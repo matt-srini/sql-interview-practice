@@ -1,12 +1,16 @@
 import logging
-import os
 from contextlib import asynccontextmanager
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from fastapi import FastAPI, Request
 from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from config import ALLOWED_ORIGINS, RATE_LIMIT_REQUESTS, RATE_LIMIT_WINDOW_SECONDS, REDIS_URL
 from database import load_datasets
 from exceptions import AppError
 from middleware.request_context import request_context_middleware
@@ -26,13 +30,6 @@ for _handler in _root_logger.handlers:
     _handler.setFormatter(_formatter)
 
 logger = logging.getLogger(__name__)
-
-
-def _get_allowed_origins() -> list[str]:
-    configured = os.getenv("ALLOWED_ORIGINS") or os.getenv("CORS_ALLOW_ORIGINS")
-    if configured:
-        return [origin.strip() for origin in configured.split(",") if origin.strip()]
-    return ["http://localhost:3000", "http://localhost:5173"]
 
 
 # ---------------------------------------------------------------------------
@@ -93,15 +90,11 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_get_allowed_origins(),
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-RATE_LIMIT_REQUESTS = int(os.getenv("RATE_LIMIT_REQUESTS", "60"))
-RATE_LIMIT_WINDOW_SECONDS = int(os.getenv("RATE_LIMIT_WINDOW_SECONDS", "60"))
-REDIS_URL = os.getenv("REDIS_URL")
 
 rate_limiter: BaseRateLimiter = create_rate_limiter(
     max_requests=RATE_LIMIT_REQUESTS,
