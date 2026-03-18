@@ -1,1 +1,23 @@
-[]
+[
+	{
+		"id": 3001,
+		"order": 1,
+		"title": "Users with the highest total order amount",
+		"description": "Return the user_id and total_amount for the user(s) with the highest total order amount. If multiple users tie, include all. Columns: user_id, total_amount. Order by user_id ascending.",
+		"difficulty": "hard",
+		"schema": {
+			"users": ["user_id", "name", "signup_date", "country"],
+			"orders": ["order_id", "user_id", "order_date", "amount", "status"]
+		},
+		"dataset_files": ["users.csv", "orders.csv"],
+		"expected_query": "SELECT user_id, total_amount FROM (SELECT u.user_id, SUM(o.amount) AS total_amount FROM users u JOIN orders o ON u.user_id = o.user_id GROUP BY u.user_id) t WHERE total_amount = (SELECT MAX(total_amount) FROM (SELECT SUM(o.amount) AS total_amount FROM users u JOIN orders o ON u.user_id = o.user_id GROUP BY u.user_id)) ORDER BY user_id ASC",
+		"solution_query": "SELECT user_id, total_amount FROM (SELECT u.user_id, SUM(o.amount) AS total_amount FROM users u JOIN orders o ON u.user_id = o.user_id GROUP BY u.user_id) t WHERE total_amount = (SELECT MAX(total_amount) FROM (SELECT SUM(o.amount) AS total_amount FROM users u JOIN orders o ON u.user_id = o.user_id GROUP BY u.user_id)) ORDER BY user_id ASC;",
+		"explanation": "Aggregate order amounts per user, find the maximum, and return all users matching that maximum.",
+		"hints": [
+			"Aggregate order amounts per user.",
+			"Find the maximum total_amount.",
+			"Return all users matching the maximum."
+		],
+		"concepts": ["JOIN", "SUM", "GROUP BY", "MAX", "Subquery"]
+	}
+]
