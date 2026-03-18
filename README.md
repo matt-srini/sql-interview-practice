@@ -97,6 +97,16 @@ cd backend
 pytest -q
 ```
 
+Generate deterministic v1 interview datasets:
+
+```bash
+cd backend
+python scripts/generate_v1_datasets.py --seed 20260318 --scale small
+```
+
+By default this writes CSVs to `backend/datasets_generated` plus a metadata file.
+See `backend/datasets/DATA_DICTIONARY_V1.md` for schema definitions and generation notes.
+
 If the frontend is deployed on a different origin, allow it through CORS with:
 
 ```bash

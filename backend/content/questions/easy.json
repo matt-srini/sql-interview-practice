@@ -1,0 +1,70 @@
+[
+  {
+    "id": 1001,
+    "order": 1,
+    "title": "List all users",
+    "description": "Return all columns for all rows in the users table.",
+    "difficulty": "easy",
+    "schema": {
+      "users": ["user_id", "name", "signup_date", "country"]
+    },
+    "dataset_files": ["users.csv"],
+    "expected_query": "SELECT * FROM users",
+    "solution_query": "SELECT *\nFROM users;",
+    "explanation": "Selecting all columns and rows from users returns the full table.",
+    "hints": ["Use SELECT * FROM users."],
+    "concepts": ["SELECT", "FROM"]
+  },
+  {
+    "id": 1002,
+    "order": 2,
+    "title": "Orders per user",
+    "description": "Return each user_id and the number of orders they have made as order_count. Include users with zero orders. Order by user_id ascending.",
+    "difficulty": "easy",
+    "schema": {
+      "users": ["user_id", "name", "signup_date", "country"],
+      "orders": ["order_id", "user_id", "order_date", "amount", "status"]
+    },
+    "dataset_files": ["users.csv", "orders.csv"],
+    "expected_query": "SELECT u.user_id, COUNT(o.order_id) AS order_count\nFROM users u\nLEFT JOIN orders o ON u.user_id = o.user_id\nGROUP BY u.user_id\nORDER BY u.user_id",
+    "solution_query": "SELECT u.user_id, COUNT(o.order_id) AS order_count\nFROM users u\nLEFT JOIN orders o ON u.user_id = o.user_id\nGROUP BY u.user_id\nORDER BY u.user_id;",
+    "explanation": "A LEFT JOIN keeps every user. COUNT(order_id) counts non-NULL matches, so users with no orders get 0.",
+    "hints": [
+      "Use a LEFT JOIN so users with no orders are included.",
+      "COUNT(order_id) counts the number of orders per user."
+    ],
+    "concepts": ["LEFT JOIN", "COUNT", "GROUP BY", "ORDER BY"]
+  },
+  {
+    "id": 1003,
+    "order": 3,
+    "title": "Total completed order amount",
+    "description": "Return the total amount of all completed orders as total_completed_amount.",
+    "difficulty": "easy",
+    "schema": {
+      "orders": ["order_id", "user_id", "order_date", "amount", "status"]
+    },
+    "dataset_files": ["orders.csv"],
+    "expected_query": "SELECT SUM(amount) AS total_completed_amount\nFROM orders\nWHERE status = 'completed'",
+    "solution_query": "SELECT SUM(amount) AS total_completed_amount\nFROM orders\nWHERE status = 'completed';",
+    "explanation": "Filter to completed orders and sum their amounts.",
+    "hints": ["Use WHERE status = 'completed' then SUM(amount)."],
+    "concepts": ["WHERE", "SUM"]
+  },
+  {
+    "id": 1004,
+    "order": 4,
+    "title": "Users who signed up in 2023",
+    "description": "Return all users who signed up in the year 2023. Include all columns.",
+    "difficulty": "easy",
+    "schema": {
+      "users": ["user_id", "name", "signup_date", "country"]
+    },
+    "dataset_files": ["users.csv"],
+    "expected_query": "SELECT *\nFROM users\nWHERE signup_date >= DATE '2023-01-01'\n  AND signup_date < DATE '2024-01-01'",
+    "solution_query": "SELECT *\nFROM users\nWHERE signup_date >= DATE '2023-01-01'\n  AND signup_date < DATE '2024-01-01';",
+    "explanation": "Use a half-open date range to capture all dates in 2023 without worrying about time components.",
+    "hints": ["Use signup_date >= 2023-01-01 AND signup_date < 2024-01-01."],
+    "concepts": ["WHERE", "dates"]
+  }
+]

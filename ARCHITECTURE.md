@@ -2,17 +2,17 @@
 
 ## Question Catalog
 
-- The seeded question bank lives in `backend/question_bank/` split by difficulty (`easy.py`, `medium.py`, `hard.py`).
+- The seeded challenge question bank lives in `backend/content/questions/` split by difficulty (`easy.json`, `medium.json`, `hard.json`) with `schemas.json` defining loader expectations.
 - `backend/questions.py` loads and validates the full catalog at import time, builds an in-memory index by id, and exposes:
   - `get_all_questions()` (list view)
   - `get_question(id)` (detail view)
   - `get_questions_by_difficulty()` (ordered lists per difficulty)
 - IDs are aligned with progression ranges:
-  - easy: `1..25`
-  - medium: `26..50`
-  - hard: `51..75`
+  - easy: `1001..1999`
+  - medium: `2001..2999`
+  - hard: `3001..3999`
 
-This keeps authoring simple (plain Python dicts) while still being easy to refactor into JSON/YAML later.
+Sample questions remain in `backend/sample_questions.py` with their own non-overlapping namespaces.
 
 ## Backend Routing
 

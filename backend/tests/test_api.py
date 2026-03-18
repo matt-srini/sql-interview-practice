@@ -18,7 +18,8 @@ def test_health() -> None:
         assert resp.status_code == 200
         payload = resp.json()
         assert payload["status"] == "ok"
-        assert "employees" in payload["tables_loaded"]
+        assert "users" in payload["tables_loaded"]
+        assert "orders" in payload["tables_loaded"]
 
 
 def test_get_questions() -> None:
@@ -26,7 +27,7 @@ def test_get_questions() -> None:
         resp = client.get("/questions")
         assert resp.status_code == 200
         payload = resp.json()
-        assert len(payload) >= 75
+        assert len(payload) == 5
         assert {"id", "title", "difficulty"}.issubset(payload[0].keys())
 
 
@@ -35,7 +36,7 @@ def test_get_api_questions() -> None:
         resp = client.get("/api/questions")
         assert resp.status_code == 200
         payload = resp.json()
-        assert len(payload) >= 75
+        assert len(payload) == 5
 
 
 def test_get_catalog_groups_and_initial_unlocks() -> None:
@@ -47,8 +48,11 @@ def test_get_catalog_groups_and_initial_unlocks() -> None:
         groups = {g["difficulty"]: g for g in payload["groups"]}
         assert set(groups.keys()) == {"easy", "medium", "hard"}
 
-        for diff in ["easy", "medium", "hard"]:
-            assert groups[diff]["counts"]["total"] >= 25
+        assert groups["easy"]["counts"]["total"] == 4
+        assert groups["medium"]["counts"]["total"] == 1
+        assert groups["hard"]["counts"]["total"] == 0
+
+        for diff in ["easy", "medium"]:
             first = sorted(groups[diff]["questions"], key=lambda q: q["order"])[0]
             assert first["state"] == "unlocked"
             assert first["is_next"] is True
@@ -85,12 +89,12 @@ def test_run_query_success() -> None:
         first_easy_id, _ = _first_two_easy_ids(client, "u_run_ok")
         resp = client.post(
             "/run-query",
-            json={"query": "SELECT id, name FROM employees LIMIT 3", "question_id": first_easy_id},
+            json={"query": "SELECT user_id, name FROM users ORDER BY user_id LIMIT 3", "question_id": first_easy_id},
             headers={"X-User-Id": "u_run_ok"},
         )
         assert resp.status_code == 200
         payload = resp.json()
-        assert payload["columns"] == ["id", "name"]
+        assert payload["columns"] == ["user_id", "name"]
         assert len(payload["rows"]) == 3
 
 
@@ -99,7 +103,7 @@ def test_run_query_locked_question_blocked() -> None:
         _, second_easy_id = _first_two_easy_ids(client, "u_locked")
         resp = client.post(
             "/run-query",
-            json={"query": "SELECT email FROM employees LIMIT 1", "question_id": second_easy_id},
+            json={"query": "SELECT country FROM users LIMIT 1", "question_id": second_easy_id},
             headers={"X-User-Id": "u_locked"},
         )
         assert resp.status_code == 403
@@ -149,7 +153,7 @@ def test_submit_blocks_disallowed_query() -> None:
         first_easy_id, _ = _first_two_easy_ids(client, "u_submit_block")
         resp = client.post(
             "/submit",
-            json={"query": "DELETE FROM employees", "question_id": first_easy_id},
+            json={"query": "DELETE FROM users", "question_id": first_easy_id},
             headers={"X-User-Id": "u_submit_block"},
         )
         assert resp.status_code == 400
@@ -206,7 +210,12 @@ def test_get_sample_question_by_difficulty() -> None:
             assert payload["progress"]["mode"] == "sample"
             assert payload["progress"]["unlocked"] is True
             assert "solution_query" not in payload
-            assert payload["id"] >= 1000
+            if difficulty == "easy":
+                assert 101 <= payload["id"] <= 103
+            elif difficulty == "medium":
+                assert 201 <= payload["id"] <= 203
+            elif difficulty == "hard":
+                assert 301 <= payload["id"] <= 303
             assert payload["sample"]["total"] == 3
 
 
@@ -266,12 +275,12 @@ def test_sample_submit_does_not_advance_catalog_progress() -> None:
         before_easy = next(group for group in before["groups"] if group["difficulty"] == "easy")
 
         sample = client.get("/api/sample/easy", headers={"X-User-Id": user_id}).json()
-        assert sample["id"] == 1001
+        assert sample["id"] == 101
 
         resp = client.post(
             "/api/sample/submit",
             json={
-                "query": "SELECT MAX(salary) AS max_salary FROM employees",
+                "query": "SELECT COUNT(*) AS user_count FROM users",
                 "question_id": sample["id"],
             },
             headers={"X-User-Id": user_id},

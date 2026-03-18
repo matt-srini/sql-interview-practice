@@ -17,6 +17,7 @@ It provides a controlled SQL practice environment where learners can:
 
 ### Main implemented features
 - Progressive challenge mode with sequential unlocks by difficulty
+- Seeded practice question bank (currently 5 questions: 4 easy, 1 medium; hard is empty after the latest reset)
 - Dedicated sample mode with exactly 3 sample questions per difficulty
 - Sample exhaustion tracking and sample progress reset
 - Query run and answer submit workflows
@@ -24,6 +25,8 @@ It provides a controlled SQL practice environment where learners can:
 - SQL safety guardrails with parser-based validation
 - Per-question SQL execution isolation
 - Per-IP API rate limiting with Redis or in-memory fallback
+- Request correlation via X-Request-ID response header and request_id-prefixed logs
+- Standardized API error responses shaped as { error, request_id }
 - Responsive challenge shell with sidebar navigation and mobile drawer
 - Single-service production deployment path for Railway + Cloudflare
 
@@ -84,6 +87,7 @@ Key backend modules:
 - Engine: DuckDB
 - Persistent database file: backend/sql_practice.duckdb
 - Dataset source: CSV files in backend/datasets
+- Current practice datasets: users.csv and orders.csv (orders uses the unified user_id-based schema)
 - Persistent DuckDB usage:
   - Loaded base tables for local inspection and health visibility
   - user_progress table for challenge completion tracking
@@ -134,6 +138,7 @@ Key backend modules:
 - main.py: FastAPI app wiring, lifespan setup, middleware, and router registration
 - config.py: backend/frontend path constants used by static serving routes
 - deps.py: shared request models and dependency helpers used across routers
+- content/questions/: JSON-backed challenge content files (`easy.json`, `medium.json`, `hard.json`) plus `schemas.json`
 - routers/: domain-focused route modules (`system.py`, `catalog.py`, `questions.py`, `sample.py`, `spa.py`)
 - database.py: DuckDB connection helpers, CSV loading, and isolated execution connection creation
 - evaluator.py: query execution and result evaluation logic
@@ -464,7 +469,7 @@ This is what allows both:
 - Real authentication and multi-device user accounts
 - Explicit challenge progress reset in the UI and API
 - Admin tooling for managing question content
-- Structured observability: logs, metrics, tracing, request correlation
+- Metrics and tracing (request correlation via request_id is implemented)
 - Submission history and audit trail
 - Better feedback tooling such as hints or richer diffing between results
 - Content migrations/versioning beyond code changes
@@ -503,7 +508,7 @@ This is what allows both:
 
 ### Medium-term
 - Externalize question definitions into validated content files or a content store
-- Add structured logging and request IDs
+- Add metrics (e.g., request latency, error rates) and tracing as needed
 - Harden cookie settings per environment, including Secure in production
 - Add a Redis-backed production recommendation to the Railway setup
 

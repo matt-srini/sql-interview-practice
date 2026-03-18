@@ -1,0 +1,43 @@
+{
+  "dataset_version": "v1",
+  "seed": 20260318,
+  "scale": "small",
+  "generated_at": "2026-03-18T09:57:00Z",
+  "row_counts": {
+    "users": 600,
+    "categories": 16,
+    "products": 260,
+    "orders": 4200,
+    "order_items": 12665,
+    "payments": 4737,
+    "sessions": 9000,
+    "events": 44964,
+    "support_tickets": 1300,
+    "departments": 10,
+    "employees": 180
+  },
+  "quality_metrics": {
+    "users_email_null_rate": 0.03,
+    "products_launch_date_null_rate": 0.0154,
+    "users_without_sessions": 72,
+    "users_with_sessions_but_no_orders": 139,
+    "categories_without_sales": 2,
+    "empty_departments": 2,
+    "tickets_with_null_resolution_hours": 515,
+    "ticket_status_counts": {
+      "resolved": 785,
+      "in_progress": 287,
+      "open": 228
+    },
+    "order_status_counts": {
+      "completed": 3638,
+      "cancelled": 562
+    },
+    "payment_status_counts": {
+      "paid": 3689,
+      "failed": 443,
+      "refunded": 520,
+      "chargeback": 85
+    }
+  }
+}
