@@ -3,12 +3,33 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Optional
 
-from question_bank.common import (
-    ORDERS_SCHEMA,
-    USERS_SCHEMA,
-    merge_schema,
-    q,
-)
+
+# Inline schemas and helpers (formerly from question_bank.common)
+ORDERS_SCHEMA = {
+    "orders": ["order_id", "user_id", "order_date", "amount", "status"],
+}
+USERS_SCHEMA = {
+    "users": ["user_id", "name", "signup_date", "country"],
+}
+def merge_schema(*schemas):
+    merged = {}
+    for schema in schemas:
+        for table, cols in schema.items():
+            merged[table] = list(cols)
+    return merged
+def q(*, id, order, title, description, difficulty, schema, dataset_files, expected_query, solution_query, explanation):
+    return {
+        "id": id,
+        "order": order,
+        "title": title,
+        "description": description,
+        "difficulty": difficulty,
+        "schema": schema,
+        "dataset_files": dataset_files,
+        "expected_query": expected_query,
+        "solution_query": solution_query,
+        "explanation": explanation,
+    }
 
 
 _DATASETS_DIR = Path(__file__).resolve().parent / "datasets"
