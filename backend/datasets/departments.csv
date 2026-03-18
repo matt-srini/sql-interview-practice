@@ -1,4 +1,11 @@
-id,name
-1,Engineering
-2,Data Science
-3,Operations
+department_id,department_name,region
+1,Department 1,NA
+2,Department 2,EMEA
+3,Department 3,APAC
+4,Department 4,LATAM
+5,Department 5,NA
+6,Department 6,EMEA
+7,Department 7,APAC
+8,Department 8,LATAM
+9,Department 9,NA
+10,Department 10,EMEA

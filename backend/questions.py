@@ -1,16 +1,99 @@
-"""Question catalog.
+"""Question catalog loaded from validated JSON content files."""
 
-Challenge questions are loaded from validated JSON content files via the
-`question_bank` package while preserving the same public API.
-"""
-
+import json
 import random
+from pathlib import Path
 from typing import Any, Optional
 
-from question_bank import load_question_bank
+
+_CONTENT_DIR = Path(__file__).resolve().parent / "content" / "questions"
+_DATASETS_DIR = Path(__file__).resolve().parent / "datasets"
+_SCHEMA_CONFIG_PATH = _CONTENT_DIR / "schemas.json"
 
 
-QUESTIONS: list[dict[str, Any]] = load_question_bank()
+def _fail(question_id: int, reason: str) -> None:
+    raise ValueError(f"Invalid challenge question (id={int(question_id)}): {reason}")
+
+
+def _load_json(path: Path) -> Any:
+    with path.open("r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def _table_name_from_dataset_file(dataset_file: str) -> str:
+    return Path(dataset_file).stem
+
+
+def _validate_question(question: dict[str, Any], *, required_fields: list[str], id_ranges: dict[str, list[int]]) -> None:
+    qid = int(question.get("id", -1))
+    for required in required_fields:
+        if required not in question:
+            _fail(qid, f"Missing required field: {required}")
+
+    difficulty = str(question.get("difficulty"))
+    if difficulty not in id_ranges:
+        _fail(qid, f"Invalid difficulty: {difficulty}")
+
+    lo, hi = id_ranges[difficulty]
+    if not (lo <= qid <= hi):
+        _fail(qid, f"ID out of range for difficulty={difficulty}: expected {lo}-{hi}")
+
+    dataset_files = question.get("dataset_files")
+    if not isinstance(dataset_files, list) or not dataset_files:
+        _fail(qid, "dataset_files must be a non-empty list")
+
+    schema = question.get("schema")
+    if not isinstance(schema, dict) or not schema:
+        _fail(qid, "schema must be a non-empty dict")
+
+    dataset_files_set = {str(dataset_file) for dataset_file in dataset_files}
+    schema_tables = {str(table_name) for table_name in schema.keys()}
+
+    for dataset_file in dataset_files_set:
+        if not dataset_file.endswith(".csv"):
+            _fail(qid, f"dataset_files contains non-CSV entry: {dataset_file}")
+        if not (_DATASETS_DIR / dataset_file).exists():
+            _fail(qid, f"Dataset file not found: {dataset_file}")
+        table_name = _table_name_from_dataset_file(dataset_file)
+        if table_name not in schema_tables:
+            _fail(qid, f"dataset_files includes '{dataset_file}' but schema is missing table '{table_name}'")
+
+    for table_name in schema_tables:
+        expected_file = f"{table_name}.csv"
+        if expected_file not in dataset_files_set:
+            _fail(qid, f"schema includes table '{table_name}' but dataset_files is missing '{expected_file}'")
+
+
+def _load_questions() -> list[dict[str, Any]]:
+    schema_config = _load_json(_SCHEMA_CONFIG_PATH)
+    required_fields = list(schema_config["question_required_fields"])
+    difficulty_files = dict(schema_config["difficulty_files"])
+    id_ranges = dict(schema_config["challenge_id_ranges"])
+
+    questions: list[dict[str, Any]] = []
+    seen_ids: set[int] = set()
+
+    for difficulty in ["easy", "medium", "hard"]:
+        question_file = _CONTENT_DIR / str(difficulty_files[difficulty])
+        content = _load_json(question_file)
+        if not isinstance(content, list):
+            _fail(-1, f"Question file must contain a list: {question_file.name}")
+
+        for question in content:
+            if not isinstance(question, dict):
+                _fail(-1, f"Question entry must be an object in {question_file.name}")
+            _validate_question(question, required_fields=required_fields, id_ranges=id_ranges)
+
+            qid = int(question["id"])
+            if qid in seen_ids:
+                _fail(qid, "Duplicate question id")
+            seen_ids.add(qid)
+            questions.append(question)
+
+    return questions
+
+
+QUESTIONS: list[dict[str, Any]] = _load_questions()
 
 _INDEX: dict[int, dict[str, Any]] = {int(q["id"]): q for q in QUESTIONS}
 
