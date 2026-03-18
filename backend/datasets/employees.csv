@@ -1,0 +1,16 @@
+id,name,email,salary,department_id
+1,Alice Johnson,alice@example.com,95000,1
+2,Bob Smith,bob@example.com,82000,1
+3,Carol White,carol@example.com,110000,2
+4,David Brown,david@example.com,75000,3
+5,Eve Davis,eve@example.com,95000,2
+6,Frank Wilson,frank@example.com,60000,3
+7,Grace Lee,grace@example.com,130000,2
+8,Henry Taylor,henry@example.com,82000,1
+9,Ivy Martin,ivy@example.com,47000,3
+10,Jack Anderson,jack@example.com,58000,3
+11,Karen Thomas,karen@example.com,110000,1
+12,Leo Jackson,leo@example.com,75000,2
+13,Mia White,mia@example.com,60000,3
+14,Nick Harris,alice@example.com,89000,1
+15,Olivia Clark,bob@example.com,72000,2
