@@ -1,6 +1,7 @@
 import pandas as pd
 
 from database import load_datasets
+from exceptions import BadRequestError
 from evaluator import MAX_RESULT_ROWS, evaluate, normalize_dataframe, run_query
 from questions import get_question
 
@@ -29,7 +30,7 @@ def test_run_query_returns_rows() -> None:
 def test_run_query_blocks_non_select() -> None:
     try:
         run_query("DROP TABLE employees", Q_EMPLOYEES_ONLY)
-    except ValueError as exc:
+    except BadRequestError as exc:
         assert "Only SELECT queries are allowed" in str(exc)
         return
     assert False, "Expected ValueError for disallowed query"
@@ -48,7 +49,7 @@ def test_run_query_allows_with_cte() -> None:
 def test_run_query_blocks_multi_statement() -> None:
     try:
         run_query("SELECT 1; SELECT 2;", Q_EMPLOYEES_ONLY)
-    except ValueError as exc:
+    except BadRequestError as exc:
         assert "single SQL statement" in str(exc)
         return
     assert False, "Expected ValueError for multi-statement query"
@@ -57,7 +58,7 @@ def test_run_query_blocks_multi_statement() -> None:
 def test_run_query_blocks_cartesian_join() -> None:
     try:
         run_query("SELECT * FROM employees CROSS JOIN orders", Q_MULTI_TABLES)
-    except ValueError as exc:
+    except BadRequestError as exc:
         assert "Cartesian join" in str(exc)
         return
     assert False, "Expected ValueError for Cartesian join"
@@ -75,7 +76,7 @@ def test_run_query_blocks_too_many_joins() -> None:
             "JOIN departments d2 ON d2.id = e2.department_id",
             Q_MULTI_TABLES,
         )
-    except ValueError as exc:
+    except BadRequestError as exc:
         assert "Maximum" in str(exc)
         return
     assert False, "Expected ValueError for too many joins"
@@ -106,7 +107,7 @@ def test_run_query_enforces_row_limit() -> None:
 def test_run_query_blocks_unrelated_table_access() -> None:
     try:
         run_query("SELECT * FROM orders LIMIT 1", Q_EMPLOYEES_ONLY)
-    except ValueError as exc:
+    except BadRequestError as exc:
         assert "orders" in str(exc).lower() or "catalog" in str(exc).lower() or "table" in str(exc).lower()
         return
     assert False, "Expected failure when querying table outside question datasets"

@@ -1,0 +1,453 @@
+diff --git a/backend/evaluator.py b/backend/evaluator.py
+index b698acc..531c4a4 100644
+--- a/backend/evaluator.py
++++ b/backend/evaluator.py
+@@ -15,6 +15,7 @@ from typing import Any
+ import pandas as pd
+ 
+ from database import create_isolated_connection
++from exceptions import BadRequestError
+ from middleware.request_context import get_request_id
+ from sql_guard import validate_read_only_select_query
+ 
+@@ -52,7 +53,7 @@ def _run_with_timeout(normalized_query: str, question: dict[str, Any]) -> pd.Dat
+         try:
+             return future.result(timeout=QUERY_TIMEOUT_SECONDS)
+         except FutureTimeoutError as exc:
+-            raise ValueError(
++            raise BadRequestError(
+                 f"Query timed out after {QUERY_TIMEOUT_SECONDS} seconds. "
+                 "Try a simpler query."
+             ) from exc
+@@ -71,7 +72,11 @@ def run_query(query: str, question: dict[str, Any]) -> dict[str, Any]:
+         question.get("id"),
+         len(query or ""),
+     )
+-    normalized_query = _validate_query(query)
++    try:
++        normalized_query = _validate_query(query)
++    except Exception as exc:
++        logger.info("%sQuery failed: %s", prefix, str(exc))
++        raise BadRequestError(str(exc)) from exc
+     try:
+         start = time.time()
+         result = _run_with_timeout(normalized_query, question)
+@@ -79,7 +84,7 @@ def run_query(query: str, question: dict[str, Any]) -> dict[str, Any]:
+         logger.info("%sQuery executed in %.3fs", prefix, duration)
+     except Exception as exc:
+         logger.info("%sQuery failed: %s", prefix, str(exc))
+-        raise ValueError(str(exc)) from exc
++        raise BadRequestError(str(exc)) from exc
+ 
+     payload = {
+         "columns": list(result.columns),
+diff --git a/backend/main.py b/backend/main.py
+index 2a257f4..0eb2ee2 100644
+--- a/backend/main.py
++++ b/backend/main.py
+@@ -3,11 +3,14 @@ import os
+ from contextlib import asynccontextmanager
+ 
+ from fastapi import FastAPI, Request
++from fastapi import HTTPException
+ from fastapi.middleware.cors import CORSMiddleware
+ from fastapi.responses import JSONResponse
+ 
+ from database import load_datasets
++from exceptions import AppError
+ from middleware.request_context import request_context_middleware
++from middleware.request_context import get_request_id
+ from progress import init_progress_storage
+ from rate_limiter import BaseRateLimiter, create_rate_limiter
+ from routers import catalog, questions, sample, spa, system
+@@ -49,6 +52,45 @@ async def lifespan(app: FastAPI):
+ 
+ app = FastAPI(title="SQL Interview Practice API", lifespan=lifespan)
+ 
++
++@app.exception_handler(AppError)
++async def app_error_handler(request: Request, exc: AppError):
++    request_id = get_request_id()
++    return JSONResponse(
++        status_code=exc.status_code,
++        content={
++            "error": exc.message,
++            "request_id": request_id,
++        },
++        headers={"X-Request-ID": request_id},
++    )
++
++
++@app.exception_handler(HTTPException)
++async def http_exception_handler(request: Request, exc: HTTPException):
++    request_id = get_request_id()
++    return JSONResponse(
++        status_code=exc.status_code,
++        content={
++            "error": str(exc.detail),
++            "request_id": request_id,
++        },
++        headers={"X-Request-ID": request_id},
++    )
++
++
++@app.exception_handler(Exception)
++async def global_exception_handler(request: Request, exc: Exception):
++    request_id = get_request_id()
++    return JSONResponse(
++        status_code=500,
++        content={
++            "error": "Internal server error",
++            "request_id": request_id,
++        },
++        headers={"X-Request-ID": request_id},
++    )
++
+ app.add_middleware(
+     CORSMiddleware,
+     allow_origins=_get_allowed_origins(),
+@@ -83,8 +125,12 @@ async def ip_rate_limit_middleware(request: Request, call_next):
+     client_ip = request.client.host if request.client and request.client.host else "unknown"
+     decision = rate_limiter.check(client_ip)
+     if not decision.allowed:
++        prefix = f"[request_id={request_id}] "
+         logger.warning(
+-            f"[request_id={request_id}] Rate limit exceeded client_ip={client_ip} retry_after={decision.retry_after}s"
++            "%sRate limit exceeded client_ip=%s retry_after=%ss",
++            prefix,
++            client_ip,
++            decision.retry_after,
+         )
+         return JSONResponse(
+             status_code=429,
+diff --git a/backend/middleware/request_context.py b/backend/middleware/request_context.py
+index 16dc89e..a6d06a6 100644
+--- a/backend/middleware/request_context.py
++++ b/backend/middleware/request_context.py
+@@ -6,7 +6,9 @@ import uuid
+ from typing import Awaitable, Callable
+ 
+ from fastapi import Request
+-from fastapi.responses import JSONResponse
++from fastapi import HTTPException
++
++from exceptions import AppError
+ 
+ logger = logging.getLogger(__name__)
+ 
+@@ -37,32 +39,32 @@ async def request_context_middleware(
+     token = _request_id_var.set(request_id)
+     try:
+         client_ip = request.client.host if request.client else "unknown"
++        prefix = f"[request_id={request_id}] "
+         logger.info(
+-            f"[request_id={request_id}] "
+-            f"{request.method} {request.url.path} "
+-            f"client_ip={client_ip}"
++            "%s%s %s client_ip=%s",
++            prefix,
++            request.method,
++            request.url.path,
++            client_ip,
+         )
+         response = await call_next(request)
+         # Ensure the request id is returned to the client.
+         response.headers["X-Request-ID"] = request_id
+         logger.info(
+-            f"[request_id={request_id}] "
+-            f"Completed {request.method} {request.url.path} "
+-            f"status_code={response.status_code}"
++            "%sCompleted %s %s status_code=%s",
++            prefix,
++            request.method,
++            request.url.path,
++            response.status_code,
+         )
+         return response
++    except (AppError, HTTPException):
++        # Expected / user-facing errors are formatted by centralized handlers.
++        raise
+     except Exception:
+-        # Log unhandled exception with request_id, but do not leak traces to the client.
+-        logger.exception(
+-            f"[request_id={request_id}] Unhandled exception"
+-        )
+-        return JSONResponse(
+-            status_code=500,
+-            content={
+-                "error": "Internal server error",
+-                "request_id": request_id,
+-            },
+-            headers={"X-Request-ID": request_id},
+-        )
++        # Log truly unhandled exceptions with request_id; centralized handler formats response.
++        prefix = f"[request_id={request_id}] "
++        logger.exception("%sUnhandled exception", prefix)
++        raise
+     finally:
+         _request_id_var.reset(token)
+diff --git a/backend/progress.py b/backend/progress.py
+index 2fc5326..fa5cb06 100644
+--- a/backend/progress.py
++++ b/backend/progress.py
+@@ -80,7 +80,12 @@ def mark_question_solved(user_id: str, question_id: int) -> None:
+ 
+ def clear_user_progress(user_id: str) -> None:
+     request_id = get_request_id()
+-    logger.info(f"[request_id={request_id}] Clear user progress: user_id={user_id}")
++    prefix = f"[request_id={request_id}] "
++    logger.info(
++        "%sClear user progress: user_id=%s",
++        prefix,
++        user_id,
++    )
+     conn = get_connection(read_only=False)
+     try:
+         conn.execute("DELETE FROM user_progress WHERE user_id = ?", [user_id])
+@@ -122,7 +127,13 @@ def mark_sample_seen(user_id: str, difficulty: str, question_id: int) -> None:
+ 
+ def clear_seen_sample_ids(user_id: str, difficulty: str) -> None:
+     request_id = get_request_id()
+-    logger.info(f"[request_id={request_id}] Clear seen sample ids: user_id={user_id} difficulty={difficulty}")
++    prefix = f"[request_id={request_id}] "
++    logger.info(
++        "%sClear seen sample ids: user_id=%s difficulty=%s",
++        prefix,
++        user_id,
++        difficulty,
++    )
+     conn = get_connection(read_only=False)
+     try:
+         conn.execute(
+diff --git a/backend/routers/questions.py b/backend/routers/questions.py
+index 4e1aeee..995a673 100644
+--- a/backend/routers/questions.py
++++ b/backend/routers/questions.py
+@@ -56,7 +56,13 @@ def run_query_endpoint(
+     user_id: str = Depends(get_user_id),
+ ) -> dict[str, Any]:
+     request_id = get_request_id()
+-    logger.info(f"[request_id={request_id}] /run-query: user_id={user_id} question_id={body.question_id}")
++    prefix = f"[request_id={request_id}] "
++    logger.info(
++        "%s/run-query: user_id=%s question_id=%s",
++        prefix,
++        user_id,
++        body.question_id,
++    )
+     question = get_question(body.question_id)
+     if question is None:
+         raise HTTPException(status_code=404, detail="Question not found")
+@@ -66,11 +72,7 @@ def run_query_endpoint(
+     if not is_unlocked_for_user(question=question, questions_by_difficulty=grouped, solved_ids=solved_ids):
+         raise HTTPException(status_code=403, detail="Question is locked. Solve previous questions first.")
+ 
+-    try:
+-        result = run_query(body.query, question)
+-    except ValueError as exc:
+-        raise HTTPException(status_code=400, detail=str(exc))
+-    return result
++    return run_query(body.query, question)
+ 
+ 
+ @router.post("/submit")
+@@ -81,7 +83,13 @@ def submit_answer(
+     user_id: str = Depends(get_user_id),
+ ) -> dict[str, Any]:
+     request_id = get_request_id()
+-    logger.info(f"[request_id={request_id}] /submit: user_id={user_id} question_id={body.question_id}")
++    prefix = f"[request_id={request_id}] "
++    logger.info(
++        "%s/submit: user_id=%s question_id=%s",
++        prefix,
++        user_id,
++        body.question_id,
++    )
+     question = get_question(body.question_id)
+     if question is None:
+         raise HTTPException(status_code=404, detail="Question not found")
+@@ -91,10 +99,7 @@ def submit_answer(
+     if not is_unlocked_for_user(question=question, questions_by_difficulty=grouped, solved_ids=solved_ids):
+         raise HTTPException(status_code=403, detail="Question is locked. Solve previous questions first.")
+ 
+-    try:
+-        result = evaluate(body.query, question["expected_query"], question)
+-    except ValueError as exc:
+-        raise HTTPException(status_code=400, detail=str(exc))
++    result = evaluate(body.query, question["expected_query"], question)
+ 
+     if result.get("correct") is True:
+         mark_question_solved(user_id, int(question["id"]))
+diff --git a/backend/routers/sample.py b/backend/routers/sample.py
+index 23b38a7..f0207ec 100644
+--- a/backend/routers/sample.py
++++ b/backend/routers/sample.py
+@@ -23,7 +23,13 @@ def get_sample_question_by_difficulty(
+     user_id: str = Depends(get_user_id),
+ ) -> dict[str, Any]:
+     request_id = get_request_id()
+-    logger.info(f"[request_id={request_id}] Get sample question: user_id={user_id} difficulty={difficulty}")
++    prefix = f"[request_id={request_id}] "
++    logger.info(
++        "%sGet sample question: user_id=%s difficulty=%s",
++        prefix,
++        user_id,
++        difficulty,
++    )
+     normalized = _validate_difficulty(difficulty)
+     grouped = get_sample_questions_by_difficulty()
+     pool = grouped.get(normalized, [])
+@@ -64,7 +70,13 @@ def reset_sample_progress_for_difficulty(
+     user_id: str = Depends(get_user_id),
+ ) -> dict[str, Any]:
+     request_id = get_request_id()
+-    logger.info(f"[request_id={request_id}] Reset sample progress: user_id={user_id} difficulty={difficulty}")
++    prefix = f"[request_id={request_id}] "
++    logger.info(
++        "%sReset sample progress: user_id=%s difficulty=%s",
++        prefix,
++        user_id,
++        difficulty,
++    )
+     normalized = _validate_difficulty(difficulty)
+     clear_seen_sample_ids(user_id, normalized)
+     return {
+@@ -76,30 +88,33 @@ def reset_sample_progress_for_difficulty(
+ @router.post("/run-query")
+ def run_sample_query(body: RunQueryRequest) -> dict[str, Any]:
+     request_id = get_request_id()
+-    logger.info(f"[request_id={request_id}] Sample /run-query: question_id={body.question_id}")
++    prefix = f"[request_id={request_id}] "
++    logger.info(
++        "%sSample /run-query: question_id=%s",
++        prefix,
++        body.question_id,
++    )
+     question = get_sample_question(body.question_id)
+     if question is None:
+         raise HTTPException(status_code=404, detail="Question not found")
+ 
+-    try:
+-        result = run_query(body.query, question)
+-    except ValueError as exc:
+-        raise HTTPException(status_code=400, detail=str(exc))
+-    return result
++    return run_query(body.query, question)
+ 
+ 
+ @router.post("/submit")
+ def submit_sample_answer(body: SubmitRequest) -> dict[str, Any]:
+     request_id = get_request_id()
+-    logger.info(f"[request_id={request_id}] Sample /submit: question_id={body.question_id}")
++    prefix = f"[request_id={request_id}] "
++    logger.info(
++        "%sSample /submit: question_id=%s",
++        prefix,
++        body.question_id,
++    )
+     question = get_sample_question(body.question_id)
+     if question is None:
+         raise HTTPException(status_code=404, detail="Question not found")
+ 
+-    try:
+-        result = evaluate(body.query, question["expected_query"], question)
+-    except ValueError as exc:
+-        raise HTTPException(status_code=400, detail=str(exc))
++    result = evaluate(body.query, question["expected_query"], question)
+ 
+     return {
+         **result,
+diff --git a/backend/tests/test_api.py b/backend/tests/test_api.py
+index d8f8256..42b287d 100644
+--- a/backend/tests/test_api.py
++++ b/backend/tests/test_api.py
+@@ -113,6 +113,10 @@ def test_run_query_invalid_question() -> None:
+         )
+         assert resp.status_code == 404
+ 
++        payload = resp.json()
++        assert "error" in payload
++        assert "request_id" in payload
++
+ 
+ def test_submit_correct_answer() -> None:
+     with TestClient(app) as client:
+@@ -150,6 +154,10 @@ def test_submit_blocks_disallowed_query() -> None:
+         )
+         assert resp.status_code == 400
+ 
++        payload = resp.json()
++        assert "error" in payload
++        assert "request_id" in payload
++
+ 
+ def test_rate_limit_headers_present() -> None:
+     main._clear_rate_limit_state()
+@@ -174,6 +182,10 @@ def test_rate_limit_enforced() -> None:
+             assert client.get("/questions").status_code == 200
+             limited = client.get("/questions")
+             assert limited.status_code == 429
++            payload = limited.json()
++            assert "error" in payload
++            assert "request_id" in payload
++            assert "X-Request-ID" in limited.headers
+     finally:
+         limiter.max_requests = original_requests
+         limiter.window_seconds = original_window
+diff --git a/backend/tests/test_evaluator.py b/backend/tests/test_evaluator.py
+index ca07d1c..a5fd8d5 100644
+--- a/backend/tests/test_evaluator.py
++++ b/backend/tests/test_evaluator.py
+@@ -1,6 +1,7 @@
+ import pandas as pd
+ 
+ from database import load_datasets
++from exceptions import BadRequestError
+ from evaluator import MAX_RESULT_ROWS, evaluate, normalize_dataframe, run_query
+ from questions import get_question
+ 
+@@ -29,7 +30,7 @@ def test_run_query_returns_rows() -> None:
+ def test_run_query_blocks_non_select() -> None:
+     try:
+         run_query("DROP TABLE employees", Q_EMPLOYEES_ONLY)
+-    except ValueError as exc:
++    except BadRequestError as exc:
+         assert "Only SELECT queries are allowed" in str(exc)
+         return
+     assert False, "Expected ValueError for disallowed query"
+@@ -48,7 +49,7 @@ def test_run_query_allows_with_cte() -> None:
+ def test_run_query_blocks_multi_statement() -> None:
+     try:
+         run_query("SELECT 1; SELECT 2;", Q_EMPLOYEES_ONLY)
+-    except ValueError as exc:
++    except BadRequestError as exc:
+         assert "single SQL statement" in str(exc)
+         return
+     assert False, "Expected ValueError for multi-statement query"
+@@ -57,7 +58,7 @@ def test_run_query_blocks_multi_statement() -> None:
+ def test_run_query_blocks_cartesian_join() -> None:
+     try:
+         run_query("SELECT * FROM employees CROSS JOIN orders", Q_MULTI_TABLES)
+-    except ValueError as exc:
++    except BadRequestError as exc:
+         assert "Cartesian join" in str(exc)
+         return
+     assert False, "Expected ValueError for Cartesian join"
+@@ -75,7 +76,7 @@ def test_run_query_blocks_too_many_joins() -> None:
+             "JOIN departments d2 ON d2.id = e2.department_id",
+             Q_MULTI_TABLES,
+         )
+-    except ValueError as exc:
++    except BadRequestError as exc:
+         assert "Maximum" in str(exc)
+         return
+     assert False, "Expected ValueError for too many joins"
+@@ -106,7 +107,7 @@ def test_run_query_enforces_row_limit() -> None:
+ def test_run_query_blocks_unrelated_table_access() -> None:
+     try:
+         run_query("SELECT * FROM orders LIMIT 1", Q_EMPLOYEES_ONLY)
+-    except ValueError as exc:
++    except BadRequestError as exc:
+         assert "orders" in str(exc).lower() or "catalog" in str(exc).lower() or "table" in str(exc).lower()
+         return
+     assert False, "Expected failure when querying table outside question datasets"

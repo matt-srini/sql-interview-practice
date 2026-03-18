@@ -80,7 +80,12 @@ def mark_question_solved(user_id: str, question_id: int) -> None:
 
 def clear_user_progress(user_id: str) -> None:
     request_id = get_request_id()
-    logger.info(f"[request_id={request_id}] Clear user progress: user_id={user_id}")
+    prefix = f"[request_id={request_id}] "
+    logger.info(
+        "%sClear user progress: user_id=%s",
+        prefix,
+        user_id,
+    )
     conn = get_connection(read_only=False)
     try:
         conn.execute("DELETE FROM user_progress WHERE user_id = ?", [user_id])
@@ -122,7 +127,13 @@ def mark_sample_seen(user_id: str, difficulty: str, question_id: int) -> None:
 
 def clear_seen_sample_ids(user_id: str, difficulty: str) -> None:
     request_id = get_request_id()
-    logger.info(f"[request_id={request_id}] Clear seen sample ids: user_id={user_id} difficulty={difficulty}")
+    prefix = f"[request_id={request_id}] "
+    logger.info(
+        "%sClear seen sample ids: user_id=%s difficulty=%s",
+        prefix,
+        user_id,
+        difficulty,
+    )
     conn = get_connection(read_only=False)
     try:
         conn.execute(

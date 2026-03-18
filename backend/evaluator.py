@@ -15,6 +15,7 @@ from typing import Any
 import pandas as pd
 
 from database import create_isolated_connection
+from exceptions import BadRequestError
 from middleware.request_context import get_request_id
 from sql_guard import validate_read_only_select_query
 
@@ -52,7 +53,7 @@ def _run_with_timeout(normalized_query: str, question: dict[str, Any]) -> pd.Dat
         try:
             return future.result(timeout=QUERY_TIMEOUT_SECONDS)
         except FutureTimeoutError as exc:
-            raise ValueError(
+            raise BadRequestError(
                 f"Query timed out after {QUERY_TIMEOUT_SECONDS} seconds. "
                 "Try a simpler query."
             ) from exc
@@ -71,7 +72,11 @@ def run_query(query: str, question: dict[str, Any]) -> dict[str, Any]:
         question.get("id"),
         len(query or ""),
     )
-    normalized_query = _validate_query(query)
+    try:
+        normalized_query = _validate_query(query)
+    except Exception as exc:
+        logger.info("%sQuery failed: %s", prefix, str(exc))
+        raise BadRequestError(str(exc)) from exc
     try:
         start = time.time()
         result = _run_with_timeout(normalized_query, question)
@@ -79,7 +84,7 @@ def run_query(query: str, question: dict[str, Any]) -> dict[str, Any]:
         logger.info("%sQuery executed in %.3fs", prefix, duration)
     except Exception as exc:
         logger.info("%sQuery failed: %s", prefix, str(exc))
-        raise ValueError(str(exc)) from exc
+        raise BadRequestError(str(exc)) from exc
 
     payload = {
         "columns": list(result.columns),

@@ -23,7 +23,13 @@ def get_sample_question_by_difficulty(
     user_id: str = Depends(get_user_id),
 ) -> dict[str, Any]:
     request_id = get_request_id()
-    logger.info(f"[request_id={request_id}] Get sample question: user_id={user_id} difficulty={difficulty}")
+    prefix = f"[request_id={request_id}] "
+    logger.info(
+        "%sGet sample question: user_id=%s difficulty=%s",
+        prefix,
+        user_id,
+        difficulty,
+    )
     normalized = _validate_difficulty(difficulty)
     grouped = get_sample_questions_by_difficulty()
     pool = grouped.get(normalized, [])
@@ -64,7 +70,13 @@ def reset_sample_progress_for_difficulty(
     user_id: str = Depends(get_user_id),
 ) -> dict[str, Any]:
     request_id = get_request_id()
-    logger.info(f"[request_id={request_id}] Reset sample progress: user_id={user_id} difficulty={difficulty}")
+    prefix = f"[request_id={request_id}] "
+    logger.info(
+        "%sReset sample progress: user_id=%s difficulty=%s",
+        prefix,
+        user_id,
+        difficulty,
+    )
     normalized = _validate_difficulty(difficulty)
     clear_seen_sample_ids(user_id, normalized)
     return {
@@ -76,30 +88,33 @@ def reset_sample_progress_for_difficulty(
 @router.post("/run-query")
 def run_sample_query(body: RunQueryRequest) -> dict[str, Any]:
     request_id = get_request_id()
-    logger.info(f"[request_id={request_id}] Sample /run-query: question_id={body.question_id}")
+    prefix = f"[request_id={request_id}] "
+    logger.info(
+        "%sSample /run-query: question_id=%s",
+        prefix,
+        body.question_id,
+    )
     question = get_sample_question(body.question_id)
     if question is None:
         raise HTTPException(status_code=404, detail="Question not found")
 
-    try:
-        result = run_query(body.query, question)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
-    return result
+    return run_query(body.query, question)
 
 
 @router.post("/submit")
 def submit_sample_answer(body: SubmitRequest) -> dict[str, Any]:
     request_id = get_request_id()
-    logger.info(f"[request_id={request_id}] Sample /submit: question_id={body.question_id}")
+    prefix = f"[request_id={request_id}] "
+    logger.info(
+        "%sSample /submit: question_id=%s",
+        prefix,
+        body.question_id,
+    )
     question = get_sample_question(body.question_id)
     if question is None:
         raise HTTPException(status_code=404, detail="Question not found")
 
-    try:
-        result = evaluate(body.query, question["expected_query"], question)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+    result = evaluate(body.query, question["expected_query"], question)
 
     return {
         **result,
