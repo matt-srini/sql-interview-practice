@@ -15,10 +15,12 @@ It provides a controlled SQL practice environment where learners can:
 - Execute read-only SQL safely against realistic datasets
 - Compare results against expected outputs and view official solutions
 
+
 ### Main implemented features
 - Progressive challenge mode with sequential unlocks by difficulty
-- Seeded practice question bank (currently 5 questions: 4 easy, 1 medium; hard is empty after the latest reset)
-- Dedicated sample mode with exactly 3 sample questions per difficulty
+- JSON-backed challenge question bank (currently 14 easy, 11 medium, 8 hard; expanding toward 30+ per difficulty)
+- Dedicated sample mode with exactly 3 sample questions per difficulty (Python-backed)
+- Dataset generator script for deterministic, edge-case-rich CSVs and a formal data dictionary
 - Sample exhaustion tracking and sample progress reset
 - Query run and answer submit workflows
 - Official solution and explanation reveal on submit
@@ -83,11 +85,13 @@ Key backend modules:
 - backend/routers/sample.py
 - backend/routers/spa.py
 
+
 ### Database and query engine
 - Engine: DuckDB
 - Persistent database file: backend/sql_practice.duckdb
-- Dataset source: CSV files in backend/datasets
-- Current practice datasets: users.csv and orders.csv (orders uses the unified user_id-based schema)
+- Dataset source: CSV files in backend/datasets (generated via backend/scripts/generate_v1_datasets.py)
+- Data contract: backend/datasets/DATA_DICTIONARY_V1.md
+- Current practice datasets: users.csv, orders.csv, employees.csv, departments.csv, customers.csv (all generated, schema documented)
 - Persistent DuckDB usage:
   - Loaded base tables for local inspection and health visibility
   - user_progress table for challenge completion tracking
@@ -134,11 +138,14 @@ Key backend modules:
 - .dockerignore: Docker build context exclusions
 - project-blueprint.md: this architecture reference
 
+
 ### backend/
 - main.py: FastAPI app wiring, lifespan setup, middleware, and router registration
 - config.py: backend/frontend path constants used by static serving routes
 - deps.py: shared request models and dependency helpers used across routers
 - content/questions/: JSON-backed challenge content files (`easy.json`, `medium.json`, `hard.json`) plus `schemas.json`
+- scripts/generate_v1_datasets.py: deterministic dataset generator for all CSVs
+- datasets/DATA_DICTIONARY_V1.md: formal schema/data contract for all generated tables
 - routers/: domain-focused route modules (`system.py`, `catalog.py`, `questions.py`, `sample.py`, `spa.py`)
 - database.py: DuckDB connection helpers, CSV loading, and isolated execution connection creation
 - evaluator.py: query execution and result evaluation logic
@@ -147,8 +154,8 @@ Key backend modules:
 - questions.py: challenge bank loading, indexing, and public payload shaping
 - sample_questions.py: dedicated sample bank with 3 questions per difficulty
 - rate_limiter.py: in-memory and Redis-backed rate limiter implementations
-- question_bank/: seeded challenge question content
-- datasets/: CSV source data used for SQL practice
+- question_bank/: legacy seeded challenge question content (now obsolete)
+- datasets/: CSV source data used for SQL practice (generated, not hand-authored)
 - tests/: API, evaluator, and rate limiter tests
 - requirements.txt: backend dependencies
 - Dockerfile: backend-only container build for local compose workflows
@@ -442,15 +449,18 @@ This is what allows both:
 
 ## 8. Weaknesses and Risks
 
+
 ### Architectural and maintainability risks
 - Route composition is modular now, but cross-module contracts (shared deps/models/imports) should stay disciplined to avoid drift.
-- Question content remains hard-coded in Python, which is not ideal for non-engineering content workflows.
+- Challenge question content is now externalized to JSON files, enabling non-engineering content workflows and easier scaling.
 - The repo currently maintains both a production single-service path and older compose-based split frontend/backend dev containers, which adds some operational duality.
+
 
 ### Scalability and runtime risks
 - Query isolation is safer, but it increases per-request overhead because CSV datasets are loaded into a fresh in-memory DuckDB connection every time.
 - DuckDB remains acceptable for low-to-moderate educational traffic, but it is not a great fit for high-concurrency, write-heavy, multi-user systems.
 - Without Redis, rate limiting is still per-process only.
+- Dataset generator and data contract make it easy to regenerate or expand datasets for new question batches.
 
 ### Security and abuse risks
 - Authentication is still best-effort browser identity rather than a real account system.
@@ -458,9 +468,11 @@ This is what allows both:
 - Sample and challenge submit endpoints intentionally reveal official solutions, which is fine for practice but easy to script.
 - CORS is configurable now, but split-origin deployment still requires careful env configuration.
 
+
 ### Product risks
 - Progress is browser-identity-based rather than account-based.
 - There is no analytics, moderation, content tooling, or admin workflow.
+- Challenge content and datasets are now externalized, but content QA and review processes are still manual.
 
 ---
 
@@ -522,9 +534,10 @@ This is what allows both:
 
 ## 12. Summary
 
+
 Current state:
-- This is a strong MVP or advanced prototype for SQL practice with meaningful safety controls, progression logic, and a simpler production deployment model than before.
-- The most important architectural improvement since the earlier blueprint is SQL execution isolation: queries now only see the datasets declared for the current question.
+- The platform now uses a JSON-backed challenge bank (currently 14 easy, 11 medium, 8 hard) and a deterministic dataset generator with a formal data contract.
+- SQL execution isolation, safety guardrails, and progression logic remain core strengths.
 - The most important deployment improvement is the single-service production path: FastAPI serves both the React app and the API, which fits Railway + Cloudflare well.
 
 Readiness level:
