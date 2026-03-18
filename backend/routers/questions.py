@@ -56,7 +56,13 @@ def run_query_endpoint(
     user_id: str = Depends(get_user_id),
 ) -> dict[str, Any]:
     request_id = get_request_id()
-    logger.info(f"[request_id={request_id}] /run-query: user_id={user_id} question_id={body.question_id}")
+    prefix = f"[request_id={request_id}] "
+    logger.info(
+        "%s/run-query: user_id=%s question_id=%s",
+        prefix,
+        user_id,
+        body.question_id,
+    )
     question = get_question(body.question_id)
     if question is None:
         raise HTTPException(status_code=404, detail="Question not found")
@@ -66,11 +72,7 @@ def run_query_endpoint(
     if not is_unlocked_for_user(question=question, questions_by_difficulty=grouped, solved_ids=solved_ids):
         raise HTTPException(status_code=403, detail="Question is locked. Solve previous questions first.")
 
-    try:
-        result = run_query(body.query, question)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
-    return result
+    return run_query(body.query, question)
 
 
 @router.post("/submit")
@@ -81,7 +83,13 @@ def submit_answer(
     user_id: str = Depends(get_user_id),
 ) -> dict[str, Any]:
     request_id = get_request_id()
-    logger.info(f"[request_id={request_id}] /submit: user_id={user_id} question_id={body.question_id}")
+    prefix = f"[request_id={request_id}] "
+    logger.info(
+        "%s/submit: user_id=%s question_id=%s",
+        prefix,
+        user_id,
+        body.question_id,
+    )
     question = get_question(body.question_id)
     if question is None:
         raise HTTPException(status_code=404, detail="Question not found")
@@ -91,10 +99,7 @@ def submit_answer(
     if not is_unlocked_for_user(question=question, questions_by_difficulty=grouped, solved_ids=solved_ids):
         raise HTTPException(status_code=403, detail="Question is locked. Solve previous questions first.")
 
-    try:
-        result = evaluate(body.query, question["expected_query"], question)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+    result = evaluate(body.query, question["expected_query"], question)
 
     if result.get("correct") is True:
         mark_question_solved(user_id, int(question["id"]))

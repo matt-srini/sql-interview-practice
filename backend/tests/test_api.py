@@ -113,6 +113,10 @@ def test_run_query_invalid_question() -> None:
         )
         assert resp.status_code == 404
 
+        payload = resp.json()
+        assert "error" in payload
+        assert "request_id" in payload
+
 
 def test_submit_correct_answer() -> None:
     with TestClient(app) as client:
@@ -150,6 +154,10 @@ def test_submit_blocks_disallowed_query() -> None:
         )
         assert resp.status_code == 400
 
+        payload = resp.json()
+        assert "error" in payload
+        assert "request_id" in payload
+
 
 def test_rate_limit_headers_present() -> None:
     main._clear_rate_limit_state()
@@ -174,6 +182,10 @@ def test_rate_limit_enforced() -> None:
             assert client.get("/questions").status_code == 200
             limited = client.get("/questions")
             assert limited.status_code == 429
+            payload = limited.json()
+            assert "error" in payload
+            assert "request_id" in payload
+            assert "X-Request-ID" in limited.headers
     finally:
         limiter.max_requests = original_requests
         limiter.window_seconds = original_window

@@ -3,11 +3,14 @@ import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
+from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from database import load_datasets
+from exceptions import AppError
 from middleware.request_context import request_context_middleware
+from middleware.request_context import get_request_id
 from progress import init_progress_storage
 from rate_limiter import BaseRateLimiter, create_rate_limiter
 from routers import catalog, questions, sample, spa, system
@@ -49,6 +52,45 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="SQL Interview Practice API", lifespan=lifespan)
 
+
+@app.exception_handler(AppError)
+async def app_error_handler(request: Request, exc: AppError):
+    request_id = get_request_id()
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": exc.message,
+            "request_id": request_id,
+        },
+        headers={"X-Request-ID": request_id},
+    )
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    request_id = get_request_id()
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": str(exc.detail),
+            "request_id": request_id,
+        },
+        headers={"X-Request-ID": request_id},
+    )
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    request_id = get_request_id()
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": "Internal server error",
+            "request_id": request_id,
+        },
+        headers={"X-Request-ID": request_id},
+    )
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_get_allowed_origins(),
@@ -83,8 +125,12 @@ async def ip_rate_limit_middleware(request: Request, call_next):
     client_ip = request.client.host if request.client and request.client.host else "unknown"
     decision = rate_limiter.check(client_ip)
     if not decision.allowed:
+        prefix = f"[request_id={request_id}] "
         logger.warning(
-            f"[request_id={request_id}] Rate limit exceeded client_ip={client_ip} retry_after={decision.retry_after}s"
+            "%sRate limit exceeded client_ip=%s retry_after=%ss",
+            prefix,
+            client_ip,
+            decision.retry_after,
         )
         return JSONResponse(
             status_code=429,

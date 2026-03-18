@@ -6,7 +6,9 @@ import uuid
 from typing import Awaitable, Callable
 
 from fastapi import Request
-from fastapi.responses import JSONResponse
+from fastapi import HTTPException
+
+from exceptions import AppError
 
 logger = logging.getLogger(__name__)
 
@@ -37,32 +39,32 @@ async def request_context_middleware(
     token = _request_id_var.set(request_id)
     try:
         client_ip = request.client.host if request.client else "unknown"
+        prefix = f"[request_id={request_id}] "
         logger.info(
-            f"[request_id={request_id}] "
-            f"{request.method} {request.url.path} "
-            f"client_ip={client_ip}"
+            "%s%s %s client_ip=%s",
+            prefix,
+            request.method,
+            request.url.path,
+            client_ip,
         )
         response = await call_next(request)
         # Ensure the request id is returned to the client.
         response.headers["X-Request-ID"] = request_id
         logger.info(
-            f"[request_id={request_id}] "
-            f"Completed {request.method} {request.url.path} "
-            f"status_code={response.status_code}"
+            "%sCompleted %s %s status_code=%s",
+            prefix,
+            request.method,
+            request.url.path,
+            response.status_code,
         )
         return response
+    except (AppError, HTTPException):
+        # Expected / user-facing errors are formatted by centralized handlers.
+        raise
     except Exception:
-        # Log unhandled exception with request_id, but do not leak traces to the client.
-        logger.exception(
-            f"[request_id={request_id}] Unhandled exception"
-        )
-        return JSONResponse(
-            status_code=500,
-            content={
-                "error": "Internal server error",
-                "request_id": request_id,
-            },
-            headers={"X-Request-ID": request_id},
-        )
+        # Log truly unhandled exceptions with request_id; centralized handler formats response.
+        prefix = f"[request_id={request_id}] "
+        logger.exception("%sUnhandled exception", prefix)
+        raise
     finally:
         _request_id_var.reset(token)
