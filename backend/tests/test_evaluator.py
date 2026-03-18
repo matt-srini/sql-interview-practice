@@ -6,9 +6,10 @@ from evaluator import MAX_RESULT_ROWS, evaluate, normalize_dataframe, run_query
 from questions import get_question
 
 
-Q_EMPLOYEES_ONLY = get_question(1)
+Q_USERS_ONLY = get_question(1001)
 Q_MULTI_TABLES = {
     "dataset_files": [
+        "users.csv",
         "employees.csv",
         "departments.csv",
         "customers.csv",
@@ -22,14 +23,18 @@ def setup_module() -> None:
 
 
 def test_run_query_returns_rows() -> None:
-    result = run_query("SELECT name, salary FROM employees ORDER BY salary DESC LIMIT 2", Q_EMPLOYEES_ONLY)
-    assert result["columns"] == ["name", "salary"]
+    assert Q_USERS_ONLY is not None
+    result = run_query(
+        "SELECT user_id, name FROM users ORDER BY user_id LIMIT 2",
+        Q_USERS_ONLY,
+    )
+    assert result["columns"] == ["user_id", "name"]
     assert len(result["rows"]) == 2
 
 
 def test_run_query_blocks_non_select() -> None:
     try:
-        run_query("DROP TABLE employees", Q_EMPLOYEES_ONLY)
+        run_query("DROP TABLE users", Q_USERS_ONLY)
     except BadRequestError as exc:
         assert "Only SELECT queries are allowed" in str(exc)
         return
@@ -38,9 +43,9 @@ def test_run_query_blocks_non_select() -> None:
 
 def test_run_query_allows_with_cte() -> None:
     result = run_query(
-        "WITH high_paid AS (SELECT * FROM employees WHERE salary >= 110000) "
-        "SELECT COUNT(*) AS cnt FROM high_paid",
-        Q_EMPLOYEES_ONLY,
+        "WITH recent AS (SELECT * FROM users WHERE signup_date >= DATE '2023-01-01') "
+        "SELECT COUNT(*) AS cnt FROM recent",
+        Q_USERS_ONLY,
     )
     assert result["columns"] == ["cnt"]
     assert result["rows"][0][0] >= 1
@@ -48,7 +53,7 @@ def test_run_query_allows_with_cte() -> None:
 
 def test_run_query_blocks_multi_statement() -> None:
     try:
-        run_query("SELECT 1; SELECT 2;", Q_EMPLOYEES_ONLY)
+        run_query("SELECT 1; SELECT 2;", Q_USERS_ONLY)
     except BadRequestError as exc:
         assert "single SQL statement" in str(exc)
         return
@@ -57,7 +62,7 @@ def test_run_query_blocks_multi_statement() -> None:
 
 def test_run_query_blocks_cartesian_join() -> None:
     try:
-        run_query("SELECT * FROM employees CROSS JOIN orders", Q_MULTI_TABLES)
+        run_query("SELECT * FROM users CROSS JOIN orders", Q_MULTI_TABLES)
     except BadRequestError as exc:
         assert "Cartesian join" in str(exc)
         return
@@ -68,12 +73,12 @@ def test_run_query_blocks_too_many_joins() -> None:
     try:
         run_query(
             "SELECT 1 "
-            "FROM employees e "
-            "JOIN departments d ON e.department_id = d.id "
-            "JOIN customers c ON c.id = e.id "
-            "JOIN orders o ON o.customer_id = c.id "
-            "JOIN employees e2 ON e2.id = e.id "
-            "JOIN departments d2 ON d2.id = e2.department_id",
+            "FROM users u "
+            "JOIN orders o ON o.user_id = u.user_id "
+            "JOIN customers c ON c.id = 1 "
+            "JOIN employees e ON e.id = c.id "
+            "JOIN departments d ON d.id = e.department_id "
+            "JOIN users u2 ON u2.user_id = u.user_id",
             Q_MULTI_TABLES,
         )
     except BadRequestError as exc:
@@ -106,7 +111,7 @@ def test_run_query_enforces_row_limit() -> None:
 
 def test_run_query_blocks_unrelated_table_access() -> None:
     try:
-        run_query("SELECT * FROM orders LIMIT 1", Q_EMPLOYEES_ONLY)
+        run_query("SELECT * FROM orders LIMIT 1", Q_USERS_ONLY)
     except BadRequestError as exc:
         assert "orders" in str(exc).lower() or "catalog" in str(exc).lower() or "table" in str(exc).lower()
         return
@@ -114,22 +119,25 @@ def test_run_query_blocks_unrelated_table_access() -> None:
 
 
 def test_evaluate_correct_solution() -> None:
-    q1 = get_question(1)
+    q1 = get_question(1001)
+    assert q1 is not None
     result = evaluate(q1["solution_query"], q1["expected_query"], q1)
     assert result["correct"] is True
 
 
 def test_evaluate_respects_order_by_direction() -> None:
-    # Easy question 4 asks for ascending order. A descending answer must fail.
-    q4 = get_question(4)
-    assert q4 is not None
+    # Easy question 102 orders by user_id ascending. A descending answer must fail.
+    q102 = get_question(1002)
+    assert q102 is not None
 
     wrong_order_query = (
-        "SELECT DISTINCT department_id "
-        "FROM employees "
-        "ORDER BY department_id DESC"
+        "SELECT u.user_id, COUNT(o.order_id) AS order_count "
+        "FROM users u "
+        "LEFT JOIN orders o ON u.user_id = o.user_id "
+        "GROUP BY u.user_id "
+        "ORDER BY u.user_id DESC"
     )
-    result = evaluate(wrong_order_query, q4["expected_query"], q4)
+    result = evaluate(wrong_order_query, q102["expected_query"], q102)
     assert result["correct"] is False
 
 

@@ -1,7 +1,7 @@
 """Question catalog.
 
-The MVP originally hard-coded a small list. This module now loads a larger seeded
-catalog from the `question_bank` package while preserving the same public API.
+Challenge questions are loaded from validated JSON content files via the
+`question_bank` package while preserving the same public API.
 """
 
 import random

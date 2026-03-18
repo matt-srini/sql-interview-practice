@@ -1,0 +1,28 @@
+{
+  "question_required_fields": [
+    "id",
+    "order",
+    "title",
+    "description",
+    "difficulty",
+    "schema",
+    "dataset_files",
+    "expected_query",
+    "solution_query",
+    "explanation"
+  ],
+  "question_optional_fields": [
+    "hints",
+    "concepts"
+  ],
+  "difficulty_files": {
+    "easy": "easy.json",
+    "medium": "medium.json",
+    "hard": "hard.json"
+  },
+  "challenge_id_ranges": {
+    "easy": [1001, 1999],
+    "medium": [2001, 2999],
+    "hard": [3001, 3999]
+  }
+}

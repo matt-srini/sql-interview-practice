@@ -16,7 +16,11 @@ CUSTOMERS_SCHEMA: dict[str, list[str]] = {
 }
 
 ORDERS_SCHEMA: dict[str, list[str]] = {
-    "orders": ["id", "customer_id", "amount", "date"],
+    "orders": ["order_id", "user_id", "order_date", "amount", "status"],
+}
+
+USERS_SCHEMA: dict[str, list[str]] = {
+    "users": ["user_id", "name", "signup_date", "country"],
 }
 
 
@@ -40,6 +44,8 @@ def q(
     expected_query: str,
     solution_query: str,
     explanation: str,
+    hints: list[str] | None = None,
+    concepts: list[str] | None = None,
 ) -> dict[str, Any]:
     return {
         "id": id,
@@ -52,4 +58,6 @@ def q(
         "expected_query": expected_query.strip().rstrip(";"),
         "solution_query": solution_query.strip(),
         "explanation": explanation.strip(),
+        "hints": hints if hints is not None else [],
+        "concepts": concepts if concepts is not None else [],
     }
