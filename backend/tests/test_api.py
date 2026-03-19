@@ -183,6 +183,41 @@ def test_submit_requires_enforced_order_by_for_acceptance() -> None:
         assert easy_questions[1]["state"] == "locked"
 
 
+def test_easy_questions_with_required_concepts_have_covering_hints() -> None:
+    grouped = get_questions_by_difficulty()
+    concept_keywords = {
+        "order_by": ["order by", "order"],
+        "distinct": ["distinct"],
+        "where": ["where", "filter"],
+        "group_by": ["group by", "group"],
+        "having": ["having"],
+        "join": ["join"],
+        "left_join": ["left join"],
+        "aggregation": ["count", "sum", "avg", "min", "max", "aggregate"],
+        "subquery": ["subquery"],
+        "window_function": ["window", "over"],
+    }
+
+    for question in grouped["easy"]:
+        required_concepts = question.get("required_concepts") or []
+        hints = question.get("hints") or []
+
+        if not required_concepts:
+            continue
+
+        normalized_hints = [str(hint).strip().lower() for hint in hints]
+        assert len(normalized_hints) == len(set(normalized_hints)), (
+            f"Question {question['id']} has duplicate hints"
+        )
+
+        combined_hints = " ".join(normalized_hints)
+        for concept in required_concepts:
+            keywords = concept_keywords.get(concept, [concept.replace("_", " ")])
+            assert any(keyword in combined_hints for keyword in keywords), (
+                f"Question {question['id']} is missing a hint for required concept '{concept}'"
+            )
+
+
 def test_submit_blocks_disallowed_query() -> None:
     with TestClient(app) as client:
         first_easy_id, _ = _first_two_easy_ids(client, "u_submit_block")
