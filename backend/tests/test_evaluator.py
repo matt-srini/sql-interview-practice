@@ -128,18 +128,18 @@ def test_evaluate_correct_solution() -> None:
 
 
 def test_evaluate_respects_order_by_direction() -> None:
-    # Easy question 102 orders by user_id ascending. A descending answer must fail.
-    q102 = get_question(1002)
-    assert q102 is not None
+    # Easy question 1016 orders by u.user_id ascending. A descending answer must fail.
+    q1016 = get_question(1016)
+    assert q1016 is not None
 
     wrong_order_query = (
-        "SELECT u.user_id, COUNT(o.order_id) AS order_count "
+        "SELECT u.user_id, u.name, COUNT(o.order_id) AS order_count "
         "FROM users u "
         "LEFT JOIN orders o ON u.user_id = o.user_id "
-        "GROUP BY u.user_id "
+        "GROUP BY u.user_id, u.name "
         "ORDER BY u.user_id DESC"
     )
-    result = evaluate(wrong_order_query, q102["expected_query"], q102)
+    result = evaluate(wrong_order_query, q1016["expected_query"], q1016)
     assert result["correct"] is False
 
 

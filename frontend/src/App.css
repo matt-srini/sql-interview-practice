@@ -872,3 +872,39 @@ a {
   padding: 1rem 0;
   animation: pulse 1.5s ease-in-out infinite;
 }
+
+/* ============================================================
+   Concept tags
+   ============================================================ */
+.concept-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+
+.tag-concept {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  background: var(--bg-card, #1e2230);
+  color: var(--accent, #7c9ef7);
+  border: 1px solid var(--accent, #7c9ef7);
+}
+
+/* ============================================================
+   Hint cards
+   ============================================================ */
+.hint-card {
+  background: var(--bg-card, #1e2230);
+  border-left: 3px solid var(--accent, #7c9ef7);
+  border-radius: 4px;
+  padding: 0.75rem 1rem;
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}

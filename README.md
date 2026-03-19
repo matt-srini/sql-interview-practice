@@ -6,8 +6,8 @@ A SQL practice platform with a React frontend, a FastAPI backend, and DuckDB-bac
 
 ## Current State
 
-- Challenge bank: 6 questions total
-  - Easy: 4
+- Challenge bank: 22 questions total
+  - Easy: 20
   - Medium: 1
   - Hard: 1
 - Sample bank: 9 questions total
@@ -16,6 +16,8 @@ A SQL practice platform with a React frontend, a FastAPI backend, and DuckDB-bac
 - Sample content is Python-backed in backend/sample_questions.py
 - Query execution is isolated per request using in-memory DuckDB connections scoped to question dataset_files
 - Question schemas are validated against the committed dataset headers at load time
+- Concept tags (`concepts` field) are surfaced as pill badges on each question page
+- Hints are revealed progressively one at a time before the solution is shown
 
 For the fuller architectural reference, see docs/project-blueprint.md.
 
