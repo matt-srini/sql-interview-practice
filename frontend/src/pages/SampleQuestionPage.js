@@ -28,6 +28,8 @@ export default function SampleQuestionPage() {
   const [submitting, setSubmitting] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
   const [hintsShown, setHintsShown] = useState(0);
+  const shouldShowFeedback = submitResult?.feedback?.length > 0
+    && !(submitResult.correct && (submitResult.structure_correct ?? true));
 
   useEffect(() => {
     setQuestion(null);
@@ -269,7 +271,7 @@ export default function SampleQuestionPage() {
                 <div className={`verdict ${submitResult.correct ? 'verdict-correct' : 'verdict-incorrect'}`}>
                   {submitResult.correct ? '✓ Correct! Your answer matches the expected output.' : '✗ Incorrect. Your output does not match the expected result.'}
                 </div>
-                {submitResult.feedback?.length > 0 && (
+                {shouldShowFeedback && (
                   <div className="feedback-card">
                     {submitResult.feedback.map((message, index) => (
                       <p key={`${index}-${message}`} className="feedback-message">
@@ -282,7 +284,7 @@ export default function SampleQuestionPage() {
               </>
             )}
 
-            {submitResult && !submitResult.correct && (
+            {submitResult && (
               <>
                 <div className="results-card">
                   <div className="results-header">

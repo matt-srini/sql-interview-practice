@@ -109,6 +109,8 @@ export default function QuestionPage() {
   }
 
   const isLocked = question.progress && question.progress.unlocked === false;
+  const shouldShowFeedback = submitResult?.feedback?.length > 0
+    && !(submitResult.correct && (submitResult.structure_correct ?? true));
 
   return (
     <>
@@ -189,7 +191,7 @@ export default function QuestionPage() {
                 <div className={`verdict ${submitResult.correct ? 'verdict-correct' : 'verdict-incorrect'}`}>
                   {submitResult.correct ? '✓ Correct! Your answer matches the expected output.' : '✗ Incorrect. Your output does not match the expected result.'}
                 </div>
-                {submitResult.feedback?.length > 0 && (
+                {shouldShowFeedback && (
                   <div className="feedback-card">
                     {submitResult.feedback.map((message, index) => (
                       <p key={`${index}-${message}`} className="feedback-message">
@@ -202,8 +204,8 @@ export default function QuestionPage() {
               </>
             )}
 
-            {/* Expected vs user result diff (on incorrect) */}
-            {submitResult && !submitResult.correct && (
+            {/* Submitted vs expected results */}
+            {submitResult && (
               <>
                 <div className="results-card">
                   <div className="results-header">
