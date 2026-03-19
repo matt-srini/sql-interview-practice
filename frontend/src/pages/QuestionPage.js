@@ -70,7 +70,7 @@ export default function QuestionPage() {
       const res = await api.post('/run-query', { query, question_id: Number(id) });
       setRunResult(res.data);
     } catch (err) {
-      setRunError(err.response?.data?.detail ?? 'Query execution failed.');
+      setRunError(err.response?.data?.error ?? err.response?.data?.detail ?? 'Query execution failed.');
     } finally {
       setRunning(false);
     }
@@ -86,7 +86,7 @@ export default function QuestionPage() {
       setSubmitResult(res.data);
       if (res.data.correct) await refresh();
     } catch (err) {
-      setSubmitError(err.response?.data?.detail ?? 'Submission failed.');
+      setSubmitError(err.response?.data?.error ?? err.response?.data?.detail ?? 'Submission failed.');
     } finally {
       setSubmitting(false);
     }

@@ -127,7 +127,7 @@ export default function SampleQuestionPage() {
       const res = await api.post('/sample/run-query', { query, question_id: Number(question.id) });
       setRunResult(res.data);
     } catch (err) {
-      setRunError(err.response?.data?.detail ?? 'Query execution failed.');
+      setRunError(err.response?.data?.error ?? err.response?.data?.detail ?? 'Query execution failed.');
     } finally {
       setRunning(false);
     }
@@ -144,7 +144,7 @@ export default function SampleQuestionPage() {
       const res = await api.post('/sample/submit', { query, question_id: Number(question.id) });
       setSubmitResult(res.data);
     } catch (err) {
-      setSubmitError(err.response?.data?.detail ?? 'Submission failed.');
+      setSubmitError(err.response?.data?.error ?? err.response?.data?.detail ?? 'Submission failed.');
     } finally {
       setSubmitting(false);
     }
