@@ -20,20 +20,20 @@
   {
     "id": 1002,
     "order": 2,
-    "title": "List all products",
-    "description": "Return product_id, product_name, brand, and price for all products. Order by product_id ascending.",
+    "title": "Distinct product brands",
+    "description": "Return each distinct brand from the products table. Order by brand ascending.",
     "difficulty": "easy",
     "schema": {
-      "products": ["product_id", "product_name", "brand", "price"]
+      "products": ["brand"]
     },
     "dataset_files": ["products.csv"],
-    "expected_query": "SELECT product_id, product_name, brand, price\nFROM products\nORDER BY product_id",
-    "solution_query": "SELECT product_id, product_name, brand, price\nFROM products\nORDER BY product_id;",
-    "required_concepts": ["order_by"],
-    "enforce_concepts": true,
-    "explanation": "This query selects four specific columns from the products table using explicit column names. Using explicit column names instead of SELECT * is best practice — it avoids returning unnecessary data and documents what the query needs. ORDER BY product_id ensures a deterministic result order.",
-    "hints": ["Name each specific column you want in the SELECT list instead of using SELECT *"],
-    "concepts": ["SELECT", "ORDER BY"]
+    "expected_query": "SELECT DISTINCT brand\nFROM products\nORDER BY brand",
+    "solution_query": "SELECT DISTINCT brand\nFROM products\nORDER BY brand;",
+    "required_concepts": ["distinct", "order_by"],
+    "enforce_concepts": false,
+    "explanation": "DISTINCT removes duplicate brand values so each brand appears only once in the result set, even if many products share that brand. ORDER BY brand then sorts those unique values alphabetically so the output is deterministic and easy to review. Together, these clauses produce a clean list of unique brands instead of one row per product.",
+    "hints": ["Use DISTINCT to eliminate duplicate values", "Order the result by brand"],
+    "concepts": ["SELECT", "DISTINCT", "ORDER BY"]
   },
   {
     "id": 1003,
@@ -103,17 +103,17 @@
     "id": 1007,
     "order": 7,
     "title": "Employees by hire date",
-    "description": "Return employee_id, employee_name, and hire_date for all employees. Order by hire_date ascending to show the longest-tenured employees first.",
+    "description": "Return employee_id, employee_name, and hire_date for employees with a known hire_date. Order by hire_date ascending to show the longest-tenured employees first.",
     "difficulty": "easy",
     "schema": {
       "employees": ["employee_id", "employee_name", "hire_date"]
     },
     "dataset_files": ["employees.csv"],
-    "expected_query": "SELECT employee_id, employee_name, hire_date\nFROM employees\nORDER BY hire_date ASC",
-    "solution_query": "SELECT employee_id, employee_name, hire_date\nFROM employees\nORDER BY hire_date ASC;",
-    "explanation": "ORDER BY hire_date ASC sorts employees from the earliest hire date to the most recent. Date columns sort naturally in chronological order when using ASC. ASC is the default sort direction but is written explicitly here for clarity. This is useful for seniority analysis.",
-    "hints": ["Date columns sort chronologically — ASC means earliest first"],
-    "concepts": ["SELECT", "ORDER BY"]
+    "expected_query": "SELECT employee_id, employee_name, hire_date\nFROM employees\nWHERE hire_date IS NOT NULL\nORDER BY hire_date ASC",
+    "solution_query": "SELECT employee_id, employee_name, hire_date\nFROM employees\nWHERE hire_date IS NOT NULL\nORDER BY hire_date ASC;",
+    "explanation": "WHERE hire_date IS NOT NULL filters out rows that do not have a known hire date before sorting begins. After that filter, ORDER BY hire_date ASC sorts the remaining employees from the earliest hire date to the most recent. This keeps the result focused on employees whose tenure can be evaluated and makes the final row order deterministic.",
+    "hints": ["Filter out missing hire dates before sorting", "Date columns sort chronologically — ASC means earliest first"],
+    "concepts": ["SELECT", "WHERE", "ORDER BY"]
   },
   {
     "id": 1008,
@@ -231,17 +231,17 @@
     "id": 1015,
     "order": 15,
     "title": "Support tickets by issue type",
-    "description": "Return each issue_type and the count of support tickets with that type as ticket_count. Order by ticket_count descending.",
+    "description": "Return each issue_type and the count of support tickets with that type as ticket_count, but only include issue types with more than one ticket. Order by ticket_count descending.",
     "difficulty": "easy",
     "schema": {
       "support_tickets": ["ticket_id", "issue_type"]
     },
     "dataset_files": ["support_tickets.csv"],
-    "expected_query": "SELECT issue_type, COUNT(ticket_id) AS ticket_count\nFROM support_tickets\nGROUP BY issue_type\nORDER BY ticket_count DESC",
-    "solution_query": "SELECT issue_type, COUNT(ticket_id) AS ticket_count\nFROM support_tickets\nGROUP BY issue_type\nORDER BY ticket_count DESC;",
-    "explanation": "GROUP BY issue_type groups tickets into category buckets. COUNT(ticket_id) counts how many tickets are in each bucket. ORDER BY ticket_count DESC shows which issue types generate the most tickets — useful for prioritizing support resources. The result has one row per distinct issue_type value.",
-    "hints": ["GROUP BY issue_type to bucket tickets by category", "COUNT() the ticket_id column to get the number of tickets per type"],
-    "concepts": ["SELECT", "GROUP BY", "COUNT", "ORDER BY"]
+    "expected_query": "SELECT issue_type, COUNT(ticket_id) AS ticket_count\nFROM support_tickets\nGROUP BY issue_type\nHAVING COUNT(ticket_id) > 1\nORDER BY ticket_count DESC",
+    "solution_query": "SELECT issue_type, COUNT(ticket_id) AS ticket_count\nFROM support_tickets\nGROUP BY issue_type\nHAVING COUNT(ticket_id) > 1\nORDER BY ticket_count DESC;",
+    "explanation": "GROUP BY issue_type creates one aggregate group per issue type, and COUNT(ticket_id) measures how many tickets fall into each group. HAVING COUNT(ticket_id) > 1 then filters those aggregated groups after the counts have been calculated. This is different from WHERE, which filters individual rows before aggregation happens. ORDER BY ticket_count DESC shows the larger issue categories first.",
+    "hints": ["HAVING filters after aggregation", "Use COUNT(ticket_id) in HAVING"],
+    "concepts": ["SELECT", "GROUP BY", "COUNT", "HAVING", "ORDER BY"]
   },
   {
     "id": 1016,
@@ -346,17 +346,17 @@
     "id": 1022,
     "order": 22,
     "title": "Products in selected categories",
-    "description": "Return product_id, product_name, and category_id for products whose category_id is 3, 8, or 14.",
+    "description": "Return product_id, product_name, and category_id for products whose category_id is 3, 8, or 14. Order by category_id ascending.",
     "difficulty": "easy",
     "schema": {
       "products": ["product_id", "product_name", "category_id"]
     },
     "dataset_files": ["products.csv"],
-    "expected_query": "SELECT product_id, product_name, category_id\nFROM products\nWHERE category_id IN (3, 8, 14)",
-    "solution_query": "SELECT product_id, product_name, category_id\nFROM products\nWHERE category_id IN (3, 8, 14);",
-    "explanation": "This query filters products to a small set of category IDs using IN. IN is the right choice when the same column needs to match one of several exact values, because it is more compact and clearer than chaining multiple OR comparisons. Only the requested product columns are selected, so the result stays aligned with the prompt. This pattern is common when analysts need to focus on a chosen subset of categories.",
-    "hints": ["Filter category_id with one IN list instead of multiple OR checks", "Numeric values in the IN list do not need quotes"],
-    "concepts": ["WHERE", "IN"],
+    "expected_query": "SELECT product_id, product_name, category_id\nFROM products\nWHERE category_id IN (3, 8, 14)\nORDER BY category_id ASC",
+    "solution_query": "SELECT product_id, product_name, category_id\nFROM products\nWHERE category_id IN (3, 8, 14)\nORDER BY category_id ASC;",
+    "explanation": "This query filters products to a small set of category IDs using IN. IN is the right choice when the same column needs to match one of several exact values, because it is more compact and clearer than chaining multiple OR comparisons. ORDER BY category_id ASC then groups the matching categories into a predictable sequence for review. Only the requested product columns are selected, so the result stays aligned with the prompt.",
+    "hints": ["Filter category_id with one IN list instead of multiple OR checks", "Order the matching rows by category_id ascending"],
+    "concepts": ["WHERE", "IN", "ORDER BY"],
     "tags": ["easy", "products", "filtering", "in"]
   },
   {
