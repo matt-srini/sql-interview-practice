@@ -18,8 +18,8 @@ The application combines a question catalog, SQL editor, schema viewer, and resu
 ## Current Scope
 
 Current committed content:
-- Challenge questions: 22 total
-  - easy: 20
+- Challenge questions: 32 total
+  - easy: 30
   - medium: 1
   - hard: 1
 - Sample questions: 9 total

@@ -370,8 +370,64 @@ They must:
 
 ---
 
-# FINAL RULE
+# QUESTION QUALITY STANDARDS (ENFORCED)
 
-This document is the **contract**.
+All questions generated under this curriculum MUST adhere to the following quality rules.
 
-Any question violating this spec must be rejected.
+## 1. Clarity
+- The problem must be unambiguous
+- Avoid vague terms like "top", "best" unless clearly defined
+- Clearly define:
+  - grouping level
+  - sorting expectations
+  - output columns
+
+## 2. Deterministic Output
+- Results must not depend on:
+  - implicit ordering
+  - database-specific behavior
+- If ordering matters, it must be explicitly stated
+
+## 3. Single Responsibility
+- Each question should test **1–2 core concepts max**
+- Avoid combining unrelated concepts
+
+## 4. Real-World Framing
+- Questions must simulate realistic business scenarios
+- Avoid artificial or academic phrasing
+
+## 5. Schema Alignment
+- Only use approved tables:
+  - users, orders, order_items, products, payments, events, employees
+- Joins must reflect realistic relationships
+
+## 6. Evaluation Compatibility
+- Queries must be:
+  - executable
+  - deterministic
+  - comparable via result-based evaluation
+
+## 7. Explanation Quality
+- Every question must include:
+  - clear reasoning
+  - why the solution works
+  - common pitfalls
+
+## 8. Anti-Patterns (STRICTLY AVOID)
+- SELECT *
+- ambiguous grouping
+- hidden assumptions
+- multiple valid interpretations
+
+---
+
+# FINAL ENFORCEMENT RULE
+
+This document is the contract for all question generation.
+
+A question is valid ONLY IF:
+- It satisfies curriculum coverage requirements
+AND
+- It satisfies all quality standards above
+
+Any violation must result in rejection.

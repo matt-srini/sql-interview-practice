@@ -320,5 +320,175 @@
     "explanation": "A half-open date range (>= '2024-01-01' AND < '2025-01-01') captures every date within the year 2024 without depending on time components. This approach is more portable than using YEAR() or EXTRACT() functions, which have slightly different syntax across PostgreSQL, MySQL, and SQL Server. ORDER BY signup_date ASC lists users in chronological order.",
     "hints": ["Use a date range with >= and < to capture an entire year", "Compare signup_date to date string literals in 'YYYY-MM-DD' format"],
     "concepts": ["SELECT", "WHERE", "ORDER BY", "dates"]
+  },
+  {
+    "id": 1021,
+    "order": 21,
+    "title": "Users in selected countries",
+    "description": "Return user_id, name, and country for users whose country is 'UK', 'IN', or 'DE'.",
+    "difficulty": "easy",
+    "schema": {
+      "users": ["user_id", "name", "country"]
+    },
+    "dataset_files": ["users.csv"],
+    "expected_query": "SELECT user_id, name, country\nFROM users\nWHERE country IN ('UK', 'IN', 'DE')",
+    "solution_query": "SELECT user_id, name, country\nFROM users\nWHERE country IN ('UK', 'IN', 'DE');",
+    "explanation": "The IN operator checks whether a column matches any value in a short list of exact options. Here it keeps only users whose country is UK, IN, or DE without repeating the country column in several OR conditions. This is easier to read and maintain than writing multiple equality checks. The query returns only the requested identifying columns, which keeps the output focused on the business question.",
+    "hints": ["Use IN when one column can match any value from a fixed list", "Put the allowed country codes inside parentheses after IN"],
+    "concepts": ["WHERE", "IN"],
+    "tags": ["easy", "users", "filtering", "in"]
+  },
+  {
+    "id": 1022,
+    "order": 22,
+    "title": "Products in selected categories",
+    "description": "Return product_id, product_name, and category_id for products whose category_id is 3, 8, or 14.",
+    "difficulty": "easy",
+    "schema": {
+      "products": ["product_id", "product_name", "category_id"]
+    },
+    "dataset_files": ["products.csv"],
+    "expected_query": "SELECT product_id, product_name, category_id\nFROM products\nWHERE category_id IN (3, 8, 14)",
+    "solution_query": "SELECT product_id, product_name, category_id\nFROM products\nWHERE category_id IN (3, 8, 14);",
+    "explanation": "This query filters products to a small set of category IDs using IN. IN is the right choice when the same column needs to match one of several exact values, because it is more compact and clearer than chaining multiple OR comparisons. Only the requested product columns are selected, so the result stays aligned with the prompt. This pattern is common when analysts need to focus on a chosen subset of categories.",
+    "hints": ["Filter category_id with one IN list instead of multiple OR checks", "Numeric values in the IN list do not need quotes"],
+    "concepts": ["WHERE", "IN"],
+    "tags": ["easy", "products", "filtering", "in"]
+  },
+  {
+    "id": 1023,
+    "order": 23,
+    "title": "Users whose names start with User 1",
+    "description": "Return user_id, name, and country for users whose name starts with 'User 1'.",
+    "difficulty": "easy",
+    "schema": {
+      "users": ["user_id", "name", "country"]
+    },
+    "dataset_files": ["users.csv"],
+    "expected_query": "SELECT user_id, name, country\nFROM users\nWHERE name LIKE 'User 1%'",
+    "solution_query": "SELECT user_id, name, country\nFROM users\nWHERE name LIKE 'User 1%';",
+    "explanation": "LIKE performs text pattern matching instead of exact equality matching. The pattern 'User 1%' means the name must begin with the text 'User 1', and the percent sign allows any characters after that prefix. This makes LIKE a good fit for prefix searches such as names, product codes, or campaign labels. The query returns only the columns requested in the prompt while filtering rows based on the name pattern.",
+    "hints": ["Use LIKE for prefix matching on text columns", "A trailing % wildcard means any characters can follow the prefix"],
+    "concepts": ["WHERE", "LIKE"],
+    "tags": ["easy", "users", "pattern-matching", "like"]
+  },
+  {
+    "id": 1024,
+    "order": 24,
+    "title": "Checkout-related events",
+    "description": "Return event_id, user_id, and event_name for events whose event_name contains the word 'checkout'.",
+    "difficulty": "easy",
+    "schema": {
+      "events": ["event_id", "user_id", "event_name"]
+    },
+    "dataset_files": ["events.csv"],
+    "expected_query": "SELECT event_id, user_id, event_name\nFROM events\nWHERE event_name LIKE '%checkout%'",
+    "solution_query": "SELECT event_id, user_id, event_name\nFROM events\nWHERE event_name LIKE '%checkout%';",
+    "explanation": "The LIKE pattern '%checkout%' finds rows where the text 'checkout' appears anywhere inside event_name. The percent sign before and after the word means characters are allowed on both sides of the match, which makes this a contains search rather than a prefix or suffix search. This is useful when business event names follow a naming convention and you want to capture a family of related actions. The query then returns the key identifying fields for each matching event row.",
+    "hints": ["Put % on both sides of the word when you want a contains match", "Filter event_name with LIKE before selecting the event columns"],
+    "concepts": ["WHERE", "LIKE"],
+    "tags": ["easy", "events", "pattern-matching", "like"]
+  },
+  {
+    "id": 1025,
+    "order": 25,
+    "title": "Orders that need review",
+    "description": "Return order_id, status, payment_status, and net_amount for orders where the order status is 'cancelled' or the payment_status is 'failed'.",
+    "difficulty": "easy",
+    "schema": {
+      "orders": ["order_id", "status", "payment_status", "net_amount"]
+    },
+    "dataset_files": ["orders.csv"],
+    "expected_query": "SELECT order_id, status, payment_status, net_amount\nFROM orders\nWHERE status = 'cancelled' OR payment_status = 'failed'",
+    "solution_query": "SELECT order_id, status, payment_status, net_amount\nFROM orders\nWHERE status = 'cancelled' OR payment_status = 'failed';",
+    "explanation": "OR makes the filter broader by keeping rows that satisfy either condition. In this case, an order appears in the result if it was cancelled, if its payment failed, or if both things are true for the same row. This is different from AND, which would require both conditions to be true at once. Returning both status columns helps explain why each order qualifies for the review list.",
+    "hints": ["Use OR when either condition should qualify the row", "Both status columns belong in the result because both are part of the business rule"],
+    "concepts": ["WHERE", "OR"],
+    "tags": ["easy", "orders", "logical-operators", "or"]
+  },
+  {
+    "id": 1026,
+    "order": 26,
+    "title": "US paid users on higher tiers",
+    "description": "Return user_id, name, country, and plan_tier for users who are in the US and whose plan_tier is either 'pro' or 'enterprise'.",
+    "difficulty": "easy",
+    "schema": {
+      "users": ["user_id", "name", "country", "plan_tier"]
+    },
+    "dataset_files": ["users.csv"],
+    "expected_query": "SELECT user_id, name, country, plan_tier\nFROM users\nWHERE country = 'US'\n  AND (plan_tier = 'pro' OR plan_tier = 'enterprise')",
+    "solution_query": "SELECT user_id, name, country, plan_tier\nFROM users\nWHERE country = 'US'\n  AND (plan_tier = 'pro' OR plan_tier = 'enterprise');",
+    "explanation": "This filter combines AND and OR to express a more precise business rule. The user must first be in the US, and then their plan_tier must be either pro or enterprise. Parentheses matter because they keep the two plan_tier checks together as one grouped condition. Without the parentheses, SQL operator precedence could change the result and allow rows that do not satisfy the full rule.",
+    "hints": ["Use AND for the country requirement and OR for the two allowed plan tiers", "Wrap the OR conditions in parentheses so they stay grouped together"],
+    "concepts": ["WHERE", "AND", "OR"],
+    "tags": ["easy", "users", "logical-operators", "and-or"]
+  },
+  {
+    "id": 1027,
+    "order": 27,
+    "title": "Users missing an email address",
+    "description": "Return user_id, name, and country for users whose email is missing.",
+    "difficulty": "easy",
+    "schema": {
+      "users": ["user_id", "name", "country", "email"]
+    },
+    "dataset_files": ["users.csv"],
+    "expected_query": "SELECT user_id, name, country\nFROM users\nWHERE email IS NULL",
+    "solution_query": "SELECT user_id, name, country\nFROM users\nWHERE email IS NULL;",
+    "explanation": "NULL represents missing or unknown data, so it cannot be tested with = NULL. The correct SQL syntax is IS NULL, which matches rows where the column truly has no value. Here email is used only in the filter while the output focuses on user identifiers and country. This is a common data-quality query for finding incomplete customer records.",
+    "hints": ["Use IS NULL instead of = NULL", "Filter on email, but return the user columns requested in the prompt"],
+    "concepts": ["WHERE", "IS NULL"],
+    "tags": ["easy", "users", "null-handling", "is-null"]
+  },
+  {
+    "id": 1028,
+    "order": 28,
+    "title": "Events linked to a product",
+    "description": "Return event_id, user_id, event_name, and product_id for events where product_id is present.",
+    "difficulty": "easy",
+    "schema": {
+      "events": ["event_id", "user_id", "event_name", "product_id"]
+    },
+    "dataset_files": ["events.csv"],
+    "expected_query": "SELECT event_id, user_id, event_name, product_id\nFROM events\nWHERE product_id IS NOT NULL",
+    "solution_query": "SELECT event_id, user_id, event_name, product_id\nFROM events\nWHERE product_id IS NOT NULL;",
+    "explanation": "IS NOT NULL keeps only rows where the column contains a real value. In the events table, that means the event is associated with a specific product instead of leaving product_id blank. This is the correct SQL form for checking populated fields, because comparisons like <> NULL do not work the way beginners often expect. The query returns the event fields needed to inspect those product-linked actions.",
+    "hints": ["Use IS NOT NULL to keep rows with a populated value", "Filter product_id first, then return the event details requested"],
+    "concepts": ["WHERE", "IS NOT NULL"],
+    "tags": ["easy", "events", "null-handling", "is-not-null"]
+  },
+  {
+    "id": 1029,
+    "order": 29,
+    "title": "Known email users by acquisition channel",
+    "description": "Return acquisition_channel and the number of users in that channel as user_count, but only for users whose email ends with '@example.com'. Order by user_count descending, then acquisition_channel ascending.",
+    "difficulty": "easy",
+    "schema": {
+      "users": ["user_id", "email", "acquisition_channel"]
+    },
+    "dataset_files": ["users.csv"],
+    "expected_query": "SELECT acquisition_channel, COUNT(user_id) AS user_count\nFROM users\nWHERE email LIKE '%@example.com'\nGROUP BY acquisition_channel\nORDER BY user_count DESC, acquisition_channel ASC",
+    "solution_query": "SELECT acquisition_channel, COUNT(user_id) AS user_count\nFROM users\nWHERE email LIKE '%@example.com'\nGROUP BY acquisition_channel\nORDER BY user_count DESC, acquisition_channel ASC;",
+    "explanation": "This query combines filtering and grouping in a simple two-step flow. The WHERE clause first keeps only users whose email matches the requested domain pattern, and then GROUP BY acquisition_channel collects those filtered users into one group per channel. COUNT(user_id) counts the number of matching users in each group. The final ORDER BY makes the grouped result deterministic and puts the largest channels first.",
+    "hints": ["Filter the email column with LIKE before grouping the rows", "Group by acquisition_channel and count user_id within each channel"],
+    "concepts": ["LIKE", "GROUP BY", "COUNT"],
+    "tags": ["easy", "users", "grouping", "like"]
+  },
+  {
+    "id": 1030,
+    "order": 30,
+    "title": "Total payment amount for failed or refunded payments",
+    "description": "Return status and the total payment amount for that status as total_amount, but only for payments where status is 'failed' or 'refunded'. Order by total_amount descending, then status ascending.",
+    "difficulty": "easy",
+    "schema": {
+      "payments": ["status", "amount"]
+    },
+    "dataset_files": ["payments.csv"],
+    "expected_query": "SELECT status, SUM(amount) AS total_amount\nFROM payments\nWHERE status = 'failed' OR status = 'refunded'\nGROUP BY status\nORDER BY total_amount DESC, status",
+    "solution_query": "SELECT status, SUM(amount) AS total_amount\nFROM payments\nWHERE status = 'failed' OR status = 'refunded'\nGROUP BY status\nORDER BY total_amount DESC, status;",
+    "explanation": "The WHERE clause uses OR to keep only the two requested payment statuses. After that filter is applied, GROUP BY status creates one group for each remaining status value and SUM(amount) adds the payment amounts within each group. This is a good beginner example of combining a multi-value filter with a simple aggregation. ORDER BY total_amount DESC makes the grouped output deterministic and surfaces the larger total first.",
+    "hints": ["Use OR to keep the two allowed status values", "After filtering, group by status and sum the amount column"],
+    "concepts": ["OR", "GROUP BY", "SUM"],
+    "tags": ["easy", "payments", "aggregation", "or"]
   }
 ]
