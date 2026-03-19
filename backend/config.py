@@ -22,7 +22,12 @@ def _get_int(name: str, default: str) -> int:
 def _parse_origins(configured: str | None) -> list[str]:
 	if configured:
 		return [origin.strip() for origin in configured.split(",") if origin.strip()]
-	return ["http://localhost:3000", "http://localhost:5173"]
+	return [
+		"http://localhost:3000",
+		"http://localhost:5173",
+		"http://127.0.0.1:3000",
+		"http://127.0.0.1:5173",
+	]
 
 
 # ---------------------------------------------------------------------------
