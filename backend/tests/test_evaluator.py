@@ -4,6 +4,8 @@ from database import load_datasets
 from exceptions import BadRequestError
 from evaluator import MAX_RESULT_ROWS, evaluate, normalize_dataframe, run_query
 from questions import get_question
+from questions import QUESTIONS
+from sample_questions import SAMPLE_QUESTIONS
 
 
 Q_USERS_ONLY = get_question(1001)
@@ -12,8 +14,8 @@ Q_MULTI_TABLES = {
         "users.csv",
         "employees.csv",
         "departments.csv",
-        "customers.csv",
         "orders.csv",
+        "products.csv",
     ]
 }
 
@@ -75,9 +77,9 @@ def test_run_query_blocks_too_many_joins() -> None:
             "SELECT 1 "
             "FROM users u "
             "JOIN orders o ON o.user_id = u.user_id "
-            "JOIN customers c ON c.id = 1 "
-            "JOIN employees e ON e.id = c.id "
-            "JOIN departments d ON d.id = e.department_id "
+            "JOIN employees e ON e.country = u.country "
+            "JOIN departments d ON d.department_id = e.department_id "
+            "JOIN products p ON p.is_active = TRUE "
             "JOIN users u2 ON u2.user_id = u.user_id",
             Q_MULTI_TABLES,
         )
@@ -139,6 +141,20 @@ def test_evaluate_respects_order_by_direction() -> None:
     )
     result = evaluate(wrong_order_query, q102["expected_query"], q102)
     assert result["correct"] is False
+
+
+def test_all_challenge_queries_execute_against_current_datasets() -> None:
+    for question in QUESTIONS:
+        result = run_query(question["expected_query"], question)
+        assert "columns" in result
+        assert "rows" in result
+
+
+def test_all_sample_queries_execute_against_current_datasets() -> None:
+    for question in SAMPLE_QUESTIONS:
+        result = run_query(question["expected_query"], question)
+        assert "columns" in result
+        assert "rows" in result
 
 
 # ---------------------------------------------------------------------------

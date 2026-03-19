@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import csv
 from pathlib import Path
 from typing import Any, Optional
 
 
 # Inline schemas and helpers (formerly from question_bank.common)
 ORDERS_SCHEMA = {
-    "orders": ["order_id", "user_id", "order_date", "amount", "status"],
+    "orders": ["order_id", "user_id", "order_date", "status", "net_amount"],
 }
 USERS_SCHEMA = {
     "users": ["user_id", "name", "signup_date", "country"],
@@ -41,6 +42,16 @@ def _fail(question_id: int, reason: str) -> None:
 
 def _table_name_from_dataset_file(dataset_file: str) -> str:
     return Path(dataset_file).stem
+
+
+def _read_dataset_headers(dataset_file: str) -> set[str]:
+    dataset_path = _DATASETS_DIR / dataset_file
+    with dataset_path.open("r", encoding="utf-8", newline="") as handle:
+        reader = csv.reader(handle)
+        try:
+            return {str(column) for column in next(reader)}
+        except StopIteration as exc:
+            raise ValueError(f"Dataset file is empty: {dataset_file}") from exc
 
 
 def _enforce_sample_id_range(*, qid: int, difficulty: str) -> None:
@@ -104,11 +115,18 @@ def _validate_sample_questions(questions: list[dict[str, Any]]) -> None:
                 _fail(qid, f"Dataset file not found: {dataset_file}")
 
         schema_tables = {str(t) for t in schema.keys()}
+        table_headers = {
+            _table_name_from_dataset_file(dataset_file): _read_dataset_headers(dataset_file)
+            for dataset_file in dataset_files_set
+        }
 
         for table in schema_tables:
             expected_file = f"{table}.csv"
             if expected_file not in dataset_files_set:
                 _fail(qid, f"schema includes table '{table}' but dataset_files is missing '{expected_file}'")
+            missing_columns = [column for column in schema[table] if str(column) not in table_headers[table]]
+            if missing_columns:
+                _fail(qid, f"schema columns not found in dataset '{expected_file}': {missing_columns}")
 
         for dataset_file in dataset_files_set:
             if not dataset_file.endswith(".csv"):
@@ -164,16 +182,16 @@ SAMPLE_QUESTIONS: list[dict[str, Any]] = [
         schema=merge_schema(ORDERS_SCHEMA),
         dataset_files=["orders.csv"],
         expected_query=(
-            "SELECT SUM(amount) AS total_completed_amount "
+            "SELECT SUM(net_amount) AS total_completed_amount "
             "FROM orders "
             "WHERE status = 'completed'"
         ),
         solution_query=(
-            "SELECT SUM(amount) AS total_completed_amount\n"
+            "SELECT SUM(net_amount) AS total_completed_amount\n"
             "FROM orders\n"
             "WHERE status = 'completed';"
         ),
-        explanation="Filter to completed orders, then sum amount.",
+        explanation="Filter to completed orders, then sum net_amount.",
     ),
     q(
         id=201,
@@ -208,18 +226,18 @@ SAMPLE_QUESTIONS: list[dict[str, Any]] = [
         schema=merge_schema(ORDERS_SCHEMA),
         dataset_files=["orders.csv"],
         expected_query=(
-            "SELECT status, SUM(amount) AS revenue "
+            "SELECT status, SUM(net_amount) AS revenue "
             "FROM orders "
             "GROUP BY status "
             "ORDER BY status"
         ),
         solution_query=(
-            "SELECT status, SUM(amount) AS revenue\n"
+            "SELECT status, SUM(net_amount) AS revenue\n"
             "FROM orders\n"
             "GROUP BY status\n"
             "ORDER BY status;"
         ),
-        explanation="Group by status, then sum amount within each status.",
+        explanation="Group by status, then sum net_amount within each status.",
     ),
     q(
         id=203,
@@ -230,18 +248,18 @@ SAMPLE_QUESTIONS: list[dict[str, Any]] = [
         schema=merge_schema(ORDERS_SCHEMA),
         dataset_files=["orders.csv"],
         expected_query=(
-            "SELECT DATE_TRUNC('month', CAST(order_date AS DATE)) AS month, SUM(amount) AS revenue "
+            "SELECT DATE_TRUNC('month', CAST(order_date AS DATE)) AS month, SUM(net_amount) AS revenue "
             "FROM orders "
             "GROUP BY 1 "
             "ORDER BY 1"
         ),
         solution_query=(
-            "SELECT DATE_TRUNC('month', CAST(order_date AS DATE)) AS month, SUM(amount) AS revenue\n"
+            "SELECT DATE_TRUNC('month', CAST(order_date AS DATE)) AS month, SUM(net_amount) AS revenue\n"
             "FROM orders\n"
             "GROUP BY 1\n"
             "ORDER BY 1;"
         ),
-        explanation="Bucket by month using DATE_TRUNC, then aggregate revenue per bucket.",
+        explanation="Bucket by month using DATE_TRUNC, then aggregate net_amount per bucket.",
     ),
     q(
         id=301,
@@ -254,7 +272,7 @@ SAMPLE_QUESTIONS: list[dict[str, Any]] = [
         expected_query=(
             "SELECT user_id, order_id, amount, rnk "
             "FROM ("
-            "  SELECT order_id, user_id, amount, DENSE_RANK() OVER (PARTITION BY user_id ORDER BY amount DESC) AS rnk "
+            "  SELECT order_id, user_id, net_amount AS amount, DENSE_RANK() OVER (PARTITION BY user_id ORDER BY net_amount DESC) AS rnk "
             "  FROM orders"
             ") t "
             "WHERE rnk <= 2 "
@@ -263,14 +281,14 @@ SAMPLE_QUESTIONS: list[dict[str, Any]] = [
         solution_query=(
             "SELECT user_id, order_id, amount, rnk\n"
             "FROM (\n"
-            "  SELECT order_id, user_id, amount,\n"
-            "         DENSE_RANK() OVER (PARTITION BY user_id ORDER BY amount DESC) AS rnk\n"
+            "  SELECT order_id, user_id, net_amount AS amount,\n"
+            "         DENSE_RANK() OVER (PARTITION BY user_id ORDER BY net_amount DESC) AS rnk\n"
             "  FROM orders\n"
             ") t\n"
             "WHERE rnk <= 2\n"
             "ORDER BY user_id, rnk, order_id;"
         ),
-        explanation="Rank orders per user by amount, then keep the top two ranks.",
+        explanation="Rank orders per user by net_amount, then keep the top two ranks.",
     ),
     q(
         id=302,
@@ -303,7 +321,7 @@ SAMPLE_QUESTIONS: list[dict[str, Any]] = [
         schema=merge_schema(USERS_SCHEMA, ORDERS_SCHEMA),
         dataset_files=["users.csv", "orders.csv"],
         expected_query=(
-            "SELECT u.country, SUM(o.amount) AS completed_revenue "
+            "SELECT u.country, SUM(o.net_amount) AS completed_revenue "
             "FROM users u "
             "JOIN orders o ON o.user_id = u.user_id "
             "WHERE o.status = 'completed' "
@@ -311,14 +329,14 @@ SAMPLE_QUESTIONS: list[dict[str, Any]] = [
             "ORDER BY u.country"
         ),
         solution_query=(
-            "SELECT u.country, SUM(o.amount) AS completed_revenue\n"
+            "SELECT u.country, SUM(o.net_amount) AS completed_revenue\n"
             "FROM users u\n"
             "JOIN orders o ON o.user_id = u.user_id\n"
             "WHERE o.status = 'completed'\n"
             "GROUP BY u.country\n"
             "ORDER BY u.country;"
         ),
-        explanation="Join users to orders, filter to completed, then sum by country.",
+        explanation="Join users to orders, filter to completed, then sum net_amount by country.",
     ),
 ]
 

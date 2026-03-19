@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 
 import main
 from main import app
+from questions import get_all_questions, get_questions_by_difficulty
 from questions import get_question
 
 
@@ -27,7 +28,7 @@ def test_get_questions() -> None:
         resp = client.get("/questions")
         assert resp.status_code == 200
         payload = resp.json()
-        assert len(payload) == 5
+        assert len(payload) == len(get_all_questions())
         assert {"id", "title", "difficulty"}.issubset(payload[0].keys())
 
 
@@ -36,7 +37,7 @@ def test_get_api_questions() -> None:
         resp = client.get("/api/questions")
         assert resp.status_code == 200
         payload = resp.json()
-        assert len(payload) == 5
+        assert len(payload) == len(get_all_questions())
 
 
 def test_get_catalog_groups_and_initial_unlocks() -> None:
@@ -47,12 +48,13 @@ def test_get_catalog_groups_and_initial_unlocks() -> None:
         assert payload["user_id"] == "u_catalog"
         groups = {g["difficulty"]: g for g in payload["groups"]}
         assert set(groups.keys()) == {"easy", "medium", "hard"}
+        grouped = get_questions_by_difficulty()
 
-        assert groups["easy"]["counts"]["total"] == 4
-        assert groups["medium"]["counts"]["total"] == 1
-        assert groups["hard"]["counts"]["total"] == 0
+        assert groups["easy"]["counts"]["total"] == len(grouped["easy"])
+        assert groups["medium"]["counts"]["total"] == len(grouped["medium"])
+        assert groups["hard"]["counts"]["total"] == len(grouped["hard"])
 
-        for diff in ["easy", "medium"]:
+        for diff in ["easy", "medium", "hard"]:
             first = sorted(groups[diff]["questions"], key=lambda q: q["order"])[0]
             assert first["state"] == "unlocked"
             assert first["is_next"] is True

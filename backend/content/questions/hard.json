@@ -7,12 +7,12 @@
 		"difficulty": "hard",
 		"schema": {
 			"users": ["user_id", "name", "signup_date", "country"],
-			"orders": ["order_id", "user_id", "order_date", "amount", "status"]
+			"orders": ["order_id", "user_id", "order_date", "status", "net_amount"]
 		},
 		"dataset_files": ["users.csv", "orders.csv"],
-		"expected_query": "SELECT user_id, total_amount FROM (SELECT u.user_id, SUM(o.amount) AS total_amount FROM users u JOIN orders o ON u.user_id = o.user_id GROUP BY u.user_id) t WHERE total_amount = (SELECT MAX(total_amount) FROM (SELECT SUM(o.amount) AS total_amount FROM users u JOIN orders o ON u.user_id = o.user_id GROUP BY u.user_id)) ORDER BY user_id ASC",
-		"solution_query": "SELECT user_id, total_amount FROM (SELECT u.user_id, SUM(o.amount) AS total_amount FROM users u JOIN orders o ON u.user_id = o.user_id GROUP BY u.user_id) t WHERE total_amount = (SELECT MAX(total_amount) FROM (SELECT SUM(o.amount) AS total_amount FROM users u JOIN orders o ON u.user_id = o.user_id GROUP BY u.user_id)) ORDER BY user_id ASC;",
-		"explanation": "Aggregate order amounts per user, find the maximum, and return all users matching that maximum.",
+		"expected_query": "SELECT user_id, total_amount FROM (SELECT u.user_id, SUM(o.net_amount) AS total_amount FROM users u JOIN orders o ON u.user_id = o.user_id GROUP BY u.user_id) t WHERE total_amount = (SELECT MAX(total_amount) FROM (SELECT SUM(o.net_amount) AS total_amount FROM users u JOIN orders o ON u.user_id = o.user_id GROUP BY u.user_id)) ORDER BY user_id ASC",
+		"solution_query": "SELECT user_id, total_amount FROM (SELECT u.user_id, SUM(o.net_amount) AS total_amount FROM users u JOIN orders o ON u.user_id = o.user_id GROUP BY u.user_id) t WHERE total_amount = (SELECT MAX(total_amount) FROM (SELECT SUM(o.net_amount) AS total_amount FROM users u JOIN orders o ON u.user_id = o.user_id GROUP BY u.user_id)) ORDER BY user_id ASC;",
+		"explanation": "Aggregate order net_amount per user, find the maximum, and return all users matching that maximum.",
 		"hints": [
 			"Aggregate order amounts per user.",
 			"Find the maximum total_amount.",

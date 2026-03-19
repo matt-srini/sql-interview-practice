@@ -7,7 +7,7 @@
     "difficulty": "medium",
     "schema": {
       "users": ["user_id", "name", "signup_date", "country"],
-      "orders": ["order_id", "user_id", "order_date", "amount", "status"]
+      "orders": ["order_id", "user_id", "order_date", "status"]
     },
     "dataset_files": ["users.csv", "orders.csv"],
     "expected_query": "SELECT u.user_id, COUNT(o.order_id) AS order_count\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nGROUP BY u.user_id\nORDER BY order_count DESC, u.user_id ASC\nLIMIT 5",
