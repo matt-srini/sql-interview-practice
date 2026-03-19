@@ -27,6 +27,7 @@ export default function SampleQuestionPage() {
   const [submitError, setSubmitError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
+  const [hintsShown, setHintsShown] = useState(0);
 
   useEffect(() => {
     setQuestion(null);
@@ -40,6 +41,7 @@ export default function SampleQuestionPage() {
     setSubmitResult(null);
     setSubmitError(null);
     setShowSolution(false);
+    setHintsShown(0);
 
     api
       .get(`/sample/${difficulty}`)
@@ -141,7 +143,6 @@ export default function SampleQuestionPage() {
     try {
       const res = await api.post('/sample/submit', { query, question_id: Number(question.id) });
       setSubmitResult(res.data);
-      setShowSolution(true);
     } catch (err) {
       setSubmitError(err.response?.data?.detail ?? 'Submission failed.');
     } finally {
@@ -197,6 +198,13 @@ export default function SampleQuestionPage() {
                 <span className={`badge badge-${question.difficulty}`}>{question.difficulty}</span>
               </div>
               <p className="description-text">{question.description}</p>
+              {question.concepts?.length > 0 && (
+                <div className="concept-tags">
+                  {question.concepts.map((c) => (
+                    <span key={c} className="tag-concept">{c}</span>
+                  ))}
+                </div>
+              )}
               <div className="locked-callout">
                 Sample mode does not change your challenge progress. {shownSamples}/{totalSamples} shown.
               </div>
@@ -281,13 +289,39 @@ export default function SampleQuestionPage() {
               </>
             )}
 
-            {showSolution && submitResult && (
-              <div className="solution-card">
-                <h3>Official Solution</h3>
-                <pre>{submitResult.solution_query}</pre>
-                <h3 style={{ marginBottom: '0.5rem' }}>Explanation</h3>
-                <p>{submitResult.explanation}</p>
-              </div>
+            {/* Hints and Solution */}
+            {submitResult && (
+              <>
+                {question.hints?.slice(0, hintsShown).map((hint, i) => (
+                  <div key={i} className="hint-card">
+                    <strong>Hint {i + 1}:</strong> {hint}
+                  </div>
+                ))}
+                {hintsShown < (question.hints?.length ?? 0) && (
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => setHintsShown((n) => n + 1)}
+                  >
+                    Show Hint {hintsShown + 1}
+                  </button>
+                )}
+                {hintsShown >= (question.hints?.length ?? 0) && (
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => setShowSolution((v) => !v)}
+                  >
+                    {showSolution ? 'Hide Solution' : 'Show Solution'}
+                  </button>
+                )}
+                {showSolution && (
+                  <div className="solution-card">
+                    <h3>Official Solution</h3>
+                    <pre>{submitResult.solution_query}</pre>
+                    <h3 style={{ marginBottom: '0.5rem' }}>Explanation</h3>
+                    <p>{submitResult.explanation}</p>
+                  </div>
+                )}
+              </>
             )}
           </section>
         </div>

@@ -18,8 +18,8 @@ The application combines a question catalog, SQL editor, schema viewer, and resu
 ## Current Scope
 
 Current committed content:
-- Challenge questions: 6 total
-  - easy: 4
+- Challenge questions: 22 total
+  - easy: 20
   - medium: 1
   - hard: 1
 - Sample questions: 9 total
@@ -33,6 +33,8 @@ Current platform capabilities:
 - Read-only SQL validation and isolated query execution
 - Result normalization and correctness evaluation
 - Schema/header validation for question content against committed datasets
+- Concept tags surfaced as pill badges on question pages
+- Progressive hint reveal flow before solution display
 - Structured request_id logging and standardized API error responses
 - Single-service production deployment path where FastAPI serves both UI and API
 

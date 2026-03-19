@@ -31,8 +31,8 @@ It provides a controlled SQL practice environment where learners can:
 - Single-service production deployment path where FastAPI serves both the API and the built frontend
 
 ### Current content footprint
-- Challenge questions: 6 total
-  - easy: 4
+- Challenge questions: 22 total
+  - easy: 20
   - medium: 1
   - hard: 1
 - Sample questions: 9 total
@@ -40,6 +40,7 @@ It provides a controlled SQL practice environment where learners can:
   - medium: 3
   - hard: 3
 - Question schemas are validated against committed dataset headers during catalog loading
+- Every question carries `hints` (1–2 entries) and `concepts` (topic tags) fields
 
 ---
 
@@ -279,7 +280,7 @@ For derived tables, the actual counts depend on generated behavior volume:
 - Current committed count: 4200
 - Typical generated range: about 4200 to 7000
 - Supports order-volume, discount, net-revenue, and lifecycle-status analysis
-- Note: current question content still drifts from this schema in places by referencing a legacy amount column
+- All question content is aligned to these column names; the legacy amount column is no longer referenced
 
 #### order_items.csv
 - Models line items within each order
@@ -383,6 +384,7 @@ Registered route modules:
   - 404 if the question does not exist
   - 403 if the question is locked and not already solved
   - Omits expected_query, solution_query, and explanation before submission
+  - Includes hints and concepts in the pre-submission payload
   - Includes progress metadata with mode set to practice
 
 - POST /run-query
@@ -406,7 +408,7 @@ Registered route modules:
 - GET /api/sample/{difficulty}
   - Returns the next unseen sample question for that difficulty
   - Marks the returned sample as seen
-  - Returns progress metadata and sample counters
+  - Returns progress metadata, hints, concepts, and sample counters
   - Returns 409 when the user has exhausted all 3 samples for that difficulty
 
 - POST /api/sample/{difficulty}/reset
@@ -513,14 +515,17 @@ Defined in frontend/src/App.js:
 #### QuestionPage
 - Loads challenge question details
 - Renders schema, editor, results, and answer feedback
+- Renders `concepts` as pill-style tag badges below the question description
 - Supports running and submitting SQL
 - Refreshes the catalog after a correct answer so unlock state updates immediately
-- Shows solution and explanation after submission
+- After submission, shows hints sequentially (one per button click); the solution button only appears after all hints are revealed
 
 #### SampleQuestionPage
 - Loads the next unseen sample for the selected difficulty
 - Shows sample counters such as shown_count and remaining
+- Renders `concepts` as pill-style tag badges below the question description
 - Supports running and submitting SQL
+- After submission, shows hints sequentially; the solution button only appears after all hints are revealed
 - Supports requesting another sample and resetting seen samples for the current difficulty
 - Handles 409 exhaustion responses from the backend
 

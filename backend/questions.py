@@ -144,6 +144,8 @@ def get_public_question(question: dict[str, Any]) -> dict[str, Any]:
         "difficulty": question["difficulty"],
         "schema": question["schema"],
         "dataset_files": question["dataset_files"],
+        "hints": question.get("hints", []),
+        "concepts": question.get("concepts", []),
     }
 
 

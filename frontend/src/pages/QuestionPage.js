@@ -40,6 +40,7 @@ export default function QuestionPage() {
   const [submitting, setSubmitting] = useState(false);
 
   const [showSolution, setShowSolution] = useState(false);
+  const [hintsShown, setHintsShown] = useState(0);
 
   useEffect(() => {
     setQuestion(null);
@@ -58,6 +59,7 @@ export default function QuestionPage() {
     setSubmitResult(null);
     setSubmitError(null);
     setShowSolution(false);
+    setHintsShown(0);
   }, [id]);
 
   async function handleRun() {
@@ -82,7 +84,6 @@ export default function QuestionPage() {
     try {
       const res = await api.post('/submit', { query, question_id: Number(id) });
       setSubmitResult(res.data);
-      setShowSolution(true);
       if (res.data.correct) await refresh();
     } catch (err) {
       setSubmitError(err.response?.data?.detail ?? 'Submission failed.');
@@ -121,6 +122,13 @@ export default function QuestionPage() {
                 <span className={`badge badge-${question.difficulty}`}>{question.difficulty}</span>
               </div>
               <p className="description-text">{question.description}</p>
+              {question.concepts?.length > 0 && (
+                <div className="concept-tags">
+                  {question.concepts.map((c) => (
+                    <span key={c} className="tag-concept">{c}</span>
+                  ))}
+                </div>
+              )}
               {isLocked && (
                 <div className="locked-callout">
                   This question is locked. Solve previous questions in this difficulty first.
@@ -202,14 +210,39 @@ export default function QuestionPage() {
               </>
             )}
 
-            {/* Solution */}
-            {showSolution && submitResult && (
-              <div className="solution-card">
-                <h3>Official Solution</h3>
-                <pre>{submitResult.solution_query}</pre>
-                <h3 style={{ marginBottom: '0.5rem' }}>Explanation</h3>
-                <p>{submitResult.explanation}</p>
-              </div>
+            {/* Hints and Solution */}
+            {submitResult && (
+              <>
+                {question.hints?.slice(0, hintsShown).map((hint, i) => (
+                  <div key={i} className="hint-card">
+                    <strong>Hint {i + 1}:</strong> {hint}
+                  </div>
+                ))}
+                {hintsShown < (question.hints?.length ?? 0) && (
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => setHintsShown((n) => n + 1)}
+                  >
+                    Show Hint {hintsShown + 1}
+                  </button>
+                )}
+                {hintsShown >= (question.hints?.length ?? 0) && (
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => setShowSolution((v) => !v)}
+                  >
+                    {showSolution ? 'Hide Solution' : 'Show Solution'}
+                  </button>
+                )}
+                {showSolution && (
+                  <div className="solution-card">
+                    <h3>Official Solution</h3>
+                    <pre>{submitResult.solution_query}</pre>
+                    <h3 style={{ marginBottom: '0.5rem' }}>Explanation</h3>
+                    <p>{submitResult.explanation}</p>
+                  </div>
+                )}
+              </>
             )}
           </section>
         </div>
