@@ -768,21 +768,42 @@ a {
 
 .feedback-card {
   margin-top: 0.75rem;
-  background: #1a1d27;
-  border: 1px solid #2d3148;
+  background: #1f2433;
+  border: 1px solid #3b445f;
+  border-left: 3px solid #eab308;
   border-radius: 10px;
   padding: 0.9rem 1rem;
 }
 
 .feedback-message {
   margin: 0;
-  color: #cbd5e1;
+  color: #e2e8f0;
   font-size: 0.9rem;
   line-height: 1.6;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
 }
 
 .feedback-message + .feedback-message {
   margin-top: 0.5rem;
+}
+
+.feedback-icon {
+  width: 1.2rem;
+  height: 1.2rem;
+  flex: 0 0 1.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #3f2d0b;
+  color: #facc15;
+  border: 1px solid #ca8a04;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-top: 0.05rem;
 }
 
 /* ============================================================

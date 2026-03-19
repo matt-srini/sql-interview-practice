@@ -192,7 +192,10 @@ export default function QuestionPage() {
                 {submitResult.feedback?.length > 0 && (
                   <div className="feedback-card">
                     {submitResult.feedback.map((message, index) => (
-                      <p key={`${index}-${message}`} className="feedback-message">{message}</p>
+                      <p key={`${index}-${message}`} className="feedback-message">
+                        <span className="feedback-icon" aria-hidden="true">i</span>
+                        <span>{message}</span>
+                      </p>
                     ))}
                   </div>
                 )}
