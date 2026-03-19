@@ -153,27 +153,18 @@ def test_submit_correct_answer() -> None:
 
 def test_submit_requires_enforced_order_by_for_acceptance() -> None:
     with TestClient(app) as client:
-        first_easy_id, second_easy_id = _first_two_easy_ids(client, "u_order_enforced")
+        user_id = "u_order_enforced_missing_order"
+        first_easy_id, second_easy_id = _first_two_easy_ids(client, user_id)
         first_easy = get_question(first_easy_id)
-        second_easy = get_question(second_easy_id)
         assert first_easy is not None
-        assert second_easy is not None
-
-        solve_first = client.post(
-            "/submit",
-            json={"query": first_easy["solution_query"], "question_id": first_easy_id},
-            headers={"X-User-Id": "u_order_enforced"},
-        )
-        assert solve_first.status_code == 200
-        assert solve_first.json()["correct"] is True
 
         resp = client.post(
             "/submit",
             json={
-                "query": "SELECT product_id, product_name, brand, price FROM products",
-                "question_id": second_easy_id,
+                "query": "SELECT user_id, name, email, country FROM users",
+                "question_id": first_easy_id,
             },
-            headers={"X-User-Id": "u_order_enforced"},
+            headers={"X-User-Id": user_id},
         )
         assert resp.status_code == 200
         payload = resp.json()
@@ -183,12 +174,13 @@ def test_submit_requires_enforced_order_by_for_acceptance() -> None:
         assert len(payload["feedback"]) > 0
         assert any("ORDER BY" in message for message in payload["feedback"])
 
-        catalog = client.get("/catalog", headers={"X-User-Id": "u_order_enforced"}).json()
+        catalog = client.get("/catalog", headers={"X-User-Id": user_id}).json()
         easy = next(g for g in catalog["groups"] if g["difficulty"] == "easy")
         easy_questions = sorted(easy["questions"], key=lambda q: q["order"])
+        assert easy_questions[0]["id"] == first_easy_id
+        assert easy_questions[0]["state"] == "unlocked"
         assert easy_questions[1]["id"] == second_easy_id
-        assert easy_questions[1]["state"] == "unlocked"
-        assert easy_questions[2]["state"] == "locked"
+        assert easy_questions[1]["state"] == "locked"
 
 
 def test_submit_blocks_disallowed_query() -> None:
