@@ -100,12 +100,14 @@ def submit_answer(
         raise HTTPException(status_code=403, detail="Question is locked. Solve previous questions first.")
 
     result = evaluate(body.query, question["expected_query"], question)
+    accepted = bool(result.get("correct")) and bool(result.get("structure_correct", True))
 
-    if result.get("correct") is True:
+    if accepted:
         mark_question_solved(user_id, int(question["id"]))
 
     return {
         **result,
+        "correct": accepted,
         "solution_query": question["solution_query"],
         "explanation": question["explanation"],
     }

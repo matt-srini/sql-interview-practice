@@ -333,7 +333,7 @@ def test_evaluate_returns_new_fields() -> None:
 
 
 def test_evaluate_no_concepts_defined_is_always_structure_correct() -> None:
-    q = get_question(1001)
+    q = get_question(1003)
     assert not q.get("required_concepts")
     result = evaluate(q["solution_query"], q["expected_query"], q)
     assert result["structure_correct"] is True

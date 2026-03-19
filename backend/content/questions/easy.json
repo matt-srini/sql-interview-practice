@@ -11,6 +11,8 @@
     "dataset_files": ["users.csv"],
     "expected_query": "SELECT user_id, name, email, country\nFROM users\nORDER BY user_id",
     "solution_query": "SELECT user_id, name, email, country\nFROM users\nORDER BY user_id;",
+    "required_concepts": ["order_by"],
+    "enforce_concepts": true,
     "explanation": "SELECT with explicit column names retrieves only the specified fields from the users table. Listing columns explicitly instead of using SELECT * is best practice — it avoids returning unnecessary data and makes the query self-documenting. ORDER BY user_id ASC ensures a predictable, deterministic output order.",
     "hints": ["List each column name you need in the SELECT clause instead of using SELECT *"],
     "concepts": ["SELECT", "ORDER BY"]
@@ -27,6 +29,8 @@
     "dataset_files": ["products.csv"],
     "expected_query": "SELECT product_id, product_name, brand, price\nFROM products\nORDER BY product_id",
     "solution_query": "SELECT product_id, product_name, brand, price\nFROM products\nORDER BY product_id;",
+    "required_concepts": ["order_by"],
+    "enforce_concepts": true,
     "explanation": "This query selects four specific columns from the products table using explicit column names. Using explicit column names instead of SELECT * is best practice — it avoids returning unnecessary data and documents what the query needs. ORDER BY product_id ensures a deterministic result order.",
     "hints": ["Name each specific column you want in the SELECT list instead of using SELECT *"],
     "concepts": ["SELECT", "ORDER BY"]

@@ -150,6 +150,45 @@ def test_submit_correct_answer() -> None:
         assert easy_questions[1]["state"] == "unlocked"
 
 
+def test_submit_requires_enforced_order_by_for_acceptance() -> None:
+    with TestClient(app) as client:
+        first_easy_id, second_easy_id = _first_two_easy_ids(client, "u_order_enforced")
+        first_easy = get_question(first_easy_id)
+        second_easy = get_question(second_easy_id)
+        assert first_easy is not None
+        assert second_easy is not None
+
+        solve_first = client.post(
+            "/submit",
+            json={"query": first_easy["solution_query"], "question_id": first_easy_id},
+            headers={"X-User-Id": "u_order_enforced"},
+        )
+        assert solve_first.status_code == 200
+        assert solve_first.json()["correct"] is True
+
+        resp = client.post(
+            "/submit",
+            json={
+                "query": "SELECT product_id, product_name, brand, price FROM products",
+                "question_id": second_easy_id,
+            },
+            headers={"X-User-Id": "u_order_enforced"},
+        )
+        assert resp.status_code == 200
+        payload = resp.json()
+        assert payload["correct"] is False
+        assert payload["structure_correct"] is False
+        assert len(payload["feedback"]) > 0
+        assert "ORDER BY" in payload["feedback"][0]
+
+        catalog = client.get("/catalog", headers={"X-User-Id": "u_order_enforced"}).json()
+        easy = next(g for g in catalog["groups"] if g["difficulty"] == "easy")
+        easy_questions = sorted(easy["questions"], key=lambda q: q["order"])
+        assert easy_questions[1]["id"] == second_easy_id
+        assert easy_questions[1]["state"] == "unlocked"
+        assert easy_questions[2]["state"] == "locked"
+
+
 def test_submit_blocks_disallowed_query() -> None:
     with TestClient(app) as client:
         first_easy_id, _ = _first_two_easy_ids(client, "u_submit_block")
