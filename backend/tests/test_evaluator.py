@@ -6,6 +6,7 @@ from evaluator import MAX_RESULT_ROWS, evaluate, normalize_dataframe, run_query
 from questions import get_question
 from questions import QUESTIONS
 from sample_questions import SAMPLE_QUESTIONS
+from sql_analyzer import extract_query_features
 
 
 Q_USERS_ONLY = get_question(1001)
@@ -243,4 +244,136 @@ def test_normalize_row_order_independence() -> None:
     df1 = pd.DataFrame([[1, "x"], [2, "y"]], columns=["id", "label"])
     df2 = pd.DataFrame([[2, "y"], [1, "x"]], columns=["id", "label"])
     assert normalize_dataframe(df1).equals(normalize_dataframe(df2))
+
+
+# ---------------------------------------------------------------------------
+# sql_analyzer — extract_query_features unit tests
+# ---------------------------------------------------------------------------
+
+def test_extract_features_group_by() -> None:
+    f = extract_query_features("SELECT user_id, COUNT(*) FROM orders GROUP BY user_id")
+    assert f["has_group_by"] is True
+    assert f["has_aggregation"] is True
+    assert f["has_join"] is False
+
+
+def test_extract_features_left_join() -> None:
+    f = extract_query_features("SELECT u.name, o.order_id FROM users u LEFT JOIN orders o ON u.user_id = o.user_id")
+    assert f["has_left_join"] is True
+    assert f["has_join"] is True
+
+
+def test_extract_features_inner_join_not_left() -> None:
+    f = extract_query_features("SELECT u.name FROM users u JOIN orders o ON u.user_id = o.user_id")
+    assert f["has_join"] is True
+    assert f["has_left_join"] is False
+
+
+def test_extract_features_subquery() -> None:
+    f = extract_query_features("SELECT * FROM (SELECT user_id FROM users) sub")
+    assert f["has_subquery"] is True
+
+
+def test_extract_features_window_function() -> None:
+    f = extract_query_features("SELECT user_id, ROW_NUMBER() OVER (ORDER BY user_id) FROM users")
+    assert f["has_window_function"] is True
+
+
+def test_extract_features_where_and_order_by() -> None:
+    f = extract_query_features("SELECT name FROM users WHERE country = 'US' ORDER BY name")
+    assert f["has_where"] is True
+    assert f["has_order_by"] is True
+    assert f["has_group_by"] is False
+
+
+def test_extract_features_distinct() -> None:
+    f = extract_query_features("SELECT DISTINCT country FROM users")
+    assert f["has_distinct"] is True
+
+
+def test_extract_features_having() -> None:
+    f = extract_query_features("SELECT user_id, COUNT(*) FROM orders GROUP BY user_id HAVING COUNT(*) > 5")
+    assert f["has_having"] is True
+    assert f["has_group_by"] is True
+
+
+def test_extract_features_no_features() -> None:
+    f = extract_query_features("SELECT user_id, name FROM users")
+    assert f["has_group_by"] is False
+    assert f["has_join"] is False
+    assert f["has_subquery"] is False
+    assert f["has_window_function"] is False
+
+
+# ---------------------------------------------------------------------------
+# evaluate() — hybrid evaluation (result + concept-aware feedback)
+# ---------------------------------------------------------------------------
+
+# Minimal question fixture with required_concepts and enforce_concepts
+_Q_CONCEPTS_ENFORCED = {
+    **get_question(1001),  # type: ignore[arg-type]
+    "required_concepts": ["group_by"],
+    "enforce_concepts": True,
+}
+
+_Q_CONCEPTS_SOFT = {
+    **get_question(1001),  # type: ignore[arg-type]
+    "required_concepts": ["group_by"],
+    "enforce_concepts": False,
+}
+
+
+def test_evaluate_returns_new_fields() -> None:
+    """evaluate() must always return structure_correct and feedback."""
+    q = get_question(1001)
+    result = evaluate(q["solution_query"], q["expected_query"], q)
+    assert "structure_correct" in result
+    assert "feedback" in result
+    assert isinstance(result["feedback"], list)
+
+
+def test_evaluate_no_concepts_defined_is_always_structure_correct() -> None:
+    q = get_question(1001)
+    assert not q.get("required_concepts")
+    result = evaluate(q["solution_query"], q["expected_query"], q)
+    assert result["structure_correct"] is True
+    assert result["feedback"] == ["Your solution is correct and follows the intended approach."]
+
+
+def test_evaluate_correct_result_correct_structure() -> None:
+    """Correct result + required concept used → both flags True with positive feedback."""
+    q = get_question(1016)  # order count per user — uses GROUP BY
+    assert q is not None
+    q_with_concepts = {**q, "required_concepts": ["group_by"], "enforce_concepts": True}
+    result = evaluate(q["solution_query"], q["expected_query"], q_with_concepts)
+    assert result["correct"] is True
+    assert result["structure_correct"] is True
+    assert result["feedback"] == ["Your solution is correct and follows the intended approach."]
+
+
+def test_evaluate_correct_result_wrong_structure_enforced() -> None:
+    """Solution is correct but required concept missing + enforced → structure_correct=False."""
+    q = get_question(1001)  # simple SELECT, no GROUP BY
+    result = evaluate(q["solution_query"], q["expected_query"], _Q_CONCEPTS_ENFORCED)
+    assert result["correct"] is True           # result still correct
+    assert result["structure_correct"] is False  # concept enforced and missing
+    assert len(result["feedback"]) > 0
+    assert "GROUP BY" in result["feedback"][0]
+
+
+def test_evaluate_correct_result_wrong_structure_soft() -> None:
+    """Solution is correct but required concept missing, not enforced → soft feedback only."""
+    q = get_question(1001)
+    result = evaluate(q["solution_query"], q["expected_query"], _Q_CONCEPTS_SOFT)
+    assert result["correct"] is True
+    assert result["structure_correct"] is True   # not enforced → still True
+    assert len(result["feedback"]) > 0
+    assert "consider using" in result["feedback"][0].lower()
+
+
+def test_evaluate_wrong_result() -> None:
+    """Wrong result → correct=False regardless of concept state."""
+    q = get_question(1001)
+    result = evaluate("SELECT user_id FROM users LIMIT 1", q["expected_query"], q)
+    assert result["correct"] is False
 

@@ -17,6 +17,7 @@ import pandas as pd
 from database import create_isolated_connection
 from exceptions import BadRequestError
 from middleware.request_context import get_request_id
+from sql_analyzer import CONCEPT_LABELS, CONCEPT_TO_FEATURE, extract_query_features
 from sql_guard import validate_read_only_select_query
 
 
@@ -86,9 +87,18 @@ def run_query(query: str, question: dict[str, Any]) -> dict[str, Any]:
         logger.info("%sQuery failed: %s", prefix, str(exc))
         raise BadRequestError(str(exc)) from exc
 
+    def _to_json_native(v: object) -> object:
+        """Convert non-JSON-serializable types (e.g. pandas.Timestamp) to safe Python types."""
+        if v is None:
+            return None
+        if hasattr(v, "isoformat"):  # datetime, date, pandas.Timestamp
+            return v.isoformat()
+        return v
+
+    clean = result.where(pd.notnull(result), None)
     payload = {
         "columns": list(result.columns),
-        "rows": result.where(pd.notnull(result), None).values.tolist(),
+        "rows": [[_to_json_native(v) for v in row] for row in clean.values.tolist()],
         "row_limit": MAX_RESULT_ROWS,
     }
 
@@ -185,10 +195,68 @@ def normalize_dataframe(df: pd.DataFrame, *, sort_rows: bool = True) -> pd.DataF
     return df
 
 
+def _evaluate_concepts(
+    user_query: str,
+    question: dict[str, Any],
+    result_correct: bool,
+) -> tuple[bool, list[str]]:
+    """
+    Compare user query structure against required_concepts from the question.
+
+    Returns:
+        structure_correct: bool — False only when enforce_concepts=True and a
+                           required concept is missing.
+        feedback: list[str] — human-readable messages about concept usage.
+    """
+    required_concepts: list[str] = question.get("required_concepts") or []
+    enforce: bool = bool(question.get("enforce_concepts", False))
+    request_id = get_request_id()
+    prefix = f"[request_id={request_id}] "
+
+    if not required_concepts:
+        return True, []
+
+    features = extract_query_features(user_query)
+    feedback: list[str] = []
+    structure_correct = True
+
+    for concept in required_concepts:
+        feature_key = CONCEPT_TO_FEATURE.get(concept)
+        label = CONCEPT_LABELS.get(concept, concept)
+
+        if feature_key is None:
+            logger.warning("%sUnknown concept: %s", prefix, concept)
+            continue
+
+        present = features.get(feature_key, False)
+
+        if not present:
+            if enforce:
+                structure_correct = False
+                feedback.append(
+                    f"This question is intended to practice {label}. "
+                    "Try rewriting your solution to use it."
+                )
+            else:
+                feedback.append(
+                    f"Your result is correct, but consider using {label} — "
+                    "that's the intended approach for this question."
+                )
+
+    return structure_correct, feedback
+
+
 def evaluate(user_query: str, expected_query: str, question: dict[str, Any]) -> dict[str, Any]:
     """
-    Run both queries and compare their result sets.
-    Returns a dict with keys: correct, user_result, expected_result.
+    Run both queries and compare their result sets, then apply concept-aware
+    feedback (hybrid evaluation).
+
+    Returns:
+        correct          — result sets match
+        structure_correct — required concepts present (or no concepts defined)
+        feedback         — list of concept-related feedback messages
+        user_result      — {columns, rows, row_limit}
+        expected_result  — {columns, rows, row_limit}
     """
     request_id = get_request_id()
     prefix = f"[request_id={request_id}] "
@@ -213,11 +281,23 @@ def evaluate(user_query: str, expected_query: str, question: dict[str, Any]) -> 
     except Exception:
         correct = False
 
-    logger.info("%sEvaluation complete: correct=%s", prefix, correct)
+    # Concept-aware layer — does not override result correctness
+    structure_correct, feedback = _evaluate_concepts(user_query, question, correct)
+    if correct and structure_correct and not feedback:
+        feedback.append("Your solution is correct and follows the intended approach.")
+    elif correct and not feedback:
+        feedback.append("Your solution is correct.")
+
+    logger.info(
+        "%sEvaluation complete: correct=%s structure_correct=%s feedback_count=%d",
+        prefix, correct, structure_correct, len(feedback),
+    )
     logger.info("%sEvaluation completed in %.3fs", prefix, time.time() - eval_start)
 
     return {
         "correct": correct,
+        "structure_correct": structure_correct,
+        "feedback": feedback,
         "user_result": user_result,
         "expected_result": expected_result,
     }
