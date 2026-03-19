@@ -138,6 +138,7 @@ def test_submit_correct_answer() -> None:
         assert resp.status_code == 200
         payload = resp.json()
         assert payload["correct"] is True
+        assert payload["is_result_correct"] is True
         assert "solution_query" in payload
         assert "explanation" in payload
 
@@ -177,9 +178,10 @@ def test_submit_requires_enforced_order_by_for_acceptance() -> None:
         assert resp.status_code == 200
         payload = resp.json()
         assert payload["correct"] is False
+        assert payload["is_result_correct"] is True
         assert payload["structure_correct"] is False
         assert len(payload["feedback"]) > 0
-        assert "ORDER BY" in payload["feedback"][0]
+        assert any("ORDER BY" in message for message in payload["feedback"])
 
         catalog = client.get("/catalog", headers={"X-User-Id": "u_order_enforced"}).json()
         easy = next(g for g in catalog["groups"] if g["difficulty"] == "easy")
