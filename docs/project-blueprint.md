@@ -399,8 +399,10 @@ Registered route modules:
   - Input: { query, question_id }
   - Rejects locked questions
   - Evaluates user output against expected_query
-  - On correct submission, marks the question solved
-  - Returns correctness plus user_result, expected_result, solution_query, and explanation
+  - Uses `correct` as the final acceptance flag for challenge progression
+  - Also returns `is_result_correct`, `structure_correct`, and `feedback` for result-vs-approach clarity
+  - On accepted submission, marks the question solved
+  - Returns acceptance/result flags plus user_result, expected_result, solution_query, and explanation
 
 #### Sample routes
 - Prefix: /api/sample
@@ -573,8 +575,8 @@ Axios is configured with withCredentials: true so cookie-based identity works du
 6. The user runs SQL against /api/run-query.
 7. The backend validates SQL, enforces unlock state, creates a question-scoped in-memory DuckDB connection, and returns tabular results.
 8. The user submits SQL to /api/submit.
-9. The backend re-runs both user and expected queries, compares normalized results, and returns correctness plus official answer material.
-10. On correct submission, challenge progression is persisted and the frontend refreshes catalog state.
+9. The backend re-runs both user and expected queries, compares normalized results, and returns final acceptance, result correctness, structural correctness, feedback, and official answer material.
+10. On accepted submission, challenge progression is persisted and the frontend refreshes catalog state.
 
 ### Sample flow
 1. User opens /sample/{difficulty}.

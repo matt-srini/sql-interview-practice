@@ -235,7 +235,7 @@ CORS_ALLOW_ORIGINS is also supported as an alias.
 | GET | /api/questions/{id} | Same as /questions/{id} |
 | POST | /run-query | Execute SQL for a challenge question |
 | POST | /api/run-query | Same as /run-query |
-| POST | /submit | Evaluate a challenge answer |
+| POST | /submit | Evaluate a challenge answer and return acceptance/result feedback |
 | POST | /api/submit | Same as /submit |
 
 ### Sample routes

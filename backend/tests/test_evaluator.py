@@ -358,7 +358,8 @@ def test_evaluate_correct_result_wrong_structure_enforced() -> None:
     assert result["correct"] is True           # result still correct
     assert result["structure_correct"] is False  # concept enforced and missing
     assert len(result["feedback"]) > 0
-    assert "GROUP BY" in result["feedback"][0]
+    assert result["feedback"][0] == "Your result is correct, but the required approach was not followed."
+    assert any("GROUP BY" in message for message in result["feedback"])
 
 
 def test_evaluate_correct_result_wrong_structure_soft() -> None:

@@ -283,6 +283,11 @@ def evaluate(user_query: str, expected_query: str, question: dict[str, Any]) -> 
 
     # Concept-aware layer — does not override result correctness
     structure_correct, feedback = _evaluate_concepts(user_query, question, correct)
+    if correct and not structure_correct:
+        feedback.insert(
+            0,
+            "Your result is correct, but the required approach was not followed."
+        )
     if correct and structure_correct and not feedback:
         feedback.append("Your solution is correct and follows the intended approach.")
     elif correct and not feedback:

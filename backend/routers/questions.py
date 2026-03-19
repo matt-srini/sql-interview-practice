@@ -108,6 +108,8 @@ def submit_answer(
     return {
         **result,
         "correct": accepted,
+        "is_result_correct": bool(result.get("correct")),
+        "structure_correct": bool(result.get("structure_correct", True)),
         "solution_query": question["solution_query"],
         "explanation": question["explanation"],
     }
