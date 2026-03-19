@@ -265,9 +265,18 @@ export default function SampleQuestionPage() {
 
             {submitError && <div className="error-box">{submitError}</div>}
             {submitResult && (
-              <div className={`verdict ${submitResult.correct ? 'verdict-correct' : 'verdict-incorrect'}`}>
-                {submitResult.correct ? '✓ Correct! Your answer matches the expected output.' : '✗ Incorrect. Your output does not match the expected result.'}
-              </div>
+              <>
+                <div className={`verdict ${submitResult.correct ? 'verdict-correct' : 'verdict-incorrect'}`}>
+                  {submitResult.correct ? '✓ Correct! Your answer matches the expected output.' : '✗ Incorrect. Your output does not match the expected result.'}
+                </div>
+                {submitResult.feedback?.length > 0 && (
+                  <div className="feedback-card">
+                    {submitResult.feedback.map((message, index) => (
+                      <p key={`${index}-${message}`} className="feedback-message">{message}</p>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
 
             {submitResult && !submitResult.correct && (
