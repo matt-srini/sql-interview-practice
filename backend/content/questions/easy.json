@@ -23,7 +23,7 @@
     "difficulty": "easy",
     "schema": {
       "users": ["user_id", "name", "signup_date", "country"],
-      "orders": ["order_id", "user_id", "order_date", "amount", "status"]
+      "orders": ["order_id", "user_id", "order_date", "status"]
     },
     "dataset_files": ["users.csv", "orders.csv"],
     "expected_query": "SELECT u.user_id, COUNT(o.order_id) AS order_count\nFROM users u\nLEFT JOIN orders o ON u.user_id = o.user_id\nGROUP BY u.user_id\nORDER BY u.user_id",
@@ -42,13 +42,13 @@
     "description": "Return the total amount of all completed orders as total_completed_amount.",
     "difficulty": "easy",
     "schema": {
-      "orders": ["order_id", "user_id", "order_date", "amount", "status"]
+      "orders": ["order_id", "user_id", "order_date", "status", "net_amount"]
     },
     "dataset_files": ["orders.csv"],
-    "expected_query": "SELECT SUM(amount) AS total_completed_amount\nFROM orders\nWHERE status = 'completed'",
-    "solution_query": "SELECT SUM(amount) AS total_completed_amount\nFROM orders\nWHERE status = 'completed';",
-    "explanation": "Filter to completed orders and sum their amounts.",
-    "hints": ["Use WHERE status = 'completed' then SUM(amount)."],
+    "expected_query": "SELECT SUM(net_amount) AS total_completed_amount\nFROM orders\nWHERE status = 'completed'",
+    "solution_query": "SELECT SUM(net_amount) AS total_completed_amount\nFROM orders\nWHERE status = 'completed';",
+    "explanation": "Filter to completed orders and sum their net_amount values.",
+    "hints": ["Use WHERE status = 'completed' then SUM(net_amount)."],
     "concepts": ["WHERE", "SUM"]
   },
   {

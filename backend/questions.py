@@ -1,5 +1,6 @@
 """Question catalog loaded from validated JSON content files."""
 
+import csv
 import json
 import random
 from pathlib import Path
@@ -22,6 +23,16 @@ def _load_json(path: Path) -> Any:
 
 def _table_name_from_dataset_file(dataset_file: str) -> str:
     return Path(dataset_file).stem
+
+
+def _read_dataset_headers(dataset_file: str) -> set[str]:
+    dataset_path = _DATASETS_DIR / dataset_file
+    with dataset_path.open("r", encoding="utf-8", newline="") as handle:
+        reader = csv.reader(handle)
+        try:
+            return {str(column) for column in next(reader)}
+        except StopIteration as exc:
+            raise ValueError(f"Dataset file is empty: {dataset_file}") from exc
 
 
 def _validate_question(question: dict[str, Any], *, required_fields: list[str], id_ranges: dict[str, list[int]]) -> None:
@@ -48,6 +59,10 @@ def _validate_question(question: dict[str, Any], *, required_fields: list[str], 
 
     dataset_files_set = {str(dataset_file) for dataset_file in dataset_files}
     schema_tables = {str(table_name) for table_name in schema.keys()}
+    table_headers = {
+        _table_name_from_dataset_file(dataset_file): _read_dataset_headers(dataset_file)
+        for dataset_file in dataset_files_set
+    }
 
     for dataset_file in dataset_files_set:
         if not dataset_file.endswith(".csv"):
@@ -62,6 +77,9 @@ def _validate_question(question: dict[str, Any], *, required_fields: list[str], 
         expected_file = f"{table_name}.csv"
         if expected_file not in dataset_files_set:
             _fail(qid, f"schema includes table '{table_name}' but dataset_files is missing '{expected_file}'")
+        missing_columns = [column for column in schema[table_name] if str(column) not in table_headers[table_name]]
+        if missing_columns:
+            _fail(qid, f"schema columns not found in dataset '{expected_file}': {missing_columns}")
 
 
 def _load_questions() -> list[dict[str, Any]]:

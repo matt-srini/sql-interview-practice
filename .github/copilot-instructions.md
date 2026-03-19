@@ -141,19 +141,61 @@ would pass after changes.
 
 ---
 
+## 5.3 Keep Core Docs Updated
+
+Whenever a significant change affects user-facing behavior, architecture, datasets, execution model, deployment flow, project structure, question inventory, or any documented workflow, you MUST review whether these files need updates:
+- README.md
+- docs/project-overview.md
+- docs/project-blueprint.md
+
+If any of those files are affected, you MUST update them in the same task.
+
+Examples that require documentation review:
+- backend or frontend architecture changes
+- route or API behavior changes
+- dataset additions, removals, schema changes, or scale-profile changes
+- question-bank count or organization changes
+- deployment or environment-variable changes
+- major workflow or project-structure changes
+
+Rules:
+- Do NOT leave these docs stale after significant relevant changes.
+- Keep README.md concise and operator-focused.
+- Keep docs/project-overview.md as a short product/state summary.
+- Keep docs/project-blueprint.md as the detailed current-state reference.
+- If a significant change does not require updates to one or more of these files, explicitly verify that they remain accurate.
+
+---
+
 # 6. Git & Change Management (MANDATORY)
 
 ## 6.1 After Every Non-Trivial Change
 
 You MUST provide:
 
-### 1. Commit Message
+### 1. Final Clear Commit Command
+
+Format:
+git commit -m "<type>: <short description>"
+
+Rules:
+- This must be a single clear command the user can copy/paste directly.
+- Once provided in the response, it must not be altered or paraphrased elsewhere in that same response.
+- It must match the short commit title used in the structured commit summary.
+
+---
+
+### 2. Commit Message Summary
 
 Format:
 <type>: <short description>
 
 - bullet point summary of changes
 - include impacted modules
+
+Rules:
+- Keep this structured summary alongside the final clear commit command.
+- Do NOT replace this summary with the command; both are required.
 
 Types:
 - feat
@@ -164,7 +206,7 @@ Types:
 
 ---
 
-### 2. Git Diff Output
+### 3. Git Diff Output
 
 Generate a diff of ALL changes:
 
@@ -241,8 +283,9 @@ Unless explicitly told otherwise, every response must include:
 
 1. Summary of changes
 2. Files modified
-3. Commit message
-4. Git diff instructions or output
+3. Final clear git commit -m command
+4. Structured commit message summary
+5. Git diff instructions or output
 
 ---
 
@@ -263,6 +306,7 @@ Maintain a stable, production-ready SQL learning platform where:
 - content is scalable
 - changes are traceable
 - bugs are minimized
+- documentation stays aligned with the current repository state
 
 ---
 

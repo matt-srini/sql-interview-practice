@@ -1,145 +1,145 @@
 # SQL Interview Practice Platform
 
-A web platform for practicing SQL interview questions by writing queries against sample datasets. The platform executes your query and evaluates whether the result matches the expected output.
+A SQL practice platform with a React frontend, a FastAPI backend, and DuckDB-backed execution. Users can work through gated challenge questions, try a separate sample track, run read-only SQL, and compare their output against expected results.
+
+---
+
+## Current State
+
+- Challenge bank: 6 questions total
+  - Easy: 4
+  - Medium: 1
+  - Hard: 1
+- Sample bank: 9 questions total
+  - 3 per difficulty in backend/sample_questions.py
+- Challenge content is JSON-backed in backend/content/questions/
+- Sample content is Python-backed in backend/sample_questions.py
+- Query execution is isolated per request using in-memory DuckDB connections scoped to question dataset_files
+- Question schemas are validated against the committed dataset headers at load time
+
+For the fuller architectural reference, see docs/project-blueprint.md.
 
 ---
 
 ## Tech Stack
 
-| Layer     | Technology                        |
-|-----------|-----------------------------------|
-| Backend   | Python, FastAPI, DuckDB, Pandas   |
-| Frontend  | React (Vite), Monaco Editor, Axios |
-| Datasets  | CSV files loaded into DuckDB      |
+| Layer | Technology |
+|-------|------------|
+| Backend | Python, FastAPI, DuckDB, Pandas |
+| Frontend | React 18, React Router, Vite, Monaco Editor, Axios |
+| Testing | pytest, httpx, Vitest, React Testing Library |
+| Datasets | Generated CSV files loaded into DuckDB |
 
 ---
 
-## Project Structure
+## Repository Layout
 
-```
+```text
 sql-interview-practice/
 ├── backend/
-│   ├── main.py          # FastAPI app and routes
-│   ├── database.py      # DuckDB connection and dataset loader
-│   ├── questions.py     # Question catalog loader + helpers
-│   ├── question_bank/   # Seeded question bank (easy/medium/hard)
-│   ├── progress.py      # DuckDB-backed per-user progression
-│   ├── evaluator.py     # Query execution and answer evaluation
-│   ├── requirements.txt
-│   └── datasets/
-│       ├── employees.csv
-│       ├── departments.csv
-│       ├── customers.csv
-│       └── orders.csv
-└── frontend/
-    ├── index.html
-    ├── vite.config.js
-    ├── package.json
-    └── src/
-      ├── index.js
-      ├── App.js
-        ├── App.css
-        ├── pages/
-      │   ├── QuestionListPage.js
-      │   └── QuestionPage.js
-        └── components/
-        ├── SQLEditor.js
-        ├── ResultsTable.js
-        └── SchemaViewer.js
-        ├── catalogContext.js
-        ├── pages/
-        │   └── QuestionPage.js
-        └── components/
-            ├── AppShell.js
-            ├── SidebarNav.js
-            ├── SQLEditor.js
-            ├── ResultsTable.js
-            └── SchemaViewer.js
-|---|-------------------------------|------------|
-| 1 | Second Highest Salary          | Easy       |
-| 2 | Find Duplicate Emails          | Easy       |
-| 3 | Top 3 Salaries per Department  | Hard       |
-| 4 | Customers With No Orders       | Medium     |
-  ## Guided Progression (MVP)
-
-  - The question bank contains **75 starter questions** (25 Easy, 25 Medium, 25 Hard).
-  - Progression is **sequential within each difficulty**:
-    - The first question in each difficulty starts unlocked.
-    - The next question unlocks only after the previous one is solved.
-  - Progress is tracked per user via a cookie session id (`sql_practice_uid`) and stored in DuckDB (`user_progress`).
-  - For testing or API clients, you can explicitly identify the user via the `X-User-Id` header.
-
-  See [ARCHITECTURE.md](ARCHITECTURE.md) for a short design note.
-  For end-to-end verification, use [MANUAL_TEST_CHECKLIST.md](MANUAL_TEST_CHECKLIST.md).
-- Node.js 18+
+│   ├── content/questions/        # JSON-backed challenge questions
+│   ├── datasets/                 # Committed generated CSV datasets + metadata
+│   ├── middleware/               # Request context and request_id handling
+│   ├── routers/                  # API and SPA route modules
+│   ├── scripts/                  # Dataset generation scripts
+│   ├── tests/                    # Backend tests
+│   ├── database.py               # DuckDB loading and isolated execution setup
+│   ├── evaluator.py              # Query execution and result comparison
+│   ├── main.py                   # FastAPI app wiring
+│   ├── progress.py               # Challenge/sample progress storage
+│   ├── questions.py              # Challenge catalog loader
+│   ├── sample_questions.py       # Sample question catalog
+│   └── sql_guard.py              # Read-only SQL validation
+├── docs/
+│   ├── project-blueprint.md      # Detailed architecture and current-state reference
+│   ├── project-overview.md       # Concise product summary
+│   └── question-authoring-guidelines.md
+├── frontend/
+│   ├── src/components/           # App shell, sidebar, editor, results, schema
+│   ├── src/pages/                # Landing, challenge, and sample flows
+│   ├── src/api.js                # API client and environment resolution
+│   └── package.json
+├── Dockerfile                    # Single-service production build
+└── docker-compose.yml            # Local Redis + backend + frontend stack
+```
 
 ---
+
+## Dataset Inventory
+
+The committed datasets live in backend/datasets/.
+
+| CSV | What it models | Current committed count |
+|-----|----------------|-------------------------|
+| users.csv | User/account dimension with signup and plan metadata | 600 |
+| categories.csv | Product category taxonomy | 16 |
+| products.csv | Product catalog | 260 |
+| orders.csv | Order headers linked to users | 4200 |
+| order_items.csv | Line items within orders | 12665 |
+| payments.csv | Payment events for orders | 4737 |
+| sessions.csv | Website sessions | 9000 |
+| events.csv | Session-level event stream | 44964 |
+| support_tickets.csv | Customer support cases | 1300 |
+| departments.csv | Department dimension | 10 |
+| employees.csv | Employee records | 180 |
+
+The current committed metadata snapshot is in backend/datasets/dataset_metadata_v1.json.
+
+The generator currently supports small and medium profiles via backend/scripts/generate_v1_datasets.py.
+
+Note:
+- backend/datasets/DATA_DICTIONARY_V1.md is referenced in older docs but is not present in the current workspace.
+- The generator script and metadata JSON are the current source of truth.
+
+---
+
+## Local Development
+
+### Prerequisites
+
+- Python 3.11 recommended
+- Node.js 20 recommended
+- Docker optional for the compose workflow
 
 ### Backend
 
 ```bash
 cd backend
-pip install fastapi uvicorn duckdb pandas
-pip install -r requirements.txt
-uvicorn main:app --reload
+../.venv/bin/python -m pip install -r requirements.txt
+../.venv/bin/python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-The API will be available at `http://localhost:8000`.
+Backend URLs:
+- API root: http://127.0.0.1:8000
+- Swagger UI: http://127.0.0.1:8000/docs
+- Health: http://127.0.0.1:8000/health
 
-API docs (Swagger UI): `http://localhost:8000/docs`
-
-Health endpoint: `http://localhost:8000/health`
-
-Run tests:
+Run backend tests:
 
 ```bash
 cd backend
-pytest -q
+../.venv/bin/python -m pytest -q
 ```
 
-Generate deterministic v1 interview datasets:
+Generate datasets into a separate output folder:
 
 ```bash
 cd backend
-python scripts/generate_v1_datasets.py --seed 20260318 --scale small
+../.venv/bin/python scripts/generate_v1_datasets.py --seed 20260318 --scale small
 ```
 
-By default this writes CSVs to `backend/datasets_generated` plus a metadata file.
-See `backend/datasets/DATA_DICTIONARY_V1.md` for schema definitions and generation notes.
-
-If the frontend is deployed on a different origin, allow it through CORS with:
-
-```bash
-export ALLOWED_ORIGINS="https://app.example.com,http://localhost:5173"
-```
-
-`CORS_ALLOW_ORIGINS` is also supported as an alias.
-
----
+By default this writes to backend/datasets_generated/.
 
 ### Frontend
 
 ```bash
 cd frontend
 npm install
-npm start
+npm run dev -- --host 127.0.0.1
 ```
 
-API routing is resolved differently depending on how the frontend is served:
-
-- In Vite dev mode, requests can use the dev proxy.
-- If the frontend is served directly from `localhost` without a proxy, the app automatically calls `http://localhost:8000/api`.
-- If the frontend is deployed separately from the backend, set `VITE_BACKEND_URL` to the browser-reachable backend origin, for example `https://api.example.com`.
-
-If `npm install` fails with a cache permissions error on macOS, use the repo-local cache:
-
-```bash
-cd frontend
-npm config set cache .npm-cache --location=project
-npm install
-```
-
-The app will be available at `http://localhost:5173`.
+Frontend URL:
+- http://127.0.0.1:5173
 
 Run frontend tests:
 
@@ -148,35 +148,115 @@ cd frontend
 npm test
 ```
 
----
+If npm cache permissions fail on macOS:
 
-## Query Guardrails
+```bash
+cd frontend
+npm config set cache .npm-cache --location=project
+npm install
+```
 
-- Only single `SELECT` / `WITH` queries are allowed.
-- Multi-statement SQL is blocked.
-- Query timeout is enforced (3 seconds).
-- Result row count is capped at 200 rows per execution.
-- Potential Cartesian joins are blocked (joins must use `ON` or `USING`).
-- Query complexity is capped at 4 joins.
+### API base URL behavior
 
-## API Rate Limiting
+The frontend resolves the backend as follows:
+- If VITE_BACKEND_URL is set, use that origin plus /api
+- If running on localhost without same-origin backend routing, fall back to http://localhost:8000/api
+- Otherwise use same-origin /api
 
-- Per-IP request limiting is enabled for API routes (except `/health`).
-- Distributed limiting is used automatically when `REDIS_URL` is configured.
-- If Redis is unavailable, the app safely falls back to in-memory limiting.
-- Default limit: 60 requests per 60-second window.
-- Limit values can be configured with environment variables:
-  - `RATE_LIMIT_REQUESTS`
-  - `RATE_LIMIT_WINDOW_SECONDS`
-  - `REDIS_URL` (optional, enables shared/distributed limits)
-- Responses include rate-limit headers:
-  - `X-RateLimit-Limit`
-  - `X-RateLimit-Remaining`
-  - `X-RateLimit-Window`
+For split-origin development or deployment, configure:
+
+```bash
+export ALLOWED_ORIGINS="https://app.example.com,http://localhost:5173"
+```
+
+CORS_ALLOW_ORIGINS is also supported as an alias.
 
 ---
 
-## One-Command Startup (Docker Compose)
+## Application Behavior
+
+### Challenge progression
+
+- Progression is sequential within each difficulty
+- The first unsolved question in each difficulty is the next unlocked question
+- Progress is tracked in DuckDB using user_progress
+- User identity is best-effort via cookie or the X-User-Id header
+
+### Sample mode
+
+- Sample mode is separate from challenge progression
+- Each difficulty has exactly 3 sample questions
+- Seen-sample tracking is stored in user_sample_seen
+- Sample exhaustion returns HTTP 409 until the user resets that difficulty
+
+### Query guardrails
+
+- Only single SELECT-style queries are allowed
+- Multi-statement SQL is blocked
+- Query timeout is 3 seconds
+- Result rows are capped at 200
+- Cartesian joins are blocked unless properly constrained
+- Query complexity is capped at 4 joins
+
+### Error and request handling
+
+- User-facing error responses follow { error, request_id }
+- Responses include X-Request-ID
+- Structured logs use the format [request_id=<id>] message
+
+### API rate limiting
+
+- Per-IP request limiting applies to API traffic except /health
+- Redis-backed limiting is used when REDIS_URL is configured
+- Otherwise the app falls back to in-memory limiting
+- Default limit is 60 requests per 60-second window
+
+---
+
+## API Endpoints
+
+### System and catalog
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /health | Service health and loaded persistent tables |
+| GET | /catalog | Grouped challenge catalog with per-user state |
+| GET | /api/catalog | Same as /catalog |
+
+### Challenge routes
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /questions | Lightweight challenge list |
+| GET | /api/questions | Same as /questions |
+| GET | /questions/{id} | Challenge question detail |
+| GET | /api/questions/{id} | Same as /questions/{id} |
+| POST | /run-query | Execute SQL for a challenge question |
+| POST | /api/run-query | Same as /run-query |
+| POST | /submit | Evaluate a challenge answer |
+| POST | /api/submit | Same as /submit |
+
+### Sample routes
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /api/sample/{difficulty} | Get next unseen sample question |
+| POST | /api/sample/{difficulty}/reset | Reset sample progress for that difficulty |
+| POST | /api/sample/run-query | Execute SQL for a sample question |
+| POST | /api/sample/submit | Evaluate a sample answer |
+
+### Example request body
+
+```json
+{
+  "query": "SELECT * FROM users",
+  "question_id": 1001
+}
+```
+
+---
+
+## Docker Compose
 
 If Docker is installed:
 
@@ -185,74 +265,49 @@ docker compose up --build
 ```
 
 Services:
-
-- Redis: `localhost:6379`
-- Backend API: `http://localhost:8000`
-- Frontend: `http://localhost:5173`
-
-## Production Deployment
-
-The recommended production setup for this project is:
-
-- GitHub as the source repo
-- Railway running a single service from the root `Dockerfile`
-- Cloudflare in front of Railway with your custom domain
-
-This deployment shape is intentional:
-
-- FastAPI serves both the API and the built React app from one origin.
-- The browser uses same-origin `/api` requests in production.
-- CORS is only needed when you deliberately split frontend and backend across different origins.
-
-### Railway
-
-- Deploy the repository root, not `frontend/` or `backend/` individually.
-- Railway should build from the root `Dockerfile`.
-- Set the health check path to `/health`.
-- If you later split the frontend and backend across separate domains, set `ALLOWED_ORIGINS` on the backend and `VITE_BACKEND_URL` on the frontend.
-
-### Cloudflare
-
-- Point your custom domain at the Railway service.
-- Keep the app under one public origin, for example `https://sql.example.com`.
-- Leave API requests on the same origin so the frontend continues using `/api` without extra routing logic.
+- Redis: localhost:6379
+- Backend API: http://localhost:8000
+- Frontend: http://localhost:5173
 
 ---
 
-## API Endpoints
+## Production Deployment
 
-| Method | Endpoint            | Description                              |
-|--------|---------------------|------------------------------------------|
-| GET    | `/health`           | Service health and loaded tables         |
-| GET    | `/catalog`          | Grouped questions + per-user status metadata |
-| GET    | `/questions`        | List all questions (id, title, difficulty) |
-| GET    | `/questions/{id}`   | Get full question detail                 |
-| POST   | `/run-query`        | Execute a SQL query and return results   |
-| POST   | `/submit`           | Evaluate user's answer                   |
+Recommended shape:
+- GitHub as the source repo
+- Railway building the repository root Dockerfile
+- Cloudflare in front of Railway for the public domain
+
+This keeps the production app on one origin:
+- FastAPI serves the built React app and the API
+- The browser uses same-origin /api requests
+- CORS is only needed for intentional split-origin setups
+
+### Railway
+
+- Deploy the repository root, not frontend/ or backend/ individually
+- Build from the root Dockerfile
+- Use /health as the health check path
+- If you split frontend and backend later, set ALLOWED_ORIGINS on the backend and VITE_BACKEND_URL on the frontend
+
+### Cloudflare
+
+- Point your custom domain at the Railway service
+- Keep the app under one origin such as https://sql.example.com
 
 ---
 
 ## CI
 
-GitHub Actions workflow is included at `.github/workflows/ci.yml` and runs:
+The GitHub Actions workflow at .github/workflows/ci.yml runs:
+- Backend tests with pytest
+- Frontend production build with npm run build
 
-- Backend tests (`pytest`) on push and pull requests
-- Frontend production build (`npm run build`) on push and pull requests
+---
 
-### POST `/run-query` request body
+## Related Docs
 
-```json
-{
-  "query": "SELECT * FROM employees",
-  "question_id": 1
-}
-```
-
-### POST `/submit` request body
-
-```json
-{
-  "query": "SELECT MAX(salary) FROM employees WHERE salary < (SELECT MAX(salary) FROM employees)",
-  "question_id": 1
-}
-```
+- docs/project-blueprint.md: detailed architecture and current-state reference
+- docs/project-overview.md: concise product summary
+- docs/question-authoring-guidelines.md: question authoring standard
+- MANUAL_TEST_CHECKLIST.md: manual verification steps
