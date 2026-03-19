@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const SAMPLE_TILES = [
   {
@@ -19,11 +20,30 @@ const SAMPLE_TILES = [
 ];
 
 export default function LandingPage() {
+  const { user, logout } = useAuth();
+
   return (
     <>
       <header className="topbar">
         <div className="container topbar-inner">
           <h1>SQL Interview Practice</h1>
+          {user ? (
+            <div className="topbar-user-pill">
+              <span className="topbar-user-name">{user.name || user.email}</span>
+              <button
+                type="button"
+                className="topbar-signout-btn"
+                onClick={logout}
+                aria-label="Sign out"
+              >
+                Sign out
+              </button>
+            </div>
+          ) : (
+            <Link className="topbar-auth-link" to="/auth">
+              Sign in
+            </Link>
+          )}
         </div>
       </header>
 

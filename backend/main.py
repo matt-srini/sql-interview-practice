@@ -17,7 +17,8 @@ from middleware.request_context import request_context_middleware
 from middleware.request_context import get_request_id
 from progress import init_progress_storage
 from rate_limiter import BaseRateLimiter, create_rate_limiter
-from routers import catalog, questions, sample, spa, system
+import auth_db
+from routers import auth, catalog, questions, sample, spa, system
 
 
 LOG_FORMAT = "%(asctime)s [%(levelname)s] %(message)s"
@@ -40,6 +41,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     load_datasets()
     init_progress_storage()
+    auth_db.init_auth_db()
     yield
 
 
@@ -158,6 +160,7 @@ async def request_id_middleware(request: Request, call_next):
 # ---------------------------------------------------------------------------
 
 app.include_router(system.router)
+app.include_router(auth.router)
 app.include_router(catalog.router)
 app.include_router(questions.router)
 app.include_router(sample.router)

@@ -1,5 +1,3 @@
-
-
 # Question Authoring Guidelines — SQL Interview Practice Platform
 
 ## Purpose
@@ -15,17 +13,29 @@ The goal is to ensure:
 
 # 1. Core Principles
 
-## 1.1 Each Question Tests ONE Core Concept
-Every question must have a clear focus.
+## 1.1 Primary Learning Objective (STRICT)
+
+Every question must have a clear primary learning objective.
+
+Core concepts include:
+- Joins
+- Aggregation (GROUP BY, HAVING)
+- Window Functions
+- Subqueries
+
+Guidelines:
+- A question should focus on one primary concept
+- Supporting concepts are allowed if they are necessary to solve the problem
+- Do NOT artificially limit the number of concepts
+- Avoid mixing unrelated concepts
 
 Examples:
-- filtering → WHERE
-- aggregation → GROUP BY
-- joins → JOIN
-- ranking → window functions
+- Aggregation + JOIN → valid if aggregation is the main objective
+- Window + aggregation → valid if sequencing depends on aggregation
 
 Avoid:
-- mixing too many concepts in easy/medium questions
+- stacking unrelated concepts
+- adding concepts without purpose
 
 ---
 
@@ -48,6 +58,21 @@ Every question must produce a clearly defined result set.
 If ordering matters → explicitly require it.
 
 ---
+
+## 1.5 Concept Cohesion (MANDATORY)
+
+If multiple concepts are used:
+- They must belong to the same logical flow
+- They must solve one unified problem
+
+NOT allowed:
+- JOIN + window + subquery + CASE arbitrarily
+- artificial difficulty via concept stacking
+
+Difficulty must come from:
+- multi-stage reasoning
+- transformation steps
+- dependency between steps
 
 ## 1.4 Real-World Context
 Questions should feel like real business problems.
@@ -89,8 +114,23 @@ Focus:
 - CASE statements
 
 Rules:
-- 2–3 logical steps
-- moderate reasoning required
+- Prefer a small number of related concepts
+- Concepts must be directly related
+- Avoid introducing multiple independent reasoning layers
+
+- linear reasoning:
+  → join → filter → aggregate
+
+- subqueries:
+  - allowed but must be simple
+  - must not introduce a second independent logic layer
+
+- CASE:
+  - allowed only as a helper
+
+Avoid:
+- combining JOIN + subquery + CASE unnecessarily
+- multi-layer nested logic
 
 ---
 
@@ -103,9 +143,26 @@ Focus:
 - edge-case handling
 
 Rules:
-- multi-layer logic
-- may require optimization thinking
-- can use advanced SQL features
+- Defined by multi-stage reasoning, not concept count
+
+Every HARD question must:
+- Require at least 2 dependent steps (e.g., derive → filter, aggregate → rank)
+- Involve grain awareness (correct level of aggregation at each step)
+- Include at least one advanced mechanism:
+  - Window functions
+  - Correlated subqueries (EXISTS / NOT EXISTS)
+  - Multi-level aggregation
+  - Conditional aggregation
+
+- Supporting concepts are allowed if they are cohesive
+
+Complexity must come from:
+- reasoning and dependency between steps
+- transformation across stages
+
+Avoid:
+- artificial complexity via unnecessary nesting
+- mixing unrelated concepts
 
 ---
 
@@ -256,6 +313,11 @@ Purpose:
 - future filtering
 - learning analytics
 
+Important:
+- Tags must align with core concepts defined above
+- Do NOT tag patterns as separate concepts
+  - e.g., use "WINDOW" instead of "ROW_NUMBER"
+
 ---
 
 # 10. Dataset Usage Rules
@@ -302,6 +364,10 @@ Before adding a question, verify:
 - [ ] dataset_files exist
 - [ ] tables match dataset
 - [ ] no ambiguity in output
+
+- [ ] concepts are cohesive (no unrelated mixing)
+- [ ] difficulty matches reasoning depth
+- [ ] question requires multi-step reasoning (for medium/hard)
 
 ---
 

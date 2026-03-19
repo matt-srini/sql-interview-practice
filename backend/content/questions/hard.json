@@ -1,23 +1,101 @@
 [
-	{
-		"id": 3001,
-		"order": 1,
-		"title": "Users with the highest total order amount",
-		"description": "Return the user_id and total_amount for the user(s) with the highest total order amount. If multiple users tie, include all. Columns: user_id, total_amount. Order by user_id ascending.",
-		"difficulty": "hard",
-		"schema": {
-			"users": ["user_id", "name", "signup_date", "country"],
-			"orders": ["order_id", "user_id", "order_date", "status", "net_amount"]
-		},
-		"dataset_files": ["users.csv", "orders.csv"],
-		"expected_query": "SELECT user_id, total_amount FROM (SELECT u.user_id, SUM(o.net_amount) AS total_amount FROM users u JOIN orders o ON u.user_id = o.user_id GROUP BY u.user_id) t WHERE total_amount = (SELECT MAX(total_amount) FROM (SELECT SUM(o.net_amount) AS total_amount FROM users u JOIN orders o ON u.user_id = o.user_id GROUP BY u.user_id)) ORDER BY user_id ASC",
-		"solution_query": "SELECT user_id, total_amount FROM (SELECT u.user_id, SUM(o.net_amount) AS total_amount FROM users u JOIN orders o ON u.user_id = o.user_id GROUP BY u.user_id) t WHERE total_amount = (SELECT MAX(total_amount) FROM (SELECT SUM(o.net_amount) AS total_amount FROM users u JOIN orders o ON u.user_id = o.user_id GROUP BY u.user_id)) ORDER BY user_id ASC;",
-		"explanation": "Aggregate order net_amount per user, find the maximum, and return all users matching that maximum.",
-		"hints": [
-			"Aggregate order amounts per user.",
-			"Find the maximum total_amount.",
-			"Return all users matching the maximum."
-		],
-		"concepts": ["JOIN", "SUM", "GROUP BY", "MAX", "Subquery"]
-	}
+  {
+    "id": 3001,
+    "order": 1,
+    "title": "Completed revenue share by plan tier",
+    "description": "Return plan_tier, total_completed_revenue, and revenue_share_pct for each plan tier based on completed orders only. revenue_share_pct should be the percentage contribution of that tier's total_completed_revenue to the overall completed revenue across all plan tiers, rounded to 2 decimal places. Include only plan tiers that have at least one completed order. Order by total_completed_revenue descending, then plan_tier ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "users": ["user_id", "plan_tier"],
+      "orders": ["user_id", "status", "net_amount"]
+    },
+    "dataset_files": ["users.csv", "orders.csv"],
+    "expected_query": "SELECT plan_tier, total_completed_revenue,\n  ROUND(100.0 * total_completed_revenue / SUM(total_completed_revenue) OVER (), 2) AS revenue_share_pct\nFROM (\n  SELECT u.plan_tier, SUM(o.net_amount) AS total_completed_revenue\n  FROM users u\n  JOIN orders o ON u.user_id = o.user_id\n  WHERE o.status = 'completed'\n  GROUP BY u.plan_tier\n) tier_revenue\nORDER BY total_completed_revenue DESC, plan_tier ASC",
+    "solution_query": "SELECT plan_tier, total_completed_revenue,\n  ROUND(100.0 * total_completed_revenue / SUM(total_completed_revenue) OVER (), 2) AS revenue_share_pct\nFROM (\n  SELECT u.plan_tier, SUM(o.net_amount) AS total_completed_revenue\n  FROM users u\n  JOIN orders o ON u.user_id = o.user_id\n  WHERE o.status = 'completed'\n  GROUP BY u.plan_tier\n) tier_revenue\nORDER BY total_completed_revenue DESC, plan_tier ASC;",
+    "explanation": "The inner query performs the first stage: join users to orders, filter to completed orders, and aggregate net_amount by plan_tier. That produces one revenue total per tier. The outer query then applies a window function across those aggregated rows. SUM(total_completed_revenue) OVER () gives the grand total across all tiers without collapsing the result into a single row, which makes it possible to compute each tier's percentage share alongside its own subtotal. This is a classic hard-level pattern because the window function operates on the result of an earlier aggregation step rather than on raw rows.",
+    "hints": [
+      "First compute completed revenue per plan_tier in a subquery.",
+      "Then use a window SUM over the aggregated result to get the grand total for the percentage calculation."
+    ],
+    "concepts": ["JOIN", "AGGREGATION", "WINDOW FUNCTION", "SUBQUERY"]
+  },
+  {
+    "id": 3002,
+    "order": 2,
+    "title": "Top completed-revenue user in each acquisition channel",
+    "description": "For orders placed in 2024, return the single user with the highest completed revenue in each acquisition_channel. Columns: acquisition_channel, user_id, name, total_completed_revenue. If multiple users in the same acquisition_channel tie on total_completed_revenue, choose the user whose first completed order in 2024 is earlier. If there is still a tie, choose the lower user_id. Order by acquisition_channel ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "users": ["user_id", "name", "acquisition_channel"],
+      "orders": ["user_id", "order_date", "status", "net_amount"]
+    },
+    "dataset_files": ["users.csv", "orders.csv"],
+    "expected_query": "SELECT acquisition_channel, user_id, name, total_completed_revenue\nFROM (\n  SELECT\n    u.acquisition_channel,\n    u.user_id,\n    u.name,\n    SUM(o.net_amount) AS total_completed_revenue,\n    ROW_NUMBER() OVER (\n      PARTITION BY u.acquisition_channel\n      ORDER BY SUM(o.net_amount) DESC, MIN(o.order_date) ASC, u.user_id ASC\n    ) AS rn\n  FROM users u\n  JOIN orders o ON u.user_id = o.user_id\n  WHERE o.status = 'completed'\n    AND EXTRACT(YEAR FROM o.order_date) = 2024\n  GROUP BY u.acquisition_channel, u.user_id, u.name\n) ranked\nWHERE rn = 1\nORDER BY acquisition_channel ASC",
+    "solution_query": "SELECT acquisition_channel, user_id, name, total_completed_revenue\nFROM (\n  SELECT\n    u.acquisition_channel,\n    u.user_id,\n    u.name,\n    SUM(o.net_amount) AS total_completed_revenue,\n    ROW_NUMBER() OVER (\n      PARTITION BY u.acquisition_channel\n      ORDER BY SUM(o.net_amount) DESC, MIN(o.order_date) ASC, u.user_id ASC\n    ) AS rn\n  FROM users u\n  JOIN orders o ON u.user_id = o.user_id\n  WHERE o.status = 'completed'\n    AND EXTRACT(YEAR FROM o.order_date) = 2024\n  GROUP BY u.acquisition_channel, u.user_id, u.name\n) ranked\nWHERE rn = 1\nORDER BY acquisition_channel ASC;",
+    "explanation": "This query combines aggregation and partitioned ranking. The grouped subquery computes each user's completed revenue within an acquisition channel for 2024. After that aggregation, ROW_NUMBER() is applied with PARTITION BY acquisition_channel so ranking restarts independently inside each channel. The ORDER BY inside the window is deliberately multi-step: highest total revenue first, then earliest completed order date, then lowest user_id. That guarantees exactly one deterministic winner per channel even when totals tie.",
+    "hints": [
+      "Aggregate completed revenue per user inside each acquisition_channel before ranking.",
+      "Use ROW_NUMBER() with PARTITION BY acquisition_channel and include every tie-breaker in the window ORDER BY."
+    ],
+    "concepts": ["JOIN", "AGGREGATION", "WINDOW FUNCTION", "SUBQUERY"]
+  },
+  {
+    "id": 3003,
+    "order": 3,
+    "title": "First completed order where cumulative revenue reaches 1000",
+    "description": "Return the first completed order for each user where that user's cumulative completed revenue reaches or exceeds 1000 for the first time. Columns: user_id, order_id, order_date, net_amount, running_completed_revenue. Build the cumulative revenue in order_date ascending order, breaking ties on order_id ascending. Exclude users who never reach 1000. Order by user_id ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "orders": ["order_id", "user_id", "order_date", "status", "net_amount"]
+    },
+    "dataset_files": ["orders.csv"],
+    "expected_query": "SELECT user_id, order_id, order_date, net_amount, running_completed_revenue\nFROM (\n  SELECT\n    user_id,\n    order_id,\n    order_date,\n    net_amount,\n    SUM(net_amount) OVER (\n      PARTITION BY user_id\n      ORDER BY order_date ASC, order_id ASC\n      ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n    ) AS running_completed_revenue\n  FROM orders\n  WHERE status = 'completed'\n) running\nWHERE running_completed_revenue >= 1000\n  AND running_completed_revenue - net_amount < 1000\nORDER BY user_id ASC",
+    "solution_query": "SELECT user_id, order_id, order_date, net_amount, running_completed_revenue\nFROM (\n  SELECT\n    user_id,\n    order_id,\n    order_date,\n    net_amount,\n    SUM(net_amount) OVER (\n      PARTITION BY user_id\n      ORDER BY order_date ASC, order_id ASC\n      ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n    ) AS running_completed_revenue\n  FROM orders\n  WHERE status = 'completed'\n) running\nWHERE running_completed_revenue >= 1000\n  AND running_completed_revenue - net_amount < 1000\nORDER BY user_id ASC;",
+    "explanation": "The inner query calculates a running completed-revenue total per user with a windowed SUM. PARTITION BY user_id ensures each user's accumulation is independent, while ORDER BY order_date and order_id defines the exact sequence. The explicit ROWS frame makes the cumulative logic unambiguous. The outer filter is the key dependency step: running_completed_revenue >= 1000 identifies rows at or beyond the threshold, and running_completed_revenue - net_amount < 1000 guarantees that the previous cumulative total was still below 1000. Together, those conditions isolate the first threshold-crossing order for each user.",
+    "hints": [
+      "Compute a running SUM(net_amount) over completed orders, partitioned by user_id.",
+      "After you have the running total, keep only rows where the threshold is reached now but had not been reached before this row."
+    ],
+    "concepts": ["WINDOW FUNCTION", "SUBQUERY"]
+  },
+  {
+    "id": 3004,
+    "order": 4,
+    "title": "User-months above each user's 2024 monthly average",
+    "description": "For 2024 only, return every user-month where the user's completed revenue for that month is strictly greater than their own average monthly completed revenue across all 2024 months that contain at least one completed order. Columns: user_id, order_month, monthly_completed_revenue, avg_monthly_completed_revenue. order_month should be the numeric month extracted from order_date. Order by user_id ascending, then order_month ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "orders": ["user_id", "order_date", "status", "net_amount"]
+    },
+    "dataset_files": ["orders.csv"],
+    "expected_query": "SELECT user_id, order_month, monthly_completed_revenue, avg_monthly_completed_revenue\nFROM (\n  SELECT\n    user_id,\n    order_month,\n    monthly_completed_revenue,\n    ROUND(AVG(monthly_completed_revenue) OVER (PARTITION BY user_id), 2) AS avg_monthly_completed_revenue\n  FROM (\n    SELECT\n      user_id,\n      EXTRACT(MONTH FROM order_date) AS order_month,\n      SUM(net_amount) AS monthly_completed_revenue\n    FROM orders\n    WHERE status = 'completed'\n      AND EXTRACT(YEAR FROM order_date) = 2024\n    GROUP BY user_id, EXTRACT(MONTH FROM order_date)\n  ) monthly\n) scored\nWHERE monthly_completed_revenue > avg_monthly_completed_revenue\nORDER BY user_id ASC, order_month ASC",
+    "solution_query": "SELECT user_id, order_month, monthly_completed_revenue, avg_monthly_completed_revenue\nFROM (\n  SELECT\n    user_id,\n    order_month,\n    monthly_completed_revenue,\n    ROUND(AVG(monthly_completed_revenue) OVER (PARTITION BY user_id), 2) AS avg_monthly_completed_revenue\n  FROM (\n    SELECT\n      user_id,\n      EXTRACT(MONTH FROM order_date) AS order_month,\n      SUM(net_amount) AS monthly_completed_revenue\n    FROM orders\n    WHERE status = 'completed'\n      AND EXTRACT(YEAR FROM order_date) = 2024\n    GROUP BY user_id, EXTRACT(MONTH FROM order_date)\n  ) monthly\n) scored\nWHERE monthly_completed_revenue > avg_monthly_completed_revenue\nORDER BY user_id ASC, order_month ASC;",
+    "explanation": "This is a two-stage aggregation problem. The inner subquery collapses raw orders into one row per user per month, but only for completed orders in 2024. The outer query then computes each user's average monthly revenue across those already-aggregated monthly rows with AVG(...) OVER (PARTITION BY user_id). That is the critical hard-level move: the window function is not operating on raw orders, but on monthly totals produced by a prior aggregation. Once both numbers exist on the same row, the final filter simply keeps months whose revenue is above the user's own baseline.",
+    "hints": [
+      "Start by aggregating completed revenue by user_id and month for 2024.",
+      "After you have monthly totals, use a window AVG partitioned by user_id to compute each user's monthly baseline."
+    ],
+    "concepts": ["AGGREGATION", "WINDOW FUNCTION", "SUBQUERY"]
+  },
+  {
+    "id": 3005,
+    "order": 5,
+    "title": "Products added to cart but never purchased afterward",
+    "description": "Return each user-product pair where the user added the product to cart at least once, but never recorded a purchase event for that same product at or after their first add_to_cart event for that product. Columns: user_id, name, product_id, product_name, first_add_to_cart_time. If a user added the same product multiple times, base the comparison on the earliest add_to_cart time for that user-product pair. Order by user_id ascending, then product_id ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "events": ["user_id", "product_id", "event_time", "event_name"],
+      "users": ["user_id", "name"],
+      "products": ["product_id", "product_name"]
+    },
+    "dataset_files": ["events.csv", "users.csv", "products.csv"],
+    "expected_query": "SELECT a.user_id, u.name, a.product_id, p.product_name, a.first_add_to_cart_time\nFROM (\n  SELECT user_id, product_id, MIN(event_time) AS first_add_to_cart_time\n  FROM events\n  WHERE event_name = 'add_to_cart'\n    AND product_id IS NOT NULL\n  GROUP BY user_id, product_id\n) a\nJOIN users u ON a.user_id = u.user_id\nJOIN products p ON a.product_id = p.product_id\nWHERE NOT EXISTS (\n  SELECT 1\n  FROM events e\n  WHERE e.user_id = a.user_id\n    AND e.product_id = a.product_id\n    AND e.event_name = 'purchase'\n    AND e.event_time >= a.first_add_to_cart_time\n)\nORDER BY a.user_id ASC, a.product_id ASC",
+    "solution_query": "SELECT a.user_id, u.name, a.product_id, p.product_name, a.first_add_to_cart_time\nFROM (\n  SELECT user_id, product_id, MIN(event_time) AS first_add_to_cart_time\n  FROM events\n  WHERE event_name = 'add_to_cart'\n    AND product_id IS NOT NULL\n  GROUP BY user_id, product_id\n) a\nJOIN users u ON a.user_id = u.user_id\nJOIN products p ON a.product_id = p.product_id\nWHERE NOT EXISTS (\n  SELECT 1\n  FROM events e\n  WHERE e.user_id = a.user_id\n    AND e.product_id = a.product_id\n    AND e.event_name = 'purchase'\n    AND e.event_time >= a.first_add_to_cart_time\n)\nORDER BY a.user_id ASC, a.product_id ASC;",
+    "explanation": "The inner query establishes the dependency point by reducing all add_to_cart events to one earliest timestamp per user-product pair. That first add_to_cart time becomes the reference event for later filtering. The outer query enriches those pairs with user and product details, then applies a correlated NOT EXISTS check against the events table. The correlated subquery asks a precise business question: does this same user ever have a purchase event for this same product at or after that first add_to_cart? If the answer is no, the pair stays in the result. This is hard because the filter depends on a value computed in an earlier stage rather than on a simple raw-column predicate.",
+    "hints": [
+      "First reduce add_to_cart events to one earliest timestamp per user and product.",
+      "Then use a correlated NOT EXISTS to check whether a later purchase exists for that same user-product pair."
+    ],
+    "concepts": ["AGGREGATION", "JOIN", "SUBQUERY"]
+  }
 ]

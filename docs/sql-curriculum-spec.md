@@ -17,11 +17,77 @@ STRICT RULE: All questions must conform to this spec.
   - users, orders, products, events, employees, payments
 - Avoid academic or artificial problems
 - Prefer **clarity over trickiness**
-- Each question must test **1–2 core concepts max**
+
+## Definition of Core Concept (MANDATORY)
+
+Core concepts refer to fundamental SQL capabilities:
+- Joins
+- Aggregation (GROUP BY, HAVING)
+- Window Functions
+- Subqueries
+
+The following are NOT separate core concepts (they are patterns/usages):
+- ROW_NUMBER, RANK, LAG, LEAD
+- Top-N per group
+- Running totals / averages
+- Event sequencing
+
+These must be treated as applications of a core concept, not additional concepts.
+
+- EASY:
+  - Focus on a single primary concept
+  - Minimal transformation logic
+  - No multi-step reasoning
+
+- MEDIUM:
+  - Combine related concepts in a linear flow
+  - Typical pattern: join → filter → aggregate
+  - Limited use of subqueries (simple and focused)
+
+- HARD:
+  - Defined by multi-stage reasoning, not concept count
+  - Requires at least 2 dependent steps (e.g., derive → rank, sequence → filter)
+  - May involve multiple concepts, but must have one clear primary objective
+  - Complexity must come from reasoning, not stacking unrelated concepts
+
+## Concept Cohesion Rule (STRICT)
+
+- If multiple concepts are used, they must:
+  - Belong to the same logical flow
+  - Solve one unified problem
+
+- NOT allowed:
+  - Mixing unrelated concepts (e.g., JOIN + window + subquery + CASE arbitrarily)
+  - Increasing difficulty by stacking independent ideas
+
+- Difficulty must come from:
+  - Multi-stage reasoning
+  - Transformation steps
+  - Correct sequencing and dependency between steps
 - Every question must be:
   - Deterministic
   - Evaluatable via result comparison
   - Free of ambiguity
+
+## Concept Counting Rule (STRICT)
+
+- Only the following are counted as core concepts:
+  - Joins
+  - Aggregation
+  - Window Functions
+  - Subqueries
+
+- Patterns and variations DO NOT increase concept count:
+  - ROW_NUMBER, RANK, LAG, LEAD → count as Window Functions
+  - Top-N per group → Window Function pattern
+  - Running totals → Window Function pattern
+
+- Multiple uses of the same concept still count as ONE concept
+
+Examples:
+- ROW_NUMBER + RANK → 1 concept (Window Functions)
+- GROUP BY + HAVING → 1 concept (Aggregation)
+- JOIN + GROUP BY → 2 concepts
 
 ---
 
@@ -42,6 +108,29 @@ STRICT RULE: All questions must conform to this spec.
 ---
 
 ## 2. SQL Topic Coverage
+### Composition Rules (STRICT)
+
+- Limit to 1–2 core concepts only
+- Concepts must be directly related and commonly used together
+
+Allowed patterns:
+- JOIN + aggregation
+- JOIN + filtering
+- aggregation + HAVING
+
+Restricted:
+- JOIN + subquery + CASE together
+- Multiple independent logic layers
+
+Subqueries:
+- Must be simple and focused
+- Should not introduce a second independent reasoning layer
+
+CASE WHEN:
+- Allowed only as a helper, not the main complexity driver
+
+MEDIUM should feel like:
+→ combining building blocks, not solving multi-layer analytical problems
 
 ### Filtering & Selection
 - SELECT specific columns (no SELECT *)
@@ -138,6 +227,28 @@ User should be able to:
 ---
 
 ## 2. SQL Topic Coverage
+### Composition Rules (STRICT)
+
+- Limit to 1–2 core concepts only
+
+Complexity must come from:
+- Multi-step reasoning (CTEs, transformations)
+- Sequencing logic
+- Partitioning and ordering
+
+Allowed:
+- Multiple CTEs
+- Repeated use of the same concept (e.g., multiple window functions)
+
+NOT allowed:
+- Combining unrelated core concepts beyond 2
+- Artificial complexity via nesting or mixing paradigms
+
+Examples of BAD HARD design:
+- window + subquery + CASE + aggregation without cohesion
+
+HARD should feel like:
+→ deep thinking within a concept, not many concepts at once
 
 ### Joins
 - INNER JOIN
@@ -232,20 +343,26 @@ User should be able to:
 
 ## 2. SQL Topic Coverage
 
-### Window Functions
-- ROW_NUMBER
-- RANK / DENSE_RANK
-- LEAD / LAG
-- Running totals
+### Hard SQL Mechanisms (At least one required)
 
-### Advanced Query Design
-- CTEs
-- Multi-step transformations
+- Window functions (ROW_NUMBER, RANK, LAG, LEAD)
+- Correlated subqueries (EXISTS / NOT EXISTS)
+- Multi-level aggregation
+- Conditional aggregation
+
+### Multi-Stage Query Design (MANDATORY)
+
+Every HARD question must:
+- Require at least two dependent steps
+- Involve transformation across stages (e.g., aggregate → rank, sequence → filter)
+- Use CTEs or derived tables where appropriate
 
 ### Analytical Patterns
-- Top-N per group
-- Time-based analysis
-- Cohort-style logic (basic)
+
+- Sequence-based logic (event ordering, first/last, transitions)
+- Contribution analysis (part vs total)
+- Ranking after aggregation
+- Boundary comparisons (first vs latest, before vs after)
 
 ---
 
@@ -331,6 +448,18 @@ All questions must use:
 
 Every question MUST:
 
+  Clarification by difficulty:
+  - EASY:
+    - 1 primary concept preferred
+    - Up to 2 concepts allowed ONLY if tightly coupled and beginner-friendly
+    - Complexity must remain low (no multi-step reasoning)
+  - MEDIUM: at most 2 concepts, directly related
+  - HARD:
+    - Must involve multi-stage reasoning with dependent steps
+    - May include multiple concepts if they are logically cohesive
+    - Must have a clear primary learning objective
+    - Complexity must come from reasoning and transformation, not arbitrary concept stacking
+
 - Have:
   - Clear problem statement
   - Deterministic output
@@ -389,7 +518,8 @@ All questions generated under this curriculum MUST adhere to the following quali
 - If ordering matters, it must be explicitly stated
 
 ## 3. Single Responsibility
-- Each question should test **1–2 core concepts max**
+- Each question must have a clear primary learning objective
+- Supporting concepts are allowed if they are necessary and cohesive
 - Avoid combining unrelated concepts
 
 ## 4. Real-World Framing

@@ -2,21 +2,1231 @@
   {
     "id": 2001,
     "order": 1,
-    "title": "Top users by order count",
-    "description": "Return the top 5 users by number of orders, with columns user_id and order_count. Include only users with at least 1 order. Order by order_count desc, then user_id asc.",
+    "title": "Failed payments on completed orders",
+    "description": "Return user_id, name, order_id, payment_method, and amount for orders that are marked as completed but have a payment status of either 'failed' or 'chargeback'. Order by amount descending, then order_id ascending.",
     "difficulty": "medium",
     "schema": {
-      "users": ["user_id", "name", "signup_date", "country"],
-      "orders": ["order_id", "user_id", "order_date", "status"]
+      "users": [
+        "user_id",
+        "name"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status"
+      ],
+      "payments": [
+        "order_id",
+        "payment_method",
+        "amount",
+        "status"
+      ]
     },
-    "dataset_files": ["users.csv", "orders.csv"],
-    "expected_query": "SELECT u.user_id, COUNT(o.order_id) AS order_count\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nGROUP BY u.user_id\nORDER BY order_count DESC, u.user_id ASC\nLIMIT 5",
-    "solution_query": "SELECT u.user_id, COUNT(o.order_id) AS order_count\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nGROUP BY u.user_id\nORDER BY order_count DESC, u.user_id ASC\nLIMIT 5;",
-    "explanation": "An INNER JOIN excludes users with zero orders. COUNT(order_id) counts orders per user; ORDER BY and LIMIT return the top 5.",
-    "hints": [
-      "Use an INNER JOIN (JOIN) to exclude users with no orders.",
-      "Group by user_id and COUNT(order_id)."
+    "dataset_files": [
+      "users.csv",
+      "orders.csv",
+      "payments.csv"
     ],
-    "concepts": ["JOIN", "GROUP BY", "COUNT", "ORDER BY", "LIMIT"]
+    "expected_query": "SELECT u.user_id, u.name, o.order_id, p.payment_method, p.amount\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nJOIN payments p ON o.order_id = p.order_id\nWHERE o.status = 'completed'\n AND p.status IN ('failed', 'chargeback')\nORDER BY p.amount DESC, o.order_id ASC",
+    "solution_query": "SELECT u.user_id, u.name, o.order_id, p.payment_method, p.amount\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nJOIN payments p ON o.order_id = p.order_id\nWHERE o.status = 'completed'\n AND p.status IN ('failed', 'chargeback')\nORDER BY p.amount DESC, o.order_id ASC;",
+    "explanation": "This query joins users to their orders, then joins those orders to payments so each returned row has both customer and payment context. The two WHERE conditions are important because order status and payment status describe different stages of the transaction lifecycle. Filtering after the joins ensures only completed orders with failed or chargeback payments are returned. The ORDER BY clause makes the output deterministic and highlights the largest problematic payments first.",
+    "hints": [
+      "Join users to orders on user_id, then join orders to payments on order_id.",
+      "Filter on both the order status and the payment status."
+    ],
+    "concepts": [
+      "INNER JOIN",
+      "WHERE",
+      "ORDER BY"
+    ]
+  },
+  {
+    "id": 2002,
+    "order": 2,
+    "title": "Products in refunded orders",
+    "description": "Return each distinct product_name and brand for products that appear in orders whose payment_status is 'refunded'. Order by product_name ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "orders": [
+        "order_id",
+        "payment_status"
+      ],
+      "order_items": [
+        "order_id",
+        "product_id"
+      ],
+      "products": [
+        "product_id",
+        "product_name",
+        "brand"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv",
+      "order_items.csv",
+      "products.csv"
+    ],
+    "expected_query": "SELECT DISTINCT p.product_name, p.brand\nFROM orders o\nJOIN order_items oi ON o.order_id = oi.order_id\nJOIN products p ON oi.product_id = p.product_id\nWHERE o.payment_status = 'refunded'\nORDER BY p.product_name ASC",
+    "solution_query": "SELECT DISTINCT p.product_name, p.brand\nFROM orders o\nJOIN order_items oi ON o.order_id = oi.order_id\nJOIN products p ON oi.product_id = p.product_id\nWHERE o.payment_status = 'refunded'\nORDER BY p.product_name ASC;",
+    "explanation": "The query first links refunded orders to their order items, then links those line items to products so product details can be returned. DISTINCT is necessary because the same product can appear in multiple refunded orders, and the question asks for unique products rather than one row per order item. The WHERE clause applies the business filter at the order level, while ORDER BY makes the final list deterministic and easy to review.",
+    "hints": [
+      "You need orders to find refunded purchases and order_items to reach the product ids.",
+      "Use DISTINCT because the same product may appear in more than one refunded order."
+    ],
+    "concepts": [
+      "INNER JOIN",
+      "DISTINCT",
+      "WHERE",
+      "ORDER BY"
+    ]
+  },
+  {
+    "id": 2003,
+    "order": 3,
+    "title": "Departments without employees",
+    "description": "Return department_id, department_name, and region for departments that do not have any employees assigned to them. Order by department_id ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "departments": [
+        "department_id",
+        "department_name",
+        "region"
+      ],
+      "employees": [
+        "employee_id",
+        "department_id"
+      ]
+    },
+    "dataset_files": [
+      "departments.csv",
+      "employees.csv"
+    ],
+    "expected_query": "SELECT d.department_id, d.department_name, d.region\nFROM departments d\nLEFT JOIN employees e ON d.department_id = e.department_id\nWHERE e.employee_id IS NULL\nORDER BY d.department_id ASC",
+    "solution_query": "SELECT d.department_id, d.department_name, d.region\nFROM departments d\nLEFT JOIN employees e ON d.department_id = e.department_id\nWHERE e.employee_id IS NULL\nORDER BY d.department_id ASC;",
+    "explanation": "A LEFT JOIN keeps every department even when there is no matching employee row. After the join, departments with no employees will have NULL values from the employees table, so filtering on e.employee_id IS NULL isolates exactly those unmatched departments. This is a standard medium-level join pattern because it depends on understanding how NULLs behave after an outer join. ORDER BY department_id keeps the result deterministic.",
+    "hints": [
+      "Use a LEFT JOIN so departments still appear even when they have no matching employee rows.",
+      "After the join, look for NULL on a column from the employees table."
+    ],
+    "concepts": [
+      "LEFT JOIN",
+      "WHERE",
+      "ORDER BY"
+    ]
+  },
+  {
+    "id": 2004,
+    "order": 4,
+    "title": "Paid revenue by user country",
+    "description": "Return each country and the total paid payment amount for completed orders from users in that country as total_paid_amount. Order by total_paid_amount descending, then country ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "country"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status"
+      ],
+      "payments": [
+        "order_id",
+        "amount",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv",
+      "payments.csv"
+    ],
+    "expected_query": "SELECT u.country, SUM(p.amount) AS total_paid_amount\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nJOIN payments p ON o.order_id = p.order_id\nWHERE o.status = 'completed'\n AND p.status = 'paid'\nGROUP BY u.country\nORDER BY total_paid_amount DESC, u.country ASC",
+    "solution_query": "SELECT u.country, SUM(p.amount) AS total_paid_amount\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nJOIN payments p ON o.order_id = p.order_id\nWHERE o.status = 'completed'\n AND p.status = 'paid'\nGROUP BY u.country\nORDER BY total_paid_amount DESC, u.country ASC;",
+    "explanation": "This query requires joining before aggregating because the country lives on users, the order completion state lives on orders, and the payment amount lives on payments. The WHERE clause narrows the data to completed orders with paid payments before the SUM is calculated. GROUP BY country then rolls those filtered rows up to one revenue total per country. ORDER BY surfaces the highest-revenue countries first and guarantees deterministic output.",
+    "hints": [
+      "You need three tables because the country, order state, and payment amount are stored separately.",
+      "Filter first, then group by country and sum the payment amount."
+    ],
+    "concepts": [
+      "INNER JOIN",
+      "GROUP BY",
+      "SUM",
+      "ORDER BY"
+    ]
+  },
+  {
+    "id": 2005,
+    "order": 5,
+    "title": "Country-plan segments with high average order value",
+    "description": "Return country, plan_tier, and the average net_amount of completed orders as avg_completed_amount for country and plan tier combinations whose average completed order value is greater than 600. Order by avg_completed_amount descending, then country ascending, then plan_tier ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "country",
+        "plan_tier"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv"
+    ],
+    "expected_query": "SELECT u.country, u.plan_tier, AVG(o.net_amount) AS avg_completed_amount\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nWHERE o.status = 'completed'\nGROUP BY u.country, u.plan_tier\nHAVING AVG(o.net_amount) > 600\nORDER BY avg_completed_amount DESC, u.country ASC, u.plan_tier ASC",
+    "solution_query": "SELECT u.country, u.plan_tier, AVG(o.net_amount) AS avg_completed_amount\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nWHERE o.status = 'completed'\nGROUP BY u.country, u.plan_tier\nHAVING AVG(o.net_amount) > 600\nORDER BY avg_completed_amount DESC, u.country ASC, u.plan_tier ASC;",
+    "required_concepts": [
+      "having"
+    ],
+    "enforce_concepts": false,
+    "explanation": "The join links each order to user attributes so the aggregation can happen at the country and plan tier level. WHERE filters the dataset down to completed orders before grouping, which ensures cancelled orders do not affect the average. GROUP BY on two columns creates a segment-level view, and HAVING filters those aggregated segments after AVG has been computed. This is exactly the kind of medium reasoning where WHERE and HAVING must be used for different purposes.",
+    "hints": [
+      "Group by both country and plan_tier because the result is at the segment level.",
+      "Use HAVING, not WHERE, to keep only groups whose average net_amount is above 600."
+    ],
+    "concepts": [
+      "INNER JOIN",
+      "GROUP BY",
+      "AVG",
+      "HAVING",
+      "ORDER BY"
+    ]
+  },
+  {
+    "id": 2006,
+    "order": 6,
+    "title": "Users with multiple paid payment methods",
+    "description": "Return user_id, name, and the number of distinct payment methods used across paid payments as payment_method_count. Include only users who have used more than one distinct payment method. Order by payment_method_count descending, then user_id ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "name"
+      ],
+      "orders": [
+        "order_id",
+        "user_id"
+      ],
+      "payments": [
+        "order_id",
+        "payment_method",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv",
+      "payments.csv"
+    ],
+    "expected_query": "SELECT u.user_id, u.name, COUNT(DISTINCT p.payment_method) AS payment_method_count\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nJOIN payments p ON o.order_id = p.order_id\nWHERE p.status = 'paid'\nGROUP BY u.user_id, u.name\nHAVING COUNT(DISTINCT p.payment_method) > 1\nORDER BY payment_method_count DESC, u.user_id ASC",
+    "solution_query": "SELECT u.user_id, u.name, COUNT(DISTINCT p.payment_method) AS payment_method_count\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nJOIN payments p ON o.order_id = p.order_id\nWHERE p.status = 'paid'\nGROUP BY u.user_id, u.name\nHAVING COUNT(DISTINCT p.payment_method) > 1\nORDER BY payment_method_count DESC, u.user_id ASC;",
+    "required_concepts": [
+      "having"
+    ],
+    "enforce_concepts": false,
+    "explanation": "This query joins users to orders and then to payments so payment method behavior can be analyzed per user. COUNT(DISTINCT payment_method) is important because repeated use of the same method should count once, not once per payment row. WHERE limits the analysis to paid payments before the grouping happens. HAVING then filters the grouped results to only users who truly used more than one distinct payment method.",
+    "hints": [
+      "You need DISTINCT inside COUNT because the question is about unique payment methods, not raw payment rows.",
+      "Use HAVING after GROUP BY to keep only users whose distinct payment method count is greater than 1."
+    ],
+    "concepts": [
+      "INNER JOIN",
+      "GROUP BY",
+      "COUNT",
+      "DISTINCT",
+      "HAVING",
+      "ORDER BY"
+    ]
+  },
+  {
+    "id": 2007,
+    "order": 7,
+    "title": "Slow resolved ticket groups",
+    "description": "Return priority, issue_type, and the average resolution_hours for resolved tickets as avg_resolution_hours. Include only priority and issue type groups whose average resolution_hours is greater than 72. Order by avg_resolution_hours descending, then priority ascending, then issue_type ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "support_tickets": [
+        "ticket_id",
+        "issue_type",
+        "priority",
+        "status",
+        "resolution_hours"
+      ]
+    },
+    "dataset_files": [
+      "support_tickets.csv"
+    ],
+    "expected_query": "SELECT priority, issue_type, AVG(resolution_hours) AS avg_resolution_hours\nFROM support_tickets\nWHERE status = 'resolved'\nGROUP BY priority, issue_type\nHAVING AVG(resolution_hours) > 72\nORDER BY avg_resolution_hours DESC, priority ASC, issue_type ASC",
+    "solution_query": "SELECT priority, issue_type, AVG(resolution_hours) AS avg_resolution_hours\nFROM support_tickets\nWHERE status = 'resolved'\nGROUP BY priority, issue_type\nHAVING AVG(resolution_hours) > 72\nORDER BY avg_resolution_hours DESC, priority ASC, issue_type ASC;",
+    "required_concepts": [
+      "having"
+    ],
+    "enforce_concepts": false,
+    "explanation": "The WHERE clause limits the input rows to resolved tickets because unresolved tickets should not affect resolution-time analysis. GROUP BY priority and issue_type creates a separate aggregate for each operational category. HAVING then removes groups whose average resolution time is not high enough to be considered slow. This structure demonstrates the medium-level difference between filtering raw rows first and filtering aggregated groups later.",
+    "hints": [
+      "Filter to resolved tickets before you calculate the average resolution time.",
+      "Because the filter is on an aggregate, use HAVING rather than WHERE."
+    ],
+    "concepts": [
+      "WHERE",
+      "GROUP BY",
+      "AVG",
+      "HAVING",
+      "ORDER BY"
+    ]
+  },
+  {
+    "id": 2008,
+    "order": 8,
+    "title": "Order value bands",
+    "description": "Bucket orders into three bands based on net_amount: 'low value' for amounts under 100, 'mid value' for amounts from 100 up to but not including 500, and 'high value' for amounts of 500 or more. Return order_value_band and order_count. Order by order_count descending, then order_value_band ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "orders": [
+        "order_id",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv"
+    ],
+    "expected_query": "SELECT CASE\n WHEN net_amount < 100 THEN 'low value'\n WHEN net_amount < 500 THEN 'mid value'\n ELSE 'high value'\n END AS order_value_band,\n COUNT(order_id) AS order_count\nFROM orders\nGROUP BY CASE\n WHEN net_amount < 100 THEN 'low value'\n WHEN net_amount < 500 THEN 'mid value'\n ELSE 'high value'\n END\nORDER BY order_count DESC, order_value_band ASC",
+    "solution_query": "SELECT CASE\n WHEN net_amount < 100 THEN 'low value'\n WHEN net_amount < 500 THEN 'mid value'\n ELSE 'high value'\n END AS order_value_band,\n COUNT(order_id) AS order_count\nFROM orders\nGROUP BY CASE\n WHEN net_amount < 100 THEN 'low value'\n WHEN net_amount < 500 THEN 'mid value'\n ELSE 'high value'\n END\nORDER BY order_count DESC, order_value_band ASC;",
+    "explanation": "CASE WHEN creates a derived label for each order based on its net_amount, which turns a continuous numeric value into business-friendly categories. Because the output is summarized by those labels, the same CASE expression must appear in the GROUP BY clause. COUNT then measures how many orders fall into each band. The ORDER BY clause makes the summary deterministic and shows the most common band first.",
+    "hints": [
+      "Use CASE WHEN to turn net_amount into a text bucket.",
+      "Group by the same CASE expression you use in the SELECT list."
+    ],
+    "concepts": [
+      "CASE WHEN",
+      "GROUP BY",
+      "COUNT",
+      "ORDER BY"
+    ]
+  },
+  {
+    "id": 2009,
+    "order": 9,
+    "title": "Salary bands by department region",
+    "description": "Return region, salary_band, and employee_count, where salary_band is 'high salary' for salaries of 100000 or more and 'standard salary' otherwise. Count employees per region and salary_band. Order by region ascending, then salary_band ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "employees": [
+        "employee_id",
+        "salary",
+        "department_id"
+      ],
+      "departments": [
+        "department_id",
+        "region"
+      ]
+    },
+    "dataset_files": [
+      "employees.csv",
+      "departments.csv"
+    ],
+    "expected_query": "SELECT d.region,\n CASE WHEN e.salary >= 100000 THEN 'high salary' ELSE 'standard salary' END AS salary_band,\n COUNT(e.employee_id) AS employee_count\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nGROUP BY d.region,\n CASE WHEN e.salary >= 100000 THEN 'high salary' ELSE 'standard salary' END\nORDER BY d.region ASC, salary_band ASC",
+    "solution_query": "SELECT d.region,\n CASE WHEN e.salary >= 100000 THEN 'high salary' ELSE 'standard salary' END AS salary_band,\n COUNT(e.employee_id) AS employee_count\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nGROUP BY d.region,\n CASE WHEN e.salary >= 100000 THEN 'high salary' ELSE 'standard salary' END\nORDER BY d.region ASC, salary_band ASC;",
+    "explanation": "The join is needed because the salary information is stored on employees while region is stored on departments. CASE WHEN derives a salary band for each employee row before aggregation. GROUP BY on region and the derived band produces one count per regional bucket. This introduces medium-level reasoning because the result depends on both a relationship and a computed category rather than a direct column group.",
+    "hints": [
+      "Join employees to departments first so each employee row has a region.",
+      "Use CASE WHEN to create the salary_band, then group by both region and that derived band."
+    ],
+    "concepts": [
+      "CASE WHEN",
+      "INNER JOIN",
+      "GROUP BY",
+      "COUNT",
+      "ORDER BY"
+    ]
+  },
+  {
+    "id": 2010,
+    "order": 10,
+    "title": "Users with chargeback orders",
+    "description": "Return user_id and name for users who have at least one order that appears in the payments table with status = 'chargeback'. Order by user_id ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "name"
+      ],
+      "orders": [
+        "order_id",
+        "user_id"
+      ],
+      "payments": [
+        "order_id",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv",
+      "payments.csv"
+    ],
+    "expected_query": "SELECT u.user_id, u.name\nFROM users u\nWHERE u.user_id IN (\n SELECT o.user_id\n FROM orders o\n JOIN payments p ON o.order_id = p.order_id\n WHERE p.status = 'chargeback'\n)\nORDER BY u.user_id ASC",
+    "solution_query": "SELECT u.user_id, u.name\nFROM users u\nWHERE u.user_id IN (\n SELECT o.user_id\n FROM orders o\n JOIN payments p ON o.order_id = p.order_id\n WHERE p.status = 'chargeback'\n)\nORDER BY u.user_id ASC;",
+    "required_concepts": [
+      "subquery"
+    ],
+    "enforce_concepts": false,
+    "explanation": "The subquery first identifies which user_ids are associated with at least one chargeback payment by joining orders to payments. The outer query then filters the users table to only those matching user_ids. This is a good introductory subquery pattern because the inner query solves a narrower set-membership problem and the outer query uses that result to fetch descriptive user columns. ORDER BY user_id keeps the final output deterministic.",
+    "hints": [
+      "Use a subquery to identify the user_ids tied to chargeback payments.",
+      "The outer query should filter users based on whether their user_id appears in that inner result set."
+    ],
+    "concepts": [
+      "SUBQUERY",
+      "INNER JOIN",
+      "WHERE",
+      "ORDER BY"
+    ]
+  },
+  {
+    "id": 2011,
+    "order": 11,
+    "title": "Paid completed orders by country",
+    "description": "Return one row per country with columns country, paid_completed_order_count, and total_paid_amount. Count only orders where the order status is 'completed' and there is at least one payment row with payment status 'paid'. If an order has multiple paid payment rows, it should still count as one order in paid_completed_order_count. Sum the paid payment amounts across qualifying payment rows. Order by total_paid_amount descending, then country ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "country"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status"
+      ],
+      "payments": [
+        "order_id",
+        "amount",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv",
+      "payments.csv"
+    ],
+    "expected_query": "SELECT u.country, COUNT(DISTINCT o.order_id) AS paid_completed_order_count, SUM(p.amount) AS total_paid_amount\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nJOIN payments p ON o.order_id = p.order_id\nWHERE o.status = 'completed'\n AND p.status = 'paid'\nGROUP BY u.country\nORDER BY total_paid_amount DESC, u.country ASC",
+    "solution_query": "SELECT u.country, COUNT(DISTINCT o.order_id) AS paid_completed_order_count, SUM(p.amount) AS total_paid_amount\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nJOIN payments p ON o.order_id = p.order_id\nWHERE o.status = 'completed'\n AND p.status = 'paid'\nGROUP BY u.country\nORDER BY total_paid_amount DESC, u.country ASC;",
+    "required_concepts": [
+      "join",
+      "aggregation",
+      "distinct"
+    ],
+    "enforce_concepts": false,
+    "explanation": "This query joins users to orders and payments so each payment can be tied back to a user country. The WHERE clause filters to completed orders and paid payment rows before any aggregation happens, which keeps only the business events we care about. Because one order can have multiple paid payment rows, COUNT(DISTINCT o.order_id) is necessary to avoid counting the same order multiple times. SUM(p.amount) then adds the qualifying payment amounts, and the final ORDER BY makes the output deterministic.",
+    "hints": [
+      "Filter completed orders and paid payments before grouping.",
+      "An order can match multiple payment rows, so think about how to count orders only once.",
+      "Group by country after the joins."
+    ],
+    "concepts": [
+      "JOIN",
+      "COUNT DISTINCT",
+      "GROUP BY",
+      "ORDER BY"
+    ]
+  },
+  {
+    "id": 2012,
+    "order": 12,
+    "title": "Brand reach in completed 2024 orders",
+    "description": "For each product brand, return brand, distinct_order_count, and total_units_sold for completed orders placed in 2024. distinct_order_count should count an order only once per brand, even if that order contains multiple line items from the same brand. total_units_sold should sum quantity across those qualifying line items. Order by total_units_sold descending, then brand ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "products": [
+        "product_id",
+        "brand"
+      ],
+      "order_items": [
+        "order_id",
+        "product_id",
+        "quantity"
+      ],
+      "orders": [
+        "order_id",
+        "order_date",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "products.csv",
+      "order_items.csv",
+      "orders.csv"
+    ],
+    "expected_query": "SELECT p.brand, COUNT(DISTINCT oi.order_id) AS distinct_order_count, SUM(oi.quantity) AS total_units_sold\nFROM products p\nJOIN order_items oi ON p.product_id = oi.product_id\nJOIN orders o ON oi.order_id = o.order_id\nWHERE o.status = 'completed'\n AND o.order_date >= '2024-01-01'\n AND o.order_date < '2025-01-01'\nGROUP BY p.brand\nORDER BY total_units_sold DESC, p.brand ASC",
+    "solution_query": "SELECT p.brand, COUNT(DISTINCT oi.order_id) AS distinct_order_count, SUM(oi.quantity) AS total_units_sold\nFROM products p\nJOIN order_items oi ON p.product_id = oi.product_id\nJOIN orders o ON oi.order_id = o.order_id\nWHERE o.status = 'completed'\n AND o.order_date >= '2024-01-01'\n AND o.order_date < '2025-01-01'\nGROUP BY p.brand\nORDER BY total_units_sold DESC, p.brand ASC;",
+    "required_concepts": [
+      "join",
+      "aggregation",
+      "distinct"
+    ],
+    "enforce_concepts": false,
+    "explanation": "The query starts by joining products to order_items so each line item is associated with a brand, then joins orders so order-level filters can be applied. The WHERE clause limits rows to completed orders from 2024 before aggregation, which prevents unrelated rows from affecting the totals. COUNT(DISTINCT oi.order_id) counts each qualifying order once per brand, even when multiple items from the same brand appear in that order. SUM(oi.quantity) measures total units sold, and the result is sorted deterministically.",
+    "hints": [
+      "You need product details from one table and order status/date from another.",
+      "Count orders at the brand level without double-counting repeated line items in the same order.",
+      "Apply the 2024 and completed-order filters before grouping."
+    ],
+    "concepts": [
+      "JOIN",
+      "COUNT DISTINCT",
+      "SUM",
+      "GROUP BY"
+    ]
+  },
+  {
+    "id": 2013,
+    "order": 13,
+    "title": "Users with both orders and high-priority tickets",
+    "description": "Return one row per country with columns country and affected_user_count. A user should be counted only if they have at least one completed order and at least one support ticket with priority = 'high'. Count each qualifying user once per country, even if they have many completed orders and many high-priority tickets. Order by affected_user_count descending, then country ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "country"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status"
+      ],
+      "support_tickets": [
+        "ticket_id",
+        "user_id",
+        "priority"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv",
+      "support_tickets.csv"
+    ],
+    "expected_query": "SELECT u.country, COUNT(DISTINCT u.user_id) AS affected_user_count\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nJOIN support_tickets st ON u.user_id = st.user_id\nWHERE o.status = 'completed'\n AND st.priority = 'high'\nGROUP BY u.country\nORDER BY affected_user_count DESC, u.country ASC",
+    "solution_query": "SELECT u.country, COUNT(DISTINCT u.user_id) AS affected_user_count\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nJOIN support_tickets st ON u.user_id = st.user_id\nWHERE o.status = 'completed'\n AND st.priority = 'high'\nGROUP BY u.country\nORDER BY affected_user_count DESC, u.country ASC;",
+    "required_concepts": [
+      "join",
+      "aggregation",
+      "distinct"
+    ],
+    "enforce_concepts": false,
+    "explanation": "This question requires combining two different user activities: purchasing and support engagement. Joining users to both orders and support_tickets creates one row for each matching order-ticket combination, which can multiply rows for the same user. COUNT(DISTINCT u.user_id) is therefore required to avoid inflated counts. The filters for completed orders and high-priority tickets belong in the WHERE clause because they determine which joined rows qualify before aggregation.",
+    "hints": [
+      "A user must satisfy conditions from both the orders table and the support_tickets table.",
+      "Joining both activity tables can create duplicate user rows.",
+      "Count users, not rows."
+    ],
+    "concepts": [
+      "JOIN",
+      "COUNT DISTINCT",
+      "GROUP BY"
+    ]
+  },
+  {
+    "id": 2014,
+    "order": 14,
+    "title": "Employees above their department average",
+    "description": "Return employee_id, employee_name, department_name, and salary for employees whose salary is strictly greater than the average salary of their own department. Order by department_name ascending, then salary descending, then employee_id ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "employees": [
+        "employee_id",
+        "employee_name",
+        "salary",
+        "department_id"
+      ],
+      "departments": [
+        "department_id",
+        "department_name"
+      ]
+    },
+    "dataset_files": [
+      "employees.csv",
+      "departments.csv"
+    ],
+    "expected_query": "SELECT e.employee_id, e.employee_name, d.department_name, e.salary\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nWHERE e.salary > (\n SELECT AVG(e2.salary)\n FROM employees e2\n WHERE e2.department_id = e.department_id\n)\nORDER BY d.department_name ASC, e.salary DESC, e.employee_id ASC",
+    "solution_query": "SELECT e.employee_id, e.employee_name, d.department_name, e.salary\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nWHERE e.salary > (\n SELECT AVG(e2.salary)\n FROM employees e2\n WHERE e2.department_id = e.department_id\n)\nORDER BY d.department_name ASC, e.salary DESC, e.employee_id ASC;",
+    "required_concepts": [
+      "subquery",
+      "aggregation",
+      "join"
+    ],
+    "enforce_concepts": false,
+    "explanation": "The outer query returns employee details along with the department name. The correlated subquery recalculates the average salary for the current employee's department by matching e2.department_id to e.department_id. Because that subquery depends on the outer row, it produces a department-specific comparison instead of one global average. The WHERE clause keeps only employees whose salary is above their own department average, and the ORDER BY produces a stable result.",
+    "hints": [
+      "You need to compare each employee to a department-specific average, not one average for the whole company.",
+      "The subquery should reference the outer employee row through department_id.",
+      "Join departments only to display the department name."
+    ],
+    "concepts": [
+      "CORRELATED SUBQUERY",
+      "JOIN",
+      "ORDER BY"
+    ]
+  },
+  {
+    "id": 2015,
+    "order": 15,
+    "title": "Early signups with no completed orders",
+    "description": "Return user_id, name, and country for users who signed up before 2024-01-01 and have never placed a completed order. Order by user_id ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "name",
+        "signup_date",
+        "country"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv"
+    ],
+    "expected_query": "SELECT u.user_id, u.name, u.country\nFROM users u\nWHERE u.signup_date < '2024-01-01'\n AND NOT EXISTS (\n SELECT 1\n FROM orders o\n WHERE o.user_id = u.user_id\n AND o.status = 'completed'\n )\nORDER BY u.user_id ASC",
+    "solution_query": "SELECT u.user_id, u.name, u.country\nFROM users u\nWHERE u.signup_date < '2024-01-01'\n AND NOT EXISTS (\n SELECT 1\n FROM orders o\n WHERE o.user_id = u.user_id\n AND o.status = 'completed'\n )\nORDER BY u.user_id ASC;",
+    "required_concepts": [
+      "subquery",
+      "where"
+    ],
+    "enforce_concepts": false,
+    "explanation": "The outer query starts from users because the result needs user-level output, including people who may have no qualifying orders at all. NOT EXISTS is the correct anti-subquery pattern here because it checks whether any completed order is present for the current user. If none exists, that user remains in the result. The signup_date filter is applied in the outer WHERE clause so only early signups are evaluated, and the final ordering is deterministic.",
+    "hints": [
+      "Start from the users table because you need to keep users even when matching orders do not exist.",
+      "Use an anti-subquery pattern to exclude users who have at least one completed order.",
+      "Apply the signup-date filter in the outer query."
+    ],
+    "concepts": [
+      "NOT EXISTS",
+      "SUBQUERY",
+      "WHERE",
+      "ORDER BY"
+    ]
+  },
+  {
+    "id": 2016,
+    "order": 16,
+    "title": "Brands above average completed-order revenue",
+    "description": "Return brand and total_revenue for brands whose revenue from completed orders is greater than the average brand revenue from completed orders across all brands. Order by total_revenue descending, then brand ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "products": [
+        "product_id",
+        "brand"
+      ],
+      "order_items": [
+        "order_id",
+        "product_id",
+        "line_amount"
+      ],
+      "orders": [
+        "order_id",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "products.csv",
+      "order_items.csv",
+      "orders.csv"
+    ],
+    "expected_query": "SELECT p.brand, SUM(oi.line_amount) AS total_revenue\nFROM products p\nJOIN order_items oi ON p.product_id = oi.product_id\nJOIN orders o ON oi.order_id = o.order_id\nWHERE o.status = 'completed'\nGROUP BY p.brand\nHAVING SUM(oi.line_amount) > (\n SELECT AVG(brand_revenue)\n FROM (\n SELECT SUM(oi2.line_amount) AS brand_revenue\n FROM products p2\n JOIN order_items oi2 ON p2.product_id = oi2.product_id\n JOIN orders o2 ON oi2.order_id = o2.order_id\n WHERE o2.status = 'completed'\n GROUP BY p2.brand\n ) revenue_by_brand\n)\nORDER BY total_revenue DESC, p.brand ASC",
+    "solution_query": "SELECT p.brand, SUM(oi.line_amount) AS total_revenue\nFROM products p\nJOIN order_items oi ON p.product_id = oi.product_id\nJOIN orders o ON oi.order_id = o.order_id\nWHERE o.status = 'completed'\nGROUP BY p.brand\nHAVING SUM(oi.line_amount) > (\n SELECT AVG(brand_revenue)\n FROM (\n SELECT SUM(oi2.line_amount) AS brand_revenue\n FROM products p2\n JOIN order_items oi2 ON p2.product_id = oi2.product_id\n JOIN orders o2 ON oi2.order_id = o2.order_id\n WHERE o2.status = 'completed'\n GROUP BY p2.brand\n ) revenue_by_brand\n)\nORDER BY total_revenue DESC, p.brand ASC;",
+    "required_concepts": [
+      "subquery",
+      "join",
+      "aggregation",
+      "having"
+    ],
+    "enforce_concepts": false,
+    "explanation": "The outer query calculates total completed-order revenue per brand. The subquery in the HAVING clause computes the average of those brand-level revenue totals by first aggregating revenue per brand in a derived table and then averaging those results. This is different from averaging individual line items, which would answer a different question. HAVING is required because the comparison happens after the outer query has grouped rows by brand.",
+    "hints": [
+      "First think about how to compute revenue per brand from completed orders.",
+      "The comparison target is an average of brand totals, not an average of individual order lines.",
+      "Use HAVING because you are comparing an aggregate result."
+    ],
+    "concepts": [
+      "SUBQUERY",
+      "HAVING",
+      "JOIN",
+      "GROUP BY"
+    ]
+  },
+  {
+    "id": 2017,
+    "order": 17,
+    "title": "Country order outcome mix",
+    "description": "Return country, completed_orders, and cancelled_orders for countries with at least 50 total orders. Count orders from the orders table joined to users. Order by completed_orders descending, then country ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "country"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv"
+    ],
+    "expected_query": "SELECT u.country,\n SUM(CASE WHEN o.status = 'completed' THEN 1 ELSE 0 END) AS completed_orders,\n SUM(CASE WHEN o.status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled_orders\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nGROUP BY u.country\nHAVING COUNT(o.order_id) >= 50\nORDER BY completed_orders DESC, u.country ASC",
+    "solution_query": "SELECT u.country,\n SUM(CASE WHEN o.status = 'completed' THEN 1 ELSE 0 END) AS completed_orders,\n SUM(CASE WHEN o.status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled_orders\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nGROUP BY u.country\nHAVING COUNT(o.order_id) >= 50\nORDER BY completed_orders DESC, u.country ASC;",
+    "required_concepts": [
+      "join",
+      "aggregation",
+      "having"
+    ],
+    "enforce_concepts": false,
+    "explanation": "This query uses conditional aggregation to produce two different counts from the same grouped set of order rows. After joining orders to users, rows are grouped by country. Each SUM(CASE WHEN ...) counts only the rows that match one status condition, while HAVING COUNT(o.order_id) >= 50 removes countries with too little activity. This pattern is useful when several related metrics need to be computed in a single grouped query.",
+    "hints": [
+      "You need multiple counts from the same grouped rows, not separate queries.",
+      "Use CASE inside an aggregate to count only rows with one status at a time.",
+      "Apply the minimum-total-orders rule with HAVING."
+    ],
+    "concepts": [
+      "CONDITIONAL AGGREGATION",
+      "JOIN",
+      "HAVING",
+      "GROUP BY"
+    ]
+  },
+  {
+    "id": 2018,
+    "order": 18,
+    "title": "Ticket resolution mix by issue type",
+    "description": "Return issue_type, resolved_ticket_count, unresolved_ticket_count, and avg_resolved_hours. unresolved_ticket_count should include tickets whose status is 'open' or 'in_progress'. avg_resolved_hours should average resolution_hours only for resolved tickets. Include only issue types with at least 20 total tickets. Order by resolved_ticket_count descending, then issue_type ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "support_tickets": [
+        "issue_type",
+        "status",
+        "resolution_hours"
+      ]
+    },
+    "dataset_files": [
+      "support_tickets.csv"
+    ],
+    "expected_query": "SELECT issue_type,\n SUM(CASE WHEN status = 'resolved' THEN 1 ELSE 0 END) AS resolved_ticket_count,\n SUM(CASE WHEN status IN ('open', 'in_progress') THEN 1 ELSE 0 END) AS unresolved_ticket_count,\n AVG(CASE WHEN status = 'resolved' THEN resolution_hours END) AS avg_resolved_hours\nFROM support_tickets\nGROUP BY issue_type\nHAVING COUNT(*) >= 20\nORDER BY resolved_ticket_count DESC, issue_type ASC",
+    "solution_query": "SELECT issue_type,\n SUM(CASE WHEN status = 'resolved' THEN 1 ELSE 0 END) AS resolved_ticket_count,\n SUM(CASE WHEN status IN ('open', 'in_progress') THEN 1 ELSE 0 END) AS unresolved_ticket_count,\n AVG(CASE WHEN status = 'resolved' THEN resolution_hours END) AS avg_resolved_hours\nFROM support_tickets\nGROUP BY issue_type\nHAVING COUNT(*) >= 20\nORDER BY resolved_ticket_count DESC, issue_type ASC;",
+    "required_concepts": [
+      "aggregation",
+      "having"
+    ],
+    "enforce_concepts": false,
+    "explanation": "The query groups tickets by issue_type and then calculates multiple metrics from that same grouped data. Conditional SUM expressions separate resolved from unresolved tickets without needing multiple passes over the table. AVG(CASE WHEN status = 'resolved' THEN resolution_hours END) averages only resolved-ticket times because unresolved rows contribute NULL, which AVG ignores. HAVING enforces the minimum volume requirement after the grouping step.",
+    "hints": [
+      "Use one grouped query to produce all four output columns.",
+      "A CASE expression inside AVG can limit which rows contribute to the average.",
+      "The minimum-ticket requirement belongs after grouping."
+    ],
+    "concepts": [
+      "CONDITIONAL AGGREGATION",
+      "GROUP BY",
+      "HAVING"
+    ]
+  },
+  {
+    "id": 2019,
+    "order": 19,
+    "title": "Repeat large-order users in selected countries",
+    "description": "Return user_id, name, completed_order_count, and avg_net_amount for users from US, UK, or CA who placed at least 3 completed orders in 2024 where each counted order has net_amount >= 500. Order by avg_net_amount descending, then user_id ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "name",
+        "country"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv"
+    ],
+    "expected_query": "SELECT u.user_id, u.name, COUNT(o.order_id) AS completed_order_count, AVG(o.net_amount) AS avg_net_amount\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nWHERE u.country IN ('US', 'UK', 'CA')\n AND o.status = 'completed'\n AND o.order_date >= '2024-01-01'\n AND o.order_date < '2025-01-01'\n AND o.net_amount >= 500\nGROUP BY u.user_id, u.name\nHAVING COUNT(o.order_id) >= 3\nORDER BY avg_net_amount DESC, u.user_id ASC",
+    "solution_query": "SELECT u.user_id, u.name, COUNT(o.order_id) AS completed_order_count, AVG(o.net_amount) AS avg_net_amount\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nWHERE u.country IN ('US', 'UK', 'CA')\n AND o.status = 'completed'\n AND o.order_date >= '2024-01-01'\n AND o.order_date < '2025-01-01'\n AND o.net_amount >= 500\nGROUP BY u.user_id, u.name\nHAVING COUNT(o.order_id) >= 3\nORDER BY avg_net_amount DESC, u.user_id ASC;",
+    "required_concepts": [
+      "join",
+      "where",
+      "aggregation",
+      "having"
+    ],
+    "enforce_concepts": false,
+    "explanation": "This problem combines row-level filters with group-level filters. The WHERE clause first limits rows to selected countries and qualifying orders in 2024 with sufficient net_amount. After those rows are filtered, the query groups by user and calculates both the order count and the average net amount. HAVING is then used to keep only users who still have at least 3 qualifying orders after all row-level filters have been applied.",
+    "hints": [
+      "Decide which conditions should reduce rows before grouping and which should filter grouped results after aggregation.",
+      "The order count threshold must be evaluated after grouping by user.",
+      "Average only the orders that passed the earlier filters."
+    ],
+    "concepts": [
+      "JOIN",
+      "WHERE",
+      "HAVING",
+      "AVG"
+    ]
+  },
+  {
+    "id": 2020,
+    "order": 20,
+    "title": "High-volume brands in completed 2024 orders",
+    "description": "Return category_id, brand, distinct_order_count, and total_units for product brands that meet all of the following conditions: the product launch_date is not null and earlier than 2025-01-01, the order is completed, the order was placed in 2024, the brand appears in at least 25 distinct qualifying orders, and the brand sold at least 80 total units across those qualifying rows. Order by distinct_order_count descending, then category_id ascending, then brand ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "products": [
+        "product_id",
+        "category_id",
+        "brand",
+        "launch_date"
+      ],
+      "order_items": [
+        "order_id",
+        "product_id",
+        "quantity"
+      ],
+      "orders": [
+        "order_id",
+        "order_date",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "products.csv",
+      "order_items.csv",
+      "orders.csv"
+    ],
+    "expected_query": "SELECT p.category_id, p.brand, COUNT(DISTINCT oi.order_id) AS distinct_order_count, SUM(oi.quantity) AS total_units\nFROM products p\nJOIN order_items oi ON p.product_id = oi.product_id\nJOIN orders o ON oi.order_id = o.order_id\nWHERE p.launch_date IS NOT NULL\n AND p.launch_date < '2025-01-01'\n AND o.status = 'completed'\n AND o.order_date >= '2024-01-01'\n AND o.order_date < '2025-01-01'\nGROUP BY p.category_id, p.brand\nHAVING COUNT(DISTINCT oi.order_id) >= 25\n AND SUM(oi.quantity) >= 80\nORDER BY distinct_order_count DESC, p.category_id ASC, p.brand ASC",
+    "solution_query": "SELECT p.category_id, p.brand, COUNT(DISTINCT oi.order_id) AS distinct_order_count, SUM(oi.quantity) AS total_units\nFROM products p\nJOIN order_items oi ON p.product_id = oi.product_id\nJOIN orders o ON oi.order_id = o.order_id\nWHERE p.launch_date IS NOT NULL\n AND p.launch_date < '2025-01-01'\n AND o.status = 'completed'\n AND o.order_date >= '2024-01-01'\n AND o.order_date < '2025-01-01'\nGROUP BY p.category_id, p.brand\nHAVING COUNT(DISTINCT oi.order_id) >= 25\n AND SUM(oi.quantity) >= 80\nORDER BY distinct_order_count DESC, p.category_id ASC, p.brand ASC;",
+    "required_concepts": [
+      "join",
+      "where",
+      "aggregation",
+      "having",
+      "distinct"
+    ],
+    "enforce_concepts": false,
+    "explanation": "This query requires filtering at multiple stages. The WHERE clause first removes products and orders that do not meet the launch-date, order-status, and date-range requirements, so only relevant detail rows remain. The grouped result is then produced at the category-and-brand level, where COUNT(DISTINCT oi.order_id) measures how many qualifying orders included that brand and SUM(oi.quantity) measures total units sold. HAVING applies the volume thresholds after those grouped metrics have been computed.",
+    "hints": [
+      "Use WHERE for the product and order filters that apply before aggregation.",
+      "Group by both category_id and brand because both appear in the output.",
+      "The minimum order-count and unit thresholds belong in HAVING."
+    ],
+    "concepts": [
+      "JOIN",
+      "WHERE",
+      "HAVING",
+      "COUNT DISTINCT",
+      "SUM"
+    ]
+  },
+  {
+    "id": 2021,
+    "order": 21,
+    "title": "Departments with no 2024 hires",
+    "description": "Return department_id, department_name, and hires_2024 for departments that had zero employees hired during 2024. hires_2024 should appear as 0 for every returned row. Order by department_id ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "departments": [
+        "department_id",
+        "department_name"
+      ],
+      "employees": [
+        "employee_id",
+        "department_id",
+        "hire_date"
+      ]
+    },
+    "dataset_files": [
+      "departments.csv",
+      "employees.csv"
+    ],
+    "expected_query": "SELECT d.department_id, d.department_name, COUNT(e.employee_id) AS hires_2024\nFROM departments d\nLEFT JOIN employees e\n  ON d.department_id = e.department_id\n AND e.hire_date >= '2024-01-01'\n AND e.hire_date < '2025-01-01'\nGROUP BY d.department_id, d.department_name\nHAVING COUNT(e.employee_id) = 0\nORDER BY d.department_id ASC",
+    "solution_query": "SELECT d.department_id, d.department_name, COUNT(e.employee_id) AS hires_2024\nFROM departments d\nLEFT JOIN employees e\n  ON d.department_id = e.department_id\n AND e.hire_date >= '2024-01-01'\n AND e.hire_date < '2025-01-01'\nGROUP BY d.department_id, d.department_name\nHAVING COUNT(e.employee_id) = 0\nORDER BY d.department_id ASC;",
+    "explanation": "This query starts from departments because departments with no matching hires still need to appear in the result. The date filter belongs inside the LEFT JOIN condition, not in the WHERE clause, so departments with no 2024 hires are preserved instead of being filtered out. After grouping by department, COUNT(e.employee_id) counts only matched 2024 hires, and HAVING COUNT(e.employee_id) = 0 keeps only departments with none. The final ORDER BY makes the output deterministic.",
+    "hints": [
+      "Start from departments, not employees, because departments with no matching hires must still be considered.",
+      "If you put the hire-date filter in WHERE, the LEFT JOIN will behave like an INNER JOIN.",
+      "Use HAVING after grouping to keep only zero-hire departments."
+    ],
+    "concepts": [
+      "LEFT JOIN",
+      "GROUP BY",
+      "HAVING"
+    ]
+  },
+  {
+    "id": 2022,
+    "order": 22,
+    "title": "Selected-country users without 2024 orders",
+    "description": "Return user_id, name, and country for users from US, UK, or CA who placed no orders during 2024, regardless of order status. Order by user_id ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "name",
+        "country"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv"
+    ],
+    "expected_query": "SELECT u.user_id, u.name, u.country\nFROM users u\nLEFT JOIN orders o\n  ON u.user_id = o.user_id\n AND o.order_date >= '2024-01-01'\n AND o.order_date < '2025-01-01'\nWHERE u.country IN ('US', 'UK', 'CA')\nGROUP BY u.user_id, u.name, u.country\nHAVING COUNT(o.order_id) = 0\nORDER BY u.user_id ASC",
+    "solution_query": "SELECT u.user_id, u.name, u.country\nFROM users u\nLEFT JOIN orders o\n  ON u.user_id = o.user_id\n AND o.order_date >= '2024-01-01'\n AND o.order_date < '2025-01-01'\nWHERE u.country IN ('US', 'UK', 'CA')\nGROUP BY u.user_id, u.name, u.country\nHAVING COUNT(o.order_id) = 0\nORDER BY u.user_id ASC;",
+    "explanation": "The result must include users even when they have no 2024 orders, so the query starts from users and uses a LEFT JOIN to orders. The 2024 date filter is applied in the join condition so only 2024 orders can match, while users with no such orders remain in the joined result. The country filter belongs in WHERE because it applies to the driving users table. After grouping by user, COUNT(o.order_id) counts only matched 2024 orders, and HAVING COUNT(o.order_id) = 0 keeps the users with none. This is a join-correctness problem because moving the order-date filter to WHERE would incorrectly remove the users you need.",
+    "hints": [
+      "Use users as the driving table because users with no matching 2024 orders must stay visible.",
+      "Filter the user list to the requested countries before applying the zero-order test.",
+      "Filter the order date range before the grouping, but be careful where that filter is placed."
+    ],
+    "concepts": [
+      "LEFT JOIN",
+      "GROUP BY",
+      "HAVING"
+    ]
+  },
+  {
+    "id": 2023,
+    "order": 23,
+    "title": "Completed 2024 orders missing paid payments",
+    "description": "Return order_id, user_id, and order_status for completed orders placed in 2024 that have no payment row with status = 'paid'. Order by order_id ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status"
+      ],
+      "payments": [
+        "payment_id",
+        "order_id",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv",
+      "payments.csv"
+    ],
+    "expected_query": "SELECT o.order_id, o.user_id, o.status AS order_status\nFROM orders o\nLEFT JOIN payments p\n  ON o.order_id = p.order_id\n AND p.status = 'paid'\nWHERE o.status = 'completed'\n AND o.order_date >= '2024-01-01'\n AND o.order_date < '2025-01-01'\nGROUP BY o.order_id, o.user_id, o.status\nHAVING COUNT(p.payment_id) = 0\nORDER BY o.order_id ASC",
+    "solution_query": "SELECT o.order_id, o.user_id, o.status AS order_status\nFROM orders o\nLEFT JOIN payments p\n  ON o.order_id = p.order_id\n AND p.status = 'paid'\nWHERE o.status = 'completed'\n AND o.order_date >= '2024-01-01'\n AND o.order_date < '2025-01-01'\nGROUP BY o.order_id, o.user_id, o.status\nHAVING COUNT(p.payment_id) = 0\nORDER BY o.order_id ASC;",
+    "explanation": "This query checks for completed 2024 orders that never matched a paid payment row. The payment-status filter belongs in the LEFT JOIN condition so each order is tested specifically for a paid payment match. If the filter were moved into WHERE, orders without a paid payment would disappear before the final check. Grouping by order lets COUNT(p.payment_id) count only matching paid payments, and HAVING COUNT(p.payment_id) = 0 keeps the orders with none.",
+    "hints": [
+      "You need every qualifying order to remain visible even when no paid payment row exists.",
+      "Join only to paid payments, then test which orders matched zero rows.",
+      "Group by the order columns before applying the zero-match condition."
+    ],
+    "concepts": [
+      "LEFT JOIN",
+      "GROUP BY",
+      "HAVING"
+    ]
+  },
+  {
+    "id": 2024,
+    "order": 24,
+    "title": "Category launch-date completeness snapshot",
+    "description": "For each category, return category_id, category_name, launched_product_count, missing_launch_date_count, and avg_launched_price. launched_product_count should count products whose launch_date is not null. avg_launched_price should average price only for products whose launch_date is not null. Include only categories with at least 8 total products. Order by category_id ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "categories": [
+        "category_id",
+        "category_name"
+      ],
+      "products": [
+        "product_id",
+        "category_id",
+        "price",
+        "launch_date"
+      ]
+    },
+    "dataset_files": [
+      "categories.csv",
+      "products.csv"
+    ],
+    "expected_query": "SELECT c.category_id, c.category_name,\n SUM(CASE WHEN p.launch_date IS NOT NULL THEN 1 ELSE 0 END) AS launched_product_count,\n SUM(CASE WHEN p.launch_date IS NULL THEN 1 ELSE 0 END) AS missing_launch_date_count,\n AVG(CASE WHEN p.launch_date IS NOT NULL THEN p.price END) AS avg_launched_price\nFROM categories c\nJOIN products p ON c.category_id = p.category_id\nGROUP BY c.category_id, c.category_name\nHAVING COUNT(p.product_id) >= 8\nORDER BY c.category_id ASC",
+    "solution_query": "SELECT c.category_id, c.category_name,\n SUM(CASE WHEN p.launch_date IS NOT NULL THEN 1 ELSE 0 END) AS launched_product_count,\n SUM(CASE WHEN p.launch_date IS NULL THEN 1 ELSE 0 END) AS missing_launch_date_count,\n AVG(CASE WHEN p.launch_date IS NOT NULL THEN p.price END) AS avg_launched_price\nFROM categories c\nJOIN products p ON c.category_id = p.category_id\nGROUP BY c.category_id, c.category_name\nHAVING COUNT(p.product_id) >= 8\nORDER BY c.category_id ASC;",
+    "explanation": "This is an aggregation edge-case question because one grouped result needs several metrics with different row-participation rules. The CASE expressions count launched and missing-launch-date products separately inside the same grouped query. AVG(CASE WHEN p.launch_date IS NOT NULL THEN p.price END) averages only the products with a known launch date because the others contribute NULL, which AVG ignores. GROUP BY is required for category-level output, and HAVING enforces the minimum total-product threshold after grouping.",
+    "hints": [
+      "Use one grouped query to compute all category-level metrics.",
+      "CASE inside SUM can count rows with and without launch dates separately.",
+      "To average only launched products, let missing launch dates contribute NULL to AVG."
+    ],
+    "concepts": [
+      "JOIN",
+      "GROUP BY",
+      "HAVING",
+      "CASE WHEN"
+    ]
+  },
+  {
+    "id": 2025,
+    "order": 25,
+    "title": "Country and plan tier order mix",
+    "description": "Return country, plan_tier, completed_order_count, and cancelled_order_count for user segments with at least 25 total orders. Count order rows after joining users to orders. Order by country ascending, then plan_tier ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "country",
+        "plan_tier"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv"
+    ],
+    "expected_query": "SELECT u.country, u.plan_tier,\n SUM(CASE WHEN o.status = 'completed' THEN 1 ELSE 0 END) AS completed_order_count,\n SUM(CASE WHEN o.status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled_order_count\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nGROUP BY u.country, u.plan_tier\nHAVING COUNT(o.order_id) >= 25\nORDER BY u.country ASC, u.plan_tier ASC",
+    "solution_query": "SELECT u.country, u.plan_tier,\n SUM(CASE WHEN o.status = 'completed' THEN 1 ELSE 0 END) AS completed_order_count,\n SUM(CASE WHEN o.status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled_order_count\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nGROUP BY u.country, u.plan_tier\nHAVING COUNT(o.order_id) >= 25\nORDER BY u.country ASC, u.plan_tier ASC;",
+    "explanation": "The core trap here is grouping at the right grain. Because the output is segmented by both country and plan_tier, both columns must appear in GROUP BY. Conditional aggregation then computes the completed and cancelled counts from the same grouped order rows. HAVING COUNT(o.order_id) >= 25 removes segments with too little activity only after the grouped totals have been calculated. This increases reasoning complexity without using more advanced SQL features.",
+    "hints": [
+      "Match the grouping columns to the exact business segment named in the output.",
+      "Use CASE inside SUM to split one set of order rows into status-specific counts.",
+      "The minimum-order rule should be applied after grouping."
+    ],
+    "concepts": [
+      "JOIN",
+      "GROUP BY",
+      "HAVING",
+      "CASE WHEN"
+    ]
+  },
+  {
+    "id": 2026,
+    "order": 26,
+    "title": "Department hiring cohort summary",
+    "description": "Return department_name, recent_hire_count, older_hire_count, and avg_recent_hire_salary for departments with at least 10 employees total. A recent hire is an employee with hire_date on or after 2023-01-01. avg_recent_hire_salary should average salary only for recent hires. Order by recent_hire_count descending, then department_name ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "departments": [
+        "department_id",
+        "department_name"
+      ],
+      "employees": [
+        "employee_id",
+        "department_id",
+        "hire_date",
+        "salary"
+      ]
+    },
+    "dataset_files": [
+      "departments.csv",
+      "employees.csv"
+    ],
+    "expected_query": "SELECT d.department_name,\n SUM(CASE WHEN e.hire_date >= '2023-01-01' THEN 1 ELSE 0 END) AS recent_hire_count,\n SUM(CASE WHEN e.hire_date < '2023-01-01' THEN 1 ELSE 0 END) AS older_hire_count,\n AVG(CASE WHEN e.hire_date >= '2023-01-01' THEN e.salary END) AS avg_recent_hire_salary\nFROM departments d\nJOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_name\nHAVING COUNT(e.employee_id) >= 10\nORDER BY recent_hire_count DESC, d.department_name ASC",
+    "solution_query": "SELECT d.department_name,\n SUM(CASE WHEN e.hire_date >= '2023-01-01' THEN 1 ELSE 0 END) AS recent_hire_count,\n SUM(CASE WHEN e.hire_date < '2023-01-01' THEN 1 ELSE 0 END) AS older_hire_count,\n AVG(CASE WHEN e.hire_date >= '2023-01-01' THEN e.salary END) AS avg_recent_hire_salary\nFROM departments d\nJOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_name\nHAVING COUNT(e.employee_id) >= 10\nORDER BY recent_hire_count DESC, d.department_name ASC;",
+    "explanation": "This query combines conditional aggregation with a grouped staffing threshold. After joining departments to employees, the grouped rows are split into recent and older hires using separate CASE expressions inside SUM. AVG(CASE WHEN e.hire_date >= '2023-01-01' THEN e.salary END) calculates a recent-hire-only average because older hires contribute NULL, which AVG ignores. HAVING ensures that only departments with enough total employees are included, while the ORDER BY sorts by the recent-hire volume first.",
+    "hints": [
+      "Use one grouped query per department rather than separate queries for recent and older hires.",
+      "CASE inside AVG can limit which employee salaries contribute to the average.",
+      "The minimum total-employee condition depends on the full grouped set, not just recent hires."
+    ],
+    "concepts": [
+      "JOIN",
+      "GROUP BY",
+      "HAVING",
+      "CASE WHEN"
+    ]
+  },
+  {
+    "id": 2027,
+    "order": 27,
+    "title": "Products never sold in completed orders",
+    "description": "Return product_id, product_name, and brand for products launched before 2024-01-01 that have never appeared in an order_item tied to a completed order. Order by product_id ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "products": [
+        "product_id",
+        "product_name",
+        "brand",
+        "launch_date"
+      ],
+      "order_items": [
+        "order_id",
+        "product_id"
+      ],
+      "orders": [
+        "order_id",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "products.csv",
+      "order_items.csv",
+      "orders.csv"
+    ],
+    "expected_query": "SELECT p.product_id, p.product_name, p.brand\nFROM products p\nWHERE p.launch_date < '2024-01-01'\n AND NOT EXISTS (\n  SELECT 1\n  FROM order_items oi\n  JOIN orders o ON oi.order_id = o.order_id\n  WHERE oi.product_id = p.product_id\n   AND o.status = 'completed'\n )\nORDER BY p.product_id ASC",
+    "solution_query": "SELECT p.product_id, p.product_name, p.brand\nFROM products p\nWHERE p.launch_date < '2024-01-01'\n AND NOT EXISTS (\n  SELECT 1\n  FROM order_items oi\n  JOIN orders o ON oi.order_id = o.order_id\n  WHERE oi.product_id = p.product_id\n   AND o.status = 'completed'\n )\nORDER BY p.product_id ASC;",
+    "explanation": "The outer query starts from products because the result should include products that might have no matching order history at all. The NOT EXISTS subquery checks whether a completed-order match exists for the current product by joining order_items to orders and correlating back through oi.product_id = p.product_id. If no such completed-order row exists, the product stays in the result. This is a clean anti-match pattern that avoids accidental loss of products with no order-item rows.",
+    "hints": [
+      "Start from products because products with no completed-order history must still be testable.",
+      "The subquery should look for evidence that a product appears in a completed order.",
+      "Keep only products for which that evidence does not exist."
+    ],
+    "concepts": [
+      "NOT EXISTS",
+      "SUBQUERY",
+      "JOIN"
+    ]
+  },
+  {
+    "id": 2028,
+    "order": 28,
+    "title": "Departments above their region average headcount",
+    "description": "Return department_id, department_name, region, and employee_count for departments whose employee_count is strictly greater than the average department employee_count within the same region. Include departments with zero employees when calculating each region average. Order by region ascending, then employee_count descending, then department_id ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "departments": [
+        "department_id",
+        "department_name",
+        "region"
+      ],
+      "employees": [
+        "employee_id",
+        "department_id"
+      ]
+    },
+    "dataset_files": [
+      "departments.csv",
+      "employees.csv"
+    ],
+    "expected_query": "SELECT d.department_id, d.department_name, d.region, COUNT(e.employee_id) AS employee_count\nFROM departments d\nLEFT JOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_id, d.department_name, d.region\nHAVING COUNT(e.employee_id) > (\n  SELECT AVG(region_department_count)\n  FROM (\n    SELECT COUNT(e2.employee_id) AS region_department_count\n    FROM departments d2\n    LEFT JOIN employees e2 ON d2.department_id = e2.department_id\n    WHERE d2.region = d.region\n    GROUP BY d2.department_id\n  ) region_counts\n)\nORDER BY d.region ASC, employee_count DESC, d.department_id ASC",
+    "solution_query": "SELECT d.department_id, d.department_name, d.region, COUNT(e.employee_id) AS employee_count\nFROM departments d\nLEFT JOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_id, d.department_name, d.region\nHAVING COUNT(e.employee_id) > (\n  SELECT AVG(region_department_count)\n  FROM (\n    SELECT COUNT(e2.employee_id) AS region_department_count\n    FROM departments d2\n    LEFT JOIN employees e2 ON d2.department_id = e2.department_id\n    WHERE d2.region = d.region\n    GROUP BY d2.department_id\n  ) region_counts\n)\nORDER BY d.region ASC, employee_count DESC, d.department_id ASC;",
+    "explanation": "The outer query computes one employee_count per department, including departments with zero employees because of the LEFT JOIN. The correlated subquery then calculates the average department headcount for the current outer region by building a region-specific list of department counts and averaging them. Including zero-employee departments in that inner grouped set matters because the description explicitly says they must affect the regional average. The HAVING comparison happens after the outer department count has been computed, which is why this is a nested aggregation subquery pattern.",
+    "hints": [
+      "First compute one employee count per department in the outer query.",
+      "The comparison target is not a single global average; it changes with the outer row's region.",
+      "Make sure zero-employee departments still participate in the regional average calculation."
+    ],
+    "concepts": [
+      "CORRELATED SUBQUERY",
+      "LEFT JOIN",
+      "GROUP BY",
+      "HAVING"
+    ]
+  },
+  {
+    "id": 2029,
+    "order": 29,
+    "title": "Users with repeated refunds and no open tickets",
+    "description": "Return user_id, name, refunded_payment_count, and refunded_amount for users who have at least 2 payment rows with status = 'refunded' and have no support ticket whose status is 'open' or 'in_progress'. Order by refunded_amount descending, then user_id ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "name"
+      ],
+      "orders": [
+        "order_id",
+        "user_id"
+      ],
+      "payments": [
+        "payment_id",
+        "order_id",
+        "amount",
+        "status"
+      ],
+      "support_tickets": [
+        "ticket_id",
+        "user_id",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv",
+      "payments.csv",
+      "support_tickets.csv"
+    ],
+    "expected_query": "SELECT u.user_id, u.name, COUNT(p.payment_id) AS refunded_payment_count, SUM(p.amount) AS refunded_amount\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nJOIN payments p ON o.order_id = p.order_id\nWHERE p.status = 'refunded'\n AND NOT EXISTS (\n  SELECT 1\n  FROM support_tickets st\n  WHERE st.user_id = u.user_id\n   AND st.status IN ('open', 'in_progress')\n )\nGROUP BY u.user_id, u.name\nHAVING COUNT(p.payment_id) >= 2\nORDER BY refunded_amount DESC, u.user_id ASC",
+    "solution_query": "SELECT u.user_id, u.name, COUNT(p.payment_id) AS refunded_payment_count, SUM(p.amount) AS refunded_amount\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nJOIN payments p ON o.order_id = p.order_id\nWHERE p.status = 'refunded'\n AND NOT EXISTS (\n  SELECT 1\n  FROM support_tickets st\n  WHERE st.user_id = u.user_id\n   AND st.status IN ('open', 'in_progress')\n )\nGROUP BY u.user_id, u.name\nHAVING COUNT(p.payment_id) >= 2\nORDER BY refunded_amount DESC, u.user_id ASC;",
+    "explanation": "This is a business-logic question that combines payment behavior with support status. The main query joins users to their orders and payment rows, then filters to refunded payment rows only. The NOT EXISTS subquery removes any user who currently has an open or in-progress support ticket, which keeps the user-level business rule separate from the payment-row aggregation. After grouping by user, HAVING COUNT(p.payment_id) >= 2 enforces the repeated-refund threshold, and SUM(p.amount) measures the refund exposure.",
+    "hints": [
+      "Aggregate refunded payment rows at the user level.",
+      "Handle the support-ticket exclusion as a separate user-level check, not by joining ticket rows into the main aggregation.",
+      "Use HAVING for the minimum refund-count requirement."
+    ],
+    "concepts": [
+      "NOT EXISTS",
+      "SUBQUERY",
+      "JOIN",
+      "GROUP BY",
+      "HAVING"
+    ]
+  },
+  {
+    "id": 2030,
+    "order": 30,
+    "title": "Countries with problematic payment totals above paid totals",
+    "description": "Return country, paid_amount, and problematic_amount for countries where completed orders placed in 2024 produced more problematic payment amount than paid payment amount. Treat problematic payments as rows whose payment status is 'failed' or 'refunded'. Include only countries with at least 20 payment rows tied to completed 2024 orders. Order by problematic_amount descending, then country ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "country"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status"
+      ],
+      "payments": [
+        "payment_id",
+        "order_id",
+        "amount",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv",
+      "payments.csv"
+    ],
+    "expected_query": "SELECT u.country,\n SUM(CASE WHEN p.status = 'paid' THEN p.amount ELSE 0 END) AS paid_amount,\n SUM(CASE WHEN p.status IN ('failed', 'refunded') THEN p.amount ELSE 0 END) AS problematic_amount\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nJOIN payments p ON o.order_id = p.order_id\nWHERE o.status = 'completed'\n AND o.order_date >= '2024-01-01'\n AND o.order_date < '2025-01-01'\nGROUP BY u.country\nHAVING COUNT(p.payment_id) >= 20\n AND SUM(CASE WHEN p.status IN ('failed', 'refunded') THEN p.amount ELSE 0 END) > SUM(CASE WHEN p.status = 'paid' THEN p.amount ELSE 0 END)\nORDER BY problematic_amount DESC, u.country ASC",
+    "solution_query": "SELECT u.country,\n SUM(CASE WHEN p.status = 'paid' THEN p.amount ELSE 0 END) AS paid_amount,\n SUM(CASE WHEN p.status IN ('failed', 'refunded') THEN p.amount ELSE 0 END) AS problematic_amount\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nJOIN payments p ON o.order_id = p.order_id\nWHERE o.status = 'completed'\n AND o.order_date >= '2024-01-01'\n AND o.order_date < '2025-01-01'\nGROUP BY u.country\nHAVING COUNT(p.payment_id) >= 20\n AND SUM(CASE WHEN p.status IN ('failed', 'refunded') THEN p.amount ELSE 0 END) > SUM(CASE WHEN p.status = 'paid' THEN p.amount ELSE 0 END)\nORDER BY problematic_amount DESC, u.country ASC;",
+    "explanation": "The query joins users, orders, and payments so payment rows can be analyzed at the country level. The WHERE clause limits the detail rows to payments tied to completed 2024 orders before any aggregation occurs. Two CASE-based sums then split the grouped payment amount into paid and problematic buckets, and HAVING applies both the minimum-volume rule and the business comparison that problematic_amount must exceed paid_amount. This is more about layered business rules than about introducing a new SQL feature.",
+    "hints": [
+      "First restrict the rows to payments tied to completed orders in 2024.",
+      "Use separate CASE-based sums for paid and problematic payment amounts.",
+      "The country-level comparison belongs in HAVING because it depends on grouped totals."
+    ],
+    "concepts": [
+      "JOIN",
+      "GROUP BY",
+      "HAVING",
+      "CASE WHEN"
+    ]
   }
 ]

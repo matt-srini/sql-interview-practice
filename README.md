@@ -6,10 +6,10 @@ A SQL practice platform with a React frontend, a FastAPI backend, and DuckDB-bac
 
 ## Current State
 
-- Challenge bank: 32 questions total
+- Challenge bank: 85 questions total
   - Easy: 30
-  - Medium: 1
-  - Hard: 1
+  - Medium: 30
+  - Hard: 25
 - Sample bank: 9 questions total
   - 3 per difficulty in backend/sample_questions.py
 - Challenge content is JSON-backed in backend/content/questions/
