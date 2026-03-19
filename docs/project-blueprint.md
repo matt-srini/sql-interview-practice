@@ -31,10 +31,10 @@ It provides a controlled SQL practice environment where learners can:
 - Single-service production deployment path where FastAPI serves both the API and the built frontend
 
 ### Current content footprint
-- Challenge questions: 32 total
+- Challenge questions: 85 total
   - easy: 30
-  - medium: 1
-  - hard: 1
+  - medium: 30
+  - hard: 25
 - Sample questions: 9 total
   - easy: 3
   - medium: 3
@@ -151,7 +151,7 @@ Isolated execution responsibilities:
 ## 3. Project Structure Breakdown
 
 ### Root-level files
-- README.md: setup and usage documentation, but currently contains outdated inventory claims in some sections
+- README.md: setup and usage documentation and current question-bank inventory
 - ARCHITECTURE.md: shorter historical architecture notes
 - MANUAL_TEST_CHECKLIST.md: manual QA checklist
 - TODO_FUTURE.md: backlog and future enhancements
@@ -673,7 +673,7 @@ Current gaps:
 Current state:
 - The platform is structurally sound as a small SQL practice application with clear separation between frontend, backend, content, and execution logic.
 - The committed dataset inventory is broader and more realistic than the older docs implied, covering commerce, product, behavioral, support, and HR domains.
-- The live challenge bank now includes 30 easy, 1 medium, and 1 hard question.
+- The live challenge bank now includes 30 easy, 30 medium, and 25 hard questions.
 - The sample bank is complete at 3 questions per difficulty.
 - Question content now aligns with the current orders schema, and schema/header mismatches fail fast during catalog loading.
 

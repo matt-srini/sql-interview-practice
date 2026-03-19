@@ -18,6 +18,9 @@ env/
 *.duckdb
 *.duckdb.wal
 
+# SQLite (auth database — created at runtime)
+*.db
+
 # Node
 node_modules/
 dist/
