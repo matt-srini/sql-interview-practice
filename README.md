@@ -16,7 +16,7 @@ A SQL practice platform with a React frontend, a FastAPI backend, and DuckDB-bac
 - Sample content is Python-backed in backend/sample_questions.py
 - Query execution is isolated per request using in-memory DuckDB connections scoped to question dataset_files
 - Question schemas are validated against the committed dataset headers at load time
-- Concept tags (`concepts` field) are surfaced as pill badges on each question page
+- Semantic reasoning tags (`concepts` field) are surfaced as pill badges on each question page
 - Hints are revealed progressively one at a time before the solution is shown
 
 For the fuller architectural reference, see docs/project-blueprint.md.

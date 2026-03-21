@@ -33,7 +33,7 @@ Current platform capabilities:
 - Read-only SQL validation and isolated query execution
 - Result normalization and correctness evaluation
 - Schema/header validation for question content against committed datasets
-- Concept tags surfaced as pill badges on question pages
+- Semantic reasoning tags surfaced as pill badges on question pages
 - Progressive hint reveal flow before solution display
 - Structured request_id logging and standardized API error responses
 - Single-service production deployment path where FastAPI serves both UI and API

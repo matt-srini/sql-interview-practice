@@ -23,6 +23,13 @@ Core concepts include:
 - Window Functions
 - Subqueries
 
+These core concepts are used for:
+- difficulty design
+- curriculum coverage
+- primary learning objective review
+
+They are not the same thing as the learner-facing `concepts` field in the question JSON.
+
 Guidelines:
 - A question should focus on one primary concept
 - Supporting concepts are allowed if they are necessary to solve the problem
@@ -213,7 +220,9 @@ Each question MUST follow:
   "description": "Clear problem statement",
 
   "dataset_files": ["users.csv"],
-  "tables": ["users"],
+  "schema": {
+    "users": ["user_id", "name"]
+  },
 
   "expected_query": "...",
   "solution_query": "...",
@@ -304,19 +313,30 @@ Example:
 
 # 9. Concepts Tagging
 
+The `concepts` field is a learner-facing reasoning tag set, not a raw SQL primitive inventory.
+
 Each question should include:
 
-"concepts": ["GROUP BY", "JOIN"]
+"concepts": ["COHORT ANALYSIS", "RETENTION BY MONTH OFFSET"]
 
 Purpose:
 - categorization
 - future filtering
 - learning analytics
+- surfacing the problem's reasoning pattern to the learner
 
 Important:
-- Tags must align with core concepts defined above
-- Do NOT tag patterns as separate concepts
-  - e.g., use "WINDOW" instead of "ROW_NUMBER"
+- Tags must describe the business or analytical thinking pattern
+- Do NOT use low-level SQL primitives as tags
+  - avoid: `JOIN`, `GROUP BY`, `SUBQUERY`, `WINDOW FUNCTION`
+  - avoid: `ROW_NUMBER`, `LAG`, `CASE`, `LEFT JOIN`
+- Tags should be semantic and reusable
+  - examples: `COHORT ANALYSIS`, `FUNNEL ORDER ENFORCEMENT`, `LATEST STATE DERIVATION`, `SEQUENTIAL EVENT PATTERN`
+- Keep tags cohesive and short
+  - target 2–4 tags per question
+  - include only the dominant reasoning patterns, not every helper step
+- The `concepts` field does not replace core-concept review
+  - the primary SQL concept still determines difficulty and curriculum fit
 
 ---
 
@@ -362,10 +382,11 @@ Before adding a question, verify:
 - [ ] solution_query is clean
 - [ ] explanation is detailed
 - [ ] dataset_files exist
-- [ ] tables match dataset
+- [ ] schema matches dataset
 - [ ] no ambiguity in output
 
 - [ ] concepts are cohesive (no unrelated mixing)
+- [ ] concepts are semantic reasoning tags, not SQL primitive names
 - [ ] difficulty matches reasoning depth
 - [ ] question requires multi-step reasoning (for medium/hard)
 

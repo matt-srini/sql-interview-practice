@@ -26,6 +26,9 @@ Core concepts refer to fundamental SQL capabilities:
 - Window Functions
 - Subqueries
 
+These core concepts are the curriculum and difficulty framework.
+They are not the same thing as the learner-facing `concepts` field stored on each question.
+
 The following are NOT separate core concepts (they are patterns/usages):
 - ROW_NUMBER, RANK, LAG, LEAD
 - Top-N per group
@@ -88,6 +91,36 @@ Examples:
 - ROW_NUMBER + RANK → 1 concept (Window Functions)
 - GROUP BY + HAVING → 1 concept (Aggregation)
 - JOIN + GROUP BY → 2 concepts
+
+## Question Metadata Tags
+
+The `concepts` array on a question is a learner-facing metadata field.
+
+Rules for `concepts`:
+- Use semantic reasoning tags, not raw SQL primitives
+- Tags should describe the analytical pattern the learner is practicing
+- Keep tags cohesive and limited to the dominant patterns in the problem
+- Target 2–4 tags per question
+
+Examples of good tags:
+- COHORT ANALYSIS
+- RUNNING TOTAL THRESHOLD DETECTION
+- LATEST STATE DERIVATION
+- FUNNEL ORDER ENFORCEMENT
+- CUMULATIVE CONTRIBUTION (PARETO)
+
+Examples of bad tags:
+- JOIN
+- AGGREGATION
+- WINDOW FUNCTION
+- SUBQUERY
+- ROW_NUMBER
+- LAG
+
+Important:
+- Difficulty still maps to core SQL concepts and reasoning depth
+- The `concepts` field is for learner guidance, filtering, and analytics
+- Do not use the `concepts` field as the source of truth for concept counting
 
 ---
 
@@ -521,6 +554,11 @@ All questions generated under this curriculum MUST adhere to the following quali
 - Each question must have a clear primary learning objective
 - Supporting concepts are allowed if they are necessary and cohesive
 - Avoid combining unrelated concepts
+
+## 3.1 Question Tagging Standard
+- Question `concepts` metadata should reflect semantic reasoning patterns
+- Question `concepts` metadata should not list every SQL clause used in the solution
+- Question `concepts` metadata must remain aligned with the question's main reasoning flow
 
 ## 4. Real-World Framing
 - Questions must simulate realistic business scenarios
