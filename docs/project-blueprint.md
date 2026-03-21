@@ -40,7 +40,7 @@ It provides a controlled SQL practice environment where learners can:
   - medium: 3
   - hard: 3
 - Question schemas are validated against committed dataset headers during catalog loading
-- Every question carries `hints` (1–2 entries) and `concepts` (topic tags) fields
+- Every question carries `hints` (1–2 entries) and `concepts` (semantic reasoning tags) fields
 
 ---
 
@@ -517,7 +517,7 @@ Defined in frontend/src/App.js:
 #### QuestionPage
 - Loads challenge question details
 - Renders schema, editor, results, and answer feedback
-- Renders `concepts` as pill-style tag badges below the question description
+- Renders `concepts` as pill-style semantic reasoning badges below the question description
 - Supports running and submitting SQL
 - Refreshes the catalog after a correct answer so unlock state updates immediately
 - After submission, shows hints sequentially (one per button click); the solution button only appears after all hints are revealed
@@ -525,7 +525,7 @@ Defined in frontend/src/App.js:
 #### SampleQuestionPage
 - Loads the next unseen sample for the selected difficulty
 - Shows sample counters such as shown_count and remaining
-- Renders `concepts` as pill-style tag badges below the question description
+- Renders `concepts` as pill-style semantic reasoning badges below the question description
 - Supports running and submitting SQL
 - After submission, shows hints sequentially; the solution button only appears after all hints are revealed
 - Supports requesting another sample and resetting seen samples for the current difficulty
