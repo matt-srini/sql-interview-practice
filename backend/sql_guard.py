@@ -39,19 +39,24 @@ def _node_types_by_name(names: list[str]) -> tuple[type, ...]:
 
 DISALLOWED_NODE_TYPES = _node_types_by_name(_DISALLOWED_NODE_NAMES)
 ALLOWED_ROOT_TYPES = _node_types_by_name(_ALLOWED_ROOT_NAMES)
-MAX_JOINS = 4
+MAX_JOINS = 5
 
 
 def _validate_query_cost(statement: exp.Expression) -> None:
+    from exceptions import BadRequestError
+    import logging
     joins = list(statement.find_all(exp.Join))
-    if len(joins) > MAX_JOINS:
-        raise ValueError(f"Query is too complex. Maximum {MAX_JOINS} joins allowed.")
+    logging.info(f"[sql_guard] Found {len(joins)} JOINs in query.")
+    if len(joins) >= MAX_JOINS:
+        logging.info(f"[sql_guard] Raising join limit error: {len(joins)} >= {MAX_JOINS}")
+        raise BadRequestError(f"Query is too complex. Maximum {MAX_JOINS} joins allowed.")
 
     for join in joins:
         has_on = join.args.get("on") is not None
         has_using = join.args.get("using") is not None
         if not has_on and not has_using:
-            raise ValueError(
+            logging.info("[sql_guard] Raising cartesian join error.")
+            raise BadRequestError(
                 "Potential Cartesian join detected. Add an ON or USING condition."
             )
 

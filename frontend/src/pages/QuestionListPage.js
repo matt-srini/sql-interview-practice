@@ -1,27 +1,21 @@
-import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../api';
+import { useCatalog } from '../catalogContext';
 
 const DIFFICULTY_ORDER = { easy: 0, medium: 1, hard: 2 };
 
 export default function QuestionListPage() {
-  const [questions, setQuestions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { catalog, loading, error } = useCatalog();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    api
-      .get('/questions')
-      .then((res) => {
-        const sorted = [...res.data].sort(
-          (a, b) => DIFFICULTY_ORDER[a.difficulty] - DIFFICULTY_ORDER[b.difficulty]
-        );
-        setQuestions(sorted);
-      })
-      .catch(() => setError('Failed to load questions. Is the backend running?'))
-      .finally(() => setLoading(false));
-  }, []);
+  // Flatten all questions with unlock state
+  const questions = (catalog?.groups || [])
+    .flatMap((g) => g.questions.map((q) => ({ ...q, difficulty: g.difficulty, order: q.order })))
+    .sort((a, b) => {
+      if (DIFFICULTY_ORDER[a.difficulty] !== DIFFICULTY_ORDER[b.difficulty]) {
+        return DIFFICULTY_ORDER[a.difficulty] - DIFFICULTY_ORDER[b.difficulty];
+      }
+      return a.order - b.order;
+    });
 
   return (
     <>
@@ -42,16 +36,30 @@ export default function QuestionListPage() {
 
         {!loading && !error && (
           <div className="question-grid">
-            {questions.map((q) => (
-              <div
-                key={q.id}
-                className="question-card"
-                onClick={() => navigate(`/practice/questions/${q.id}`)}
-              >
-                <h2>{q.title}</h2>
-                <span className={`badge badge-${q.difficulty}`}>{q.difficulty}</span>
-              </div>
-            ))}
+            {questions.map((q) => {
+              const isLocked = q.state === 'locked';
+              const isSolved = q.state === 'solved';
+              const isUnlocked = q.state === 'unlocked';
+              return (
+                <div
+                  key={q.id}
+                  className={`question-card question-card-${q.state}`}
+                  onClick={() => {
+                    if (!isLocked) navigate(`/practice/questions/${q.id}`);
+                  }}
+                  style={isLocked ? { cursor: 'not-allowed', opacity: 0.6 } : {}}
+                  title={isLocked ? 'Locked: Solve previous questions to unlock.' : isSolved ? 'Solved' : isUnlocked ? 'Unlocked' : ''}
+                  aria-disabled={isLocked}
+                >
+                  <h2>{q.title}</h2>
+                  <span className={`badge badge-${q.difficulty}`}>{q.difficulty}</span>
+                  <span className={`status-dot status-${q.state}`} aria-hidden="true" />
+                  {isSolved && <span className="sidebar-solved">Solved</span>}
+                  {isLocked && <span className="sidebar-locked">Locked</span>}
+                  {isUnlocked && <span className="sidebar-unlocked">Unlocked</span>}
+                </div>
+              );
+            })}
           </div>
         )}
       </main>

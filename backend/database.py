@@ -1,3 +1,48 @@
+def init_user_profile_storage() -> None:
+    conn = get_connection(read_only=False)
+    try:
+        conn.execute(
+            '''
+            CREATE TABLE IF NOT EXISTS user_profiles (
+                user_id VARCHAR PRIMARY KEY,
+                plan VARCHAR NOT NULL,
+                metadata JSON
+            );
+            '''
+        )
+    finally:
+        conn.close()
+
+def get_user_profile(user_id: str):
+    conn = get_connection(read_only=True)
+    try:
+        row = conn.execute(
+            'SELECT user_id, plan, metadata FROM user_profiles WHERE user_id = ?', [user_id]
+        ).fetchone()
+        if not row:
+            return None
+        return {
+            'user_id': row[0],
+            'plan': row[1],
+            'metadata': row[2] if row[2] is not None else None
+        }
+    finally:
+        conn.close()
+
+def set_user_profile(user_id: str, plan: str, metadata=None):
+    import logging
+    conn = get_connection(read_only=False)
+    try:
+        logging.info(f"[set_user_profile] Writing user_id={user_id}, plan={plan}, metadata={metadata}")
+        conn.execute(
+            'INSERT INTO user_profiles(user_id, plan, metadata) VALUES (?, ?, ?)' 
+            'ON CONFLICT(user_id) DO UPDATE SET plan=excluded.plan, metadata=excluded.metadata',
+            [user_id, plan, metadata]
+        )
+        conn.commit()
+        logging.info(f"[set_user_profile] Commit complete for user_id={user_id}")
+    finally:
+        conn.close()
 import os
 import re
 
@@ -10,6 +55,10 @@ _TABLE_NAME_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
 def get_connection(read_only: bool = False) -> duckdb.DuckDBPyConnection:
     """Return a DuckDB connection to the project database file."""
+    import os
+    if os.environ.get("TESTING") == "1":
+        # Always use read_only=False in test mode to ensure visibility across connections
+        return duckdb.connect(database=DB_PATH, read_only=False)
     return duckdb.connect(database=DB_PATH, read_only=read_only)
 
 
