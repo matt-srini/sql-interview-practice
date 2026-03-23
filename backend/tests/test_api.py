@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 
-import main
-from main import app
+import backend.main as main
+app = main.app
 from questions import get_all_questions, get_questions_by_difficulty
 from questions import get_question
 

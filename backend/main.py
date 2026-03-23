@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from fastapi import FastAPI, Request
+from backend.database import init_user_profile_storage
 from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -50,6 +51,9 @@ async def lifespan(app: FastAPI):
 # ---------------------------------------------------------------------------
 
 app = FastAPI(title="SQL Interview Practice API", lifespan=lifespan)
+
+# Ensure user_profiles table exists at startup
+init_user_profile_storage()
 
 
 @app.exception_handler(AppError)
@@ -159,9 +163,11 @@ async def request_id_middleware(request: Request, call_next):
 # Routers — spa must be last (contains catch-all /{asset_path:path})
 # ---------------------------------------------------------------------------
 
+from backend.routers import plan
 app.include_router(system.router)
 app.include_router(auth.router)
 app.include_router(catalog.router)
 app.include_router(questions.router)
 app.include_router(sample.router)
 app.include_router(spa.router)
+app.include_router(plan.router)
