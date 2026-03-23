@@ -47,3 +47,6 @@ gitdiff.log
 
 # Audit
 auditresults.log
+
+# Ignore npm cache
+.npm-cache/
