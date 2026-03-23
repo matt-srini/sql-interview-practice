@@ -72,79 +72,87 @@ Key frontend entry points:
 - frontend/src/pages/QuestionPage.js
 - frontend/src/pages/SampleQuestionPage.js
 
+
 ### Backend
-- Framework: FastAPI
-- Persistence and execution engine: DuckDB
-- Test tooling: pytest + httpx
+- **Framework:** FastAPI
+- **Persistence:** DuckDB (file-backed for user/profile/progress, in-memory for per-query execution)
+- **Test tooling:** pytest + httpx
 
-Core responsibilities:
+**Core responsibilities:**
 - API layer and dependency handling
-- Best-effort user identity assignment via cookie or request header
-- Challenge progression computation and persistence
-- Sample sequencing and reset
-- SQL validation, execution, and evaluation
-- Rate limiting
+- User identity via X-User-Id header or HttpOnly cookie (no login/account system)
+- Challenge progression and sample sequencing, persisted in DuckDB
+- SQL validation, execution, and evaluation (read-only, single-statement, timeout, row cap)
+- Per-IP rate limiting (Redis-backed or in-memory)
+- Stripe integration (simulated, with stub endpoints and webhook logic)
+- User profile and plan management (user_profiles table)
 - Request-id assignment and structured logging
-- Serving the built frontend bundle in production-style deployments
+- Serving the built frontend bundle in production
 
-Key backend modules:
-- backend/main.py
-- backend/config.py
-- backend/deps.py
-- backend/database.py
-- backend/evaluator.py
-- backend/exceptions.py
-- backend/progress.py
-- backend/questions.py
-- backend/sample_questions.py
-- backend/rate_limiter.py
-- backend/sql_guard.py
-- backend/middleware/request_context.py
-- backend/routers/system.py
-- backend/routers/catalog.py
-- backend/routers/questions.py
-- backend/routers/sample.py
-- backend/routers/spa.py
+**Key backend modules:**
+- backend/main.py: app wiring, middleware, exception handlers, router registration, lifespan setup
+- backend/config.py: environment settings, CORS, rate-limiter, frontend dist path
+- backend/database.py: persistent DuckDB connection, CSV loading, isolated per-query execution, user_profiles CRUD
+- backend/evaluator.py: query execution, timeout, result serialization, evaluation normalization
+- backend/progress.py: challenge/sample progress storage, unlock logic
+- backend/questions.py: challenge catalog loader/validator
+- backend/sample_questions.py: sample catalog loader
+- backend/rate_limiter.py: in-memory and Redis-backed rate limiter
+- backend/sql_guard.py: SQL validation and safety checks
+- backend/middleware/request_context.py: request-id assignment, logging context, X-Request-ID header
+- backend/routers/: system, catalog, questions, sample, plan (Stripe/user profile), spa
+- backend/content/questions/: challenge question content files and schema config
+- backend/datasets/: committed generated CSV datasets + metadata
+- backend/scripts/generate_v1_datasets.py: dataset generator/validator
+- backend/tests/: backend API, evaluator, and rate limiter tests
 
-### Data and execution model
-- Source datasets live in backend/datasets/
-- A persistent DuckDB file at backend/sql_practice.duckdb stores application state and loaded base tables
-- On startup, backend/database.py loads every CSV from backend/datasets/ into persistent DuckDB tables
-- For query execution, backend/database.py creates a fresh in-memory DuckDB connection
-- Only the tables listed in the current question's dataset_files are loaded into that isolated connection
+**Data and execution model:**
+- Source datasets: backend/datasets/
+- Persistent DuckDB file: backend/sql_practice.duckdb (stores user_profiles, user_progress, user_sample_seen, and loaded base tables)
+- On startup: backend/database.py loads all CSVs into persistent DuckDB tables
+- For query execution: backend/database.py creates a fresh in-memory DuckDB connection, loading only the tables listed in the question's dataset_files
+- Persistent DuckDB: used for user profile, plan, and progress tracking
+- Isolated in-memory DuckDB: used for per-query execution, ensuring no cross-question data leakage
 
-Persistent DuckDB responsibilities:
+**Stripe and user profile logic:**
+- User profiles (user_id, plan, metadata) are stored in user_profiles table
+- Plan changes and unlock logic are handled via backend/routers/plan.py
+- Stripe integration is stubbed: endpoints simulate session creation and webhook events, updating user plan on successful webhook
+
+**Persistent DuckDB responsibilities:**
 - Loaded base tables for inspection and health visibility
-- user_progress table for challenge completion tracking
-- user_sample_seen table for sample exposure tracking
+- user_profiles: user plan and metadata
+- user_progress: challenge completion tracking
+- user_sample_seen: sample exposure tracking
 
-Isolated execution responsibilities:
+**Isolated execution responsibilities:**
 - Limit user query scope to the question's allowed dataset files
 - Avoid cross-question data leakage
 - Keep evaluation reproducible against a fresh connection per execution
+
 
 ### Deployment model
 
 #### Local development
 - Frontend: Vite dev server on port 5173
 - Backend: Uvicorn/FastAPI on port 8000
-- Optional docker-compose stack with Redis, backend, and frontend services
+- Optional: docker-compose stack with Redis, backend, and frontend
 
 #### Production path
-- Root Dockerfile builds the frontend and runs the backend as a single service
-- FastAPI serves frontend/dist and the /api routes from one origin
-- Railway is the intended hosting target for the single-service deploy path
-- Cloudflare is the intended fronting layer for custom domain delivery
+- Root Dockerfile builds frontend and runs backend as a single service
+- FastAPI serves frontend/dist and /api routes from one origin
+- Railway: intended hosting target for single-service deploy
+- Cloudflare: intended fronting layer for custom domain delivery
 
 ### Request flow
-1. The user interacts with the browser UI.
-2. The frontend resolves the API base URL via frontend/src/api.js.
-3. Requests go to same-origin /api in production, or to localhost/Vite-backed routing in development.
-4. FastAPI routes requests through backend/routers/* registered in backend/main.py.
-5. SQL validation and execution run through backend/sql_guard.py, backend/evaluator.py, and backend/database.py.
-6. Progress and sample exposure state are read and written via backend/progress.py.
-7. FastAPI returns JSON payloads to the frontend.
-8. In single-service production mode, FastAPI also serves the built SPA and asset routes.
+1. User interacts with browser UI
+2. Frontend resolves API base URL via frontend/src/api.js
+3. Requests go to same-origin /api in production, or to localhost/Vite-backed routing in development
+4. FastAPI routes requests through backend/routers/* registered in backend/main.py
+5. SQL validation and execution run through backend/sql_guard.py, backend/evaluator.py, and backend/database.py
+6. Progress, sample exposure, and user profile state are read/written via backend/progress.py and backend/database.py
+7. FastAPI returns JSON payloads to the frontend
+8. In production, FastAPI also serves the built SPA and asset routes
 
 ---
 

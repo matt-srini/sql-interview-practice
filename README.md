@@ -23,16 +23,19 @@ For the fuller architectural reference, see docs/project-blueprint.md.
 
 ---
 
+
 ## Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| Backend | Python, FastAPI, DuckDB, Pandas |
-| Frontend | React 18, React Router, Vite, Monaco Editor, Axios |
-| Testing | pytest, httpx, Vitest, React Testing Library |
-| Datasets | Generated CSV files loaded into DuckDB |
+| Layer     | Technology                                                      |
+|-----------|-----------------------------------------------------------------|
+| Backend   | Python, FastAPI, DuckDB (file-backed + in-memory), Pandas       |
+| Frontend  | React 18, React Router, Vite, Monaco Editor, Axios              |
+| Testing   | pytest, httpx, Vitest, React Testing Library                    |
+| Datasets  | Generated CSV files loaded into DuckDB                          |
+| Payments  | Stripe integration (simulated, stub endpoints, webhook logic)   |
 
 ---
+
 
 ## Repository Layout
 
@@ -42,16 +45,17 @@ sql-interview-practice/
 │   ├── content/questions/        # JSON-backed challenge questions
 │   ├── datasets/                 # Committed generated CSV datasets + metadata
 │   ├── middleware/               # Request context and request_id handling
-│   ├── routers/                  # API and SPA route modules
+│   ├── routers/                  # API, SPA, plan/user profile, Stripe endpoints
 │   ├── scripts/                  # Dataset generation scripts
 │   ├── tests/                    # Backend tests
-│   ├── database.py               # DuckDB loading and isolated execution setup
+│   ├── database.py               # DuckDB loading, isolated execution, user_profiles CRUD
 │   ├── evaluator.py              # Query execution and result comparison
-│   ├── main.py                   # FastAPI app wiring
+│   ├── main.py                   # FastAPI app wiring, middleware, exception handling
 │   ├── progress.py               # Challenge/sample progress storage
 │   ├── questions.py              # Challenge catalog loader
 │   ├── sample_questions.py       # Sample question catalog
-│   └── sql_guard.py              # Read-only SQL validation
+│   ├── sql_guard.py              # Read-only SQL validation
+│   └── ...
 ├── docs/
 │   ├── project-blueprint.md      # Detailed architecture and current-state reference
 │   ├── project-overview.md       # Concise product summary
@@ -175,24 +179,27 @@ CORS_ALLOW_ORIGINS is also supported as an alias.
 
 ---
 
+
 ## Application Behavior
 
 ### Challenge progression
-
 - Progression is sequential within each difficulty
 - The first unsolved question in each difficulty is the next unlocked question
 - Progress is tracked in DuckDB using user_progress
-- User identity is best-effort via cookie or the X-User-Id header
+- User identity is best-effort via X-User-Id header or HttpOnly cookie (no login/account system)
 
 ### Sample mode
-
-- Sample mode is separate from challenge progression
+- Separate from challenge progression
 - Each difficulty has exactly 3 sample questions
 - Seen-sample tracking is stored in user_sample_seen
 - Sample exhaustion returns HTTP 409 until the user resets that difficulty
 
-### Query guardrails
+### User profile, plan, and Stripe logic
+- User profiles (user_id, plan, metadata) are stored in user_profiles table
+- Plan changes and unlock logic handled via backend/routers/plan.py
+- Stripe integration is stubbed: endpoints simulate session creation and webhook events, updating user plan on webhook
 
+### Query guardrails
 - Only single SELECT-style queries are allowed
 - Multi-statement SQL is blocked
 - Query timeout is 3 seconds
@@ -201,17 +208,15 @@ CORS_ALLOW_ORIGINS is also supported as an alias.
 - Query complexity is capped at 4 joins
 
 ### Error and request handling
-
-- User-facing error responses follow { error, request_id }
+- User-facing error responses: { error, request_id }
 - Responses include X-Request-ID
-- Structured logs use the format [request_id=<id>] message
+- Structured logs: [request_id=<id>] message
 
 ### API rate limiting
-
 - Per-IP request limiting applies to API traffic except /health
 - Redis-backed limiting is used when REDIS_URL is configured
-- Otherwise the app falls back to in-memory limiting
-- Default limit is 60 requests per 60-second window
+- Otherwise falls back to in-memory limiting
+- Default: 60 requests per 60-second window
 
 ---
 
