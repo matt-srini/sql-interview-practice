@@ -24,9 +24,9 @@ function getApiBaseUrl() {
 
 const api = axios.create({
   baseURL: getApiBaseUrl(),
-  // Required so the browser sends the sql_practice_uid cookie on cross-origin
-  // requests (e.g. Vite dev server on :5173 → backend on :8000). Without this
-  // the backend generates a new user UUID on every request, breaking progression.
+  // Required so the browser sends the session cookie on cross-origin requests
+  // (e.g. Vite dev server on :5173 -> backend on :8000). Without this the
+  // backend creates a new anonymous session on every request.
   withCredentials: true,
 });
 

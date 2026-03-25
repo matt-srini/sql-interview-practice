@@ -1,9 +1,8 @@
 import logging
-from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException
 
-from deps import RunQueryRequest, SubmitRequest, _validate_difficulty, get_user_id
+from deps import RunQueryRequest, SubmitRequest, _validate_difficulty, get_current_user
 from evaluator import evaluate, run_query
 from middleware.request_context import get_request_id
 from progress import clear_seen_sample_ids, get_seen_sample_ids, mark_sample_seen
@@ -12,22 +11,19 @@ from sample_questions import get_sample_question, get_sample_questions_by_diffic
 
 router = APIRouter(prefix="/api/sample")
 
-
 logger = logging.getLogger(__name__)
 
 
 @router.get("/{difficulty}")
-def get_sample_question_by_difficulty(
+async def get_sample_question_by_difficulty(
     difficulty: str,
-    response: Response,
-    user_id: str = Depends(get_user_id),
-) -> dict[str, Any]:
+    current_user: dict = Depends(get_current_user),
+) -> dict:
     request_id = get_request_id()
-    prefix = f"[request_id={request_id}] "
     logger.info(
-        "%sGet sample question: user_id=%s difficulty=%s",
-        prefix,
-        user_id,
+        "[request_id=%s] Get sample question: user_id=%s difficulty=%s",
+        request_id,
+        current_user["id"],
         difficulty,
     )
     normalized = _validate_difficulty(difficulty)
@@ -36,12 +32,12 @@ def get_sample_question_by_difficulty(
     if not pool:
         raise HTTPException(status_code=404, detail="Sample questions not found")
 
-    seen_ids = get_seen_sample_ids(user_id, normalized)
+    seen_ids = await get_seen_sample_ids(current_user["id"], normalized)
     next_unseen = next((q for q in pool if int(q["id"]) not in seen_ids), None)
     if next_unseen is None:
         raise HTTPException(status_code=409, detail="All sample questions exhausted for this difficulty.")
 
-    mark_sample_seen(user_id, normalized, int(next_unseen["id"]))
+    await mark_sample_seen(current_user["id"], normalized, int(next_unseen["id"]))
     seen_count = len(seen_ids) + 1
     remaining_count = max(len(pool) - seen_count, 0)
 
@@ -64,21 +60,19 @@ def get_sample_question_by_difficulty(
 
 
 @router.post("/{difficulty}/reset")
-def reset_sample_progress_for_difficulty(
+async def reset_sample_progress_for_difficulty(
     difficulty: str,
-    response: Response,
-    user_id: str = Depends(get_user_id),
-) -> dict[str, Any]:
+    current_user: dict = Depends(get_current_user),
+) -> dict[str, object]:
     request_id = get_request_id()
-    prefix = f"[request_id={request_id}] "
     logger.info(
-        "%sReset sample progress: user_id=%s difficulty=%s",
-        prefix,
-        user_id,
+        "[request_id=%s] Reset sample progress: user_id=%s difficulty=%s",
+        request_id,
+        current_user["id"],
         difficulty,
     )
     normalized = _validate_difficulty(difficulty)
-    clear_seen_sample_ids(user_id, normalized)
+    await clear_seen_sample_ids(current_user["id"], normalized)
     return {
         "difficulty": normalized,
         "reset": True,
@@ -86,12 +80,11 @@ def reset_sample_progress_for_difficulty(
 
 
 @router.post("/run-query")
-def run_sample_query(body: RunQueryRequest) -> dict[str, Any]:
+def run_sample_query(body: RunQueryRequest) -> dict:
     request_id = get_request_id()
-    prefix = f"[request_id={request_id}] "
     logger.info(
-        "%sSample /run-query: question_id=%s",
-        prefix,
+        "[request_id=%s] Sample /run-query: question_id=%s",
+        request_id,
         body.question_id,
     )
     question = get_sample_question(body.question_id)
@@ -102,12 +95,11 @@ def run_sample_query(body: RunQueryRequest) -> dict[str, Any]:
 
 
 @router.post("/submit")
-def submit_sample_answer(body: SubmitRequest) -> dict[str, Any]:
+def submit_sample_answer(body: SubmitRequest) -> dict:
     request_id = get_request_id()
-    prefix = f"[request_id={request_id}] "
     logger.info(
-        "%sSample /submit: question_id=%s",
-        prefix,
+        "[request_id=%s] Sample /submit: question_id=%s",
+        request_id,
         body.question_id,
     )
     question = get_sample_question(body.question_id)

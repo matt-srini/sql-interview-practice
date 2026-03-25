@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import SidebarNav from './SidebarNav';
+import api from '../api';
 import { useCatalog } from '../catalogContext';
+import { useAuth } from '../contexts/AuthContext';
 
 function pickStartQuestionId(catalog) {
   const order = ['easy', 'medium', 'hard'];
@@ -15,11 +17,15 @@ function pickStartQuestionId(catalog) {
 }
 
 export default function AppShell() {
-  const { catalog, loading, error } = useCatalog();
+  const { catalog, loading, error, refresh } = useCatalog();
+  const { user, refreshUser } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [collapsedByDiff, setCollapsedByDiff] = useState({ easy: false, medium: true, hard: true });
+  const [upgradePending, setUpgradePending] = useState(false);
+  const [upgradeError, setUpgradeError] = useState('');
+  const [upgradeSuccess, setUpgradeSuccess] = useState(false);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -51,6 +57,16 @@ export default function AppShell() {
     }
   }, [loading, error, catalog, location.pathname, startQuestionId, navigate]);
 
+  useEffect(() => {
+    if (!location.search.includes('upgraded=true')) return;
+
+    setUpgradeSuccess(true);
+    setUpgradeError('');
+    refreshUser().catch(() => {});
+    refresh().catch(() => {});
+    navigate({ pathname: location.pathname }, { replace: true });
+  }, [location.pathname, location.search, navigate, refresh, refreshUser]);
+
   function toggleDiff(diff) {
     setCollapsedByDiff((prev) => ({ ...prev, [diff]: !prev[diff] }));
   }
@@ -70,6 +86,21 @@ export default function AppShell() {
     setDesktopCollapsed((value) => !value);
   }
 
+  async function startCheckout(plan) {
+    setUpgradePending(true);
+    setUpgradeError('');
+    try {
+      const response = await api.post('/stripe/create-checkout', { plan });
+      window.location.assign(response.data.checkout_url);
+    } catch (err) {
+      const message = err?.response?.data?.error || 'Unable to start checkout right now.';
+      setUpgradeError(message);
+      setUpgradePending(false);
+    }
+  }
+
+  const showUpgradeControls = user && (user.plan === 'free' || user.plan === 'pro');
+
   return (
     <div className={`app-shell ${desktopCollapsed ? 'sidebar-collapsed' : ''}`}>
       <header className="topbar app-topbar">
@@ -87,8 +118,26 @@ export default function AppShell() {
           <Link className="back-link" to="/">
             Home
           </Link>
+          {showUpgradeControls && (
+            <div className="upgrade-actions">
+              {user.plan === 'free' && (
+                <button className="btn btn-primary" onClick={() => startCheckout('pro')} disabled={upgradePending}>
+                  Upgrade to Pro
+                </button>
+              )}
+              <button className="btn btn-secondary" onClick={() => startCheckout('elite')} disabled={upgradePending}>
+                Upgrade to Elite
+              </button>
+            </div>
+          )}
+          {user && <span className="plan-pill">Plan: {user.plan}</span>}
           {catalog?.user_id && <span className="user-pill">Session: {catalog.user_id.slice(0, 8)}</span>}
         </div>
+        {(upgradeError || upgradeSuccess) && (
+          <div className={`app-banner ${upgradeError ? 'app-banner-error' : 'app-banner-success'}`}>
+            {upgradeError || 'Upgrade confirmed. Your access is refreshing now.'}
+          </div>
+        )}
       </header>
 
       <div className="app-body">

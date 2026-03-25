@@ -1,160 +1,132 @@
-"""
-Plan management endpoints: plan change, profile, unlocks, Stripe integration.
-"""
-from fastapi import APIRouter, HTTPException, Request, status
-from pydantic import BaseModel
-from typing import Optional
+"""Plan management endpoints: profile, plan changes, and unlock state."""
 
-from backend.models import UserProfile, PlanChangeRequest, PlanChangeResult, UnlockState, StripeSession
-from backend.database import get_user_profile, set_user_profile, init_user_profile_storage
+from __future__ import annotations
+
+import logging
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException
+
+from config import IS_PROD
+from db import get_user_by_id, get_solved_ids, record_plan_change, set_user_plan
+from deps import get_current_user
+from models import PlanChangeRequest, PlanChangeResult, UnlockState, UserProfile
+from questions import get_questions_by_difficulty
+from unlock import compute_unlock_state
 
 router = APIRouter()
 
+logger = logging.getLogger(__name__)
 
-STRIPE_SESSIONS = {}
+
+async def _resolve_user(user_id: str | None, current_user: dict[str, Any]) -> dict[str, Any]:
+    target_id = user_id or current_user["id"]
+    user = await get_user_by_id(target_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
 
 
 @router.get("/api/user/profile", response_model=UserProfile)
-def get_user_profile_route(user_id: str):
-    profile = get_user_profile(user_id)
-    if not profile:
-        raise HTTPException(status_code=404, detail="User not found")
-    return UserProfile(**profile)
+async def get_user_profile_route(
+    user_id: str | None = None,
+    current_user: dict[str, Any] = Depends(get_current_user),
+) -> UserProfile:
+    user = await _resolve_user(user_id, current_user)
+    return UserProfile(**user)
 
 
 @router.put("/api/user/profile", response_model=UserProfile)
-def update_user_profile(user_id: str, plan: str, metadata: Optional[dict] = None):
+async def update_user_profile(
+    plan: str,
+    user_id: str | None = None,
+    current_user: dict[str, Any] = Depends(get_current_user),
+) -> UserProfile:
+    if IS_PROD:
+        raise HTTPException(status_code=403, detail="Direct plan changes disabled in production.")
     if plan not in ("free", "pro", "elite"):
         raise HTTPException(status_code=400, detail="Invalid plan")
-    set_user_profile(user_id, plan, metadata)
-    profile = get_user_profile(user_id)
-    return UserProfile(**profile)
+
+    target = await _resolve_user(user_id, current_user)
+    updated = await set_user_plan(target["id"], plan)
+    if updated is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    if updated["plan"] != target["plan"]:
+        await record_plan_change(target["id"], target["plan"], updated["plan"], context="profile-update")
+    return UserProfile(**updated)
+
 
 @router.post("/api/user/plan", response_model=PlanChangeResult)
-
-def change_plan(req: PlanChangeRequest):
-    profile = get_user_profile(req.user_id)
-    if not profile:
+async def change_plan(req: PlanChangeRequest) -> PlanChangeResult:
+    if IS_PROD:
+        raise HTTPException(status_code=403, detail="Direct plan changes disabled in production.")
+    user = await get_user_by_id(req.user_id)
+    if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    old_plan = profile["plan"]
+
+    old_plan = user["plan"]
     valid_plans = ("free", "pro", "elite")
     if req.new_plan not in valid_plans:
-        return PlanChangeResult(user_id=req.user_id, old_plan=old_plan, new_plan=old_plan, success=False, reason="Invalid plan")
+        return PlanChangeResult(
+            user_id=req.user_id,
+            old_plan=old_plan,
+            new_plan=old_plan,
+            success=False,
+            reason="Invalid plan",
+        )
     if req.new_plan == old_plan:
-        return PlanChangeResult(user_id=req.user_id, old_plan=old_plan, new_plan=old_plan, success=True, reason="No change")
+        return PlanChangeResult(
+            user_id=req.user_id,
+            old_plan=old_plan,
+            new_plan=old_plan,
+            success=True,
+            reason="No change",
+        )
 
-    # Plan transition validation
     allowed_transitions = {
         "free": {"pro", "elite"},
         "pro": {"elite", "free"},
         "elite": {"pro", "free"},
     }
     if req.new_plan not in allowed_transitions.get(old_plan, set()):
-        return PlanChangeResult(user_id=req.user_id, old_plan=old_plan, new_plan=old_plan, success=False, reason="Transition not allowed")
+        return PlanChangeResult(
+            user_id=req.user_id,
+            old_plan=old_plan,
+            new_plan=old_plan,
+            success=False,
+            reason="Transition not allowed",
+        )
 
-    # Audit log (placeholder)
-    import logging
-    logging.info(f"[plan-change] user_id={req.user_id} {old_plan}->{req.new_plan}")
-
-    # Unlock recompute trigger (placeholder)
-    # In a real system, would trigger unlock recalculation here
-
-    set_user_profile(req.user_id, req.new_plan, profile.get("metadata"))
-    return PlanChangeResult(user_id=req.user_id, old_plan=old_plan, new_plan=req.new_plan, success=True)
-
-
-# Stripe integration (stub)
-import backend.progress as progress
-import json
-import os
-import logging
-import uuid
-try:
-    import stripe
-except ImportError:
-    stripe = None
-
-def _load_questions_by_difficulty():
-    base = os.path.join(os.path.dirname(__file__), "../content/questions")
-    questions_by_diff = {}
-    for diff in ("easy", "medium", "hard"):
-        path = os.path.join(base, f"{diff}.json")
-        with open(path, "r", encoding="utf-8") as f:
-            questions_by_diff[diff] = json.load(f)
-    return questions_by_diff
+    updated = await set_user_plan(req.user_id, req.new_plan)
+    if updated is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    await record_plan_change(req.user_id, old_plan, req.new_plan, context=req.context)
+    logger.info("[plan-change] user_id=%s %s->%s", req.user_id, old_plan, req.new_plan)
+    return PlanChangeResult(
+        user_id=req.user_id,
+        old_plan=old_plan,
+        new_plan=req.new_plan,
+        success=True,
+    )
 
 
 @router.get("/api/user/unlocks", response_model=UnlockState)
-def get_unlock_state(user_id: str):
-    profile = get_user_profile(user_id)
-    if not profile:
-        raise HTTPException(status_code=404, detail="User not found")
+async def get_unlock_state(
+    user_id: str | None = None,
+    current_user: dict[str, Any] = Depends(get_current_user),
+) -> UnlockState:
+    user = await _resolve_user(user_id, current_user)
+    questions_by_diff = get_questions_by_difficulty()
+    solved_ids = await get_solved_ids(user["id"])
+    unlock_state = compute_unlock_state(user["plan"], solved_ids, questions_by_diff)
 
-    plan = profile["plan"]
-    # Plan determines accessible difficulties
-    if plan == "free":
-        allowed = ["easy"]
-    elif plan == "pro":
-        allowed = ["easy", "medium"]
-    elif plan == "elite":
-        allowed = ["easy", "medium", "hard"]
-    else:
-        allowed = []
-
-    questions_by_diff = _load_questions_by_difficulty()
-    allowed_questions = {d: questions_by_diff[d] for d in allowed}
-    solved_ids = progress.get_solved_question_ids(user_id)
-    statuses = progress.compute_statuses(questions_by_difficulty=allowed_questions, solved_ids=solved_ids)
-
-    unlocked_questions = [str(qid) for qid, st in statuses.items() if st.state == "unlocked"]
-    solved_questions = [str(qid) for qid, st in statuses.items() if st.state == "solved"]
-    access_map = {str(qid): st.state for qid, st in statuses.items()}
+    unlocked_questions = [str(qid) for qid, state in unlock_state.items() if state == "unlocked"]
+    solved_questions = [str(qid) for qid, state in unlock_state.items() if state == "solved"]
+    access_map = {str(qid): state for qid, state in unlock_state.items()}
 
     return UnlockState(
-        user_id=user_id,
+        user_id=user["id"],
         unlocked_questions=unlocked_questions,
         solved_questions=solved_questions,
         access_map=access_map,
     )
-
-@router.post("/api/stripe/create-session", response_model=StripeSession)
-def create_stripe_session(user_id: str, plan: str):
-    # Simulate Stripe session creation
-    if stripe is None:
-        session_id = f"sess_{user_id}_{plan}_{uuid.uuid4().hex[:8]}"
-        session = StripeSession(user_id=user_id, session_id=session_id, plan=plan, status="created")
-        STRIPE_SESSIONS[session_id] = session
-        return session
-    # Real Stripe integration would go here
-    # session = stripe.checkout.Session.create(...)
-    # return StripeSession(...)
-    session_id = f"sess_{user_id}_{plan}_{uuid.uuid4().hex[:8]}"
-    session = StripeSession(user_id=user_id, session_id=session_id, plan=plan, status="created")
-    STRIPE_SESSIONS[session_id] = session
-    return session
-
-@router.post("/api/stripe/webhook")
-async def stripe_webhook(request: Request):
-    # Simulate Stripe webhook event
-    payload = await request.body()
-    event = None
-    try:
-        event = json.loads(payload)
-    except Exception:
-        return {"error": "Invalid payload"}
-
-    # In real integration, validate signature and event type
-    event_type = event.get("type")
-    data = event.get("data", {})
-    user_id = data.get("user_id")
-    plan = data.get("plan")
-    if event_type == "checkout.session.completed" and user_id and plan:
-        # Ensure user profile exists before plan change
-        profile = get_user_profile(user_id)
-        if not profile:
-            set_user_profile(user_id, plan, None)
-        req = PlanChangeRequest(user_id=user_id, new_plan=plan, context="stripe")
-        change_plan(req)
-        logging.info(f"[stripe-webhook] Upgraded user {user_id} to {plan}")
-        return {"status": "plan changed"}
-    return {"status": "webhook received"}

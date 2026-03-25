@@ -5,27 +5,24 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from fastapi import FastAPI, Request
-from backend.database import init_user_profile_storage
-from fastapi import HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from config import ALLOWED_ORIGINS, RATE_LIMIT_REQUESTS, RATE_LIMIT_WINDOW_SECONDS, REDIS_URL
-from database import load_datasets
+from config import ALLOWED_ORIGINS, IS_PROD, RATE_LIMIT_REQUESTS, RATE_LIMIT_WINDOW_SECONDS, REDIS_URL
+from database import close_query_engine, init_query_engine
+from db import close_pool, ensure_schema, init_pool
 from exceptions import AppError
-from middleware.request_context import request_context_middleware
-from middleware.request_context import get_request_id
-from progress import init_progress_storage
+from middleware.request_context import get_request_id, request_context_middleware
 from rate_limiter import BaseRateLimiter, create_rate_limiter
-import auth_db
 from routers import auth, catalog, questions, sample, spa, system
+from routers import plan
+from routers import stripe as stripe_router
 
 
 LOG_FORMAT = "%(asctime)s [%(levelname)s] %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
-# Ensure root handlers use our formatter (uvicorn may pre-configure handlers).
 _root_logger = logging.getLogger()
 _formatter = logging.Formatter(LOG_FORMAT)
 for _handler in _root_logger.handlers:
@@ -34,26 +31,18 @@ for _handler in _root_logger.handlers:
 logger = logging.getLogger(__name__)
 
 
-# ---------------------------------------------------------------------------
-# Lifespan: load CSV datasets into DuckDB once on startup
-# ---------------------------------------------------------------------------
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    load_datasets()
-    init_progress_storage()
-    auth_db.init_auth_db()
+    init_query_engine()
+    await init_pool()
+    if not IS_PROD:
+        await ensure_schema()
     yield
+    close_query_engine()
+    await close_pool()
 
-
-# ---------------------------------------------------------------------------
-# App setup
-# ---------------------------------------------------------------------------
 
 app = FastAPI(title="SQL Interview Practice API", lifespan=lifespan)
-
-# Ensure user_profiles table exists at startup
-init_user_profile_storage()
 
 
 @app.exception_handler(AppError)
@@ -85,6 +74,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     request_id = get_request_id()
+    logger.exception("[request_id=%s] Unhandled exception", request_id, exc_info=exc)
     return JSONResponse(
         status_code=500,
         content={
@@ -93,6 +83,7 @@ async def global_exception_handler(request: Request, exc: Exception):
         },
         headers={"X-Request-ID": request_id},
     )
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -110,13 +101,11 @@ rate_limiter: BaseRateLimiter = create_rate_limiter(
 
 
 def _clear_rate_limit_state() -> None:
-    """Testing helper to clear rate-limit state where possible."""
     rate_limiter.clear()
 
 
 @app.middleware("http")
 async def ip_rate_limit_middleware(request: Request, call_next):
-    # Keep health checks always accessible for orchestration.
     if request.url.path == "/health":
         return await call_next(request)
 
@@ -124,10 +113,9 @@ async def ip_rate_limit_middleware(request: Request, call_next):
     client_ip = request.client.host if request.client and request.client.host else "unknown"
     decision = rate_limiter.check(client_ip)
     if not decision.allowed:
-        prefix = f"[request_id={request_id}] "
         logger.warning(
-            "%sRate limit exceeded client_ip=%s retry_after=%ss",
-            prefix,
+            "[request_id=%s] Rate limit exceeded client_ip=%s retry_after=%ss",
+            request_id,
             client_ip,
             decision.retry_after,
         )
@@ -155,19 +143,14 @@ async def ip_rate_limit_middleware(request: Request, call_next):
 
 @app.middleware("http")
 async def request_id_middleware(request: Request, call_next):
-    # Register request context middleware last so it runs first.
     return await request_context_middleware(request, call_next)
 
 
-# ---------------------------------------------------------------------------
-# Routers — spa must be last (contains catch-all /{asset_path:path})
-# ---------------------------------------------------------------------------
-
-from backend.routers import plan
 app.include_router(system.router)
 app.include_router(auth.router)
 app.include_router(catalog.router)
 app.include_router(questions.router)
 app.include_router(sample.router)
-app.include_router(spa.router)
 app.include_router(plan.router)
+app.include_router(stripe_router.router)
+app.include_router(spa.router)

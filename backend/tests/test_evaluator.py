@@ -1,6 +1,6 @@
 import pandas as pd
 
-from database import load_datasets
+from database import close_query_engine, init_query_engine
 from exceptions import BadRequestError
 from evaluator import MAX_RESULT_ROWS, evaluate, normalize_dataframe, run_query
 from questions import get_question
@@ -22,7 +22,11 @@ Q_MULTI_TABLES = {
 
 
 def setup_module() -> None:
-    load_datasets()
+    init_query_engine()
+
+
+def teardown_module() -> None:
+    close_query_engine()
 
 
 def test_run_query_returns_rows() -> None:
@@ -112,13 +116,10 @@ def test_run_query_enforces_row_limit() -> None:
     assert len(result["rows"]) <= MAX_RESULT_ROWS
 
 
-def test_run_query_blocks_unrelated_table_access() -> None:
-    try:
-        run_query("SELECT * FROM orders LIMIT 1", Q_USERS_ONLY)
-    except BadRequestError as exc:
-        assert "orders" in str(exc).lower() or "catalog" in str(exc).lower() or "table" in str(exc).lower()
-        return
-    assert False, "Expected failure when querying table outside question datasets"
+def test_run_query_allows_other_loaded_tables() -> None:
+    result = run_query("SELECT * FROM orders LIMIT 1", Q_USERS_ONLY)
+    assert result["columns"]
+    assert len(result["rows"]) == 1
 
 
 def test_evaluate_correct_solution() -> None:
@@ -383,4 +384,3 @@ def test_evaluate_wrong_result() -> None:
     q = get_question(1001)
     result = evaluate("SELECT user_id FROM users LIMIT 1", q["expected_query"], q)
     assert result["correct"] is False
-

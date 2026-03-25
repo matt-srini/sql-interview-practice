@@ -1,18 +1,24 @@
 """
 Data models for user, plan, unlock, and payment state.
 """
+
 from typing import Optional
+
 from pydantic import BaseModel
 
+
 class UserProfile(BaseModel):
-    user_id: str
-    plan: str  # 'free', 'pro', 'elite'
-    metadata: Optional[dict] = None
+    id: str
+    email: Optional[str] = None
+    name: Optional[str] = None
+    plan: str
+
 
 class PlanChangeRequest(BaseModel):
     user_id: str
-    new_plan: str  # 'free', 'pro', 'elite'
-    context: Optional[str] = None  # e.g., 'dev', 'stripe', etc.
+    new_plan: str
+    context: Optional[str] = None
+
 
 class PlanChangeResult(BaseModel):
     user_id: str
@@ -21,16 +27,17 @@ class PlanChangeResult(BaseModel):
     success: bool
     reason: Optional[str] = None
 
+
 class UnlockState(BaseModel):
     user_id: str
     unlocked_questions: list[str]
     solved_questions: list[str]
-    access_map: dict  # question_id -> 'locked' | 'unlocked' | 'solved'
+    access_map: dict[str, str]
 
-class StripeSession(BaseModel):
-    user_id: str
-    session_id: str
-    customer_id: Optional[str] = None
-    status: str  # 'created', 'completed', 'failed', etc.
+
+class CheckoutRequest(BaseModel):
     plan: str
-    created_at: Optional[str] = None
+
+
+class CheckoutResponse(BaseModel):
+    checkout_url: str

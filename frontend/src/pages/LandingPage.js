@@ -19,6 +19,23 @@ const SAMPLE_TILES = [
   },
 ];
 
+const TIMED_CHALLENGE_TILES = [
+  {
+    duration: '30 min',
+    title: 'Paced interview set',
+    mix: '1 easy + 2 medium',
+    copy: 'Built for shorter recruiter screens and warm-up reps. You get one quick opener, then two medium questions that reward clean execution.',
+    detail: 'Best for keeping pace without stretching into a full session.',
+  },
+  {
+    duration: '60 min',
+    title: 'Full round simulation',
+    mix: '1 easy + 2 medium + 1 hard',
+    copy: 'Closer to a full SQL interview arc. Start with a fast confidence builder, work through two core mediums, then finish with one deeper stretch problem.',
+    detail: 'Best for realistic interview stamina and recovery after a miss.',
+  },
+];
+
 export default function LandingPage() {
   const { user, logout } = useAuth();
 
@@ -54,7 +71,7 @@ export default function LandingPage() {
             <h2 className="landing-title">Try a sample question or start the guided challenge.</h2>
             <p className="landing-copy">
               Each difficulty has a dedicated 3-question sample track separate from the challenge bank. When you are ready,
-              switch into challenge mode and unlock questions in order.
+              move into structured practice and upcoming timed challenge formats designed around real interview pacing.
             </p>
             <div className="landing-actions">
               <Link className="btn btn-primary" to="/practice">
@@ -67,14 +84,27 @@ export default function LandingPage() {
           </div>
 
           <div className="landing-side-card">
-            <h2>How it works</h2>
-            <p>The challenge path tracks what you have solved in this browser session. Sample mode is a sandbox.</p>
-            <ul className="landing-checklist">
-              <li>Each difficulty has exactly 3 dedicated sample questions.</li>
-              <li>Samples are separate from the challenge pool and do not affect progression.</li>
-              <li>Challenge mode unlocks the next problem only after you solve the current one.</li>
-              <li>Direct links to locked questions are blocked by the backend.</li>
-            </ul>
+            <span className="landing-side-kicker">Timed practice formats</span>
+            <h2>Train for the shape of the interview, not just the questions.</h2>
+            <p>
+              The guided challenge remains the main path. Alongside it, timed modes should feel focused and realistic rather
+              than gamified or random.
+            </p>
+            <div className="timed-mode-list">
+              {TIMED_CHALLENGE_TILES.map((tile) => (
+                <div key={tile.duration} className="timed-mode-tile" aria-label={`${tile.duration} challenge preview`}>
+                  <div className="timed-mode-top">
+                    <span className="timed-mode-duration">{tile.duration}</span>
+                    <span className="timed-mode-status">Planned</span>
+                  </div>
+                  <h3>{tile.title}</h3>
+                  <p className="timed-mode-mix">{tile.mix}</p>
+                  <p className="timed-mode-copy">{tile.copy}</p>
+                  <p className="timed-mode-detail">{tile.detail}</p>
+                </div>
+              ))}
+            </div>
+            <p className="landing-side-note">Samples stay sandboxed. Structured practice remains your persistent path.</p>
           </div>
         </section>
 

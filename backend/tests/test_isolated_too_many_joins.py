@@ -1,10 +1,5 @@
-
-import os
-import tempfile
-import pytest
 from exceptions import BadRequestError
 from evaluator import run_query
-import backend.database as database
 
 Q_MULTI_TABLES = {
     "dataset_files": [
@@ -15,14 +10,6 @@ Q_MULTI_TABLES = {
         "products.csv",
     ]
 }
-
-@pytest.fixture(autouse=True)
-def patch_duckdb_path(monkeypatch):
-    with tempfile.TemporaryDirectory() as tmpdir:
-        db_path = os.path.join(tmpdir, "test.duckdb")
-        monkeypatch.setattr(database, "DB_PATH", db_path)
-        database.init_user_profile_storage()
-        yield
 
 def test_run_query_blocks_too_many_joins():
     try:
