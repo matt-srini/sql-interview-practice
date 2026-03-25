@@ -1,47 +1,132 @@
-import os
-import tempfile
+from types import SimpleNamespace
+
 import pytest
-
 from fastapi.testclient import TestClient
-import backend.database as database
+
+import backend.main as main
+from routers import stripe as stripe_router
 
 
-@pytest.fixture(autouse=True)
-def patch_duckdb_path(monkeypatch):
-    import tempfile
-    import os
-    with tempfile.NamedTemporaryFile(suffix=".duckdb", delete=True) as tf:
-        db_path = tf.name
-    # At this point, the file exists, so delete it so DuckDB can create it
-    if os.path.exists(db_path):
-        os.remove(db_path)
-    monkeypatch.setattr(database, "DB_PATH", db_path)
-    global app
-    from backend.main import app as fastapi_app
-    app = fastapi_app
-    database.init_user_profile_storage()
-    yield
-    if os.path.exists(db_path):
-        os.remove(db_path)
+app = main.app
+pytestmark = pytest.mark.usefixtures("isolated_state")
 
-def test_stripe_webhook_triggers_plan_change():
+
+def _register_user(client: TestClient, email: str = "isolated@example.com") -> dict:
+    client.get("/api/catalog")
+    response = client.post(
+        "/api/auth/register",
+        json={
+            "email": email,
+            "name": "Isolated Stripe User",
+            "password": "password123",
+        },
+    )
+    assert response.status_code == 201
+    return response.json()["user"]
+
+
+def _configure_webhook(monkeypatch, event):
+    def construct_event(payload, signature, secret):
+        if signature != "good-signature":
+            raise ValueError("invalid signature")
+        return event
+
+    stripe_stub = SimpleNamespace(
+        api_key=None,
+        Customer=SimpleNamespace(create=lambda **kwargs: SimpleNamespace(id="cus_test_456")),
+        checkout=SimpleNamespace(
+            Session=SimpleNamespace(create=lambda **kwargs: SimpleNamespace(url="https://checkout.stripe.test/session_456"))
+        ),
+        Webhook=SimpleNamespace(construct_event=construct_event),
+    )
+
+    monkeypatch.setattr(stripe_router, "stripe", stripe_stub)
+    monkeypatch.setattr(stripe_router, "STRIPE_SECRET_KEY", "sk_test_456")
+    monkeypatch.setattr(stripe_router, "STRIPE_WEBHOOK_SECRET", "whsec_test_456")
+    monkeypatch.setattr(stripe_router, "PRICE_IDS", {"pro": "price_pro_456", "elite": "price_elite_456"})
+
+
+def test_checkout_completed_webhook_updates_plan_and_is_idempotent(monkeypatch) -> None:
     with TestClient(app) as client:
-        # Create user profile first
-        client.put("/api/user/profile", params={"user_id": "stripeuser", "plan": "free"})
-        # Simulate Stripe webhook event
+        user = _register_user(client)
         event = {
+            "id": "evt_checkout_completed_1",
             "type": "checkout.session.completed",
-            "data": {"user_id": "stripeuser", "plan": "pro"}
+            "data": {
+                "object": {
+                    "metadata": {
+                        "user_id": user["id"],
+                        "target_plan": "pro",
+                    }
+                }
+            },
         }
-        resp = client.post("/api/stripe/webhook", json=event)
-        assert resp.status_code == 200
-        assert resp.json()["status"] == "plan changed"
-        import time
-        time.sleep(0.1)
-        # Check user profile updated
-        resp = client.get("/api/user/profile", params={"user_id": "stripeuser"})
-        profile = resp.json()
-        if resp.status_code == 200:
-            assert profile["plan"] == "pro"
-        else:
-            assert False, f"Failed to fetch user profile: {profile}"
+        _configure_webhook(monkeypatch, event)
+
+        first = client.post(
+            "/api/stripe/webhook",
+            content=b"{}",
+            headers={"Stripe-Signature": "good-signature"},
+        )
+        assert first.status_code == 200
+        assert first.json()["status"] == "processed"
+
+        profile = client.get("/api/user/profile", params={"user_id": user["id"]})
+        assert profile.status_code == 200
+        assert profile.json()["plan"] == "pro"
+
+        second = client.post(
+            "/api/stripe/webhook",
+            content=b"{}",
+            headers={"Stripe-Signature": "good-signature"},
+        )
+        assert second.status_code == 200
+        assert second.json()["status"] == "already processed"
+
+
+def test_subscription_deleted_webhook_downgrades_user(monkeypatch) -> None:
+    with TestClient(app) as client:
+        user = _register_user(client, email="downgrade@example.com")
+        upgrade = client.post(
+            "/api/user/plan",
+            json={"user_id": user["id"], "new_plan": "pro", "context": "test-setup"},
+        )
+        assert upgrade.status_code == 200
+
+        checkout_event = {
+            "id": "evt_checkout_seed_customer",
+            "type": "noop",
+            "data": {"object": {}},
+        }
+        _configure_webhook(monkeypatch, checkout_event)
+        checkout = client.post(
+            "/api/stripe/create-checkout",
+            json={"plan": "elite"},
+            headers={"Origin": "http://localhost:5173"},
+        )
+        assert checkout.status_code == 200
+
+        deleted_event = {
+            "id": "evt_subscription_deleted_1",
+            "type": "customer.subscription.deleted",
+            "data": {
+                "object": {
+                    "customer": "cus_test_456",
+                    "metadata": {},
+                }
+            },
+        }
+        _configure_webhook(monkeypatch, deleted_event)
+
+        response = client.post(
+            "/api/stripe/webhook",
+            content=b"{}",
+            headers={"Stripe-Signature": "good-signature"},
+        )
+
+        assert response.status_code == 200
+        assert response.json()["status"] == "processed"
+
+        profile = client.get("/api/user/profile", params={"user_id": user["id"]})
+        assert profile.status_code == 200
+        assert profile.json()["plan"] == "free"

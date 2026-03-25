@@ -7,7 +7,15 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Hydrate session from cookie on mount.
+  const refreshUser = useCallback(async () => {
+    try {
+      const res = await api.get('/auth/me');
+      setUser(res.data.user ?? null);
+    } catch {
+      setUser(null);
+    }
+  }, []);
+
   useEffect(() => {
     api
       .get('/auth/me')
@@ -38,7 +46,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, requestMagicLink }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, requestMagicLink, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

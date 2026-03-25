@@ -6,35 +6,40 @@
 This repository is a SQL interview practice platform with:
 - A React frontend for browsing questions, writing SQL, and reviewing results
 - A FastAPI backend for routing, progression, execution, evaluation, and static SPA serving
-- A DuckDB-backed persistence layer for progress metadata plus isolated in-memory DuckDB execution for each query attempt
+- A PostgreSQL-backed product-state layer plus a shared in-memory DuckDB execution engine
 
 ### Problem it solves
 It provides a controlled SQL practice environment where learners can:
-- Work through challenge questions in a gated sequence by difficulty
+- Work through challenge questions with plan-aware unlock rules
 - Use a separate sample track without affecting challenge progression
 - Execute read-only SQL safely against realistic CSV-backed datasets
 - Compare their results against expected outputs and then review official solutions and explanations
 
 ### Current implemented features
-- Sequential challenge progression within each difficulty
+- Unified anonymous and registered identity with cookie-backed sessions
+- PostgreSQL-backed users, sessions, progress, sample tracking, plan changes, and Stripe audit events
+- Plan-aware unlock computation shared across catalog, question guards, and profile routes
 - JSON-backed challenge question bank in backend/content/questions/
 - Python-backed sample question bank with exactly 3 questions per difficulty
 - Deterministic dataset generation via backend/scripts/generate_v1_datasets.py
-- Per-question isolated query execution using only the current question's dataset_files
+- Process-singleton DuckDB query engine loaded once at startup
 - SQL safety validation with parser-based checks in backend/sql_guard.py
 - Query execution timeout and row-count capping
 - Result-set comparison with normalization and ORDER BY-sensitive evaluation behavior
 - Sample exhaustion tracking and per-difficulty sample reset
 - Per-IP rate limiting with Redis or in-memory fallback
+- Stripe Checkout creation plus verified, idempotent webhook processing
+- Health checks that validate both Postgres and the query engine
+- Anonymous-session cleanup script for stale users and expired sessions
 - Request correlation with X-Request-ID headers and request_id-prefixed logs
 - Standardized API error payloads shaped as { error, request_id }
 - Single-service production deployment path where FastAPI serves both the API and the built frontend
 
 ### Current content footprint
-- Challenge questions: 85 total
+- Challenge questions: 86 total
   - easy: 30
   - medium: 30
-  - hard: 25
+  - hard: 26
 - Sample questions: 9 total
   - easy: 3
   - medium: 3
@@ -75,60 +80,54 @@ Key frontend entry points:
 
 ### Backend
 - **Framework:** FastAPI
-- **Persistence:** DuckDB (file-backed for user/profile/progress, in-memory for per-query execution)
+- **Persistence:** PostgreSQL for product state, DuckDB for SQL execution only
 - **Test tooling:** pytest + httpx
 
 **Core responsibilities:**
 - API layer and dependency handling
-- User identity via X-User-Id header or HttpOnly cookie (no login/account system)
-- Challenge progression and sample sequencing, persisted in DuckDB
+- User identity via unified session_token cookie with anonymous-to-registered continuity
+- Challenge progression, sample sequencing, plans, and billing audits persisted in PostgreSQL
 - SQL validation, execution, and evaluation (read-only, single-statement, timeout, row cap)
 - Per-IP rate limiting (Redis-backed or in-memory)
-- Stripe integration (simulated, with stub endpoints and webhook logic)
-- User profile and plan management (user_profiles table)
+- Stripe Checkout and verified webhook handling
+- User profile and plan management
 - Request-id assignment and structured logging
 - Serving the built frontend bundle in production
 
 **Key backend modules:**
 - backend/main.py: app wiring, middleware, exception handlers, router registration, lifespan setup
 - backend/config.py: environment settings, CORS, rate-limiter, frontend dist path
-- backend/database.py: persistent DuckDB connection, CSV loading, isolated per-query execution, user_profiles CRUD
+- backend/db.py: async PostgreSQL access layer for users, sessions, progress, plans, and Stripe audit data
+- backend/database.py: DuckDB golden connection startup, table loading, and cursor access for execution
 - backend/evaluator.py: query execution, timeout, result serialization, evaluation normalization
-- backend/progress.py: challenge/sample progress storage, unlock logic
+- backend/progress.py: challenge/sample persistence wrappers
+- backend/unlock.py: pure unlock and next-question policy logic
 - backend/questions.py: challenge catalog loader/validator
 - backend/sample_questions.py: sample catalog loader
 - backend/rate_limiter.py: in-memory and Redis-backed rate limiter
 - backend/sql_guard.py: SQL validation and safety checks
 - backend/middleware/request_context.py: request-id assignment, logging context, X-Request-ID header
-- backend/routers/: system, catalog, questions, sample, plan (Stripe/user profile), spa
+- backend/routers/: system, auth, catalog, questions, sample, plan, stripe, spa
 - backend/content/questions/: challenge question content files and schema config
 - backend/datasets/: committed generated CSV datasets + metadata
 - backend/scripts/generate_v1_datasets.py: dataset generator/validator
+- backend/scripts/cleanup_anonymous.py: stale anonymous-user cleanup command
 - backend/tests/: backend API, evaluator, and rate limiter tests
 
 **Data and execution model:**
 - Source datasets: backend/datasets/
-- Persistent DuckDB file: backend/sql_practice.duckdb (stores user_profiles, user_progress, user_sample_seen, and loaded base tables)
-- On startup: backend/database.py loads all CSVs into persistent DuckDB tables
-- For query execution: backend/database.py creates a fresh in-memory DuckDB connection, loading only the tables listed in the question's dataset_files
-- Persistent DuckDB: used for user profile, plan, and progress tracking
-- Isolated in-memory DuckDB: used for per-query execution, ensuring no cross-question data leakage
+- PostgreSQL: source of truth for users, sessions, progress, sample exposure, plan changes, and Stripe event audits
+- On startup: backend/database.py loads all committed CSVs into a single in-memory DuckDB connection
+- For query execution: backend/database.py returns lightweight cursors against the shared in-memory engine
+- DuckDB is execution-only and never stores product state
+- All committed datasets are visible to execution, with writes blocked by sql_guard.py and query limits
 
 **Stripe and user profile logic:**
-- User profiles (user_id, plan, metadata) are stored in user_profiles table
-- Plan changes and unlock logic are handled via backend/routers/plan.py
-- Stripe integration is stubbed: endpoints simulate session creation and webhook events, updating user plan on successful webhook
-
-**Persistent DuckDB responsibilities:**
-- Loaded base tables for inspection and health visibility
-- user_profiles: user plan and metadata
-- user_progress: challenge completion tracking
-- user_sample_seen: sample exposure tracking
-
-**Isolated execution responsibilities:**
-- Limit user query scope to the question's allowed dataset files
-- Avoid cross-question data leakage
-- Keep evaluation reproducible against a fresh connection per execution
+- User profiles, sessions, and plans are stored in PostgreSQL
+- Direct plan changes remain available in development mode for testing
+- Stripe checkout lives in backend/routers/stripe.py
+- Webhooks are signature-verified, idempotent, and recorded in audit tables
+- Solved questions always remain solved across upgrades and downgrades
 
 
 ### Deployment model
@@ -136,7 +135,7 @@ Key frontend entry points:
 #### Local development
 - Frontend: Vite dev server on port 5173
 - Backend: Uvicorn/FastAPI on port 8000
-- Optional: docker-compose stack with Redis, backend, and frontend
+- Optional: docker-compose stack with Postgres, Redis, backend, and frontend
 
 #### Production path
 - Root Dockerfile builds frontend and runs backend as a single service
@@ -150,7 +149,7 @@ Key frontend entry points:
 3. Requests go to same-origin /api in production, or to localhost/Vite-backed routing in development
 4. FastAPI routes requests through backend/routers/* registered in backend/main.py
 5. SQL validation and execution run through backend/sql_guard.py, backend/evaluator.py, and backend/database.py
-6. Progress, sample exposure, and user profile state are read/written via backend/progress.py and backend/database.py
+6. Progress, sample exposure, identity, and plan state are read/written via backend/db.py and backend/progress.py
 7. FastAPI returns JSON payloads to the frontend
 8. In production, FastAPI also serves the built SPA and asset routes
 
@@ -163,7 +162,7 @@ Key frontend entry points:
 - ARCHITECTURE.md: shorter historical architecture notes
 - MANUAL_TEST_CHECKLIST.md: manual QA checklist
 - TODO_FUTURE.md: backlog and future enhancements
-- docker-compose.yml: local multi-container stack for Redis + backend + frontend
+- docker-compose.yml: local multi-container stack for Postgres + Redis + backend + frontend
 - Dockerfile: root single-service production image
 - railway.json: Railway deployment metadata
 - docs/project-blueprint.md: this detailed architecture and state reference
@@ -173,16 +172,18 @@ Key frontend entry points:
 - main.py: app wiring, middleware, exception handlers, router registration, lifespan setup
 - config.py: environment settings, CORS origins, rate-limiter settings, frontend dist path
 - deps.py: request models and shared dependencies
-- database.py: persistent DuckDB connections, startup CSV loading, isolated per-question execution connections
+- db.py: PostgreSQL connection pool, schema helpers, and app-state persistence
+- database.py: shared DuckDB query engine and cursor helpers
 - evaluator.py: query execution, timeout handling, result serialization, evaluation normalization
 - exceptions.py: user-facing application exception types
-- progress.py: challenge completion, sample exposure, unlock logic, storage initialization
+- progress.py: challenge completion and sample-exposure persistence wrappers
+- unlock.py: pure entitlement and next-question policy logic
 - questions.py: validated JSON-backed challenge catalog loading and shaping
 - sample_questions.py: validated Python-backed sample catalog with fixed counts by difficulty
 - rate_limiter.py: in-memory and Redis-backed rate limiter implementations
 - sql_guard.py: SQL validation and safety checks
 - middleware/request_context.py: request-id assignment, logging context, X-Request-ID header propagation
-- routers/: route modules for system, catalog, challenge, sample, and SPA/static serving
+- routers/: route modules for auth, system, catalog, challenge, sample, plan, Stripe, and SPA/static serving
 - content/questions/: challenge question content files and schema config
 - datasets/: committed generated CSV datasets plus metadata JSON
 - scripts/generate_v1_datasets.py: dataset generator and validator
@@ -363,15 +364,24 @@ Router composition entry point:
 - backend/main.py
 
 Registered route modules:
+- backend/routers/auth.py
 - backend/routers/system.py
 - backend/routers/catalog.py
 - backend/routers/questions.py
 - backend/routers/sample.py
+- backend/routers/plan.py
+- backend/routers/stripe.py
 - backend/routers/spa.py
+
+#### Auth routes
+- Prefix: /api/auth
+- Anonymous sessions are upgraded in place on registration when possible
+- Login can merge anonymous progress into an existing account
+- Includes register, login, logout, and current-user endpoints
 
 #### System route
 - GET /health
-  - Returns: { status, tables_loaded }
+  - Returns: { status, postgres, tables_loaded }
   - Used for service health and orchestration checks
 
 #### Catalog routes
@@ -399,7 +409,7 @@ Registered route modules:
 - POST /api/run-query
   - Input: { query, question_id }
   - Rejects locked questions
-  - Validates and runs the query against the question-scoped isolated connection
+  - Validates and runs the query against the shared DuckDB execution engine
   - Returns { columns, rows, row_limit }
 
 - POST /submit
@@ -430,6 +440,22 @@ Registered route modules:
 - POST /api/sample/submit
   - Evaluates sample SQL and returns solution and explanation
   - Does not affect challenge progression
+
+#### Plan and account routes
+- GET /api/user/profile
+  - Returns user identity and plan information
+- PUT /api/user/profile
+  - Allows direct plan changes in development mode
+- POST /api/user/plan
+  - Development-mode plan mutation endpoint for tests and local workflows
+- GET /api/user/unlocks
+  - Returns computed access state across the challenge catalog
+
+#### Stripe routes
+- POST /api/stripe/create-checkout
+  - Creates a Stripe Checkout session for authenticated users
+- POST /api/stripe/webhook
+  - Verifies Stripe signatures, applies idempotent plan changes, and records audit events
 
 #### SPA/static routes
 - GET /
@@ -467,14 +493,14 @@ Files:
 
 Execution path:
 1. The submitted SQL is validated by validate_read_only_select_query.
-2. The question's dataset_files are loaded into a fresh in-memory DuckDB connection.
+2. A lightweight cursor is created from the shared in-memory DuckDB engine.
 3. The validated query is executed directly to preserve ORDER BY semantics.
 4. Execution is run through a thread pool with a 3-second timeout.
 5. Results are capped at 200 rows before serialization.
 
 Evaluation path:
-1. Run the user's query in the question-scoped isolated environment.
-2. Run the expected query in the same scoped environment.
+1. Run the user's query in the shared in-memory execution environment.
+2. Run the expected query in the same execution environment.
 3. Build pandas DataFrames from both payloads.
 4. Normalize column casing, column order, float precision, and null handling.
 5. Sort rows for comparison unless the expected query explicitly contains ORDER BY.
@@ -486,23 +512,33 @@ Behavioral implications:
 - Duplicate rows are preserved during evaluation
 - Float comparisons use a tolerance-oriented normalization step
 
-### D. Progression and storage
+### D. Identity, progression, and storage
 
-File:
+Files:
+- backend/db.py
 - backend/progress.py
+- backend/unlock.py
 
 Current challenge unlock model:
-- Progression is sequential within each difficulty only
-- The first unsolved question in each difficulty is the next unlocked question
-- Questions after that remain locked until earlier ones are solved
+- Unlock state is derived from plan + solve history through a pure policy layer
+- Free users have all easy questions, medium thresholds at 10/20/30 solved easy, and hard thresholds at 10/20/30 solved medium with a free hard cap
+- Pro users have all easy and medium questions plus the first 22 hard questions
+- Elite users have the full catalog
+- Solved questions remain solved regardless of future plan changes
 
 Stored tables:
+- users
+- sessions
 - user_progress
 - user_sample_seen
+- stripe_events
+- plan_changes
 
 Identity model:
-- User identity is best-effort, based on a cookie or X-User-Id header
-- There is no account system, no login flow, and no multi-device user model
+- Anonymous visitors receive first-class user rows and real session cookies
+- Registration upgrades the same user where possible
+- Login can merge anonymous progress into an existing account
+- Multi-device account access is supported through authenticated sessions
 
 ---
 
@@ -581,7 +617,7 @@ Axios is configured with withCredentials: true so cookie-based identity works du
 4. User opens a question route under /practice/questions/:id.
 5. The frontend fetches the question detail payload.
 6. The user runs SQL against /api/run-query.
-7. The backend validates SQL, enforces unlock state, creates a question-scoped in-memory DuckDB connection, and returns tabular results.
+7. The backend validates SQL, enforces unlock state, creates a DuckDB cursor, and returns tabular results.
 8. The user submits SQL to /api/submit.
 9. The backend re-runs both user and expected queries, compares normalized results, and returns final acceptance, result correctness, structural correctness, feedback, and official answer material.
 10. On accepted submission, challenge progression is persisted and the frontend refreshes catalog state.
@@ -604,9 +640,12 @@ Axios is configured with withCredentials: true so cookie-based identity works du
 
 ## 8. Current Strengths
 
-- Clear separation between challenge content, sample content, execution, progression, and rate limiting
-- Safer execution model than a shared-connection demo because each query runs in a question-scoped isolated in-memory DuckDB instance
+- Clear separation between challenge content, sample content, product state, execution, billing, and rate limiting
+- Horizontally friendlier product-state model because identity, progress, sessions, and plans live in PostgreSQL
+- Faster execution path because datasets are preloaded once into a shared in-memory DuckDB engine
 - Server-side enforcement of challenge locks
+- Unified identity that preserves anonymous progress through registration and login merge flows
+- Real Stripe billing path with signature verification, idempotency, and audit logging
 - Standardized request-id propagation and user-facing error shapes
 - Deterministic dataset generation with explicit validation of edge-case coverage
 - Dual deployment story: simple local split dev flow and single-service production path
@@ -617,7 +656,7 @@ Axios is configured with withCredentials: true so cookie-based identity works du
 ## 9. Current Weaknesses and Risks
 
 ### Documentation drift
-- Some repository docs still describe a larger question bank and older dataset inventory than what is currently committed.
+- This document must continue to be updated alongside platform changes, especially around timed modes, future tracks, and production billing operations.
 - This blueprint should be treated as the current corrective reference.
 
 ### Runtime and scalability limits

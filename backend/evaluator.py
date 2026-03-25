@@ -2,7 +2,7 @@
 Query execution and answer evaluation.
 
 Security note: user-submitted queries are restricted to SELECT statements only.
-Execution uses read-only DuckDB connections with SQL parser validation.
+Execution uses a shared in-memory DuckDB query engine with SQL parser validation.
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ from typing import Any
 
 import pandas as pd
 
-from database import create_isolated_connection
+from database import get_query_cursor
 from exceptions import BadRequestError
 from middleware.request_context import get_request_id
 from sql_analyzer import CONCEPT_LABELS, CONCEPT_TO_FEATURE, extract_query_features
@@ -35,17 +35,17 @@ def _validate_query(query: str) -> str:
 
 def _execute_limited_query(normalized_query: str, question: dict[str, Any]) -> pd.DataFrame:
     """Execute the query in read-only mode and cap returned rows for payloads."""
-    conn = create_isolated_connection(question)
+    cursor = get_query_cursor(question["dataset_files"])
     try:
         # Execute the validated query as-is so ORDER BY semantics are preserved.
         # Wrapping in SELECT * FROM (<query>) can allow the optimizer to drop
         # inner ordering and incorrectly mark reversed-order answers as correct.
-        result = conn.execute(normalized_query).fetchdf()
+        result = cursor.execute(normalized_query).fetchdf()
         if len(result) > MAX_RESULT_ROWS:
             return result.head(MAX_RESULT_ROWS)
         return result
     finally:
-        conn.close()
+        cursor.close()
 
 
 def _run_with_timeout(normalized_query: str, question: dict[str, Any]) -> pd.DataFrame:

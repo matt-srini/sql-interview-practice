@@ -1,11 +1,12 @@
 from typing import Any
-from uuid import uuid4
 
 from fastapi import HTTPException, Request, Response
 from pydantic import BaseModel
 
-from progress import compute_statuses, get_solved_question_ids
+from db import SESSION_COOKIE_NAME, create_anonymous_user, create_session, get_session_user
+from progress import get_solved_question_ids
 from questions import get_public_question, get_questions_by_difficulty
+from unlock import compute_unlock_state, get_next_questions
 
 
 class RunQueryRequest(BaseModel):
@@ -18,24 +19,37 @@ class SubmitRequest(BaseModel):
     question_id: int
 
 
-def get_user_id(request: Request, response: Response) -> str:
-    """Best-effort user identity for progression (cookie or explicit header)."""
-    header_uid = request.headers.get("X-User-Id")
-    if header_uid:
-        return header_uid
-
-    cookie_uid = request.cookies.get("sql_practice_uid")
-    if cookie_uid:
-        return cookie_uid
-
-    uid = str(uuid4())
+def set_session_cookie(response: Response, token: str) -> None:
     response.set_cookie(
-        key="sql_practice_uid",
-        value=uid,
+        key=SESSION_COOKIE_NAME,
+        value=token,
         httponly=True,
         samesite="lax",
+        max_age=30 * 24 * 3600,
+        path="/",
     )
-    return uid
+
+
+def clear_session_cookie(response: Response) -> None:
+    response.delete_cookie(key=SESSION_COOKIE_NAME, path="/")
+
+
+async def get_optional_current_user(request: Request) -> dict[str, Any] | None:
+    session_token = request.cookies.get(SESSION_COOKIE_NAME)
+    if not session_token:
+        return None
+    return await get_session_user(session_token)
+
+
+async def get_current_user(request: Request, response: Response) -> dict[str, Any]:
+    existing = await get_optional_current_user(request)
+    if existing is not None:
+        return existing
+
+    user = await create_anonymous_user()
+    token = await create_session(user["id"])
+    set_session_cookie(response, token)
+    return user
 
 
 def _validate_difficulty(difficulty: str) -> str:
@@ -45,27 +59,29 @@ def _validate_difficulty(difficulty: str) -> str:
     return normalized
 
 
-def _get_progress_snapshot(
-    user_id: str,
-) -> tuple[dict[str, list[dict[str, Any]]], set[int], dict[int, Any]]:
+async def _get_progress_snapshot(
+    current_user: dict[str, Any],
+) -> tuple[dict[str, list[dict[str, Any]]], set[int], dict[int, str], dict[str, int | None]]:
     grouped = get_questions_by_difficulty()
-    solved_ids = get_solved_question_ids(user_id)
-    statuses = compute_statuses(questions_by_difficulty=grouped, solved_ids=solved_ids)
-    return grouped, solved_ids, statuses
+    solved_ids = await get_solved_question_ids(current_user["id"])
+    unlock_state = compute_unlock_state(current_user["plan"], solved_ids, grouped)
+    next_questions = get_next_questions(unlock_state, grouped)
+    return grouped, solved_ids, unlock_state, next_questions
 
 
 def _question_detail_payload(
     question: dict[str, Any],
-    status: Any,
+    state: str,
     *,
     unlocked: bool,
+    is_next: bool,
     mode: str = "practice",
 ) -> dict[str, Any]:
     return {
         **get_public_question(question),
         "progress": {
-            "state": status.state,
-            "is_next": status.is_next,
+            "state": state,
+            "is_next": is_next,
             "unlocked": unlocked,
             "mode": mode,
         },

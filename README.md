@@ -1,20 +1,20 @@
 # SQL Interview Practice Platform
 
-A SQL practice platform with a React frontend, a FastAPI backend, and DuckDB-backed execution. Users can work through gated challenge questions, try a separate sample track, run read-only SQL, and compare their output against expected results.
+A SQL practice platform with a React frontend, a FastAPI backend, PostgreSQL-backed app state, and DuckDB-backed SQL execution. Users can work through gated challenge questions, try a separate sample track, run read-only SQL, and compare their output against expected results.
 
 ---
 
 ## Current State
 
-- Challenge bank: 85 questions total
+- Challenge bank: 86 questions total
   - Easy: 30
   - Medium: 30
-  - Hard: 25
+  - Hard: 26
 - Sample bank: 9 questions total
   - 3 per difficulty in backend/sample_questions.py
 - Challenge content is JSON-backed in backend/content/questions/
 - Sample content is Python-backed in backend/sample_questions.py
-- Query execution is isolated per request using in-memory DuckDB connections scoped to question dataset_files
+- Query execution uses a process-singleton in-memory DuckDB engine loaded once at startup
 - Question schemas are validated against the committed dataset headers at load time
 - Semantic reasoning tags (`concepts` field) are surfaced as pill badges on each question page
 - Hints are revealed progressively one at a time before the solution is shown
@@ -28,11 +28,11 @@ For the fuller architectural reference, see docs/project-blueprint.md.
 
 | Layer     | Technology                                                      |
 |-----------|-----------------------------------------------------------------|
-| Backend   | Python, FastAPI, DuckDB (file-backed + in-memory), Pandas       |
+| Backend   | Python, FastAPI, PostgreSQL, DuckDB (query execution), Pandas   |
 | Frontend  | React 18, React Router, Vite, Monaco Editor, Axios              |
 | Testing   | pytest, httpx, Vitest, React Testing Library                    |
 | Datasets  | Generated CSV files loaded into DuckDB                          |
-| Payments  | Stripe integration (simulated, stub endpoints, webhook logic)   |
+| Payments  | Stripe Checkout + verified webhooks + audit logging             |
 
 ---
 
@@ -48,10 +48,12 @@ sql-interview-practice/
 │   ├── routers/                  # API, SPA, plan/user profile, Stripe endpoints
 │   ├── scripts/                  # Dataset generation scripts
 │   ├── tests/                    # Backend tests
-│   ├── database.py               # DuckDB loading, isolated execution, user_profiles CRUD
+│   ├── alembic/                  # Postgres migrations
+│   ├── database.py               # DuckDB loading and shared query execution
+│   ├── db.py                     # Async Postgres access layer
 │   ├── evaluator.py              # Query execution and result comparison
 │   ├── main.py                   # FastAPI app wiring, middleware, exception handling
-│   ├── progress.py               # Challenge/sample progress storage
+│   ├── progress.py               # Challenge/sample progress helpers
 │   ├── questions.py              # Challenge catalog loader
 │   ├── sample_questions.py       # Sample question catalog
 │   ├── sql_guard.py              # Read-only SQL validation
@@ -66,7 +68,7 @@ sql-interview-practice/
 │   ├── src/api.js                # API client and environment resolution
 │   └── package.json
 ├── Dockerfile                    # Single-service production build
-└── docker-compose.yml            # Local Redis + backend + frontend stack
+└── docker-compose.yml            # Local Postgres + Redis + backend + frontend stack
 ```
 
 ---
@@ -105,9 +107,23 @@ Note:
 
 - Python 3.11 recommended
 - Node.js 20 recommended
-- Docker optional for the compose workflow
+- Docker with Colima or Docker Desktop recommended for the local Postgres workflow
 
 ### Backend
+
+Start local infrastructure:
+
+```bash
+colima start
+docker-compose up -d postgres
+docker-compose exec -T postgres psql -U postgres -d postgres -c "CREATE DATABASE sql_practice_test;"
+```
+
+Set the database URL:
+
+```bash
+export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/sql_practice"
+```
 
 ```bash
 cd backend
@@ -124,7 +140,30 @@ Run backend tests:
 
 ```bash
 cd backend
-../.venv/bin/python -m pytest -q
+TESTING=1 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/sql_practice_test" ../.venv/bin/python -m pytest -q
+```
+
+Run migrations manually:
+
+```bash
+cd backend
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/sql_practice" ../.venv/bin/python -m alembic upgrade head
+```
+
+Optional Stripe environment for local checkout testing:
+
+```bash
+export STRIPE_SECRET_KEY="sk_test_..."
+export STRIPE_WEBHOOK_SECRET="whsec_..."
+export STRIPE_PRICE_PRO="price_..."
+export STRIPE_PRICE_ELITE="price_..."
+```
+
+Run anonymous-session cleanup:
+
+```bash
+cd backend
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/sql_practice" ../.venv/bin/python scripts/cleanup_anonymous.py --days 30
 ```
 
 Generate datasets into a separate output folder:
@@ -183,21 +222,25 @@ CORS_ALLOW_ORIGINS is also supported as an alias.
 ## Application Behavior
 
 ### Challenge progression
-- Progression is sequential within each difficulty
-- The first unsolved question in each difficulty is the next unlocked question
-- Progress is tracked in DuckDB using user_progress
-- User identity is best-effort via X-User-Id header or HttpOnly cookie (no login/account system)
+- Unlocking is computed from one shared policy engine that combines plan tier and solve progress
+- Free users get all easy questions, medium unlocks at 10/20/30 solved easy, and hard unlocks at 10/20/30 solved medium
+- Pro users get all easy and medium questions plus the first 22 hard questions
+- Elite users get the full catalog
+- Progress is tracked in PostgreSQL using `user_progress`
+- User identity is unified through the `session_token` cookie
+- Anonymous users get real user rows and can register without losing progress
 
 ### Sample mode
 - Separate from challenge progression
 - Each difficulty has exactly 3 sample questions
-- Seen-sample tracking is stored in user_sample_seen
+- Seen-sample tracking is stored in PostgreSQL `user_sample_seen`
 - Sample exhaustion returns HTTP 409 until the user resets that difficulty
 
 ### User profile, plan, and Stripe logic
-- User profiles (user_id, plan, metadata) are stored in user_profiles table
-- Plan changes and unlock logic handled via backend/routers/plan.py
-- Stripe integration is stubbed: endpoints simulate session creation and webhook events, updating user plan on webhook
+- Users, sessions, plans, and auth all live in PostgreSQL
+- Unlock state is computed dynamically from plan + progress
+- Direct plan changes are development-only
+- Stripe checkout and webhook handling live in backend/routers/stripe.py with signature verification and idempotent event recording
 
 ### Query guardrails
 - Only single SELECT-style queries are allowed
@@ -226,7 +269,7 @@ CORS_ALLOW_ORIGINS is also supported as an alias.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | /health | Service health and loaded persistent tables |
+| GET | /health | Service health, Postgres connectivity, and loaded DuckDB tables |
 | GET | /catalog | Grouped challenge catalog with per-user state |
 | GET | /api/catalog | Same as /catalog |
 
@@ -268,10 +311,12 @@ CORS_ALLOW_ORIGINS is also supported as an alias.
 If Docker is installed:
 
 ```bash
-docker compose up --build
+colima start
+docker-compose up --build
 ```
 
 Services:
+- Postgres: localhost:5432
 - Redis: localhost:6379
 - Backend API: http://localhost:8000
 - Frontend: http://localhost:5173

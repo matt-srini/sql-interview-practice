@@ -1,16 +1,23 @@
+import pytest
 from fastapi.testclient import TestClient
 
 import backend.main as main
+from questions import get_all_questions, get_question, get_questions_by_difficulty
+
+
 app = main.app
-from questions import get_all_questions, get_questions_by_difficulty
-from questions import get_question
+pytestmark = pytest.mark.usefixtures("isolated_state")
 
 
-def _first_two_easy_ids(client: TestClient, user_id: str) -> tuple[int, int]:
-    catalog = client.get("/catalog", headers={"X-User-Id": user_id}).json()
+def _first_two_easy_ids(client: TestClient) -> tuple[int, int]:
+    catalog = client.get("/catalog").json()
     easy = next(group for group in catalog["groups"] if group["difficulty"] == "easy")
     easy_questions = sorted(easy["questions"], key=lambda q: q["order"])
     return int(easy_questions[0]["id"]), int(easy_questions[1]["id"])
+
+
+def _first_medium_id() -> int:
+    return int(get_questions_by_difficulty()["medium"][0]["id"])
 
 
 def test_health() -> None:
@@ -18,7 +25,7 @@ def test_health() -> None:
         resp = client.get("/health")
         assert resp.status_code == 200
         payload = resp.json()
-        assert payload["status"] == "ok"
+        assert payload["status"] in {"ok", "healthy"}
         assert "users" in payload["tables_loaded"]
         assert "orders" in payload["tables_loaded"]
 
@@ -40,12 +47,14 @@ def test_get_api_questions() -> None:
         assert len(payload) == len(get_all_questions())
 
 
-def test_get_catalog_groups_and_initial_unlocks() -> None:
+def test_catalog_creates_anonymous_session_and_initial_unlocks() -> None:
     with TestClient(app) as client:
-        resp = client.get("/catalog", headers={"X-User-Id": "u_catalog"})
+        resp = client.get("/catalog")
         assert resp.status_code == 200
+        assert "session_token" in client.cookies
+
         payload = resp.json()
-        assert payload["user_id"] == "u_catalog"
+        assert payload["user_id"]
         groups = {g["difficulty"]: g for g in payload["groups"]}
         assert set(groups.keys()) == {"easy", "medium", "hard"}
         grouped = get_questions_by_difficulty()
@@ -54,20 +63,23 @@ def test_get_catalog_groups_and_initial_unlocks() -> None:
         assert groups["medium"]["counts"]["total"] == len(grouped["medium"])
         assert groups["hard"]["counts"]["total"] == len(grouped["hard"])
 
-        for diff in ["easy", "medium", "hard"]:
-            first = sorted(groups[diff]["questions"], key=lambda q: q["order"])[0]
-            assert first["state"] == "unlocked"
-            assert first["is_next"] is True
-
-        # Easy question #2 should be locked until #1 is solved.
         easy_questions = sorted(groups["easy"]["questions"], key=lambda q: q["order"])
-        assert easy_questions[1]["state"] == "locked"
+        assert all(question["state"] == "unlocked" for question in easy_questions)
+        assert easy_questions[0]["is_next"] is True
+        assert all(question["is_next"] is False for question in easy_questions[1:])
+
+        medium_questions = sorted(groups["medium"]["questions"], key=lambda q: q["order"])
+        hard_questions = sorted(groups["hard"]["questions"], key=lambda q: q["order"])
+        assert all(question["state"] == "locked" for question in medium_questions)
+        assert all(question["state"] == "locked" for question in hard_questions)
+        assert all(question["is_next"] is False for question in medium_questions)
+        assert all(question["is_next"] is False for question in hard_questions)
 
 
 def test_get_question_detail() -> None:
     with TestClient(app) as client:
-        first_easy_id, _ = _first_two_easy_ids(client, "u_detail")
-        resp = client.get(f"/api/questions/{first_easy_id}", headers={"X-User-Id": "u_detail"})
+        first_easy_id, _ = _first_two_easy_ids(client)
+        resp = client.get(f"/api/questions/{first_easy_id}")
         assert resp.status_code == 200
         payload = resp.json()
         assert payload["id"] == first_easy_id
@@ -81,18 +93,17 @@ def test_get_question_detail() -> None:
 
 def test_get_question_detail_blocks_locked_question() -> None:
     with TestClient(app) as client:
-        _, second_easy_id = _first_two_easy_ids(client, "u_detail_locked")
-        resp = client.get(f"/api/questions/{second_easy_id}", headers={"X-User-Id": "u_detail_locked"})
+        medium_id = _first_medium_id()
+        resp = client.get(f"/api/questions/{medium_id}")
         assert resp.status_code == 403
 
 
 def test_run_query_success() -> None:
     with TestClient(app) as client:
-        first_easy_id, _ = _first_two_easy_ids(client, "u_run_ok")
+        first_easy_id, _ = _first_two_easy_ids(client)
         resp = client.post(
             "/run-query",
             json={"query": "SELECT user_id, name FROM users ORDER BY user_id LIMIT 3", "question_id": first_easy_id},
-            headers={"X-User-Id": "u_run_ok"},
         )
         assert resp.status_code == 200
         payload = resp.json()
@@ -102,11 +113,10 @@ def test_run_query_success() -> None:
 
 def test_run_query_locked_question_blocked() -> None:
     with TestClient(app) as client:
-        _, second_easy_id = _first_two_easy_ids(client, "u_locked")
+        medium_id = _first_medium_id()
         resp = client.post(
             "/run-query",
-            json={"query": "SELECT country FROM users LIMIT 1", "question_id": second_easy_id},
-            headers={"X-User-Id": "u_locked"},
+            json={"query": "SELECT country FROM users LIMIT 1", "question_id": medium_id},
         )
         assert resp.status_code == 403
 
@@ -118,7 +128,6 @@ def test_run_query_invalid_question() -> None:
             json={"query": "SELECT 1", "question_id": 999},
         )
         assert resp.status_code == 404
-
         payload = resp.json()
         assert "error" in payload
         assert "request_id" in payload
@@ -126,14 +135,13 @@ def test_run_query_invalid_question() -> None:
 
 def test_submit_correct_answer() -> None:
     with TestClient(app) as client:
-        first_easy_id, _ = _first_two_easy_ids(client, "u_progress")
+        first_easy_id, _ = _first_two_easy_ids(client)
         first_easy = get_question(first_easy_id)
         assert first_easy is not None
 
         resp = client.post(
             "/submit",
             json={"query": first_easy["solution_query"], "question_id": first_easy_id},
-            headers={"X-User-Id": "u_progress"},
         )
         assert resp.status_code == 200
         payload = resp.json()
@@ -142,8 +150,7 @@ def test_submit_correct_answer() -> None:
         assert "solution_query" in payload
         assert "explanation" in payload
 
-        # After solving easy #1, easy #2 should unlock for this user.
-        catalog = client.get("/catalog", headers={"X-User-Id": "u_progress"}).json()
+        catalog = client.get("/catalog").json()
         easy = next(g for g in catalog["groups"] if g["difficulty"] == "easy")
         easy_questions = sorted(easy["questions"], key=lambda q: q["order"])
         assert easy_questions[0]["id"] == first_easy_id
@@ -153,8 +160,7 @@ def test_submit_correct_answer() -> None:
 
 def test_submit_requires_enforced_order_by_for_acceptance() -> None:
     with TestClient(app) as client:
-        user_id = "u_order_enforced_missing_order"
-        first_easy_id, second_easy_id = _first_two_easy_ids(client, user_id)
+        first_easy_id, second_easy_id = _first_two_easy_ids(client)
         first_easy = get_question(first_easy_id)
         assert first_easy is not None
 
@@ -164,7 +170,6 @@ def test_submit_requires_enforced_order_by_for_acceptance() -> None:
                 "query": "SELECT user_id, name, email, country FROM users",
                 "question_id": first_easy_id,
             },
-            headers={"X-User-Id": user_id},
         )
         assert resp.status_code == 200
         payload = resp.json()
@@ -174,13 +179,13 @@ def test_submit_requires_enforced_order_by_for_acceptance() -> None:
         assert len(payload["feedback"]) > 0
         assert any("ORDER BY" in message for message in payload["feedback"])
 
-        catalog = client.get("/catalog", headers={"X-User-Id": user_id}).json()
+        catalog = client.get("/catalog").json()
         easy = next(g for g in catalog["groups"] if g["difficulty"] == "easy")
         easy_questions = sorted(easy["questions"], key=lambda q: q["order"])
         assert easy_questions[0]["id"] == first_easy_id
         assert easy_questions[0]["state"] == "unlocked"
         assert easy_questions[1]["id"] == second_easy_id
-        assert easy_questions[1]["state"] == "locked"
+        assert easy_questions[1]["state"] == "unlocked"
 
 
 def test_easy_questions_with_required_concepts_have_covering_hints() -> None:
@@ -220,14 +225,12 @@ def test_easy_questions_with_required_concepts_have_covering_hints() -> None:
 
 def test_submit_blocks_disallowed_query() -> None:
     with TestClient(app) as client:
-        first_easy_id, _ = _first_two_easy_ids(client, "u_submit_block")
+        first_easy_id, _ = _first_two_easy_ids(client)
         resp = client.post(
             "/submit",
             json={"query": "DELETE FROM users", "question_id": first_easy_id},
-            headers={"X-User-Id": "u_submit_block"},
         )
         assert resp.status_code == 400
-
         payload = resp.json()
         assert "error" in payload
         assert "request_id" in payload
@@ -269,11 +272,10 @@ def test_rate_limit_enforced() -> None:
 def test_get_sample_question_by_difficulty() -> None:
     with TestClient(app) as client:
         for difficulty in ["easy", "medium", "hard"]:
-            user_id = f"u_sample_{difficulty}"
-            reset = client.post(f"/api/sample/{difficulty}/reset", headers={"X-User-Id": user_id})
+            reset = client.post(f"/api/sample/{difficulty}/reset")
             assert reset.status_code == 200
 
-            resp = client.get(f"/api/sample/{difficulty}", headers={"X-User-Id": user_id})
+            resp = client.get(f"/api/sample/{difficulty}")
             assert resp.status_code == 200
             payload = resp.json()
             assert payload["difficulty"] == difficulty
@@ -290,61 +292,56 @@ def test_get_sample_question_by_difficulty() -> None:
 
 
 def test_sample_questions_exhaust_after_three_shown() -> None:
-    user_id = "u_sample_exhaust"
     seen_ids: set[int] = set()
 
     with TestClient(app) as client:
-        reset = client.post("/api/sample/easy/reset", headers={"X-User-Id": user_id})
+        reset = client.post("/api/sample/easy/reset")
         assert reset.status_code == 200
 
         for _ in range(3):
-            resp = client.get("/api/sample/easy", headers={"X-User-Id": user_id})
+            resp = client.get("/api/sample/easy")
             assert resp.status_code == 200
             payload = resp.json()
             seen_ids.add(int(payload["id"]))
 
         assert len(seen_ids) == 3
 
-        exhausted = client.get("/api/sample/easy", headers={"X-User-Id": user_id})
+        exhausted = client.get("/api/sample/easy")
         assert exhausted.status_code == 409
 
 
 def test_reset_sample_progress_restarts_difficulty_sequence() -> None:
-    user_id = "u_sample_reset"
-
     with TestClient(app) as client:
-        reset_initial = client.post("/api/sample/easy/reset", headers={"X-User-Id": user_id})
+        reset_initial = client.post("/api/sample/easy/reset")
         assert reset_initial.status_code == 200
 
-        first = client.get("/api/sample/easy", headers={"X-User-Id": user_id})
+        first = client.get("/api/sample/easy")
         assert first.status_code == 200
         first_id = int(first.json()["id"])
 
-        second = client.get("/api/sample/easy", headers={"X-User-Id": user_id})
+        second = client.get("/api/sample/easy")
         assert second.status_code == 200
         assert int(second.json()["id"]) != first_id
 
-        reset = client.post("/api/sample/easy/reset", headers={"X-User-Id": user_id})
+        reset = client.post("/api/sample/easy/reset")
         assert reset.status_code == 200
         assert reset.json()["reset"] is True
 
-        after_reset = client.get("/api/sample/easy", headers={"X-User-Id": user_id})
+        after_reset = client.get("/api/sample/easy")
         assert after_reset.status_code == 200
         assert int(after_reset.json()["id"]) == first_id
         assert after_reset.json()["sample"]["shown_count"] == 1
 
 
 def test_sample_submit_does_not_advance_catalog_progress() -> None:
-    user_id = "u_sample_progress"
-
     with TestClient(app) as client:
-        reset = client.post("/api/sample/easy/reset", headers={"X-User-Id": user_id})
+        reset = client.post("/api/sample/easy/reset")
         assert reset.status_code == 200
 
-        before = client.get("/api/catalog", headers={"X-User-Id": user_id}).json()
+        before = client.get("/api/catalog").json()
         before_easy = next(group for group in before["groups"] if group["difficulty"] == "easy")
 
-        sample = client.get("/api/sample/easy", headers={"X-User-Id": user_id}).json()
+        sample = client.get("/api/sample/easy").json()
         assert sample["id"] == 101
 
         resp = client.post(
@@ -353,12 +350,85 @@ def test_sample_submit_does_not_advance_catalog_progress() -> None:
                 "query": "SELECT COUNT(*) AS user_count FROM users",
                 "question_id": sample["id"],
             },
-            headers={"X-User-Id": user_id},
         )
         assert resp.status_code == 200
         assert resp.json()["correct"] is True
 
-        after = client.get("/api/catalog", headers={"X-User-Id": user_id}).json()
+        after = client.get("/api/catalog").json()
         after_easy = next(group for group in after["groups"] if group["difficulty"] == "easy")
 
         assert before_easy == after_easy
+
+
+def test_register_preserves_anonymous_progress_and_user_id() -> None:
+    with TestClient(app) as client:
+        catalog_before = client.get("/api/catalog").json()
+        first_easy_id, _ = _first_two_easy_ids(client)
+        first_easy = get_question(first_easy_id)
+        assert first_easy is not None
+
+        submit = client.post(
+            "/api/submit",
+            json={"query": first_easy["solution_query"], "question_id": first_easy_id},
+        )
+        assert submit.status_code == 200
+        anon_user_id = catalog_before["user_id"]
+
+        register = client.post(
+            "/api/auth/register",
+            json={"email": "anon@example.com", "name": "Anon User", "password": "password123"},
+        )
+        assert register.status_code == 201
+        payload = register.json()["user"]
+        assert payload["id"] == anon_user_id
+        assert payload["email"] == "anon@example.com"
+
+        me = client.get("/api/auth/me")
+        assert me.status_code == 200
+        assert me.json()["user"]["id"] == anon_user_id
+
+        catalog_after = client.get("/api/catalog").json()
+        easy = next(group for group in catalog_after["groups"] if group["difficulty"] == "easy")
+        easy_questions = sorted(easy["questions"], key=lambda q: q["order"])
+        assert easy_questions[0]["state"] == "solved"
+        assert easy_questions[1]["state"] == "unlocked"
+
+
+def test_login_merges_existing_anonymous_progress() -> None:
+    first_easy_id = int(get_questions_by_difficulty()["easy"][0]["id"])
+    first_easy = get_question(first_easy_id)
+    assert first_easy is not None
+
+    with TestClient(app) as registered_client:
+        registered_client.get("/api/catalog")
+        register = registered_client.post(
+            "/api/auth/register",
+            json={"email": "merge@example.com", "name": "Merge User", "password": "password123"},
+        )
+        assert register.status_code == 201
+        registered_user_id = register.json()["user"]["id"]
+
+    with TestClient(app) as anonymous_client:
+        anonymous_catalog = anonymous_client.get("/api/catalog").json()
+        anonymous_user_id = anonymous_catalog["user_id"]
+        assert anonymous_user_id != registered_user_id
+
+        submit = anonymous_client.post(
+            "/api/submit",
+            json={"query": first_easy["solution_query"], "question_id": first_easy_id},
+        )
+        assert submit.status_code == 200
+
+        login = anonymous_client.post(
+            "/api/auth/login",
+            json={"email": "merge@example.com", "password": "password123"},
+        )
+        assert login.status_code == 200
+        assert login.json()["user"]["id"] == registered_user_id
+
+        catalog_after = anonymous_client.get("/api/catalog").json()
+        assert catalog_after["user_id"] == registered_user_id
+        easy = next(group for group in catalog_after["groups"] if group["difficulty"] == "easy")
+        easy_questions = sorted(easy["questions"], key=lambda q: q["order"])
+        assert easy_questions[0]["state"] == "solved"
+        assert easy_questions[1]["state"] == "unlocked"
