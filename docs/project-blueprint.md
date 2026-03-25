@@ -76,6 +76,8 @@ Key frontend entry points:
 - frontend/src/pages/LandingPage.js
 - frontend/src/pages/QuestionPage.js
 - frontend/src/pages/SampleQuestionPage.js
+- frontend/src/pages/AuthPage.js
+- frontend/src/contexts/AuthContext.js
 
 
 ### Backend
@@ -112,6 +114,8 @@ Key frontend entry points:
 - backend/datasets/: committed generated CSV datasets + metadata
 - backend/scripts/generate_v1_datasets.py: dataset generator/validator
 - backend/scripts/cleanup_anonymous.py: stale anonymous-user cleanup command
+- backend/models.py: Pydantic response models and shared type definitions
+- backend/sql_analyzer.py: SQL analysis utilities
 - backend/tests/: backend API, evaluator, and rate limiter tests
 
 **Data and execution model:**
@@ -159,7 +163,6 @@ Key frontend entry points:
 
 ### Root-level files
 - README.md: setup and usage documentation and current question-bank inventory
-- ARCHITECTURE.md: shorter historical architecture notes
 - MANUAL_TEST_CHECKLIST.md: manual QA checklist
 - TODO_FUTURE.md: backlog and future enhancements
 - docker-compose.yml: local multi-container stack for Postgres + Redis + backend + frontend
@@ -167,11 +170,15 @@ Key frontend entry points:
 - railway.json: Railway deployment metadata
 - docs/project-blueprint.md: this detailed architecture and state reference
 - docs/question-authoring-guidelines.md: rules for challenge question authoring quality and structure
+- docs/sql-curriculum-spec.md: difficulty tiers, volume targets, and curriculum standards
+- docs/ui-design-system.md: design tokens, typography, button system, and layout reference
 
 ### backend/
 - main.py: app wiring, middleware, exception handlers, router registration, lifespan setup
 - config.py: environment settings, CORS origins, rate-limiter settings, frontend dist path
 - deps.py: request models and shared dependencies
+- models.py: Pydantic response models and shared type definitions
+- sql_analyzer.py: SQL analysis utilities
 - db.py: PostgreSQL connection pool, schema helpers, and app-state persistence
 - database.py: shared DuckDB query engine and cursor helpers
 - evaluator.py: query execution, timeout handling, result serialization, evaluation normalization
@@ -547,6 +554,7 @@ Identity model:
 ### Current route tree
 Defined in frontend/src/App.js:
 - / -> LandingPage
+- /auth -> AuthPage (register / sign in)
 - /sample/:difficulty -> SampleQuestionPage
 - /practice -> AppShell inside CatalogProvider
   - /practice/questions/:id -> QuestionPage
@@ -665,7 +673,6 @@ Axios is configured with withCredentials: true so cookie-based identity works du
 - The current model is appropriate for low-to-moderate educational usage, not high-concurrency public scale.
 
 ### Product limitations
-- No real authentication or user accounts
 - No submission history or analytics layer
 - No admin/content management UI
 - No automated content QA pipeline beyond code validation and tests
@@ -699,18 +706,16 @@ Current gaps:
 ## 11. Suggested Next Improvements
 
 ### Short-term
-- Add a committed data dictionary document if a human-readable dataset contract is still desired
 - Extend content validation coverage in CI beyond current schema-header and query-execution checks
-- Update README and any other stale docs to match the current challenge counts and dataset inventory
+- Add focused frontend tests for sample exhaustion, reset flow, and challenge progression UI
 
 ### Medium-term
 - Expand the challenge bank while preserving strict schema correctness and difficulty discipline
-- Add focused frontend tests for sample exhaustion, reset flow, and challenge progression UI
 - Add a content-review workflow for question JSON changes
+- Add submission history and per-user analytics
 
 ### Long-term
-- Introduce real user accounts if multi-device persistence becomes necessary
-- Add richer learning analytics and submission history
+- Add richer learning analytics dashboard
 - Revisit the execution architecture if concurrency or public usage grows materially
 
 ---
@@ -720,7 +725,7 @@ Current gaps:
 Current state:
 - The platform is structurally sound as a small SQL practice application with clear separation between frontend, backend, content, and execution logic.
 - The committed dataset inventory is broader and more realistic than the older docs implied, covering commerce, product, behavioral, support, and HR domains.
-- The live challenge bank now includes 30 easy, 30 medium, and 25 hard questions.
+- The live challenge bank now includes 30 easy, 30 medium, and 26 hard questions.
 - The sample bank is complete at 3 questions per difficulty.
 - Question content now aligns with the current orders schema, and schema/header mismatches fail fast during catalog loading.
 
