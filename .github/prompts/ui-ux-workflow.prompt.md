@@ -32,6 +32,16 @@ What is already decided:
 What has already been implemented:
 - Landing-page timed challenge preview tiles in frontend/src/pages/LandingPage.js
 - Supporting landing styles in frontend/src/App.css
+- Phase 2 shell hierarchy refinements in frontend/src/components/AppShell.js
+- Phase 2 sidebar hierarchy refinements in frontend/src/components/SidebarNav.js
+- Supporting shell and sidebar styling updates in frontend/src/App.css
+- Phase 3 challenge workspace refinements in frontend/src/pages/QuestionPage.js
+- Phase 3 sample workspace refinements in frontend/src/pages/SampleQuestionPage.js
+- Phase 3 schema and editor refinements in frontend/src/components/SchemaViewer.js and frontend/src/components/SQLEditor.js
+- Phase 4 results and feedback refinements in frontend/src/components/ResultsTable.js
+- Phase 4 verdict and comparison refinements in frontend/src/pages/QuestionPage.js and frontend/src/pages/SampleQuestionPage.js
+- Phase 5 auth surface refinements in frontend/src/pages/AuthPage.js
+- Phase 5 upgrade grouping refinements in frontend/src/components/AppShell.js
 
 Do not lose these product truths:
 - SQL interview practice is the current focus.
@@ -100,10 +110,62 @@ Workflow for each phase:
 
 Completion ledger:
 - Phase 1 entry surfaces: started and partially implemented
-- Phase 2 practice shell: pending
-- Phase 3 problem workspace: pending
-- Phase 4 results and feedback: pending
-- Phase 5 auth and upgrade: pending
+- Phase 2 practice shell: completed
+- Phase 3 problem workspace: completed
+- Phase 4 results and feedback: completed
+- Phase 5 auth and upgrade: completed
+
+Phase notes:
+- Phase 2 completed
+  - Calm, lower-noise challenge topbar with clearer workspace framing, compact upgrade controls, and quieter plan/session context.
+  - Sidebar now has a durable overview block, clearer difficulty-group hierarchy, and subtler current / next / solved / locked row states.
+  - Mobile sidebar behavior and routing were preserved.
+  - Files touched:
+    - frontend/src/App.css
+    - frontend/src/components/AppShell.js
+    - frontend/src/components/SidebarNav.js
+    - frontend/src/components/SidebarNav.test.js
+  - Carry-forward notes:
+    - Keep the shell palette restrained and avoid reintroducing loud state pills in later phases.
+    - Build the problem workspace so the active question row remains visually anchored against the calmer shell.
+    - Continue using the subtler accent and softer semantic colors rather than returning to bright purple or saturated success/error fills.
+- Phase 3 completed
+  - Rebalanced the challenge and sample workspaces so the editor has more authority, with integrated workspace headers and calmer action clusters.
+  - Reworked prompt and schema cards for clearer reading rhythm, including structured schema table headers and column tokens.
+  - Brought sample mode closer to the main product language with aligned helper cards, sample-track controls, and exhausted-state treatment.
+  - Files touched:
+    - frontend/src/App.css
+    - frontend/src/components/SchemaViewer.js
+    - frontend/src/components/SQLEditor.js
+    - frontend/src/pages/QuestionPage.js
+    - frontend/src/pages/SampleQuestionPage.js
+  - Carry-forward notes:
+    - Phase 4 should refine the new results stack rather than changing the workspace proportions again.
+    - Keep run / submit / hint / solution controls within the calmer editor and post-submit rhythm now established.
+    - Results tables, verdict blocks, and solution styling should inherit the same softer surfaces and typography hierarchy.
+- Phase 4 completed
+  - Reworked verdict blocks to use calmer structured language instead of loud success / error banners.
+  - Improved results-table readability with clearer empty and null states plus a side-by-side comparison grid for user vs expected output.
+  - Tuned hint and official-solution reveal controls to feel more progressive and review-oriented.
+  - Files touched:
+    - frontend/src/App.css
+    - frontend/src/components/ResultsTable.js
+    - frontend/src/pages/QuestionPage.js
+    - frontend/src/pages/SampleQuestionPage.js
+  - Carry-forward notes:
+    - Phase 5 should keep auth alerts, post-success states, and upgrade messaging at the same restrained intensity as the new feedback surfaces.
+    - Preserve the calmer accent hierarchy and avoid slipping back into bright marketing-style treatment for upgrade actions.
+- Phase 5 completed
+  - Aligned the auth page to the calmer product language with quieter background treatment, steadier card rhythm, and more trustworthy helper copy.
+  - Refined the shell upgrade grouping so plan context and upgrade actions feel integrated instead of bolted onto the topbar.
+  - Tuned auth alerts, inputs, OAuth buttons, and link treatments to match the rest of the refactor without changing auth or checkout behavior.
+  - Files touched:
+    - frontend/src/App.css
+    - frontend/src/components/AppShell.js
+    - frontend/src/pages/AuthPage.js
+  - Carry-forward notes:
+    - Remaining future work should mostly be small coherence passes on the partially-refreshed landing slice rather than new structural refactors.
+    - Keep the single restrained accent and the softer semantic colors as the baseline across future UI work.
 
 Quality checks for every phase:
 - Does the screen feel calmer than before?

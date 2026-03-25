@@ -17,17 +17,16 @@ export default function SampleQuestionPage() {
   const [sampleExhausted, setSampleExhausted] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [resetNotice, setResetNotice] = useState('');
-
   const [query, setQuery] = useState(PLACEHOLDER);
   const [runResult, setRunResult] = useState(null);
   const [runError, setRunError] = useState(null);
   const [running, setRunning] = useState(false);
-
   const [submitResult, setSubmitResult] = useState(null);
   const [submitError, setSubmitError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
   const [hintsShown, setHintsShown] = useState(0);
+
   const shouldShowFeedback = submitResult?.feedback?.length > 0
     && !(submitResult.correct && (submitResult.structure_correct ?? true));
 
@@ -58,6 +57,7 @@ export default function SampleQuestionPage() {
         }
         setLoadError(err.response?.data?.detail ?? 'Failed to load sample question.');
       });
+
     return undefined;
   }, [difficulty, reloadToken]);
 
@@ -83,40 +83,6 @@ export default function SampleQuestionPage() {
     } finally {
       setResetting(false);
     }
-  }
-
-  function renderExhaustedState() {
-    return (
-      <>
-        <header className="topbar">
-          <div className="container topbar-inner sample-page-topbar">
-            <Link className="back-link" to="/">
-              ← Back to landing page
-            </Link>
-            <h1>Sample question</h1>
-            <Link className="btn btn-secondary" to="/practice">
-              Start the challenge
-            </Link>
-          </div>
-        </header>
-
-        <main className="container" style={{ paddingTop: '2rem' }}>
-          {resetNotice && <p className="sample-reset-notice">{resetNotice}</p>}
-          <div className="card sample-challenge-card">
-            <h3>Sample set exhausted for {difficulty}</h3>
-            <p className="sample-challenge-copy">
-              You have seen all 3 dedicated {difficulty} sample questions. Continue with the ordered challenge flow.
-            </p>
-            <button className="btn btn-secondary sample-challenge-button" onClick={handleResetSamples} disabled={resetting}>
-              {resetting ? 'Resetting…' : 'Reset sample progress'}
-            </button>
-            <Link className="btn btn-primary sample-challenge-button" to="/practice">
-              Take the Challenge
-            </Link>
-          </div>
-        </main>
-      </>
-    );
   }
 
   async function handleRun() {
@@ -152,6 +118,48 @@ export default function SampleQuestionPage() {
     }
   }
 
+  function renderExhaustedState() {
+    return (
+      <>
+        <header className="topbar">
+          <div className="container topbar-inner sample-page-topbar">
+            <Link className="back-link" to="/">
+              ← Back to landing page
+            </Link>
+            <h1>Sample question</h1>
+            <Link className="btn btn-secondary" to="/practice">
+              Start the challenge
+            </Link>
+          </div>
+        </header>
+
+        <main className="container" style={{ paddingTop: '2rem' }}>
+          {resetNotice && <p className="sample-reset-notice">{resetNotice}</p>}
+          <div className="card sample-challenge-card sample-exhausted-card">
+            <div className="section-heading">
+              <div>
+                <span className="section-kicker">Sample track</span>
+                <h3>Sample set exhausted for {difficulty}</h3>
+              </div>
+              <span className="section-meta">3 of 3 shown</span>
+            </div>
+            <p className="sample-challenge-copy">
+              You have seen all 3 dedicated {difficulty} sample questions. Continue with the ordered challenge flow.
+            </p>
+            <div className="sample-challenge-actions">
+              <button className="btn btn-secondary sample-challenge-button" onClick={handleResetSamples} disabled={resetting}>
+                {resetting ? 'Resetting…' : 'Reset sample progress'}
+              </button>
+              <Link className="btn btn-primary sample-challenge-button" to="/practice">
+                Take the Challenge
+              </Link>
+            </div>
+          </div>
+        </main>
+      </>
+    );
+  }
+
   if (loadError) {
     return (
       <main className="container" style={{ paddingTop: '2rem' }}>
@@ -175,6 +183,7 @@ export default function SampleQuestionPage() {
   const remainingSamples = sampleMeta?.remaining ?? 0;
   const shownSamples = sampleMeta?.shown_count ?? 0;
   const totalSamples = sampleMeta?.total ?? 3;
+  const schemaTableCount = Object.keys(question.schema ?? {}).length;
 
   return (
     <>
@@ -190,67 +199,103 @@ export default function SampleQuestionPage() {
         </div>
       </header>
 
-      <main className="container question-page">
+      <main className="container question-page question-page-sample">
         {resetNotice && <p className="sample-reset-notice">{resetNotice}</p>}
+
         <div className="question-page-inner">
           <aside className="left-panel">
-            <div className="card">
-              <div className="question-title-row">
-                <h2>{question.title}</h2>
-                <span className={`badge badge-${question.difficulty}`}>{question.difficulty}</span>
+            <div className="card prompt-card">
+              <div className="section-heading">
+                <div>
+                  <span className="section-kicker">Sample question</span>
+                  <div className="question-title-row">
+                    <h2>{question.title}</h2>
+                    <span className={`badge badge-${question.difficulty}`}>{question.difficulty}</span>
+                  </div>
+                </div>
               </div>
-              <p className="description-text">{question.description}</p>
+
               {question.concepts?.length > 0 && (
-                <div className="concept-tags">
-                  {question.concepts.map((c) => (
-                    <span key={c} className="tag-concept">{c}</span>
+                <div className="concept-tags concept-tags-inline">
+                  {question.concepts.map((concept) => (
+                    <span key={concept} className="tag-concept">{concept}</span>
                   ))}
                 </div>
               )}
-              <div className="locked-callout">
+
+              <p className="description-text">{question.description}</p>
+
+              <div className="locked-callout locked-callout-sample">
                 Sample mode does not change your challenge progress. {shownSamples}/{totalSamples} shown.
               </div>
             </div>
 
-            <div className="card">
-              <h3>Table Schema</h3>
+            <div className="card schema-card">
+              <div className="section-heading">
+                <div>
+                  <span className="section-kicker">Reference</span>
+                  <h3>Table schema</h3>
+                </div>
+                <span className="section-meta">{schemaTableCount} tables</span>
+              </div>
               <SchemaViewer schema={question.schema} />
             </div>
 
             <div className="card sample-challenge-card">
-              <h3>{remainingSamples > 0 ? 'Ready for the real flow?' : 'Sample set exhausted'}</h3>
+              <div className="section-heading">
+                <div>
+                  <span className="section-kicker">Sample track</span>
+                  <h3>{remainingSamples > 0 ? 'Keep sampling or move into the real flow' : 'Sample set exhausted'}</h3>
+                </div>
+                <span className="section-meta">{shownSamples}/{totalSamples} shown</span>
+              </div>
               <p className="sample-challenge-copy">
                 {remainingSamples > 0
                   ? `${remainingSamples} sample ${remainingSamples === 1 ? 'question remains' : 'questions remain'} in this ${difficulty} set.`
                   : 'You have seen all dedicated samples in this difficulty. Continue with the guided sequence.'}
               </p>
-              {remainingSamples > 0 && (
-                <button className="btn btn-secondary sample-challenge-button" onClick={handleAnotherSample}>
-                  Show next sample
+              <div className="sample-challenge-actions">
+                {remainingSamples > 0 && (
+                  <button className="btn btn-secondary sample-challenge-button" onClick={handleAnotherSample}>
+                    Show next sample
+                  </button>
+                )}
+                <button className="btn btn-secondary sample-challenge-button" onClick={handleResetSamples} disabled={resetting}>
+                  {resetting ? 'Resetting…' : 'Reset sample progress'}
                 </button>
-              )}
-              <button className="btn btn-secondary sample-challenge-button" onClick={handleResetSamples} disabled={resetting}>
-                {resetting ? 'Resetting…' : 'Reset sample progress'}
-              </button>
-              <Link className="btn btn-primary sample-challenge-button" to="/practice">
-                Take the Challenge
-              </Link>
+                <Link className="btn btn-primary sample-challenge-button" to="/practice">
+                  Take the Challenge
+                </Link>
+              </div>
             </div>
           </aside>
 
           <section className="right-panel">
-            <div className="editor-wrapper">
-              <div className="editor-topbar">SQL Editor</div>
-              <SQLEditor value={query} onChange={setQuery} />
-            </div>
+            <div className="editor-wrapper editor-workspace">
+              <div className="editor-topbar">
+                <div className="editor-topbar-copy">
+                  <span className="section-kicker">Workspace</span>
+                  <span className="editor-title">SQL editor</span>
+                </div>
+                <span className="editor-topbar-note">Sample mode uses the same read-only dataset model</span>
+              </div>
 
-            <div className="button-row">
-              <button className="btn btn-secondary" onClick={handleRun} disabled={running || submitting}>
-                {running ? 'Running…' : '▶ Run Query'}
-              </button>
-              <button className="btn btn-primary" onClick={handleSubmit} disabled={running || submitting}>
-                {submitting ? 'Checking…' : '✓ Submit Answer'}
-              </button>
+              <SQLEditor value={query} onChange={setQuery} />
+
+              <div className="editor-footer">
+                <div className="editor-footer-copy">
+                  <span className="editor-footer-title">Use samples to test your approach without affecting the challenge track.</span>
+                  <span className="editor-footer-note">Run the query for quick iteration, then submit to compare with the expected result.</span>
+                </div>
+                <div className="button-row">
+                  <button className="btn btn-secondary" onClick={handleRun} disabled={running || submitting}>
+                    {running ? 'Running…' : 'Run Query'}
+                  </button>
+                  <button className="btn btn-primary" onClick={handleSubmit} disabled={running || submitting}>
+                    {submitting ? 'Checking…' : 'Submit Answer'}
+                  </button>
+                </div>
+              </div>
             </div>
 
             {runError && <div className="error-box">{runError}</div>}
@@ -269,10 +314,14 @@ export default function SampleQuestionPage() {
             {submitResult && (
               <>
                 <div className={`verdict ${submitResult.correct ? 'verdict-correct' : 'verdict-incorrect'}`}>
-                  {submitResult.correct ? '✓ Correct! Your answer matches the expected output.' : '✗ Incorrect. Your output does not match the expected result.'}
+                  <span className="verdict-label">{submitResult.correct ? 'Correct' : 'Keep iterating'}</span>
+                  <p className="verdict-copy">
+                    {submitResult.correct ? 'Submission matches the expected result.' : 'Submission does not match the expected result yet.'}
+                  </p>
                 </div>
                 {shouldShowFeedback && (
                   <div className="feedback-card">
+                    <div className="feedback-title">What to adjust</div>
                     {submitResult.feedback.map((message, index) => (
                       <p key={`${index}-${message}`} className="feedback-message">
                         <span className="feedback-icon" aria-hidden="true">i</span>
@@ -285,7 +334,7 @@ export default function SampleQuestionPage() {
             )}
 
             {submitResult && (
-              <>
+              <div className="results-compare-grid">
                 <div className="results-card">
                   <div className="results-header">
                     <span>Your Output</span>
@@ -300,33 +349,35 @@ export default function SampleQuestionPage() {
                   </div>
                   <ResultsTable columns={submitResult.expected_result.columns} rows={submitResult.expected_result.rows} />
                 </div>
-              </>
+              </div>
             )}
 
-            {/* Hints and Solution */}
             {submitResult && (
-              <>
-                {question.hints?.slice(0, hintsShown).map((hint, i) => (
-                  <div key={i} className="hint-card">
-                    <strong>Hint {i + 1}:</strong> {hint}
+              <div className="post-submit-stack">
+                {question.hints?.slice(0, hintsShown).map((hint, index) => (
+                  <div key={index} className="hint-card">
+                    <strong>Hint {index + 1}:</strong> {hint}
                   </div>
                 ))}
+
                 {hintsShown < (question.hints?.length ?? 0) && (
                   <button
-                    className="btn btn-secondary"
-                    onClick={() => setHintsShown((n) => n + 1)}
+                    className="btn btn-secondary workspace-inline-action"
+                    onClick={() => setHintsShown((count) => count + 1)}
                   >
-                    Show Hint {hintsShown + 1}
+                    Reveal Hint {hintsShown + 1}
                   </button>
                 )}
+
                 {hintsShown >= (question.hints?.length ?? 0) && (
                   <button
-                    className="btn btn-secondary"
-                    onClick={() => setShowSolution((v) => !v)}
+                    className="btn btn-secondary workspace-inline-action"
+                    onClick={() => setShowSolution((value) => !value)}
                   >
-                    {showSolution ? 'Hide Solution' : 'Show Solution'}
+                    {showSolution ? 'Hide Official Solution' : 'Review Official Solution'}
                   </button>
                 )}
+
                 {showSolution && (
                   <div className="solution-card">
                     <h3>Official Solution</h3>
@@ -335,7 +386,7 @@ export default function SampleQuestionPage() {
                     <p>{submitResult.explanation}</p>
                   </div>
                 )}
-              </>
+              </div>
             )}
           </section>
         </div>

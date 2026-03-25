@@ -53,10 +53,10 @@ describe('SidebarNav', () => {
     renderWithRouter(<Harness />, { initialEntries: ['/practice'] });
 
     expect(screen.getByText('easy')).toBeInTheDocument();
-    expect(screen.queryByText('1. Q1')).not.toBeInTheDocument();
+    expect(screen.queryByText('Q1')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /easy/i }));
-    expect(screen.getByText('1. Q1')).toBeInTheDocument();
+    expect(screen.getByText('Q1')).toBeInTheDocument();
   });
 
   it('does not render locked questions as links and navigates on unlocked click', async () => {
@@ -87,11 +87,11 @@ describe('SidebarNav', () => {
     );
 
     // Locked question should not be a link
-    const lockedRow = screen.getByText('2. Duplicate Emails').closest('.sidebar-question');
+    const lockedRow = screen.getByText('Duplicate Emails').closest('.sidebar-question');
     expect(lockedRow).toHaveAttribute('aria-disabled', 'true');
 
     // Unlocked question should navigate
-    await user.click(screen.getByText('1. Second Highest Salary'));
+    await user.click(screen.getByText('Second Highest Salary'));
     expect(await screen.findByText('Question 1')).toBeInTheDocument();
   });
 });
