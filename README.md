@@ -360,6 +360,8 @@ The GitHub Actions workflow at .github/workflows/ci.yml runs:
 ## Related Docs
 
 - docs/project-blueprint.md: detailed architecture and current-state reference
-- docs/project-overview.md: concise product summary
+- docs/frontend.md: frontend pages, components, and data flows
+- docs/backend.md: backend modules, routes, and execution model
+- docs/ui-design-system.md: design tokens, layout, and component patterns
 - docs/question-authoring-guidelines.md: question authoring standard
 - MANUAL_TEST_CHECKLIST.md: manual verification steps
