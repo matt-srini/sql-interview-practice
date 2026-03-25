@@ -37,10 +37,17 @@ function AppleIcon() {
 const VALID_MODES = ['signin', 'signup', 'magic', 'forgot'];
 
 const MODE_META = {
-  signin:  { title: 'Sign in',          subtitle: 'Welcome back' },
-  signup:  { title: 'Create account',   subtitle: 'Start your SQL journey' },
-  magic:   { title: 'Magic link',        subtitle: 'Get a sign-in link by email' },
-  forgot:  { title: 'Reset password',   subtitle: "We'll send a reset link" },
+  signin: { title: 'Sign in', subtitle: 'Pick up your practice session' },
+  signup: { title: 'Create account', subtitle: 'Save progress and unlock more practice' },
+  magic: { title: 'Magic link', subtitle: 'Get a one-time sign-in link by email' },
+  forgot: { title: 'Reset password', subtitle: "We'll help you back into your account" },
+};
+
+const MODE_SUPPORT = {
+  signin: 'Use the same email you want tied to your progress and any plan access.',
+  signup: 'Creating an account keeps your browser progress in place and makes future upgrades smoother.',
+  magic: 'If magic links are enabled for your account, we will send the next step to your inbox.',
+  forgot: 'Password reset is still lightweight here, but we will point you back to the most reliable sign-in path.',
 };
 
 // ─── AuthPage component ───────────────────────────────────────────────────────
@@ -128,6 +135,7 @@ export default function AuthPage() {
   const isLoading = status === 'loading';
   const isSuccess = status === 'success';
   const meta = MODE_META[mode];
+  const supportCopy = MODE_SUPPORT[mode];
   const showOAuth = mode === 'signin' || mode === 'signup';
   const showPasswordField = mode === 'signin' || mode === 'signup';
   const showNameField = mode === 'signup';
@@ -159,6 +167,7 @@ export default function AuthPage() {
           <div className="auth-card-header">
             <h1 className="auth-card-title">{meta.title}</h1>
             <p className="auth-card-subtitle">{meta.subtitle}</p>
+            <p className="auth-card-note">{supportCopy}</p>
           </div>
 
           {/* OAuth buttons — only shown on sign-in / sign-up modes */}

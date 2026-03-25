@@ -16,6 +16,11 @@ function pickStartQuestionId(catalog) {
   return null;
 }
 
+function formatPlanLabel(plan) {
+  if (!plan) return '';
+  return `${plan.charAt(0).toUpperCase()}${plan.slice(1)} plan`;
+}
+
 export default function AppShell() {
   const { catalog, loading, error, refresh } = useCatalog();
   const { user, refreshUser } = useAuth();
@@ -100,38 +105,63 @@ export default function AppShell() {
   }
 
   const showUpgradeControls = user && (user.plan === 'free' || user.plan === 'pro');
+  const sessionId = catalog?.user_id ? catalog.user_id.slice(0, 8) : null;
 
   return (
     <div className={`app-shell ${desktopCollapsed ? 'sidebar-collapsed' : ''}`}>
       <header className="topbar app-topbar">
         <div className="topbar-inner app-topbar-inner">
-          <button
-            className="btn btn-secondary sidebar-toggle"
-            onClick={handleSidebarToggle}
-            aria-label="Toggle sidebar"
-            aria-expanded={isMobile ? mobileOpen : !desktopCollapsed}
-            aria-controls="sidebar"
-          >
-            ☰
-          </button>
-          <h1>SQL Interview Practice</h1>
-          <Link className="back-link" to="/">
-            Home
-          </Link>
-          {showUpgradeControls && (
-            <div className="upgrade-actions">
-              {user.plan === 'free' && (
-                <button className="btn btn-primary" onClick={() => startCheckout('pro')} disabled={upgradePending}>
-                  Upgrade to Pro
-                </button>
-              )}
-              <button className="btn btn-secondary" onClick={() => startCheckout('elite')} disabled={upgradePending}>
-                Upgrade to Elite
-              </button>
+          <div className="app-topbar-brand">
+            <button
+              className="btn btn-secondary sidebar-toggle"
+              onClick={handleSidebarToggle}
+              aria-label="Toggle sidebar"
+              aria-expanded={isMobile ? mobileOpen : !desktopCollapsed}
+              aria-controls="sidebar"
+            >
+              <span className="sidebar-toggle-icon" aria-hidden="true">
+                {isMobile ? '☰' : desktopCollapsed ? '▤' : '▥'}
+              </span>
+              <span className="sidebar-toggle-label">{desktopCollapsed ? 'Show bank' : 'Question bank'}</span>
+            </button>
+
+            <div className="app-title-group">
+              <span className="app-title-kicker">Challenge workspace</span>
+              <div className="app-title-row">
+                <h1>SQL Interview Practice</h1>
+                <Link className="back-link app-home-link" to="/">
+                  Home
+                </Link>
+              </div>
             </div>
-          )}
-          {user && <span className="plan-pill">Plan: {user.plan}</span>}
-          {catalog?.user_id && <span className="user-pill">Session: {catalog.user_id.slice(0, 8)}</span>}
+          </div>
+
+          <div className="app-topbar-actions">
+            {(user || sessionId) && (
+              <div className="app-context">
+                {user && <span className="shell-pill shell-pill-plan">{formatPlanLabel(user.plan)}</span>}
+                {sessionId && <span className="shell-pill shell-pill-session">Session {sessionId}</span>}
+              </div>
+            )}
+
+            {showUpgradeControls && (
+              <div className="upgrade-panel">
+                <span className="upgrade-panel-label">
+                  {user.plan === 'free' ? 'Expand question access' : 'Unlock the full challenge track'}
+                </span>
+                <div className="upgrade-actions">
+                  {user.plan === 'free' && (
+                    <button className="btn btn-secondary btn-compact" onClick={() => startCheckout('pro')} disabled={upgradePending}>
+                      Unlock Pro
+                    </button>
+                  )}
+                  <button className="btn btn-primary btn-compact" onClick={() => startCheckout('elite')} disabled={upgradePending}>
+                    {user.plan === 'free' ? 'Unlock Elite' : 'Upgrade to Elite'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
         {(upgradeError || upgradeSuccess) && (
           <div className={`app-banner ${upgradeError ? 'app-banner-error' : 'app-banner-success'}`}>

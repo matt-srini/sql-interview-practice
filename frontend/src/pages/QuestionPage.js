@@ -13,12 +13,10 @@ export default function QuestionPage() {
   const { catalog, refresh } = useCatalog();
   const navigate = useNavigate();
 
-  // After a correct submission the catalog is refreshed; the newly-unlocked
-  // question gets is_next:true. Derive its id so we can offer a Next button.
   const nextQuestionId = useMemo(() => {
     if (!catalog) return null;
-    for (const g of catalog.groups) {
-      const next = g.questions.find((q) => q.is_next);
+    for (const group of catalog.groups) {
+      const next = group.questions.find((question) => question.is_next);
       if (next) return next.id;
     }
     return null;
@@ -26,19 +24,13 @@ export default function QuestionPage() {
 
   const [question, setQuestion] = useState(null);
   const [loadError, setLoadError] = useState(null);
-
   const [query, setQuery] = useState(PLACEHOLDER);
-
-  // Run query state
   const [runResult, setRunResult] = useState(null);
   const [runError, setRunError] = useState(null);
   const [running, setRunning] = useState(false);
-
-  // Submit state
   const [submitResult, setSubmitResult] = useState(null);
   const [submitError, setSubmitError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-
   const [showSolution, setShowSolution] = useState(false);
   const [hintsShown, setHintsShown] = useState(0);
 
@@ -51,7 +43,6 @@ export default function QuestionPage() {
       .catch((err) => setLoadError(err.response?.data?.detail ?? 'Failed to load question.'));
   }, [id]);
 
-  // Reset state when navigating to a different question
   useEffect(() => {
     setQuery(PLACEHOLDER);
     setRunResult(null);
@@ -111,156 +102,180 @@ export default function QuestionPage() {
   const isLocked = question.progress && question.progress.unlocked === false;
   const shouldShowFeedback = submitResult?.feedback?.length > 0
     && !(submitResult.correct && (submitResult.structure_correct ?? true));
+  const schemaTableCount = Object.keys(question.schema ?? {}).length;
 
   return (
-    <>
-      <main className="container question-page">
-        <div className="question-page-inner">
-          {/* ── Left panel ── */}
-          <aside className="left-panel">
-            <div className="card">
-              <div className="question-title-row">
-                <h2>{question.title}</h2>
-                <span className={`badge badge-${question.difficulty}`}>{question.difficulty}</span>
+    <main className="container question-page question-page-challenge">
+      <div className="question-page-inner">
+        <aside className="left-panel">
+          <div className="card prompt-card">
+            <div className="section-heading">
+              <div>
+                <span className="section-kicker">Challenge question</span>
+                <div className="question-title-row">
+                  <h2>{question.title}</h2>
+                  <span className={`badge badge-${question.difficulty}`}>{question.difficulty}</span>
+                </div>
               </div>
-              <p className="description-text">{question.description}</p>
-              {question.concepts?.length > 0 && (
-                <div className="concept-tags">
-                  {question.concepts.map((c) => (
-                    <span key={c} className="tag-concept">{c}</span>
+            </div>
+
+            {question.concepts?.length > 0 && (
+              <div className="concept-tags concept-tags-inline">
+                {question.concepts.map((concept) => (
+                  <span key={concept} className="tag-concept">{concept}</span>
+                ))}
+              </div>
+            )}
+
+            <p className="description-text">{question.description}</p>
+
+            {isLocked && (
+              <div className="locked-callout">
+                This question is locked. Solve previous questions in this difficulty first.
+              </div>
+            )}
+          </div>
+
+          <div className="card schema-card">
+            <div className="section-heading">
+              <div>
+                <span className="section-kicker">Reference</span>
+                <h3>Table schema</h3>
+              </div>
+              <span className="section-meta">{schemaTableCount} tables</span>
+            </div>
+            <SchemaViewer schema={question.schema} />
+          </div>
+        </aside>
+
+        <section className="right-panel">
+          <div className="editor-wrapper editor-workspace">
+            <div className="editor-topbar">
+              <div className="editor-topbar-copy">
+                <span className="section-kicker">Workspace</span>
+                <span className="editor-title">SQL editor</span>
+              </div>
+              <span className="editor-topbar-note">Read-only DuckDB sandbox</span>
+            </div>
+
+            <SQLEditor value={query} onChange={setQuery} />
+
+            <div className="editor-footer">
+              <div className="editor-footer-copy">
+                <span className="editor-footer-title">Run as often as you need, then submit once the result shape looks right.</span>
+                <span className="editor-footer-note">The dataset is fixed for this prompt, so you can iterate freely without changing the question state.</span>
+              </div>
+              <div className="button-row">
+                <button className="btn btn-secondary" onClick={handleRun} disabled={running || submitting || isLocked}>
+                  {running ? 'Running…' : 'Run Query'}
+                </button>
+                <button className="btn btn-primary" onClick={handleSubmit} disabled={running || submitting || isLocked}>
+                  {submitting ? 'Checking…' : 'Submit Answer'}
+                </button>
+                {submitResult?.correct && nextQuestionId && (
+                  <button
+                    className="btn btn-success"
+                    onClick={() => navigate(`/practice/questions/${nextQuestionId}`)}
+                  >
+                    Next Question
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {runError && <div className="error-box">{runError}</div>}
+
+          {runResult && (
+            <div className="results-card">
+              <div className="results-header">
+                <span>Query Result</span>
+                <span>{runResult.rows.length} row{runResult.rows.length !== 1 ? 's' : ''}</span>
+              </div>
+              <ResultsTable columns={runResult.columns} rows={runResult.rows} />
+            </div>
+          )}
+
+          {submitError && <div className="error-box">{submitError}</div>}
+          {submitResult && (
+            <>
+              <div className={`verdict ${submitResult.correct ? 'verdict-correct' : 'verdict-incorrect'}`}>
+                <span className="verdict-label">{submitResult.correct ? 'Correct' : 'Keep iterating'}</span>
+                <p className="verdict-copy">
+                  {submitResult.correct ? 'Submission matches the expected result.' : 'Submission does not match the expected result yet.'}
+                </p>
+              </div>
+              {shouldShowFeedback && (
+                <div className="feedback-card">
+                  <div className="feedback-title">What to adjust</div>
+                  {submitResult.feedback.map((message, index) => (
+                    <p key={`${index}-${message}`} className="feedback-message">
+                      <span className="feedback-icon" aria-hidden="true">i</span>
+                      <span>{message}</span>
+                    </p>
                   ))}
                 </div>
               )}
-              {isLocked && (
-                <div className="locked-callout">
-                  This question is locked. Solve previous questions in this difficulty first.
-                </div>
-              )}
-            </div>
+            </>
+          )}
 
-            <div className="card">
-              <h3>Table Schema</h3>
-              <SchemaViewer schema={question.schema} />
-            </div>
-          </aside>
-
-          {/* ── Right panel ── */}
-          <section className="right-panel">
-            {/* Editor */}
-            <div className="editor-wrapper">
-              <div className="editor-topbar">SQL Editor</div>
-              <SQLEditor value={query} onChange={setQuery} />
-            </div>
-
-            {/* Action buttons */}
-            <div className="button-row">
-              <button className="btn btn-secondary" onClick={handleRun} disabled={running || submitting || isLocked}>
-                {running ? 'Running…' : '▶ Run Query'}
-              </button>
-              <button className="btn btn-primary" onClick={handleSubmit} disabled={running || submitting || isLocked}>
-                {submitting ? 'Checking…' : '✓ Submit Answer'}
-              </button>
-              {submitResult?.correct && nextQuestionId && (
-                <button
-                  className="btn btn-success"
-                  onClick={() => navigate(`/practice/questions/${nextQuestionId}`)}
-                >
-                  Next Question →
-                </button>
-              )}
-            </div>
-
-            {/* Run error */}
-            {runError && <div className="error-box">{runError}</div>}
-
-            {/* Run results */}
-            {runResult && (
+          {submitResult && (
+            <div className="results-compare-grid">
               <div className="results-card">
                 <div className="results-header">
-                  <span>Query Result</span>
-                  <span>{runResult.rows.length} row{runResult.rows.length !== 1 ? 's' : ''}</span>
+                  <span>Your Output</span>
+                  <span>{submitResult.user_result.rows.length} row{submitResult.user_result.rows.length !== 1 ? 's' : ''}</span>
                 </div>
-                <ResultsTable columns={runResult.columns} rows={runResult.rows} />
+                <ResultsTable columns={submitResult.user_result.columns} rows={submitResult.user_result.rows} />
               </div>
-            )}
-
-            {/* Submit verdict */}
-            {submitError && <div className="error-box">{submitError}</div>}
-            {submitResult && (
-              <>
-                <div className={`verdict ${submitResult.correct ? 'verdict-correct' : 'verdict-incorrect'}`}>
-                  {submitResult.correct ? '✓ Correct! Your answer matches the expected output.' : '✗ Incorrect. Your output does not match the expected result.'}
+              <div className="results-card">
+                <div className="results-header">
+                  <span>Expected Output</span>
+                  <span>{submitResult.expected_result.rows.length} row{submitResult.expected_result.rows.length !== 1 ? 's' : ''}</span>
                 </div>
-                {shouldShowFeedback && (
-                  <div className="feedback-card">
-                    {submitResult.feedback.map((message, index) => (
-                      <p key={`${index}-${message}`} className="feedback-message">
-                        <span className="feedback-icon" aria-hidden="true">i</span>
-                        <span>{message}</span>
-                      </p>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
+                <ResultsTable columns={submitResult.expected_result.columns} rows={submitResult.expected_result.rows} />
+              </div>
+            </div>
+          )}
 
-            {/* Submitted vs expected results */}
-            {submitResult && (
-              <>
-                <div className="results-card">
-                  <div className="results-header">
-                    <span>Your Output</span>
-                    <span>{submitResult.user_result.rows.length} row{submitResult.user_result.rows.length !== 1 ? 's' : ''}</span>
-                  </div>
-                  <ResultsTable columns={submitResult.user_result.columns} rows={submitResult.user_result.rows} />
+          {submitResult && (
+            <div className="post-submit-stack">
+              {question.hints?.slice(0, hintsShown).map((hint, index) => (
+                <div key={index} className="hint-card">
+                  <strong>Hint {index + 1}:</strong> {hint}
                 </div>
-                <div className="results-card">
-                  <div className="results-header">
-                    <span>Expected Output</span>
-                    <span>{submitResult.expected_result.rows.length} row{submitResult.expected_result.rows.length !== 1 ? 's' : ''}</span>
-                  </div>
-                  <ResultsTable columns={submitResult.expected_result.columns} rows={submitResult.expected_result.rows} />
-                </div>
-              </>
-            )}
+              ))}
 
-            {/* Hints and Solution */}
-            {submitResult && (
-              <>
-                {question.hints?.slice(0, hintsShown).map((hint, i) => (
-                  <div key={i} className="hint-card">
-                    <strong>Hint {i + 1}:</strong> {hint}
-                  </div>
-                ))}
-                {hintsShown < (question.hints?.length ?? 0) && (
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => setHintsShown((n) => n + 1)}
-                  >
-                    Show Hint {hintsShown + 1}
-                  </button>
-                )}
-                {hintsShown >= (question.hints?.length ?? 0) && (
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => setShowSolution((v) => !v)}
-                  >
-                    {showSolution ? 'Hide Solution' : 'Show Solution'}
-                  </button>
-                )}
-                {showSolution && (
-                  <div className="solution-card">
-                    <h3>Official Solution</h3>
-                    <pre>{submitResult.solution_query}</pre>
-                    <h3 style={{ marginBottom: '0.5rem' }}>Explanation</h3>
-                    <p>{submitResult.explanation}</p>
-                  </div>
-                )}
-              </>
-            )}
-          </section>
-        </div>
-      </main>
-    </>
+              {hintsShown < (question.hints?.length ?? 0) && (
+                <button
+                  className="btn btn-secondary workspace-inline-action"
+                  onClick={() => setHintsShown((count) => count + 1)}
+                >
+                  Reveal Hint {hintsShown + 1}
+                </button>
+              )}
+
+              {hintsShown >= (question.hints?.length ?? 0) && (
+                <button
+                  className="btn btn-secondary workspace-inline-action"
+                  onClick={() => setShowSolution((value) => !value)}
+                >
+                  {showSolution ? 'Hide Official Solution' : 'Review Official Solution'}
+                </button>
+              )}
+
+              {showSolution && (
+                <div className="solution-card">
+                  <h3>Official Solution</h3>
+                  <pre>{submitResult.solution_query}</pre>
+                  <h3 style={{ marginBottom: '0.5rem' }}>Explanation</h3>
+                  <p>{submitResult.explanation}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+      </div>
+    </main>
   );
 }
