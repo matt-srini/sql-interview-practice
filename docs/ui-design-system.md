@@ -71,7 +71,13 @@ All hover states use `translateY(-1px)`. No transforms on disabled. Transitions:
 
 ## Layout
 
-The app shell layout is unchanged from the original implementation:
+### Landing page
+- Centered flex column; hero section `max-width: 560px`, sample tiles `max-width: 800px`
+- Hero: kicker pill → headline → copy → two CTAs (centered)
+- Sample tiles: 3-column grid (`repeat(3, minmax(0,1fr))`), flex column cards with `align-items: flex-start`
+- Mobile (<900px): hero left-aligned, tiles stack to 1 column
+
+### App shell (challenge workspace)
 - **Sidebar**: 328px, sticky, collapsible (`display:none` on `.sidebar-collapsed`)
 - **Top bar**: 72px, sticky, blurred backdrop
 - **Question page**: CSS Grid `minmax(300px,360px) / minmax(0,1fr)` — left panel sticky at `top: 96px`
@@ -92,7 +98,7 @@ Always dark. Uses `#1e1e1e` background to match Monaco `vs-dark`. Editor config 
 ## Radii and Shadows
 
 ```
---radius-lg: 20px   (editor wrapper, hero cards)
+--radius-lg: 20px   (editor wrapper)
 --radius-md: 14px   (inner cards, schema blocks)
 --radius-sm: 10px   (badges, tokens)
 
