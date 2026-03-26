@@ -81,8 +81,16 @@ All hover states use `translateY(-1px)`. No transforms on disabled. Transitions:
 - **Sidebar**: 328px, sticky, collapsible (`display:none` on `.sidebar-collapsed`)
 - **Top bar**: 72px, sticky, blurred backdrop
 - **Question page**: CSS Grid `minmax(300px,360px) / minmax(0,1fr)` — left panel sticky at `top: 96px`
+- **Left panel cards**: padding `1.1rem 1.15rem`, border-radius `14px`, gap `0.85rem`
+- **Right panel**: gap `1rem`
 - **Mobile breakpoint**: 900px — sidebar becomes fixed overlay
 - **Container**: max-width 1180px centered
+
+### Question page chrome
+- No section kickers — content is self-evident from titles and badges
+- Editor topbar: single line, "SQL editor" left + "DuckDB sandbox" right, padding `0.65rem 1.15rem`
+- Editor footer: buttons only (Run Query, Submit Answer, Next Question), right-aligned, padding `0.65rem 1.15rem`
+- Post-submit: `.submit-outcome` wrapper with overflow hidden groups verdict + feedback cards; hint-card has no box-shadow
 
 ---
 

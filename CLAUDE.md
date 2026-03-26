@@ -163,6 +163,8 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 
 **Buttons:** `.btn-primary` (accent fill), `.btn-secondary` (outlined, context-sensitive bg), `.btn-success` (success tint). All hover: `translateY(-1px)`, `150ms ease-out`.
 
+**Question page chrome:** Minimal — no section kickers (content self-evident from titles/badges). Editor topbar is single-line ("SQL editor" / "DuckDB sandbox"). Editor footer is buttons-only, right-aligned. Post-submit verdict + feedback grouped in `.submit-outcome` wrapper. Cards use tight padding (`1.1rem 1.15rem`) with `14px` border-radius.
+
 ---
 
 ## Datasets
