@@ -37,7 +37,9 @@ Main practice screen. Two-column layout: sticky left panel (description + schema
 - Run → calls `/api/run-query`, shows results table
 - Submit → calls `/api/submit`, shows verdict inline
 - On correct: `refresh()` called on catalog context so sidebar unlock state updates immediately
-- Post-submit: hints revealed one at a time; solution button appears only after all hints shown
+- Post-submit: verdict + feedback wrapped in `.submit-outcome` container; hints revealed one at a time; solution button appears only after all hints shown
+
+**Minimal chrome approach:** No section kickers on prompt or schema cards (content is self-evident from titles and badges). Editor topbar is a single line ("SQL editor" left, "DuckDB sandbox" right). Editor footer is buttons-only, right-aligned — no instructional text.
 
 ### SampleQuestionPage (`/sample/:difficulty`)
 Standalone sample practice. Same editor layout as QuestionPage but no sidebar.
