@@ -281,6 +281,11 @@ cd frontend && npm test
 | `docs/datasets.md` | Dataset inventory, schema details, edge cases |
 | `docs/deployment.md` | Local dev, Docker, production image, env vars, Railway |
 | `docs/ui-design-system.md` | Design tokens, layout, buttons, editor, landing page structure |
-| `docs/question-authoring-guidelines.md` | Rules for authoring challenge questions |
-| `docs/sql-curriculum-spec.md` | Difficulty tiers and curriculum standards |
+| `docs/question-authoring-guidelines.md` | Rules for authoring SQL challenge questions |
+| `docs/sql-curriculum-spec.md` | SQL difficulty tiers and curriculum standards |
 | `docs/USERGUIDE.md` | End-user guide to the platform |
+| `docs/multi-topic-platform.md` | **Master implementation guide** for Python, Python (Data), PySpark tracks — all backend, frontend, DB, and routing changes |
+| `docs/python-curriculum-spec.md` | Python (algorithms) difficulty tiers, question bank, authoring rules |
+| `docs/python-data-curriculum-spec.md` | Python (Data) pandas+numpy difficulty tiers, question bank, authoring rules |
+| `docs/pyspark-curriculum-spec.md` | PySpark conceptual MCQ difficulty tiers, question bank, authoring rules |
+| `docs/python-question-authoring.md` | JSON schemas, field reference, and authoring checklist for all new tracks |
