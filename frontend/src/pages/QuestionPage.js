@@ -111,7 +111,6 @@ export default function QuestionPage() {
           <div className="card prompt-card">
             <div className="section-heading">
               <div>
-                <span className="section-kicker">Challenge question</span>
                 <div className="question-title-row">
                   <h2>{question.title}</h2>
                   <span className={`badge badge-${question.difficulty}`}>{question.difficulty}</span>
@@ -139,7 +138,6 @@ export default function QuestionPage() {
           <div className="card schema-card">
             <div className="section-heading">
               <div>
-                <span className="section-kicker">Reference</span>
                 <h3>Table schema</h3>
               </div>
               <span className="section-meta">{schemaTableCount} tables</span>
@@ -151,20 +149,13 @@ export default function QuestionPage() {
         <section className="right-panel">
           <div className="editor-wrapper editor-workspace">
             <div className="editor-topbar">
-              <div className="editor-topbar-copy">
-                <span className="section-kicker">Workspace</span>
-                <span className="editor-title">SQL editor</span>
-              </div>
-              <span className="editor-topbar-note">Read-only DuckDB sandbox</span>
+              <span className="editor-title">SQL editor</span>
+              <span className="editor-topbar-note">DuckDB sandbox</span>
             </div>
 
             <SQLEditor value={query} onChange={setQuery} />
 
             <div className="editor-footer">
-              <div className="editor-footer-copy">
-                <span className="editor-footer-title">Run as often as you need, then submit once the result shape looks right.</span>
-                <span className="editor-footer-note">The dataset is fixed for this prompt, so you can iterate freely without changing the question state.</span>
-              </div>
               <div className="button-row">
                 <button className="btn btn-secondary" onClick={handleRun} disabled={running || submitting || isLocked}>
                   {running ? 'Running…' : 'Run Query'}
@@ -198,7 +189,7 @@ export default function QuestionPage() {
 
           {submitError && <div className="error-box">{submitError}</div>}
           {submitResult && (
-            <>
+            <div className="submit-outcome">
               <div className={`verdict ${submitResult.correct ? 'verdict-correct' : 'verdict-incorrect'}`}>
                 <span className="verdict-label">{submitResult.correct ? 'Correct' : 'Keep iterating'}</span>
                 <p className="verdict-copy">
@@ -216,7 +207,7 @@ export default function QuestionPage() {
                   ))}
                 </div>
               )}
-            </>
+            </div>
           )}
 
           {submitResult && (
