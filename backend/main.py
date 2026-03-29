@@ -18,6 +18,10 @@ from rate_limiter import BaseRateLimiter, create_rate_limiter
 from routers import auth, catalog, questions, sample, spa, system
 from routers import plan
 from routers import stripe as stripe_router
+from routers import python_questions as python_questions_router
+from routers import python_data_questions as python_data_questions_router
+from routers import pyspark_questions as pyspark_questions_router
+from routers import dashboard as dashboard_router
 
 
 LOG_FORMAT = "%(asctime)s [%(levelname)s] %(message)s"
@@ -153,4 +157,8 @@ app.include_router(questions.router)
 app.include_router(sample.router)
 app.include_router(plan.router)
 app.include_router(stripe_router.router)
+app.include_router(python_questions_router.router)
+app.include_router(python_data_questions_router.router)
+app.include_router(pyspark_questions_router.router)
+app.include_router(dashboard_router.router)
 app.include_router(spa.router)
