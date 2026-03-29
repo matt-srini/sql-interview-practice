@@ -51,16 +51,18 @@ CREATE TABLE IF NOT EXISTS sessions (
 CREATE TABLE IF NOT EXISTS user_progress (
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     question_id INTEGER NOT NULL,
+    topic TEXT NOT NULL DEFAULT 'sql',
     solved_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    PRIMARY KEY (user_id, question_id)
+    PRIMARY KEY (user_id, question_id, topic)
 );
 
 CREATE TABLE IF NOT EXISTS user_sample_seen (
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     difficulty TEXT NOT NULL,
     question_id INTEGER NOT NULL,
+    topic TEXT NOT NULL DEFAULT 'sql',
     seen_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    PRIMARY KEY (user_id, difficulty, question_id)
+    PRIMARY KEY (user_id, difficulty, question_id, topic)
 );
 
 CREATE TABLE IF NOT EXISTS stripe_events (
@@ -84,6 +86,7 @@ CREATE TABLE IF NOT EXISTS plan_changes (
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
 CREATE INDEX IF NOT EXISTS idx_progress_user ON user_progress(user_id);
+CREATE INDEX IF NOT EXISTS idx_progress_user_topic ON user_progress(user_id, topic);
 CREATE INDEX IF NOT EXISTS idx_plan_changes_user ON plan_changes(user_id);
 """
 
@@ -406,7 +409,7 @@ async def delete_user(user_id: str) -> None:
         await session.commit()
 
 
-async def get_solved_ids(user_id: str) -> set[int]:
+async def get_solved_ids(user_id: str, topic: str = "sql") -> set[int]:
     session_factory = _session_factory_or_raise()
     async with session_factory() as session:
         result = await session.execute(
@@ -415,28 +418,30 @@ async def get_solved_ids(user_id: str) -> set[int]:
                 SELECT question_id
                 FROM user_progress
                 WHERE user_id = CAST(:user_id AS UUID)
+                  AND topic = :topic
                 """
             ),
-            {"user_id": user_id},
+            {"user_id": user_id, "topic": topic},
         )
         return {int(row[0]) for row in result.fetchall()}
 
 
-async def mark_solved(user_id: str, question_id: int) -> None:
+async def mark_solved(user_id: str, question_id: int, topic: str = "sql") -> None:
     session_factory = _session_factory_or_raise()
     async with session_factory() as session:
         await session.execute(
             text(
                 """
-                INSERT INTO user_progress (user_id, question_id, solved_at)
-                VALUES (CAST(:user_id AS UUID), :question_id, now())
-                ON CONFLICT (user_id, question_id)
+                INSERT INTO user_progress (user_id, question_id, topic, solved_at)
+                VALUES (CAST(:user_id AS UUID), :question_id, :topic, now())
+                ON CONFLICT (user_id, question_id, topic)
                 DO UPDATE SET solved_at = EXCLUDED.solved_at
                 """
             ),
             {
                 "user_id": user_id,
                 "question_id": int(question_id),
+                "topic": topic,
             },
         )
         await session.commit()
@@ -452,7 +457,7 @@ async def clear_progress(user_id: str) -> None:
         await session.commit()
 
 
-async def get_seen_sample_ids(user_id: str, difficulty: str) -> set[int]:
+async def get_seen_sample_ids(user_id: str, difficulty: str, topic: str = "sql") -> set[int]:
     session_factory = _session_factory_or_raise()
     async with session_factory() as session:
         result = await session.execute(
@@ -462,25 +467,27 @@ async def get_seen_sample_ids(user_id: str, difficulty: str) -> set[int]:
                 FROM user_sample_seen
                 WHERE user_id = CAST(:user_id AS UUID)
                   AND difficulty = :difficulty
+                  AND topic = :topic
                 """
             ),
             {
                 "user_id": user_id,
                 "difficulty": difficulty,
+                "topic": topic,
             },
         )
         return {int(row[0]) for row in result.fetchall()}
 
 
-async def mark_sample_seen(user_id: str, difficulty: str, question_id: int) -> None:
+async def mark_sample_seen(user_id: str, difficulty: str, question_id: int, topic: str = "sql") -> None:
     session_factory = _session_factory_or_raise()
     async with session_factory() as session:
         await session.execute(
             text(
                 """
-                INSERT INTO user_sample_seen (user_id, difficulty, question_id, seen_at)
-                VALUES (CAST(:user_id AS UUID), :difficulty, :question_id, now())
-                ON CONFLICT (user_id, difficulty, question_id)
+                INSERT INTO user_sample_seen (user_id, difficulty, question_id, topic, seen_at)
+                VALUES (CAST(:user_id AS UUID), :difficulty, :question_id, :topic, now())
+                ON CONFLICT (user_id, difficulty, question_id, topic)
                 DO UPDATE SET seen_at = EXCLUDED.seen_at
                 """
             ),
@@ -488,6 +495,7 @@ async def mark_sample_seen(user_id: str, difficulty: str, question_id: int) -> N
                 "user_id": user_id,
                 "difficulty": difficulty,
                 "question_id": int(question_id),
+                "topic": topic,
             },
         )
         await session.commit()
@@ -695,11 +703,11 @@ async def merge_users(from_user_id: str, to_user_id: str) -> None:
         await session.execute(
             text(
                 """
-                INSERT INTO user_progress (user_id, question_id, solved_at)
-                SELECT CAST(:to_user_id AS UUID), question_id, solved_at
+                INSERT INTO user_progress (user_id, question_id, topic, solved_at)
+                SELECT CAST(:to_user_id AS UUID), question_id, topic, solved_at
                 FROM user_progress
                 WHERE user_id = CAST(:from_user_id AS UUID)
-                ON CONFLICT (user_id, question_id)
+                ON CONFLICT (user_id, question_id, topic)
                 DO UPDATE SET solved_at = EXCLUDED.solved_at
                 """
             ),
@@ -711,11 +719,11 @@ async def merge_users(from_user_id: str, to_user_id: str) -> None:
         await session.execute(
             text(
                 """
-                INSERT INTO user_sample_seen (user_id, difficulty, question_id, seen_at)
-                SELECT CAST(:to_user_id AS UUID), difficulty, question_id, seen_at
+                INSERT INTO user_sample_seen (user_id, difficulty, question_id, topic, seen_at)
+                SELECT CAST(:to_user_id AS UUID), difficulty, question_id, topic, seen_at
                 FROM user_sample_seen
                 WHERE user_id = CAST(:from_user_id AS UUID)
-                ON CONFLICT (user_id, difficulty, question_id)
+                ON CONFLICT (user_id, difficulty, question_id, topic)
                 DO UPDATE SET seen_at = EXCLUDED.seen_at
                 """
             ),
@@ -729,3 +737,46 @@ async def merge_users(from_user_id: str, to_user_id: str) -> None:
             {"from_user_id": from_user_id},
         )
         await session.commit()
+
+
+async def get_recent_activity(user_id: str, limit: int = 10) -> list[dict[str, Any]]:
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                SELECT question_id, topic, solved_at
+                FROM user_progress
+                WHERE user_id = CAST(:user_id AS UUID)
+                ORDER BY solved_at DESC
+                LIMIT :limit
+                """
+            ),
+            {"user_id": user_id, "limit": limit},
+        )
+        return [
+            {
+                "question_id": row[0],
+                "topic": row[1],
+                "solved_at": row[2].isoformat() if row[2] else None,
+            }
+            for row in result.fetchall()
+        ]
+
+
+async def get_progress_by_topic(user_id: str) -> dict[str, dict[str, int]]:
+    """Returns solved count per topic."""
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                SELECT topic, COUNT(*) as solved_count
+                FROM user_progress
+                WHERE user_id = CAST(:user_id AS UUID)
+                GROUP BY topic
+                """
+            ),
+            {"user_id": user_id},
+        )
+        return {row[0]: {"solved": row[1]} for row in result.fetchall()}

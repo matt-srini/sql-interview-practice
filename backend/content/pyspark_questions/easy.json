@@ -1,0 +1,222 @@
+[
+  {
+    "id": 11001,
+    "order": 1,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "Transformations vs Actions",
+    "description": "In PySpark, operations on DataFrames are divided into **transformations** (lazy — they define a new computation but don't execute it) and **actions** (eager — they trigger execution and return a result).\n\nWhich of the following operations **triggers actual execution** of the Spark job?",
+    "code_snippet": null,
+    "options": [
+      "df.filter(df['age'] > 30)",
+      "df.count()",
+      "df.select('name', 'age')",
+      "df.withColumn('bonus', df['salary'] * 0.1)"
+    ],
+    "correct_option": 1,
+    "explanation": "`df.count()` is an **action** — it forces Spark to execute the entire computation graph and return a Python integer. The other three (`filter`, `select`, `withColumn`) are **transformations**: they return a new DataFrame representing a deferred computation that is only evaluated when an action is called.",
+    "hints": [
+      "Ask yourself: which operation returns a concrete value (number, list, or writes data) rather than another DataFrame?"
+    ],
+    "concepts": ["transformations vs actions", "lazy evaluation", "DAG execution"]
+  },
+  {
+    "id": 11002,
+    "order": 2,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "Lazy Evaluation in Spark",
+    "description": "PySpark uses **lazy evaluation** to optimize query execution. Which statement **best describes** what lazy evaluation means in Spark?",
+    "code_snippet": null,
+    "options": [
+      "Spark caches all intermediate DataFrames in memory automatically to avoid recomputation",
+      "Spark builds a logical execution plan as transformations are defined, and only executes it when an action is called",
+      "Spark evaluates each transformation immediately but delays writing results to disk",
+      "Spark delays reading data from disk until the DataFrame is printed"
+    ],
+    "correct_option": 1,
+    "explanation": "Lazy evaluation means Spark records each transformation as a step in a **logical plan (DAG)** but does not execute any computation until an action (such as `.count()`, `.collect()`, or `.write`) is called. At that point, Spark optimises the full plan using the Catalyst optimizer and only then executes it. This allows Spark to combine and reorder operations for efficiency.",
+    "hints": [
+      "Think about when Spark actually reads data and runs computations — is it when you call `.filter()` or when you call `.collect()`?"
+    ],
+    "concepts": ["lazy evaluation", "DAG", "Catalyst optimizer", "execution plan"]
+  },
+  {
+    "id": 11003,
+    "order": 3,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "RDD vs DataFrame",
+    "description": "PySpark provides both the low-level **RDD** (Resilient Distributed Dataset) API and the higher-level **DataFrame** API.\n\nWhich statement about DataFrames is correct?",
+    "code_snippet": null,
+    "options": [
+      "DataFrames are lower-level than RDDs and give more control over physical execution",
+      "DataFrames are untyped and cannot benefit from schema information",
+      "DataFrames are higher-level than RDDs and benefit from the Catalyst query optimizer and Tungsten execution engine",
+      "DataFrames cannot be converted back to RDDs once created"
+    ],
+    "correct_option": 2,
+    "explanation": "DataFrames are a **higher-level abstraction** built on top of RDDs. They carry schema information (column names and types) and pass through Spark's **Catalyst optimizer**, which generates an optimised physical execution plan. RDDs give you more control but lack these automatic optimisations. You can always call `.rdd` on a DataFrame to go back to the RDD level if needed.",
+    "hints": [
+      "Which API does Spark recommend for most workloads in modern versions, and which benefits from the Catalyst and Tungsten optimisers?"
+    ],
+    "concepts": ["RDD vs DataFrame", "Catalyst optimizer", "Tungsten", "schema"]
+  },
+  {
+    "id": 11004,
+    "order": 4,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "Role of the Driver",
+    "description": "A Spark application runs with a **Driver** process and one or more **Executor** processes distributed across the cluster.\n\nWhat is the primary responsibility of the **Driver**?",
+    "code_snippet": null,
+    "options": [
+      "The Driver stores all data in memory and serves it to executors on demand",
+      "The Driver runs user code, constructs the DAG of stages and tasks, and coordinates their execution across executors",
+      "The Driver executes all shuffle operations so executors only handle map-side work",
+      "The Driver is responsible for reading and writing data to HDFS or object storage"
+    ],
+    "correct_option": 1,
+    "explanation": "The **Driver** is the JVM process that runs your `main()` / Python script. It constructs the logical and physical execution plans, divides work into **stages** and **tasks**, and schedules those tasks on executors via the cluster manager. **Executors** do the actual data processing. The Driver does not store distributed data or handle I/O itself — those responsibilities belong to the executors.",
+    "hints": [
+      "Think of the Driver as the coordinator or orchestrator — it plans the work. Executors are the workers that execute it."
+    ],
+    "concepts": ["driver", "executor", "cluster architecture", "task scheduling"]
+  },
+  {
+    "id": 11005,
+    "order": 5,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "easy",
+    "title": "Default Column Types When Reading CSV",
+    "description": "Consider the following PySpark code that reads a CSV file with a header row:\n\n```python\ndf = spark.read.csv(\"data.csv\", header=True)\n```\n\nNo schema is provided explicitly. What **data type** does Spark infer for **all** columns by default?",
+    "code_snippet": "df = spark.read.csv(\"data.csv\", header=True)\ndf.printSchema()",
+    "options": [
+      "Spark infers each column's type by scanning the file (IntegerType, DoubleType, StringType, etc.)",
+      "StringType — all columns are read as strings unless a schema or inferSchema=True is specified",
+      "IntegerType — Spark defaults to integers for numeric-looking columns",
+      "BinaryType — raw bytes until an explicit cast is applied"
+    ],
+    "correct_option": 1,
+    "explanation": "When you read a CSV **without** `inferSchema=True`, Spark reads every column as `StringType`. To get proper numeric or date types you must either pass `inferSchema=True` (which triggers a second pass over the data) or supply an explicit `schema` argument using `StructType`. This is a common source of bugs when numeric columns appear as strings in downstream operations.",
+    "hints": [
+      "What happens when Spark doesn't know the data types ahead of time and no `inferSchema` option is set?"
+    ],
+    "concepts": ["CSV reading", "schema inference", "StringType", "inferSchema"]
+  },
+  {
+    "id": 11006,
+    "order": 6,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "Adding a Column with withColumn",
+    "description": "You want to add a new column `discounted_price` to a DataFrame `df` that contains a `price` column, where the discounted price is 90% of the original.\n\nWhich of the following correctly adds the new column?",
+    "code_snippet": null,
+    "options": [
+      "df.addColumn('discounted_price', df['price'] * 0.9)",
+      "df['discounted_price'] = df['price'] * 0.9",
+      "df.withColumn('discounted_price', df['price'] * 0.9)",
+      "df.select('discounted_price', df['price'] * 0.9)"
+    ],
+    "correct_option": 2,
+    "explanation": "`withColumn(colName, col_expression)` is the correct DataFrame method to add or replace a column. It returns a **new** DataFrame — DataFrames in Spark are immutable. Option B looks like Python attribute assignment but does not work on Spark DataFrames. `addColumn` does not exist, and `select` with two arguments in that form would not produce the desired result.",
+    "hints": [
+      "PySpark DataFrames are immutable — adding a column always returns a new DataFrame via a specific method"
+    ],
+    "concepts": ["withColumn", "column expressions", "immutability", "derived columns"]
+  },
+  {
+    "id": 11007,
+    "order": 7,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "easy",
+    "title": "How Many Jobs Does This Chain Trigger?",
+    "description": "Consider the following PySpark code:\n\n```python\nresult = df.filter(col('age') > 30).select('name').count()\n```\n\nHow many **Spark jobs** are triggered by executing this line?",
+    "code_snippet": "result = df.filter(col('age') > 30).select('name').count()",
+    "options": [
+      "3 — one job per operation (filter, select, count)",
+      "2 — one for the transformations and one for the action",
+      "1 — a single job is triggered by the one action (.count())",
+      "0 — Spark defers everything until result is printed"
+    ],
+    "correct_option": 2,
+    "explanation": "`filter` and `select` are **transformations** — they are lazy and do not submit any work to the cluster. `.count()` is the only **action** in this chain, so exactly **one Spark job** is submitted. Spark combines the filter and select into a single optimised execution plan before running it. The number of jobs equals the number of actions, not the number of operations.",
+    "hints": [
+      "Count the number of *actions* in the code — each action triggers exactly one Spark job"
+    ],
+    "concepts": ["lazy evaluation", "transformations vs actions", "job execution", "DAG"]
+  },
+  {
+    "id": 11008,
+    "order": 8,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "Wide vs Narrow Transformations",
+    "description": "Spark transformations are classified as **narrow** (each output partition depends on only one input partition — no data movement across the network) or **wide** (output partitions may depend on multiple input partitions — requires a **shuffle**).\n\nWhich of the following is a **wide** transformation?",
+    "code_snippet": null,
+    "options": [
+      "df.filter(df['status'] == 'active')",
+      "df.select('name', 'email')",
+      "df.groupBy('country').count()",
+      "df.withColumn('upper_name', upper(df['name']))"
+    ],
+    "correct_option": 2,
+    "explanation": "`groupBy().count()` is a **wide transformation** because grouping requires collecting all rows with the same key from all partitions — this involves a **shuffle** across the network. `filter`, `select`, and `withColumn` are **narrow** transformations because each row in the output can be produced from a single row in a single input partition, with no data movement needed.",
+    "hints": [
+      "Wide transformations require data from multiple partitions to be combined — think about which operations need to 'see' all rows with the same key"
+    ],
+    "concepts": ["wide transformations", "narrow transformations", "shuffle", "groupBy", "partitioning"]
+  },
+  {
+    "id": 11009,
+    "order": 9,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "Registering a DataFrame as a SQL View",
+    "description": "You want to query a PySpark DataFrame using standard SQL syntax via `spark.sql(...)`. Before you can do that, you need to register the DataFrame as a temporary view.\n\nWhich method registers a DataFrame as a **temporary SQL view** named `'orders'`?",
+    "code_snippet": null,
+    "options": [
+      "df.registerTable('orders')",
+      "df.createOrReplaceTempView('orders')",
+      "spark.registerDataFrame(df, 'orders')",
+      "df.toSQL('orders')"
+    ],
+    "correct_option": 1,
+    "explanation": "`df.createOrReplaceTempView('orders')` registers the DataFrame under the name `'orders'` in the current SparkSession's catalog. You can then query it with `spark.sql('SELECT * FROM orders WHERE ...')`. The view is session-scoped and is dropped when the SparkSession ends. `createOrReplaceTempView` is the standard, idiomatic method — the other options do not exist.",
+    "hints": [
+      "The method you need is on the DataFrame itself, takes a string name, and has 'view' in its name"
+    ],
+    "concepts": ["Spark SQL", "createOrReplaceTempView", "catalog", "temp view"]
+  },
+  {
+    "id": 11010,
+    "order": 10,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "What Does .cache() Do?",
+    "description": "You are building a pipeline that reads a large DataFrame and uses it in multiple downstream operations. A colleague suggests adding `.cache()` to the DataFrame.\n\nWhat does calling `.cache()` on a DataFrame actually do?",
+    "code_snippet": null,
+    "options": [
+      "It immediately computes and stores the DataFrame in executor memory so future actions skip recomputation",
+      "It marks the DataFrame to be persisted in executor memory (and optionally disk) the first time it is computed by an action, so subsequent actions can reuse the cached data",
+      "It writes the DataFrame to a temporary HDFS location for fault tolerance",
+      "It pins the DataFrame in the Driver's memory so it can be iterated over in Python"
+    ],
+    "correct_option": 1,
+    "explanation": "`.cache()` is a **lazy** operation — it marks the DataFrame for persistence but does not compute or store anything immediately. The first time an **action** is called on the cached DataFrame, Spark computes it and stores the result in executor memory (default storage level: `MEMORY_AND_DISK`). Subsequent actions that use the same DataFrame read from the cache rather than recomputing from scratch. This is valuable when the same DataFrame is consumed by multiple downstream operations.",
+    "hints": [
+      "Remember that Spark is lazy — does `.cache()` itself store data, or does it just *mark* the DataFrame for future storage?"
+    ],
+    "concepts": ["caching", "persist", "storage level", "lazy evaluation", "recomputation"]
+  }
+]
