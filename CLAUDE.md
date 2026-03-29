@@ -44,10 +44,16 @@ A data interview practice platform covering four tracks. Users write SQL or Pyth
 
 ## Content footprint
 
-- **Challenge questions:** 86 total — 30 easy, 30 medium, 26 hard (JSON in `backend/content/questions/`)
-- **Sample questions:** 9 total — 3 per difficulty (Python in `backend/sample_questions.py`)
+| Track | Questions | Format | Location |
+|---|---|---|---|
+| SQL | 86 (30 easy, 30 medium, 26 hard) | SQL query | `backend/content/questions/` |
+| Python | 10 easy (expanding) | Algorithm test cases | `backend/content/python_questions/` |
+| Python (Data) | 10 easy (expanding) | DataFrame comparison | `backend/content/python_data_questions/` |
+| PySpark | 10 easy (expanding) | MCQ / predict output | `backend/content/pyspark_questions/` |
+
+- **Sample questions (SQL only):** 9 total — 3 per difficulty (`backend/sample_questions.py`)
 - Every question has `hints` (1–2 entries) and `concepts` (semantic tags surfaced as pills)
-- Schemas are validated against committed CSV headers at catalog load time
+- SQL schemas validated against committed CSV headers at catalog load time
 
 ---
 
@@ -219,13 +225,21 @@ Intentional edge cases: NULL emails, NULL launch dates, unresolved tickets, depa
 
 ## Backend behaviour
 
-**Query execution pipeline:** `sql_guard.py` → `evaluator.py` → `database.py`
+**SQL execution pipeline:** `sql_guard.py` → `evaluator.py` → `database.py`
 - Parser-based read-only validation (no writes, single statement)
 - Shared in-memory DuckDB cursor (loaded once at startup)
 - 3-second thread-pool timeout
 - 200-row result cap
 
-**Evaluation (submit):** Both user query and expected query run in DuckDB, results compared as pandas DataFrames after normalising column casing, column order, float precision, nulls. Row order ignored unless expected query has `ORDER BY`.
+**SQL evaluation (submit):** Both user query and expected query run in DuckDB, results compared as pandas DataFrames after normalising column casing, column order, float precision, nulls. Row order ignored unless expected query has `ORDER BY`.
+
+**Python execution pipeline:** `python_guard.py` → `python_evaluator.py` → `python_sandbox_harness.py` (subprocess)
+- AST-based code guard blocks all imports for algorithms; allows pandas/numpy/math/etc. for Python (Data)
+- Subprocess spawned per request with 5-second timeout and 512MB memory cap
+- Algorithm track: test-case comparison (`solve(*args)` for each case)
+- Python (Data) track: DataFrame comparison via same `normalize_dataframe()` as SQL
+
+**PySpark evaluation:** No code execution. `selected_option` compared directly against `correct_option` from question JSON. Explanation always returned.
 
 **Unlock model** (pure policy in `unlock.py`):
 | Plan | Access |
@@ -324,7 +338,6 @@ cd frontend && npm test
 | `docs/question-authoring-guidelines.md` | Rules for authoring SQL challenge questions |
 | `docs/sql-curriculum-spec.md` | SQL difficulty tiers and curriculum standards |
 | `docs/USERGUIDE.md` | End-user guide to the platform |
-| `docs/multi-topic-platform.md` | **Master implementation guide** for Python, Python (Data), PySpark tracks — all backend, frontend, DB, and routing changes |
 | `docs/python-curriculum-spec.md` | Python (algorithms) difficulty tiers, question bank, authoring rules |
 | `docs/python-data-curriculum-spec.md` | Python (Data) pandas+numpy difficulty tiers, question bank, authoring rules |
 | `docs/pyspark-curriculum-spec.md` | PySpark conceptual MCQ difficulty tiers, question bank, authoring rules |

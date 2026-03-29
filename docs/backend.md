@@ -2,7 +2,7 @@
 
 > **Navigation:** [Docs index](./README.md) · [Project blueprint](./project-blueprint.md) · [Frontend](./frontend.md)
 
-FastAPI + Uvicorn. PostgreSQL for all product state. DuckDB for query execution only (in-memory, loaded at startup).
+FastAPI + Uvicorn. PostgreSQL for all product state. DuckDB for SQL query execution (in-memory, loaded at startup). Python/PySpark execution runs in subprocess sandboxes.
 
 ---
 
@@ -14,11 +14,15 @@ Registered in `backend/main.py`:
 |---|---|---|
 | `routers/auth.py` | `/api/auth` | Register, login, logout, current user |
 | `routers/system.py` | — | Health check |
-| `routers/catalog.py` | `/api/catalog` | Challenge catalog by difficulty |
-| `routers/questions.py` | `/api/questions` | Question detail, run query, submit |
-| `routers/sample.py` | `/api/sample` | Sample questions, run, submit, reset |
+| `routers/catalog.py` | `/api/catalog` | SQL catalog by difficulty |
+| `routers/questions.py` | `/api/questions` | SQL question detail, run query, submit |
+| `routers/sample.py` | `/api/sample` | SQL sample questions, run, submit, reset |
 | `routers/plan.py` | `/api/user` | User profile, plan, unlock state |
 | `routers/stripe.py` | `/api/stripe` | Checkout creation, webhook handler |
+| `routers/python_questions.py` | `/api/python` | Python algorithm catalog, detail, run-code, submit |
+| `routers/python_data_questions.py` | `/api/python-data` | Python (Data) catalog, detail, run-code, submit |
+| `routers/pyspark_questions.py` | `/api/pyspark` | PySpark catalog, detail, submit (MCQ only) |
+| `routers/dashboard.py` | `/api` | Cross-track progress dashboard |
 | `routers/spa.py` | — | Static assets + SPA fallback |
 
 ---
@@ -100,6 +104,42 @@ Also available without `/api` prefix.
 
 ---
 
+### Python — `/api/python`
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/python/catalog` | Python catalog grouped by difficulty with per-user state |
+| GET | `/api/python/questions/{id}` | Question detail. Omits `solution_code`/`explanation` pre-submit. |
+| POST | `/api/python/run-code` | `{ code, question_id }` → test case results (public cases only). Guard checked first. |
+| POST | `/api/python/submit` | `{ code, question_id }` → verdict + hidden test summary + solution on correct |
+
+### Python (Data) — `/api/python-data`
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/python-data/catalog` | Python (Data) catalog |
+| GET | `/api/python-data/questions/{id}` | Question detail including `dataframes` and `schema` maps |
+| POST | `/api/python-data/run-code` | `{ code, question_id }` → DataFrame result + `print_output` |
+| POST | `/api/python-data/submit` | `{ code, question_id }` → correct/incorrect + DataFrame comparison + solution on correct |
+
+### PySpark — `/api/pyspark`
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/pyspark/catalog` | PySpark catalog |
+| GET | `/api/pyspark/questions/{id}` | Question detail (options visible, `correct_option` hidden) |
+| POST | `/api/pyspark/submit` | `{ selected_option, question_id }` → `{ correct, explanation }`. No code execution. |
+
+### Dashboard — `/api/dashboard`
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/dashboard` | Per-track solved counts, concepts, and recent activity for the current user |
+
+Response shape: `{ tracks: { sql, python, python_data, pyspark }, concepts_by_track, recent_activity }`.
+
+---
+
 ## Query execution pipeline
 
 Files: `sql_guard.py` → `evaluator.py` → `database.py`
@@ -126,6 +166,32 @@ Behavioral rules:
 
 ---
 
+## Python execution pipeline
+
+Files: `python_guard.py` → `python_evaluator.py` → `python_sandbox_harness.py`
+
+**Guard (`python_guard.py`):**
+- AST-based validation runs before any execution
+- Algorithm track: blocks all `import` statements plus dangerous builtins (`eval`, `exec`, `open`, `__import__`)
+- Python (Data) track: allows `pandas`, `numpy`, `math`, `statistics`, `collections`, `itertools`, `functools`, `datetime`, `re`, `json`, `decimal`, `fractions`, `operator`, `string`; blocks all others
+- Also blocks dangerous attribute access (`__class__`, `__subclasses__`, `system`, etc.)
+
+**Evaluator (`python_evaluator.py`):**
+- Spawns `python_sandbox_harness.py` in a subprocess with 5-second timeout
+- Algorithm mode: passes `{ mode: "algorithm", code, test_cases }`
+- Data mode: passes `{ mode: "data", code, dataframes, csv_dir }`
+- Parses JSON from stdout; non-zero exit or timeout → error response
+
+**Harness (`python_sandbox_harness.py`):**
+- Sets `resource.RLIMIT_AS` to 512 MB before execution
+- Algorithm mode: `exec()`s user code, calls `solve(*args)` for each test case, captures stdout per case
+- Data mode: loads DataFrames via `pd.read_csv`, `exec()`s user code with `pd`/`np` in namespace, calls `solve(**dataframes)`, serializes result DataFrame to JSON
+
+**PySpark evaluation:**
+No execution at all. `POST /api/pyspark/submit` compares `body.selected_option == question["correct_option"]` and returns `{ correct, explanation }`.
+
+---
+
 ## Identity and unlock model
 
 Files: `db.py`, `progress.py`, `unlock.py`
@@ -141,7 +207,9 @@ Files: `db.py`, `progress.py`, `unlock.py`
 | `plan_changes` | Audit log of plan tier changes |
 | `stripe_events` | Idempotent Stripe webhook event records |
 
-**Unlock tiers (pure policy in `unlock.py`):**
+**`user_progress` and `user_sample_seen` carry a `topic` column** (DEFAULT `'sql'`). All `db.py` progress functions accept `topic: str = "sql"`. Progress is independent per topic — solving SQL questions does not affect Python unlock state.
+
+**Unlock tiers (pure policy in `unlock.py`, applied independently per topic):**
 
 | Plan | Access |
 |---|---|
