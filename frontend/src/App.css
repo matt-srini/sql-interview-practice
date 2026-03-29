@@ -1110,15 +1110,62 @@ select {
   font-size: 0.98rem;
 }
 
+.landing-hero {
+  text-align: center;
+  max-width: 620px;
+  width: 100%;
+  margin-bottom: 3rem;
+}
+
+.landing-kicker {
+  display: inline-flex;
+  margin-bottom: 1rem;
+  padding: 0.35rem 0.78rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+}
+
+.landing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.8rem;
+}
+
 .landing-tabs-shell {
   width: 100%;
   max-width: 1040px;
-  padding: 1.5rem 0 0;
+  border-radius: 28px;
+  border: 1px solid var(--border-subtle);
+  background:
+    radial-gradient(circle at top left, rgba(91, 106, 240, 0.08), transparent 24%),
+    var(--surface-card);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
 }
 
 .landing-tabs-heading {
-  max-width: 620px;
-  margin-bottom: 1.4rem;
+  padding: 1.35rem 1.45rem 0.85rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.landing-tabs-title {
+  font-size: 0.94rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+.landing-tabs-copy {
+  margin-top: 0.45rem;
+  max-width: 48ch;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  font-size: 0.9rem;
 }
 
 .topbar-user-pill {
@@ -1161,33 +1208,30 @@ select {
   align-items: center;
   gap: 0.55rem;
   flex-wrap: wrap;
-  margin-bottom: 1rem;
+  padding: 0.95rem 1.45rem 0;
 }
 
 .landing-tab-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
-  min-height: 38px;
-  padding: 0.42rem 0.75rem;
-  border-radius: 999px;
-  border: 1px solid var(--border-subtle);
-  background: rgba(255, 255, 255, 0.55);
+  min-height: 34px;
+  padding: 0.3rem 0.18rem 0.45rem;
+  border-radius: 0;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
   color: var(--text-muted);
-  transition: transform 0.15s ease, color 0.15s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: color 0.15s ease, border-color 0.2s ease, opacity 0.2s ease;
 }
 
 .landing-tab-btn:hover {
   color: var(--text-primary);
-  border-color: var(--border-strong);
-  transform: translateY(-1px);
 }
 
 .landing-tab-btn.is-active {
   color: var(--text-strong);
-  background: var(--surface-card);
-  border-color: var(--border-strong);
-  box-shadow: var(--shadow-sm);
+  border-color: var(--accent);
 }
 
 .landing-tab-label {
@@ -1203,16 +1247,15 @@ select {
 
 .landing-tab-panels {
   width: 100%;
+  padding: 1rem 1.45rem 1.45rem;
 }
 
 .landing-tab-panel {
-  border-radius: 24px;
+  border-radius: 20px;
   border: 1px solid var(--border-subtle);
-  background:
-    radial-gradient(circle at top left, rgba(91, 106, 240, 0.08), transparent 28%),
-    var(--surface-card);
-  box-shadow: var(--shadow-md);
-  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.56);
+  box-shadow: var(--shadow-sm);
+  padding: 1.35rem;
   opacity: 0;
   transform: translateY(10px);
   animation: landingPanelIn 220ms ease forwards;
@@ -1227,7 +1270,7 @@ select {
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.1rem;
 }
 
 .landing-panel-header h3 {
@@ -1326,6 +1369,16 @@ select {
     align-items: flex-start;
   }
 
+  .landing-hero {
+    text-align: left;
+    max-width: 100%;
+    margin-bottom: 2.2rem;
+  }
+
+  .landing-actions {
+    justify-content: flex-start;
+  }
+
   .landing-topbar-inner {
     min-height: 64px;
   }
@@ -1335,7 +1388,7 @@ select {
   }
 
   .landing-tabs-shell {
-    padding-top: 1rem;
+    border-radius: 22px;
   }
 
   .landing-panel-header,
@@ -1372,6 +1425,7 @@ select {
   .landing-tabs-nav {
     overflow-x: auto;
     flex-wrap: nowrap;
+    padding: 0.85rem 1rem 0;
     padding-bottom: 0.2rem;
     scrollbar-width: none;
   }
@@ -1381,7 +1435,13 @@ select {
   }
 
   .landing-tab-panel {
-    padding: 1.15rem;
+    padding: 1.05rem;
+  }
+
+  .landing-tabs-heading,
+  .landing-tab-panels {
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 }
 

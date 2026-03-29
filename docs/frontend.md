@@ -31,7 +31,7 @@ Defined in `frontend/src/App.js`:
 
 ### LandingPage (`/`)
 
-Entry point. Shows "Data Interview Practice" on the left edge of the fixed topbar and dashboard/auth actions on the right. The main surface is a tabbed landing shell:
+Entry point. Shows "Data Interview Practice" on the left edge of the fixed topbar and dashboard/auth actions on the right. Logged-out users still see the centered hero with the primary "Get sharp at data interviews" message and CTAs. Below that sits a single tabbed landing shell:
 - Track tabs for `sql`, `python`, `python-data`, `pyspark`
 - A `SQL Samples` tab for unauthenticated sample entry points
 - Each track tab shows a compact progress summary and CTA into `/practice/:topic`

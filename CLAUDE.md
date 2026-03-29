@@ -144,11 +144,17 @@ Topic context is provided by `TopicContext.js` (see `frontend/src/contexts/Topic
 
 ## Landing page structure
 
-Fixed topbar plus a single modern tab shell. No split hero. No placeholder/planned features visible.
+Fixed topbar plus the original centered hero for logged-out users, followed by a single modern tab shell. No split hero. No placeholder/planned features visible.
 
 ```
 TOPBAR
   "Data Interview Practice"                                 [Dashboard] [name · Sign out] or [Sign in]
+
+HERO  (logged-out only)
+  kicker: "SQL · Python · PySpark · pandas"
+  headline: "Get sharp at data interviews."
+  copy: one sentence about four tracks
+  CTAs: [Explore tracks ↓] [Create account]
 
 TAB STRIP
   [SQL] [Python] [Python (Data)] [PySpark] [SQL Samples]
