@@ -6,12 +6,19 @@
 
 ## 1. What this is
 
-A SQL interview practice platform with:
-- A React frontend for browsing questions, writing SQL, and reviewing results
-- A FastAPI backend for routing, progression, execution, evaluation, and static SPA serving
-- A PostgreSQL-backed product-state layer plus a shared in-memory DuckDB execution engine
+A data interview practice platform with four tracks:
 
-Users can work through challenge questions with plan-aware unlock rules, use a separate sample track without affecting challenge progression, execute read-only SQL safely against realistic CSV-backed datasets, and compare results against expected outputs before reviewing official solutions.
+| Track | Questions | Execution |
+|---|---|---|
+| SQL | 86 challenge questions | DuckDB in-memory |
+| Python | 10+ algorithm questions | Subprocess sandbox + test cases |
+| Python (Data) | 10+ pandas/numpy questions | Subprocess sandbox + DataFrame comparison |
+| PySpark | 10+ conceptual MCQ questions | No execution (answer matching) |
+
+- React frontend for browsing questions, writing code (SQL/Python), answering MCQs, and reviewing results
+- FastAPI backend for routing, progression, execution, evaluation, and static SPA serving
+- PostgreSQL-backed product-state layer with per-topic progress tracking
+- DuckDB in-memory for SQL execution; Python subprocess sandbox for algorithm and data tracks
 
 ---
 
@@ -38,10 +45,16 @@ Browser
 
 ## 3. Current content footprint
 
-- **Challenge questions:** 86 total — 30 easy, 30 medium, 26 hard
-- **Sample questions:** 9 total — 3 per difficulty
+| Track | Questions | Status |
+|---|---|---|
+| SQL | 86 (30 easy, 30 medium, 26 hard) | Full curriculum |
+| Python | 10 easy | MVP — expanding |
+| Python (Data) | 10 easy | MVP — expanding |
+| PySpark | 10 easy | MVP — expanding |
+
+- **Sample questions (SQL only):** 9 total — 3 per difficulty
 - Every question carries `hints` (1–2 entries) and `concepts` (semantic tags)
-- Question schemas are validated against committed dataset headers at catalog load time
+- SQL question schemas validated against committed dataset headers at catalog load time
 
 ---
 
@@ -58,31 +71,41 @@ Browser
 ### `backend/`
 - `main.py` — app wiring, middleware, routers, lifespan
 - `config.py` — env settings, CORS, rate limiter, frontend dist path
-- `db.py` — async PostgreSQL pool, schema, all app-state persistence
+- `db.py` — async PostgreSQL pool, schema, all app-state persistence (topic-aware)
 - `database.py` — DuckDB engine startup, table loading, cursor access
-- `evaluator.py` — query execution, timeout, result serialization, comparison
-- `unlock.py` — pure plan + solve-history → unlock policy
-- `questions.py` / `sample_questions.py` — catalog loaders and validators
+- `evaluator.py` — SQL query execution, timeout, result serialization, comparison
+- `unlock.py` — pure plan + solve-history → unlock policy (applies to all topics)
+- `questions.py` / `sample_questions.py` — SQL catalog loaders and validators
+- `python_questions.py` — Python algorithms catalog loader
+- `python_data_questions.py` — Python (Data) catalog loader
+- `pyspark_questions.py` — PySpark MCQ catalog loader
 - `sql_guard.py` — SQL safety validation
+- `python_guard.py` — AST-based Python code validator (import allowlist per track)
+- `python_sandbox_harness.py` — subprocess harness for Python execution
+- `python_evaluator.py` — spawns harness, enforces timeout, compares results
 - `progress.py` — challenge/sample persistence wrappers
 - `rate_limiter.py` — in-memory and Redis-backed limiter
 - `models.py` / `deps.py` — Pydantic models and shared dependencies
 - `sql_analyzer.py` — SQL analysis utilities
 - `middleware/request_context.py` — request-id, logging context, X-Request-ID
-- `routers/` — auth, system, catalog, questions, sample, plan, stripe, spa
-- `content/questions/` — challenge question JSON (easy.json, medium.json, hard.json)
+- `routers/` — auth, system, catalog, questions, sample, plan, stripe, python_questions, python_data_questions, pyspark_questions, dashboard, spa
+- `content/questions/` — SQL challenge question JSON (easy.json, medium.json, hard.json)
+- `content/python_questions/` — Python algorithm questions
+- `content/python_data_questions/` — Python (Data) questions
+- `content/pyspark_questions/` — PySpark MCQ questions
 - `datasets/` — committed CSVs + metadata
 - `scripts/` — dataset generator, anonymous user cleanup
 - `tests/` — API, evaluator, rate limiter tests
 
 ### `frontend/`
-- `src/App.js` — route tree
+- `src/App.js` — route tree with topic-scoped routes
 - `src/api.js` — Axios client, base URL resolution
-- `src/catalogContext.js` — catalog state and refresh
+- `src/catalogContext.js` — topic-aware catalog state and refresh
 - `src/App.css` — global styles and design tokens
-- `src/components/` — AppShell, SidebarNav, SQLEditor, ResultsTable, SchemaViewer
-- `src/pages/` — LandingPage, QuestionPage, SampleQuestionPage, AuthPage
 - `src/contexts/AuthContext.js` — auth state management
+- `src/contexts/TopicContext.js` — TRACK_META, TopicProvider, useTopic()
+- `src/components/` — AppShell, SidebarNav, CodeEditor, SQLEditor, ResultsTable, SchemaViewer, TestCasePanel, PrintOutputPanel, VariablesPanel, MCQPanel, TrackProgressBar
+- `src/pages/` — LandingPage, TrackHubPage, QuestionPage, ProgressDashboard, SampleQuestionPage, AuthPage
 
 ---
 
