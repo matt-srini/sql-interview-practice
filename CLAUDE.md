@@ -103,7 +103,7 @@ sql-interview-practice/
 │   │   │   ├── MCQPanel.js        # Radio-button MCQ for PySpark questions
 │   │   │   └── TrackProgressBar.js # Reusable horizontal progress bar
 │   │   └── pages/
-│   │       ├── LandingPage.js         # 4-tile track grid, topbar with Dashboard link
+│   │       ├── LandingPage.js         # Fixed-topbar landing with track/sample tabs and compact progress panels
 │   │       ├── QuestionPage.js        # Topic-aware question page (all 4 tracks, status line + mobile action dock)
 │   │       ├── TrackHubPage.js        # Per-track landing (progress, next-up summary, concept preview)
 │   │       ├── ProgressDashboard.js   # Cross-track progress overview at /dashboard
@@ -144,30 +144,24 @@ Topic context is provided by `TopicContext.js` (see `frontend/src/contexts/Topic
 
 ## Landing page structure
 
-Centered, single-column layout. No split hero. No placeholder/planned features visible.
+Fixed topbar plus a single modern tab shell. No split hero. No placeholder/planned features visible.
 
 ```
 TOPBAR
-  "Data Interview Practice"    [Dashboard]  [name · Sign out] or [Sign in]
+  "Data Interview Practice"                                 [Dashboard] [name · Sign out] or [Sign in]
 
-HERO  (shown to logged-out / anonymous users only)
-  kicker: "SQL · Python · PySpark · pandas"
-  headline: "Get sharp at data interviews."
-  copy: one sentence about four tracks
-  CTAs: [Explore tracks ↓] → #tracks   [Create account] → /auth
+TAB STRIP
+  [SQL] [Python] [Python (Data)] [PySpark] [SQL Samples]
 
-TRACK TILES  (2×2 grid, max-width 900px)
-  SQL        | Python
-  Python (Data) | PySpark
-  Each tile: label, tagline, description, question count or progress bar, CTA
-
-SAMPLE TILES  (simplified, 3-col grid)
-  SQL easy/medium/hard sample links
+ACTIVE PANEL
+  Track title + one-line description
+  Progress summary / question count pill
+  Progress bar + compact copy
+  CTA into the track or sample set
 ```
 
-CSS classes: `.track-tiles`, `.track-tile`, `.track-tile-header`, `.track-tile-body`,
-`.track-tile-footer`, `.track-tile-cta`, `.landing-samples`, `.sample-tile`.
-Topbar auth: `.topbar-user-pill`, `.topbar-user-name`, `.topbar-signout-btn`, `.topbar-auth-link`, `.topbar-right`.
+CSS classes center around `.landing-tabs-*`, `.landing-panel-*`, `.landing-samples-grid`, and `.sample-tile`.
+Topbar auth remains `.topbar-user-pill`, `.topbar-user-name`, `.topbar-signout-btn`, `.topbar-auth-link`.
 
 ---
 
@@ -197,7 +191,7 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 
 **Buttons:** `.btn-primary` (accent fill), `.btn-secondary` (outlined, context-sensitive bg), `.btn-success` (success tint). All hover: `translateY(-1px)`, `150ms ease-out`.
 
-**Question page chrome:** Minimal — no section kickers (content self-evident from titles/badges). Prompt card includes a compact uppercase status line (difficulty / question position / open count). Editor topbar is single-line ("SQL editor" / "DuckDB sandbox"). Editor footer is buttons-only, right-aligned on desktop and becomes a low-profile sticky action dock on mobile. Post-submit verdict + feedback grouped in `.submit-outcome` wrapper. Cards use tight padding with `14px` border-radius. The practice topbar stays sparse, and the sidebar begins directly with the question bank rather than a separate summary card.
+**Question page chrome:** Minimal — no section kickers (content self-evident from titles/badges). Prompt card includes a compact uppercase status line (difficulty / question position / open count). Editor topbar is single-line ("SQL editor" / "DuckDB sandbox"). Editor footer is buttons-only, right-aligned on desktop and becomes a low-profile sticky action dock on mobile. Post-submit verdict + feedback grouped in `.submit-outcome` wrapper. Cards use tight padding with `14px` border-radius. The practice topbar stays sparse, exposes direct track nav, and the desktop question-panel toggle lives in workspace controls instead of the header.
 
 ---
 
