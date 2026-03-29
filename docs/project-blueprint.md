@@ -12,7 +12,7 @@ A data interview practice platform with four tracks:
 |---|---|---|
 | SQL | 86 challenge questions | DuckDB in-memory |
 | Python | 10+ algorithm questions | Subprocess sandbox + test cases |
-| Python (Data) | 10+ pandas/numpy questions | Subprocess sandbox + DataFrame comparison |
+| Pandas | 10+ pandas/numpy questions | Subprocess sandbox + DataFrame comparison |
 | PySpark | 10+ conceptual MCQ questions | No execution (answer matching) |
 
 - React frontend for browsing questions, writing code (SQL/Python), answering MCQs, and reviewing results
@@ -49,7 +49,7 @@ Browser
 |---|---|---|
 | SQL | 86 (30 easy, 30 medium, 26 hard) | Full curriculum |
 | Python | 10 easy | MVP — expanding |
-| Python (Data) | 10 easy | MVP — expanding |
+| Pandas | 10 easy | MVP — expanding |
 | PySpark | 10 easy | MVP — expanding |
 
 - **Sample questions (SQL only):** 9 total — 3 per difficulty
@@ -77,7 +77,7 @@ Browser
 - `unlock.py` — pure plan + solve-history → unlock policy (applies to all topics)
 - `questions.py` / `sample_questions.py` — SQL catalog loaders and validators
 - `python_questions.py` — Python algorithms catalog loader
-- `python_data_questions.py` — Python (Data) catalog loader
+- `python_data_questions.py` — Pandas catalog loader
 - `pyspark_questions.py` — PySpark MCQ catalog loader
 - `sql_guard.py` — SQL safety validation
 - `python_guard.py` — AST-based Python code validator (import allowlist per track)
@@ -91,7 +91,7 @@ Browser
 - `routers/` — auth, system, catalog, questions, sample, plan, stripe, python_questions, python_data_questions, pyspark_questions, dashboard, spa
 - `content/questions/` — SQL challenge question JSON (easy.json, medium.json, hard.json)
 - `content/python_questions/` — Python algorithm questions
-- `content/python_data_questions/` — Python (Data) questions
+- `content/python_data_questions/` — Pandas questions
 - `content/pyspark_questions/` — PySpark MCQ questions
 - `datasets/` — committed CSVs + metadata
 - `scripts/` — dataset generator, anonymous user cleanup

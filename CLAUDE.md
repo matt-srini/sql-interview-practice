@@ -10,6 +10,7 @@ This file is the canonical context reference for Claude in this repository.
 - **Always commit after meaningful changes.** End every session of edits with a `git commit` carrying a clear, specific message (not "update files" — something like "refactor landing page to centered hero, remove timed-mode placeholder"). Co-author line: `Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>`.
 - **Keep `docs/` in sync.** When architecture, API routes, UI layout, design tokens, or product behaviour changes, update the relevant file(s) in `docs/` as part of the same task — not as a follow-up.
 - **Keep `CLAUDE.md` in sync.** When anything in this file becomes stale, update it in the same commit as the code change.
+- **Parallelize coding work when possible.** If a coding task can be split safely and Codex subagents are available, offload disjoint slices in parallel and prefer the strongest practical coding model for those subtasks. Review and integrate the results yourself before finishing.
 
 ---
 
@@ -18,12 +19,12 @@ This file is the canonical context reference for Claude in this repository.
 A data interview practice platform covering four tracks. Users write SQL or Python, answer MCQ questions, get instant feedback, and work through gated challenge banks. Modes per track:
 
 - **Challenge mode** — 86+ questions per track, plan-aware unlock rules, persistent progress
-- **Sample mode** — 9 sandbox SQL questions (3 per difficulty), no progress recorded, no login required
+- **Sample mode** — 36 sandbox questions across all four tracks (3 per track+difficulty), no progress recorded, no login required
 
 **Tracks:**
 - **SQL** — 86 questions, DuckDB execution, realistic relational datasets
 - **Python** — algorithms and data structures, test-case evaluation
-- **Python (Data)** — pandas/numpy data manipulation, DataFrame comparison
+- **Pandas** — pandas/numpy data manipulation, DataFrame comparison
 - **PySpark** — conceptual MCQ, predict-output questions
 
 ---
@@ -48,7 +49,7 @@ A data interview practice platform covering four tracks. Users write SQL or Pyth
 |---|---|---|---|
 | SQL | 86 (30 easy, 30 medium, 26 hard) | SQL query | `backend/content/questions/` |
 | Python | 10 easy (expanding) | Algorithm test cases | `backend/content/python_questions/` |
-| Python (Data) | 10 easy (expanding) | DataFrame comparison | `backend/content/python_data_questions/` |
+| Pandas | 10 easy (expanding) | DataFrame comparison | `backend/content/python_data_questions/` |
 | PySpark | 10 easy (expanding) | MCQ / predict output | `backend/content/pyspark_questions/` |
 
 - **Sample questions (SQL only):** 9 total — 3 per difficulty (`backend/sample_questions.py`)
@@ -99,7 +100,7 @@ sql-interview-practice/
 │   │   │   ├── SchemaViewer.js
 │   │   │   ├── TestCasePanel.js   # Python algorithm test case results
 │   │   │   ├── PrintOutputPanel.js # Captured stdout from Python execution
-│   │   │   ├── VariablesPanel.js  # Available DataFrames for Python (Data) questions
+│   │   │   ├── VariablesPanel.js  # Available DataFrames for Pandas questions
 │   │   │   ├── MCQPanel.js        # Radio-button MCQ for PySpark questions
 │   │   │   └── TrackProgressBar.js # Reusable horizontal progress bar
 │   │   └── pages/
@@ -126,7 +127,8 @@ sql-interview-practice/
 /                              → LandingPage (4-tile track grid)
 /auth                          → AuthPage (register / sign in)
 /dashboard                     → ProgressDashboard (cross-track progress)
-/sample/:difficulty            → SampleQuestionPage (SQL samples only)
+/sample/:topic/:difficulty     → SampleQuestionPage (topic-aware sample mode)
+/sample/:difficulty            → redirect → /sample/sql/:difficulty
 /practice/:topic               → TopicShell (TopicProvider + CatalogProvider + AppShell)
   /practice/:topic             → TrackHubPage (hub page when no question selected)
   /practice/:topic/questions/:id → QuestionPage (topic-aware)
@@ -148,7 +150,7 @@ Fixed topbar plus the original centered hero for logged-out users, followed by a
 
 ```
 TOPBAR
-  "Data Interview Practice"                                 [Dashboard] [name · Sign out] or [Sign in]
+  "datanest"                                               [Dashboard] [name · Sign out] or [Login]
 
 HERO  (logged-out only)
   kicker: "SQL · Python · PySpark · pandas"
@@ -157,13 +159,14 @@ HERO  (logged-out only)
   CTAs: [Explore tracks ↓] [Create account]
 
 TAB STRIP
-  [SQL] [Python] [Python (Data)] [PySpark] [SQL Samples]
+  [SQL] [Python] [Pandas] [PySpark]
 
 ACTIVE PANEL
   Track title + one-line description
-  Progress summary / question count pill
+  Progress summary pill
   Progress bar + compact copy
-  CTA into the track or sample set
+  CTA into the track
+  Easy / Medium / Hard sample tiles for that same track
 ```
 
 CSS classes center around `.landing-tabs-*`, `.landing-panel-*`, `.landing-samples-grid`, and `.sample-tile`.
@@ -234,10 +237,10 @@ Intentional edge cases: NULL emails, NULL launch dates, unresolved tickets, depa
 **SQL evaluation (submit):** Both user query and expected query run in DuckDB, results compared as pandas DataFrames after normalising column casing, column order, float precision, nulls. Row order ignored unless expected query has `ORDER BY`.
 
 **Python execution pipeline:** `python_guard.py` → `python_evaluator.py` → `python_sandbox_harness.py` (subprocess)
-- AST-based code guard blocks all imports for algorithms; allows pandas/numpy/math/etc. for Python (Data)
+- AST-based code guard blocks all imports for algorithms; allows pandas/numpy/math/etc. for Pandas
 - Subprocess spawned per request with 5-second timeout and 512MB memory cap
 - Algorithm track: test-case comparison (`solve(*args)` for each case)
-- Python (Data) track: DataFrame comparison via same `normalize_dataframe()` as SQL
+- Pandas track: DataFrame comparison via same `normalize_dataframe()` as SQL
 
 **PySpark evaluation:** No code execution. `selected_option` compared directly against `correct_option` from question JSON. Explanation always returned.
 
@@ -271,16 +274,21 @@ Solved questions stay solved permanently across plan changes.
 | GET | `/api/python/questions/{id}` | Python question detail |
 | POST | `/api/python/run-code` | Run Python code, return test results + stdout |
 | POST | `/api/python/submit` | Submit Python code |
-| GET | `/api/python-data/catalog` | Python (Data) catalog |
-| GET | `/api/python-data/questions/{id}` | Python (Data) question detail |
+| GET | `/api/python-data/catalog` | Pandas catalog |
+| GET | `/api/python-data/questions/{id}` | Pandas question detail |
 | POST | `/api/python-data/run-code` | Run pandas code, return DataFrame output |
 | POST | `/api/python-data/submit` | Submit pandas code |
 | GET | `/api/pyspark/catalog` | PySpark catalog |
 | GET | `/api/pyspark/questions/{id}` | PySpark question detail |
 | POST | `/api/pyspark/submit` | Submit MCQ answer |
 | GET | `/api/dashboard` | Cross-track progress summary |
-| GET | `/api/sample/{difficulty}` | Next unseen sample (409 when exhausted) |
-| POST | `/api/sample/{difficulty}/reset` | Clear seen state |
+| GET | `/api/sample/{topic}/{difficulty}` | Next unseen sample for a track+difficulty (409 when exhausted) |
+| POST | `/api/sample/{topic}/{difficulty}/reset` | Clear seen state for that track+difficulty |
+| POST | `/api/sample/sql/run-query` | Execute SQL sample query |
+| POST | `/api/sample/{topic}/run-code` | Execute Python or Pandas sample code |
+| POST | `/api/sample/{topic}/submit` | Submit sample answer without affecting challenge progress |
+| GET | `/api/sample/{difficulty}` | Legacy SQL alias |
+| POST | `/api/sample/{difficulty}/reset` | Legacy SQL alias |
 | GET | `/api/auth/me` | Current user identity |
 | POST | `/api/auth/register` | Create account, upgrade anonymous session |
 | POST | `/api/auth/login` | Authenticate, merge anonymous progress |
@@ -339,6 +347,6 @@ cd frontend && npm test
 | `docs/sql-curriculum-spec.md` | SQL difficulty tiers and curriculum standards |
 | `docs/USERGUIDE.md` | End-user guide to the platform |
 | `docs/python-curriculum-spec.md` | Python (algorithms) difficulty tiers, question bank, authoring rules |
-| `docs/python-data-curriculum-spec.md` | Python (Data) pandas+numpy difficulty tiers, question bank, authoring rules |
+| `docs/python-data-curriculum-spec.md` | Pandas pandas+numpy difficulty tiers, question bank, authoring rules |
 | `docs/pyspark-curriculum-spec.md` | PySpark conceptual MCQ difficulty tiers, question bank, authoring rules |
 | `docs/python-question-authoring.md` | JSON schemas, field reference, and authoring checklist for all new tracks |

@@ -16,11 +16,11 @@ Registered in `backend/main.py`:
 | `routers/system.py` | — | Health check |
 | `routers/catalog.py` | `/api/catalog` | SQL catalog by difficulty |
 | `routers/questions.py` | `/api/questions` | SQL question detail, run query, submit |
-| `routers/sample.py` | `/api/sample` | SQL sample questions, run, submit, reset |
+| `routers/sample.py` | `/api/sample` | Topic-aware sample questions, run, submit, reset |
 | `routers/plan.py` | `/api/user` | User profile, plan, unlock state |
 | `routers/stripe.py` | `/api/stripe` | Checkout creation, webhook handler |
 | `routers/python_questions.py` | `/api/python` | Python algorithm catalog, detail, run-code, submit |
-| `routers/python_data_questions.py` | `/api/python-data` | Python (Data) catalog, detail, run-code, submit |
+| `routers/python_data_questions.py` | `/api/python-data` | Pandas catalog, detail, run-code, submit |
 | `routers/pyspark_questions.py` | `/api/pyspark` | PySpark catalog, detail, submit (MCQ only) |
 | `routers/dashboard.py` | `/api` | Cross-track progress dashboard |
 | `routers/spa.py` | — | Static assets + SPA fallback |
@@ -77,10 +77,15 @@ Also available without `/api` prefix.
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/api/sample/{difficulty}` | Next unseen sample for difficulty. Marks as seen. Returns 409 when all 3 exhausted. |
-| POST | `/api/sample/{difficulty}/reset` | Clears seen state for that difficulty |
-| POST | `/api/sample/run-query` | Run SQL in sample context (no lock checks) |
-| POST | `/api/sample/submit` | Evaluate SQL; returns solution. Does not affect challenge progression. |
+| GET | `/api/sample/{topic}/{difficulty}` | Next unseen sample for a track+difficulty. Marks as seen. Returns 409 when all 3 are exhausted. |
+| POST | `/api/sample/{topic}/{difficulty}/reset` | Clears seen state for that track+difficulty |
+| POST | `/api/sample/sql/run-query` | Run SQL in SQL sample context (no lock checks) |
+| POST | `/api/sample/{topic}/run-code` | Run Python / Pandas sample code (no lock checks) |
+| POST | `/api/sample/{topic}/submit` | Evaluate sample answer for any track. Does not affect challenge progression. |
+| GET | `/api/sample/{difficulty}` | Legacy SQL alias for `/api/sample/sql/{difficulty}` |
+| POST | `/api/sample/{difficulty}/reset` | Legacy SQL alias for `/api/sample/sql/{difficulty}/reset` |
+| POST | `/api/sample/run-query` | Legacy SQL alias for `/api/sample/sql/run-query` |
+| POST | `/api/sample/submit` | Legacy SQL alias for `/api/sample/sql/submit` |
 
 ### User and plan — `/api/user`
 
@@ -113,11 +118,11 @@ Also available without `/api` prefix.
 | POST | `/api/python/run-code` | `{ code, question_id }` → test case results (public cases only). Guard checked first. |
 | POST | `/api/python/submit` | `{ code, question_id }` → verdict + hidden test summary + solution on correct |
 
-### Python (Data) — `/api/python-data`
+### Pandas — `/api/python-data`
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/api/python-data/catalog` | Python (Data) catalog |
+| GET | `/api/python-data/catalog` | Pandas catalog |
 | GET | `/api/python-data/questions/{id}` | Question detail including `dataframes` and `schema` maps |
 | POST | `/api/python-data/run-code` | `{ code, question_id }` → DataFrame result + `print_output` |
 | POST | `/api/python-data/submit` | `{ code, question_id }` → correct/incorrect + DataFrame comparison + solution on correct |
@@ -173,7 +178,7 @@ Files: `python_guard.py` → `python_evaluator.py` → `python_sandbox_harness.p
 **Guard (`python_guard.py`):**
 - AST-based validation runs before any execution
 - Algorithm track: blocks all `import` statements plus dangerous builtins (`eval`, `exec`, `open`, `__import__`)
-- Python (Data) track: allows `pandas`, `numpy`, `math`, `statistics`, `collections`, `itertools`, `functools`, `datetime`, `re`, `json`, `decimal`, `fractions`, `operator`, `string`; blocks all others
+- Pandas track: allows `pandas`, `numpy`, `math`, `statistics`, `collections`, `itertools`, `functools`, `datetime`, `re`, `json`, `decimal`, `fractions`, `operator`, `string`; blocks all others
 - Also blocks dangerous attribute access (`__class__`, `__subclasses__`, `system`, etc.)
 
 **Evaluator (`python_evaluator.py`):**

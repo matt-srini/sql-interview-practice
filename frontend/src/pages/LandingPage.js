@@ -7,11 +7,28 @@ import TrackProgressBar from '../components/TrackProgressBar';
 
 const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
 
-const SAMPLES = [
-  { difficulty: 'easy',   copy: '3 warm-up SQL questions. No progress recorded.' },
-  { difficulty: 'medium', copy: '3 mid-tier SQL questions to test your range.' },
-  { difficulty: 'hard',   copy: '3 hard SQL questions to find your ceiling.' },
-];
+const SAMPLE_TIERS = {
+  sql: [
+    { difficulty: 'easy', title: 'Warm-up joins', copy: 'Three approachable query prompts on filters, joins, and aggregates.' },
+    { difficulty: 'medium', title: 'Interview core', copy: 'A mid-tier SQL set focused on grouping, window logic, and cleaner result shaping.' },
+    { difficulty: 'hard', title: 'Stretch round', copy: 'Three harder SQL prompts to pressure-test precision and sequencing.' },
+  ],
+  python: [
+    { difficulty: 'easy', title: 'Warm-up problems', copy: 'Three algorithm samples with light control flow and array/string handling.' },
+    { difficulty: 'medium', title: 'Core patterns', copy: 'Interview-style Python samples covering maps, traversal, and common data structures.' },
+    { difficulty: 'hard', title: 'Stretch problems', copy: 'Tighter Python prompts that reward clean reasoning and edge-case handling.' },
+  ],
+  'python-data': [
+    { difficulty: 'easy', title: 'DataFrame warm-up', copy: 'Three pandas samples for selection, filtering, and tidy output shaping.' },
+    { difficulty: 'medium', title: 'Analysis patterns', copy: 'Practice merge, grouping, and transformation patterns used in real interviews.' },
+    { difficulty: 'hard', title: 'Wrangling stretch', copy: 'A tougher pandas set focused on sequencing, normalization, and precision.' },
+  ],
+  pyspark: [
+    { difficulty: 'easy', title: 'Spark basics', copy: 'Three PySpark samples covering execution basics, APIs, and conceptual foundations.' },
+    { difficulty: 'medium', title: 'Distributed thinking', copy: 'A mid-tier set on shuffles, partitioning, and practical transformation choices.' },
+    { difficulty: 'hard', title: 'Systems stretch', copy: 'Harder PySpark samples for optimization instincts and architecture judgment.' },
+  ],
+};
 
 export default function LandingPage() {
   const { user, logout } = useAuth();
@@ -19,7 +36,6 @@ export default function LandingPage() {
   const [activeTab, setActiveTab] = useState('sql');
 
   useEffect(() => {
-    // Fetch progress data for authenticated users
     if (user) {
       api.get('/dashboard').then((res) => setDashData(res.data)).catch(() => {});
       return;
@@ -35,32 +51,19 @@ export default function LandingPage() {
         const solved = trackData?.solved ?? 0;
         const total = trackData?.total ?? meta.totalQuestions;
         const completion = total > 0 ? Math.round((solved / total) * 100) : 0;
+
         return {
           id: topic,
           label: meta.label,
-          tagline: meta.tagline,
           description: meta.description,
           color: meta.color,
           solved,
           total,
           completion,
+          samples: SAMPLE_TIERS[topic],
         };
       }),
     [dashData]
-  );
-
-  const tabs = useMemo(
-    () => [
-      ...trackTabs,
-      {
-        id: 'samples',
-        label: 'SQL Samples',
-        tagline: 'easy · medium · hard',
-        description: 'Practice SQL sample questions without affecting challenge progress.',
-        color: '#5B6AF0',
-      },
-    ],
-    [trackTabs]
   );
 
   function handleTabChange(tabId) {
@@ -72,7 +75,7 @@ export default function LandingPage() {
       <header className="topbar landing-topbar">
         <div className="container topbar-inner landing-topbar-inner">
           <div className="landing-topbar-left">
-            <h1 className="landing-brand">Data Interview Practice</h1>
+            <Link className="landing-brand brand-wordmark" to="/">datanest</Link>
           </div>
           <div className="landing-topbar-right">
             <Link className="topbar-auth-link" to="/dashboard">Dashboard</Link>
@@ -84,7 +87,7 @@ export default function LandingPage() {
                 </button>
               </div>
             ) : (
-              <Link className="topbar-auth-link" to="/auth">Sign in</Link>
+              <Link className="topbar-auth-link" to="/auth">Login</Link>
             )}
           </div>
         </div>
@@ -94,10 +97,10 @@ export default function LandingPage() {
         {!user && (
           <section className="landing-hero">
             <span className="landing-kicker">SQL · Python · PySpark · pandas</span>
-            <h2 className="landing-title">Get sharp at data interviews.</h2>
+            <h1 className="landing-title">Get sharp at data interviews.</h1>
             <p className="landing-copy">
-              Four tracks covering SQL, algorithms, data manipulation, and Spark.
-              Work through structured question banks with instant feedback.
+              Four focused tracks covering query fluency, coding fundamentals, dataframe work, and Spark judgment.
+              Practice in a calm workspace with instant feedback and guided progression.
             </p>
             <div className="landing-actions">
               <a className="btn btn-primary" href="#landing-tracks">Explore tracks ↓</a>
@@ -108,14 +111,14 @@ export default function LandingPage() {
 
         <section className="landing-tabs-shell" id="landing-tracks">
           <div className="landing-tabs-heading">
-            <h3 className="landing-tabs-title">Practice by track</h3>
+            <h2 className="landing-tabs-title">Practice by track</h2>
             <p className="landing-tabs-copy">
-              Choose a focus area, see progress at a glance, and jump straight into practice.
+              Pick a lane, skim the sample rounds, and jump into the real challenge flow when you are ready.
             </p>
           </div>
 
           <div className="landing-tabs-nav" role="tablist" aria-label="Track tabs">
-            {tabs.map((tab) => {
+            {trackTabs.map((tab) => {
               const isActive = activeTab === tab.id;
               return (
                 <button
@@ -129,48 +132,14 @@ export default function LandingPage() {
                   onClick={() => handleTabChange(tab.id)}
                 >
                   <span className="landing-tab-label">{tab.label}</span>
-                  {tab.id !== 'samples' && (
-                    <span className="landing-tab-meta">{tab.solved}/{tab.total}</span>
-                  )}
                 </button>
               );
             })}
           </div>
 
           <div className="landing-tab-panels">
-            {tabs.map((tab) => {
+            {trackTabs.map((tab) => {
               const isActive = activeTab === tab.id;
-
-              if (tab.id === 'samples') {
-                return (
-                  <section
-                    key={tab.id}
-                    id={`landing-tab-panel-${tab.id}`}
-                    role="tabpanel"
-                    aria-labelledby={`landing-tab-${tab.id}`}
-                    hidden={!isActive}
-                    className={`landing-tab-panel ${isActive ? 'is-active' : ''}`}
-                  >
-                    <div className="landing-panel-header">
-                      <div>
-                        <h3>SQL sample questions</h3>
-                        <p>{tab.description}</p>
-                      </div>
-                      <span className="landing-panel-tag">No login required</span>
-                    </div>
-                    <div className="landing-samples-grid">
-                      {SAMPLES.map(({ difficulty, copy }) => (
-                        <Link key={difficulty} className="sample-tile" to={`/sample/${difficulty}`}>
-                          <span className={`badge badge-${difficulty}`}>{difficulty}</span>
-                          <p>{copy}</p>
-                          <span className="sample-tile-footer">Open sample →</span>
-                        </Link>
-                      ))}
-                    </div>
-                  </section>
-                );
-              }
-
               const hasStarted = tab.solved > 0;
               const progressLabel = user
                 ? `${tab.completion}% complete`
@@ -201,7 +170,7 @@ export default function LandingPage() {
                       <span className="landing-panel-progress-copy">
                         {user
                           ? `${tab.solved} solved out of ${tab.total}`
-                          : `Sign in to persist progress across sessions`}
+                          : 'Sign in to save progress and carry it across devices'}
                       </span>
                     </div>
                     <div className="landing-panel-actions">
@@ -209,6 +178,27 @@ export default function LandingPage() {
                         {hasStarted ? 'Continue track' : 'Start track'} →
                       </Link>
                       {!user && <Link className="btn btn-secondary" to="/auth">Create account</Link>}
+                    </div>
+                  </div>
+
+                  <div className="landing-panel-samples">
+                    <div className="landing-panel-samples-header">
+                      <div>
+                        <h4>Sample rounds</h4>
+                        <p>Try an easy, medium, or hard slice without affecting challenge progress.</p>
+                      </div>
+                      <span className="landing-panel-tag">No progress recorded</span>
+                    </div>
+
+                    <div className="landing-samples-grid">
+                      {tab.samples.map(({ difficulty, title, copy }) => (
+                        <Link key={difficulty} className="sample-tile" to={`/sample/${tab.id}/${difficulty}`}>
+                          <span className={`badge badge-${difficulty}`}>{difficulty}</span>
+                          <strong className="sample-tile-title">{title}</strong>
+                          <p>{copy}</p>
+                          <span className="sample-tile-footer">Open sample →</span>
+                        </Link>
+                      ))}
                     </div>
                   </div>
                 </section>

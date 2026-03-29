@@ -1,16 +1,16 @@
 # User Guide
 
-A SQL interview practice platform. Write SQL, get instant feedback, work through progressively harder questions.
+`datanest` is a data interview practice platform. Write SQL or Python, answer PySpark MCQs, get instant feedback, and work through progressively harder tracks.
 
 ---
 
 ## Two practice modes
 
-### Challenge mode (`/practice`)
-The main track. 86 questions across three difficulty tiers — Easy (30), Medium (30), Hard (26). Your progress is saved. Questions unlock as you solve them. This is where you build up.
+### Challenge mode (`/practice/:topic`)
+The main track. Each topic has its own guided question bank and saved progress. Questions unlock as you solve them.
 
-### Sample mode (`/sample/easy`, `/sample/medium`, `/sample/hard`)
-A no-stakes sandbox. 3 questions per difficulty, served in random order. No login required, no effect on your challenge progress. Good for getting a feel for the platform before committing.
+### Sample mode (`/sample/:topic/:difficulty`)
+A no-stakes sandbox. Every track has easy, medium, and hard sample rounds with 3 questions per round. No login required, no effect on your challenge progress. Good for getting a feel for the platform before committing.
 
 ---
 
@@ -24,17 +24,17 @@ When you register, your anonymous progress carries over. Nothing is lost.
 
 ## The question screen
 
-Each question has two panels:
+Each question uses a two-column workspace:
 
 **Left panel**
 - The question prompt — what you need to return
-- The schema — which tables and columns are available for this question
+- The schema or available dataframe variables, depending on track
 - Hints and solution (revealed progressively after you submit)
 
 **Right panel**
-- The SQL editor — write your query here
-- Run and Submit buttons
-- Results table showing your query output
+- The code editor or answer area
+- Run and Submit buttons when the track supports execution
+- Results, test cases, or MCQ feedback depending on track
 
 ---
 
@@ -114,10 +114,10 @@ Each question shows one of these states:
 
 ## Sample mode details
 
-- 3 questions per difficulty (9 total)
-- Each question is shown once per session — you won't see the same sample twice until you reset
+- 3 questions per track+difficulty
+- Each question is shown once per session — you won't see the same sample twice until you reset that track+difficulty
 - When all 3 are exhausted, a reset button appears
-- Run and submit work the same as challenge mode; you see the solution after submitting
+- Run and submit mirror the main track behavior for that topic, and samples reveal the official solution/explanation after submit where applicable
 - Nothing here affects your challenge progress or unlock state
 
 ---

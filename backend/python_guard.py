@@ -2,11 +2,11 @@
 AST-based security guard for user-submitted Python code.
 
 For Python (algorithms): blocks ALL imports and dangerous builtins.
-For Python (Data): allows a specific allowlist of safe imports.
+For Pandas: allows a specific allowlist of safe imports.
 """
 import ast
 
-# Imports allowed for the Python (Data) track
+# Imports allowed for the Pandas track
 _DATA_ALLOWLIST = {
     "pandas",
     "numpy",

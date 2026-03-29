@@ -501,27 +501,31 @@ async def mark_sample_seen(user_id: str, difficulty: str, question_id: int, topi
         await session.commit()
 
 
-async def clear_seen_samples(user_id: str, difficulty: str | None = None) -> None:
+async def clear_seen_samples(user_id: str, difficulty: str | None = None, topic: str | None = None) -> None:
     session_factory = _session_factory_or_raise()
     async with session_factory() as session:
-        if difficulty is None:
+        if difficulty is None and topic is None:
             await session.execute(
                 text("DELETE FROM user_sample_seen WHERE user_id = CAST(:user_id AS UUID)"),
                 {"user_id": user_id},
             )
         else:
+            clauses = ["user_id = CAST(:user_id AS UUID)"]
+            params: dict[str, object] = {"user_id": user_id}
+            if difficulty is not None:
+                clauses.append("difficulty = :difficulty")
+                params["difficulty"] = difficulty
+            if topic is not None:
+                clauses.append("topic = :topic")
+                params["topic"] = topic
             await session.execute(
                 text(
-                    """
+                    f"""
                     DELETE FROM user_sample_seen
-                    WHERE user_id = CAST(:user_id AS UUID)
-                      AND difficulty = :difficulty
+                    WHERE {" AND ".join(clauses)}
                     """
                 ),
-                {
-                    "user_id": user_id,
-                    "difficulty": difficulty,
-                },
+                params,
             )
         await session.commit()
 

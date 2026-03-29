@@ -72,16 +72,16 @@ All hover states use `translateY(-1px)`. No transforms on disabled. Transitions:
 ## Layout
 
 ### Landing page
-- Fixed topbar with brand left and dashboard/auth actions right
+- Fixed topbar with the `datanest` wordmark left and dashboard/auth actions right
 - Logged-out users keep the centered hero above the tabbed shell
-- Main surface below the hero is a tabbed card shell with compact progress summaries and a dedicated SQL samples tab
+- Main surface below the hero is a tabbed card shell with compact progress summaries and per-track sample tiles inside each tab
 - Panels use subtle fade/slide entry and stay restrained rather than dashboard-heavy
 - Mobile (<900px): tabs become horizontally scrollable chips and panels stack vertically
 
 ### App shell (challenge workspace)
 - **Sidebar**: 328px, sticky, collapsible (`display:none` on `.sidebar-collapsed`)
 - **Top bar**: 64px on desktop, sticky, blurred backdrop
-- **Practice nav**: brand/home link on the left, direct track nav in the fixed header
+- **Practice nav**: `datanest` brand/home link on the left, direct track nav in the fixed header
 - **Question page**: CSS Grid `minmax(330px,400px) / minmax(0,1fr)` — left panel sticky at `top: 88px`
 - **Left panel cards**: tight padding, `14px` radius, prompt card slightly stronger than schema card
 - **Right panel**: tighter vertical rhythm than the previous 1rem stack

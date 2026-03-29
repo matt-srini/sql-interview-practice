@@ -39,7 +39,7 @@ export default function ProgressDashboard() {
     <>
       <header className="topbar">
         <div className="container topbar-inner">
-          <h1>Data Interview Practice</h1>
+          <Link className="dashboard-brand brand-wordmark" to="/">datanest</Link>
           <Link className="topbar-auth-link" to="/">← All Tracks</Link>
         </div>
       </header>

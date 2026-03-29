@@ -38,28 +38,30 @@ async def clear_user_progress(user_id: str) -> None:
     await clear_seen_samples(user_id)
 
 
-async def get_seen_sample_ids(user_id: str, difficulty: str) -> set[int]:
-    return await db_get_seen_sample_ids(user_id, difficulty)
+async def get_seen_sample_ids(user_id: str, difficulty: str, topic: str = "sql") -> set[int]:
+    return await db_get_seen_sample_ids(user_id, difficulty, topic=topic)
 
 
-async def mark_sample_seen(user_id: str, difficulty: str, question_id: int) -> None:
+async def mark_sample_seen(user_id: str, difficulty: str, question_id: int, topic: str = "sql") -> None:
     request_id = get_request_id()
     logger.info(
-        "[request_id=%s] Mark sample seen: user_id=%s difficulty=%s question_id=%s",
+        "[request_id=%s] Mark sample seen: user_id=%s topic=%s difficulty=%s question_id=%s",
         request_id,
         user_id,
+        topic,
         difficulty,
         int(question_id),
     )
-    await db_mark_sample_seen(user_id, difficulty, question_id)
+    await db_mark_sample_seen(user_id, difficulty, question_id, topic=topic)
 
 
-async def clear_seen_sample_ids(user_id: str, difficulty: str) -> None:
+async def clear_seen_sample_ids(user_id: str, difficulty: str, topic: str = "sql") -> None:
     request_id = get_request_id()
     logger.info(
-        "[request_id=%s] Clear seen sample ids: user_id=%s difficulty=%s",
+        "[request_id=%s] Clear seen sample ids: user_id=%s topic=%s difficulty=%s",
         request_id,
         user_id,
+        topic,
         difficulty,
     )
-    await clear_seen_samples(user_id, difficulty)
+    await clear_seen_samples(user_id, difficulty, topic=topic)

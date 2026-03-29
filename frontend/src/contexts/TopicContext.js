@@ -25,7 +25,7 @@ export const TRACK_META = {
     tagline: 'algorithms · data structures · OOP',
   },
   'python-data': {
-    label: 'Python (Data)',
+    label: 'Pandas',
     description: 'pandas and numpy data manipulation',
     color: '#C47F17',
     apiPrefix: '/python-data',
