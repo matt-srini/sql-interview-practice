@@ -1,70 +1,17 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import SidebarNav from './SidebarNav';
 import api from '../api';
 import { useCatalog } from '../catalogContext';
 import { useAuth } from '../contexts/AuthContext';
-import { useTopic, TRACK_META } from '../contexts/TopicContext';
+import { TRACK_META } from '../contexts/TopicContext';
 import TrackHubPage from '../pages/TrackHubPage';
 
 const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
 
-function pickStartQuestionId(catalog) {
-  const order = ['easy', 'medium', 'hard'];
-  for (const diff of order) {
-    const g = catalog.groups?.find((x) => x.difficulty === diff);
-    if (!g) continue;
-    const next = g.questions.find((q) => q.is_next) ?? g.questions.find((q) => q.state !== 'locked');
-    if (next) return next.id;
-  }
-  return null;
-}
-
-function TrackSwitcher({ currentTopic, onClose }) {
-  const navigate = useNavigate();
-  const switcherRef = useRef(null);
-
-  // Close on outside click
-  useEffect(() => {
-    function handleClick(e) {
-      if (switcherRef.current && !switcherRef.current.contains(e.target)) {
-        onClose();
-      }
-    }
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [onClose]);
-
-  return (
-    <div className="track-switcher-dropdown" ref={switcherRef}>
-      {TOPICS.filter((t) => t !== currentTopic).map((t) => {
-        const meta = TRACK_META[t];
-        return (
-          <button
-            key={t}
-            className="track-switcher-item"
-            onClick={() => {
-              navigate(`/practice/${t}`);
-              onClose();
-            }}
-          >
-            <span className="track-switcher-dot" style={{ background: meta.color }} />
-            {meta.label}
-          </button>
-        );
-      })}
-      <div className="track-switcher-divider" />
-      <Link className="track-switcher-item track-switcher-all" to="/" onClick={onClose}>
-        ← All Tracks
-      </Link>
-    </div>
-  );
-}
-
 export default function AppShell() {
   const { catalog, loading, error, refresh } = useCatalog();
   const { user, refreshUser } = useAuth();
-  const { topic, meta } = useTopic();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -72,12 +19,9 @@ export default function AppShell() {
   const [upgradePending, setUpgradePending] = useState(false);
   const [upgradeError, setUpgradeError] = useState('');
   const [upgradeSuccess, setUpgradeSuccess] = useState(false);
-  const [switcherOpen, setSwitcherOpen] = useState(false);
 
   const location = useLocation();
   const navigate = useNavigate();
-
-  const startQuestionId = useMemo(() => (catalog ? pickStartQuestionId(catalog) : null), [catalog]);
 
   // Determine if we're at the hub (no question selected)
   const isAtHub = !location.pathname.includes('/questions/');
@@ -105,7 +49,7 @@ export default function AppShell() {
   // For the new /:topic paths we show TrackHubPage instead
   useEffect(() => {
     // No auto-redirect needed for the new topic-aware routing
-  }, [loading, error, catalog, location.pathname, startQuestionId, navigate]);
+  }, [loading, error, catalog, location.pathname, navigate]);
 
   useEffect(() => {
     if (!location.search.includes('upgraded=true')) return;
@@ -155,43 +99,39 @@ export default function AppShell() {
       <header className="topbar app-topbar">
         <div className="topbar-inner app-topbar-inner">
           <div className="app-topbar-brand">
-            <button
-              className="btn btn-secondary sidebar-toggle"
-              onClick={handleSidebarToggle}
-              aria-label={desktopCollapsed ? 'Show questions' : 'Toggle question bank'}
-              aria-expanded={isMobile ? mobileOpen : !desktopCollapsed}
-              aria-controls="sidebar"
-            >
-              <span className="sidebar-toggle-icon" aria-hidden="true">
-                {isMobile ? '☰' : desktopCollapsed ? '▤' : '▥'}
-              </span>
-              <span className="sidebar-toggle-label">{desktopCollapsed ? 'Show bank' : 'Questions'}</span>
-            </button>
+            {isMobile && (
+              <button
+                className="btn btn-secondary sidebar-toggle"
+                onClick={handleSidebarToggle}
+                aria-label="Toggle question bank"
+                aria-expanded={mobileOpen}
+                aria-controls="sidebar"
+              >
+                <span className="sidebar-toggle-icon" aria-hidden="true">☰</span>
+                <span className="sidebar-toggle-label">Questions</span>
+              </button>
+            )}
 
             <div className="app-title-group">
-              <div className="app-title-row">
-                <div className="track-switcher-wrap">
-                  <button
-                    className="app-title-track-btn"
-                    onClick={() => setSwitcherOpen((v) => !v)}
-                    aria-haspopup="listbox"
-                    aria-expanded={switcherOpen}
-                  >
-                    <span
-                      className="track-dot"
-                      style={{ background: meta.color }}
-                      aria-hidden="true"
-                    />
-                    <h1>{meta.label} Practice</h1>
-                    <span className="track-switcher-chevron" aria-hidden="true">▾</span>
-                  </button>
-                  {switcherOpen && (
-                    <TrackSwitcher
-                      currentTopic={topic}
-                      onClose={() => setSwitcherOpen(false)}
-                    />
-                  )}
-                </div>
+              <div className="app-title-row app-title-row-nav">
+                <Link className="app-practice-home" to="/">Data Interview Practice</Link>
+                <nav className="app-track-nav" aria-label="Practice tracks">
+                  {TOPICS.map((track) => {
+                    const trackMeta = TRACK_META[track];
+                    return (
+                      <NavLink
+                        key={track}
+                        className={({ isActive }) =>
+                          `app-track-link ${isActive ? 'app-track-link-active' : ''}`
+                        }
+                        style={{ '--track-color': trackMeta.color }}
+                        to={`/practice/${track}`}
+                      >
+                        {trackMeta.label}
+                      </NavLink>
+                    );
+                  })}
+                </nav>
               </div>
             </div>
           </div>
@@ -245,6 +185,19 @@ export default function AppShell() {
         {mobileOpen && <div className="sidebar-backdrop" onClick={() => setMobileOpen(false)} />}
 
         <main className="content">
+          <div className="content-toolbar">
+            {!isMobile && (
+              <button
+                className="btn btn-secondary content-toolbar-toggle"
+                onClick={handleSidebarToggle}
+                aria-label={desktopCollapsed ? 'Show question panel' : 'Hide question panel'}
+                aria-expanded={!desktopCollapsed}
+                aria-controls="sidebar"
+              >
+                {desktopCollapsed ? 'Show questions' : 'Hide questions'}
+              </button>
+            )}
+          </div>
           {isAtHub ? <TrackHubPage /> : <Outlet />}
         </main>
       </div>

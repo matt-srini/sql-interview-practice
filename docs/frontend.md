@@ -31,7 +31,11 @@ Defined in `frontend/src/App.js`:
 
 ### LandingPage (`/`)
 
-Entry point. Shows "Data Interview Practice" branding with a Dashboard link in the topbar. Below the hero (shown to logged-out users only), four track tiles in a 2×2 grid link to `/practice/:topic`. For authenticated users, tiles display progress bars. A simplified SQL sample section appears at the bottom.
+Entry point. Shows "Data Interview Practice" on the left edge of the fixed topbar and dashboard/auth actions on the right. The main surface is a tabbed landing shell:
+- Track tabs for `sql`, `python`, `python-data`, `pyspark`
+- A `SQL Samples` tab for unauthenticated sample entry points
+- Each track tab shows a compact progress summary and CTA into `/practice/:topic`
+- Uses existing dashboard data only; no new API shape
 
 ### AuthPage (`/auth`)
 
@@ -84,7 +88,7 @@ Cross-track progress overview. 4-card grid with TrackProgressBar per track, conc
 
 | Component | File | Purpose |
 |---|---|---|
-| AppShell | `components/AppShell.js` | Challenge workspace shell: topbar with track switcher, collapsible sidebar |
+| AppShell | `components/AppShell.js` | Challenge workspace shell: fixed topbar with direct track nav, collapsible sidebar |
 | SidebarNav | `components/SidebarNav.js` | Question list grouped by difficulty; topic-aware NavLinks |
 | CodeEditor | `components/CodeEditor.js` | Language-agnostic Monaco editor (language prop: `'sql'` \| `'python'`) |
 | SQLEditor | `components/SQLEditor.js` | Thin re-export of CodeEditor with `language="sql"` (backward compat) |
@@ -98,11 +102,12 @@ Cross-track progress overview. 4-card grid with TrackProgressBar per track, conc
 
 ### AppShell
 
-- Track switcher dropdown in topbar: shows current track label, dropdown lists other tracks + "← All Tracks"
-- Navigates to `/practice/{topic}` on track switch
+- Fixed topbar shows a home-brand link plus direct track nav (`SQL`, `Python`, `Python (Data)`, `PySpark`)
+- Track nav links route directly to `/practice/{topic}`
 - Desktop: sidebar 328px, collapsible via toggle
 - Mobile (<900px): sidebar becomes fixed overlay with backdrop
-- Topbar is intentionally sparse: question-bank toggle, current track switcher, and a small session pill on desktop
+- Desktop question-bank toggle lives in workspace controls, not the header
+- Mobile keeps a compact menu button in the header for opening the question drawer
 - Upgrade panel shown for `free` and `pro` plan users
 - Upgrade controls live in the sidebar instead of the topbar
 - Handles `?upgraded=true` query param from Stripe redirect

@@ -72,19 +72,20 @@ All hover states use `translateY(-1px)`. No transforms on disabled. Transitions:
 ## Layout
 
 ### Landing page
-- Centered flex column; hero section `max-width: 560px`, sample tiles `max-width: 800px`
-- Hero: kicker pill → headline → copy → two CTAs (centered)
-- Sample tiles: 3-column grid (`repeat(3, minmax(0,1fr))`), flex column cards with `align-items: flex-start`
-- Mobile (<900px): hero left-aligned, tiles stack to 1 column
+- Fixed topbar with brand left and dashboard/auth actions right
+- Main surface is a tabbed card shell with compact progress summaries and a dedicated SQL samples tab
+- Panels use subtle fade/slide entry and stay restrained rather than dashboard-heavy
+- Mobile (<900px): tabs become horizontally scrollable chips and panels stack vertically
 
 ### App shell (challenge workspace)
 - **Sidebar**: 328px, sticky, collapsible (`display:none` on `.sidebar-collapsed`)
 - **Top bar**: 64px on desktop, sticky, blurred backdrop
+- **Practice nav**: brand/home link on the left, direct track nav in the fixed header
 - **Question page**: CSS Grid `minmax(330px,400px) / minmax(0,1fr)` — left panel sticky at `top: 88px`
 - **Left panel cards**: tight padding, `14px` radius, prompt card slightly stronger than schema card
 - **Right panel**: tighter vertical rhythm than the previous 1rem stack
 - **Mobile breakpoint**: 900px — sidebar becomes fixed overlay
-- **Mobile header**: stripped to menu button + current track switcher
+- **Mobile header**: compact menu button plus horizontally scrollable track nav
 - **Container**: max-width 1180px centered
 
 ### Question page chrome
@@ -92,6 +93,7 @@ All hover states use `translateY(-1px)`. No transforms on disabled. Transitions:
 - Prompt header includes a compact uppercase status line (difficulty / question position / open count)
 - Editor topbar: single line, "SQL editor" left + "DuckDB sandbox" right, slightly tightened padding
 - Editor footer: buttons only (Run Query, Submit Answer, Next Question), right-aligned on desktop and presented as a low-profile sticky dock on mobile
+- Desktop question-panel toggle sits in the content toolbar above the workspace instead of in the global header
 - Post-submit: `.submit-outcome` wrapper with overflow hidden groups verdict + feedback cards; hint-card has no box-shadow
 - Sidebar intentionally begins with the question bank; no separate progress/summary card above it
 
