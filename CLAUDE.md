@@ -197,7 +197,7 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 
 **Buttons:** `.btn-primary` (accent fill), `.btn-secondary` (outlined, context-sensitive bg), `.btn-success` (success tint). All hover: `translateY(-1px)`, `150ms ease-out`.
 
-**Question page chrome:** Minimal — no section kickers (content self-evident from titles/badges). Prompt card includes a compact uppercase status line (difficulty / question position / open count). Editor topbar is single-line ("SQL editor" / "DuckDB sandbox"). Editor footer is buttons-only, right-aligned on desktop and becomes a low-profile sticky action dock on mobile. Post-submit verdict + feedback grouped in `.submit-outcome` wrapper. Cards use tight padding with `14px` border-radius.
+**Question page chrome:** Minimal — no section kickers (content self-evident from titles/badges). Prompt card includes a compact uppercase status line (difficulty / question position / open count). Editor topbar is single-line ("SQL editor" / "DuckDB sandbox"). Editor footer is buttons-only, right-aligned on desktop and becomes a low-profile sticky action dock on mobile. Post-submit verdict + feedback grouped in `.submit-outcome` wrapper. Cards use tight padding with `14px` border-radius. The practice topbar stays sparse, and the sidebar begins directly with the question bank rather than a separate summary card.
 
 ---
 

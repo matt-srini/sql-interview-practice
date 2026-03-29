@@ -20,11 +20,6 @@ function pickStartQuestionId(catalog) {
   return null;
 }
 
-function formatPlanLabel(plan) {
-  if (!plan) return '';
-  return `${plan.charAt(0).toUpperCase()}${plan.slice(1)} plan`;
-}
-
 function TrackSwitcher({ currentTopic, onClose }) {
   const navigate = useNavigate();
   const switcherRef = useRef(null);
@@ -163,18 +158,17 @@ export default function AppShell() {
             <button
               className="btn btn-secondary sidebar-toggle"
               onClick={handleSidebarToggle}
-              aria-label="Toggle sidebar"
+              aria-label={desktopCollapsed ? 'Show questions' : 'Toggle question bank'}
               aria-expanded={isMobile ? mobileOpen : !desktopCollapsed}
               aria-controls="sidebar"
             >
               <span className="sidebar-toggle-icon" aria-hidden="true">
                 {isMobile ? '☰' : desktopCollapsed ? '▤' : '▥'}
               </span>
-              <span className="sidebar-toggle-label">{desktopCollapsed ? 'Show bank' : meta.label + ' questions'}</span>
+              <span className="sidebar-toggle-label">{desktopCollapsed ? 'Show bank' : 'Questions'}</span>
             </button>
 
             <div className="app-title-group">
-              <span className="app-title-kicker">Challenge workspace</span>
               <div className="app-title-row">
                 <div className="track-switcher-wrap">
                   <button
@@ -198,35 +192,13 @@ export default function AppShell() {
                     />
                   )}
                 </div>
-                <Link className="back-link app-home-link" to="/">
-                  All Tracks
-                </Link>
               </div>
             </div>
           </div>
 
           <div className="app-topbar-actions">
-            {showUpgradeControls && (
-              <div className="upgrade-panel">
-                <span className="upgrade-panel-label">
-                  {user.plan === 'free' ? 'Expand question access' : 'Unlock the full challenge track'}
-                </span>
-                <div className="upgrade-actions">
-                  {user.plan === 'free' && (
-                    <button className="btn btn-secondary btn-compact" onClick={() => startCheckout('pro')} disabled={upgradePending}>
-                      Unlock Pro
-                    </button>
-                  )}
-                  <button className="btn btn-primary btn-compact" onClick={() => startCheckout('elite')} disabled={upgradePending}>
-                    {user.plan === 'free' ? 'Unlock Elite' : 'Upgrade to Elite'}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {(user || sessionId) && (
+            {sessionId && (
               <div className="app-context app-context-secondary">
-                {user && <span className="shell-pill shell-pill-plan">{formatPlanLabel(user.plan)}</span>}
                 {sessionId && <span className="shell-pill shell-pill-session">Session {sessionId}</span>}
               </div>
             )}
@@ -250,6 +222,23 @@ export default function AppShell() {
               toggleDiff={toggleDiff}
               onNavigate={handleNavigateFromSidebar}
             />
+          )}
+          {showUpgradeControls && (
+            <div className="sidebar-upgrade-panel">
+              <span className="upgrade-panel-label">
+                {user.plan === 'free' ? 'Expand question access' : 'Unlock the full challenge track'}
+              </span>
+              <div className="upgrade-actions">
+                {user.plan === 'free' && (
+                  <button className="btn btn-secondary btn-compact" onClick={() => startCheckout('pro')} disabled={upgradePending}>
+                    Unlock Pro
+                  </button>
+                )}
+                <button className="btn btn-primary btn-compact" onClick={() => startCheckout('elite')} disabled={upgradePending}>
+                  {user.plan === 'free' ? 'Unlock Elite' : 'Upgrade to Elite'}
+                </button>
+              </div>
+            </div>
           )}
         </aside>
 

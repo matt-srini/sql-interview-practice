@@ -89,46 +89,11 @@ function QuestionRow({ q, onNavigate, topic }) {
 }
 
 export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNavigate }) {
-  const { topic, meta } = useTopic();
+  const { topic } = useTopic();
   const groups = catalog?.groups ?? [];
-  const questionCounts = groups.reduce(
-    (totals, group) => {
-      group.questions.forEach((question) => {
-        totals.total += 1;
-        if (question.state !== 'locked') {
-          totals.available += 1;
-        }
-        if (question.state === 'solved') {
-          totals.solved += 1;
-        }
-      });
-      return totals;
-    },
-    { total: 0, available: 0, solved: 0 }
-  );
 
   return (
     <div className="sidebar-inner">
-      <div className="sidebar-overview">
-        <div className="sidebar-overview-top">
-          <div className="sidebar-header">
-            <span className="sidebar-eyebrow">Guided practice</span>
-            <div className="sidebar-title">{meta.label} questions</div>
-          </div>
-          <div className="sidebar-progress-inline">
-            <span className="sidebar-progress-pill">
-              <strong>{questionCounts.solved}</strong> solved
-            </span>
-            <span className="sidebar-progress-pill">
-              <strong>{questionCounts.available}</strong> open
-            </span>
-          </div>
-        </div>
-        <div className="sidebar-subtitle sidebar-subtitle-compact">
-          Progress stays tied to this browser session.
-        </div>
-      </div>
-
       {groups.map((g) => {
         const collapsed = Boolean(collapsedByDiff[g.difficulty]);
         return (
