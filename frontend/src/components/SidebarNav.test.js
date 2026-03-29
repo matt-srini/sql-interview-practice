@@ -14,8 +14,8 @@ function renderWithRouter(ui, { initialEntries = ['/'] } = {}) {
   return render(
     <MemoryRouter initialEntries={initialEntries}>
       <Routes>
-        <Route path="/practice" element={ui} />
-        <Route path="/practice/questions/:id" element={<QuestionStub />} />
+        <Route path="/practice/sql" element={ui} />
+        <Route path="/practice/sql/questions/:id" element={<QuestionStub />} />
       </Routes>
     </MemoryRouter>
   );
@@ -50,7 +50,7 @@ describe('SidebarNav', () => {
       );
     }
 
-    renderWithRouter(<Harness />, { initialEntries: ['/practice'] });
+    renderWithRouter(<Harness />, { initialEntries: ['/practice/sql'] });
 
     expect(screen.getByText('easy')).toBeInTheDocument();
     expect(screen.queryByText('Q1')).not.toBeInTheDocument();
@@ -83,7 +83,7 @@ describe('SidebarNav', () => {
         toggleDiff={() => {}}
         onNavigate={() => {}}
       />,
-      { initialEntries: ['/practice'] }
+      { initialEntries: ['/practice/sql'] }
     );
 
     // Locked question should not be a link
