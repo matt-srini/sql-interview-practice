@@ -232,9 +232,9 @@ CORS_ALLOW_ORIGINS is also supported as an alias.
 
 ### Sample mode
 - Separate from challenge progression
-- Each difficulty has exactly 3 sample questions
+- Each track/difficulty pair has exactly 3 sample questions
 - Seen-sample tracking is stored in PostgreSQL `user_sample_seen`
-- Sample exhaustion returns HTTP 409 until the user resets that difficulty
+- Sample exhaustion returns HTTP 409 until the user resets that track+difficulty
 
 ### User profile, plan, and Stripe logic
 - Users, sessions, plans, and auth all live in PostgreSQL
@@ -290,10 +290,11 @@ CORS_ALLOW_ORIGINS is also supported as an alias.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | /api/sample/{difficulty} | Get next unseen sample question |
-| POST | /api/sample/{difficulty}/reset | Reset sample progress for that difficulty |
-| POST | /api/sample/run-query | Execute SQL for a sample question |
-| POST | /api/sample/submit | Evaluate a sample answer |
+| GET | /api/sample/{topic}/{difficulty} | Get next unseen sample question for a track |
+| POST | /api/sample/{topic}/{difficulty}/reset | Reset sample progress for that track+difficulty |
+| POST | /api/sample/sql/run-query | Execute SQL for a SQL sample |
+| POST | /api/sample/{topic}/run-code | Execute Python or Pandas sample code |
+| POST | /api/sample/{topic}/submit | Evaluate a sample answer |
 
 ### Example request body
 

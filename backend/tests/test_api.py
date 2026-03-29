@@ -282,6 +282,7 @@ def test_get_sample_question_by_difficulty() -> None:
             assert payload["progress"]["mode"] == "sample"
             assert payload["progress"]["unlocked"] is True
             assert "solution_query" not in payload
+            assert payload["sample"]["topic"] == "sql"
             if difficulty == "easy":
                 assert 101 <= payload["id"] <= 103
             elif difficulty == "medium":
@@ -291,43 +292,58 @@ def test_get_sample_question_by_difficulty() -> None:
             assert payload["sample"]["total"] == 3
 
 
+def test_get_topic_sample_question_by_difficulty() -> None:
+    with TestClient(app) as client:
+        for topic in ["python", "python-data", "pyspark"]:
+            reset = client.post(f"/api/sample/{topic}/easy/reset")
+            assert reset.status_code == 200
+
+            resp = client.get(f"/api/sample/{topic}/easy")
+            assert resp.status_code == 200
+            payload = resp.json()
+            assert payload["difficulty"] == "easy"
+            assert payload["progress"]["mode"] == "sample"
+            assert payload["sample"]["topic"] == topic
+            assert payload["sample"]["total"] == 3
+
+
 def test_sample_questions_exhaust_after_three_shown() -> None:
     seen_ids: set[int] = set()
 
     with TestClient(app) as client:
-        reset = client.post("/api/sample/easy/reset")
+        reset = client.post("/api/sample/sql/easy/reset")
         assert reset.status_code == 200
 
         for _ in range(3):
-            resp = client.get("/api/sample/easy")
+            resp = client.get("/api/sample/sql/easy")
             assert resp.status_code == 200
             payload = resp.json()
             seen_ids.add(int(payload["id"]))
 
         assert len(seen_ids) == 3
 
-        exhausted = client.get("/api/sample/easy")
+        exhausted = client.get("/api/sample/sql/easy")
         assert exhausted.status_code == 409
 
 
 def test_reset_sample_progress_restarts_difficulty_sequence() -> None:
     with TestClient(app) as client:
-        reset_initial = client.post("/api/sample/easy/reset")
+        reset_initial = client.post("/api/sample/sql/easy/reset")
         assert reset_initial.status_code == 200
 
-        first = client.get("/api/sample/easy")
+        first = client.get("/api/sample/sql/easy")
         assert first.status_code == 200
         first_id = int(first.json()["id"])
 
-        second = client.get("/api/sample/easy")
+        second = client.get("/api/sample/sql/easy")
         assert second.status_code == 200
         assert int(second.json()["id"]) != first_id
 
-        reset = client.post("/api/sample/easy/reset")
+        reset = client.post("/api/sample/sql/easy/reset")
         assert reset.status_code == 200
         assert reset.json()["reset"] is True
 
-        after_reset = client.get("/api/sample/easy")
+        after_reset = client.get("/api/sample/sql/easy")
         assert after_reset.status_code == 200
         assert int(after_reset.json()["id"]) == first_id
         assert after_reset.json()["sample"]["shown_count"] == 1
@@ -335,17 +351,17 @@ def test_reset_sample_progress_restarts_difficulty_sequence() -> None:
 
 def test_sample_submit_does_not_advance_catalog_progress() -> None:
     with TestClient(app) as client:
-        reset = client.post("/api/sample/easy/reset")
+        reset = client.post("/api/sample/sql/easy/reset")
         assert reset.status_code == 200
 
         before = client.get("/api/catalog").json()
         before_easy = next(group for group in before["groups"] if group["difficulty"] == "easy")
 
-        sample = client.get("/api/sample/easy").json()
+        sample = client.get("/api/sample/sql/easy").json()
         assert sample["id"] == 101
 
         resp = client.post(
-            "/api/sample/submit",
+            "/api/sample/sql/submit",
             json={
                 "query": "SELECT COUNT(*) AS user_count FROM users",
                 "question_id": sample["id"],
@@ -358,6 +374,128 @@ def test_sample_submit_does_not_advance_catalog_progress() -> None:
         after_easy = next(group for group in after["groups"] if group["difficulty"] == "easy")
 
         assert before_easy == after_easy
+
+
+def test_topic_sample_question_by_difficulty_for_all_tracks() -> None:
+    main._clear_rate_limit_state()
+    with TestClient(app) as client:
+        for topic in ["sql", "python", "python-data", "pyspark"]:
+            for difficulty in ["easy", "medium", "hard"]:
+                reset = client.post(f"/api/sample/{topic}/{difficulty}/reset")
+                assert reset.status_code == 200
+                payload = reset.json()
+                assert payload["topic"] == topic
+                assert payload["difficulty"] == difficulty
+                assert payload["reset"] is True
+
+                resp = client.get(f"/api/sample/{topic}/{difficulty}")
+                assert resp.status_code == 200
+                body = resp.json()
+                assert body["progress"]["mode"] == "sample"
+                assert body["sample"]["topic"] == topic
+                assert body["sample"]["difficulty"] == difficulty
+                assert body["sample"]["total"] == 3
+
+                if topic == "sql":
+                    assert body["sample"]["served_difficulty"] == difficulty
+                    assert body["id"] in {101, 102, 103, 201, 202, 203, 301, 302, 303}
+                else:
+                    assert body["sample"]["served_difficulty"] == difficulty
+                    if topic == "python":
+                        if difficulty == "easy":
+                            assert 4001 <= int(body["id"]) <= 4003
+                        elif difficulty == "medium":
+                            assert 4004 <= int(body["id"]) <= 4006
+                        else:
+                            assert 4007 <= int(body["id"]) <= 4009
+                    elif topic == "python-data":
+                        if difficulty == "easy":
+                            assert 5001 <= int(body["id"]) <= 5003
+                        elif difficulty == "medium":
+                            assert 5004 <= int(body["id"]) <= 5006
+                        else:
+                            assert 5007 <= int(body["id"]) <= 5009
+                    else:
+                        if difficulty == "easy":
+                            assert 11001 <= int(body["id"]) <= 11003
+                        elif difficulty == "medium":
+                            assert 11004 <= int(body["id"]) <= 11006
+                        else:
+                            assert 11007 <= int(body["id"]) <= 11009
+
+
+def test_topic_sample_submit_and_run_preserve_challenge_progress() -> None:
+    main._clear_rate_limit_state()
+    with TestClient(app) as client:
+        before_python = client.get("/api/python/catalog").json()
+        before_python_easy = next(group for group in before_python["groups"] if group["difficulty"] == "easy")
+
+        sample_python = client.get("/api/sample/python/easy").json()
+        run_python = client.post(
+            "/api/sample/python/run-code",
+            json={
+                "code": sample_python["starter_code"],
+                "question_id": sample_python["id"],
+            },
+        )
+        assert run_python.status_code == 200
+        assert "results" in run_python.json()
+
+        submit_python = client.post(
+            "/api/sample/python/submit",
+            json={
+                "code": sample_python["starter_code"],
+                "question_id": sample_python["id"],
+            },
+        )
+        assert submit_python.status_code == 200
+        assert "correct" in submit_python.json()
+
+        sample_python_data = client.get("/api/sample/python-data/easy").json()
+        run_python_data = client.post(
+            "/api/sample/python-data/run-code",
+            json={
+                "code": sample_python_data["starter_code"],
+                "question_id": sample_python_data["id"],
+            },
+        )
+        assert run_python_data.status_code == 200
+        assert "error" in run_python_data.json()
+
+        submit_python_data = client.post(
+            "/api/sample/python-data/submit",
+            json={
+                "code": sample_python_data["starter_code"],
+                "question_id": sample_python_data["id"],
+            },
+        )
+        assert submit_python_data.status_code == 200
+        assert "correct" in submit_python_data.json()
+
+        after_python = client.get("/api/python/catalog").json()
+        after_python_easy = next(group for group in after_python["groups"] if group["difficulty"] == "easy")
+        assert before_python_easy == after_python_easy
+
+
+def test_topic_sample_pyspark_submit_flow() -> None:
+    main._clear_rate_limit_state()
+    with TestClient(app) as client:
+        sample = client.get("/api/sample/pyspark/easy")
+        assert sample.status_code == 200
+        payload = sample.json()
+        assert "options" in payload
+        assert len(payload["options"]) >= 2
+
+        submit = client.post(
+            "/api/sample/pyspark/submit",
+            json={
+                "question_id": payload["id"],
+                "selected_option": 0,
+            },
+        )
+        assert submit.status_code == 200
+        assert "correct" in submit.json()
+        assert "explanation" in submit.json()
 
 
 def test_register_preserves_anonymous_progress_and_user_id() -> None:

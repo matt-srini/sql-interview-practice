@@ -4,6 +4,9 @@ import csv
 from pathlib import Path
 from typing import Any, Optional
 
+import pyspark_questions as pyspark_catalog
+import python_data_questions as python_data_catalog
+import python_questions as python_catalog
 
 # Inline schemas and helpers (formerly from question_bank.common)
 ORDERS_SCHEMA = {
@@ -346,9 +349,46 @@ _validate_sample_questions(SAMPLE_QUESTIONS)
 
 SAMPLE_INDEX: dict[int, dict[str, Any]] = {int(q["id"]): q for q in SAMPLE_QUESTIONS}
 
+_TOPIC_ALIASES: dict[str, str] = {
+    "sql": "sql",
+    "python": "python",
+    "python_data": "python_data",
+    "python-data": "python_data",
+    "pyspark": "pyspark",
+}
+
+_TOPIC_CATALOGS = {
+    "python": python_catalog,
+    "python_data": python_data_catalog,
+    "pyspark": pyspark_catalog,
+}
+_DIFFICULTY_ORDER = ("easy", "medium", "hard")
+_SAMPLE_POOL_SIZE = 3
+
+
+def normalize_sample_topic(topic: str) -> str:
+    normalized = _TOPIC_ALIASES.get(str(topic).strip().lower())
+    if normalized is None:
+        raise ValueError(f"Unsupported sample topic: {topic}")
+    return normalized
+
 
 def get_sample_question(question_id: int) -> Optional[dict[str, Any]]:
     return SAMPLE_INDEX.get(int(question_id))
+
+
+def get_sample_question_for_topic(question_id: int, topic: str) -> Optional[dict[str, Any]]:
+    normalized_topic = normalize_sample_topic(topic)
+    if normalized_topic == "sql":
+        return get_sample_question(question_id)
+
+    target_id = int(question_id)
+    for difficulty in _DIFFICULTY_ORDER:
+        pool, _ = get_topic_sample_pool(topic=normalized_topic, difficulty=difficulty)
+        for question in pool:
+            if int(question["id"]) == target_id:
+                return question
+    return None
 
 
 def get_sample_questions_by_difficulty() -> dict[str, list[dict[str, Any]]]:
@@ -358,3 +398,34 @@ def get_sample_questions_by_difficulty() -> dict[str, list[dict[str, Any]]]:
     for diff in grouped:
         grouped[diff] = sorted(grouped[diff], key=lambda x: int(x["order"]))
     return grouped
+
+
+def get_topic_sample_pool(
+    *,
+    topic: str,
+    difficulty: str,
+) -> tuple[list[dict[str, Any]], str]:
+    normalized_topic = normalize_sample_topic(topic)
+    normalized_difficulty = str(difficulty).strip().lower()
+    if normalized_difficulty not in _DIFFICULTY_ORDER:
+        raise ValueError(f"Unsupported sample difficulty: {difficulty}")
+
+    if normalized_topic == "sql":
+        grouped = get_sample_questions_by_difficulty()
+        pool = list(grouped.get(normalized_difficulty, []))
+        return pool, normalized_difficulty
+
+    grouped = _TOPIC_CATALOGS[normalized_topic].get_questions_by_difficulty()
+    requested_pool = list(grouped.get(normalized_difficulty, []))
+    served_difficulty = normalized_difficulty
+    if not requested_pool:
+        easy_pool = sorted(grouped.get("easy", []), key=lambda question: int(question.get("order", 0)))
+        if normalized_difficulty == "medium":
+            requested_pool = easy_pool[_SAMPLE_POOL_SIZE:_SAMPLE_POOL_SIZE * 2]
+        elif normalized_difficulty == "hard":
+            requested_pool = easy_pool[_SAMPLE_POOL_SIZE * 2:_SAMPLE_POOL_SIZE * 3]
+        else:
+            requested_pool = easy_pool[:_SAMPLE_POOL_SIZE]
+
+    requested_pool = sorted(requested_pool, key=lambda question: int(question.get("order", 0)))
+    return requested_pool[:_SAMPLE_POOL_SIZE], served_difficulty

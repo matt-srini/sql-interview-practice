@@ -1,4 +1,4 @@
-"""Python (Data) question catalog loaded from JSON content files."""
+"""Pandas question catalog loaded from JSON content files."""
 
 import json
 from pathlib import Path

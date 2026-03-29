@@ -25,6 +25,12 @@ function LegacyQuestionRedirect() {
   return <Navigate to={`/practice/sql/questions/${id}`} replace />;
 }
 
+// Legacy redirect: /sample/:difficulty → /sample/sql/:difficulty
+function LegacySampleRedirect() {
+  const { difficulty } = useParams();
+  return <Navigate to={`/sample/sql/${difficulty}`} replace />;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -33,7 +39,8 @@ export default function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/dashboard" element={<ProgressDashboard />} />
-          <Route path="/sample/:difficulty" element={<SampleQuestionPage />} />
+          <Route path="/sample/:topic/:difficulty" element={<SampleQuestionPage />} />
+          <Route path="/sample/:difficulty" element={<LegacySampleRedirect />} />
 
           {/* Legacy redirects — must come before the :topic wildcard */}
           <Route path="/practice/questions/:id" element={<LegacyQuestionRedirect />} />

@@ -5,6 +5,9 @@
   color-scheme: light;
   --font-sans: "Inter", "Avenir Next", "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  --font-brand: "Sora", var(--font-sans);
+  --brand-accent: #2F6D9A;
+  --brand-wordmark-tracking: -0.018em;
 
   /* Backgrounds */
   --bg-page: #F7F7F5;
@@ -1006,6 +1009,51 @@ select {
   color: var(--text-strong);
 }
 
+/* ============================================================
+   Brand wordmark
+   ============================================================ */
+.brand-wordmark,
+.landing-brand,
+.app-practice-home,
+.dashboard-brand {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-brand);
+  font-weight: 650;
+  letter-spacing: var(--brand-wordmark-tracking);
+  color: var(--text-strong);
+  text-transform: lowercase;
+}
+
+.brand-wordmark::before,
+.landing-brand::before,
+.app-practice-home::before,
+.dashboard-brand::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(140deg, var(--brand-accent), var(--accent));
+  box-shadow: 0 0 0 3px rgba(47, 109, 154, 0.12);
+  flex: 0 0 auto;
+}
+
+.landing-brand {
+  font-size: 1.08rem;
+  white-space: nowrap;
+}
+
+.app-practice-home {
+  font-size: 0.98rem;
+}
+
+.app-practice-home:hover,
+.dashboard-brand:hover {
+  color: var(--text-strong);
+}
+
 .topbar .back-link {
   font-size: 0.86rem;
   color: var(--text-muted);
@@ -1154,10 +1202,9 @@ select {
 }
 
 .landing-tabs-title {
-  font-size: 0.94rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--text-muted);
+  font-size: 1rem;
+  color: var(--text-strong);
+  letter-spacing: -0.02em;
 }
 
 .landing-tabs-copy {
@@ -1237,12 +1284,6 @@ select {
 .landing-tab-label {
   font-size: 0.85rem;
   font-weight: 600;
-}
-
-.landing-tab-meta {
-  font-size: 0.74rem;
-  font-family: var(--font-mono);
-  color: var(--text-muted);
 }
 
 .landing-tab-panels {
@@ -1326,6 +1367,33 @@ select {
   flex-wrap: wrap;
 }
 
+.landing-panel-samples {
+  margin-top: 1.35rem;
+  padding-top: 1.15rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.landing-panel-samples-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.landing-panel-samples-header h4 {
+  font-size: 0.95rem;
+  color: var(--text-strong);
+  letter-spacing: -0.02em;
+}
+
+.landing-panel-samples-header p {
+  margin-top: 0.3rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  font-size: 0.88rem;
+}
+
 .landing-samples-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1355,6 +1423,13 @@ select {
   font-size: 0.88rem;
   line-height: 1.55;
   flex: 1;
+}
+
+.sample-tile-title {
+  color: var(--text-strong);
+  font-size: 0.93rem;
+  font-weight: 600;
+  line-height: 1.35;
 }
 
 .sample-tile-footer {
@@ -1408,7 +1483,7 @@ select {
   }
 
   .landing-brand {
-    font-size: 0.98rem;
+    font-size: 0.95rem;
   }
 
   .landing-topbar-right {
@@ -1436,6 +1511,11 @@ select {
 
   .landing-tab-panel {
     padding: 1.05rem;
+  }
+
+  .landing-panel-samples-header {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .landing-tabs-heading,
@@ -2183,6 +2263,10 @@ select {
   align-items: center;
 }
 
+.sample-home-link {
+  color: var(--text-strong);
+}
+
 .sample-page-topbar h1 {
   color: var(--text-strong);
 }
@@ -2347,6 +2431,7 @@ select {
     --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.30);
     --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.30);
     --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.40);
+    --brand-accent: #78A9CE;
   }
 
   body {

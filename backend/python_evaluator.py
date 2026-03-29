@@ -114,7 +114,7 @@ def evaluate_python_code(code: str, question: dict[str, Any]) -> dict[str, Any]:
 def run_python_data_code(code: str, question: dict[str, Any]) -> dict[str, Any]:
     """
     Run user pandas/numpy code and return the resulting DataFrame.
-    Used by /run-code endpoint for the Python (Data) track.
+    Used by /run-code endpoint for the Pandas track.
     """
     dataframes = question.get("dataframes", {})
     payload = {

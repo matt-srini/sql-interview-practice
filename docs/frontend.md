@@ -11,10 +11,11 @@ React 18 + React Router + Vite. Monaco editor. Axios API client. Single global s
 Defined in `frontend/src/App.js`:
 
 ```
-/                                → LandingPage (4-tile track grid)
+/                                → LandingPage (hero + integrated track tabs)
 /auth                            → AuthPage (register / sign in)
 /dashboard                       → ProgressDashboard (cross-track progress)
-/sample/:difficulty              → SampleQuestionPage (SQL samples only)
+/sample/:topic/:difficulty       → SampleQuestionPage (topic-aware sample mode)
+/sample/:difficulty              → redirect → /sample/sql/:difficulty
 /practice/:topic                 → TopicShell (TopicProvider + CatalogProvider + AppShell)
   /practice/:topic               → TrackHubPage (track overview when no question selected)
   /practice/:topic/questions/:id → QuestionPage (topic-aware)
@@ -31,11 +32,11 @@ Defined in `frontend/src/App.js`:
 
 ### LandingPage (`/`)
 
-Entry point. Shows "Data Interview Practice" on the left edge of the fixed topbar and dashboard/auth actions on the right. Logged-out users still see the centered hero with the primary "Get sharp at data interviews" message and CTAs. Below that sits a single tabbed landing shell:
+Entry point. Shows the `datanest` wordmark on the left edge of the fixed topbar and dashboard/auth actions on the right. Logged-out users still see the centered hero with the primary "Get sharp at data interviews" message and CTAs. Below that sits a single integrated tab shell:
 - Track tabs for `sql`, `python`, `python-data`, `pyspark`
-- A `SQL Samples` tab for unauthenticated sample entry points
-- Each track tab shows a compact progress summary and CTA into `/practice/:topic`
-- Uses existing dashboard data only; no new API shape
+- Tab headings show labels only (`SQL`, `Python`, `Pandas`, `PySpark`) with no progress counters in the tab strip
+- Each track tab shows a compact progress summary, CTA into `/practice/:topic`, and easy/medium/hard sample tiles for that same track
+- Uses existing dashboard data only; no new dashboard API shape
 
 ### AuthPage (`/auth`)
 
@@ -61,7 +62,7 @@ Main practice screen. Layout and behavior vary by topic:
 |---|---|---|---|
 | SQL | Monaco (sql) | Schema viewer | ResultsTable (run + submit) |
 | Python | Monaco (python) | Description only | TestCasePanel + PrintOutputPanel |
-| Python (Data) | Monaco (python) | VariablesPanel + description | ResultsTable + PrintOutputPanel |
+| Pandas | Monaco (python) | VariablesPanel + description | ResultsTable + PrintOutputPanel |
 | PySpark | Read-only code snippet (if present) | Description only | MCQPanel → reveal explanation |
 
 - Left panel is widened slightly and remains sticky on desktop
@@ -74,9 +75,9 @@ Main practice screen. Layout and behavior vary by topic:
 - PySpark: no Run button; MCQPanel handles option selection + submit + explanation reveal
 - "Next Question" navigates to `/practice/:topic/questions/:nextId`
 
-### SampleQuestionPage (`/sample/:difficulty`)
+### SampleQuestionPage (`/sample/:topic/:difficulty`)
 
-Standalone SQL sample practice (unchanged). No sidebar. SQL-only.
+Standalone sample practice for all four tracks. No sidebar. Layout mirrors the main question workspace, but progress stays isolated from challenge progression. Legacy `/sample/:difficulty` continues to redirect into the SQL sample route.
 
 ### ProgressDashboard (`/dashboard`)
 
@@ -102,7 +103,7 @@ Cross-track progress overview. 4-card grid with TrackProgressBar per track, conc
 
 ### AppShell
 
-- Fixed topbar shows a home-brand link plus direct track nav (`SQL`, `Python`, `Python (Data)`, `PySpark`)
+- Fixed topbar shows a `datanest` home-brand link plus direct track nav (`SQL`, `Python`, `Pandas`, `PySpark`)
 - Track nav links route directly to `/practice/{topic}`
 - Desktop: sidebar 328px, collapsible via toggle
 - Mobile (<900px): sidebar becomes fixed overlay with backdrop
@@ -131,7 +132,7 @@ Provides current topic and track metadata to the entire component tree.
 ```js
 // TRACK_META[topic] shape:
 {
-  label: 'Python (Data)',
+  label: 'Pandas',
   description: 'pandas and numpy data manipulation',
   color: '#C47F17',
   apiPrefix: '/python-data',   // used to build API paths
@@ -190,7 +191,7 @@ All requests use `withCredentials: true` so the `session_token` cookie is sent d
 4. Submit → `POST /api/python/submit` → TestCasePanel + hidden test summary
 5. On correct: solution_code + explanation revealed
 
-### Python (Data) flow
+### Pandas flow
 1. `/practice/python-data/questions/:id` → fetch `/api/python-data/questions/:id`
 2. VariablesPanel shows available DataFrames from `question.dataframes`
 3. Run → `POST /api/python-data/run-code` → ResultsTable + PrintOutputPanel
@@ -204,8 +205,11 @@ All requests use `withCredentials: true` so the `session_token` cookie is sent d
 5. No Run button; no code editor
 
 ### Sample flow
-1. `/sample/:difficulty` → `GET /api/sample/:difficulty`
-2. Backend marks sample as seen and returns question
-3. Run/submit via `/api/sample/run-query` and `/api/sample/submit`
-4. 409 on exhaustion → reset button → `POST /api/sample/:difficulty/reset` → re-fetch
+1. `/sample/:topic/:difficulty` → `GET /api/sample/:topic/:difficulty`
+2. Backend marks that topic+difficulty sample as seen and returns the next sample question
+3. Run/submit uses topic-specific sample endpoints:
+   SQL → `/api/sample/sql/run-query`, `/api/sample/sql/submit`
+   Python / Pandas → `/api/sample/{topic}/run-code`, `/api/sample/{topic}/submit`
+   PySpark → `/api/sample/pyspark/submit`
+4. 409 on exhaustion → reset button → `POST /api/sample/:topic/:difficulty/reset` → re-fetch
 5. No effect on challenge progress

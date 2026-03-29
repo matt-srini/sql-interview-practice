@@ -1,14 +1,30 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import api from '../api';
-import SQLEditor from '../components/SQLEditor';
+import CodeEditor from '../components/CodeEditor';
+import MCQPanel from '../components/MCQPanel';
+import PrintOutputPanel from '../components/PrintOutputPanel';
 import ResultsTable from '../components/ResultsTable';
 import SchemaViewer from '../components/SchemaViewer';
+import TestCasePanel from '../components/TestCasePanel';
+import VariablesPanel from '../components/VariablesPanel';
+import { TRACK_META } from '../contexts/TopicContext';
 
-const PLACEHOLDER = '-- Write your SQL query here\nSELECT ';
+const SQL_PLACEHOLDER = '-- Write your SQL query here\nSELECT ';
+const PYTHON_PLACEHOLDER = '# Write your solution here\n';
 
 export default function SampleQuestionPage() {
-  const { difficulty } = useParams();
+  const { topic: rawTopic, difficulty } = useParams();
+  const topic = TRACK_META[rawTopic] ? rawTopic : 'sql';
+  const meta = TRACK_META[topic];
+
+  const defaultCode = meta.language === 'python' ? PYTHON_PLACEHOLDER : SQL_PLACEHOLDER;
+  const sampleBasePath = `/sample/${topic}`;
+  const challengePath = `/practice/${topic}`;
+  const runApiPath = meta.language === 'python'
+    ? `${sampleBasePath}/run-code`
+    : `${sampleBasePath}/run-query`;
+  const submitApiPath = `${sampleBasePath}/submit`;
 
   const [question, setQuestion] = useState(null);
   const [loadError, setLoadError] = useState(null);
@@ -17,7 +33,8 @@ export default function SampleQuestionPage() {
   const [sampleExhausted, setSampleExhausted] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [resetNotice, setResetNotice] = useState('');
-  const [query, setQuery] = useState(PLACEHOLDER);
+  const [code, setCode] = useState(defaultCode);
+  const [selectedOption, setSelectedOption] = useState(null);
   const [runResult, setRunResult] = useState(null);
   const [runError, setRunError] = useState(null);
   const [running, setRunning] = useState(false);
@@ -25,10 +42,6 @@ export default function SampleQuestionPage() {
   const [submitError, setSubmitError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
-  const [hintsShown, setHintsShown] = useState(0);
-
-  const shouldShowFeedback = submitResult?.feedback?.length > 0
-    && !(submitResult.correct && (submitResult.structure_correct ?? true));
 
   useEffect(() => {
     setQuestion(null);
@@ -36,19 +49,23 @@ export default function SampleQuestionPage() {
     setSampleMeta(null);
     setSampleExhausted(false);
     setResetNotice('');
-    setQuery(PLACEHOLDER);
+    setCode(defaultCode);
+    setSelectedOption(null);
     setRunResult(null);
     setRunError(null);
     setSubmitResult(null);
     setSubmitError(null);
     setShowSolution(false);
-    setHintsShown(0);
 
     api
-      .get(`/sample/${difficulty}`)
+      .get(`${sampleBasePath}/${difficulty}`)
       .then((res) => {
-        setQuestion(res.data);
-        setSampleMeta(res.data.sample ?? null);
+        const nextQuestion = res.data;
+        setQuestion(nextQuestion);
+        setSampleMeta(nextQuestion.sample ?? null);
+        if (meta.language === 'python' && nextQuestion.starter_code) {
+          setCode(nextQuestion.starter_code);
+        }
       })
       .catch((err) => {
         if (err.response?.status === 409) {
@@ -57,9 +74,23 @@ export default function SampleQuestionPage() {
         }
         setLoadError(err.response?.data?.detail ?? 'Failed to load sample question.');
       });
+  }, [defaultCode, difficulty, meta.language, sampleBasePath, reloadToken]);
 
-    return undefined;
-  }, [difficulty, reloadToken]);
+  const topicLabel = meta.label;
+  const shownSamples = sampleMeta?.shown_count ?? 0;
+  const totalSamples = sampleMeta?.total ?? 3;
+  const remainingSamples = sampleMeta?.remaining ?? 0;
+  const servedDifficulty = sampleMeta?.served_difficulty ?? difficulty;
+  const sampleStatusLine = useMemo(() => {
+    const chunks = [
+      `${servedDifficulty.charAt(0).toUpperCase()}${servedDifficulty.slice(1)} sample`,
+      `${shownSamples} of ${totalSamples} shown`,
+    ];
+    if (remainingSamples >= 0) {
+      chunks.push(`${remainingSamples} remaining`);
+    }
+    return chunks.join(' · ');
+  }, [remainingSamples, servedDifficulty, shownSamples, totalSamples]);
 
   function handleAnotherSample() {
     if (sampleMeta && sampleMeta.remaining <= 0) {
@@ -73,7 +104,7 @@ export default function SampleQuestionPage() {
   async function handleResetSamples() {
     setResetting(true);
     try {
-      await api.post(`/sample/${difficulty}/reset`);
+      await api.post(`${sampleBasePath}/${difficulty}/reset`);
       setSampleExhausted(false);
       setLoadError(null);
       setResetNotice('Sample progress reset. Started this set from question 1.');
@@ -86,16 +117,19 @@ export default function SampleQuestionPage() {
   }
 
   async function handleRun() {
-    if (!question) return;
+    if (!question || !meta.hasRunCode) return;
 
     setRunning(true);
     setRunResult(null);
     setRunError(null);
     try {
-      const res = await api.post('/sample/run-query', { query, question_id: Number(question.id) });
+      const payload = meta.language === 'python'
+        ? { code, question_id: Number(question.id) }
+        : { query: code, question_id: Number(question.id) };
+      const res = await api.post(runApiPath, payload);
       setRunResult(res.data);
     } catch (err) {
-      setRunError(err.response?.data?.error ?? err.response?.data?.detail ?? 'Query execution failed.');
+      setRunError(err.response?.data?.error ?? err.response?.data?.detail ?? 'Execution failed.');
     } finally {
       setRunning(false);
     }
@@ -109,7 +143,15 @@ export default function SampleQuestionPage() {
     setSubmitError(null);
     setShowSolution(false);
     try {
-      const res = await api.post('/sample/submit', { query, question_id: Number(question.id) });
+      let payload;
+      if (meta.hasMCQ) {
+        payload = { selected_option: selectedOption, question_id: Number(question.id) };
+      } else if (meta.language === 'python') {
+        payload = { code, question_id: Number(question.id) };
+      } else {
+        payload = { query: code, question_id: Number(question.id) };
+      }
+      const res = await api.post(submitApiPath, payload);
       setSubmitResult(res.data);
     } catch (err) {
       setSubmitError(err.response?.data?.error ?? err.response?.data?.detail ?? 'Submission failed.');
@@ -123,11 +165,11 @@ export default function SampleQuestionPage() {
       <>
         <header className="topbar">
           <div className="container topbar-inner sample-page-topbar">
-            <Link className="back-link" to="/">
-              ← Back to landing page
+            <Link className="sample-home-link brand-wordmark" to="/">
+              datanest
             </Link>
-            <h1>Sample question</h1>
-            <Link className="btn btn-secondary" to="/practice">
+            <h1>{topicLabel} sample</h1>
+            <Link className="btn btn-secondary" to={challengePath}>
               Start the challenge
             </Link>
           </div>
@@ -139,19 +181,19 @@ export default function SampleQuestionPage() {
             <div className="section-heading">
               <div>
                 <span className="section-kicker">Sample track</span>
-                <h3>Sample set exhausted for {difficulty}</h3>
+                <h3>Sample set exhausted for {topicLabel}</h3>
               </div>
-              <span className="section-meta">3 of 3 shown</span>
+              <span className="section-meta">{totalSamples} shown</span>
             </div>
             <p className="sample-challenge-copy">
-              You have seen all 3 dedicated {difficulty} sample questions. Continue with the ordered challenge flow.
+              You have seen all dedicated {difficulty} samples for this track. Reset the set or move into the full guided flow.
             </p>
             <div className="sample-challenge-actions">
               <button className="btn btn-secondary sample-challenge-button" onClick={handleResetSamples} disabled={resetting}>
                 {resetting ? 'Resetting…' : 'Reset sample progress'}
               </button>
-              <Link className="btn btn-primary sample-challenge-button" to="/practice">
-                Take the Challenge
+              <Link className="btn btn-primary sample-challenge-button" to={challengePath}>
+                Take the challenge
               </Link>
             </div>
           </div>
@@ -180,20 +222,38 @@ export default function SampleQuestionPage() {
     );
   }
 
-  const remainingSamples = sampleMeta?.remaining ?? 0;
-  const shownSamples = sampleMeta?.shown_count ?? 0;
-  const totalSamples = sampleMeta?.total ?? 3;
+  const showSchema = topic === 'sql';
+  const showVariables = topic === 'python-data';
   const schemaTableCount = Object.keys(question.schema ?? {}).length;
+  const pythonRunResults = runResult?.results ?? runResult?.test_results ?? [];
+  const pythonSubmitResults = submitResult?.public_results ?? submitResult?.test_results ?? [];
+  const pythonRunOutput = runResult?.stdout ?? '';
+  const pandasRunResult = runResult?.result ?? null;
+  const pandasRunOutput = runResult?.print_output ?? runResult?.stdout ?? '';
+  const pandasSubmitOutput = submitResult?.print_output ?? '';
+  const shouldShowFeedback = submitResult?.feedback?.length > 0
+    && !(submitResult.correct && (submitResult.structure_correct ?? true));
+  const showSolutionToggle = Boolean(submitResult?.solution_query || submitResult?.solution_code);
+  const editorTitle = meta.hasMCQ
+    ? 'Code preview'
+    : meta.language === 'python'
+      ? 'Python editor'
+      : 'SQL editor';
+  const editorNote = meta.hasMCQ
+    ? 'Read-only'
+    : meta.language === 'python'
+      ? 'Sandboxed execution'
+      : 'DuckDB sandbox';
 
   return (
     <>
       <header className="topbar">
         <div className="container topbar-inner sample-page-topbar">
-          <Link className="back-link" to="/">
-            ← Back to landing page
+          <Link className="sample-home-link brand-wordmark" to="/">
+            datanest
           </Link>
-          <h1>Sample question</h1>
-          <Link className="btn btn-secondary" to="/practice">
+          <h1>{topicLabel} sample</h1>
+          <Link className="btn btn-secondary" to={challengePath}>
             Start the challenge
           </Link>
         </div>
@@ -204,14 +264,14 @@ export default function SampleQuestionPage() {
 
         <div className="question-page-inner">
           <aside className="left-panel">
-            <div className="card prompt-card">
+            <div className="card prompt-card prompt-card-main">
               <div className="section-heading">
                 <div>
-                  <span className="section-kicker">Sample question</span>
                   <div className="question-title-row">
                     <h2>{question.title}</h2>
                     <span className={`badge badge-${question.difficulty}`}>{question.difficulty}</span>
                   </div>
+                  <p className="question-status-line">{sampleStatusLine}</p>
                 </div>
               </div>
 
@@ -225,34 +285,46 @@ export default function SampleQuestionPage() {
 
               <p className="description-text">{question.description}</p>
 
+              {meta.hasMCQ && question.code_snippet && (
+                <pre className="question-code-snippet">{question.code_snippet}</pre>
+              )}
+
               <div className="locked-callout locked-callout-sample">
-                Sample mode does not change your challenge progress. {shownSamples}/{totalSamples} shown.
+                Sample mode is separate from challenge progress. Move to the full track whenever you are ready.
               </div>
             </div>
 
-            <div className="card schema-card">
-              <div className="section-heading">
-                <div>
-                  <span className="section-kicker">Reference</span>
-                  <h3>Table schema</h3>
+            {showSchema && (
+              <div className="card schema-card schema-card-utility">
+                <div className="section-heading">
+                  <div>
+                    <h3>Table schema</h3>
+                  </div>
+                  <span className="section-meta">{schemaTableCount} tables</span>
                 </div>
-                <span className="section-meta">{schemaTableCount} tables</span>
+                <SchemaViewer schema={question.schema} />
               </div>
-              <SchemaViewer schema={question.schema} />
-            </div>
+            )}
+
+            {showVariables && (
+              <VariablesPanel
+                dataframes={question.dataframes ?? {}}
+                schema={question.schema ?? {}}
+              />
+            )}
 
             <div className="card sample-challenge-card">
               <div className="section-heading">
                 <div>
                   <span className="section-kicker">Sample track</span>
-                  <h3>{remainingSamples > 0 ? 'Keep sampling or move into the real flow' : 'Sample set exhausted'}</h3>
+                  <h3>{remainingSamples > 0 ? 'Keep sampling or move into the full flow' : 'Sample set exhausted'}</h3>
                 </div>
                 <span className="section-meta">{shownSamples}/{totalSamples} shown</span>
               </div>
               <p className="sample-challenge-copy">
                 {remainingSamples > 0
                   ? `${remainingSamples} sample ${remainingSamples === 1 ? 'question remains' : 'questions remain'} in this ${difficulty} set.`
-                  : 'You have seen all dedicated samples in this difficulty. Continue with the guided sequence.'}
+                  : 'You have seen all dedicated samples in this difficulty. Continue with the guided sequence when you are ready.'}
               </p>
               <div className="sample-challenge-actions">
                 {remainingSamples > 0 && (
@@ -263,44 +335,71 @@ export default function SampleQuestionPage() {
                 <button className="btn btn-secondary sample-challenge-button" onClick={handleResetSamples} disabled={resetting}>
                   {resetting ? 'Resetting…' : 'Reset sample progress'}
                 </button>
-                <Link className="btn btn-primary sample-challenge-button" to="/practice">
-                  Take the Challenge
+                <Link className="btn btn-primary sample-challenge-button" to={challengePath}>
+                  Enter challenge track
                 </Link>
               </div>
             </div>
           </aside>
 
           <section className="right-panel">
-            <div className="editor-wrapper editor-workspace">
-              <div className="editor-topbar">
-                <div className="editor-topbar-copy">
-                  <span className="section-kicker">Workspace</span>
-                  <span className="editor-title">SQL editor</span>
+            {meta.hasMCQ ? (
+              <div className="card">
+                <div className="section-heading">
+                  <h3>Choose the correct answer</h3>
                 </div>
-                <span className="editor-topbar-note">Sample mode uses the same read-only dataset model</span>
+                <MCQPanel
+                  options={question.options ?? []}
+                  selectedOption={selectedOption}
+                  onSelect={setSelectedOption}
+                  submitted={!!submitResult}
+                  correct={submitResult?.correct ?? null}
+                  correctIndex={submitResult?.correct_index ?? null}
+                  explanation={submitResult?.explanation ?? ''}
+                />
+                <div className="editor-footer editor-footer-plain question-action-dock">
+                  <div className="button-row question-action-row">
+                    <button
+                      className="btn btn-primary"
+                      onClick={handleSubmit}
+                      disabled={submitting || running || selectedOption === null}
+                    >
+                      {submitting ? 'Checking…' : 'Submit Answer'}
+                    </button>
+                  </div>
+                </div>
               </div>
-
-              <SQLEditor value={query} onChange={setQuery} />
-
-              <div className="editor-footer">
-                <div className="editor-footer-copy">
-                  <span className="editor-footer-title">Use samples to test your approach without affecting the challenge track.</span>
-                  <span className="editor-footer-note">Run the query for quick iteration, then submit to compare with the expected result.</span>
+            ) : (
+              <div className="editor-wrapper editor-workspace">
+                <div className="editor-topbar">
+                  <span className="editor-title">{editorTitle}</span>
+                  <span className="editor-topbar-note">{editorNote}</span>
                 </div>
-                <div className="button-row">
-                  <button className="btn btn-secondary" onClick={handleRun} disabled={running || submitting}>
-                    {running ? 'Running…' : 'Run Query'}
-                  </button>
-                  <button className="btn btn-primary" onClick={handleSubmit} disabled={running || submitting}>
-                    {submitting ? 'Checking…' : 'Submit Answer'}
-                  </button>
+
+                <CodeEditor
+                  value={code}
+                  onChange={setCode}
+                  language={meta.language}
+                />
+
+                <div className="editor-footer question-action-dock">
+                  <div className="button-row question-action-row">
+                    {meta.hasRunCode && (
+                      <button className="btn btn-secondary" onClick={handleRun} disabled={running || submitting}>
+                        {running ? 'Running…' : meta.language === 'python' ? 'Run Code' : 'Run Query'}
+                      </button>
+                    )}
+                    <button className="btn btn-primary" onClick={handleSubmit} disabled={running || submitting}>
+                      {submitting ? 'Checking…' : 'Submit Answer'}
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {runError && <div className="error-box">{runError}</div>}
 
-            {runResult && (
+            {topic === 'sql' && runResult?.rows && (
               <div className="results-card">
                 <div className="results-header">
                   <span>Query Result</span>
@@ -310,13 +409,36 @@ export default function SampleQuestionPage() {
               </div>
             )}
 
-            {submitError && <div className="error-box">{submitError}</div>}
-            {submitResult && (
+            {topic === 'python' && pythonRunResults.length > 0 && (
               <>
+                <TestCasePanel results={pythonRunResults} hiddenSummary={null} />
+                <PrintOutputPanel output={pythonRunOutput} />
+              </>
+            )}
+
+            {topic === 'python-data' && pandasRunResult && (
+              <>
+                <div className="results-card">
+                  <div className="results-header">
+                    <span>Output</span>
+                    <span>{(pandasRunResult.rows ?? []).length} rows</span>
+                  </div>
+                  <ResultsTable columns={pandasRunResult.columns ?? []} rows={pandasRunResult.rows ?? []} />
+                </div>
+                <PrintOutputPanel output={pandasRunOutput} />
+              </>
+            )}
+
+            {submitError && <div className="error-box">{submitError}</div>}
+
+            {submitResult && (
+              <div className="submit-outcome">
                 <div className={`verdict ${submitResult.correct ? 'verdict-correct' : 'verdict-incorrect'}`}>
                   <span className="verdict-label">{submitResult.correct ? 'Correct' : 'Keep iterating'}</span>
                   <p className="verdict-copy">
-                    {submitResult.correct ? 'Submission matches the expected result.' : 'Submission does not match the expected result yet.'}
+                    {submitResult.correct
+                      ? 'Your submission matches the expected result.'
+                      : 'Your submission does not match the expected result yet.'}
                   </p>
                 </div>
                 {shouldShowFeedback && (
@@ -330,60 +452,83 @@ export default function SampleQuestionPage() {
                     ))}
                   </div>
                 )}
-              </>
+              </div>
             )}
 
-            {submitResult && (
+            {topic === 'sql' && submitResult?.user_result && (
               <div className="results-compare-grid">
                 <div className="results-card">
                   <div className="results-header">
                     <span>Your Output</span>
-                    <span>{submitResult.user_result.rows.length} row{submitResult.user_result.rows.length !== 1 ? 's' : ''}</span>
+                    <span>{submitResult.user_result.rows.length} rows</span>
                   </div>
                   <ResultsTable columns={submitResult.user_result.columns} rows={submitResult.user_result.rows} />
                 </div>
                 <div className="results-card">
                   <div className="results-header">
                     <span>Expected Output</span>
-                    <span>{submitResult.expected_result.rows.length} row{submitResult.expected_result.rows.length !== 1 ? 's' : ''}</span>
+                    <span>{submitResult.expected_result.rows.length} rows</span>
                   </div>
                   <ResultsTable columns={submitResult.expected_result.columns} rows={submitResult.expected_result.rows} />
                 </div>
               </div>
             )}
 
-            {submitResult && (
-              <div className="post-submit-stack">
-                {question.hints?.slice(0, hintsShown).map((hint, index) => (
-                  <div key={index} className="hint-card">
-                    <strong>Hint {index + 1}:</strong> {hint}
+            {topic === 'python' && submitResult && (
+              <>
+                <TestCasePanel
+                  results={pythonSubmitResults}
+                  hiddenSummary={submitResult.hidden_summary ?? null}
+                />
+                <PrintOutputPanel output={submitResult.stdout ?? ''} />
+              </>
+            )}
+
+            {topic === 'python-data' && submitResult?.user_result && (
+              <div className="results-compare-grid">
+                <div className="results-card">
+                  <div className="results-header">
+                    <span>Your Output</span>
+                    <span>{(submitResult.user_result.rows ?? []).length} rows</span>
                   </div>
-                ))}
+                  <ResultsTable
+                    columns={submitResult.user_result.columns ?? []}
+                    rows={submitResult.user_result.rows ?? []}
+                  />
+                </div>
+                <div className="results-card">
+                  <div className="results-header">
+                    <span>Expected Output</span>
+                    <span>{(submitResult.expected_result.rows ?? []).length} rows</span>
+                  </div>
+                  <ResultsTable
+                    columns={submitResult.expected_result.columns ?? []}
+                    rows={submitResult.expected_result.rows ?? []}
+                  />
+                </div>
+                <PrintOutputPanel output={pandasSubmitOutput} />
+              </div>
+            )}
 
-                {hintsShown < (question.hints?.length ?? 0) && (
-                  <button
-                    className="btn btn-secondary workspace-inline-action"
-                    onClick={() => setHintsShown((count) => count + 1)}
-                  >
-                    Reveal Hint {hintsShown + 1}
-                  </button>
-                )}
-
-                {hintsShown >= (question.hints?.length ?? 0) && (
-                  <button
-                    className="btn btn-secondary workspace-inline-action"
-                    onClick={() => setShowSolution((value) => !value)}
-                  >
-                    {showSolution ? 'Hide Official Solution' : 'Review Official Solution'}
-                  </button>
-                )}
+            {showSolutionToggle && (
+              <div className="post-submit-stack">
+                <button
+                  className="btn btn-secondary workspace-inline-action"
+                  onClick={() => setShowSolution((value) => !value)}
+                >
+                  {showSolution ? 'Hide Official Solution' : 'Review Official Solution'}
+                </button>
 
                 {showSolution && (
                   <div className="solution-card">
                     <h3>Official Solution</h3>
-                    <pre>{submitResult.solution_query}</pre>
-                    <h3 style={{ marginBottom: '0.5rem' }}>Explanation</h3>
-                    <p>{submitResult.explanation}</p>
+                    <pre>{submitResult.solution_query ?? submitResult.solution_code ?? ''}</pre>
+                    {submitResult.explanation && (
+                      <>
+                        <h3 style={{ marginBottom: '0.5rem' }}>Explanation</h3>
+                        <p>{submitResult.explanation}</p>
+                      </>
+                    )}
                   </div>
                 )}
               </div>

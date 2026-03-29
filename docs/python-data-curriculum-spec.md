@@ -1,6 +1,6 @@
-# Python (Data) Curriculum Spec
+# Pandas Curriculum Spec
 
-Track: **Python (Data)**
+Track: **Pandas**
 Topic key: `python_data`
 ID range: easy 5001–5999, medium 6001–6999, hard 7001–7999
 Sample IDs: easy 501–503, medium 601–603, hard 701–703

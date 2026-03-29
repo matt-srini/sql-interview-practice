@@ -114,7 +114,7 @@ export default function AppShell() {
 
             <div className="app-title-group">
               <div className="app-title-row app-title-row-nav">
-                <Link className="app-practice-home" to="/">Data Interview Practice</Link>
+                <Link className="app-practice-home brand-wordmark" to="/">datanest</Link>
                 <nav className="app-track-nav" aria-label="Practice tracks">
                   {TOPICS.map((track) => {
                     const trackMeta = TRACK_META[track];

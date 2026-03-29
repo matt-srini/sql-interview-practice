@@ -1,6 +1,6 @@
 # Python Track Question Authoring Guidelines
 
-This file covers authoring rules for all three new code-based tracks: Python (algorithms), Python (Data), and PySpark. For PySpark, also see `docs/pyspark-curriculum-spec.md`.
+This file covers authoring rules for all three new code-based tracks: Python (algorithms), Pandas, and PySpark. For PySpark, also see `docs/pyspark-curriculum-spec.md`.
 
 ---
 
@@ -118,7 +118,7 @@ IDs must be unique across **all** question files in all tracks (including SQL). 
 
 Sample question IDs:
 - Python algorithms samples: 401–423
-- Python (Data) samples: 501–723
+- Pandas samples: 501–723
 - PySpark samples: 4501–4723
 
 ---
@@ -137,7 +137,7 @@ Sample question IDs:
 - Require any imported library
 - Write test cases that are solvable by brute force O(n²) if the question's intended solution is O(n)
 
-### Python (Data)
+### Pandas
 
 **Do:**
 - Use the real dataset tables (with their actual column names and data types)
@@ -178,7 +178,7 @@ for tc in test_cases:
 print("All test cases passed")
 ```
 
-### Python (Data)
+### Pandas
 
 Run your `expected_code` against the real CSVs:
 ```python
