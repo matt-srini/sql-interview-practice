@@ -102,8 +102,9 @@ Cross-track progress overview. 4-card grid with TrackProgressBar per track, conc
 - Navigates to `/practice/{topic}` on track switch
 - Desktop: sidebar 328px, collapsible via toggle
 - Mobile (<900px): sidebar becomes fixed overlay with backdrop
-- Mobile topbar hides the workspace kicker and moves plan/session pills into a secondary row
+- Topbar is intentionally sparse: question-bank toggle, current track switcher, and a small session pill on desktop
 - Upgrade panel shown for `free` and `pro` plan users
+- Upgrade controls live in the sidebar instead of the topbar
 - Handles `?upgraded=true` query param from Stripe redirect
 
 ### SidebarNav
@@ -111,8 +112,7 @@ Cross-track progress overview. 4-card grid with TrackProgressBar per track, conc
 - Collapsible difficulty groups
 - Per-question state: `unlocked`, `locked`, `solved`, `next`, `current`
 - NavLinks point to `/practice/${topic}/questions/${id}` (topic from `useTopic()`)
-- Header title uses track label from `TRACK_META`
-- Overview panel is compact: solved/open counts are shown as inline pills above the bank
+- Sidebar starts directly with the difficulty groups and question bank
 - Test coverage in `components/SidebarNav.test.js`
 
 ---

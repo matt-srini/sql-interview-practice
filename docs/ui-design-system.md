@@ -79,12 +79,12 @@ All hover states use `translateY(-1px)`. No transforms on disabled. Transitions:
 
 ### App shell (challenge workspace)
 - **Sidebar**: 328px, sticky, collapsible (`display:none` on `.sidebar-collapsed`)
-- **Top bar**: 72px, sticky, blurred backdrop
+- **Top bar**: 64px on desktop, sticky, blurred backdrop
 - **Question page**: CSS Grid `minmax(330px,400px) / minmax(0,1fr)` — left panel sticky at `top: 88px`
 - **Left panel cards**: tight padding, `14px` radius, prompt card slightly stronger than schema card
 - **Right panel**: tighter vertical rhythm than the previous 1rem stack
 - **Mobile breakpoint**: 900px — sidebar becomes fixed overlay
-- **Mobile header**: workspace kicker hidden, context pills moved to a secondary row
+- **Mobile header**: stripped to menu button + current track switcher
 - **Container**: max-width 1180px centered
 
 ### Question page chrome
@@ -93,6 +93,7 @@ All hover states use `translateY(-1px)`. No transforms on disabled. Transitions:
 - Editor topbar: single line, "SQL editor" left + "DuckDB sandbox" right, slightly tightened padding
 - Editor footer: buttons only (Run Query, Submit Answer, Next Question), right-aligned on desktop and presented as a low-profile sticky dock on mobile
 - Post-submit: `.submit-outcome` wrapper with overflow hidden groups verdict + feedback cards; hint-card has no box-shadow
+- Sidebar intentionally begins with the question bank; no separate progress/summary card above it
 
 ---
 
