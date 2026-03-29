@@ -80,16 +80,18 @@ All hover states use `translateY(-1px)`. No transforms on disabled. Transitions:
 ### App shell (challenge workspace)
 - **Sidebar**: 328px, sticky, collapsible (`display:none` on `.sidebar-collapsed`)
 - **Top bar**: 72px, sticky, blurred backdrop
-- **Question page**: CSS Grid `minmax(300px,360px) / minmax(0,1fr)` — left panel sticky at `top: 96px`
-- **Left panel cards**: padding `1.1rem 1.15rem`, border-radius `14px`, gap `0.85rem`
-- **Right panel**: gap `1rem`
+- **Question page**: CSS Grid `minmax(330px,400px) / minmax(0,1fr)` — left panel sticky at `top: 88px`
+- **Left panel cards**: tight padding, `14px` radius, prompt card slightly stronger than schema card
+- **Right panel**: tighter vertical rhythm than the previous 1rem stack
 - **Mobile breakpoint**: 900px — sidebar becomes fixed overlay
+- **Mobile header**: workspace kicker hidden, context pills moved to a secondary row
 - **Container**: max-width 1180px centered
 
 ### Question page chrome
 - No section kickers — content is self-evident from titles and badges
-- Editor topbar: single line, "SQL editor" left + "DuckDB sandbox" right, padding `0.65rem 1.15rem`
-- Editor footer: buttons only (Run Query, Submit Answer, Next Question), right-aligned, padding `0.65rem 1.15rem`
+- Prompt header includes a compact uppercase status line (difficulty / question position / open count)
+- Editor topbar: single line, "SQL editor" left + "DuckDB sandbox" right, slightly tightened padding
+- Editor footer: buttons only (Run Query, Submit Answer, Next Question), right-aligned on desktop and presented as a low-profile sticky dock on mobile
 - Post-submit: `.submit-outcome` wrapper with overflow hidden groups verdict + feedback cards; hint-card has no box-shadow
 
 ---

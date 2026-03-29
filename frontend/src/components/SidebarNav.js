@@ -110,23 +110,22 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
   return (
     <div className="sidebar-inner">
       <div className="sidebar-overview">
-        <div className="sidebar-header">
-          <span className="sidebar-eyebrow">Guided practice</span>
-          <div className="sidebar-title">{meta.label} questions</div>
-          <div className="sidebar-subtitle">
-            Pick up where you left off. Progress stays tied to this browser session.
+        <div className="sidebar-overview-top">
+          <div className="sidebar-header">
+            <span className="sidebar-eyebrow">Guided practice</span>
+            <div className="sidebar-title">{meta.label} questions</div>
+          </div>
+          <div className="sidebar-progress-inline">
+            <span className="sidebar-progress-pill">
+              <strong>{questionCounts.solved}</strong> solved
+            </span>
+            <span className="sidebar-progress-pill">
+              <strong>{questionCounts.available}</strong> open
+            </span>
           </div>
         </div>
-
-        <div className="sidebar-progress-grid">
-          <div className="sidebar-progress-card">
-            <span className="sidebar-progress-value">{questionCounts.solved}</span>
-            <span className="sidebar-progress-label">Solved</span>
-          </div>
-          <div className="sidebar-progress-card">
-            <span className="sidebar-progress-value">{questionCounts.available}</span>
-            <span className="sidebar-progress-label">Open now</span>
-          </div>
+        <div className="sidebar-subtitle sidebar-subtitle-compact">
+          Progress stays tied to this browser session.
         </div>
       </div>
 

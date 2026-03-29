@@ -104,8 +104,8 @@ sql-interview-practice/
 │   │   │   └── TrackProgressBar.js # Reusable horizontal progress bar
 │   │   └── pages/
 │   │       ├── LandingPage.js         # 4-tile track grid, topbar with Dashboard link
-│   │       ├── QuestionPage.js        # Topic-aware question page (all 4 tracks)
-│   │       ├── TrackHubPage.js        # Per-track landing (progress, concepts, continue CTA)
+│   │       ├── QuestionPage.js        # Topic-aware question page (all 4 tracks, status line + mobile action dock)
+│   │       ├── TrackHubPage.js        # Per-track landing (progress, next-up summary, concept preview)
 │   │       ├── ProgressDashboard.js   # Cross-track progress overview at /dashboard
 │   │       ├── SampleQuestionPage.js
 │   │       └── AuthPage.js
@@ -197,7 +197,7 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 
 **Buttons:** `.btn-primary` (accent fill), `.btn-secondary` (outlined, context-sensitive bg), `.btn-success` (success tint). All hover: `translateY(-1px)`, `150ms ease-out`.
 
-**Question page chrome:** Minimal — no section kickers (content self-evident from titles/badges). Editor topbar is single-line ("SQL editor" / "DuckDB sandbox"). Editor footer is buttons-only, right-aligned. Post-submit verdict + feedback grouped in `.submit-outcome` wrapper. Cards use tight padding (`1.1rem 1.15rem`) with `14px` border-radius.
+**Question page chrome:** Minimal — no section kickers (content self-evident from titles/badges). Prompt card includes a compact uppercase status line (difficulty / question position / open count). Editor topbar is single-line ("SQL editor" / "DuckDB sandbox"). Editor footer is buttons-only, right-aligned on desktop and becomes a low-profile sticky action dock on mobile. Post-submit verdict + feedback grouped in `.submit-outcome` wrapper. Cards use tight padding with `14px` border-radius.
 
 ---
 

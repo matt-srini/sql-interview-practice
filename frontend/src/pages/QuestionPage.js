@@ -37,6 +37,32 @@ export default function QuestionPage() {
     }
     return null;
   }, [catalog]);
+  const catalogQuestionMeta = useMemo(() => {
+    if (!catalog) return null;
+    const targetId = Number(id);
+    for (const group of (catalog.groups ?? [])) {
+      const matched = group.questions.find((question) => question.id === targetId);
+      if (matched) {
+        return { group, question: matched };
+      }
+    }
+    return null;
+  }, [catalog, id]);
+  const workspaceStatus = useMemo(() => {
+    if (!catalogQuestionMeta) return null;
+    const group = catalogQuestionMeta.group;
+    const groupTitle = group?.difficulty
+      ? `${group.difficulty.charAt(0).toUpperCase()}${group.difficulty.slice(1)}`
+      : null;
+    const total = group?.counts?.total ?? group?.questions?.length ?? null;
+    const order = catalogQuestionMeta.question?.order ?? null;
+    const openNow = group?.questions?.filter((entry) => entry.state !== 'locked').length ?? null;
+    const chunks = [];
+    if (groupTitle) chunks.push(groupTitle);
+    if (order && total) chunks.push(`Question ${order} of ${total}`);
+    if (typeof openNow === 'number') chunks.push(`${openNow} open now`);
+    return chunks.length > 0 ? chunks.join(' · ') : null;
+  }, [catalogQuestionMeta]);
 
   const [question, setQuestion] = useState(null);
   const [loadError, setLoadError] = useState(null);
@@ -183,13 +209,16 @@ export default function QuestionPage() {
     <main className="container question-page question-page-challenge">
       <div className="question-page-inner">
         <aside className="left-panel">
-          <div className="card prompt-card">
+          <div className="card prompt-card prompt-card-main">
             <div className="section-heading">
               <div>
                 <div className="question-title-row">
                   <h2>{question.title}</h2>
                   <span className={`badge badge-${question.difficulty}`}>{question.difficulty}</span>
                 </div>
+                {workspaceStatus && (
+                  <p className="question-status-line">{workspaceStatus}</p>
+                )}
               </div>
             </div>
 
@@ -216,7 +245,7 @@ export default function QuestionPage() {
           </div>
 
           {showSchema && (
-            <div className="card schema-card">
+            <div className="card schema-card schema-card-utility">
               <div className="section-heading">
                 <div>
                   <h3>Table schema</h3>
@@ -251,8 +280,8 @@ export default function QuestionPage() {
                 correctIndex={submitResult?.correct_index ?? null}
                 explanation={submitResult?.explanation ?? ''}
               />
-              <div className="editor-footer" style={{ marginTop: '1rem', padding: '0', borderTop: 'none', background: 'none' }}>
-                <div className="button-row">
+              <div className="editor-footer editor-footer-plain question-action-dock">
+                <div className="button-row question-action-row">
                   <button
                     className="btn btn-primary"
                     onClick={handleSubmit}
@@ -285,8 +314,8 @@ export default function QuestionPage() {
                 language={meta.language}
               />
 
-              <div className="editor-footer">
-                <div className="button-row">
+              <div className="editor-footer question-action-dock">
+                <div className="button-row question-action-row">
                   {meta.hasRunCode && (
                     <button className="btn btn-secondary" onClick={handleRun} disabled={running || submitting || isLocked}>
                       {running ? 'Running…' : meta.language === 'python' ? 'Run Code' : 'Run Query'}

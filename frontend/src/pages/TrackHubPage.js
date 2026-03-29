@@ -25,6 +25,25 @@ function pickFirstQuestionId(catalog) {
   return null;
 }
 
+function pickNextQuestionMeta(catalog) {
+  if (!catalog) return null;
+  const order = ['easy', 'medium', 'hard'];
+  for (const diff of order) {
+    const group = catalog.groups?.find((entry) => entry.difficulty === diff);
+    if (!group) continue;
+    const next = group.questions.find((question) => question.is_next) ?? group.questions.find((question) => question.state !== 'locked');
+    if (next) {
+      return {
+        id: next.id,
+        title: next.title,
+        difficulty: group.difficulty,
+        order: next.order,
+      };
+    }
+  }
+  return null;
+}
+
 function collectConcepts(catalog) {
   const all = new Set();
   const solved = new Set();
@@ -46,6 +65,7 @@ export default function TrackHubPage() {
 
   const nextId = useMemo(() => pickNextQuestionId(catalog), [catalog]);
   const firstId = useMemo(() => pickFirstQuestionId(catalog), [catalog]);
+  const nextQuestion = useMemo(() => pickNextQuestionMeta(catalog), [catalog]);
   const continueId = nextId ?? firstId;
 
   const totalSolved = useMemo(() => {
@@ -59,6 +79,7 @@ export default function TrackHubPage() {
   }, [catalog, meta]);
 
   const { all: allConcepts, solved: solvedConcepts } = useMemo(() => collectConcepts(catalog), [catalog]);
+  const conceptPreview = allConcepts.slice(0, 8);
 
   function handleContinue() {
     if (continueId) {
@@ -124,26 +145,44 @@ export default function TrackHubPage() {
           )}
         </div>
 
-        {allConcepts.length > 0 && (
-          <div className="card track-hub-concepts-card">
+        {(nextQuestion || conceptPreview.length > 0) && (
+          <div className="card track-hub-focus-card">
             <div className="section-heading">
-              <h3>Concepts in this track</h3>
-            </div>
-            <div className="concept-tags concept-tags-inline" style={{ marginTop: '0.75rem' }}>
-              {allConcepts.map((c) => (
-                <span key={c} className="tag-concept">{c}</span>
-              ))}
+              <h3>What you'll practice</h3>
             </div>
 
+            {nextQuestion && (
+              <div className="track-hub-next-up">
+                <span className="track-hub-next-label">Next unlocked</span>
+                <div className="track-hub-next-title">
+                  <span className={`badge badge-${nextQuestion.difficulty}`}>{nextQuestion.difficulty}</span>
+                  <span>{nextQuestion.order}. {nextQuestion.title}</span>
+                </div>
+              </div>
+            )}
+
+            {conceptPreview.length > 0 && (
+              <div className="track-hub-concepts-card">
+                <div className="concept-tags concept-tags-inline">
+                  {conceptPreview.map((c) => (
+                    <span key={c} className="tag-concept">{c}</span>
+                  ))}
+                </div>
+                {allConcepts.length > conceptPreview.length && (
+                  <div className="track-hub-concepts-sub">+{allConcepts.length - conceptPreview.length} more concepts in this track</div>
+                )}
+              </div>
+            )}
+
             {solvedConcepts.length > 0 && (
-              <>
+              <div className="track-hub-solved-strip">
                 <div className="track-hub-concepts-sub">My solved concepts</div>
                 <div className="concept-tags concept-tags-inline">
-                  {solvedConcepts.map((c) => (
+                  {solvedConcepts.slice(0, 6).map((c) => (
                     <span key={c} className="tag-concept tag-concept-solved">{c} ✓</span>
                   ))}
                 </div>
-              </>
+              </div>
             )}
           </div>
         )}

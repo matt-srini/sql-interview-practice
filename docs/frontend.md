@@ -43,8 +43,9 @@ Per-track landing rendered by `Outlet` when no question is active. Shows:
 - Track name + overall solved/total progress bar
 - Per-difficulty breakdown (easy/medium/hard bars)
 - "Continue where I left off" button → navigates to next unlocked question
-- Concepts covered in this track (all question concept tags)
-- My solved concepts (concept tags from solved questions only)
+- "What you'll practice" focus card with next unlocked question summary
+- Compact concept preview for the track
+- My solved concepts (concept tags from solved questions only, shown as a short strip)
 
 Uses `useCatalog()` for question/progress data.
 
@@ -59,6 +60,9 @@ Main practice screen. Layout and behavior vary by topic:
 | Python (Data) | Monaco (python) | VariablesPanel + description | ResultsTable + PrintOutputPanel |
 | PySpark | Read-only code snippet (if present) | Description only | MCQPanel → reveal explanation |
 
+- Left panel is widened slightly and remains sticky on desktop
+- Question header includes a compact status line derived from catalog metadata
+- On mobile, question actions use a low-profile sticky dock for Run / Submit controls
 - Loads question from topic API: `/api/python/questions/:id`, `/api/pyspark/questions/:id`, etc.
 - Run → calls topic-specific run endpoint (`/api/python/run-code`, `/api/python-data/run-code`)
 - Submit → calls topic-specific submit endpoint; marks solved on correct
@@ -98,6 +102,7 @@ Cross-track progress overview. 4-card grid with TrackProgressBar per track, conc
 - Navigates to `/practice/{topic}` on track switch
 - Desktop: sidebar 328px, collapsible via toggle
 - Mobile (<900px): sidebar becomes fixed overlay with backdrop
+- Mobile topbar hides the workspace kicker and moves plan/session pills into a secondary row
 - Upgrade panel shown for `free` and `pro` plan users
 - Handles `?upgraded=true` query param from Stripe redirect
 
@@ -107,6 +112,7 @@ Cross-track progress overview. 4-card grid with TrackProgressBar per track, conc
 - Per-question state: `unlocked`, `locked`, `solved`, `next`, `current`
 - NavLinks point to `/practice/${topic}/questions/${id}` (topic from `useTopic()`)
 - Header title uses track label from `TRACK_META`
+- Overview panel is compact: solved/open counts are shown as inline pills above the bank
 - Test coverage in `components/SidebarNav.test.js`
 
 ---

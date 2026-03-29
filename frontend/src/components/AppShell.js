@@ -206,13 +206,6 @@ export default function AppShell() {
           </div>
 
           <div className="app-topbar-actions">
-            {(user || sessionId) && (
-              <div className="app-context">
-                {user && <span className="shell-pill shell-pill-plan">{formatPlanLabel(user.plan)}</span>}
-                {sessionId && <span className="shell-pill shell-pill-session">Session {sessionId}</span>}
-              </div>
-            )}
-
             {showUpgradeControls && (
               <div className="upgrade-panel">
                 <span className="upgrade-panel-label">
@@ -228,6 +221,13 @@ export default function AppShell() {
                     {user.plan === 'free' ? 'Unlock Elite' : 'Upgrade to Elite'}
                   </button>
                 </div>
+              </div>
+            )}
+
+            {(user || sessionId) && (
+              <div className="app-context app-context-secondary">
+                {user && <span className="shell-pill shell-pill-plan">{formatPlanLabel(user.plan)}</span>}
+                {sessionId && <span className="shell-pill shell-pill-session">Session {sessionId}</span>}
               </div>
             )}
           </div>
