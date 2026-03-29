@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import { useTopic } from '../contexts/TopicContext';
 
 function titleCase(value) {
   if (!value) return '';
@@ -63,7 +64,7 @@ function QuestionContent({ q, isActive = false }) {
   );
 }
 
-function QuestionRow({ q, onNavigate }) {
+function QuestionRow({ q, onNavigate, topic }) {
   const stateClass = `sidebar-question-state-${q.state}`;
 
   if (q.state === 'locked') {
@@ -76,7 +77,7 @@ function QuestionRow({ q, onNavigate }) {
 
   return (
     <NavLink
-      to={`/practice/questions/${q.id}`}
+      to={`/practice/${topic}/questions/${q.id}`}
       className={({ isActive }) =>
         `sidebar-question ${stateClass} ${isActive ? 'sidebar-question-active' : ''}`
       }
@@ -88,6 +89,7 @@ function QuestionRow({ q, onNavigate }) {
 }
 
 export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNavigate }) {
+  const { topic, meta } = useTopic();
   const groups = catalog?.groups ?? [];
   const questionCounts = groups.reduce(
     (totals, group) => {
@@ -110,7 +112,7 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
       <div className="sidebar-overview">
         <div className="sidebar-header">
           <span className="sidebar-eyebrow">Guided practice</span>
-          <div className="sidebar-title">Question bank</div>
+          <div className="sidebar-title">{meta.label} questions</div>
           <div className="sidebar-subtitle">
             Pick up where you left off. Progress stays tied to this browser session.
           </div>
@@ -144,7 +146,7 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
                   .slice()
                   .sort((a, b) => a.order - b.order)
                   .map((q) => (
-                    <QuestionRow key={q.id} q={q} onNavigate={onNavigate} />
+                    <QuestionRow key={q.id} q={q} onNavigate={onNavigate} topic={topic} />
                   ))}
               </div>
             )}

@@ -1,24 +1,6 @@
-import Editor from '@monaco-editor/react';
+import CodeEditor from './CodeEditor';
 
+// Backward-compatible wrapper — always uses SQL language
 export default function SQLEditor({ value, onChange, height = '340px' }) {
-  return (
-    <Editor
-      height={height}
-      language="sql"
-      theme="vs-dark"
-      value={value}
-      onChange={(val) => onChange(val ?? '')}
-      options={{
-        minimap: { enabled: false },
-        fontSize: 14,
-        fontFamily: '"JetBrains Mono", "SFMono-Regular", Consolas, monospace',
-        lineNumbers: 'on',
-        scrollBeyondLastLine: false,
-        wordWrap: 'on',
-        tabSize: 2,
-        automaticLayout: true,
-        padding: { top: 14, bottom: 14 },
-      }}
-    />
-  );
+  return <CodeEditor value={value} onChange={onChange} language="sql" height={height} />;
 }

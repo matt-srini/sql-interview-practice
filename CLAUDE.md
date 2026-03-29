@@ -15,10 +15,16 @@ This file is the canonical context reference for Claude in this repository.
 
 ## What this is
 
-A SQL interview practice platform. Users write SQL against realistic datasets, get instant feedback, and work through a gated challenge bank. Two distinct tracks:
+A data interview practice platform covering four tracks. Users write SQL or Python, answer MCQ questions, get instant feedback, and work through gated challenge banks. Modes per track:
 
-- **Challenge mode** — 86 questions across three difficulty tiers, plan-aware unlock rules, persistent progress
-- **Sample mode** — 9 sandbox questions (3 per difficulty), no progress recorded, no login required
+- **Challenge mode** — 86+ questions per track, plan-aware unlock rules, persistent progress
+- **Sample mode** — 9 sandbox SQL questions (3 per difficulty), no progress recorded, no login required
+
+**Tracks:**
+- **SQL** — 86 questions, DuckDB execution, realistic relational datasets
+- **Python** — algorithms and data structures, test-case evaluation
+- **Python (Data)** — pandas/numpy data manipulation, DataFrame comparison
+- **PySpark** — conceptual MCQ, predict-output questions
 
 ---
 
@@ -76,16 +82,25 @@ sql-interview-practice/
 │   │   ├── api.js             # Axios client, base URL resolution
 │   │   ├── catalogContext.js  # Catalog state and refresh
 │   │   ├── contexts/
-│   │   │   └── AuthContext.js # Auth state (user, loading, refreshUser)
+│   │   │   ├── AuthContext.js  # Auth state (user, loading, refreshUser)
+│   │   │   └── TopicContext.js # TRACK_META, TopicProvider, useTopic()
 │   │   ├── components/
-│   │   │   ├── AppShell.js    # Challenge workspace shell, sidebar container
-│   │   │   ├── SidebarNav.js  # Question list, lock/solved/next states
-│   │   │   ├── SQLEditor.js   # Monaco editor wrapper
+│   │   │   ├── AppShell.js        # Challenge workspace shell, sidebar, track switcher
+│   │   │   ├── SidebarNav.js      # Question list, lock/solved/next states (topic-aware)
+│   │   │   ├── CodeEditor.js      # Language-agnostic Monaco editor wrapper
+│   │   │   ├── SQLEditor.js       # Thin re-export of CodeEditor with language="sql"
 │   │   │   ├── ResultsTable.js
-│   │   │   └── SchemaViewer.js
+│   │   │   ├── SchemaViewer.js
+│   │   │   ├── TestCasePanel.js   # Python algorithm test case results
+│   │   │   ├── PrintOutputPanel.js # Captured stdout from Python execution
+│   │   │   ├── VariablesPanel.js  # Available DataFrames for Python (Data) questions
+│   │   │   ├── MCQPanel.js        # Radio-button MCQ for PySpark questions
+│   │   │   └── TrackProgressBar.js # Reusable horizontal progress bar
 │   │   └── pages/
-│   │       ├── LandingPage.js
-│   │       ├── QuestionPage.js
+│   │       ├── LandingPage.js         # 4-tile track grid, topbar with Dashboard link
+│   │       ├── QuestionPage.js        # Topic-aware question page (all 4 tracks)
+│   │       ├── TrackHubPage.js        # Per-track landing (progress, concepts, continue CTA)
+│   │       ├── ProgressDashboard.js   # Cross-track progress overview at /dashboard
 │   │       ├── SampleQuestionPage.js
 │   │       └── AuthPage.js
 │   └── package.json
@@ -102,13 +117,22 @@ sql-interview-practice/
 ## Frontend routes
 
 ```
-/                          → LandingPage
-/auth                      → AuthPage (register / sign in)
-/sample/:difficulty        → SampleQuestionPage
-/practice                  → AppShell + CatalogProvider
-  /practice/questions/:id  → QuestionPage
-/questions/:id             → redirect → /practice/questions/:id
+/                              → LandingPage (4-tile track grid)
+/auth                          → AuthPage (register / sign in)
+/dashboard                     → ProgressDashboard (cross-track progress)
+/sample/:difficulty            → SampleQuestionPage (SQL samples only)
+/practice/:topic               → TopicShell (TopicProvider + CatalogProvider + AppShell)
+  /practice/:topic             → TrackHubPage (hub page when no question selected)
+  /practice/:topic/questions/:id → QuestionPage (topic-aware)
+/practice/questions/:id        → redirect → /practice/sql/questions/:id (legacy)
+/practice                      → redirect → /practice/sql
+/questions/:id                 → redirect → /practice/sql/questions/:id (legacy)
 ```
+
+`:topic` values: `sql` | `python` | `python-data` | `pyspark`
+
+Topic context is provided by `TopicContext.js` (see `frontend/src/contexts/TopicContext.js`).
+`TRACK_META` constant defines label, color, apiPrefix, language, hasRunCode, hasMCQ per track.
 
 ---
 
@@ -118,22 +142,26 @@ Centered, single-column layout. No split hero. No placeholder/planned features v
 
 ```
 TOPBAR
-  "SQL Interview Practice"              [Sign in] or [name · Sign out]
+  "Data Interview Practice"    [Dashboard]  [name · Sign out] or [Sign in]
 
-HERO  (centered, max-width 560px)
-  kicker: "86 questions · easy, medium, hard"
-  headline: "Get sharp at SQL interviews."
-  copy: one sentence about challenge bank + samples
-  CTAs: [Start the challenge] → /practice   [Try a sample] → /sample/easy
+HERO  (shown to logged-out / anonymous users only)
+  kicker: "SQL · Python · PySpark · pandas"
+  headline: "Get sharp at data interviews."
+  copy: one sentence about four tracks
+  CTAs: [Explore tracks ↓] → #tracks   [Create account] → /auth
 
-SAMPLE TILES  (3-col grid, max-width 800px)
-  [easy]   3 warm-up questions. No progress recorded.   Open sample →
-  [medium] 3 mid-tier questions to test your range.     Open sample →
-  [hard]   3 hard questions to find your ceiling.       Open sample →
+TRACK TILES  (2×2 grid, max-width 900px)
+  SQL        | Python
+  Python (Data) | PySpark
+  Each tile: label, tagline, description, question count or progress bar, CTA
+
+SAMPLE TILES  (simplified, 3-col grid)
+  SQL easy/medium/hard sample links
 ```
 
-CSS classes: `.landing-hero`, `.landing-kicker`, `.landing-title`, `.landing-copy`, `.landing-actions`, `.landing-samples`, `.sample-tile`.
-Topbar auth: `.topbar-user-pill`, `.topbar-user-name`, `.topbar-signout-btn`, `.topbar-auth-link`.
+CSS classes: `.track-tiles`, `.track-tile`, `.track-tile-header`, `.track-tile-body`,
+`.track-tile-footer`, `.track-tile-cta`, `.landing-samples`, `.sample-tile`.
+Topbar auth: `.topbar-user-pill`, `.topbar-user-name`, `.topbar-signout-btn`, `.topbar-auth-link`, `.topbar-right`.
 
 ---
 
@@ -221,10 +249,22 @@ Solved questions stay solved permanently across plan changes.
 | Method | Path | Purpose |
 |---|---|---|
 | GET | `/health` | Status, Postgres, loaded tables |
-| GET | `/api/catalog` | Questions grouped by difficulty with per-user state |
-| GET | `/api/questions/{id}` | Question detail (403 if locked, omits solution pre-submit) |
+| GET | `/api/catalog` | SQL questions grouped by difficulty with per-user state |
+| GET | `/api/questions/{id}` | SQL question detail (403 if locked, omits solution pre-submit) |
 | POST | `/api/run-query` | Execute SQL, return rows |
 | POST | `/api/submit` | Evaluate SQL, return verdict + solution on correct |
+| GET | `/api/python/catalog` | Python catalog |
+| GET | `/api/python/questions/{id}` | Python question detail |
+| POST | `/api/python/run-code` | Run Python code, return test results + stdout |
+| POST | `/api/python/submit` | Submit Python code |
+| GET | `/api/python-data/catalog` | Python (Data) catalog |
+| GET | `/api/python-data/questions/{id}` | Python (Data) question detail |
+| POST | `/api/python-data/run-code` | Run pandas code, return DataFrame output |
+| POST | `/api/python-data/submit` | Submit pandas code |
+| GET | `/api/pyspark/catalog` | PySpark catalog |
+| GET | `/api/pyspark/questions/{id}` | PySpark question detail |
+| POST | `/api/pyspark/submit` | Submit MCQ answer |
+| GET | `/api/dashboard` | Cross-track progress summary |
 | GET | `/api/sample/{difficulty}` | Next unseen sample (409 when exhausted) |
 | POST | `/api/sample/{difficulty}/reset` | Clear seen state |
 | GET | `/api/auth/me` | Current user identity |
