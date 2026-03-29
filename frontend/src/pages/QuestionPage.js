@@ -1,21 +1,37 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
-import SQLEditor from '../components/SQLEditor';
+import CodeEditor from '../components/CodeEditor';
 import ResultsTable from '../components/ResultsTable';
 import SchemaViewer from '../components/SchemaViewer';
+import TestCasePanel from '../components/TestCasePanel';
+import PrintOutputPanel from '../components/PrintOutputPanel';
+import VariablesPanel from '../components/VariablesPanel';
+import MCQPanel from '../components/MCQPanel';
 import { useCatalog } from '../catalogContext';
+import { useTopic } from '../contexts/TopicContext';
 
-const PLACEHOLDER = '-- Write your SQL query here\nSELECT ';
+const SQL_PLACEHOLDER = '-- Write your SQL query here\nSELECT ';
+const PYTHON_PLACEHOLDER = '# Write your solution here\n';
 
 export default function QuestionPage() {
   const { id } = useParams();
   const { catalog, refresh } = useCatalog();
+  const { topic, meta } = useTopic();
   const navigate = useNavigate();
+
+  // Derive API paths from topic
+  const apiPrefix = meta.apiPrefix; // '', '/python', '/python-data', '/pyspark'
+
+  const questionApiPath = apiPrefix ? `${apiPrefix}/questions/${id}` : `/questions/${id}`;
+  const runApiPath = apiPrefix ? `${apiPrefix}/run-code` : '/run-query';
+  const submitApiPath = apiPrefix ? `${apiPrefix}/submit` : '/submit';
+
+  const defaultCode = meta.language === 'python' ? PYTHON_PLACEHOLDER : SQL_PLACEHOLDER;
 
   const nextQuestionId = useMemo(() => {
     if (!catalog) return null;
-    for (const group of catalog.groups) {
+    for (const group of (catalog.groups ?? [])) {
       const next = group.questions.find((question) => question.is_next);
       if (next) return next.id;
     }
@@ -24,7 +40,7 @@ export default function QuestionPage() {
 
   const [question, setQuestion] = useState(null);
   const [loadError, setLoadError] = useState(null);
-  const [query, setQuery] = useState(PLACEHOLDER);
+  const [code, setCode] = useState(defaultCode);
   const [runResult, setRunResult] = useState(null);
   const [runError, setRunError] = useState(null);
   const [running, setRunning] = useState(false);
@@ -34,34 +50,55 @@ export default function QuestionPage() {
   const [showSolution, setShowSolution] = useState(false);
   const [hintsShown, setHintsShown] = useState(0);
 
+  // MCQ state for PySpark
+  const [selectedOption, setSelectedOption] = useState(null);
+
   useEffect(() => {
     setQuestion(null);
     setLoadError(null);
     api
-      .get(`/questions/${id}`)
-      .then((res) => setQuestion(res.data))
+      .get(questionApiPath)
+      .then((res) => {
+        const q = res.data;
+        setQuestion(q);
+        // For Python tracks use starter_code from question if available
+        if (meta.language === 'python' && q.starter_code) {
+          setCode(q.starter_code);
+        } else if (!meta.hasMCQ) {
+          setCode(defaultCode);
+        }
+      })
       .catch((err) => setLoadError(err.response?.data?.detail ?? 'Failed to load question.'));
-  }, [id]);
+  }, [id, questionApiPath, meta.language, meta.hasMCQ, defaultCode]);
 
   useEffect(() => {
-    setQuery(PLACEHOLDER);
+    if (meta.language === 'python') {
+      setCode(PYTHON_PLACEHOLDER);
+    } else if (!meta.hasMCQ) {
+      setCode(SQL_PLACEHOLDER);
+    }
     setRunResult(null);
     setRunError(null);
     setSubmitResult(null);
     setSubmitError(null);
     setShowSolution(false);
     setHintsShown(0);
-  }, [id]);
+    setSelectedOption(null);
+  }, [id, meta.language, meta.hasMCQ]);
 
   async function handleRun() {
+    if (!meta.hasRunCode) return;
     setRunning(true);
     setRunResult(null);
     setRunError(null);
     try {
-      const res = await api.post('/run-query', { query, question_id: Number(id) });
+      const payload = meta.language === 'python'
+        ? { code, question_id: Number(id) }
+        : { query: code, question_id: Number(id) };
+      const res = await api.post(runApiPath, payload);
       setRunResult(res.data);
     } catch (err) {
-      setRunError(err.response?.data?.error ?? err.response?.data?.detail ?? 'Query execution failed.');
+      setRunError(err.response?.data?.error ?? err.response?.data?.detail ?? 'Execution failed.');
     } finally {
       setRunning(false);
     }
@@ -73,7 +110,15 @@ export default function QuestionPage() {
     setSubmitError(null);
     setShowSolution(false);
     try {
-      const res = await api.post('/submit', { query, question_id: Number(id) });
+      let payload;
+      if (meta.hasMCQ) {
+        payload = { selected_option: selectedOption, question_id: Number(id) };
+      } else if (meta.language === 'python') {
+        payload = { code, question_id: Number(id) };
+      } else {
+        payload = { query: code, question_id: Number(id) };
+      }
+      const res = await api.post(submitApiPath, payload);
       setSubmitResult(res.data);
       if (res.data.correct) await refresh();
     } catch (err) {
@@ -104,6 +149,36 @@ export default function QuestionPage() {
     && !(submitResult.correct && (submitResult.structure_correct ?? true));
   const schemaTableCount = Object.keys(question.schema ?? {}).length;
 
+  // Determine what to show in left panel
+  const showSchema = topic === 'sql';
+  const showVariables = topic === 'python-data';
+
+  // For Python run results — detect shape
+  const isPythonRunResult = topic !== 'sql' && runResult;
+  const isSQLRunResult = topic === 'sql' && runResult;
+
+  // Editor title based on topic
+  const editorTitle = meta.hasMCQ
+    ? 'Code preview'
+    : meta.language === 'python'
+    ? 'Python editor'
+    : 'SQL editor';
+  const editorNote = meta.hasMCQ
+    ? 'Read-only'
+    : meta.language === 'python'
+    ? 'Python sandbox'
+    : 'DuckDB sandbox';
+
+  // Submit button label
+  const submitBtnLabel = submitting
+    ? 'Checking…'
+    : meta.hasMCQ
+    ? 'Submit Answer'
+    : 'Submit Answer';
+
+  const isSubmitDisabled = submitting || running || isLocked
+    || (meta.hasMCQ && selectedOption === null);
+
   return (
     <main className="container question-page question-page-challenge">
       <div className="question-page-inner">
@@ -128,6 +203,11 @@ export default function QuestionPage() {
 
             <p className="description-text">{question.description}</p>
 
+            {/* PySpark: show code snippet (question stem) if present */}
+            {meta.hasMCQ && question.code_snippet && (
+              <pre className="question-code-snippet">{question.code_snippet}</pre>
+            )}
+
             {isLocked && (
               <div className="locked-callout">
                 This question is locked. Solve previous questions in this difficulty first.
@@ -135,49 +215,103 @@ export default function QuestionPage() {
             )}
           </div>
 
-          <div className="card schema-card">
-            <div className="section-heading">
-              <div>
-                <h3>Table schema</h3>
+          {showSchema && (
+            <div className="card schema-card">
+              <div className="section-heading">
+                <div>
+                  <h3>Table schema</h3>
+                </div>
+                <span className="section-meta">{schemaTableCount} tables</span>
               </div>
-              <span className="section-meta">{schemaTableCount} tables</span>
+              <SchemaViewer schema={question.schema} />
             </div>
-            <SchemaViewer schema={question.schema} />
-          </div>
+          )}
+
+          {showVariables && (
+            <VariablesPanel
+              dataframes={question.dataframes ?? {}}
+              schema={question.dataframe_schema ?? {}}
+            />
+          )}
         </aside>
 
         <section className="right-panel">
-          <div className="editor-wrapper editor-workspace">
-            <div className="editor-topbar">
-              <span className="editor-title">SQL editor</span>
-              <span className="editor-topbar-note">DuckDB sandbox</span>
-            </div>
-
-            <SQLEditor value={query} onChange={setQuery} />
-
-            <div className="editor-footer">
-              <div className="button-row">
-                <button className="btn btn-secondary" onClick={handleRun} disabled={running || submitting || isLocked}>
-                  {running ? 'Running…' : 'Run Query'}
-                </button>
-                <button className="btn btn-primary" onClick={handleSubmit} disabled={running || submitting || isLocked}>
-                  {submitting ? 'Checking…' : 'Submit Answer'}
-                </button>
-                {submitResult?.correct && nextQuestionId && (
+          {/* PySpark: MCQ panel instead of editor */}
+          {meta.hasMCQ ? (
+            <div className="card">
+              <div className="section-heading">
+                <h3>Choose the correct answer</h3>
+              </div>
+              <MCQPanel
+                options={question.options ?? []}
+                selectedOption={selectedOption}
+                onSelect={setSelectedOption}
+                submitted={!!submitResult}
+                correct={submitResult?.correct ?? null}
+                correctIndex={submitResult?.correct_index ?? null}
+                explanation={submitResult?.explanation ?? ''}
+              />
+              <div className="editor-footer" style={{ marginTop: '1rem', padding: '0', borderTop: 'none', background: 'none' }}>
+                <div className="button-row">
                   <button
-                    className="btn btn-success"
-                    onClick={() => navigate(`/practice/questions/${nextQuestionId}`)}
+                    className="btn btn-primary"
+                    onClick={handleSubmit}
+                    disabled={isSubmitDisabled}
                   >
-                    Next Question
+                    {submitBtnLabel}
                   </button>
-                )}
+                  {submitResult?.correct && nextQuestionId && (
+                    <button
+                      className="btn btn-success"
+                      onClick={() => navigate(`/practice/${topic}/questions/${nextQuestionId}`)}
+                    >
+                      Next Question
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            /* Code/SQL editor */
+            <div className="editor-wrapper editor-workspace">
+              <div className="editor-topbar">
+                <span className="editor-title">{editorTitle}</span>
+                <span className="editor-topbar-note">{editorNote}</span>
+              </div>
+
+              <CodeEditor
+                value={code}
+                onChange={setCode}
+                language={meta.language}
+              />
+
+              <div className="editor-footer">
+                <div className="button-row">
+                  {meta.hasRunCode && (
+                    <button className="btn btn-secondary" onClick={handleRun} disabled={running || submitting || isLocked}>
+                      {running ? 'Running…' : meta.language === 'python' ? 'Run Code' : 'Run Query'}
+                    </button>
+                  )}
+                  <button className="btn btn-primary" onClick={handleSubmit} disabled={isSubmitDisabled}>
+                    {submitBtnLabel}
+                  </button>
+                  {submitResult?.correct && nextQuestionId && (
+                    <button
+                      className="btn btn-success"
+                      onClick={() => navigate(`/practice/${topic}/questions/${nextQuestionId}`)}
+                    >
+                      Next Question
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {runError && <div className="error-box">{runError}</div>}
 
-          {runResult && (
+          {/* SQL run result */}
+          {isSQLRunResult && (
             <div className="results-card">
               <div className="results-header">
                 <span>Query Result</span>
@@ -187,13 +321,39 @@ export default function QuestionPage() {
             </div>
           )}
 
+          {/* Python run results */}
+          {isPythonRunResult && topic === 'python' && (
+            <>
+              <TestCasePanel results={runResult.test_results ?? []} hiddenSummary={null} />
+              <PrintOutputPanel output={runResult.stdout ?? ''} />
+            </>
+          )}
+
+          {isPythonRunResult && topic === 'python-data' && (
+            <>
+              {runResult.columns && (
+                <div className="results-card">
+                  <div className="results-header">
+                    <span>Output</span>
+                    <span>{(runResult.rows ?? []).length} rows</span>
+                  </div>
+                  <ResultsTable columns={runResult.columns} rows={runResult.rows ?? []} />
+                </div>
+              )}
+              <PrintOutputPanel output={runResult.stdout ?? ''} />
+            </>
+          )}
+
           {submitError && <div className="error-box">{submitError}</div>}
+
           {submitResult && (
             <div className="submit-outcome">
               <div className={`verdict ${submitResult.correct ? 'verdict-correct' : 'verdict-incorrect'}`}>
                 <span className="verdict-label">{submitResult.correct ? 'Correct' : 'Keep iterating'}</span>
                 <p className="verdict-copy">
-                  {submitResult.correct ? 'Submission matches the expected result.' : 'Submission does not match the expected result yet.'}
+                  {submitResult.correct
+                    ? 'Your submission matches the expected result.'
+                    : 'Your submission does not match the expected result yet.'}
                 </p>
               </div>
               {shouldShowFeedback && (
@@ -210,7 +370,8 @@ export default function QuestionPage() {
             </div>
           )}
 
-          {submitResult && (
+          {/* SQL submit: show compare grid */}
+          {submitResult && topic === 'sql' && submitResult.user_result && (
             <div className="results-compare-grid">
               <div className="results-card">
                 <div className="results-header">
@@ -225,6 +386,43 @@ export default function QuestionPage() {
                   <span>{submitResult.expected_result.rows.length} row{submitResult.expected_result.rows.length !== 1 ? 's' : ''}</span>
                 </div>
                 <ResultsTable columns={submitResult.expected_result.columns} rows={submitResult.expected_result.rows} />
+              </div>
+            </div>
+          )}
+
+          {/* Python submit: show test case results */}
+          {submitResult && topic === 'python' && (
+            <>
+              <TestCasePanel
+                results={submitResult.test_results ?? []}
+                hiddenSummary={submitResult.hidden_summary ?? null}
+              />
+              <PrintOutputPanel output={submitResult.stdout ?? ''} />
+            </>
+          )}
+
+          {/* Python-Data submit: show DataFrame output */}
+          {submitResult && topic === 'python-data' && submitResult.user_result && (
+            <div className="results-compare-grid">
+              <div className="results-card">
+                <div className="results-header">
+                  <span>Your Output</span>
+                  <span>{(submitResult.user_result.rows ?? []).length} rows</span>
+                </div>
+                <ResultsTable
+                  columns={submitResult.user_result.columns ?? []}
+                  rows={submitResult.user_result.rows ?? []}
+                />
+              </div>
+              <div className="results-card">
+                <div className="results-header">
+                  <span>Expected Output</span>
+                  <span>{(submitResult.expected_result.rows ?? []).length} rows</span>
+                </div>
+                <ResultsTable
+                  columns={submitResult.expected_result.columns ?? []}
+                  rows={submitResult.expected_result.rows ?? []}
+                />
               </div>
             </div>
           )}
@@ -258,9 +456,13 @@ export default function QuestionPage() {
               {showSolution && (
                 <div className="solution-card">
                   <h3>Official Solution</h3>
-                  <pre>{submitResult.solution_query}</pre>
-                  <h3 style={{ marginBottom: '0.5rem' }}>Explanation</h3>
-                  <p>{submitResult.explanation}</p>
+                  <pre>{submitResult.solution_query ?? submitResult.solution_code ?? ''}</pre>
+                  {submitResult.explanation && (
+                    <>
+                      <h3 style={{ marginBottom: '0.5rem' }}>Explanation</h3>
+                      <p>{submitResult.explanation}</p>
+                    </>
+                  )}
                 </div>
               )}
             </div>
