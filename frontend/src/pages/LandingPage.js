@@ -91,10 +91,25 @@ export default function LandingPage() {
       </header>
 
       <main className="container landing-page">
-        <section className="landing-tabs-shell">
-          <div className="landing-tabs-heading">
-            <h2 className="landing-title">Practice by track</h2>
+        {!user && (
+          <section className="landing-hero">
+            <span className="landing-kicker">SQL · Python · PySpark · pandas</span>
+            <h2 className="landing-title">Get sharp at data interviews.</h2>
             <p className="landing-copy">
+              Four tracks covering SQL, algorithms, data manipulation, and Spark.
+              Work through structured question banks with instant feedback.
+            </p>
+            <div className="landing-actions">
+              <a className="btn btn-primary" href="#landing-tracks">Explore tracks ↓</a>
+              <Link className="btn btn-secondary" to="/auth">Create account</Link>
+            </div>
+          </section>
+        )}
+
+        <section className="landing-tabs-shell" id="landing-tracks">
+          <div className="landing-tabs-heading">
+            <h3 className="landing-tabs-title">Practice by track</h3>
+            <p className="landing-tabs-copy">
               Choose a focus area, see progress at a glance, and jump straight into practice.
             </p>
           </div>

@@ -73,7 +73,8 @@ All hover states use `translateY(-1px)`. No transforms on disabled. Transitions:
 
 ### Landing page
 - Fixed topbar with brand left and dashboard/auth actions right
-- Main surface is a tabbed card shell with compact progress summaries and a dedicated SQL samples tab
+- Logged-out users keep the centered hero above the tabbed shell
+- Main surface below the hero is a tabbed card shell with compact progress summaries and a dedicated SQL samples tab
 - Panels use subtle fade/slide entry and stay restrained rather than dashboard-heavy
 - Mobile (<900px): tabs become horizontally scrollable chips and panels stack vertically
 
