@@ -1,0 +1,191 @@
+[
+  {
+    "id": 5001,
+    "order": 1,
+    "topic": "python_data",
+    "difficulty": "easy",
+    "title": "Filter US Users",
+    "description": "You have a DataFrame `df_users` loaded from the users dataset.\n\n**Columns:** `user_id`, `name`, `email`, `country`, `created_at`, `status`\n\nReturn all rows where `country` is `'US'`, sorted by `user_id` ascending.",
+    "dataframes": { "df_users": "users.csv" },
+    "schema": { "df_users": ["user_id", "name", "email", "country", "created_at", "status"] },
+    "starter_code": "import pandas as pd\n\ndef solve(df_users):\n    # Filter for US users, return sorted by user_id ascending\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_users):\n    return df_users[df_users['country'] == 'US'].sort_values('user_id').reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_users):\n    return df_users[df_users['country'] == 'US'].sort_values('user_id').reset_index(drop=True)",
+    "explanation": "Boolean indexing with `df[condition]` filters rows where the condition is True. `sort_values('user_id')` orders the result ascending by default. `reset_index(drop=True)` gives the result a clean 0-based index.",
+    "hints": [
+      "Use boolean indexing: `df[df['column'] == value]`",
+      "Chain `.sort_values('user_id')` to order the result"
+    ],
+    "concepts": ["boolean indexing", "sort_values", "filtering"]
+  },
+  {
+    "id": 5002,
+    "order": 2,
+    "topic": "python_data",
+    "difficulty": "easy",
+    "title": "Select Columns and Drop Nulls",
+    "description": "You have a DataFrame `df_users` loaded from the users dataset.\n\n**Columns:** `user_id`, `name`, `email`, `country`, `created_at`, `status`\n\nSelect only the `name` and `email` columns, then drop any rows where `email` is null. Return the resulting DataFrame.",
+    "dataframes": { "df_users": "users.csv" },
+    "schema": { "df_users": ["user_id", "name", "email", "country", "created_at", "status"] },
+    "starter_code": "import pandas as pd\n\ndef solve(df_users):\n    # Select name and email columns, drop rows with null email\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_users):\n    return df_users[['name', 'email']].dropna(subset=['email']).reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_users):\n    return df_users[['name', 'email']].dropna(subset=['email']).reset_index(drop=True)",
+    "explanation": "Passing a list of column names to `df[['col1', 'col2']]` selects those columns. `.dropna(subset=['email'])` removes rows where `email` is NaN. Using `subset` is more precise than plain `.dropna()` which would drop rows with any null.",
+    "hints": [
+      "Use `df[['name', 'email']]` to select multiple columns",
+      "Use `.dropna(subset=['email'])` to remove rows where only email is null"
+    ],
+    "concepts": ["column selection", "dropna", "missing values"]
+  },
+  {
+    "id": 5003,
+    "order": 3,
+    "topic": "python_data",
+    "difficulty": "easy",
+    "title": "Count Orders by Status",
+    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `status`, `total_amount`, `created_at`\n\nCount the number of orders for each `status`. Return a DataFrame with columns `['status', 'count']`, sorted by `count` descending.",
+    "dataframes": { "df_orders": "orders.csv" },
+    "schema": { "df_orders": ["order_id", "user_id", "status", "total_amount", "created_at"] },
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Count orders per status, return DataFrame with columns [status, count]\n    # sorted by count descending\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    result = df_orders.groupby('status', as_index=False).size().rename(columns={'size': 'count'})\n    return result.sort_values('count', ascending=False).reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    result = df_orders.groupby('status', as_index=False).size().rename(columns={'size': 'count'})\n    return result.sort_values('count', ascending=False).reset_index(drop=True)",
+    "explanation": "`groupby('status').size()` counts rows per group. Using `as_index=False` keeps `status` as a column rather than the index. `.rename(columns={'size': 'count'})` gives the count column its required name. Finally, sorting by `count` descending puts the most common statuses first.",
+    "hints": [
+      "Use `.groupby('status').size()` to count rows per group",
+      "Set `as_index=False` so the groupby key becomes a regular column, then rename the size column to 'count'"
+    ],
+    "concepts": ["groupby", "aggregation", "sort_values", "rename"]
+  },
+  {
+    "id": 5004,
+    "order": 4,
+    "topic": "python_data",
+    "difficulty": "easy",
+    "title": "Filter Expensive Products",
+    "description": "You have a DataFrame `df_products` loaded from the products dataset.\n\n**Columns:** `product_id`, `name`, `category_id`, `price`, `stock_quantity`, `launch_date`\n\nReturn all products where `price` is greater than `100`, sorted by `price` descending.",
+    "dataframes": { "df_products": "products.csv" },
+    "schema": { "df_products": ["product_id", "name", "category_id", "price", "stock_quantity", "launch_date"] },
+    "starter_code": "import pandas as pd\n\ndef solve(df_products):\n    # Return products with price > 100, sorted by price descending\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_products):\n    return df_products[df_products['price'] > 100].sort_values('price', ascending=False).reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_products):\n    return df_products[df_products['price'] > 100].sort_values('price', ascending=False).reset_index(drop=True)",
+    "explanation": "Boolean indexing `df[df['price'] > 100]` keeps only rows where price exceeds 100. `.sort_values('price', ascending=False)` orders results from most to least expensive.",
+    "hints": [
+      "Use `df[df['price'] > 100]` for the filter",
+      "Pass `ascending=False` to `sort_values` for descending order"
+    ],
+    "concepts": ["boolean indexing", "comparison operators", "sort_values"]
+  },
+  {
+    "id": 5005,
+    "order": 5,
+    "topic": "python_data",
+    "difficulty": "easy",
+    "title": "Top 5 Most Expensive Products",
+    "description": "You have a DataFrame `df_products` loaded from the products dataset.\n\n**Columns:** `product_id`, `name`, `category_id`, `price`, `stock_quantity`, `launch_date`\n\nReturn the top 5 most expensive products. The result should contain only the columns `product_id`, `name`, and `price`.",
+    "dataframes": { "df_products": "products.csv" },
+    "schema": { "df_products": ["product_id", "name", "category_id", "price", "stock_quantity", "launch_date"] },
+    "starter_code": "import pandas as pd\n\ndef solve(df_products):\n    # Return the top 5 most expensive products with columns: product_id, name, price\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_products):\n    return df_products[['product_id', 'name', 'price']].sort_values('price', ascending=False).head(5).reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_products):\n    return df_products[['product_id', 'name', 'price']].sort_values('price', ascending=False).head(5).reset_index(drop=True)",
+    "explanation": "Selecting `[['product_id', 'name', 'price']]` narrows the columns first. Sorting by `price` descending puts the most expensive products at the top. `.head(5)` then takes only the first 5 rows.",
+    "hints": [
+      "Sort by price descending, then use `.head(5)` to take the top rows",
+      "Select the required columns with `df[['product_id', 'name', 'price']]`"
+    ],
+    "concepts": ["column selection", "sort_values", "head"]
+  },
+  {
+    "id": 5006,
+    "order": 6,
+    "topic": "python_data",
+    "difficulty": "easy",
+    "title": "Fill Missing Salaries with Mean",
+    "description": "You have a DataFrame `df_employees` loaded from the employees dataset.\n\n**Columns:** `employee_id`, `name`, `department_id`, `salary`, `hire_date`, `manager_id`\n\nSome employees have a null `salary`. Fill those null values with the mean salary of all employees (computed from non-null values). Return the full DataFrame with the filled values.",
+    "dataframes": { "df_employees": "employees.csv" },
+    "schema": { "df_employees": ["employee_id", "name", "department_id", "salary", "hire_date", "manager_id"] },
+    "starter_code": "import pandas as pd\n\ndef solve(df_employees):\n    # Fill null salary values with the mean salary, return the full DataFrame\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_employees):\n    mean_salary = df_employees['salary'].mean()\n    result = df_employees.copy()\n    result['salary'] = result['salary'].fillna(mean_salary)\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_employees):\n    mean_salary = df_employees['salary'].mean()\n    result = df_employees.copy()\n    result['salary'] = result['salary'].fillna(mean_salary)\n    return result",
+    "explanation": "`.mean()` on a Series automatically skips NaN values, giving the mean of non-null salaries. `.fillna(value)` replaces NaN entries with that value. Working on a `.copy()` of the DataFrame avoids mutating the original.",
+    "hints": [
+      "Compute the mean with `df_employees['salary'].mean()` — pandas skips NaN automatically",
+      "Use `.fillna(mean_salary)` to replace null values in the salary column"
+    ],
+    "concepts": ["fillna", "mean", "missing values", "copy"]
+  },
+  {
+    "id": 5007,
+    "order": 7,
+    "topic": "python_data",
+    "difficulty": "easy",
+    "title": "Extract Email Domain",
+    "description": "You have a DataFrame `df_users` loaded from the users dataset.\n\n**Columns:** `user_id`, `name`, `email`, `country`, `created_at`, `status`\n\nSome rows have null `email`. First drop those rows, then add a new column `email_domain` that contains the domain part of the email address (everything after the `@` symbol — e.g. `'gmail.com'` from `'user@gmail.com'`). Return the full DataFrame with the new column.",
+    "dataframes": { "df_users": "users.csv" },
+    "schema": { "df_users": ["user_id", "name", "email", "country", "created_at", "status"] },
+    "starter_code": "import pandas as pd\n\ndef solve(df_users):\n    # Drop rows with null email, then add 'email_domain' column\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_users):\n    result = df_users.dropna(subset=['email']).copy()\n    result['email_domain'] = result['email'].str.split('@').str[1]\n    return result.reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_users):\n    result = df_users.dropna(subset=['email']).copy()\n    result['email_domain'] = result['email'].str.split('@').str[1]\n    return result.reset_index(drop=True)",
+    "explanation": "`.dropna(subset=['email'])` removes rows with a null email before the string operation. `.str.split('@')` splits each email string into a list at the `@` sign. `.str[1]` then extracts the second element (index 1), which is the domain. The `.copy()` prevents a SettingWithCopyWarning.",
+    "hints": [
+      "Drop null emails first with `.dropna(subset=['email'])`",
+      "Use `.str.split('@').str[1]` to extract the part after the '@'"
+    ],
+    "concepts": ["str accessor", "string split", "dropna", "derived columns"]
+  },
+  {
+    "id": 5008,
+    "order": 8,
+    "topic": "python_data",
+    "difficulty": "easy",
+    "title": "Total Order Amount by Status",
+    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `status`, `total_amount`, `created_at`\n\nCompute the sum of `total_amount` for each `status`. Return a DataFrame with columns `['status', 'total_amount']`, sorted by `status` ascending.",
+    "dataframes": { "df_orders": "orders.csv" },
+    "schema": { "df_orders": ["order_id", "user_id", "status", "total_amount", "created_at"] },
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Return total_amount summed by status, columns: [status, total_amount]\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    result = df_orders.groupby('status', as_index=False)['total_amount'].sum()\n    return result.sort_values('status').reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    result = df_orders.groupby('status', as_index=False)['total_amount'].sum()\n    return result.sort_values('status').reset_index(drop=True)",
+    "explanation": "`groupby('status', as_index=False)['total_amount'].sum()` groups rows by status, selects the `total_amount` column, and sums each group. `as_index=False` keeps `status` as a plain column in the output rather than the DataFrame index.",
+    "hints": [
+      "Use `.groupby('status')['total_amount'].sum()` to aggregate",
+      "Set `as_index=False` so the result has a `status` column rather than a status index"
+    ],
+    "concepts": ["groupby", "aggregation", "sum", "as_index"]
+  },
+  {
+    "id": 5009,
+    "order": 9,
+    "topic": "python_data",
+    "difficulty": "easy",
+    "title": "Remove Duplicate Products",
+    "description": "You have a DataFrame `df_products` loaded from the products dataset.\n\n**Columns:** `product_id`, `name`, `category_id`, `price`, `stock_quantity`, `launch_date`\n\nRemove duplicate rows based on `product_id` (keep the first occurrence). Return the deduplicated DataFrame sorted by `product_id` ascending.",
+    "dataframes": { "df_products": "products.csv" },
+    "schema": { "df_products": ["product_id", "name", "category_id", "price", "stock_quantity", "launch_date"] },
+    "starter_code": "import pandas as pd\n\ndef solve(df_products):\n    # Remove duplicate product_id rows (keep first), return sorted by product_id\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_products):\n    return df_products.drop_duplicates(subset=['product_id'], keep='first').sort_values('product_id').reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_products):\n    return df_products.drop_duplicates(subset=['product_id'], keep='first').sort_values('product_id').reset_index(drop=True)",
+    "explanation": "`.drop_duplicates(subset=['product_id'], keep='first')` scans the DataFrame and removes any row whose `product_id` has already appeared, retaining the first occurrence. Without `subset`, pandas would compare all columns simultaneously — specifying the key column(s) is more precise.",
+    "hints": [
+      "Use `.drop_duplicates(subset=['product_id'])` to deduplicate on a specific column",
+      "The default `keep='first'` retains the first occurrence of each duplicate"
+    ],
+    "concepts": ["drop_duplicates", "deduplication", "sort_values"]
+  },
+  {
+    "id": 5010,
+    "order": 10,
+    "topic": "python_data",
+    "difficulty": "easy",
+    "title": "Rename a Column",
+    "description": "You have a DataFrame `df_employees` loaded from the employees dataset.\n\n**Columns:** `employee_id`, `name`, `department_id`, `salary`, `hire_date`, `manager_id`\n\nRename the column `salary` to `annual_salary`. Return the full DataFrame with the renamed column.",
+    "dataframes": { "df_employees": "employees.csv" },
+    "schema": { "df_employees": ["employee_id", "name", "department_id", "salary", "hire_date", "manager_id"] },
+    "starter_code": "import pandas as pd\n\ndef solve(df_employees):\n    # Rename 'salary' to 'annual_salary', return the full DataFrame\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_employees):\n    return df_employees.rename(columns={'salary': 'annual_salary'})",
+    "solution_code": "import pandas as pd\n\ndef solve(df_employees):\n    return df_employees.rename(columns={'salary': 'annual_salary'})",
+    "explanation": "`.rename(columns={'old_name': 'new_name'})` returns a new DataFrame with the specified column(s) renamed. The original DataFrame is not modified. You can rename multiple columns at once by adding more key-value pairs to the dict.",
+    "hints": [
+      "Use `.rename(columns={'salary': 'annual_salary'})` — the `columns` argument takes a mapping of old name to new name"
+    ],
+    "concepts": ["rename", "column manipulation"]
+  }
+]

@@ -41,3 +41,18 @@ class CheckoutRequest(BaseModel):
 
 class CheckoutResponse(BaseModel):
     checkout_url: str
+
+
+class RunCodeRequest(BaseModel):
+    code: str
+    question_id: int
+
+
+class SubmitCodeRequest(BaseModel):
+    code: str
+    question_id: int
+
+
+class PySparkSubmitRequest(BaseModel):
+    selected_option: int
+    question_id: int

@@ -1,0 +1,248 @@
+[
+  {
+    "id": 4001,
+    "order": 1,
+    "topic": "python",
+    "difficulty": "easy",
+    "title": "Two Sum",
+    "description": "Given a list of integers `nums` and an integer `target`, return the **indices** of the two numbers that add up to `target`. You may assume exactly one solution exists, and you may not use the same element twice.\n\n```\nsolve([2, 7, 11, 15], 9)  # → [0, 1]\nsolve([3, 2, 4], 6)       # → [1, 2]\n```",
+    "starter_code": "def solve(nums: list, target: int) -> list:\n    # Your code here\n    pass",
+    "expected_code": "def solve(nums, target):\n    seen = {}\n    for i, n in enumerate(nums):\n        complement = target - n\n        if complement in seen:\n            return [seen[complement], i]\n        seen[n] = i\n    return []",
+    "solution_code": "def solve(nums, target):\n    seen = {}\n    for i, n in enumerate(nums):\n        complement = target - n\n        if complement in seen:\n            return [seen[complement], i]\n        seen[n] = i\n    return []",
+    "explanation": "Use a hash map to store each number and its index as you iterate. For each number, check if its complement (target - number) is already in the map. This gives O(n) time vs O(n²) for the naive nested loop approach.",
+    "test_cases": [
+      {"input": [[2, 7, 11, 15], 9], "expected": [0, 1]},
+      {"input": [[3, 2, 4], 6], "expected": [1, 2]},
+      {"input": [[3, 3], 6], "expected": [0, 1]},
+      {"input": [[1, 5, 3, 7], 8], "expected": [1, 2]}
+    ],
+    "public_test_cases": 2,
+    "hints": [
+      "Use a dictionary to store values you've already seen.",
+      "For each number, check if (target - number) exists in your dictionary."
+    ],
+    "concepts": ["hash map", "array"]
+  },
+  {
+    "id": 4002,
+    "order": 2,
+    "topic": "python",
+    "difficulty": "easy",
+    "title": "Palindrome Check",
+    "description": "Given a string `s`, return `True` if it is a palindrome, `False` otherwise. Ignore case and non-alphanumeric characters.\n\n```\nsolve('racecar')       # → True\nsolve('A man a plan a canal Panama')  # → True\nsolve('hello')         # → False\n```",
+    "starter_code": "def solve(s: str) -> bool:\n    # Your code here\n    pass",
+    "expected_code": "def solve(s):\n    cleaned = ''.join(c.lower() for c in s if c.isalnum())\n    return cleaned == cleaned[::-1]",
+    "solution_code": "def solve(s):\n    cleaned = ''.join(c.lower() for c in s if c.isalnum())\n    return cleaned == cleaned[::-1]",
+    "explanation": "Clean the string by filtering to alphanumeric characters and lowercasing, then compare it to its reverse using slicing `[::-1]`.",
+    "test_cases": [
+      {"input": ["racecar"], "expected": true},
+      {"input": ["hello"], "expected": false},
+      {"input": ["A man a plan a canal Panama"], "expected": true},
+      {"input": ["Was it a car or a cat I saw"], "expected": true},
+      {"input": ["not a palindrome"], "expected": false}
+    ],
+    "public_test_cases": 2,
+    "hints": [
+      "Remove non-alphanumeric characters and lowercase everything first.",
+      "Slicing with [::-1] reverses a string."
+    ],
+    "concepts": ["string manipulation", "two pointers"]
+  },
+  {
+    "id": 4003,
+    "order": 3,
+    "topic": "python",
+    "difficulty": "easy",
+    "title": "FizzBuzz Variant",
+    "description": "Given an integer `n`, return a list of strings for numbers 1 through n using these rules:\n- `'Fizz'` if divisible by 3\n- `'Buzz'` if divisible by 5\n- `'FizzBuzz'` if divisible by both 3 and 5\n- The number as a string otherwise\n\n```\nsolve(5)  # → ['1', '2', 'Fizz', '4', 'Buzz']\nsolve(15) # → ['1', '2', 'Fizz', '4', 'Buzz', 'Fizz', '7', '8', 'Fizz', 'Buzz', '11', 'Fizz', '13', '14', 'FizzBuzz']\n```",
+    "starter_code": "def solve(n: int) -> list:\n    # Your code here\n    pass",
+    "expected_code": "def solve(n):\n    result = []\n    for i in range(1, n + 1):\n        if i % 15 == 0:\n            result.append('FizzBuzz')\n        elif i % 3 == 0:\n            result.append('Fizz')\n        elif i % 5 == 0:\n            result.append('Buzz')\n        else:\n            result.append(str(i))\n    return result",
+    "solution_code": "def solve(n):\n    result = []\n    for i in range(1, n + 1):\n        if i % 15 == 0:\n            result.append('FizzBuzz')\n        elif i % 3 == 0:\n            result.append('Fizz')\n        elif i % 5 == 0:\n            result.append('Buzz')\n        else:\n            result.append(str(i))\n    return result",
+    "explanation": "Check divisibility by 15 first (both 3 and 5), then 3, then 5, then fall back to the string of the number. Order matters: FizzBuzz must come before Fizz and Buzz.",
+    "test_cases": [
+      {"input": [5], "expected": ["1", "2", "Fizz", "4", "Buzz"]},
+      {"input": [1], "expected": ["1"]},
+      {"input": [15], "expected": ["1", "2", "Fizz", "4", "Buzz", "Fizz", "7", "8", "Fizz", "Buzz", "11", "Fizz", "13", "14", "FizzBuzz"]},
+      {"input": [3], "expected": ["1", "2", "Fizz"]}
+    ],
+    "public_test_cases": 2,
+    "hints": [
+      "Check divisibility by 15 (i.e., both 3 and 5) before checking 3 or 5 individually.",
+      "Use range(1, n + 1) to iterate from 1 to n inclusive."
+    ],
+    "concepts": ["modulo", "conditionals", "list building"]
+  },
+  {
+    "id": 4004,
+    "order": 4,
+    "topic": "python",
+    "difficulty": "easy",
+    "title": "Count Vowels",
+    "description": "Given a string `s`, return the number of vowel characters (`a`, `e`, `i`, `o`, `u`) it contains. Case-insensitive.\n\n```\nsolve('hello')         # → 2\nsolve('Python')        # → 1\nsolve('aeiou AEIOU')   # → 10\n```",
+    "starter_code": "def solve(s: str) -> int:\n    # Your code here\n    pass",
+    "expected_code": "def solve(s):\n    return sum(1 for c in s if c.lower() in 'aeiou')",
+    "solution_code": "def solve(s):\n    return sum(1 for c in s if c.lower() in 'aeiou')",
+    "explanation": "Iterate over each character, convert to lowercase, and check if it's in the vowel set. Using `sum` with a generator expression is concise and efficient.",
+    "test_cases": [
+      {"input": ["hello"], "expected": 2},
+      {"input": ["Python"], "expected": 1},
+      {"input": ["aeiou AEIOU"], "expected": 10},
+      {"input": ["rhythm"], "expected": 0},
+      {"input": [""], "expected": 0}
+    ],
+    "public_test_cases": 2,
+    "hints": [
+      "Convert each character to lowercase before checking.",
+      "You can check membership in a string: 'a' in 'aeiou' is True."
+    ],
+    "concepts": ["string manipulation", "iteration"]
+  },
+  {
+    "id": 4005,
+    "order": 5,
+    "topic": "python",
+    "difficulty": "easy",
+    "title": "Fibonacci Sequence",
+    "description": "Given an integer `n`, return the `n`-th Fibonacci number (0-indexed).\n\nFibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, ...\n\n```\nsolve(0)  # → 0\nsolve(1)  # → 1\nsolve(6)  # → 8\nsolve(9)  # → 34\n```",
+    "starter_code": "def solve(n: int) -> int:\n    # Your code here\n    pass",
+    "expected_code": "def solve(n):\n    if n <= 1:\n        return n\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b",
+    "solution_code": "def solve(n):\n    if n <= 1:\n        return n\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b",
+    "explanation": "Use an iterative approach with two variables tracking consecutive Fibonacci numbers. This is O(n) time and O(1) space, avoiding the exponential cost of naive recursion.",
+    "test_cases": [
+      {"input": [0], "expected": 0},
+      {"input": [1], "expected": 1},
+      {"input": [6], "expected": 8},
+      {"input": [9], "expected": 34},
+      {"input": [10], "expected": 55}
+    ],
+    "public_test_cases": 3,
+    "hints": [
+      "Handle the base cases n=0 and n=1 first.",
+      "Use two variables and update them in each iteration instead of recursion."
+    ],
+    "concepts": ["dynamic programming", "iteration"]
+  },
+  {
+    "id": 4006,
+    "order": 6,
+    "topic": "python",
+    "difficulty": "easy",
+    "title": "Anagram Check",
+    "description": "Given two strings `s` and `t`, return `True` if `t` is an anagram of `s`, `False` otherwise. Ignore spaces and case.\n\n```\nsolve('listen', 'silent')     # → True\nsolve('triangle', 'integral') # → True\nsolve('hello', 'world')       # → False\n```",
+    "starter_code": "def solve(s: str, t: str) -> bool:\n    # Your code here\n    pass",
+    "expected_code": "def solve(s, t):\n    clean = lambda x: sorted(x.lower().replace(' ', ''))\n    return clean(s) == clean(t)",
+    "solution_code": "def solve(s, t):\n    clean = lambda x: sorted(x.lower().replace(' ', ''))\n    return clean(s) == clean(t)",
+    "explanation": "Sort the characters of both strings (after lowercasing and removing spaces). Two strings are anagrams if and only if their sorted character lists are identical. Alternatively, compare character frequency counts.",
+    "test_cases": [
+      {"input": ["listen", "silent"], "expected": true},
+      {"input": ["triangle", "integral"], "expected": true},
+      {"input": ["hello", "world"], "expected": false},
+      {"input": ["Astronomer", "Moon starer"], "expected": true},
+      {"input": ["abc", "ab"], "expected": false}
+    ],
+    "public_test_cases": 2,
+    "hints": [
+      "Sort the characters of both strings and compare.",
+      "Don't forget to handle case and spaces."
+    ],
+    "concepts": ["string manipulation", "sorting", "hash map"]
+  },
+  {
+    "id": 4007,
+    "order": 7,
+    "topic": "python",
+    "difficulty": "easy",
+    "title": "Remove Duplicates",
+    "description": "Given a list `nums`, return a new list with duplicates removed. Preserve the original order of first occurrences.\n\n```\nsolve([1, 2, 2, 3, 1])     # → [1, 2, 3]\nsolve([4, 4, 4])            # → [4]\nsolve([1, 2, 3])            # → [1, 2, 3]\n```",
+    "starter_code": "def solve(nums: list) -> list:\n    # Your code here\n    pass",
+    "expected_code": "def solve(nums):\n    seen = set()\n    result = []\n    for n in nums:\n        if n not in seen:\n            seen.add(n)\n            result.append(n)\n    return result",
+    "solution_code": "def solve(nums):\n    seen = set()\n    result = []\n    for n in nums:\n        if n not in seen:\n            seen.add(n)\n            result.append(n)\n    return result",
+    "explanation": "Use a set to track seen values in O(1) per lookup, building the result list as you go. This preserves insertion order (unlike converting directly to a set).",
+    "test_cases": [
+      {"input": [[1, 2, 2, 3, 1]], "expected": [1, 2, 3]},
+      {"input": [[4, 4, 4]], "expected": [4]},
+      {"input": [[1, 2, 3]], "expected": [1, 2, 3]},
+      {"input": [[]], "expected": []},
+      {"input": [[3, 1, 4, 1, 5, 9, 2, 6, 5]], "expected": [3, 1, 4, 5, 9, 2, 6]}
+    ],
+    "public_test_cases": 2,
+    "hints": [
+      "Use a set to track which values you've already encountered.",
+      "Iterate through the list and only add unseen values to your result."
+    ],
+    "concepts": ["set", "array", "hash map"]
+  },
+  {
+    "id": 4008,
+    "order": 8,
+    "topic": "python",
+    "difficulty": "easy",
+    "title": "Find Maximum Without Built-in",
+    "description": "Given a list of integers `nums`, return the maximum value **without using the built-in `max()` function**.\n\n```\nsolve([3, 1, 4, 1, 5, 9, 2, 6])  # → 9\nsolve([-5, -1, -3])               # → -1\nsolve([42])                       # → 42\n```",
+    "starter_code": "def solve(nums: list) -> int:\n    # Do not use max() or sorted()\n    pass",
+    "expected_code": "def solve(nums):\n    if not nums:\n        raise ValueError('Empty list')\n    current_max = nums[0]\n    for n in nums[1:]:\n        if n > current_max:\n            current_max = n\n    return current_max",
+    "solution_code": "def solve(nums):\n    current_max = nums[0]\n    for n in nums[1:]:\n        if n > current_max:\n            current_max = n\n    return current_max",
+    "explanation": "Initialize the maximum with the first element, then scan through the rest updating it whenever you find a larger value. This linear scan is O(n) — the minimum complexity needed since you must check every element.",
+    "test_cases": [
+      {"input": [[3, 1, 4, 1, 5, 9, 2, 6]], "expected": 9},
+      {"input": [[-5, -1, -3]], "expected": -1},
+      {"input": [[42]], "expected": 42},
+      {"input": [[0, 0, 0]], "expected": 0}
+    ],
+    "public_test_cases": 2,
+    "hints": [
+      "Start with the first element as the current maximum.",
+      "Update your running maximum each time you find a larger value."
+    ],
+    "concepts": ["array", "linear scan"]
+  },
+  {
+    "id": 4009,
+    "order": 9,
+    "topic": "python",
+    "difficulty": "easy",
+    "title": "Reverse a String",
+    "description": "Given a string `s`, return it reversed **without using `s[::-1]` or `reversed()`**.\n\n```\nsolve('hello')   # → 'olleh'\nsolve('Python')  # → 'nohtyP'\nsolve('a')       # → 'a'\n```",
+    "starter_code": "def solve(s: str) -> str:\n    # Do not use s[::-1] or reversed()\n    pass",
+    "expected_code": "def solve(s):\n    result = []\n    for i in range(len(s) - 1, -1, -1):\n        result.append(s[i])\n    return ''.join(result)",
+    "solution_code": "def solve(s):\n    result = []\n    for i in range(len(s) - 1, -1, -1):\n        result.append(s[i])\n    return ''.join(result)",
+    "explanation": "Iterate from the last index down to 0 (using `range(len(s)-1, -1, -1)`), collecting characters into a list, then join. This demonstrates explicit index manipulation without relying on Python's slicing shortcut.",
+    "test_cases": [
+      {"input": ["hello"], "expected": "olleh"},
+      {"input": ["Python"], "expected": "nohtyP"},
+      {"input": ["a"], "expected": "a"},
+      {"input": [""], "expected": ""},
+      {"input": ["abcde"], "expected": "edcba"}
+    ],
+    "public_test_cases": 2,
+    "hints": [
+      "Iterate from the end of the string to the beginning.",
+      "Use range(len(s)-1, -1, -1) to count backwards."
+    ],
+    "concepts": ["string manipulation", "iteration"]
+  },
+  {
+    "id": 4010,
+    "order": 10,
+    "topic": "python",
+    "difficulty": "easy",
+    "title": "Factorial",
+    "description": "Given a non-negative integer `n`, return `n!` (n factorial) iteratively.\n\n```\nsolve(0)  # → 1\nsolve(5)  # → 120\nsolve(10) # → 3628800\n```",
+    "starter_code": "def solve(n: int) -> int:\n    # Implement iteratively (no recursion)\n    pass",
+    "expected_code": "def solve(n):\n    result = 1\n    for i in range(2, n + 1):\n        result *= i\n    return result",
+    "solution_code": "def solve(n):\n    result = 1\n    for i in range(2, n + 1):\n        result *= i\n    return result",
+    "explanation": "Initialize the result to 1 (the identity element for multiplication), then multiply by each integer from 2 to n. Starting from 2 avoids a redundant multiplication by 1. 0! = 1 by convention, handled naturally since the loop doesn't execute.",
+    "test_cases": [
+      {"input": [0], "expected": 1},
+      {"input": [1], "expected": 1},
+      {"input": [5], "expected": 120},
+      {"input": [10], "expected": 3628800}
+    ],
+    "public_test_cases": 2,
+    "hints": [
+      "0! = 1 by convention.",
+      "Start with result = 1 and multiply each number from 2 to n."
+    ],
+    "concepts": ["iteration", "multiplication"]
+  }
+]
