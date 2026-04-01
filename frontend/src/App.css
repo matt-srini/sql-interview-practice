@@ -1117,10 +1117,9 @@ select {
    ============================================================ */
 .landing-page {
   min-height: calc(100vh - 68px);
-  padding: 3rem 0 5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  padding: 0;
+  display: block;
+  width: 100%;
 }
 
 .landing-topbar-inner {
@@ -1159,10 +1158,14 @@ select {
 }
 
 .landing-hero {
-  text-align: center;
-  max-width: 620px;
   width: 100%;
-  margin-bottom: 3rem;
+  padding: 5.5rem 1.5rem 4.5rem;
+  text-align: center;
+}
+
+.landing-hero-inner {
+  max-width: 620px;
+  margin: 0 auto;
 }
 
 .landing-kicker {
@@ -1184,36 +1187,70 @@ select {
   margin-top: 1.8rem;
 }
 
-.landing-tabs-shell {
+.landing-practice-section {
   width: 100%;
   max-width: 1040px;
-  border-radius: 24px;
-  border: 1px solid var(--border-subtle);
-  background:
-    radial-gradient(circle at top left, rgba(91, 106, 240, 0.06), transparent 30%),
-    var(--surface-card);
-  box-shadow: var(--shadow-md);
-  overflow: hidden;
+  margin: 0 auto;
+  padding: 5rem 1.5rem 5.5rem;
 }
 
-.landing-tabs-heading {
-  padding: 1.6rem 1.75rem 0;
-  border-bottom: none;
+.landing-practice-heading {
+  margin-bottom: 2rem;
 }
 
-.landing-tabs-title {
-  font-size: 1.05rem;
+.landing-practice-title {
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
   font-weight: 700;
   color: var(--text-strong);
-  letter-spacing: -0.025em;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
 }
 
-.landing-tabs-copy {
-  margin-top: 0.35rem;
+.landing-practice-copy {
+  margin-top: 0.5rem;
   color: var(--text-secondary);
-  line-height: 1.5;
-  font-size: 0.875rem;
+  line-height: 1.55;
+  font-size: 0.9rem;
+}
+
+/* ── Shared track pill nav (showcase + practice) ── */
+.landing-track-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 2.5rem;
+}
+
+.landing-track-nav--practice {
+  justify-content: flex-start;
+  margin-bottom: 2rem;
+}
+
+.landing-track-pill {
+  padding: 0.38rem 1.1rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
   white-space: nowrap;
+  line-height: 1.5;
+}
+
+.landing-track-pill:hover {
+  border-color: var(--border-strong, var(--text-muted));
+  color: var(--text-primary);
+}
+
+.landing-track-pill.is-active {
+  background: var(--pill-color);
+  border-color: var(--pill-color);
+  color: #fff;
 }
 
 .topbar-user-pill {
@@ -1251,53 +1288,18 @@ select {
   color: var(--text-primary);
 }
 
-.landing-tabs-nav {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  flex-wrap: wrap;
-  padding: 1.25rem 1.75rem 0;
-}
-
-.landing-tab-btn {
-  display: inline-flex;
-  align-items: center;
-  min-height: 38px;
-  padding: 0.4rem 1rem 0.55rem;
-  border-radius: 0;
-  border: none;
-  border-bottom: 2.5px solid transparent;
-  background: transparent;
-  color: var(--text-muted);
-  transition: color 0.15s ease, border-color 0.2s ease;
-}
-
-.landing-tab-btn:hover {
-  color: var(--text-primary);
-}
-
-.landing-tab-btn.is-active {
-  color: var(--text-strong);
-  border-color: var(--accent);
-}
-
-.landing-tab-label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
+/* .landing-tabs-nav, .landing-tab-btn, .landing-tab-label replaced by .landing-track-nav + .landing-track-pill */
 
 .landing-tab-panels {
   width: 100%;
-  padding: 1rem 1.75rem 1.75rem;
+  padding: 0;
 }
 
 .landing-tab-panel {
-  border-radius: 18px;
-  border: 1px solid var(--border-subtle);
-  background: var(--surface-card-soft);
+  background: transparent;
+  border: none;
   box-shadow: none;
-  padding: 1.5rem;
+  padding: 1.5rem 0;
   opacity: 0;
   transform: translateY(8px);
   animation: landingPanelIn 200ms ease forwards;
@@ -1444,15 +1446,9 @@ select {
 }
 
 @media (max-width: 900px) {
-  .landing-page {
-    padding: 2rem 0 3rem;
-    align-items: flex-start;
-  }
-
   .landing-hero {
+    padding: 3.5rem 1.25rem 3rem;
     text-align: left;
-    max-width: 100%;
-    margin-bottom: 2.2rem;
   }
 
   .landing-actions {
@@ -1467,8 +1463,8 @@ select {
     gap: 0.7rem;
   }
 
-  .landing-tabs-shell {
-    border-radius: 22px;
+  .landing-practice-section {
+    padding: 3rem 1.25rem 4rem;
   }
 
   .landing-panel-header,
@@ -1502,20 +1498,24 @@ select {
     font-size: 0.82rem;
   }
 
-  .landing-tabs-nav {
+  .landing-track-nav {
     overflow-x: auto;
     flex-wrap: nowrap;
-    padding: 0.85rem 1rem 0;
-    padding-bottom: 0.2rem;
     scrollbar-width: none;
+    justify-content: flex-start;
   }
 
-  .landing-tabs-nav::-webkit-scrollbar {
+  .landing-track-nav::-webkit-scrollbar {
     display: none;
   }
 
+  .landing-track-pill {
+    font-size: 0.8rem;
+    padding: 0.32rem 0.9rem;
+  }
+
   .landing-tab-panel {
-    padding: 1.05rem;
+    padding: 1rem 0;
   }
 
   .landing-panel-samples-header {
@@ -1523,10 +1523,8 @@ select {
     align-items: flex-start;
   }
 
-  .landing-tabs-heading,
-  .landing-tab-panels {
-    padding-left: 1rem;
-    padding-right: 1rem;
+  .landing-practice-section {
+    padding: 2.5rem 1rem 3.5rem;
   }
 }
 
@@ -3405,21 +3403,13 @@ select {
 ───────────────────────────────────────────────────── */
 .landing-showcase {
   width: 100%;
-  background:
-    linear-gradient(to bottom, var(--bg-page) 0%, transparent 72px),
-    linear-gradient(to top,    var(--bg-page) 0%, transparent 72px),
-    radial-gradient(ellipse 60% 55% at 8% 50%,  rgba(91,106,240,0.22)  0%, transparent 65%),
-    radial-gradient(ellipse 50% 60% at 92% 30%, rgba(217,79,61,0.18)   0%, transparent 65%),
-    radial-gradient(ellipse 45% 55% at 55% 85%, rgba(45,158,107,0.16)  0%, transparent 65%),
-    radial-gradient(ellipse 40% 50% at 45% 15%, rgba(196,127,23,0.14)  0%, transparent 65%),
-    #17150D;
-  padding: 5.5rem 1.5rem;
-  overflow: hidden;
+  background: transparent;
+  padding: 2rem 1.5rem 5rem;
   position: relative;
 }
 
 .landing-showcase-inner {
-  max-width: 1120px;
+  max-width: 740px;
   margin: 0 auto;
   opacity: 0;
   transform: translateY(32px);
@@ -3433,70 +3423,54 @@ select {
 
 .landing-showcase-header {
   text-align: center;
-  margin-bottom: 3.25rem;
+  margin-bottom: 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.5rem;
 }
 
 .landing-showcase-eyebrow {
   display: inline-block;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.35);
+  color: var(--text-muted);
 }
 
 .landing-showcase-title {
-  font-size: clamp(1.65rem, 3.2vw, 2.5rem);
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
   font-weight: 700;
-  color: rgba(255,255,255,0.90);
-  letter-spacing: -0.035em;
-  line-height: 1.08;
+  color: var(--text-strong);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
   margin: 0;
 }
 
-.landing-showcase-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  perspective: 1400px;
-  align-items: start;
-}
-
-/* ── Showcase cards ────────────────────── */
+/* ── Single showcase card ────────────────── */
 .showcase-card {
-  background: rgba(255,255,255,0.035);
-  border: 1px solid rgba(255,255,255,0.07);
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-left: 4px solid transparent;
   border-radius: 20px;
-  padding: 1.4rem;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
-  opacity: 0.38;
-  transform: translateY(0) scale(0.985);
-  transition:
-    opacity 0.55s ease,
-    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.45s ease,
-    box-shadow 0.55s ease;
-  height: 370px;
+  gap: 0.85rem;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.04);
+  height: 420px;
   overflow: hidden;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  will-change: transform, opacity;
+  transition: border-left-color 0.35s ease, opacity 0.3s ease, transform 0.3s ease;
 }
 
 .showcase-card.is-active {
-  opacity: 1;
-  transform: translateY(-8px) scale(1.02);
-  border-color: var(--active-color, rgba(255,255,255,0.25));
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--active-color, transparent) 40%, transparent),
-    0 16px 48px rgba(0,0,0,0.6),
-    0 0 80px color-mix(in srgb, var(--active-color, transparent) 18%, transparent);
+  border-left-color: var(--active-color, var(--accent));
+}
+
+.showcase-card.is-transitioning {
+  opacity: 0;
+  transform: translateY(6px);
 }
 
 /* ── Card header ────────────────────────── */
@@ -3511,14 +3485,13 @@ select {
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
-  box-shadow: 0 0 6px currentColor;
 }
 
 .showcase-track-label {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  color: rgba(255,255,255,0.65);
-  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
@@ -3528,48 +3501,48 @@ select {
   font-weight: 600;
   padding: 0.14rem 0.5rem;
   border-radius: 999px;
-  background: rgba(255,255,255,0.07);
-  color: rgba(255,255,255,0.42);
+  background: var(--surface-highlight, #F0EEE9);
+  color: var(--text-muted);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid var(--border-subtle);
 }
 
 /* ── Card body ──────────────────────────── */
 .showcase-question-title {
-  font-size: 0.86rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  color: rgba(255,255,255,0.82);
+  color: var(--text-strong);
   line-height: 1.35;
   letter-spacing: -0.015em;
 }
 
 .showcase-phase-label {
-  font-size: 0.66rem;
+  font-size: 0.64rem;
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.28);
+  color: var(--text-muted);
   min-height: 0.9rem;
   transition: color 0.3s ease;
 }
 
 .showcase-card.is-active .showcase-phase-label {
-  color: color-mix(in srgb, var(--active-color, rgba(255,255,255,0.5)) 65%, rgba(255,255,255,0.3));
+  color: color-mix(in srgb, var(--active-color, var(--accent)) 80%, var(--text-muted));
 }
 
 /* ── Code block ─────────────────────────── */
 .showcase-code-block {
   font-family: var(--font-mono);
-  font-size: 0.7rem;
-  line-height: 1.68;
-  color: rgba(255,255,255,0.60);
-  background: rgba(0,0,0,0.40);
-  border: 1px solid rgba(255,255,255,0.055);
+  font-size: 0.72rem;
+  line-height: 1.72;
+  color: rgba(220, 218, 210, 0.88);
+  background: #141413;
+  border: 1px solid rgba(255,255,255,0.06);
   border-radius: 13px;
-  padding: 0.9rem 1rem;
-  flex: none;
-  height: 196px;
+  padding: 1rem 1.1rem;
+  flex: 1;
+  min-height: 0;
   margin: 0;
   white-space: pre;
   overflow: hidden;
@@ -3581,13 +3554,13 @@ select {
   white-space: pre;
 }
 
-/* Cursor blink — only on active card */
+/* Cursor blink */
 .showcase-card.is-active .showcase-code-block::after {
   content: '▎';
   display: inline;
   opacity: 1;
   animation: showcaseCursor 0.9s step-end infinite;
-  color: rgba(255,255,255,0.65);
+  color: rgba(255,255,255,0.55);
   font-size: 0.75rem;
   line-height: 1;
 }
@@ -3597,28 +3570,56 @@ select {
   50% { opacity: 0; }
 }
 
-/* ── Responsive ─────────────────────────── */
-@media (max-width: 960px) {
-  .landing-showcase-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+/* Progress bar — quieter on landing page */
+.landing-tab-panel .track-progress-bar-track {
+  height: 4px;
+}
+
+.landing-tab-panel .track-progress-bar-fill {
+  opacity: 0.6;
+}
+
+/* ── Showcase responsive ────────────────── */
+@media (max-width: 800px) {
   .landing-showcase {
-    padding: 4rem 1.25rem;
+    padding: 1.5rem 1.25rem 4rem;
+  }
+  .showcase-card {
+    height: auto;
+    min-height: 360px;
   }
 }
 
 @media (max-width: 560px) {
-  .landing-showcase-grid {
-    grid-template-columns: 1fr;
-  }
   .landing-showcase {
-    padding: 3rem 1rem;
-  }
-  .showcase-card {
-    min-height: auto;
+    padding: 1rem 1rem 3rem;
   }
 }
 
+/* ── Dark mode overrides ────────────────── */
 @media (prefers-color-scheme: dark) {
-  /* Already dark, no changes needed */
+  .showcase-card {
+    background: var(--surface-card);
+    border-color: var(--border-subtle);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.20);
+  }
+
+  .showcase-difficulty-badge {
+    background: var(--surface-card-alt, #242422);
+    border-color: var(--border-subtle);
+  }
+
+  .showcase-code-block {
+    background: #0E0E0D;
+    border-color: rgba(255,255,255,0.05);
+  }
+
+  .landing-track-pill {
+    border-color: var(--border-subtle);
+    color: var(--text-secondary);
+  }
+
+  .landing-track-pill:hover {
+    color: var(--text-primary);
+  }
 }

@@ -84,12 +84,12 @@ ORDER BY order_date;`,
     answerCode: `def solve(df_orders):
     df = df_orders.copy()
     df['user_avg_order'] = (
-        df.groupby('user_id')['total_amount']
+        df.groupby('user_id')['net_amount']
           .transform('mean')
           .round(2)
     )
     return df[['order_id', 'user_id',
-               'total_amount',
+               'net_amount',
                'user_avg_order']]`,
   },
   {
@@ -122,7 +122,8 @@ export default function LandingPage() {
   const showcaseRef = useRef(null);
   const [showcaseActiveIndex, setShowcaseActiveIndex] = useState(0);
   const [showcaseDisplayed, setShowcaseDisplayed] = useState('');
-  const [showcasePhase, setShowcasePhase] = useState('question'); // 'question' | 'answer'
+  const [showcasePhase, setShowcasePhase] = useState('question');
+  const [showcaseTransitioning, setShowcaseTransitioning] = useState(false);
   const showcaseTimers = useRef({ interval: null, timeout: null });
 
   useEffect(() => {
@@ -137,43 +138,44 @@ export default function LandingPage() {
     const card = SHOWCASE_CARDS[showcaseActiveIndex];
     const timers = showcaseTimers.current;
 
-    // Clear any existing timers
     if (timers.interval) clearInterval(timers.interval);
     if (timers.timeout) clearTimeout(timers.timeout);
 
-    setShowcaseDisplayed('');
-    setShowcasePhase('question');
+    // Brief fade-out before resetting content
+    setShowcaseTransitioning(true);
+    timers.timeout = setTimeout(() => {
+      setShowcaseTransitioning(false);
+      setShowcaseDisplayed('');
+      setShowcasePhase('question');
 
-    let i = 0;
-    const question = card.questionText;
+      let i = 0;
+      const question = card.questionText;
 
-    // Phase 1: type the question
-    timers.interval = setInterval(() => {
-      i++;
-      setShowcaseDisplayed(question.slice(0, i));
-      if (i >= question.length) {
-        clearInterval(timers.interval);
-        // Pause then start answer phase
-        timers.timeout = setTimeout(() => {
-          setShowcasePhase('answer');
-          let j = 0;
-          const answer = card.answerCode;
-          const fullText = question + '\n\n' + answer;
-          const startLen = question.length + 2;
-          timers.interval = setInterval(() => {
-            j++;
-            setShowcaseDisplayed(fullText.slice(0, startLen + j));
-            if (j >= answer.length) {
-              clearInterval(timers.interval);
-              // Hold then advance
-              timers.timeout = setTimeout(() => {
-                setShowcaseActiveIndex(prev => (prev + 1) % SHOWCASE_CARDS.length);
-              }, 1500);
-            }
-          }, 10);
-        }, 800);
-      }
-    }, 12);
+      timers.interval = setInterval(() => {
+        i++;
+        setShowcaseDisplayed(question.slice(0, i));
+        if (i >= question.length) {
+          clearInterval(timers.interval);
+          timers.timeout = setTimeout(() => {
+            setShowcasePhase('answer');
+            let j = 0;
+            const answer = card.answerCode;
+            const fullText = question + '\n\n' + answer;
+            const startLen = question.length + 2;
+            timers.interval = setInterval(() => {
+              j++;
+              setShowcaseDisplayed(fullText.slice(0, startLen + j));
+              if (j >= answer.length) {
+                clearInterval(timers.interval);
+                timers.timeout = setTimeout(() => {
+                  setShowcaseActiveIndex(prev => (prev + 1) % SHOWCASE_CARDS.length);
+                }, 2000);
+              }
+            }, 10);
+          }, 800);
+        }
+      }, 12);
+    }, 180);
 
     return () => {
       if (timers.interval) clearInterval(timers.interval);
@@ -219,6 +221,8 @@ export default function LandingPage() {
     startTransition(() => setActiveTab(tabId));
   }
 
+  const activeCard = SHOWCASE_CARDS[showcaseActiveIndex];
+
   return (
     <>
       <header className="topbar landing-topbar">
@@ -242,18 +246,20 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main className="container landing-page">
+      <main className="landing-page">
         {!user && (
           <section className="landing-hero">
-            <span className="landing-kicker">SQL · Python · PySpark · pandas</span>
-            <h1 className="landing-title">Get sharp at data interviews.</h1>
-            <p className="landing-copy">
-              Four focused tracks covering query fluency, coding fundamentals, dataframe work, and Spark judgment.
-              Practice in a calm workspace with instant feedback and guided progression.
-            </p>
-            <div className="landing-actions">
-              <a className="btn btn-primary" href="#landing-tracks">Explore tracks ↓</a>
-              <Link className="btn btn-secondary" to="/auth">Create account</Link>
+            <div className="landing-hero-inner">
+              <span className="landing-kicker">SQL · Python · PySpark · pandas</span>
+              <h1 className="landing-title">Get sharp at data interviews.</h1>
+              <p className="landing-copy">
+                Four focused tracks covering query fluency, coding fundamentals, dataframe work, and Spark judgment.
+                Practice in a calm workspace with instant feedback and guided progression.
+              </p>
+              <div className="landing-actions">
+                <a className="btn btn-primary" href="#landing-tracks">Explore tracks ↓</a>
+                <Link className="btn btn-secondary" to="/auth">Create account</Link>
+              </div>
             </div>
           </section>
         )}
@@ -264,40 +270,52 @@ export default function LandingPage() {
               <span className="landing-showcase-eyebrow">All four tracks. Real interview problems.</span>
               <h2 className="landing-showcase-title">See what you&rsquo;ll be solving.</h2>
             </div>
-            <div className="landing-showcase-grid">
+
+            <div className="landing-track-nav" role="tablist" aria-label="Showcase track selector">
               {SHOWCASE_CARDS.map((card, i) => (
-                <div
+                <button
                   key={card.label}
-                  className={`showcase-card${showcaseActiveIndex === i ? ' is-active' : ''}`}
-                  style={showcaseActiveIndex === i ? { '--active-color': card.color } : {}}
+                  type="button"
+                  role="tab"
+                  aria-selected={showcaseActiveIndex === i}
+                  className={`landing-track-pill${showcaseActiveIndex === i ? ' is-active' : ''}`}
+                  style={{ '--pill-color': card.color }}
+                  onClick={() => setShowcaseActiveIndex(i)}
                 >
-                  <div className="showcase-card-header">
-                    <span className="showcase-track-dot" style={{ background: card.color }} />
-                    <span className="showcase-track-label">{card.label}</span>
-                    <span className="showcase-difficulty-badge">{card.difficulty}</span>
-                  </div>
-                  <div className="showcase-question-title">{card.title}</div>
-                  <div className="showcase-phase-label">
-                    {showcaseActiveIndex === i ? (showcasePhase === 'question' ? 'Question' : 'Answer') : ''}
-                  </div>
-                  <pre className="showcase-code-block">
-                    <code>{showcaseActiveIndex === i ? showcaseDisplayed : ''}</code>
-                  </pre>
-                </div>
+                  {card.label}
+                </button>
               ))}
+            </div>
+
+            <div
+              className={`showcase-card is-active${showcaseTransitioning ? ' is-transitioning' : ''}`}
+              style={{ '--active-color': activeCard.color }}
+            >
+              <div className="showcase-card-header">
+                <span className="showcase-track-dot" style={{ background: activeCard.color }} />
+                <span className="showcase-track-label">{activeCard.label}</span>
+                <span className="showcase-difficulty-badge">{activeCard.difficulty}</span>
+              </div>
+              <div className="showcase-question-title">{activeCard.title}</div>
+              <div className="showcase-phase-label">
+                {showcasePhase === 'question' ? 'Question' : 'Answer'}
+              </div>
+              <pre className="showcase-code-block">
+                <code>{showcaseDisplayed}</code>
+              </pre>
             </div>
           </div>
         </section>
 
-        <section className="landing-tabs-shell" id="landing-tracks">
-          <div className="landing-tabs-heading">
-            <h2 className="landing-tabs-title">Practice by track</h2>
-            <p className="landing-tabs-copy">
-              Pick a lane, skim the sample rounds, and jump into the real challenge flow when you are ready.
+        <section className="landing-practice-section" id="landing-tracks">
+          <div className="landing-practice-heading">
+            <h2 className="landing-practice-title">Practice by track</h2>
+            <p className="landing-practice-copy">
+              Pick a lane, skim the sample rounds, and jump into the challenge flow when you&rsquo;re ready.
             </p>
           </div>
 
-          <div className="landing-tabs-nav" role="tablist" aria-label="Track tabs">
+          <div className="landing-track-nav landing-track-nav--practice" role="tablist" aria-label="Track tabs">
             {trackTabs.map((tab) => {
               const isActive = activeTab === tab.id;
               return (
@@ -308,10 +326,11 @@ export default function LandingPage() {
                   aria-selected={isActive}
                   aria-controls={`landing-tab-panel-${tab.id}`}
                   id={`landing-tab-${tab.id}`}
-                  className={`landing-tab-btn ${isActive ? 'is-active' : ''}`}
+                  className={`landing-track-pill${isActive ? ' is-active' : ''}`}
+                  style={{ '--pill-color': tab.color }}
                   onClick={() => handleTabChange(tab.id)}
                 >
-                  <span className="landing-tab-label">{tab.label}</span>
+                  {tab.label}
                 </button>
               );
             })}
@@ -332,7 +351,7 @@ export default function LandingPage() {
                   role="tabpanel"
                   aria-labelledby={`landing-tab-${tab.id}`}
                   hidden={!isActive}
-                  className={`landing-tab-panel ${isActive ? 'is-active' : ''}`}
+                  className={`landing-tab-panel${isActive ? ' is-active' : ''}`}
                 >
                   <div className="landing-panel-header">
                     <div>
@@ -346,7 +365,7 @@ export default function LandingPage() {
 
                   <div className="landing-panel-body">
                     <div className="landing-panel-progress">
-                      <TrackProgressBar solved={tab.solved} total={tab.total} color={tab.color} />
+                      <TrackProgressBar solved={tab.solved} total={tab.total} color={tab.color} showLabel={false} />
                       <span className="landing-panel-progress-copy">
                         {user
                           ? `${tab.solved} solved out of ${tab.total}`
