@@ -163,22 +163,42 @@ Question subtypes:
 
 ---
 
-## MVP Question Bank — 30 Questions
+## Question Bank
 
-### Easy (10) — IDs 11001–11010 — Spark Fundamentals
+### Easy (30) — IDs 11001–11030 — Spark Fundamentals
 
 | ID | Title | Type | Topic |
 |---|---|---|---|
 | 11001 | Transformations vs Actions | mcq | Lazy evaluation — filter/select are transformations; count/collect/show are actions |
-| 11002 | What is a DAG? | mcq | Directed Acyclic Graph — how Spark models computation |
+| 11002 | Lazy Evaluation in Spark | mcq | Directed Acyclic Graph — how Spark models computation |
 | 11003 | RDD vs DataFrame | mcq | DataFrame is schema-aware, optimized by Catalyst; RDD is unstructured |
-| 11004 | Spark Driver vs Executor | mcq | Driver: orchestrates. Executor: runs tasks. |
-| 11005 | Predict Output of Chained Filters | predict_output | Sequential filter application on small sample data |
-| 11006 | When Does .cache() Help? | mcq | Reused DataFrames (e.g., in iterative algorithms); not for one-time scans |
-| 11007 | Wide vs Narrow Transformation | mcq | Narrow: map/filter (no shuffle). Wide: groupBy/join (shuffle required). |
-| 11008 | Spark SQL — createOrReplaceTempView | mcq | Registers a DataFrame as a temp view for spark.sql() queries |
-| 11009 | What Does .persist(StorageLevel.DISK_ONLY) Do? | mcq | Spills to disk, not memory — tradeoff between speed and memory |
-| 11010 | Reading a CSV — inferSchema Trade-off | mcq | inferSchema scans entire file for types — slow; explicit schema is faster |
+| 11004 | Role of the Driver | mcq | Driver: orchestrates. Executor: runs tasks. |
+| 11005 | Default Column Types When Reading CSV | predict_output | Without inferSchema all columns are StringType |
+| 11006 | Adding a Column with withColumn | mcq | withColumn returns a new DataFrame; DataFrames are immutable |
+| 11007 | How Many Jobs Does This Chain Trigger? | predict_output | One action = one Spark job |
+| 11008 | Wide vs Narrow Transformations | mcq | Narrow: map/filter (no shuffle). Wide: groupBy/join (shuffle required). |
+| 11009 | Registering a DataFrame as a SQL View | mcq | createOrReplaceTempView registers a DataFrame for spark.sql() queries |
+| 11010 | What Does .cache() Do? | mcq | Lazy mark for persistence; first action materializes it |
+| 11011 | What is a Spark Partition? | mcq | Partitions map to HDFS blocks; 256 MB / 128 MB block = ~2 partitions |
+| 11012 | count() vs show() | mcq | count() returns int; show() returns None and prints |
+| 11013 | orderBy vs sort | mcq | Aliases — identical behavior in PySpark |
+| 11014 | withColumnRenamed Usage | predict_output | Column is renamed in the new DataFrame; old name not preserved |
+| 11015 | dropDuplicates Scope | mcq | Which row is kept is non-deterministic in a distributed system |
+| 11016 | SparkSession Entry Point | mcq | SparkSession.builder.appName(...).getOrCreate() |
+| 11017 | Write Mode: overwrite | mcq | Deletes existing directory and replaces with new data |
+| 11018 | when().otherwise() Return Type | predict_output | Branch values are strings → StringType column |
+| 11019 | Why Python UDFs Are Slow | mcq | Bypass Catalyst + JVM↔Python serialization per row |
+| 11020 | Casting Column Types | mcq | df['col'].cast('double') inside withColumn |
+| 11021 | union() Column Matching | mcq | Positional — by order, not by name; use unionByName for name-based |
+| 11022 | distinct() vs dropDuplicates() | mcq | distinct() = dropDuplicates(); dropDuplicates accepts a subset |
+| 11023 | The lit() Function | mcq | Creates a constant Column literal for use in expressions |
+| 11024 | alias() Behavior | predict_output | Column name becomes the alias in the output |
+| 11025 | printSchema() Return Value | mcq | Returns None; use df.schema for StructType |
+| 11026 | Reading Multi-Line JSON | mcq | option("multiLine", True) required for pretty-printed JSON |
+| 11027 | What explain() Shows | mcq | Optimized physical execution plan with operators |
+| 11028 | limit() vs head() | mcq | limit() is lazy transformation; head() is an action returning Row list |
+| 11029 | Why Use checkpoint()? | mcq | Breaks lineage to prevent StackOverflow in iterative jobs |
+| 11030 | inferSchema Performance Cost | mcq | Full extra pass over data to determine column types |
 
 ### Medium (10) — IDs 12001–12010 — Internals and Common Patterns
 

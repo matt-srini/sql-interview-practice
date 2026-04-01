@@ -50,7 +50,7 @@ A data interview practice platform covering four tracks. Users write SQL or Pyth
 | SQL | 86 (30 easy, 30 medium, 26 hard) | SQL query | `backend/content/questions/` |
 | Python | 10 easy (expanding) | Algorithm test cases | `backend/content/python_questions/` |
 | Pandas | 10 easy (expanding) | DataFrame comparison | `backend/content/python_data_questions/` |
-| PySpark | 10 easy (expanding) | MCQ / predict output | `backend/content/pyspark_questions/` |
+| PySpark | 30 easy (expanding) | MCQ / predict output | `backend/content/pyspark_questions/` |
 
 - **Sample questions (SQL only):** 9 total — 3 per difficulty (`backend/sample_questions.py`)
 - Every question has `hints` (1–2 entries) and `concepts` (semantic tags surfaced as pills)
