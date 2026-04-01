@@ -3454,15 +3454,16 @@ select {
   margin: 0;
 }
 
-/* ── 4-card grid ─────────────────────────── */
+/* ── 4-card flex row — active card expands to show full code ── */
 .landing-showcase-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
   gap: 1rem;
-  align-items: start;
+  align-items: stretch;
 }
 
 .showcase-card {
+  flex: 1;
+  min-width: 0;
   background: rgba(255,255,255,0.035);
   border: 1px solid rgba(255,255,255,0.07);
   border-radius: 20px;
@@ -3472,21 +3473,25 @@ select {
   gap: 0.9rem;
   opacity: 0.38;
   transition:
+    flex-grow 0.55s cubic-bezier(0.22, 1, 0.36, 1),
     opacity 0.55s ease,
     transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
     border-color 0.45s ease,
     box-shadow 0.55s ease;
-  /* Fixed height — prevents card expanding when text types in */
-  height: 370px;
+  /* No fixed height on inactive cards — they stretch to match the active card */
+  min-height: 300px;
   overflow: hidden;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  will-change: transform, opacity;
+  will-change: transform, opacity, flex-grow;
 }
 
 .showcase-card.is-active {
+  flex-grow: 2.4;
+  /* Fixed height on active card — tall enough for full content, never expands during typing */
+  height: 510px;
   opacity: 1;
-  transform: translateY(-6px) scale(1.015);
+  transform: translateY(-6px);
   border-color: var(--active-color, rgba(255,255,255,0.25));
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--active-color, transparent) 40%, transparent),
@@ -3563,13 +3568,19 @@ select {
   border: 1px solid rgba(255,255,255,0.055);
   border-radius: 13px;
   padding: 0.9rem 1rem;
-  /* Fixed height — prevents code block pushing card taller as text types in */
-  flex: none;
-  height: 196px;
+  /* Inactive cards: flex: 1 fills whatever height the card stretches to */
+  flex: 1;
+  min-height: 0;
   margin: 0;
   white-space: pre;
   overflow: hidden;
   position: relative;
+}
+
+/* Active card: fixed tall code block — shows full question + answer (~17 lines for SQL) */
+.showcase-card.is-active .showcase-code-block {
+  flex: none;
+  height: 360px;
 }
 
 .showcase-code-block code {
@@ -3605,7 +3616,14 @@ select {
 /* ── Showcase responsive ────────────────── */
 @media (max-width: 960px) {
   .landing-showcase-grid {
-    grid-template-columns: repeat(2, 1fr);
+    flex-wrap: wrap;
+  }
+  .showcase-card {
+    flex: 1 1 calc(50% - 0.5rem);
+  }
+  .showcase-card.is-active {
+    flex: 1 1 calc(50% - 0.5rem);
+    transform: none;
   }
   .landing-showcase {
     padding: 4rem 1.25rem 4.5rem;
@@ -3614,14 +3632,25 @@ select {
 
 @media (max-width: 560px) {
   .landing-showcase-grid {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
+  .showcase-card {
+    flex: none;
+    width: 100%;
+    min-height: 0;
+  }
+  .showcase-card.is-active {
+    flex: none;
+    width: 100%;
+    height: auto;
+    transform: none;
+  }
+  .showcase-card.is-active .showcase-code-block {
+    flex: none;
+    height: 360px;
   }
   .landing-showcase {
     padding: 3rem 1rem 3.5rem;
-  }
-  .showcase-card {
-    height: auto;
-    min-height: 320px;
   }
 }
 
