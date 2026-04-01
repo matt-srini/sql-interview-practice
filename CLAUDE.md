@@ -146,37 +146,45 @@ Topic context is provided by `TopicContext.js` (see `frontend/src/contexts/Topic
 
 ## Landing page structure
 
-Fixed topbar plus the original centered hero for logged-out users, followed by a single modern tab shell. No split hero. No placeholder/planned features visible.
+Fixed topbar, centered hero (logged-out only), showcase animation, then practice section. One coherent scroll on the warm light background — no dark-box sections, no card containers. Logged-in users see showcase + practice only (hero hidden).
 
 ```
 TOPBAR
   "datanest"                                               [Dashboard] [name · Sign out] or [Login]
 
 HERO  (logged-out only)
+  Centered, max-width 620px inner wrapper (.landing-hero-inner)
   kicker: "SQL · Python · PySpark · pandas"
   headline: "Get sharp at data interviews."
   copy: one sentence about four tracks
   CTAs: [Explore tracks ↓] [Create account]
 
-SHOWCASE  (all users — between hero and tabs)
-  Dark section (#0C0C0A) with radial gradient overlays in track accent colors
-  4-card horizontal grid, one per track (SQL, Python, Pandas, PySpark)
-  Each card shows a medium/hard question + typed answer animation
-  Active card cycles every ~5s with glow border and elevation; others dimmed
-  CSS classes: .landing-showcase, .showcase-card, .showcase-card.is-active
+SHOWCASE  (all users)
+  Same warm page background — no dark box
+  Centered max-width 740px inner (.landing-showcase-inner)
+  Eyebrow + title (centered)
+  4 track pill selectors (.landing-track-nav + .landing-track-pill)
+    Active pill: solid fill in track color (via --pill-color CSS var)
+  Single large showcase card (.showcase-card.is-active)
+    White card, 4px colored left border in track color (--active-color)
+    Card header: track dot + label + difficulty badge
+    Question title + phase label ("Question" / "Answer")
+    Dark code block (#141413 bg, flex: 1) with typing animation + cursor blink
+    Auto-advances every ~5s; click a pill to jump tracks
+    Fade transition (.is-transitioning) between cards
 
-TAB STRIP
-  [SQL] [Python] [Pandas] [PySpark]
-
-ACTIVE PANEL
-  Track title + one-line description
-  Progress summary pill
-  Progress bar + compact copy
-  CTA into the track
-  Easy / Medium / Hard sample tiles for that same track
+PRACTICE BY TRACK  (all users)
+  Full-width section, no box (.landing-practice-section, max-width 1040px centered)
+  Heading + subtext (.landing-practice-heading)
+  Same track pill nav (.landing-track-nav.landing-track-nav--practice), left-aligned
+  Panel content per track (no box wrapper):
+    Track name + description
+    Thin progress bar (4px, 60% opacity) + "sign in to save" copy
+    Start/Continue CTA
+    Sample tiles grid (3-col) — Easy / Medium / Hard
 ```
 
-CSS classes center around `.landing-tabs-*`, `.landing-panel-*`, `.landing-samples-grid`, and `.sample-tile`.
+Key CSS classes: `.landing-track-nav`, `.landing-track-pill`, `.landing-practice-section`, `.landing-practice-heading`, `.landing-panel-*`, `.landing-samples-grid`, `.sample-tile`, `.showcase-card`, `.showcase-code-block`.
 Topbar auth remains `.topbar-user-pill`, `.topbar-user-name`, `.topbar-signout-btn`, `.topbar-auth-link`.
 
 ---
