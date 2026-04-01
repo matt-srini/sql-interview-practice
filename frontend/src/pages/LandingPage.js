@@ -1,4 +1,4 @@
-import { startTransition, useEffect, useMemo, useState } from 'react';
+import { startTransition, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
@@ -30,10 +30,100 @@ const SAMPLE_TIERS = {
   ],
 };
 
+const SHOWCASE_CARDS = [
+  {
+    label: 'SQL',
+    color: '#5B6AF0',
+    difficulty: 'medium',
+    title: '7-Day Rolling Revenue',
+    questionText: `-- Challenge: For each day, compute the sum
+-- of order revenue over the past 7 days
+-- (including today). Return: order_date,
+-- daily_revenue, rolling_7d_revenue.`,
+    answerCode: `SELECT
+  order_date,
+  SUM(total_amount) AS daily_revenue,
+  SUM(SUM(total_amount)) OVER (
+    ORDER BY order_date
+    ROWS BETWEEN 6 PRECEDING
+             AND CURRENT ROW
+  ) AS rolling_7d_revenue
+FROM orders
+GROUP BY order_date
+ORDER BY order_date;`,
+  },
+  {
+    label: 'Python',
+    color: '#2D9E6B',
+    difficulty: 'hard',
+    title: 'Coin Change (DP)',
+    questionText: `# Challenge: Given coin denominations and
+# an amount, return the minimum number of
+# coins needed. Return -1 if impossible.
+# Time: O(amount × coins). Space: O(amount).`,
+    answerCode: `def solve(coins, amount):
+    dp = [float('inf')] * (amount + 1)
+    dp[0] = 0
+    for coin in coins:
+        for x in range(coin, amount + 1):
+            dp[x] = min(dp[x],
+                        dp[x - coin] + 1)
+    return (dp[amount]
+            if dp[amount] != float('inf')
+            else -1)`,
+  },
+  {
+    label: 'Pandas',
+    color: '#C47F17',
+    difficulty: 'medium',
+    title: 'User Avg Order (Transform)',
+    questionText: `# Challenge: Add a column showing each
+# user's average order value on every row.
+# Use groupby + transform so the result
+# aligns with the original DataFrame index.`,
+    answerCode: `def solve(df_orders):
+    df = df_orders.copy()
+    df['user_avg_order'] = (
+        df.groupby('user_id')['total_amount']
+          .transform('mean')
+          .round(2)
+    )
+    return df[['order_id', 'user_id',
+               'total_amount',
+               'user_avg_order']]`,
+  },
+  {
+    label: 'PySpark',
+    color: '#D94F3D',
+    difficulty: 'medium',
+    title: 'repartition vs coalesce',
+    questionText: `# Challenge: You need to reduce a DataFrame
+# from 200 partitions to 10 for writing.
+# Which operation avoids a full shuffle,
+# and when does that matter?`,
+    answerCode: `# coalesce(10) — merges partitions locally,
+# no full shuffle. Best when REDUCING count.
+#
+# repartition(10) — full shuffle, even
+# distribution. Use when INCREASING or when
+# data is skewed across partitions.
+#
+# → For reducing: coalesce saves significant
+#   network I/O and shuffle overhead.
+df = df.coalesce(10)`,
+  },
+];
+
 export default function LandingPage() {
   const { user, logout } = useAuth();
   const [dashData, setDashData] = useState(null);
   const [activeTab, setActiveTab] = useState('sql');
+
+  const showcaseRef = useRef(null);
+  const [showcaseActiveIndex, setShowcaseActiveIndex] = useState(0);
+  const [showcaseDisplayed, setShowcaseDisplayed] = useState('');
+  const [showcasePhase, setShowcasePhase] = useState('question'); // 'question' | 'answer'
+  const showcaseTimers = useRef({ interval: null, timeout: null });
 
   useEffect(() => {
     if (user) {
@@ -42,6 +132,65 @@ export default function LandingPage() {
     }
     setDashData(null);
   }, [user]);
+
+  useEffect(() => {
+    const card = SHOWCASE_CARDS[showcaseActiveIndex];
+    const timers = showcaseTimers.current;
+
+    // Clear any existing timers
+    if (timers.interval) clearInterval(timers.interval);
+    if (timers.timeout) clearTimeout(timers.timeout);
+
+    setShowcaseDisplayed('');
+    setShowcasePhase('question');
+
+    let i = 0;
+    const question = card.questionText;
+
+    // Phase 1: type the question
+    timers.interval = setInterval(() => {
+      i++;
+      setShowcaseDisplayed(question.slice(0, i));
+      if (i >= question.length) {
+        clearInterval(timers.interval);
+        // Pause then start answer phase
+        timers.timeout = setTimeout(() => {
+          setShowcasePhase('answer');
+          let j = 0;
+          const answer = card.answerCode;
+          const fullText = question + '\n\n' + answer;
+          const startLen = question.length + 2;
+          timers.interval = setInterval(() => {
+            j++;
+            setShowcaseDisplayed(fullText.slice(0, startLen + j));
+            if (j >= answer.length) {
+              clearInterval(timers.interval);
+              // Hold then advance
+              timers.timeout = setTimeout(() => {
+                setShowcaseActiveIndex(prev => (prev + 1) % SHOWCASE_CARDS.length);
+              }, 1500);
+            }
+          }, 10);
+        }, 800);
+      }
+    }, 12);
+
+    return () => {
+      if (timers.interval) clearInterval(timers.interval);
+      if (timers.timeout) clearTimeout(timers.timeout);
+    };
+  }, [showcaseActiveIndex]);
+
+  useEffect(() => {
+    const el = showcaseRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) el.classList.add('is-visible'); },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const trackTabs = useMemo(
     () =>
@@ -108,6 +257,37 @@ export default function LandingPage() {
             </div>
           </section>
         )}
+
+        <section className="landing-showcase">
+          <div className="landing-showcase-inner" ref={showcaseRef}>
+            <div className="landing-showcase-header">
+              <span className="landing-showcase-eyebrow">All four tracks. Real interview problems.</span>
+              <h2 className="landing-showcase-title">See what you&rsquo;ll be solving.</h2>
+            </div>
+            <div className="landing-showcase-grid">
+              {SHOWCASE_CARDS.map((card, i) => (
+                <div
+                  key={card.label}
+                  className={`showcase-card${showcaseActiveIndex === i ? ' is-active' : ''}`}
+                  style={showcaseActiveIndex === i ? { '--active-color': card.color } : {}}
+                >
+                  <div className="showcase-card-header">
+                    <span className="showcase-track-dot" style={{ background: card.color }} />
+                    <span className="showcase-track-label">{card.label}</span>
+                    <span className="showcase-difficulty-badge">{card.difficulty}</span>
+                  </div>
+                  <div className="showcase-question-title">{card.title}</div>
+                  <div className="showcase-phase-label">
+                    {showcaseActiveIndex === i ? (showcasePhase === 'question' ? 'Question' : 'Answer') : ''}
+                  </div>
+                  <pre className="showcase-code-block">
+                    <code>{showcaseActiveIndex === i ? showcaseDisplayed : ''}</code>
+                  </pre>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
 
         <section className="landing-tabs-shell" id="landing-tracks">
           <div className="landing-tabs-heading">
