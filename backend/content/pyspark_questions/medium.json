@@ -1,1 +1,727 @@
-[]
+[
+  {
+    "id": 11301,
+    "order": 1,
+    "topic": "pyspark",
+    "type": "debug",
+    "difficulty": "medium",
+    "title": "AnalysisException on Column Access",
+    "description": "A data engineer runs the following code and gets an unexpected exception. What error is thrown and what is the correct fix?\n\n```python\nfrom pyspark.sql import SparkSession\n\nspark = SparkSession.builder.getOrCreate()\ndf = spark.createDataFrame([(1, 'Alice'), (2, 'Bob')], ['id', 'name'])\n\nresult = df.select('nonexistent_col')\nresult.show()\n```",
+    "code_snippet": "from pyspark.sql import SparkSession\n\nspark = SparkSession.builder.getOrCreate()\ndf = spark.createDataFrame([(1, 'Alice'), (2, 'Bob')], ['id', 'name'])\n\nresult = df.select('nonexistent_col')\nresult.show()",
+    "options": [
+      "KeyError: 'nonexistent_col' \u2014 fix by catching the KeyError and supplying a default column",
+      "AnalysisException: Column 'nonexistent_col' not found \u2014 fix by verifying the column exists first using `df.columns` before calling select",
+      "AttributeError: 'DataFrame' object has no attribute 'nonexistent_col' \u2014 fix by accessing the column via df['nonexistent_col']",
+      "TypeError: unsupported column type \u2014 fix by casting the column name to a Column object using col()"
+    ],
+    "correct_option": 1,
+    "explanation": "Spark raises `pyspark.sql.utils.AnalysisException` during the **analysis phase** (when the logical plan is resolved against the schema) when a referenced column does not exist in the DataFrame. This happens at action time \u2014 note that `df.select('nonexistent_col')` itself (the transformation) doesn't fail; the exception fires on `.show()`. The safe fix is to check `df.columns` before constructing the select, or catch `AnalysisException`. A `KeyError` would come from Python dict access, not Spark column resolution. `AttributeError` would occur if you tried to access `df.nonexistent_col` as a Python attribute. `TypeError` is for type mismatches, not missing columns.",
+    "hints": [
+      "Spark validates column references during the analysis phase of query planning, not when the transformation is written",
+      "Check `df.columns` (a plain Python list) before building your select expression to avoid this error at runtime"
+    ],
+    "concepts": [
+      "AnalysisException",
+      "column resolution",
+      "query analysis phase",
+      "error handling"
+    ]
+  },
+  {
+    "id": 11302,
+    "order": 2,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "medium",
+    "title": "repartition vs coalesce Tradeoffs",
+    "description": "Your pipeline currently produces a DataFrame with 100 partitions, but you want to write it to storage as 4 files. You are deciding between `df.repartition(4)` and `df.coalesce(4)`.\n\nWhen should you prefer **`coalesce(4)`** over `repartition(4)`?",
+    "code_snippet": null,
+    "options": [
+      "When you need to increase the number of partitions from 4 to 100 to improve parallelism",
+      "When reducing the number of partitions, because coalesce merges partitions locally without a full shuffle",
+      "When the data is heavily skewed and you want to balance partition sizes evenly",
+      "When writing to HDFS, because HDFS requires coalesce to manage block boundaries"
+    ],
+    "correct_option": 1,
+    "explanation": "`coalesce(n)` is the right choice when **decreasing** partition count because it avoids a full shuffle \u2014 it simply combines existing partitions on the same executor, which is much cheaper. `repartition(n)` always triggers a full shuffle regardless of direction, producing more evenly balanced partitions but at higher cost. When **increasing** partitions, you must use `repartition` because coalesce cannot split a single partition. For skewed data, `repartition` (which uses a hash or round-robin shuffle) is better at balancing sizes than coalesce. HDFS has no special requirement for either method.",
+    "hints": [
+      "Consider which operation requires moving data across the network (shuffle) and which does not",
+      "coalesce avoids a shuffle by merging partitions that already reside on the same executor \u2014 this only works when going from more to fewer partitions"
+    ],
+    "concepts": [
+      "repartition",
+      "coalesce",
+      "shuffle",
+      "partitioning",
+      "performance"
+    ]
+  },
+  {
+    "id": 11303,
+    "order": 3,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "medium",
+    "title": "What Triggers a Shuffle",
+    "description": "Understanding which operations cause a **shuffle** (data movement across the network between executors) is critical for writing efficient Spark code.\n\nWhich of the following operations **triggers a shuffle**?",
+    "code_snippet": null,
+    "options": [
+      "df.filter(df['status'] == 'active')",
+      "df.groupBy('department').agg(F.sum('salary'))",
+      "df.select('name', 'department', 'salary')",
+      "df.withColumn('tax', df['salary'] * 0.2)"
+    ],
+    "correct_option": 1,
+    "explanation": "`groupBy().agg()` is a **wide transformation** that requires a shuffle: all rows with the same group key must be co-located on the same executor before aggregation can occur. This forces Spark to redistribute (shuffle) data across the network. `filter` is a **narrow** transformation \u2014 rows are filtered partition-by-partition with no cross-partition communication. `select` simply projects columns and involves no data movement. `withColumn` computes a new column row-by-row within each partition. Only operations that need to combine data across partitions (groupBy, join, distinct, orderBy, etc.) cause shuffles.",
+    "hints": [
+      "A shuffle occurs whenever a row's destination partition depends on its content rather than its current location",
+      "Wide transformations require all rows with the same key to be on the same partition \u2014 ask yourself which operation here has that requirement"
+    ],
+    "concepts": [
+      "shuffle",
+      "wide transformation",
+      "narrow transformation",
+      "groupBy",
+      "partitioning"
+    ]
+  },
+  {
+    "id": 11304,
+    "order": 4,
+    "topic": "pyspark",
+    "type": "optimization",
+    "difficulty": "medium",
+    "title": "Broadcast Join for Small Dimension Tables",
+    "description": "You have a pipeline joining a **10 GB fact table** (`orders`) with a **1 MB dimension table** (`countries`). The join is very slow. What is the best optimization strategy?\n\n```python\nresult = orders.join(countries, on='country_code')\n```",
+    "code_snippet": "result = orders.join(countries, on='country_code')",
+    "options": [
+      "Broadcast join: wrap the small table with F.broadcast() so it is sent to every executor, eliminating the shuffle on the large table",
+      "Repartition both DataFrames to the same number of partitions before joining so data is co-located",
+      "Coalesce the large table to fewer partitions before joining to reduce the number of tasks",
+      "Call .persist() on the large table before the join so Spark doesn't recompute it"
+    ],
+    "correct_option": 0,
+    "explanation": "A **broadcast join** (`orders.join(F.broadcast(countries), on='country_code')`) is the best optimization here. The 1 MB dimension table is small enough to fit in memory on each executor, so Spark sends a copy of it to every executor. This means the large 10 GB table never needs to be shuffled \u2014 each partition of `orders` looks up its matching `countries` rows locally. Repartitioning both tables still requires a shuffle of the 10 GB table. Coalescing the large table reduces parallelism and doesn't eliminate the shuffle. `.persist()` avoids recomputation of the large table in multi-step pipelines but does nothing to reduce the join shuffle.",
+    "hints": [
+      "When one side of a join is small enough to fit in executor memory, you can avoid shuffling the large side entirely",
+      "Use `pyspark.sql.functions.broadcast(small_df)` to hint to Spark that the table should be broadcast"
+    ],
+    "concepts": [
+      "broadcast join",
+      "join optimization",
+      "shuffle elimination",
+      "F.broadcast"
+    ]
+  },
+  {
+    "id": 11305,
+    "order": 5,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "medium",
+    "title": "Output Schema of groupBy + agg",
+    "description": "Given a DataFrame `df` with columns `dept` (StringType) and `salary` (DoubleType), you run the following aggregation:\n\n```python\nfrom pyspark.sql import functions as F\n\nresult = df.groupBy('dept').agg(\n    F.count('*').alias('cnt'),\n    F.avg('salary').alias('avg_sal')\n)\nresult.printSchema()\n```\n\nWhat does the printed schema look like?",
+    "code_snippet": "from pyspark.sql import functions as F\n\nresult = df.groupBy('dept').agg(\n    F.count('*').alias('cnt'),\n    F.avg('salary').alias('avg_sal')\n)\nresult.printSchema()",
+    "options": [
+      "root\n |-- dept: string (nullable = true)\n |-- cnt: integer (nullable = false)\n |-- avg_sal: double (nullable = true)",
+      "root\n |-- dept: string (nullable = true)\n |-- cnt: long (nullable = false)\n |-- avg_sal: double (nullable = true)",
+      "root\n |-- dept: string (nullable = true)\n |-- cnt: long (nullable = false)\n |-- avg_sal: float (nullable = true)",
+      "root\n |-- dept: string (nullable = true)\n |-- cnt: integer (nullable = false)\n |-- avg_sal: float (nullable = true)"
+    ],
+    "correct_option": 1,
+    "explanation": "`F.count('*')` returns **LongType** (64-bit integer) in Spark \u2014 not IntegerType. This is because row counts can exceed the 2-billion limit of a 32-bit integer. `F.avg()` on a DoubleType column returns **DoubleType**, not FloatType. The grouping column `dept` retains its original StringType. Options A and D are wrong because they show IntegerType for count. Option C is wrong because it shows FloatType for avg_sal. The correct combination is Long for count and Double for average.",
+    "hints": [
+      "Spark's count aggregate always returns LongType, not IntegerType \u2014 row counts can be very large",
+      "avg() preserves or promotes to DoubleType for numeric accuracy"
+    ],
+    "concepts": [
+      "schema inference",
+      "LongType",
+      "DoubleType",
+      "aggregation output types",
+      "printSchema"
+    ]
+  },
+  {
+    "id": 11306,
+    "order": 6,
+    "topic": "pyspark",
+    "type": "debug",
+    "difficulty": "medium",
+    "title": "Executor OutOfMemoryError Diagnosis",
+    "description": "A Spark job processing 500 GB of log data fails partway through with the following error on multiple executors:\n\n```\njava.lang.OutOfMemoryError: GC overhead limit exceeded\n  at org.apache.spark.sql.execution.UnsafeExternalSorter\n```\n\nThe job uses 50 partitions and each executor has 4 GB of memory. What is the **most likely cause and fix**?",
+    "code_snippet": "spark.conf.set(\"spark.sql.shuffle.partitions\", \"50\")\n\ndf = spark.read.parquet(\"/data/logs/\")  # 500 GB\n\ncleaned = (\n    df.filter(col(\"event_type\") == \"error\")\n      .groupBy(\"user_id\", \"session_id\")\n      .agg(F.count(\"*\").alias(\"error_count\"),\n           F.max(\"timestamp\").alias(\"last_error\"))\n)\n\ncleaned.write.parquet(\"/output/error_summary\")",
+    "options": [
+      "The driver process has run out of memory \u2014 increase spark.driver.memory and call .collect() in smaller batches",
+      "The partitions are too large \u2014 each partition holds too much data for executor memory; fix by repartitioning to more partitions (e.g., 500\u20131000) and/or increasing spark.executor.memory",
+      "Too many cached DataFrames are filling executor memory \u2014 call .unpersist() on all DataFrames before the failing stage",
+      "Python UDFs are leaking memory \u2014 rewrite all UDFs in Scala to avoid the Python worker overhead"
+    ],
+    "correct_option": 1,
+    "explanation": "With 500 GB and only 50 partitions, each partition holds approximately 10 GB of data \u2014 far more than a 4 GB executor can hold. The executor runs out of memory trying to sort or aggregate a single partition. The primary fix is to **increase the partition count** (a rule of thumb is 2\u20134 partitions per GB) using `repartition()` or by increasing `spark.sql.shuffle.partitions`. Optionally increase `spark.executor.memory` too. The error on the `UnsafeExternalSorter` stack confirms this is a per-executor data volume problem, not a driver issue. Unrelated cached DataFrames or Python UDFs are not indicated by this stack trace.",
+    "hints": [
+      "Divide total data size by number of partitions to estimate per-partition size \u2014 compare that to executor memory",
+      "A good rule of thumb is to target 128\u2013256 MB per partition; with 500 GB of data that means roughly 2000\u20134000 partitions"
+    ],
+    "concepts": [
+      "OutOfMemoryError",
+      "partition sizing",
+      "executor memory",
+      "repartition",
+      "performance tuning"
+    ]
+  },
+  {
+    "id": 11307,
+    "order": 7,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "medium",
+    "title": "RANK vs DENSE_RANK vs ROW_NUMBER",
+    "description": "A DataFrame contains salary values `[100, 90, 90, 80]` in descending order for employees in one department. You apply three window functions:\n\n```python\nfrom pyspark.sql import Window\nfrom pyspark.sql import functions as F\n\nw = Window.partitionBy('dept').orderBy(F.desc('salary'))\ndf = df.withColumn('rnk', F.rank().over(w))\ndf = df.withColumn('dense', F.dense_rank().over(w))\ndf = df.withColumn('rownum', F.row_number().over(w))\n```\n\nFor the **two employees earning 90**, what values do `rnk`, `dense`, and `rownum` produce?",
+    "code_snippet": null,
+    "options": [
+      "rnk=1,1 | dense=1,1 | rownum=1,2 \u2014 ties always start at rank 1",
+      "rnk=2,2 | dense=2,2 | rownum=2,3 \u2014 RANK and DENSE_RANK both give 2 for ties; ROW_NUMBER assigns consecutive values",
+      "rnk=2,3 | dense=2,2 | rownum=2,3 \u2014 RANK skips after a tie; DENSE_RANK does not",
+      "rnk=2,2 | dense=2,3 | rownum=2,2 \u2014 DENSE_RANK skips after a tie; RANK does not"
+    ],
+    "correct_option": 1,
+    "explanation": "For the two 90-salary employees: **RANK** gives both rank 2 (since 100 is rank 1), then **skips** to rank 4 for 80 \u2014 so the ties both get 2. **DENSE_RANK** also gives both rank 2, but does **not skip** \u2014 80 gets rank 3. **ROW_NUMBER** assigns a unique, consecutive number to every row regardless of ties; the two 90s get 2 and 3 (order between tied rows is arbitrary but deterministic within a run). Option A is wrong \u2014 100 is rank 1, so 90s start at 2. Option C confuses RANK and DENSE_RANK (it's RANK that skips, not DENSE_RANK). Option D reverses the skip behavior.",
+    "hints": [
+      "RANK leaves gaps after ties (1, 2, 2, 4); DENSE_RANK never leaves gaps (1, 2, 2, 3); ROW_NUMBER is always unique",
+      "All three functions share the same ORDER BY \u2014 ties differ only in how each function handles duplicate order values"
+    ],
+    "concepts": [
+      "window functions",
+      "RANK",
+      "DENSE_RANK",
+      "ROW_NUMBER",
+      "ties handling"
+    ]
+  },
+  {
+    "id": 11308,
+    "order": 8,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "medium",
+    "title": "Broadcast Variable vs Accumulator",
+    "description": "You are writing a UDF that looks up a country name from a country code using a Python dictionary `country_map` that is 50 MB. This UDF runs across millions of rows.\n\nHow should you share `country_map` with executors?",
+    "code_snippet": null,
+    "options": [
+      "Use a Broadcast Variable: `bc = spark.sparkContext.broadcast(country_map)` and access `bc.value` inside the UDF \u2014 the dictionary is sent to each executor once and reused across all tasks",
+      "Use an Accumulator: `acc = spark.sparkContext.accumulator(country_map)` to share the dictionary across all executors",
+      "Pass `country_map` directly in the Python UDF closure \u2014 Spark serializes it efficiently per task automatically",
+      "Write `country_map` to HDFS as a JSON file and read it inside the UDF on each executor"
+    ],
+    "correct_option": 0,
+    "explanation": "A **Broadcast Variable** is the correct tool for sharing a read-only lookup dictionary across executors. Spark serializes the variable once, ships it to each executor, and caches it in executor memory \u2014 every task on that executor reuses the same copy without additional serialization. An **Accumulator** is a write-only aggregation mechanism (like a distributed counter or sum) \u2014 it cannot be read by executors and is not designed for lookup. Passing the dict directly in a Python closure works but causes Spark to serialize the dictionary with every task, which is expensive at 50 MB \u00d7 millions of tasks. Reading from HDFS per row is extremely slow and not a real pattern.",
+    "hints": [
+      "Broadcast Variables are for read-only data you want to send to executors once; Accumulators are for aggregating values back to the driver",
+      "With a Broadcast Variable, the 50 MB dictionary is shipped to each executor node (not each task) \u2014 a big difference when you have thousands of tasks"
+    ],
+    "concepts": [
+      "broadcast variable",
+      "accumulator",
+      "UDF",
+      "executor memory",
+      "serialization"
+    ]
+  },
+  {
+    "id": 11309,
+    "order": 9,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "medium",
+    "title": "inferSchema in Production Pipelines",
+    "description": "Your team reads a 100-million-row CSV file every morning in a production pipeline:\n\n```python\ndf = spark.read.csv('/data/daily_events.csv', header=True, inferSchema=True)\n```\n\nA senior engineer flags this as a production anti-pattern. Are they correct, and why?",
+    "code_snippet": null,
+    "options": [
+      "No \u2014 inferSchema=True is best practice in production because it adapts automatically to schema changes",
+      "No \u2014 inferSchema only samples 1,000 rows, so it is fast and reliable even on large files",
+      "Yes \u2014 inferSchema=True triggers a full additional scan of the data to determine types, making it slow on large files and potentially inferring wrong types (e.g., leading-zero strings as integers); use an explicit StructType schema instead",
+      "Yes \u2014 inferSchema=True is deprecated in Spark 3.x and will raise a warning in production"
+    ],
+    "correct_option": 2,
+    "explanation": "The engineer is correct. `inferSchema=True` forces Spark to **read the entire file twice** \u2014 once to determine column types, once to produce the DataFrame \u2014 doubling I/O on large files. It can also infer incorrect types (e.g., a ZIP code column containing '01234' might be inferred as Integer, silently dropping the leading zero). In production, the schema is known and stable; an explicit `StructType` schema is faster, deterministic, and robust to data quality issues. Option A is wrong \u2014 automatic schema adaptation is a risk, not a benefit, for production pipelines. Option B is false \u2014 `inferSchema` scans the full file, not a sample. Option D is false \u2014 `inferSchema` is not deprecated.",
+    "hints": [
+      "Think about how many times Spark needs to read the data when it doesn't know the types in advance",
+      "Consider what happens to a column like '00123' (ZIP code) when Spark decides its type based on the data values"
+    ],
+    "concepts": [
+      "inferSchema",
+      "StructType",
+      "CSV reading",
+      "schema definition",
+      "production patterns"
+    ]
+  },
+  {
+    "id": 11310,
+    "order": 10,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "medium",
+    "title": "Kryo vs Java Serialization",
+    "description": "You are tuning a Spark job that performs heavy shuffles and the shuffle data size shown in the Spark UI is very large. A colleague suggests enabling Kryo serialization.\n\nWhen should you enable Kryo serialization by setting `spark.serializer=org.apache.spark.serializer.KryoSerializer`?",
+    "code_snippet": null,
+    "options": [
+      "Only when your job uses Python UDFs \u2014 Kryo is needed to serialize Python objects across the JVM boundary",
+      "When reading Parquet files \u2014 Kryo enables columnar deserialization of Parquet row groups",
+      "When shuffling or caching large amounts of data \u2014 Kryo is typically 10x faster and produces much smaller serialized objects than Java's default serializer, reducing shuffle I/O and memory",
+      "Always \u2014 Kryo is the default serializer in PySpark and does not need to be explicitly enabled"
+    ],
+    "correct_option": 2,
+    "explanation": "Kryo serialization shines in **shuffle-heavy or cache-heavy** jobs because it is significantly faster and more compact than Java's default `ObjectOutputStream`-based serialization, which can produce large, slow-to-serialize objects. Reducing serialized size directly reduces shuffle write/read volume and network traffic. Python UDFs use **Pickle** serialization across the Python\u2013JVM boundary, not Kryo. Parquet reading uses its own columnar format, not Java object serialization. Kryo is **not** the default in PySpark \u2014 Java serialization is; you must explicitly configure it, and you may also need to register your custom classes with Kryo for maximum performance.",
+    "hints": [
+      "Kryo improves the serialization of JVM objects during shuffles and .cache() calls \u2014 it doesn't affect Python-side serialization",
+      "Look at shuffle read/write sizes in the Spark UI Stages tab \u2014 large shuffle I/O is a good signal that Kryo serialization could help"
+    ],
+    "concepts": [
+      "Kryo serialization",
+      "Java serialization",
+      "shuffle optimization",
+      "spark.serializer",
+      "performance tuning"
+    ]
+  },
+  {
+    "id": 11311,
+    "order": 11,
+    "topic": "pyspark",
+    "type": "optimization",
+    "difficulty": "medium",
+    "title": "Salting for Skewed Joins",
+    "description": "A join between `events` (5 billion rows) and `users` (10 million rows) on `user_id` is extremely slow. In the Spark UI you see that 95% of data is being processed by a single task because `user_id = -1` (anonymous users) accounts for 80% of all rows.\n\nWhat technique addresses this data skew?",
+    "code_snippet": null,
+    "options": [
+      "Salting: add a random integer suffix to the skewed key on the large table and explode matching salted keys on the small table, creating a more balanced join key distribution",
+      "Broadcast join: broadcast the large events table so every executor gets a full copy, eliminating the skewed shuffle",
+      "Repartition events by user_id before the join \u2014 this ensures all rows with the same user_id are already co-located",
+      "Increase the number of executor cores for the skewed task so it can process the large partition faster"
+    ],
+    "correct_option": 0,
+    "explanation": "**Salting** is the standard fix for skewed joins. You add a random integer (the 'salt') to the skewed key in the large table (e.g., `user_id_salted = concat(user_id, '_', floor(rand() * N))`), then explode the small table to have N copies of each row (one per salt value). This transforms one huge task into N smaller, balanced tasks. Broadcast join requires the large table to fit in executor memory \u2014 5 billion rows cannot be broadcast. Repartitioning by `user_id` actually makes skew worse, not better \u2014 all the `-1` rows end up in the same partition. Increasing executor cores does not fix the root cause of skew and doesn't improve the other tasks.",
+    "hints": [
+      "Salting artificially increases the cardinality of the skewed key so rows are distributed across more partitions",
+      "You must 'explode' the small (non-skewed) table to match each salt value, so N copies of the matching rows are created"
+    ],
+    "concepts": [
+      "data skew",
+      "salting",
+      "skewed join",
+      "partition imbalance",
+      "join optimization"
+    ]
+  },
+  {
+    "id": 11312,
+    "order": 12,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "medium",
+    "title": "Writing Partitioned Parquet Output",
+    "description": "You call the following to write a DataFrame to Parquet:\n\n```python\ndf.write.partitionBy('country').parquet('/output/sales')\n```\n\nThe DataFrame contains rows for countries `US`, `DE`, and `FR`. What does the output directory structure look like?",
+    "code_snippet": null,
+    "options": [
+      "Three Parquet files at the root level, one per country, named `US.parquet`, `DE.parquet`, `FR.parquet`",
+      "Subdirectories using Hive-style naming: `/output/sales/country=US/`, `/output/sales/country=DE/`, `/output/sales/country=FR/`, each containing one or more Parquet part-files",
+      "A single Parquet file with country stored as the first column for efficient predicate pushdown",
+      "One directory per Spark partition (e.g., `/output/sales/part-00000/`, `/output/sales/part-00001/`), where each partition stores all countries present in that partition"
+    ],
+    "correct_option": 1,
+    "explanation": "Spark's `partitionBy` uses **Hive-compatible directory partitioning**: it creates subdirectories named `<column>=<value>` (e.g., `country=US`). Inside each subdirectory, Spark writes one or more `part-*.parquet` files. This structure allows query engines (Spark, Hive, Presto, Athena, etc.) to perform **partition pruning** \u2014 filtering on `country` only reads the relevant subdirectory without scanning other countries. Option A (flat named files) is not how Spark works. Option C (single file) would need `coalesce(1)` and still uses the directory structure. Option D (partition-number directories) describes the internal task structure, not `partitionBy`.",
+    "hints": [
+      "Spark's partitionBy mirrors Hive's directory partitioning convention \u2014 look for the column=value pattern",
+      "This directory structure is what allows downstream query engines to do partition pruning efficiently"
+    ],
+    "concepts": [
+      "partitionBy",
+      "Parquet",
+      "Hive partitioning",
+      "directory structure",
+      "partition pruning"
+    ]
+  },
+  {
+    "id": 11313,
+    "order": 13,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "medium",
+    "title": "AQE Auto-Broadcast Join Threshold",
+    "description": "Your team has Adaptive Query Execution (AQE) enabled (`spark.sql.adaptive.enabled=true`). You notice in the Spark UI that a join you expected to be a SortMergeJoin was converted to a BroadcastHashJoin at runtime.\n\nWhen does AQE automatically convert a sort-merge join to a broadcast join?",
+    "code_snippet": null,
+    "options": [
+      "AQE always converts all joins to broadcast joins when adaptive mode is enabled",
+      "AQE converts the join at runtime when Spark determines that the build side (smaller table) is smaller than `spark.sql.autoBroadcastJoinThreshold` after collecting actual shuffle statistics",
+      "AQE converts the join only when using the SQL interface \u2014 DataFrame API joins are never auto-broadcast by AQE",
+      "AQE never affects join strategies \u2014 it only optimizes partition coalescing after shuffles"
+    ],
+    "correct_option": 1,
+    "explanation": "AQE can convert a sort-merge join to a broadcast join **at runtime** (during execution, not at planning time) by using actual shuffle statistics gathered during the job. Once the shuffle output for the build side is known, Spark checks if it is below `spark.sql.autoBroadcastJoinThreshold` (default 10 MB). If so, it dynamically broadcasts that side \u2014 avoiding the second sort-merge phase. This is more accurate than the static optimizer, which estimates sizes from table statistics that may be stale or absent. AQE applies equally to SQL and DataFrame API. AQE also handles partition coalescing and skew join optimization, not just auto-broadcast.",
+    "hints": [
+      "AQE acts on runtime statistics \u2014 it 'looks back' at actual data sizes after a shuffle stage completes",
+      "The key config is spark.sql.autoBroadcastJoinThreshold; AQE can apply this threshold dynamically using measured shuffle sizes"
+    ],
+    "concepts": [
+      "AQE",
+      "adaptive query execution",
+      "broadcast join",
+      "autoBroadcastJoinThreshold",
+      "join optimization"
+    ]
+  },
+  {
+    "id": 11314,
+    "order": 14,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "medium",
+    "title": "Catalyst Optimizer Phases",
+    "description": "Spark's **Catalyst optimizer** processes every query through a series of plan transformation phases before execution. What is the **correct order** of these phases?",
+    "code_snippet": null,
+    "options": [
+      "Optimized Logical Plan \u2192 Analyzed Logical Plan \u2192 Unresolved Logical Plan \u2192 Physical Plans \u2192 Selected Physical Plan",
+      "Unresolved Logical Plan \u2192 Analyzed Logical Plan \u2192 Optimized Logical Plan \u2192 Physical Plans \u2192 Selected Physical Plan",
+      "Analyzed Logical Plan \u2192 Unresolved Logical Plan \u2192 Physical Plans \u2192 Optimized Logical Plan \u2192 Selected Physical Plan",
+      "Physical Plans \u2192 Selected Physical Plan \u2192 Unresolved Logical Plan \u2192 Analyzed Logical Plan \u2192 Optimized Logical Plan"
+    ],
+    "correct_option": 1,
+    "explanation": "Catalyst processes queries in this exact order: (1) **Unresolved Logical Plan** \u2014 the raw parse tree with unresolved column names and functions; (2) **Analyzed Logical Plan** \u2014 column references and types are resolved against the catalog (this is when AnalysisException is thrown for missing columns); (3) **Optimized Logical Plan** \u2014 rule-based and cost-based optimizations are applied (predicate pushdown, constant folding, filter reordering, etc.); (4) **Physical Plans** \u2014 one or more physical execution strategies are generated; (5) **Selected Physical Plan** \u2014 the cost model picks the best plan and a code-generated execution is produced. Options A, C, and D all scramble this order.",
+    "hints": [
+      "Think about the natural sequence: parse \u2192 resolve \u2192 optimize \u2192 plan physical execution \u2192 select best",
+      "The Analyzed phase is where Spark validates that columns actually exist; Optimization comes after validation"
+    ],
+    "concepts": [
+      "Catalyst optimizer",
+      "logical plan",
+      "physical plan",
+      "query optimization",
+      "analysis phase"
+    ]
+  },
+  {
+    "id": 11315,
+    "order": 15,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "medium",
+    "title": "Predicate Pushdown in Parquet",
+    "description": "You have a large Parquet dataset and apply a filter before doing anything else:\n\n```python\ndf = spark.read.parquet('/data/sales')\nresult = df.filter(df.country == 'US').groupBy('product').agg(F.sum('revenue'))\nresult.show()\n```\n\nHow does the Catalyst optimizer handle the `filter` in this pipeline?",
+    "code_snippet": null,
+    "options": [
+      "The filter is applied after the full Parquet file is read into memory \u2014 Spark cannot push filters into file readers",
+      "The filter is pushed down to the Parquet reader \u2014 Spark uses Parquet's row group metadata to skip row groups where country \u2260 'US', reading far less data from disk",
+      "The filter is converted by Catalyst into a broadcast join against a small lookup table of valid country codes",
+      "The filter is deferred until after the groupBy so Spark can use the aggregation to reduce rows first"
+    ],
+    "correct_option": 1,
+    "explanation": "Catalyst's **predicate pushdown** optimization pushes filter expressions as deep as possible in the execution plan \u2014 ideally into the data source reader. Parquet stores **row group statistics** (min/max per column) in file footers, allowing Spark to skip entire row groups where the predicate cannot match. For column-level predicates on dictionary-encoded columns, even individual data pages can be skipped. This dramatically reduces I/O. Spark cannot push all predicates (e.g., UDFs cannot be pushed), but simple equality and range filters on primitive types are typically pushed. The filter is not converted to a join, and Spark always pushes filters earlier (not later) when possible.",
+    "hints": [
+      "Parquet stores column statistics (min/max) in file metadata \u2014 Spark uses these to skip reading row groups that can't match the filter",
+      "Check `.explain(True)` and look for 'PushedFilters' in the plan to confirm pushdown is happening"
+    ],
+    "concepts": [
+      "predicate pushdown",
+      "Parquet",
+      "row group pruning",
+      "Catalyst optimizer",
+      "I/O optimization"
+    ]
+  },
+  {
+    "id": 11316,
+    "order": 16,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "medium",
+    "title": "Structured Streaming vs Batch Processing",
+    "description": "A new engineer asks about the architectural difference between PySpark **Structured Streaming** and standard batch DataFrame processing.\n\nWhich statement **best describes** the key architectural difference?",
+    "code_snippet": null,
+    "options": [
+      "Structured Streaming is always faster than batch because it processes data in memory without writing to disk between stages",
+      "Structured Streaming models incoming data as an **unbounded (infinite) table** and processes it incrementally via micro-batches or continuous processing; batch DataFrames operate on a fixed, bounded dataset",
+      "Structured Streaming uses the RDD API under the hood while batch processing uses the DataFrame API, so they have different optimizer paths",
+      "Structured Streaming does not support Spark SQL or DataFrame operations \u2014 you must use the DStream API"
+    ],
+    "correct_option": 1,
+    "explanation": "The defining architectural concept of Structured Streaming is the **unbounded table model**: incoming data is treated as new rows continuously appended to a virtual table. Spark processes this incrementally in **micro-batches** (the default trigger) or via **continuous processing** (low-latency mode). In contrast, batch DataFrames represent a fixed, finite dataset. Critically, Structured Streaming **reuses the same DataFrame/Dataset API** \u2014 the code is nearly identical to batch, and Catalyst optimizes streaming queries just as it does batch. It does not use the legacy DStream API (that was Spark Streaming, the older system). Streaming is not inherently faster than batch; it adds overhead for state management and fault tolerance.",
+    "hints": [
+      "Think about what 'unbounded table' means \u2014 the table keeps growing as new data arrives, and Spark processes new rows in each trigger interval",
+      "Structured Streaming is built on the same DataFrame API \u2014 the key word is 'structured', meaning it uses Catalyst, not DStreams"
+    ],
+    "concepts": [
+      "structured streaming",
+      "unbounded table",
+      "micro-batch",
+      "continuous processing",
+      "streaming vs batch"
+    ]
+  },
+  {
+    "id": 11317,
+    "order": 17,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "medium",
+    "title": "foreachBatch vs foreach in Structured Streaming",
+    "description": "In a Structured Streaming pipeline, you need to write each micro-batch to **two different sinks** (a database and an S3 bucket) and also deduplicate rows before writing.\n\nShould you use `foreachBatch` or `foreach`?",
+    "code_snippet": null,
+    "options": [
+      "Use `foreach` \u2014 it allows writing to multiple sinks by calling the sink write function once per row for each destination",
+      "Use `foreachBatch` \u2014 it gives you the micro-batch as a full DataFrame, allowing you to use the DataFrame API (deduplication, multiple writes) before the batch is committed",
+      "Use `foreach` \u2014 `foreachBatch` is deprecated in Spark 3.x and has been replaced by `forEachMicroBatch`",
+      "They are identical \u2014 both receive the same DataFrame handle and support the same operations"
+    ],
+    "correct_option": 1,
+    "explanation": "`foreachBatch(func)` calls `func(batch_df, batch_id)` for each micro-batch, passing you a **full DataFrame**. This lets you use the entire DataFrame API \u2014 you can call `.dropDuplicates()`, `.write` to multiple sinks, apply transformations, and more. `foreach(writer)` calls `writer.process(row)` **one row at a time** \u2014 you only see individual Row objects, not a DataFrame, so you cannot apply DataFrame operations like deduplication. `foreachBatch` is not deprecated; it is the recommended approach for custom sink logic. The two methods are not identical \u2014 `foreach` operates at row granularity.",
+    "hints": [
+      "Ask whether you need access to the full DataFrame API per batch (foreachBatch) or just need to process one row at a time (foreach)",
+      "Deduplication requires seeing all rows in a batch together \u2014 that rules out foreach"
+    ],
+    "concepts": [
+      "foreachBatch",
+      "foreach",
+      "structured streaming",
+      "custom sinks",
+      "micro-batch"
+    ]
+  },
+  {
+    "id": 11318,
+    "order": 18,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "medium",
+    "title": "Spark SQL vs DataFrame API Performance",
+    "description": "Two engineers debate whether to use Spark SQL or the DataFrame API for a complex analytics query.\n\nEngineer A says: \"Use SQL \u2014 the SQL optimizer is more mature and produces faster execution plans.\"\nEngineer B says: \"Use the DataFrame API \u2014 it skips the SQL parser and goes straight to optimization.\"\n\nWhich statement is **most accurate**?",
+    "code_snippet": null,
+    "options": [
+      "Engineer A is correct \u2014 Spark SQL has a dedicated cost-based optimizer that is not available to the DataFrame API",
+      "Engineer B is correct \u2014 the DataFrame API bypasses parsing and is consistently faster than SQL for equivalent queries",
+      "Both are incorrect \u2014 Spark SQL and the DataFrame API produce the same logical plan and go through the same Catalyst optimization pipeline, so performance is equivalent for the same query",
+      "Both are incorrect \u2014 Spark SQL only supports read operations; write operations must use the DataFrame API"
+    ],
+    "correct_option": 2,
+    "explanation": "Both SQL and the DataFrame API feed into the **same Catalyst optimizer** and produce equivalent logical plans for equivalent queries \u2014 there is no performance difference. The SQL string goes through an additional parsing step (parsed into an AST first), but this is trivially fast and does not affect execution performance. Both paths go through Unresolved \u2192 Analyzed \u2192 Optimized Logical Plan \u2192 Physical Plan. The choice between SQL and the DataFrame API is therefore a matter of **style, readability, and team convention**, not performance. Spark SQL does have a cost-based optimizer (CBO), but it is available for both SQL and DataFrame queries when enabled via `spark.sql.cbo.enabled=true`.",
+    "hints": [
+      "Both APIs pass through the same Catalyst optimizer \u2014 the SQL parser is just one extra step that costs microseconds",
+      "Use `.explain()` on a SQL query and the equivalent DataFrame expression \u2014 they often produce identical physical plans"
+    ],
+    "concepts": [
+      "Spark SQL",
+      "DataFrame API",
+      "Catalyst optimizer",
+      "query performance",
+      "execution plan equivalence"
+    ]
+  },
+  {
+    "id": 11319,
+    "order": 19,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "medium",
+    "title": "Caching Strategy: When to Cache",
+    "description": "You have a pipeline that builds a cleaned and joined DataFrame `base_df` from three tables, then uses `base_df` in three separate downstream aggregations. The total size of `base_df` is 8 GB and executor memory per node is 16 GB.\n\nWhat is the **best strategy** for `base_df`?",
+    "code_snippet": null,
+    "options": [
+      "Cache every intermediate DataFrame to ensure Spark never recomputes anything, keeping memory usage predictable",
+      "Cache `base_df` \u2014 it is expensive to recompute (multi-table join + cleaning) and is reused three times, and at 8 GB it can fit in executor memory, saving redundant work",
+      "Never cache DataFrames \u2014 always use checkpointing to a reliable storage system instead, since memory is unreliable",
+      "Cache `base_df` only if it is larger than 1 GB, otherwise the cache overhead exceeds the recomputation cost"
+    ],
+    "correct_option": 1,
+    "explanation": "Caching `base_df` is the right call here for three reasons: (1) recomputation is **expensive** \u2014 it involves reading from three tables and performing a multi-table join; (2) it is **reused three times** \u2014 without caching, Spark recomputes the full join for each downstream aggregation; (3) **it fits in memory** at 8 GB on 16 GB executors. The cache overhead is minimal compared to three full recomputations. Caching every intermediate DataFrame wastes memory and can cause spills that slow other operations. Checkpointing is useful for fault-tolerance in long lineages or streaming, not as a general alternative to caching. The 1 GB threshold is arbitrary and not a Spark rule.",
+    "hints": [
+      "Three conditions favour caching: (1) expensive to compute, (2) reused multiple times, (3) fits in available executor memory",
+      "Call .cache() before the first downstream action and .unpersist() after the last one to release memory promptly"
+    ],
+    "concepts": [
+      "caching",
+      "persist",
+      "recomputation",
+      "memory management",
+      "pipeline optimization"
+    ]
+  },
+  {
+    "id": 11320,
+    "order": 20,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "medium",
+    "title": "Job vs Stage vs Task Hierarchy",
+    "description": "A data engineer is reading Spark UI output and wants to understand the relationship between **jobs**, **stages**, and **tasks**.\n\nWhich statement correctly describes the hierarchy?",
+    "code_snippet": null,
+    "options": [
+      "One stage is created per action; each stage contains one or more jobs; jobs are subdivided into tasks",
+      "One job is created per action; a job is split into stages at shuffle boundaries; each stage runs as parallel tasks \u2014 one task per partition",
+      "Tasks are the top-level unit of work; tasks group into stages when data is shuffled; stages group into jobs per executor",
+      "Jobs and stages are the same concept; tasks are the individual threads within an executor process"
+    ],
+    "correct_option": 1,
+    "explanation": "The hierarchy is: **Action \u2192 Job \u2192 Stages \u2192 Tasks**. Each **action** (`.count()`, `.write()`, `.collect()`, etc.) triggers exactly one **job**. Spark divides a job into **stages** at each shuffle boundary \u2014 a shuffle marks where one wave of parallel work must complete before the next can begin. Each stage is executed as a set of parallel **tasks**, where each task processes exactly one partition. So a DataFrame with 200 partitions produces 200 tasks in its stage. Option A inverts job and stage. Option C inverts the entire hierarchy. Option D incorrectly equates jobs and stages and mischaracterizes tasks as threads.",
+    "hints": [
+      "Use the Spark UI's Jobs and Stages tabs to trace this: click a job to see its stages; click a stage to see its tasks",
+      "Shuffle boundaries are the key concept \u2014 each side of a shuffle is a separate stage"
+    ],
+    "concepts": [
+      "job",
+      "stage",
+      "task",
+      "Spark UI",
+      "execution hierarchy",
+      "shuffle boundary"
+    ]
+  },
+  {
+    "id": 11321,
+    "order": 21,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "medium",
+    "title": "Speculative Execution",
+    "description": "A cluster administrator suggests enabling `spark.speculation=true` on your long-running Spark jobs. You want to understand what this does before enabling it.\n\nWhat does **speculative execution** do in Spark?",
+    "code_snippet": null,
+    "options": [
+      "Spark launches duplicate executor processes so if one executor fails, the other takes over immediately \u2014 similar to hot standby",
+      "If a task is running significantly slower than the median of its peers (a 'straggler'), Spark launches an identical speculative copy of the task on a different executor and uses the result from whichever copy finishes first",
+      "Spark doubles the number of executor cores allocated to long-running stages to speed them up",
+      "Spark re-runs the entire job a second time after completion and compares the two outputs to validate correctness"
+    ],
+    "correct_option": 1,
+    "explanation": "Speculative execution addresses **straggler tasks** \u2014 tasks that take much longer than their peers, often due to hardware issues, hotspot data, or transient cluster problems. When enabled, Spark monitors task durations and if a task is significantly slower than the median (configurable via `spark.speculation.multiplier` and `spark.speculation.quantile`), it launches a **duplicate speculative task** on another available executor. Spark uses the output of whichever copy completes first and cancels the other. This reduces the tail latency of jobs affected by occasional slow nodes. It does not provision extra executors, run validation checks, or provide hot standby \u2014 those are different mechanisms.",
+    "hints": [
+      "Think of speculative execution as insurance against a single slow task delaying the whole stage",
+      "Speculation is most useful on clusters where hardware performance is variable (cloud spot instances, mixed hardware)"
+    ],
+    "concepts": [
+      "speculative execution",
+      "straggler tasks",
+      "task scheduling",
+      "spark.speculation",
+      "fault tolerance"
+    ]
+  },
+  {
+    "id": 11322,
+    "order": 22,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "medium",
+    "title": "mapPartitions vs map",
+    "description": "You need to classify every row in a 10-billion-row DataFrame using a large machine learning model that requires a 2-second initialization step. You are deciding between `rdd.map(classify_row)` and `rdd.mapPartitions(classify_partition)`.\n\nWhen is `mapPartitions` preferred?",
+    "code_snippet": null,
+    "options": [
+      "When the data is skewed across partitions \u2014 mapPartitions automatically rebalances partition sizes",
+      "When processing string columns \u2014 mapPartitions has a native string optimization that map lacks",
+      "When each row requires shared, expensive initialization (loading a model, opening a DB connection) \u2014 mapPartitions runs setup once per partition rather than once per row, dramatically reducing overhead",
+      "mapPartitions is always faster than map and should always be preferred regardless of use case"
+    ],
+    "correct_option": 2,
+    "explanation": "`mapPartitions(func)` calls `func(iterator)` once per partition, passing an iterator over all rows. This means expensive per-task initialization \u2014 such as loading an ML model, opening a database connection, or instantiating a heavy object \u2014 happens **once per partition** rather than once per row. With 10 billion rows at (say) 10 million rows per partition, that's 1,000 initialization calls instead of 10 billion. `map(func)` calls `func(row)` for each individual row, so initialization inside the function runs billions of times. `mapPartitions` does not rebalance data or have string-specific optimizations. It is not universally faster \u2014 if initialization is cheap, the overhead of collecting rows into an iterator may negate any benefit.",
+    "hints": [
+      "mapPartitions is the right tool when the expensive operation is setup/initialization, not the per-row processing itself",
+      "Pattern: load model once at the top of the mapPartitions function, then iterate over the partition rows applying inference"
+    ],
+    "concepts": [
+      "mapPartitions",
+      "map",
+      "initialization overhead",
+      "UDF optimization",
+      "RDD API"
+    ]
+  },
+  {
+    "id": 11323,
+    "order": 23,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "medium",
+    "title": "Identifying Skewed Joins in Spark UI",
+    "description": "After a join between two large tables runs for 2 hours and most tasks finish in under 5 minutes, you suspect **data skew**. You open the Spark UI Stage detail view.\n\nWhat is the key visual indicator of a skewed join in the Stage detail view?",
+    "code_snippet": null,
+    "options": [
+      "The DAG visualization shows an unusually large number of stages compared to non-skewed jobs",
+      "The physical plan shows 'SortMergeJoin' \u2014 this operator is always a sign of skew",
+      "One or a few tasks show dramatically higher duration and input data size compared to the median task \u2014 visible as outliers in the task duration histogram and task metric table",
+      "Memory usage is uniformly high across all tasks, indicating that all partitions are proportionally large"
+    ],
+    "correct_option": 2,
+    "explanation": "In the Spark UI **Stage detail view**, skew appears as **outlier tasks**: a small number of tasks (or just one) with dramatically higher duration and input bytes than the rest. The task duration histogram will show a long tail, and the task metric table will show one task with, say, 50 GB of input while all others have under 1 GB. This is the characteristic signature of a skewed join \u2014 one partition got the vast majority of the data. The DAG stage count is not a skew indicator (it reflects shuffle structure). SortMergeJoin is a normal operator for large joins and is not inherently a skew sign. Uniform high memory usage across all tasks suggests a memory configuration issue, not skew.",
+    "hints": [
+      "Open the Stage detail and look at the task duration distribution \u2014 skew shows as one very tall bar in the histogram",
+      "Also check the 'Input Size / Records' column in the task table \u2014 the skewed task will have far more input than its peers"
+    ],
+    "concepts": [
+      "data skew",
+      "Spark UI",
+      "task metrics",
+      "stage detail",
+      "join performance"
+    ]
+  },
+  {
+    "id": 11324,
+    "order": 24,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "medium",
+    "title": "Dynamic Partition Pruning",
+    "description": "Spark 3.x introduced **Dynamic Partition Pruning (DPP)** to optimize star-schema joins between large fact tables and small dimension tables.\n\nHow does DPP improve join performance?",
+    "code_snippet": null,
+    "options": [
+      "DPP broadcasts the large fact table to all executors so dimension table lookups are fast",
+      "DPP automatically converts sort-merge joins to hash joins when the dimension table is small",
+      "DPP uses the filtered dimension table result to prune partitions from the fact table at runtime, so only relevant fact partitions are read from storage \u2014 reducing I/O before the join even begins",
+      "DPP splits the fact table into smaller sub-partitions at write time to pre-optimize future joins"
+    ],
+    "correct_option": 2,
+    "explanation": "Dynamic Partition Pruning works in two steps: (1) Spark evaluates the filter on the small dimension table; (2) the resulting set of dimension keys is used to **prune partitions of the fact table** at scan time \u2014 only partitions whose partition key matches a key in the filtered dimension are read from storage. For example, if you join `sales` (fact) with `date_dim` (dimension) filtered to Q4 2024, DPP ensures only the `sales` partitions for Q4 dates are scanned, skipping all others. This reduces I/O dramatically for star-schema queries. DPP does not broadcast the fact table (it's too large), does not change join strategies, and does not modify how data is written.",
+    "hints": [
+      "DPP is most effective when the fact table is partitioned by a column that is also a join/filter key in the dimension table",
+      "Think of it as partition pruning that happens dynamically at runtime, informed by what the dimension filter actually returns"
+    ],
+    "concepts": [
+      "dynamic partition pruning",
+      "DPP",
+      "star schema",
+      "partition pruning",
+      "Spark 3",
+      "I/O optimization"
+    ]
+  },
+  {
+    "id": 11325,
+    "order": 25,
+    "topic": "pyspark",
+    "type": "debug",
+    "difficulty": "medium",
+    "title": "Driver OOM vs Executor OOM",
+    "description": "A Spark application processing 200 GB of data fails with the following error in the **driver logs** (not executor logs):\n\n```\nException in thread \"main\" java.lang.OutOfMemoryError: Java heap space\n  at org.apache.spark.sql.execution.SparkPlan.executeCollect\n```\n\nWhat is the **most likely cause**?",
+    "code_snippet": "df = spark.read.parquet(\"/data/events/\")  # 200 GB\n\n# Enrich with dimension lookups\nenriched = (\n    df.join(users_df, \"user_id\")\n      .join(products_df, \"product_id\")\n      .withColumn(\"revenue\", col(\"price\") * col(\"quantity\"))\n)\n\n# Bring results to driver for downstream Python processing\nresults = enriched.collect()  # <-- driver OOM here\nfor row in results:\n    process(row)",
+    "options": [
+      "The job has too many partitions \u2014 reduce partition count with coalesce() to lower memory pressure on the driver",
+      "Executor memory is too small \u2014 increase spark.executor.memory so executors can process larger partitions",
+      "A collecting action like `.collect()` or `.toPandas()` is pulling the full 200 GB dataset into driver memory \u2014 the driver cannot hold that much data",
+      "The Parquet read buffer on the driver is too large \u2014 set spark.sql.parquet.maxPartitionBytes to a smaller value"
+    ],
+    "correct_option": 2,
+    "explanation": "The stack trace points to `SparkPlan.executeCollect`, which is called by `.collect()`, `.toPandas()`, `.show()` with a large limit, `.take(n)` with large n, and similar actions that move data from executors to the driver. The driver is a single JVM process \u2014 if you try to collect 200 GB of data into it, it runs out of heap. The fix is to avoid collecting large datasets to the driver: process data in Spark, write results to storage, or collect only a meaningful sample/aggregate. Partition count affects executors, not the driver. Executor memory is fine \u2014 the error is on the driver. Parquet buffer configuration is unrelated to `executeCollect`.",
+    "hints": [
+      "The key clue is that the OOM is in the driver process and the stack trace includes 'executeCollect' \u2014 something is pulling data to the driver",
+      "Good rule: never call .collect() on a DataFrame whose size you don't know; use .limit(n).collect() for inspection"
+    ],
+    "concepts": [
+      "driver OOM",
+      "collect",
+      "toPandas",
+      "driver memory",
+      "data collection anti-patterns"
+    ]
+  }
+]
