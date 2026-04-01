@@ -218,5 +218,445 @@
       "Remember that Spark is lazy — does `.cache()` itself store data, or does it just *mark* the DataFrame for future storage?"
     ],
     "concepts": ["caching", "persist", "storage level", "lazy evaluation", "recomputation"]
+  },
+  {
+    "id": 11011,
+    "order": 11,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "What is a Spark Partition?",
+    "description": "A distributed Spark DataFrame is physically divided into **partitions** — chunks of data that can be processed in parallel across executors.\n\nWhen reading a **256 MB CSV file** with default Spark settings (128 MB HDFS block size), approximately how many partitions will the resulting DataFrame have?",
+    "code_snippet": null,
+    "options": [
+      "1 — Spark always reads a single file into a single partition",
+      "2 — roughly one partition per 128 MB block, so 256 MB yields ~2 partitions",
+      "256 — one partition per megabyte",
+      "One partition per row in the file"
+    ],
+    "correct_option": 1,
+    "explanation": "By default, Spark creates one partition per HDFS block (128 MB). A 256 MB file spans approximately **2 blocks**, so the resulting DataFrame will have roughly **2 partitions**. Option A is wrong because Spark splits large files to enable parallelism. Option C confuses megabytes with partitions — a 256 MB file would produce ~2 partitions, not 256. Option D would be catastrophic for performance and is never true.",
+    "hints": [
+      "Think about how Spark relates partitions to the underlying storage block size"
+    ],
+    "concepts": ["partitions", "parallelism", "block size", "data distribution"]
+  },
+  {
+    "id": 11012,
+    "order": 12,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "count() vs show()",
+    "description": "You call `df.count()` and `df.show(5)` on the same DataFrame. Both trigger Spark execution — but they behave differently as Python expressions.\n\nWhich statement **best describes** the difference between them?",
+    "code_snippet": null,
+    "options": [
+      "`count()` is an action that returns a Python `int`; `show()` is also an action but returns `None` and prints rows to stdout",
+      "`count()` is a lazy transformation; `show()` is the only true action",
+      "They are identical — both print the total row count to stdout",
+      "`show()` returns a list of `Row` objects that you can iterate over in Python"
+    ],
+    "correct_option": 0,
+    "explanation": "`df.count()` is an **action** that computes the total number of rows and returns a Python `int` you can assign to a variable. `df.show(5)` is also an **action** — it triggers execution, prints the first 5 rows as a formatted table to stdout, and returns `None`. Option B is wrong because `count()` is definitely an action, not lazy. Option C is wrong because they produce different output. Option D is wrong because `show()` returns `None`; use `.collect()` or `.head()` to get a list of `Row` objects.",
+    "hints": [
+      "Which one gives you a value you can use in a Python expression, and which one just prints?"
+    ],
+    "concepts": ["actions", "count", "show", "return values"]
+  },
+  {
+    "id": 11013,
+    "order": 13,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "orderBy vs sort",
+    "description": "A colleague tells you to use `df.orderBy('revenue')` instead of `df.sort('revenue')` for correctness. You check the PySpark documentation.\n\nWhat is the actual difference between `df.orderBy('col')` and `df.sort('col')`?",
+    "code_snippet": null,
+    "options": [
+      "They are aliases — `orderBy` and `sort` have identical behavior in PySpark",
+      "`orderBy` performs a global sort across all partitions; `sort` only sorts within each partition",
+      "`sort` only supports ascending order; `orderBy` supports both ascending and descending",
+      "`orderBy` requires a `Column` object as input; `sort` accepts plain strings"
+    ],
+    "correct_option": 0,
+    "explanation": "In PySpark, `DataFrame.orderBy` and `DataFrame.sort` are **aliases** for the same operation — they accept the same arguments and produce identical results. Both perform a global sort (requiring a shuffle). Option B describes a real distinction in some systems but is not true in PySpark. Option C is false — both methods accept `asc()` and `desc()` column specifications. Option D is also false — both methods accept strings, Column objects, or a mix.",
+    "hints": [
+      "Check the PySpark API — sometimes two method names do exactly the same thing"
+    ],
+    "concepts": ["orderBy", "sort", "global sort", "shuffle"]
+  },
+  {
+    "id": 11014,
+    "order": 14,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "easy",
+    "title": "withColumnRenamed Usage",
+    "description": "Given the code below, what does `result.columns` return?\n\n```python\ndf = spark.createDataFrame([(1, 'x', 10)], ['id', 'old_name', 'value'])\nresult = df.withColumnRenamed('old_name', 'new_name')\n```",
+    "code_snippet": "df = spark.createDataFrame([(1, 'x', 10)], ['id', 'old_name', 'value'])\nresult = df.withColumnRenamed('old_name', 'new_name')\nprint(result.columns)",
+    "options": [
+      "['id', 'old_name', 'value'] — the original DataFrame is unchanged",
+      "['id', 'new_name', 'value'] — the renamed column replaces the old one",
+      "['id', 'old_name', 'new_name', 'value'] — both old and new names are kept",
+      "An AnalysisException is raised because the column cannot be renamed"
+    ],
+    "correct_option": 1,
+    "explanation": "`withColumnRenamed('old_name', 'new_name')` returns a **new** DataFrame where the column `old_name` has been renamed to `new_name` in-place — the column order is preserved and only the name changes. Option A is wrong because `withColumnRenamed` does change the column name (in the new DataFrame). Option C is wrong — the old name is not kept alongside the new one. Option D is wrong — renaming an existing column is a valid operation that does not raise an exception.",
+    "hints": [
+      "withColumnRenamed returns a new DataFrame — what exactly changes about it?"
+    ],
+    "concepts": ["withColumnRenamed", "column names", "immutability", "schema"]
+  },
+  {
+    "id": 11015,
+    "order": 15,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "dropDuplicates Scope",
+    "description": "You call `df.dropDuplicates(['user_id'])` on a DataFrame with 1000 rows where some users appear multiple times. The operation keeps exactly one row per `user_id`.\n\nWhich row is kept when multiple rows share the same `user_id`?",
+    "code_snippet": null,
+    "options": [
+      "The result is non-deterministic — Spark does not guarantee which row is kept for each group",
+      "The first row by original insertion order",
+      "The row with the smallest primary key value",
+      "An error is raised because a subset column must be unique in the schema"
+    ],
+    "correct_option": 0,
+    "explanation": "In a distributed system, there is no concept of stable insertion order across partitions. `dropDuplicates` will keep **one** row per key, but which specific row is kept is **non-deterministic** — it depends on how data is distributed across partitions and the order tasks finish. Option B is wrong because Spark does not preserve insertion order. Option C is wrong because Spark has no concept of a primary key. Option D is wrong — `dropDuplicates` with a subset list is a fully valid API call.",
+    "hints": [
+      "Distributed systems don't have a global row order — what does that imply about which duplicate is kept?"
+    ],
+    "concepts": ["dropDuplicates", "non-determinism", "distributed systems", "deduplication"]
+  },
+  {
+    "id": 11016,
+    "order": 16,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "SparkSession Entry Point",
+    "description": "You are writing a new PySpark script and need to create a SparkSession (or reuse one if it already exists).\n\nWhat is the **correct** way to obtain a SparkSession?",
+    "code_snippet": null,
+    "options": [
+      "SparkSession.builder.appName(\"MyApp\").getOrCreate()",
+      "SparkContext(\"local\", \"MyApp\")",
+      "pyspark.session.create(appName=\"MyApp\")",
+      "Spark.init(appName=\"MyApp\")"
+    ],
+    "correct_option": 0,
+    "explanation": "`SparkSession.builder.appName(\"MyApp\").getOrCreate()` is the idiomatic entry point since Spark 2.0. The builder pattern lets you chain configuration options before calling `getOrCreate()`, which either creates a new session or returns an existing active one. Option B creates a low-level `SparkContext` (the RDD-era entry point) — you can still do this, but it bypasses the higher-level DataFrame API. Options C and D do not exist in the PySpark API.",
+    "hints": [
+      "The modern PySpark entry point uses a builder pattern and has 'getOrCreate' in it"
+    ],
+    "concepts": ["SparkSession", "builder pattern", "getOrCreate", "entry point"]
+  },
+  {
+    "id": 11017,
+    "order": 17,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "Write Mode: overwrite",
+    "description": "You run the following code, and the directory `/output/data` already contains Parquet files from a previous run:\n\n```python\ndf.write.mode(\"overwrite\").parquet(\"/output/data\")\n```\n\nWhat happens to the existing data?",
+    "code_snippet": null,
+    "options": [
+      "The existing directory is deleted and entirely replaced with the newly written data",
+      "New Parquet files are appended alongside the existing files",
+      "An AnalysisException is thrown because the path already exists",
+      "The write is silently skipped — existing data is preserved"
+    ],
+    "correct_option": 0,
+    "explanation": "Write mode `\"overwrite\"` deletes the **entire target directory** and replaces it with the new output. This is destructive — all previous files in `/output/data` are removed. Option B describes `mode(\"append\")`. Option C describes the default behavior (`mode(\"error\")` or `mode(\"errorifexists\")`), which throws if the path already exists. Option D describes `mode(\"ignore\")`, which leaves existing data untouched and skips the write.",
+    "hints": [
+      "Think about what 'overwrite' literally means — and remember there are four write modes: error, append, overwrite, ignore"
+    ],
+    "concepts": ["write modes", "overwrite", "parquet", "output management"]
+  },
+  {
+    "id": 11018,
+    "order": 18,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "easy",
+    "title": "when().otherwise() Return Type",
+    "description": "What is the **data type** of the `tier` column added by the code below?\n\n```python\nfrom pyspark.sql import functions as F\ndf2 = df.withColumn('tier', F.when(df.salary > 80000, 'high').otherwise('normal'))\n```",
+    "code_snippet": "from pyspark.sql import functions as F\ndf2 = df.withColumn('tier', F.when(df.salary > 80000, 'high').otherwise('normal'))",
+    "options": [
+      "StringType — both branches return string literals, so the column is typed as string",
+      "BooleanType — the condition `df.salary > 80000` is a boolean expression",
+      "IntegerType — Spark defaults numeric-looking conditional results to integers",
+      "NullType — the type cannot be determined until runtime"
+    ],
+    "correct_option": 0,
+    "explanation": "`F.when(condition, value).otherwise(value)` returns a Column whose type is inferred from the **values** in the branches, not from the condition. Both branches here return string literals (`'high'` and `'normal'`), so the resulting column is `StringType`. Option B is wrong — the boolean condition determines *which* branch is taken, not the output type. Options C and D are also wrong — Spark successfully infers `StringType` at plan-compile time from the literal values.",
+    "hints": [
+      "The data type of a when/otherwise expression comes from its return values, not from the boolean condition"
+    ],
+    "concepts": ["when", "otherwise", "conditional expressions", "type inference", "StringType"]
+  },
+  {
+    "id": 11019,
+    "order": 19,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "Why Python UDFs Are Slow",
+    "description": "Your team is debating whether to use a Python UDF or a built-in `pyspark.sql.functions` call for a column transformation.\n\nWhy are **Python UDFs** generally slower than equivalent **built-in DataFrame functions**?",
+    "code_snippet": null,
+    "options": [
+      "Python UDFs bypass the Catalyst optimizer and require row-by-row serialization of data between the JVM and the Python interpreter",
+      "Python UDFs always run single-threaded on the driver and cannot be parallelized",
+      "Python UDFs produce wide transformations that trigger a full shuffle",
+      "Python UDFs cannot be used with GPU-accelerated Spark clusters"
+    ],
+    "correct_option": 0,
+    "explanation": "Built-in Spark functions operate entirely within the JVM and benefit from Catalyst optimization and Tungsten code generation. Python UDFs require Spark to **serialize each row** from JVM memory into Python-compatible objects, invoke the Python interpreter (running in a separate process), and deserialize the results back — this row-by-row round trip is the main performance bottleneck. Option B is wrong — UDFs are still distributed across executors in parallel, they're just slower due to serialization. Option C is wrong — a simple column UDF is a narrow transformation, not a wide one. Option D is irrelevant to the general performance question.",
+    "hints": [
+      "Consider what happens at the boundary between the JVM (where Spark runs) and the Python process"
+    ],
+    "concepts": ["UDF", "serialization", "JVM", "Catalyst optimizer", "performance"]
+  },
+  {
+    "id": 11020,
+    "order": 20,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "Casting Column Types",
+    "description": "A DataFrame has a column `price` that was read as `StringType`. You want to cast it to `DoubleType` for arithmetic operations.\n\nWhat is the **correct** PySpark syntax?",
+    "code_snippet": null,
+    "options": [
+      "df.withColumn('price', df['price'].cast('double'))",
+      "df['price'].astype(float)",
+      "df.cast('price', DoubleType())",
+      "df.withColumn('price', double(df['price']))"
+    ],
+    "correct_option": 0,
+    "explanation": "`df['price'].cast('double')` (or equivalently `.cast(DoubleType())`) is the correct PySpark Column method for type casting. Wrapping it in `withColumn` replaces the existing column with the cast version. Option B is pandas syntax — `.astype()` does not exist on PySpark Columns. Option C inverts the argument order and calls `cast` on the DataFrame rather than a Column, which is not valid. Option D uses `double()` as if it were a function — no such standalone function exists in the PySpark API.",
+    "hints": [
+      "Look for a `.cast()` method — which object does it belong to in PySpark?"
+    ],
+    "concepts": ["cast", "type conversion", "DoubleType", "withColumn", "schema"]
+  },
+  {
+    "id": 11021,
+    "order": 21,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "union() Column Matching",
+    "description": "You call `df1.union(df2)` to combine two DataFrames. Both have three columns but with **different column names**.\n\nHow does PySpark's `union()` match columns between the two DataFrames?",
+    "code_snippet": null,
+    "options": [
+      "By position — columns are matched by their order, not their names",
+      "By column name — columns are matched by name regardless of order",
+      "By data type — columns with matching types are aligned automatically",
+      "Spark automatically renames mismatched columns to match the left DataFrame"
+    ],
+    "correct_option": 0,
+    "explanation": "`DataFrame.union()` in PySpark is **positional** — the first column of `df2` is merged with the first column of `df1`, the second with the second, and so on, regardless of column names. This mirrors SQL's `UNION ALL` behavior. If you want name-based alignment (safer when column order differs), use `df1.unionByName(df2)` instead. Options B, C, and D all describe behaviors that don't apply to `union()` — using it when column names or order differ is a common source of subtle data bugs.",
+    "hints": [
+      "Think about how SQL UNION works — does it match by column name or by position?"
+    ],
+    "concepts": ["union", "unionByName", "positional matching", "schema alignment"]
+  },
+  {
+    "id": 11022,
+    "order": 22,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "distinct() vs dropDuplicates()",
+    "description": "You need to remove duplicate rows from a DataFrame. A colleague uses `df.distinct()` while you use `df.dropDuplicates()`.\n\nWhat is the key difference between the two?",
+    "code_snippet": null,
+    "options": [
+      "`df.distinct()` always considers all columns; `df.dropDuplicates(subset=[...])` lets you specify a subset of columns to consider — without a subset argument the two are equivalent",
+      "`distinct()` is significantly faster than `dropDuplicates()` in all cases",
+      "`distinct()` removes rows that contain any NULL value",
+      "`dropDuplicates()` is deprecated in Spark 3.x and should be avoided"
+    ],
+    "correct_option": 0,
+    "explanation": "`df.distinct()` is equivalent to `df.dropDuplicates()` called with no arguments — both deduplicate across all columns. The power of `dropDuplicates` is the optional `subset` parameter: `df.dropDuplicates(['user_id'])` keeps one row per unique `user_id` even if other columns differ. Option B is incorrect — there is no inherent performance difference. Option C is wrong — `distinct()` does not treat NULL specially; NULLs are compared as equal for deduplication purposes. Option D is false — `dropDuplicates` is not deprecated.",
+    "hints": [
+      "Think about what extra flexibility one method has that the other lacks"
+    ],
+    "concepts": ["distinct", "dropDuplicates", "deduplication", "subset columns"]
+  },
+  {
+    "id": 11023,
+    "order": 23,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "The lit() Function",
+    "description": "You want to add a constant column `version` with the integer value `100` to every row in a DataFrame.\n\nWhat does `F.lit(100)` do in a PySpark expression?",
+    "code_snippet": null,
+    "options": [
+      "Creates a Column object representing the constant value 100, which can be used in `withColumn` or `select`",
+      "Limits the DataFrame to 100 rows",
+      "Creates a Python list of length 100",
+      "Filters rows where any column equals 100"
+    ],
+    "correct_option": 0,
+    "explanation": "`F.lit(value)` (**lit**eral) wraps a Python scalar value into a Spark **Column** object representing that constant. You can then use it wherever a Column expression is expected: `df.withColumn('version', F.lit(100))` adds a column where every row has the value 100. Option B describes `.limit(100)`. Option C has no PySpark equivalent — `lit` does not create lists. Option D describes a filter operation, not a literal value.",
+    "hints": [
+      "The name 'lit' is short for 'literal' — what does creating a literal mean in a column expression context?"
+    ],
+    "concepts": ["lit", "literal column", "constant column", "functions"]
+  },
+  {
+    "id": 11024,
+    "order": 24,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "easy",
+    "title": "alias() Behavior",
+    "description": "After running the code below, what is the **name** of the column in `result`?\n\n```python\nresult = df.select(df['revenue'].alias('total'))\n```",
+    "code_snippet": "result = df.select(df['revenue'].alias('total'))\nprint(result.columns)",
+    "options": [
+      "'revenue' — the original column name is preserved",
+      "'total' — the alias replaces the column name in the output",
+      "Both 'revenue' and 'total' exist as separate columns",
+      "An AnalysisException is raised because alias requires a Column object"
+    ],
+    "correct_option": 1,
+    "explanation": "`.alias('total')` renames the column **in the output** of this expression. The resulting DataFrame has a single column named `'total'` — the original name `'revenue'` does not appear. Option A is wrong because alias explicitly changes the name. Option C is wrong — alias replaces the name; it does not add a second column. Option D is wrong — `df['revenue']` already is a Column object, so `.alias()` is fully valid.",
+    "hints": [
+      "An alias replaces the column name in the output — how many columns does a select with one expression produce?"
+    ],
+    "concepts": ["alias", "column renaming", "select", "Column expressions"]
+  },
+  {
+    "id": 11025,
+    "order": 25,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "printSchema() Return Value",
+    "description": "You call `df.printSchema()` in your PySpark script and want to capture the schema information in a variable for programmatic use.\n\nWhat does `df.printSchema()` return in Python?",
+    "code_snippet": null,
+    "options": [
+      "None — it prints the schema tree to stdout and returns nothing",
+      "A StructType object representing the schema",
+      "A list of (column_name, dtype) tuples",
+      "A dict mapping column names to their data type strings"
+    ],
+    "correct_option": 0,
+    "explanation": "`df.printSchema()` is a **side-effect method** — it prints a human-readable tree of column names and types to stdout and returns `None`. You cannot capture its output in a variable meaningfully. To work with the schema programmatically, use `df.schema` (returns a `StructType` object) or `df.dtypes` (returns a list of `(name, typeString)` tuples). Option B describes `df.schema`. Option C describes `df.dtypes`. Option D does not correspond to any PySpark API.",
+    "hints": [
+      "Methods that 'print' something usually return None — how would you get the schema as a Python object instead?"
+    ],
+    "concepts": ["printSchema", "schema", "StructType", "dtypes", "return values"]
+  },
+  {
+    "id": 11026,
+    "order": 26,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "Reading Multi-Line JSON",
+    "description": "Your team stores data as pretty-printed JSON files where each record spans multiple lines. When you try to read one with `spark.read.json(path)`, the results are malformed.\n\nWhat option must you set to correctly read **multi-line JSON** files?",
+    "code_snippet": null,
+    "options": [
+      "spark.read.option(\"multiLine\", True).json(path)",
+      "spark.read.json(path, format='multiline')",
+      "spark.read.option(\"lines\", \"multiple\").json(path)",
+      "No option is needed — Spark auto-detects multi-line JSON records"
+    ],
+    "correct_option": 0,
+    "explanation": "By default, Spark's JSON reader expects **one JSON object per line** (newline-delimited JSON / NDJSON format). For pretty-printed multi-line JSON, you must pass `option(\"multiLine\", True)` so Spark reads across line boundaries when parsing each record. Option B uses an invalid `format` keyword argument for `.json()`. Option C uses a non-existent option key. Option D is incorrect — without the option, multi-line records will be misread or produce null/error rows.",
+    "hints": [
+      "The key option name contains the word 'multiLine' — check the capitalization carefully"
+    ],
+    "concepts": ["JSON reading", "multiLine", "NDJSON", "read options"]
+  },
+  {
+    "id": 11027,
+    "order": 27,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "What explain() Shows",
+    "description": "You call `df.filter(df.age > 25).explain()` on a DataFrame. You want to understand what work Spark will actually perform.\n\nWhat does the output of `explain()` show?",
+    "code_snippet": null,
+    "options": [
+      "The optimized physical execution plan, including operators like FileScan, Filter, and Exchange",
+      "The Python source code of your transformation chain",
+      "Only the SQL translation of your query",
+      "Row count estimates for each operator in the plan"
+    ],
+    "correct_option": 0,
+    "explanation": "`df.explain()` prints Spark's **physical execution plan** — the actual operators Spark will run, such as `FileScan`, `Filter`, `HashAggregate`, or `Exchange` (shuffle). This is useful for debugging performance: you can see whether a filter is pushed down to the scan, how joins are implemented, and where shuffles occur. Option B is wrong — explain shows a query plan, not Python source code. Option C is partly true (you can see a logical plan), but the default output is the physical plan with concrete operators. Option D is wrong — row counts are not shown by default (use `explain(\"cost\")` or Spark UI for statistics).",
+    "hints": [
+      "explain() reveals the query plan Spark will execute — look for keywords like 'physical plan' and operator names"
+    ],
+    "concepts": ["explain", "physical plan", "Catalyst optimizer", "query planning", "debugging"]
+  },
+  {
+    "id": 11028,
+    "order": 28,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "limit() vs head()",
+    "description": "You want to inspect the first 5 rows of a large DataFrame. A colleague uses `df.limit(5)` and you use `df.head(5)`.\n\nWhat is the **key difference** between the two?",
+    "code_snippet": null,
+    "options": [
+      "`limit(5)` is a lazy transformation that returns a new DataFrame; `head(5)` is an action that collects and returns a Python list of `Row` objects",
+      "Both return a DataFrame containing the first 5 rows",
+      "`head(5)` is a lazy transformation; `limit(5)` is the action that triggers execution",
+      "They are identical — both return a Python list of Row objects"
+    ],
+    "correct_option": 0,
+    "explanation": "`df.limit(5)` is a **transformation** — it returns a new DataFrame restricted to 5 rows, but no computation runs until an action is called on it. `df.head(5)` is an **action** — it immediately collects up to 5 rows from the cluster and returns them as a **Python list of Row objects** (equivalent to `df.limit(5).collect()`). Option B is wrong because `head` returns a list, not a DataFrame. Option C reverses the lazy/action relationship. Option D is wrong — `limit` returns a DataFrame, not a list.",
+    "hints": [
+      "One of these gives you a DataFrame to continue transforming; the other gives you Python objects right now"
+    ],
+    "concepts": ["limit", "head", "transformations vs actions", "collect", "Row objects"]
+  },
+  {
+    "id": 11029,
+    "order": 29,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "Why Use checkpoint()?",
+    "description": "You are running an iterative machine learning pipeline with many transformation steps chained together. After many iterations, the job starts throwing `StackOverflowError` due to the deeply nested execution plan.\n\nWhy would you call `df.checkpoint()` to address this?",
+    "code_snippet": null,
+    "options": [
+      "Checkpoint truncates the RDD lineage by saving the current result to reliable distributed storage — the plan is restarted from that point, preventing StackOverflow errors in deeply nested DAGs",
+      "Checkpoint caches the DataFrame in executor memory, equivalent to calling `.cache()`",
+      "Checkpoint saves the result to the Spark Driver so it can be reused across multiple jobs",
+      "Checkpoint compresses the DataFrame before writing it to output storage"
+    ],
+    "correct_option": 0,
+    "explanation": "`df.checkpoint()` **materializes** the DataFrame to a reliable storage location (configured via `sc.setCheckpointDir()`) and **breaks the lineage** — subsequent operations start their DAG from the checkpointed data rather than tracing back through the entire history. This is essential in iterative algorithms (like graph processing or ML training loops) where the DAG grows unboundedly and causes `StackOverflowError`. Option B describes `.cache()`, which stores in memory but does not break the lineage. Option C is wrong — checkpoint writes to distributed storage (HDFS/S3), not the driver. Option D has nothing to do with checkpoint.",
+    "hints": [
+      "Think about what happens to the execution plan (DAG) after checkpoint — does Spark still need to remember all the previous steps?"
+    ],
+    "concepts": ["checkpoint", "lineage", "DAG", "iterative algorithms", "fault tolerance"]
+  },
+  {
+    "id": 11030,
+    "order": 30,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "inferSchema Performance Cost",
+    "description": "You read a large CSV file using `spark.read.option(\"inferSchema\", True).csv(path)`. A colleague warns that this is slower than reading without `inferSchema`.\n\nWhy does enabling `inferSchema` incur an extra performance cost?",
+    "code_snippet": null,
+    "options": [
+      "Spark makes an additional full pass over the entire dataset to sample values and determine column types — roughly doubling the read time",
+      "Spark downloads the entire file to the driver node before inferring types",
+      "Spark only reads the first 1000 rows to determine column types",
+      "Spark raises an error if column types are inconsistent across rows"
+    ],
+    "correct_option": 0,
+    "explanation": "When `inferSchema=True` is set, Spark must **scan the entire dataset** (or a large sample) to determine appropriate types for each column. This is essentially a second read pass on top of the actual data load, roughly doubling I/O time for large files. Option B is wrong — Spark reads data in a distributed fashion across executors, not by downloading to the driver. Option C describes a partial-read heuristic that some tools use, but Spark's default `inferSchema` does a full pass. Option D is wrong — Spark resolves type conflicts by choosing the widest compatible type (e.g., `LongType` over `IntegerType`), not by raising an error.",
+    "hints": [
+      "inferSchema needs to 'see' the data before it can know the types — how many times does it need to read the file?"
+    ],
+    "concepts": ["inferSchema", "CSV reading", "performance", "type inference", "schema"]
   }
 ]
