@@ -3403,13 +3403,19 @@ select {
 ───────────────────────────────────────────────────── */
 .landing-showcase {
   width: 100%;
-  background: transparent;
-  padding: 2rem 1.5rem 5rem;
+  background:
+    radial-gradient(ellipse 60% 55% at 8% 50%,  rgba(91,106,240,0.20)  0%, transparent 65%),
+    radial-gradient(ellipse 50% 60% at 92% 30%, rgba(217,79,61,0.16)   0%, transparent 65%),
+    radial-gradient(ellipse 45% 55% at 55% 85%, rgba(45,158,107,0.14)  0%, transparent 65%),
+    radial-gradient(ellipse 40% 50% at 45% 15%, rgba(196,127,23,0.12)  0%, transparent 65%),
+    #0C0C0A;
+  padding: 5rem 1.5rem 5.5rem;
+  overflow: hidden;
   position: relative;
 }
 
 .landing-showcase-inner {
-  max-width: 740px;
+  max-width: 1120px;
   margin: 0 auto;
   opacity: 0;
   transform: translateY(32px);
@@ -3423,54 +3429,69 @@ select {
 
 .landing-showcase-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 3.25rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.65rem;
 }
 
 .landing-showcase-eyebrow {
   display: inline-block;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: rgba(255,255,255,0.35);
 }
 
 .landing-showcase-title {
-  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  font-size: clamp(1.65rem, 3.2vw, 2.5rem);
   font-weight: 700;
-  color: var(--text-strong);
-  letter-spacing: -0.03em;
-  line-height: 1.1;
+  color: rgba(255,255,255,0.90);
+  letter-spacing: -0.035em;
+  line-height: 1.08;
   margin: 0;
 }
 
-/* ── Single showcase card ────────────────── */
+/* ── 4-card grid ─────────────────────────── */
+.landing-showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
 .showcase-card {
-  background: #ffffff;
-  border: 1px solid var(--border-subtle);
-  border-left: 4px solid transparent;
+  background: rgba(255,255,255,0.035);
+  border: 1px solid rgba(255,255,255,0.07);
   border-radius: 20px;
-  padding: 1.5rem;
+  padding: 1.4rem;
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.04);
-  height: 420px;
+  gap: 0.9rem;
+  opacity: 0.38;
+  transition:
+    opacity 0.55s ease,
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.45s ease,
+    box-shadow 0.55s ease;
+  /* Fixed height — prevents card expanding when text types in */
+  height: 370px;
   overflow: hidden;
-  transition: border-left-color 0.35s ease, opacity 0.3s ease, transform 0.3s ease;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  will-change: transform, opacity;
 }
 
 .showcase-card.is-active {
-  border-left-color: var(--active-color, var(--accent));
-}
-
-.showcase-card.is-transitioning {
-  opacity: 0;
-  transform: translateY(6px);
+  opacity: 1;
+  transform: translateY(-6px) scale(1.015);
+  border-color: var(--active-color, rgba(255,255,255,0.25));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--active-color, transparent) 40%, transparent),
+    0 16px 48px rgba(0,0,0,0.6),
+    0 0 80px color-mix(in srgb, var(--active-color, transparent) 18%, transparent);
 }
 
 /* ── Card header ────────────────────────── */
@@ -3485,13 +3506,14 @@ select {
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
+  box-shadow: 0 0 6px currentColor;
 }
 
 .showcase-track-label {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  color: var(--text-muted);
-  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.65);
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
@@ -3501,48 +3523,49 @@ select {
   font-weight: 600;
   padding: 0.14rem 0.5rem;
   border-radius: 999px;
-  background: var(--surface-highlight, #F0EEE9);
-  color: var(--text-muted);
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.42);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid rgba(255,255,255,0.1);
 }
 
 /* ── Card body ──────────────────────────── */
 .showcase-question-title {
-  font-size: 0.95rem;
+  font-size: 0.86rem;
   font-weight: 600;
-  color: var(--text-strong);
+  color: rgba(255,255,255,0.82);
   line-height: 1.35;
   letter-spacing: -0.015em;
 }
 
 .showcase-phase-label {
-  font-size: 0.64rem;
+  font-size: 0.66rem;
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: rgba(255,255,255,0.28);
   min-height: 0.9rem;
   transition: color 0.3s ease;
 }
 
 .showcase-card.is-active .showcase-phase-label {
-  color: color-mix(in srgb, var(--active-color, var(--accent)) 80%, var(--text-muted));
+  color: color-mix(in srgb, var(--active-color, rgba(255,255,255,0.5)) 65%, rgba(255,255,255,0.3));
 }
 
 /* ── Code block ─────────────────────────── */
 .showcase-code-block {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
-  line-height: 1.72;
-  color: rgba(220, 218, 210, 0.88);
-  background: #141413;
-  border: 1px solid rgba(255,255,255,0.06);
+  font-size: 0.7rem;
+  line-height: 1.68;
+  color: rgba(255,255,255,0.60);
+  background: rgba(0,0,0,0.40);
+  border: 1px solid rgba(255,255,255,0.055);
   border-radius: 13px;
-  padding: 1rem 1.1rem;
-  flex: 1;
-  min-height: 0;
+  padding: 0.9rem 1rem;
+  /* Fixed height — prevents code block pushing card taller as text types in */
+  flex: none;
+  height: 196px;
   margin: 0;
   white-space: pre;
   overflow: hidden;
@@ -3554,13 +3577,13 @@ select {
   white-space: pre;
 }
 
-/* Cursor blink */
+/* Cursor blink — only on active card */
 .showcase-card.is-active .showcase-code-block::after {
   content: '▎';
   display: inline;
   opacity: 1;
   animation: showcaseCursor 0.9s step-end infinite;
-  color: rgba(255,255,255,0.55);
+  color: rgba(255,255,255,0.65);
   font-size: 0.75rem;
   line-height: 1;
 }
@@ -3580,40 +3603,30 @@ select {
 }
 
 /* ── Showcase responsive ────────────────── */
-@media (max-width: 800px) {
-  .landing-showcase {
-    padding: 1.5rem 1.25rem 4rem;
+@media (max-width: 960px) {
+  .landing-showcase-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
-  .showcase-card {
-    height: auto;
-    min-height: 360px;
+  .landing-showcase {
+    padding: 4rem 1.25rem 4.5rem;
   }
 }
 
 @media (max-width: 560px) {
+  .landing-showcase-grid {
+    grid-template-columns: 1fr;
+  }
   .landing-showcase {
-    padding: 1rem 1rem 3rem;
+    padding: 3rem 1rem 3.5rem;
+  }
+  .showcase-card {
+    height: auto;
+    min-height: 320px;
   }
 }
 
-/* ── Dark mode overrides ────────────────── */
+/* ── Dark mode (showcase already dark — only pill overrides needed) ── */
 @media (prefers-color-scheme: dark) {
-  .showcase-card {
-    background: var(--surface-card);
-    border-color: var(--border-subtle);
-    box-shadow: 0 8px 40px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.20);
-  }
-
-  .showcase-difficulty-badge {
-    background: var(--surface-card-alt, #242422);
-    border-color: var(--border-subtle);
-  }
-
-  .showcase-code-block {
-    background: #0E0E0D;
-    border-color: rgba(255,255,255,0.05);
-  }
-
   .landing-track-pill {
     border-color: var(--border-subtle);
     color: var(--text-secondary);

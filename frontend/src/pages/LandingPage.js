@@ -123,7 +123,6 @@ export default function LandingPage() {
   const [showcaseActiveIndex, setShowcaseActiveIndex] = useState(0);
   const [showcaseDisplayed, setShowcaseDisplayed] = useState('');
   const [showcasePhase, setShowcasePhase] = useState('question');
-  const [showcaseTransitioning, setShowcaseTransitioning] = useState(false);
   const showcaseTimers = useRef({ interval: null, timeout: null });
 
   useEffect(() => {
@@ -141,41 +140,36 @@ export default function LandingPage() {
     if (timers.interval) clearInterval(timers.interval);
     if (timers.timeout) clearTimeout(timers.timeout);
 
-    // Brief fade-out before resetting content
-    setShowcaseTransitioning(true);
-    timers.timeout = setTimeout(() => {
-      setShowcaseTransitioning(false);
-      setShowcaseDisplayed('');
-      setShowcasePhase('question');
+    setShowcaseDisplayed('');
+    setShowcasePhase('question');
 
-      let i = 0;
-      const question = card.questionText;
+    let i = 0;
+    const question = card.questionText;
 
-      timers.interval = setInterval(() => {
-        i++;
-        setShowcaseDisplayed(question.slice(0, i));
-        if (i >= question.length) {
-          clearInterval(timers.interval);
-          timers.timeout = setTimeout(() => {
-            setShowcasePhase('answer');
-            let j = 0;
-            const answer = card.answerCode;
-            const fullText = question + '\n\n' + answer;
-            const startLen = question.length + 2;
-            timers.interval = setInterval(() => {
-              j++;
-              setShowcaseDisplayed(fullText.slice(0, startLen + j));
-              if (j >= answer.length) {
-                clearInterval(timers.interval);
-                timers.timeout = setTimeout(() => {
-                  setShowcaseActiveIndex(prev => (prev + 1) % SHOWCASE_CARDS.length);
-                }, 2000);
-              }
-            }, 10);
-          }, 800);
-        }
-      }, 12);
-    }, 180);
+    timers.interval = setInterval(() => {
+      i++;
+      setShowcaseDisplayed(question.slice(0, i));
+      if (i >= question.length) {
+        clearInterval(timers.interval);
+        timers.timeout = setTimeout(() => {
+          setShowcasePhase('answer');
+          let j = 0;
+          const answer = card.answerCode;
+          const fullText = question + '\n\n' + answer;
+          const startLen = question.length + 2;
+          timers.interval = setInterval(() => {
+            j++;
+            setShowcaseDisplayed(fullText.slice(0, startLen + j));
+            if (j >= answer.length) {
+              clearInterval(timers.interval);
+              timers.timeout = setTimeout(() => {
+                setShowcaseActiveIndex(prev => (prev + 1) % SHOWCASE_CARDS.length);
+              }, 1500);
+            }
+          }, 10);
+        }, 800);
+      }
+    }, 12);
 
     return () => {
       if (timers.interval) clearInterval(timers.interval);
@@ -220,8 +214,6 @@ export default function LandingPage() {
   function handleTabChange(tabId) {
     startTransition(() => setActiveTab(tabId));
   }
-
-  const activeCard = SHOWCASE_CARDS[showcaseActiveIndex];
 
   return (
     <>
@@ -271,38 +263,27 @@ export default function LandingPage() {
               <h2 className="landing-showcase-title">See what you&rsquo;ll be solving.</h2>
             </div>
 
-            <div className="landing-track-nav" role="tablist" aria-label="Showcase track selector">
+            <div className="landing-showcase-grid">
               {SHOWCASE_CARDS.map((card, i) => (
-                <button
+                <div
                   key={card.label}
-                  type="button"
-                  role="tab"
-                  aria-selected={showcaseActiveIndex === i}
-                  className={`landing-track-pill${showcaseActiveIndex === i ? ' is-active' : ''}`}
-                  style={{ '--pill-color': card.color }}
-                  onClick={() => setShowcaseActiveIndex(i)}
+                  className={`showcase-card${showcaseActiveIndex === i ? ' is-active' : ''}`}
+                  style={showcaseActiveIndex === i ? { '--active-color': card.color } : {}}
                 >
-                  {card.label}
-                </button>
+                  <div className="showcase-card-header">
+                    <span className="showcase-track-dot" style={{ background: card.color }} />
+                    <span className="showcase-track-label">{card.label}</span>
+                    <span className="showcase-difficulty-badge">{card.difficulty}</span>
+                  </div>
+                  <div className="showcase-question-title">{card.title}</div>
+                  <div className="showcase-phase-label">
+                    {showcaseActiveIndex === i ? (showcasePhase === 'question' ? 'Question' : 'Answer') : ''}
+                  </div>
+                  <pre className="showcase-code-block">
+                    <code>{showcaseActiveIndex === i ? showcaseDisplayed : ''}</code>
+                  </pre>
+                </div>
               ))}
-            </div>
-
-            <div
-              className={`showcase-card is-active${showcaseTransitioning ? ' is-transitioning' : ''}`}
-              style={{ '--active-color': activeCard.color }}
-            >
-              <div className="showcase-card-header">
-                <span className="showcase-track-dot" style={{ background: activeCard.color }} />
-                <span className="showcase-track-label">{activeCard.label}</span>
-                <span className="showcase-difficulty-badge">{activeCard.difficulty}</span>
-              </div>
-              <div className="showcase-question-title">{activeCard.title}</div>
-              <div className="showcase-phase-label">
-                {showcasePhase === 'question' ? 'Question' : 'Answer'}
-              </div>
-              <pre className="showcase-code-block">
-                <code>{showcaseDisplayed}</code>
-              </pre>
             </div>
           </div>
         </section>
