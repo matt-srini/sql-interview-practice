@@ -112,14 +112,15 @@ Each JSON file is an array of question objects. Example `easy.json` for Python (
 
 IDs must be unique across **all** question files in all tracks (including SQL). Before assigning an ID, check that it doesn't already exist in:
 - `backend/content/questions/easy.json`, `medium.json`, `hard.json` (SQL, 1001–3999)
-- `backend/content/python_questions/` (4001–4999)
-- `backend/content/python_data_questions/` (5001–7999)
-- `backend/content/pyspark_questions/` (11001–13999)
+- `backend/content/python_questions/` (4001–4999: easy 4001–4299, medium 4301–4599, hard 4601–4899)
+- `backend/content/python_data_questions/` (5001–5899: easy 5001–5299, medium 5301–5599, hard 5601–5899)
+- `backend/content/pyspark_questions/` (11001–11899: easy 11001–11299, medium 11301–11599, hard 11601–11899)
 
-Sample question IDs:
+Sample question IDs (all 3 digits):
+- SQL samples: 101–303
 - Python algorithms samples: 401–423
-- Pandas samples: 501–723
-- PySpark samples: 4501–4723
+- Pandas samples: 501–523
+- PySpark samples: 601–623
 
 ---
 

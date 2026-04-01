@@ -48,9 +48,9 @@ A data interview practice platform covering four tracks. Users write SQL or Pyth
 | Track | Questions | Format | Location |
 |---|---|---|---|
 | SQL | 86 (30 easy, 30 medium, 26 hard) | SQL query | `backend/content/questions/` |
-| Python | 10 easy (expanding) | Algorithm test cases | `backend/content/python_questions/` |
-| Pandas | 10 easy (expanding) | DataFrame comparison | `backend/content/python_data_questions/` |
-| PySpark | 30 easy (expanding) | MCQ / predict output | `backend/content/pyspark_questions/` |
+| Python | 75 (30 easy, 25 medium, 20 hard) | Algorithm test cases | `backend/content/python_questions/` |
+| Pandas | 75 (30 easy, 25 medium, 20 hard) | DataFrame comparison | `backend/content/python_data_questions/` |
+| PySpark | 75 (30 easy, 25 medium, 20 hard) | MCQ / predict output | `backend/content/pyspark_questions/` |
 
 - **Sample questions (SQL only):** 9 total — 3 per difficulty (`backend/sample_questions.py`)
 - Every question has `hints` (1–2 entries) and `concepts` (semantic tags surfaced as pills)
@@ -157,6 +157,13 @@ HERO  (logged-out only)
   headline: "Get sharp at data interviews."
   copy: one sentence about four tracks
   CTAs: [Explore tracks ↓] [Create account]
+
+SHOWCASE  (all users — between hero and tabs)
+  Dark section (#0C0C0A) with radial gradient overlays in track accent colors
+  4-card horizontal grid, one per track (SQL, Python, Pandas, PySpark)
+  Each card shows a medium/hard question + typed answer animation
+  Active card cycles every ~5s with glow border and elevation; others dimmed
+  CSS classes: .landing-showcase, .showcase-card, .showcase-card.is-active
 
 TAB STRIP
   [SQL] [Python] [Pandas] [PySpark]
