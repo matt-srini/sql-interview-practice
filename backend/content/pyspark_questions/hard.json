@@ -1,1 +1,442 @@
-[]
+[
+  {
+    "id": 11601,
+    "order": 1,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "hard",
+    "title": "Skewed Join Optimization with Salting",
+    "description": "You are joining a 500 GB `user_events` table against a small `users` lookup table on `user_id`. The job is extremely slow — profiling the Spark UI reveals that 90% of events carry `user_id = 9999` (a known bot). You already tried `repartition(500)` but the job got worse.\n\nWhat is the **best** fix for this data skew?",
+    "code_snippet": null,
+    "options": [
+      "Increase the number of executor cores so each task processes the skewed partition faster",
+      "Broadcast the 500 GB `user_events` table to every executor to eliminate the shuffle entirely",
+      "Salt the skewed join key — append a random integer 0–9 to `user_id` on the events side and explode the users side by the same range, then aggregate away the salt after the join",
+      "Filter out `user_id = 9999` before the join to remove the skewed key"
+    ],
+    "correct_option": 2,
+    "explanation": "**Salting** is the canonical fix for data skew in a join. By appending a random integer (e.g. 0–9) to the skewed key on the large side and exploding the small lookup table by the same range, you distribute the 90% of rows that previously landed on one reducer across 10 reducers — achieving even parallelism. After the join, you aggregate away the salt. Option A (more cores) doesn't help: all the extra cores still contend for the same oversized partition. Option B (broadcast) is impossible — 500 GB far exceeds the broadcast threshold (default 10 MB); broadcasting that volume would OOM the executors. Option D (filter out the key) removes legitimate bot-user event data that may be needed for the business logic, and is not a general solution.",
+    "hints": [
+      "Skew is a data distribution problem, not a compute resource problem — adding more cores to the same skewed partition doesn't help"
+    ],
+    "concepts": ["skew join", "salting", "data skew", "broadcast join", "shuffle optimization"]
+  },
+  {
+    "id": 11602,
+    "order": 2,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "hard",
+    "title": "executor.memory vs memoryOverhead for Pandas UDFs",
+    "description": "Your PySpark job uses pandas UDFs (vectorized UDFs via `@pandas_udf`). Despite setting `spark.executor.memory=8g`, YARN kills containers with the error: **\"Container killed on request. Exit code is 143\"** — a memory limit violation.\n\nWhich configuration change should you make **first**?",
+    "code_snippet": null,
+    "options": [
+      "Increase `spark.executor.cores` from 2 to 4 so each core has more CPU budget for the UDF",
+      "Set `spark.memory.fraction=1.0` to give all JVM heap memory to execution",
+      "Increase `spark.executor.memoryOverhead` (or `spark.executor.pyspark.memory`) to account for off-heap Python process memory",
+      "Add more executors with `spark.executor.instances=20` without changing per-executor memory"
+    ],
+    "correct_option": 2,
+    "explanation": "`spark.executor.memory` controls the JVM heap size, but pandas UDFs run in a **separate Python subprocess** outside the JVM. That Python process's memory — including the pandas/numpy buffers for the vectorized UDF — is not covered by `executor.memory`; it counts against the container's total memory limit (JVM heap + overhead). `spark.executor.memoryOverhead` (default: `max(executorMemory * 0.1, 384MB)`) is the off-heap budget. For pandas UDF-heavy jobs, this often needs to be raised to 2–4 GB. Alternatively, `spark.executor.pyspark.memory` (Spark 3.x) lets you set a separate Python memory cap. Option A (more cores) is irrelevant — the crash is a memory issue, not CPU. Option B (`memory.fraction=1.0`) only redistributes the JVM heap between execution and storage memory; it has no effect on the Python process. Option D (more executors) just scales the problem — each new executor's Python process will also exceed its container limit.",
+    "hints": [
+      "Pandas UDFs execute in a Python subprocess, not in the JVM — ask yourself which memory budget covers processes outside the JVM heap"
+    ],
+    "concepts": ["memoryOverhead", "pandas UDF", "off-heap memory", "YARN container", "executor memory"]
+  },
+  {
+    "id": 11603,
+    "order": 3,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "hard",
+    "title": "Dynamic Partition Pruning Activation Requirements",
+    "description": "You are running a star-schema query that joins a large, date-partitioned `fact_sales` table against a `dim_store` dimension table, filtering on `dim_store.region = 'West'`. A colleague says Dynamic Partition Pruning (DPP) should dramatically cut I/O on `fact_sales`.\n\nWhich combination of conditions is **required** for DPP to activate?",
+    "code_snippet": null,
+    "options": [
+      "DPP activates on any join type regardless of how `fact_sales` is partitioned, as long as AQE is enabled",
+      "The fact table must be partitioned on the join key (`store_id`), the dimension table must have a selective filter applied, and `spark.sql.optimizer.dynamicPartitionPruning.enabled=true` (default true since Spark 3.0)",
+      "DPP requires the Parquet file format exclusively — it does not work with ORC, CSV, or Delta Lake",
+      "DPP requires AQE to be explicitly disabled, because AQE and DPP conflict at the planner level"
+    ],
+    "correct_option": 1,
+    "explanation": "Dynamic Partition Pruning works by injecting a runtime subquery from the filtered dimension side into the fact table scan. Three conditions must all hold: (1) the fact table is **partitioned on the join key** so Spark knows which partitions to prune; (2) the dimension side has a **selective filter** (otherwise there is nothing to push down); (3) the DPP config flag is enabled (default since Spark 3.0). Option A is wrong — DPP only helps if the fact table is partitioned on the join column; without that, there are no partitions to prune. Option C is wrong — DPP works with any Hadoop-compatible format that supports partition-level pruning (ORC, Delta, etc.); it is not Parquet-only. Option D is the opposite of reality: AQE and DPP coexist in Spark 3.x; AQE can even improve DPP by providing more accurate runtime stats.",
+    "hints": [
+      "Ask yourself what Spark needs in order to skip partitions at read time — it must know which partitions exist, meaning the table must be partitioned on the relevant column"
+    ],
+    "concepts": ["dynamic partition pruning", "DPP", "star schema", "partition pruning", "AQE"]
+  },
+  {
+    "id": 11604,
+    "order": 4,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "hard",
+    "title": "Three AQE Runtime Optimizations",
+    "description": "Adaptive Query Execution (AQE), enabled by default since Spark 3.2, applies several runtime optimizations after each shuffle stage. Which answer correctly describes **all three** core AQE optimizations?",
+    "code_snippet": null,
+    "options": [
+      "Predicate pushdown into data sources, column pruning across projections, and constant folding of literal expressions",
+      "Coalescing small shuffle partitions into fewer larger ones, converting sort-merge joins to broadcast joins based on runtime sizes, and splitting oversized skewed join partitions",
+      "Rewriting correlated subqueries as lateral joins, eliminating redundant sorts before aggregations, and caching intermediate shuffle results",
+      "Choosing between hash join and nested-loop join at runtime, compressing shuffle blocks when network bandwidth is low, and inlining small CTEs"
+    ],
+    "correct_option": 1,
+    "explanation": "AQE's three core optimizations are: (1) **Shuffle partition coalescing** — after a shuffle, many small partitions (e.g. 200 × 2 MB) are merged into fewer, larger ones based on `advisoryPartitionSizeInBytes`, reducing task overhead. (2) **Join strategy switching** — if runtime statistics show the build side is smaller than `autoBroadcastJoinThreshold` (default 10 MB), AQE converts a planned sort-merge join to a more efficient broadcast join, eliminating a shuffle stage. (3) **Skew join optimization** — AQE detects oversized partitions on the join probe side (> `skewedPartitionThresholdInBytes`) and splits them into smaller sub-partitions, duplicating the matching build-side partition to compensate. Option A describes **Catalyst** static optimizations, not AQE. Options C and D list features that don't exist in AQE.",
+    "hints": [
+      "AQE is a runtime optimizer — it kicks in *after* shuffle stages complete and real partition sizes are known, not at plan compilation time"
+    ],
+    "concepts": ["AQE", "adaptive query execution", "shuffle coalescing", "skew join", "broadcast join conversion"]
+  },
+  {
+    "id": 11605,
+    "order": 5,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "title": "Identify the Bottleneck in an Explain Plan",
+    "description": "A data engineer calls `df.explain()` on an aggregation query and sees the physical plan below. Which operator is the **most likely execution bottleneck**, and why?\n\n```\n== Physical Plan ==\n*(3) HashAggregate(keys=[country], functions=[sum(amount)])\n+- Exchange hashpartitioning(country, 200), ENSURE_REQUIREMENTS\n   +- *(2) HashAggregate(keys=[country], functions=[partial_sum(amount)])\n      +- *(1) FileScan parquet [country,amount]\n```",
+    "code_snippet": "== Physical Plan ==\n*(3) HashAggregate(keys=[country], functions=[sum(amount)])\n+- Exchange hashpartitioning(country, 200), ENSURE_REQUIREMENTS\n   +- *(2) HashAggregate(keys=[country], functions=[partial_sum(amount)])\n      +- *(1) FileScan parquet [country,amount]",
+    "options": [
+      "FileScan parquet — reading from disk is always the slowest operation in any Spark job",
+      "Exchange (shuffle) — redistributing data across the network between all executors is the most expensive operation; its cost scales with data volume and cluster size",
+      "The final HashAggregate *(3) — merging partial sums requires iterating over all shuffled data serially in a single task",
+      "The plan is already fully optimised — the two-phase partial aggregation means there is no bottleneck"
+    ],
+    "correct_option": 1,
+    "explanation": "The `Exchange hashpartitioning(country, 200)` — the **shuffle** — is almost always the dominant cost in this plan. It serializes rows, sends them over the network, and deserializes on the receiving executor; the cost scales with the amount of data after partial aggregation and with network latency and bandwidth. The `FileScan` reads local Parquet files, which benefits from columnar projection (only `country` and `amount` columns are read) and is I/O-local — typically far cheaper than a network shuffle. The `HashAggregate` operators are in-memory CPU operations and are usually fast. The two-phase partial aggregation (option D) *reduces* shuffle volume but does not eliminate it — for high-cardinality `country` keys with little reduction, the shuffle is still large. Recognising the Exchange as the bottleneck is the key insight for tuning: reduce data volume before the shuffle, increase partition count to avoid skew, or consider AQE coalescing.",
+    "hints": [
+      "In a distributed system, moving data across the network is orders of magnitude more expensive than reading local storage or performing in-memory computation"
+    ],
+    "concepts": ["explain plan", "shuffle", "Exchange operator", "HashAggregate", "performance bottleneck"]
+  },
+  {
+    "id": 11606,
+    "order": 6,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "hard",
+    "title": "collect() on a Large DataFrame",
+    "description": "A junior engineer writes the following code to inspect a 10 GB DataFrame:\n\n```python\nrows = df.collect()\nprint(rows[:5])\n```\n\nWhat will **most likely** happen when this code runs?",
+    "code_snippet": null,
+    "options": [
+      "Spark streams the data to the driver in configurable chunks, so only a small buffer is held in driver memory at any time",
+      "The driver JVM runs out of heap memory — all 10 GB is deserialized and loaded into the driver process, causing an OutOfMemoryError",
+      "The data is automatically compressed with Snappy before being sent to the driver, reducing memory usage to approximately 1–2 GB",
+      "collect() is a lazy transformation, so nothing executes until the result is iterated"
+    ],
+    "correct_option": 1,
+    "explanation": "`collect()` is an **action** that brings the entire DataFrame to the driver as a Python list of `Row` objects. All 10 GB — deserialized into JVM objects, then converted to Python objects via Py4J — must fit in driver memory simultaneously. Driver JVMs are typically configured with 1–4 GB heap (`spark.driver.memory`), so 10 GB of data will almost certainly cause an `OutOfMemoryError` (or a `SparkException` wrapping one). Option A is incorrect — Spark has no automatic streaming/chunking mechanism for `collect()`; the entire result set is materialized at once. Option C is incorrect — data is not automatically compressed before being sent to the driver; even if it were, decompression happens before creating the Python list, so memory usage is the full uncompressed size. Option D is wrong — `collect()` is an action, not a transformation; it executes immediately. The correct pattern for inspecting large DataFrames is `df.show(5)` or `df.limit(5).collect()`.",
+    "hints": [
+      "collect() sends every row to a single process — the driver. Think about how much memory the driver process typically has"
+    ],
+    "concepts": ["collect", "driver memory", "OutOfMemoryError", "actions", "large data"]
+  },
+  {
+    "id": 11607,
+    "order": 7,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "hard",
+    "title": "reduceByKey vs groupByKey Network Cost",
+    "description": "In the RDD API, both `reduceByKey` and `groupByKey` can be used to compute the sum of values per key. For a dataset with millions of rows and only a few hundred distinct keys:\n\nWhy does `groupByKey()` consume **significantly more network bandwidth** than `reduceByKey()` for the same sum aggregation?",
+    "code_snippet": null,
+    "options": [
+      "groupByKey creates more output partitions than reduceByKey, increasing the total amount of data written to shuffle files",
+      "groupByKey shuffles all values for each key across the network before any aggregation occurs; reduceByKey performs a map-side partial aggregation (combiner) first, sending only partial sums — far less data",
+      "groupByKey is a deprecated API and Spark adds artificial overhead to encourage migration to reduceByKey",
+      "groupByKey and reduceByKey shuffle the same amount of data; the difference is only in CPU cost during the reduce phase"
+    ],
+    "correct_option": 1,
+    "explanation": "`reduceByKey(f)` applies the reduction function `f` **locally within each partition** before the shuffle (a map-side combine / combiner pattern). For a sum, if a partition has 10,000 rows for key `k`, `reduceByKey` sends only one partial sum per key per partition across the network. `groupByKey()` has no such pre-aggregation — it shuffles all 10,000 raw values for key `k` from every partition, creating a massive iterator that must be sent over the network and then held in memory on the receiving executor. With millions of rows and few distinct keys, the shuffle data for `groupByKey` can be orders of magnitude larger. Option A is wrong — both APIs produce the same number of partitions (default `spark.default.parallelism`). Option C is misleading — while `groupByKey` is discouraged, the overhead is data-structural (no combiner), not artificial. Option D is factually wrong: the shuffle I/O difference is the primary performance gap.",
+    "hints": [
+      "Think about what data is sent across the network in each case — raw values vs. pre-aggregated partial results"
+    ],
+    "concepts": ["reduceByKey", "groupByKey", "map-side combine", "shuffle", "RDD API"]
+  },
+  {
+    "id": 11608,
+    "order": 8,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "hard",
+    "title": "Parquet vs CSV for Analytical Workloads",
+    "description": "You are selecting a storage format for a 2 TB dataset that is queried daily with patterns like `WHERE country = 'US'` and `SELECT user_id, revenue, timestamp` (3 of 50 columns). Query latency and cost are the primary concerns.\n\nWhich format and primary reason is correct?",
+    "code_snippet": null,
+    "options": [
+      "CSV — simpler to debug and inspect with standard tools; the query engine will handle the filtering efficiently regardless of format",
+      "JSON — maximally schema-flexible, allowing columns to be added without a migration, and Spark reads it natively",
+      "ORC — identical columnar benefits to Parquet, and ORC has better compression ratios in all cases making it strictly superior",
+      "Parquet — columnar storage enables predicate pushdown (row group min/max statistics skip irrelevant blocks) and column pruning (only 3 of 50 columns are deserialized), reducing I/O by 80–95% vs row-based formats"
+    ],
+    "correct_option": 3,
+    "explanation": "**Parquet** is the correct choice for this analytical access pattern. Its two key advantages are: (1) **Column pruning** — data is stored column-by-column on disk, so reading 3 of 50 columns requires deserializing only 6% of the data. CSV and JSON store rows, so all 50 columns must be read regardless. (2) **Predicate pushdown** — Parquet files embed row-group-level min/max statistics, allowing Spark to skip entire file blocks where `country` cannot be `'US'`, reducing scan volume dramatically. Option A (CSV) provides none of these benefits; every query does a full scan of all columns and all rows. Option B (JSON) is row-oriented, verbose, and slow for analytical queries. Option C overstates ORC's advantage — ORC and Parquet have similar columnar benefits, and Parquet has broader ecosystem support (Delta Lake, Iceberg, Arrow), better Spark integration, and compression ratios that are competitive (Snappy, Zstandard); ORC is not strictly superior in all cases.",
+    "hints": [
+      "With 50 columns and you only need 3, ask yourself: which formats store columns together so unneeded columns can be skipped entirely?"
+    ],
+    "concepts": ["Parquet", "columnar storage", "predicate pushdown", "column pruning", "file format"]
+  },
+  {
+    "id": 11609,
+    "order": 9,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "hard",
+    "title": "Diagnosing a Suddenly Slow Spark Job",
+    "description": "A Spark pipeline that previously ran in 10 minutes now takes 2 hours after the input data volume grew 10×. The cluster has ample free resources (CPU and memory utilization are low). What is the **first and most targeted** diagnostic step?",
+    "code_snippet": null,
+    "options": [
+      "Check the YARN Resource Manager UI to confirm free container slots are available before investigating Spark-specific causes",
+      "Restart all executors via the Spark UI to clear any accumulated JVM heap fragmentation from the increased data volume",
+      "Check the Python version on all executor nodes — a version mismatch after a cluster upgrade could cause serialization slowdowns",
+      "Open the Spark UI Stage detail view for the slowest stage — examine task duration distribution for skew, shuffle read/write sizes for unexpected data volume, and GC time per task to isolate the bottleneck"
+    ],
+    "correct_option": 3,
+    "explanation": "The **Spark UI Stage detail view** is the correct first stop because it gives task-level granularity that directly points to the cause: (1) A **skewed task duration** (e.g. 199 tasks finish in 10 seconds but 1 task takes 90 minutes) immediately identifies data skew. (2) **Shuffle read/write sizes** reveal whether a join or aggregation is processing unexpectedly large intermediate datasets. (3) **GC time** shows whether tasks are spending significant time in garbage collection, indicating memory pressure. With cluster resources available (option A is already answered — resources are free), the bottleneck is within Spark's execution. Option B (restarting executors) is disruptive and would not fix a structural problem like skew or a missing partition filter. Option C (Python version) is a valid concern in general but is not the first step for a job that was previously working; a version issue would have caused failures, not a 12× slowdown.",
+    "hints": [
+      "Low cluster utilization combined with a slow job is a classic indicator of data skew — a few tasks are doing all the work while the rest sit idle"
+    ],
+    "concepts": ["Spark UI", "skew diagnosis", "stage detail", "GC time", "shuffle read/write", "performance tuning"]
+  },
+  {
+    "id": 11610,
+    "order": 10,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "hard",
+    "title": "Checkpoint vs Cache for Iterative ML Training",
+    "description": "You are implementing a 50-iteration ML training loop in Spark. After every 10 iterations, you want to protect against executor failures and avoid recomputing the entire lineage from source data.\n\nWhy should you use `checkpoint()` periodically instead of relying only on `cache()`?",
+    "code_snippet": null,
+    "options": [
+      "checkpoint() is faster than cache() for reads because checkpointed data is stored in a distributed filesystem closer to the executors",
+      "cache() stores data on HDFS automatically, but checkpoint() additionally truncates the DAG lineage, making both approaches equivalent for fault tolerance",
+      "Only checkpoint() provides fault tolerance — if an executor fails, Spark can recover the checkpointed RDD/DataFrame from the checkpoint directory on stable storage (HDFS/S3), truncating the DAG so the full recomputation chain is not re-executed",
+      "checkpoint() and cache() are identical for fault tolerance; the only difference is that checkpoint() uses more disk space"
+    ],
+    "correct_option": 2,
+    "explanation": "`cache()` stores computed partitions in **executor memory** (and optionally local disk via `MEMORY_AND_DISK`). If an executor is lost, its cached partitions are gone — Spark recomputes them by replaying the full lineage from the source. After 50 iterations, that lineage is enormous and the source data may no longer be available. `checkpoint()` writes the DataFrame to **external stable storage** (HDFS, S3, GCS) and — critically — **truncates the DAG lineage**. After checkpointing, Spark treats the checkpoint file as the new source; if an executor fails, it reads from the checkpoint, not from recomputing 50 iterations. Option A is misleading — checkpoint reads from HDFS, which is generally slower than in-memory cache for subsequent reads; the benefit is fault tolerance, not speed. Option B is wrong — `cache()` stores data in executor memory, not HDFS; only `checkpoint()` writes to HDFS. Option D is wrong — they are fundamentally different: `cache()` is ephemeral (tied to executor lifetime) and does not truncate lineage; `checkpoint()` is durable and does.",
+    "hints": [
+      "Ask: what happens to cached data when the executor that holds it crashes? And what does 'truncating the DAG' mean for fault recovery?"
+    ],
+    "concepts": ["checkpoint", "cache", "fault tolerance", "DAG lineage", "iterative algorithms"]
+  },
+  {
+    "id": 11611,
+    "order": 11,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "hard",
+    "title": "Tungsten Off-Heap Binary Format",
+    "description": "Project Tungsten stores intermediate data in a compact off-heap binary format, bypassing the standard JVM object heap. What **primary problem** does this solve that the standard JVM object representation cannot?",
+    "code_snippet": null,
+    "options": [
+      "It enables GPU-accelerated computation by storing data in a format compatible with CUDA memory layouts",
+      "It eliminates JVM garbage collection overhead — GC pauses (especially Full GC triggered by heap pressure) can stall executor tasks for multiple seconds, severely impacting throughput in long-running jobs",
+      "It allows Spark to store DataFrames on remote executor nodes, enabling larger-than-memory datasets without spilling to local disk",
+      "It makes Python UDFs faster by sharing memory between the JVM and the Python subprocess, avoiding serialization"
+    ],
+    "correct_option": 1,
+    "explanation": "The JVM's garbage collector must periodically scan and compact heap-allocated objects. In Spark, intermediate join buffers, aggregation hash maps, and shuffle write buffers can generate enormous GC pressure. A Full GC pause can stop all threads in an executor for several seconds — a phenomenon visible as long GC time in the Spark UI Stage detail. Tungsten avoids this by allocating compact binary records **off-heap** (outside the JVM's managed memory) using `sun.misc.Unsafe`. Off-heap memory is never scanned by GC, eliminating pause-related task stalls. Option A is wrong — GPU support is a separate initiative (Spark RAPIDS, not Tungsten). Option C is wrong — Tungsten data is still local to the executor; it does not enable cross-node in-memory sharing. Option D is wrong — Python UDFs run in a separate process; Tungsten's binary format is a JVM-side optimization and has no direct effect on the Python subprocess.",
+    "hints": [
+      "Think about what happens when the JVM heap fills up and GC kicks in — and how storing data outside the heap would change that"
+    ],
+    "concepts": ["Tungsten", "off-heap memory", "garbage collection", "JVM GC", "execution engine"]
+  },
+  {
+    "id": 11612,
+    "order": 12,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "hard",
+    "title": "Z-Ordering in Delta Lake",
+    "description": "Your Delta Lake table is partitioned by `event_date`. A common query pattern is:\n\n```sql\nSELECT * FROM events\nWHERE event_date = '2024-01-15' AND user_id = 12345\n```\n\nAfter running `OPTIMIZE events ZORDER BY (user_id)`, what improvement should you expect?",
+    "code_snippet": null,
+    "options": [
+      "Z-ordering creates a new physical partition column for `user_id`, so Spark can use directory-level partition pruning to skip entire folders",
+      "Within each date partition's Parquet files, rows with similar `user_id` values are co-located — Spark uses per-file min/max statistics to skip files whose `user_id` range excludes 12345, reducing files read significantly",
+      "Z-ordering sorts the entire table globally by `user_id`, replacing the `event_date` partition scheme with a globally sorted layout",
+      "Z-ordering is a write optimization that speeds up future INSERT and MERGE operations by pre-sorting incoming data"
+    ],
+    "correct_option": 1,
+    "explanation": "Z-ordering is a **data skipping** optimization, not partitioning. Within each `event_date` partition, `OPTIMIZE ... ZORDER BY (user_id)` rewrites Parquet files so that rows with nearby `user_id` values are physically stored together. Delta Lake's transaction log records per-file min/max statistics for `user_id`. When Spark executes the query with `user_id = 12345`, it reads those statistics and skips any file whose `[min_user_id, max_user_id]` range does not include 12345 — potentially reducing file reads from hundreds to a handful. Option A is wrong — Z-ordering does not add a partition column; it only rearranges data within existing partition files. Option C is wrong — Z-ordering operates **within** each partition file, not globally; the `event_date` partition structure is preserved. Option D is wrong — Z-ordering makes **reads** faster through data skipping; it does not speed up writes (it actually slows writes slightly due to the sorting/rewriting cost).",
+    "hints": [
+      "Z-ordering works at the file level within a partition — think about what information Delta Lake stores about each file that lets Spark skip it"
+    ],
+    "concepts": ["Z-ordering", "Delta Lake", "data skipping", "file-level statistics", "predicate pushdown"]
+  },
+  {
+    "id": 11613,
+    "order": 13,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "hard",
+    "title": "Bloom Filters for High-Cardinality Joins",
+    "description": "You are joining two 200 GB tables on `email` (100 million distinct values). The join is slow because almost every row from the probe side must be shuffled to find its match. A colleague proposes building a **Bloom filter** on the build side before the join.\n\nWhat does a Bloom filter achieve in this context, and what is its key trade-off?",
+    "code_snippet": null,
+    "options": [
+      "The Bloom filter replaces the shuffle entirely — all join matching is done probabilistically, so no data needs to be moved across the network",
+      "The Bloom filter is broadcast to all executors; probe-side rows that are **definitely not** in the build side (no false negatives) are filtered out before the shuffle, reducing data movement — at the cost of false positives (some non-matching rows pass through and are discarded at the actual join step)",
+      "The Bloom filter guarantees zero false positives, acting as a perfect pre-filter that eliminates all unnecessary shuffle I/O with no accuracy trade-off",
+      "The Bloom filter replaces min/max statistics with a probabilistic structure, improving predicate pushdown into Parquet files but having no effect on join performance"
+    ],
+    "correct_option": 1,
+    "explanation": "A Bloom filter is a **probabilistic set membership structure**: given a query element, it answers definitively 'NO, not in the set' (no false negatives) or 'POSSIBLY YES' (may have false positives). In a join context, the build side's `email` values are inserted into the filter, which is then broadcast to all probe-side executors. Each probe row checks the filter: if the result is 'definitely not a match', the row is discarded **before** shuffling — significantly reducing shuffle volume. Rows that pass the filter are shuffled and checked against the actual build side; false positives are discarded at that point with no correctness impact. Option A is wrong — the Bloom filter is a pre-filter, not a replacement for the join; the actual match still requires shuffling passing rows. Option C is wrong — Bloom filters inherently have a false positive rate (tunable via size and number of hash functions); zero false positives would require a perfect hash structure like a hash set. Option D describes file-level statistics (min/max in Parquet metadata), not join Bloom filters — these are different optimization layers.",
+    "hints": [
+      "A Bloom filter has two possible answers: 'definitely not in the set' (accurate) or 'might be in the set' (uncertain). Which direction has no errors?"
+    ],
+    "concepts": ["bloom filter", "high-cardinality join", "shuffle reduction", "false positives", "probabilistic data structures"]
+  },
+  {
+    "id": 11614,
+    "order": 14,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "title": "AQE Partition Coalescing: Predicting Output Count",
+    "description": "AQE is enabled with the following configuration:\n\n```python\nspark.conf.set(\"spark.sql.adaptive.advisoryPartitionSizeInBytes\", \"64MB\")\n```\n\nA shuffle stage produces **400 MB of output data across 200 partitions** (approximately 2 MB each).\n\nApproximately how many partitions will AQE coalesce the result to?",
+    "code_snippet": "spark.conf.set(\"spark.sql.adaptive.advisoryPartitionSizeInBytes\", \"64MB\")\n# Shuffle produces 400 MB across 200 partitions (2 MB each)\n# How many post-coalesce partitions does AQE create?",
+    "options": [
+      "200 — AQE does not coalesce partitions when the number of partitions equals spark.sql.shuffle.partitions",
+      "64 — the advisory size becomes the new partition count when coalescing",
+      "1 — AQE collapses all small partitions into a single partition to maximise task efficiency",
+      "7 — AQE coalesces consecutive small partitions until each combined partition reaches approximately 64 MB: ceil(400 MB / 64 MB) = ceil(6.25) = 7 partitions"
+    ],
+    "correct_option": 3,
+    "explanation": "AQE's shuffle partition coalescing groups **consecutive** shuffle partitions into combined partitions, where each combined partition targets `advisoryPartitionSizeInBytes` in size. With 400 MB total and a 64 MB target, the math is `ceil(400 / 64) = ceil(6.25) = 7` partitions. This converts 200 near-empty 2 MB tasks into 7 healthy 57 MB tasks, dramatically reducing task scheduling overhead. Option A is wrong — AQE coalesces whenever partition sizes are below the advisory threshold, regardless of the original partition count. Option B confuses the advisory size (a byte threshold) with a partition count — 64 MB is not a count of 64 partitions. Option C is wrong — AQE coalesces toward the advisory target size, not to 1; collapsing everything into one partition would create a new bottleneck. Note that AQE only coalesces **consecutive** partitions (to preserve hash-bucketed data correctness), so the actual count may vary slightly from the theoretical minimum depending on partition size distribution.",
+    "hints": [
+      "The advisory size is a target, not a strict limit — divide total shuffle size by the target size and round up to get the approximate post-coalesce count"
+    ],
+    "concepts": ["AQE", "shuffle partition coalescing", "advisoryPartitionSizeInBytes", "partition tuning", "task overhead"]
+  },
+  {
+    "id": 11615,
+    "order": 15,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "hard",
+    "title": "Stream–Stream Join Watermarks and Late Data",
+    "description": "You are joining two Kafka streams in Structured Streaming on `event_id`, with a **10-minute watermark** defined on both streams based on event timestamp. An event arrives **15 minutes late** (its event timestamp is 15 minutes behind the current watermark boundary).\n\nWhat happens to this late event?",
+    "code_snippet": null,
+    "options": [
+      "Spark buffers the event indefinitely until its matching event_id is found, then emits the join result retroactively",
+      "Spark raises an AnalysisException and the streaming job fails, requiring the late event to be replayed from Kafka",
+      "The late event triggers a recomputation of all previously emitted results that could be affected by this event_id",
+      "The late event is silently dropped — state for events older than the watermark boundary has already been cleared to bound memory usage, and Structured Streaming does not retroactively update already-emitted results"
+    ],
+    "correct_option": 3,
+    "explanation": "In Structured Streaming stream-stream joins, the **watermark** defines how long Spark buffers state for each stream, waiting for the other side to arrive. Once the watermark advances past an event's timestamp, all state for that event is cleared. An event arriving 15 minutes late — 5 minutes beyond the 10-minute watermark — finds its state window already evicted. Spark silently drops the event: there is no exception, no retroactive update, and no indefinite buffering. This is a deliberate trade-off: bounded state guarantees memory safety, at the cost of dropping very late data. Option A is wrong — indefinite buffering would cause unbounded state growth (the primary problem watermarks solve). Option B is wrong — late events are not exceptions; the stream continues normally. Option C is wrong — Structured Streaming in Append output mode does not retroactively update emitted results; this is a fundamental property of the streaming model (unlike some complex event-time sessionization systems).",
+    "hints": [
+      "Watermarks exist specifically to bound state size — what must happen to state (and late events) once the watermark passes their timestamp?"
+    ],
+    "concepts": ["watermark", "stream-stream join", "late data", "state management", "structured streaming"]
+  },
+  {
+    "id": 11616,
+    "order": 16,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "hard",
+    "title": "mapGroupsWithState Memory Leak",
+    "description": "You implement per-user session tracking in Structured Streaming using `mapGroupsWithState`. After 6 months in production, the job is crashing with executor OOM errors. The user base is stable (no growth). What is the **most likely root cause**?",
+    "code_snippet": null,
+    "options": [
+      "mapGroupsWithState state is held in executor JVM heap only and cannot be checkpointed, so memory fills up inevitably over time regardless of configuration",
+      "The user base, while stable in active users, has accumulated 6 months of historical user keys — without a GroupStateTimeout configured, state for users who stopped generating events is never expired, causing indefinite state accumulation",
+      "Structured Streaming's mapGroupsWithState is not designed for production use beyond 30 days; you should migrate to flatMapGroupsWithState",
+      "State checkpoint files have grown too large, causing checkpoint reads to exceed executor memory during recovery"
+    ],
+    "correct_option": 1,
+    "explanation": "The root cause is **missing state expiration**. `mapGroupsWithState` accumulates a state entry for every `user_id` that has ever been seen. Without a `GroupStateTimeout` (either `ProcessingTimeTimeout` or `EventTimeTimeout`), state for inactive users — users who stopped generating events weeks or months ago — is **never removed**. Over 6 months, this creates millions of stale state entries occupying executor memory, eventually causing OOM. The fix is to call `state.setTimeoutDuration(...)` or `state.setTimeoutTimestamp(...)` within the mapping function and handle the timeout case to remove stale state. Option A is wrong — state *is* checkpointed to stable storage (checkpoint directory); the OOM is from in-memory state, not from a lack of checkpointing. Option C is wrong — `mapGroupsWithState` is production-ready for long-running jobs; the distinction from `flatMapGroupsWithState` is about output cardinality, not job duration. Option D is wrong — checkpoint files grow to disk, not executor memory; large checkpoint files slow recovery but don't directly cause executor OOM during normal operation.",
+    "hints": [
+      "Think about what happens to state entries for users who stopped sending events months ago — does anything clean them up automatically?"
+    ],
+    "concepts": ["mapGroupsWithState", "GroupStateTimeout", "state expiration", "streaming state", "memory management"]
+  },
+  {
+    "id": 11617,
+    "order": 17,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "hard",
+    "title": "Guaranteeing Co-location with repartition by Column",
+    "description": "Your pipeline requires all rows with the same `user_id` to always land on the **same partition** — a prerequisite for a subsequent `mapPartitions` operation that builds per-user aggregates without cross-partition lookups.\n\nWhich operation **guarantees** this co-location?",
+    "code_snippet": null,
+    "options": [
+      "df.coalesce(N) — reduces partition count, ensuring fewer partitions each contain a broader range of user_ids",
+      "df.sortWithinPartitions('user_id') — sorts rows by user_id within each partition, co-locating them within the partition",
+      "df.orderBy('user_id') — globally sorts all rows by user_id, guaranteeing adjacent rows have the same user_id",
+      "df.repartition(N, 'user_id') — uses hash partitioning on user_id so hash(user_id) % N is the same for every row with the same user_id, guaranteeing co-location"
+    ],
+    "correct_option": 3,
+    "explanation": "`df.repartition(N, 'user_id')` applies **hash partitioning**: the target partition for each row is `hash(user_id) % N`. Since the hash function is deterministic and N is fixed, every row with `user_id = X` maps to exactly the same partition. This guarantees co-location. Option A (`coalesce`) merges existing partitions without redistribution — rows with the same `user_id` that were on different partitions before coalesce may end up on different partitions afterward (coalesce just merges whole partitions, not rows within them). Option B (`sortWithinPartitions`) sorts rows within each partition but does **not** redistribute data — rows with the same `user_id` may still be spread across multiple partitions; they're just sorted within each. Option C (`orderBy`) produces a global sort, which uses range partitioning based on sampled data ranges, not hash partitioning — rows with the same `user_id` may span two partitions if they fall near a range boundary.",
+    "hints": [
+      "Only one of these operations uses a hash function on user_id to determine the destination partition — which one?"
+    ],
+    "concepts": ["repartition", "hash partitioning", "co-location", "coalesce", "sortWithinPartitions"]
+  },
+  {
+    "id": 11618,
+    "order": 18,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "hard",
+    "title": "Structured Streaming Exactly-Once Semantics",
+    "description": "A Structured Streaming job writing to Delta Lake restarts from its checkpoint after an executor failure mid-batch. Which **delivery guarantee** does it provide, and what is the key requirement on the sink?",
+    "code_snippet": null,
+    "options": [
+      "At-most-once — the checkpoint records the last committed offset, but without a replay mechanism Spark may skip records after a restart",
+      "At-least-once regardless of sink — the checkpoint guarantees records are replayed after failure, but duplicates are possible and the sink cannot prevent them",
+      "Exactly-once end-to-end — the checkpoint records both committed read offsets and write state; with an idempotent or transactional sink (like Delta Lake), no record is processed twice or skipped, even after a restart",
+      "Exactly-once is only possible with Kafka as both source and sink; Delta Lake cannot participate in exactly-once semantics"
+    ],
+    "correct_option": 2,
+    "explanation": "Structured Streaming achieves **exactly-once** end-to-end semantics through two coordinated mechanisms: (1) The **checkpoint** records the read offset range committed at the end of each micro-batch, so on restart Spark knows exactly which source offsets to replay — no records are skipped. (2) The **sink must be idempotent or transactional** to prevent duplicates. Delta Lake uses a transactional write protocol: each micro-batch is assigned a unique batch ID written atomically to the Delta log; if the same batch is retried, Delta's idempotency check rejects the duplicate write. Option A is wrong — at-most-once applies to non-checkpointed streaming; checkpointing enables at-least-once or better. Option B overstates the limitation — with a transactional sink, exactly-once *is* achievable, not merely at-least-once. Option D is wrong — exactly-once requires a transactional/idempotent sink of any type (Delta Lake, Kafka with transactions, custom idempotent writers); it is not limited to Kafka-to-Kafka.",
+    "hints": [
+      "Checkpointing solves the 'no skipped records' half of exactly-once. What property of the sink solves the 'no duplicates' half?"
+    ],
+    "concepts": ["exactly-once", "structured streaming", "checkpoint", "idempotent sink", "Delta Lake", "delivery semantics"]
+  },
+  {
+    "id": 11619,
+    "order": 19,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "hard",
+    "title": "Delta Lake Write Amplification from Row-Level Updates",
+    "description": "A Delta Lake table stores 10 million rows across 1000 Parquet files (10,000 rows per file). You run a nightly job that updates approximately 100 rows spread across 100 different files (`UPDATE events SET status='resolved' WHERE id IN (...100 ids...)`). After 3 months, storage costs have grown 15×. Why?",
+    "code_snippet": null,
+    "options": [
+      "Delta Lake writes each changed row to a separate new Parquet file, creating 100 new single-row files per UPDATE operation",
+      "The Delta transaction log entry grows exponentially with each UPDATE, as each operation appends a full copy of all previous log entries",
+      "Delta Lake Parquet files are immutable — each UPDATE must rewrite every Parquet file that contains at least one changed row; 100 rows spread across 100 files means 100 entire files are rewritten per operation, accumulating old file versions until VACUUM is run",
+      "A checkpoint file is written to the transaction log after every UPDATE, and each checkpoint is a full copy of the table data"
+    ],
+    "correct_option": 2,
+    "explanation": "Delta Lake uses an **immutable file** model: existing Parquet files are never modified in place. An UPDATE identifies which files contain rows matching the predicate, rewrites those files (applying the update), and adds the new file paths plus tombstones for the old ones to the Delta log. Updating 1 row in a 10,000-row file requires rewriting all 10,000 rows. With 100 updated rows spread across 100 different files, each nightly UPDATE rewrites 100 complete files. Over 90 nights, that's 9,000 file rewrites plus the originals — dramatic storage amplification. The old file versions are retained until `VACUUM` is run (default 7-day retention window). The fix is: (1) batch updates more aggressively to concentrate changes per file, (2) run `OPTIMIZE` to compact small/fragmented files, (3) run `VACUUM` regularly to purge old versions. Option A is wrong — Delta does not write single-row files; it rewrites complete Parquet files. Option B is wrong — the transaction log grows linearly (one entry per operation); it does not grow exponentially and does not copy previous entries. Option D is wrong — Delta checkpoints are written every 10 commits (configurable) and contain the aggregated table state, not a full copy of table data files.",
+    "hints": [
+      "In an immutable file system, what must happen to a 10,000-row file when just 1 of its rows needs to change?"
+    ],
+    "concepts": ["Delta Lake", "write amplification", "immutable files", "VACUUM", "OPTIMIZE", "UPDATE cost"]
+  },
+  {
+    "id": 11620,
+    "order": 20,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "hard",
+    "title": "AQE Runtime Join Strategy Switch",
+    "description": "The Catalyst planner chose a **sort-merge join** because stale table statistics reported the dimension table as 500 MB. At runtime, after scanning the actual data, AQE determines the dimension table is only **8 MB**.\n\nWhat does AQE do, and what is the performance impact?",
+    "code_snippet": null,
+    "options": [
+      "AQE keeps the planned sort-merge join — the physical plan is fixed at compile time and cannot change once execution begins, even with AQE enabled",
+      "AQE raises a PlanChangedException and restarts the query from scratch using a newly compiled broadcast join plan",
+      "AQE converts the sort-merge join to a broadcast join mid-execution — the 8 MB dimension table is broadcast to all executors, eliminating the shuffle stage on the large fact table side, typically reducing job time by 50% or more",
+      "AQE updates the table statistics in the metastore and schedules the query to be re-run with corrected statistics at the next trigger"
+    ],
+    "correct_option": 2,
+    "explanation": "AQE's **runtime join strategy switching** is one of its three core optimizations. After the shuffle stage that produces the dimension table's output, AQE has real statistics: the dimension side is 8 MB, well below `spark.sql.adaptive.autoBroadcastJoinThreshold` (default 10 MB). AQE rewrites the **physical plan** at this point — it replaces the sort-merge join with a broadcast hash join. This eliminates the entire shuffle stage on the probe (fact) side, which is typically the most expensive operation for large fact tables. The fact table's data no longer needs to be repartitioned and shuffled to co-locate with dimension keys — instead the dimension is pushed to every executor and the fact table is scanned locally. Option A describes behavior **without** AQE — a key motivation for AQE is precisely that static plans cannot adapt to runtime realities. Option B is wrong — AQE adapts in-flight by modifying the physical plan for remaining stages; it does not raise an exception or restart the query from the beginning. Option D is wrong — AQE operates within the current query execution; it does not write to the metastore or schedule future runs.",
+    "hints": [
+      "AQE's job is to change the physical plan at runtime when real data sizes differ from compile-time estimates — which join type becomes optimal when one side is tiny?"
+    ],
+    "concepts": ["AQE", "join strategy switching", "broadcast join", "sort-merge join", "runtime optimization", "autoBroadcastJoinThreshold"]
+  }
+]
