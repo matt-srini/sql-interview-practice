@@ -6,6 +6,404 @@ Phased roadmap to evolve datanest into a top-tier data interview practice platfo
 
 ---
 
+## UI Architecture & Layout Plan
+
+This section defines the full frontend blueprint across all phases — route tree, navigation evolution, new page layouts, and how existing pages change. Implement phases in order; each phase builds on the last.
+
+---
+
+### Full route tree (current + all phases)
+
+```
+/                              → LandingPage
+/auth                          → AuthPage
+/dashboard                     → ProgressDashboard          [Phase 1A evolved]
+/practice/:topic               → TopicShell → TrackHubPage  [Phase 1C, 4 evolved]
+/practice/:topic/questions/:id → QuestionPage               [Phase 1A, 3 evolved]
+/sample/:topic/:difficulty     → SampleQuestionPage
+/mock                          → MockHub                    [Phase 2 — new]
+/mock/:id                      → MockSession / MockSummary  [Phase 2 — new]
+/learn/:path-slug              → LearningPath               [Phase 4 — new]
+/profile                       → ProfilePage                [Phase 6 — new]
+/leaderboard                   → Leaderboard                [Phase 6 — new]
+```
+
+Legacy redirects remain unchanged: `/practice`, `/practice/questions/:id`, `/questions/:id`, `/sample/:difficulty`.
+
+`App.js` additions per phase:
+- Phase 2: add `/mock` and `/mock/:id` routes (wrap in `AuthRequired`)
+- Phase 4: add `/learn/:path-slug`
+- Phase 6: add `/profile`, `/leaderboard`
+
+---
+
+### Global navigation (topbar) evolution
+
+The topbar is the primary wayfinding element. It changes in two ways: link set grows with phases, and it enters a special focused state during a mock session.
+
+**Phase 1 topbar (Practice workspace — `AppShell.js`):**
+```
+datanest  [SQL] [Python] [Pandas] [PySpark]  ···  [☀/☾]  [Dashboard]  [name · Sign out]
+                                                   ↑ Phase 1B: theme toggle
+```
+
+**Phase 2+ topbar (global — all non-mock pages):**
+```
+datanest  [Practice ▾]  [Mock]  [Dashboard]  ···  [☀/☾]  [name · Sign out]
+                ↓ dropdown
+           SQL · Python · Pandas · PySpark
+```
+- "Practice" becomes a dropdown when the nav grows; direct track links move inside it
+- "Mock" is a top-level link (high-visibility, this is a key feature)
+- Dashboard stays visible
+
+**Mock session topbar (special focused state — `MockSession.js`):**
+```
+[◀ Exit]   Q1 ●  Q2 ○  Q3 ○   [  12:34  ]   [End session]
+             question dots         timer
+```
+- No brand link, no nav — user should stay focused
+- Timer centred and always visible
+- Timer background: neutral → yellow (<10 min) → red pulsing (<3 min)
+- "Exit" returns to `/mock` with a confirmation modal ("Your progress will be lost")
+- On completion: topbar stays but timer shows "Done" and "End session" becomes "View results"
+
+**LandingPage topbar (unchanged from current):**
+```
+datanest                                       [Dashboard]  [name · Sign out]  or  [Sign in]
+```
+
+---
+
+### New pages — layout blueprints
+
+#### MockHub (`/mock`)
+
+```
+TOPBAR  (global nav)
+
+HERO ROW
+  "Mock Interview"  h1
+  "Simulate real interview conditions with a countdown timer." p
+
+MODE SELECTOR  (3 cards in a row, card selected = accent border)
+  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+  │  Quick          │  │  Full           │  │  Custom         │
+  │  30 min         │  │  60 min         │  │  __ min         │
+  │  2 questions    │  │  3 questions    │  │  1–5 questions  │
+  └─────────────────┘  └─────────────────┘  └─────────────────┘
+
+CONFIGURATION ROW  (shown below mode selector)
+  Track:       [SQL ●]  [Python]  [Pandas]  [PySpark]  [Mixed]
+  Difficulty:  [Easy]  [Medium ●]  [Hard]  [Mixed]
+
+[Start Mock Interview]  btn-primary, full-width on mobile
+
+RECENT SESSIONS  (shown only if user has past sessions)
+  h2: "Recent sessions"
+  Table/list: date · track · difficulty · score (2/3) · time used · [Review →]
+  "View all" link → /mock/history  (future; for now show last 5 inline)
+```
+
+Responsive: mode cards wrap to single column on mobile (<600px). Configuration pills scroll horizontally if needed.
+
+---
+
+#### MockSession (`/mock/:id`)
+
+Two states: **Active** (timer running) and **Summary** (after finish).
+
+**Active state layout:**
+
+```
+MOCK TOPBAR  (special focused state — see nav section above)
+
+CONTENT AREA  (full height below topbar, CSS Grid: sidebar | editor)
+
+LEFT: Question tabs + info  (240px, fixed)
+  ┌──────────────────────────┐
+  │ [Q1]  [Q2]  [Q3]         │  tab strip (dots = solved/unsolved)
+  ├──────────────────────────┤
+  │ Q1 · Medium              │
+  │ "Top Products by Revenue"│  question title
+  │                          │
+  │ [Description]  [Schema]  │  toggle tabs
+  │                          │
+  │ Question text here...    │
+  │                          │
+  │ Concepts: [RANKING] [...]│
+  └──────────────────────────┘
+
+RIGHT: Editor + results  (flex-grow 1)
+  Same Monaco editor + Run/Submit layout as QuestionPage
+  On submit: verdict shows inline (no full page reload)
+  Correct: question tab dot turns green; "Next question →" shown
+```
+
+Mobile (<900px): tabs collapse to a top strip; left panel becomes a slide-up drawer triggered by "Question" button in action dock.
+
+**Summary state layout** (replaces content area after timer ends or user clicks "End session"):
+
+```
+TOPBAR  (simplified — no timer, "Back to Mock" link on left)
+
+SUMMARY CARD  (centered, max-width 640px)
+  Score: "2 / 3 questions solved"  (large, success color if >50%, danger if 0)
+  Time:  "Used 27:43 of 30:00"
+  ──────────────────────────────
+  Per-question breakdown (3 rows):
+    Q1  Top Products    ✓ solved   4:12   [See solution ▾]
+    Q2  Cohort Retention ✗ unsolved  —    [See solution ▾]
+    Q3  Running Total   ✓ solved  11:30   [See solution ▾]
+  ──────────────────────────────
+  [Practice weaknesses →]   btn-secondary  (links to concept-filtered question list)
+  [Share result]            btn-secondary  (copy "2/3 Medium SQL in 27m")
+  [New mock interview]      btn-primary
+
+TIPS STRIP  (below card, only if score < 100%)
+  Concept tags from unsolved questions + link to each concept in the sidebar
+```
+
+---
+
+#### LearningPath (`/learn/:path-slug`) — Phase 4
+
+```
+TOPBAR  (global nav)
+
+PATH HEADER  (full-width, light surface)
+  Breadcrumb: Practice › Learning Paths › Window Functions Mastery
+  h1: "Window Functions Mastery"
+  p:  "8 questions building from basics to advanced ranking."
+  Progress bar: 3 / 8 completed
+
+QUESTION SEQUENCE  (centered, max-width 720px)
+  ┌─────────────────────────────────────────────────────┐
+  │ 1 ✓  Running Totals           Easy    [Review →]   │
+  │ 2 ✓  Rank by Revenue          Easy    [Review →]   │
+  │ 3 ✓  Dense Rank Gaps          Medium  [Review →]   │
+  │ 4 →  Top-N per Category       Medium  [Start →]    │  ← next
+  │ 5 🔒  Event Sequence Filter    Medium  (locked)     │
+  │ 6 🔒  Retention by Cohort      Hard    (locked)     │
+  └─────────────────────────────────────────────────────┘
+
+  Each row: number · solved/locked state · title · difficulty badge · action
+  Clicking a solved row → /practice/:topic/questions/:id (preserves path context)
+  Clicking current → same, marks path progress
+```
+
+---
+
+#### ProfilePage (`/profile`) — Phase 6
+
+```
+TOPBAR  (global nav)
+
+PROFILE HEADER
+  Avatar (initials only, no image upload needed) · name/email · plan badge
+  Member since · total questions solved · streak
+
+BADGES ROW  (horizontal scroll on mobile)
+  Each badge: icon · name · unlock date
+  Locked badges shown greyed-out with unlock criteria tooltip
+
+STATS GRID  (2×2 on desktop, 1-column on mobile)
+  ┌─────────────────┐  ┌─────────────────┐
+  │ SQL             │  │ Python          │
+  │ 42/86 solved    │  │ 18/75 solved    │
+  │ progress bar    │  │ progress bar    │
+  └─────────────────┘  └─────────────────┘
+  (Pandas, PySpark same pattern)
+
+MOCK HISTORY  (table)
+  Date · Mode · Track · Score · Time · [Review]
+
+SUBMISSION ACTIVITY  (heatmap — Phase 6)
+  GitHub-style contribution grid showing solve activity by day
+  (simple implementation: query submissions table, render CSS grid)
+```
+
+---
+
+#### Leaderboard (`/leaderboard`) — Phase 6
+
+```
+TOPBAR  (global nav)
+
+TABS  [Weekly ●]  [All-time]  [By track ▾]
+
+TABLE
+  Rank · User (anonymised unless opt-in) · Track · Questions solved · Avg time
+  Current user highlighted if on the list
+
+OPT-IN BANNER  (shown if user is not opted in)
+  "You're not on the leaderboard. Make your stats public?"  [Opt in]
+```
+
+---
+
+### Existing pages — evolution by phase
+
+#### LandingPage (`/`)
+
+**Phase 1B:** Add theme toggle button to topbar (sun/moon icon, right of Dashboard link).
+
+**Phase 1D:** Replace horizontal scroll sample tiles with vertical card stack on mobile (<600px). Schema viewer becomes bottom-sheet drawer on mobile.
+
+**Phase 4:** Insert "Top company questions" strip between Showcase and Track Selection:
+```
+COMPANY STRIP  (light, between showcase and track section)
+  "Practice questions from:"
+  Logo row: [Meta] [Stripe] [Airbnb] [Uber] [Netflix] ...  (greyscale, opacity 0.6)
+  These are filter links — clicking "Meta" opens Track Selection filtered to Meta questions
+```
+
+**Phase 4:** Insert "Learning paths" section after Track Selection:
+```
+LEARNING PATHS  (below track selection, light surface)
+  h2: "Structured learning paths"
+  3–4 path cards in a row:
+  ┌─────────────────────┐
+  │ Window Functions    │
+  │ Mastery             │
+  │ 8 questions · SQL   │
+  │ ████░░░░ 3/8        │  (progress if logged in)
+  │ [Start path →]      │
+  └─────────────────────┘
+```
+
+---
+
+#### ProgressDashboard (`/dashboard`)
+
+**Current:** 4-track progress cards, concept tags, recent activity list.
+
+**Phase 1A:** Add "Recent submissions" feed below the 4-track grid:
+```
+RECENT SUBMISSIONS  (table, last 10 across all tracks)
+  Time · Track · Question title · ✓/✗ · [Go to question →]
+```
+
+**Phase 2:** Add "Mock sessions" summary card alongside the 4-track grid:
+```
+MOCK SESSIONS CARD
+  Sessions completed: 12
+  Best score: 3/3 (Full · SQL · Hard)
+  Recent: [date · 2/3 · 28m] [date · 1/2 · 15m]  [View all →]
+```
+
+**Phase 6:** Add badges row at the top of the dashboard:
+```
+BADGES ROW  (horizontal strip, compact)
+  5 most recent badges shown; [See all →] links to /profile
+```
+
+---
+
+#### QuestionPage (`/practice/:topic/questions/:id`)
+
+**Phase 1A:** Add "Past attempts" panel below the verdict card:
+```
+PAST ATTEMPTS  (collapsible, shown after first submission)
+  ▾ Past attempts (3)
+  ──────────────────────────────────────────
+  2 hours ago   ✗  [Show code ▾]
+  Yesterday     ✓  [Show code ▾]
+  3 days ago    ✗  [Show code ▾]
+```
+
+**Phase 3:** Add "Solution analysis" section after a correct verdict:
+```
+SOLUTION ANALYSIS  (expandable, shown only on correct submit)
+  ▾ Solution analysis
+  Efficiency:  Your query scans ~4,200 rows. Optimal: ~260 rows.
+               [Suggestion: filter on orders before joining products]
+  Style:       ✓ Uses CTEs clearly  ✗ Inconsistent aliasing
+  Complexity:  O(n log n) — expected for this pattern
+
+  [See alternative approach ▾]
+    (second solution from question JSON, if available)
+```
+
+---
+
+#### SidebarNav (`/practice/:topic`)
+
+**Phase 1C:** Add concept filter chips above difficulty groups:
+```
+CONCEPT FILTER  (collapsible, above difficulty groups)
+  Filter by concept:
+  [COHORT ANALYSIS ×] [RUNNING TOTAL] [RANKING] [FUNNEL] [+12 more ▾]
+  Active filter chip shown with accent fill + ×; inactive = outlined
+  "Clear filters" link when any active
+```
+
+**Phase 4:** Add company filter alongside concept filter:
+```
+FILTERS  (collapsible section)
+  Concepts:  [RANKING ×]  [FUNNEL]  ...
+  Companies: [Meta ×]  [Stripe]  [Airbnb]  ...
+```
+
+---
+
+#### TrackHubPage (`/practice/:topic`)
+
+**Phase 4:** Add learning paths entry point below the existing "What you'll practice" card:
+```
+LEARNING PATHS FOR THIS TRACK
+  ┌──────────────────────┐  ┌──────────────────────┐
+  │ Window Functions     │  │ Aggregation Deep Dive │
+  │ 8 questions          │  │ 6 questions           │
+  │ ████░░ 3/8           │  │ Not started           │
+  │ [Continue →]         │  │ [Start →]             │
+  └──────────────────────┘  └──────────────────────┘
+```
+
+---
+
+### New components needed
+
+| Component | Phase | Purpose |
+|---|---|---|
+| `MockTimerBanner.js` | 2 | Full-width timer bar for MockSession topbar |
+| `MockSummaryCard.js` | 2 | Score + per-question breakdown after session |
+| `QuestionTabStrip.js` | 2 | Q1/Q2/Q3 tab navigation in MockSession sidebar |
+| `SolutionAnalysis.js` | 3 | Efficiency + style scorecard in QuestionPage |
+| `PathProgressCard.js` | 4 | Learning path card with progress bar |
+| `ConceptFilter.js` | 1C | Filter chip set for sidebar (reused in Phase 4 with company filter) |
+| `BadgeCard.js` | 6 | Achievement badge display (ProfilePage + Dashboard) |
+| `ActivityHeatmap.js` | 6 | GitHub-style contribution grid |
+| `LeaderboardTable.js` | 6 | Ranked table with current-user highlight |
+
+---
+
+### Responsive strategy
+
+| Breakpoint | Behaviour |
+|---|---|
+| `< 600px` | Single column everywhere. Sample tiles stack vertically. MockSession: left panel is a slide-up drawer. Mode cards stack. Profile stats stack. |
+| `600–900px` | Two columns for grids where sensible. Sidebar still overlay. MockSession tabs condense. |
+| `> 900px` | Full desktop layout. Sidebar pinned. MockSession two-column. Dashboard 2×2 grid. |
+
+All new pages must be tested at 375px (iPhone SE) and 768px (iPad) in addition to desktop.
+
+---
+
+### Design token additions
+
+No new tokens needed for Phase 1–3 — use existing palette. Phase 2 mock timer requires two states that can use existing tokens:
+
+```css
+/* Mock timer states — add to App.css in Phase 2 */
+.mock-timer--warning  { background: var(--warning-soft); color: var(--warning); }
+.mock-timer--danger   { background: var(--danger-soft);  color: var(--danger);  animation: pulse 1s infinite; }
+```
+
+Phase 6 activity heatmap uses a 5-level intensity scale built from `--success` with opacity steps — no new color tokens.
+
+---
+
 ## Phase 1 — Quick wins (core experience) ✦ high impact, low effort
 
 ### 1A · Submission history
