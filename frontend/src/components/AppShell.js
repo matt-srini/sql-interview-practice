@@ -153,6 +153,16 @@ export default function AppShell() {
 
       <div className="app-body">
         <aside id="sidebar" className={`sidebar ${mobileOpen ? 'sidebar-open' : ''}`}>
+          {!isMobile && (
+            <button
+              className="sidebar-collapse-btn"
+              onClick={handleSidebarToggle}
+              aria-label={desktopCollapsed ? 'Show question bank' : 'Hide question bank'}
+              title={desktopCollapsed ? 'Show question bank' : 'Hide question bank'}
+            >
+              ‹
+            </button>
+          )}
           {loading && <div className="sidebar-loading">Loading…</div>}
           {error && <div className="sidebar-error">{error}</div>}
           {!loading && !error && catalog && (
@@ -185,19 +195,18 @@ export default function AppShell() {
         {mobileOpen && <div className="sidebar-backdrop" onClick={() => setMobileOpen(false)} />}
 
         <main className="content">
-          <div className="content-toolbar">
-            {!isMobile && (
+          {desktopCollapsed && !isMobile && (
+            <div className="content-toolbar">
               <button
-                className="btn btn-secondary content-toolbar-toggle"
+                className="sidebar-expand-btn"
                 onClick={handleSidebarToggle}
-                aria-label={desktopCollapsed ? 'Show question panel' : 'Hide question panel'}
-                aria-expanded={!desktopCollapsed}
-                aria-controls="sidebar"
+                aria-label="Show question bank"
+                title="Show question bank"
               >
-                {desktopCollapsed ? 'Show questions' : 'Hide questions'}
+                ›
               </button>
-            )}
-          </div>
+            </div>
+          )}
           {isAtHub ? <TrackHubPage /> : <Outlet />}
         </main>
       </div>
