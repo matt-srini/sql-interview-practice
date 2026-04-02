@@ -164,12 +164,12 @@ export default function SampleQuestionPage() {
     return (
       <>
         <header className="topbar">
-          <div className="container topbar-inner sample-page-topbar">
+          <div className="topbar-inner sample-page-topbar">
             <div className="sample-topbar-left">
               <Link className="sample-home-link brand-wordmark" to="/">datanest</Link>
             </div>
             <div className="sample-topbar-center">
-              <Link className="sample-back-link" to={`/#landing-tracks`} aria-label="Back to tracks">←</Link>
+              <a className="sample-back-link" href="/#landing-tracks" aria-label="Back to track selection">←</a>
               <h1>{topicLabel} sample</h1>
             </div>
             <div className="sample-topbar-right">
@@ -251,12 +251,12 @@ export default function SampleQuestionPage() {
   return (
     <>
       <header className="topbar">
-        <div className="container topbar-inner sample-page-topbar">
+        <div className="topbar-inner sample-page-topbar">
           <div className="sample-topbar-left">
             <Link className="sample-home-link brand-wordmark" to="/">datanest</Link>
           </div>
           <div className="sample-topbar-center">
-            <Link className="sample-back-link" to={`/#landing-tracks`} aria-label="Back to tracks">←</Link>
+            <a className="sample-back-link" href="/#landing-tracks" aria-label="Back to track selection">←</a>
             <h1>{topicLabel} sample</h1>
           </div>
           <div className="sample-topbar-right">
