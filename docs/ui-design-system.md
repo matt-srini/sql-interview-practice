@@ -53,7 +53,13 @@ Defined in `:root` in `App.css`. Dark mode overrides in `@media (prefers-color-s
 --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace
 ```
 
-Both loaded from Google Fonts in `frontend/index.html`. Inter for all UI; JetBrains Mono for the editor, results table cells, and code blocks.
+All loaded from Google Fonts in `frontend/index.html`.
+
+| Font | Weight | Use |
+|---|---|---|
+| Inter | 400/500/600 | All UI text |
+| JetBrains Mono | 400/600 | Editor, results tables, inline code blocks |
+| Geist Mono | 300 | Showcase animation code block only (display context, not the sandbox) |
 
 ---
 
@@ -72,21 +78,43 @@ All hover states use `translateY(-1px)`. No transforms on disabled. Transitions:
 ## Layout
 
 ### Landing page
-- Fixed topbar with the `datanest` wordmark left and dashboard/auth actions right
-- Logged-out users keep the centered hero above the tabbed shell
-- Main surface below the hero is a tabbed card shell with compact progress summaries and per-track sample tiles inside each tab
-- Panels use subtle fade/slide entry and stay restrained rather than dashboard-heavy
-- Mobile (<900px): tabs become horizontally scrollable chips and panels stack vertically
+
+Three stacked sections on a single scroll:
+
+| Section | CSS | Notes |
+|---|---|---|
+| **Hero** | `.landing-hero` | Logged-out only; centered headline + CTAs |
+| **Showcase** | `.landing-showcase` | Dark (`#0C0C0A`), 4-card flex grid with per-track glow |
+| **Track selection** | `.landing-practice-section` `#landing-tracks` | Light, full-width, pill nav + panel per track |
+
+**Showcase details:**
+- 4 cards in `.landing-showcase-grid` (flex row, `align-items: stretch`)
+- Active card: `flex-grow 2.4`, `height 510px`, colored `box-shadow` via `--active-color`
+- Code block: `Geist Mono` weight 300, `height 360px`, typing animation + cursor blink
+- Auto-advances through all 4 tracks every ~5 s; responsive to 2×2 at 960px, column at 560px
+
+**Track selection details:**
+- Left-aligned pill nav (`.landing-track-nav--practice`); active pill fills in track color
+- Sample tiles: 3-column CSS grid on desktop; **horizontal flex scroll on mobile** (<900px), tiles `min-width 78%`, scrollbar hidden
+
+### Sample page topbar
+Three-column layout spanning full topbar width (`max-width: none`):
+- **Left** (`.sample-topbar-left`): `datanest` home link
+- **Center** (`.sample-topbar-center`): `←` back arrow (native `<a href="/#landing-tracks">`) + track + difficulty label
+- **Right** (`.sample-topbar-right`): "Start the challenge" CTA
+
+Back arrow links to `/#landing-tracks`; `LandingPage` handles hash scroll on mount with a 300 ms `window.scrollTo` call.
 
 ### App shell (challenge workspace)
 - **Sidebar**: 328px, sticky, collapsible (`display:none` on `.sidebar-collapsed`)
+- **Sidebar collapse**: `‹` icon button (`.sidebar-collapse-btn`) at top of sidebar; when collapsed a `›` expand button (`.sidebar-expand-btn`) appears in the content toolbar
 - **Top bar**: 64px on desktop, sticky, blurred backdrop
 - **Practice nav**: `datanest` brand/home link on the left, direct track nav in the fixed header
 - **Question page**: CSS Grid `minmax(330px,400px) / minmax(0,1fr)` — left panel sticky at `top: 88px`
 - **Left panel cards**: tight padding, `14px` radius, prompt card slightly stronger than schema card
 - **Right panel**: tighter vertical rhythm than the previous 1rem stack
 - **Mobile breakpoint**: 900px — sidebar becomes fixed overlay
-- **Mobile header**: compact menu button plus horizontally scrollable track nav
+- **Mobile header**: compact hamburger button in the header for opening the question drawer
 - **Container**: max-width 1180px centered
 
 ### Question page chrome
@@ -94,7 +122,6 @@ All hover states use `translateY(-1px)`. No transforms on disabled. Transitions:
 - Prompt header includes a compact uppercase status line (difficulty / question position / open count)
 - Editor topbar: single line, "SQL editor" left + "DuckDB sandbox" right, slightly tightened padding
 - Editor footer: buttons only (Run Query, Submit Answer, Next Question), right-aligned on desktop and presented as a low-profile sticky dock on mobile
-- Desktop question-panel toggle sits in the content toolbar above the workspace instead of in the global header
 - Post-submit: `.submit-outcome` wrapper with overflow hidden groups verdict + feedback cards; hint-card has no box-shadow
 - Sidebar intentionally begins with the question bank; no separate progress/summary card above it
 
