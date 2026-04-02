@@ -32,11 +32,13 @@ Defined in `frontend/src/App.js`:
 
 ### LandingPage (`/`)
 
-Entry point. Shows the `datanest` wordmark on the left edge of the fixed topbar and dashboard/auth actions on the right. Logged-out users still see the centered hero with the primary "Get sharp at data interviews" message and CTAs. Below that sits a single integrated tab shell:
-- Track tabs for `sql`, `python`, `python-data`, `pyspark`
-- Tab headings show labels only (`SQL`, `Python`, `Pandas`, `PySpark`) with no progress counters in the tab strip
-- Each track tab shows a compact progress summary, CTA into `/practice/:topic`, and easy/medium/hard sample tiles for that same track
-- Uses existing dashboard data only; no new dashboard API shape
+Entry point. Three stacked sections on one scroll:
+
+1. **Hero** (`.landing-hero`, logged-out only) — centered headline, tagline, CTAs
+2. **Showcase** (`.landing-showcase`) — dark section, 4-card flex grid showing one animated question+answer per track; active card expands with a colored glow. Code font is Geist Mono weight 300. Auto-advances every ~5 s.
+3. **Track selection** (`.landing-practice-section`, `id="landing-tracks"`) — pill nav selects a track; panel shows description, progress bar, CTA, and easy/medium/hard sample tiles. Mobile sample tiles use horizontal scroll.
+
+On mount, checks `window.location.hash` and scrolls to the matching element (used by the sample page back arrow → `/#landing-tracks`).
 
 ### AuthPage (`/auth`)
 
@@ -79,6 +81,11 @@ Main practice screen. Layout and behavior vary by topic:
 
 Standalone sample practice for all four tracks. No sidebar. Layout mirrors the main question workspace, but progress stays isolated from challenge progression. Legacy `/sample/:difficulty` continues to redirect into the SQL sample route.
 
+**Topbar** — three-column, full-width (`max-width: none`):
+- Left: `datanest` home link
+- Center: `←` back arrow (`<a href="/#landing-tracks">`) + track + difficulty label (`h1`)
+- Right: "Start the challenge" CTA → `/practice/:topic`
+
 ### ProgressDashboard (`/dashboard`)
 
 Cross-track progress overview. 4-card grid with TrackProgressBar per track, concept tags by track, and recent activity list. Fetches `GET /api/dashboard` on mount.
@@ -105,12 +112,9 @@ Cross-track progress overview. 4-card grid with TrackProgressBar per track, conc
 
 - Fixed topbar shows a `datanest` home-brand link plus direct track nav (`SQL`, `Python`, `Pandas`, `PySpark`)
 - Track nav links route directly to `/practice/{topic}`
-- Desktop: sidebar 328px, collapsible via toggle
-- Mobile (<900px): sidebar becomes fixed overlay with backdrop
-- Desktop question-bank toggle lives in workspace controls, not the header
-- Mobile keeps a compact menu button in the header for opening the question drawer
-- Upgrade panel shown for `free` and `pro` plan users
-- Upgrade controls live in the sidebar instead of the topbar
+- Desktop: sidebar 328px, collapsible; toggle is a `‹` icon button (`.sidebar-collapse-btn`) at the top of the sidebar; a `›` expand button (`.sidebar-expand-btn`) appears in the content area when collapsed
+- Mobile (<900px): sidebar becomes fixed overlay with backdrop; hamburger button in topbar
+- Upgrade panel shown for `free` and `pro` plan users; lives in the sidebar
 - Handles `?upgraded=true` query param from Stripe redirect
 
 ### SidebarNav

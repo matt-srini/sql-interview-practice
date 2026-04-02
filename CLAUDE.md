@@ -146,7 +146,12 @@ Topic context is provided by `TopicContext.js` (see `frontend/src/contexts/Topic
 
 ## Landing page structure
 
-Fixed topbar, centered hero (logged-out only), showcase animation, then practice section. One coherent scroll on the warm light background — no dark-box sections, no card containers. Logged-in users see showcase + practice only (hero hidden).
+Fixed topbar → centered hero (logged-out only) → dark showcase → light practice section. Logged-in users see showcase + practice only (hero hidden).
+
+**Named sections:**
+- **Hero** — logged-out only, `.landing-hero`
+- **Showcase** — dark, `.landing-showcase`
+- **Track selection** — light, `.landing-practice-section`, `id="landing-tracks"`
 
 ```
 TOPBAR
@@ -160,32 +165,34 @@ HERO  (logged-out only)
   CTAs: [Explore tracks ↓] [Create account]
 
 SHOWCASE  (all users)
-  Same warm page background — no dark box
-  Centered max-width 740px inner (.landing-showcase-inner)
-  Eyebrow + title (centered)
-  4 track pill selectors (.landing-track-nav + .landing-track-pill)
-    Active pill: solid fill in track color (via --pill-color CSS var)
-  Single large showcase card (.showcase-card.is-active)
-    White card, 4px colored left border in track color (--active-color)
-    Card header: track dot + label + difficulty badge
-    Question title + phase label ("Question" / "Answer")
-    Dark code block (#141413 bg, flex: 1) with typing animation + cursor blink
-    Auto-advances every ~5s; click a pill to jump tracks
-    Fade transition (.is-transitioning) between cards
+  Dark section (#0C0C0A) with per-track radial gradients (blue/red/green/amber glows)
+  Eyebrow + title centered above grid
+  4 cards in a flex row (.landing-showcase-grid, gap 1rem, align-items stretch)
+    Inactive: opacity 0.38, flex-grow 1, min-height 300px
+    Active (.is-active): opacity 1, flex-grow 2.4, height 510px, translateY(-6px)
+      Colored glow border + box-shadow via --active-color CSS var (set per card)
+    Card anatomy: track dot + label + badge | question title | phase label | code block
+    Code block: rgba(0,0,0,0.4) bg, border-radius 13px, height 360px on active
+      Font: Geist Mono weight 300 (display-only — distinct from sandbox JetBrains Mono)
+      Typing animation character-by-character; cursor blink via ::after pseudo-element
+    Auto-advances through all 4 tracks (~5s question phase → answer phase → next track)
+    Responsive: flex-wrap 2×2 at 960px; single-column stack at 560px
 
-PRACTICE BY TRACK  (all users)
-  Full-width section, no box (.landing-practice-section, max-width 1040px centered)
-  Heading + subtext (.landing-practice-heading)
-  Same track pill nav (.landing-track-nav.landing-track-nav--practice), left-aligned
-  Panel content per track (no box wrapper):
+TRACK SELECTION  (all users, id="landing-tracks")
+  Light section, no box (.landing-practice-section, max-width 1040px centered)
+  Track pill nav (.landing-track-nav.landing-track-nav--practice), left-aligned
+    Active pill: solid fill in track color (via --pill-color CSS var)
+  Panel per track (.landing-tab-panel):
     Track name + description
     Thin progress bar (4px, 60% opacity) + "sign in to save" copy
     Start/Continue CTA
-    Sample tiles grid (3-col) — Easy / Medium / Hard
+    Sample tiles (.landing-samples-grid):
+      Desktop: 3-column CSS grid — Easy / Medium / Hard tiles
+      Mobile (<900px): horizontal flex scroll, tiles min-width 78%, scrollbar hidden
 ```
 
-Key CSS classes: `.landing-track-nav`, `.landing-track-pill`, `.landing-practice-section`, `.landing-practice-heading`, `.landing-panel-*`, `.landing-samples-grid`, `.sample-tile`, `.showcase-card`, `.showcase-code-block`.
-Topbar auth remains `.topbar-user-pill`, `.topbar-user-name`, `.topbar-signout-btn`, `.topbar-auth-link`.
+Key CSS classes: `.landing-track-nav`, `.landing-track-pill`, `.landing-practice-section`, `.landing-tab-panel`, `.landing-panel-*`, `.landing-samples-grid`, `.sample-tile`, `.showcase-card`, `.showcase-code-block`.
+Topbar auth: `.topbar-user-pill`, `.topbar-user-name`, `.topbar-signout-btn`, `.topbar-auth-link`.
 
 ---
 
@@ -211,11 +218,11 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 --radius-sm: 10px  (badges, tokens)
 ```
 
-**Fonts:** Inter (UI), JetBrains Mono (editor, results, code blocks) — both from Google Fonts.
+**Fonts:** Inter (UI), JetBrains Mono (editor, results, code blocks), Geist Mono (showcase animation only, weight 300) — all from Google Fonts.
 
 **Buttons:** `.btn-primary` (accent fill), `.btn-secondary` (outlined, context-sensitive bg), `.btn-success` (success tint). All hover: `translateY(-1px)`, `150ms ease-out`.
 
-**Question page chrome:** Minimal — no section kickers (content self-evident from titles/badges). Prompt card includes a compact uppercase status line (difficulty / question position / open count). Editor topbar is single-line ("SQL editor" / "DuckDB sandbox"). Editor footer is buttons-only, right-aligned on desktop and becomes a low-profile sticky action dock on mobile. Post-submit verdict + feedback grouped in `.submit-outcome` wrapper. Cards use tight padding with `14px` border-radius. The practice topbar stays sparse, exposes direct track nav, and the desktop question-panel toggle lives in workspace controls instead of the header.
+**Question page chrome:** Minimal — no section kickers (content self-evident from titles/badges). Prompt card includes a compact uppercase status line (difficulty / question position / open count). Editor topbar is single-line ("SQL editor" / "DuckDB sandbox"). Editor footer is buttons-only, right-aligned on desktop and becomes a low-profile sticky action dock on mobile. Post-submit verdict + feedback grouped in `.submit-outcome` wrapper. Cards use tight padding with `14px` border-radius. The practice topbar stays sparse, exposes direct track nav, and the desktop question-bank collapse toggle is a `‹`/`›` icon button inside the sidebar header (`.sidebar-collapse-btn`) with a matching expand button (`.sidebar-expand-btn`) that appears in the content area when collapsed.
 
 ---
 
