@@ -133,6 +133,17 @@ export default function LandingPage() {
     setDashData(null);
   }, [user]);
 
+  // Scroll to hash on mount (e.g. /#landing-tracks from back arrow)
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (!hash) return;
+    const el = document.getElementById(hash.slice(1));
+    if (el) {
+      // Small delay to let the page render first
+      setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 80);
+    }
+  }, []);
+
   useEffect(() => {
     const card = SHOWCASE_CARDS[showcaseActiveIndex];
     const timers = showcaseTimers.current;

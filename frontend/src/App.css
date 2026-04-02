@@ -3673,9 +3673,10 @@ select {
 
 /* ── Code block ─────────────────────────── */
 .showcase-code-block {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  line-height: 1.68;
+  font-family: "Geist Mono", var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.7;
+  font-weight: 300;
   color: rgba(255,255,255,0.60);
   background: rgba(0,0,0,0.40);
   border: 1px solid rgba(255,255,255,0.055);
