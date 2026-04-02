@@ -165,13 +165,16 @@ export default function SampleQuestionPage() {
       <>
         <header className="topbar">
           <div className="container topbar-inner sample-page-topbar">
-            <Link className="sample-home-link brand-wordmark" to="/">
-              datanest
-            </Link>
-            <h1>{topicLabel} sample</h1>
-            <Link className="btn btn-secondary" to={challengePath}>
-              Start the challenge
-            </Link>
+            <div className="sample-topbar-left">
+              <Link className="sample-home-link brand-wordmark" to="/">datanest</Link>
+            </div>
+            <div className="sample-topbar-center">
+              <Link className="sample-back-link" to={`/#landing-tracks`} aria-label="Back to tracks">←</Link>
+              <h1>{topicLabel} sample</h1>
+            </div>
+            <div className="sample-topbar-right">
+              <Link className="btn btn-secondary" to={challengePath}>Start the challenge</Link>
+            </div>
           </div>
         </header>
 
@@ -249,13 +252,16 @@ export default function SampleQuestionPage() {
     <>
       <header className="topbar">
         <div className="container topbar-inner sample-page-topbar">
-          <Link className="sample-home-link brand-wordmark" to="/">
-            datanest
-          </Link>
-          <h1>{topicLabel} sample</h1>
-          <Link className="btn btn-secondary" to={challengePath}>
-            Start the challenge
-          </Link>
+          <div className="sample-topbar-left">
+            <Link className="sample-home-link brand-wordmark" to="/">datanest</Link>
+          </div>
+          <div className="sample-topbar-center">
+            <Link className="sample-back-link" to={`/#landing-tracks`} aria-label="Back to tracks">←</Link>
+            <h1>{topicLabel} sample</h1>
+          </div>
+          <div className="sample-topbar-right">
+            <Link className="btn btn-secondary" to={challengePath}>Start the challenge</Link>
+          </div>
         </div>
       </header>
 
