@@ -404,6 +404,246 @@ Phase 6 activity heatmap uses a 5-level intensity scale built from `--success` w
 
 ---
 
+---
+
+## Tech Stack Decisions
+
+Decisions to make before or alongside implementation. Deferring these creates compounding debt.
+
+### Adopt React Query (TanStack Query) — Phase 1
+
+**Problem:** Every page does manual `useState + useEffect + fetch` for server data. As mock sessions, submission history, and leaderboards land, managing loading/error/stale states manually becomes unmaintainable.
+
+**Decision:** Replace manual data fetching with TanStack Query (`@tanstack/react-query`).
+- Automatic caching, background refetch, stale-while-revalidate
+- `useQuery` for reads, `useMutation` for writes (submit, mock start/finish)
+- Remove ~40% of boilerplate from every page component
+- Works alongside existing Axios client (`api.js`)
+
+**Scope:** Migrate `catalogContext.js`, `QuestionPage`, `ProgressDashboard` first. New pages (MockHub, MockSession) use it from day one.
+
+**File additions:** `frontend/package.json` (add `@tanstack/react-query`), `frontend/src/App.js` (wrap in `QueryClientProvider`)
+
+---
+
+### TypeScript migration — Phase 4 (after core features stable)
+
+**Problem:** Plain JS frontend has no type safety. With 10+ new pages and components planned, bugs from bad prop types and API response shapes will grow.
+
+**Decision:** Migrate frontend to TypeScript incrementally.
+- Start: add `tsconfig.json`, rename new files `.tsx`/`.ts` as they are created
+- Don't rename all existing files at once — migrate as each file is touched
+- Add API response types in `frontend/src/types/api.ts`
+- Adds ~zero runtime cost, massive developer experience improvement
+
+**Files:** `frontend/tsconfig.json` (new), `frontend/vite.config.js` (update), new components in `.tsx`
+
+---
+
+### Email service — Phase 1 (prerequisite for account recovery)
+
+**Problem:** Password reset UI exists in `AuthPage.js` but the backend has no email sending capability. Users who forget their password are permanently locked out.
+
+**Recommended:** [Resend](https://resend.com) (simple API, generous free tier) or Postmark.
+
+**What to build:**
+- `password_reset_tokens` table: `token`, `user_id`, `expires_at`, `used`
+- `POST /api/auth/forgot-password` — generate token, send email, 15-min expiry
+- `POST /api/auth/reset-password` — validate token, update password hash, invalidate token
+- `POST /api/auth/verify-email` — optional but recommended for paid users
+- Welcome email on registration
+
+**Env vars to add:** `EMAIL_FROM`, `RESEND_API_KEY` (or equivalent)
+
+**Files:** `backend/routers/auth.py`, `backend/db.py`, `backend/alembic/`, `backend/email.py` (new utility)
+
+---
+
+## Platform Health
+
+Infrastructure that must exist before significant user growth. Not features — foundations.
+
+### Error monitoring — Sentry ✦ add before Phase 2 launch
+
+**Problem:** Production errors are invisible. Users encounter bugs; we have no signal.
+
+**What to add:**
+- Backend: `sentry-sdk[fastapi]` — catches unhandled exceptions, attaches `request_id`, user context
+- Frontend: `@sentry/react` — catches JS errors, records component stack
+- Set up separate DSNs for backend/frontend
+- Filter out 4xx errors (expected); alert on 5xx spikes
+
+**Env vars:** `SENTRY_DSN` (backend + frontend)
+
+**Files:** `backend/main.py` (init Sentry before app creation), `frontend/src/App.js` (wrap with `Sentry.ErrorBoundary`)
+
+---
+
+### Analytics — PostHog ✦ add before Phase 2 launch
+
+**Problem:** No visibility into user behavior — can't measure where users drop off, which questions get abandoned, free→paid conversion, or which features drive engagement.
+
+**Recommended:** [PostHog](https://posthog.com) — open source, self-hostable, generous free cloud tier.
+
+**Key events to track:**
+- `question_started`, `question_submitted`, `question_solved` (with track, difficulty, question_id)
+- `mock_session_started`, `mock_session_completed` (with mode, track, score)
+- `plan_upgraded` (with from/to plan)
+- `sample_completed`, `sample_reset`
+- Page views (automatic with PostHog's autocapture)
+
+**Funnel to measure:** Landing → Track selection → First question → First solve → Registration → Plan upgrade
+
+**Files:** `frontend/src/App.js` (PostHog init), `frontend/src/pages/QuestionPage.js` (track events), `frontend/package.json`
+
+---
+
+### SEO — add in Phase 1 ✦ low effort, high compounding return
+
+**Problem:** `index.html` has `<title>datanest</title>` and nothing else. No description, no og:* tags, no structured data. A client-rendered React SPA with no meta tags gets zero organic traffic.
+
+**What to add:**
+
+1. **Static meta tags** in `frontend/index.html` (immediate):
+   ```html
+   <meta name="description" content="Practice SQL, Python, Pandas, and PySpark for data interviews. 311+ real interview questions with instant feedback." />
+   <meta property="og:title" content="datanest — Data Interview Practice" />
+   <meta property="og:description" content="..." />
+   <meta property="og:image" content="/og-image.png" />
+   <meta name="twitter:card" content="summary_large_image" />
+   ```
+
+2. **Dynamic meta tags** per page using `react-helmet-async`:
+   - Landing: brand description
+   - TrackHubPage: "Practice SQL interview questions — datanest"
+   - QuestionPage: question title in `<title>` (helps with direct links)
+
+3. **robots.txt** and **sitemap.xml** served by FastAPI:
+   - Block `/api/*`, `/auth`, `/mock/:id`
+   - Include `/`, `/practice/sql`, `/practice/python`, `/sample/*`, `/learn/*`
+
+4. **Prerender/SSG for landing page** (longer term): For a React SPA, consider adding `react-snap` or moving the landing page to a static HTML file for full Google indexability.
+
+**Files:** `frontend/index.html`, `frontend/public/robots.txt`, `backend/routers/system.py` (add sitemap endpoint), `frontend/package.json` (add `react-helmet-async`)
+
+---
+
+### CI/CD pipeline — complete the loop ✦ before Phase 2
+
+**Current state:** CI runs tests on every push but nothing deploys automatically. Production deployments are manual.
+
+**What to add to `.github/workflows/ci.yml`:**
+1. **On merge to `main`:** trigger Railway deploy via `railway up` or Railway webhook
+2. **Question JSON validation job:** catch malformed question JSON before merge
+   ```yaml
+   - name: Validate question JSON
+     run: python backend/scripts/validate_questions.py
+   ```
+3. **Dependency security scan:** `pip-audit` for backend, `npm audit` for frontend
+4. **ESLint** check for frontend (add `.eslintrc.js`)
+5. **Bundle size check:** fail if JS bundle exceeds threshold (e.g., 500KB gzipped)
+
+**Files:** `.github/workflows/ci.yml`, `backend/scripts/validate_questions.py` (new), `.eslintrc.js` (new)
+
+---
+
+### Security hardening — Phase 1
+
+**Current gaps:**
+- No HTTPS enforcement (redirect http → https in production)
+- No security headers (`X-Frame-Options`, `X-Content-Type-Options`, `Strict-Transport-Security`, `Content-Security-Policy`)
+- No CSRF protection (FastAPI uses cookies; CSRF is a real vector)
+- No password strength validation on registration
+- No account lockout after N failed login attempts
+
+**What to add to `backend/main.py`:**
+```python
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+
+# Add security headers middleware
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
+```
+
+**CSRF:** Use `double-submit cookie` pattern or `sameSite=strict` on session cookie (already partially mitigated if session cookie is `SameSite=Strict`).
+
+---
+
+### Database connection pool tuning — Phase 5 prerequisite
+
+**Problem:** `asyncpg` defaults to 10 connections. Under real load with concurrent users this exhausts immediately.
+
+**Add to `config.py`:**
+```python
+DB_POOL_MIN_SIZE: int = 5
+DB_POOL_MAX_SIZE: int = 50  # PGPOOL_MAX_SIZE env var
+DB_POOL_MAX_INACTIVE_CONNECTION_LIFETIME: float = 300.0
+```
+
+Apply when creating pool in `db.py`:
+```python
+pool = await asyncpg.create_pool(
+    DATABASE_URL,
+    min_size=settings.DB_POOL_MIN_SIZE,
+    max_size=settings.DB_POOL_MAX_SIZE,
+    max_inactive_connection_lifetime=settings.DB_POOL_MAX_INACTIVE_CONNECTION_LIFETIME,
+)
+```
+
+---
+
+### Question search — Phase 4
+
+**Problem:** At 311+ questions (growing), users can't find specific questions without browsing all difficulty groups.
+
+**What to build:**
+- Lightweight full-text search over question `title` + `description` + `concepts`
+- Client-side search via `fuse.js` (no backend changes — catalog is already loaded)
+- Search bar in the sidebar above concept filters
+- Results: question title · difficulty badge · track · [Go →]
+
+**Files:** `frontend/src/components/SidebarNav.js`, `frontend/package.json` (add `fuse.js`), `frontend/src/App.css`
+
+---
+
+### Admin / question management — Phase 4
+
+**Problem:** 311+ questions managed via raw JSON file edits. No way to add/edit questions without touching source code.
+
+**Minimal admin interface (internal tool, not public):**
+- Protected route `/admin` (admin-only flag on user row)
+- Question list with search and filter
+- Edit form for question JSON fields
+- Saves to PostgreSQL question cache (or writes back to JSON files via API)
+- Question preview (render as it would appear to users)
+
+**Alternative (simpler):** GitHub-based workflow — question edits go through PRs with automated validation CI job. No admin UI needed; CI is the gatekeeper.
+
+---
+
+### Onboarding — Phase 1 ✦ biggest retention lever
+
+**Problem:** New users (anonymous) land on the platform with no guidance. The conversion from "landed" to "first question solved" is the most important funnel step.
+
+**What to build:**
+- First-time visitor modal or tooltip sequence:
+  1. "Pick a track" → highlight track pills
+  2. "Try a sample question first — no login needed" → highlight sample tiles
+  3. Skip option always visible
+- First solve celebration: confetti or highlight animation on first correct answer
+- Empty state in `TrackHubPage`: "You haven't solved any questions yet. Start with Easy →"
+- Progress nudge: after 5 easy questions solved, show "Unlock medium questions — 5 more to go" progress indicator
+
+**Files:** New `frontend/src/components/OnboardingTooltip.js`, `frontend/src/pages/QuestionPage.js` (first-solve celebration), `frontend/src/pages/TrackHubPage.js` (empty state), `frontend/src/App.css`
+
+---
+
 ## Phase 1 — Quick wins (core experience) ✦ high impact, low effort
 
 ### 1A · Submission history
