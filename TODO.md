@@ -406,6 +406,358 @@ Phase 6 activity heatmap uses a 5-level intensity scale built from `--success` w
 
 ---
 
+## UX Polish & Learning Experience
+
+This section covers what separates a *functional* product from a *top-notch* one. These are the details that make users stay longer, return daily, and recommend the platform. Many are small individually; together they define the feel of the product.
+
+---
+
+### Auto-save code drafts ✦ must-have
+
+**Problem:** Navigating away from a question — accidentally clicking a link, hitting back, or closing the tab — loses all unsaved code. This is a trust-destroying experience.
+
+**What to build:**
+- On every editor change, debounce-save to `localStorage` keyed by `{topic}:{questionId}`
+- On question load, check localStorage first; if draft exists, restore it silently
+- Show a faint "Draft saved" indicator in the editor topbar (fades after 2s)
+- "Clear draft" option resets to starter code
+
+**Files:** `frontend/src/pages/QuestionPage.js`, `frontend/src/pages/SampleQuestionPage.js`
+
+---
+
+### Daily streak system ✦ single strongest retention mechanism
+
+**Problem:** Users have no reason to return daily. Streaks are the most proven mechanism for building practice habits (Duolingo, LeetCode, Brilliant all use them).
+
+**Backend:**
+- `GET /api/auth/me` already exists — add `streak_days` and `streak_at_risk` to response
+- Computed from `user_progress` table (solved at least one question today and yesterday)
+- `streak_at_risk: true` when current day has no solve yet
+
+**Frontend:**
+- Streak flame counter in the topbar next to the user name: `🔥 7`
+- On first solve of the day: toast notification "Streak extended! 🔥 8 days"
+- On `streak_at_risk: true`: subtle yellow indicator "Solve today to keep your streak"
+- Streak broken: "Your streak ended at 7 days. Start a new one." (no punishment, just a nudge)
+- Milestone toasts: 7, 30, 100 days
+
+**Files:** `backend/db.py`, `backend/routers/auth.py`, `frontend/src/components/AppShell.js`, `frontend/src/App.css`
+
+---
+
+### Wrong answer diff visualization ✦ core feedback quality
+
+**Problem:** On an incorrect SQL submission, users see two separate result tables (yours vs expected). They have to scan both mentally to find the difference. This is slow and frustrating.
+
+**What to build:**
+- Row-level diff in `ResultsTable.js` when showing submit comparison:
+  - Rows only in user result: highlighted red background
+  - Rows only in expected result: highlighted green background
+  - Rows in both but with differing cell values: cell-level yellow highlight
+- Summary line above the table: `"Your query returns 47 rows, expected 23. 24 extra rows found."`
+- For Python track: test case diff shows input → your output vs expected output side-by-side
+
+**Files:** `frontend/src/components/ResultsTable.js`, `frontend/src/pages/QuestionPage.js`, `frontend/src/App.css`
+
+---
+
+### Progressive hint system redesign ✦ learning experience
+
+**Problem:** Current hint system is a simple reveal counter (hint 1, hint 2, solution). It doesn't scaffold learning — it just reveals pre-written text. Users either ignore hints or go straight to the solution.
+
+**What to build:**
+
+Replace the current hint reveal with a **"Help me" journey**:
+
+```
+[I'm stuck]  ←── single CTA, always visible below question
+
+  Step 1: Conceptual nudge       "Think about how to identify the earliest event per user"
+  Step 2: Approach hint          "You'll need to group by user_id and find the minimum timestamp"
+  Step 3: Code structure hint    "Consider: SELECT user_id, MIN(event_time) FROM events GROUP BY ..."
+  Step 4: Show full solution     (with explanation)
+```
+
+- Each step is a tap/click to reveal; can't skip steps (reduces solution shortcutting)
+- Time gate: can advance to next step immediately, but solution requires 2 min on page (soft gate)
+- Show how many users needed each step: "67% of users solved this without hints" (social proof + motivation)
+- Hint steps are structured fields in question JSON: `hint_conceptual`, `hint_approach`, `hint_structure`
+
+**Files:** Question JSON schema (add `hint_conceptual`, `hint_approach`, `hint_structure`), `frontend/src/pages/QuestionPage.js`, new `frontend/src/components/HintStepper.js`
+
+---
+
+### Concept tag explanation modal ✦ learning depth
+
+**Problem:** Concept tags (e.g., "COHORT ANALYSIS", "RUNNING TOTAL") are displayed as decorative pills. Clicking them does nothing. This is a missed learning opportunity.
+
+**What to build:**
+- Clicking any concept tag opens a slide-in panel (right side, 320px):
+  ```
+  COHORT ANALYSIS
+  ─────────────────────────────
+  Group users by their signup period, then track their
+  behavior over subsequent time periods relative to when
+  they joined — not by calendar date.
+
+  Common pattern:
+  WITH cohorts AS (
+    SELECT user_id, DATE_TRUNC('month', signup_date) AS cohort
+    FROM users
+  )
+  ...
+
+  Questions using this concept:  [3 questions →]
+  ```
+- Concept explanations stored in a `backend/content/concepts.json` map (concept name → explanation + code example)
+- Panel is dismissible; ESC key closes it
+
+**Files:** New `backend/content/concepts.json`, new `frontend/src/components/ConceptPanel.js`, `frontend/src/pages/QuestionPage.js`, `frontend/src/App.css`
+
+---
+
+### "Similar questions" after solving ✦ session length driver
+
+**Problem:** After solving a question correctly, users see "Next Question →" which goes to the next sequential question. There's no recommendation of related questions. Users who want to reinforce a concept have no easy path.
+
+**What to build:**
+- After a correct submission, show a "Practice more like this" strip below the verdict card:
+  ```
+  You just practiced: [COHORT ANALYSIS]  [RUNNING TOTAL THRESHOLD]
+
+  Similar questions:
+  ┌──────────────────────────────┐  ┌──────────────────────────────┐
+  │ Monthly Retention Rate       │  │ Rolling 7-day Active Users    │
+  │ Medium · SQL                 │  │ Hard · SQL                    │
+  │ [Solve →]                    │  │ [Solve →]                     │
+  └──────────────────────────────┘  └──────────────────────────────┘
+  ```
+- Computed client-side: find unsolved questions that share ≥1 concept tag with the solved question
+- Show max 2 recommendations; exclude already-solved and locked questions
+- "Continue to next →" still exists as the primary CTA; this is secondary
+
+**Files:** `frontend/src/pages/QuestionPage.js`, `frontend/src/App.css`
+
+---
+
+### Monaco editor enhancements ✦ editor quality
+
+The editor is where users spend 80% of their time. It must feel excellent.
+
+**SQL autocomplete with schema awareness:**
+- Register table names and column names from `question.schema` as Monaco completions
+- Trigger on `.` after a table alias → show columns for that table
+- Trigger on whitespace/newline → suggest table names
+- Implementation: `monaco.languages.registerCompletionItemProvider('sql', ...)`
+
+**Auto-format SQL:**
+- `Cmd+Shift+F` (or `Ctrl+Shift+F`) formats the SQL in the editor
+- Use `sql-formatter` npm package (lightweight, no backend call needed)
+- Also auto-format on submit (optional, show formatted version in solution)
+
+**Query history (within session):**
+- Last 5 Run results accessible via a `↑↓` toggle in the editor topbar
+- Clicking a history entry restores that code into the editor
+- Stored in component state (not persisted — session only)
+
+**Font size control:**
+- `A−` / `A+` buttons in the editor topbar
+- Range: 12px–20px, step 2px
+- Persisted in localStorage (`editor_font_size`)
+
+**Files:** `frontend/src/components/CodeEditor.js`, `frontend/src/App.css`, `frontend/package.json` (add `sql-formatter`)
+
+---
+
+### Skeleton loaders ✦ polish
+
+**Problem:** Loading states currently show nothing or a spinner. Skeleton loaders feel significantly more polished and reduce perceived load time.
+
+**What to build:**
+- `QuestionPage` skeleton: placeholder blocks for question title, description text, editor area
+- `SidebarNav` skeleton: 8 placeholder question rows while catalog loads
+- `TrackHubPage` skeleton: progress bar placeholder + question list stubs
+- `ProgressDashboard` skeleton: 4-card grid with pulsing placeholder content
+- CSS: use `animation: skeleton-pulse 1.5s ease-in-out infinite` with a light gray shimmer
+
+**Files:** New `frontend/src/components/Skeleton.js`, all page components, `frontend/src/App.css`
+
+---
+
+### Micro-animations & transitions ✦ look and feel
+
+**Problem:** The current UI is static — progress bars snap to their values, navigating between pages is instant but jarring, and solving a question feels no different from getting one wrong.
+
+**What to build:**
+
+**Progress bar animations:**
+- All `TrackProgressBar` fills animate from previous value to new value (`transition: width 600ms ease-out`)
+- Triggering moment: catalog refresh after a correct submit
+
+**Solve celebration:**
+- On first correct submission for a question: brief confetti burst (use `canvas-confetti`, ~5KB)
+- Subsequent correct submits: green checkmark pulse only (no repeat confetti)
+- Unlock event: when a new difficulty unlocks, show a toast: "Medium questions unlocked! 🔓"
+
+**Page transitions:**
+- Fade-in on route change (`opacity: 0 → 1`, 150ms) using React Router's location key
+- Eliminates the jarring "white flash" on navigation
+
+**Button loading states:**
+- Run/Submit buttons show a spinner inside when loading (not just `disabled`)
+- Submit button: "Checking..." text during submission
+
+**Milestone toasts:**
+- 1st question solved: "First one down! Keep going →"
+- 10 easy questions: "Medium questions unlocking soon!"
+- 25 total: "You're on a roll — 25 questions solved"
+- First hard: "Hard mode unlocked. You're ready for this."
+
+**Files:** `frontend/src/App.css`, `frontend/src/components/TrackProgressBar.js`, `frontend/src/pages/QuestionPage.js`, `frontend/package.json` (add `canvas-confetti`)
+
+---
+
+### Session goals & focus mode ✦ longer sessions
+
+**Problem:** Users open the app without a clear intention. Having a goal ("solve 3 questions today") dramatically increases session length and return rate.
+
+**Daily goal widget:**
+- Set on first visit of the day (or from settings): "Today's goal: 3 questions"
+- Shown as a compact progress indicator in the sidebar header: `🎯 1 / 3 today`
+- Completing the goal: green checkmark + "Goal met! See you tomorrow."
+- Goal persists in localStorage; resets at midnight
+
+**Focus mode:**
+- Toggle button (⊡ icon) in the editor topbar
+- Hides: sidebar, topbar nav links, concept pills, status metadata
+- Shows: only question description + editor + run/submit buttons
+- URL gains `?focus=1`; ESC exits focus mode
+- Ideal for timed practice or deep work
+
+**Files:** `frontend/src/components/AppShell.js`, `frontend/src/components/SidebarNav.js`, `frontend/src/pages/QuestionPage.js`, `frontend/src/App.css`
+
+---
+
+### Keyboard shortcuts ✦ power user experience
+
+Power users who practice daily will reach for shortcuts. Missing shortcuts are a friction that accumulates.
+
+| Shortcut | Action |
+|---|---|
+| `Cmd/Ctrl + Enter` | Run code |
+| `Cmd/Ctrl + Shift + Enter` | Submit |
+| `Cmd/Ctrl + ]` | Next question |
+| `Cmd/Ctrl + [` | Previous question |
+| `Cmd/Ctrl + Shift + F` | Format SQL |
+| `?` | Open keyboard shortcuts modal |
+| `Esc` | Close any open panel / exit focus mode |
+| `H` | Show next hint (when focused outside editor) |
+
+- Register via `useEffect` + `keydown` listener in `QuestionPage.js`
+- `?` key opens a `KeyboardShortcutsModal.js` overlay
+- Shortcuts disabled when cursor is inside Monaco editor (Monaco handles its own)
+
+**Files:** `frontend/src/pages/QuestionPage.js`, new `frontend/src/components/KeyboardShortcutsModal.js`, `frontend/src/App.css`
+
+---
+
+### Resizable split pane ✦ editor ergonomics
+
+**Problem:** The question description vs editor split is a fixed CSS grid. Users writing long queries want more editor space; users re-reading the question want more description space.
+
+**What to build:**
+- Draggable divider between left panel and right editor panel
+- Drag handle: 4px wide bar, hover shows cursor `col-resize`
+- Range: left panel 260px–500px; persisted in localStorage
+- Snap to default (330px) on double-click of divider
+- Mobile: not applicable (stacked layout)
+
+**Implementation:** Pure CSS/JS resize (no library needed — ~30 lines of drag logic).
+
+**Files:** `frontend/src/components/AppShell.js` or `frontend/src/pages/QuestionPage.js`, `frontend/src/App.css`
+
+---
+
+### Empty states with guidance ✦ clarity
+
+Every empty state must tell the user what to do next. Currently most are blank or missing.
+
+| Location | Empty state message |
+|---|---|
+| TrackHubPage (0 solved) | "Start with an Easy question — they're designed to build your foundation." + [First question →] |
+| ProgressDashboard (new user) | "You haven't solved any questions yet. Pick a track to start." + track cards |
+| Submission history | "No past attempts — submit your answer to start tracking." |
+| SidebarNav search (no results) | "No questions match '{query}'. Try a different concept or clear the filter." |
+| Concept filter (no matches) | "No questions match these filters. Try removing one." |
+| Mock session history | "No mock sessions yet. [Start your first mock →]" |
+
+**Files:** All page components, `frontend/src/App.css`
+
+---
+
+### Accessibility baseline ✦ non-negotiable
+
+**What to ensure before public launch:**
+- All interactive elements reachable via `Tab` key
+- Sidebar question list navigable with arrow keys
+- Focus ring visible on all focused elements (currently may be suppressed by CSS)
+- `aria-label` on icon-only buttons (collapse toggle, theme toggle, hint reveal)
+- Color alone never conveys state (solved/locked states use icons + color, not color alone)
+- Minimum contrast ratio 4.5:1 for all text (audit `--text-secondary` on light backgrounds)
+- Monaco editor: `aria-label="Code editor"` attribute
+
+Run Lighthouse accessibility audit; target score ≥ 90 before Phase 2 launch.
+
+**Files:** `frontend/src/components/AppShell.js`, `frontend/src/components/SidebarNav.js`, `frontend/src/App.css`
+
+---
+
+### Result error clarity ✦ feedback quality
+
+**Problem:** When SQL has a syntax error or runtime error, the error message is displayed as raw text from DuckDB. This is opaque to learners.
+
+**What to build:**
+- Parse common DuckDB error patterns and show a human-friendly version:
+  - `Parser Error: syntax error at or near "FORM"` → `Syntax error: Did you mean FROM instead of FORM?`
+  - `Binder Error: Referenced table "user" not found` → `Table "user" not found. Available tables: users, orders, products...`
+  - Timeout → `Your query took too long (>3 seconds). Try adding a WHERE clause to filter rows first.`
+- Highlight the error line in Monaco (Monaco supports `editor.deltaDecorations`)
+- Link to the relevant table in SchemaViewer when a "table not found" error fires
+
+**Files:** `frontend/src/pages/QuestionPage.js`, new `frontend/src/utils/sqlErrorParser.js`, `frontend/src/components/CodeEditor.js`
+
+---
+
+### Question bookmarks ✦ return-to-later
+
+**Problem:** Users encounter questions they want to return to (too hard now, interesting pattern to revisit) but have no way to mark them.
+
+**What to build:**
+- Bookmark icon (☆/★) in the question header
+- Bookmarks stored in localStorage (no backend needed — keep it simple)
+- "Bookmarked" section at the bottom of `SidebarNav` (shown only when bookmarks exist)
+- Max 20 bookmarks; oldest removed when exceeded
+
+**Files:** `frontend/src/pages/QuestionPage.js`, `frontend/src/components/SidebarNav.js`, `frontend/src/App.css`
+
+---
+
+### Per-question soft timer ✦ interview awareness
+
+**Problem:** Users have no awareness of how long they spend on each question. In real interviews, time awareness is a skill. This is separate from mock mode — it's always-on, non-enforced, educational.
+
+**What to build:**
+- Subtle elapsed timer in the editor topbar: `⏱ 4:32` (starts when question loads)
+- Pauses when tab loses focus (no anxiety from background time)
+- Color: neutral → orange (>10 min for easy, >20 min for medium, >30 min for hard)
+- Recorded in submission payload as `duration_ms` (already in the submissions schema)
+- After submit: "You solved this in 6:24. Median for this question: 8:10." (Phase 3+ once data exists)
+
+**Files:** `frontend/src/pages/QuestionPage.js`, `frontend/src/App.css`
+
+---
+
 ## Tech Stack Decisions
 
 Decisions to make before or alongside implementation. Deferring these creates compounding debt.
