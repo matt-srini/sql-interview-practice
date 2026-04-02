@@ -137,11 +137,15 @@ export default function LandingPage() {
   useEffect(() => {
     const hash = window.location.hash;
     if (!hash) return;
-    const el = document.getElementById(hash.slice(1));
-    if (el) {
-      // Small delay to let the page render first
-      setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 80);
-    }
+    const id = hash.slice(1);
+    // Two attempts: one after paint, one after React Router scroll restoration
+    const scroll = () => {
+      const el = document.getElementById(id);
+      if (el) window.scrollTo({ top: el.offsetTop - 16, behavior: 'smooth' });
+    };
+    const t1 = setTimeout(scroll, 100);
+    const t2 = setTimeout(scroll, 400);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
   useEffect(() => {
