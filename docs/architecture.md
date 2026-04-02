@@ -85,16 +85,17 @@ No code execution. Entirely answer-matching.
 
 ## PostgreSQL schema
 
-Tables managed by Alembic migrations in `backend/alembic/`.
+Schema is defined as a raw SQL string `_SCHEMA_SQL` in `backend/db.py` and applied idempotently at startup via `ensure_schema()`.
 
 | Table | Purpose | Key columns |
 |---|---|---|
-| `users` | All users (anonymous + registered) | `id`, `email`, `is_anonymous`, `plan_tier` |
-| `sessions` | Session tokens | `token`, `user_id`, `created_at` |
+| `users` | All users (anonymous + registered) | `id`, `email`, `name`, `plan` |
+| `sessions` | Session tokens | `token`, `user_id`, `expires_at` |
 | `user_progress` | Solved questions per topic | `user_id`, `question_id`, `topic`, `solved_at` |
-| `user_sample_seen` | Sample question exposure | `user_id`, `sample_id`, `topic`, `difficulty` |
-| `plan_changes` | Audit log of plan upgrades | `user_id`, `old_plan`, `new_plan`, `changed_at` |
-| `stripe_events` | Idempotent Stripe webhook records | `event_id`, `processed_at` |
+| `user_sample_seen` | Sample question exposure | `user_id`, `difficulty`, `question_id`, `topic` |
+| `plan_changes` | Audit log of plan upgrades | `user_id`, `old_plan`, `new_plan`, `created_at` |
+| `stripe_events` | Idempotent Stripe webhook records | `event_id`, `event_type`, `processed_at` |
+| `submissions` | Every submit attempt per user | `user_id`, `track`, `question_id`, `is_correct`, `code`, `submitted_at` |
 
 **`user_progress` and `user_sample_seen` carry a `topic` column** (DEFAULT `'sql'`). Progress is completely independent per topic — solving SQL does not affect Python unlock state.
 

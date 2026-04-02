@@ -4,7 +4,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException
 
 import pyspark_questions as catalog
-from db import get_solved_ids, mark_solved
+from db import get_solved_ids, mark_solved, record_submission
 from deps import get_current_user
 from middleware.request_context import get_request_id
 from models import PySparkSubmitRequest
@@ -117,6 +117,14 @@ async def submit_pyspark_answer(
 
     if correct:
         await mark_solved(current_user["id"], int(q["id"]), topic="pyspark")
+
+    await record_submission(
+        user_id=current_user["id"],
+        track="pyspark",
+        question_id=int(body.question_id),
+        is_correct=correct,
+        code=None,
+    )
 
     return {
         "correct": correct,

@@ -83,11 +83,23 @@ CREATE TABLE IF NOT EXISTS plan_changes (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS submissions (
+    id BIGSERIAL PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    track TEXT NOT NULL,
+    question_id INTEGER NOT NULL,
+    is_correct BOOLEAN NOT NULL,
+    code TEXT,
+    submitted_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
 CREATE INDEX IF NOT EXISTS idx_progress_user ON user_progress(user_id);
 CREATE INDEX IF NOT EXISTS idx_progress_user_topic ON user_progress(user_id, topic);
 CREATE INDEX IF NOT EXISTS idx_plan_changes_user ON plan_changes(user_id);
+CREATE INDEX IF NOT EXISTS idx_submissions_user_question ON submissions(user_id, question_id, track);
+CREATE INDEX IF NOT EXISTS idx_submissions_user_recent ON submissions(user_id, submitted_at DESC);
 """
 
 
@@ -195,7 +207,7 @@ async def reset_database() -> None:
         raise RuntimeError("Database pool is not initialized")
 
     async with _engine.begin() as conn:
-        await conn.execute(text("TRUNCATE TABLE plan_changes, stripe_events, user_sample_seen, user_progress, sessions, users RESTART IDENTITY CASCADE"))
+        await conn.execute(text("TRUNCATE TABLE submissions, plan_changes, stripe_events, user_sample_seen, user_progress, sessions, users RESTART IDENTITY CASCADE"))
 
 
 async def ensure_schema_admin(database_url: str | None = None) -> None:
@@ -214,7 +226,7 @@ async def reset_database_admin(database_url: str | None = None) -> None:
         async with engine.begin() as conn:
             await conn.execute(
                 text(
-                    "TRUNCATE TABLE plan_changes, stripe_events, user_sample_seen, user_progress, sessions, users RESTART IDENTITY CASCADE"
+                    "TRUNCATE TABLE submissions, plan_changes, stripe_events, user_sample_seen, user_progress, sessions, users RESTART IDENTITY CASCADE"
                 )
             )
     finally:
@@ -784,3 +796,66 @@ async def get_progress_by_topic(user_id: str) -> dict[str, dict[str, int]]:
             {"user_id": user_id},
         )
         return {row[0]: {"solved": row[1]} for row in result.fetchall()}
+
+
+async def record_submission(
+    user_id: str,
+    track: str,
+    question_id: int,
+    is_correct: bool,
+    code: str | None = None,
+) -> None:
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        await session.execute(
+            text(
+                """
+                INSERT INTO submissions (user_id, track, question_id, is_correct, code)
+                VALUES (CAST(:user_id AS UUID), :track, :question_id, :is_correct, :code)
+                """
+            ),
+            {
+                "user_id": user_id,
+                "track": track,
+                "question_id": question_id,
+                "is_correct": is_correct,
+                "code": code,
+            },
+        )
+        await session.commit()
+
+
+async def get_submissions(
+    user_id: str,
+    track: str,
+    question_id: int,
+    limit: int = 5,
+) -> list[dict[str, Any]]:
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                SELECT id, track, question_id, is_correct, code, submitted_at
+                FROM submissions
+                WHERE user_id = CAST(:user_id AS UUID)
+                  AND track = :track
+                  AND question_id = :question_id
+                ORDER BY submitted_at DESC
+                LIMIT :limit
+                """
+            ),
+            {"user_id": user_id, "track": track, "question_id": question_id, "limit": limit},
+        )
+        rows = result.mappings().all()
+        return [
+            {
+                "id": row["id"],
+                "track": row["track"],
+                "question_id": row["question_id"],
+                "is_correct": row["is_correct"],
+                "code": row["code"],
+                "submitted_at": row["submitted_at"].isoformat() if row["submitted_at"] else None,
+            }
+            for row in rows
+        ]

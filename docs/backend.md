@@ -140,6 +140,7 @@ Also available without `/api` prefix.
 | Method | Path | Description |
 |---|---|---|
 | GET | `/api/dashboard` | Per-track solved counts, concepts, and recent activity for the current user |
+| GET | `/api/submissions` | Submission history for a question (`track`, `question_id`, `limit` query params; max 20) |
 
 Response shape: `{ tracks: { sql, python, python_data, pyspark }, concepts_by_track, recent_activity }`.
 

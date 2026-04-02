@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 import python_guard
 import python_evaluator
 import python_questions as catalog
-from db import get_solved_ids, mark_solved
+from db import get_solved_ids, mark_solved, record_submission
 from deps import get_current_user
 from middleware.request_context import get_request_id
 from models import RunCodeRequest, SubmitCodeRequest
@@ -154,9 +154,19 @@ async def submit_python_code(
 
     result = python_evaluator.evaluate_python_code(body.code, q)
 
-    if result.get("correct"):
+    accepted = bool(result.get("correct"))
+
+    if accepted:
         await mark_solved(current_user["id"], int(q["id"]), topic="python")
         result["solution_code"] = q.get("expected_code", "")
         result["explanation"] = q.get("explanation", "")
+
+    await record_submission(
+        user_id=current_user["id"],
+        track="python",
+        question_id=int(body.question_id),
+        is_correct=accepted,
+        code=body.code,
+    )
 
     return result
