@@ -1,6 +1,6 @@
 # Backend
 
-> **Navigation:** [Docs index](./README.md) · [Project blueprint](./project-blueprint.md) · [Frontend](./frontend.md)
+> **Navigation:** [Docs index](./README.md) · [Architecture](./architecture.md) · [Frontend](./frontend.md)
 
 FastAPI + Uvicorn. PostgreSQL for all product state. DuckDB for SQL query execution (in-memory, loaded at startup). Python/PySpark execution runs in subprocess sandboxes.
 
