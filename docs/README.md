@@ -1,23 +1,33 @@
 # Documentation
 
-This folder contains all project documentation. Start with the blueprint for orientation, then follow links into specific areas.
+This is the documentation hub for the datanest interview practice platform. Start here, then follow links into the specific area you need.
 
 ---
 
-## Core reference
+## Docs index
 
 | Doc | What it covers |
 |---|---|
-| [project-blueprint.md](./project-blueprint.md) | Overview, architecture summary, project structure, strengths/weaknesses, testing, next steps |
-| [backend.md](./backend.md) | All API routes, query execution pipeline, identity model, rate limiting, Stripe |
-| [frontend.md](./frontend.md) | Route tree, pages, components, API client, challenge and sample data flows |
-| [datasets.md](./datasets.md) | All 11 CSV tables — columns, row counts, scale ranges, edge cases |
-| [deployment.md](./deployment.md) | Local dev setup, Docker services, production build, Railway/Cloudflare |
+| [architecture.md](./architecture.md) | System design, request lifecycles, data model, execution pipelines, scaling |
+| [backend.md](./backend.md) | All API routes, routers, query execution, Python sandbox, identity model |
+| [frontend.md](./frontend.md) | Route tree, pages, components, design system, data flows |
+| [datasets.md](./datasets.md) | All 11 CSV tables — columns, row counts, edge cases |
+| [deployment.md](./deployment.md) | Local dev, Docker, production build, environment variables, Railway |
+| [content-authoring.md](./content-authoring.md) | Curriculum specs and authoring rules for all four tracks (SQL, Python, Pandas, PySpark) |
+| [USERGUIDE.md](./USERGUIDE.md) | End-user guide to the platform |
 
-## Content and design
+---
 
-| Doc | What it covers |
-|---|---|
-| [sql-curriculum-spec.md](./sql-curriculum-spec.md) | Difficulty tiers, volume targets, learning objectives, progression rules |
-| [question-authoring-guidelines.md](./question-authoring-guidelines.md) | Rules and quality bar for writing challenge questions |
-| [ui-design-system.md](./ui-design-system.md) | Design tokens, typography, button system, layout, dark mode |
+## Quick orientation
+
+**What it is:** A data interview practice platform with four tracks (SQL, Python, Pandas, PySpark), 311 questions, Monaco editor, instant feedback, and plan-gated progression.
+
+**Tech stack:** React 18 + Vite frontend · FastAPI backend · PostgreSQL (state) · DuckDB (SQL execution) · Python subprocess sandbox · Redis (rate limiting) · Stripe (billing) · Single Docker container on Railway.
+
+**Two practice modes:**
+- **Challenge mode** (`/practice/:topic`) — plan-aware question bank, persistent progress, unlock gates
+- **Sample mode** (`/sample/:topic/:difficulty`) — no login required, no progress recorded, 3 questions per track+difficulty
+
+**For architectural decisions and system design:** see [architecture.md](./architecture.md)
+
+**For adding or editing questions:** see [content-authoring.md](./content-authoring.md)

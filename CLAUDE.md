@@ -1,24 +1,37 @@
 # CLAUDE.md — Project context for AI assistance
 
 This file is the canonical context reference for Claude in this repository.
-**Keep it current.** Any time the architecture, design, content, or behaviour of this platform changes, update this file and the relevant files in `docs/` before finishing the task.
+**Keep it current.** Any time the architecture, design, content, or behaviour of this platform changes, update this file and the relevant files in `docs/` as part of the same task — not as a follow-up.
 
 ---
 
 ## Standing instructions
 
-- **Always commit after meaningful changes.** End every session of edits with a `git commit` carrying a clear, specific message (not "update files" — something like "refactor landing page to centered hero, remove timed-mode placeholder"). Co-author line: `Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>`.
-- **Keep `docs/` in sync.** When architecture, API routes, UI layout, design tokens, or product behaviour changes, update the relevant file(s) in `docs/` as part of the same task — not as a follow-up.
-- **Keep `CLAUDE.md` in sync.** When anything in this file becomes stale, update it in the same commit as the code change.
-- **Parallelize coding work when possible.** If a coding task can be split safely and Codex subagents are available, offload disjoint slices in parallel and prefer the strongest practical coding model for those subtasks. Review and integrate the results yourself before finishing.
+- **Always commit after meaningful changes.** End every session of edits with a `git commit` carrying a clear, specific message (not "update files" — something like "add mock interview mode with timer and session summary"). Co-author line: `Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>`.
+
+- **Keep docs in sync automatically.** When a change affects any of the following areas, update the corresponding doc in the same commit:
+  | Change area | Doc to update |
+  |---|---|
+  | System design, data flows, execution model, scaling | `docs/architecture.md` |
+  | API routes, routers, backend behaviour | `docs/backend.md` |
+  | Pages, components, routes, design tokens | `docs/frontend.md` |
+  | Dataset schema, row counts, edge cases | `docs/datasets.md` |
+  | Env vars, Docker, Railway, deployment | `docs/deployment.md` |
+  | Question authoring rules, curriculum specs | `docs/content-authoring.md` |
+  | Product overview, tech stack, content footprint | This file (`CLAUDE.md`) |
+
+- **Keep `CLAUDE.md` in sync.** When content footprint, tech stack, routes, or product behaviour changes, update the relevant section below in the same commit.
+
+- **Parallelize coding work when possible.** If a coding task can be split safely and subagents are available, offload disjoint slices in parallel. Review and integrate results before finishing.
 
 ---
 
 ## What this is
 
-A data interview practice platform covering four tracks. Users write SQL or Python, answer MCQ questions, get instant feedback, and work through gated challenge banks. Modes per track:
+A data interview practice platform covering four tracks. Users write SQL or Python, answer MCQ questions, get instant feedback, and work through gated challenge banks.
 
-- **Challenge mode** — 86+ questions per track, plan-aware unlock rules, persistent progress
+**Modes per track:**
+- **Challenge mode** — plan-aware unlock rules, persistent progress, 311+ questions across 4 tracks
 - **Sample mode** — 36 sandbox questions across all four tracks (3 per track+difficulty), no progress recorded, no login required
 
 **Tracks:**
@@ -52,7 +65,7 @@ A data interview practice platform covering four tracks. Users write SQL or Pyth
 | Pandas | 75 (30 easy, 25 medium, 20 hard) | DataFrame comparison | `backend/content/python_data_questions/` |
 | PySpark | 75 (30 easy, 25 medium, 20 hard) | MCQ / predict output | `backend/content/pyspark_questions/` |
 
-- **Sample questions (SQL only):** 9 total — 3 per difficulty (`backend/sample_questions.py`)
+- **Sample questions:** 3 per track+difficulty = 36 total across all tracks
 - Every question has `hints` (1–2 entries) and `concepts` (semantic tags surfaced as pills)
 - SQL schemas validated against committed CSV headers at catalog load time
 
@@ -63,60 +76,70 @@ A data interview practice platform covering four tracks. Users write SQL or Pyth
 ```
 sql-interview-practice/
 ├── backend/
-│   ├── content/questions/     # Challenge question JSON (easy.json, medium.json, hard.json)
-│   ├── datasets/              # Committed CSVs + metadata JSON
-│   ├── middleware/            # Request context, request_id, X-Request-ID
-│   ├── routers/               # auth, system, catalog, questions, sample, plan, stripe, spa
-│   ├── scripts/               # Dataset generator, anonymous user cleanup
-│   ├── tests/                 # API, evaluator, rate limiter tests
-│   ├── alembic/               # Postgres migrations
-│   ├── main.py                # App wiring, middleware, routers, lifespan
-│   ├── config.py              # Env settings, CORS, rate limiter, dist path
-│   ├── db.py                  # Async Postgres pool, all product-state persistence
-│   ├── database.py            # DuckDB engine startup, table loading, cursor access
-│   ├── evaluator.py           # Query execution, timeout, comparison normalization
-│   ├── unlock.py              # Pure plan + solve-history → unlock policy
-│   ├── questions.py           # Challenge catalog loader/validator
-│   ├── sample_questions.py    # Sample catalog loader
-│   ├── sql_guard.py           # Read-only SQL validation
-│   ├── progress.py            # Challenge/sample persistence wrappers
-│   ├── rate_limiter.py        # In-memory and Redis-backed limiter
-│   └── models.py / deps.py    # Pydantic models and shared dependencies
+│   ├── content/questions/          # SQL challenge question JSON (easy.json, medium.json, hard.json)
+│   ├── content/python_questions/   # Python algorithm questions
+│   ├── content/python_data_questions/ # Pandas questions
+│   ├── content/pyspark_questions/  # PySpark MCQ questions
+│   ├── datasets/                   # Committed CSVs + metadata JSON
+│   ├── middleware/                 # Request context, request_id, X-Request-ID
+│   ├── routers/                    # auth, system, catalog, questions, sample, plan, stripe, spa
+│   ├── scripts/                    # Dataset generator, anonymous user cleanup
+│   ├── tests/                      # API, evaluator, rate limiter tests
+│   ├── alembic/                    # Postgres migrations
+│   ├── main.py                     # App wiring, middleware, routers, lifespan
+│   ├── config.py                   # Env settings, CORS, rate limiter, dist path
+│   ├── db.py                       # Async Postgres pool, all product-state persistence
+│   ├── database.py                 # DuckDB engine startup, table loading, cursor access
+│   ├── evaluator.py                # Query execution, timeout, comparison normalization
+│   ├── unlock.py                   # Pure plan + solve-history → unlock policy
+│   ├── questions.py                # SQL catalog loader/validator
+│   ├── sample_questions.py         # SQL sample catalog loader
+│   ├── python_questions.py         # Python algorithm catalog loader
+│   ├── python_data_questions.py    # Pandas catalog loader
+│   ├── pyspark_questions.py        # PySpark catalog loader
+│   ├── sql_guard.py                # Read-only SQL validation
+│   ├── python_guard.py             # AST-based Python code validator
+│   ├── python_evaluator.py         # Spawns sandbox, enforces timeout, compares results
+│   ├── python_sandbox_harness.py   # Subprocess harness for Python/Pandas execution
+│   ├── progress.py                 # Challenge/sample persistence wrappers
+│   ├── rate_limiter.py             # In-memory and Redis-backed limiter
+│   └── models.py / deps.py         # Pydantic models and shared dependencies
 ├── frontend/
 │   ├── src/
-│   │   ├── App.js             # Route tree
-│   │   ├── App.css            # Global styles and design tokens (single stylesheet)
-│   │   ├── api.js             # Axios client, base URL resolution
-│   │   ├── catalogContext.js  # Catalog state and refresh
+│   │   ├── App.js                  # Route tree
+│   │   ├── App.css                 # Global styles and design tokens (single stylesheet)
+│   │   ├── api.js                  # Axios client, base URL resolution
+│   │   ├── catalogContext.js       # Catalog state and refresh
 │   │   ├── contexts/
-│   │   │   ├── AuthContext.js  # Auth state (user, loading, refreshUser)
-│   │   │   └── TopicContext.js # TRACK_META, TopicProvider, useTopic()
+│   │   │   ├── AuthContext.js      # Auth state (user, loading, refreshUser)
+│   │   │   └── TopicContext.js     # TRACK_META, TopicProvider, useTopic()
 │   │   ├── components/
-│   │   │   ├── AppShell.js        # Challenge workspace shell, sidebar, track switcher
-│   │   │   ├── SidebarNav.js      # Question list, lock/solved/next states (topic-aware)
-│   │   │   ├── CodeEditor.js      # Language-agnostic Monaco editor wrapper
-│   │   │   ├── SQLEditor.js       # Thin re-export of CodeEditor with language="sql"
+│   │   │   ├── AppShell.js         # Challenge workspace shell, sidebar, track switcher
+│   │   │   ├── SidebarNav.js       # Question list, lock/solved/next states (topic-aware)
+│   │   │   ├── CodeEditor.js       # Language-agnostic Monaco editor wrapper
+│   │   │   ├── SQLEditor.js        # Thin re-export of CodeEditor with language="sql"
 │   │   │   ├── ResultsTable.js
 │   │   │   ├── SchemaViewer.js
-│   │   │   ├── TestCasePanel.js   # Python algorithm test case results
+│   │   │   ├── TestCasePanel.js    # Python algorithm test case results
 │   │   │   ├── PrintOutputPanel.js # Captured stdout from Python execution
-│   │   │   ├── VariablesPanel.js  # Available DataFrames for Pandas questions
-│   │   │   ├── MCQPanel.js        # Radio-button MCQ for PySpark questions
+│   │   │   ├── VariablesPanel.js   # Available DataFrames for Pandas questions
+│   │   │   ├── MCQPanel.js         # Radio-button MCQ for PySpark questions
 │   │   │   └── TrackProgressBar.js # Reusable horizontal progress bar
 │   │   └── pages/
-│   │       ├── LandingPage.js         # Fixed-topbar landing with track/sample tabs and compact progress panels
-│   │       ├── QuestionPage.js        # Topic-aware question page (all 4 tracks, status line + mobile action dock)
-│   │       ├── TrackHubPage.js        # Per-track landing (progress, next-up summary, concept preview)
-│   │       ├── ProgressDashboard.js   # Cross-track progress overview at /dashboard
+│   │       ├── LandingPage.js          # Fixed-topbar landing with track/sample tabs and compact progress panels
+│   │       ├── QuestionPage.js         # Topic-aware question page (all 4 tracks)
+│   │       ├── TrackHubPage.js         # Per-track landing (progress, next-up summary, concept preview)
+│   │       ├── ProgressDashboard.js    # Cross-track progress overview at /dashboard
 │   │       ├── SampleQuestionPage.js
 │   │       └── AuthPage.js
 │   └── package.json
-├── docs/                      # Architecture and design reference docs
-├── CLAUDE.md                  # This file
-├── README.md                  # Setup and usage guide
-├── Dockerfile                 # Single-service production image
-├── docker-compose.yml         # Local Postgres + Redis stack
-└── railway.json               # Railway deployment config
+├── docs/                           # Architecture and design reference docs (see docs/README.md)
+├── TODO.md                         # Phased product upgrade backlog
+├── CLAUDE.md                       # This file
+├── README.md                       # Setup and usage guide
+├── Dockerfile                      # Single-service production image
+├── docker-compose.yml              # Local Postgres + Redis stack
+└── railway.json                    # Railway deployment config
 ```
 
 ---
@@ -139,68 +162,34 @@ sql-interview-practice/
 
 `:topic` values: `sql` | `python` | `python-data` | `pyspark`
 
-Topic context is provided by `TopicContext.js` (see `frontend/src/contexts/TopicContext.js`).
-`TRACK_META` constant defines label, color, apiPrefix, language, hasRunCode, hasMCQ per track.
-
 ---
 
 ## Landing page structure
 
-Fixed topbar → centered hero (logged-out only) → dark showcase → light practice section. Logged-in users see showcase + practice only (hero hidden).
-
-**Named sections:**
-- **Hero** — logged-out only, `.landing-hero`
-- **Showcase** — dark, `.landing-showcase`
-- **Track selection** — light, `.landing-practice-section`, `id="landing-tracks"`
+Fixed topbar → centered hero (logged-out only) → dark showcase → light practice section.
 
 ```
 TOPBAR
   "datanest"                                               [Dashboard] [name · Sign out] or [Login]
 
 HERO  (logged-out only)
-  Centered, max-width 620px inner wrapper (.landing-hero-inner)
-  kicker: "SQL · Python · PySpark · pandas"
-  headline: "Get sharp at data interviews."
-  copy: one sentence about four tracks
-  CTAs: [Explore tracks ↓] [Create account]
+  Centered, max-width 620px inner wrapper
+  kicker · headline · copy · CTAs: [Explore tracks ↓] [Create account]
 
 SHOWCASE  (all users)
-  Dark section (#0C0C0A) with per-track radial gradients (blue/red/green/amber glows)
-  Eyebrow + title centered above grid
-  4 cards in a flex row (.landing-showcase-grid, gap 1rem, align-items stretch)
-    Inactive: opacity 0.38, flex-grow 1, min-height 300px
-    Active (.is-active): opacity 1, flex-grow 2.4, height 510px, translateY(-6px)
-      Colored glow border + box-shadow via --active-color CSS var (set per card)
-    Card anatomy: track dot + label + badge | question title | phase label | code block
-    Code block: rgba(0,0,0,0.4) bg, border-radius 13px, height 360px on active
-      Font: Geist Mono weight 300 (display-only — distinct from sandbox JetBrains Mono)
-      Typing animation character-by-character; cursor blink via ::after pseudo-element
-    Auto-advances through all 4 tracks (~5s question phase → answer phase → next track)
-    Responsive: flex-wrap 2×2 at 960px; single-column stack at 560px
+  Dark section (#0C0C0A), 4-card flex row with per-track glow
+  Auto-advances every ~5s; typing animation on active card
 
 TRACK SELECTION  (all users, id="landing-tracks")
-  Light section, no box (.landing-practice-section, max-width 1040px centered)
-  Track pill nav (.landing-track-nav.landing-track-nav--practice), left-aligned
-    Active pill: solid fill in track color (via --pill-color CSS var)
-  Panel per track (.landing-tab-panel):
-    Track name + description
-    Thin progress bar (4px, 60% opacity) + "sign in to save" copy
-    Start/Continue CTA
-    Sample tiles (.landing-samples-grid):
-      Desktop: 3-column CSS grid — Easy / Medium / Hard tiles
-      Mobile (<900px): horizontal flex scroll, tiles min-width 78%, scrollbar hidden
+  Light section, pill nav (SQL/Python/Pandas/PySpark)
+  Per-track panel: description · progress bar · CTA · 3 sample tiles
 ```
-
-Key CSS classes: `.landing-track-nav`, `.landing-track-pill`, `.landing-practice-section`, `.landing-tab-panel`, `.landing-panel-*`, `.landing-samples-grid`, `.sample-tile`, `.showcase-card`, `.showcase-code-block`.
-Topbar auth: `.topbar-user-pill`, `.topbar-user-name`, `.topbar-signout-btn`, `.topbar-auth-link`.
 
 ---
 
 ## Design system
 
 Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modules.
-
-**Philosophy:** Professional tool aesthetic — calm, fast, distraction-free. Light mode primary, warm dark mode via `prefers-color-scheme`. SQL editor always dark (`#1e1e1e`) regardless of colour scheme.
 
 **Key tokens:**
 ```
@@ -212,74 +201,32 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 --success:         #2D9E6B
 --warning:         #C47F17
 --danger:          #D94F3D
-
---radius-lg: 20px  (editor wrapper)
---radius-md: 14px  (inner cards, schema blocks)
---radius-sm: 10px  (badges, tokens)
+--radius-lg: 20px  --radius-md: 14px  --radius-sm: 10px
 ```
 
-**Fonts:** Inter (UI), JetBrains Mono (editor, results, code blocks), Geist Mono (showcase animation only, weight 300) — all from Google Fonts.
-
-**Buttons:** `.btn-primary` (accent fill), `.btn-secondary` (outlined, context-sensitive bg), `.btn-success` (success tint). All hover: `translateY(-1px)`, `150ms ease-out`.
-
-**Question page chrome:** Minimal — no section kickers (content self-evident from titles/badges). Prompt card includes a compact uppercase status line (difficulty / question position / open count). Editor topbar is single-line ("SQL editor" / "DuckDB sandbox"). Editor footer is buttons-only, right-aligned on desktop and becomes a low-profile sticky action dock on mobile. Post-submit verdict + feedback grouped in `.submit-outcome` wrapper. Cards use tight padding with `14px` border-radius. The practice topbar stays sparse, exposes direct track nav, and the desktop question-bank collapse toggle is a `‹`/`›` icon button inside the sidebar header (`.sidebar-collapse-btn`) with a matching expand button (`.sidebar-expand-btn`) that appears in the content area when collapsed.
-
----
-
-## Datasets
-
-11 CSV tables in `backend/datasets/`, loaded into DuckDB at startup:
-
-| Table | Rows | Domain |
-|---|---|---|
-| users | 600 | Accounts |
-| categories | 16 | Product taxonomy |
-| products | 260 | Product catalog |
-| orders | 4200 | Order headers |
-| order_items | 12665 | Line items |
-| payments | 4737 | Payment events |
-| sessions | 9000 | Web sessions |
-| events | 44964 | Event stream |
-| support_tickets | 1300 | Support cases |
-| departments | 10 | HR dimension |
-| employees | 180 | Employee records |
-
-Intentional edge cases: NULL emails, NULL launch dates, unresolved tickets, departments with no employees, salary ties, mixed payment statuses.
+**Fonts:** Inter (UI), JetBrains Mono (editor/code), Geist Mono (showcase animation only).
 
 ---
 
 ## Backend behaviour
 
-**SQL execution pipeline:** `sql_guard.py` → `evaluator.py` → `database.py`
-- Parser-based read-only validation (no writes, single statement)
-- Shared in-memory DuckDB cursor (loaded once at startup)
-- 3-second thread-pool timeout
-- 200-row result cap
+**SQL:** `sql_guard.py` → `evaluator.py` → DuckDB. Parser-based read-only validation; 3-second timeout; 200-row cap. Submit: both queries run → DataFrames normalized → compared.
 
-**SQL evaluation (submit):** Both user query and expected query run in DuckDB, results compared as pandas DataFrames after normalising column casing, column order, float precision, nulls. Row order ignored unless expected query has `ORDER BY`.
+**Python/Pandas:** `python_guard.py` → `python_evaluator.py` → subprocess harness. AST guard, 5-second timeout, 512 MB RLIMIT_AS.
 
-**Python execution pipeline:** `python_guard.py` → `python_evaluator.py` → `python_sandbox_harness.py` (subprocess)
-- AST-based code guard blocks all imports for algorithms; allows pandas/numpy/math/etc. for Pandas
-- Subprocess spawned per request with 5-second timeout and 512MB memory cap
-- Algorithm track: test-case comparison (`solve(*args)` for each case)
-- Pandas track: DataFrame comparison via same `normalize_dataframe()` as SQL
+**PySpark:** No execution. `selected_option` compared to `correct_option`. Explanation always returned.
 
-**PySpark evaluation:** No code execution. `selected_option` compared directly against `correct_option` from question JSON. Explanation always returned.
+**Unlock model** (pure policy in `unlock.py`, applied independently per topic):
 
-**Unlock model** (pure policy in `unlock.py`):
 | Plan | Access |
 |---|---|
 | Free | All easy. Medium unlocks at 10/20/30 solved easy. Hard unlocks at 10/20/30 solved medium (capped). |
 | Pro | All easy + medium + first 22 hard |
 | Elite | Full catalog |
 
-Solved questions stay solved permanently across plan changes.
-
-**Identity:** Anonymous visitors get real user rows + session cookies. Registration upgrades the existing session (no progress lost). Login merges anonymous progress into an existing account.
+**Identity:** Anonymous visitors get real user rows + session cookies. Registration upgrades the session in place. Login merges anonymous progress into an existing account.
 
 **Error shape:** `{ error, request_id }` on all user-facing errors. `X-Request-ID` header on all responses.
-
-**Rate limiting:** 60 req/60s per IP. Redis-backed in production, in-memory fallback otherwise.
 
 ---
 
@@ -297,20 +244,16 @@ Solved questions stay solved permanently across plan changes.
 | POST | `/api/python/run-code` | Run Python code, return test results + stdout |
 | POST | `/api/python/submit` | Submit Python code |
 | GET | `/api/python-data/catalog` | Pandas catalog |
-| GET | `/api/python-data/questions/{id}` | Pandas question detail |
-| POST | `/api/python-data/run-code` | Run pandas code, return DataFrame output |
+| POST | `/api/python-data/run-code` | Run pandas code |
 | POST | `/api/python-data/submit` | Submit pandas code |
 | GET | `/api/pyspark/catalog` | PySpark catalog |
-| GET | `/api/pyspark/questions/{id}` | PySpark question detail |
 | POST | `/api/pyspark/submit` | Submit MCQ answer |
 | GET | `/api/dashboard` | Cross-track progress summary |
-| GET | `/api/sample/{topic}/{difficulty}` | Next unseen sample for a track+difficulty (409 when exhausted) |
-| POST | `/api/sample/{topic}/{difficulty}/reset` | Clear seen state for that track+difficulty |
+| GET | `/api/sample/{topic}/{difficulty}` | Next unseen sample (409 when exhausted) |
+| POST | `/api/sample/{topic}/{difficulty}/reset` | Clear seen state |
 | POST | `/api/sample/sql/run-query` | Execute SQL sample query |
-| POST | `/api/sample/{topic}/run-code` | Execute Python or Pandas sample code |
-| POST | `/api/sample/{topic}/submit` | Submit sample answer without affecting challenge progress |
-| GET | `/api/sample/{difficulty}` | Legacy SQL alias |
-| POST | `/api/sample/{difficulty}/reset` | Legacy SQL alias |
+| POST | `/api/sample/{topic}/run-code` | Execute Python/Pandas sample code |
+| POST | `/api/sample/{topic}/submit` | Submit sample answer (no challenge progress impact) |
 | GET | `/api/auth/me` | Current user identity |
 | POST | `/api/auth/register` | Create account, upgrade anonymous session |
 | POST | `/api/auth/login` | Authenticate, merge anonymous progress |
@@ -321,35 +264,18 @@ Solved questions stay solved permanently across plan changes.
 
 ## Local development
 
-**Start infrastructure:**
 ```bash
+# Infrastructure
 docker-compose up -d postgres redis
-```
 
-**Backend** (from `backend/`):
-```bash
+# Backend (from backend/)
 uvicorn main:app --reload --port 8000
-```
-Requires `DATABASE_URL` set (see `backend/.env`).
 
-**Frontend** (from `frontend/`):
-```bash
+# Frontend (from frontend/)
 npm run dev
-```
-Runs on port 5173. API client auto-resolves to `http://localhost:8000/api` in dev.
 
-**Health check:**
-```
-GET http://localhost:8000/health
-→ { "status": "healthy", "postgres": true, "tables_loaded": [...] }
-```
-
-**Tests:**
-```bash
-# Backend
+# Tests
 cd backend && pytest -q
-
-# Frontend
 cd frontend && npm test
 ```
 
@@ -359,16 +285,11 @@ cd frontend && npm test
 
 | File | What it covers |
 |---|---|
-| `docs/project-blueprint.md` | Architecture, structure, content footprint, strengths/weaknesses |
-| `docs/frontend.md` | Routes, pages, components, data flows |
-| `docs/backend.md` | Routers, API reference, execution pipeline, identity model |
+| `docs/README.md` | Documentation hub and quick orientation |
+| `docs/architecture.md` | System design, request lifecycles, data model, execution pipelines, scaling |
+| `docs/backend.md` | All API routes, routers, execution pipeline, identity model |
+| `docs/frontend.md` | Routes, pages, components, design system, data flows |
 | `docs/datasets.md` | Dataset inventory, schema details, edge cases |
 | `docs/deployment.md` | Local dev, Docker, production image, env vars, Railway |
-| `docs/ui-design-system.md` | Design tokens, layout, buttons, editor, landing page structure |
-| `docs/question-authoring-guidelines.md` | Rules for authoring SQL challenge questions |
-| `docs/sql-curriculum-spec.md` | SQL difficulty tiers and curriculum standards |
+| `docs/content-authoring.md` | Curriculum specs and authoring rules for all four tracks |
 | `docs/USERGUIDE.md` | End-user guide to the platform |
-| `docs/python-curriculum-spec.md` | Python (algorithms) difficulty tiers, question bank, authoring rules |
-| `docs/python-data-curriculum-spec.md` | Pandas pandas+numpy difficulty tiers, question bank, authoring rules |
-| `docs/pyspark-curriculum-spec.md` | PySpark conceptual MCQ difficulty tiers, question bank, authoring rules |
-| `docs/python-question-authoring.md` | JSON schemas, field reference, and authoring checklist for all new tracks |

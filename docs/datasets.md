@@ -1,6 +1,6 @@
 # Datasets
 
-> **Navigation:** [Docs index](./README.md) · [Project blueprint](./project-blueprint.md)
+> **Navigation:** [Docs index](./README.md) · [Architecture](./architecture.md)
 
 All datasets live in `backend/datasets/`. They are committed CSV files loaded into a single in-memory DuckDB engine at startup. The generator and metadata are the authoritative source of truth.
 
