@@ -75,6 +75,9 @@ export default function QuestionPage() {
   const [submitting, setSubmitting] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
   const [hintsShown, setHintsShown] = useState(0);
+  const [pastAttempts, setPastAttempts] = useState([]);
+  const [pastAttemptsOpen, setPastAttemptsOpen] = useState(false);
+  const [openAttemptCodes, setOpenAttemptCodes] = useState(new Set());
 
   // MCQ state for PySpark
   const [selectedOption, setSelectedOption] = useState(null);
@@ -95,7 +98,10 @@ export default function QuestionPage() {
         }
       })
       .catch((err) => setLoadError(err.response?.data?.detail ?? 'Failed to load question.'));
-  }, [id, questionApiPath, meta.language, meta.hasMCQ, defaultCode]);
+    api.get('/submissions', { params: { track: topic, question_id: id, limit: 5 } })
+      .then((res) => setPastAttempts(res.data))
+      .catch(() => {});
+  }, [id, topic, questionApiPath, meta.language, meta.hasMCQ, defaultCode]);
 
   useEffect(() => {
     if (meta.language === 'python') {
@@ -110,7 +116,26 @@ export default function QuestionPage() {
     setShowSolution(false);
     setHintsShown(0);
     setSelectedOption(null);
+    setPastAttempts([]);
+    setPastAttemptsOpen(false);
+    setOpenAttemptCodes(new Set());
   }, [id, meta.language, meta.hasMCQ]);
+
+  function formatRelativeTime(isoString) {
+    const diff = Date.now() - new Date(isoString).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return `${Math.floor(hours / 24)}d ago`;
+  }
+
+  const toggleAttemptCode = (attemptId) => setOpenAttemptCodes((prev) => {
+    const next = new Set(prev);
+    if (next.has(attemptId)) next.delete(attemptId); else next.add(attemptId);
+    return next;
+  });
 
   async function handleRun() {
     if (!meta.hasRunCode) return;
@@ -147,6 +172,9 @@ export default function QuestionPage() {
       const res = await api.post(submitApiPath, payload);
       setSubmitResult(res.data);
       if (res.data.correct) await refresh();
+      api.get('/submissions', { params: { track: topic, question_id: id, limit: 5 } })
+        .then((r) => setPastAttempts(r.data))
+        .catch(() => {});
     } catch (err) {
       setSubmitError(err.response?.data?.error ?? err.response?.data?.detail ?? 'Submission failed.');
     } finally {
@@ -453,6 +481,42 @@ export default function QuestionPage() {
                   rows={submitResult.expected_result.rows ?? []}
                 />
               </div>
+            </div>
+          )}
+
+          {pastAttempts.length > 0 && (
+            <div className="past-attempts">
+              <button
+                className="past-attempts-toggle"
+                onClick={() => setPastAttemptsOpen((v) => !v)}
+                aria-expanded={pastAttemptsOpen}
+              >
+                Past attempts ({pastAttempts.length})
+                <span className="past-attempts-chevron">{pastAttemptsOpen ? '▾' : '▸'}</span>
+              </button>
+              {pastAttemptsOpen && (
+                <div className="past-attempts-list">
+                  {pastAttempts.map((attempt) => (
+                    <div key={attempt.id} className={`past-attempt-row past-attempt-row--${attempt.is_correct ? 'correct' : 'wrong'}`}>
+                      <span className={`past-attempt-badge ${attempt.is_correct ? 'past-attempt-badge--correct' : 'past-attempt-badge--wrong'}`}>
+                        {attempt.is_correct ? '✓' : '✗'}
+                      </span>
+                      <span className="past-attempt-time">{formatRelativeTime(attempt.submitted_at)}</span>
+                      {attempt.code && (
+                        <button
+                          className="past-attempt-code-toggle"
+                          onClick={() => toggleAttemptCode(attempt.id)}
+                        >
+                          {openAttemptCodes.has(attempt.id) ? 'Hide code' : 'Show code'}
+                        </button>
+                      )}
+                      {attempt.code && openAttemptCodes.has(attempt.id) && (
+                        <pre className="past-attempt-code">{attempt.code}</pre>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

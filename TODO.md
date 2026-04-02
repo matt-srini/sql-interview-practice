@@ -998,34 +998,6 @@ pool = await asyncpg.create_pool(
 
 ## Phase 1 — Quick wins (core experience) ✦ high impact, low effort
 
-### 1A · Submission history
-
-**Problem:** Users can't track improvement or revisit past attempts — the #1 retention signal missing.
-
-**Backend:**
-- New `submissions` table in PostgreSQL:
-  ```sql
-  CREATE TABLE submissions (
-    id           SERIAL PRIMARY KEY,
-    user_id      INTEGER REFERENCES users(id),
-    track        TEXT NOT NULL,
-    question_id  INTEGER NOT NULL,
-    submitted_at TIMESTAMPTZ DEFAULT NOW(),
-    is_correct   BOOLEAN NOT NULL,
-    code         TEXT,
-    duration_ms  INTEGER
-  );
-  ```
-- `GET /api/submissions?track=sql&question_id=42&limit=10`
-- Call `record_submission()` inside every submit handler
-
-**Frontend:**
-- Collapsible "Past attempts" panel below verdict card in `QuestionPage.js`
-- Show last 5 attempts: timestamp · pass/fail · code toggle
-
-**Files:** `backend/db.py`, `backend/routers/questions.py` (+ python/pyspark variants), `backend/alembic/`, `frontend/src/pages/QuestionPage.js`, `frontend/src/App.css`
-
----
 
 ### 1B · Dark mode persistence
 
@@ -1255,4 +1227,8 @@ Awarded automatically from existing `submissions` data:
 
 ## Completed
 
-*(Move items here when shipped, with the commit SHA)*
+### 1A · Submission history — shipped
+
+Records every submit attempt per user. Collapsible "Past attempts" panel in QuestionPage shows last 5 attempts with pass/fail badge, relative timestamp, and code expand toggle. Backend: `submissions` table in `_SCHEMA_SQL`, `record_submission()` + `get_submissions()` in `db.py`, `GET /api/submissions` endpoint, called in all 4 submit handlers.
+
+*(commit SHA — see git log)*

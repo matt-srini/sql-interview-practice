@@ -2498,6 +2498,94 @@ select {
   color: var(--text-secondary);
 }
 
+/* Past attempts panel */
+.past-attempts {
+  margin-top: 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.past-attempts-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--surface-card-alt);
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.past-attempts-toggle:hover {
+  color: var(--text-primary);
+}
+
+.past-attempts-chevron {
+  font-size: 0.75rem;
+}
+
+.past-attempts-list {
+  padding: 4px 0;
+}
+
+.past-attempt-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 14px;
+  border-top: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+}
+
+.past-attempt-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.past-attempt-badge--correct { color: var(--success); }
+.past-attempt-badge--wrong   { color: var(--danger); }
+
+.past-attempt-time {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.past-attempt-code-toggle {
+  font-size: 0.75rem;
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.past-attempt-code {
+  width: 100%;
+  margin-top: 6px;
+  padding: 10px 12px;
+  background: var(--surface-card-alt);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow: auto;
+  max-height: 200px;
+}
+
 .post-submit-stack {
   display: flex;
   flex-direction: column;

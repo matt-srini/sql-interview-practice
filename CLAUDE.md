@@ -249,6 +249,7 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 | GET | `/api/pyspark/catalog` | PySpark catalog |
 | POST | `/api/pyspark/submit` | Submit MCQ answer |
 | GET | `/api/dashboard` | Cross-track progress summary |
+| GET | `/api/submissions` | Submission history for a question (`track`, `question_id`, `limit` params) |
 | GET | `/api/sample/{topic}/{difficulty}` | Next unseen sample (409 when exhausted) |
 | POST | `/api/sample/{topic}/{difficulty}/reset` | Clear seen state |
 | POST | `/api/sample/sql/run-query` | Execute SQL sample query |

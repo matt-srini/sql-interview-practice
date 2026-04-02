@@ -3,6 +3,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from db import record_submission
 from deps import RunQueryRequest, SubmitRequest, _get_progress_snapshot, _question_detail_payload
 from deps import get_current_user
 from evaluator import evaluate, run_query
@@ -92,6 +93,14 @@ async def submit_answer(
 
     if accepted:
         await mark_question_solved(current_user["id"], int(question["id"]))
+
+    await record_submission(
+        user_id=current_user["id"],
+        track="sql",
+        question_id=int(body.question_id),
+        is_correct=accepted,
+        code=body.query,
+    )
 
     return {
         **result,
