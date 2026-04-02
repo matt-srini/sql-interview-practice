@@ -1231,4 +1231,4 @@ Awarded automatically from existing `submissions` data:
 
 Records every submit attempt per user. Collapsible "Past attempts" panel in QuestionPage shows last 5 attempts with pass/fail badge, relative timestamp, and code expand toggle. Backend: `submissions` table in `_SCHEMA_SQL`, `record_submission()` + `get_submissions()` in `db.py`, `GET /api/submissions` endpoint, called in all 4 submit handlers.
 
-*(commit SHA — see git log)*
+*commit: c0aab30*
