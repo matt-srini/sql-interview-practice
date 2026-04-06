@@ -4,6 +4,7 @@ import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
 import TrackProgressBar from '../components/TrackProgressBar';
+import { useTheme } from '../App';
 
 const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
 
@@ -123,6 +124,14 @@ df = df.coalesce(10)`,
 
 export default function LandingPage() {
   const { user, logout } = useAuth();
+  const { theme, setTheme, resolvedTheme } = useTheme();
+
+  function cycleTheme() {
+    const next = theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system';
+    setTheme(next);
+  }
+  const themeIcon = theme === 'system' ? '◐' : resolvedTheme === 'dark' ? '☀' : '☾';
+  const themeLabel = theme === 'system' ? 'Theme: system' : theme === 'light' ? 'Theme: light' : 'Theme: dark';
   const [dashData, setDashData] = useState(null);
   const [activeTab, setActiveTab] = useState('sql');
 
@@ -246,6 +255,14 @@ export default function LandingPage() {
             <Link className="landing-brand brand-wordmark" to="/">datanest</Link>
           </div>
           <div className="landing-topbar-right">
+            <button
+              className="theme-toggle"
+              onClick={cycleTheme}
+              aria-label={themeLabel}
+              title={themeLabel}
+            >
+              {themeIcon}
+            </button>
             <Link className="topbar-auth-link" to="/dashboard">Dashboard</Link>
             {user ? (
               <div className="topbar-user-pill">
