@@ -1231,7 +1231,7 @@ Awarded automatically from existing `submissions` data:
 
 localStorage-backed theme toggle (light / dark / system) with ◐/☾/☀ icon button in both topbars (LandingPage + AppShell). `ThemeContext` + `useTheme` hook in `App.js`; anti-FOUC inline script in `index.html`; `[data-theme="dark"]` and `[data-theme="light"]` CSS override selectors in `App.css` mirror the existing `@media (prefers-color-scheme: dark)` block.
 
-*commit: TBD*
+*commit: a4681ec*
 
 ---
 
