@@ -1223,7 +1223,7 @@ Awarded automatically from existing `submissions` data:
 
 Frequency-sorted concept chips above difficulty groups in `SidebarNav.js`. Top 8 shown by default; "+N more ▾" expands all. Active chip shows accent fill + ×; "Clear" link resets. Client-side filter updates question list and counts in real time. Backend: added `concepts` field to `/api/catalog` response in `routers/catalog.py`.
 
-*commit: TBD*
+*commit: d35f550*
 
 ---
 
