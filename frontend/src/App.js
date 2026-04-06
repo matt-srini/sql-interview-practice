@@ -1,3 +1,4 @@
+import { createContext, useContext, useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-dom';
 import { CatalogProvider } from './catalogContext';
 import { AuthProvider } from './contexts/AuthContext';
@@ -8,6 +9,58 @@ import LandingPage from './pages/LandingPage';
 import ProgressDashboard from './pages/ProgressDashboard';
 import QuestionPage from './pages/QuestionPage';
 import SampleQuestionPage from './pages/SampleQuestionPage';
+
+// ── Theme ──────────────────────────────────────────────────────
+export const ThemeContext = createContext(null);
+
+export function useTheme() {
+  return useContext(ThemeContext);
+}
+
+function getSystemTheme() {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function ThemeProvider({ children }) {
+  const [theme, setThemeState] = useState(() => localStorage.getItem('theme') || 'system');
+
+  // Resolved = what is actually applied (accounts for system preference)
+  const resolvedTheme = theme === 'system' ? getSystemTheme() : theme;
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'system') {
+      root.removeAttribute('data-theme');
+    } else {
+      root.setAttribute('data-theme', theme);
+    }
+  }, [theme]);
+
+  // Keep resolved theme in sync when system preference changes
+  useEffect(() => {
+    if (theme !== 'system') return;
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = () => setThemeState('system'); // re-render to pick up new resolved value
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, [theme]);
+
+  function setTheme(value) {
+    setThemeState(value);
+    if (value === 'system') {
+      localStorage.removeItem('theme');
+    } else {
+      localStorage.setItem('theme', value);
+    }
+  }
+
+  return (
+    <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+}
+// ──────────────────────────────────────────────────────────────
 
 function TopicShell() {
   return (
@@ -33,6 +86,7 @@ function LegacySampleRedirect() {
 
 export default function App() {
   return (
+    <ThemeProvider>
     <BrowserRouter>
       <AuthProvider>
         <Routes>
@@ -54,5 +108,6 @@ export default function App() {
         </Routes>
       </AuthProvider>
     </BrowserRouter>
+    </ThemeProvider>
   );
 }

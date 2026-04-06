@@ -6,12 +6,14 @@ import { useCatalog } from '../catalogContext';
 import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
 import TrackHubPage from '../pages/TrackHubPage';
+import { useTheme } from '../App';
 
 const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
 
 export default function AppShell() {
   const { catalog, loading, error, refresh } = useCatalog();
   const { user, refreshUser } = useAuth();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -94,6 +96,13 @@ export default function AppShell() {
   const showUpgradeControls = user && (user.plan === 'free' || user.plan === 'pro');
   const sessionId = catalog?.user_id ? catalog.user_id.slice(0, 8) : null;
 
+  function cycleTheme() {
+    const next = theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system';
+    setTheme(next);
+  }
+  const themeIcon = theme === 'system' ? '◐' : resolvedTheme === 'dark' ? '☀' : '☾';
+  const themeLabel = theme === 'system' ? 'Theme: system' : theme === 'light' ? 'Theme: light' : 'Theme: dark';
+
   return (
     <div className={`app-shell ${desktopCollapsed ? 'sidebar-collapsed' : ''}`}>
       <header className="topbar app-topbar">
@@ -137,6 +146,14 @@ export default function AppShell() {
           </div>
 
           <div className="app-topbar-actions">
+            <button
+              className="theme-toggle"
+              onClick={cycleTheme}
+              aria-label={themeLabel}
+              title={themeLabel}
+            >
+              {themeIcon}
+            </button>
             {sessionId && (
               <div className="app-context app-context-secondary">
                 {sessionId && <span className="shell-pill shell-pill-session">Session {sessionId}</span>}

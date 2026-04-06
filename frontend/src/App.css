@@ -3784,6 +3784,164 @@ select {
   }
 }
 
+/* ============================================================
+   Theme toggle button
+   ============================================================ */
+.theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 5px 7px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  line-height: 1;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+  color: var(--text-strong);
+  background: var(--surface-highlight);
+}
+
+/* ============================================================
+   [data-theme] overrides — allow JS to force light or dark
+   regardless of OS preference
+   ============================================================ */
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-page:           #141413;
+  --surface-canvas:    #1C1C1A;
+  --surface-card:      #1C1C1A;
+  --surface-card-alt:  #242422;
+  --surface-card-soft: #1E1E1C;
+  --surface-highlight: #2A2A27;
+  --border-subtle: rgba(240, 238, 233, 0.08);
+  --border-strong: rgba(240, 238, 233, 0.14);
+  --text-strong:    #F0EEE9;
+  --text-primary:   #D8D5CE;
+  --text-secondary: #9B9891;
+  --text-muted:     #6B6760;
+  --text-soft:      #4A4743;
+  --accent:             #7B8AF5;
+  --accent-strong:      #9AA7F7;
+  --accent-soft:        rgba(123, 138, 245, 0.12);
+  --accent-soft-strong: rgba(123, 138, 245, 0.22);
+  --success:       #4CAF82;
+  --success-soft:  rgba(76, 175, 130, 0.12);
+  --warning:       #D4973A;
+  --warning-soft:  rgba(212, 151, 58, 0.12);
+  --danger:        #E06B5A;
+  --danger-soft:   rgba(224, 107, 90, 0.12);
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.30);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.30);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.40);
+  --brand-accent: #78A9CE;
+}
+
+[data-theme="dark"] body { background: var(--bg-page); }
+[data-theme="dark"] .auth-page { background: var(--bg-page); }
+[data-theme="dark"] .auth-topbar { background: rgba(20, 20, 19, 0.92); }
+[data-theme="dark"] .auth-card { background: var(--surface-card); }
+[data-theme="dark"] .auth-divider span { background: var(--surface-card); }
+[data-theme="dark"] .auth-oauth-btn { background: rgba(255, 255, 255, 0.03); border-color: var(--border-subtle); }
+[data-theme="dark"] .auth-oauth-btn:hover { background: rgba(255, 255, 255, 0.06); }
+[data-theme="dark"] .auth-input { background: rgba(255, 255, 255, 0.04); color: var(--text-strong); }
+[data-theme="dark"] .auth-alert-error { color: #F0B8B1; }
+[data-theme="dark"] .auth-alert-info { color: var(--accent-strong); }
+[data-theme="dark"] .app-topbar { background: rgba(20, 20, 19, 0.92); }
+[data-theme="dark"] .topbar { background: rgba(20, 20, 19, 0.92); }
+[data-theme="dark"] .sidebar { background: var(--surface-card-alt); border-color: var(--border-subtle); }
+[data-theme="dark"] .sidebar-backdrop { background: rgba(0, 0, 0, 0.55); }
+[data-theme="dark"] .sidebar-group-header { background: rgba(255, 255, 255, 0.02); }
+[data-theme="dark"] .sidebar-group-header:hover { background: rgba(255, 255, 255, 0.04); }
+[data-theme="dark"] .sidebar-question:hover { background: rgba(255, 255, 255, 0.03); }
+[data-theme="dark"] .shell-pill { background: rgba(255, 255, 255, 0.04); }
+[data-theme="dark"] .app-banner-success { color: #C7E8D7; }
+[data-theme="dark"] .app-banner-error { color: #F0B8B1; }
+[data-theme="dark"] .card,
+[data-theme="dark"] .results-card,
+[data-theme="dark"] .solution-card,
+[data-theme="dark"] .question-card,
+[data-theme="dark"] .sample-tile { background: var(--surface-card); border-color: var(--border-subtle); }
+[data-theme="dark"] .schema-table { background: var(--surface-card-alt); }
+[data-theme="dark"] .schema-column-token { background: rgba(255, 255, 255, 0.03); }
+[data-theme="dark"] .results-header { background: rgba(255, 255, 255, 0.03); }
+[data-theme="dark"] .results-table th { background: rgba(255, 255, 255, 0.03); }
+[data-theme="dark"] .results-table tbody tr:nth-child(even) td { background: rgba(255, 255, 255, 0.015); }
+[data-theme="dark"] .results-table tr:hover td { background: rgba(255, 255, 255, 0.035); }
+[data-theme="dark"] .verdict-correct { color: #B8E5CE; }
+[data-theme="dark"] .verdict-incorrect { color: #F0C8C3; }
+[data-theme="dark"] .feedback-card { background: rgba(255, 255, 255, 0.03); }
+[data-theme="dark"] .feedback-title { color: var(--warning); }
+[data-theme="dark"] .feedback-icon { color: var(--warning); }
+[data-theme="dark"] .locked-callout { color: var(--warning); }
+[data-theme="dark"] .badge-easy   { background: rgba(76, 175, 130, 0.14); color: #7ECFA5; border-color: rgba(76, 175, 130, 0.28); }
+[data-theme="dark"] .badge-medium { background: rgba(212, 151, 58, 0.14);  color: #E0B870; border-color: rgba(212, 151, 58, 0.28); }
+[data-theme="dark"] .badge-hard   { background: rgba(224, 107, 90, 0.14);  color: #EFA09A; border-color: rgba(224, 107, 90, 0.28); }
+[data-theme="dark"] .error-box { color: #F0C8C3; border-color: rgba(224, 107, 90, 0.22); border-left-color: var(--danger); }
+[data-theme="dark"] .hint-card { background: rgba(255, 255, 255, 0.03); border-color: var(--border-subtle); }
+[data-theme="dark"] .sidebar-progress-card { background: rgba(255, 255, 255, 0.03); }
+[data-theme="dark"] .sample-reset-notice { color: #B8E5CE; }
+[data-theme="dark"] .landing-actions .btn-secondary,
+[data-theme="dark"] .sample-page-actions .btn-secondary,
+[data-theme="dark"] .post-submit-stack .btn-secondary,
+[data-theme="dark"] .sample-challenge-actions .btn-secondary,
+[data-theme="dark"] .app-topbar .btn-secondary,
+[data-theme="dark"] .auth-topbar .btn-secondary { background: rgba(255, 255, 255, 0.05); color: var(--text-primary); border-color: var(--border-subtle); }
+[data-theme="dark"] .landing-actions .btn-secondary:not(:disabled):hover,
+[data-theme="dark"] .sample-page-actions .btn-secondary:not(:disabled):hover,
+[data-theme="dark"] .post-submit-stack .btn-secondary:not(:disabled):hover,
+[data-theme="dark"] .sample-challenge-actions .btn-secondary:not(:disabled):hover,
+[data-theme="dark"] .app-topbar .btn-secondary:not(:disabled):hover,
+[data-theme="dark"] .auth-topbar .btn-secondary:not(:disabled):hover { background: rgba(255, 255, 255, 0.09); border-color: var(--border-strong); }
+[data-theme="dark"] .btn-success { color: var(--success); }
+[data-theme="dark"] .sidebar-error { color: var(--danger); }
+[data-theme="dark"] .track-tile { background: var(--surface-card); border-color: var(--border-subtle); }
+[data-theme="dark"] .mcq-option { background: var(--surface-card-alt); }
+[data-theme="dark"] .mcq-option--correct { color: #B8E5CE; }
+[data-theme="dark"] .mcq-option--wrong { color: #F0C8C3; }
+[data-theme="dark"] .mcq-explanation { background: var(--surface-card-alt); }
+[data-theme="dark"] .dashboard-track-card { background: var(--surface-card); border-color: var(--border-subtle); }
+[data-theme="dark"] .variable-row { background: var(--surface-card-alt); }
+[data-theme="dark"] .variable-column-token { background: rgba(255, 255, 255, 0.03); }
+[data-theme="dark"] .tag-concept-solved { color: var(--success); }
+
+[data-theme="light"] {
+  color-scheme: light;
+  --bg-page:           #F7F7F5;
+  --surface-canvas:    #FFFFFF;
+  --surface-card:      #FFFFFF;
+  --surface-card-alt:  #F0EFED;
+  --surface-card-soft: #F4F3F1;
+  --surface-highlight: #ECEAE7;
+  --border-subtle: rgba(26, 26, 24, 0.08);
+  --border-strong: rgba(26, 26, 24, 0.16);
+  --text-strong:    #1A1A18;
+  --text-primary:   #2D2D2B;
+  --text-secondary: #6B6862;
+  --text-muted:     #A8A49F;
+  --text-soft:      #C4C0BB;
+  --accent:             #5B6AF0;
+  --accent-strong:      #4A59DF;
+  --accent-soft:        rgba(91, 106, 240, 0.08);
+  --accent-soft-strong: rgba(91, 106, 240, 0.18);
+  --success:       #2D9E6B;
+  --success-soft:  rgba(45, 158, 107, 0.10);
+  --warning:       #C47F17;
+  --warning-soft:  rgba(196, 127, 23, 0.10);
+  --danger:        #D94F3D;
+  --danger-soft:   rgba(217, 79, 61, 0.10);
+  --shadow-sm: 0 1px 4px rgba(26, 26, 24, 0.08);
+  --shadow-md: 0 4px 16px rgba(26, 26, 24, 0.10);
+  --shadow-lg: 0 8px 40px rgba(26, 26, 24, 0.12);
+  --brand-accent: #2F6D9A;
+}
+
 /* ─────────────────────────────────────────────────────
    Landing Showcase — animated code demo section
 ───────────────────────────────────────────────────── */
