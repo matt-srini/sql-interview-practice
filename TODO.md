@@ -1011,15 +1011,7 @@ pool = await asyncpg.create_pool(
 
 ---
 
-### 1C · Concept filter in sidebar
-
-**Problem:** No way to find "all window function questions" or practice a specific concept cluster.
-
-- Concept filter chips above the question list in `SidebarNav.js`
-- Clicking a chip filters the visible question list (client-side, no API change needed)
-- All question metadata already has `concepts` arrays
-
-**Files:** `frontend/src/components/SidebarNav.js`, `frontend/src/App.css`
+### ~~1C · Concept filter in sidebar~~ — shipped → see Completed
 
 ---
 
@@ -1226,6 +1218,14 @@ Awarded automatically from existing `submissions` data:
 ---
 
 ## Completed
+
+### 1C · Concept filter in sidebar — shipped
+
+Frequency-sorted concept chips above difficulty groups in `SidebarNav.js`. Top 8 shown by default; "+N more ▾" expands all. Active chip shows accent fill + ×; "Clear" link resets. Client-side filter updates question list and counts in real time. Backend: added `concepts` field to `/api/catalog` response in `routers/catalog.py`.
+
+*commit: TBD*
+
+---
 
 ### 1B · Dark mode persistence — shipped
 

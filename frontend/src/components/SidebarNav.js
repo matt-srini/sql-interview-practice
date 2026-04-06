@@ -1,5 +1,9 @@
+import { useMemo, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useTopic } from '../contexts/TopicContext';
+
+// How many concept chips to show before the "show more" toggle
+const CHIP_VISIBLE_DEFAULT = 8;
 
 function titleCase(value) {
   if (!value) return '';
@@ -88,13 +92,138 @@ function QuestionRow({ q, onNavigate, topic }) {
   );
 }
 
+// Build sorted concept list: most-frequent concepts first
+function buildConceptList(groups) {
+  const freq = {};
+  for (const g of groups) {
+    for (const q of g.questions) {
+      for (const c of q.concepts ?? []) {
+        freq[c] = (freq[c] ?? 0) + 1;
+      }
+    }
+  }
+  return Object.entries(freq)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([concept]) => concept);
+}
+
+function ConceptFilter({ groups, activeFilters, onToggle, onClear }) {
+  const [expanded, setExpanded] = useState(false);
+  const concepts = useMemo(() => buildConceptList(groups), [groups]);
+
+  if (concepts.length === 0) return null;
+
+  const visible = expanded ? concepts : concepts.slice(0, CHIP_VISIBLE_DEFAULT);
+  const hiddenCount = concepts.length - CHIP_VISIBLE_DEFAULT;
+
+  return (
+    <div className="sidebar-concept-filter">
+      <div className="sidebar-concept-filter-header">
+        <span className="sidebar-concept-filter-label">Filter by concept</span>
+        {activeFilters.size > 0 && (
+          <button className="sidebar-concept-clear" onClick={onClear}>
+            Clear
+          </button>
+        )}
+      </div>
+      <div className="sidebar-concept-chips">
+        {visible.map((concept) => {
+          const active = activeFilters.has(concept);
+          return (
+            <button
+              key={concept}
+              className={`sidebar-concept-chip${active ? ' sidebar-concept-chip-active' : ''}`}
+              onClick={() => onToggle(concept)}
+              title={concept}
+            >
+              {concept}
+              {active && <span className="sidebar-concept-chip-x" aria-hidden="true">×</span>}
+            </button>
+          );
+        })}
+        {!expanded && hiddenCount > 0 && (
+          <button
+            className="sidebar-concept-chip sidebar-concept-chip-more"
+            onClick={() => setExpanded(true)}
+          >
+            +{hiddenCount} more ▾
+          </button>
+        )}
+        {expanded && hiddenCount > 0 && (
+          <button
+            className="sidebar-concept-chip sidebar-concept-chip-more"
+            onClick={() => setExpanded(false)}
+          >
+            show less ▴
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNavigate }) {
   const { topic } = useTopic();
   const groups = catalog?.groups ?? [];
 
+  const [activeFilters, setActiveFilters] = useState(new Set());
+
+  function toggleFilter(concept) {
+    setActiveFilters((prev) => {
+      const next = new Set(prev);
+      if (next.has(concept)) {
+        next.delete(concept);
+      } else {
+        next.add(concept);
+      }
+      return next;
+    });
+  }
+
+  function clearFilters() {
+    setActiveFilters(new Set());
+  }
+
+  // Apply concept filter to groups
+  const filteredGroups = useMemo(() => {
+    if (activeFilters.size === 0) return groups;
+    return groups.map((g) => ({
+      ...g,
+      questions: g.questions.filter((q) =>
+        (q.concepts ?? []).some((c) => activeFilters.has(c))
+      ),
+      counts: {
+        ...g.counts,
+        // Show filtered count in parentheses (keep total for context)
+        total: g.questions.filter((q) =>
+          (q.concepts ?? []).some((c) => activeFilters.has(c))
+        ).length,
+        solved: g.questions.filter((q) =>
+          (q.concepts ?? []).some((c) => activeFilters.has(c)) && q.state === 'solved'
+        ).length,
+      },
+    })).filter((g) => g.questions.length > 0);
+  }, [groups, activeFilters]);
+
   return (
     <div className="sidebar-inner">
-      {groups.map((g) => {
+      <ConceptFilter
+        groups={groups}
+        activeFilters={activeFilters}
+        onToggle={toggleFilter}
+        onClear={clearFilters}
+      />
+
+      {activeFilters.size > 0 && filteredGroups.length === 0 && (
+        <div className="sidebar-concept-empty">
+          No questions match these filters.{' '}
+          <button className="sidebar-concept-clear" onClick={clearFilters}>
+            Clear filters
+          </button>
+        </div>
+      )}
+
+      {filteredGroups.map((g) => {
         const collapsed = Boolean(collapsedByDiff[g.difficulty]);
         return (
           <div className="sidebar-group" key={g.difficulty}>
