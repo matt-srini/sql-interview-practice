@@ -4210,3 +4210,108 @@ select {
     color: var(--text-primary);
   }
 }
+
+/* ============================================================
+   Sidebar concept filter
+   ============================================================ */
+.sidebar-concept-filter {
+  padding: 0.75rem 0.85rem 0.6rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.sidebar-concept-filter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-concept-filter-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.sidebar-concept-clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.72rem;
+  color: var(--accent);
+  padding: 0;
+  text-decoration: underline;
+}
+
+.sidebar-concept-clear:hover {
+  color: var(--accent-strong);
+}
+
+.sidebar-concept-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.sidebar-concept-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: none;
+  color: var(--text-secondary);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-concept-chip:hover {
+  background: var(--surface-highlight);
+  color: var(--text-strong);
+  border-color: var(--border-strong);
+}
+
+.sidebar-concept-chip-active {
+  background: var(--accent-soft-strong);
+  color: var(--accent-strong);
+  border-color: var(--accent);
+}
+
+.sidebar-concept-chip-active:hover {
+  background: var(--accent-soft-strong);
+  color: var(--accent-strong);
+}
+
+.sidebar-concept-chip-x {
+  font-size: 0.75rem;
+  line-height: 1;
+  margin-left: 1px;
+  opacity: 0.7;
+}
+
+.sidebar-concept-chip-more {
+  color: var(--accent);
+  border-color: var(--accent-soft);
+  background: var(--accent-soft);
+}
+
+.sidebar-concept-chip-more:hover {
+  background: var(--accent-soft-strong);
+  color: var(--accent-strong);
+}
+
+.sidebar-concept-empty {
+  padding: 1rem 0.85rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}

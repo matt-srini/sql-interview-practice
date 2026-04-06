@@ -32,6 +32,7 @@ async def get_catalog(current_user: dict[str, Any] = Depends(get_current_user)) 
                     "order": q["order"],
                     "state": state,
                     "is_next": state == "unlocked" and next_questions[difficulty] == question_id,
+                    "concepts": q.get("concepts", []),
                 }
             )
         groups_payload.append(
