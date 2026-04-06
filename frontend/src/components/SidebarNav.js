@@ -113,8 +113,28 @@ function ConceptFilter({ groups, activeFilters, onToggle, onClear }) {
 
   if (concepts.length === 0) return null;
 
-  const visible = expanded ? concepts : concepts.slice(0, CHIP_VISIBLE_DEFAULT);
-  const hiddenCount = concepts.length - CHIP_VISIBLE_DEFAULT;
+  // Active chips always float to the top and are always visible.
+  // Inactive chips fill remaining slots up to CHIP_VISIBLE_DEFAULT when collapsed.
+  const activeList   = concepts.filter((c) => activeFilters.has(c));
+  const inactiveList = concepts.filter((c) => !activeFilters.has(c));
+  const inactiveSlots = Math.max(0, CHIP_VISIBLE_DEFAULT - activeList.length);
+  const visibleInactive = expanded ? inactiveList : inactiveList.slice(0, inactiveSlots);
+  const hiddenCount = inactiveList.length - inactiveSlots;
+
+  function renderChip(concept) {
+    const active = activeFilters.has(concept);
+    return (
+      <button
+        key={concept}
+        className={`sidebar-concept-chip${active ? ' sidebar-concept-chip-active' : ''}`}
+        onClick={() => onToggle(concept)}
+        title={concept}
+      >
+        {concept}
+        {active && <span className="sidebar-concept-chip-x" aria-hidden="true">×</span>}
+      </button>
+    );
+  }
 
   return (
     <div className="sidebar-concept-filter">
@@ -127,20 +147,8 @@ function ConceptFilter({ groups, activeFilters, onToggle, onClear }) {
         )}
       </div>
       <div className="sidebar-concept-chips">
-        {visible.map((concept) => {
-          const active = activeFilters.has(concept);
-          return (
-            <button
-              key={concept}
-              className={`sidebar-concept-chip${active ? ' sidebar-concept-chip-active' : ''}`}
-              onClick={() => onToggle(concept)}
-              title={concept}
-            >
-              {concept}
-              {active && <span className="sidebar-concept-chip-x" aria-hidden="true">×</span>}
-            </button>
-          );
-        })}
+        {activeList.map(renderChip)}
+        {visibleInactive.map(renderChip)}
         {!expanded && hiddenCount > 0 && (
           <button
             className="sidebar-concept-chip sidebar-concept-chip-more"
