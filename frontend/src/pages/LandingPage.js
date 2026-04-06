@@ -133,7 +133,9 @@ export default function LandingPage() {
   const themeIcon = theme === 'system' ? '◐' : resolvedTheme === 'dark' ? '☀' : '☾';
   const themeLabel = theme === 'system' ? 'Theme: system' : theme === 'light' ? 'Theme: light' : 'Theme: dark';
   const [dashData, setDashData] = useState(null);
-  const [activeTab, setActiveTab] = useState('sql');
+  const [activeTab, setActiveTab] = useState(
+    () => sessionStorage.getItem('landingActiveTab') || 'sql'
+  );
 
   const showcaseRef = useRef(null);
   const [showcaseActiveIndex, setShowcaseActiveIndex] = useState(0);
@@ -244,6 +246,7 @@ export default function LandingPage() {
   );
 
   function handleTabChange(tabId) {
+    sessionStorage.setItem('landingActiveTab', tabId);
     startTransition(() => setActiveTab(tabId));
   }
 
