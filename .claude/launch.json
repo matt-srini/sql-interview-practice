@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "frontend",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "frontend", "run", "dev"],
+      "runtimeExecutable": "/Users/matt/Work/projects/sql-interview-practice/.claude/start-frontend.sh",
+      "runtimeArgs": [],
       "port": 5173
     }
   ]

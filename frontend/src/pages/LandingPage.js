@@ -7,6 +7,13 @@ import TrackProgressBar from '../components/TrackProgressBar';
 
 const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
 
+const TRACK_DIFFICULTIES = {
+  sql:           { easy: 30, medium: 30, hard: 26 },
+  python:        { easy: 30, medium: 25, hard: 20 },
+  'python-data': { easy: 30, medium: 25, hard: 20 },
+  pyspark:       { easy: 30, medium: 25, hard: 20 },
+};
+
 const SAMPLE_TIERS = {
   sql: [
     { difficulty: 'easy', title: 'Warm-up joins', copy: 'Three approachable query prompts on filters, joins, and aggregates.' },
@@ -220,6 +227,7 @@ export default function LandingPage() {
           solved,
           total,
           completion,
+          difficulties: TRACK_DIFFICULTIES[topic],
           samples: SAMPLE_TIERS[topic],
         };
       }),
@@ -305,101 +313,99 @@ export default function LandingPage() {
 
         <section className="landing-practice-section" id="landing-tracks">
           <div className="landing-practice-heading">
-            <h2 className="landing-practice-title">Practice by track</h2>
+            <h2 className="landing-practice-title">Practice tracks</h2>
             <p className="landing-practice-copy">
-              Pick a lane, skim the sample rounds, and jump into the challenge flow when you&rsquo;re ready.
+              Four focused tracks — from query fluency to distributed systems. Each with a structured challenge bank and free samples to explore first.
             </p>
           </div>
 
-          <div className="landing-track-nav landing-track-nav--practice" role="tablist" aria-label="Track tabs">
+          <div className="track-cards-grid">
             {trackTabs.map((tab) => {
               const isActive = activeTab === tab.id;
               return (
                 <button
                   key={tab.id}
                   type="button"
-                  role="tab"
-                  aria-selected={isActive}
-                  aria-controls={`landing-tab-panel-${tab.id}`}
-                  id={`landing-tab-${tab.id}`}
-                  className={`landing-track-pill${isActive ? ' is-active' : ''}`}
-                  style={{ '--pill-color': tab.color }}
+                  className={`track-card${isActive ? ' is-active' : ''}`}
+                  style={{ '--track-color': tab.color }}
                   onClick={() => handleTabChange(tab.id)}
                 >
-                  {tab.label}
+                  <div className="track-card-header">
+                    <span className="track-card-dot" />
+                    <span className="track-card-name">{tab.label}</span>
+                    <span className="track-card-count">{tab.total} Q</span>
+                  </div>
+                  <p className="track-card-desc">{tab.description}</p>
+                  <div className="track-card-difficulties">
+                    <span className="track-diff-chip track-diff-chip--easy">{tab.difficulties.easy} easy</span>
+                    <span className="track-diff-chip track-diff-chip--medium">{tab.difficulties.medium} medium</span>
+                    <span className="track-diff-chip track-diff-chip--hard">{tab.difficulties.hard} hard</span>
+                  </div>
+                  {user && (
+                    <div className="track-card-progress">
+                      <TrackProgressBar solved={tab.solved} total={tab.total} color={tab.color} showLabel={false} />
+                      <span className="track-card-progress-label">
+                        {tab.solved > 0 ? `${tab.solved} of ${tab.total} solved` : `Not started`}
+                      </span>
+                    </div>
+                  )}
+                  <div className="track-card-footer">
+                    <span className="track-card-cta">
+                      {tab.solved > 0 ? 'Continue' : 'Start track'} →
+                    </span>
+                    {isActive && <span className="track-card-active-label">▼ samples below</span>}
+                  </div>
                 </button>
               );
             })}
           </div>
 
-          <div className="landing-tab-panels">
-            {trackTabs.map((tab) => {
-              const isActive = activeTab === tab.id;
-              const hasStarted = tab.solved > 0;
-              const progressLabel = user
-                ? `${tab.completion}% complete`
-                : `${tab.total} challenge questions`;
-
-              return (
-                <section
-                  key={tab.id}
-                  id={`landing-tab-panel-${tab.id}`}
-                  role="tabpanel"
-                  aria-labelledby={`landing-tab-${tab.id}`}
-                  hidden={!isActive}
-                  className={`landing-tab-panel${isActive ? ' is-active' : ''}`}
-                >
-                  <div className="landing-panel-header">
-                    <div>
-                      <h3>{tab.label}</h3>
-                      <p>{tab.description}</p>
-                    </div>
-                    <span className="landing-panel-tag" style={{ borderColor: tab.color, color: tab.color }}>
-                      {progressLabel}
-                    </span>
+          {trackTabs.map((tab) => {
+            if (activeTab !== tab.id) return null;
+            const hasStarted = tab.solved > 0;
+            return (
+              <div key={tab.id} className="track-samples-strip" style={{ '--track-color': tab.color }}>
+                <div className="track-samples-header">
+                  <div className="track-samples-header-text">
+                    <h3 className="track-samples-title">
+                      <span className="track-samples-dot" />
+                      Free samples — {tab.label}
+                    </h3>
+                    <p className="track-samples-desc">
+                      3 questions per difficulty tier. No account required, no progress recorded.
+                    </p>
                   </div>
-
-                  <div className="landing-panel-body">
-                    <div className="landing-panel-progress">
-                      <TrackProgressBar solved={tab.solved} total={tab.total} color={tab.color} showLabel={false} />
-                      <span className="landing-panel-progress-copy">
-                        {user
-                          ? `${tab.solved} solved out of ${tab.total}`
-                          : 'Sign in to save progress and carry it across devices'}
-                      </span>
-                    </div>
-                    <div className="landing-panel-actions">
-                      <Link className="btn btn-primary" to={`/practice/${tab.id}`}>
-                        {hasStarted ? 'Continue track' : 'Start track'} →
-                      </Link>
-                      {!user && <Link className="btn btn-secondary" to="/auth">Create account</Link>}
-                    </div>
+                  <div className="track-samples-actions">
+                    <Link
+                      className="btn btn-primary"
+                      to={`/practice/${tab.id}`}
+                      style={{ background: tab.color, borderColor: tab.color }}
+                    >
+                      {hasStarted ? 'Continue track' : 'Open full track'} →
+                    </Link>
+                    {!user && (
+                      <Link className="btn btn-secondary" to="/auth">Create account</Link>
+                    )}
                   </div>
-
-                  <div className="landing-panel-samples">
-                    <div className="landing-panel-samples-header">
-                      <div>
-                        <h4>Sample rounds</h4>
-                        <p>Try an easy, medium, or hard slice without affecting challenge progress.</p>
-                      </div>
-                      <span className="landing-panel-tag">No progress recorded</span>
-                    </div>
-
-                    <div className="landing-samples-grid">
-                      {tab.samples.map(({ difficulty, title, copy }) => (
-                        <Link key={difficulty} className="sample-tile" to={`/sample/${tab.id}/${difficulty}`}>
-                          <span className={`badge badge-${difficulty}`}>{difficulty}</span>
-                          <strong className="sample-tile-title">{title}</strong>
-                          <p>{copy}</p>
-                          <span className="sample-tile-footer">Open sample →</span>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                </section>
-              );
-            })}
-          </div>
+                </div>
+                <div className="landing-samples-grid">
+                  {tab.samples.map(({ difficulty, title, copy }) => (
+                    <Link
+                      key={difficulty}
+                      className="sample-tile"
+                      to={`/sample/${tab.id}/${difficulty}`}
+                      style={{ '--tile-color': tab.color }}
+                    >
+                      <span className={`badge badge-${difficulty}`}>{difficulty}</span>
+                      <strong className="sample-tile-title">{title}</strong>
+                      <p>{copy}</p>
+                      <span className="sample-tile-footer">Start sample →</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </section>
       </main>
     </>
