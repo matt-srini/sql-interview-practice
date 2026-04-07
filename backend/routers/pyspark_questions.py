@@ -48,6 +48,7 @@ async def get_pyspark_catalog(
                     "order": q["order"],
                     "state": state,
                     "is_next": state == "unlocked" and next_questions[difficulty] == question_id,
+                    "concepts": q.get("concepts", []),
                 }
             )
         groups_payload.append(
