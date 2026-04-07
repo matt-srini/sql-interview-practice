@@ -1776,6 +1776,136 @@ select {
   }
 }
 
+@media (max-width: 600px) {
+  /* Sample tiles: vertical stack instead of horizontal scroll */
+  .landing-samples-grid {
+    display: flex;
+    flex-direction: column;
+    overflow-x: visible;
+    gap: 0.65rem;
+    padding-bottom: 0;
+  }
+
+  .landing-samples-grid .sample-tile {
+    min-width: 0;
+    width: 100%;
+    flex-shrink: unset;
+  }
+
+  /* Schema card: hide inline on mobile — shown via bottom sheet instead */
+  .schema-card-utility {
+    display: none;
+  }
+
+  /* Schema sheet trigger button: only shown on mobile */
+  .schema-sheet-trigger {
+    display: flex;
+  }
+}
+
+/* Schema sheet trigger — hidden on desktop, revealed above via mobile override */
+.schema-sheet-trigger {
+  display: none;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--surface-card-alt);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 6px 12px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 0.75rem;
+  justify-content: center;
+}
+
+.schema-sheet-trigger:hover {
+  background: var(--surface-highlight);
+  color: var(--text-strong);
+}
+
+/* Schema bottom sheet */
+.schema-bottom-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+}
+
+.schema-bottom-sheet.is-open {
+  pointer-events: all;
+}
+
+.schema-bottom-sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+
+.schema-bottom-sheet.is-open .schema-bottom-sheet-backdrop {
+  opacity: 1;
+}
+
+.schema-bottom-sheet-panel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--surface-card);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  max-height: 70vh;
+  overflow-y: auto;
+  transform: translateY(100%);
+  transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.schema-bottom-sheet.is-open .schema-bottom-sheet-panel {
+  transform: translateY(0);
+}
+
+.schema-bottom-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.1rem 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+  position: sticky;
+  top: 0;
+  background: var(--surface-card);
+  z-index: 1;
+}
+
+.schema-bottom-sheet-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.schema-bottom-sheet-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.schema-bottom-sheet-close:hover {
+  color: var(--text-strong);
+  background: var(--surface-highlight);
+}
+
+.schema-bottom-sheet-body {
+  padding: 0.9rem 1.1rem 1.25rem;
+}
+
 /* ============================================================
    Difficulty badges
    ============================================================ */

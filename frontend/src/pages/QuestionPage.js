@@ -81,6 +81,7 @@ export default function QuestionPage() {
 
   // MCQ state for PySpark
   const [selectedOption, setSelectedOption] = useState(null);
+  const [schemaSheetOpen, setSchemaSheetOpen] = useState(false);
 
   useEffect(() => {
     setQuestion(null);
@@ -273,15 +274,54 @@ export default function QuestionPage() {
           </div>
 
           {showSchema && (
-            <div className="card schema-card schema-card-utility">
-              <div className="section-heading">
-                <div>
-                  <h3>Table schema</h3>
+            <>
+              {/* Desktop: inline schema card */}
+              <div className="card schema-card schema-card-utility">
+                <div className="section-heading">
+                  <div>
+                    <h3>Table schema</h3>
+                  </div>
+                  <span className="section-meta">{schemaTableCount} tables</span>
                 </div>
-                <span className="section-meta">{schemaTableCount} tables</span>
+                <SchemaViewer schema={question.schema} />
               </div>
-              <SchemaViewer schema={question.schema} />
-            </div>
+
+              {/* Mobile: trigger button (CSS hides this on desktop) */}
+              <button
+                className="schema-sheet-trigger"
+                onClick={() => setSchemaSheetOpen(true)}
+              >
+                ⊞ Table schema ({schemaTableCount} {schemaTableCount === 1 ? 'table' : 'tables'})
+              </button>
+
+              {/* Mobile: bottom-sheet overlay */}
+              <div
+                className={`schema-bottom-sheet${schemaSheetOpen ? ' is-open' : ''}`}
+                aria-modal="true"
+                role="dialog"
+                aria-label="Table schema"
+              >
+                <div
+                  className="schema-bottom-sheet-backdrop"
+                  onClick={() => setSchemaSheetOpen(false)}
+                />
+                <div className="schema-bottom-sheet-panel">
+                  <div className="schema-bottom-sheet-header">
+                    <span className="schema-bottom-sheet-title">Table schema</span>
+                    <button
+                      className="schema-bottom-sheet-close"
+                      onClick={() => setSchemaSheetOpen(false)}
+                      aria-label="Close schema"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <div className="schema-bottom-sheet-body">
+                    <SchemaViewer schema={question.schema} />
+                  </div>
+                </div>
+              </div>
+            </>
           )}
 
           {showVariables && (
