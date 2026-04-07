@@ -97,38 +97,13 @@ select {
   background: var(--bg-page);
 }
 
-.auth-topbar {
-  border-bottom: 1px solid var(--border-subtle);
-  background: rgba(247, 247, 245, 0.92);
-  backdrop-filter: blur(18px);
-}
-
-.auth-topbar-inner {
-  display: flex;
-  align-items: center;
-  min-height: 68px;
-  justify-content: space-between;
-}
-
-.auth-back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  color: var(--text-secondary);
-  font-size: 0.95rem;
-  font-weight: 600;
-}
-
-.auth-back-link:hover {
-  color: var(--text-strong);
-}
-
 .auth-main {
-  min-height: calc(100vh - 69px);
+  min-height: calc(100vh - 68px);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 3.5rem 1.5rem;
+  padding: 4rem 1.5rem 3rem;
+  overflow-y: auto;
 }
 
 .auth-card {
@@ -140,25 +115,6 @@ select {
   box-shadow: var(--shadow-lg);
 }
 
-.auth-brand {
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 1.1rem;
-}
-
-.auth-brand-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.85rem;
-  height: 2.85rem;
-  border-radius: 18px;
-  border: 1px solid var(--accent-soft-strong);
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-size: 1.25rem;
-  font-weight: 800;
-}
 
 .auth-card-header {
   text-align: left;
@@ -2327,14 +2283,14 @@ select {
 }
 
 .app-topbar .btn-secondary,
-.auth-topbar .btn-secondary {
+.auth-topbar-unused .btn-secondary {
   background: rgba(0, 0, 0, 0.03);
   color: var(--text-primary);
   border-color: var(--border-subtle);
 }
 
 .app-topbar .btn-secondary:not(:disabled):hover,
-.auth-topbar .btn-secondary:not(:disabled):hover {
+.auth-topbar-unused .btn-secondary:not(:disabled):hover {
   background: rgba(0, 0, 0, 0.06);
   border-color: var(--border-strong);
 }
@@ -3052,9 +3008,6 @@ select {
     background: var(--bg-page);
   }
 
-  .auth-topbar {
-    background: rgba(20, 20, 19, 0.92);
-  }
 
   .auth-card {
     background: var(--surface-card);
@@ -3224,7 +3177,7 @@ select {
   .post-submit-stack .btn-secondary,
   .sample-challenge-actions .btn-secondary,
   .app-topbar .btn-secondary,
-  .auth-topbar .btn-secondary {
+  .auth-topbar-unused .btn-secondary {
     background: rgba(255, 255, 255, 0.05);
     color: var(--text-primary);
     border-color: var(--border-subtle);
@@ -3235,7 +3188,7 @@ select {
   .post-submit-stack .btn-secondary:not(:disabled):hover,
   .sample-challenge-actions .btn-secondary:not(:disabled):hover,
   .app-topbar .btn-secondary:not(:disabled):hover,
-  .auth-topbar .btn-secondary:not(:disabled):hover {
+  .auth-topbar-unused .btn-secondary:not(:disabled):hover {
     background: rgba(255, 255, 255, 0.09);
     border-color: var(--border-strong);
   }
@@ -4066,7 +4019,7 @@ select {
 
 [data-theme="dark"] body { background: var(--bg-page); }
 [data-theme="dark"] .auth-page { background: var(--bg-page); }
-[data-theme="dark"] .auth-topbar { background: rgba(20, 20, 19, 0.92); }
+[data-theme="dark"] .auth-topbar-unused { background: rgba(20, 20, 19, 0.92); }
 [data-theme="dark"] .auth-card { background: var(--surface-card); }
 [data-theme="dark"] .auth-divider span { background: var(--surface-card); }
 [data-theme="dark"] .auth-oauth-btn { background: rgba(255, 255, 255, 0.03); border-color: var(--border-subtle); }
@@ -4117,13 +4070,13 @@ select {
 [data-theme="dark"] .post-submit-stack .btn-secondary,
 [data-theme="dark"] .sample-challenge-actions .btn-secondary,
 [data-theme="dark"] .app-topbar .btn-secondary,
-[data-theme="dark"] .auth-topbar .btn-secondary { background: rgba(255, 255, 255, 0.05); color: var(--text-primary); border-color: var(--border-subtle); }
+[data-theme="dark"] .auth-topbar-unused .btn-secondary { background: rgba(255, 255, 255, 0.05); color: var(--text-primary); border-color: var(--border-subtle); }
 [data-theme="dark"] .landing-actions .btn-secondary:not(:disabled):hover,
 [data-theme="dark"] .sample-page-actions .btn-secondary:not(:disabled):hover,
 [data-theme="dark"] .post-submit-stack .btn-secondary:not(:disabled):hover,
 [data-theme="dark"] .sample-challenge-actions .btn-secondary:not(:disabled):hover,
 [data-theme="dark"] .app-topbar .btn-secondary:not(:disabled):hover,
-[data-theme="dark"] .auth-topbar .btn-secondary:not(:disabled):hover { background: rgba(255, 255, 255, 0.09); border-color: var(--border-strong); }
+[data-theme="dark"] .auth-topbar-unused .btn-secondary:not(:disabled):hover { background: rgba(255, 255, 255, 0.09); border-color: var(--border-strong); }
 [data-theme="dark"] .btn-success { color: var(--success); }
 [data-theme="dark"] .sidebar-error { color: var(--danger); }
 [data-theme="dark"] .track-tile { background: var(--surface-card); border-color: var(--border-subtle); }
