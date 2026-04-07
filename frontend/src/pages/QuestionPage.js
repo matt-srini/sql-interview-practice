@@ -78,6 +78,8 @@ export default function QuestionPage() {
   const [pastAttempts, setPastAttempts] = useState([]);
   const [pastAttemptsOpen, setPastAttemptsOpen] = useState(false);
   const [openAttemptCodes, setOpenAttemptCodes] = useState(new Set());
+  const [solutionAnalysisOpen, setSolutionAnalysisOpen] = useState(false);
+  const [showAltSolution, setShowAltSolution] = useState(false);
 
   // MCQ state for PySpark
   const [selectedOption, setSelectedOption] = useState(null);
@@ -120,6 +122,8 @@ export default function QuestionPage() {
     setPastAttempts([]);
     setPastAttemptsOpen(false);
     setOpenAttemptCodes(new Set());
+    setSolutionAnalysisOpen(false);
+    setShowAltSolution(false);
   }, [id, meta.language, meta.hasMCQ]);
 
   function formatRelativeTime(isoString) {
@@ -562,6 +566,64 @@ export default function QuestionPage() {
 
           {submitResult && (
             <div className="post-submit-stack">
+              {submitResult.correct && topic === 'sql' && submitResult.quality &&
+                (submitResult.quality.efficiency_note ||
+                 submitResult.quality.style_notes?.length > 0 ||
+                 submitResult.quality.complexity_hint ||
+                 submitResult.quality.alternative_solution) && (
+                <div className="solution-analysis-card">
+                  <button
+                    className="solution-analysis-toggle"
+                    onClick={() => setSolutionAnalysisOpen((v) => !v)}
+                    aria-expanded={solutionAnalysisOpen}
+                  >
+                    <span>Solution analysis</span>
+                    <span className="solution-analysis-chevron">{solutionAnalysisOpen ? '▾' : '▸'}</span>
+                  </button>
+                  {solutionAnalysisOpen && (
+                    <div className="solution-analysis-body">
+                      {submitResult.quality.efficiency_note && (
+                        <div className="quality-metric">
+                          <span className="quality-metric-label">Efficiency</span>
+                          <p className="quality-metric-note">{submitResult.quality.efficiency_note}</p>
+                        </div>
+                      )}
+                      {submitResult.quality.style_notes?.length > 0 && (
+                        <div className="quality-metric">
+                          <span className="quality-metric-label">Style</span>
+                          {submitResult.quality.style_notes.map((note, i) => (
+                            <p key={i} className="quality-metric-note">{note}</p>
+                          ))}
+                        </div>
+                      )}
+                      {submitResult.quality.complexity_hint && (
+                        <div className="quality-metric">
+                          <span className="quality-metric-label">Complexity</span>
+                          <p className="quality-metric-note">{submitResult.quality.complexity_hint}</p>
+                        </div>
+                      )}
+                      {submitResult.quality.alternative_solution && (
+                        <div className="quality-metric">
+                          <span className="quality-metric-label">Alternative approach</span>
+                          <button
+                            className="btn btn-secondary workspace-inline-action"
+                            onClick={() => setShowAltSolution((v) => !v)}
+                          >
+                            {showAltSolution ? 'Hide' : 'See another approach'}
+                          </button>
+                          {showAltSolution && (
+                            <div className="quality-alt-solution">
+                              <pre className="quality-alt-code">{submitResult.quality.alternative_solution.query}</pre>
+                              <p className="quality-alt-explanation">{submitResult.quality.alternative_solution.explanation}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {!submitResult.correct && question.hints?.slice(0, hintsShown).map((hint, index) => (
                 <div key={index} className="hint-card">
                   <strong>Hint {index + 1}:</strong> {hint}
