@@ -998,22 +998,7 @@ pool = await asyncpg.create_pool(
 
 ## Phase 1 — Quick wins (core experience) ✦ high impact, low effort
 
-
-### 1B · Dark mode persistence
-
-**Problem:** `prefers-color-scheme` resets on every visit; users who prefer dark mode get inconsistent experience.
-
-- Store `theme` preference in `localStorage` (`light` / `dark` / `system`)
-- Add theme toggle button (sun/moon icon) in the topbar
-- Apply `data-theme` attribute on `<html>` that overrides the media query
-
-**Files:** `frontend/src/App.js`, `frontend/src/App.css`, `frontend/src/components/AppShell.js`
-
----
-
-### ~~1C · Concept filter in sidebar~~ — shipped → see Completed
-
----
+~~All Phase 1 items shipped — see Completed section.~~
 
 ---
 
@@ -1217,9 +1202,9 @@ Track tiles stack vertically on mobile (<600px) instead of horizontal scroll. Sc
 
 ### 1C · Concept filter in sidebar — shipped
 
-Frequency-sorted concept chips above difficulty groups in `SidebarNav.js`. Top 8 shown by default; "+N more ▾" expands all. Active chip shows accent fill + ×; "Clear" link resets. Client-side filter updates question list and counts in real time. Backend: added `concepts` field to `/api/catalog` response in `routers/catalog.py`.
+Frequency-sorted concept chips above difficulty groups in `SidebarNav.js`. Top 8 shown by default; "+N more ▾" expands all. Active chip shows accent fill + ×; "Clear" link resets. Client-side filter updates question list and counts in real time. Backend: `concepts` field added to all four catalog responses (`routers/catalog.py`, `python_questions.py`, `python_data_questions.py`, `pyspark_questions.py`).
 
-*commit: d35f550*
+*commit: d35f550 (initial), concepts parity fix: follow-up commit*
 
 ---
 
