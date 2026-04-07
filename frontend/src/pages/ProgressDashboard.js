@@ -19,11 +19,23 @@ function formatRelativeTime(isoString) {
   return `${days}d ago`;
 }
 
+const TRACK_LABELS = {
+  sql: 'SQL', python: 'Python', 'python-data': 'Pandas', pyspark: 'PySpark', mixed: 'Mixed',
+};
+
+function formatMockTime(s) {
+  if (s == null) return '—';
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+}
+
 export default function ProgressDashboard() {
   const { user } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [mockHistory, setMockHistory] = useState([]);
 
   useEffect(() => {
     setLoading(true);
@@ -33,6 +45,10 @@ export default function ProgressDashboard() {
       .then((res) => setData(res.data))
       .catch(() => setError('Failed to load dashboard data.'))
       .finally(() => setLoading(false));
+
+    api.get('/mock/history')
+      .then(r => setMockHistory(r.data.slice(0, 5)))
+      .catch(() => {});
   }, []);
 
   return (
@@ -131,6 +147,46 @@ export default function ProgressDashboard() {
                 </div>
               </section>
             )}
+          {mockHistory.length > 0 && (
+            <section className="dashboard-section dashboard-mock-section">
+              <div className="dashboard-section-header">
+                <h3 className="dashboard-section-title">Mock Interviews</h3>
+                <Link to="/mock" className="dashboard-link">Start new →</Link>
+              </div>
+              <table className="mock-history-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Mode</th>
+                    <th>Track</th>
+                    <th>Difficulty</th>
+                    <th>Score</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {mockHistory.map(s => (
+                    <tr key={s.session_id}>
+                      <td>{formatRelativeTime(s.started_at)}</td>
+                      <td>{s.mode}</td>
+                      <td>{TRACK_LABELS[s.track] || s.track}</td>
+                      <td>
+                        {s.difficulty && (
+                          <span className={`badge badge-${s.difficulty}`}>{s.difficulty}</span>
+                        )}
+                      </td>
+                      <td>{s.solved_count}/{s.total_count}</td>
+                      <td>
+                        <Link to={`/mock/${s.session_id}`} className="mock-review-link">
+                          {s.status === 'completed' ? 'Review →' : 'Resume →'}
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+          )}
           </>
         )}
       </main>

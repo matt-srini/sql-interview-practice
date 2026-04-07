@@ -82,7 +82,7 @@ sql-interview-practice/
 │   ├── content/pyspark_questions/  # PySpark MCQ questions
 │   ├── datasets/                   # Committed CSVs + metadata JSON
 │   ├── middleware/                 # Request context, request_id, X-Request-ID
-│   ├── routers/                    # auth, system, catalog, questions, sample, plan, stripe, spa
+│   ├── routers/                    # auth, system, catalog, questions, sample, plan, stripe, mock, spa
 │   ├── scripts/                    # Dataset generator, anonymous user cleanup
 │   ├── tests/                      # API, evaluator, rate limiter tests
 │   ├── alembic/                    # Postgres migrations
@@ -130,6 +130,8 @@ sql-interview-practice/
 │   │       ├── QuestionPage.js         # Topic-aware question page (all 4 tracks)
 │   │       ├── TrackHubPage.js         # Per-track landing (progress, next-up summary, concept preview)
 │   │       ├── ProgressDashboard.js    # Cross-track progress overview at /dashboard
+│   │       ├── MockHub.js              # Mock interview lobby at /mock (mode/track/difficulty selection)
+│   │       ├── MockSession.js          # Active mock session + summary at /mock/:id
 │   │       ├── SampleQuestionPage.js
 │   │       └── AuthPage.js
 │   └── package.json
@@ -150,6 +152,8 @@ sql-interview-practice/
 /                              → LandingPage (4-tile track grid)
 /auth                          → AuthPage (register / sign in)
 /dashboard                     → ProgressDashboard (cross-track progress)
+/mock                          → MockHub (mode/track/difficulty selector + history)  [AuthRequired]
+/mock/:id                      → MockSession (active session + inline summary)        [AuthRequired]
 /sample/:topic/:difficulty     → SampleQuestionPage (topic-aware sample mode)
 /sample/:difficulty            → redirect → /sample/sql/:difficulty
 /practice/:topic               → TopicShell (TopicProvider + CatalogProvider + AppShell)
@@ -170,7 +174,7 @@ Fixed topbar → centered hero (logged-out only) → dark showcase → light pra
 
 ```
 TOPBAR
-  "datanest"                                               [Dashboard] [name · Sign out] or [Login]
+  "datanest"                             [Mock] [Dashboard] [name · Sign out] or [Login]
 
 HERO  (logged-out only)
   Centered, max-width 620px inner wrapper
@@ -250,6 +254,11 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 | POST | `/api/pyspark/submit` | Submit MCQ answer |
 | GET | `/api/dashboard` | Cross-track progress summary |
 | GET | `/api/submissions` | Submission history for a question (`track`, `question_id`, `limit` params) |
+| GET | `/api/mock/history` | Past mock sessions list (last 20) |
+| POST | `/api/mock/start` | Start a mock session `{ mode, track, difficulty }` → `{ session_id, questions[], time_limit_s, started_at }` |
+| GET | `/api/mock/{id}` | Session state for reload recovery |
+| POST | `/api/mock/{id}/submit` | Submit answer mid-session → `{ correct, feedback }` (no solution revealed) |
+| POST | `/api/mock/{id}/finish` | End session → full summary with per-question solutions |
 | GET | `/api/sample/{topic}/{difficulty}` | Next unseen sample (409 when exhausted) |
 | POST | `/api/sample/{topic}/{difficulty}/reset` | Clear seen state |
 | POST | `/api/sample/sql/run-query` | Execute SQL sample query |
@@ -265,19 +274,24 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 
 ## Local development
 
+> Full details, node path quirks, and Alembic migration commands: **[`docs/deployment.md`](docs/deployment.md)**
+
 ```bash
 # Infrastructure
-docker-compose up -d postgres redis
+docker compose up postgres redis -d
 
-# Backend (from backend/)
-uvicorn main:app --reload --port 8000
+# Backend (from backend/ — virtualenv is at project root)
+cd backend && ../.venv/bin/uvicorn main:app --reload --port 8000
 
-# Frontend (from frontend/)
-npm run dev
+# Frontend
+cd frontend && npm run dev
 
-# Tests
-cd backend && pytest -q
-cd frontend && npm test
+# Backend tests (from backend/)
+cd backend && ../.venv/bin/python -m pytest tests/ -q
+
+# Alembic migrations (asyncpg driver required)
+cd backend && DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:5432/sql_practice" \
+  ../.venv/bin/alembic upgrade head
 ```
 
 ---

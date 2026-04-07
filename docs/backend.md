@@ -237,3 +237,64 @@ Solved questions remain solved permanently regardless of plan changes.
 - Default: 60 requests per 60-second window per IP
 - Redis-backed when `REDIS_URL` is set; in-memory fallback otherwise
 - Config: `RATE_LIMIT_REQUESTS`, `RATE_LIMIT_WINDOW_SECONDS` in `config.py`
+
+---
+
+## Mock interview router (`routers/mock.py`)
+
+Prefix: `/api/mock`
+
+### Endpoints
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| GET | `/api/mock/history` | required | Past sessions list (last 20), sorted by `started_at DESC` |
+| POST | `/api/mock/start` | required | Start a session; selects questions, persists, returns full question payloads |
+| GET | `/api/mock/{id}` | required | Load session state (for reload recovery) |
+| POST | `/api/mock/{id}/submit` | required | Evaluate an answer mid-session; updates `mock_session_questions`; no solutions returned |
+| POST | `/api/mock/{id}/finish` | required | Mark session completed; returns summary with per-question solutions (idempotent) |
+
+### Request bodies
+
+**`POST /start`**
+```json
+{ "mode": "30min|60min|custom", "track": "sql|python|python-data|pyspark|mixed",
+  "difficulty": "easy|medium|hard|mixed",
+  "num_questions": 2,   // custom only, 1-5
+  "time_minutes": 30    // custom only, 10-90
+}
+```
+
+**`POST /{id}/submit`**
+```json
+{ "question_id": 1001, "track": "sql", "code": "SELECT ...", "time_spent_s": 120 }
+// PySpark: { "question_id": ..., "track": "pyspark", "selected_option": 2 }
+```
+
+### Data model
+
+```sql
+mock_sessions (id BIGSERIAL, user_id UUID, mode, track, difficulty,
+               started_at TIMESTAMPTZ, ended_at TIMESTAMPTZ, time_limit_s INT, status TEXT)
+
+mock_session_questions (id BIGSERIAL, session_id BIGINT→mock_sessions, question_id INT,
+                        track TEXT, position INT, is_solved BOOL, submitted_at TIMESTAMPTZ,
+                        final_code TEXT, time_spent_s INT)
+```
+
+### Question selection
+
+- Questions are randomly sampled from the user's unlocked pool (via `compute_unlock_state`).
+- `mixed` track: pools questions from all 4 catalogs.
+- `mixed` difficulty: samples across easy/medium/hard.
+- Returns 400 if the pool has fewer questions than requested.
+
+### Evaluator reuse
+
+The mock submit endpoint reuses the same evaluators as the practice tracks:
+- SQL: `evaluator.evaluate()`
+- Python: `python_evaluator.evaluate_python_code()`
+- Pandas: `python_evaluator.evaluate_python_data_code()`
+- PySpark: direct `selected_option == correct_option` comparison
+
+Correct submissions also call `mark_solved()` and `record_submission()` to update challenge progress.

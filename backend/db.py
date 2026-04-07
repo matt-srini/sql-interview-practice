@@ -825,6 +825,270 @@ async def record_submission(
         await session.commit()
 
 
+# ── Mock interview ────────────────────────────────────────────────────────────
+
+async def create_mock_session(
+    user_id: str,
+    mode: str,
+    track: str,
+    difficulty: str | None,
+    time_limit_s: int,
+    questions: list[dict],  # [{"question_id": int, "track": str, "position": int}]
+) -> dict[str, Any]:
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                INSERT INTO mock_sessions (user_id, mode, track, difficulty, time_limit_s)
+                VALUES (CAST(:user_id AS UUID), :mode, :track, :difficulty, :time_limit_s)
+                RETURNING id, user_id, mode, track, difficulty, started_at, time_limit_s, status
+                """
+            ),
+            {
+                "user_id": user_id,
+                "mode": mode,
+                "track": track,
+                "difficulty": difficulty,
+                "time_limit_s": time_limit_s,
+            },
+        )
+        session_row = result.mappings().first()
+        session_id = session_row["id"]
+        for q in questions:
+            await session.execute(
+                text(
+                    """
+                    INSERT INTO mock_session_questions (session_id, question_id, track, position)
+                    VALUES (:session_id, :question_id, :track, :position)
+                    """
+                ),
+                {
+                    "session_id": session_id,
+                    "question_id": q["question_id"],
+                    "track": q["track"],
+                    "position": q["position"],
+                },
+            )
+        await session.commit()
+        return {
+            "session_id": session_id,
+            "mode": session_row["mode"],
+            "track": session_row["track"],
+            "difficulty": session_row["difficulty"],
+            "started_at": session_row["started_at"].isoformat(),
+            "time_limit_s": session_row["time_limit_s"],
+            "status": session_row["status"],
+        }
+
+
+async def get_mock_session(session_id: int, user_id: str) -> dict[str, Any] | None:
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                SELECT
+                    ms.id AS session_id,
+                    ms.mode, ms.track, ms.difficulty,
+                    ms.started_at, ms.ended_at, ms.time_limit_s, ms.status,
+                    msq.id AS msq_id,
+                    msq.question_id, msq.track AS q_track, msq.position,
+                    msq.is_solved, msq.submitted_at, msq.final_code, msq.time_spent_s
+                FROM mock_sessions ms
+                LEFT JOIN mock_session_questions msq ON msq.session_id = ms.id
+                WHERE ms.id = :session_id AND ms.user_id = CAST(:user_id AS UUID)
+                ORDER BY msq.position
+                """
+            ),
+            {"session_id": session_id, "user_id": user_id},
+        )
+        rows = result.mappings().all()
+        if not rows:
+            return None
+        first = rows[0]
+        session_data = {
+            "session_id": first["session_id"],
+            "mode": first["mode"],
+            "track": first["track"],
+            "difficulty": first["difficulty"],
+            "started_at": first["started_at"].isoformat() if first["started_at"] else None,
+            "ended_at": first["ended_at"].isoformat() if first["ended_at"] else None,
+            "time_limit_s": first["time_limit_s"],
+            "status": first["status"],
+        }
+        question_rows = []
+        for row in rows:
+            if row["msq_id"] is not None:
+                question_rows.append({
+                    "question_id": row["question_id"],
+                    "track": row["q_track"],
+                    "position": row["position"],
+                    "is_solved": row["is_solved"],
+                    "submitted_at": row["submitted_at"].isoformat() if row["submitted_at"] else None,
+                    "final_code": row["final_code"],
+                    "time_spent_s": row["time_spent_s"],
+                })
+        session_data["questions"] = question_rows
+        return session_data
+
+
+async def submit_mock_question(
+    session_id: int,
+    question_id: int,
+    user_id: str,
+    is_solved: bool,
+    code: str | None,
+    time_spent_s: int | None,
+) -> bool:
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                UPDATE mock_session_questions
+                SET is_solved = :is_solved,
+                    final_code = :code,
+                    submitted_at = now(),
+                    time_spent_s = :time_spent_s
+                WHERE session_id = :session_id
+                  AND question_id = :question_id
+                  AND EXISTS (
+                      SELECT 1 FROM mock_sessions
+                      WHERE id = :session_id
+                        AND user_id = CAST(:user_id AS UUID)
+                        AND status = 'active'
+                  )
+                """
+            ),
+            {
+                "session_id": session_id,
+                "question_id": question_id,
+                "user_id": user_id,
+                "is_solved": is_solved,
+                "code": code,
+                "time_spent_s": time_spent_s,
+            },
+        )
+        await session.commit()
+        return (result.rowcount or 0) > 0
+
+
+async def finish_mock_session(session_id: int, user_id: str) -> dict[str, Any] | None:
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        # Try to mark as completed (no-op if already completed)
+        await session.execute(
+            text(
+                """
+                UPDATE mock_sessions
+                SET ended_at = now(), status = 'completed'
+                WHERE id = :session_id
+                  AND user_id = CAST(:user_id AS UUID)
+                  AND status = 'active'
+                """
+            ),
+            {"session_id": session_id, "user_id": user_id},
+        )
+        await session.commit()
+
+        # Return full session state regardless (idempotent)
+        result = await session.execute(
+            text(
+                """
+                SELECT
+                    ms.id AS session_id,
+                    ms.mode, ms.track, ms.difficulty,
+                    ms.started_at, ms.ended_at, ms.time_limit_s, ms.status,
+                    msq.question_id, msq.track AS q_track, msq.position,
+                    msq.is_solved, msq.submitted_at, msq.final_code, msq.time_spent_s
+                FROM mock_sessions ms
+                LEFT JOIN mock_session_questions msq ON msq.session_id = ms.id
+                WHERE ms.id = :session_id AND ms.user_id = CAST(:user_id AS UUID)
+                ORDER BY msq.position
+                """
+            ),
+            {"session_id": session_id, "user_id": user_id},
+        )
+        rows = result.mappings().all()
+        if not rows:
+            return None
+        first = rows[0]
+        started = first["started_at"]
+        ended = first["ended_at"]
+        time_used_s = int((ended - started).total_seconds()) if started and ended else None
+        session_out = {
+            "session_id": first["session_id"],
+            "mode": first["mode"],
+            "track": first["track"],
+            "difficulty": first["difficulty"],
+            "started_at": started.isoformat() if started else None,
+            "ended_at": ended.isoformat() if ended else None,
+            "time_limit_s": first["time_limit_s"],
+            "time_used_s": time_used_s,
+            "status": first["status"],
+        }
+        question_rows = []
+        for row in rows:
+            if row["question_id"] is not None:
+                question_rows.append({
+                    "question_id": row["question_id"],
+                    "track": row["q_track"],
+                    "position": row["position"],
+                    "is_solved": row["is_solved"],
+                    "submitted_at": row["submitted_at"].isoformat() if row["submitted_at"] else None,
+                    "final_code": row["final_code"],
+                    "time_spent_s": row["time_spent_s"],
+                })
+        session_out["questions"] = question_rows
+        solved_count = sum(1 for q in question_rows if q["is_solved"])
+        session_out["solved_count"] = solved_count
+        session_out["total_count"] = len(question_rows)
+        return session_out
+
+
+async def get_mock_history(user_id: str, limit: int = 20) -> list[dict[str, Any]]:
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                SELECT
+                    ms.id AS session_id,
+                    ms.mode, ms.track, ms.difficulty,
+                    ms.started_at, ms.ended_at, ms.time_limit_s, ms.status,
+                    COUNT(msq.id) AS total_count,
+                    COUNT(CASE WHEN msq.is_solved THEN 1 END) AS solved_count
+                FROM mock_sessions ms
+                LEFT JOIN mock_session_questions msq ON msq.session_id = ms.id
+                WHERE ms.user_id = CAST(:user_id AS UUID)
+                GROUP BY ms.id
+                ORDER BY ms.started_at DESC
+                LIMIT :limit
+                """
+            ),
+            {"user_id": user_id, "limit": limit},
+        )
+        rows = result.mappings().all()
+        return [
+            {
+                "session_id": row["session_id"],
+                "mode": row["mode"],
+                "track": row["track"],
+                "difficulty": row["difficulty"],
+                "started_at": row["started_at"].isoformat() if row["started_at"] else None,
+                "ended_at": row["ended_at"].isoformat() if row["ended_at"] else None,
+                "time_limit_s": row["time_limit_s"],
+                "status": row["status"],
+                "total_count": row["total_count"],
+                "solved_count": row["solved_count"],
+            }
+            for row in rows
+        ]
+
+
+# ── Submissions ────────────────────────────────────────────────────────────────
+
 async def get_submissions(
     user_id: str,
     track: str,

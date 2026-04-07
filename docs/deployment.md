@@ -8,6 +8,15 @@
 
 The standard local setup runs backend and frontend natively, with Postgres and Redis in Docker.
 
+### Prerequisites
+
+- Python virtualenv at `.venv/` in the **project root** (not `backend/`), with `backend/requirements.txt` installed:
+  ```bash
+  python3 -m venv .venv
+  .venv/bin/pip install -r backend/requirements.txt
+  ```
+- Node.js and npm (verify: `node --version`). On macOS the binary may be at `/usr/local/bin/node` and not on the shell path — use the full path if `npm` is not found.
+
 ### 1. Start infrastructure
 
 ```bash
@@ -20,7 +29,7 @@ This starts:
 
 ### 2. Configure backend
 
-Create `backend/.env`:
+Create `backend/.env` (relative to project root: `backend/.env`):
 
 ```
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/sql_practice
@@ -38,21 +47,30 @@ STRIPE_PRICE_ELITE=price_...
 
 ### 3. Start backend
 
+Always run from the `backend/` directory so relative imports and data paths resolve correctly:
+
 ```bash
 cd backend
-../.venv/bin/python -m uvicorn main:app --reload --port 8000
+../.venv/bin/uvicorn main:app --reload --port 8000
 ```
-
-Requires a virtualenv at `.venv/` in the project root with `backend/requirements.txt` installed.
 
 ### 4. Start frontend
 
 ```bash
 cd frontend
 npm run dev
+# or if node isn't on PATH:
+/usr/local/bin/node node_modules/.bin/vite
 ```
 
 Vite starts on port `5173` (increments if occupied). The API client resolves to `http://localhost:8000/api` when running on localhost without a same-origin backend.
+
+### 5. Run backend tests
+
+```bash
+cd backend
+../.venv/bin/python -m pytest tests/ -q
+```
 
 ### Health check
 
@@ -60,6 +78,43 @@ Vite starts on port `5173` (increments if occupied). The API client resolves to 
 GET http://localhost:8000/health
 → { "status": "ok", "postgres": true, "tables_loaded": 11 }
 ```
+
+---
+
+## Database migrations (Alembic)
+
+Alembic manages schema changes. The `env.py` is configured for async connections, so the `DATABASE_URL` must use the `asyncpg` driver even when running migrations from the CLI.
+
+### Apply pending migrations
+
+```bash
+cd backend
+DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:5432/sql_practice" \
+  ../.venv/bin/alembic upgrade head
+```
+
+### First-time setup on an existing database
+
+If the database schema was created by the app's `ensure_schema()` startup function (before Alembic was introduced), Alembic has no version tracking. Stamp the baseline revision first, then upgrade:
+
+```bash
+cd backend
+DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:5432/sql_practice" \
+  ../.venv/bin/alembic stamp 20260323_000001
+
+DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:5432/sql_practice" \
+  ../.venv/bin/alembic upgrade head
+```
+
+### Create a new migration
+
+```bash
+cd backend
+DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:5432/sql_practice" \
+  ../.venv/bin/alembic revision --autogenerate -m "describe the change"
+```
+
+Review the generated file in `alembic/versions/` before applying.
 
 ---
 

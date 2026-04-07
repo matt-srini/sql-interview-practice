@@ -1,11 +1,13 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-dom';
 import { CatalogProvider } from './catalogContext';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { TopicProvider } from './contexts/TopicContext';
 import AppShell from './components/AppShell';
 import AuthPage from './pages/AuthPage';
 import LandingPage from './pages/LandingPage';
+import MockHub from './pages/MockHub';
+import MockSession from './pages/MockSession';
 import ProgressDashboard from './pages/ProgressDashboard';
 import QuestionPage from './pages/QuestionPage';
 import SampleQuestionPage from './pages/SampleQuestionPage';
@@ -62,6 +64,13 @@ function ThemeProvider({ children }) {
 }
 // ──────────────────────────────────────────────────────────────
 
+function AuthRequired({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user || user.email === null) return <Navigate to="/auth" replace />;
+  return children;
+}
+
 function TopicShell() {
   return (
     <TopicProvider>
@@ -93,6 +102,8 @@ export default function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/dashboard" element={<ProgressDashboard />} />
+          <Route path="/mock" element={<AuthRequired><MockHub /></AuthRequired>} />
+          <Route path="/mock/:id" element={<AuthRequired><MockSession /></AuthRequired>} />
           <Route path="/sample/:topic/:difficulty" element={<SampleQuestionPage />} />
           <Route path="/sample/:difficulty" element={<LegacySampleRedirect />} />
 

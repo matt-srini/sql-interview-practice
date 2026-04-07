@@ -266,6 +266,7 @@ export default function LandingPage() {
             >
               {themeIcon}
             </button>
+            <Link className="topbar-auth-link" to="/mock">Mock</Link>
             <Link className="topbar-auth-link" to="/dashboard">Dashboard</Link>
             {user ? (
               <div className="topbar-user-pill">
