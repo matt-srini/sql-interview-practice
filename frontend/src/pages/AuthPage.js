@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../App';
 
 // ─── Inline SVG icons ────────────────────────────────────────────────────────
 
@@ -65,8 +66,9 @@ export default function AuthPage() {
   const [error, setError] = useState(null);
   const [info, setInfo] = useState(null);
 
-  const { login, register, requestMagicLink } = useAuth();
+  const { login, register, requestMagicLink, user, logout } = useAuth();
   const navigate = useNavigate();
+  const { cycleTheme, themeIcon, themeLabel } = useTheme();
   const firstFieldRef = useRef(null);
 
   function switchMode(next) {
@@ -143,14 +145,29 @@ export default function AuthPage() {
   return (
     <div className="auth-page">
       {/* ── Topbar ── */}
-      <header className="auth-topbar">
-        <div className="container auth-topbar-inner">
-          <Link to="/" className="auth-back-link" aria-label="Back to SQL Interview Practice">
-            <svg aria-hidden="true" viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
-              <path fillRule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd" />
-            </svg>
-            SQL Interview Practice
-          </Link>
+      <header className="topbar landing-topbar">
+        <div className="container topbar-inner landing-topbar-inner">
+          <div className="landing-topbar-left">
+            <Link className="landing-brand brand-wordmark" to="/">datanest</Link>
+          </div>
+          <div className="landing-topbar-right">
+            <button
+              className="theme-toggle"
+              onClick={cycleTheme}
+              aria-label={themeLabel}
+              title={themeLabel}
+            >
+              {themeIcon}
+            </button>
+            {user && user.email ? (
+              <div className="topbar-user-pill">
+                <span className="topbar-user-name">{user.name || user.email}</span>
+                <button type="button" className="topbar-signout-btn" onClick={logout}>
+                  Sign out
+                </button>
+              </div>
+            ) : null}
+          </div>
         </div>
       </header>
 
@@ -158,16 +175,10 @@ export default function AuthPage() {
       <main className="auth-main">
         <div className="auth-card" role="main">
 
-          {/* Brand mark */}
-          <div className="auth-brand">
-            <span className="auth-brand-mark" aria-hidden="true">⌗</span>
-          </div>
-
           {/* Header */}
           <div className="auth-card-header">
             <h1 className="auth-card-title">{meta.title}</h1>
             <p className="auth-card-subtitle">{meta.subtitle}</p>
-            <p className="auth-card-note">{supportCopy}</p>
           </div>
 
           {/* OAuth buttons — only shown on sign-in / sign-up modes */}
