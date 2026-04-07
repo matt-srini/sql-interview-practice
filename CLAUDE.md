@@ -214,7 +214,7 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 
 ## Backend behaviour
 
-**SQL:** `sql_guard.py` → `evaluator.py` → DuckDB. Parser-based read-only validation; 3-second timeout; 200-row cap. Submit: both queries run → DataFrames normalized → compared.
+**SQL:** `sql_guard.py` → `evaluator.py` → DuckDB. Parser-based read-only validation; 3-second timeout; 200-row cap. Submit: both queries run → DataFrames normalized → compared. On correct+structure_correct submissions, `_compute_quality()` runs DuckDB `EXPLAIN` on both queries and returns `{ efficiency_note, style_notes, complexity_hint, alternative_solution }` for the Solution Analysis UI in `QuestionPage.js`.
 
 **Python/Pandas:** `python_guard.py` → `python_evaluator.py` → subprocess harness. AST guard, 5-second timeout, 512 MB RLIMIT_AS.
 
