@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useTopic } from '../contexts/TopicContext';
 
@@ -109,6 +109,7 @@ function buildConceptList(groups) {
 
 function ConceptFilter({ groups, activeFilters, onToggle, onClear }) {
   const [expanded, setExpanded] = useState(false);
+  const filterRef = useRef(null);
   const concepts = useMemo(() => buildConceptList(groups), [groups]);
 
   if (concepts.length === 0) return null;
@@ -136,8 +137,13 @@ function ConceptFilter({ groups, activeFilters, onToggle, onClear }) {
     );
   }
 
+  function collapse() {
+    setExpanded(false);
+    filterRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  }
+
   return (
-    <div className="sidebar-concept-filter">
+    <div className="sidebar-concept-filter" ref={filterRef}>
       <div className="sidebar-concept-filter-header">
         <span className="sidebar-concept-filter-label">Filter by concept</span>
         {activeFilters.size > 0 && (
@@ -160,7 +166,7 @@ function ConceptFilter({ groups, activeFilters, onToggle, onClear }) {
         {expanded && hiddenCount > 0 && (
           <button
             className="sidebar-concept-chip sidebar-concept-chip-more"
-            onClick={() => setExpanded(false)}
+            onClick={collapse}
           >
             show less ▴
           </button>
