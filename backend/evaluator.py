@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
 import logging
+import re
 import time
 from typing import Any
 
@@ -26,6 +27,83 @@ logger = logging.getLogger(__name__)
 QUERY_TIMEOUT_SECONDS = 3
 MAX_RESULT_ROWS = 200
 MAX_QUERY_LENGTH = 5000
+
+
+def _get_explain_total_ec(query: str, question: dict[str, Any]) -> int | None:
+    """Run EXPLAIN and sum all estimated cardinality (EC) values from the plan."""
+    cursor = get_query_cursor(question["dataset_files"])
+    try:
+        rows = cursor.execute(f"EXPLAIN {query}").fetchall()
+        plan_text = "\n".join(str(row[1]) for row in rows if len(row) > 1)
+        ec_values = re.findall(r'\bEC:\s*(\d+)', plan_text)
+        return sum(int(v) for v in ec_values) if ec_values else None
+    except Exception:
+        return None
+    finally:
+        cursor.close()
+
+
+def _analyze_query_style(query: str) -> list[str]:
+    """Generate style observations about a SQL query."""
+    notes = []
+    q = query.lower()
+
+    if re.search(r'\bselect\s+\*', q):
+        notes.append(
+            "Avoid SELECT * in production — list only the columns you need for clarity and performance."
+        )
+
+    nested_count = len(re.findall(r'\(\s*select\b', q))
+    has_cte = bool(re.search(r'^\s*with\b', q.lstrip()))
+    if nested_count >= 2 and not has_cte:
+        notes.append(
+            "Consider using CTEs (WITH clauses) instead of deeply nested subqueries — they make the query easier to read and debug."
+        )
+
+    if has_cte:
+        notes.append(
+            "Good use of CTEs — breaking the query into named steps improves readability."
+        )
+
+    return notes
+
+
+def _compute_quality(
+    user_query: str,
+    expected_query: str,
+    question: dict[str, Any],
+) -> dict[str, Any]:
+    """Build the quality scorecard for a correct SQL submission."""
+    efficiency_note = None
+    try:
+        user_ec = _get_explain_total_ec(user_query, question)
+        expected_ec = _get_explain_total_ec(expected_query, question)
+        if user_ec is not None and expected_ec is not None and expected_ec > 0:
+            if user_ec <= expected_ec * 1.5:
+                efficiency_note = (
+                    f"Efficient — your query estimates ~{user_ec:,} total rows processed, "
+                    f"comparable to the reference solution (~{expected_ec:,})."
+                )
+            else:
+                ratio = user_ec / expected_ec
+                efficiency_note = (
+                    f"Your query estimates ~{user_ec:,} total rows processed vs "
+                    f"~{expected_ec:,} for the reference solution ({ratio:.1f}× more work). "
+                    "Look for opportunities to filter earlier or reduce join inputs."
+                )
+    except Exception:
+        pass
+
+    style_notes = _analyze_query_style(user_query)
+    complexity_hint = question.get("complexity_hint")
+    alternative = question.get("alternative_solution")
+
+    return {
+        "efficiency_note": efficiency_note,
+        "style_notes": style_notes,
+        "complexity_hint": complexity_hint,
+        "alternative_solution": alternative,
+    }
 
 
 def _validate_query(query: str) -> str:
@@ -299,10 +377,18 @@ def evaluate(user_query: str, expected_query: str, question: dict[str, Any]) -> 
     )
     logger.info("%sEvaluation completed in %.3fs", prefix, time.time() - eval_start)
 
+    quality = None
+    if correct and structure_correct:
+        try:
+            quality = _compute_quality(user_query, expected_query, question)
+        except Exception:
+            logger.exception("%sQuality analysis failed", prefix)
+
     return {
         "correct": correct,
         "structure_correct": structure_correct,
         "feedback": feedback,
         "user_result": user_result,
         "expected_result": expected_result,
+        "quality": quality,
     }

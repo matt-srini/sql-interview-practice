@@ -17,7 +17,12 @@
       "First compute completed revenue per plan_tier in a subquery.",
       "Then use a window SUM over the aggregated result to get the grand total for the percentage calculation."
     ],
-    "concepts": ["PROPORTIONAL CONTRIBUTION ANALYSIS", "POST-AGGREGATION WINDOWING"]
+    "concepts": ["PROPORTIONAL CONTRIBUTION ANALYSIS", "POST-AGGREGATION WINDOWING"],
+    "complexity_hint": "Two-stage pattern: aggregate first (subquery), then apply a window function on the aggregated rows. The window SUM(...) OVER () computes the grand total without collapsing rows.",
+    "alternative_solution": {
+      "query": "WITH tier_revenue AS (\n  SELECT u.plan_tier, SUM(o.net_amount) AS total_completed_revenue\n  FROM users u\n  JOIN orders o ON u.user_id = o.user_id\n  WHERE o.status = 'completed'\n  GROUP BY u.plan_tier\n)\nSELECT plan_tier, total_completed_revenue,\n  ROUND(100.0 * total_completed_revenue / SUM(total_completed_revenue) OVER (), 2) AS revenue_share_pct\nFROM tier_revenue\nORDER BY total_completed_revenue DESC, plan_tier ASC",
+      "explanation": "This version uses a CTE (WITH clause) instead of an inline subquery. Both approaches produce identical results. CTEs are generally preferred when the intermediate result is referenced more than once, or when readability is the priority — the named step makes the two-stage intent explicit."
+    }
   },
   {
     "id": 3002,
@@ -56,7 +61,8 @@
       "Compute a running SUM(net_amount) over completed orders, partitioned by user_id.",
       "After you have the running total, keep only rows where the threshold is reached now but had not been reached before this row."
     ],
-    "concepts": ["RUNNING TOTAL THRESHOLD DETECTION", "FIRST THRESHOLD-CROSSING ROW"]
+    "concepts": ["RUNNING TOTAL THRESHOLD DETECTION", "FIRST THRESHOLD-CROSSING ROW"],
+    "complexity_hint": "O(n) window scan per user partition. The two-condition filter (current >= 1000 AND current - net_amount < 1000) precisely isolates the first threshold-crossing row without a self-join."
   },
   {
     "id": 3004,
@@ -75,7 +81,8 @@
       "Start by aggregating completed revenue by user_id and month for 2024.",
       "After you have monthly totals, use a window AVG partitioned by user_id to compute each user's monthly baseline."
     ],
-    "concepts": ["PERSONAL BASELINE COMPARISON", "POST-AGGREGATION WINDOWING", "TIME-BASED AGGREGATION COMPARISON"]
+    "concepts": ["PERSONAL BASELINE COMPARISON", "POST-AGGREGATION WINDOWING", "TIME-BASED AGGREGATION COMPARISON"],
+    "complexity_hint": "Double-nested subquery: the inner subquery aggregates by month, the outer window computes each user's monthly average on top of those aggregates. This pattern can be rewritten with two CTEs for readability."
   },
   {
     "id": 3005,

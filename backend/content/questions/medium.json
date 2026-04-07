@@ -38,7 +38,8 @@
       "INNER JOIN",
       "WHERE",
       "ORDER BY"
-    ]
+    ],
+    "complexity_hint": "O(n) scan with early filter pushdown. The two WHERE conditions reduce the result before sorting."
   },
   {
     "id": 2002,
@@ -112,7 +113,12 @@
       "LEFT JOIN",
       "WHERE",
       "ORDER BY"
-    ]
+    ],
+    "complexity_hint": "LEFT JOIN anti-pattern: keep rows from the left table that have no match on the right. Can also be written with NOT IN or NOT EXISTS — LEFT JOIN + IS NULL is typically most performant.",
+    "alternative_solution": {
+      "query": "SELECT d.department_id, d.department_name, d.region\nFROM departments d\nWHERE d.department_id NOT IN (\n  SELECT department_id FROM employees\n)\nORDER BY d.department_id ASC",
+      "explanation": "This alternative uses a NOT IN subquery instead of LEFT JOIN + IS NULL. Both produce identical results here, but NOT IN can silently return no rows if the subquery produces any NULLs — use LEFT JOIN + IS NULL in production for safety."
+    }
   },
   {
     "id": 2004,
@@ -153,7 +159,8 @@
       "GROUP BY",
       "SUM",
       "ORDER BY"
-    ]
+    ],
+    "complexity_hint": "O(n log n) due to GROUP BY sort. Filtering with WHERE before aggregation is the key to keeping this efficient."
   },
   {
     "id": 2005,
