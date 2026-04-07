@@ -562,13 +562,13 @@ export default function QuestionPage() {
 
           {submitResult && (
             <div className="post-submit-stack">
-              {question.hints?.slice(0, hintsShown).map((hint, index) => (
+              {!submitResult.correct && question.hints?.slice(0, hintsShown).map((hint, index) => (
                 <div key={index} className="hint-card">
                   <strong>Hint {index + 1}:</strong> {hint}
                 </div>
               ))}
 
-              {hintsShown < (question.hints?.length ?? 0) && (
+              {!submitResult.correct && hintsShown < (question.hints?.length ?? 0) && (
                 <button
                   className="btn btn-secondary workspace-inline-action"
                   onClick={() => setHintsShown((count) => count + 1)}
@@ -577,7 +577,7 @@ export default function QuestionPage() {
                 </button>
               )}
 
-              {hintsShown >= (question.hints?.length ?? 0) && (
+              {(submitResult.correct || hintsShown >= (question.hints?.length ?? 0)) && (
                 <button
                   className="btn btn-secondary workspace-inline-action"
                   onClick={() => setShowSolution((value) => !value)}
