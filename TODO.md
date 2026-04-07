@@ -1079,32 +1079,7 @@ Question selection: 2 questions for 30-min, 3 for 60-min. Randomized from unlock
 
 ---
 
-## Phase 3 — AI-enhanced feedback ✦ strong differentiation
-
-**Problem:** Pass/fail verdict tells users *what* happened, not *why* their solution is good or bad.
-
-### Solution quality scorecard
-
-After correct submission, show a 3-axis scorecard:
-1. **Correctness** ✓ (already exists)
-2. **Efficiency** — run `EXPLAIN` on user query and expected query in DuckDB; compare estimated row scans
-3. **Style** — CTE vs subquery choice, aliasing, readability heuristic
-
-**Backend:**
-- Add `explain_query()` utility to `evaluator.py` using DuckDB `EXPLAIN`
-- Return `{ quality: { efficiency_note, style_notes[] } }` alongside correct verdicts
-- Add `complexity_hint` field to question JSON (e.g., `"O(n log n) with sort"`)
-
-**Frontend:**
-- Expandable "Solution analysis" section below verdict card
-- Show EXPLAIN comparison + style notes + complexity hint
-
-**Alternative approaches:**
-- Questions can carry multiple `solutions` in JSON
-- "See another approach" toggle reveals second solution + explanation
-- No AI inference — curated content, added over time
-
-**Files:** `backend/evaluator.py`, `backend/routers/questions.py`, `backend/content/questions/*.json` (add fields), `frontend/src/pages/QuestionPage.js`, `frontend/src/App.css`
+~~Phase 3 shipped — see Completed section.~~
 
 ---
 
@@ -1215,6 +1190,12 @@ Frequency-sorted concept chips above difficulty groups in `SidebarNav.js`. Top 8
 localStorage-backed theme toggle (light / dark / system) with ◐/☾/☀ icon button in both topbars (LandingPage + AppShell). `ThemeContext` + `useTheme` hook in `App.js`; anti-FOUC inline script in `index.html`; `[data-theme="dark"]` and `[data-theme="light"]` CSS override selectors in `App.css` mirror the existing `@media (prefers-color-scheme: dark)` block.
 
 *commit: a4681ec*
+
+---
+
+### 3 · Solution quality scorecard — shipped
+
+After a correct SQL submission, an expandable "Solution analysis" section appears in `QuestionPage.js` showing: **Efficiency** (DuckDB EXPLAIN-based estimated row comparison), **Style** (SELECT *, nested subqueries, CTE usage), **Complexity** (from `complexity_hint` field in question JSON), and **Alternative approach** (from `alternative_solution` field). Backend: `_get_explain_total_ec()`, `_analyze_query_style()`, `_compute_quality()` added to `evaluator.py`; `quality` returned alongside correct verdicts. `complexity_hint` + `alternative_solution` added to medium Q2001/2003/2004 and hard Q3001/3003/3004.
 
 ---
 
