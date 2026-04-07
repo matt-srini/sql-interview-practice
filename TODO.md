@@ -1015,16 +1015,6 @@ pool = await asyncpg.create_pool(
 
 ---
 
-### 1D · Mobile UX improvements
-
-**Problem:** Horizontal scroll sample tiles are a workaround; schema viewer is awkward on mobile.
-
-- Replace horizontal scroll tiles with vertical card stack on mobile (<600px)
-- Schema viewer: bottom-sheet drawer on mobile (tap "Schema" → slide up)
-- Ensure sticky action dock doesn't overlap results
-
-**Files:** `frontend/src/App.css`, `frontend/src/pages/LandingPage.js`, `frontend/src/pages/QuestionPage.js`
-
 ---
 
 ## Phase 2 — Mock interview mode ✦ highest competitive impact
@@ -1218,6 +1208,12 @@ Awarded automatically from existing `submissions` data:
 ---
 
 ## Completed
+
+### 1D · Mobile UX improvements — shipped
+
+Track tiles stack vertically on mobile (<600px) instead of horizontal scroll. Schema viewer on SQL question pages becomes a bottom-sheet drawer on mobile — "Schema (N tables)" button slides up an overlay panel. CSS in `App.css`; bottom-sheet JSX + `schemaSheetOpen` state in `QuestionPage.js`.
+
+---
 
 ### 1C · Concept filter in sidebar — shipped
 
