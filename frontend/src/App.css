@@ -322,21 +322,54 @@ select {
   transform: none;
 }
 
-.auth-footer {
-  margin-top: 1.1rem;
-  text-align: center;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-}
-
-.auth-footer a {
+.auth-link-btn {
+  display: inline;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  font-size: inherit;
   color: var(--accent);
   font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
   transition: color 0.15s;
+  line-height: inherit;
 }
 
-.auth-footer a:hover {
+.auth-link-btn:hover {
   color: var(--accent-strong);
+  text-decoration: underline;
+}
+
+.auth-link-subtle {
+  color: var(--text-muted);
+  font-weight: 400;
+  font-size: 0.875rem;
+}
+
+.auth-link-subtle:hover {
+  color: var(--text-secondary);
+}
+
+.auth-footer {
+  margin-top: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.auth-footer-text {
+  color: var(--text-secondary);
+}
+
+.auth-magic-link-cta {
+  margin-top: 0.75rem;
+  text-align: center;
 }
 
 .auth-spinner {
