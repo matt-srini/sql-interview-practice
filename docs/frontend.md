@@ -295,3 +295,52 @@ Always dark. `#1e1e1e` background (Monaco `vs-dark`).
 - Active (`.is-active`): `opacity 1`, `flex-grow 2.4`, `height 510px`, `translateY(-6px)`, colored glow border via `--active-color`
 - Code block: Geist Mono weight 300, `height 360px` on active, typing animation + cursor blink
 - Auto-advances through all 4 tracks; responsive: 2×2 at 960px, column at 560px
+
+---
+
+## Phase 2: Mock interview mode
+
+### New routes
+
+| Path | Component | Auth |
+|---|---|---|
+| `/mock` | `MockHub` | Required (registered users only) |
+| `/mock/:id` | `MockSession` | Required |
+
+`AuthRequired` wrapper in `App.js` redirects unauthenticated and anonymous users (`user.email === null`) to `/auth`.
+
+### MockHub (`pages/MockHub.js`)
+
+Self-contained page with its own topbar (Practice dropdown + Mock link + Dashboard + theme toggle). Does not use `AppShell`.
+
+**State:** `mode` ('30min'/'60min'/'custom'), `track`, `difficulty`, `numQuestions`, `timeMinutes`, `history[]`.
+
+**Flow:** Select mode/track/difficulty → `POST /api/mock/start` → navigate to `/mock/:id` passing `sessionData` via router state.
+
+**Layout:** Mode cards (3) → config pills (track + difficulty) → custom controls (if mode=custom) → Start button → recent sessions table.
+
+### MockSession (`pages/MockSession.js`)
+
+Full-screen layout. Does not use `AppShell`. Has two states:
+
+**Active state:**
+- Custom topbar: `[◀ Exit] [Q1• Q2○ Q3○] [MM:SS timer] [End session]`
+- Body: 280px left panel (question description/schema + concepts) | flex-grow right panel (editor + run/submit)
+- Timer: countdown from `time_limit_s`. Recomputed from `started_at` on reload. Auto-finishes when it hits zero.
+- Timer CSS states: neutral → `.mock-timer--warning` (<10min) → `.mock-timer--danger` (<3min, pulsing)
+
+**Summary state (after finish):**
+- Score card: X/Y solved, time used
+- Per-question rows: title · solved badge · time spent · collapsible solution
+- Share CTA → `navigator.clipboard.writeText(...)`
+- "New mock interview" → `/mock`
+
+**Reload recovery:** On mount, if no `location.state.sessionData`, fetches `GET /api/mock/:id`. Computes `remainingS = time_limit_s - elapsed_since_started_at`.
+
+### Navigation changes
+
+**AppShell topbar:** Track links moved into a `nav-dropdown` "Practice ▾" dropdown. "Mock" added as a top-level `NavLink`.
+
+**LandingPage topbar:** "Mock" link added before "Dashboard".
+
+**ProgressDashboard:** Mock sessions history table shown below the track grid (fetched from `GET /api/mock/history`).

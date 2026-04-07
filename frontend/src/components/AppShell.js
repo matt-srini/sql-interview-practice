@@ -125,21 +125,32 @@ export default function AppShell() {
               <div className="app-title-row app-title-row-nav">
                 <Link className="app-practice-home brand-wordmark" to="/">datanest</Link>
                 <nav className="app-track-nav" aria-label="Practice tracks">
-                  {TOPICS.map((track) => {
-                    const trackMeta = TRACK_META[track];
-                    return (
-                      <NavLink
-                        key={track}
-                        className={({ isActive }) =>
-                          `app-track-link ${isActive ? 'app-track-link-active' : ''}`
-                        }
-                        style={{ '--track-color': trackMeta.color }}
-                        to={`/practice/${track}`}
-                      >
-                        {trackMeta.label}
-                      </NavLink>
-                    );
-                  })}
+                  <div className="nav-dropdown">
+                    <span className="app-track-link nav-dropdown-trigger">Practice ▾</span>
+                    <div className="nav-dropdown-menu">
+                      {TOPICS.map((track) => {
+                        const trackMeta = TRACK_META[track];
+                        return (
+                          <NavLink
+                            key={track}
+                            className="nav-dropdown-item"
+                            style={{ '--track-color': trackMeta.color }}
+                            to={`/practice/${track}`}
+                          >
+                            {trackMeta.label}
+                          </NavLink>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <NavLink
+                    className={({ isActive }) =>
+                      `app-track-link ${isActive ? 'app-track-link-active' : ''}`
+                    }
+                    to="/mock"
+                  >
+                    Mock
+                  </NavLink>
                 </nav>
               </div>
             </div>

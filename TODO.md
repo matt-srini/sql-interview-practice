@@ -1004,6 +1004,8 @@ pool = await asyncpg.create_pool(
 
 ## Phase 2 — Mock interview mode ✦ highest competitive impact
 
+~~All Phase 2 items shipped — commit bd21542+.~~
+
 **Rationale:** The #1 missing feature vs every competitor. Users consistently cite timed mock practice as what they want but can't find.
 
 ### Data model

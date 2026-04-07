@@ -1,0 +1,570 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import api from '../api';
+import CodeEditor from '../components/CodeEditor';
+import MCQPanel from '../components/MCQPanel';
+import { TRACK_META } from '../contexts/TopicContext';
+
+function formatTime(s) {
+  if (s == null || s < 0) return '00:00';
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+}
+
+function timerClass(s) {
+  if (s < 180) return 'mock-timer mock-timer--danger';
+  if (s < 600) return 'mock-timer mock-timer--warning';
+  return 'mock-timer';
+}
+
+const TRACK_LABELS = {
+  sql: 'SQL', python: 'Python', 'python-data': 'Pandas', pyspark: 'PySpark', mixed: 'Mixed',
+};
+
+const DEFAULT_CODE = {
+  sql: '-- Write your SQL query here\n',
+  python: '# Write your Python solution here\n\ndef solution():\n    pass\n',
+  'python-data': '# Write your pandas/numpy code here\n# result should be assigned to a variable named `result`\n',
+  pyspark: '',
+};
+
+export default function MockSession() {
+  const { id } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const [session, setSession] = useState(null);
+  const [questions, setQuestions] = useState([]);
+  const [activeQ, setActiveQ] = useState(0);
+  const [codes, setCodes] = useState({});
+  const [results, setResults] = useState({});       // {qId: verdict}
+  const [solved, setSolved] = useState({});         // {qId: bool}
+  const [mcqSelections, setMcqSelections] = useState({}); // {qId: int}
+  const [submitting, setSubmitting] = useState(false);
+  const [running, setRunning] = useState(false);
+  const [runResults, setRunResults] = useState({});
+  const [remainingS, setRemainingS] = useState(null);
+  const [status, setStatus] = useState('loading');  // 'loading'|'active'|'finishing'|'completed'
+  const [summary, setSummary] = useState(null);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [questionView, setQuestionView] = useState('description');  // 'description'|'schema'
+  const [mobileQuestionOpen, setMobileQuestionOpen] = useState(false);
+  const [expandedSolutions, setExpandedSolutions] = useState({}); // {qId: bool}
+  const [loadError, setLoadError] = useState(null);
+
+  const finishCalled = useRef(false);
+
+  const handleFinish = useCallback(async () => {
+    if (finishCalled.current) return;
+    finishCalled.current = true;
+    setStatus('finishing');
+    try {
+      const r = await api.post(`/mock/${id}/finish`);
+      setSummary(r.data);
+      setStatus('completed');
+    } catch (err) {
+      console.error('Failed to finish session', err);
+      setStatus('completed');
+    }
+  }, [id]);
+
+  function initFromData(data) {
+    setSession({
+      session_id: data.session_id,
+      mode: data.mode,
+      track: data.track,
+      difficulty: data.difficulty,
+      started_at: data.started_at,
+      time_limit_s: data.time_limit_s,
+      status: data.status,
+    });
+    setQuestions(data.questions || []);
+
+    // Restore codes and solved state from server
+    const initialCodes = {};
+    const initialSolved = {};
+    (data.questions || []).forEach(q => {
+      initialCodes[q.id] = q.final_code || DEFAULT_CODE[q.track] || '';
+      initialSolved[q.id] = q.is_solved || false;
+    });
+    setCodes(initialCodes);
+    setSolved(initialSolved);
+
+    if (data.status === 'completed') {
+      // Already finished — fetch summary
+      api.post(`/mock/${id}/finish`)
+        .then(r => { setSummary(r.data); setStatus('completed'); })
+        .catch(() => setStatus('completed'));
+    } else {
+      // Compute remaining time from server's started_at
+      const elapsed = Math.floor((Date.now() - new Date(data.started_at)) / 1000);
+      const remaining = Math.max(0, data.time_limit_s - elapsed);
+      setRemainingS(remaining);
+      setStatus('active');
+    }
+  }
+
+  useEffect(() => {
+    const sessionData = location.state?.sessionData;
+    if (sessionData) {
+      initFromData(sessionData);
+    } else {
+      api.get(`/mock/${id}`)
+        .then(r => initFromData(r.data))
+        .catch(() => setLoadError('Failed to load session.'));
+    }
+  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Countdown timer
+  useEffect(() => {
+    if (remainingS === null || status !== 'active') return;
+    if (remainingS <= 0) {
+      handleFinish();
+      return;
+    }
+    const t = setInterval(() => {
+      setRemainingS(s => {
+        if (s <= 1) {
+          clearInterval(t);
+          handleFinish();
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(t);
+  }, [remainingS === null, status]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Browser tab title
+  useEffect(() => {
+    if (status === 'active' && remainingS != null) {
+      document.title = `${formatTime(remainingS)} — Mock Interview | datanest`;
+    } else if (status === 'completed') {
+      document.title = 'Mock Interview Summary | datanest';
+    }
+    return () => { document.title = 'datanest'; };
+  }, [remainingS, status]);
+
+  const currentQuestion = questions[activeQ] || null;
+
+  function getCode(q) {
+    if (!q) return '';
+    return codes[q.id] !== undefined ? codes[q.id] : (DEFAULT_CODE[q.track] || '');
+  }
+
+  function setCode(qId, value) {
+    setCodes(prev => ({ ...prev, [qId]: value }));
+  }
+
+  async function handleRun() {
+    if (!currentQuestion || running) return;
+    const q = currentQuestion;
+    const track = q.track;
+    const meta = TRACK_META[track];
+    if (!meta || !meta.hasRunCode) return;
+
+    setRunning(true);
+    setRunResults(prev => ({ ...prev, [q.id]: null }));
+    try {
+      const endpoint = track === 'sql'
+        ? '/run-query'
+        : `${meta.apiPrefix}/run-code`;
+      const payload = track === 'sql'
+        ? { query: getCode(q), question_id: q.id }
+        : { code: getCode(q), question_id: q.id };
+      const r = await api.post(endpoint, payload);
+      setRunResults(prev => ({ ...prev, [q.id]: r.data }));
+    } catch (err) {
+      const errMsg = err?.response?.data?.error || err?.response?.data?.detail || 'Run failed';
+      setRunResults(prev => ({ ...prev, [q.id]: { error: errMsg } }));
+    } finally {
+      setRunning(false);
+    }
+  }
+
+  async function handleSubmit() {
+    if (!currentQuestion || submitting || solved[currentQuestion.id]) return;
+    const q = currentQuestion;
+
+    setSubmitting(true);
+    setResults(prev => ({ ...prev, [q.id]: null }));
+    try {
+      const payload = {
+        question_id: q.id,
+        track: q.track,
+        time_spent_s: null,
+      };
+      if (q.track === 'pyspark') {
+        payload.selected_option = mcqSelections[q.id] !== undefined ? mcqSelections[q.id] : null;
+      } else {
+        payload.code = getCode(q);
+      }
+      const r = await api.post(`/mock/${id}/submit`, payload);
+      setResults(prev => ({ ...prev, [q.id]: r.data }));
+      if (r.data.correct) {
+        setSolved(prev => ({ ...prev, [q.id]: true }));
+      }
+    } catch (err) {
+      const errMsg = err?.response?.data?.detail || 'Submission failed';
+      setResults(prev => ({ ...prev, [q.id]: { error: errMsg } }));
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  function handleExitConfirm() {
+    setShowExitConfirm(false);
+    handleFinish().then(() => navigate('/mock'));
+  }
+
+  // ── Loading / error states ─────────────────────────────────────────────────
+  if (loadError) {
+    return (
+      <div className="mock-shell" style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: 'var(--danger)' }}>{loadError}</p>
+        <Link to="/mock" className="btn btn-secondary" style={{ marginTop: '1rem' }}>Back to Mock</Link>
+      </div>
+    );
+  }
+
+  if (status === 'loading') {
+    return <div className="mock-shell" style={{ alignItems: 'center', justifyContent: 'center' }}>
+      <p style={{ color: 'var(--text-secondary)' }}>Loading session…</p>
+    </div>;
+  }
+
+  // ── Summary view ───────────────────────────────────────────────────────────
+  if (status === 'completed' || status === 'finishing') {
+    const sum = summary;
+    const qs = sum?.questions || questions;
+    const solvedCount = sum?.solved_count ?? Object.values(solved).filter(Boolean).length;
+    const totalCount = sum?.total_count ?? questions.length;
+    const timeUsedS = sum?.time_used_s;
+    const timeLimitS = sum?.time_limit_s ?? session?.time_limit_s;
+
+    function shareText() {
+      const diff = session?.difficulty || sum?.difficulty || '';
+      const trk = TRACK_LABELS[session?.track || sum?.track] || '';
+      const mins = timeUsedS ? Math.floor(timeUsedS / 60) : '?';
+      return `${solvedCount}/${totalCount} ${diff} ${trk} questions in ${mins}m`;
+    }
+
+    return (
+      <div className="mock-shell">
+        <header className="mock-topbar">
+          <Link to="/mock" className="btn btn-secondary btn-compact">← Back to Mock</Link>
+          <span className="mock-topbar-title">Session Summary</span>
+          <span />
+        </header>
+        <div className="mock-summary-scroll">
+          <div className="mock-summary-card">
+            <div className="mock-summary-score" style={{
+              color: solvedCount === 0 ? 'var(--danger)' : solvedCount > totalCount / 2 ? 'var(--success)' : 'var(--text-strong)',
+            }}>
+              {status === 'finishing' ? 'Finishing…' : `${solvedCount} / ${totalCount} questions solved`}
+            </div>
+            {timeUsedS != null && (
+              <div className="mock-summary-time">
+                Used {formatTime(timeUsedS)} of {formatTime(timeLimitS)}
+              </div>
+            )}
+            <hr className="mock-summary-divider" />
+            {qs.map((q, i) => {
+              const isSolved = q.is_solved ?? solved[q.id];
+              const expanded = expandedSolutions[q.id];
+              return (
+                <div key={q.id} className="mock-summary-row">
+                  <div className="mock-summary-row-main">
+                    <span className="mock-summary-qnum">Q{q.position ?? i + 1}</span>
+                    <span className="mock-summary-qtitle">{q.title}</span>
+                    <span className={`mock-summary-status ${isSolved ? 'solved' : 'unsolved'}`}>
+                      {isSolved ? '✓ solved' : '✗ unsolved'}
+                    </span>
+                    {q.time_spent_s != null && (
+                      <span className="mock-summary-time-spent">{formatTime(q.time_spent_s)}</span>
+                    )}
+                    {(q.solution_query || q.solution_code || q.explanation) && (
+                      <button
+                        className="mock-solution-toggle"
+                        onClick={() => setExpandedSolutions(prev => ({ ...prev, [q.id]: !expanded }))}
+                      >
+                        {expanded ? 'Hide solution ▲' : 'See solution ▾'}
+                      </button>
+                    )}
+                  </div>
+                  {expanded && (
+                    <div className="mock-solution-body">
+                      {q.explanation && <p className="mock-solution-explanation">{q.explanation}</p>}
+                      {(q.solution_query || q.solution_code) && (
+                        <pre className="mock-solution-code">{q.solution_query || q.solution_code}</pre>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            <hr className="mock-summary-divider" />
+            <div className="mock-summary-actions">
+              <button
+                className="btn btn-secondary"
+                onClick={() => {
+                  navigator.clipboard?.writeText(shareText()).catch(() => {});
+                }}
+              >
+                Share result
+              </button>
+              <button className="btn btn-primary" onClick={() => navigate('/mock')}>
+                New mock interview
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Active session ─────────────────────────────────────────────────────────
+  const q = currentQuestion;
+  const meta = q ? TRACK_META[q.track] : null;
+  const currentResult = q ? results[q.id] : null;
+  const currentRunResult = q ? runResults[q.id] : null;
+
+  return (
+    <div className="mock-shell">
+      {/* Mock topbar */}
+      <header className="mock-topbar">
+        <button
+          className="btn btn-secondary btn-compact"
+          onClick={() => setShowExitConfirm(true)}
+        >
+          ◀ Exit
+        </button>
+
+        {/* Question dots */}
+        <div className="mock-q-tabs">
+          {questions.map((question, i) => (
+            <button
+              key={question.id}
+              type="button"
+              className={`mock-q-tab ${activeQ === i ? 'active' : ''}`}
+              onClick={() => setActiveQ(i)}
+            >
+              Q{i + 1}
+              <span className={`mock-q-dot ${solved[question.id] ? 'solved' : 'unsolved'}`} />
+            </button>
+          ))}
+        </div>
+
+        {/* Timer */}
+        <span className={timerClass(remainingS ?? 0)}>
+          {formatTime(remainingS)}
+        </span>
+
+        <button
+          className="btn btn-secondary btn-compact"
+          onClick={() => setShowExitConfirm(true)}
+        >
+          End session
+        </button>
+      </header>
+
+      {/* Body */}
+      <div className="mock-body">
+        {/* Left panel — question info */}
+        <div className={`mock-left-panel ${mobileQuestionOpen ? 'open' : ''}`}>
+          {mobileQuestionOpen && (
+            <button
+              className="btn btn-secondary btn-compact mock-close-panel"
+              onClick={() => setMobileQuestionOpen(false)}
+            >
+              ✕ Close
+            </button>
+          )}
+
+          {q && (
+            <>
+              <div className="mock-question-meta">
+                <span className={`badge badge-${q.difficulty}`}>{q.difficulty}</span>
+                <span className="mock-question-track">{TRACK_LABELS[q.track]}</span>
+              </div>
+              <h2 className="mock-question-title">{q.title}</h2>
+
+              {/* Description / Schema toggle (SQL only) */}
+              {q.track === 'sql' && q.schema && (
+                <div className="mock-view-toggle">
+                  <button
+                    className={`mock-view-btn ${questionView === 'description' ? 'active' : ''}`}
+                    onClick={() => setQuestionView('description')}
+                  >
+                    Description
+                  </button>
+                  <button
+                    className={`mock-view-btn ${questionView === 'schema' ? 'active' : ''}`}
+                    onClick={() => setQuestionView('schema')}
+                  >
+                    Schema
+                  </button>
+                </div>
+              )}
+
+              {questionView === 'description' ? (
+                <p className="mock-question-description">{q.description}</p>
+              ) : (
+                <div className="mock-schema">
+                  {Object.entries(q.schema || {}).map(([table, cols]) => (
+                    <div key={table} className="mock-schema-table">
+                      <div className="mock-schema-table-name">{table}</div>
+                      <ul className="mock-schema-cols">
+                        {cols.map(col => <li key={col}>{col}</li>)}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {q.concepts?.length > 0 && (
+                <div className="concept-tags" style={{ marginTop: '1rem' }}>
+                  {q.concepts.map(c => (
+                    <span key={c} className="tag-concept">{c}</span>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Right panel — editor + results */}
+        <div className="mock-right-panel">
+          {/* Mobile: "Question" button to open left panel */}
+          <button
+            className="btn btn-secondary btn-compact mock-show-question-btn"
+            onClick={() => setMobileQuestionOpen(true)}
+          >
+            Question ↑
+          </button>
+
+          {q && meta && !meta.hasMCQ && (
+            <>
+              <div className="mock-editor-wrapper">
+                <CodeEditor
+                  value={getCode(q)}
+                  onChange={val => setCode(q.id, val)}
+                  language={meta.language}
+                  height="340px"
+                />
+              </div>
+              <div className="mock-action-row">
+                {meta.hasRunCode && (
+                  <button
+                    className="btn btn-secondary"
+                    onClick={handleRun}
+                    disabled={running || submitting}
+                  >
+                    {running ? 'Running…' : 'Run'}
+                  </button>
+                )}
+                <button
+                  className="btn btn-primary"
+                  onClick={handleSubmit}
+                  disabled={submitting || solved[q.id]}
+                >
+                  {submitting ? 'Checking…' : solved[q.id] ? '✓ Solved' : 'Submit'}
+                </button>
+              </div>
+
+              {/* Run result */}
+              {currentRunResult && !currentRunResult.error && currentRunResult.columns && (
+                <div className="mock-run-result">
+                  <div className="mock-run-result-label">Run result</div>
+                  <div className="result-table-wrap">
+                    <table className="result-table">
+                      <thead>
+                        <tr>{currentRunResult.columns.map(c => <th key={c}>{c}</th>)}</tr>
+                      </thead>
+                      <tbody>
+                        {currentRunResult.rows?.slice(0, 20).map((row, i) => (
+                          <tr key={i}>{row.map((cell, j) => <td key={j}>{String(cell ?? '')}</td>)}</tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+              {currentRunResult?.error && (
+                <div className="mock-run-error">{currentRunResult.error}</div>
+              )}
+            </>
+          )}
+
+          {q && meta?.hasMCQ && (
+            <>
+              <MCQPanel
+                options={q.options || []}
+                selectedOption={mcqSelections[q.id] !== undefined ? mcqSelections[q.id] : null}
+                onSelect={idx => setMcqSelections(prev => ({ ...prev, [q.id]: idx }))}
+                submitted={!!currentResult}
+                correct={currentResult?.correct ?? null}
+                correctIndex={null}  // not revealed mid-session
+                explanation=""
+              />
+              <div className="mock-action-row">
+                <button
+                  className="btn btn-primary"
+                  onClick={handleSubmit}
+                  disabled={submitting || solved[q.id] || mcqSelections[q.id] === undefined}
+                >
+                  {submitting ? 'Checking…' : solved[q.id] ? '✓ Solved' : 'Submit'}
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* Submit verdict */}
+          {currentResult && (
+            <div className={`mock-verdict ${currentResult.correct ? 'mock-verdict--correct' : currentResult.error ? 'mock-verdict--error' : 'mock-verdict--wrong'}`}>
+              {currentResult.error
+                ? `Error: ${currentResult.error}`
+                : currentResult.correct
+                  ? '✓ Correct! Move to the next question.'
+                  : '✗ Not quite — review your logic and try again.'}
+              {!currentResult.error && !currentResult.correct && currentResult.feedback?.length > 0 && (
+                <ul className="mock-feedback-list">
+                  {currentResult.feedback.map((f, i) => <li key={i}>{f}</li>)}
+                </ul>
+              )}
+            </div>
+          )}
+
+          {/* Next question prompt */}
+          {solved[q?.id] && activeQ < questions.length - 1 && (
+            <button
+              className="btn btn-secondary"
+              onClick={() => setActiveQ(activeQ + 1)}
+            >
+              Next question →
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Exit confirmation modal */}
+      {showExitConfirm && (
+        <div className="mock-modal-overlay" onClick={() => setShowExitConfirm(false)}>
+          <div className="mock-modal" onClick={e => e.stopPropagation()}>
+            <h3 className="mock-modal-title">End this session?</h3>
+            <p className="mock-modal-body">Your progress will be saved and you'll see a summary.</p>
+            <div className="mock-modal-actions">
+              <button className="btn btn-secondary" onClick={() => setShowExitConfirm(false)}>
+                Keep going
+              </button>
+              <button className="btn btn-primary" onClick={handleExitConfirm}>
+                End and see summary
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
