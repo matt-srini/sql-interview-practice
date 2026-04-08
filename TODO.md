@@ -6,6 +6,24 @@ Phased roadmap to evolve datanest into a top-tier data interview practice platfo
 
 ---
 
+## Production readiness checklist
+
+### Admin account + reserved emails (pre-launch)
+
+- **Reserved email blocking** is already live in `auth.py` — no action needed, applies to prod automatically.
+- **Admin seed script** (`backend/scripts/seed_admin.py`) must be run once against the Railway Postgres DB before launch:
+  ```bash
+  DATABASE_URL="<railway-postgres-url>" \
+  ADMIN_EMAIL=<your-real-email> \
+  ADMIN_PASSWORD=<strong-password> \
+    .venv/bin/python backend/scripts/seed_admin.py
+  ```
+  Options for running against Railway: `railway run python backend/scripts/seed_admin.py` (with env vars set in Railway dashboard), or exec into the running container via `railway shell`.
+- Use a real email address you own for the prod admin account (not `admin@internal.test`).
+- The script is idempotent — safe to re-run if credentials need rotating.
+
+---
+
 ## UI Architecture & Layout Plan
 
 This section defines the full frontend blueprint across all phases — route tree, navigation evolution, new page layouts, and how existing pages change. Implement phases in order; each phase builds on the last.
