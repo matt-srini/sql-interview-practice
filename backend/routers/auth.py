@@ -2,14 +2,36 @@ from __future__ import annotations
 
 import logging
 import re
+import urllib.parse
 
+import httpx
 from fastapi import APIRouter, Depends, Request, Response
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel, field_validator
 
-from db import create_session, delete_session, get_user_credentials_by_email, merge_users
-from db import upgrade_anonymous_to_registered, verify_password
+from config import (
+    APP_BASE_URL,
+    FRONTEND_BASE_URL,
+    GITHUB_CLIENT_ID,
+    GITHUB_CLIENT_SECRET,
+    GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET,
+)
+from db import (
+    consume_password_reset_token,
+    create_password_reset_token,
+    create_session,
+    delete_session,
+    get_or_create_oauth_user,
+    get_user_by_email,
+    get_user_credentials_by_email,
+    merge_users,
+    update_password,
+    upgrade_anonymous_to_registered,
+    verify_password,
+)
 from deps import clear_session_cookie, get_current_user, get_optional_current_user, set_session_cookie
+from email_service import email_available, send_password_reset_email
 from middleware.request_context import get_request_id
 
 
@@ -24,6 +46,15 @@ _RESERVED_EMAIL_PREFIXES: frozenset[str] = frozenset({
     "automation", "auto", "author",
 })
 
+# OAuth state param length (random bytes for CSRF prevention stored in session cookie)
+_OAUTH_STATE_BYTES = 16
+
+# OAuth redirect URIs — provider will redirect back here after auth
+def _oauth_callback_url(provider: str) -> str:
+    return f"{APP_BASE_URL}/api/auth/oauth/{provider}/callback"
+
+
+# ── Pydantic models ───────────────────────────────────────────────────────────
 
 class RegisterRequest(BaseModel):
     email: str
@@ -86,12 +117,44 @@ class MagicLinkRequest(BaseModel):
         return value
 
 
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+    @field_validator("email")
+    @classmethod
+    def normalize_email(cls, value: str) -> str:
+        return value.strip().lower()
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    password: str
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, value: str) -> str:
+        msg = "Password must be at least 8 characters and include uppercase, lowercase, and a number."
+        if len(value) < 8:
+            raise ValueError(msg)
+        if not re.search(r"[A-Z]", value):
+            raise ValueError(msg)
+        if not re.search(r"[a-z]", value):
+            raise ValueError(msg)
+        if not re.search(r"[0-9]", value):
+            raise ValueError(msg)
+        return value
+
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
 def _err(message: str, status: int = 400) -> JSONResponse:
     return JSONResponse(
         status_code=status,
         content={"error": message, "request_id": get_request_id()},
     )
 
+
+# ── Standard auth ─────────────────────────────────────────────────────────────
 
 @router.post("/register", status_code=201)
 async def register(
@@ -112,11 +175,7 @@ async def register(
         return _err("Unable to create account. Please try again.")
 
     token = await create_session(user["id"])
-    logger.info(
-        "[request_id=%s] Account created: user_id=%s",
-        get_request_id(),
-        user["id"],
-    )
+    logger.info("[request_id=%s] Account created: user_id=%s", get_request_id(), user["id"])
     payload = JSONResponse(
         status_code=201,
         content={"user": {"id": user["id"], "email": user["email"], "name": user["name"], "plan": user["plan"]}},
@@ -148,11 +207,7 @@ async def login(
         await delete_session(existing_token)
 
     token = await create_session(candidate["id"])
-    logger.info(
-        "[request_id=%s] Sign-in: user_id=%s",
-        get_request_id(),
-        candidate["id"],
-    )
+    logger.info("[request_id=%s] Sign-in: user_id=%s", get_request_id(), candidate["id"])
     payload = JSONResponse(
         content={"user": {"id": candidate["id"], "email": candidate["email"], "name": candidate["name"], "plan": candidate["plan"]}}
     )
@@ -181,22 +236,216 @@ async def me(session_user: dict[str, str | None] | None = Depends(get_optional_c
 
 @router.post("/magic-link")
 async def request_magic_link(body: MagicLinkRequest) -> JSONResponse:
-    logger.info(
-        "[request_id=%s] Magic link requested (stub, not sent): email=%s",
-        get_request_id(),
-        body.email,
-    )
+    logger.info("[request_id=%s] Magic link requested (stub): email=%s", get_request_id(), body.email)
     return _err("Magic link sign-in is not yet available.", status=501)
 
 
-@router.get("/oauth/{provider}")
-async def oauth_redirect(provider: str) -> JSONResponse:
-    supported = {"google", "github", "apple"}
-    if provider not in supported:
-        return _err("Unknown provider.", status=404)
-    logger.info(
-        "[request_id=%s] OAuth redirect requested (stub): provider=%s",
-        get_request_id(),
-        provider,
+# ── Password reset ────────────────────────────────────────────────────────────
+
+@router.post("/forgot-password")
+async def forgot_password(body: ForgotPasswordRequest) -> JSONResponse:
+    """Request a password reset email. Always returns success to prevent enumeration."""
+    # Look up user — don't reveal whether the email exists
+    user = await get_user_by_email(body.email)
+    if user is not None:
+        if not email_available():
+            logger.warning(
+                "[request_id=%s] Forgot-password: RESEND_API_KEY not configured, cannot send reset email",
+                get_request_id(),
+            )
+        else:
+            token = await create_password_reset_token(user["id"])
+            sent = await send_password_reset_email(body.email, token)
+            if sent:
+                logger.info("[request_id=%s] Password reset email sent: user_id=%s", get_request_id(), user["id"])
+            else:
+                logger.error("[request_id=%s] Failed to send reset email: user_id=%s", get_request_id(), user["id"])
+    else:
+        logger.info("[request_id=%s] Forgot-password: no account for email %s", get_request_id(), body.email)
+
+    # Always return success (prevent email enumeration)
+    return JSONResponse(content={"ok": True})
+
+
+@router.post("/reset-password")
+async def reset_password(body: ResetPasswordRequest) -> JSONResponse:
+    """Consume a reset token and update the user's password."""
+    user_id = await consume_password_reset_token(body.token)
+    if user_id is None:
+        return _err("This reset link is invalid or has expired. Please request a new one.", status=400)
+
+    await update_password(user_id, body.password)
+    logger.info("[request_id=%s] Password reset: user_id=%s", get_request_id(), user_id)
+    return JSONResponse(content={"ok": True})
+
+
+# ── OAuth ─────────────────────────────────────────────────────────────────────
+
+@router.get("/oauth/{provider}/authorize")
+async def oauth_authorize(provider: str, request: Request) -> JSONResponse:
+    """Return the OAuth authorization URL for the given provider."""
+    import secrets as _secrets
+
+    if provider == "google":
+        if not GOOGLE_CLIENT_ID:
+            return _err("Google sign-in is not configured.", status=503)
+        state = _secrets.token_urlsafe(_OAUTH_STATE_BYTES)
+        params = {
+            "client_id": GOOGLE_CLIENT_ID,
+            "redirect_uri": _oauth_callback_url("google"),
+            "response_type": "code",
+            "scope": "openid email profile",
+            "state": state,
+            "access_type": "online",
+        }
+        url = "https://accounts.google.com/o/oauth2/v2/auth?" + urllib.parse.urlencode(params)
+        return JSONResponse(content={"url": url, "state": state})
+
+    if provider == "github":
+        if not GITHUB_CLIENT_ID:
+            return _err("GitHub sign-in is not configured.", status=503)
+        state = _secrets.token_urlsafe(_OAUTH_STATE_BYTES)
+        params = {
+            "client_id": GITHUB_CLIENT_ID,
+            "redirect_uri": _oauth_callback_url("github"),
+            "scope": "user:email",
+            "state": state,
+        }
+        url = "https://github.com/login/oauth/authorize?" + urllib.parse.urlencode(params)
+        return JSONResponse(content={"url": url, "state": state})
+
+    if provider == "apple":
+        return _err("Apple sign-in is not yet available.", status=503)
+
+    return _err("Unknown provider.", status=404)
+
+
+@router.get("/oauth/{provider}/callback")
+async def oauth_callback(provider: str, request: Request) -> RedirectResponse:
+    """Handle OAuth callback — exchange code for token, upsert user, set session."""
+    code = request.query_params.get("code")
+    error = request.query_params.get("error")
+    frontend_base = (FRONTEND_BASE_URL or APP_BASE_URL or "http://localhost:5173").rstrip("/")
+
+    def _redirect_error(msg: str) -> RedirectResponse:
+        params = urllib.parse.urlencode({"error": msg})
+        return RedirectResponse(url=f"{frontend_base}/auth?{params}", status_code=302)
+
+    if error or not code:
+        return _redirect_error("OAuth sign-in was cancelled or failed.")
+
+    try:
+        if provider == "google":
+            user_info = await _exchange_google_code(code)
+        elif provider == "github":
+            user_info = await _exchange_github_code(code)
+        else:
+            return _redirect_error("Unknown OAuth provider.")
+    except Exception:
+        logger.exception("[request_id=%s] OAuth token exchange failed: provider=%s", get_request_id(), provider)
+        return _redirect_error("Sign-in failed. Please try again.")
+
+    if not user_info:
+        return _redirect_error("Could not retrieve account information from provider.")
+
+    user = await get_or_create_oauth_user(
+        provider=provider,
+        provider_user_id=user_info["id"],
+        email=user_info.get("email"),
+        name=user_info.get("name"),
     )
-    return _err(f"{provider.capitalize()} sign-in is not yet available.", status=501)
+
+    token = await create_session(user["id"])
+    logger.info("[request_id=%s] OAuth sign-in: provider=%s user_id=%s", get_request_id(), provider, user["id"])
+
+    response = RedirectResponse(url=f"{frontend_base}/", status_code=302)
+    response.set_cookie(
+        key="session_token",
+        value=token,
+        httponly=True,
+        samesite="lax",
+        max_age=30 * 24 * 3600,
+        path="/",
+    )
+    return response
+
+
+async def _exchange_google_code(code: str) -> dict | None:
+    """Exchange Google auth code for user info."""
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        token_resp = await client.post(
+            "https://oauth2.googleapis.com/token",
+            data={
+                "code": code,
+                "client_id": GOOGLE_CLIENT_ID,
+                "client_secret": GOOGLE_CLIENT_SECRET,
+                "redirect_uri": _oauth_callback_url("google"),
+                "grant_type": "authorization_code",
+            },
+        )
+        if token_resp.status_code != 200:
+            logger.error("Google token exchange failed: %s", token_resp.text)
+            return None
+        access_token = token_resp.json().get("access_token")
+        if not access_token:
+            return None
+
+        userinfo_resp = await client.get(
+            "https://www.googleapis.com/oauth2/v2/userinfo",
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+        if userinfo_resp.status_code != 200:
+            return None
+        data = userinfo_resp.json()
+        return {
+            "id": data.get("id"),
+            "email": data.get("email"),
+            "name": data.get("name"),
+        }
+
+
+async def _exchange_github_code(code: str) -> dict | None:
+    """Exchange GitHub auth code for user info."""
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        token_resp = await client.post(
+            "https://github.com/login/oauth/access_token",
+            headers={"Accept": "application/json"},
+            data={
+                "client_id": GITHUB_CLIENT_ID,
+                "client_secret": GITHUB_CLIENT_SECRET,
+                "code": code,
+                "redirect_uri": _oauth_callback_url("github"),
+            },
+        )
+        if token_resp.status_code != 200:
+            return None
+        access_token = token_resp.json().get("access_token")
+        if not access_token:
+            return None
+
+        user_resp = await client.get(
+            "https://api.github.com/user",
+            headers={"Authorization": f"Bearer {access_token}", "Accept": "application/vnd.github+json"},
+        )
+        if user_resp.status_code != 200:
+            return None
+        data = user_resp.json()
+
+        email = data.get("email")
+        if not email:
+            # GitHub users may hide their primary email; fetch via /user/emails
+            emails_resp = await client.get(
+                "https://api.github.com/user/emails",
+                headers={"Authorization": f"Bearer {access_token}", "Accept": "application/vnd.github+json"},
+            )
+            if emails_resp.status_code == 200:
+                for entry in emails_resp.json():
+                    if entry.get("primary") and entry.get("verified"):
+                        email = entry["email"]
+                        break
+
+        return {
+            "id": str(data.get("id")),
+            "email": email,
+            "name": data.get("name") or data.get("login"),
+        }

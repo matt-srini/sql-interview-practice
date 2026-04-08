@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../App';
 
@@ -13,6 +14,27 @@ function validatePassword(password) {
   return null;
 }
 
+// ─── SVG icons ───────────────────────────────────────────────────────────────
+
+function GoogleIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18">
+      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+    </svg>
+  );
+}
+
+function GithubIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+      <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+    </svg>
+  );
+}
+
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const VALID_MODES = ['signin', 'signup', 'magic', 'forgot'];
@@ -21,7 +43,7 @@ const MODE_META = {
   signin: { title: 'Sign in', subtitle: 'Pick up your practice session' },
   signup: { title: 'Create account', subtitle: 'Save progress and unlock more practice' },
   magic: { title: 'Magic link', subtitle: 'Get a one-time sign-in link by email' },
-  forgot: { title: 'Reset password', subtitle: 'Recover access to your account' },
+  forgot: { title: 'Reset password', subtitle: 'We\'ll send a reset link to your email' },
 };
 
 // ─── AuthPage component ───────────────────────────────────────────────────────
@@ -38,8 +60,14 @@ export default function AuthPage() {
   const [status, setStatus] = useState('idle'); // 'idle' | 'loading' | 'success'
   const [error, setError] = useState(null);
   const [info, setInfo] = useState(null);
-
   const [passwordError, setPasswordError] = useState(null);
+  const [oauthLoading, setOauthLoading] = useState(null); // 'google' | 'github' | null
+
+  // Show error from OAuth redirect (e.g. ?error=...)
+  useEffect(() => {
+    const oauthError = searchParams.get('error');
+    if (oauthError) setError(oauthError);
+  }, [searchParams]);
 
   const { login, register, requestMagicLink, user, logout } = useAuth();
   const navigate = useNavigate();
@@ -56,7 +84,6 @@ export default function AuthPage() {
     setInfo(null);
     setPasswordError(null);
     setStatus('idle');
-    // Move focus to first input on mode switch for keyboard users.
     requestAnimationFrame(() => firstFieldRef.current?.focus());
   }
 
@@ -64,6 +91,24 @@ export default function AuthPage() {
     setFields((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     if (error) setError(null);
     if (e.target.name === 'password' && passwordError) setPasswordError(null);
+  }
+
+  async function handleOAuth(provider) {
+    setError(null);
+    setOauthLoading(provider);
+    try {
+      const res = await api.get(`/auth/oauth/${provider}/authorize`);
+      // Redirect the browser to the provider's auth page
+      window.location.href = res.data.url;
+    } catch (err) {
+      setOauthLoading(null);
+      const msg = err?.response?.data?.error;
+      if (err?.response?.status === 503) {
+        setError(`${provider.charAt(0).toUpperCase() + provider.slice(1)} sign-in is not configured yet.`);
+      } else {
+        setError(msg || `${provider} sign-in failed. Please try again.`);
+      }
+    }
   }
 
   async function handleSubmit(e) {
@@ -91,13 +136,20 @@ export default function AuthPage() {
           setStatus('success');
           setInfo('If an account exists for that address, a sign-in link is on its way.');
         } catch (err) {
-          setStatus('success'); // always look like success to avoid enumeration
+          setStatus('success');
           setInfo(
             err?.response?.status === 501
               ? 'Magic link sign-in is not yet available. Please sign in with email and password.'
               : 'If an account exists for that address, a sign-in link is on its way.'
           );
         }
+        return;
+      } else if (mode === 'forgot') {
+        await api.post('/auth/forgot-password', { email: fields.email });
+        setStatus('success');
+        setInfo(
+          'If an account exists for that email, a reset link is on its way. Check your inbox (and spam folder).'
+        );
         return;
       }
     } catch (err) {
@@ -110,6 +162,7 @@ export default function AuthPage() {
   const isLoading = status === 'loading';
   const isSuccess = status === 'success';
   const meta = MODE_META[mode];
+  const showOAuth = mode === 'signin' || mode === 'signup';
   const showPasswordField = mode === 'signin' || mode === 'signup';
   const showNameField = mode === 'signup';
 
@@ -152,21 +205,32 @@ export default function AuthPage() {
             <p className="auth-card-subtitle">{meta.subtitle}</p>
           </div>
 
-          {/* Forgot password — static message, no submit */}
-          {mode === 'forgot' && (
-            <div className="auth-forgot-info">
-              <p className="auth-forgot-message">
-                Password reset by email isn't available yet.
-                <br />
-                To regain access, sign in with email and password, or create a new account.
-              </p>
+          {/* OAuth buttons — sign-in / sign-up only */}
+          {showOAuth && (
+            <div className="auth-oauth">
               <button
                 type="button"
-                className="btn btn-secondary auth-submit"
-                onClick={() => switchMode('signin')}
+                className="auth-oauth-btn"
+                onClick={() => handleOAuth('google')}
+                disabled={!!oauthLoading}
+                aria-label="Continue with Google"
               >
-                Back to sign in
+                {oauthLoading === 'google' ? <span className="auth-spinner auth-spinner--sm" aria-hidden="true" /> : <GoogleIcon />}
+                <span>Continue with Google</span>
               </button>
+              <button
+                type="button"
+                className="auth-oauth-btn"
+                onClick={() => handleOAuth('github')}
+                disabled={!!oauthLoading}
+                aria-label="Continue with GitHub"
+              >
+                {oauthLoading === 'github' ? <span className="auth-spinner auth-spinner--sm" aria-hidden="true" /> : <GithubIcon />}
+                <span>Continue with GitHub</span>
+              </button>
+              <div className="auth-divider" role="separator">
+                <span>or continue with email</span>
+              </div>
             </div>
           )}
 
@@ -185,7 +249,7 @@ export default function AuthPage() {
           )}
 
           {/* Form */}
-          {!isSuccess && mode !== 'forgot' && (
+          {!isSuccess && (
             <form className="auth-form" onSubmit={handleSubmit} noValidate>
 
               {/* Name — signup only */}
@@ -294,21 +358,22 @@ export default function AuthPage() {
                 {isLoading ? (
                   <>
                     <span className="auth-spinner" aria-hidden="true" />
-                    {mode === 'signin' ? 'Signing in…' : mode === 'signup' ? 'Creating account…' : 'Sending link…'}
+                    {mode === 'signin' ? 'Signing in…' : mode === 'signup' ? 'Creating account…' : 'Sending…'}
                   </>
                 ) : (
                   <>
-                    {mode === 'signin' && 'Sign in'}
-                    {mode === 'signup' && 'Create account'}
-                    {mode === 'magic'  && 'Send magic link'}
+                    {mode === 'signin'  && 'Sign in'}
+                    {mode === 'signup'  && 'Create account'}
+                    {mode === 'magic'   && 'Send magic link'}
+                    {mode === 'forgot'  && 'Send reset link'}
                   </>
                 )}
               </button>
             </form>
           )}
 
-          {/* Post-success actions */}
-          {isSuccess && mode === 'magic' && (
+          {/* Post-success: back to sign in */}
+          {isSuccess && (mode === 'magic' || mode === 'forgot') && (
             <div className="auth-post-success">
               <button
                 type="button"
@@ -322,14 +387,10 @@ export default function AuthPage() {
 
           {/* Footer links */}
           <div className="auth-footer">
-            {(mode === 'signin' || mode === 'magic') && (
+            {(mode === 'signin' || mode === 'magic' || mode === 'forgot') && (
               <>
                 <span className="auth-footer-text">Don't have an account?</span>
-                <button
-                  type="button"
-                  className="auth-link-btn"
-                  onClick={() => switchMode('signup')}
-                >
+                <button type="button" className="auth-link-btn" onClick={() => switchMode('signup')}>
                   Create one
                 </button>
               </>
@@ -337,11 +398,7 @@ export default function AuthPage() {
             {mode === 'signup' && (
               <>
                 <span className="auth-footer-text">Already have an account?</span>
-                <button
-                  type="button"
-                  className="auth-link-btn"
-                  onClick={() => switchMode('signin')}
-                >
+                <button type="button" className="auth-link-btn" onClick={() => switchMode('signin')}>
                   Sign in
                 </button>
               </>
