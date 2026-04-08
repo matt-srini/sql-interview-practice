@@ -976,7 +976,14 @@ select {
   min-width: 0;
 }
 
+.sidebar-question-main {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
 .sidebar-question-title {
+  display: block;
   font-size: 0.83rem;
   font-weight: 500;
   color: var(--text-primary);
