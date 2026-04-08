@@ -81,9 +81,10 @@ sql-interview-practice/
 │   ├── content/python_questions/   # Python algorithm questions
 │   ├── content/python_data_questions/ # Pandas questions
 │   ├── content/pyspark_questions/  # PySpark MCQ questions
+│   ├── content/paths/              # Learning path configs (slug, title, description, topic, questions[])
 │   ├── datasets/                   # Committed CSVs + metadata JSON
 │   ├── middleware/                 # Request context, request_id, X-Request-ID
-│   ├── routers/                    # auth, system, catalog, questions, sample, plan, stripe, mock, spa
+│   ├── routers/                    # auth, system, catalog, questions, sample, plan, stripe, mock, paths, spa
 │   ├── scripts/                    # Dataset generator, anonymous user cleanup
 │   ├── tests/                      # API, evaluator, rate limiter tests
 │   ├── alembic/                    # Postgres migrations
@@ -98,6 +99,7 @@ sql-interview-practice/
 │   ├── python_questions.py         # Python algorithm catalog loader
 │   ├── python_data_questions.py    # Pandas catalog loader
 │   ├── pyspark_questions.py        # PySpark catalog loader
+│   ├── path_loader.py              # Learning path catalog loader (reads content/paths/*.json)
 │   ├── sql_guard.py                # Read-only SQL validation
 │   ├── python_guard.py             # AST-based Python code validator
 │   ├── python_evaluator.py         # Spawns sandbox, enforces timeout, compares results
@@ -125,11 +127,13 @@ sql-interview-practice/
 │   │   │   ├── PrintOutputPanel.js # Captured stdout from Python execution
 │   │   │   ├── VariablesPanel.js   # Available DataFrames for Pandas questions
 │   │   │   ├── MCQPanel.js         # Radio-button MCQ for PySpark questions
-│   │   │   └── TrackProgressBar.js # Reusable horizontal progress bar
+│   │   │   ├── TrackProgressBar.js # Reusable horizontal progress bar
+│   │   │   └── PathProgressCard.js # Path card with topic dot, progress bar, CTA (used on Landing + TrackHub)
 │   │   └── pages/
 │   │       ├── LandingPage.js          # Fixed-topbar landing with track/sample tabs and compact progress panels
 │   │       ├── QuestionPage.js         # Topic-aware question page (all 4 tracks)
-│   │       ├── TrackHubPage.js         # Per-track landing (progress, next-up summary, concept preview)
+│   │       ├── TrackHubPage.js         # Per-track landing (progress, next-up summary, concept preview, paths)
+│   │       ├── LearningPath.js         # Curated path page at /learn/:slug (breadcrumb, progress, question list)
 │   │       ├── ProgressDashboard.js    # Cross-track progress overview at /dashboard
 │   │       ├── MockHub.js              # Mock interview lobby at /mock (mode/track/difficulty selection)
 │   │       ├── MockSession.js          # Active mock session + summary at /mock/:id
@@ -155,6 +159,7 @@ sql-interview-practice/
 /dashboard                     → ProgressDashboard (cross-track progress)
 /mock                          → MockHub (mode/track/difficulty selector + history)  [AuthRequired]
 /mock/:id                      → MockSession (active session + inline summary)        [AuthRequired]
+/learn/:slug                   → LearningPath (curated path — breadcrumb, progress bar, question list)
 /sample/:topic/:difficulty     → SampleQuestionPage (topic-aware sample mode)
 /sample/:difficulty            → redirect → /sample/sql/:difficulty
 /practice/:topic               → TopicShell (TopicProvider + CatalogProvider + AppShell)
@@ -255,6 +260,8 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 | POST | `/api/pyspark/submit` | Submit MCQ answer |
 | GET | `/api/dashboard` | Cross-track progress summary |
 | GET | `/api/submissions` | Submission history for a question (`track`, `question_id`, `limit` params) |
+| GET | `/api/paths` | All learning paths with per-user `solved_count` |
+| GET | `/api/paths/{slug}` | Path detail with per-question `state` (solved/unlocked/locked) |
 | GET | `/api/mock/history` | Past mock sessions list (last 20) |
 | POST | `/api/mock/start` | Start a mock session `{ mode, track, difficulty }` → `{ session_id, questions[], time_limit_s, started_at }` |
 | GET | `/api/mock/{id}` | Session state for reload recovery |

@@ -1,8 +1,10 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../api';
 import { useCatalog } from '../catalogContext';
 import { useTopic } from '../contexts/TopicContext';
 import TrackProgressBar from '../components/TrackProgressBar';
+import PathProgressCard from '../components/PathProgressCard';
 
 function pickNextQuestionId(catalog) {
   if (!catalog) return null;
@@ -80,6 +82,11 @@ export default function TrackHubPage() {
 
   const { all: allConcepts, solved: solvedConcepts } = useMemo(() => collectConcepts(catalog), [catalog]);
   const conceptPreview = allConcepts.slice(0, 8);
+
+  const [topicPaths, setTopicPaths] = useState([]);
+  useEffect(() => {
+    api.get('/paths').then(r => setTopicPaths(r.data.filter(p => p.topic === topic))).catch(() => {});
+  }, [topic]);
 
   function handleContinue() {
     if (continueId) {
@@ -185,6 +192,17 @@ export default function TrackHubPage() {
               </div>
             )}
           </div>
+        )}
+
+        {topicPaths.length > 0 && (
+          <section className="trackhub-paths">
+            <h3 className="trackhub-paths-title">Learning paths</h3>
+            <div className="trackhub-paths-grid">
+              {topicPaths.map(p => (
+                <PathProgressCard key={p.slug} path={p} compact />
+              ))}
+            </div>
+          </section>
         )}
       </div>
     </main>
