@@ -57,6 +57,22 @@ RATE_LIMIT_REQUESTS = _get_int("RATE_LIMIT_REQUESTS", "60")
 RATE_LIMIT_WINDOW_SECONDS = _get_int("RATE_LIMIT_WINDOW_SECONDS", "60")
 REDIS_URL = _getenv("REDIS_URL")
 
+# OAuth providers
+GOOGLE_CLIENT_ID = _getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = _getenv("GOOGLE_CLIENT_SECRET")
+GITHUB_CLIENT_ID = _getenv("GITHUB_CLIENT_ID")
+GITHUB_CLIENT_SECRET = _getenv("GITHUB_CLIENT_SECRET")
+
+# Email / password reset
+RESEND_API_KEY = _getenv("RESEND_API_KEY")
+EMAIL_FROM = _getenv("EMAIL_FROM", "datanest <noreply@datanest.app>")
+
+# Base URLs
+# APP_BASE_URL: backend server base (used for OAuth callback URIs — must match what you register with providers)
+# FRONTEND_BASE_URL: where to redirect users after OAuth (defaults to APP_BASE_URL in production single-service deploys)
+APP_BASE_URL = _getenv("APP_BASE_URL", "http://localhost:8000")
+FRONTEND_BASE_URL = _getenv("FRONTEND_BASE_URL", "http://localhost:5173")
+
 _origins_raw = _getenv("ALLOWED_ORIGINS") or _getenv("CORS_ALLOW_ORIGINS")
 ALLOWED_ORIGINS = _parse_origins(_origins_raw)
 

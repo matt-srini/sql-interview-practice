@@ -1146,3 +1146,161 @@ async def get_submissions(
             }
             for row in rows
         ]
+
+
+# ── OAuth accounts ────────────────────────────────────────────────────────────
+
+async def get_or_create_oauth_user(
+    provider: str,
+    provider_user_id: str,
+    email: str | None,
+    name: str | None,
+) -> dict[str, Any]:
+    """Find or create a user for an OAuth login. Returns the user dict."""
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        # Try to find existing OAuth account
+        result = await session.execute(
+            text(
+                """
+                SELECT u.id, u.email, u.name, u.plan, u.stripe_customer_id, u.created_at, u.upgraded_at
+                FROM oauth_accounts oa
+                JOIN users u ON u.id = oa.user_id
+                WHERE oa.provider = :provider
+                  AND oa.provider_user_id = :provider_user_id
+                """
+            ),
+            {"provider": provider, "provider_user_id": provider_user_id},
+        )
+        row = result.mappings().first()
+        if row:
+            return _user_from_mapping(row)  # type: ignore[return-value]
+
+        # If email provided, check for existing user with that email
+        user_id: str | None = None
+        if email:
+            result2 = await session.execute(
+                text("SELECT id FROM users WHERE email = :email"),
+                {"email": email},
+            )
+            existing = result2.mappings().first()
+            if existing:
+                user_id = str(existing["id"])
+
+        # Create a new user if none found
+        if user_id is None:
+            result3 = await session.execute(
+                text(
+                    """
+                    INSERT INTO users (email, name, pwd_hash, pwd_salt, plan)
+                    VALUES (:email, :name, NULL, NULL, 'free')
+                    RETURNING id, email, name, plan, stripe_customer_id, created_at, upgraded_at
+                    """
+                ),
+                {"email": email, "name": name or email},
+            )
+            user_row = result3.mappings().one()
+            user_id = str(user_row["id"])
+            user_dict = _user_from_mapping(user_row)  # type: ignore[arg-type]
+        else:
+            result4 = await session.execute(
+                text(
+                    """
+                    SELECT id, email, name, plan, stripe_customer_id, created_at, upgraded_at
+                    FROM users WHERE id = CAST(:user_id AS UUID)
+                    """
+                ),
+                {"user_id": user_id},
+            )
+            user_dict = _user_from_mapping(result4.mappings().first())  # type: ignore[arg-type]
+
+        # Link OAuth account
+        await session.execute(
+            text(
+                """
+                INSERT INTO oauth_accounts (user_id, provider, provider_user_id, email, name)
+                VALUES (CAST(:user_id AS UUID), :provider, :provider_user_id, :email, :name)
+                ON CONFLICT (provider, provider_user_id) DO NOTHING
+                """
+            ),
+            {"user_id": user_id, "provider": provider, "provider_user_id": provider_user_id, "email": email, "name": name},
+        )
+        await session.commit()
+        return user_dict  # type: ignore[return-value]
+
+
+# ── Password reset tokens ─────────────────────────────────────────────────────
+
+async def create_password_reset_token(user_id: str) -> str:
+    """Generate a password reset token valid for 1 hour."""
+    token = secrets.token_urlsafe(32)
+    expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        # Invalidate any existing unused tokens for this user
+        await session.execute(
+            text(
+                """
+                UPDATE password_reset_tokens
+                SET used_at = now()
+                WHERE user_id = CAST(:user_id AS UUID)
+                  AND used_at IS NULL
+                  AND expires_at > now()
+                """
+            ),
+            {"user_id": user_id},
+        )
+        await session.execute(
+            text(
+                """
+                INSERT INTO password_reset_tokens (token, user_id, expires_at)
+                VALUES (:token, CAST(:user_id AS UUID), :expires_at)
+                """
+            ),
+            {"token": token, "user_id": user_id, "expires_at": expires_at},
+        )
+        await session.commit()
+    return token
+
+
+async def consume_password_reset_token(token: str) -> str | None:
+    """Validate and consume a reset token. Returns user_id or None if invalid."""
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                UPDATE password_reset_tokens
+                SET used_at = now()
+                WHERE token = :token
+                  AND used_at IS NULL
+                  AND expires_at > now()
+                RETURNING user_id
+                """
+            ),
+            {"token": token},
+        )
+        row = result.mappings().first()
+        if row is None:
+            await session.rollback()
+            return None
+        await session.commit()
+        return str(row["user_id"])
+
+
+async def update_password(user_id: str, new_password: str) -> None:
+    """Update a user's password hash."""
+    pwd_hash, pwd_salt = _hash_password(new_password)
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        await session.execute(
+            text(
+                """
+                UPDATE users
+                SET pwd_hash = :pwd_hash, pwd_salt = :pwd_salt
+                WHERE id = CAST(:user_id AS UUID)
+                """
+            ),
+            {"pwd_hash": pwd_hash, "pwd_salt": pwd_salt, "user_id": user_id},
+        )
+        await session.commit()

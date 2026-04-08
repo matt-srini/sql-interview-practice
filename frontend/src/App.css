@@ -143,18 +143,71 @@ select {
   max-width: 48ch;
 }
 
-.auth-forgot-info {
+.auth-oauth {
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
+  gap: 0.7rem;
   margin-bottom: 1.4rem;
 }
 
-.auth-forgot-message {
-  font-size: 0.93rem;
-  color: var(--text-secondary);
-  line-height: 1.65;
-  margin: 0;
+.auth-oauth-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.7rem;
+  padding: 0.95rem 1rem;
+  border-radius: 16px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(0, 0, 0, 0.02);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.auth-oauth-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: var(--border-strong);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.auth-oauth-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.auth-divider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.35rem 0;
+}
+
+.auth-divider::before {
+  content: "";
+  position: absolute;
+  inset: 50% 0 auto;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.auth-divider span {
+  position: relative;
+  z-index: 1;
+  padding: 0 0.85rem;
+  background: var(--surface-card);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.auth-spinner--sm {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 .auth-field-hint--error {
@@ -4088,6 +4141,9 @@ select {
 [data-theme="dark"] .auth-page { background: var(--bg-page); }
 [data-theme="dark"] .auth-topbar-unused { background: rgba(20, 20, 19, 0.92); }
 [data-theme="dark"] .auth-card { background: var(--surface-card); }
+[data-theme="dark"] .auth-divider span { background: var(--surface-card); }
+[data-theme="dark"] .auth-oauth-btn { background: rgba(255, 255, 255, 0.03); border-color: var(--border-subtle); }
+[data-theme="dark"] .auth-oauth-btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.06); }
 [data-theme="dark"] .auth-input { background: rgba(255, 255, 255, 0.04); color: var(--text-strong); }
 [data-theme="dark"] .auth-alert-error { color: #F0B8B1; }
 [data-theme="dark"] .auth-alert-info { color: var(--accent-strong); }
