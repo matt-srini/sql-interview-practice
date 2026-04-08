@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
@@ -70,6 +70,10 @@ export default function AuthPage() {
   const navigate = useNavigate();
   const { cycleTheme, themeIcon, themeLabel } = useTheme();
   const firstFieldRef = useRef(null);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   function switchMode(next) {
     setMode(next);
