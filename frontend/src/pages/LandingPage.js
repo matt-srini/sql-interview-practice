@@ -4,6 +4,7 @@ import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
 import TrackProgressBar from '../components/TrackProgressBar';
+import PathProgressCard from '../components/PathProgressCard';
 import { useTheme } from '../App';
 
 const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
@@ -143,6 +144,8 @@ export default function LandingPage() {
   const [showcasePhase, setShowcasePhase] = useState('question');
   const showcaseTimers = useRef({ interval: null, timeout: null });
 
+  const [paths, setPaths] = useState([]);
+
   useEffect(() => {
     if (user) {
       api.get('/dashboard').then((res) => setDashData(res.data)).catch(() => {});
@@ -150,6 +153,10 @@ export default function LandingPage() {
     }
     setDashData(null);
   }, [user]);
+
+  useEffect(() => {
+    api.get('/paths').then(r => setPaths(r.data)).catch(() => {});
+  }, []);
 
   // Scroll to hash on mount (e.g. /#landing-tracks from back arrow)
   useEffect(() => {
@@ -445,6 +452,20 @@ export default function LandingPage() {
             );
           })}
         </section>
+
+        {paths.length > 0 && (
+          <section className="landing-paths">
+            <div className="container">
+              <h2 className="landing-paths-title">Structured learning paths</h2>
+              <p className="landing-paths-sub">Curated sequences from basics to advanced.</p>
+              <div className="landing-paths-grid">
+                {paths.slice(0, 4).map(p => (
+                  <PathProgressCard key={p.slug} path={p} />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
       </main>
     </>
   );

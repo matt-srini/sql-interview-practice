@@ -1110,13 +1110,6 @@ Question selection: 2 questions for 30-min, 3 for 60-min. Randomized from unlock
 - Landing page: "Practice questions from top companies" section
 - No backend schema changes — metadata on question JSON only
 
-### Learning paths
-
-- Curated question sequences building toward a skill (e.g., "Window Functions Mastery" → 8 questions easy to hard)
-- Stored as JSON configs in `backend/content/paths/`
-- New route: `/learn/:path-slug` → guided sequential experience
-- Progress tracked per path (separate from free-form challenge progress)
-
 ### New question types (longer term, new evaluator logic required)
 
 - **Query debugging** — given a broken query, fix it
@@ -1202,6 +1195,14 @@ Awarded automatically from existing `submissions` data:
 ---
 
 ## Completed
+
+### Phase 4 · Learning paths — shipped
+
+4 curated SQL learning paths stored as JSON in `backend/content/paths/`: Window Functions Mastery (7 questions), Aggregation Patterns (7), Cohort & Retention (6), Funnel & Event Analysis (5). `GET /api/paths` returns list with per-user `solved_count`; `GET /api/paths/:slug` returns detail with per-question `state` (solved/unlocked/locked) using existing `compute_unlock_state()`. `LearningPath.js` page at `/learn/:slug` with topbar, breadcrumb, progress bar, and question list (✓ solved / → next / 🔒 locked). `PathProgressCard` component (used by LandingPage + TrackHubPage). LandingPage gets "Structured learning paths" section below track selection. TrackHubPage shows filtered path cards below "What you'll practice".
+
+*commit: (current)*
+
+---
 
 ### Phase 4 · Company tags on SQL questions — shipped
 

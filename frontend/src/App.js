@@ -11,6 +11,7 @@ import MockSession from './pages/MockSession';
 import ProgressDashboard from './pages/ProgressDashboard';
 import QuestionPage from './pages/QuestionPage';
 import SampleQuestionPage from './pages/SampleQuestionPage';
+import LearningPath from './pages/LearningPath';
 
 // ── Theme ──────────────────────────────────────────────────────
 export const ThemeContext = createContext(null);
@@ -111,6 +112,9 @@ export default function App() {
           <Route path="/practice/questions/:id" element={<LegacyQuestionRedirect />} />
           <Route path="/practice" element={<Navigate to="/practice/sql" replace />} />
           <Route path="/questions/:id" element={<LegacyQuestionRedirect />} />
+
+          {/* Learning paths */}
+          <Route path="/learn/:slug" element={<LearningPath />} />
 
           {/* Topic-aware practice routes */}
           <Route path="/practice/:topic" element={<TopicShell />}>

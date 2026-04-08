@@ -24,6 +24,7 @@ from routers import pyspark_questions as pyspark_questions_router
 from routers import dashboard as dashboard_router
 from routers import submissions as submissions_router
 from routers import mock as mock_router
+from routers import paths as paths_router
 
 
 LOG_FORMAT = "%(asctime)s [%(levelname)s] %(message)s"
@@ -165,4 +166,5 @@ app.include_router(pyspark_questions_router.router)
 app.include_router(dashboard_router.router)
 app.include_router(submissions_router.router)
 app.include_router(mock_router.router)
+app.include_router(paths_router.router)
 app.include_router(spa.router)
