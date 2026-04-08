@@ -128,7 +128,7 @@ export default function LearningPath() {
                 else if (isNext) rowClass += ' learn-question-row--next';
                 else if (isLocked) rowClass += ' learn-question-row--locked';
 
-                const questionUrl = `/practice/${path.topic}/questions/${q.id}`;
+                const questionUrl = `/practice/${path.topic}/questions/${q.id}?path=${path.slug}`;
 
                 return (
                   <div key={q.id} className={rowClass}>

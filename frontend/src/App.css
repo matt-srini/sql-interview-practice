@@ -5504,3 +5504,67 @@ select {
   white-space: nowrap;
 }
 .learn-question-btn:hover { text-decoration: underline; }
+
+/* ── Path nav bar (inside QuestionPage when ?path= is set) ───── */
+.path-nav-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 1rem;
+  margin-bottom: 0.75rem;
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+}
+.path-nav-back {
+  color: var(--text-secondary);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+.path-nav-back:hover { color: var(--accent); }
+.path-nav-pos {
+  color: var(--text-secondary);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.path-nav-arrows {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+.path-nav-btn {
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  white-space: nowrap;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: transparent;
+  transition: background 0.12s, border-color 0.12s;
+}
+.path-nav-btn:hover {
+  background: var(--surface-raised, var(--bg-page));
+  border-color: var(--accent);
+}
+.path-nav-btn--next {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.path-nav-btn--next:hover {
+  background: var(--accent-dark, #4a58d4);
+  border-color: var(--accent-dark, #4a58d4);
+}
+.path-nav-btn--disabled {
+  color: var(--text-secondary);
+  opacity: 0.45;
+  cursor: default;
+  border-color: var(--border);
+}
