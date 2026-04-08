@@ -100,6 +100,29 @@ CREATE INDEX IF NOT EXISTS idx_progress_user_topic ON user_progress(user_id, top
 CREATE INDEX IF NOT EXISTS idx_plan_changes_user ON plan_changes(user_id);
 CREATE INDEX IF NOT EXISTS idx_submissions_user_question ON submissions(user_id, question_id, track);
 CREATE INDEX IF NOT EXISTS idx_submissions_user_recent ON submissions(user_id, submitted_at DESC);
+
+CREATE TABLE IF NOT EXISTS oauth_accounts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    provider TEXT NOT NULL,
+    provider_user_id TEXT NOT NULL,
+    email TEXT,
+    name TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (provider, provider_user_id)
+);
+
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    token TEXT PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    expires_at TIMESTAMPTZ NOT NULL,
+    used_at TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_oauth_accounts_user ON oauth_accounts(user_id);
+CREATE INDEX IF NOT EXISTS idx_reset_tokens_user ON password_reset_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_reset_tokens_expires ON password_reset_tokens(expires_at);
 """
 
 

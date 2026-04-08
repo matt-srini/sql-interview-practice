@@ -12,6 +12,7 @@ import ProgressDashboard from './pages/ProgressDashboard';
 import QuestionPage from './pages/QuestionPage';
 import SampleQuestionPage from './pages/SampleQuestionPage';
 import LearningPath from './pages/LearningPath';
+import LearningPathsIndex from './pages/LearningPathsIndex';
 
 // ── Theme ──────────────────────────────────────────────────────
 export const ThemeContext = createContext(null);
@@ -114,7 +115,9 @@ export default function App() {
           <Route path="/questions/:id" element={<LegacyQuestionRedirect />} />
 
           {/* Learning paths */}
-          <Route path="/learn/:slug" element={<LearningPath />} />
+          <Route path="/learn" element={<LearningPathsIndex />} />
+          <Route path="/learn/:topic" element={<LearningPathsIndex />} />
+          <Route path="/learn/:topic/:slug" element={<LearningPath />} />
 
           {/* Topic-aware practice routes */}
           <Route path="/practice/:topic" element={<TopicShell />}>

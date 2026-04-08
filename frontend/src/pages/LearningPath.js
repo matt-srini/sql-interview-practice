@@ -11,7 +11,7 @@ const DIFFICULTY_COLORS = {
 };
 
 export default function LearningPath() {
-  const { slug } = useParams();
+  const { topic, slug } = useParams();
   const navigate = useNavigate();
 
   const [path, setPath] = useState(null);
@@ -22,7 +22,7 @@ export default function LearningPath() {
       .then(r => setPath(r.data))
       .catch(err => {
         if (err?.response?.status === 404) {
-          navigate('/', { replace: true });
+          navigate('/learn', { replace: true });
         }
       })
       .finally(() => setLoading(false));
@@ -30,29 +30,25 @@ export default function LearningPath() {
 
   const meta = path ? (TRACK_META[path.topic] || TRACK_META['sql']) : TRACK_META['sql'];
   const pct = path && path.question_count > 0 ? (path.solved_count / path.question_count) * 100 : 0;
-
-  // Find the first non-solved unlocked question index for highlighting
-  const nextIndex = path
-    ? path.questions.findIndex(q => q.state === 'unlocked')
-    : -1;
+  const nextIndex = path ? path.questions.findIndex(q => q.state === 'unlocked') : -1;
+  const topicLabel = meta.label;
 
   return (
     <div className="learn-page">
       <Topbar />
 
-      {loading && (
-        <div className="learn-loading">Loading path…</div>
-      )}
+      {loading && <div className="learn-loading">Loading path…</div>}
 
       {!loading && path && (
         <>
-          {/* Path header */}
           <section className="learn-header">
             <div className="container learn-header-inner">
               <nav className="learn-breadcrumb" aria-label="breadcrumb">
                 <Link to="/">Practice</Link>
                 <span className="learn-breadcrumb-sep">›</span>
-                <span>Learning Paths</span>
+                <Link to="/learn">Learning Paths</Link>
+                <span className="learn-breadcrumb-sep">›</span>
+                <Link to={`/learn/${topic}`}>{topicLabel}</Link>
                 <span className="learn-breadcrumb-sep">›</span>
                 <span>{path.title}</span>
               </nav>
@@ -72,7 +68,6 @@ export default function LearningPath() {
             </div>
           </section>
 
-          {/* Question list */}
           <section className="learn-body">
             <div className="learn-question-list">
               {path.questions.map((q, i) => {
@@ -85,7 +80,7 @@ export default function LearningPath() {
                 else if (isNext) rowClass += ' learn-question-row--next';
                 else if (isLocked) rowClass += ' learn-question-row--locked';
 
-                const questionUrl = `/practice/${path.topic}/questions/${q.id}?path=${path.slug}`;
+                const questionUrl = `/practice/${path.topic}/questions/${q.id}?path=${slug}`;
 
                 return (
                   <div key={q.id} className={rowClass}>
@@ -94,9 +89,7 @@ export default function LearningPath() {
                       {isSolved ? '✓' : isLocked ? '🔒' : '→'}
                     </span>
                     <span className="learn-question-title">
-                      {isLocked ? q.title : (
-                        <Link to={questionUrl}>{q.title}</Link>
-                      )}
+                      {isLocked ? q.title : <Link to={questionUrl}>{q.title}</Link>}
                     </span>
                     <span
                       className="learn-question-difficulty"
@@ -105,10 +98,7 @@ export default function LearningPath() {
                       {q.difficulty}
                     </span>
                     {!isLocked && (
-                      <Link
-                        to={questionUrl}
-                        className="learn-question-btn"
-                      >
+                      <Link to={questionUrl} className="learn-question-btn">
                         {isSolved ? 'Review →' : isNext ? 'Start →' : 'Open →'}
                       </Link>
                     )}

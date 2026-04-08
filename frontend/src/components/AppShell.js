@@ -139,56 +139,44 @@ export default function AppShell() {
                 <span className="sidebar-toggle-label">Questions</span>
               </button>
             )}
-
-            <div className="app-title-group">
-              <div className="app-title-row app-title-row-nav">
-                <Link className="app-practice-home brand-wordmark" to="/">datanest</Link>
-                <div className="topbar-practice-dropdown app-practice-dropdown">
-                  <button
-                    className={`app-track-link topbar-practice-trigger${practiceOpen ? ' topbar-practice-trigger--open' : ''}`}
-                    onClick={() => setPracticeOpen(v => !v)}
-                    aria-haspopup="true"
-                    aria-expanded={practiceOpen}
-                    type="button"
-                  >
-                    Practice <span className="topbar-practice-caret">{practiceOpen ? '▴' : '▾'}</span>
-                  </button>
-                  {practiceOpen && (
-                    <div className="topbar-practice-menu">
-                      <div className="topbar-practice-label">Switch track</div>
-                      {TOPICS.map((track) => {
-                        const trackMeta = TRACK_META[track];
-                        return (
-                          <NavLink
-                            key={track}
-                            className={({ isActive }) => `topbar-practice-item${isActive ? ' topbar-practice-item--active' : ''}`}
-                            to={`/practice/${track}`}
-                            onClick={() => setPracticeOpen(false)}
-                          >
-                            <span className="topbar-practice-dot" style={{ background: trackMeta.color }} />
-                            <span className="topbar-practice-name">{trackMeta.label}</span>
-                            <span className="topbar-practice-sub">{trackMeta.tagline}</span>
-                          </NavLink>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-                <nav className="app-track-nav" aria-label="Practice tracks">
-                  <NavLink
-                    className={({ isActive }) =>
-                      `app-track-link ${isActive ? 'app-track-link-active' : ''}`
-                    }
-                    to="/mock"
-                  >
-                    Mock
-                  </NavLink>
-                </nav>
-              </div>
-            </div>
+            <Link className="app-practice-home brand-wordmark" to="/">datanest</Link>
           </div>
 
           <div className="app-topbar-actions">
+            <div className="topbar-practice-dropdown app-practice-dropdown">
+              <button
+                className={`topbar-auth-link topbar-practice-trigger${practiceOpen ? ' topbar-practice-trigger--open' : ''}`}
+                onClick={() => setPracticeOpen(v => !v)}
+                aria-haspopup="true"
+                aria-expanded={practiceOpen}
+                type="button"
+              >
+                Practice <span className="topbar-practice-caret">{practiceOpen ? '▴' : '▾'}</span>
+              </button>
+              {practiceOpen && (
+                <div className="topbar-practice-menu">
+                  {TOPICS.map((track) => {
+                    const trackMeta = TRACK_META[track];
+                    return (
+                      <NavLink
+                        key={track}
+                        className={({ isActive }) => `topbar-practice-item${isActive ? ' topbar-practice-item--active' : ''}`}
+                        to={`/practice/${track}`}
+                        onClick={() => setPracticeOpen(false)}
+                      >
+                        {trackMeta.label}
+                      </NavLink>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            <NavLink
+              className={({ isActive }) => `topbar-auth-link${isActive ? ' topbar-auth-link--active' : ''}`}
+              to="/mock"
+            >
+              Mock
+            </NavLink>
             <button
               className="theme-toggle"
               onClick={cycleTheme}
@@ -199,7 +187,7 @@ export default function AppShell() {
             </button>
             {sessionId && (
               <div className="app-context app-context-secondary">
-                {sessionId && <span className="shell-pill shell-pill-session">Session {sessionId}</span>}
+                <span className="shell-pill shell-pill-session">Session {sessionId}</span>
               </div>
             )}
           </div>
