@@ -16,6 +16,7 @@ export default function AppShell() {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
+  const [practiceOpen, setPracticeOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [collapsedByDiff, setCollapsedByDiff] = useState({ easy: false, medium: true, hard: true });
   const [upgradePending, setUpgradePending] = useState(false);
@@ -46,6 +47,24 @@ export default function AppShell() {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [mobileOpen]);
+
+  // Close Practice dropdown on outside click or Escape
+  useEffect(() => {
+    if (!practiceOpen) return;
+    const handleClick = (e) => {
+      if (!e.target.closest('.app-practice-dropdown')) setPracticeOpen(false);
+    };
+    const handleKey = (e) => { if (e.key === 'Escape') setPracticeOpen(false); };
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [practiceOpen]);
+
+  // Close Practice dropdown on route change
+  useEffect(() => { setPracticeOpen(false); }, [location.pathname]);
 
   // Only auto-navigate to first question when the user lands on the old /practice path
   // For the new /:topic paths we show TrackHubPage instead
@@ -124,25 +143,36 @@ export default function AppShell() {
             <div className="app-title-group">
               <div className="app-title-row app-title-row-nav">
                 <Link className="app-practice-home brand-wordmark" to="/">datanest</Link>
-                <nav className="app-track-nav" aria-label="Practice tracks">
-                  <div className="nav-dropdown">
-                    <span className="app-track-link nav-dropdown-trigger">Practice ▾</span>
-                    <div className="nav-dropdown-menu">
+                <div className="app-practice-dropdown">
+                  <button
+                    className={`app-track-link app-practice-dropdown-trigger${practiceOpen ? ' active' : ''}`}
+                    onClick={() => setPracticeOpen(v => !v)}
+                    aria-haspopup="true"
+                    aria-expanded={practiceOpen}
+                  >
+                    Practice <span className="app-practice-dropdown-caret">{practiceOpen ? '▴' : '▾'}</span>
+                  </button>
+                  {practiceOpen && (
+                    <div className="app-practice-dropdown-menu">
+                      <div className="app-practice-dropdown-label">Switch track</div>
                       {TOPICS.map((track) => {
                         const trackMeta = TRACK_META[track];
                         return (
                           <NavLink
                             key={track}
-                            className="nav-dropdown-item"
-                            style={{ '--track-color': trackMeta.color }}
+                            className={({ isActive }) => `app-practice-dropdown-item${isActive ? ' active' : ''}`}
                             to={`/practice/${track}`}
                           >
-                            {trackMeta.label}
+                            <span className="app-practice-dropdown-dot" style={{ background: trackMeta.color }} />
+                            <span className="app-practice-dropdown-name">{trackMeta.label}</span>
+                            <span className="app-practice-dropdown-desc">{trackMeta.tagline}</span>
                           </NavLink>
                         );
                       })}
                     </div>
-                  </div>
+                  )}
+                </div>
+                <nav className="app-track-nav" aria-label="Practice tracks">
                   <NavLink
                     className={({ isActive }) =>
                       `app-track-link ${isActive ? 'app-track-link-active' : ''}`
