@@ -143,60 +143,22 @@ select {
   max-width: 48ch;
 }
 
-.auth-oauth {
+.auth-forgot-info {
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
+  gap: 1.2rem;
   margin-bottom: 1.4rem;
 }
 
-.auth-oauth-btn {
-  width: 100%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 0.7rem;
-  padding: 0.95rem 1rem;
-  border-radius: 16px;
-  border: 1px solid var(--border-subtle);
-  background: rgba(0, 0, 0, 0.02);
-  color: var(--text-primary);
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+.auth-forgot-message {
+  font-size: 0.93rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  margin: 0;
 }
 
-.auth-oauth-btn:hover {
-  transform: translateY(-1px);
-  border-color: var(--border-strong);
-  background: rgba(0, 0, 0, 0.04);
-}
-
-.auth-divider {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0.35rem 0;
-}
-
-.auth-divider::before {
-  content: "";
-  position: absolute;
-  inset: 50% 0 auto;
-  border-top: 1px solid var(--border-subtle);
-}
-
-.auth-divider span {
-  position: relative;
-  z-index: 1;
-  padding: 0 0.85rem;
-  background: var(--surface-card);
-  color: var(--text-muted);
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
+.auth-field-hint--error {
+  color: var(--danger);
 }
 
 .auth-alert {
@@ -3131,19 +3093,6 @@ select {
     background: var(--surface-card);
   }
 
-  .auth-divider span {
-    background: var(--surface-card);
-  }
-
-  .auth-oauth-btn {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: var(--border-subtle);
-  }
-
-  .auth-oauth-btn:hover {
-    background: rgba(255, 255, 255, 0.06);
-  }
-
   .auth-input {
     background: rgba(255, 255, 255, 0.04);
     color: var(--text-strong);
@@ -4139,9 +4088,6 @@ select {
 [data-theme="dark"] .auth-page { background: var(--bg-page); }
 [data-theme="dark"] .auth-topbar-unused { background: rgba(20, 20, 19, 0.92); }
 [data-theme="dark"] .auth-card { background: var(--surface-card); }
-[data-theme="dark"] .auth-divider span { background: var(--surface-card); }
-[data-theme="dark"] .auth-oauth-btn { background: rgba(255, 255, 255, 0.03); border-color: var(--border-subtle); }
-[data-theme="dark"] .auth-oauth-btn:hover { background: rgba(255, 255, 255, 0.06); }
 [data-theme="dark"] .auth-input { background: rgba(255, 255, 255, 0.04); color: var(--text-strong); }
 [data-theme="dark"] .auth-alert-error { color: #F0B8B1; }
 [data-theme="dark"] .auth-alert-info { color: var(--accent-strong); }
@@ -5334,63 +5280,38 @@ select {
 }
 .topbar-practice-caret {
   font-size: 0.6rem;
-  opacity: 0.7;
+  opacity: 0.6;
 }
 .topbar-practice-menu {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 6px);
   right: 0;
   background: var(--surface-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 0.45rem;
-  min-width: 220px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.07);
+  border-radius: var(--radius-sm);
+  padding: 0.3rem;
+  min-width: 130px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06);
   z-index: 500;
 }
-.topbar-practice-label {
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--text-secondary);
-  padding: 0.2rem 0.65rem 0.45rem;
-}
 .topbar-practice-item {
-  display: grid;
-  grid-template-columns: 8px 1fr;
-  grid-template-rows: auto auto;
-  column-gap: 0.6rem;
-  row-gap: 0.05rem;
-  align-items: center;
-  padding: 0.5rem 0.65rem;
-  border-radius: var(--radius-sm);
+  display: block;
+  padding: 0.42rem 0.75rem;
+  border-radius: 6px;
   text-decoration: none;
   color: var(--text-strong);
+  font-size: 0.84rem;
+  font-weight: 500;
+  white-space: nowrap;
   transition: background 0.1s;
 }
 .topbar-practice-item:hover {
   background: var(--bg-page);
+  color: var(--text-strong);
 }
 .topbar-practice-item--active {
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
-}
-.topbar-practice-dot {
-  grid-row: 1 / 3;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  align-self: center;
-}
-.topbar-practice-name {
-  font-size: 0.84rem;
+  color: var(--accent);
   font-weight: 600;
-  line-height: 1.2;
-}
-.topbar-practice-sub {
-  font-size: 0.71rem;
-  color: var(--text-secondary);
-  line-height: 1.2;
 }
 
 /* ── Responsive ──────────────────────────────────────────── */
