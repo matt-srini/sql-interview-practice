@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import api from '../api';
 import CodeEditor from '../components/CodeEditor';
 import ResultsTable from '../components/ResultsTable';
@@ -16,9 +16,20 @@ const PYTHON_PLACEHOLDER = '# Write your solution here\n';
 
 export default function QuestionPage() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const { catalog, refresh } = useCatalog();
   const { topic, meta } = useTopic();
   const navigate = useNavigate();
+
+  // Path context — set when arriving from a learning path (?path=slug)
+  const pathSlug = searchParams.get('path');
+  const [pathContext, setPathContext] = useState(null);
+  useEffect(() => {
+    if (!pathSlug) { setPathContext(null); return; }
+    api.get(`/paths/${pathSlug}`)
+      .then(r => setPathContext(r.data))
+      .catch(() => setPathContext(null));
+  }, [pathSlug]);
 
   // Derive API paths from topic
   const apiPrefix = meta.apiPrefix; // '', '/python', '/python-data', '/pyspark'
@@ -187,6 +198,17 @@ export default function QuestionPage() {
     }
   }
 
+  // Path nav bar derived values — must be before early returns (Rules of Hooks)
+  const pathNavBar = useMemo(() => {
+    if (!pathContext) return null;
+    const questions = pathContext.questions ?? [];
+    const currentIndex = questions.findIndex(q => String(q.id) === String(id));
+    if (currentIndex === -1) return null;
+    const prev = questions[currentIndex - 1] ?? null;
+    const next = questions[currentIndex + 1] ?? null;
+    return { path: pathContext, currentIndex, total: questions.length, prev, next };
+  }, [pathContext, id]);
+
   if (loadError) {
     return (
       <main className="container" style={{ paddingTop: '2rem' }}>
@@ -240,6 +262,38 @@ export default function QuestionPage() {
 
   return (
     <main className="container question-page question-page-challenge">
+      {pathNavBar && (
+        <div className="path-nav-bar">
+          <Link to={`/learn/${pathNavBar.path.slug}`} className="path-nav-back">
+            ← {pathNavBar.path.title}
+          </Link>
+          <span className="path-nav-pos">
+            {pathNavBar.currentIndex + 1} / {pathNavBar.total}
+          </span>
+          <div className="path-nav-arrows">
+            {pathNavBar.prev && !['locked'].includes(pathNavBar.prev.state) ? (
+              <Link
+                to={`/practice/${topic}/questions/${pathNavBar.prev.id}?path=${pathSlug}`}
+                className="path-nav-btn"
+              >
+                ← Prev
+              </Link>
+            ) : <span className="path-nav-btn path-nav-btn--disabled">← Prev</span>}
+            {pathNavBar.next && !['locked'].includes(pathNavBar.next.state) ? (
+              <Link
+                to={`/practice/${topic}/questions/${pathNavBar.next.id}?path=${pathSlug}`}
+                className="path-nav-btn path-nav-btn--next"
+              >
+                Next →
+              </Link>
+            ) : pathNavBar.next ? (
+              <span className="path-nav-btn path-nav-btn--disabled" title="Locked — solve more questions to unlock">Next 🔒</span>
+            ) : (
+              <span className="path-nav-btn path-nav-btn--disabled">Last question</span>
+            )}
+          </div>
+        </div>
+      )}
       <div className="question-page-inner">
         <aside className="left-panel">
           <div className="card prompt-card prompt-card-main">
