@@ -263,6 +263,14 @@ export default function QuestionPage() {
               </div>
             )}
 
+            {question.companies?.length > 0 && (
+              <div className="concept-tags concept-tags-inline">
+                {question.companies.map((company) => (
+                  <span key={company} className="tag-company">{company}</span>
+                ))}
+              </div>
+            )}
+
             <p className="description-text">{question.description}</p>
 
             {/* PySpark: show code snippet (question stem) if present */}
