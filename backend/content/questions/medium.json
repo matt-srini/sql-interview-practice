@@ -39,7 +39,11 @@
       "WHERE",
       "ORDER BY"
     ],
-    "complexity_hint": "O(n) scan with early filter pushdown. The two WHERE conditions reduce the result before sorting."
+    "complexity_hint": "O(n) scan with early filter pushdown. The two WHERE conditions reduce the result before sorting.",
+    "companies": [
+      "Stripe",
+      "Amazon"
+    ]
   },
   {
     "id": 2002,
@@ -79,6 +83,10 @@
       "DISTINCT",
       "WHERE",
       "ORDER BY"
+    ],
+    "companies": [
+      "Amazon",
+      "Shopify"
     ]
   },
   {
@@ -114,11 +122,15 @@
       "WHERE",
       "ORDER BY"
     ],
-    "complexity_hint": "LEFT JOIN anti-pattern: keep rows from the left table that have no match on the right. Can also be written with NOT IN or NOT EXISTS — LEFT JOIN + IS NULL is typically most performant.",
+    "complexity_hint": "LEFT JOIN anti-pattern: keep rows from the left table that have no match on the right. Can also be written with NOT IN or NOT EXISTS \u2014 LEFT JOIN + IS NULL is typically most performant.",
     "alternative_solution": {
       "query": "SELECT d.department_id, d.department_name, d.region\nFROM departments d\nWHERE d.department_id NOT IN (\n  SELECT department_id FROM employees\n)\nORDER BY d.department_id ASC",
-      "explanation": "This alternative uses a NOT IN subquery instead of LEFT JOIN + IS NULL. Both produce identical results here, but NOT IN can silently return no rows if the subquery produces any NULLs — use LEFT JOIN + IS NULL in production for safety."
-    }
+      "explanation": "This alternative uses a NOT IN subquery instead of LEFT JOIN + IS NULL. Both produce identical results here, but NOT IN can silently return no rows if the subquery produces any NULLs \u2014 use LEFT JOIN + IS NULL in production for safety."
+    },
+    "companies": [
+      "Google",
+      "Microsoft"
+    ]
   },
   {
     "id": 2004,
@@ -160,7 +172,11 @@
       "SUM",
       "ORDER BY"
     ],
-    "complexity_hint": "O(n log n) due to GROUP BY sort. Filtering with WHERE before aggregation is the key to keeping this efficient."
+    "complexity_hint": "O(n log n) due to GROUP BY sort. Filtering with WHERE before aggregation is the key to keeping this efficient.",
+    "companies": [
+      "Stripe",
+      "Amazon"
+    ]
   },
   {
     "id": 2005,
@@ -202,6 +218,10 @@
       "AVG",
       "HAVING",
       "ORDER BY"
+    ],
+    "companies": [
+      "Airbnb",
+      "Amazon"
     ]
   },
   {
@@ -248,6 +268,9 @@
       "DISTINCT",
       "HAVING",
       "ORDER BY"
+    ],
+    "companies": [
+      "Stripe"
     ]
   },
   {
@@ -285,6 +308,10 @@
       "AVG",
       "HAVING",
       "ORDER BY"
+    ],
+    "companies": [
+      "Zendesk",
+      "Salesforce"
     ]
   },
   {
@@ -314,6 +341,10 @@
       "GROUP BY",
       "COUNT",
       "ORDER BY"
+    ],
+    "companies": [
+      "Amazon",
+      "Shopify"
     ]
   },
   {
@@ -350,6 +381,10 @@
       "GROUP BY",
       "COUNT",
       "ORDER BY"
+    ],
+    "companies": [
+      "Google",
+      "Microsoft"
     ]
   },
   {
@@ -393,6 +428,10 @@
       "INNER JOIN",
       "WHERE",
       "ORDER BY"
+    ],
+    "companies": [
+      "Stripe",
+      "PayPal"
     ]
   },
   {
@@ -441,6 +480,10 @@
       "COUNT DISTINCT",
       "GROUP BY",
       "ORDER BY"
+    ],
+    "companies": [
+      "Stripe",
+      "Amazon"
     ]
   },
   {
@@ -489,6 +532,10 @@
       "COUNT DISTINCT",
       "SUM",
       "GROUP BY"
+    ],
+    "companies": [
+      "Amazon",
+      "Shopify"
     ]
   },
   {
@@ -536,6 +583,10 @@
       "JOIN",
       "COUNT DISTINCT",
       "GROUP BY"
+    ],
+    "companies": [
+      "Amazon",
+      "Zendesk"
     ]
   },
   {
@@ -578,6 +629,10 @@
       "CORRELATED SUBQUERY",
       "JOIN",
       "ORDER BY"
+    ],
+    "companies": [
+      "Google",
+      "Microsoft"
     ]
   },
   {
@@ -621,6 +676,10 @@
       "SUBQUERY",
       "WHERE",
       "ORDER BY"
+    ],
+    "companies": [
+      "Meta",
+      "Airbnb"
     ]
   },
   {
@@ -669,6 +728,9 @@
       "HAVING",
       "JOIN",
       "GROUP BY"
+    ],
+    "companies": [
+      "Amazon"
     ]
   },
   {
@@ -711,6 +773,10 @@
       "JOIN",
       "HAVING",
       "GROUP BY"
+    ],
+    "companies": [
+      "Amazon",
+      "Airbnb"
     ]
   },
   {
@@ -746,6 +812,9 @@
       "CONDITIONAL AGGREGATION",
       "GROUP BY",
       "HAVING"
+    ],
+    "companies": [
+      "Zendesk"
     ]
   },
   {
@@ -792,6 +861,10 @@
       "WHERE",
       "HAVING",
       "AVG"
+    ],
+    "companies": [
+      "Amazon",
+      "Airbnb"
     ]
   },
   {
@@ -845,6 +918,10 @@
       "HAVING",
       "COUNT DISTINCT",
       "SUM"
+    ],
+    "companies": [
+      "Amazon",
+      "Shopify"
     ]
   },
   {
@@ -880,6 +957,10 @@
       "LEFT JOIN",
       "GROUP BY",
       "HAVING"
+    ],
+    "companies": [
+      "Google",
+      "Microsoft"
     ]
   },
   {
@@ -916,6 +997,10 @@
       "LEFT JOIN",
       "GROUP BY",
       "HAVING"
+    ],
+    "companies": [
+      "Meta",
+      "Airbnb"
     ]
   },
   {
@@ -953,6 +1038,10 @@
       "LEFT JOIN",
       "GROUP BY",
       "HAVING"
+    ],
+    "companies": [
+      "Stripe",
+      "Amazon"
     ]
   },
   {
@@ -990,6 +1079,9 @@
       "GROUP BY",
       "HAVING",
       "CASE WHEN"
+    ],
+    "companies": [
+      "Amazon"
     ]
   },
   {
@@ -1027,6 +1119,10 @@
       "GROUP BY",
       "HAVING",
       "CASE WHEN"
+    ],
+    "companies": [
+      "Amazon",
+      "Airbnb"
     ]
   },
   {
@@ -1064,6 +1160,10 @@
       "GROUP BY",
       "HAVING",
       "CASE WHEN"
+    ],
+    "companies": [
+      "Google",
+      "LinkedIn"
     ]
   },
   {
@@ -1105,6 +1205,10 @@
       "NOT EXISTS",
       "SUBQUERY",
       "JOIN"
+    ],
+    "companies": [
+      "Amazon",
+      "Shopify"
     ]
   },
   {
@@ -1141,6 +1245,10 @@
       "LEFT JOIN",
       "GROUP BY",
       "HAVING"
+    ],
+    "companies": [
+      "Google",
+      "Microsoft"
     ]
   },
   {
@@ -1190,6 +1298,10 @@
       "JOIN",
       "GROUP BY",
       "HAVING"
+    ],
+    "companies": [
+      "Amazon",
+      "Stripe"
     ]
   },
   {
@@ -1234,6 +1346,9 @@
       "GROUP BY",
       "HAVING",
       "CASE WHEN"
+    ],
+    "companies": [
+      "Stripe"
     ]
   }
 ]

@@ -6,16 +6,35 @@
     "description": "Return user_id, name, email, and country for every user in the users table. Order by user_id ascending.",
     "difficulty": "easy",
     "schema": {
-      "users": ["user_id", "name", "email", "country"]
+      "users": [
+        "user_id",
+        "name",
+        "email",
+        "country"
+      ]
     },
-    "dataset_files": ["users.csv"],
+    "dataset_files": [
+      "users.csv"
+    ],
     "expected_query": "SELECT user_id, name, email, country\nFROM users\nORDER BY user_id",
     "solution_query": "SELECT user_id, name, email, country\nFROM users\nORDER BY user_id;",
-    "required_concepts": ["order_by"],
+    "required_concepts": [
+      "order_by"
+    ],
     "enforce_concepts": true,
-    "explanation": "SELECT with explicit column names retrieves only the specified fields from the users table. Listing columns explicitly instead of using SELECT * is best practice — it avoids returning unnecessary data and makes the query self-documenting. ORDER BY user_id ASC ensures a predictable, deterministic output order.",
-    "hints": ["List each column name you need in the SELECT clause instead of using SELECT *", "Order the result by user_id ascending"],
-    "concepts": ["SELECT", "ORDER BY"]
+    "explanation": "SELECT with explicit column names retrieves only the specified fields from the users table. Listing columns explicitly instead of using SELECT * is best practice \u2014 it avoids returning unnecessary data and makes the query self-documenting. ORDER BY user_id ASC ensures a predictable, deterministic output order.",
+    "hints": [
+      "List each column name you need in the SELECT clause instead of using SELECT *",
+      "Order the result by user_id ascending"
+    ],
+    "concepts": [
+      "SELECT",
+      "ORDER BY"
+    ],
+    "companies": [
+      "Meta",
+      "Airbnb"
+    ]
   },
   {
     "id": 1002,
@@ -24,16 +43,34 @@
     "description": "Return each distinct brand from the products table. Order by brand ascending.",
     "difficulty": "easy",
     "schema": {
-      "products": ["brand"]
+      "products": [
+        "brand"
+      ]
     },
-    "dataset_files": ["products.csv"],
+    "dataset_files": [
+      "products.csv"
+    ],
     "expected_query": "SELECT DISTINCT brand\nFROM products\nORDER BY brand",
     "solution_query": "SELECT DISTINCT brand\nFROM products\nORDER BY brand;",
-    "required_concepts": ["distinct", "order_by"],
+    "required_concepts": [
+      "distinct",
+      "order_by"
+    ],
     "enforce_concepts": false,
     "explanation": "DISTINCT removes duplicate brand values so each brand appears only once in the result set, even if many products share that brand. ORDER BY brand then sorts those unique values alphabetically so the output is deterministic and easy to review. Together, these clauses produce a clean list of unique brands instead of one row per product.",
-    "hints": ["Use DISTINCT to eliminate duplicate values", "Order the result by brand"],
-    "concepts": ["SELECT", "DISTINCT", "ORDER BY"]
+    "hints": [
+      "Use DISTINCT to eliminate duplicate values",
+      "Order the result by brand"
+    ],
+    "concepts": [
+      "SELECT",
+      "DISTINCT",
+      "ORDER BY"
+    ],
+    "companies": [
+      "Amazon",
+      "Shopify"
+    ]
   },
   {
     "id": 1003,
@@ -42,14 +79,33 @@
     "description": "Return order_id, user_id, order_date, and net_amount for all orders where status is 'completed'. Order by order_id ascending.",
     "difficulty": "easy",
     "schema": {
-      "orders": ["order_id", "user_id", "order_date", "status", "net_amount"]
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "net_amount"
+      ]
     },
-    "dataset_files": ["orders.csv"],
+    "dataset_files": [
+      "orders.csv"
+    ],
     "expected_query": "SELECT order_id, user_id, order_date, net_amount\nFROM orders\nWHERE status = 'completed'\nORDER BY order_id",
     "solution_query": "SELECT order_id, user_id, order_date, net_amount\nFROM orders\nWHERE status = 'completed'\nORDER BY order_id;",
     "explanation": "The WHERE clause filters rows before they are returned. Only orders where the status column equals the string 'completed' pass the filter. String comparisons are case-sensitive in most databases, so the value must match exactly. The status column is included in the schema because it is used in the WHERE clause even though it does not appear in the SELECT list. ORDER BY order_id ASC produces a deterministic result.",
-    "hints": ["Use a WHERE clause to filter rows by column value", "String comparisons are case-sensitive — match the exact value in the data"],
-    "concepts": ["SELECT", "WHERE", "ORDER BY"]
+    "hints": [
+      "Use a WHERE clause to filter rows by column value",
+      "String comparisons are case-sensitive \u2014 match the exact value in the data"
+    ],
+    "concepts": [
+      "SELECT",
+      "WHERE",
+      "ORDER BY"
+    ],
+    "companies": [
+      "Amazon",
+      "Shopify"
+    ]
   },
   {
     "id": 1004,
@@ -58,14 +114,32 @@
     "description": "Return user_id, name, and email for all users from the United States (country = 'US'). Order by user_id ascending.",
     "difficulty": "easy",
     "schema": {
-      "users": ["user_id", "name", "email", "country"]
+      "users": [
+        "user_id",
+        "name",
+        "email",
+        "country"
+      ]
     },
-    "dataset_files": ["users.csv"],
+    "dataset_files": [
+      "users.csv"
+    ],
     "expected_query": "SELECT user_id, name, email\nFROM users\nWHERE country = 'US'\nORDER BY user_id",
     "solution_query": "SELECT user_id, name, email\nFROM users\nWHERE country = 'US'\nORDER BY user_id;",
     "explanation": "WHERE country = 'US' applies a string equality filter that keeps only rows whose country column exactly matches 'US'. The country column is included in the schema because it is the filter column, even though it does not appear in the SELECT list. ORDER BY user_id ensures a deterministic output.",
-    "hints": ["Use WHERE to filter on the country column", "String values in WHERE clauses must be wrapped in single quotes"],
-    "concepts": ["SELECT", "WHERE", "ORDER BY"]
+    "hints": [
+      "Use WHERE to filter on the country column",
+      "String values in WHERE clauses must be wrapped in single quotes"
+    ],
+    "concepts": [
+      "SELECT",
+      "WHERE",
+      "ORDER BY"
+    ],
+    "companies": [
+      "Meta",
+      "Google"
+    ]
   },
   {
     "id": 1005,
@@ -74,14 +148,31 @@
     "description": "Return employee_id, employee_name, and salary for all employees with a salary greater than 80000. Order by salary descending.",
     "difficulty": "easy",
     "schema": {
-      "employees": ["employee_id", "employee_name", "salary"]
+      "employees": [
+        "employee_id",
+        "employee_name",
+        "salary"
+      ]
     },
-    "dataset_files": ["employees.csv"],
+    "dataset_files": [
+      "employees.csv"
+    ],
     "expected_query": "SELECT employee_id, employee_name, salary\nFROM employees\nWHERE salary > 80000\nORDER BY salary DESC",
     "solution_query": "SELECT employee_id, employee_name, salary\nFROM employees\nWHERE salary > 80000\nORDER BY salary DESC;",
     "explanation": "WHERE salary > 80000 is a numeric comparison filter. Only employees whose salary value is strictly greater than 80000 are included. Numeric comparisons do not require quotes around the value. ORDER BY salary DESC places the highest earners at the top of the result.",
-    "hints": ["Use a comparison operator like > in the WHERE clause for numeric filters", "ORDER BY salary DESC places the highest values first"],
-    "concepts": ["SELECT", "WHERE", "ORDER BY"]
+    "hints": [
+      "Use a comparison operator like > in the WHERE clause for numeric filters",
+      "ORDER BY salary DESC places the highest values first"
+    ],
+    "concepts": [
+      "SELECT",
+      "WHERE",
+      "ORDER BY"
+    ],
+    "companies": [
+      "Google",
+      "Microsoft"
+    ]
   },
   {
     "id": 1006,
@@ -90,14 +181,29 @@
     "description": "Return product_id, product_name, and price for all products. Order by price descending so the most expensive products appear first.",
     "difficulty": "easy",
     "schema": {
-      "products": ["product_id", "product_name", "price"]
+      "products": [
+        "product_id",
+        "product_name",
+        "price"
+      ]
     },
-    "dataset_files": ["products.csv"],
+    "dataset_files": [
+      "products.csv"
+    ],
     "expected_query": "SELECT product_id, product_name, price\nFROM products\nORDER BY price DESC",
     "solution_query": "SELECT product_id, product_name, price\nFROM products\nORDER BY price DESC;",
-    "explanation": "ORDER BY price DESC sorts all rows in descending order of the price column — highest price first. The DESC keyword reverses the default ascending sort direction. When no WHERE clause is included, all products are returned. This is a common pattern for ranking or top-N style analysis.",
-    "hints": ["Use the DESC keyword after the column name in ORDER BY to sort highest to lowest"],
-    "concepts": ["SELECT", "ORDER BY"]
+    "explanation": "ORDER BY price DESC sorts all rows in descending order of the price column \u2014 highest price first. The DESC keyword reverses the default ascending sort direction. When no WHERE clause is included, all products are returned. This is a common pattern for ranking or top-N style analysis.",
+    "hints": [
+      "Use the DESC keyword after the column name in ORDER BY to sort highest to lowest"
+    ],
+    "concepts": [
+      "SELECT",
+      "ORDER BY"
+    ],
+    "companies": [
+      "Amazon",
+      "eBay"
+    ]
   },
   {
     "id": 1007,
@@ -106,14 +212,31 @@
     "description": "Return employee_id, employee_name, and hire_date for employees with a known hire_date. Order by hire_date ascending to show the longest-tenured employees first.",
     "difficulty": "easy",
     "schema": {
-      "employees": ["employee_id", "employee_name", "hire_date"]
+      "employees": [
+        "employee_id",
+        "employee_name",
+        "hire_date"
+      ]
     },
-    "dataset_files": ["employees.csv"],
+    "dataset_files": [
+      "employees.csv"
+    ],
     "expected_query": "SELECT employee_id, employee_name, hire_date\nFROM employees\nWHERE hire_date IS NOT NULL\nORDER BY hire_date ASC",
     "solution_query": "SELECT employee_id, employee_name, hire_date\nFROM employees\nWHERE hire_date IS NOT NULL\nORDER BY hire_date ASC;",
     "explanation": "WHERE hire_date IS NOT NULL filters out rows that do not have a known hire date before sorting begins. After that filter, ORDER BY hire_date ASC sorts the remaining employees from the earliest hire date to the most recent. This keeps the result focused on employees whose tenure can be evaluated and makes the final row order deterministic.",
-    "hints": ["Filter out missing hire dates before sorting", "Date columns sort chronologically — ASC means earliest first"],
-    "concepts": ["SELECT", "WHERE", "ORDER BY"]
+    "hints": [
+      "Filter out missing hire dates before sorting",
+      "Date columns sort chronologically \u2014 ASC means earliest first"
+    ],
+    "concepts": [
+      "SELECT",
+      "WHERE",
+      "ORDER BY"
+    ],
+    "companies": [
+      "Google",
+      "LinkedIn"
+    ]
   },
   {
     "id": 1008,
@@ -122,14 +245,28 @@
     "description": "Return the total number of orders in the orders table as a single value aliased as total_orders.",
     "difficulty": "easy",
     "schema": {
-      "orders": ["order_id"]
+      "orders": [
+        "order_id"
+      ]
     },
-    "dataset_files": ["orders.csv"],
+    "dataset_files": [
+      "orders.csv"
+    ],
     "expected_query": "SELECT COUNT(order_id) AS total_orders\nFROM orders",
     "solution_query": "SELECT COUNT(order_id) AS total_orders\nFROM orders;",
     "explanation": "COUNT(order_id) counts all non-NULL values of order_id. Because order_id is the primary key and is never NULL, this equals the total number of rows in the table. No GROUP BY is needed since we want a single aggregate across the entire table. The AS alias gives the output column a meaningful name.",
-    "hints": ["Use COUNT() to count rows in a table", "No GROUP BY is needed when aggregating the entire table into a single result"],
-    "concepts": ["SELECT", "COUNT"]
+    "hints": [
+      "Use COUNT() to count rows in a table",
+      "No GROUP BY is needed when aggregating the entire table into a single result"
+    ],
+    "concepts": [
+      "SELECT",
+      "COUNT"
+    ],
+    "companies": [
+      "Amazon",
+      "Shopify"
+    ]
   },
   {
     "id": 1009,
@@ -138,14 +275,30 @@
     "description": "Return the total net_amount from all completed orders as a single value aliased as total_completed_revenue. Only include orders where status = 'completed'.",
     "difficulty": "easy",
     "schema": {
-      "orders": ["status", "net_amount"]
+      "orders": [
+        "status",
+        "net_amount"
+      ]
     },
-    "dataset_files": ["orders.csv"],
+    "dataset_files": [
+      "orders.csv"
+    ],
     "expected_query": "SELECT SUM(net_amount) AS total_completed_revenue\nFROM orders\nWHERE status = 'completed'",
     "solution_query": "SELECT SUM(net_amount) AS total_completed_revenue\nFROM orders\nWHERE status = 'completed';",
     "explanation": "The WHERE clause filters to only completed orders before the SUM aggregation runs. SUM(net_amount) adds up all net_amount values for those filtered rows. Because there is no GROUP BY, the result is a single row with one value. SUM automatically ignores NULL values.",
-    "hints": ["Filter with WHERE before aggregating with SUM", "SUM() adds up all values in a column for the matching rows"],
-    "concepts": ["SELECT", "SUM", "WHERE"]
+    "hints": [
+      "Filter with WHERE before aggregating with SUM",
+      "SUM() adds up all values in a column for the matching rows"
+    ],
+    "concepts": [
+      "SELECT",
+      "SUM",
+      "WHERE"
+    ],
+    "companies": [
+      "Amazon",
+      "Stripe"
+    ]
   },
   {
     "id": 1010,
@@ -154,14 +307,27 @@
     "description": "Return the average salary across all employees as a single value aliased as avg_salary.",
     "difficulty": "easy",
     "schema": {
-      "employees": ["salary"]
+      "employees": [
+        "salary"
+      ]
     },
-    "dataset_files": ["employees.csv"],
+    "dataset_files": [
+      "employees.csv"
+    ],
     "expected_query": "SELECT AVG(salary) AS avg_salary\nFROM employees",
     "solution_query": "SELECT AVG(salary) AS avg_salary\nFROM employees;",
     "explanation": "AVG(salary) computes the arithmetic mean of all non-NULL salary values in the employees table. Since no WHERE clause is provided, the average covers all employees. AVG automatically ignores NULL values. The result is a single row with one column aliased as avg_salary.",
-    "hints": ["Use AVG() to calculate the mean of a numeric column"],
-    "concepts": ["SELECT", "AVG"]
+    "hints": [
+      "Use AVG() to calculate the mean of a numeric column"
+    ],
+    "concepts": [
+      "SELECT",
+      "AVG"
+    ],
+    "companies": [
+      "Google",
+      "LinkedIn"
+    ]
   },
   {
     "id": 1011,
@@ -170,14 +336,27 @@
     "description": "Return the highest price among all products as a single value aliased as max_price.",
     "difficulty": "easy",
     "schema": {
-      "products": ["price"]
+      "products": [
+        "price"
+      ]
     },
-    "dataset_files": ["products.csv"],
+    "dataset_files": [
+      "products.csv"
+    ],
     "expected_query": "SELECT MAX(price) AS max_price\nFROM products",
     "solution_query": "SELECT MAX(price) AS max_price\nFROM products;",
     "explanation": "MAX(price) scans all rows in the products table and returns the single highest value in the price column. NULL values are automatically ignored by MAX. No GROUP BY is needed since we want a single aggregate across the entire table. The result is one row with one column.",
-    "hints": ["Use MAX() to find the largest value in a column"],
-    "concepts": ["SELECT", "MAX"]
+    "hints": [
+      "Use MAX() to find the largest value in a column"
+    ],
+    "concepts": [
+      "SELECT",
+      "MAX"
+    ],
+    "companies": [
+      "Amazon",
+      "eBay"
+    ]
   },
   {
     "id": 1012,
@@ -186,14 +365,30 @@
     "description": "Return the minimum resolution_hours from all resolved support tickets as a single value aliased as min_resolution_hours. Only include tickets where status = 'resolved'.",
     "difficulty": "easy",
     "schema": {
-      "support_tickets": ["status", "resolution_hours"]
+      "support_tickets": [
+        "status",
+        "resolution_hours"
+      ]
     },
-    "dataset_files": ["support_tickets.csv"],
+    "dataset_files": [
+      "support_tickets.csv"
+    ],
     "expected_query": "SELECT MIN(resolution_hours) AS min_resolution_hours\nFROM support_tickets\nWHERE status = 'resolved'",
     "solution_query": "SELECT MIN(resolution_hours) AS min_resolution_hours\nFROM support_tickets\nWHERE status = 'resolved';",
-    "explanation": "WHERE status = 'resolved' filters the table to only closed tickets before MIN runs. MIN(resolution_hours) returns the smallest resolution time among those rows — the ticket that was resolved fastest. Filtering first ensures we do not include NULL or irrelevant resolution_hours from tickets that are not yet resolved.",
-    "hints": ["Filter to resolved tickets first using WHERE", "MIN() returns the smallest value in a column"],
-    "concepts": ["SELECT", "MIN", "WHERE"]
+    "explanation": "WHERE status = 'resolved' filters the table to only closed tickets before MIN runs. MIN(resolution_hours) returns the smallest resolution time among those rows \u2014 the ticket that was resolved fastest. Filtering first ensures we do not include NULL or irrelevant resolution_hours from tickets that are not yet resolved.",
+    "hints": [
+      "Filter to resolved tickets first using WHERE",
+      "MIN() returns the smallest value in a column"
+    ],
+    "concepts": [
+      "SELECT",
+      "MIN",
+      "WHERE"
+    ],
+    "companies": [
+      "Zendesk",
+      "Salesforce"
+    ]
   },
   {
     "id": 1013,
@@ -202,14 +397,31 @@
     "description": "Return each distinct order status and the count of orders with that status as order_count. Order by order_count descending.",
     "difficulty": "easy",
     "schema": {
-      "orders": ["order_id", "status"]
+      "orders": [
+        "order_id",
+        "status"
+      ]
     },
-    "dataset_files": ["orders.csv"],
+    "dataset_files": [
+      "orders.csv"
+    ],
     "expected_query": "SELECT status, COUNT(order_id) AS order_count\nFROM orders\nGROUP BY status\nORDER BY order_count DESC",
     "solution_query": "SELECT status, COUNT(order_id) AS order_count\nFROM orders\nGROUP BY status\nORDER BY order_count DESC;",
-    "explanation": "GROUP BY status groups all order rows that share the same status value into a single group. COUNT(order_id) counts the rows in each group. Every non-aggregated column in the SELECT list must appear in the GROUP BY clause — here that is status. ORDER BY order_count DESC lists the most common statuses first.",
-    "hints": ["GROUP BY the column you want to count per group", "Use the count alias in ORDER BY to sort by frequency"],
-    "concepts": ["SELECT", "GROUP BY", "COUNT", "ORDER BY"]
+    "explanation": "GROUP BY status groups all order rows that share the same status value into a single group. COUNT(order_id) counts the rows in each group. Every non-aggregated column in the SELECT list must appear in the GROUP BY clause \u2014 here that is status. ORDER BY order_count DESC lists the most common statuses first.",
+    "hints": [
+      "GROUP BY the column you want to count per group",
+      "Use the count alias in ORDER BY to sort by frequency"
+    ],
+    "concepts": [
+      "SELECT",
+      "GROUP BY",
+      "COUNT",
+      "ORDER BY"
+    ],
+    "companies": [
+      "Amazon",
+      "Shopify"
+    ]
   },
   {
     "id": 1014,
@@ -218,14 +430,31 @@
     "description": "Return each user_id and the total net_amount they have spent across all their orders as total_spent. Order by total_spent descending.",
     "difficulty": "easy",
     "schema": {
-      "orders": ["user_id", "net_amount"]
+      "orders": [
+        "user_id",
+        "net_amount"
+      ]
     },
-    "dataset_files": ["orders.csv"],
+    "dataset_files": [
+      "orders.csv"
+    ],
     "expected_query": "SELECT user_id, SUM(net_amount) AS total_spent\nFROM orders\nGROUP BY user_id\nORDER BY total_spent DESC",
     "solution_query": "SELECT user_id, SUM(net_amount) AS total_spent\nFROM orders\nGROUP BY user_id\nORDER BY total_spent DESC;",
     "explanation": "GROUP BY user_id groups all orders belonging to the same user. SUM(net_amount) sums the net_amount for each group, giving the total spend per user. Users with multiple orders have their amounts summed together. ORDER BY total_spent DESC puts the highest spenders at the top.",
-    "hints": ["GROUP BY user_id to separate each user's orders", "SUM(net_amount) totals spending per group"],
-    "concepts": ["SELECT", "GROUP BY", "SUM", "ORDER BY"]
+    "hints": [
+      "GROUP BY user_id to separate each user's orders",
+      "SUM(net_amount) totals spending per group"
+    ],
+    "concepts": [
+      "SELECT",
+      "GROUP BY",
+      "SUM",
+      "ORDER BY"
+    ],
+    "companies": [
+      "Amazon",
+      "Stripe"
+    ]
   },
   {
     "id": 1015,
@@ -234,14 +463,32 @@
     "description": "Return each issue_type and the count of support tickets with that type as ticket_count, but only include issue types with more than one ticket. Order by ticket_count descending.",
     "difficulty": "easy",
     "schema": {
-      "support_tickets": ["ticket_id", "issue_type"]
+      "support_tickets": [
+        "ticket_id",
+        "issue_type"
+      ]
     },
-    "dataset_files": ["support_tickets.csv"],
+    "dataset_files": [
+      "support_tickets.csv"
+    ],
     "expected_query": "SELECT issue_type, COUNT(ticket_id) AS ticket_count\nFROM support_tickets\nGROUP BY issue_type\nHAVING COUNT(ticket_id) > 1\nORDER BY ticket_count DESC",
     "solution_query": "SELECT issue_type, COUNT(ticket_id) AS ticket_count\nFROM support_tickets\nGROUP BY issue_type\nHAVING COUNT(ticket_id) > 1\nORDER BY ticket_count DESC;",
     "explanation": "GROUP BY issue_type creates one aggregate group per issue type, and COUNT(ticket_id) measures how many tickets fall into each group. HAVING COUNT(ticket_id) > 1 then filters those aggregated groups after the counts have been calculated. This is different from WHERE, which filters individual rows before aggregation happens. ORDER BY ticket_count DESC shows the larger issue categories first.",
-    "hints": ["HAVING filters after aggregation", "Use COUNT(ticket_id) in HAVING"],
-    "concepts": ["SELECT", "GROUP BY", "COUNT", "HAVING", "ORDER BY"]
+    "hints": [
+      "HAVING filters after aggregation",
+      "Use COUNT(ticket_id) in HAVING"
+    ],
+    "concepts": [
+      "SELECT",
+      "GROUP BY",
+      "COUNT",
+      "HAVING",
+      "ORDER BY"
+    ],
+    "companies": [
+      "Zendesk",
+      "Salesforce"
+    ]
   },
   {
     "id": 1016,
@@ -250,15 +497,37 @@
     "description": "Return user_id, name, and the total number of orders each user has placed as order_count. Include users who have placed zero orders. Order by user_id ascending.",
     "difficulty": "easy",
     "schema": {
-      "users": ["user_id", "name"],
-      "orders": ["order_id", "user_id"]
+      "users": [
+        "user_id",
+        "name"
+      ],
+      "orders": [
+        "order_id",
+        "user_id"
+      ]
     },
-    "dataset_files": ["users.csv", "orders.csv"],
+    "dataset_files": [
+      "users.csv",
+      "orders.csv"
+    ],
     "expected_query": "SELECT u.user_id, u.name, COUNT(o.order_id) AS order_count\nFROM users u\nLEFT JOIN orders o ON u.user_id = o.user_id\nGROUP BY u.user_id, u.name\nORDER BY u.user_id",
     "solution_query": "SELECT u.user_id, u.name, COUNT(o.order_id) AS order_count\nFROM users u\nLEFT JOIN orders o ON u.user_id = o.user_id\nGROUP BY u.user_id, u.name\nORDER BY u.user_id;",
-    "explanation": "A LEFT JOIN keeps every row from the users table (the left side) even if there is no matching row in orders. COUNT(o.order_id) counts non-NULL order_id values per group — users with no orders will have NULL for o.order_id, so COUNT returns 0 for them, not NULL. GROUP BY u.user_id, u.name is required because u.name is a non-aggregated column in the SELECT list. ORDER BY u.user_id gives a deterministic result.",
-    "hints": ["Use LEFT JOIN so users with no orders are still included in the result", "COUNT(o.order_id) returns 0 for users with no orders because NULL values are not counted by COUNT"],
-    "concepts": ["SELECT", "LEFT JOIN", "COUNT", "GROUP BY", "ORDER BY"]
+    "explanation": "A LEFT JOIN keeps every row from the users table (the left side) even if there is no matching row in orders. COUNT(o.order_id) counts non-NULL order_id values per group \u2014 users with no orders will have NULL for o.order_id, so COUNT returns 0 for them, not NULL. GROUP BY u.user_id, u.name is required because u.name is a non-aggregated column in the SELECT list. ORDER BY u.user_id gives a deterministic result.",
+    "hints": [
+      "Use LEFT JOIN so users with no orders are still included in the result",
+      "COUNT(o.order_id) returns 0 for users with no orders because NULL values are not counted by COUNT"
+    ],
+    "concepts": [
+      "SELECT",
+      "LEFT JOIN",
+      "COUNT",
+      "GROUP BY",
+      "ORDER BY"
+    ],
+    "companies": [
+      "Amazon",
+      "Shopify"
+    ]
   },
   {
     "id": 1017,
@@ -267,15 +536,37 @@
     "description": "Return employee_id, employee_name, salary, and department_name for every employee and their department. Order by employee_id ascending.",
     "difficulty": "easy",
     "schema": {
-      "employees": ["employee_id", "employee_name", "salary", "department_id"],
-      "departments": ["department_id", "department_name"]
+      "employees": [
+        "employee_id",
+        "employee_name",
+        "salary",
+        "department_id"
+      ],
+      "departments": [
+        "department_id",
+        "department_name"
+      ]
     },
-    "dataset_files": ["employees.csv", "departments.csv"],
+    "dataset_files": [
+      "employees.csv",
+      "departments.csv"
+    ],
     "expected_query": "SELECT e.employee_id, e.employee_name, e.salary, d.department_name\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nORDER BY e.employee_id",
     "solution_query": "SELECT e.employee_id, e.employee_name, e.salary, d.department_name\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nORDER BY e.employee_id;",
     "explanation": "An INNER JOIN (written as JOIN) links each employee row to its department using the shared foreign key department_id. Only employees that have a matching department_id in the departments table are returned. Table aliases (e, d) keep column references short and unambiguous when querying multiple tables. ORDER BY e.employee_id produces a deterministic result.",
-    "hints": ["JOIN on the column that links employees to departments", "Use table aliases to keep column references clear when joining two tables"],
-    "concepts": ["SELECT", "INNER JOIN", "ORDER BY"]
+    "hints": [
+      "JOIN on the column that links employees to departments",
+      "Use table aliases to keep column references clear when joining two tables"
+    ],
+    "concepts": [
+      "SELECT",
+      "INNER JOIN",
+      "ORDER BY"
+    ],
+    "companies": [
+      "Google",
+      "Microsoft"
+    ]
   },
   {
     "id": 1018,
@@ -284,14 +575,28 @@
     "description": "Return each distinct country represented in the users table as a single column named country. Order by country ascending.",
     "difficulty": "easy",
     "schema": {
-      "users": ["country"]
+      "users": [
+        "country"
+      ]
     },
-    "dataset_files": ["users.csv"],
+    "dataset_files": [
+      "users.csv"
+    ],
     "expected_query": "SELECT DISTINCT country\nFROM users\nORDER BY country",
     "solution_query": "SELECT DISTINCT country\nFROM users\nORDER BY country;",
-    "explanation": "DISTINCT removes duplicate values from the result set so each country appears exactly once, regardless of how many users share that country. Without DISTINCT, every row in users would be returned — one per user. ORDER BY country sorts the unique values alphabetically for readability.",
-    "hints": ["Use the DISTINCT keyword to eliminate duplicate values in the output"],
-    "concepts": ["SELECT", "DISTINCT", "ORDER BY"]
+    "explanation": "DISTINCT removes duplicate values from the result set so each country appears exactly once, regardless of how many users share that country. Without DISTINCT, every row in users would be returned \u2014 one per user. ORDER BY country sorts the unique values alphabetically for readability.",
+    "hints": [
+      "Use the DISTINCT keyword to eliminate duplicate values in the output"
+    ],
+    "concepts": [
+      "SELECT",
+      "DISTINCT",
+      "ORDER BY"
+    ],
+    "companies": [
+      "Meta",
+      "Airbnb"
+    ]
   },
   {
     "id": 1019,
@@ -300,14 +605,32 @@
     "description": "Return product_id, product_name, and price for all products with a price between 100 and 500 inclusive. Order by price ascending.",
     "difficulty": "easy",
     "schema": {
-      "products": ["product_id", "product_name", "price"]
+      "products": [
+        "product_id",
+        "product_name",
+        "price"
+      ]
     },
-    "dataset_files": ["products.csv"],
+    "dataset_files": [
+      "products.csv"
+    ],
     "expected_query": "SELECT product_id, product_name, price\nFROM products\nWHERE price BETWEEN 100 AND 500\nORDER BY price",
     "solution_query": "SELECT product_id, product_name, price\nFROM products\nWHERE price BETWEEN 100 AND 500\nORDER BY price;",
-    "explanation": "BETWEEN 100 AND 500 is a range filter that is inclusive on both ends — it is equivalent to WHERE price >= 100 AND price <= 500. This syntax is more readable than writing two separate conditions. ORDER BY price ASC arranges results from cheapest to most expensive within the range.",
-    "hints": ["BETWEEN includes both the lower and upper bounds", "BETWEEN is equivalent to >= lower AND <= upper"],
-    "concepts": ["SELECT", "WHERE", "BETWEEN", "ORDER BY"]
+    "explanation": "BETWEEN 100 AND 500 is a range filter that is inclusive on both ends \u2014 it is equivalent to WHERE price >= 100 AND price <= 500. This syntax is more readable than writing two separate conditions. ORDER BY price ASC arranges results from cheapest to most expensive within the range.",
+    "hints": [
+      "BETWEEN includes both the lower and upper bounds",
+      "BETWEEN is equivalent to >= lower AND <= upper"
+    ],
+    "concepts": [
+      "SELECT",
+      "WHERE",
+      "BETWEEN",
+      "ORDER BY"
+    ],
+    "companies": [
+      "Amazon",
+      "eBay"
+    ]
   },
   {
     "id": 1020,
@@ -316,14 +639,32 @@
     "description": "Return user_id, name, and signup_date for all users who signed up during the year 2024. Order by signup_date ascending.",
     "difficulty": "easy",
     "schema": {
-      "users": ["user_id", "name", "signup_date"]
+      "users": [
+        "user_id",
+        "name",
+        "signup_date"
+      ]
     },
-    "dataset_files": ["users.csv"],
+    "dataset_files": [
+      "users.csv"
+    ],
     "expected_query": "SELECT user_id, name, signup_date\nFROM users\nWHERE signup_date >= '2024-01-01'\n  AND signup_date < '2025-01-01'\nORDER BY signup_date",
     "solution_query": "SELECT user_id, name, signup_date\nFROM users\nWHERE signup_date >= '2024-01-01'\n  AND signup_date < '2025-01-01'\nORDER BY signup_date;",
     "explanation": "A half-open date range (>= '2024-01-01' AND < '2025-01-01') captures every date within the year 2024 without depending on time components. This approach is more portable than using YEAR() or EXTRACT() functions, which have slightly different syntax across PostgreSQL, MySQL, and SQL Server. ORDER BY signup_date ASC lists users in chronological order.",
-    "hints": ["Use a date range with >= and < to capture an entire year", "Compare signup_date to date string literals in 'YYYY-MM-DD' format"],
-    "concepts": ["SELECT", "WHERE", "ORDER BY", "dates"]
+    "hints": [
+      "Use a date range with >= and < to capture an entire year",
+      "Compare signup_date to date string literals in 'YYYY-MM-DD' format"
+    ],
+    "concepts": [
+      "SELECT",
+      "WHERE",
+      "ORDER BY",
+      "dates"
+    ],
+    "companies": [
+      "Meta",
+      "Airbnb"
+    ]
   },
   {
     "id": 1021,
@@ -332,15 +673,36 @@
     "description": "Return user_id, name, and country for users whose country is 'UK', 'IN', or 'DE'.",
     "difficulty": "easy",
     "schema": {
-      "users": ["user_id", "name", "country"]
+      "users": [
+        "user_id",
+        "name",
+        "country"
+      ]
     },
-    "dataset_files": ["users.csv"],
+    "dataset_files": [
+      "users.csv"
+    ],
     "expected_query": "SELECT user_id, name, country\nFROM users\nWHERE country IN ('UK', 'IN', 'DE')",
     "solution_query": "SELECT user_id, name, country\nFROM users\nWHERE country IN ('UK', 'IN', 'DE');",
     "explanation": "The IN operator checks whether a column matches any value in a short list of exact options. Here it keeps only users whose country is UK, IN, or DE without repeating the country column in several OR conditions. This is easier to read and maintain than writing multiple equality checks. The query returns only the requested identifying columns, which keeps the output focused on the business question.",
-    "hints": ["Use IN when one column can match any value from a fixed list", "Put the allowed country codes inside parentheses after IN"],
-    "concepts": ["WHERE", "IN"],
-    "tags": ["easy", "users", "filtering", "in"]
+    "hints": [
+      "Use IN when one column can match any value from a fixed list",
+      "Put the allowed country codes inside parentheses after IN"
+    ],
+    "concepts": [
+      "WHERE",
+      "IN"
+    ],
+    "tags": [
+      "easy",
+      "users",
+      "filtering",
+      "in"
+    ],
+    "companies": [
+      "Meta",
+      "Airbnb"
+    ]
   },
   {
     "id": 1022,
@@ -349,15 +711,36 @@
     "description": "Return product_id, product_name, and category_id for products whose category_id is 3, 8, or 14. Order by category_id ascending.",
     "difficulty": "easy",
     "schema": {
-      "products": ["product_id", "product_name", "category_id"]
+      "products": [
+        "product_id",
+        "product_name",
+        "category_id"
+      ]
     },
-    "dataset_files": ["products.csv"],
+    "dataset_files": [
+      "products.csv"
+    ],
     "expected_query": "SELECT product_id, product_name, category_id\nFROM products\nWHERE category_id IN (3, 8, 14)\nORDER BY category_id ASC",
     "solution_query": "SELECT product_id, product_name, category_id\nFROM products\nWHERE category_id IN (3, 8, 14)\nORDER BY category_id ASC;",
     "explanation": "This query filters products to a small set of category IDs using IN. IN is the right choice when the same column needs to match one of several exact values, because it is more compact and clearer than chaining multiple OR comparisons. ORDER BY category_id ASC then groups the matching categories into a predictable sequence for review. Only the requested product columns are selected, so the result stays aligned with the prompt.",
-    "hints": ["Filter category_id with one IN list instead of multiple OR checks", "Order the matching rows by category_id ascending"],
-    "concepts": ["WHERE", "IN", "ORDER BY"],
-    "tags": ["easy", "products", "filtering", "in"]
+    "hints": [
+      "Filter category_id with one IN list instead of multiple OR checks",
+      "Order the matching rows by category_id ascending"
+    ],
+    "concepts": [
+      "WHERE",
+      "IN",
+      "ORDER BY"
+    ],
+    "tags": [
+      "easy",
+      "products",
+      "filtering",
+      "in"
+    ],
+    "companies": [
+      "Amazon"
+    ]
   },
   {
     "id": 1023,
@@ -366,15 +749,35 @@
     "description": "Return user_id, name, and country for users whose name starts with 'User 1'.",
     "difficulty": "easy",
     "schema": {
-      "users": ["user_id", "name", "country"]
+      "users": [
+        "user_id",
+        "name",
+        "country"
+      ]
     },
-    "dataset_files": ["users.csv"],
+    "dataset_files": [
+      "users.csv"
+    ],
     "expected_query": "SELECT user_id, name, country\nFROM users\nWHERE name LIKE 'User 1%'",
     "solution_query": "SELECT user_id, name, country\nFROM users\nWHERE name LIKE 'User 1%';",
     "explanation": "LIKE performs text pattern matching instead of exact equality matching. The pattern 'User 1%' means the name must begin with the text 'User 1', and the percent sign allows any characters after that prefix. This makes LIKE a good fit for prefix searches such as names, product codes, or campaign labels. The query returns only the columns requested in the prompt while filtering rows based on the name pattern.",
-    "hints": ["Use LIKE for prefix matching on text columns", "A trailing % wildcard means any characters can follow the prefix"],
-    "concepts": ["WHERE", "LIKE"],
-    "tags": ["easy", "users", "pattern-matching", "like"]
+    "hints": [
+      "Use LIKE for prefix matching on text columns",
+      "A trailing % wildcard means any characters can follow the prefix"
+    ],
+    "concepts": [
+      "WHERE",
+      "LIKE"
+    ],
+    "tags": [
+      "easy",
+      "users",
+      "pattern-matching",
+      "like"
+    ],
+    "companies": [
+      "Meta"
+    ]
   },
   {
     "id": 1024,
@@ -383,15 +786,36 @@
     "description": "Return event_id, user_id, and event_name for events whose event_name contains the word 'checkout'.",
     "difficulty": "easy",
     "schema": {
-      "events": ["event_id", "user_id", "event_name"]
+      "events": [
+        "event_id",
+        "user_id",
+        "event_name"
+      ]
     },
-    "dataset_files": ["events.csv"],
+    "dataset_files": [
+      "events.csv"
+    ],
     "expected_query": "SELECT event_id, user_id, event_name\nFROM events\nWHERE event_name LIKE '%checkout%'",
     "solution_query": "SELECT event_id, user_id, event_name\nFROM events\nWHERE event_name LIKE '%checkout%';",
     "explanation": "The LIKE pattern '%checkout%' finds rows where the text 'checkout' appears anywhere inside event_name. The percent sign before and after the word means characters are allowed on both sides of the match, which makes this a contains search rather than a prefix or suffix search. This is useful when business event names follow a naming convention and you want to capture a family of related actions. The query then returns the key identifying fields for each matching event row.",
-    "hints": ["Put % on both sides of the word when you want a contains match", "Filter event_name with LIKE before selecting the event columns"],
-    "concepts": ["WHERE", "LIKE"],
-    "tags": ["easy", "events", "pattern-matching", "like"]
+    "hints": [
+      "Put % on both sides of the word when you want a contains match",
+      "Filter event_name with LIKE before selecting the event columns"
+    ],
+    "concepts": [
+      "WHERE",
+      "LIKE"
+    ],
+    "tags": [
+      "easy",
+      "events",
+      "pattern-matching",
+      "like"
+    ],
+    "companies": [
+      "Meta",
+      "Amazon"
+    ]
   },
   {
     "id": 1025,
@@ -400,15 +824,37 @@
     "description": "Return order_id, status, payment_status, and net_amount for orders where the order status is 'cancelled' or the payment_status is 'failed'.",
     "difficulty": "easy",
     "schema": {
-      "orders": ["order_id", "status", "payment_status", "net_amount"]
+      "orders": [
+        "order_id",
+        "status",
+        "payment_status",
+        "net_amount"
+      ]
     },
-    "dataset_files": ["orders.csv"],
+    "dataset_files": [
+      "orders.csv"
+    ],
     "expected_query": "SELECT order_id, status, payment_status, net_amount\nFROM orders\nWHERE status = 'cancelled' OR payment_status = 'failed'",
     "solution_query": "SELECT order_id, status, payment_status, net_amount\nFROM orders\nWHERE status = 'cancelled' OR payment_status = 'failed';",
     "explanation": "OR makes the filter broader by keeping rows that satisfy either condition. In this case, an order appears in the result if it was cancelled, if its payment failed, or if both things are true for the same row. This is different from AND, which would require both conditions to be true at once. Returning both status columns helps explain why each order qualifies for the review list.",
-    "hints": ["Use OR when either condition should qualify the row", "Both status columns belong in the result because both are part of the business rule"],
-    "concepts": ["WHERE", "OR"],
-    "tags": ["easy", "orders", "logical-operators", "or"]
+    "hints": [
+      "Use OR when either condition should qualify the row",
+      "Both status columns belong in the result because both are part of the business rule"
+    ],
+    "concepts": [
+      "WHERE",
+      "OR"
+    ],
+    "tags": [
+      "easy",
+      "orders",
+      "logical-operators",
+      "or"
+    ],
+    "companies": [
+      "Amazon",
+      "Stripe"
+    ]
   },
   {
     "id": 1026,
@@ -417,15 +863,38 @@
     "description": "Return user_id, name, country, and plan_tier for users who are in the US and whose plan_tier is either 'pro' or 'enterprise'.",
     "difficulty": "easy",
     "schema": {
-      "users": ["user_id", "name", "country", "plan_tier"]
+      "users": [
+        "user_id",
+        "name",
+        "country",
+        "plan_tier"
+      ]
     },
-    "dataset_files": ["users.csv"],
+    "dataset_files": [
+      "users.csv"
+    ],
     "expected_query": "SELECT user_id, name, country, plan_tier\nFROM users\nWHERE country = 'US'\n  AND (plan_tier = 'pro' OR plan_tier = 'enterprise')",
     "solution_query": "SELECT user_id, name, country, plan_tier\nFROM users\nWHERE country = 'US'\n  AND (plan_tier = 'pro' OR plan_tier = 'enterprise');",
     "explanation": "This filter combines AND and OR to express a more precise business rule. The user must first be in the US, and then their plan_tier must be either pro or enterprise. Parentheses matter because they keep the two plan_tier checks together as one grouped condition. Without the parentheses, SQL operator precedence could change the result and allow rows that do not satisfy the full rule.",
-    "hints": ["Use AND for the country requirement and OR for the two allowed plan tiers", "Wrap the OR conditions in parentheses so they stay grouped together"],
-    "concepts": ["WHERE", "AND", "OR"],
-    "tags": ["easy", "users", "logical-operators", "and-or"]
+    "hints": [
+      "Use AND for the country requirement and OR for the two allowed plan tiers",
+      "Wrap the OR conditions in parentheses so they stay grouped together"
+    ],
+    "concepts": [
+      "WHERE",
+      "AND",
+      "OR"
+    ],
+    "tags": [
+      "easy",
+      "users",
+      "logical-operators",
+      "and-or"
+    ],
+    "companies": [
+      "Meta",
+      "Airbnb"
+    ]
   },
   {
     "id": 1027,
@@ -434,15 +903,36 @@
     "description": "Return user_id, name, and country for users whose email is missing.",
     "difficulty": "easy",
     "schema": {
-      "users": ["user_id", "name", "country", "email"]
+      "users": [
+        "user_id",
+        "name",
+        "country",
+        "email"
+      ]
     },
-    "dataset_files": ["users.csv"],
+    "dataset_files": [
+      "users.csv"
+    ],
     "expected_query": "SELECT user_id, name, country\nFROM users\nWHERE email IS NULL",
     "solution_query": "SELECT user_id, name, country\nFROM users\nWHERE email IS NULL;",
     "explanation": "NULL represents missing or unknown data, so it cannot be tested with = NULL. The correct SQL syntax is IS NULL, which matches rows where the column truly has no value. Here email is used only in the filter while the output focuses on user identifiers and country. This is a common data-quality query for finding incomplete customer records.",
-    "hints": ["Use IS NULL instead of = NULL", "Filter on email, but return the user columns requested in the prompt"],
-    "concepts": ["WHERE", "IS NULL"],
-    "tags": ["easy", "users", "null-handling", "is-null"]
+    "hints": [
+      "Use IS NULL instead of = NULL",
+      "Filter on email, but return the user columns requested in the prompt"
+    ],
+    "concepts": [
+      "WHERE",
+      "IS NULL"
+    ],
+    "tags": [
+      "easy",
+      "users",
+      "null-handling",
+      "is-null"
+    ],
+    "companies": [
+      "Meta"
+    ]
   },
   {
     "id": 1028,
@@ -451,15 +941,37 @@
     "description": "Return event_id, user_id, event_name, and product_id for events where product_id is present.",
     "difficulty": "easy",
     "schema": {
-      "events": ["event_id", "user_id", "event_name", "product_id"]
+      "events": [
+        "event_id",
+        "user_id",
+        "event_name",
+        "product_id"
+      ]
     },
-    "dataset_files": ["events.csv"],
+    "dataset_files": [
+      "events.csv"
+    ],
     "expected_query": "SELECT event_id, user_id, event_name, product_id\nFROM events\nWHERE product_id IS NOT NULL",
     "solution_query": "SELECT event_id, user_id, event_name, product_id\nFROM events\nWHERE product_id IS NOT NULL;",
     "explanation": "IS NOT NULL keeps only rows where the column contains a real value. In the events table, that means the event is associated with a specific product instead of leaving product_id blank. This is the correct SQL form for checking populated fields, because comparisons like <> NULL do not work the way beginners often expect. The query returns the event fields needed to inspect those product-linked actions.",
-    "hints": ["Use IS NOT NULL to keep rows with a populated value", "Filter product_id first, then return the event details requested"],
-    "concepts": ["WHERE", "IS NOT NULL"],
-    "tags": ["easy", "events", "null-handling", "is-not-null"]
+    "hints": [
+      "Use IS NOT NULL to keep rows with a populated value",
+      "Filter product_id first, then return the event details requested"
+    ],
+    "concepts": [
+      "WHERE",
+      "IS NOT NULL"
+    ],
+    "tags": [
+      "easy",
+      "events",
+      "null-handling",
+      "is-not-null"
+    ],
+    "companies": [
+      "Meta",
+      "Amazon"
+    ]
   },
   {
     "id": 1029,
@@ -468,15 +980,37 @@
     "description": "Return acquisition_channel and the number of users in that channel as user_count, but only for users whose email ends with '@example.com'. Order by user_count descending, then acquisition_channel ascending.",
     "difficulty": "easy",
     "schema": {
-      "users": ["user_id", "email", "acquisition_channel"]
+      "users": [
+        "user_id",
+        "email",
+        "acquisition_channel"
+      ]
     },
-    "dataset_files": ["users.csv"],
+    "dataset_files": [
+      "users.csv"
+    ],
     "expected_query": "SELECT acquisition_channel, COUNT(user_id) AS user_count\nFROM users\nWHERE email LIKE '%@example.com'\nGROUP BY acquisition_channel\nORDER BY user_count DESC, acquisition_channel ASC",
     "solution_query": "SELECT acquisition_channel, COUNT(user_id) AS user_count\nFROM users\nWHERE email LIKE '%@example.com'\nGROUP BY acquisition_channel\nORDER BY user_count DESC, acquisition_channel ASC;",
     "explanation": "This query combines filtering and grouping in a simple two-step flow. The WHERE clause first keeps only users whose email matches the requested domain pattern, and then GROUP BY acquisition_channel collects those filtered users into one group per channel. COUNT(user_id) counts the number of matching users in each group. The final ORDER BY makes the grouped result deterministic and puts the largest channels first.",
-    "hints": ["Filter the email column with LIKE before grouping the rows", "Group by acquisition_channel and count user_id within each channel"],
-    "concepts": ["LIKE", "GROUP BY", "COUNT"],
-    "tags": ["easy", "users", "grouping", "like"]
+    "hints": [
+      "Filter the email column with LIKE before grouping the rows",
+      "Group by acquisition_channel and count user_id within each channel"
+    ],
+    "concepts": [
+      "LIKE",
+      "GROUP BY",
+      "COUNT"
+    ],
+    "tags": [
+      "easy",
+      "users",
+      "grouping",
+      "like"
+    ],
+    "companies": [
+      "Meta",
+      "Airbnb"
+    ]
   },
   {
     "id": 1030,
@@ -485,14 +1019,35 @@
     "description": "Return status and the total payment amount for that status as total_amount, but only for payments where status is 'failed' or 'refunded'. Order by total_amount descending, then status ascending.",
     "difficulty": "easy",
     "schema": {
-      "payments": ["status", "amount"]
+      "payments": [
+        "status",
+        "amount"
+      ]
     },
-    "dataset_files": ["payments.csv"],
+    "dataset_files": [
+      "payments.csv"
+    ],
     "expected_query": "SELECT status, SUM(amount) AS total_amount\nFROM payments\nWHERE status = 'failed' OR status = 'refunded'\nGROUP BY status\nORDER BY total_amount DESC, status",
     "solution_query": "SELECT status, SUM(amount) AS total_amount\nFROM payments\nWHERE status = 'failed' OR status = 'refunded'\nGROUP BY status\nORDER BY total_amount DESC, status;",
     "explanation": "The WHERE clause uses OR to keep only the two requested payment statuses. After that filter is applied, GROUP BY status creates one group for each remaining status value and SUM(amount) adds the payment amounts within each group. This is a good beginner example of combining a multi-value filter with a simple aggregation. ORDER BY total_amount DESC makes the grouped output deterministic and surfaces the larger total first.",
-    "hints": ["Use OR to keep the two allowed status values", "After filtering, group by status and sum the amount column"],
-    "concepts": ["OR", "GROUP BY", "SUM"],
-    "tags": ["easy", "payments", "aggregation", "or"]
+    "hints": [
+      "Use OR to keep the two allowed status values",
+      "After filtering, group by status and sum the amount column"
+    ],
+    "concepts": [
+      "OR",
+      "GROUP BY",
+      "SUM"
+    ],
+    "tags": [
+      "easy",
+      "payments",
+      "aggregation",
+      "or"
+    ],
+    "companies": [
+      "Stripe",
+      "PayPal"
+    ]
   }
 ]

@@ -332,6 +332,23 @@ export default function LandingPage() {
           </div>
         </section>
 
+        <section className="landing-companies">
+          <div className="container">
+            <p className="landing-companies-label">Practice questions from top companies:</p>
+            <div className="landing-companies-row">
+              {['Meta', 'Google', 'Amazon', 'Stripe', 'Airbnb', 'Netflix', 'Uber', 'Microsoft', 'LinkedIn', 'Shopify'].map((company) => (
+                <a
+                  key={company}
+                  className="landing-company-chip"
+                  href="#landing-tracks"
+                >
+                  {company}
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section className="landing-practice-section" id="landing-tracks">
           <div className="landing-practice-heading">
             <h2 className="landing-practice-title">Practice tracks</h2>
