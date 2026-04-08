@@ -100,9 +100,9 @@ select {
 .auth-main {
   min-height: calc(100vh - 68px);
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  padding: 4rem 1.5rem 3rem;
+  padding: 2rem 1.5rem;
   overflow-y: auto;
 }
 
