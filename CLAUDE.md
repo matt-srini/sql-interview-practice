@@ -67,6 +67,7 @@ A data interview practice platform covering four tracks. Users write SQL or Pyth
 
 - **Sample questions:** 3 per track+difficulty = 36 total across all tracks
 - Every question has `hints` (1–2 entries) and `concepts` (semantic tags surfaced as pills)
+- SQL questions have a `companies` field (`["Meta", "Stripe", ...]`) used for the company filter in SidebarNav
 - SQL schemas validated against committed CSV headers at catalog load time
 
 ---
