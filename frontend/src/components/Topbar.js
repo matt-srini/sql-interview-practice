@@ -64,7 +64,6 @@ export default function Topbar({ active }) {
             </button>
             {practiceOpen && (
               <div className="topbar-practice-menu">
-                <div className="topbar-practice-label">Switch track</div>
                 {TOPICS.map(t => (
                   <Link
                     key={t}
@@ -72,9 +71,7 @@ export default function Topbar({ active }) {
                     to={`/practice/${t}`}
                     onClick={() => setPracticeOpen(false)}
                   >
-                    <span className="topbar-practice-dot" style={{ background: TRACK_META[t].color }} />
-                    <span className="topbar-practice-name">{TRACK_META[t].label}</span>
-                    <span className="topbar-practice-sub">{TRACK_META[t].tagline}</span>
+                    {TRACK_META[t].label}
                   </Link>
                 ))}
               </div>

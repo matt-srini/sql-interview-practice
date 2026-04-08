@@ -8,7 +8,7 @@ export default function PathProgressCard({ path, compact = false }) {
 
   return (
     <Link
-      to={`/learn/${path.slug}`}
+      to={`/learn/${path.topic}/${path.slug}`}
       className={`path-card${compact ? ' path-card--compact' : ''}`}
     >
       <div className="path-card-header">

@@ -264,7 +264,7 @@ export default function QuestionPage() {
     <main className="container question-page question-page-challenge">
       {pathNavBar && (
         <div className="path-nav-bar">
-          <Link to={`/learn/${pathNavBar.path.slug}`} className="path-nav-back">
+          <Link to={`/learn/${pathNavBar.path.topic}/${pathNavBar.path.slug}`} className="path-nav-back">
             ← {pathNavBar.path.title}
           </Link>
           <span className="path-nav-pos">

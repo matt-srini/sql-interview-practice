@@ -5652,3 +5652,90 @@ select {
   cursor: default;
   border-color: var(--border);
 }
+
+/* ── LearningPathsIndex page (/learn, /learn/:topic) ─── */
+.learn-index-page {
+  min-height: 100vh;
+  background: var(--bg-page);
+}
+.learn-index-header {
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--border);
+  padding: 2rem 1.5rem 2.5rem;
+}
+.learn-index-title {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--text-strong);
+  margin: 0.75rem 0 0.4rem;
+}
+.learn-index-sub {
+  color: var(--text-secondary);
+  margin: 0 0 1.25rem;
+  font-size: 0.95rem;
+}
+.learn-index-topic-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+.learn-index-topic-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--pill-color);
+  border: 1.5px solid var(--pill-color);
+  background: color-mix(in srgb, var(--pill-color) 10%, transparent);
+  text-decoration: none;
+  transition: background 0.12s;
+}
+.learn-index-topic-pill:hover {
+  background: color-mix(in srgb, var(--pill-color) 20%, transparent);
+}
+.learn-index-body {
+  padding: 2rem 1.5rem;
+}
+.learn-index-group {
+  margin-bottom: 2.5rem;
+}
+.learn-index-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.9rem;
+}
+.learn-index-group-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-strong);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.learn-index-group-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.learn-index-group-link {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+}
+.learn-index-group-link:hover { text-decoration: underline; }
+.learn-index-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+.learn-index-empty {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
