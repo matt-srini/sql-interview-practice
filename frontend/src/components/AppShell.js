@@ -143,29 +143,31 @@ export default function AppShell() {
             <div className="app-title-group">
               <div className="app-title-row app-title-row-nav">
                 <Link className="app-practice-home brand-wordmark" to="/">datanest</Link>
-                <div className="app-practice-dropdown">
+                <div className="topbar-practice-dropdown app-practice-dropdown">
                   <button
-                    className={`app-track-link app-practice-dropdown-trigger${practiceOpen ? ' active' : ''}`}
+                    className={`app-track-link topbar-practice-trigger${practiceOpen ? ' topbar-practice-trigger--open' : ''}`}
                     onClick={() => setPracticeOpen(v => !v)}
                     aria-haspopup="true"
                     aria-expanded={practiceOpen}
+                    type="button"
                   >
-                    Practice <span className="app-practice-dropdown-caret">{practiceOpen ? '▴' : '▾'}</span>
+                    Practice <span className="topbar-practice-caret">{practiceOpen ? '▴' : '▾'}</span>
                   </button>
                   {practiceOpen && (
-                    <div className="app-practice-dropdown-menu">
-                      <div className="app-practice-dropdown-label">Switch track</div>
+                    <div className="topbar-practice-menu">
+                      <div className="topbar-practice-label">Switch track</div>
                       {TOPICS.map((track) => {
                         const trackMeta = TRACK_META[track];
                         return (
                           <NavLink
                             key={track}
-                            className={({ isActive }) => `app-practice-dropdown-item${isActive ? ' active' : ''}`}
+                            className={({ isActive }) => `topbar-practice-item${isActive ? ' topbar-practice-item--active' : ''}`}
                             to={`/practice/${track}`}
+                            onClick={() => setPracticeOpen(false)}
                           >
-                            <span className="app-practice-dropdown-dot" style={{ background: trackMeta.color }} />
-                            <span className="app-practice-dropdown-name">{trackMeta.label}</span>
-                            <span className="app-practice-dropdown-desc">{trackMeta.tagline}</span>
+                            <span className="topbar-practice-dot" style={{ background: trackMeta.color }} />
+                            <span className="topbar-practice-name">{trackMeta.label}</span>
+                            <span className="topbar-practice-sub">{trackMeta.tagline}</span>
                           </NavLink>
                         );
                       })}

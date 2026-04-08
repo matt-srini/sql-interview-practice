@@ -128,7 +128,8 @@ sql-interview-practice/
 │   │   │   ├── VariablesPanel.js   # Available DataFrames for Pandas questions
 │   │   │   ├── MCQPanel.js         # Radio-button MCQ for PySpark questions
 │   │   │   ├── TrackProgressBar.js # Reusable horizontal progress bar
-│   │   │   └── PathProgressCard.js # Path card with topic dot, progress bar, CTA (used on Landing + TrackHub)
+│   │   │   ├── PathProgressCard.js # Path card with topic dot, progress bar, CTA (used on Landing + TrackHub)
+│   │   │   └── Topbar.js           # Shared top nav bar used by all standalone pages (Practice dropdown, Mock, Dashboard, auth)
 │   │   └── pages/
 │   │       ├── LandingPage.js          # Fixed-topbar landing with track/sample tabs and compact progress panels
 │   │       ├── QuestionPage.js         # Topic-aware question page (all 4 tracks)

@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import api from '../api';
-import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
-import { useTheme } from '../App';
+import Topbar from '../components/Topbar';
 
 const TRACKS = ['sql', 'python', 'python-data', 'pyspark', 'mixed'];
 const DIFFICULTIES = ['easy', 'medium', 'hard', 'mixed'];
@@ -41,8 +40,6 @@ function formatDuration(timeLimitS, timeUsedS) {
 }
 
 export default function MockHub() {
-  const { user, logout } = useAuth();
-  const { theme, setTheme, resolvedTheme } = useTheme();
   const navigate = useNavigate();
 
   const [mode, setMode] = useState('30min');
@@ -61,12 +58,6 @@ export default function MockHub() {
       .catch(() => {})
       .finally(() => setHistoryLoading(false));
   }, []);
-
-  function cycleTheme() {
-    const next = theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system';
-    setTheme(next);
-  }
-  const themeIcon = theme === 'system' ? '◐' : resolvedTheme === 'dark' ? '☀' : '☾';
 
   async function handleStart() {
     setStarting(true);
@@ -95,39 +86,7 @@ export default function MockHub() {
 
   return (
     <div className="mock-hub-page">
-      {/* Topbar */}
-      <header className="topbar landing-topbar">
-        <div className="container topbar-inner landing-topbar-inner">
-          <div className="landing-topbar-left">
-            <Link className="brand-wordmark" to="/">datanest</Link>
-          </div>
-          <div className="landing-topbar-right">
-            <div className="nav-dropdown">
-              <button className="topbar-auth-link nav-dropdown-trigger" type="button">
-                Practice ▾
-              </button>
-              <div className="nav-dropdown-menu">
-                {['sql', 'python', 'python-data', 'pyspark'].map(t => (
-                  <Link key={t} className="nav-dropdown-item" to={`/practice/${t}`}>
-                    {TRACK_META[t].label}
-                  </Link>
-                ))}
-              </div>
-            </div>
-            <Link className="topbar-auth-link topbar-auth-link--active" to="/mock">Mock</Link>
-            <Link className="topbar-auth-link" to="/dashboard">Dashboard</Link>
-            <button className="theme-toggle" onClick={cycleTheme} aria-label="Toggle theme">
-              {themeIcon}
-            </button>
-            {user && (
-              <>
-                <span className="topbar-user-name">{user.name || user.email}</span>
-                <button type="button" className="topbar-signout-btn" onClick={logout}>Sign out</button>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
+      <Topbar active="mock" />
 
       <main className="mock-hub-main">
         {/* Hero */}
