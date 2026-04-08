@@ -1225,6 +1225,47 @@ select {
   margin-top: 1.8rem;
 }
 
+.landing-companies {
+  background: var(--bg-page);
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  border-top: 1px solid var(--border);
+}
+
+.landing-companies-label {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.landing-companies-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.landing-company-chip {
+  padding: 5px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-card);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.landing-company-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--surface-raised, var(--surface-card));
+}
+
 .landing-practice-section {
   width: 100%;
   max-width: 1040px;

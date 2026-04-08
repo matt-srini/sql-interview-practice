@@ -1169,6 +1169,20 @@ Awarded automatically from existing `submissions` data:
 
 ---
 
+### Auth page tightening
+
+**Current gaps in `AuthPage.js`:**
+
+1. **OAuth buttons are unimplemented.** Google, GitHub, and Apple buttons are rendered and hit `/auth/oauth/{provider}` which doesn't exist — they just surface an error. Remove them or replace with a disabled/"Coming soon" state until OAuth is actually built.
+
+2. **Forgot password silently misleads users.** Submitting the forgot-password form shows a hardcoded fake-success message ("Password reset is not yet available"). Users who are genuinely locked out think a reset email was sent. Fix: show the honest message *before* submission (static copy in the form), or remove the `forgot` mode entirely until the email service is live (see Email service section above).
+
+3. **No real password complexity enforcement.** Signup only has `minLength={8}` on the HTML input with no backend validation. Add client-side rules and a matching server-side check: min 8 chars, at least one uppercase, one lowercase, one number. No symbol requirement — accessible but not trivial. Show a short requirements hint under the password field on signup.
+
+**Files:** `frontend/src/pages/AuthPage.js`, `backend/routers/auth.py`, `frontend/src/App.css`
+
+---
+
 ## Completed
 
 ### 1D · Mobile UX improvements — shipped

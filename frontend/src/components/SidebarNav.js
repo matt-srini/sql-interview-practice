@@ -107,6 +107,21 @@ function buildConceptList(groups) {
     .map(([concept]) => concept);
 }
 
+// Build sorted company list: most-frequent companies first
+function buildCompanyList(groups) {
+  const freq = {};
+  for (const g of groups) {
+    for (const q of g.questions) {
+      for (const c of q.companies ?? []) {
+        freq[c] = (freq[c] ?? 0) + 1;
+      }
+    }
+  }
+  return Object.entries(freq)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([company]) => company);
+}
+
 function ConceptFilter({ groups, activeFilters, onToggle, onClear }) {
   const [expanded, setExpanded] = useState(false);
   const filterRef = useRef(null);
@@ -176,20 +191,59 @@ function ConceptFilter({ groups, activeFilters, onToggle, onClear }) {
   );
 }
 
+function CompanyFilter({ groups, activeFilters, onToggle, onClear }) {
+  const companies = useMemo(() => buildCompanyList(groups), [groups]);
+
+  if (companies.length === 0) return null;
+
+  const activeList = companies.filter((c) => activeFilters.has(c));
+  const inactiveList = companies.filter((c) => !activeFilters.has(c));
+
+  function renderChip(company) {
+    const active = activeFilters.has(company);
+    return (
+      <button
+        key={company}
+        className={`sidebar-concept-chip${active ? ' sidebar-concept-chip-active' : ''}`}
+        onClick={() => onToggle(company)}
+        title={company}
+      >
+        {company}
+        {active && <span className="sidebar-concept-chip-x" aria-hidden="true">×</span>}
+      </button>
+    );
+  }
+
+  return (
+    <div className="sidebar-concept-filter sidebar-company-filter">
+      <div className="sidebar-concept-filter-header">
+        <span className="sidebar-concept-filter-label">Filter by company</span>
+        {activeFilters.size > 0 && (
+          <button className="sidebar-concept-clear" onClick={onClear}>
+            Clear
+          </button>
+        )}
+      </div>
+      <div className="sidebar-concept-chips">
+        {activeList.map(renderChip)}
+        {inactiveList.map(renderChip)}
+      </div>
+    </div>
+  );
+}
+
 export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNavigate }) {
   const { topic } = useTopic();
   const groups = catalog?.groups ?? [];
 
   const [activeFilters, setActiveFilters] = useState(new Set());
+  const [activeCompanyFilters, setActiveCompanyFilters] = useState(new Set());
 
   function toggleFilter(concept) {
     setActiveFilters((prev) => {
       const next = new Set(prev);
-      if (next.has(concept)) {
-        next.delete(concept);
-      } else {
-        next.add(concept);
-      }
+      if (next.has(concept)) next.delete(concept);
+      else next.add(concept);
       return next;
     });
   }
@@ -198,26 +252,41 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
     setActiveFilters(new Set());
   }
 
-  // Apply concept filter to groups
+  function toggleCompanyFilter(company) {
+    setActiveCompanyFilters((prev) => {
+      const next = new Set(prev);
+      if (next.has(company)) next.delete(company);
+      else next.add(company);
+      return next;
+    });
+  }
+
+  function clearCompanyFilters() {
+    setActiveCompanyFilters(new Set());
+  }
+
+  const anyFilterActive = activeFilters.size > 0 || activeCompanyFilters.size > 0;
+
+  // Apply concept + company filters (AND logic: question must satisfy both)
   const filteredGroups = useMemo(() => {
-    if (activeFilters.size === 0) return groups;
-    return groups.map((g) => ({
-      ...g,
-      questions: g.questions.filter((q) =>
-        (q.concepts ?? []).some((c) => activeFilters.has(c))
-      ),
-      counts: {
-        ...g.counts,
-        // Show filtered count in parentheses (keep total for context)
-        total: g.questions.filter((q) =>
-          (q.concepts ?? []).some((c) => activeFilters.has(c))
-        ).length,
-        solved: g.questions.filter((q) =>
-          (q.concepts ?? []).some((c) => activeFilters.has(c)) && q.state === 'solved'
-        ).length,
-      },
-    })).filter((g) => g.questions.length > 0);
-  }, [groups, activeFilters]);
+    if (!anyFilterActive) return groups;
+    return groups.map((g) => {
+      const questions = g.questions.filter((q) => {
+        const conceptMatch = activeFilters.size === 0 || (q.concepts ?? []).some((c) => activeFilters.has(c));
+        const companyMatch = activeCompanyFilters.size === 0 || (q.companies ?? []).some((c) => activeCompanyFilters.has(c));
+        return conceptMatch && companyMatch;
+      });
+      return {
+        ...g,
+        questions,
+        counts: {
+          ...g.counts,
+          total: questions.length,
+          solved: questions.filter((q) => q.state === 'solved').length,
+        },
+      };
+    }).filter((g) => g.questions.length > 0);
+  }, [groups, activeFilters, activeCompanyFilters, anyFilterActive]);
 
   return (
     <div className="sidebar-inner">
@@ -227,11 +296,17 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
         onToggle={toggleFilter}
         onClear={clearFilters}
       />
+      <CompanyFilter
+        groups={groups}
+        activeFilters={activeCompanyFilters}
+        onToggle={toggleCompanyFilter}
+        onClear={clearCompanyFilters}
+      />
 
-      {activeFilters.size > 0 && filteredGroups.length === 0 && (
+      {anyFilterActive && filteredGroups.length === 0 && (
         <div className="sidebar-concept-empty">
           No questions match these filters.{' '}
-          <button className="sidebar-concept-clear" onClick={clearFilters}>
+          <button className="sidebar-concept-clear" onClick={() => { clearFilters(); clearCompanyFilters(); }}>
             Clear filters
           </button>
         </div>
