@@ -1,0 +1,7 @@
+{
+  "slug": "dataframe-fundamentals",
+  "title": "DataFrame Fundamentals",
+  "description": "Get fluent with the everyday pandas toolkit: boolean indexing, column selection, null handling, derived columns, and basic sorting.",
+  "topic": "python-data",
+  "questions": [5001, 5002, 5004, 5005, 5006, 5007]
+}

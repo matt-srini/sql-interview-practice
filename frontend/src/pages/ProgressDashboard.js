@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
 import TrackProgressBar from '../components/TrackProgressBar';
+import Topbar from '../components/Topbar';
 
 const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
 
@@ -53,12 +53,7 @@ export default function ProgressDashboard() {
 
   return (
     <>
-      <header className="topbar">
-        <div className="container topbar-inner">
-          <Link className="dashboard-brand brand-wordmark" to="/">datanest</Link>
-          <Link className="topbar-auth-link" to="/">← All Tracks</Link>
-        </div>
-      </header>
+      <Topbar active="dashboard" />
 
       <main className="container dashboard-page">
         <div className="dashboard-heading">

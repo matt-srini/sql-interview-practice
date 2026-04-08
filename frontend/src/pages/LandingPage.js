@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
 import TrackProgressBar from '../components/TrackProgressBar';
 import PathProgressCard from '../components/PathProgressCard';
+import Topbar from '../components/Topbar';
 import { useTheme } from '../App';
 
 const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
@@ -259,35 +260,7 @@ export default function LandingPage() {
 
   return (
     <>
-      <header className="topbar landing-topbar">
-        <div className="container topbar-inner landing-topbar-inner">
-          <div className="landing-topbar-left">
-            <Link className="landing-brand brand-wordmark" to="/">datanest</Link>
-          </div>
-          <div className="landing-topbar-right">
-            <button
-              className="theme-toggle"
-              onClick={cycleTheme}
-              aria-label={themeLabel}
-              title={themeLabel}
-            >
-              {themeIcon}
-            </button>
-            <Link className="topbar-auth-link" to="/mock">Mock</Link>
-            <Link className="topbar-auth-link" to="/dashboard">Dashboard</Link>
-            {user ? (
-              <div className="topbar-user-pill">
-                <span className="topbar-user-name">{user.name || user.email}</span>
-                <button type="button" className="topbar-signout-btn" onClick={logout}>
-                  Sign out
-                </button>
-              </div>
-            ) : (
-              <Link className="topbar-auth-link" to="/auth">Login</Link>
-            )}
-          </div>
-        </div>
-      </header>
+      <Topbar />
 
       <main className="landing-page">
         {!user && (
