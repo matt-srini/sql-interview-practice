@@ -138,11 +138,14 @@ Target 2–4 tags per question. Tags describe the analytical *pattern*, not the 
   "solution_query": "SELECT ... (shown to user — clean, readable, best-practice SQL)",
   "explanation": "Step-by-step logic, WHY the approach works, key concepts, edge-case handling.",
   "hints": ["Guide thinking, do not reveal answer", "Progressive hint if needed"],
-  "concepts": ["SEMANTIC REASONING TAG", "ANOTHER TAG"]
+  "concepts": ["SEMANTIC REASONING TAG", "ANOTHER TAG"],
+  "companies": ["Meta", "Amazon"]
 }
 ```
 
 `expected_query` vs `solution_query`: They must produce identical results. `expected_query` is used for evaluation; `solution_query` is what users see post-submit and should be the cleanest form.
+
+`companies` (SQL only, optional): list of companies known to ask this style of question. Use the canonical set: `Meta`, `Google`, `Amazon`, `Stripe`, `Airbnb`, `Netflix`, `Uber`, `Microsoft`, `LinkedIn`, `Shopify`, `eBay`, `PayPal`, `Salesforce`, `Zendesk`, `Amplitude`. Omit or leave `[]` if no clear association. Drives the company filter chips in the sidebar.
 
 ---
 

@@ -1185,6 +1185,14 @@ Awarded automatically from existing `submissions` data:
 
 ## Completed
 
+### Phase 4 · Company tags on SQL questions — shipped
+
+`"companies"` field added to all 86 SQL questions with contextual assignments (Stripe for payments, Meta/Airbnb for user/cohort questions, Amazon/Shopify for orders/products, Google/Microsoft for HR, etc.). `CompanyFilter` component added to `SidebarNav.js` below the concept filter — frequency-sorted chips, active accent style, AND logic with concept filter. `/api/catalog` extended to include `companies` per question. Company strip added to `LandingPage.js` between showcase and tracks sections (10 company chips linking to `#landing-tracks`).
+
+*commit: 294e464*
+
+---
+
 ### 1D · Mobile UX improvements — shipped
 
 Track tiles stack vertically on mobile (<600px) instead of horizontal scroll. Schema viewer on SQL question pages becomes a bottom-sheet drawer on mobile — "Schema (N tables)" button slides up an overlay panel. CSS in `App.css`; bottom-sheet JSX + `schemaSheetOpen` state in `QuestionPage.js`.
