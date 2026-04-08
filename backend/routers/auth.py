@@ -19,6 +19,11 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
+_RESERVED_EMAIL_PREFIXES: frozenset[str] = frozenset({
+    "admin", "dev", "developer", "test", "tester",
+    "automation", "auto", "author",
+})
+
 
 class RegisterRequest(BaseModel):
     email: str
@@ -31,6 +36,9 @@ class RegisterRequest(BaseModel):
         value = value.strip().lower()
         if not _EMAIL_RE.match(value):
             raise ValueError("Invalid email address")
+        local = value.split("@")[0]
+        if local in _RESERVED_EMAIL_PREFIXES:
+            raise ValueError("That email address is not available for registration")
         return value
 
     @field_validator("name")
