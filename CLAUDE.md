@@ -134,7 +134,8 @@ sql-interview-practice/
 │   │       ├── LandingPage.js          # Fixed-topbar landing with track/sample tabs and compact progress panels
 │   │       ├── QuestionPage.js         # Topic-aware question page (all 4 tracks)
 │   │       ├── TrackHubPage.js         # Per-track landing (progress, next-up summary, concept preview, paths)
-│   │       ├── LearningPath.js         # Curated path page at /learn/:slug (breadcrumb, progress, question list)
+│   │       ├── LearningPath.js         # Curated path page at /learn/:topic/:slug (breadcrumb, progress, question list)
+│   │       ├── LearningPathsIndex.js   # Index of all paths at /learn and /learn/:topic (grouped, filterable)
 │   │       ├── ProgressDashboard.js    # Cross-track progress overview at /dashboard
 │   │       ├── MockHub.js              # Mock interview lobby at /mock (mode/track/difficulty selection)
 │   │       ├── MockSession.js          # Active mock session + summary at /mock/:id
@@ -160,7 +161,9 @@ sql-interview-practice/
 /dashboard                     → ProgressDashboard (cross-track progress)
 /mock                          → MockHub (mode/track/difficulty selector + history)  [AuthRequired]
 /mock/:id                      → MockSession (active session + inline summary)        [AuthRequired]
-/learn/:slug                   → LearningPath (curated path — breadcrumb, progress bar, question list)
+/learn                         → LearningPathsIndex (all paths, grouped by track, topic pills)
+/learn/:topic                  → LearningPathsIndex (filtered to one track)
+/learn/:topic/:slug            → LearningPath (curated path — breadcrumb, progress bar, question list)
 /sample/:topic/:difficulty     → SampleQuestionPage (topic-aware sample mode)
 /sample/:difficulty            → redirect → /sample/sql/:difficulty
 /practice/:topic               → TopicShell (TopicProvider + CatalogProvider + AppShell)
