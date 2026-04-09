@@ -312,8 +312,8 @@ def _evaluate_concepts(
             if enforce:
                 structure_correct = False
                 feedback.append(
-                    f"This question is intended to practice {label}. "
-                    "Try rewriting your solution to use it."
+                    f"Result correct — this question is designed to build {label}. "
+                    "The approach matters here."
                 )
             else:
                 feedback.append(
@@ -383,6 +383,19 @@ def evaluate(user_query: str, expected_query: str, question: dict[str, Any]) -> 
             quality = _compute_quality(user_query, expected_query, question)
         except Exception:
             logger.exception("%sQuality analysis failed", prefix)
+    elif not correct and user_df.shape == expected_df.shape and user_df.shape[0] > 0:
+        # Close miss: same row+column count but wrong values — surface style notes only
+        try:
+            style_notes = _analyze_query_style(user_query)
+            if style_notes:
+                quality = {
+                    "efficiency_note": None,
+                    "style_notes": style_notes,
+                    "complexity_hint": None,
+                    "alternative_solution": None,
+                }
+        except Exception:
+            pass
 
     return {
         "correct": correct,

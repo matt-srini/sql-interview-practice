@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import api from '../api';
 import CodeEditor from '../components/CodeEditor';
@@ -91,6 +91,8 @@ export default function QuestionPage() {
   const [openAttemptCodes, setOpenAttemptCodes] = useState(new Set());
   const [solutionAnalysisOpen, setSolutionAnalysisOpen] = useState(false);
   const [showAltSolution, setShowAltSolution] = useState(false);
+  const [submissionInsight, setSubmissionInsight] = useState(null);
+  const priorAttemptCountRef = useRef(0);
 
   // MCQ state for PySpark
   const [selectedOption, setSelectedOption] = useState(null);
@@ -112,7 +114,7 @@ export default function QuestionPage() {
         }
       })
       .catch((err) => setLoadError(err.response?.data?.detail ?? 'Failed to load question.'));
-    api.get('/submissions', { params: { track: topic, question_id: id, limit: 5 } })
+    api.get('/submissions', { params: { track: topic, question_id: id, limit: 20 } })
       .then((res) => setPastAttempts(res.data))
       .catch(() => {});
   }, [id, topic, questionApiPath, meta.language, meta.hasMCQ, defaultCode]);
@@ -135,6 +137,7 @@ export default function QuestionPage() {
     setOpenAttemptCodes(new Set());
     setSolutionAnalysisOpen(false);
     setShowAltSolution(false);
+    setSubmissionInsight(null);
   }, [id, meta.language, meta.hasMCQ]);
 
   function formatRelativeTime(isoString) {
@@ -172,10 +175,12 @@ export default function QuestionPage() {
   }
 
   async function handleSubmit() {
+    priorAttemptCountRef.current = pastAttempts.length;
     setSubmitting(true);
     setSubmitResult(null);
     setSubmitError(null);
     setShowSolution(false);
+    setSubmissionInsight(null);
     try {
       let payload;
       if (meta.hasMCQ) {
@@ -187,8 +192,15 @@ export default function QuestionPage() {
       }
       const res = await api.post(submitApiPath, payload);
       setSubmitResult(res.data);
-      if (res.data.correct) await refresh();
-      api.get('/submissions', { params: { track: topic, question_id: id, limit: 5 } })
+      if (res.data.correct) {
+        await refresh();
+        const prior = priorAttemptCountRef.current;
+        if (prior === 0) setSubmissionInsight('First-attempt solve — the system logged your approach.');
+        else if (prior >= 3) setSubmissionInsight('Took a few tries — that\'s the shape of real learning.');
+        // Auto-open writing notes on first-attempt correct solve
+        if (prior === 0) setSolutionAnalysisOpen(true);
+      }
+      api.get('/submissions', { params: { track: topic, question_id: id, limit: 20 } })
         .then((r) => setPastAttempts(r.data))
         .catch(() => {});
     } catch (err) {
@@ -197,6 +209,21 @@ export default function QuestionPage() {
       setSubmitting(false);
     }
   }
+
+  // Delta hint: row/column diff diagnostic for wrong SQL submissions
+  const deltaHint = useMemo(() => {
+    if (!submitResult || submitResult.correct || topic !== 'sql') return null;
+    const userRows = submitResult.user_result?.rows;
+    const expectedRows = submitResult.expected_result?.rows;
+    if (!userRows || !expectedRows) return null;
+    const rowDiff = userRows.length - expectedRows.length;
+    const userCols = submitResult.user_result?.columns?.length ?? 0;
+    const expectedCols = submitResult.expected_result?.columns?.length ?? 0;
+    if (rowDiff > 0) return `Your output has ${rowDiff} more row${rowDiff !== 1 ? 's' : ''} than expected. Check for a missing filter or a JOIN that multiplies rows.`;
+    if (rowDiff < 0) return `Your output has ${Math.abs(rowDiff)} fewer row${Math.abs(rowDiff) !== 1 ? 's' : ''} than expected. You may be filtering too aggressively, or missing a LEFT JOIN.`;
+    if (userCols !== expectedCols) return 'Row count matches but columns differ. Check your SELECT clause and column aliases.';
+    return 'Row and column counts match — check individual values. Look for rounding, type casting, or NULL handling differences.';
+  }, [submitResult, topic]);
 
   // Path nav bar derived values — must be before early returns (Rules of Hooks)
   const pathNavBar = useMemo(() => {
@@ -334,7 +361,7 @@ export default function QuestionPage() {
 
             {isLocked && (
               <div className="locked-callout">
-                This question is locked. Solve previous questions in this difficulty first.
+                Earn this question by solving earlier problems. The sequence builds concepts deliberately.
               </div>
             )}
           </div>
@@ -532,6 +559,9 @@ export default function QuestionPage() {
                     ? 'Your submission matches the expected result.'
                     : 'Your submission does not match the expected result yet.'}
                 </p>
+                {submissionInsight && (
+                  <p className="verdict-insight">{submissionInsight}</p>
+                )}
               </div>
               {shouldShowFeedback && (
                 <div className="feedback-card">
@@ -564,6 +594,14 @@ export default function QuestionPage() {
                 </div>
                 <ResultsTable columns={submitResult.expected_result.columns} rows={submitResult.expected_result.rows} />
               </div>
+            </div>
+          )}
+
+          {/* SQL delta hint for wrong submissions */}
+          {deltaHint && (
+            <div className="delta-hint">
+              <span className="delta-hint-label">Output diff</span>
+              {deltaHint}
             </div>
           )}
 
@@ -642,7 +680,7 @@ export default function QuestionPage() {
 
           {submitResult && (
             <div className="post-submit-stack">
-              {submitResult.correct && topic === 'sql' && submitResult.quality &&
+              {topic === 'sql' && submitResult.quality &&
                 (submitResult.quality.efficiency_note ||
                  submitResult.quality.style_notes?.length > 0 ||
                  submitResult.quality.complexity_hint ||
@@ -653,14 +691,15 @@ export default function QuestionPage() {
                     onClick={() => setSolutionAnalysisOpen((v) => !v)}
                     aria-expanded={solutionAnalysisOpen}
                   >
-                    <span>Solution analysis</span>
+                    <span>Writing notes</span>
                     <span className="solution-analysis-chevron">{solutionAnalysisOpen ? '▾' : '▸'}</span>
                   </button>
                   {solutionAnalysisOpen && (
                     <div className="solution-analysis-body">
+                      <p className="writing-notes-prompt">Interviewers ask you to explain your approach. Make sure you can.</p>
                       {submitResult.quality.efficiency_note && (
                         <div className="quality-metric">
-                          <span className="quality-metric-label">Efficiency</span>
+                          <span className={`quality-metric-label${submitResult.quality.efficiency_note.startsWith('Efficient') ? ' quality-metric-label-positive' : ''}`}>Efficiency</span>
                           <p className="quality-metric-note">{submitResult.quality.efficiency_note}</p>
                         </div>
                       )}

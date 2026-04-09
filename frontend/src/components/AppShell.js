@@ -4,7 +4,7 @@ import SidebarNav from './SidebarNav';
 import api from '../api';
 import { useCatalog } from '../catalogContext';
 import { useAuth } from '../contexts/AuthContext';
-import { TRACK_META } from '../contexts/TopicContext';
+import { TRACK_META, useTopic } from '../contexts/TopicContext';
 import TrackHubPage from '../pages/TrackHubPage';
 import { useTheme } from '../App';
 
@@ -112,8 +112,21 @@ export default function AppShell() {
     }
   }
 
+  const { meta } = useTopic();
+  const pathSlug = new URLSearchParams(location.search).get('path');
+  const modeLabel = pathSlug ? `${meta.label} · Path` : `${meta.label} · Challenge`;
+
   const showUpgradeControls = user && (user.plan === 'free' || user.plan === 'pro');
-  const sessionId = catalog?.user_id ? catalog.user_id.slice(0, 8) : null;
+
+  const planLabel = user?.plan === 'elite' ? 'Elite' : user?.plan === 'pro' ? 'Pro' : 'Free';
+  const planPillClass = `shell-pill shell-pill-plan shell-pill-plan-${user?.plan ?? 'free'}`;
+
+  // Unlock nudge for free-plan users with locked questions
+  const easyGroup = catalog?.groups?.find(g => g.difficulty === 'easy');
+  const mediumGroup = catalog?.groups?.find(g => g.difficulty === 'medium');
+  const lockedMediumCount = mediumGroup?.questions?.filter(q => q.state === 'locked').length ?? 0;
+  const lockedHardCount = (catalog?.groups?.find(g => g.difficulty === 'hard'))?.questions?.filter(q => q.state === 'locked').length ?? 0;
+  const showUnlockNudge = !!(user?.plan === 'free' && (lockedMediumCount > 0 || lockedHardCount > 0) && catalog);
 
   function cycleTheme() {
     const next = theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system';
@@ -140,6 +153,19 @@ export default function AppShell() {
               </button>
             )}
             <Link className="app-practice-home brand-wordmark" to="/">datanest</Link>
+          </div>
+
+          <div className="app-topbar-center">
+            {!isAtHub && (
+              <span
+                className={`shell-pill shell-pill-mode${pathSlug ? ' shell-pill-mode-path' : ''}`}
+                style={{ '--mode-dot-color': meta.color }}
+                aria-label={modeLabel}
+              >
+                <span className="shell-pill-mode-dot" aria-hidden="true" />
+                {modeLabel}
+              </span>
+            )}
           </div>
 
           <div className="app-topbar-actions">
@@ -185,10 +211,8 @@ export default function AppShell() {
             >
               {themeIcon}
             </button>
-            {sessionId && (
-              <div className="app-context app-context-secondary">
-                <span className="shell-pill shell-pill-session">Session {sessionId}</span>
-              </div>
+            {user && (
+              <span className={planPillClass}>{planLabel}</span>
             )}
           </div>
         </div>
@@ -219,12 +243,18 @@ export default function AppShell() {
               collapsedByDiff={collapsedByDiff}
               toggleDiff={toggleDiff}
               onNavigate={handleNavigateFromSidebar}
+              plan={user?.plan ?? 'free'}
             />
+          )}
+          {showUnlockNudge && (
+            <div className="sidebar-unlock-nudge">
+              Questions unlock as you solve them — medium opens after 10 easy solves, hard after 10 medium. The sequence builds real competence.
+            </div>
           )}
           {showUpgradeControls && (
             <div className="sidebar-upgrade-panel">
               <span className="upgrade-panel-label">
-                {user.plan === 'free' ? 'Expand question access' : 'Unlock the full challenge track'}
+                {user.plan === 'free' ? 'Questions unlock as you solve — or get full access instantly.' : 'Unlock the full challenge track'}
               </span>
               <div className="upgrade-actions">
                 {user.plan === 'free' && (

@@ -5,12 +5,27 @@ import { useTopic } from '../contexts/TopicContext';
 // How many concept chips to show before the "show more" toggle
 const CHIP_VISIBLE_DEFAULT = 8;
 
+// Mirror of backend/unlock.py thresholds (free plan progressive unlock)
+const MEDIUM_THRESHOLDS = [10, 20, 30]; // easy_solved → medium unlocks
+const HARD_THRESHOLDS   = [10, 20, 30]; // medium_solved → hard unlocks
+
+function computeUnlockNudge(solved, thresholds) {
+  const next = thresholds.find(t => t > solved);
+  if (!next) return null;
+  const prevList = thresholds.filter(t => t <= solved);
+  const prev = prevList.length > 0 ? prevList[prevList.length - 1] : 0;
+  const gap = next - solved;
+  const bracketSize = next - prev;
+  const fillPct = Math.round(((bracketSize - gap) / bracketSize) * 100);
+  return { gap, fillPct };
+}
+
 function titleCase(value) {
   if (!value) return '';
   return `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
 }
 
-function DifficultyHeader({ difficulty, counts, collapsed, onToggle }) {
+function DifficultyHeader({ difficulty, counts, collapsed, onToggle, unlockNudge }) {
   return (
     <button className="sidebar-group-header" onClick={onToggle} aria-expanded={!collapsed}>
       <div className="sidebar-group-title">
@@ -18,6 +33,14 @@ function DifficultyHeader({ difficulty, counts, collapsed, onToggle }) {
         <div className="sidebar-group-copy">
           <span className="sidebar-group-name">{titleCase(difficulty)}</span>
           <span className="sidebar-group-meta">{counts.solved} solved · {counts.total} total</span>
+          {unlockNudge && (
+            <div className="sidebar-unlock-bar">
+              <div className="sidebar-unlock-bar-track">
+                <div className="sidebar-unlock-bar-fill" style={{ width: `${unlockNudge.fillPct}%` }} />
+              </div>
+              <span className="sidebar-unlock-bar-label">{unlockNudge.gap} more to unlock</span>
+            </div>
+          )}
         </div>
       </div>
       <div className="sidebar-group-summary">
@@ -68,12 +91,16 @@ function QuestionContent({ q, isActive = false }) {
   );
 }
 
-function QuestionRow({ q, onNavigate, topic }) {
+function QuestionRow({ q, onNavigate, topic, lockedTitle }) {
   const stateClass = `sidebar-question-state-${q.state}`;
 
   if (q.state === 'locked') {
     return (
-      <div className={`sidebar-question sidebar-question-locked ${stateClass}`} aria-disabled="true">
+      <div
+        className={`sidebar-question sidebar-question-locked ${stateClass}`}
+        aria-disabled="true"
+        title={lockedTitle ?? undefined}
+      >
         <QuestionContent q={q} />
       </div>
     );
@@ -232,9 +259,27 @@ function CompanyFilter({ groups, activeFilters, onToggle, onClear }) {
   );
 }
 
-export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNavigate }) {
+export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNavigate, plan = 'free' }) {
   const { topic } = useTopic();
   const groups = catalog?.groups ?? [];
+
+  // Compute unlock nudges (free plan only)
+  const easyGroup = groups.find(g => g.difficulty === 'easy');
+  const mediumGroup = groups.find(g => g.difficulty === 'medium');
+  const easySolved = easyGroup?.counts?.solved ?? 0;
+  const mediumSolved = mediumGroup?.counts?.solved ?? 0;
+  const mediumNudge = plan === 'free' ? computeUnlockNudge(easySolved, MEDIUM_THRESHOLDS) : null;
+  const hardNudge = plan === 'free' ? computeUnlockNudge(mediumSolved, HARD_THRESHOLDS) : null;
+
+  // Locked question tooltip copy
+  const mediumLockedTitle = mediumNudge
+    ? `Solve ${mediumNudge.gap} more easy question${mediumNudge.gap !== 1 ? 's' : ''} to unlock this`
+    : null;
+  const hardLockedTitle = plan === 'pro'
+    ? 'Upgrade to Elite to unlock all hard questions'
+    : hardNudge
+    ? `Solve ${hardNudge.gap} more medium question${hardNudge.gap !== 1 ? 's' : ''} to unlock this`
+    : null;
 
   const [activeFilters, setActiveFilters] = useState(new Set());
   const [activeCompanyFilters, setActiveCompanyFilters] = useState(new Set());
@@ -314,6 +359,13 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
 
       {filteredGroups.map((g) => {
         const collapsed = Boolean(collapsedByDiff[g.difficulty]);
+        const hasLockedQuestions = g.questions.some(q => q.state === 'locked');
+        const nudge = g.difficulty === 'medium' && hasLockedQuestions ? mediumNudge
+          : g.difficulty === 'hard' && hasLockedQuestions ? hardNudge
+          : null;
+        const lockedTitle = g.difficulty === 'medium' ? mediumLockedTitle
+          : g.difficulty === 'hard' ? hardLockedTitle
+          : null;
         return (
           <div className="sidebar-group" key={g.difficulty}>
             <DifficultyHeader
@@ -321,6 +373,7 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
               counts={g.counts}
               collapsed={collapsed}
               onToggle={() => toggleDiff(g.difficulty)}
+              unlockNudge={nudge}
             />
             {!collapsed && (
               <div className="sidebar-question-list">
@@ -328,7 +381,7 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
                   .slice()
                   .sort((a, b) => a.order - b.order)
                   .map((q) => (
-                    <QuestionRow key={q.id} q={q} onNavigate={onNavigate} topic={topic} />
+                    <QuestionRow key={q.id} q={q} onNavigate={onNavigate} topic={topic} lockedTitle={q.state === 'locked' ? lockedTitle : null} />
                   ))}
               </div>
             )}

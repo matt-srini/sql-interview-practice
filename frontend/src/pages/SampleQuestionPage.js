@@ -170,7 +170,13 @@ export default function SampleQuestionPage() {
             </div>
             <div className="sample-topbar-center">
               <a className="sample-back-link" href="/#landing-tracks" aria-label="Back to track selection">←</a>
-              <h1>{topicLabel} sample</h1>
+              <span
+                className="shell-pill shell-pill-mode shell-pill-mode-sample"
+                style={{ '--mode-dot-color': meta.color }}
+              >
+                <span className="shell-pill-mode-dot" aria-hidden="true" />
+                {topicLabel} · Sample
+              </span>
             </div>
             <div className="sample-topbar-right">
               <Link className="btn btn-secondary" to={challengePath}>Start the challenge</Link>
@@ -257,7 +263,13 @@ export default function SampleQuestionPage() {
           </div>
           <div className="sample-topbar-center">
             <a className="sample-back-link" href="/#landing-tracks" aria-label="Back to track selection">←</a>
-            <h1>{topicLabel} sample</h1>
+            <span
+              className="shell-pill shell-pill-mode shell-pill-mode-sample"
+              style={{ '--mode-dot-color': meta.color }}
+            >
+              <span className="shell-pill-mode-dot" aria-hidden="true" />
+              {topicLabel} · Sample
+            </span>
           </div>
           <div className="sample-topbar-right">
             <Link className="btn btn-secondary" to={challengePath}>Start the challenge</Link>

@@ -848,6 +848,32 @@ async def record_submission(
         await session.commit()
 
 
+async def get_latest_submission(
+    user_id: str,
+    track: str,
+    question_id: int,
+) -> dict[str, Any] | None:
+    """Fetch the most recent submission for a user+question+track, used for repeat-attempt detection."""
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                SELECT id, code, is_correct
+                FROM submissions
+                WHERE user_id = CAST(:user_id AS UUID) AND track = :track AND question_id = :question_id
+                ORDER BY submitted_at DESC
+                LIMIT 1
+                """
+            ),
+            {"user_id": user_id, "track": track, "question_id": question_id},
+        )
+        row = result.fetchone()
+        if row is None:
+            return None
+        return {"id": row[0], "code": row[1], "is_correct": row[2]}
+
+
 # ── Mock interview ────────────────────────────────────────────────────────────
 
 async def create_mock_session(
