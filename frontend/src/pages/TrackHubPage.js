@@ -27,39 +27,6 @@ function pickFirstQuestionId(catalog) {
   return null;
 }
 
-function pickNextQuestionMeta(catalog) {
-  if (!catalog) return null;
-  const order = ['easy', 'medium', 'hard'];
-  for (const diff of order) {
-    const group = catalog.groups?.find((entry) => entry.difficulty === diff);
-    if (!group) continue;
-    const next = group.questions.find((question) => question.is_next) ?? group.questions.find((question) => question.state !== 'locked');
-    if (next) {
-      return {
-        id: next.id,
-        title: next.title,
-        difficulty: group.difficulty,
-        order: next.order,
-      };
-    }
-  }
-  return null;
-}
-
-function collectConcepts(catalog) {
-  const all = new Set();
-  const solved = new Set();
-  for (const g of (catalog?.groups ?? [])) {
-    for (const q of g.questions) {
-      for (const c of (q.concepts ?? [])) {
-        all.add(c);
-        if (q.state === 'solved') solved.add(c);
-      }
-    }
-  }
-  return { all: [...all], solved: [...solved] };
-}
-
 export default function TrackHubPage() {
   const { topic, meta } = useTopic();
   const { catalog, loading, error } = useCatalog();
@@ -67,7 +34,6 @@ export default function TrackHubPage() {
 
   const nextId = useMemo(() => pickNextQuestionId(catalog), [catalog]);
   const firstId = useMemo(() => pickFirstQuestionId(catalog), [catalog]);
-  const nextQuestion = useMemo(() => pickNextQuestionMeta(catalog), [catalog]);
   const continueId = nextId ?? firstId;
 
   const totalSolved = useMemo(() => {
@@ -79,9 +45,6 @@ export default function TrackHubPage() {
     if (!catalog) return meta.totalQuestions;
     return (catalog.groups ?? []).reduce((acc, g) => acc + g.questions.length, 0);
   }, [catalog, meta]);
-
-  const { all: allConcepts, solved: solvedConcepts } = useMemo(() => collectConcepts(catalog), [catalog]);
-  const conceptPreview = allConcepts.slice(0, 8);
 
   const [topicPaths, setTopicPaths] = useState([]);
   useEffect(() => {
@@ -122,6 +85,14 @@ export default function TrackHubPage() {
         </div>
 
         <div className="card track-hub-progress-card">
+          {continueId && (
+            <div className="track-hub-actions">
+              <button className="btn btn-primary" onClick={handleContinue}>
+                {totalSolved > 0 ? 'Continue where I left off' : 'Start practicing'} →
+              </button>
+            </div>
+          )}
+
           <div className="track-hub-progress-header">
             <span className="track-hub-progress-title">Overall Progress</span>
             <span className="track-hub-progress-count">{totalSolved} / {totalQuestions}</span>
@@ -142,57 +113,7 @@ export default function TrackHubPage() {
               })}
             </div>
           )}
-
-          {continueId && (
-            <div className="track-hub-actions">
-              <button className="btn btn-primary" onClick={handleContinue}>
-                {totalSolved > 0 ? 'Continue where I left off' : 'Start practicing'} →
-              </button>
-            </div>
-          )}
         </div>
-
-        {(nextQuestion || conceptPreview.length > 0) && (
-          <div className="card track-hub-focus-card">
-            <div className="section-heading">
-              <h3>What you'll practice</h3>
-            </div>
-
-            {nextQuestion && (
-              <div className="track-hub-next-up">
-                <span className="track-hub-next-label">Next unlocked</span>
-                <div className="track-hub-next-title">
-                  <span className={`badge badge-${nextQuestion.difficulty}`}>{nextQuestion.difficulty}</span>
-                  <span>{nextQuestion.order}. {nextQuestion.title}</span>
-                </div>
-              </div>
-            )}
-
-            {conceptPreview.length > 0 && (
-              <div className="track-hub-concepts-card">
-                <div className="concept-tags concept-tags-inline">
-                  {conceptPreview.map((c) => (
-                    <span key={c} className="tag-concept">{c}</span>
-                  ))}
-                </div>
-                {allConcepts.length > conceptPreview.length && (
-                  <div className="track-hub-concepts-sub">+{allConcepts.length - conceptPreview.length} more concepts in this track</div>
-                )}
-              </div>
-            )}
-
-            {solvedConcepts.length > 0 && (
-              <div className="track-hub-solved-strip">
-                <div className="track-hub-concepts-sub">My solved concepts</div>
-                <div className="concept-tags concept-tags-inline">
-                  {solvedConcepts.slice(0, 6).map((c) => (
-                    <span key={c} className="tag-concept tag-concept-solved">{c} ✓</span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
 
         {topicPaths.length > 0 && (
           <section className="trackhub-paths">
