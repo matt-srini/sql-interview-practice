@@ -423,14 +423,21 @@ export default function QuestionPage() {
                   >
                     {submitBtnLabel}
                   </button>
-                  {submitResult?.correct && nextQuestionId && (
+                  {submitResult?.correct && (pathNavBar?.next && !['locked'].includes(pathNavBar.next.state) ? (
+                    <button
+                      className="btn btn-success"
+                      onClick={() => navigate(`/practice/${topic}/questions/${pathNavBar.next.id}?path=${pathSlug}`)}
+                    >
+                      Next in Path
+                    </button>
+                  ) : !pathNavBar && nextQuestionId ? (
                     <button
                       className="btn btn-success"
                       onClick={() => navigate(`/practice/${topic}/questions/${nextQuestionId}`)}
                     >
                       Next Question
                     </button>
-                  )}
+                  ) : null)}
                 </div>
               </div>
             </div>
@@ -458,14 +465,21 @@ export default function QuestionPage() {
                   <button className="btn btn-primary" onClick={handleSubmit} disabled={isSubmitDisabled}>
                     {submitBtnLabel}
                   </button>
-                  {submitResult?.correct && nextQuestionId && (
+                  {submitResult?.correct && (pathNavBar?.next && !['locked'].includes(pathNavBar.next.state) ? (
+                    <button
+                      className="btn btn-success"
+                      onClick={() => navigate(`/practice/${topic}/questions/${pathNavBar.next.id}?path=${pathSlug}`)}
+                    >
+                      Next in Path
+                    </button>
+                  ) : !pathNavBar && nextQuestionId ? (
                     <button
                       className="btn btn-success"
                       onClick={() => navigate(`/practice/${topic}/questions/${nextQuestionId}`)}
                     >
                       Next Question
                     </button>
-                  )}
+                  ) : null)}
                 </div>
               </div>
             </div>
