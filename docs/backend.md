@@ -12,17 +12,19 @@ Registered in `backend/main.py`:
 
 | Router file | Prefix | Purpose |
 |---|---|---|
-| `routers/auth.py` | `/api/auth` | Register, login, logout, current user |
+| `routers/auth.py` | `/api/auth` | Register, login, logout, current user, forgot/reset password, OAuth (Google + GitHub) |
 | `routers/system.py` | — | Health check |
 | `routers/catalog.py` | `/api/catalog` | SQL catalog by difficulty |
-| `routers/questions.py` | `/api/questions` | SQL question detail, run query, submit |
+| `routers/questions.py` | `/api/questions` | SQL question detail, run query, submit (with repeat-attempt detection) |
 | `routers/sample.py` | `/api/sample` | Topic-aware sample questions, run, submit, reset |
 | `routers/plan.py` | `/api/user` | User profile, plan, unlock state |
 | `routers/stripe.py` | `/api/stripe` | Checkout creation, webhook handler |
 | `routers/python_questions.py` | `/api/python` | Python algorithm catalog, detail, run-code, submit |
 | `routers/python_data_questions.py` | `/api/python-data` | Pandas catalog, detail, run-code, submit |
 | `routers/pyspark_questions.py` | `/api/pyspark` | PySpark catalog, detail, submit (MCQ only) |
-| `routers/dashboard.py` | `/api` | Cross-track progress dashboard |
+| `routers/dashboard.py` | `/api` | Cross-track progress dashboard, submission history |
+| `routers/paths.py` | `/api/paths` | Learning path catalog and path detail with per-question state |
+| `routers/mock.py` | `/api/mock` | Mock interview sessions (start, submit, finish, history) |
 | `routers/spa.py` | — | Static assets + SPA fallback |
 
 ---
@@ -37,8 +39,12 @@ Registered in `backend/main.py`:
 | POST | `/api/auth/login` | Authenticate; merges anonymous progress into existing account |
 | POST | `/api/auth/logout` | Deletes session |
 | GET | `/api/auth/me` | Returns current user identity |
+| POST | `/api/auth/forgot-password` | Send password reset email (always returns 200 to prevent email enumeration) |
+| POST | `/api/auth/reset-password` | Consume reset token, set new password (400 if token invalid/expired) |
+| GET | `/api/auth/oauth/{provider}/authorize` | Return OAuth authorization URL (`google` or `github`) |
+| GET | `/api/auth/oauth/{provider}/callback` | OAuth callback — exchange code, upsert user, set session cookie, redirect to `/` |
 
-Anonymous visitors receive a real user row and session cookie. Registration upgrades that session rather than replacing it, preserving progress.
+Anonymous visitors receive a real user row and session cookie. Registration upgrades that session rather than replacing it, preserving progress. OAuth sign-in uses `get_or_create_oauth_user()` — new users are created, returning users are looked up by `(provider, provider_user_id)`. Password reset emails require `RESEND_API_KEY` to be configured.
 
 ### System
 
@@ -144,6 +150,15 @@ Also available without `/api` prefix.
 
 Response shape: `{ tracks: { sql, python, python_data, pyspark }, concepts_by_track, recent_activity }`.
 
+### Learning paths — `/api/paths`
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/paths` | All learning paths with per-user `solved_count` |
+| GET | `/api/paths/{slug}` | Path detail including `questions[]` with per-question `state` (`solved`/`unlocked`/`locked`) |
+
+Paths are defined as JSON files in `backend/content/paths/`. The `path_loader.py` module reads them at startup. Each path record has `slug`, `title`, `description`, `topic`, and `questions[]` (ordered list of question IDs). The `/api/paths/{slug}` response enriches each question entry with its catalog metadata and the user's current state.
+
 ---
 
 ## Query execution pipeline
@@ -169,6 +184,11 @@ Behavioral rules:
 - Row ordering ignored unless expected query is order-sensitive
 - Duplicate rows preserved
 - Float comparisons use tolerance-based normalization
+
+**Quality and feedback extras:**
+- On correct + `structure_correct` submissions, `_compute_quality()` runs DuckDB `EXPLAIN` on both queries and returns `{ efficiency_note, style_notes, complexity_hint, alternative_solution }` for the Solution Analysis UI.
+- On wrong submissions where the user result shares the **same row and column count** as expected (close-miss), `style_notes` are surfaced as a partial quality object to give coaching feedback without revealing the answer.
+- **Repeat-attempt detection** (`routers/questions.py`): before evaluating, `get_latest_submission()` is called. If the prior submission was the identical wrong query, a nudge message is prepended to `feedback` encouraging the user to try a different approach.
 
 ---
 
