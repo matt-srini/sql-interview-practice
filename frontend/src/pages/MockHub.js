@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../api';
+import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
 import Topbar from '../components/Topbar';
 
@@ -41,6 +42,7 @@ function formatDuration(timeLimitS, timeUsedS) {
 
 export default function MockHub() {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [mode, setMode] = useState('30min');
   const [track, setTrack] = useState('sql');
@@ -49,6 +51,7 @@ export default function MockHub() {
   const [timeMinutes, setTimeMinutes] = useState(30);
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState(null);
+  const [startErrorType, setStartErrorType] = useState(null); // 'access' | null
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(true);
 
@@ -62,6 +65,7 @@ export default function MockHub() {
   async function handleStart() {
     setStarting(true);
     setStartError(null);
+    setStartErrorType(null);
     try {
       const payload = {
         mode,
@@ -72,8 +76,10 @@ export default function MockHub() {
       const r = await api.post('/mock/start', payload);
       navigate(`/mock/${r.data.session_id}`, { state: { sessionData: r.data } });
     } catch (err) {
-      const msg = err?.response?.data?.detail || 'Failed to start session. Please try again.';
+      const msg = err?.response?.data?.error || err?.response?.data?.detail || 'Failed to start session. Please try again.';
+      const isAccessError = msg.toLowerCase().includes('not enough unlocked') || msg.toLowerCase().includes('upgrade');
       setStartError(msg);
+      setStartErrorType(isAccessError ? 'access' : null);
       setStarting(false);
     }
   }
@@ -179,8 +185,39 @@ export default function MockHub() {
           </div>
         </section>
 
-        {/* Start button */}
-        {startError && <p className="mock-hub-error">{startError}</p>}
+        {/* Start error */}
+        {startError && startErrorType === 'access' ? (
+          <div className="mock-access-error">
+            <p className="mock-access-error-msg">
+              {difficulty !== 'easy'
+                ? `Not enough unlocked ${difficulty} questions yet.`
+                : 'Not enough unlocked questions for this configuration.'}
+            </p>
+            <div className="mock-access-error-actions">
+              {difficulty !== 'easy' && (
+                <button
+                  className="btn btn-secondary btn-compact"
+                  onClick={() => { setDifficulty('easy'); setStartError(null); setStartErrorType(null); }}
+                >
+                  Try Easy instead
+                </button>
+              )}
+              {(!user?.plan || user?.plan === 'free') && (
+                <Link className="btn btn-primary btn-compact" to="/practice/sql">
+                  Solve more questions to unlock
+                </Link>
+              )}
+            </div>
+            <p className="mock-access-error-hint">
+              {user?.plan === 'free'
+                ? 'Medium questions unlock after 10 easy solves. Hard unlocks after 10 medium.'
+                : 'Solve more questions in this track to build your pool.'}
+            </p>
+          </div>
+        ) : startError ? (
+          <p className="mock-hub-error">{startError}</p>
+        ) : null}
+
         <section className="mock-hub-section">
           <button
             className="btn btn-primary mock-start-btn"
