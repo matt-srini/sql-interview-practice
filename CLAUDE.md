@@ -140,7 +140,8 @@ sql-interview-practice/
 │   │       ├── MockHub.js              # Mock interview lobby at /mock (mode/track/difficulty selection)
 │   │       ├── MockSession.js          # Active mock session + summary at /mock/:id
 │   │       ├── SampleQuestionPage.js
-│   │       └── AuthPage.js
+│   │       ├── AuthPage.js
+│   │       └── ResetPasswordPage.js    # Password reset token consumer at /auth/reset-password
 │   └── package.json
 ├── docs/                           # Architecture and design reference docs (see docs/README.md)
 ├── TODO.md                         # Phased product upgrade backlog
@@ -157,7 +158,8 @@ sql-interview-practice/
 
 ```
 /                              → LandingPage (4-tile track grid)
-/auth                          → AuthPage (register / sign in)
+/auth                          → AuthPage (register / sign in / forgot password / OAuth)
+/auth/reset-password           → ResetPasswordPage (consume reset token, set new password)
 /dashboard                     → ProgressDashboard (cross-track progress)
 /mock                          → MockHub (mode/track/difficulty selector + history)  [AuthRequired]
 /mock/:id                      → MockSession (active session + inline summary)        [AuthRequired]
@@ -224,7 +226,7 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 
 ## Backend behaviour
 
-**SQL:** `sql_guard.py` → `evaluator.py` → DuckDB. Parser-based read-only validation; 3-second timeout; 200-row cap. Submit: both queries run → DataFrames normalized → compared. On correct+structure_correct submissions, `_compute_quality()` runs DuckDB `EXPLAIN` on both queries and returns `{ efficiency_note, style_notes, complexity_hint, alternative_solution }` for the Solution Analysis UI in `QuestionPage.js`.
+**SQL:** `sql_guard.py` → `evaluator.py` → DuckDB. Parser-based read-only validation; 3-second timeout; 200-row cap. Submit: both queries run → DataFrames normalized → compared. On correct+structure_correct submissions, `_compute_quality()` runs DuckDB `EXPLAIN` on both queries and returns `{ efficiency_note, style_notes, complexity_hint, alternative_solution }` for the Solution Analysis UI in `QuestionPage.js`. On wrong answers where the user and expected results share the same shape (same row+column count but wrong values), style notes are surfaced as a partial quality object (close-miss feedback). Repeat identical wrong attempts are detected via `get_latest_submission()` and a nudge message is prepended to feedback.
 
 **Python/Pandas:** `python_guard.py` → `python_evaluator.py` → subprocess harness. AST guard, 5-second timeout, 512 MB RLIMIT_AS.
 
@@ -279,6 +281,11 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 | GET | `/api/auth/me` | Current user identity |
 | POST | `/api/auth/register` | Create account, upgrade anonymous session |
 | POST | `/api/auth/login` | Authenticate, merge anonymous progress |
+| POST | `/api/auth/logout` | Delete session |
+| POST | `/api/auth/forgot-password` | Send password reset email (always returns 200 to prevent enumeration) |
+| POST | `/api/auth/reset-password` | Consume reset token, set new password |
+| GET | `/api/auth/oauth/{provider}/authorize` | Return OAuth authorization URL (`google` or `github`) |
+| GET | `/api/auth/oauth/{provider}/callback` | OAuth callback — exchange code, upsert user, set session cookie |
 | POST | `/api/stripe/create-checkout` | Stripe Checkout session |
 | POST | `/api/stripe/webhook` | Verified, idempotent plan update |
 

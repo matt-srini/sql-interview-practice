@@ -12,8 +12,14 @@ Defined in `frontend/src/App.js`:
 
 ```
 /                                → LandingPage (hero + showcase + track tabs)
-/auth                            → AuthPage (register / sign in)
+/auth                            → AuthPage (register / sign in / forgot password / OAuth)
+/auth/reset-password             → ResetPasswordPage (consume reset token, set new password)
 /dashboard                       → ProgressDashboard (cross-track progress)
+/mock                            → MockHub (mode/track/difficulty selector + history)  [AuthRequired]
+/mock/:id                        → MockSession (active session + inline summary)        [AuthRequired]
+/learn                           → LearningPathsIndex (all paths, grouped by track, topic pills)
+/learn/:topic                    → LearningPathsIndex (filtered to one track)
+/learn/:topic/:slug              → LearningPath (curated path — breadcrumb, progress bar, question list)
 /sample/:topic/:difficulty       → SampleQuestionPage (topic-aware sample mode)
 /sample/:difficulty              → redirect → /sample/sql/:difficulty
 /practice/:topic                 → TopicShell (TopicProvider + CatalogProvider + AppShell)
@@ -42,7 +48,11 @@ On mount, checks `window.location.hash` and scrolls to the matching element (use
 
 ### AuthPage (`/auth`)
 
-Register or sign in with email/password. On successful register, anonymous session is upgraded in place (progress preserved). On login, anonymous progress merges into an existing account.
+Register or sign in. Supports email/password, Google OAuth, and GitHub OAuth. Also contains a "Forgot password?" flow that sends a reset email. On successful register, anonymous session is upgraded in place (progress preserved). On login, anonymous progress merges into an existing account. OAuth callbacks redirect back to `/` after setting a session cookie.
+
+### ResetPasswordPage (`/auth/reset-password`)
+
+Consumes a password reset token (passed as `?token=…` query param) and lets the user set a new password. Redirects to `/auth` on success or if the token is invalid/expired.
 
 ### TrackHubPage (`/practice/:topic`)
 
@@ -71,6 +81,11 @@ Main practice screen. Layout and behavior vary by topic:
 - On mobile, question actions use a low-profile sticky dock for Run / Submit controls
 - On correct: `refresh()` updates catalog context so sidebar reflects new unlock state
 - "Next Question" navigates to `/practice/:topic/questions/:nextId`
+- **Delta hint** (SQL only, wrong submissions): client-side row/column diff shows a targeted message — e.g. "Your output has 3 more rows than expected. Check for a missing filter or a JOIN that multiplies rows."
+- **Verdict insight line**: on first-attempt correct solve shows "First-attempt solve — the system logged your approach"; on 3+ attempts shows an encouraging note
+- **Writing notes auto-expand**: the Solution Analysis section (`solutionAnalysisOpen`) auto-expands on a first-attempt correct solve
+- Submission history fetched with `limit: 20`; `priorAttemptCountRef` tracks attempt count before each submit to compute insight text
+- **Path context**: when `?path=slug` is in the URL, fetches path data and shows a path nav bar (breadcrumb + position counter + prev/next links)
 
 ### SampleQuestionPage (`/sample/:topic/:difficulty`)
 
@@ -84,6 +99,14 @@ Standalone sample practice. No sidebar. No effect on challenge progression.
 ### ProgressDashboard (`/dashboard`)
 
 Cross-track progress overview. 4-card grid with TrackProgressBar per track, concept tags, and recent activity. Fetches `GET /api/dashboard` on mount.
+
+### LearningPathsIndex (`/learn`, `/learn/:topic`)
+
+Index of all learning paths. Grouped by track. Topic-filter pills narrow to a single track when `:topic` is present in the URL. Each path shown as a card with title, description, solved count, and a link to the path.
+
+### LearningPath (`/learn/:topic/:slug`)
+
+Curated path page. Shows breadcrumb (Learn → track → path title), overall progress bar, and a question list with per-question state (solved/unlocked/locked). Each question links to `/practice/:topic/questions/:id?path=:slug` so `QuestionPage` shows the path nav bar.
 
 ---
 
@@ -102,19 +125,30 @@ Cross-track progress overview. 4-card grid with TrackProgressBar per track, conc
 | VariablesPanel | `components/VariablesPanel.js` | Available DataFrame variables with CSV source and column list |
 | MCQPanel | `components/MCQPanel.js` | Radio-button MCQ with correct/wrong highlighting and explanation after submit |
 | TrackProgressBar | `components/TrackProgressBar.js` | Reusable horizontal progress bar with configurable color and label |
+| PathProgressCard | `components/PathProgressCard.js` | Path card with track color dot, progress bar, and CTA; used on LandingPage and TrackHubPage |
+| Topbar | `components/Topbar.js` | Shared top nav bar used by standalone pages (LandingPage, MockHub, MockSession, ProgressDashboard, AuthPage); includes Practice dropdown, Mock link, Dashboard link, and auth state |
 
 ### AppShell
 
-- Fixed topbar: `datanest` home-brand link + direct track nav (`SQL`, `Python`, `Pandas`, `PySpark`)
+- Fixed topbar with three zones:
+  - **Left** (`app-topbar-brand`): hamburger on mobile, `datanest` brand link
+  - **Center** (`app-topbar-center`): mode pill (`.shell-pill-mode`) — e.g. "SQL · Challenge", "SQL · Path", "Python · Challenge" — shown only when a question is active (not on TrackHub). Dot color matches the track color.
+  - **Right** (`app-topbar-actions`): Practice ▾ dropdown (all 4 tracks), Mock link, theme toggle (cycles system/light/dark), plan pill (`.shell-pill-plan-free/pro/elite`)
 - Desktop: sidebar 328px, collapsible; toggle is a `‹` icon button (`.sidebar-collapse-btn`); a `›` expand button (`.sidebar-expand-btn`) appears in the content area when collapsed
 - Mobile (<900px): sidebar becomes fixed overlay with backdrop; hamburger button in topbar
-- Upgrade panel shown for `free` and `pro` plan users; lives in the sidebar
+- Upgrade panel shown for `free` and `pro` plan users; lives in the sidebar beneath the question list
+- Unlock nudge message shown in sidebar for free-plan users who have locked questions
 
 ### SidebarNav
+
+Accepts a `plan` prop (passed from AppShell) to drive progressive unlock behavior for free-plan users:
 
 - Collapsible difficulty groups
 - Per-question state: `unlocked`, `locked`, `solved`, `next`, `current`
 - NavLinks point to `/practice/${topic}/questions/${id}` (topic from `useTopic()`)
+- **Progressive unlock bar** (`.sidebar-unlock-bar`): shown in difficulty group headers when there are locked questions. Displays a progress bar filling toward the next unlock threshold plus a "{N} more to unlock" label. Thresholds mirror `backend/unlock.py`: medium unlocks at 10/20/30 easy solves; hard unlocks at 10/20/30 medium solves.
+- **Locked question tooltip** (`title` attribute on the locked row `div`): explains exactly how many more solves are needed — e.g. "Solve 7 more easy questions to unlock this". Pro users see "Upgrade to Elite to unlock all hard questions" on hard rows.
+- Concept filter (chip grid, most-frequent first, expand/collapse) and Company filter (SQL only)
 - Test coverage in `components/SidebarNav.test.js`
 
 ---
