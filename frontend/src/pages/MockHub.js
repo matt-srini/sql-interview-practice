@@ -109,7 +109,7 @@ export default function MockHub() {
                 key={card.key}
                 type="button"
                 className={`mock-mode-card ${mode === card.key ? 'selected' : ''}`}
-                onClick={() => setMode(card.key)}
+                onClick={() => { setMode(card.key); setStartError(null); setStartErrorType(null); }}
               >
                 <div className="mock-mode-card-label">{card.label}</div>
                 <div className="mock-mode-card-sublabel">{card.sublabel}</div>
@@ -160,7 +160,7 @@ export default function MockHub() {
                     key={t}
                     type="button"
                     className={`mock-config-pill ${track === t ? 'active' : ''}`}
-                    onClick={() => setTrack(t)}
+                    onClick={() => { setTrack(t); setStartError(null); setStartErrorType(null); }}
                   >
                     {TRACK_LABELS[t]}
                   </button>
@@ -175,7 +175,7 @@ export default function MockHub() {
                     key={d}
                     type="button"
                     className={`mock-config-pill ${difficulty === d ? 'active' : ''}`}
-                    onClick={() => setDifficulty(d)}
+                    onClick={() => { setDifficulty(d); setStartError(null); setStartErrorType(null); }}
                   >
                     {DIFFICULTY_LABELS[d]}
                   </button>
