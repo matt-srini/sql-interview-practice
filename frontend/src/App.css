@@ -5332,6 +5332,37 @@ select {
   font-size: 0.875rem;
   margin-bottom: 0.75rem;
 }
+
+.mock-access-error {
+  border: 1px solid rgba(196, 127, 23, 0.25);
+  background: rgba(196, 127, 23, 0.06);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-bottom: 0.75rem;
+}
+
+.mock-access-error-msg {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--warning);
+  margin: 0;
+}
+
+.mock-access-error-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.mock-access-error-hint {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
 .mock-hub-history-title {
   font-size: 1.1rem;
   font-weight: 700;
