@@ -52,6 +52,8 @@ export default function MockHub() {
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState(null);
   const [startErrorType, setStartErrorType] = useState(null); // 'access' | null
+  const [upgradePending, setUpgradePending] = useState(false);
+  const [upgradeError, setUpgradeError] = useState(null);
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(true);
 
@@ -61,6 +63,18 @@ export default function MockHub() {
       .catch(() => {})
       .finally(() => setHistoryLoading(false));
   }, []);
+
+  async function handleUpgrade(plan) {
+    setUpgradePending(true);
+    setUpgradeError(null);
+    try {
+      const r = await api.post('/stripe/create-checkout', { plan });
+      window.location.assign(r.data.checkout_url);
+    } catch (err) {
+      setUpgradeError(err?.response?.data?.error || 'Unable to start checkout right now.');
+      setUpgradePending(false);
+    }
+  }
 
   async function handleStart() {
     setStarting(true);
@@ -202,15 +216,23 @@ export default function MockHub() {
                   Try Easy instead
                 </button>
               )}
+              <Link className="btn btn-secondary btn-compact" to="/practice/sql">
+                Solve more to unlock
+              </Link>
               {(!user?.plan || user?.plan === 'free') && (
-                <Link className="btn btn-primary btn-compact" to="/practice/sql">
-                  Solve more questions to unlock
-                </Link>
+                <button
+                  className="btn btn-primary btn-compact"
+                  onClick={() => handleUpgrade('pro')}
+                  disabled={upgradePending}
+                >
+                  {upgradePending ? 'Redirecting…' : 'Upgrade for instant access'}
+                </button>
               )}
             </div>
+            {upgradeError && <p className="mock-access-error-upgrade-err">{upgradeError}</p>}
             <p className="mock-access-error-hint">
               {user?.plan === 'free'
-                ? 'Medium questions unlock after 10 easy solves. Hard unlocks after 10 medium.'
+                ? 'Pro unlocks all medium questions instantly. Or earn them by solving more easy questions.'
                 : 'Solve more questions in this track to build your pool.'}
             </p>
           </div>
@@ -218,7 +240,7 @@ export default function MockHub() {
           <p className="mock-hub-error">{startError}</p>
         ) : null}
 
-        <section className="mock-hub-section">
+        <section className="mock-hub-section mock-hub-start-row">
           <button
             className="btn btn-primary mock-start-btn"
             onClick={handleStart}
@@ -226,6 +248,20 @@ export default function MockHub() {
           >
             {starting ? 'Starting…' : 'Start Mock Interview'}
           </button>
+          {(!user?.plan || user?.plan === 'free') && (
+            <div className="mock-hub-upgrade-nudge">
+              <span className="mock-hub-upgrade-nudge-label">
+                Want hard questions and unlimited access?
+              </span>
+              <button
+                className="btn btn-secondary btn-compact"
+                onClick={() => handleUpgrade('pro')}
+                disabled={upgradePending}
+              >
+                {upgradePending ? 'Redirecting…' : 'Upgrade to Pro'}
+              </button>
+            </div>
+          )}
         </section>
 
         {/* Recent sessions */}
