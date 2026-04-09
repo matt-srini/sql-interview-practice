@@ -3,7 +3,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from db import record_submission
+from db import get_latest_submission, record_submission
 from deps import RunQueryRequest, SubmitRequest, _get_progress_snapshot, _question_detail_payload
 from deps import get_current_user
 from evaluator import evaluate, run_query
@@ -88,8 +88,20 @@ async def submit_answer(
     if unlock_state[int(question["id"])] == "locked":
         raise HTTPException(status_code=403, detail="Question is locked for your current plan or progress.")
 
+    # Fetch last submission before evaluating (for repeat-attempt detection)
+    prev_submission = await get_latest_submission(
+        current_user["id"], "sql", int(body.question_id)
+    )
+
     result = evaluate(body.query, question["expected_query"], question)
     accepted = bool(result.get("correct")) and bool(result.get("structure_correct", True))
+
+    # Detect identical repeated wrong attempt
+    if not accepted and prev_submission and (prev_submission.get("code") or "").strip() == body.query.strip():
+        result["feedback"].insert(
+            0,
+            "This is the same approach as your last attempt. Try a different structure — the output diff shows where to focus."
+        )
 
     if accepted:
         await mark_question_solved(current_user["id"], int(question["id"]))
