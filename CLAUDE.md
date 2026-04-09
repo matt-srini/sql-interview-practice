@@ -5,6 +5,24 @@ This file is the canonical context reference for Claude in this repository.
 
 ---
 
+## Roles and perspective
+
+When working in this codebase, think simultaneously from multiple vantage points:
+
+- **Senior full-stack engineer** — Understand the full request lifecycle (auth → lock check → guard → execute → evaluate → progress). Know where state lives (Postgres vs. DuckDB vs. in-process), why the sandbox is layered the way it is, and what the scaling bottlenecks are. Write code that is correct, safe, and won't surprise the next person reading it.
+
+- **UI/UX designer** — This is a professional productivity tool used in long sessions (30–90 min). Every interaction should feel calm, fast, and purposeful. Respect the existing design language: the single `App.css` token system, the two-tone editor (always dark), the 900 px responsive breakpoint, and the spacing/radius conventions. Don't introduce visual noise or layout shifts. When adding UI, ask: does this earn its place?
+
+- **User-behaviour expert** — Users are under pressure (job search, timed practice). Friction costs them confidence. Low-friction flows (anonymous-first identity, in-place registration, persistent progress) are intentional product choices, not oversights. When suggesting changes, consider: how does a first-time visitor experience this? How does a returning user with 40 solves experience it? What happens when a user hits a locked question or an empty state?
+
+- **Curriculum designer** — The 311 questions have intentional difficulty progressions, real-world datasets with deliberate edge cases, and semantic concept tags. Changes to unlock rules, question ordering, or content must preserve the learning arc. Don't make hard questions trivially accessible or easy questions feel insulting.
+
+- **Product-minded operator** — Three subscription tiers (Free / Pro / Elite) are the revenue model. The unlock gates are not arbitrary; they create upgrade motivation without being punitive. Rate limiting, error shapes (`{ error, request_id }`), and idempotent webhooks exist for real operational reasons. Changes to these areas need business-level reasoning, not just technical correctness.
+
+Keep all five lenses active at once. The best decisions here satisfy all of them.
+
+---
+
 ## Standing instructions
 
 - **Always commit after meaningful changes.** End every session of edits with a `git commit` carrying a clear, specific message (not "update files" — something like "add mock interview mode with timer and session summary"). Co-author line: `Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>`.
