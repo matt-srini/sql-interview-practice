@@ -3645,85 +3645,7 @@ select {
 }
 
 .track-hub-actions {
-  padding-top: 0.25rem;
-}
-
-.track-hub-focus-card {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-}
-
-.track-hub-next-up {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  padding: 0.78rem 0.85rem;
-  border-radius: 12px;
-  border: 1px solid var(--border-subtle);
-  background: var(--surface-card-alt);
-}
-
-.track-hub-next-label {
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-muted);
-}
-
-.track-hub-next-title {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  min-width: 0;
-  font-size: 0.92rem;
-  color: var(--text-primary);
-  line-height: 1.5;
-}
-
-.track-hub-next-title span:last-child {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.track-hub-concepts-card {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-
-.track-hub-solved-strip {
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-  padding-top: 0.15rem;
-}
-
-.track-hub-concepts-sub {
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-muted);
-  font-weight: 600;
-  margin-top: 0.5rem;
-}
-
-.tag-concept-solved {
-  background: var(--success-soft);
-  color: var(--success);
-  border-color: rgba(45, 158, 107, 0.22);
-}
-
-@media (max-width: 720px) {
-  .track-hub-next-title {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .track-hub-next-title span:last-child {
-    white-space: normal;
-  }
+  padding-bottom: 0.25rem;
 }
 
 
@@ -4250,9 +4172,6 @@ select {
     background: rgba(255, 255, 255, 0.03);
   }
 
-  .tag-concept-solved {
-    color: var(--success);
-  }
 }
 
 /* ============================================================
@@ -4391,7 +4310,6 @@ select {
 [data-theme="dark"] .dashboard-track-card { background: var(--surface-card); border-color: var(--border-subtle); }
 [data-theme="dark"] .variable-row { background: var(--surface-card-alt); }
 [data-theme="dark"] .variable-column-token { background: rgba(255, 255, 255, 0.03); }
-[data-theme="dark"] .tag-concept-solved { color: var(--success); }
 
 [data-theme="light"] {
   color-scheme: light;
