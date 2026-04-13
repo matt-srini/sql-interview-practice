@@ -5779,6 +5779,25 @@ select {
   opacity: 0.45;
   cursor: not-allowed;
 }
+.learn-unlock-hint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  margin-bottom: 4px;
+  background: color-mix(in srgb, var(--warning) 7%, var(--surface-card));
+  border: 1px solid color-mix(in srgb, var(--warning) 22%, var(--border));
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.learn-unlock-hint-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.learn-unlock-hint-text {
+  flex: 1;
+}
 .learn-question-num {
   font-size: 0.8rem;
   color: var(--text-secondary);
