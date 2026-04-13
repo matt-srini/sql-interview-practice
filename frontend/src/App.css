@@ -1486,7 +1486,7 @@ select {
   padding: 1.5rem 1.5rem 1.25rem;
   background: var(--surface-card);
   border: 1.5px solid var(--border-subtle);
-  border-left: 4px solid color-mix(in srgb, var(--track-color) 40%, var(--border-subtle));
+  border-left: 4px solid color-mix(in srgb, var(--track-color) 25%, var(--border-subtle));
   border-radius: var(--radius-md);
   cursor: pointer;
   text-align: left;
@@ -1562,22 +1562,12 @@ select {
   border: 1px solid transparent;
 }
 
-.track-diff-chip--easy {
-  background: rgba(45, 158, 107, 0.09);
-  color: #1a7a48;
-  border-color: rgba(45, 158, 107, 0.22);
-}
-
-.track-diff-chip--medium {
-  background: rgba(196, 127, 23, 0.09);
-  color: #9a6010;
-  border-color: rgba(196, 127, 23, 0.22);
-}
-
+.track-diff-chip--easy,
+.track-diff-chip--medium,
 .track-diff-chip--hard {
-  background: rgba(217, 79, 61, 0.09);
-  color: #b03628;
-  border-color: rgba(217, 79, 61, 0.22);
+  background: var(--surface-card-alt);
+  color: var(--text-secondary);
+  border-color: var(--border-subtle);
 }
 
 .track-card-progress {
@@ -1603,7 +1593,12 @@ select {
 .track-card-cta {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--track-color);
+  color: var(--text-secondary);
+  transition: color 0.15s ease;
+}
+
+.track-card:hover .track-card-cta {
+  color: var(--text-strong);
 }
 
 .track-card-active-label {
@@ -1616,8 +1611,8 @@ select {
 .track-samples-strip {
   padding: 1.75rem 2rem;
   background: var(--surface-card);
-  border: 1.5px solid color-mix(in srgb, var(--track-color) 22%, var(--border-subtle));
-  border-top: 3px solid color-mix(in srgb, var(--track-color) 45%, var(--border-subtle));
+  border: 1.5px solid var(--border-subtle);
+  border-top: 2px solid color-mix(in srgb, var(--track-color) 30%, var(--border-subtle));
   border-radius: var(--radius-md);
   animation: trackStripIn 220ms ease forwards;
 }
@@ -1870,14 +1865,14 @@ select {
   gap: 0.75rem;
   background: var(--surface-card);
   border: 1.5px solid var(--border-subtle);
-  border-top: 3px solid var(--tile-color, var(--accent));
+  border-top: 2px solid color-mix(in srgb, var(--tile-color, var(--accent)) 50%, var(--border-subtle));
   border-radius: 14px;
   transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .sample-tile:hover {
   border-color: color-mix(in srgb, var(--tile-color, var(--accent)) 30%, var(--border-subtle));
-  border-top-color: var(--tile-color, var(--accent));
+  border-top-color: color-mix(in srgb, var(--tile-color, var(--accent)) 70%, var(--border-subtle));
   transform: translateY(-3px);
   box-shadow: var(--shadow-md);
 }
@@ -1897,9 +1892,14 @@ select {
 }
 
 .sample-tile-footer {
-  color: var(--tile-color, var(--accent));
+  color: var(--text-secondary);
   font-size: 0.85rem;
   font-weight: 600;
+  transition: color 0.15s ease;
+}
+
+.sample-tile:hover .sample-tile-footer {
+  color: var(--text-strong);
 }
 
 @media (max-width: 900px) {
