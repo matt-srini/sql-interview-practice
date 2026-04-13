@@ -15,7 +15,7 @@ function getUnlockHint(plan, difficulty) {
   if (!difficulty || plan === 'elite') return null;
   if (difficulty === 'medium') {
     return {
-      progress: 'Solve 10 easy questions across all tracks to unlock medium questions.',
+      progress: 'Solve 10 easy questions in this track to unlock medium questions.',
       upgradeTarget: plan === 'free' ? 'pro' : null,
       upgradeLabel: 'Upgrade to Pro for instant access',
     };
@@ -25,7 +25,7 @@ function getUnlockHint(plan, difficulty) {
       return { progress: null, upgradeTarget: 'elite', upgradeLabel: 'Upgrade to Elite for full hard access' };
     }
     return {
-      progress: 'Solve 10 medium questions across all tracks to unlock hard questions.',
+      progress: 'Solve 10 medium questions in this track to unlock hard questions.',
       upgradeTarget: 'pro',
       upgradeLabel: 'Upgrade to Pro for instant access',
     };
@@ -123,23 +123,6 @@ export default function LearningPath() {
 
                 return (
                   <div key={q.id}>
-                    {i === firstLockedIdx && unlockHint && (
-                      <div className="learn-unlock-hint">
-                        <span className="learn-unlock-hint-icon">🔒</span>
-                        {unlockHint.progress && (
-                          <span className="learn-unlock-hint-text">{unlockHint.progress}</span>
-                        )}
-                        {unlockHint.upgradeTarget && (
-                          <button
-                            className="btn btn-primary btn-compact"
-                            onClick={() => handleUpgrade(unlockHint.upgradeTarget)}
-                            disabled={upgradePending}
-                          >
-                            {upgradePending ? 'Redirecting…' : unlockHint.upgradeLabel}
-                          </button>
-                        )}
-                      </div>
-                    )}
                     <div className={rowClass}>
                       <span className="learn-question-num">{i + 1}</span>
                       <span className="learn-question-status" aria-label={q.state}>
@@ -164,6 +147,23 @@ export default function LearningPath() {
                 );
               })}
             </div>
+            {unlockHint && (
+              <div className="learn-unlock-hint">
+                <span className="learn-unlock-hint-icon">🔒</span>
+                {unlockHint.progress && (
+                  <span className="learn-unlock-hint-text">{unlockHint.progress}</span>
+                )}
+                {unlockHint.upgradeTarget && (
+                  <button
+                    className="btn btn-primary btn-compact"
+                    onClick={() => handleUpgrade(unlockHint.upgradeTarget)}
+                    disabled={upgradePending}
+                  >
+                    {upgradePending ? 'Redirecting…' : unlockHint.upgradeLabel}
+                  </button>
+                )}
+              </div>
+            )}
           </section>
         </>
       )}
