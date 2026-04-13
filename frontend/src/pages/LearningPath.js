@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
 import { TRACK_META } from '../contexts/TopicContext';
+import { useAuth } from '../contexts/AuthContext';
 import Topbar from '../components/Topbar';
 
 const DIFFICULTY_COLORS = {
@@ -10,12 +11,46 @@ const DIFFICULTY_COLORS = {
   hard: 'var(--danger)',
 };
 
+function getUnlockHint(plan, difficulty) {
+  if (!difficulty || plan === 'elite') return null;
+  if (difficulty === 'medium') {
+    return {
+      progress: 'Solve 10 easy questions across all tracks to unlock medium questions.',
+      upgradeTarget: plan === 'free' ? 'pro' : null,
+      upgradeLabel: 'Upgrade to Pro for instant access',
+    };
+  }
+  if (difficulty === 'hard') {
+    if (plan === 'pro') {
+      return { progress: null, upgradeTarget: 'elite', upgradeLabel: 'Upgrade to Elite for full hard access' };
+    }
+    return {
+      progress: 'Solve 10 medium questions across all tracks to unlock hard questions.',
+      upgradeTarget: 'pro',
+      upgradeLabel: 'Upgrade to Pro for instant access',
+    };
+  }
+  return { progress: 'Upgrade your plan to unlock these questions.', upgradeTarget: null, upgradeLabel: null };
+}
+
 export default function LearningPath() {
   const { topic, slug } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [path, setPath] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [upgradePending, setUpgradePending] = useState(false);
+
+  async function handleUpgrade(plan) {
+    setUpgradePending(true);
+    try {
+      const r = await api.post('/stripe/create-checkout', { plan });
+      window.location.assign(r.data.checkout_url);
+    } catch {
+      setUpgradePending(false);
+    }
+  }
 
   useEffect(() => {
     api.get(`/paths/${slug}`)
@@ -32,6 +67,10 @@ export default function LearningPath() {
   const pct = path && path.question_count > 0 ? (path.solved_count / path.question_count) * 100 : 0;
   const nextIndex = path ? path.questions.findIndex(q => q.state === 'unlocked') : -1;
   const topicLabel = meta.label;
+
+  const firstLockedIdx = path ? path.questions.findIndex(q => q.state === 'locked') : -1;
+  const firstLockedDiff = firstLockedIdx >= 0 ? path.questions[firstLockedIdx].difficulty : null;
+  const unlockHint = getUnlockHint(user?.plan ?? 'free', firstLockedDiff);
 
   return (
     <div className="learn-page">
@@ -83,25 +122,44 @@ export default function LearningPath() {
                 const questionUrl = `/practice/${path.topic}/questions/${q.id}?path=${slug}`;
 
                 return (
-                  <div key={q.id} className={rowClass}>
-                    <span className="learn-question-num">{i + 1}</span>
-                    <span className="learn-question-status" aria-label={q.state}>
-                      {isSolved ? '✓' : isLocked ? '🔒' : '→'}
-                    </span>
-                    <span className="learn-question-title">
-                      {isLocked ? q.title : <Link to={questionUrl}>{q.title}</Link>}
-                    </span>
-                    <span
-                      className="learn-question-difficulty"
-                      style={{ color: DIFFICULTY_COLORS[q.difficulty] }}
-                    >
-                      {q.difficulty}
-                    </span>
-                    {!isLocked && (
-                      <Link to={questionUrl} className="learn-question-btn">
-                        {isSolved ? 'Review →' : isNext ? 'Start →' : 'Open →'}
-                      </Link>
+                  <div key={q.id}>
+                    {i === firstLockedIdx && unlockHint && (
+                      <div className="learn-unlock-hint">
+                        <span className="learn-unlock-hint-icon">🔒</span>
+                        {unlockHint.progress && (
+                          <span className="learn-unlock-hint-text">{unlockHint.progress}</span>
+                        )}
+                        {unlockHint.upgradeTarget && (
+                          <button
+                            className="btn btn-primary btn-compact"
+                            onClick={() => handleUpgrade(unlockHint.upgradeTarget)}
+                            disabled={upgradePending}
+                          >
+                            {upgradePending ? 'Redirecting…' : unlockHint.upgradeLabel}
+                          </button>
+                        )}
+                      </div>
                     )}
+                    <div className={rowClass}>
+                      <span className="learn-question-num">{i + 1}</span>
+                      <span className="learn-question-status" aria-label={q.state}>
+                        {isSolved ? '✓' : isLocked ? '🔒' : '→'}
+                      </span>
+                      <span className="learn-question-title">
+                        {isLocked ? q.title : <Link to={questionUrl}>{q.title}</Link>}
+                      </span>
+                      <span
+                        className="learn-question-difficulty"
+                        style={{ color: DIFFICULTY_COLORS[q.difficulty] }}
+                      >
+                        {q.difficulty}
+                      </span>
+                      {!isLocked && (
+                        <Link to={questionUrl} className="learn-question-btn">
+                          {isSolved ? 'Review →' : isNext ? 'Start →' : 'Open →'}
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 );
               })}
