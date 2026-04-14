@@ -6,12 +6,32 @@ Curriculum specifications and authoring rules for all four tracks. This is the c
 
 ---
 
-## Global principles
+## Platform philosophy
 
-- Focus on **real-world business datasets** — users, orders, products, events, employees, payments
-- Avoid academic or artificial problems; prefer **clarity over cleverness**
-- Every question must be **deterministic**, **evaluatable via result comparison**, and **free of ambiguity**
-- Difficulty must come from **reasoning depth and multi-stage logic**, not concept stacking
+This is a **FAANG-level interview preparation platform**, not a syntax tutorial. Every question must pass a single test: **would a senior data interviewer at Meta, Google, Stripe, or Amazon ask this?**
+
+### What good questions do
+
+- **Test reasoning depth**, not syntax recall — the candidate should have to think, not just remember a keyword
+- **Mirror real business scenarios** — queries and code that could appear in an actual analytics or engineering codebase
+- **Teach a durable concept** — after solving it, the user should understand *why* the approach works, not just memorize the solution
+- **Progress logically** — each question builds on a mental model; the curriculum is a learning arc, not a random collection
+
+### What good questions avoid
+
+- Trivial one-liners that test nothing beyond "did you memorize this function name"
+- Academic or toy problems with no connection to real data work
+- Multiple valid interpretations of the expected output
+- Redundant coverage of the same concept (3+ questions with identical patterns)
+- Artificially increasing difficulty via concept stacking (e.g., making a question hard by requiring 8 unrelated operations)
+
+### Difficulty philosophy
+
+Difficulty should come from **reasoning complexity and multi-stage logic**, not from syntactic obscurity or concept stacking.
+
+- **Easy**: One central concept, clear input/output, applies to a realistic single-table or simple two-table scenario
+- **Medium**: Two to three related concepts that must be composed; requires thinking through a multi-step problem; no window functions in SQL
+- **Hard**: Multi-layer reasoning with dependent steps; at least one advanced concept (window functions, graph algorithms, streaming semantics, cohort analysis); often requires choosing between approaches
 
 ---
 
@@ -21,8 +41,8 @@ Curriculum specifications and authoring rules for all four tracks. This is the c
 |---|---|---|---|---|
 | SQL | 1001–1999 | 2001–2999 | 3001–3999 | 101–103 (E), 201–203 (M), 301–303 (H) |
 | Python | 4001–4299 | 4301–4599 | 4601–4999 | 401–403 (E), 411–413 (M), 421–423 (H) |
-| Pandas | 5001–5999 | 6001–6999 | 7001–7999 | 501–503 (E), 601–603 (M), 701–703 (H) |
-| PySpark | 11001–11999 | 12001–12999 | 13001–13999 | 4501–4503 (E), 4601–4603 (M), 4701–4703 (H) |
+| Pandas | 5001–5299 | 5300–5599 | 5600–5999 | 501–503 (E), 601–603 (M), 701–703 (H) |
+| PySpark | 11001–11299 | 11300–11599 | 11600–13999 | 4501–4503 (E), 4601–4603 (M), 4701–4703 (H) |
 
 **IDs must be globally unique across all tracks.** Check for duplicates before adding:
 ```bash
@@ -31,9 +51,11 @@ import json, glob
 all_ids = []
 for f in glob.glob('backend/content/*/*.json'):
     if 'schemas' in f: continue
-    all_ids.extend(q['id'] for q in json.load(open(f)))
+    data = json.load(open(f))
+    if isinstance(data, list):
+        all_ids.extend(q['id'] for q in data)
 dupes = [x for x in all_ids if all_ids.count(x) > 1]
-print('Duplicate IDs:', set(dupes) or 'none')
+print('Total:', len(all_ids), '| Duplicates:', set(dupes) or 'none')
 "
 ```
 
@@ -45,14 +67,12 @@ Before committing any new question:
 
 - [ ] ID is in the correct range and globally unique
 - [ ] `order` is the next sequential integer in the file
-- [ ] difficulty is correct and matches reasoning depth
-- [ ] description is unambiguous — clearly states output columns, filters, ordering
-- [ ] expected query / expected code is correct and deterministic
-- [ ] solution query / solution code is clean and readable
-- [ ] explanation covers logic step-by-step, WHY it works, and common pitfalls
-- [ ] concepts tags are semantic reasoning patterns, not SQL/Python primitive names
-- [ ] dataset_files / schema exist and are accurate (SQL + Pandas)
-- [ ] test cases pass (Python + Pandas)
+- [ ] Difficulty is correct: does the question require the reasoning depth for that tier?
+- [ ] Description is unambiguous: output columns, filters, ordering are all stated explicitly
+- [ ] Expected query / expected code is correct, deterministic, and verified against real data
+- [ ] Explanation teaches the *why* — covers logic step-by-step, key concepts, common pitfalls, edge cases
+- [ ] Hints are directional (guide thinking toward the approach) not prescriptive (don't give the answer)
+- [ ] Concept tags are semantic reasoning patterns, not raw primitive names
 - [ ] `pytest backend/tests/` passes (catalog loader catches schema violations)
 
 ---
@@ -70,42 +90,52 @@ Before committing any new question:
 **Core concepts:** 1–2 maximum, directly related.
 
 **Allowed:**
-- SELECT, WHERE (AND/OR, IN, BETWEEN, LIKE)
-- ORDER BY (ASC/DESC)
-- Basic aggregation: COUNT, SUM, AVG, MIN, MAX
-- Single-column GROUP BY
+- SELECT, WHERE (AND/OR, IN, BETWEEN, LIKE, IS NULL/IS NOT NULL)
+- ORDER BY (ASC/DESC, multi-column)
+- Basic aggregation: COUNT, SUM, AVG, MIN, MAX, COALESCE
+- Single-column or multi-column GROUP BY
 - DISTINCT
-- INNER JOIN (basic PK–FK, max 1 join)
-- IS NULL / IS NOT NULL
+- INNER JOIN or LEFT JOIN (basic PK–FK, max 1 join)
+- Date filtering and date extraction functions (STRFTIME)
+- Simple CTEs (WITH clause) for an intro-level CTE question
 
-**Not allowed:** Subqueries, window functions, CTEs, HAVING, multi-table joins.
+**Not allowed:** Subqueries, window functions, HAVING (except in straightforward GROUP BY + HAVING), complex multi-table joins.
 
 **Table complexity:** 1–2 tables, one-to-many only.
+
+**Quality bar:** Would a first-year analyst be expected to write this in their first week?
 
 ### Medium (2001–2999)
 
 **Core concepts:** 1–2, directly related. Complexity comes from multi-step reasoning, not concept stacking.
 
 **Allowed:**
-- Multi-table INNER + LEFT JOINs (2–4 tables)
+- Multi-table INNER + LEFT + FULL OUTER JOINs (2–4 tables)
 - GROUP BY multi-column + HAVING
-- CASE WHEN (as helper only)
-- Subqueries: IN / EXISTS / scalar (simple, single reasoning layer)
-- Date filters, combined conditions
+- CASE WHEN expressions
+- Subqueries: IN / EXISTS / scalar (single reasoning layer)
+- CTEs (WITH clause) for readability
+- Date arithmetic, combined conditions
+- LAG/LEAD window functions for adjacent-period comparisons (period-over-period)
 
-**Not allowed:** Window functions, ranking problems.
+**Not allowed:** Advanced window functions (partitioned RANK, running totals, complex frame clauses).
+
+**Quality bar:** Would this appear in a data analyst SQL screen at a mid-size tech company?
 
 ### Hard (3001–3999)
 
-**Must include at least one:**
-- Window functions (ROW_NUMBER, RANK, LAG, LEAD)
-- Correlated subqueries (EXISTS / NOT EXISTS)
-- Multi-level aggregation
-- Conditional aggregation
+**Must include at least one of:**
+- Window functions (ROW_NUMBER, RANK, DENSE_RANK, LAG, LEAD, SUM OVER, ROWS vs RANGE)
+- CTEs with dependent layers (CTE chain)
+- Multi-level aggregation (aggregate → rank, sequence → filter)
+- Conditional aggregation with business logic
+- State transition detection, cohort analysis, sessionization, funnel analysis
 
-**Must require at least 2 dependent steps** — e.g., aggregate → rank, sequence → filter.
+**Must require at least 2 dependent steps** — e.g., aggregate → rank, sequence → filter, CTE → window.
 
-**Table complexity:** 3–5 tables, complex joins including self-joins.
+**Table complexity:** 2–5 tables, may include self-joins or complex event-level tables.
+
+**Quality bar:** Would this appear in a senior analyst or data engineering SQL screen at FAANG?
 
 ---
 
@@ -113,7 +143,7 @@ Before committing any new question:
 
 The `concepts` field is a **learner-facing semantic tag**, not a raw SQL primitive inventory.
 
-✅ Good tags: `COHORT ANALYSIS`, `RUNNING TOTAL THRESHOLD DETECTION`, `LATEST STATE DERIVATION`, `FUNNEL ORDER ENFORCEMENT`, `CUMULATIVE CONTRIBUTION`
+✅ Good tags: `COHORT ANALYSIS`, `RUNNING TOTAL THRESHOLD DETECTION`, `LATEST STATE DERIVATION`, `FUNNEL ORDER ENFORCEMENT`, `CUMULATIVE CONTRIBUTION`, `DATE BUCKET GROUPING`, `NULL-SAFE ARITHMETIC`
 
 ❌ Bad tags: `JOIN`, `AGGREGATION`, `WINDOW FUNCTION`, `SUBQUERY`, `ROW_NUMBER`, `LAG`
 
@@ -136,38 +166,41 @@ Target 2–4 tags per question. Tags describe the analytical *pattern*, not the 
   },
   "expected_query": "SELECT ... (used for evaluation — must be correct and deterministic)",
   "solution_query": "SELECT ... (shown to user — clean, readable, best-practice SQL)",
-  "explanation": "Step-by-step logic, WHY the approach works, key concepts, edge-case handling.",
+  "required_concepts": ["order_by"],
+  "enforce_concepts": true,
+  "explanation": "Step-by-step logic, WHY the approach works, key concepts, edge-case handling, common mistakes.",
   "hints": ["Guide thinking, do not reveal answer", "Progressive hint if needed"],
   "concepts": ["SEMANTIC REASONING TAG", "ANOTHER TAG"],
   "companies": ["Meta", "Amazon"]
 }
 ```
 
-`expected_query` vs `solution_query`: They must produce identical results. `expected_query` is used for evaluation; `solution_query` is what users see post-submit and should be the cleanest form.
+`required_concepts` keys: `order_by`, `distinct`, `where`, `group_by`, `having`, `join`, `left_join`, `subquery`, `cte`, `window_function`, `case_when`, `coalesce`, `date_trunc`, `null_check`, `union`, `exists`, `recursive_cte`
 
-`companies` (SQL only, optional): list of companies known to ask this style of question. Use the canonical set: `Meta`, `Google`, `Amazon`, `Stripe`, `Airbnb`, `Netflix`, `Uber`, `Microsoft`, `LinkedIn`, `Shopify`, `eBay`, `PayPal`, `Salesforce`, `Zendesk`, `Amplitude`. Omit or leave `[]` if no clear association. Drives the company filter chips in the sidebar.
+`companies` (optional): canonical set: `Meta`, `Google`, `Amazon`, `Stripe`, `Airbnb`, `Netflix`, `Uber`, `Microsoft`, `LinkedIn`, `Shopify`, `eBay`, `PayPal`, `Salesforce`, `Zendesk`, `Amplitude`. Map to companies actually known to ask this style of question.
 
 ---
 
 ## SQL style rules
 
-- Easy + Medium: portable across PostgreSQL, MySQL, SQL Server (no DuckDB-specific functions)
-- Hard: can use advanced SQL; prefer standard SQL first
+- Easy + Medium: portable across PostgreSQL, MySQL, DuckDB, SQL Server
+- Hard: DuckDB-compatible; prefer standard SQL first; DuckDB-specific syntax (STRFTIME, JULIANDAY, `||` concat) is acceptable
 - Use explicit JOIN syntax (no implicit comma joins)
 - No SELECT * — always name columns explicitly
 - If ordering matters, include explicit ORDER BY
-- Use clear table aliases
+- Use clear table aliases on all multi-table queries
+- Prefer `>= '2024-01-01' AND < '2025-01-01'` over `YEAR(date) = 2024` for date range filtering
 
 ---
 
 ## SQL anti-patterns (strictly avoid)
 
-- Vague terms like "top" or "best" without clear definition
-- Non-deterministic ordering (no ORDER BY when order matters)
-- Ambiguous grouping
-- Multiple valid interpretations of the result
-- Mixing difficulty levels in a single question
+- Vague terms like "top" or "best" without a precise definition
+- Non-deterministic ordering (no ORDER BY when result order matters)
+- Ambiguous grouping or multiple valid interpretations of the result
 - Artificially increasing difficulty via unrelated concept stacking
+- Questions that test memorization of default values or obscure syntax quirks
+- Using synthetic column values that break the realism (e.g., LIKE 'User%' on names that are literally "User 1")
 
 ---
 
@@ -177,28 +210,33 @@ Target 2–4 tags per question. Tags describe the analytical *pattern*, not the 
 
 ---
 
+## What this track covers
+
+Classic data structures and algorithms problems — the type asked in coding screens at FAANG for data engineering, ML engineering, and analytics engineering roles. Problems should feel like they could appear on LeetCode Medium or Hard but are framed with realistic context.
+
 ## Difficulty standards
 
 ### Easy (4001–4299)
 - Single function, clear I/O contract
 - No more than 1 core algorithmic concept
 - Basic Python: loops, conditionals, built-in types (list, dict, set, str)
-- No recursion, no OOP, no complex data structures
-- Test cases: 3 total (2 public, 1 hidden)
+- No recursion beyond simple cases, no complex data structures
+- Test cases: 3–4 total (2 public, rest hidden)
 - Expected time complexity: O(n) or O(n log n)
 
 ### Medium (4301–4599)
 - 1–2 concepts, directly related
-- May require a known data structure (stack, queue, deque, heap) or algorithm pattern (binary search, two pointers, sliding window)
-- Recursion allowed
-- Test cases: 5 total (2 public, 3 hidden)
+- May require a known data structure (stack, queue, deque, heap, trie) or algorithm pattern
+- Recursion and backtracking allowed
+- Test cases: 5–6 total (2 public, rest hidden)
 - Expected: O(n log n) or O(n) non-obvious
 
 ### Hard (4601–4999)
-- Multi-stage reasoning: at least 2 dependent algorithmic steps
-- Advanced patterns: DP, backtracking, graph traversal (BFS/DFS), monotonic stack, trie
-- Test cases: 7 total (2 public, 5 hidden)
-- O(n²) naive is not acceptable — expected O(n log n) or better
+- Multi-stage reasoning with at least 2 dependent algorithmic steps
+- Advanced patterns: DP, backtracking, graph traversal (BFS/DFS/Dijkstra), Union-Find, monotonic stack, trie, system design data structures
+- Test cases: 7+ total (2 public, rest hidden)
+- O(n²) naive is not acceptable; expected O(n log n) or better where applicable
+- Problems should require the candidate to *choose* the right data structure, not just implement a given one
 
 ---
 
@@ -211,18 +249,16 @@ Target 2–4 tags per question. Tags describe the analytical *pattern*, not the 
   "topic": "python",
   "title": "Two Sum",
   "difficulty": "easy",
-  "description": "Given a list of integers `nums` and a target integer `target`, return a list containing the indices of the two numbers that add up to `target`. You may assume exactly one solution exists.",
+  "description": "Problem statement with examples in code blocks.",
   "starter_code": "def solve(nums: list, target: int) -> list:\n    # Your code here\n    pass",
   "expected_code": "def solve(nums, target):\n    seen = {}\n    for i, n in enumerate(nums):\n        if target - n in seen:\n            return [seen[target - n], i]\n        seen[n] = i",
   "solution_code": "def solve(nums: list, target: int) -> list:\n    seen = {}\n    for i, n in enumerate(nums):\n        if target - n in seen:\n            return [seen[target - n], i]\n        seen[n] = i",
-  "explanation": "Use a hash map to store each number and its index as you iterate. For each number n, check if (target - n) is already in the map. O(n) time, O(n) space.",
+  "explanation": "Step-by-step explanation with time/space complexity analysis.",
   "test_cases": [
-    { "input": [[2, 7, 11, 15], 9], "expected": [0, 1] },
-    { "input": [[3, 2, 4], 6], "expected": [1, 2] },
-    { "input": [[3, 3], 6], "expected": [0, 1] }
+    { "input": [[2, 7, 11, 15], 9], "expected": [0, 1] }
   ],
   "public_test_cases": 2,
-  "hints": ["Consider using a hash map to store seen numbers."],
+  "hints": ["Directional hint toward the approach"],
   "concepts": ["hash map", "linear scan"]
 }
 ```
@@ -230,18 +266,10 @@ Target 2–4 tags per question. Tags describe the analytical *pattern*, not the 
 **Rules:**
 - Always use `def solve(...)` as the function name
 - `public_test_cases` must be ≤ `len(test_cases)` — controls what users see during Run
-- Include at least one edge case: empty list, single element, duplicates, zero, negatives
-- Do not require Python 3.12+ features; do not require any imported library
+- Include at least one edge case: empty input, single element, duplicates, zero, negatives
+- Do not require Python 3.12+ features or external libraries
+- Explanation must include time and space complexity
 - Frame problems with realistic context, not toy-like phrasing
-
-**Testing before commit:**
-```python
-exec(expected_code)
-for tc in test_cases:
-    result = solve(*tc["input"])
-    assert result == tc["expected"], f"Failed: {result} != {tc['expected']}"
-print("All test cases passed")
-```
 
 ---
 
@@ -251,25 +279,41 @@ print("All test cases passed")
 
 ---
 
+## What this track covers
+
+Pandas-specific data manipulation patterns used in data science and analytics engineering roles. Questions must test *pandas thinking*, not just replicate SQL operations. The key question for each question: **would a data scientist or analytics engineer actually write this in a Jupyter notebook or production pipeline?**
+
+### Pandas-specific concepts to cover (not just SQL equivalents)
+
+- `str` accessor operations (`.str.split`, `.str.contains`, `.str.extract`)
+- `pd.cut` / `pd.qcut` for bucketing and binning
+- `resample()` for proper time series aggregation
+- `explode()` for list-valued columns
+- Memory optimization (`astype('category')`, `int32`, `memory_usage`)
+- Named aggregation syntax (`groupby().agg(name=(col, func))`)
+- `groupby().rank()` and `groupby().transform()` for within-group operations
+- `pd.pivot_table()` and `pd.melt()` for reshaping
+- MultiIndex and `.xs()` for hierarchical data
+- Rolling windows, `shift()`, cumulative operations
+
 ## Difficulty standards
 
-### Easy (5001–5999)
+### Easy (5001–5299)
 - Single core pandas operation
-- 1–2 DataFrames, no joins
-- Expected solution: 1–3 method chains
-- Skills: filtering, selecting columns, sorting, basic aggregation, null handling, string ops, renaming
+- 1–2 DataFrames, no joins required
+- Expected solution: 1–4 method chains
+- **Must test pandas-specific thinking**, not just boolean filtering that mirrors SQL WHERE
 
-### Medium (6001–6999)
+### Medium (5300–5599)
 - 2–3 concepts, directly related
-- May involve: merge, pivot/melt/stack, groupby+transform, rolling windows, numpy operations
-- Expected solution: 3–6 method chains
-- Skills: merge, concat, pivot_table, melt, groupby+transform, rolling, rank, cut/qcut, numpy broadcasting, datetime ops
+- May involve: merge, pivot/melt, groupby+transform, rolling windows, resample, rank, cut/qcut, named aggregation
+- Expected solution: 3–7 method chains or a small pipeline with intermediate steps
 
-### Hard (7001–7999)
+### Hard (5600–5999)
 - Multi-step pipeline with at least 2 dependent transformations
-- Non-obvious chaining, numpy-pandas interplay, or performance considerations
+- Non-obvious chaining, memory considerations, or performance-aware patterns
 - Expected solution: 5+ steps, may use intermediate DataFrames
-- Skills: named aggregation, time-series resampling, cumulative ops, cross-tab, stack/unstack, vectorised patterns
+- Examples: cohort retention, RFM, funnel analysis, MultiIndex operations, dtype optimization
 
 ---
 
@@ -280,41 +324,28 @@ print("All test cases passed")
   "id": 5001,
   "order": 1,
   "topic": "python_data",
-  "title": "Filter US Users",
+  "title": "Title",
   "difficulty": "easy",
-  "description": "Given `df_users`, return a DataFrame containing only users where `country = 'US'`, sorted by `user_id` ascending. Keep all columns. Reset the index.",
-  "dataset_files": ["users.csv"],
-  "schema": {
-    "users": ["user_id", "name", "email", "country", "signup_date", "plan", "status"]
-  },
-  "dataframes": {
-    "df_users": "users.csv"
-  },
-  "starter_code": "import pandas as pd\n\ndef solve(df_users):\n    # Your code here\n    pass",
-  "expected_code": "import pandas as pd\n\ndef solve(df_users):\n    return df_users[df_users['country'] == 'US'].sort_values('user_id').reset_index(drop=True)",
-  "solution_code": "import pandas as pd\n\ndef solve(df_users):\n    return df_users[df_users['country'] == 'US'].sort_values('user_id').reset_index(drop=True)",
-  "explanation": "Filter rows where country equals 'US', sort by user_id, reset the integer index.",
-  "hints": ["Use boolean indexing to filter rows."],
-  "concepts": ["filtering", "sorting"]
+  "description": "Given `df_users`, ... Return columns X, Y sorted by Z ascending.",
+  "dataframes": { "df_users": "users.csv" },
+  "schema": { "df_users": ["col1", "col2", ...] },
+  "starter_code": "import pandas as pd\n\ndef solve(df_users):\n    # comment\n    pass",
+  "expected_code": "import pandas as pd\n\ndef solve(df_users):\n    ...",
+  "solution_code": "import pandas as pd\n\ndef solve(df_users):\n    ...",
+  "explanation": "Step-by-step explanation of the pandas approach and why it works.",
+  "hints": ["Hint 1", "Hint 2"],
+  "concepts": ["tag1", "tag2"]
 }
 ```
 
 **Rules:**
-- Use the real dataset tables with their actual column names
+- Use real dataset column names exactly (verified against CSV headers)
 - Specify exactly which columns the output should contain
 - Specify sort order explicitly in the description
-- Do not assume specific pandas version behavior for edge cases
-- Avoid `apply()` in expected solutions unless the question is specifically teaching `apply()`
-
-**Testing before commit:**
-```python
-import pandas as pd
-df_users = pd.read_csv("backend/datasets/users.csv")
-exec(expected_code)
-result = solve(df_users=df_users)
-print(result.head(10), result.dtypes, result.shape)
-# Verify: column names match description, row count reasonable, no unexpected NaN
-```
+- `expected_code` and `solution_code` must be identical and correct
+- Always include `.reset_index(drop=True)` at the end for clean 0-based index
+- Avoid `apply()` in expected solutions unless the question specifically teaches `apply()`
+- Prefer vectorized operations over loops
 
 ---
 
@@ -326,32 +357,44 @@ print(result.head(10), result.dtypes, result.shape)
 
 ## What this track covers
 
-Spark architecture, the PySpark DataFrame API, and real-world optimization. **No code is executed** — all questions are multiple-choice (4 options). Some include a read-only code snippet.
+Spark architecture, the PySpark DataFrame API, performance optimization, Delta Lake, and Structured Streaming. **No code is executed** — all questions are multiple-choice (4 options). Questions anchor in real-world scenarios: actual error messages, production bottlenecks, deployment decisions.
+
+### PySpark must cover (across all difficulties)
+
+**Foundations (Easy):** Transformations vs actions, lazy evaluation, DAG, driver vs executor, narrow vs wide transformations, RDD vs DataFrame, schema inference, Catalyst optimizer basics — PLUS predict-output and debug question types to test applied understanding, not just recall.
+
+**Optimization (Medium):** Partitioning, shuffle, broadcast join, repartition vs coalesce, caching, AQE overview, Delta Lake MERGE/time travel/schema evolution, Structured Streaming output modes.
+
+**Advanced (Hard):** AQE internals (all 3 optimizations), DPP activation, skew join / salting, pandas UDF memory, Z-ordering, watermark and late data handling, speculative execution.
 
 **Question subtypes:**
-- `mcq` — choose the correct conceptual answer
-- `predict_output` — given a PySpark snippet, predict what it returns
-- `debug` — given broken code or an error message, identify the fix
+- `mcq` — choose the correct conceptual answer (anchored in a scenario)
+- `predict_output` — given a PySpark snippet, predict what it returns or prints
+- `debug` — given broken code or an error, identify the problem and fix
 - `optimization` — given a Spark job setup, choose the best strategy
 
----
+Easy tier must include a mix of all four types. Pure MCQ recall without code is not sufficient for easy questions.
 
 ## Difficulty standards
 
-### Easy (11001–11999)
-- Single concept, no ambiguity
-- Tests recall and understanding of fundamental Spark behavior
-- Common in screening rounds and entry-level data engineering interviews
+### Easy (11001–11299)
+- Single concept, tested with a realistic scenario or code snippet
+- Common question types: predict_output (what does this return?), debug (what error? what fix?), mcq (which statement is correct?)
+- Tests understanding, not pure memorization — distractor options must represent real misconceptions
+- Avoid questions whose answer is just "know the default configuration value"
 
-### Medium (12001–12999)
-- Reasoning about Spark internals (partitioning, shuffle, execution plans)
-- Comparing two or more approaches
-- May require reading and interpreting a code snippet or `explain()` output
+### Medium (11300–11599)
+- Reasoning about Spark internals or trade-offs (partitioning, shuffle, execution plans)
+- Comparing two approaches with nuanced differences
+- May involve reading and interpreting a code snippet or error message
+- Delta Lake: MERGE, time travel, schema evolution
+- Structured Streaming: output modes, trigger types
 
-### Hard (13001–13999)
-- Multi-factor trade-off reasoning
-- Memory model, AQE, or advanced optimization
-- May involve ordering questions
+### Hard (11600–13999)
+- Multi-factor trade-off reasoning under realistic constraints
+- Memory model, AQE internals, streaming state management
+- Delta Lake advanced: Z-ordering, OPTIMIZE, VACUUM, data skipping
+- May require selecting the CORRECT answer from options that are all plausible
 
 ---
 
@@ -365,17 +408,17 @@ Spark architecture, the PySpark DataFrame API, and real-world optimization. **No
   "type": "mcq",
   "difficulty": "easy",
   "title": "Transformations vs Actions",
-  "description": "Which of the following is a Spark **action** (triggers job execution)?",
-  "code_snippet": null,
+  "description": "Scenario-anchored question text.",
+  "code_snippet": "# Python code or null",
   "options": [
-    "df.filter(df.age > 30)",
-    "df.select('name', 'age')",
-    "df.count()",
-    "df.withColumn('senior', df.age > 60)"
+    "Option A",
+    "Option B",
+    "Option C",
+    "Option D"
   ],
   "correct_option": 2,
-  "explanation": "df.count() is an action — it triggers job execution and returns a Python integer. The others (filter, select, withColumn) are transformations that build a lazy execution plan.",
-  "hints": ["Think about what actually runs Spark jobs vs what just builds a plan."],
+  "explanation": "Full explanation covering ALL 4 options: why the correct answer is right AND why each wrong answer is wrong.",
+  "hints": ["One directional hint"],
   "concepts": ["lazy evaluation", "transformations vs actions"]
 }
 ```
@@ -383,17 +426,13 @@ Spark architecture, the PySpark DataFrame API, and real-world optimization. **No
 **`correct_option`** is the 0-indexed position in `options`.
 
 **Rules:**
-- Anchor in a real-world scenario (not "what does filter() return?" as pure trivia)
-- Distractors must represent actual misconceptions, not obvious wrong answers
-- For `predict_output`: keep code snippet mentally runnable with 3–5 sample rows
-- For `optimization`: do not write questions where all 4 options could be correct in some scenario
-- Do not ask about default configuration values (trivia)
-- Do not use deprecated Spark APIs (RDD-based API, `sc.parallelize`) unless specifically teaching migration
-
-**Verification before commit:**
-- `correct_option` is 0-indexed correctly
-- All 4 options are plausible but only one is unambiguously correct
-- Explanation covers all 4 options (why the wrong ones are wrong)
+- Anchor in a real-world scenario — not abstract "what does X return?"
+- Distractors must represent actual misconceptions, not obviously wrong answers
+- For `predict_output`: code snippet must be mentally runnable with simple sample data
+- For `debug`: show real error types (AnalysisException, TypeError, OOM) and explain when they fire
+- Explanation must cover all 4 options — explain why wrong answers are wrong
+- Do not ask about default configuration values as trivia
+- Do not use deprecated Spark APIs (RDD-based API, `sc.parallelize`) unless teaching migration
 
 ---
 
@@ -420,3 +459,15 @@ Sample questions are **completely separate** from challenge banks:
 - Must be simpler and platform-demo oriented
 
 **Never mix sample and challenge question sources. Never reuse IDs across systems.**
+
+---
+
+## Current question counts (as of April 2026)
+
+| Track | Easy | Medium | Hard | Total |
+|---|---|---|---|---|
+| SQL | 32 | 34 | 29 | 95 |
+| Python | 30 | 29 | 24 | 83 |
+| Pandas | 29 | 30 | 23 | 82 |
+| PySpark | 38 | 30 | 22 | 90 |
+| **Total** | **129** | **123** | **98** | **350** |

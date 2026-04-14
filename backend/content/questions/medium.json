@@ -1350,5 +1350,189 @@
     "companies": [
       "Stripe"
     ]
+  },
+  {
+    "id": 2031,
+    "order": 31,
+    "title": "Quarter-over-quarter revenue change",
+    "description": "Compute total `net_amount` per calendar quarter from the `orders` table. Label each quarter as `'YYYY-QN'` (e.g. `'2024-Q1'`). Use LAG() to compute `qoq_change` = current quarter revenue minus the previous quarter. Return `quarter`, `total_revenue` (rounded to 2 decimal places), and `qoq_change` (rounded to 2 decimal places; NULL for the first quarter). Order by `quarter` ascending.\n\nTo derive the quarter number: `((CAST(STRFTIME('%m', order_date) AS INT) - 1) / 3 + 1)`.",
+    "difficulty": "medium",
+    "schema": {
+      "orders": [
+        "order_id",
+        "order_date",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv"
+    ],
+    "expected_query": "WITH quarterly AS (\n    SELECT STRFTIME('%Y', order_date) || '-Q' ||\n           CAST(((CAST(STRFTIME('%m', order_date) AS INT) - 1) / 3 + 1) AS TEXT) AS quarter,\n           ROUND(SUM(net_amount), 2) AS total_revenue\n    FROM orders\n    GROUP BY quarter\n)\nSELECT quarter,\n       total_revenue,\n       ROUND(total_revenue - LAG(total_revenue) OVER (ORDER BY quarter), 2) AS qoq_change\nFROM quarterly\nORDER BY quarter",
+    "solution_query": "WITH quarterly AS (\n    SELECT STRFTIME('%Y', order_date) || '-Q' ||\n           CAST(((CAST(STRFTIME('%m', order_date) AS INT) - 1) / 3 + 1) AS TEXT) AS quarter,\n           ROUND(SUM(net_amount), 2) AS total_revenue\n    FROM orders\n    GROUP BY quarter\n)\nSELECT quarter,\n       total_revenue,\n       ROUND(total_revenue - LAG(total_revenue) OVER (ORDER BY quarter), 2) AS qoq_change\nFROM quarterly\nORDER BY quarter;",
+    "required_concepts": [
+      "window_function",
+      "group_by",
+      "cte",
+      "order_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "A CTE first aggregates revenue per quarter. The quarter label is built by concatenating the year (STRFTIME('%Y')), '-Q', and the quarter number derived from the month. In the outer query, LAG(total_revenue) OVER (ORDER BY quarter) fetches the previous row's revenue \u2014 because quarters sort lexicographically in 'YYYY-QN' format, this gives the correct prior quarter. Subtracting gives qoq_change; the first row has no prior, so LAG returns NULL.",
+    "hints": [
+      "First aggregate to quarterly revenue in a CTE, then apply LAG() in the outer SELECT",
+      "LAG(col) OVER (ORDER BY quarter) gives you the previous row's value \u2014 subtract it from the current row to get the change"
+    ],
+    "concepts": [
+      "PERIOD-OVER-PERIOD COMPARISON",
+      "LAG WINDOW FUNCTION",
+      "QUARTER DERIVATION",
+      "CTE PIPELINE"
+    ],
+    "companies": [
+      "Meta",
+      "Stripe",
+      "Amazon",
+      "LinkedIn"
+    ]
+  },
+  {
+    "id": 2032,
+    "order": 32,
+    "title": "Full outer join: order-payment reconciliation",
+    "description": "Identify mismatches between orders and payments. Perform a FULL OUTER JOIN between `orders` (alias `o`) and `payments` (alias `p`) on `order_id`. Return:\n- `order_id`: `COALESCE(o.order_id, p.order_id)`\n- `order_amount`: `o.net_amount` (NULL if no order record)\n- `payment_amount`: `p.amount` (NULL if no payment record)\n- `reconciliation_status`: `'order_only'` if payment is NULL, `'payment_only'` if order is NULL, `'matched'` if both exist\n\nOrder by `order_id` ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "orders": [
+        "order_id",
+        "net_amount"
+      ],
+      "payments": [
+        "payment_id",
+        "order_id",
+        "amount"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv",
+      "payments.csv"
+    ],
+    "expected_query": "SELECT COALESCE(o.order_id, p.order_id) AS order_id,\n       o.net_amount AS order_amount,\n       p.amount AS payment_amount,\n       CASE\n           WHEN p.order_id IS NULL THEN 'order_only'\n           WHEN o.order_id IS NULL THEN 'payment_only'\n           ELSE 'matched'\n       END AS reconciliation_status\nFROM orders o\nFULL OUTER JOIN payments p ON o.order_id = p.order_id\nORDER BY order_id",
+    "solution_query": "SELECT COALESCE(o.order_id, p.order_id) AS order_id,\n       o.net_amount AS order_amount,\n       p.amount AS payment_amount,\n       CASE\n           WHEN p.order_id IS NULL THEN 'order_only'\n           WHEN o.order_id IS NULL THEN 'payment_only'\n           ELSE 'matched'\n       END AS reconciliation_status\nFROM orders o\nFULL OUTER JOIN payments p ON o.order_id = p.order_id\nORDER BY order_id;",
+    "required_concepts": [
+      "join",
+      "coalesce",
+      "case_when"
+    ],
+    "enforce_concepts": true,
+    "explanation": "FULL OUTER JOIN returns all rows from both tables, filling NULL for columns from the table with no match. COALESCE(o.order_id, p.order_id) produces a non-NULL order_id regardless of which side has the match. The CASE expression classifies each row: when p.order_id is NULL, only an order exists; when o.order_id is NULL, only a payment exists; otherwise both match. This reconciliation pattern is essential in financial data pipelines to detect payment gaps or orphaned transactions.",
+    "hints": [
+      "FULL OUTER JOIN keeps all rows from both tables \u2014 rows with no match get NULLs on the other side",
+      "Use COALESCE(o.order_id, p.order_id) to get a non-null order_id regardless of which side matched"
+    ],
+    "concepts": [
+      "FULL OUTER JOIN RECONCILIATION",
+      "COALESCE NULL BRIDGING",
+      "DATA QUALITY CLASSIFICATION"
+    ],
+    "companies": [
+      "Stripe",
+      "PayPal",
+      "Airbnb",
+      "Amazon"
+    ]
+  },
+  {
+    "id": 2033,
+    "order": 33,
+    "title": "Departments with employee count and region",
+    "description": "For each department, count the number of employees. Include departments even if they have zero employees. Return `department_name`, `region`, and `employee_count`. Order by `employee_count` descending, then `department_name` ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "departments": [
+        "department_id",
+        "department_name",
+        "region"
+      ],
+      "employees": [
+        "employee_id",
+        "department_id"
+      ]
+    },
+    "dataset_files": [
+      "departments.csv",
+      "employees.csv"
+    ],
+    "expected_query": "SELECT d.department_name, d.region, COUNT(e.employee_id) AS employee_count\nFROM departments d\nLEFT JOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_id, d.department_name, d.region\nORDER BY employee_count DESC, d.department_name ASC",
+    "solution_query": "SELECT d.department_name, d.region,\n       COUNT(e.employee_id) AS employee_count\nFROM departments d\nLEFT JOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_id, d.department_name, d.region\nORDER BY employee_count DESC, d.department_name ASC;",
+    "required_concepts": [
+      "left_join",
+      "group_by",
+      "order_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The JOIN direction matters: LEFT JOIN from departments to employees preserves all department rows even when no employees exist. COUNT(e.employee_id) counts only non-NULL employee IDs \u2014 for departments with no employees, this returns 0 (not 1 or NULL). Using COUNT(*) instead would incorrectly count 1 for empty departments because the LEFT JOIN produces a row with NULLs. Grouping by department_id ensures uniqueness even if two departments share the same name.",
+    "hints": [
+      "Join FROM departments TO employees (departments is the left/driving table) so no department is lost",
+      "COUNT(e.employee_id) counts non-null values \u2014 returns 0 for departments with no employees, unlike COUNT(*)"
+    ],
+    "concepts": [
+      "LEFT JOIN DIRECTION",
+      "ZERO-COUNT PRESERVATION",
+      "COUNT NON-NULL vs COUNT STAR"
+    ],
+    "companies": [
+      "Google",
+      "Microsoft",
+      "LinkedIn",
+      "Amazon"
+    ]
+  },
+  {
+    "id": 2034,
+    "order": 34,
+    "title": "Top revenue by country and plan tier",
+    "description": "For each combination of user `country` and `plan_tier`, compute the total `net_amount` of completed orders. Return only combinations where total revenue exceeds 5000. Return `country`, `plan_tier`, and `total_revenue` (rounded to 2 decimal places). Order by `total_revenue` descending.",
+    "difficulty": "medium",
+    "schema": {
+      "orders": [
+        "order_id",
+        "user_id",
+        "status",
+        "net_amount"
+      ],
+      "users": [
+        "user_id",
+        "country",
+        "plan_tier"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv",
+      "users.csv"
+    ],
+    "expected_query": "SELECT u.country, u.plan_tier, ROUND(SUM(o.net_amount), 2) AS total_revenue\nFROM orders o\nJOIN users u ON o.user_id = u.user_id\nWHERE o.status = 'completed'\nGROUP BY u.country, u.plan_tier\nHAVING SUM(o.net_amount) > 5000\nORDER BY total_revenue DESC",
+    "solution_query": "SELECT u.country, u.plan_tier,\n       ROUND(SUM(o.net_amount), 2) AS total_revenue\nFROM orders o\nJOIN users u ON o.user_id = u.user_id\nWHERE o.status = 'completed'\nGROUP BY u.country, u.plan_tier\nHAVING SUM(o.net_amount) > 5000\nORDER BY total_revenue DESC;",
+    "required_concepts": [
+      "join",
+      "group_by",
+      "having",
+      "order_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "WHERE filters rows before aggregation (only completed orders contribute). GROUP BY produces one row per (country, plan_tier) combination. HAVING filters groups after aggregation \u2014 it's the only way to filter on aggregate values like SUM. Using WHERE SUM(...) > 5000 would be a syntax error. The distinction between WHERE (row-level filter) and HAVING (group-level filter) is one of the most commonly tested SQL concepts.",
+    "hints": [
+      "Use WHERE to filter rows before the GROUP BY, and HAVING to filter the aggregated groups after",
+      "HAVING filters on the result of the aggregation \u2014 WHERE SUM(...) > 5000 is a syntax error"
+    ],
+    "concepts": [
+      "WHERE vs HAVING DISTINCTION",
+      "MULTI-COLUMN SEGMENT AGGREGATION",
+      "POST-AGGREGATION FILTER"
+    ],
+    "companies": [
+      "Amazon",
+      "Stripe",
+      "Meta",
+      "LinkedIn"
+    ]
   }
 ]
