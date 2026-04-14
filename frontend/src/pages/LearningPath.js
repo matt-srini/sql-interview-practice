@@ -146,24 +146,27 @@ export default function LearningPath() {
                   </div>
                 );
               })}
+              {unlockHint && (
+                <div className="learn-unlock-hint">
+                  <span className="learn-unlock-hint-icon">🔒</span>
+                  {unlockHint.progress && (
+                    <span className="learn-unlock-hint-text">{unlockHint.progress}</span>
+                  )}
+                  <Link to={`/practice/${path.topic}`} className="learn-unlock-hint-link">
+                    Go to full track →
+                  </Link>
+                  {unlockHint.upgradeTarget && (
+                    <button
+                      className="btn btn-primary btn-compact"
+                      onClick={() => handleUpgrade(unlockHint.upgradeTarget)}
+                      disabled={upgradePending}
+                    >
+                      {upgradePending ? 'Redirecting…' : unlockHint.upgradeLabel}
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
-            {unlockHint && (
-              <div className="learn-unlock-hint">
-                <span className="learn-unlock-hint-icon">🔒</span>
-                {unlockHint.progress && (
-                  <span className="learn-unlock-hint-text">{unlockHint.progress}</span>
-                )}
-                {unlockHint.upgradeTarget && (
-                  <button
-                    className="btn btn-primary btn-compact"
-                    onClick={() => handleUpgrade(unlockHint.upgradeTarget)}
-                    disabled={upgradePending}
-                  >
-                    {upgradePending ? 'Redirecting…' : unlockHint.upgradeLabel}
-                  </button>
-                )}
-              </div>
-            )}
           </section>
         </>
       )}
