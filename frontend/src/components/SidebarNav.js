@@ -1,4 +1,5 @@
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { NavLink } from 'react-router-dom';
 import { useTopic } from '../contexts/TopicContext';
 import UpgradeButton from './UpgradeButton';
@@ -93,48 +94,74 @@ function QuestionContent({ q, isActive = false }) {
 }
 
 function QuestionRow({ q, onNavigate, topic, lockedMiniCard }) {
-  const [miniCardOpen, setMiniCardOpen] = useState(false);
+  const [miniCardAnchor, setMiniCardAnchor] = useState(null);
+  const rowRef = useRef(null);
+  const closeTimer = useRef(null);
   const stateClass = `sidebar-question-state-${q.state}`;
+
+  const openCard = useCallback(() => {
+    clearTimeout(closeTimer.current);
+    if (!rowRef.current) return;
+    const rect = rowRef.current.getBoundingClientRect();
+    setMiniCardAnchor({ top: rect.top, left: rect.right + 6 });
+  }, []);
+
+  const scheduleClose = useCallback(() => {
+    closeTimer.current = setTimeout(() => setMiniCardAnchor(null), 100);
+  }, []);
+
+  const cancelClose = useCallback(() => {
+    clearTimeout(closeTimer.current);
+  }, []);
+
+  useEffect(() => () => clearTimeout(closeTimer.current), []);
 
   if (q.state === 'locked') {
     // Locked questions navigate to preview mode (same as "Preview →" in learning paths).
-    // Mini-card still appears on hover for unlock info.
+    // Mini-card is rendered via a portal so it escapes the sidebar's overflow and doesn't
+    // bleed over rows below the hovered row.
     return (
-      <NavLink
-        to={`/practice/${topic}/questions/${q.id}`}
-        className={({ isActive }) =>
-          `sidebar-question sidebar-question-locked ${stateClass}${isActive ? ' sidebar-question-active' : ''}`
-        }
-        onClick={onNavigate}
-        onMouseEnter={() => setMiniCardOpen(true)}
-        onMouseLeave={() => setMiniCardOpen(false)}
-        onFocus={() => setMiniCardOpen(true)}
-        onBlur={() => setMiniCardOpen(false)}
-      >
-        {({ isActive }) => (
-          <>
-            <QuestionContent q={q} />
-            {miniCardOpen && lockedMiniCard && (
-              <div className="sidebar-locked-mini-card" role="tooltip">
-                <p className="sidebar-locked-mini-card-headline">{lockedMiniCard.headline}</p>
-                {lockedMiniCard.body && (
-                  <p className="sidebar-locked-mini-card-body">{lockedMiniCard.body}</p>
-                )}
-                <div className="sidebar-locked-mini-card-actions">
-                  {lockedMiniCard.practiceLink && (
-                    <a href={lockedMiniCard.practiceLink} className="sidebar-locked-mini-card-cta sidebar-locked-mini-card-cta-secondary">
-                      {lockedMiniCard.practiceLabel ?? 'Practice now →'}
-                    </a>
-                  )}
-                  {lockedMiniCard.upgradeTier && (
-                    <UpgradeButton tier={lockedMiniCard.upgradeTier} label={lockedMiniCard.upgradeLabel} compact source="sidebar_locked" />
-                  )}
-                </div>
-              </div>
+      <>
+        <NavLink
+          ref={rowRef}
+          to={`/practice/${topic}/questions/${q.id}`}
+          className={({ isActive }) =>
+            `sidebar-question sidebar-question-locked ${stateClass}${isActive ? ' sidebar-question-active' : ''}`
+          }
+          onClick={onNavigate}
+          onMouseEnter={openCard}
+          onMouseLeave={scheduleClose}
+          onFocus={openCard}
+          onBlur={scheduleClose}
+        >
+          {({ isActive }) => <QuestionContent q={q} isActive={isActive} />}
+        </NavLink>
+        {miniCardAnchor && lockedMiniCard && createPortal(
+          <div
+            className="sidebar-locked-mini-card"
+            role="tooltip"
+            style={{ position: 'fixed', top: miniCardAnchor.top, left: miniCardAnchor.left }}
+            onMouseEnter={cancelClose}
+            onMouseLeave={() => setMiniCardAnchor(null)}
+          >
+            <p className="sidebar-locked-mini-card-headline">{lockedMiniCard.headline}</p>
+            {lockedMiniCard.body && (
+              <p className="sidebar-locked-mini-card-body">{lockedMiniCard.body}</p>
             )}
-          </>
+            <div className="sidebar-locked-mini-card-actions">
+              {lockedMiniCard.practiceLink && (
+                <a href={lockedMiniCard.practiceLink} className="sidebar-locked-mini-card-cta sidebar-locked-mini-card-cta-secondary">
+                  {lockedMiniCard.practiceLabel ?? 'Practice now →'}
+                </a>
+              )}
+              {lockedMiniCard.upgradeTier && (
+                <UpgradeButton tier={lockedMiniCard.upgradeTier} label={lockedMiniCard.upgradeLabel} compact source="sidebar_locked" />
+              )}
+            </div>
+          </div>,
+          document.body
         )}
-      </NavLink>
+      </>
     );
   }
 
