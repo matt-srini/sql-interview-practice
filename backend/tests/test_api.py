@@ -91,11 +91,16 @@ def test_get_question_detail() -> None:
         assert "explanation" not in payload
 
 
-def test_get_question_detail_blocks_locked_question() -> None:
+def test_get_question_detail_preview_mode_for_locked_question() -> None:
+    """Locked questions now return 200 with content but progress.unlocked=False (preview mode)."""
     with TestClient(app) as client:
         medium_id = _first_medium_id()
         resp = client.get(f"/api/questions/{medium_id}")
-        assert resp.status_code == 403
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["progress"]["unlocked"] is False
+        assert "title" in data
+        assert "description" in data  # question text is visible in preview
 
 
 def test_run_query_success() -> None:
