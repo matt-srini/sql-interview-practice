@@ -97,35 +97,44 @@ function QuestionRow({ q, onNavigate, topic, lockedMiniCard }) {
   const stateClass = `sidebar-question-state-${q.state}`;
 
   if (q.state === 'locked') {
+    // Locked questions navigate to preview mode (same as "Preview →" in learning paths).
+    // Mini-card still appears on hover for unlock info.
     return (
-      <div
-        className={`sidebar-question sidebar-question-locked ${stateClass}`}
-        aria-disabled="true"
+      <NavLink
+        to={`/practice/${topic}/questions/${q.id}`}
+        className={({ isActive }) =>
+          `sidebar-question sidebar-question-locked ${stateClass}${isActive ? ' sidebar-question-active' : ''}`
+        }
+        onClick={onNavigate}
         onMouseEnter={() => setMiniCardOpen(true)}
         onMouseLeave={() => setMiniCardOpen(false)}
         onFocus={() => setMiniCardOpen(true)}
         onBlur={() => setMiniCardOpen(false)}
       >
-        <QuestionContent q={q} />
-        {miniCardOpen && lockedMiniCard && (
-          <div className="sidebar-locked-mini-card" role="tooltip">
-            <p className="sidebar-locked-mini-card-headline">{lockedMiniCard.headline}</p>
-            {lockedMiniCard.body && (
-              <p className="sidebar-locked-mini-card-body">{lockedMiniCard.body}</p>
+        {({ isActive }) => (
+          <>
+            <QuestionContent q={q} />
+            {miniCardOpen && lockedMiniCard && (
+              <div className="sidebar-locked-mini-card" role="tooltip">
+                <p className="sidebar-locked-mini-card-headline">{lockedMiniCard.headline}</p>
+                {lockedMiniCard.body && (
+                  <p className="sidebar-locked-mini-card-body">{lockedMiniCard.body}</p>
+                )}
+                <div className="sidebar-locked-mini-card-actions">
+                  {lockedMiniCard.practiceLink && (
+                    <a href={lockedMiniCard.practiceLink} className="sidebar-locked-mini-card-cta sidebar-locked-mini-card-cta-secondary">
+                      {lockedMiniCard.practiceLabel ?? 'Practice now →'}
+                    </a>
+                  )}
+                  {lockedMiniCard.upgradeTier && (
+                    <UpgradeButton tier={lockedMiniCard.upgradeTier} label={lockedMiniCard.upgradeLabel} compact source="sidebar_locked" />
+                  )}
+                </div>
+              </div>
             )}
-            <div className="sidebar-locked-mini-card-actions">
-              {lockedMiniCard.practiceLink && (
-                <a href={lockedMiniCard.practiceLink} className="sidebar-locked-mini-card-cta sidebar-locked-mini-card-cta-secondary">
-                  {lockedMiniCard.practiceLabel ?? 'Practice now →'}
-                </a>
-              )}
-              {lockedMiniCard.upgradeTier && (
-                <UpgradeButton tier={lockedMiniCard.upgradeTier} label={lockedMiniCard.upgradeLabel} compact source="sidebar_locked" />
-              )}
-            </div>
-          </div>
+          </>
         )}
-      </div>
+      </NavLink>
     );
   }
 
