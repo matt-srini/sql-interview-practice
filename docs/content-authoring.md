@@ -4,6 +4,12 @@
 
 Curriculum specifications and authoring rules for all four tracks. This is the contract for all question creation and modification.
 
+> **AI authoring agents** — track-specific prompt files live in `.github/agents/`:
+> [`sql-question-authoring.agent.md`](../.github/agents/sql-question-authoring.agent.md) ·
+> [`python-question-authoring.agent.md`](../.github/agents/python-question-authoring.agent.md) ·
+> [`pandas-question-authoring.agent.md`](../.github/agents/pandas-question-authoring.agent.md) ·
+> [`pyspark-question-authoring.agent.md`](../.github/agents/pyspark-question-authoring.agent.md)
+
 ---
 
 ## Platform philosophy
