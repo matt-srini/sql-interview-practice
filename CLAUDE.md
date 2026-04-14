@@ -15,7 +15,7 @@ When working in this codebase, think simultaneously from multiple vantage points
 
 - **User-behaviour expert** — Users are under pressure (job search, timed practice). Friction costs them confidence. Low-friction flows (anonymous-first identity, in-place registration, persistent progress) are intentional product choices, not oversights. When suggesting changes, consider: how does a first-time visitor experience this? How does a returning user with 40 solves experience it? What happens when a user hits a locked question or an empty state?
 
-- **Curriculum designer** — The 311 questions have intentional difficulty progressions, real-world datasets with deliberate edge cases, and semantic concept tags. Changes to unlock rules, question ordering, or content must preserve the learning arc. Don't make hard questions trivially accessible or easy questions feel insulting.
+- **Curriculum designer** — The 350 questions have intentional difficulty progressions, real-world datasets with deliberate edge cases, and semantic concept tags. Changes to unlock rules, question ordering, or content must preserve the learning arc. Don't make hard questions trivially accessible or easy questions feel insulting.
 
 - **Product-minded operator** — Three subscription tiers (Free / Pro / Elite) are the revenue model. The unlock gates are not arbitrary; they create upgrade motivation without being punitive. Rate limiting, error shapes (`{ error, request_id }`), and idempotent webhooks exist for real operational reasons. Changes to these areas need business-level reasoning, not just technical correctness.
 
@@ -49,14 +49,14 @@ Keep all five lenses active at once. The best decisions here satisfy all of them
 A data interview practice platform covering four tracks. Users write SQL or Python, answer MCQ questions, get instant feedback, and work through gated challenge banks.
 
 **Modes per track:**
-- **Challenge mode** — plan-aware unlock rules, persistent progress, 311+ questions across 4 tracks
+- **Challenge mode** — plan-aware unlock rules, persistent progress, 350 questions across 4 tracks
 - **Sample mode** — 36 sandbox questions across all four tracks (3 per track+difficulty), no progress recorded, no login required
 
 **Tracks:**
-- **SQL** — 86 questions, DuckDB execution, realistic relational datasets
-- **Python** — algorithms and data structures, test-case evaluation
-- **Pandas** — pandas/numpy data manipulation, DataFrame comparison
-- **PySpark** — conceptual MCQ, predict-output questions
+- **SQL** — 95 questions (32 easy / 34 medium / 29 hard), DuckDB execution, realistic relational datasets
+- **Python** — 83 questions (30 easy / 29 medium / 24 hard), algorithms and data structures, test-case evaluation
+- **Pandas** — 82 questions (29 easy / 30 medium / 23 hard), pandas-specific data manipulation, DataFrame comparison
+- **PySpark** — 90 questions (38 easy / 30 medium / 22 hard), MCQ / predict-output / debug formats
 
 ---
 
@@ -78,15 +78,16 @@ A data interview practice platform covering four tracks. Users write SQL or Pyth
 
 | Track | Questions | Format | Location |
 |---|---|---|---|
-| SQL | 86 (30 easy, 30 medium, 26 hard) | SQL query | `backend/content/questions/` |
-| Python | 75 (30 easy, 25 medium, 20 hard) | Algorithm test cases | `backend/content/python_questions/` |
-| Pandas | 75 (30 easy, 25 medium, 20 hard) | DataFrame comparison | `backend/content/python_data_questions/` |
-| PySpark | 75 (30 easy, 25 medium, 20 hard) | MCQ / predict output | `backend/content/pyspark_questions/` |
+| SQL | 95 (32 easy, 34 medium, 29 hard) | SQL query evaluated via DuckDB | `backend/content/questions/` |
+| Python | 83 (30 easy, 29 medium, 24 hard) | Algorithm function, evaluated via test cases | `backend/content/python_questions/` |
+| Pandas | 82 (29 easy, 30 medium, 23 hard) | DataFrame function, evaluated via output comparison | `backend/content/python_data_questions/` |
+| PySpark | 90 (38 easy, 30 medium, 22 hard) | MCQ / predict-output / debug, evaluated by option selection | `backend/content/pyspark_questions/` |
 
-- **Sample questions:** 3 per track+difficulty = 36 total across all tracks
-- Every question has `hints` (1–2 entries) and `concepts` (semantic tags surfaced as pills)
+- **Sample questions:** 3 per track × 3 difficulties = 36 total (no login, no progress impact)
+- Every question has `hints` (1–2 entries) and `concepts` (semantic pattern tags surfaced as pills)
 - SQL questions have a `companies` field (`["Meta", "Stripe", ...]`) used for the company filter in SidebarNav
 - SQL schemas validated against committed CSV headers at catalog load time
+- Full concept coverage per track and authoring rules: see [`docs/content-authoring.md`](docs/content-authoring.md)
 
 ---
 
@@ -337,11 +338,20 @@ cd backend && DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:543
 
 | File | What it covers |
 |---|---|
-| `docs/README.md` | Documentation hub and quick orientation |
+| `docs/README.md` | Documentation hub — start here; question bank summary, quick orientation |
 | `docs/architecture.md` | System design, request lifecycles, data model, execution pipelines, scaling |
 | `docs/backend.md` | All API routes, routers, execution pipeline, identity model |
 | `docs/frontend.md` | Routes, pages, components, design system, data flows |
-| `docs/datasets.md` | Dataset inventory, schema details, edge cases |
+| `docs/datasets.md` | All 11 dataset tables — columns, row counts, intentional edge cases |
 | `docs/deployment.md` | Local dev, Docker, production image, env vars, Railway |
-| `docs/content-authoring.md` | Curriculum specs and authoring rules for all four tracks |
+| `docs/content-authoring.md` | Platform philosophy, question counts, concept coverage maps, per-track schemas, authoring rules |
 | `docs/USERGUIDE.md` | End-user guide to the platform |
+
+**AI question authoring agents** (track-specific prompts for generating questions with Claude):
+
+| Track | Agent file |
+|---|---|
+| SQL | `.github/agents/sql-question-authoring.agent.md` |
+| Python | `.github/agents/python-question-authoring.agent.md` |
+| Pandas | `.github/agents/pandas-question-authoring.agent.md` |
+| PySpark | `.github/agents/pyspark-question-authoring.agent.md` |
