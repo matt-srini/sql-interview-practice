@@ -4,34 +4,13 @@ import api from '../api';
 import { TRACK_META } from '../contexts/TopicContext';
 import { useAuth } from '../contexts/AuthContext';
 import Topbar from '../components/Topbar';
+import UpgradeButton from '../components/UpgradeButton';
 
 const DIFFICULTY_COLORS = {
   easy: 'var(--success)',
   medium: 'var(--warning)',
   hard: 'var(--danger)',
 };
-
-function getUnlockHint(plan, difficulty) {
-  if (!difficulty || plan === 'elite') return null;
-  if (difficulty === 'medium') {
-    return {
-      progress: 'Solve 10 easy questions in this track to unlock medium questions.',
-      upgradeTarget: plan === 'free' ? 'pro' : null,
-      upgradeLabel: 'Upgrade to Pro for instant access',
-    };
-  }
-  if (difficulty === 'hard') {
-    if (plan === 'pro') {
-      return { progress: null, upgradeTarget: 'elite', upgradeLabel: 'Upgrade to Elite for full hard access' };
-    }
-    return {
-      progress: 'Solve 10 medium questions in this track to unlock hard questions.',
-      upgradeTarget: 'pro',
-      upgradeLabel: 'Upgrade to Pro for instant access',
-    };
-  }
-  return { progress: 'Upgrade your plan to unlock these questions.', upgradeTarget: null, upgradeLabel: null };
-}
 
 export default function LearningPath() {
   const { topic, slug } = useParams();
@@ -40,17 +19,6 @@ export default function LearningPath() {
 
   const [path, setPath] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [upgradePending, setUpgradePending] = useState(false);
-
-  async function handleUpgrade(plan) {
-    setUpgradePending(true);
-    try {
-      const r = await api.post('/stripe/create-checkout', { plan });
-      window.location.assign(r.data.checkout_url);
-    } catch {
-      setUpgradePending(false);
-    }
-  }
 
   useEffect(() => {
     api.get(`/paths/${slug}`)
@@ -70,7 +38,62 @@ export default function LearningPath() {
 
   const firstLockedIdx = path ? path.questions.findIndex(q => q.state === 'locked') : -1;
   const firstLockedDiff = firstLockedIdx >= 0 ? path.questions[firstLockedIdx].difficulty : null;
-  const unlockHint = getUnlockHint(user?.plan ?? 'free', firstLockedDiff);
+  const plan = user?.plan ?? 'free';
+  const role = path?.role;
+  const accessible = path?.accessible !== false;
+
+  // Determine unlock hint messaging
+  function getUnlockCards() {
+    if (!firstLockedDiff || plan === 'elite') return null;
+    const trackLabel = meta.label;
+
+    // Earn-it card (threshold-based)
+    let earnCard = null;
+    if (plan === 'free') {
+      if (firstLockedDiff === 'medium') {
+        earnCard = {
+          copy: `Solve 8 more easy ${trackLabel} questions to unlock medium.`,
+          ctaLink: `/practice/${path.topic}`,
+          ctaLabel: `Open ${trackLabel} practice →`,
+        };
+      } else if (firstLockedDiff === 'hard') {
+        earnCard = {
+          copy: `Solve 8 more medium ${trackLabel} questions to unlock hard.`,
+          ctaLink: `/practice/${path.topic}`,
+          ctaLabel: `Open ${trackLabel} practice →`,
+        };
+      }
+    }
+
+    // Skip-ahead card (upgrade)
+    const skipCard = plan !== 'elite' ? {
+      copy: firstLockedDiff === 'hard' && plan === 'pro'
+        ? null
+        : `Or unlock all ${firstLockedDiff} + ${firstLockedDiff === 'medium' ? 'hard' : ''} questions instantly with Pro.`,
+      upgradeTier: plan === 'free' ? 'pro' : 'elite',
+    } : null;
+
+    return { earnCard, skipCard };
+  }
+
+  const unlockCards = path ? getUnlockCards() : null;
+
+  // Path role chip copy
+  function getRoleChip() {
+    if (!role || !path) return null;
+    const pathState = path.path_state;
+    if (role === 'starter') {
+      if (pathState?.starter_done) return { text: 'Completed · medium unlocked', done: true };
+      return { text: 'Complete to unlock all medium in this track', done: false };
+    }
+    if (role === 'intermediate') {
+      if (pathState?.intermediate_done) return { text: 'Completed · hard unlocked', done: true };
+      return { text: 'Complete to unlock hard questions in this track', done: false };
+    }
+    return null;
+  }
+
+  const roleChip = getRoleChip();
 
   return (
     <div className="learn-page">
@@ -93,17 +116,32 @@ export default function LearningPath() {
               </nav>
               <h1 className="learn-title">{path.title}</h1>
               <p className="learn-description">{path.description}</p>
-              <div className="learn-progress">
-                <div className="learn-progress-bar">
-                  <div
-                    className="learn-progress-fill"
-                    style={{ width: `${pct}%`, background: meta.color }}
-                  />
+
+              {/* Role chip — shown on free starter/intermediate paths */}
+              {roleChip && plan === 'free' && (
+                <div className={`learn-role-chip${roleChip.done ? ' learn-role-chip--done' : ''}`}>
+                  {roleChip.done ? '✓' : '→'} {roleChip.text}
                 </div>
-                <span className="learn-progress-label">
-                  {path.solved_count} / {path.question_count} complete
-                </span>
-              </div>
+              )}
+
+              {/* Path not accessible — show tier badge */}
+              {!accessible && (
+                <span className="learn-tier-badge learn-tier-badge--pro">Pro</span>
+              )}
+
+              {accessible && (
+                <div className="learn-progress">
+                  <div className="learn-progress-bar">
+                    <div
+                      className="learn-progress-fill"
+                      style={{ width: `${pct}%`, background: meta.color }}
+                    />
+                  </div>
+                  <span className="learn-progress-label">
+                    {path.solved_count} / {path.question_count} complete
+                  </span>
+                </div>
+              )}
             </div>
           </section>
 
@@ -119,6 +157,7 @@ export default function LearningPath() {
                 else if (isNext) rowClass += ' learn-question-row--next';
                 else if (isLocked) rowClass += ' learn-question-row--locked';
 
+                // Locked questions are navigable in preview mode
                 const questionUrl = `/practice/${path.topic}/questions/${q.id}?path=${slug}`;
 
                 return (
@@ -129,7 +168,8 @@ export default function LearningPath() {
                         {isSolved ? '✓' : isLocked ? '🔒' : '→'}
                       </span>
                       <span className="learn-question-title">
-                        {isLocked ? q.title : <Link to={questionUrl}>{q.title}</Link>}
+                        {/* All questions are now navigable (preview mode for locked) */}
+                        <Link to={questionUrl}>{q.title}</Link>
                       </span>
                       <span
                         className="learn-question-difficulty"
@@ -137,32 +177,34 @@ export default function LearningPath() {
                       >
                         {q.difficulty}
                       </span>
-                      {!isLocked && (
-                        <Link to={questionUrl} className="learn-question-btn">
-                          {isSolved ? 'Review →' : isNext ? 'Start →' : 'Open →'}
-                        </Link>
-                      )}
+                      <Link to={questionUrl} className="learn-question-btn">
+                        {isSolved ? 'Review →' : isNext ? 'Start →' : isLocked ? 'Preview →' : 'Open →'}
+                      </Link>
                     </div>
                   </div>
                 );
               })}
-              {unlockHint && (
-                <div className="learn-unlock-hint">
-                  <span className="learn-unlock-hint-icon">🔒</span>
-                  {unlockHint.progress && (
-                    <span className="learn-unlock-hint-text">{unlockHint.progress}</span>
+
+              {/* Unlock hint: two stacked cards at the bottom */}
+              {unlockCards && (unlockCards.earnCard || unlockCards.skipCard?.copy) && (
+                <div className="learn-unlock-cards">
+                  {unlockCards.earnCard && (
+                    <div className="learn-unlock-card learn-unlock-card--earn">
+                      <p className="learn-unlock-card-copy">{unlockCards.earnCard.copy}</p>
+                      <Link to={unlockCards.earnCard.ctaLink} className="btn btn-secondary btn-compact">
+                        {unlockCards.earnCard.ctaLabel}
+                      </Link>
+                    </div>
                   )}
-                  <Link to={`/practice/${path.topic}`} className="learn-unlock-hint-link">
-                    Go to full track →
-                  </Link>
-                  {unlockHint.upgradeTarget && (
-                    <button
-                      className="btn btn-primary btn-compact"
-                      onClick={() => handleUpgrade(unlockHint.upgradeTarget)}
-                      disabled={upgradePending}
-                    >
-                      {upgradePending ? 'Redirecting…' : unlockHint.upgradeLabel}
-                    </button>
+                  {unlockCards.skipCard?.copy && (
+                    <div className="learn-unlock-card learn-unlock-card--upgrade">
+                      <p className="learn-unlock-card-copy">{unlockCards.skipCard.copy}</p>
+                      <UpgradeButton
+                        tier={unlockCards.skipCard.upgradeTier}
+                        compact
+                        source="learning_path_hint"
+                      />
+                    </div>
                   )}
                 </div>
               )}

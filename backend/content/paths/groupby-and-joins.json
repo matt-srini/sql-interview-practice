@@ -3,5 +3,14 @@
   "title": "GroupBy & Joins",
   "description": "Go from simple aggregations to multi-table merges, left-join anti-patterns, transform for row-level stats, and rolling time windows.",
   "topic": "python-data",
-  "questions": [5003, 5008, 5301, 5302, 5304, 5306]
+  "questions": [
+    5003,
+    5008,
+    5301,
+    5302,
+    5304,
+    5306
+  ],
+  "tier": "free",
+  "role": "intermediate"
 }

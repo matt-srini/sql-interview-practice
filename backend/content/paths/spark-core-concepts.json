@@ -3,5 +3,14 @@
   "title": "Spark Core Concepts",
   "description": "Build a solid mental model of Spark: lazy evaluation, the DAG, transformations vs actions, driver/executor roles, and narrow vs wide dependencies.",
   "topic": "pyspark",
-  "questions": [11001, 11002, 11003, 11004, 11007, 11008]
+  "questions": [
+    11001,
+    11002,
+    11003,
+    11004,
+    11007,
+    11008
+  ],
+  "tier": "free",
+  "role": "starter"
 }

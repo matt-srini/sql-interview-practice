@@ -10,6 +10,8 @@ import VariablesPanel from '../components/VariablesPanel';
 import MCQPanel from '../components/MCQPanel';
 import { useCatalog } from '../catalogContext';
 import { useTopic } from '../contexts/TopicContext';
+import { useAuth } from '../contexts/AuthContext';
+import UpgradeButton from '../components/UpgradeButton';
 
 const SQL_PLACEHOLDER = '-- Write your SQL query here\nSELECT ';
 const PYTHON_PLACEHOLDER = '# Write your solution here\n';
@@ -20,6 +22,7 @@ export default function QuestionPage() {
   const { catalog, refresh } = useCatalog();
   const { topic, meta } = useTopic();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   // Path context — set when arriving from a learning path (?path=slug)
   const pathSlug = searchParams.get('path');
@@ -359,11 +362,51 @@ export default function QuestionPage() {
               <pre className="question-code-snippet">{question.code_snippet}</pre>
             )}
 
-            {isLocked && (
-              <div className="locked-callout">
-                Earn this question by solving earlier problems. The sequence builds concepts deliberately.
-              </div>
-            )}
+            {isLocked && (() => {
+              const plan = user?.plan ?? 'free';
+              const difficulty = question?.difficulty;
+              // State 1: threshold-locked (Free, reachable by solving more)
+              const isThresholdLocked = plan === 'free' && (difficulty === 'medium' || difficulty === 'hard');
+              // State 2: plan-locked (Free at hard cap, or just showing upgrade)
+              const nextEasyNeeded = difficulty === 'medium' ? Math.max(0, 8 - (catalogQuestionMeta?.group?.counts?.solved ?? 0)) : null;
+              const nextMediumNeeded = difficulty === 'hard' ? Math.max(0, 8 - (catalog?.groups?.find(g => g.difficulty === 'medium')?.questions?.filter(q => q.state === 'solved').length ?? 0)) : null;
+              const solveMoreCopy = difficulty === 'medium' && nextEasyNeeded > 0
+                ? `Solve ${nextEasyNeeded} more easy ${topic === 'sql' ? 'SQL' : topic} question${nextEasyNeeded !== 1 ? 's' : ''} to unlock this.`
+                : difficulty === 'hard' && nextMediumNeeded > 0
+                ? `Solve ${nextMediumNeeded} more medium question${nextMediumNeeded !== 1 ? 's' : ''} to unlock this.`
+                : null;
+
+              return (
+                <div className="preview-locked-callout">
+                  {isThresholdLocked && solveMoreCopy ? (
+                    <>
+                      <p className="preview-locked-headline">Preview mode</p>
+                      <p className="preview-locked-body">{solveMoreCopy} Or open access now.</p>
+                      <div className="preview-locked-actions">
+                        <Link to={`/practice/${topic}`} className="btn btn-secondary btn-compact">
+                          Go to next {difficulty === 'medium' ? 'easy' : 'medium'} →
+                        </Link>
+                        <UpgradeButton tier="pro" label="Unlock now with Pro" compact source="question_preview" />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className="preview-locked-headline">
+                        {difficulty === 'hard' ? 'Hard practice is included with Pro' : 'Unlock with Pro'}
+                      </p>
+                      <p className="preview-locked-body">
+                        {difficulty === 'hard'
+                          ? 'Full hard access across all tracks, plus daily hard mock interviews.'
+                          : 'All medium and hard questions, plus full learning path access.'}
+                      </p>
+                      <div className="preview-locked-actions">
+                        <UpgradeButton tier="pro" compact source="question_preview_plan" />
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           {showSchema && (

@@ -1,7 +1,14 @@
 {
   "slug": "sliding-window-patterns",
   "title": "Sliding Window & Two Pointers",
-  "description": "Master the two-pointer and sliding window techniques — palindrome detection, dynamic window maximums, and classic hard substring problems.",
+  "description": "Master the two-pointer and sliding window techniques \u2014 palindrome detection, dynamic window maximums, and classic hard substring problems.",
   "topic": "python",
-  "questions": [4002, 4302, 4601, 4603]
+  "questions": [
+    4002,
+    4302,
+    4601,
+    4603
+  ],
+  "tier": "free",
+  "role": "intermediate"
 }

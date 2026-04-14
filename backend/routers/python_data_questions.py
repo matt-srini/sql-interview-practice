@@ -79,12 +79,10 @@ async def get_python_data_question_detail(
 
     unlock_state, next_questions = await _get_python_data_unlock_state(current_user)
     state = unlock_state.get(int(q["id"]), "locked")
-    if state == "locked":
-        raise HTTPException(status_code=403, detail="Question is locked for your current plan or progress.")
-
     unlocked = state != "locked"
     is_next = state == "unlocked" and next_questions.get(q["difficulty"]) == int(q["id"])
 
+    # Preview mode: return content (no solution) even when locked; frontend gates Run/Submit.
     public = catalog.get_public_question(q)
     payload = {
         **public,

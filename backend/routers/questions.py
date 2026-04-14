@@ -38,7 +38,9 @@ async def get_question_detail(
     is_next = state == "unlocked" and next_questions.get(question["difficulty"]) == int(question["id"])
 
     if not unlocked:
-        raise HTTPException(status_code=403, detail="Question is locked for your current plan or progress.")
+        # Preview mode: return question content (no solution) with unlocked=False.
+        # Frontend shows the prompt read-only and gates Run/Submit.
+        return _question_detail_payload(question, state, unlocked=False, is_next=False)
 
     return _question_detail_payload(question, state, unlocked=unlocked, is_next=is_next)
 

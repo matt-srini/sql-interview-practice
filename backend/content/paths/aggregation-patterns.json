@@ -3,5 +3,15 @@
   "title": "Aggregation Patterns",
   "description": "Master the full aggregation toolkit: basic counts and sums, multi-column grouping, HAVING filters, and conditional aggregation.",
   "topic": "sql",
-  "questions": [1008, 1013, 1015, 2004, 2005, 2007, 2011]
+  "questions": [
+    1008,
+    1013,
+    1015,
+    2004,
+    2005,
+    2007,
+    2011
+  ],
+  "tier": "free",
+  "role": "starter"
 }

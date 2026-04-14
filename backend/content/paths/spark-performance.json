@@ -3,5 +3,14 @@
   "title": "Spark Performance & Optimization",
   "description": "Diagnose and fix real Spark bottlenecks: shuffle triggers, repartition vs coalesce tradeoffs, broadcast joins, OOM analysis, and skew handling.",
   "topic": "pyspark",
-  "questions": [11302, 11303, 11304, 11306, 11601, 11604]
+  "questions": [
+    11302,
+    11303,
+    11304,
+    11306,
+    11601,
+    11604
+  ],
+  "tier": "free",
+  "role": "intermediate"
 }

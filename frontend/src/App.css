@@ -5993,3 +5993,296 @@ select {
   color: var(--text-secondary);
   font-size: 0.9rem;
 }
+
+/* ── UpgradeButton ─────────────────────────────────── */
+.upgrade-btn { font-weight: 600; }
+.upgrade-btn-elite { background: linear-gradient(135deg, #5B6AF0, #9B59B6); }
+.upgrade-btn-elite:not(:disabled):hover { background: linear-gradient(135deg, #4A59DF, #8B49A6); }
+
+/* ── TierBanner ────────────────────────────────────── */
+.tier-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  margin-bottom: 16px;
+}
+.tier-banner-free {
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-soft-strong);
+  color: var(--text-secondary);
+}
+.tier-banner-paid {
+  background: var(--surface-card-soft);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+.tier-banner-text { flex: 1; }
+.tier-banner-cta {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.tier-banner-cta:hover { text-decoration: underline; }
+
+/* ── Sidebar mini-card on locked rows ──────────────── */
+.sidebar-question-locked { position: relative; }
+.sidebar-locked-mini-card {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 120;
+  width: 230px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.sidebar-locked-mini-card-headline {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-strong);
+  margin: 0;
+}
+.sidebar-locked-mini-card-body {
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+.sidebar-locked-mini-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+.sidebar-locked-mini-card-cta {
+  font-size: 0.76rem;
+  text-decoration: none;
+  font-weight: 600;
+}
+.sidebar-locked-mini-card-cta-secondary { color: var(--accent); }
+.sidebar-locked-mini-card-cta-secondary:hover { text-decoration: underline; }
+
+/* ── Preview-locked callout (QuestionPage) ─────────── */
+.preview-locked-callout {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.preview-locked-headline {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--accent-strong);
+  margin: 0 0 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.preview-locked-body {
+  font-size: 0.86rem;
+  color: var(--text-secondary);
+  margin: 0 0 10px;
+}
+.preview-locked-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+[data-theme="dark"] .preview-locked-callout {
+  background: rgba(91, 106, 240, 0.12);
+}
+
+/* ── Path role chip (LearningPath) ─────────────────── */
+.learn-role-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  border: 1px solid var(--accent-soft-strong);
+}
+.learn-role-chip--done {
+  background: rgba(45, 158, 107, 0.10);
+  color: var(--success);
+  border-color: rgba(45, 158, 107, 0.25);
+}
+
+/* ── Tier badge on path detail page ─────────────────── */
+.learn-tier-badge {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 3px 9px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  border: 1px solid var(--accent-soft-strong);
+}
+
+/* ── Unlock cards (LearningPath bottom hint) ────────── */
+.learn-unlock-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+}
+.learn-unlock-card {
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-card-soft);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.learn-unlock-card--upgrade {
+  border-color: var(--accent-soft-strong);
+  background: var(--accent-soft);
+}
+.learn-unlock-card-copy {
+  flex: 1;
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  margin: 0;
+  min-width: 140px;
+}
+
+/* ── PathProgressCard tier badges ───────────────────── */
+.path-card-tier-badge {
+  margin-left: auto;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  border: 1px solid var(--accent-soft-strong);
+}
+.path-card-tier-badge--free {
+  background: rgba(45, 158, 107, 0.10);
+  color: var(--success);
+  border-color: rgba(45, 158, 107, 0.25);
+}
+.path-card--pro {
+  opacity: 0.75;
+}
+.path-card--pro:hover { opacity: 1; }
+
+/* ── Mock difficulty chips (pre-flight state) ───────── */
+.mock-config-pills--with-chips { align-items: flex-start; }
+.mock-diff-pill-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.mock-config-pill--blocked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.mock-diff-chip {
+  font-size: 0.72rem;
+  padding: 3px 8px;
+  border-radius: 10px;
+  max-width: 200px;
+  line-height: 1.3;
+}
+.mock-diff-chip--info {
+  background: var(--surface-card-soft);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+}
+.mock-diff-chip--blocked {
+  background: var(--warning-soft);
+  color: var(--warning);
+  border: 1px solid rgba(196, 127, 23, 0.25);
+}
+.mock-diff-chip-action { margin-top: 4px; }
+
+/* ── Landing tier comparison section ───────────────── */
+.landing-tier-section {
+  padding: 48px 0 56px;
+  background: var(--surface-card-soft);
+  border-top: 1px solid var(--border-subtle);
+}
+.landing-tier-inner {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.landing-tier-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-strong);
+  margin-bottom: 24px;
+  text-align: center;
+}
+.landing-tier-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.landing-tier-col {
+  padding: 20px;
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+}
+.landing-tier-col--featured {
+  border-color: var(--accent-soft-strong);
+  background: var(--accent-soft);
+}
+.landing-tier-col-header { margin-bottom: 12px; }
+.landing-tier-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-strong);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.landing-tier-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.landing-tier-list li {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  padding-left: 14px;
+  position: relative;
+  line-height: 1.4;
+}
+.landing-tier-list li::before {
+  content: '·';
+  position: absolute;
+  left: 4px;
+  color: var(--accent);
+}
+@media (max-width: 600px) {
+  .landing-tier-grid { grid-template-columns: 1fr; }
+}

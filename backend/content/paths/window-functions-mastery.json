@@ -1,7 +1,17 @@
 {
   "slug": "window-functions-mastery",
   "title": "Window Functions Mastery",
-  "description": "Build from GROUP BY foundations to advanced window functions — ranking, running totals, lag/lead, and cumulative analysis.",
+  "description": "Build from GROUP BY foundations to advanced window functions \u2014 ranking, running totals, lag/lead, and cumulative analysis.",
   "topic": "sql",
-  "questions": [1014, 2016, 2014, 3001, 3003, 3004, 3002]
+  "questions": [
+    1014,
+    2016,
+    2014,
+    3001,
+    3003,
+    3004,
+    3002
+  ],
+  "tier": "free",
+  "role": "intermediate"
 }
