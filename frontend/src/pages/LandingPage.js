@@ -146,6 +146,14 @@ export default function LandingPage() {
   const showcaseTimers = useRef({ interval: null, timeout: null });
 
   const [paths, setPaths] = useState([]);
+  const [displayedPaths, setDisplayedPaths] = useState([]);
+
+  function pickRandom(arr, n) {
+    const shuffled = [...arr].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, n);
+  }
+
+  const shufflePaths = () => setDisplayedPaths(pickRandom(paths, 4));
 
   useEffect(() => {
     if (user) {
@@ -156,7 +164,10 @@ export default function LandingPage() {
   }, [user]);
 
   useEffect(() => {
-    api.get('/paths').then(r => setPaths(r.data)).catch(() => {});
+    api.get('/paths').then(r => {
+      setPaths(r.data);
+      setDisplayedPaths(pickRandom(r.data, 4));
+    }).catch(() => {});
   }, []);
 
   // Scroll to hash on mount (e.g. /#landing-tracks from back arrow)
@@ -426,19 +437,68 @@ export default function LandingPage() {
           })}
         </section>
 
-        {paths.length > 0 && (
+        {displayedPaths.length > 0 && (
           <section className="landing-paths">
             <div className="container">
-              <h2 className="landing-paths-title">Structured learning paths</h2>
-              <p className="landing-paths-sub">Curated sequences from basics to advanced.</p>
+              <div className="landing-paths-header">
+                <div>
+                  <h2 className="landing-paths-title">Structured learning paths</h2>
+                  <p className="landing-paths-sub">Curated sequences from basics to advanced.</p>
+                </div>
+                <button className="landing-paths-shuffle" onClick={shufflePaths} title="Shuffle paths">
+                  ⇄ Shuffle
+                </button>
+              </div>
               <div className="landing-paths-grid">
-                {paths.slice(0, 4).map(p => (
+                {displayedPaths.map(p => (
                   <PathProgressCard key={p.slug} path={p} />
                 ))}
               </div>
             </div>
           </section>
         )}
+
+        {/* Tier comparison */}
+        <section className="landing-tier-section">
+          <div className="landing-tier-inner">
+            <h2 className="landing-tier-title">What's included</h2>
+            <div className="landing-tier-grid">
+              <div className="landing-tier-col">
+                <div className="landing-tier-col-header">
+                  <span className="landing-tier-name">Free</span>
+                </div>
+                <ul className="landing-tier-list">
+                  <li>All easy questions</li>
+                  <li>Unlock medium + hard via curated paths or solo practice</li>
+                  <li>Easy mock interviews</li>
+                  <li>2 free learning paths per track</li>
+                </ul>
+              </div>
+              <div className="landing-tier-col landing-tier-col--featured">
+                <div className="landing-tier-col-header">
+                  <span className="landing-tier-name">Pro</span>
+                </div>
+                <ul className="landing-tier-list">
+                  <li>Everything in Free</li>
+                  <li>All medium + hard across all tracks</li>
+                  <li>All learning paths</li>
+                  <li>Daily hard mock interviews</li>
+                </ul>
+              </div>
+              <div className="landing-tier-col">
+                <div className="landing-tier-col-header">
+                  <span className="landing-tier-name">Elite</span>
+                </div>
+                <ul className="landing-tier-list">
+                  <li>Everything in Pro</li>
+                  <li>Company-filtered mock interviews</li>
+                  <li>Weak-spot insights after every session</li>
+                  <li>Harder interview-realistic mock questions</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
     </>
   );

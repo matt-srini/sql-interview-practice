@@ -1330,3 +1330,74 @@ async def update_password(user_id: str, new_password: str) -> None:
             {"pwd_hash": pwd_hash, "pwd_salt": pwd_salt, "user_id": user_id},
         )
         await session.commit()
+
+
+# ── Path completion state ──────────────────────────────────────────────────────
+
+async def get_path_completion_state(
+    user_id: str,
+    topic: str,
+    starter_question_ids: list[int],
+    intermediate_question_ids: list[int],
+) -> dict[str, bool]:
+    """
+    Return whether the user has completed the free starter and intermediate
+    paths for a given track, derived from existing user_progress rows.
+
+    A path is "complete" when all of its questions are solved.
+    """
+    if not starter_question_ids and not intermediate_question_ids:
+        return {"starter_done": False, "intermediate_done": False}
+
+    all_ids = list(set(starter_question_ids) | set(intermediate_question_ids))
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                SELECT question_id
+                FROM user_progress
+                WHERE user_id = CAST(:user_id AS UUID)
+                  AND topic = :topic
+                  AND question_id = ANY(:ids)
+                """
+            ),
+            {"user_id": user_id, "topic": topic, "ids": all_ids},
+        )
+        solved = {int(row[0]) for row in result.fetchall()}
+
+    starter_done = bool(starter_question_ids) and all(qid in solved for qid in starter_question_ids)
+    intermediate_done = bool(intermediate_question_ids) and all(qid in solved for qid in intermediate_question_ids)
+
+    return {"starter_done": starter_done, "intermediate_done": intermediate_done}
+
+
+# ── Daily mock usage ───────────────────────────────────────────────────────────
+
+async def get_daily_mock_usage(user_id: str) -> dict[str, int]:
+    """
+    Return how many mock sessions the user has started today per difficulty.
+    'Today' is calendar-day in the database server timezone (UTC).
+    """
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                SELECT difficulty, COUNT(*) AS cnt
+                FROM mock_sessions
+                WHERE user_id = CAST(:user_id AS UUID)
+                  AND started_at >= CURRENT_DATE
+                  AND difficulty IN ('medium', 'hard')
+                GROUP BY difficulty
+                """
+            ),
+            {"user_id": user_id},
+        )
+        rows = result.mappings().all()
+
+    usage: dict[str, int] = {"medium": 0, "hard": 0}
+    for row in rows:
+        if row["difficulty"] in usage:
+            usage[row["difficulty"]] = int(row["cnt"])
+    return usage

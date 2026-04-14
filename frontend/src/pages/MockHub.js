@@ -4,6 +4,7 @@ import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
 import Topbar from '../components/Topbar';
+import UpgradeButton from '../components/UpgradeButton';
 
 const TRACKS = ['sql', 'python', 'python-data', 'pyspark', 'mixed'];
 const DIFFICULTIES = ['easy', 'medium', 'hard', 'mixed'];
@@ -51,11 +52,12 @@ export default function MockHub() {
   const [timeMinutes, setTimeMinutes] = useState(30);
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState(null);
-  const [startErrorType, setStartErrorType] = useState(null); // 'access' | null
-  const [upgradePending, setUpgradePending] = useState(false);
-  const [upgradeError, setUpgradeError] = useState(null);
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(true);
+
+  // Pre-flight access state from /api/mock/access
+  const [accessState, setAccessState] = useState(null);
+  const [accessLoading, setAccessLoading] = useState(false);
 
   useEffect(() => {
     api.get('/mock/history')
@@ -64,22 +66,26 @@ export default function MockHub() {
       .finally(() => setHistoryLoading(false));
   }, []);
 
-  async function handleUpgrade(plan) {
-    setUpgradePending(true);
-    setUpgradeError(null);
-    try {
-      const r = await api.post('/stripe/create-checkout', { plan });
-      window.location.assign(r.data.checkout_url);
-    } catch (err) {
-      setUpgradeError(err?.response?.data?.error || 'Unable to start checkout right now.');
-      setUpgradePending(false);
-    }
-  }
+  // Fetch access state whenever track changes
+  useEffect(() => {
+    setAccessState(null);
+    setAccessLoading(true);
+    api.get('/mock/access', { params: { track } })
+      .then(r => setAccessState(r.data))
+      .catch(() => setAccessState(null))
+      .finally(() => setAccessLoading(false));
+  }, [track]);
 
   async function handleStart() {
+    // Pre-flight check before submitting
+    const diffAccess = accessState?.access?.[difficulty];
+    if (diffAccess && !diffAccess.can_start) {
+      setStartError(diffAccess.block_copy || 'Cannot start session with this configuration.');
+      return;
+    }
+
     setStarting(true);
     setStartError(null);
-    setStartErrorType(null);
     try {
       const payload = {
         mode,
@@ -91,11 +97,35 @@ export default function MockHub() {
       navigate(`/mock/${r.data.session_id}`, { state: { sessionData: r.data } });
     } catch (err) {
       const msg = err?.response?.data?.error || err?.response?.data?.detail || 'Failed to start session. Please try again.';
-      const isAccessError = msg.toLowerCase().includes('not enough unlocked') || msg.toLowerCase().includes('upgrade');
       setStartError(msg);
-      setStartErrorType(isAccessError ? 'access' : null);
       setStarting(false);
     }
+  }
+
+  function getDifficultyButtonState(diff) {
+    if (!accessState) return { blocked: false, chip: null };
+    const a = accessState.access?.[diff];
+    if (!a) return { blocked: false, chip: null };
+    if (a.can_start) {
+      // Show usage chip for capped difficulties
+      if (a.daily_limit != null && a.daily_used != null) {
+        const remaining = a.daily_limit - a.daily_used;
+        if (remaining <= 0) return { blocked: true, chip: `Used today · resets tomorrow`, chipAction: a.needs_upgrade ? <UpgradeButton tier={a.needs_upgrade} label={`Unlimited with ${a.needs_upgrade === 'elite' ? 'Elite' : 'Pro'}`} compact source={`mock_${diff}_daily`} /> : null };
+        return { blocked: false, chip: `${remaining} remaining today` };
+      }
+      return { blocked: false, chip: diff === 'easy' ? 'Unlimited' : null };
+    }
+    // Blocked
+    const upgradeLabel = a.needs_upgrade ? `${a.needs_upgrade === 'elite' ? 'Elite' : 'Pro'} unlocks this` : null;
+    return {
+      blocked: true,
+      chip: a.block_copy,
+      chipAction: a.needs_upgrade
+        ? <UpgradeButton tier={a.needs_upgrade} label={upgradeLabel} compact source={`mock_${diff}_blocked`} />
+        : a.block_reason === 'not_unlocked'
+        ? <Link to={`/practice/${track}`} className="btn btn-secondary btn-compact">Practice to unlock →</Link>
+        : null,
+    };
   }
 
   const modeCards = [
@@ -123,7 +153,7 @@ export default function MockHub() {
                 key={card.key}
                 type="button"
                 className={`mock-mode-card ${mode === card.key ? 'selected' : ''}`}
-                onClick={() => { setMode(card.key); setStartError(null); setStartErrorType(null); }}
+                onClick={() => { setMode(card.key); setStartError(null); }}
               >
                 <div className="mock-mode-card-label">{card.label}</div>
                 <div className="mock-mode-card-sublabel">{card.sublabel}</div>
@@ -174,94 +204,61 @@ export default function MockHub() {
                     key={t}
                     type="button"
                     className={`mock-config-pill ${track === t ? 'active' : ''}`}
-                    onClick={() => { setTrack(t); setStartError(null); setStartErrorType(null); }}
+                    onClick={() => { setTrack(t); setStartError(null); }}
                   >
                     {TRACK_LABELS[t]}
                   </button>
                 ))}
               </div>
             </div>
+
+            {/* Difficulty with per-button pre-flight state */}
             <div className="mock-hub-config-row">
               <span className="mock-hub-config-label">Difficulty</span>
-              <div className="mock-config-pills">
-                {DIFFICULTIES.map(d => (
-                  <button
-                    key={d}
-                    type="button"
-                    className={`mock-config-pill ${difficulty === d ? 'active' : ''}`}
-                    onClick={() => { setDifficulty(d); setStartError(null); setStartErrorType(null); }}
-                  >
-                    {DIFFICULTY_LABELS[d]}
-                  </button>
-                ))}
+              <div className="mock-config-pills mock-config-pills--with-chips">
+                {DIFFICULTIES.map(d => {
+                  const btnState = getDifficultyButtonState(d);
+                  const isSelected = difficulty === d;
+                  return (
+                    <div key={d} className="mock-diff-pill-wrap">
+                      <button
+                        type="button"
+                        className={`mock-config-pill ${isSelected ? 'active' : ''} ${btnState.blocked ? 'mock-config-pill--blocked' : ''}`}
+                        disabled={btnState.blocked && accessState !== null}
+                        onClick={() => { if (!btnState.blocked) { setDifficulty(d); setStartError(null); } }}
+                        aria-disabled={btnState.blocked}
+                      >
+                        {DIFFICULTY_LABELS[d]}
+                      </button>
+                      {btnState.chip && (
+                        <div className={`mock-diff-chip${btnState.blocked ? ' mock-diff-chip--blocked' : ' mock-diff-chip--info'}`}>
+                          <span>{btnState.chip}</span>
+                          {btnState.chipAction && (
+                            <div className="mock-diff-chip-action">{btnState.chipAction}</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
         </section>
 
-        {/* Start error */}
-        {startError && startErrorType === 'access' ? (
-          <div className="mock-access-error">
-            <p className="mock-access-error-msg">
-              {difficulty !== 'easy'
-                ? `Not enough unlocked ${difficulty} questions yet.`
-                : 'Not enough unlocked questions for this configuration.'}
-            </p>
-            <div className="mock-access-error-actions">
-              {difficulty !== 'easy' && (
-                <button
-                  className="btn btn-secondary btn-compact"
-                  onClick={() => { setDifficulty('easy'); setStartError(null); setStartErrorType(null); }}
-                >
-                  Try Easy instead
-                </button>
-              )}
-              <Link className="btn btn-secondary btn-compact" to="/practice/sql">
-                Solve more to unlock
-              </Link>
-              {(!user?.plan || user?.plan === 'free') && (
-                <button
-                  className="btn btn-primary btn-compact"
-                  onClick={() => handleUpgrade('pro')}
-                  disabled={upgradePending}
-                >
-                  {upgradePending ? 'Redirecting…' : 'Upgrade for instant access'}
-                </button>
-              )}
-            </div>
-            {upgradeError && <p className="mock-access-error-upgrade-err">{upgradeError}</p>}
-            <p className="mock-access-error-hint">
-              {user?.plan === 'free'
-                ? 'Pro unlocks all medium questions instantly. Or earn them by solving more easy questions.'
-                : 'Solve more questions in this track to build your pool.'}
-            </p>
-          </div>
-        ) : startError ? (
+        {/* Start error (fallback for unexpected server errors) */}
+        {startError && (
           <p className="mock-hub-error">{startError}</p>
-        ) : null}
+        )}
 
         <section className="mock-hub-section mock-hub-start-row">
           <button
             className="btn btn-primary mock-start-btn"
             onClick={handleStart}
-            disabled={starting}
+            disabled={starting || accessLoading || (accessState && !accessState.access?.[difficulty]?.can_start)}
           >
             {starting ? 'Starting…' : 'Start Mock Interview'}
           </button>
-          {(!user?.plan || user?.plan === 'free') && (
-            <div className="mock-hub-upgrade-nudge">
-              <span className="mock-hub-upgrade-nudge-label">
-                Want hard questions and unlimited access?
-              </span>
-              <button
-                className="btn btn-secondary btn-compact"
-                onClick={() => handleUpgrade('pro')}
-                disabled={upgradePending}
-              >
-                {upgradePending ? 'Redirecting…' : 'Upgrade to Pro'}
-              </button>
-            </div>
-          )}
         </section>
 
         {/* Recent sessions */}

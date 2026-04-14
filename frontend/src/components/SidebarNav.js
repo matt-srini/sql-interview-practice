@@ -1,13 +1,14 @@
 import { useMemo, useRef, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useTopic } from '../contexts/TopicContext';
+import UpgradeButton from './UpgradeButton';
 
 // How many concept chips to show before the "show more" toggle
 const CHIP_VISIBLE_DEFAULT = 8;
 
-// Mirror of backend/unlock.py thresholds (free plan progressive unlock)
-const MEDIUM_THRESHOLDS = [10, 20, 30]; // easy_solved → medium unlocks
-const HARD_THRESHOLDS   = [10, 20, 30]; // medium_solved → hard unlocks
+// Mirror of backend/unlock.py thresholds (free plan progressive unlock, code tracks)
+const MEDIUM_THRESHOLDS = [8, 15, 25]; // easy_solved → medium unlocks
+const HARD_THRESHOLDS   = [8, 15, 22]; // medium_solved → hard unlocks
 
 function computeUnlockNudge(solved, thresholds) {
   const next = thresholds.find(t => t > solved);
@@ -63,7 +64,7 @@ function QuestionStateLabel({ q, isActive = false }) {
   }
 
   if (q.state === 'locked') {
-    return <span className="sidebar-question-label sidebar-question-label-locked">Locked</span>;
+    return <span className="sidebar-question-label sidebar-question-label-locked" aria-label="Locked">🔒</span>;
   }
 
   if (q.is_next) {
@@ -91,7 +92,8 @@ function QuestionContent({ q, isActive = false }) {
   );
 }
 
-function QuestionRow({ q, onNavigate, topic, lockedTitle }) {
+function QuestionRow({ q, onNavigate, topic, lockedMiniCard }) {
+  const [miniCardOpen, setMiniCardOpen] = useState(false);
   const stateClass = `sidebar-question-state-${q.state}`;
 
   if (q.state === 'locked') {
@@ -99,9 +101,30 @@ function QuestionRow({ q, onNavigate, topic, lockedTitle }) {
       <div
         className={`sidebar-question sidebar-question-locked ${stateClass}`}
         aria-disabled="true"
-        title={lockedTitle ?? undefined}
+        onMouseEnter={() => setMiniCardOpen(true)}
+        onMouseLeave={() => setMiniCardOpen(false)}
+        onFocus={() => setMiniCardOpen(true)}
+        onBlur={() => setMiniCardOpen(false)}
       >
         <QuestionContent q={q} />
+        {miniCardOpen && lockedMiniCard && (
+          <div className="sidebar-locked-mini-card" role="tooltip">
+            <p className="sidebar-locked-mini-card-headline">{lockedMiniCard.headline}</p>
+            {lockedMiniCard.body && (
+              <p className="sidebar-locked-mini-card-body">{lockedMiniCard.body}</p>
+            )}
+            <div className="sidebar-locked-mini-card-actions">
+              {lockedMiniCard.practiceLink && (
+                <a href={lockedMiniCard.practiceLink} className="sidebar-locked-mini-card-cta sidebar-locked-mini-card-cta-secondary">
+                  {lockedMiniCard.practiceLabel ?? 'Practice now →'}
+                </a>
+              )}
+              {lockedMiniCard.upgradeTier && (
+                <UpgradeButton tier={lockedMiniCard.upgradeTier} label={lockedMiniCard.upgradeLabel} compact source="sidebar_locked" />
+              )}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -271,15 +294,34 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
   const mediumNudge = plan === 'free' ? computeUnlockNudge(easySolved, MEDIUM_THRESHOLDS) : null;
   const hardNudge = plan === 'free' ? computeUnlockNudge(mediumSolved, HARD_THRESHOLDS) : null;
 
-  // Locked question tooltip copy
-  const mediumLockedTitle = mediumNudge
-    ? `Solve ${mediumNudge.gap} more easy question${mediumNudge.gap !== 1 ? 's' : ''} to unlock this`
+  // Mini-card data for locked question rows
+  const trackLabel = topic ? topic.charAt(0).toUpperCase() + topic.slice(1).replace('-', ' ') : 'this track';
+  const mediumMiniCard = plan === 'free' && mediumNudge
+    ? {
+        headline: `Unlocks after ${mediumNudge.gap} more easy solve${mediumNudge.gap !== 1 ? 's' : ''}`,
+        body: `You've solved ${easySolved} of ${MEDIUM_THRESHOLDS[0]} easy. Keep going — medium unlocks at ${MEDIUM_THRESHOLDS[0]}.`,
+        practiceLink: `/practice/${topic}`,
+        practiceLabel: 'Continue easy →',
+        upgradeTier: 'pro',
+        upgradeLabel: 'Unlock now with Pro',
+      }
+    : plan === 'free'
+    ? { headline: 'Unlock medium questions', upgradeTier: 'pro', upgradeLabel: 'Upgrade to Pro' }
     : null;
-  const hardLockedTitle = plan === 'pro'
-    ? 'Upgrade to Elite to unlock all hard questions'
-    : hardNudge
-    ? `Solve ${hardNudge.gap} more medium question${hardNudge.gap !== 1 ? 's' : ''} to unlock this`
+
+  const hardMiniCard = plan === 'free' && hardNudge
+    ? {
+        headline: `Unlocks after ${hardNudge.gap} more medium solve${hardNudge.gap !== 1 ? 's' : ''}`,
+        body: `You've solved ${mediumSolved} of ${HARD_THRESHOLDS[0]} medium. Solve more to unlock hard questions.`,
+        practiceLink: `/practice/${topic}`,
+        practiceLabel: 'Continue medium →',
+        upgradeTier: 'pro',
+        upgradeLabel: 'Unlock all hard with Pro',
+      }
+    : plan === 'free'
+    ? { headline: 'Unlock hard questions', upgradeTier: 'pro', upgradeLabel: 'Upgrade to Pro' }
     : null;
+  // Pro users now get all hard — no hard-cap mini-card needed
 
   const [activeFilters, setActiveFilters] = useState(new Set());
   const [activeCompanyFilters, setActiveCompanyFilters] = useState(new Set());
@@ -363,8 +405,8 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
         const nudge = g.difficulty === 'medium' && hasLockedQuestions ? mediumNudge
           : g.difficulty === 'hard' && hasLockedQuestions ? hardNudge
           : null;
-        const lockedTitle = g.difficulty === 'medium' ? mediumLockedTitle
-          : g.difficulty === 'hard' ? hardLockedTitle
+        const lockedMiniCard = g.difficulty === 'medium' ? mediumMiniCard
+          : g.difficulty === 'hard' ? hardMiniCard
           : null;
         return (
           <div className="sidebar-group" key={g.difficulty}>
@@ -381,7 +423,7 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
                   .slice()
                   .sort((a, b) => a.order - b.order)
                   .map((q) => (
-                    <QuestionRow key={q.id} q={q} onNavigate={onNavigate} topic={topic} lockedTitle={q.state === 'locked' ? lockedTitle : null} />
+                    <QuestionRow key={q.id} q={q} onNavigate={onNavigate} topic={topic} lockedMiniCard={q.state === 'locked' ? lockedMiniCard : null} />
                   ))}
               </div>
             )}

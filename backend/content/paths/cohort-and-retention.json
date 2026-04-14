@@ -3,5 +3,14 @@
   "title": "Cohort & Retention",
   "description": "Analyze user cohorts, compute retention rates, identify churned users, and track lifecycle patterns in real product datasets.",
   "topic": "sql",
-  "questions": [1020, 2015, 2022, 3006, 3015, 3017]
+  "questions": [
+    1020,
+    2015,
+    2022,
+    3006,
+    3015,
+    3017
+  ],
+  "tier": "pro",
+  "role": "advanced"
 }

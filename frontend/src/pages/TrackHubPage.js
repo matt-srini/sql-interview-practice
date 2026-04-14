@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import { useCatalog } from '../catalogContext';
 import { useTopic } from '../contexts/TopicContext';
+import { useAuth } from '../contexts/AuthContext';
 import TrackProgressBar from '../components/TrackProgressBar';
 import PathProgressCard from '../components/PathProgressCard';
+import TierBanner from '../components/TierBanner';
 
 function pickNextQuestionId(catalog) {
   if (!catalog) return null;
@@ -31,6 +33,7 @@ export default function TrackHubPage() {
   const { topic, meta } = useTopic();
   const { catalog, loading, error } = useCatalog();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const nextId = useMemo(() => pickNextQuestionId(catalog), [catalog]);
   const firstId = useMemo(() => pickFirstQuestionId(catalog), [catalog]);
@@ -45,6 +48,23 @@ export default function TrackHubPage() {
     if (!catalog) return meta.totalQuestions;
     return (catalog.groups ?? []).reduce((acc, g) => acc + g.questions.length, 0);
   }, [catalog, meta]);
+
+  const easySolved = useMemo(() => {
+    const g = catalog?.groups?.find(x => x.difficulty === 'easy');
+    return g ? g.questions.filter(q => q.state === 'solved').length : 0;
+  }, [catalog]);
+  const mediumSolved = useMemo(() => {
+    const g = catalog?.groups?.find(x => x.difficulty === 'medium');
+    return g ? g.questions.filter(q => q.state === 'solved').length : 0;
+  }, [catalog]);
+  const mediumUnlocked = useMemo(() => {
+    const g = catalog?.groups?.find(x => x.difficulty === 'medium');
+    return g ? g.questions.some(q => q.state !== 'locked') : false;
+  }, [catalog]);
+  const hardUnlocked = useMemo(() => {
+    const g = catalog?.groups?.find(x => x.difficulty === 'hard');
+    return g ? g.questions.some(q => q.state !== 'locked') : false;
+  }, [catalog]);
 
   const [topicPaths, setTopicPaths] = useState([]);
   useEffect(() => {
@@ -76,6 +96,13 @@ export default function TrackHubPage() {
   return (
     <main className="container track-hub-page">
       <div className="track-hub-inner">
+        <TierBanner
+          plan={user?.plan ?? 'free'}
+          easySolved={easySolved}
+          mediumSolved={mediumSolved}
+          mediumUnlocked={mediumUnlocked}
+          hardUnlocked={hardUnlocked}
+        />
         <div className="track-hub-header">
           <div className="track-hub-title-row">
             <h2 className="track-hub-title">{meta.label} Practice</h2>

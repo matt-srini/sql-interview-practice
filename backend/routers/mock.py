@@ -27,6 +27,7 @@ import questions as sql_catalog
 from db import (
     create_mock_session,
     finish_mock_session,
+    get_daily_mock_usage,
     get_mock_history,
     get_mock_session,
     mark_solved,
@@ -36,7 +37,7 @@ from db import (
 from deps import get_current_user
 from evaluator import evaluate
 from python_evaluator import evaluate_python_code, evaluate_python_data_code
-from unlock import compute_unlock_state
+from unlock import compute_mock_access, compute_unlock_state
 
 logger = logging.getLogger(__name__)
 
@@ -112,7 +113,7 @@ def _pool_for_track(
     """
     catalog = _get_catalog_for_track(track)
     grouped = catalog.get_questions_by_difficulty()
-    unlock_state = compute_unlock_state(user_plan, solved_ids, grouped)
+    unlock_state = compute_unlock_state(user_plan, solved_ids, grouped, track=track)
 
     all_questions: list[dict] = []
     for diff, qs in grouped.items():
@@ -277,6 +278,72 @@ def _evaluate_submission(
 
 
 # ── Endpoints ──────────────────────────────────────────────────────────────────
+
+@router.get("/access")
+async def get_mock_access(
+    track: str = "sql",
+    difficulty: str = "medium",
+    current_user: dict[str, Any] = Depends(get_current_user),
+) -> dict[str, Any]:
+    """
+    Pre-flight check: can this user start a mock session with these parameters?
+    Returns access state for each difficulty so the UI can render per-button state.
+    Used by MockHub.js to show predictive gating instead of a post-click error.
+    """
+    user_plan = current_user.get("plan", "free")
+    user_id = current_user["id"]
+
+    # Get daily usage across medium and hard
+    daily_usage = await get_daily_mock_usage(user_id)
+
+    # For the requested track, check whether medium is unlocked
+    medium_unlocked = False
+    if track != "mixed":
+        try:
+            solved = await _get_solved_ids_for_track(user_id, track)
+            catalog = _get_catalog_for_track(track)
+            grouped = catalog.get_questions_by_difficulty()
+            unlock_state = compute_unlock_state(user_plan, solved, grouped, track=track)
+            medium_unlocked = any(
+                v != "locked" for qid, v in unlock_state.items()
+                if any(int(q["id"]) == qid for q in grouped.get("medium", []))
+            )
+        except Exception:
+            pass
+    else:
+        # Mixed track: medium unlocked if unlocked in any single track
+        for t in ["sql", "python", "python-data", "pyspark"]:
+            try:
+                solved = await _get_solved_ids_for_track(user_id, t)
+                catalog = _get_catalog_for_track(t)
+                grouped = catalog.get_questions_by_difficulty()
+                unlock_state = compute_unlock_state(user_plan, solved, grouped, track=t)
+                if any(v != "locked" for qid, v in unlock_state.items()
+                       if any(int(q["id"]) == qid for q in grouped.get("medium", []))):
+                    medium_unlocked = True
+                    break
+            except Exception:
+                pass
+
+    # Build access state for each difficulty
+    access: dict[str, Any] = {}
+    for diff in ("easy", "medium", "hard", "mixed"):
+        access[diff] = compute_mock_access(
+            plan=user_plan,
+            track=track,
+            difficulty=diff,
+            medium_unlocked=medium_unlocked,
+            daily_medium_used=daily_usage.get("medium", 0),
+            daily_hard_used=daily_usage.get("hard", 0),
+        )
+
+    return {
+        "plan": user_plan,
+        "track": track,
+        "daily_usage": daily_usage,
+        "access": access,
+    }
+
 
 @router.get("/history")
 async def get_history(

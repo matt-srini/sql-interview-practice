@@ -3,5 +3,13 @@
   "title": "Arrays & Hashing",
   "description": "Build the core lookup-table instinct: from simple linear scans to O(1) hash map lookups, duplicate removal, and subarray sum tricks.",
   "topic": "python",
-  "questions": [4001, 4007, 4006, 4301, 4306]
+  "questions": [
+    4001,
+    4007,
+    4006,
+    4301,
+    4306
+  ],
+  "tier": "free",
+  "role": "starter"
 }
