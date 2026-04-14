@@ -5798,6 +5798,15 @@ select {
 .learn-unlock-hint-text {
   flex: 1;
 }
+.learn-unlock-hint-link {
+  color: var(--accent);
+  text-decoration: none;
+  white-space: nowrap;
+  font-size: 13px;
+}
+.learn-unlock-hint-link:hover {
+  text-decoration: underline;
+}
 .learn-question-num {
   font-size: 0.8rem;
   color: var(--text-secondary);
