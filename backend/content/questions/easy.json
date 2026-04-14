@@ -1,80 +1,7 @@
 [
   {
-    "id": 1001,
-    "order": 1,
-    "title": "List all users",
-    "description": "Return user_id, name, email, and country for every user in the users table. Order by user_id ascending.",
-    "difficulty": "easy",
-    "schema": {
-      "users": [
-        "user_id",
-        "name",
-        "email",
-        "country"
-      ]
-    },
-    "dataset_files": [
-      "users.csv"
-    ],
-    "expected_query": "SELECT user_id, name, email, country\nFROM users\nORDER BY user_id",
-    "solution_query": "SELECT user_id, name, email, country\nFROM users\nORDER BY user_id;",
-    "required_concepts": [
-      "order_by"
-    ],
-    "enforce_concepts": true,
-    "explanation": "SELECT with explicit column names retrieves only the specified fields from the users table. Listing columns explicitly instead of using SELECT * is best practice \u2014 it avoids returning unnecessary data and makes the query self-documenting. ORDER BY user_id ASC ensures a predictable, deterministic output order.",
-    "hints": [
-      "List each column name you need in the SELECT clause instead of using SELECT *",
-      "Order the result by user_id ascending"
-    ],
-    "concepts": [
-      "SELECT",
-      "ORDER BY"
-    ],
-    "companies": [
-      "Meta",
-      "Airbnb"
-    ]
-  },
-  {
-    "id": 1002,
-    "order": 2,
-    "title": "Distinct product brands",
-    "description": "Return each distinct brand from the products table. Order by brand ascending.",
-    "difficulty": "easy",
-    "schema": {
-      "products": [
-        "brand"
-      ]
-    },
-    "dataset_files": [
-      "products.csv"
-    ],
-    "expected_query": "SELECT DISTINCT brand\nFROM products\nORDER BY brand",
-    "solution_query": "SELECT DISTINCT brand\nFROM products\nORDER BY brand;",
-    "required_concepts": [
-      "distinct",
-      "order_by"
-    ],
-    "enforce_concepts": false,
-    "explanation": "DISTINCT removes duplicate brand values so each brand appears only once in the result set, even if many products share that brand. ORDER BY brand then sorts those unique values alphabetically so the output is deterministic and easy to review. Together, these clauses produce a clean list of unique brands instead of one row per product.",
-    "hints": [
-      "Use DISTINCT to eliminate duplicate values",
-      "Order the result by brand"
-    ],
-    "concepts": [
-      "SELECT",
-      "DISTINCT",
-      "ORDER BY"
-    ],
-    "companies": [
-      "Amazon",
-      "Shopify"
-    ]
-  },
-  {
     "id": 1003,
-    "order": 3,
+    "order": 1,
     "title": "Completed orders",
     "description": "Return order_id, user_id, order_date, and net_amount for all orders where status is 'completed'. Order by order_id ascending.",
     "difficulty": "easy",
@@ -109,7 +36,7 @@
   },
   {
     "id": 1004,
-    "order": 4,
+    "order": 2,
     "title": "US users",
     "description": "Return user_id, name, and email for all users from the United States (country = 'US'). Order by user_id ascending.",
     "difficulty": "easy",
@@ -143,7 +70,7 @@
   },
   {
     "id": 1005,
-    "order": 5,
+    "order": 3,
     "title": "High-salary employees",
     "description": "Return employee_id, employee_name, and salary for all employees with a salary greater than 80000. Order by salary descending.",
     "difficulty": "easy",
@@ -175,39 +102,8 @@
     ]
   },
   {
-    "id": 1006,
-    "order": 6,
-    "title": "Products by price descending",
-    "description": "Return product_id, product_name, and price for all products. Order by price descending so the most expensive products appear first.",
-    "difficulty": "easy",
-    "schema": {
-      "products": [
-        "product_id",
-        "product_name",
-        "price"
-      ]
-    },
-    "dataset_files": [
-      "products.csv"
-    ],
-    "expected_query": "SELECT product_id, product_name, price\nFROM products\nORDER BY price DESC",
-    "solution_query": "SELECT product_id, product_name, price\nFROM products\nORDER BY price DESC;",
-    "explanation": "ORDER BY price DESC sorts all rows in descending order of the price column \u2014 highest price first. The DESC keyword reverses the default ascending sort direction. When no WHERE clause is included, all products are returned. This is a common pattern for ranking or top-N style analysis.",
-    "hints": [
-      "Use the DESC keyword after the column name in ORDER BY to sort highest to lowest"
-    ],
-    "concepts": [
-      "SELECT",
-      "ORDER BY"
-    ],
-    "companies": [
-      "Amazon",
-      "eBay"
-    ]
-  },
-  {
     "id": 1007,
-    "order": 7,
+    "order": 4,
     "title": "Employees by hire date",
     "description": "Return employee_id, employee_name, and hire_date for employees with a known hire_date. Order by hire_date ascending to show the longest-tenured employees first.",
     "difficulty": "easy",
@@ -240,7 +136,7 @@
   },
   {
     "id": 1008,
-    "order": 8,
+    "order": 5,
     "title": "Total order count",
     "description": "Return the total number of orders in the orders table as a single value aliased as total_orders.",
     "difficulty": "easy",
@@ -269,69 +165,8 @@
     ]
   },
   {
-    "id": 1009,
-    "order": 9,
-    "title": "Total completed revenue",
-    "description": "Return the total net_amount from all completed orders as a single value aliased as total_completed_revenue. Only include orders where status = 'completed'.",
-    "difficulty": "easy",
-    "schema": {
-      "orders": [
-        "status",
-        "net_amount"
-      ]
-    },
-    "dataset_files": [
-      "orders.csv"
-    ],
-    "expected_query": "SELECT SUM(net_amount) AS total_completed_revenue\nFROM orders\nWHERE status = 'completed'",
-    "solution_query": "SELECT SUM(net_amount) AS total_completed_revenue\nFROM orders\nWHERE status = 'completed';",
-    "explanation": "The WHERE clause filters to only completed orders before the SUM aggregation runs. SUM(net_amount) adds up all net_amount values for those filtered rows. Because there is no GROUP BY, the result is a single row with one value. SUM automatically ignores NULL values.",
-    "hints": [
-      "Filter with WHERE before aggregating with SUM",
-      "SUM() adds up all values in a column for the matching rows"
-    ],
-    "concepts": [
-      "SELECT",
-      "SUM",
-      "WHERE"
-    ],
-    "companies": [
-      "Amazon",
-      "Stripe"
-    ]
-  },
-  {
-    "id": 1010,
-    "order": 10,
-    "title": "Average employee salary",
-    "description": "Return the average salary across all employees as a single value aliased as avg_salary.",
-    "difficulty": "easy",
-    "schema": {
-      "employees": [
-        "salary"
-      ]
-    },
-    "dataset_files": [
-      "employees.csv"
-    ],
-    "expected_query": "SELECT AVG(salary) AS avg_salary\nFROM employees",
-    "solution_query": "SELECT AVG(salary) AS avg_salary\nFROM employees;",
-    "explanation": "AVG(salary) computes the arithmetic mean of all non-NULL salary values in the employees table. Since no WHERE clause is provided, the average covers all employees. AVG automatically ignores NULL values. The result is a single row with one column aliased as avg_salary.",
-    "hints": [
-      "Use AVG() to calculate the mean of a numeric column"
-    ],
-    "concepts": [
-      "SELECT",
-      "AVG"
-    ],
-    "companies": [
-      "Google",
-      "LinkedIn"
-    ]
-  },
-  {
     "id": 1011,
-    "order": 11,
+    "order": 6,
     "title": "Most expensive product",
     "description": "Return the highest price among all products as a single value aliased as max_price.",
     "difficulty": "easy",
@@ -360,7 +195,7 @@
   },
   {
     "id": 1012,
-    "order": 12,
+    "order": 7,
     "title": "Fastest ticket resolution",
     "description": "Return the minimum resolution_hours from all resolved support tickets as a single value aliased as min_resolution_hours. Only include tickets where status = 'resolved'.",
     "difficulty": "easy",
@@ -392,7 +227,7 @@
   },
   {
     "id": 1013,
-    "order": 13,
+    "order": 8,
     "title": "Orders by status",
     "description": "Return each distinct order status and the count of orders with that status as order_count. Order by order_count descending.",
     "difficulty": "easy",
@@ -425,7 +260,7 @@
   },
   {
     "id": 1014,
-    "order": 14,
+    "order": 9,
     "title": "Total spend per user",
     "description": "Return each user_id and the total net_amount they have spent across all their orders as total_spent. Order by total_spent descending.",
     "difficulty": "easy",
@@ -458,7 +293,7 @@
   },
   {
     "id": 1015,
-    "order": 15,
+    "order": 10,
     "title": "Support tickets by issue type",
     "description": "Return each issue_type and the count of support tickets with that type as ticket_count, but only include issue types with more than one ticket. Order by ticket_count descending.",
     "difficulty": "easy",
@@ -492,7 +327,7 @@
   },
   {
     "id": 1016,
-    "order": 16,
+    "order": 11,
     "title": "Order count per user",
     "description": "Return user_id, name, and the total number of orders each user has placed as order_count. Include users who have placed zero orders. Order by user_id ascending.",
     "difficulty": "easy",
@@ -531,7 +366,7 @@
   },
   {
     "id": 1017,
-    "order": 17,
+    "order": 12,
     "title": "Employees with department names",
     "description": "Return employee_id, employee_name, salary, and department_name for every employee and their department. Order by employee_id ascending.",
     "difficulty": "easy",
@@ -569,38 +404,8 @@
     ]
   },
   {
-    "id": 1018,
-    "order": 18,
-    "title": "Distinct user countries",
-    "description": "Return each distinct country represented in the users table as a single column named country. Order by country ascending.",
-    "difficulty": "easy",
-    "schema": {
-      "users": [
-        "country"
-      ]
-    },
-    "dataset_files": [
-      "users.csv"
-    ],
-    "expected_query": "SELECT DISTINCT country\nFROM users\nORDER BY country",
-    "solution_query": "SELECT DISTINCT country\nFROM users\nORDER BY country;",
-    "explanation": "DISTINCT removes duplicate values from the result set so each country appears exactly once, regardless of how many users share that country. Without DISTINCT, every row in users would be returned \u2014 one per user. ORDER BY country sorts the unique values alphabetically for readability.",
-    "hints": [
-      "Use the DISTINCT keyword to eliminate duplicate values in the output"
-    ],
-    "concepts": [
-      "SELECT",
-      "DISTINCT",
-      "ORDER BY"
-    ],
-    "companies": [
-      "Meta",
-      "Airbnb"
-    ]
-  },
-  {
     "id": 1019,
-    "order": 19,
+    "order": 13,
     "title": "Products in price range",
     "description": "Return product_id, product_name, and price for all products with a price between 100 and 500 inclusive. Order by price ascending.",
     "difficulty": "easy",
@@ -634,7 +439,7 @@
   },
   {
     "id": 1020,
-    "order": 20,
+    "order": 14,
     "title": "Users who signed up in 2024",
     "description": "Return user_id, name, and signup_date for all users who signed up during the year 2024. Order by signup_date ascending.",
     "difficulty": "easy",
@@ -668,7 +473,7 @@
   },
   {
     "id": 1021,
-    "order": 21,
+    "order": 15,
     "title": "Users in selected countries",
     "description": "Return user_id, name, and country for users whose country is 'UK', 'IN', or 'DE'.",
     "difficulty": "easy",
@@ -706,7 +511,7 @@
   },
   {
     "id": 1022,
-    "order": 22,
+    "order": 16,
     "title": "Products in selected categories",
     "description": "Return product_id, product_name, and category_id for products whose category_id is 3, 8, or 14. Order by category_id ascending.",
     "difficulty": "easy",
@@ -743,45 +548,8 @@
     ]
   },
   {
-    "id": 1023,
-    "order": 23,
-    "title": "Users whose names start with User 1",
-    "description": "Return user_id, name, and country for users whose name starts with 'User 1'.",
-    "difficulty": "easy",
-    "schema": {
-      "users": [
-        "user_id",
-        "name",
-        "country"
-      ]
-    },
-    "dataset_files": [
-      "users.csv"
-    ],
-    "expected_query": "SELECT user_id, name, country\nFROM users\nWHERE name LIKE 'User 1%'",
-    "solution_query": "SELECT user_id, name, country\nFROM users\nWHERE name LIKE 'User 1%';",
-    "explanation": "LIKE performs text pattern matching instead of exact equality matching. The pattern 'User 1%' means the name must begin with the text 'User 1', and the percent sign allows any characters after that prefix. This makes LIKE a good fit for prefix searches such as names, product codes, or campaign labels. The query returns only the columns requested in the prompt while filtering rows based on the name pattern.",
-    "hints": [
-      "Use LIKE for prefix matching on text columns",
-      "A trailing % wildcard means any characters can follow the prefix"
-    ],
-    "concepts": [
-      "WHERE",
-      "LIKE"
-    ],
-    "tags": [
-      "easy",
-      "users",
-      "pattern-matching",
-      "like"
-    ],
-    "companies": [
-      "Meta"
-    ]
-  },
-  {
     "id": 1024,
-    "order": 24,
+    "order": 17,
     "title": "Checkout-related events",
     "description": "Return event_id, user_id, and event_name for events whose event_name contains the word 'checkout'.",
     "difficulty": "easy",
@@ -819,7 +587,7 @@
   },
   {
     "id": 1025,
-    "order": 25,
+    "order": 18,
     "title": "Orders that need review",
     "description": "Return order_id, status, payment_status, and net_amount for orders where the order status is 'cancelled' or the payment_status is 'failed'.",
     "difficulty": "easy",
@@ -858,7 +626,7 @@
   },
   {
     "id": 1026,
-    "order": 26,
+    "order": 19,
     "title": "US paid users on higher tiers",
     "description": "Return user_id, name, country, and plan_tier for users who are in the US and whose plan_tier is either 'pro' or 'enterprise'.",
     "difficulty": "easy",
@@ -898,7 +666,7 @@
   },
   {
     "id": 1027,
-    "order": 27,
+    "order": 20,
     "title": "Users missing an email address",
     "description": "Return user_id, name, and country for users whose email is missing.",
     "difficulty": "easy",
@@ -936,7 +704,7 @@
   },
   {
     "id": 1028,
-    "order": 28,
+    "order": 21,
     "title": "Events linked to a product",
     "description": "Return event_id, user_id, event_name, and product_id for events where product_id is present.",
     "difficulty": "easy",
@@ -974,47 +742,8 @@
     ]
   },
   {
-    "id": 1029,
-    "order": 29,
-    "title": "Known email users by acquisition channel",
-    "description": "Return acquisition_channel and the number of users in that channel as user_count, but only for users whose email ends with '@example.com'. Order by user_count descending, then acquisition_channel ascending.",
-    "difficulty": "easy",
-    "schema": {
-      "users": [
-        "user_id",
-        "email",
-        "acquisition_channel"
-      ]
-    },
-    "dataset_files": [
-      "users.csv"
-    ],
-    "expected_query": "SELECT acquisition_channel, COUNT(user_id) AS user_count\nFROM users\nWHERE email LIKE '%@example.com'\nGROUP BY acquisition_channel\nORDER BY user_count DESC, acquisition_channel ASC",
-    "solution_query": "SELECT acquisition_channel, COUNT(user_id) AS user_count\nFROM users\nWHERE email LIKE '%@example.com'\nGROUP BY acquisition_channel\nORDER BY user_count DESC, acquisition_channel ASC;",
-    "explanation": "This query combines filtering and grouping in a simple two-step flow. The WHERE clause first keeps only users whose email matches the requested domain pattern, and then GROUP BY acquisition_channel collects those filtered users into one group per channel. COUNT(user_id) counts the number of matching users in each group. The final ORDER BY makes the grouped result deterministic and puts the largest channels first.",
-    "hints": [
-      "Filter the email column with LIKE before grouping the rows",
-      "Group by acquisition_channel and count user_id within each channel"
-    ],
-    "concepts": [
-      "LIKE",
-      "GROUP BY",
-      "COUNT"
-    ],
-    "tags": [
-      "easy",
-      "users",
-      "grouping",
-      "like"
-    ],
-    "companies": [
-      "Meta",
-      "Airbnb"
-    ]
-  },
-  {
     "id": 1030,
-    "order": 30,
+    "order": 22,
     "title": "Total payment amount for failed or refunded payments",
     "description": "Return status and the total payment amount for that status as total_amount, but only for payments where status is 'failed' or 'refunded'. Order by total_amount descending, then status ascending.",
     "difficulty": "easy",
@@ -1048,6 +777,398 @@
     "companies": [
       "Stripe",
       "PayPal"
+    ]
+  },
+  {
+    "id": 1031,
+    "order": 23,
+    "title": "Active users by country",
+    "description": "Count active users (`is_active = true`) per country. Return `country` and `user_count`. Order by `user_count` descending, then `country` ascending.",
+    "difficulty": "easy",
+    "schema": {
+      "users": [
+        "user_id",
+        "country",
+        "is_active"
+      ]
+    },
+    "dataset_files": [
+      "users.csv"
+    ],
+    "expected_query": "SELECT country, COUNT(*) AS user_count\nFROM users\nWHERE is_active = true\nGROUP BY country\nORDER BY user_count DESC, country ASC",
+    "solution_query": "SELECT country, COUNT(*) AS user_count\nFROM users\nWHERE is_active = true\nGROUP BY country\nORDER BY user_count DESC, country ASC;",
+    "required_concepts": [
+      "group_by",
+      "where",
+      "order_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Filtering with WHERE before GROUP BY is the correct pattern for pre-aggregation filtering. `COUNT(*)` counts all rows that pass the filter per group. The dual ORDER BY (count DESC, country ASC) produces a deterministic result when two countries share the same user count.",
+    "hints": [
+      "Apply the WHERE filter before the GROUP BY so only active users are counted",
+      "Use a secondary ORDER BY column (country) to break ties deterministically"
+    ],
+    "concepts": [
+      "PRE-AGGREGATION FILTERING",
+      "MULTI-COLUMN ORDERING",
+      "GROUP COUNT"
+    ],
+    "companies": [
+      "Meta",
+      "LinkedIn",
+      "Salesforce"
+    ]
+  },
+  {
+    "id": 1032,
+    "order": 24,
+    "title": "Order amount with discount fallback",
+    "description": "Return `order_id`, `user_id`, `gross_amount`, `discount_amount`, and a computed column `final_amount` = `gross_amount - COALESCE(discount_amount, 0)`. Order by `order_id` ascending.",
+    "difficulty": "easy",
+    "schema": {
+      "orders": [
+        "order_id",
+        "user_id",
+        "gross_amount",
+        "discount_amount"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv"
+    ],
+    "expected_query": "SELECT order_id, user_id, gross_amount, discount_amount,\n       gross_amount - COALESCE(discount_amount, 0) AS final_amount\nFROM orders\nORDER BY order_id",
+    "solution_query": "SELECT order_id, user_id, gross_amount, discount_amount,\n       gross_amount - COALESCE(discount_amount, 0) AS final_amount\nFROM orders\nORDER BY order_id;",
+    "required_concepts": [
+      "coalesce"
+    ],
+    "enforce_concepts": true,
+    "explanation": "COALESCE(discount_amount, 0) replaces NULL values with 0 so the subtraction never produces NULL. Without COALESCE, any row where discount_amount IS NULL would yield NULL for final_amount \u2014 a silent bug that propagates through downstream aggregations. This pattern (null-safe arithmetic) is ubiquitous in financial reporting queries.",
+    "hints": [
+      "Subtracting NULL from any value gives NULL \u2014 use COALESCE to provide a safe default",
+      "COALESCE returns its first non-NULL argument, so COALESCE(discount_amount, 0) returns 0 when discount is missing"
+    ],
+    "concepts": [
+      "NULL-SAFE ARITHMETIC",
+      "COALESCE DEFAULT SUBSTITUTION",
+      "COMPUTED COLUMN"
+    ],
+    "companies": [
+      "Stripe",
+      "Amazon",
+      "PayPal"
+    ]
+  },
+  {
+    "id": 1033,
+    "order": 25,
+    "title": "Orders per calendar month",
+    "description": "Count orders grouped by calendar month. Return `order_month` (formatted as `'YYYY-MM'` using `STRFTIME('%Y-%m', order_date)`) and `order_count`. Order by `order_month` ascending.",
+    "difficulty": "easy",
+    "schema": {
+      "orders": [
+        "order_id",
+        "order_date"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv"
+    ],
+    "expected_query": "SELECT STRFTIME('%Y-%m', order_date) AS order_month, COUNT(*) AS order_count\nFROM orders\nGROUP BY order_month\nORDER BY order_month",
+    "solution_query": "SELECT STRFTIME('%Y-%m', order_date) AS order_month,\n       COUNT(*) AS order_count\nFROM orders\nGROUP BY order_month\nORDER BY order_month;",
+    "required_concepts": [
+      "group_by",
+      "date_trunc",
+      "order_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "STRFTIME('%Y-%m', order_date) truncates each date to its year-month string. Grouping on this string produces one row per calendar month. Sorting the 'YYYY-MM' string lexicographically gives correct chronological order because ISO format is zero-padded. This is the foundational pattern for time-series aggregations in analytics.",
+    "hints": [
+      "Use STRFTIME('%Y-%m', order_date) to extract the year-month portion of each date",
+      "Group by the derived month string \u2014 'YYYY-MM' sorts correctly as a string"
+    ],
+    "concepts": [
+      "DATE BUCKET GROUPING",
+      "TIME-SERIES AGGREGATION",
+      "STRFTIME FORMATTING"
+    ],
+    "companies": [
+      "Meta",
+      "Stripe",
+      "Airbnb",
+      "LinkedIn"
+    ]
+  },
+  {
+    "id": 1034,
+    "order": 26,
+    "title": "Products launched in 2024",
+    "description": "Return `product_id`, `product_name`, `brand`, and `launch_date` for all products launched in the calendar year 2024. Order by `launch_date` ascending.",
+    "difficulty": "easy",
+    "schema": {
+      "products": [
+        "product_id",
+        "product_name",
+        "brand",
+        "launch_date"
+      ]
+    },
+    "dataset_files": [
+      "products.csv"
+    ],
+    "expected_query": "SELECT product_id, product_name, brand, launch_date\nFROM products\nWHERE launch_date >= '2024-01-01' AND launch_date < '2025-01-01'\nORDER BY launch_date",
+    "solution_query": "SELECT product_id, product_name, brand, launch_date\nFROM products\nWHERE launch_date >= '2024-01-01' AND launch_date < '2025-01-01'\nORDER BY launch_date;",
+    "required_concepts": [
+      "where",
+      "order_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Using `>= '2024-01-01' AND < '2025-01-01'` is the portable, precise way to filter a full calendar year. It works correctly regardless of whether dates include time components, and avoids functions like YEAR() that can prevent index use in production databases. Prefer this half-open interval pattern over BETWEEN or YEAR() extraction.",
+    "hints": [
+      "Filter with a half-open interval: launch_date >= '2024-01-01' AND launch_date < '2025-01-01'",
+      "Order by launch_date DESC to show the most recent products first"
+    ],
+    "concepts": [
+      "HALF-OPEN DATE INTERVAL",
+      "RANGE FILTERING",
+      "DATE COMPARISON"
+    ],
+    "companies": [
+      "Amazon",
+      "Shopify",
+      "eBay"
+    ]
+  },
+  {
+    "id": 1035,
+    "order": 27,
+    "title": "Employees in US or UK",
+    "description": "Return `employee_id`, `employee_name`, `country`, and `salary` for all employees whose `country` is either `'US'` or `'UK'`. Order by `salary` descending.",
+    "difficulty": "easy",
+    "schema": {
+      "employees": [
+        "employee_id",
+        "employee_name",
+        "country",
+        "salary"
+      ]
+    },
+    "dataset_files": [
+      "employees.csv"
+    ],
+    "expected_query": "SELECT employee_id, employee_name, country, salary\nFROM employees\nWHERE country IN ('US', 'UK')\nORDER BY salary DESC",
+    "solution_query": "SELECT employee_id, employee_name, country, salary\nFROM employees\nWHERE country IN ('US', 'UK')\nORDER BY salary DESC;",
+    "required_concepts": [
+      "where",
+      "order_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The IN operator is a cleaner alternative to multiple OR conditions when filtering against a known set of values. `country IN ('US', 'UK')` is equivalent to `country = 'US' OR country = 'UK'` but is more readable and easier to extend. Ordering by salary DESC surfaces the highest-paid employees first.",
+    "hints": [
+      "Use WHERE with IN ('US', 'UK') to filter rows by country",
+      "IN is equivalent to country = 'US' OR country = 'UK' but more readable; ORDER BY makes results deterministic"
+    ],
+    "concepts": [
+      "IN CLAUSE FILTERING",
+      "SET MEMBERSHIP TEST",
+      "ORDERED RESULT"
+    ],
+    "companies": [
+      "Google",
+      "Microsoft",
+      "LinkedIn"
+    ]
+  },
+  {
+    "id": 1036,
+    "order": 28,
+    "title": "Highest and lowest order value",
+    "description": "Return a single row with two columns: `max_order` (the highest `net_amount` across all orders) and `min_order` (the lowest `net_amount`).",
+    "difficulty": "easy",
+    "schema": {
+      "orders": [
+        "order_id",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv"
+    ],
+    "expected_query": "SELECT MAX(net_amount) AS max_order, MIN(net_amount) AS min_order\nFROM orders",
+    "solution_query": "SELECT MAX(net_amount) AS max_order,\n       MIN(net_amount) AS min_order\nFROM orders;",
+    "required_concepts": [],
+    "enforce_concepts": false,
+    "explanation": "Multiple aggregate functions can be computed in a single SELECT without a GROUP BY \u2014 the entire table acts as one group. MAX and MIN scan all rows and return the extreme values. Naming output columns with AS makes results self-documenting. This pattern is foundational for summary statistics queries.",
+    "hints": [
+      "MAX and MIN can be computed together in a single SELECT",
+      "No GROUP BY is needed when aggregating over the entire table"
+    ],
+    "concepts": [
+      "MULTI-AGGREGATE SELECT",
+      "TABLE-WIDE SUMMARY",
+      "SCALAR AGGREGATION"
+    ],
+    "companies": [
+      "Amazon",
+      "eBay",
+      "Shopify"
+    ]
+  },
+  {
+    "id": 1037,
+    "order": 29,
+    "title": "Users by plan tier",
+    "description": "Count users grouped by `plan_tier`. Return `plan_tier` and `user_count`. Order by `user_count` descending.",
+    "difficulty": "easy",
+    "schema": {
+      "users": [
+        "user_id",
+        "plan_tier"
+      ]
+    },
+    "dataset_files": [
+      "users.csv"
+    ],
+    "expected_query": "SELECT plan_tier, COUNT(*) AS user_count\nFROM users\nGROUP BY plan_tier\nORDER BY user_count DESC",
+    "solution_query": "SELECT plan_tier, COUNT(*) AS user_count\nFROM users\nGROUP BY plan_tier\nORDER BY user_count DESC;",
+    "required_concepts": [
+      "group_by",
+      "order_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Grouping by a categorical column and counting is the canonical segmentation query. The result shows the distribution of users across plan tiers, which directly maps to subscription revenue breakdowns. Ordering by count descending surfaces the dominant tier first.",
+    "hints": [
+      "GROUP BY plan_tier, then COUNT(*) to get users per tier",
+      "ORDER BY the count column descending to see the largest tier first"
+    ],
+    "concepts": [
+      "CATEGORICAL SEGMENTATION",
+      "GROUP COUNT",
+      "DISTRIBUTION ANALYSIS"
+    ],
+    "companies": [
+      "Stripe",
+      "Shopify",
+      "Salesforce"
+    ]
+  },
+  {
+    "id": 1038,
+    "order": 30,
+    "title": "Orders with a non-zero discount",
+    "description": "Return `order_id`, `gross_amount`, `discount_amount`, and `net_amount` for orders where `discount_amount` IS NOT NULL and `discount_amount > 0`. Order by `discount_amount` descending.",
+    "difficulty": "easy",
+    "schema": {
+      "orders": [
+        "order_id",
+        "gross_amount",
+        "discount_amount",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv"
+    ],
+    "expected_query": "SELECT order_id, gross_amount, discount_amount, net_amount\nFROM orders\nWHERE discount_amount IS NOT NULL AND discount_amount > 0\nORDER BY discount_amount DESC",
+    "solution_query": "SELECT order_id, gross_amount, discount_amount, net_amount\nFROM orders\nWHERE discount_amount IS NOT NULL AND discount_amount > 0\nORDER BY discount_amount DESC;",
+    "required_concepts": [
+      "where",
+      "null_check",
+      "order_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Combining IS NOT NULL with a comparison operator (`> 0`) requires both conditions with AND. The IS NOT NULL check is needed because `NULL > 0` evaluates to NULL (not true), which would silently exclude those rows anyway \u2014 but being explicit is a best practice that makes intent clear. This combined pattern is common in any query that filters on an optional numeric field.",
+    "hints": [
+      "Use WHERE to filter rows: combine IS NOT NULL with > 0 using AND",
+      "ORDER BY discount_amount DESC puts the largest discounts first; NULL > 0 evaluates to NULL \u2014 state both conditions explicitly"
+    ],
+    "concepts": [
+      "NULL CHECK COMBINED WITH COMPARISON",
+      "COMBINED AND CONDITIONS",
+      "OPTIONAL FIELD FILTERING"
+    ],
+    "companies": [
+      "Amazon",
+      "Shopify",
+      "eBay"
+    ]
+  },
+  {
+    "id": 1039,
+    "order": 31,
+    "title": "Monthly user signups with a CTE",
+    "description": "Using a CTE named `monthly_signups`, compute the number of users who signed up each month (group by `STRFTIME('%Y-%m', signup_date)`). Return `signup_month` and `user_count` from the CTE, ordered by `signup_month` ascending.\n\nThis is an introduction to CTEs (`WITH` clauses), which create named temporary result sets that can be referenced like a table.",
+    "difficulty": "easy",
+    "schema": {
+      "users": [
+        "user_id",
+        "signup_date"
+      ]
+    },
+    "dataset_files": [
+      "users.csv"
+    ],
+    "expected_query": "WITH monthly_signups AS (\n    SELECT STRFTIME('%Y-%m', signup_date) AS signup_month,\n           COUNT(*) AS user_count\n    FROM users\n    GROUP BY signup_month\n)\nSELECT signup_month, user_count\nFROM monthly_signups\nORDER BY signup_month",
+    "solution_query": "WITH monthly_signups AS (\n    SELECT STRFTIME('%Y-%m', signup_date) AS signup_month,\n           COUNT(*) AS user_count\n    FROM users\n    GROUP BY signup_month\n)\nSELECT signup_month, user_count\nFROM monthly_signups\nORDER BY signup_month;",
+    "required_concepts": [
+      "cte",
+      "group_by",
+      "order_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "A CTE (Common Table Expression) defined with `WITH name AS (...)` creates a named temporary result set that lives only for the duration of the query. The CTE is defined first, then referenced in the main SELECT just like a table. CTEs make complex queries readable by naming intermediate steps \u2014 they are fundamental to writing maintainable SQL at any level. Here the CTE computes monthly counts, and the outer query retrieves and sorts them.",
+    "hints": [
+      "Start with WITH monthly_signups AS (...) then put your GROUP BY query inside",
+      "Reference the CTE name in the outer SELECT like a table; ORDER BY signup_month ASC ensures chronological output"
+    ],
+    "concepts": [
+      "CTE INTRODUCTION",
+      "NAMED TEMPORARY RESULT SET",
+      "WITH CLAUSE SYNTAX"
+    ],
+    "companies": [
+      "Meta",
+      "LinkedIn",
+      "Google",
+      "Stripe"
+    ]
+  },
+  {
+    "id": 1040,
+    "order": 32,
+    "title": "Tickets by priority and status",
+    "description": "Count support tickets grouped by both `priority` and `status`. Return `priority`, `status`, and `ticket_count`. Order by `priority` ascending, then `status` ascending.",
+    "difficulty": "easy",
+    "schema": {
+      "support_tickets": [
+        "ticket_id",
+        "priority",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "support_tickets.csv"
+    ],
+    "expected_query": "SELECT priority, status, COUNT(*) AS ticket_count\nFROM support_tickets\nGROUP BY priority, status\nORDER BY priority, status",
+    "solution_query": "SELECT priority, status, COUNT(*) AS ticket_count\nFROM support_tickets\nGROUP BY priority, status\nORDER BY priority, status;",
+    "required_concepts": [
+      "group_by",
+      "order_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Multi-column GROUP BY produces one row per unique combination of the grouped columns \u2014 here, one row per (priority, status) pair. This is the standard approach for cross-tabulating two categorical dimensions before pivoting. The result is effectively a raw pivot table in long format, which is the input for most BI tools and dashboards.",
+    "hints": [
+      "List both columns in GROUP BY: GROUP BY priority, status",
+      "ORDER BY priority, status gives a predictable result; each unique combination becomes one row"
+    ],
+    "concepts": [
+      "MULTI-COLUMN GROUPING",
+      "CROSS-DIMENSIONAL AGGREGATION",
+      "LONG-FORMAT CROSS-TAB"
+    ],
+    "companies": [
+      "Zendesk",
+      "Salesforce",
+      "Meta"
     ]
   }
 ]

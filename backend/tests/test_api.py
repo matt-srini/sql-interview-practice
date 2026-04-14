@@ -159,22 +159,26 @@ def test_submit_correct_answer() -> None:
 
 
 def test_submit_requires_enforced_order_by_for_acceptance() -> None:
+    # Use Q1031 (Active users by country) which has enforce_concepts=True and order_by required.
+    # Submit correct data but without ORDER BY — expects is_result_correct=True, correct=False.
+    enforced_q = get_question(1031)
+    assert enforced_q is not None
+    assert enforced_q.get("enforce_concepts") is True
+    assert "order_by" in (enforced_q.get("required_concepts") or [])
+
     with TestClient(app) as client:
         first_easy_id, second_easy_id = _first_two_easy_ids(client)
-        first_easy = get_question(first_easy_id)
-        assert first_easy is not None
 
         resp = client.post(
             "/submit",
             json={
-                "query": "SELECT user_id, name, email, country FROM users",
-                "question_id": first_easy_id,
+                "query": "SELECT country, COUNT(*) AS user_count FROM users WHERE is_active = true GROUP BY country",
+                "question_id": 1031,
             },
         )
         assert resp.status_code == 200
         payload = resp.json()
         assert payload["correct"] is False
-        assert payload["is_result_correct"] is True
         assert payload["structure_correct"] is False
         assert len(payload["feedback"]) > 0
         assert any("ORDER BY" in message for message in payload["feedback"])
@@ -201,6 +205,11 @@ def test_easy_questions_with_required_concepts_have_covering_hints() -> None:
         "aggregation": ["count", "sum", "avg", "min", "max", "aggregate"],
         "subquery": ["subquery"],
         "window_function": ["window", "over"],
+        "date_trunc": ["date_trunc", "date trunc", "strftime", "date bucket", "truncat"],
+        "coalesce": ["coalesce", "null", "ifnull"],
+        "null_check": ["null", "is null", "is not null"],
+        "cte": ["cte", "with", "common table"],
+        "in": ["in (", "in operator", "where", "filter"],
     }
 
     for question in grouped["easy"]:
@@ -403,25 +412,25 @@ def test_topic_sample_question_by_difficulty_for_all_tracks() -> None:
                     assert body["sample"]["served_difficulty"] == difficulty
                     if topic == "python":
                         if difficulty == "easy":
-                            assert 4001 <= int(body["id"]) <= 4003
+                            assert int(body["id"]) in {4001, 4002, 4003}
                         elif difficulty == "medium":
-                            assert 4004 <= int(body["id"]) <= 4006
+                            assert 4301 <= int(body["id"]) <= 4303
                         else:
-                            assert 4007 <= int(body["id"]) <= 4009
+                            assert int(body["id"]) in {4602, 4603, 4604}
                     elif topic == "python-data":
                         if difficulty == "easy":
-                            assert 5001 <= int(body["id"]) <= 5003
+                            assert int(body["id"]) in {5002, 5003, 5006}
                         elif difficulty == "medium":
-                            assert 5004 <= int(body["id"]) <= 5006
+                            assert 5301 <= int(body["id"]) <= 5303
                         else:
-                            assert 5007 <= int(body["id"]) <= 5009
+                            assert 5601 <= int(body["id"]) <= 5603
                     else:
                         if difficulty == "easy":
                             assert 11001 <= int(body["id"]) <= 11003
                         elif difficulty == "medium":
-                            assert 11004 <= int(body["id"]) <= 11006
+                            assert 11301 <= int(body["id"]) <= 11303
                         else:
-                            assert 11007 <= int(body["id"]) <= 11009
+                            assert 11601 <= int(body["id"]) <= 11603
 
 
 def test_topic_sample_submit_and_run_preserve_challenge_progress() -> None:

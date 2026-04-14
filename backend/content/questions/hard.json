@@ -1060,5 +1060,152 @@
       "Meta",
       "Airbnb"
     ]
+  },
+  {
+    "id": 3027,
+    "order": 27,
+    "title": "Session engagement score",
+    "description": "Using the `events` and `sessions` tables, compute an engagement score per session.\n\nFor each `session_id`, compute:\n- `event_count`: total number of events\n- `unique_products`: number of distinct `product_id` values interacted with\n- `has_cart`: 1 if any event has `event_name = 'add_to_cart'`, else 0\n- `has_purchase`: 1 if any event has `event_name = 'purchase'`, else 0\n- `engagement_score` = `event_count * 1 + unique_products * 2 + has_cart * 5 + has_purchase * 10`\n\nJoin with `sessions` to get `user_id`, `device_type`, and `traffic_source`. Return only sessions where `engagement_score >= 10`. Return `session_id`, `user_id`, `device_type`, `traffic_source`, `event_count`, `unique_products`, `engagement_score`. Order by `engagement_score` DESC, `session_id` ASC.",
+    "difficulty": "hard",
+    "schema": {
+      "events": [
+        "event_id",
+        "session_id",
+        "user_id",
+        "event_time",
+        "event_name",
+        "product_id"
+      ],
+      "sessions": [
+        "session_id",
+        "user_id",
+        "session_start",
+        "device_type",
+        "traffic_source",
+        "country"
+      ]
+    },
+    "dataset_files": [
+      "events.csv",
+      "sessions.csv"
+    ],
+    "expected_query": "WITH session_metrics AS (\n    SELECT session_id,\n           COUNT(*) AS event_count,\n           COUNT(DISTINCT product_id) AS unique_products,\n           MAX(CASE WHEN event_name = 'add_to_cart' THEN 1 ELSE 0 END) AS has_cart,\n           MAX(CASE WHEN event_name = 'purchase' THEN 1 ELSE 0 END) AS has_purchase\n    FROM events\n    GROUP BY session_id\n)\nSELECT sm.session_id, s.user_id, s.device_type, s.traffic_source,\n       sm.event_count, sm.unique_products,\n       sm.event_count * 1 + sm.unique_products * 2 + sm.has_cart * 5 + sm.has_purchase * 10 AS engagement_score\nFROM session_metrics sm\nJOIN sessions s ON sm.session_id = s.session_id\nWHERE sm.event_count * 1 + sm.unique_products * 2 + sm.has_cart * 5 + sm.has_purchase * 10 >= 10\nORDER BY engagement_score DESC, sm.session_id ASC",
+    "solution_query": "WITH session_metrics AS (\n    SELECT session_id,\n           COUNT(*) AS event_count,\n           COUNT(DISTINCT product_id) AS unique_products,\n           MAX(CASE WHEN event_name = 'add_to_cart' THEN 1 ELSE 0 END) AS has_cart,\n           MAX(CASE WHEN event_name = 'purchase' THEN 1 ELSE 0 END) AS has_purchase\n    FROM events\n    GROUP BY session_id\n)\nSELECT sm.session_id, s.user_id, s.device_type, s.traffic_source,\n       sm.event_count, sm.unique_products,\n       sm.event_count * 1 + sm.unique_products * 2 + sm.has_cart * 5 + sm.has_purchase * 10 AS engagement_score\nFROM session_metrics sm\nJOIN sessions s ON sm.session_id = s.session_id\nWHERE sm.event_count * 1 + sm.unique_products * 2 + sm.has_cart * 5 + sm.has_purchase * 10 >= 10\nORDER BY engagement_score DESC, sm.session_id ASC;",
+    "required_concepts": [
+      "cte",
+      "group_by",
+      "case_when",
+      "join"
+    ],
+    "enforce_concepts": true,
+    "explanation": "A CTE aggregates per-session: COUNT(*) for events, COUNT(DISTINCT product_id) for unique products, and MAX(CASE WHEN...) flags for cart and purchase presence (MAX of 0/1 across all events in the session is 1 if any event matches). The formula combines these into a weighted score. The outer query joins to sessions for device/channel context, then filters on the score. Note: the WHERE clause must repeat the formula (or use a nested query/second CTE) because aliases from SELECT cannot be referenced in WHERE in standard SQL.",
+    "hints": [
+      "Use MAX(CASE WHEN event_name = 'add_to_cart' THEN 1 ELSE 0 END) to produce a 0/1 flag per session",
+      "You cannot reference a SELECT alias in WHERE \u2014 either repeat the expression or wrap in a second CTE"
+    ],
+    "concepts": [
+      "CONDITIONAL FLAG AGGREGATION",
+      "COMPOSITE SCORING FORMULA",
+      "CTE PIPELINE",
+      "EVENT-LEVEL TO SESSION-LEVEL AGGREGATION"
+    ],
+    "companies": [
+      "Meta",
+      "Amplitude",
+      "Netflix",
+      "Airbnb"
+    ]
+  },
+  {
+    "id": 3028,
+    "order": 28,
+    "title": "ROWS vs RANGE: running total divergence",
+    "description": "For each order, compute two running total columns using different window frame semantics:\n1. `running_rows`: `SUM(net_amount) OVER (ORDER BY order_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)`\n2. `running_range`: `SUM(net_amount) OVER (ORDER BY order_date RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)`\n\nWhen `order_date` has duplicate values (multiple orders on the same date), ROWS and RANGE produce different results. Return `order_id`, `order_date`, `net_amount`, `running_rows`, `running_range` \u2014 but **only** for orders where `running_rows != running_range`. Order by `order_date` ASC, `order_id` ASC.\n\nThis reveals the dates where tied values cause the two frame semantics to diverge.",
+    "difficulty": "hard",
+    "schema": {
+      "orders": [
+        "order_id",
+        "order_date",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv"
+    ],
+    "expected_query": "WITH windowed AS (\n    SELECT order_id, order_date, net_amount,\n           ROUND(SUM(net_amount) OVER (ORDER BY order_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW), 2) AS running_rows,\n           ROUND(SUM(net_amount) OVER (ORDER BY order_date RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW), 2) AS running_range\n    FROM orders\n)\nSELECT order_id, order_date, net_amount, running_rows, running_range\nFROM windowed\nWHERE running_rows != running_range\nORDER BY order_date, order_id",
+    "solution_query": "WITH windowed AS (\n    SELECT order_id, order_date, net_amount,\n           ROUND(SUM(net_amount) OVER (ORDER BY order_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW), 2) AS running_rows,\n           ROUND(SUM(net_amount) OVER (ORDER BY order_date RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW), 2) AS running_range\n    FROM orders\n)\nSELECT order_id, order_date, net_amount, running_rows, running_range\nFROM windowed\nWHERE running_rows != running_range\nORDER BY order_date, order_id;",
+    "required_concepts": [
+      "window_function",
+      "cte",
+      "where"
+    ],
+    "enforce_concepts": true,
+    "explanation": "ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW includes exactly the rows from the start of the partition up to the physical current row \u2014 each tied row gets a different running total. RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW treats all rows with the same ORDER BY value as peers and includes all of them together \u2014 every tied row gets the same running total (the sum including all peers). When ties exist, ROWS gives an incremental per-row total while RANGE gives all tied rows the same 'as if all were included' total. The WHERE clause filters to only divergent rows, exposing exactly the dates with ties.",
+    "hints": [
+      "ROWS counts physical row positions; RANGE groups all rows with equal ORDER BY values as peers \u2014 they differ only when there are duplicate order_date values",
+      "You cannot reference window function aliases in WHERE \u2014 use a CTE to compute both, then filter in the outer query"
+    ],
+    "concepts": [
+      "ROWS vs RANGE FRAME SEMANTICS",
+      "TIE HANDLING IN WINDOW FUNCTIONS",
+      "WINDOW FRAME DIVERGENCE DETECTION"
+    ],
+    "companies": [
+      "Google",
+      "Snowflake",
+      "Databricks",
+      "Meta"
+    ]
+  },
+  {
+    "id": 3029,
+    "order": 29,
+    "title": "First conversion within 7 days of signup",
+    "description": "For each user who signed up in 2024, determine whether they placed a completed order within 7 days of their `signup_date`.\n\nReturn `user_id`, `name`, `signup_date`, `country`, `acquisition_channel`, `converted` (1 if they have a qualifying order, 0 otherwise), and `days_to_first_order` (number of days between `signup_date` and their first qualifying order, NULL if no conversion).\n\nOrder by `converted` DESC, `days_to_first_order` ASC (NULLs last).",
+    "difficulty": "hard",
+    "schema": {
+      "users": [
+        "user_id",
+        "name",
+        "signup_date",
+        "country",
+        "acquisition_channel"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv"
+    ],
+    "expected_query": "WITH signups_2024 AS (\n    SELECT user_id, name, signup_date, country, acquisition_channel\n    FROM users\n    WHERE signup_date >= '2024-01-01' AND signup_date < '2025-01-01'\n),\nfirst_qualifying AS (\n    SELECT o.user_id,\n           MIN(o.order_date) AS first_order_date\n    FROM orders o\n    JOIN signups_2024 s ON o.user_id = s.user_id\n    WHERE o.status = 'completed'\n      AND o.order_date BETWEEN s.signup_date AND (s.signup_date::DATE + INTERVAL 7 DAY)\n    GROUP BY o.user_id\n)\nSELECT s.user_id, s.name, s.signup_date, s.country, s.acquisition_channel,\n       CASE WHEN fq.user_id IS NOT NULL THEN 1 ELSE 0 END AS converted,\n       CAST(julian(fq.first_order_date) - julian(s.signup_date) AS INT) AS days_to_first_order\nFROM signups_2024 s\nLEFT JOIN first_qualifying fq ON s.user_id = fq.user_id\nORDER BY converted DESC, days_to_first_order ASC NULLS LAST",
+    "solution_query": "WITH signups_2024 AS (\n    SELECT user_id, name, signup_date, country, acquisition_channel\n    FROM users\n    WHERE signup_date >= '2024-01-01' AND signup_date < '2025-01-01'\n),\nfirst_qualifying AS (\n    SELECT o.user_id,\n           MIN(o.order_date) AS first_order_date\n    FROM orders o\n    JOIN signups_2024 s ON o.user_id = s.user_id\n    WHERE o.status = 'completed'\n      AND o.order_date BETWEEN s.signup_date AND (s.signup_date::DATE + INTERVAL 7 DAY)\n    GROUP BY o.user_id\n)\nSELECT s.user_id, s.name, s.signup_date, s.country, s.acquisition_channel,\n       CASE WHEN fq.user_id IS NOT NULL THEN 1 ELSE 0 END AS converted,\n       CAST(julian(fq.first_order_date) - julian(s.signup_date) AS INT) AS days_to_first_order\nFROM signups_2024 s\nLEFT JOIN first_qualifying fq ON s.user_id = fq.user_id\nORDER BY converted DESC, days_to_first_order ASC NULLS LAST;",
+    "required_concepts": [
+      "cte",
+      "left_join",
+      "case_when"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Two CTEs decompose the problem: `signups_2024` filters the user cohort; `first_qualifying` finds each user's first completed order within 7 days of signup using a date-range join condition. The final LEFT JOIN preserves all 2024 signups \u2014 users with no qualifying order get NULL from the right side. CASE WHEN fq.user_id IS NOT NULL THEN 1 ELSE 0 END produces the conversion flag. JULIANDAY arithmetic computes the day difference as a number. NULLS LAST sorts non-converting users to the end.",
+    "hints": [
+      "Use two CTEs: one to isolate 2024 signups, one to find the first qualifying order with a date-range WHERE condition",
+      "LEFT JOIN the first_qualifying CTE back to all signups \u2014 users with no qualifying order will have NULL on the right side, which maps to converted=0"
+    ],
+    "concepts": [
+      "CONVERSION FUNNEL ANALYSIS",
+      "DATE-RANGE JOIN CONDITION",
+      "MULTI-CTE PIPELINE",
+      "LEFT JOIN FOR OPTIONAL MATCH"
+    ],
+    "companies": [
+      "Meta",
+      "Stripe",
+      "Airbnb",
+      "LinkedIn"
+    ]
   }
 ]
