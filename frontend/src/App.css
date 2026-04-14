@@ -6029,12 +6029,9 @@ select {
 .tier-banner-cta:hover { text-decoration: underline; }
 
 /* ── Sidebar mini-card on locked rows ──────────────── */
-.sidebar-question-locked { position: relative; }
+/* Rendered as a portal (position:fixed via inline style) so it escapes sidebar overflow */
 .sidebar-locked-mini-card {
-  position: absolute;
-  right: 0;
-  top: 100%;
-  z-index: 120;
+  z-index: 9000;
   width: 230px;
   background: var(--surface-card);
   border: 1px solid var(--border-subtle);
