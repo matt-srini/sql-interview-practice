@@ -12,7 +12,7 @@ const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
 
 export default function AppShell() {
   const { catalog, loading, error, refresh } = useCatalog();
-  const { user, refreshUser } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
@@ -203,6 +203,12 @@ export default function AppShell() {
             >
               Mock
             </NavLink>
+            <NavLink
+              className={({ isActive }) => `topbar-auth-link${isActive ? ' topbar-auth-link--active' : ''}`}
+              to="/dashboard"
+            >
+              Dashboard
+            </NavLink>
             <button
               className="theme-toggle"
               onClick={cycleTheme}
@@ -211,8 +217,14 @@ export default function AppShell() {
             >
               {themeIcon}
             </button>
-            {user && (
-              <span className={planPillClass}>{planLabel}</span>
+            {user ? (
+              <>
+                {<span className={planPillClass}>{planLabel}</span>}
+                <span className="topbar-user-name">{user.name || user.email}</span>
+                <button type="button" className="topbar-signout-btn" onClick={logout}>Sign out</button>
+              </>
+            ) : (
+              <Link className="topbar-auth-link" to="/auth">Sign in</Link>
             )}
           </div>
         </div>
