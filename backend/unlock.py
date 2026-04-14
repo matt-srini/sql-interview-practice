@@ -245,10 +245,12 @@ def compute_mock_access(
 
     # Medium mocks: Free users must have medium unlocked in this track first
     if difficulty == "medium" and plan == "free" and not medium_unlocked:
+        _is_pyspark = track == "pyspark"
+        _easy_threshold = _FREE_MEDIUM_THRESHOLDS_PYSPARK[-1][0] if _is_pyspark else _FREE_MEDIUM_THRESHOLDS_CODE[-1][0]
         return {
             "can_start": False,
             "block_reason": "not_unlocked",
-            "block_copy": f"Unlock {_track_label} medium questions first — solve 8 easy or complete the starter path.",
+            "block_copy": f"Unlock {_track_label} medium questions first — solve {_easy_threshold} easy or complete the starter path.",
             "needs_upgrade": "pro",
             "daily_limit": None,
             "daily_used": None,
