@@ -127,6 +127,8 @@ Curated path page. Shows breadcrumb (Learn → track → path title), overall pr
 | TrackProgressBar | `components/TrackProgressBar.js` | Reusable horizontal progress bar with configurable color and label |
 | PathProgressCard | `components/PathProgressCard.js` | Path card with track color dot, progress bar, and CTA; used on LandingPage and TrackHubPage |
 | Topbar | `components/Topbar.js` | Shared top nav bar used by standalone pages (LandingPage, MockHub, MockSession, ProgressDashboard, AuthPage); includes Practice dropdown, Mock link, Dashboard link, and auth state |
+| TierBanner | `components/TierBanner.js` | Inline upgrade prompt shown when a user hits a plan gate (e.g. locked hard questions); renders contextual copy and upgrade CTA |
+| UpgradeButton | `components/UpgradeButton.js` | Reusable upgrade CTA button; opens Stripe Checkout for the target plan tier |
 
 ### AppShell
 
@@ -146,7 +148,7 @@ Accepts a `plan` prop (passed from AppShell) to drive progressive unlock behavio
 - Collapsible difficulty groups
 - Per-question state: `unlocked`, `locked`, `solved`, `next`, `current`
 - NavLinks point to `/practice/${topic}/questions/${id}` (topic from `useTopic()`)
-- **Progressive unlock bar** (`.sidebar-unlock-bar`): shown in difficulty group headers when there are locked questions. Displays a progress bar filling toward the next unlock threshold plus a "{N} more to unlock" label. Thresholds mirror `backend/unlock.py`: medium unlocks at 10/20/30 easy solves; hard unlocks at 10/20/30 medium solves.
+- **Progressive unlock bar** (`.sidebar-unlock-bar`): shown in difficulty group headers when there are locked questions. Displays a progress bar filling toward the next unlock threshold plus a "{N} more to unlock" label. Thresholds mirror `backend/unlock.py` (e.g. SQL/Python/Pandas medium: 8→3, 15→8, 25→all; PySpark medium: 12→3, 20→8, 30→all).
 - **Locked question tooltip** (`title` attribute on the locked row `div`): explains exactly how many more solves are needed — e.g. "Solve 7 more easy questions to unlock this". Pro users see "Upgrade to Elite to unlock all hard questions" on hard rows.
 - Concept filter (chip grid, most-frequent first, expand/collapse) and Company filter (SQL only)
 - Test coverage in `components/SidebarNav.test.js`

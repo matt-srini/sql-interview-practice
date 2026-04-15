@@ -239,9 +239,24 @@ Files: `db.py`, `progress.py`, `unlock.py`
 
 | Plan | Access |
 |---|---|
-| Free | All easy. Medium unlocks at 10/20/30 solved easy. Hard unlocks at 10/20/30 solved medium (capped). |
-| Pro | All easy + medium + first 22 hard questions |
+| Free | All easy. Medium/hard unlock in batches based on solves (track-specific thresholds). Hard is capped. |
+| Pro | All easy + all medium + all hard (no cap) |
 | Elite | Full catalog |
+
+**Free-tier thresholds — code tracks (SQL, Python, Pandas):**
+- Medium: 8 easy → 3 · 15 easy → 8 · 25 easy → all
+- Hard: 8 medium → 3 · 15 medium → 8 · 22 medium → 15 *(cap = 15)*
+
+**Free-tier thresholds — PySpark** (higher thresholds — MCQ is lower cognitive effort):
+- Medium: 12 easy → 3 · 20 easy → 8 · 30 easy → all
+- Hard: 15 medium → 5 · 22 medium → 10 *(cap = 10)*
+
+**Learning path shortcuts:** `compute_unlock_state` accepts `path_state: dict`. `starter_done=True` → all medium unlocked (bypasses threshold grinding). `intermediate_done=True` → full hard cap unlocked. The router fetches path completion state from `GET /api/paths` and passes it in.
+
+**Mock daily limits** (enforced in `compute_mock_access`):
+- Free: 1 medium mock/day, unlimited easy and hard
+- Pro: 3 hard mocks/day, unlimited easy and medium
+- Elite: unlimited
 
 Solved questions remain solved permanently regardless of plan changes.
 

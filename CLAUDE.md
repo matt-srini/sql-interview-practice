@@ -257,9 +257,21 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 
 | Plan | Access |
 |---|---|
-| Free | All easy. Medium unlocks at 10/20/30 solved easy. Hard unlocks at 10/20/30 solved medium (capped). |
-| Pro | All easy + medium + first 22 hard |
+| Free | All easy. Medium/hard unlock in batches as you solve questions (thresholds differ by track — see below). Hard is capped. |
+| Pro | All easy + all medium + all hard (no cap) |
 | Elite | Full catalog |
+
+**Free-tier unlock thresholds (code tracks — SQL, Python, Pandas):**
+- Medium: 8 easy → 3 medium · 15 easy → 8 medium · 25 easy → all medium
+- Hard: 8 medium → 3 hard · 15 medium → 8 hard · 22 medium → 15 hard *(cap: 15)*
+
+**Free-tier unlock thresholds (PySpark — higher because MCQ is lower-effort):**
+- Medium: 12 easy → 3 medium · 20 easy → 8 medium · 30 easy → all medium
+- Hard: 15 medium → 5 hard · 22 medium → 10 hard *(cap: 10)*
+
+**Learning path shortcuts:** completing the Starter path for a track → all medium unlocked immediately; completing the Intermediate path → full hard cap unlocked. Either acts as an express-lane alternative to threshold grinding.
+
+**Mock daily limits:** Free = 1 medium/day · Pro = 3 hard/day · Elite = unlimited.
 
 **Identity:** Anonymous visitors get real user rows + session cookies. Registration upgrades the session in place. Login merges anonymous progress into an existing account.
 

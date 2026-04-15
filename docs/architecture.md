@@ -103,15 +103,25 @@ Schema is defined as a raw SQL string `_SCHEMA_SQL` in `backend/db.py` and appli
 
 ## Unlock model
 
-Pure policy function in `backend/unlock.py`. Takes `(plan, solved_ids)` → returns `set[int]` of unlocked question IDs. No DB reads inside the function — all inputs passed by the router.
+Pure policy function in `backend/unlock.py`. Signature: `compute_unlock_state(plan, solved_ids, catalog, track, path_state)` → returns `dict[question_id, "unlocked"|"locked"|"solved"]`. No DB reads — all inputs passed by the router.
 
 | Plan | Access |
 |---|---|
-| Free | All easy. Medium unlocks at 10/20/30 solved easy. Hard unlocks at 10/20/30 solved medium (capped). |
-| Pro | All easy + medium + first 22 hard questions |
+| Free | All easy. Medium/hard unlock in batches based on solves (track-specific thresholds, see below). Hard is capped. |
+| Pro | All easy + all medium + all hard (no cap) |
 | Elite | Full catalog |
 
-Solved questions remain solved permanently regardless of plan changes.
+**Free-tier thresholds — code tracks (SQL, Python, Pandas):**
+- Medium: 8 easy solved → 3 medium · 15 → 8 medium · 25 → all medium
+- Hard: 8 medium solved → 3 hard · 15 → 8 hard · 22 → 15 hard *(hard cap = 15)*
+
+**Free-tier thresholds — PySpark** (higher because MCQ is lower-effort than writing code):
+- Medium: 12 easy solved → 3 medium · 20 → 8 medium · 30 → all medium
+- Hard: 15 medium solved → 5 hard · 22 → 10 hard *(hard cap = 10)*
+
+**Learning path shortcuts (`path_state`):** `starter_done=True` → all medium unlocked immediately (same ceiling as hitting the top threshold). `intermediate_done=True` → full hard cap unlocked. Either flag is an express-lane alternative to threshold grinding, giving learning-path completers a meaningful reward.
+
+Solved questions remain solved permanently regardless of plan changes or threshold reversals.
 
 ---
 

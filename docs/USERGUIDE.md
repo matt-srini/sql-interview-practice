@@ -74,16 +74,18 @@ The full solution (correct query + explanation) only appears after you've seen a
 ## Unlock system
 
 **Free plan**
-- All 30 Easy questions are available immediately
-- Medium unlocks in batches as you solve Easy: 10 solved → first batch, 20 → second, 30 → all
-- Hard unlocks the same way as you solve Medium questions
+- All Easy questions are available immediately
+- Medium unlocks in batches as you solve Easy questions (thresholds vary by track):
+  - SQL / Python / Pandas: 8 solved → 3 medium · 15 → 8 medium · 25 → all medium
+  - PySpark: 12 solved → 3 medium · 20 → 8 medium · 30 → all medium
+- Hard unlocks the same way as you solve Medium (capped at 15 for code tracks, 10 for PySpark)
+- **Shortcut:** Completing a learning path unlocks the full medium or hard tier for that track immediately
 
 **Pro plan**
-- All Easy + all Medium unlocked immediately
-- First 22 Hard questions unlocked
+- All Easy + all Medium + all Hard unlocked immediately (no cap)
 
 **Elite plan**
-- Full catalog — all 86 questions unlocked
+- Full catalog across all four tracks — 350 questions total
 
 Solved questions stay solved permanently, regardless of plan changes.
 
