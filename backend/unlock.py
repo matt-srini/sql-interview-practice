@@ -10,7 +10,7 @@ from typing import Any
 #
 # Route A (raw solves) and Route B (path completion) are two doors to the same
 # room: the *higher* limit wins, so a partially-threshold-unlocked user who also
-# completes the starter path immediately gets all medium.
+# completes a learning path immediately gets all medium.
 
 # Code tracks: SQL, Python, Pandas
 _FREE_MEDIUM_THRESHOLDS_CODE: list[tuple[int, int | None]] = [
@@ -250,7 +250,7 @@ def compute_mock_access(
         return {
             "can_start": False,
             "block_reason": "not_unlocked",
-            "block_copy": f"Unlock {_track_label} medium questions first — solve {_easy_threshold} easy or complete the starter path.",
+            "block_copy": f"Solve {_easy_threshold} easy {_track_label} questions in practice mode to unlock medium difficulty.",
             "needs_upgrade": "pro",
             "daily_limit": None,
             "daily_used": None,

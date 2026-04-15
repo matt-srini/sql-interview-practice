@@ -26,8 +26,8 @@ export default function TierBanner({ plan, easySolved = 0, mediumSolved = 0, med
   if (!mediumUnlocked) {
     const needed = Math.max(0, 8 - easySolved);
     message = needed > 0
-      ? `Free plan · All easy unlocked. Solve ${needed} more easy to unlock medium, or complete the starter path.`
-      : 'Free plan · All easy unlocked. Complete the starter path or solve 8 easy to unlock medium.';
+      ? `Free plan · All easy unlocked. Solve ${needed} more easy to unlock medium, or complete a learning path.`
+      : 'Free plan · All easy unlocked. Complete a learning path or solve 8 easy to unlock medium.';
   } else if (!hardUnlocked) {
     const needed = Math.max(0, 8 - mediumSolved);
     message = needed > 0
