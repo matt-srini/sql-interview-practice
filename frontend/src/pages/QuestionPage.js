@@ -367,9 +367,35 @@ export default function QuestionPage() {
               const difficulty = question?.difficulty;
               // State 1: threshold-locked (Free, reachable by solving more)
               const isThresholdLocked = plan === 'free' && (difficulty === 'medium' || difficulty === 'hard');
-              // State 2: plan-locked (Free at hard cap, or just showing upgrade)
-              const nextEasyNeeded = difficulty === 'medium' ? Math.max(0, 8 - (catalogQuestionMeta?.group?.counts?.solved ?? 0)) : null;
-              const nextMediumNeeded = difficulty === 'hard' ? Math.max(0, 8 - (catalog?.groups?.find(g => g.difficulty === 'medium')?.questions?.filter(q => q.state === 'solved').length ?? 0)) : null;
+
+              // Unlock thresholds mirror unlock.py exactly.
+              // Each entry: [solvedNeeded, maxQuestionsUnlocked]
+              const isPySpark = topic === 'pyspark';
+              const MEDIUM_THRESHOLDS = isPySpark
+                ? [[12, 3], [20, 8], [30, Infinity]]
+                : [[8, 3], [15, 8], [25, Infinity]];
+              const HARD_THRESHOLDS = isPySpark
+                ? [[15, 5], [22, Infinity]]
+                : [[8, 3], [15, 8], [22, Infinity]];
+
+              // 1-indexed position of this question in the sorted difficulty list
+              const sortedGroup = (catalogQuestionMeta?.group?.questions ?? [])
+                .slice().sort((a, b) => a.order - b.order);
+              const questionPos = sortedGroup.findIndex(q => Number(q.id) === Number(id)) + 1;
+
+              // Find the threshold tier that covers this question's position
+              const easyThresholdEntry  = MEDIUM_THRESHOLDS.find(([, max]) => questionPos <= max);
+              const medThresholdEntry   = HARD_THRESHOLDS.find(([, max]) => questionPos <= max);
+
+              const easySolved   = catalog?.groups?.find(g => g.difficulty === 'easy')?.counts?.solved ?? 0;
+              const mediumSolved = catalog?.groups?.find(g => g.difficulty === 'medium')?.counts?.solved ?? 0;
+
+              const nextEasyNeeded   = difficulty === 'medium' && easyThresholdEntry
+                ? Math.max(0, easyThresholdEntry[0] - easySolved)
+                : null;
+              const nextMediumNeeded = difficulty === 'hard' && medThresholdEntry
+                ? Math.max(0, medThresholdEntry[0] - mediumSolved)
+                : null;
               const solveMoreCopy = difficulty === 'medium' && nextEasyNeeded > 0
                 ? `Solve ${nextEasyNeeded} more easy ${topic === 'sql' ? 'SQL' : topic} question${nextEasyNeeded !== 1 ? 's' : ''} to unlock this.`
                 : difficulty === 'hard' && nextMediumNeeded > 0
