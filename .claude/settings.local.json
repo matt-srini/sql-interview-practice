@@ -51,7 +51,17 @@
       "Bash(find /Users/matt/Work/projects/sql-interview-practice -name *.venv -o -name venv -type d)",
       "Bash(/Users/matt/Work/projects/sql-interview-practice/.venv/bin/python3 -c \"import routers.mock; print\\(''mock router imports OK''\\)\")",
       "Bash(/Users/matt/Work/projects/sql-interview-practice/.venv/bin/python3 -c \"import main; print\\(''main.py imports OK''\\)\")",
-      "Bash(/Users/matt/Work/projects/sql-interview-practice/.venv/bin/python3 -m pytest tests/ -q)"
+      "Bash(/Users/matt/Work/projects/sql-interview-practice/.venv/bin/python3 -m pytest tests/ -q)",
+      "Bash(xargs -I{} sh -c 'echo \"=== {} ===\" && git show {}:TODO.md 2>/dev/null | grep -i \"ai\\\\|llm\\\\|gpt\\\\|claude\\\\|anthropic\\\\|intelligent\\\\|natural language\\\\|generative\" | head -5')",
+      "Bash(../.venv/bin/python -m pytest tests/test_unlock.py -v)",
+      "Bash(../.venv/bin/python -m pytest tests/test_unlock.py -q)",
+      "Bash(git checkout:*)",
+      "Bash(../.venv/bin/python -m pytest tests/test_evaluator.py tests/test_api.py -q)",
+      "Bash(python3 -c ':*)",
+      "Bash(../.venv/bin/python -m pytest tests/test_api.py::test_register_preserves_anonymous_progress_and_user_id -xvs)",
+      "Bash(../.venv/bin/python -c ':*)",
+      "Bash(../.venv/bin/python -m pytest tests/test_api.py::test_register_preserves_anonymous_progress_and_user_id tests/test_api.py::test_login_merges_existing_anonymous_progress -xvs)",
+      "Bash(git push:*)"
     ]
   }
 }
