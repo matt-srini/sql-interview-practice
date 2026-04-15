@@ -42,6 +42,8 @@ Keep all five lenses active at once. The best decisions here satisfy all of them
 
 - **Parallelize coding work when possible.** If a coding task can be split safely and subagents are available, offload disjoint slices in parallel. Review and integrate results before finishing.
 
+- **Always work directly on `main`.** Never create feature branches, worktrees, or `claude/*` branches. All changes — including multi-step implementations — go directly to `main` and are committed and pushed there.
+
 ---
 
 ## What this is
