@@ -18,7 +18,7 @@ def _register_user(client: TestClient, email: str = "stripe@example.com") -> dic
         json={
             "email": email,
             "name": "Stripe User",
-            "password": "password123",
+            "password": "Password123",
         },
     )
     assert response.status_code == 201
