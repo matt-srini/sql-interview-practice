@@ -50,3 +50,10 @@ auditresults.log
 
 # Ignore npm cache
 .npm-cache/
+
+# Playwright artifacts
+frontend/test-results/
+frontend/playwright-report/
+
+# e2e ephemeral test user credentials (recreated each run)
+frontend/e2e/.test-users.json
