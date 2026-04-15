@@ -1,0 +1,20 @@
+{
+  "elite": {
+    "email": "e2e-elite-setup-1776283825634@internal.test",
+    "password": "E2eTest123!",
+    "plan": "elite",
+    "id": "9840a3f1-106b-42b7-8710-55f1fececd41"
+  },
+  "pro": {
+    "email": "e2e-pro-setup-1776283826113@internal.test",
+    "password": "E2eTest123!",
+    "plan": "pro",
+    "id": "00e4832a-a68c-43b6-8211-8e591b9316f1"
+  },
+  "free": {
+    "email": "e2e-free-setup-1776283826199@internal.test",
+    "password": "E2eTest123!",
+    "plan": "free",
+    "id": "0d1b0f0d-f28b-406b-8f82-2e063633598a"
+  }
+}

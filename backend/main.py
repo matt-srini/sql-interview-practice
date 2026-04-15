@@ -118,6 +118,12 @@ async def ip_rate_limit_middleware(request: Request, call_next):
 
     request_id = getattr(request.state, "request_id", "-")
     client_ip = request.client.host if request.client and request.client.host else "unknown"
+
+    # Skip rate limiting for localhost in dev mode (e.g. Playwright e2e tests)
+    from config import IS_PROD
+    if not IS_PROD and client_ip in ("127.0.0.1", "::1", "localhost"):
+        return await call_next(request)
+
     decision = rate_limiter.check(client_ip)
     if not decision.allowed:
         logger.warning(
