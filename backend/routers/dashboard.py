@@ -31,9 +31,12 @@ def _build_index(module: Any) -> dict[int, dict[str, Any]]:
 def _solved_by_difficulty(
     solved_ids: set[int],
     grouped: dict[str, list[dict[str, Any]]],
-) -> dict[str, int]:
+) -> dict[str, dict[str, int]]:
     return {
-        diff: sum(1 for q in qs if int(q["id"]) in solved_ids)
+        diff: {
+            "solved": sum(1 for q in qs if int(q["id"]) in solved_ids),
+            "total": len(qs),
+        }
         for diff, qs in grouped.items()
     }
 
