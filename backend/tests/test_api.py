@@ -528,7 +528,7 @@ def test_register_preserves_anonymous_progress_and_user_id() -> None:
 
         register = client.post(
             "/api/auth/register",
-            json={"email": "anon@example.com", "name": "Anon User", "password": "password123"},
+            json={"email": "anon@example.com", "name": "Anon User", "password": "Password123"},
         )
         assert register.status_code == 201
         payload = register.json()["user"]
@@ -555,7 +555,7 @@ def test_login_merges_existing_anonymous_progress() -> None:
         registered_client.get("/api/catalog")
         register = registered_client.post(
             "/api/auth/register",
-            json={"email": "merge@example.com", "name": "Merge User", "password": "password123"},
+            json={"email": "merge@example.com", "name": "Merge User", "password": "Password123"},
         )
         assert register.status_code == 201
         registered_user_id = register.json()["user"]["id"]
@@ -573,7 +573,7 @@ def test_login_merges_existing_anonymous_progress() -> None:
 
         login = anonymous_client.post(
             "/api/auth/login",
-            json={"email": "merge@example.com", "password": "password123"},
+            json={"email": "merge@example.com", "password": "Password123"},
         )
         assert login.status_code == 200
         assert login.json()["user"]["id"] == registered_user_id
