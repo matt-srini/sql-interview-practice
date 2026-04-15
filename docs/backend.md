@@ -148,7 +148,7 @@ Also available without `/api` prefix.
 | GET | `/api/dashboard` | Per-track solved counts, concepts, and recent activity for the current user |
 | GET | `/api/submissions` | Submission history for a question (`track`, `question_id`, `limit` query params; max 20) |
 
-Response shape: `{ tracks: { sql, python, python_data, pyspark }, concepts_by_track, recent_activity }`.
+Response shape: `{ tracks: { sql, python, python_data, pyspark }, concepts_by_track, recent_activity }`. Each track includes `by_difficulty: { easy: { solved, total }, medium: { solved, total }, hard: { solved, total } }` — note both `solved` and `total` are included in each difficulty object, not bare integers.
 
 ### Learning paths — `/api/paths`
 
@@ -272,6 +272,7 @@ Solved questions remain solved permanently regardless of plan changes.
 - Default: 60 requests per 60-second window per IP
 - Redis-backed when `REDIS_URL` is set; in-memory fallback otherwise
 - Config: `RATE_LIMIT_REQUESTS`, `RATE_LIMIT_WINDOW_SECONDS` in `config.py`
+- Localhost bypass: requests from `127.0.0.1` / `::1` skip rate limiting in non-prod mode — safe for local dev and Playwright e2e tests
 
 ---
 
@@ -288,6 +289,8 @@ Prefix: `/api/mock`
 | GET | `/api/mock/{id}` | required | Load session state (for reload recovery) |
 | POST | `/api/mock/{id}/submit` | required | Evaluate an answer mid-session; updates `mock_session_questions`; no solutions returned |
 | POST | `/api/mock/{id}/finish` | required | Mark session completed; returns summary with per-question solutions (idempotent) |
+
+> **Access enforcement:** `POST /api/mock/start` validates plan and daily limits server-side via `compute_mock_access()` before persisting any session. A 403 is returned if the user's plan doesn't allow the requested difficulty, or if daily limits are exhausted. The daily-limit check at `GET /api/mock/access` is a UI preflight only — it does not gate actual session creation.
 
 ### Request bodies
 

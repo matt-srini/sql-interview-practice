@@ -98,7 +98,7 @@ Standalone sample practice. No sidebar. No effect on challenge progression.
 
 ### ProgressDashboard (`/dashboard`)
 
-Cross-track progress overview. 4-card grid with TrackProgressBar per track, concept tags, and recent activity. Fetches `GET /api/dashboard` on mount.
+Cross-track progress overview. 4-card grid with TrackProgressBar per track, concept tags, and recent activity. Fetches `GET /api/dashboard` on mount. The `by_difficulty` field in the response is `{ easy: { solved, total }, medium: { solved, total }, hard: { solved, total } }` — the dashboard renders these as "X/Y" counts per difficulty level.
 
 ### LearningPathsIndex (`/learn`, `/learn/:topic`)
 
@@ -380,3 +380,29 @@ Full-screen layout. Does not use `AppShell`. Has two states:
 **LandingPage topbar:** "Mock" link added before "Dashboard".
 
 **ProgressDashboard:** Mock sessions history table shown below the track grid (fetched from `GET /api/mock/history`).
+
+---
+
+## Testing
+
+| Suite | File | Coverage |
+|---|---|---|
+| SidebarNav unit | `src/components/SidebarNav.test.js` | Collapse/expand difficulty groups, locked vs unlocked question rendering, navigation |
+| ProgressDashboard unit | `src/pages/ProgressDashboard.test.js` | X/Y count rendering for all 4 tracks, zero counts, loading/error states, regression guard against plain-int shape returned by older API |
+| Plan-tier e2e | `e2e/plan-tiers.spec.js` | Dashboard counts, sidebar lock state, TrackHub plan banner, mock difficulty gating — verified against live dev servers for elite/pro/free plans |
+
+**Tooling:**
+- Unit tests: Vitest + React Testing Library + jsdom (`npm test`)
+- E2E: Playwright 1.59 (`npx playwright test`); config in `playwright.config.js`
+- E2E setup: `e2e/global-setup.js` creates one user per plan tier before the suite; credentials written to `e2e/.test-users.json` (gitignored) for reuse across all tests
+- `package.json` has `"type": "module"` (required for Playwright ESM config and globalSetup)
+- `vite.config.js` excludes `**/e2e/**` from Vitest so Playwright specs aren't picked up as unit tests
+
+**Running tests:**
+```bash
+# Unit tests
+cd frontend && npm test
+
+# E2E (requires backend on :8000 and frontend on :5173)
+cd frontend && npx playwright test
+```

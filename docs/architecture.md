@@ -96,6 +96,8 @@ Schema is defined as a raw SQL string `_SCHEMA_SQL` in `backend/db.py` and appli
 | `plan_changes` | Audit log of plan upgrades | `user_id`, `old_plan`, `new_plan`, `created_at` |
 | `stripe_events` | Idempotent Stripe webhook records | `event_id`, `event_type`, `processed_at` |
 | `submissions` | Every submit attempt per user | `user_id`, `track`, `question_id`, `is_correct`, `code`, `submitted_at` |
+| `mock_sessions` | Mock interview session records | `user_id`, `mode`, `track`, `difficulty`, `status`, `started_at`, `ended_at` |
+| `mock_session_questions` | Per-question answers within a mock session | `session_id`, `question_id`, `track`, `is_solved`, `final_code`, `time_spent_s` |
 
 **`user_progress` and `user_sample_seen` carry a `topic` column** (DEFAULT `'sql'`). Progress is completely independent per topic — solving SQL does not affect Python unlock state.
 
@@ -178,6 +180,7 @@ Applied as middleware to all routes except `/health`.
 - Default: 60 requests / 60-second window / IP
 - Redis-backed when `REDIS_URL` is set (required in production)
 - In-memory dict fallback for local dev (process-local only — does not share across instances)
+- Localhost bypass: requests from `127.0.0.1` / `::1` skip rate limiting in non-prod mode (safe for local dev and e2e tests)
 - Config: `RATE_LIMIT_REQUESTS`, `RATE_LIMIT_WINDOW_SECONDS` env vars
 
 ---
@@ -293,12 +296,24 @@ Sample IDs are always 3 digits and never overlap with challenge IDs.
 | Backend API | `backend/tests/test_api.py` | Auth, catalog, question fetch, submit, sample |
 | SQL evaluator | `backend/tests/test_evaluator.py` | Normalization, comparison, ORDER BY sensitivity |
 | Rate limiter | `backend/tests/test_rate_limiter.py` | Window reset, limit enforcement |
-| Frontend | `frontend/src/components/SidebarNav.test.js` | Question list states |
+| Plan tiers | `backend/tests/test_plan_tiers.py` | Catalog unlock rules, mock daily limits, dashboard shape — all 3 plan tiers × all 4 tracks |
+| Frontend unit | `frontend/src/components/SidebarNav.test.js` | Question list collapse/expand, lock state rendering |
+| Frontend unit | `frontend/src/pages/ProgressDashboard.test.js` | X/Y count format, all 4 track cards, loading/error states, regression guard against plain-int shape |
+| E2E (Playwright) | `frontend/e2e/plan-tiers.spec.js` | Dashboard counts, sidebar lock state, TrackHub banner, mock difficulty gating — live dev servers |
 
-**Gaps:** No frontend page-flow tests. No end-to-end sample exhaustion / reset regression suite.
+**Test infrastructure notes:**
+- `backend/tests/conftest.py` (`isolated_state` fixture): resets DB state and clears rate limiter between every backend test to prevent cross-test contamination
+- `frontend/e2e/global-setup.js`: creates elite/pro/free test users once before the full Playwright suite, writes credentials to `e2e/.test-users.json` (gitignored); avoids exhausting the dev server rate limiter across 7 tests
+- Localhost requests bypass the rate limiter in non-prod mode (`main.py`) — required for Playwright tests running against the local dev server
 
 **Run tests:**
 ```bash
-cd backend && pytest -q
+# Backend
+cd backend && ../.venv/bin/python -m pytest tests/ -q
+
+# Frontend unit tests (Vitest)
 cd frontend && npm test
+
+# E2E (requires both dev servers running: backend :8000, frontend :5173)
+cd frontend && npx playwright test
 ```
