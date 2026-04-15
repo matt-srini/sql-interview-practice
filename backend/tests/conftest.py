@@ -18,10 +18,13 @@ os.environ.setdefault("DATABASE_URL", "postgresql://postgres:postgres@localhost:
 @pytest.fixture
 def isolated_state(monkeypatch):
     from db import close_pool, ensure_schema_admin, reset_database_admin
+    from backend.main import _clear_rate_limit_state
 
     asyncio.run(close_pool())
     asyncio.run(ensure_schema_admin())
     asyncio.run(reset_database_admin())
+    _clear_rate_limit_state()
     yield
     asyncio.run(close_pool())
     asyncio.run(reset_database_admin())
+    _clear_rate_limit_state()

@@ -86,9 +86,10 @@ describe('SidebarNav', () => {
       { initialEntries: ['/practice/sql'] }
     );
 
-    // Locked question should not be a link
+    // Locked question renders as a NavLink with sidebar-question-locked class
+    // (navigates to preview mode — content visible, Run/Submit disabled)
     const lockedRow = screen.getByText('Duplicate Emails').closest('.sidebar-question');
-    expect(lockedRow).toHaveAttribute('aria-disabled', 'true');
+    expect(lockedRow).toHaveClass('sidebar-question-locked');
 
     // Unlocked question should navigate
     await user.click(screen.getByText('Second Highest Salary'));
