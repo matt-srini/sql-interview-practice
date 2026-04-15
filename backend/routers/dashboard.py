@@ -114,8 +114,16 @@ async def get_dashboard(
             }
         )
 
+    def _remap(d: dict) -> dict:
+        """Rename python_data → python-data to match frontend topic slugs."""
+        return {("python-data" if k == "python_data" else k): v for k, v in d.items()}
+
+    for row in recent_activity:
+        if row["topic"] == "python_data":
+            row["topic"] = "python-data"
+
     return {
-        "tracks": tracks,
-        "concepts_by_track": concepts_by_track,
+        "tracks": _remap(tracks),
+        "concepts_by_track": _remap(concepts_by_track),
         "recent_activity": recent_activity,
     }
