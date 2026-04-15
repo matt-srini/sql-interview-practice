@@ -217,6 +217,7 @@ export default function AppShell() {
             >
               {themeIcon}
             </button>
+            <div className="topbar-sep" aria-hidden="true" />
             {user ? (
               <>
                 {<span className={planPillClass}>{planLabel}</span>}
