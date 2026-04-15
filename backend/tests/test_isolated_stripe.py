@@ -18,7 +18,7 @@ def _register_user(client: TestClient, email: str = "isolated@example.com") -> d
         json={
             "email": email,
             "name": "Isolated Stripe User",
-            "password": "password123",
+            "password": "Password123",
         },
     )
     assert response.status_code == 201
