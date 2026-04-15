@@ -6157,8 +6157,7 @@ select {
 
 /* ── Mock difficulty notice (below config card) ───────── */
 .mock-config-pill--blocked {
-  opacity: 0.5;
-  cursor: not-allowed;
+  opacity: 0.55;
 }
 .mock-diff-notice {
   font-size: 0.82rem;
@@ -6175,6 +6174,11 @@ select {
   background: var(--warning-soft);
   color: var(--warning);
   border: 1px solid rgba(196, 127, 23, 0.25);
+}
+.mock-diff-notice--info {
+  background: var(--surface-card-soft);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
 }
 
 /* ── Landing tier comparison section ───────────────── */
