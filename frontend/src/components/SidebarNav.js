@@ -1,8 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { useMemo, useRef, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useTopic } from '../contexts/TopicContext';
-import UpgradeButton from './UpgradeButton';
 
 // How many concept chips to show before the "show more" toggle
 const CHIP_VISIBLE_DEFAULT = 8;
@@ -93,83 +91,16 @@ function QuestionContent({ q, isActive = false }) {
   );
 }
 
-function QuestionRow({ q, onNavigate, topic, lockedMiniCard }) {
-  const [miniCardAnchor, setMiniCardAnchor] = useState(null);
-  const rowRef = useRef(null);
-  const closeTimer = useRef(null);
+function QuestionRow({ q, onNavigate, topic }) {
   const stateClass = `sidebar-question-state-${q.state}`;
+  const lockedClass = q.state === 'locked' ? ' sidebar-question-locked' : '';
 
-  const openCard = useCallback(() => {
-    clearTimeout(closeTimer.current);
-    if (!rowRef.current) return;
-    const rect = rowRef.current.getBoundingClientRect();
-    setMiniCardAnchor({ top: rect.top, left: rect.right + 6 });
-  }, []);
-
-  const scheduleClose = useCallback(() => {
-    closeTimer.current = setTimeout(() => setMiniCardAnchor(null), 100);
-  }, []);
-
-  const cancelClose = useCallback(() => {
-    clearTimeout(closeTimer.current);
-  }, []);
-
-  useEffect(() => () => clearTimeout(closeTimer.current), []);
-
-  if (q.state === 'locked') {
-    // Locked questions navigate to preview mode (same as "Preview →" in learning paths).
-    // Mini-card is rendered via a portal so it escapes the sidebar's overflow and doesn't
-    // bleed over rows below the hovered row.
-    return (
-      <>
-        <NavLink
-          ref={rowRef}
-          to={`/practice/${topic}/questions/${q.id}`}
-          className={({ isActive }) =>
-            `sidebar-question sidebar-question-locked ${stateClass}${isActive ? ' sidebar-question-active' : ''}`
-          }
-          onClick={onNavigate}
-          onMouseEnter={openCard}
-          onMouseLeave={scheduleClose}
-          onFocus={openCard}
-          onBlur={scheduleClose}
-        >
-          {({ isActive }) => <QuestionContent q={q} isActive={isActive} />}
-        </NavLink>
-        {miniCardAnchor && lockedMiniCard && createPortal(
-          <div
-            className="sidebar-locked-mini-card"
-            role="tooltip"
-            style={{ position: 'fixed', top: miniCardAnchor.top, left: miniCardAnchor.left }}
-            onMouseEnter={cancelClose}
-            onMouseLeave={() => setMiniCardAnchor(null)}
-          >
-            <p className="sidebar-locked-mini-card-headline">{lockedMiniCard.headline}</p>
-            {lockedMiniCard.body && (
-              <p className="sidebar-locked-mini-card-body">{lockedMiniCard.body}</p>
-            )}
-            <div className="sidebar-locked-mini-card-actions">
-              {lockedMiniCard.practiceLink && (
-                <a href={lockedMiniCard.practiceLink} className="sidebar-locked-mini-card-cta sidebar-locked-mini-card-cta-secondary">
-                  {lockedMiniCard.practiceLabel ?? 'Practice now →'}
-                </a>
-              )}
-              {lockedMiniCard.upgradeTier && (
-                <UpgradeButton tier={lockedMiniCard.upgradeTier} label={lockedMiniCard.upgradeLabel} compact source="sidebar_locked" />
-              )}
-            </div>
-          </div>,
-          document.body
-        )}
-      </>
-    );
-  }
-
+  // Locked questions navigate to preview mode — content visible, Run/Submit disabled.
   return (
     <NavLink
       to={`/practice/${topic}/questions/${q.id}`}
       className={({ isActive }) =>
-        `sidebar-question ${stateClass} ${isActive ? 'sidebar-question-active' : ''}`
+        `sidebar-question${lockedClass} ${stateClass}${isActive ? ' sidebar-question-active' : ''}`
       }
       onClick={onNavigate}
     >
@@ -330,35 +261,6 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
   const mediumNudge = plan === 'free' ? computeUnlockNudge(easySolved, MEDIUM_THRESHOLDS) : null;
   const hardNudge = plan === 'free' ? computeUnlockNudge(mediumSolved, HARD_THRESHOLDS) : null;
 
-  // Mini-card data for locked question rows
-  const trackLabel = topic ? topic.charAt(0).toUpperCase() + topic.slice(1).replace('-', ' ') : 'this track';
-  const mediumMiniCard = plan === 'free' && mediumNudge
-    ? {
-        headline: `Unlocks after ${mediumNudge.gap} more easy solve${mediumNudge.gap !== 1 ? 's' : ''}`,
-        body: `You've solved ${easySolved} of ${MEDIUM_THRESHOLDS[0]} easy. Keep going — medium unlocks at ${MEDIUM_THRESHOLDS[0]}.`,
-        practiceLink: `/practice/${topic}`,
-        practiceLabel: 'Continue easy →',
-        upgradeTier: 'pro',
-        upgradeLabel: 'Unlock now with Pro',
-      }
-    : plan === 'free'
-    ? { headline: 'Unlock medium questions', upgradeTier: 'pro', upgradeLabel: 'Upgrade to Pro' }
-    : null;
-
-  const hardMiniCard = plan === 'free' && hardNudge
-    ? {
-        headline: `Unlocks after ${hardNudge.gap} more medium solve${hardNudge.gap !== 1 ? 's' : ''}`,
-        body: `You've solved ${mediumSolved} of ${HARD_THRESHOLDS[0]} medium. Solve more to unlock hard questions.`,
-        practiceLink: `/practice/${topic}`,
-        practiceLabel: 'Continue medium →',
-        upgradeTier: 'pro',
-        upgradeLabel: 'Unlock all hard with Pro',
-      }
-    : plan === 'free'
-    ? { headline: 'Unlock hard questions', upgradeTier: 'pro', upgradeLabel: 'Upgrade to Pro' }
-    : null;
-  // Pro users now get all hard — no hard-cap mini-card needed
-
   const [activeFilters, setActiveFilters] = useState(new Set());
   const [activeCompanyFilters, setActiveCompanyFilters] = useState(new Set());
 
@@ -441,9 +343,6 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
         const nudge = g.difficulty === 'medium' && hasLockedQuestions ? mediumNudge
           : g.difficulty === 'hard' && hasLockedQuestions ? hardNudge
           : null;
-        const lockedMiniCard = g.difficulty === 'medium' ? mediumMiniCard
-          : g.difficulty === 'hard' ? hardMiniCard
-          : null;
         return (
           <div className="sidebar-group" key={g.difficulty}>
             <DifficultyHeader
@@ -459,7 +358,7 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
                   .slice()
                   .sort((a, b) => a.order - b.order)
                   .map((q) => (
-                    <QuestionRow key={q.id} q={q} onNavigate={onNavigate} topic={topic} lockedMiniCard={q.state === 'locked' ? lockedMiniCard : null} />
+                    <QuestionRow key={q.id} q={q} onNavigate={onNavigate} topic={topic} />
                   ))}
               </div>
             )}
