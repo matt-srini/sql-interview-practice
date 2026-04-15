@@ -9,7 +9,7 @@ from sample_questions import SAMPLE_QUESTIONS
 from sql_analyzer import extract_query_features
 
 
-Q_USERS_ONLY = get_question(1001)
+Q_USERS_ONLY = get_question(1004)
 Q_MULTI_TABLES = {
     "dataset_files": [
         "users.csv",
@@ -123,7 +123,7 @@ def test_run_query_allows_other_loaded_tables() -> None:
 
 
 def test_evaluate_correct_solution() -> None:
-    q1 = get_question(1001)
+    q1 = get_question(1004)
     assert q1 is not None
     result = evaluate(q1["solution_query"], q1["expected_query"], q1)
     assert result["correct"] is True
@@ -318,13 +318,13 @@ def test_extract_features_no_features() -> None:
 
 # Minimal question fixture with required_concepts and enforce_concepts
 _Q_CONCEPTS_ENFORCED = {
-    **get_question(1001),  # type: ignore[arg-type]
+    **get_question(1004),  # type: ignore[arg-type]
     "required_concepts": ["group_by"],
     "enforce_concepts": True,
 }
 
 _Q_CONCEPTS_SOFT = {
-    **get_question(1001),  # type: ignore[arg-type]
+    **get_question(1004),  # type: ignore[arg-type]
     "required_concepts": ["group_by"],
     "enforce_concepts": False,
 }
@@ -332,7 +332,7 @@ _Q_CONCEPTS_SOFT = {
 
 def test_evaluate_returns_new_fields() -> None:
     """evaluate() must always return structure_correct and feedback."""
-    q = get_question(1001)
+    q = get_question(1004)
     result = evaluate(q["solution_query"], q["expected_query"], q)
     assert "structure_correct" in result
     assert "feedback" in result
@@ -360,7 +360,7 @@ def test_evaluate_correct_result_correct_structure() -> None:
 
 def test_evaluate_correct_result_wrong_structure_enforced() -> None:
     """Solution is correct but required concept missing + enforced → structure_correct=False."""
-    q = get_question(1001)  # simple SELECT, no GROUP BY
+    q = get_question(1004)  # simple SELECT, no GROUP BY
     result = evaluate(q["solution_query"], q["expected_query"], _Q_CONCEPTS_ENFORCED)
     assert result["correct"] is True           # result still correct
     assert result["structure_correct"] is False  # concept enforced and missing
@@ -371,7 +371,7 @@ def test_evaluate_correct_result_wrong_structure_enforced() -> None:
 
 def test_evaluate_correct_result_wrong_structure_soft() -> None:
     """Solution is correct but required concept missing, not enforced → soft feedback only."""
-    q = get_question(1001)
+    q = get_question(1004)
     result = evaluate(q["solution_query"], q["expected_query"], _Q_CONCEPTS_SOFT)
     assert result["correct"] is True
     assert result["structure_correct"] is True   # not enforced → still True
@@ -381,6 +381,6 @@ def test_evaluate_correct_result_wrong_structure_soft() -> None:
 
 def test_evaluate_wrong_result() -> None:
     """Wrong result → correct=False regardless of concept state."""
-    q = get_question(1001)
+    q = get_question(1004)
     result = evaluate("SELECT user_id FROM users LIMIT 1", q["expected_query"], q)
     assert result["correct"] is False

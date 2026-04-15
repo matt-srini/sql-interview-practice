@@ -1,32 +1,26 @@
 [
   {
-    "id": 5001,
-    "order": 1,
-    "topic": "python_data",
-    "difficulty": "easy",
-    "title": "Filter US Users",
-    "description": "You have a DataFrame `df_users` loaded from the users dataset.\n\n**Columns:** `user_id`, `name`, `email`, `country`, `signup_date`, `is_active`\n\nReturn all rows where `country` is `'US'`, sorted by `user_id` ascending.",
-    "dataframes": { "df_users": "users.csv" },
-    "schema": { "df_users": ["user_id", "name", "email", "signup_date", "country", "acquisition_channel", "plan_tier", "is_active"] },
-    "starter_code": "import pandas as pd\n\ndef solve(df_users):\n    # Filter for US users, return sorted by user_id ascending\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_users):\n    return df_users[df_users['country'] == 'US'].sort_values('user_id').reset_index(drop=True)",
-    "solution_code": "import pandas as pd\n\ndef solve(df_users):\n    return df_users[df_users['country'] == 'US'].sort_values('user_id').reset_index(drop=True)",
-    "explanation": "Boolean indexing with `df[condition]` filters rows where the condition is True. `sort_values('user_id')` orders the result ascending by default. `reset_index(drop=True)` gives the result a clean 0-based index.",
-    "hints": [
-      "Use boolean indexing: `df[df['column'] == value]`",
-      "Chain `.sort_values('user_id')` to order the result"
-    ],
-    "concepts": ["boolean indexing", "sort_values", "filtering"]
-  },
-  {
     "id": 5002,
-    "order": 2,
+    "order": 1,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Select Columns and Drop Nulls",
     "description": "You have a DataFrame `df_users` loaded from the users dataset.\n\n**Columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `is_active`\n\nSelect only the `name` and `email` columns, then drop any rows where `email` is null. Return the resulting DataFrame.",
-    "dataframes": { "df_users": "users.csv" },
-    "schema": { "df_users": ["user_id", "name", "email", "signup_date", "country", "acquisition_channel", "plan_tier", "is_active"] },
+    "dataframes": {
+      "df_users": "users.csv"
+    },
+    "schema": {
+      "df_users": [
+        "user_id",
+        "name",
+        "email",
+        "signup_date",
+        "country",
+        "acquisition_channel",
+        "plan_tier",
+        "is_active"
+      ]
+    },
     "starter_code": "import pandas as pd\n\ndef solve(df_users):\n    # Select name and email columns, drop rows with null email\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_users):\n    return df_users[['name', 'email']].dropna(subset=['email']).reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_users):\n    return df_users[['name', 'email']].dropna(subset=['email']).reset_index(drop=True)",
@@ -35,17 +29,34 @@
       "Use `df[['name', 'email']]` to select multiple columns",
       "Use `.dropna(subset=['email'])` to remove rows where only email is null"
     ],
-    "concepts": ["column selection", "dropna", "missing values"]
+    "concepts": [
+      "column selection",
+      "dropna",
+      "missing values"
+    ]
   },
   {
     "id": 5003,
-    "order": 3,
+    "order": 2,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Count Orders by Status",
     "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `net_amount`\n\nCount the number of orders for each `status`. Return a DataFrame with columns `['status', 'count']`, sorted by `count` descending.",
-    "dataframes": { "df_orders": "orders.csv" },
-    "schema": { "df_orders": ["order_id", "user_id", "order_date", "status", "gross_amount", "discount_amount", "net_amount", "payment_status"] },
+    "dataframes": {
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Count orders per status, return DataFrame with columns [status, count]\n    # sorted by count descending\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    result = df_orders.groupby('status', as_index=False).size().rename(columns={'size': 'count'})\n    return result.sort_values('count', ascending=False).reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    result = df_orders.groupby('status', as_index=False).size().rename(columns={'size': 'count'})\n    return result.sort_values('count', ascending=False).reset_index(drop=True)",
@@ -54,74 +65,71 @@
       "Use `.groupby('status').size()` to count rows per group",
       "Set `as_index=False` so the groupby key becomes a regular column, then rename the size column to 'count'"
     ],
-    "concepts": ["groupby", "aggregation", "sort_values", "rename"]
-  },
-  {
-    "id": 5004,
-    "order": 4,
-    "topic": "python_data",
-    "difficulty": "easy",
-    "title": "Filter Expensive Products",
-    "description": "You have a DataFrame `df_products` loaded from the products dataset.\n\n**Columns:** `product_id`, `product_name`, `category_id`, `brand`, `price`, `launch_date`, `is_active`\n\nReturn all products where `price` is greater than `100`, sorted by `price` descending.",
-    "dataframes": { "df_products": "products.csv" },
-    "schema": { "df_products": ["product_id", "product_name", "category_id", "brand", "price", "launch_date", "is_active"] },
-    "starter_code": "import pandas as pd\n\ndef solve(df_products):\n    # Return products with price > 100, sorted by price descending\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_products):\n    return df_products[df_products['price'] > 100].sort_values('price', ascending=False).reset_index(drop=True)",
-    "solution_code": "import pandas as pd\n\ndef solve(df_products):\n    return df_products[df_products['price'] > 100].sort_values('price', ascending=False).reset_index(drop=True)",
-    "explanation": "Boolean indexing `df[df['price'] > 100]` keeps only rows where price exceeds 100. `.sort_values('price', ascending=False)` orders results from most to least expensive.",
-    "hints": [
-      "Use `df[df['price'] > 100]` for the filter",
-      "Pass `ascending=False` to `sort_values` for descending order"
-    ],
-    "concepts": ["boolean indexing", "comparison operators", "sort_values"]
-  },
-  {
-    "id": 5005,
-    "order": 5,
-    "topic": "python_data",
-    "difficulty": "easy",
-    "title": "Top 5 Most Expensive Products",
-    "description": "You have a DataFrame `df_products` loaded from the products dataset.\n\n**Columns:** `product_id`, `product_name`, `category_id`, `brand`, `price`, `launch_date`, `is_active`\n\nReturn the top 5 most expensive products. The result should contain only the columns `product_id`, `product_name`, and `price`.",
-    "dataframes": { "df_products": "products.csv" },
-    "schema": { "df_products": ["product_id", "product_name", "category_id", "brand", "price", "launch_date", "is_active"] },
-    "starter_code": "import pandas as pd\n\ndef solve(df_products):\n    # Return the top 5 most expensive products with columns: product_id, product_name, price\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_products):\n    return df_products[['product_id', 'product_name', 'price']].sort_values('price', ascending=False).head(5).reset_index(drop=True)",
-    "solution_code": "import pandas as pd\n\ndef solve(df_products):\n    return df_products[['product_id', 'product_name', 'price']].sort_values('price', ascending=False).head(5).reset_index(drop=True)",
-    "explanation": "Selecting `[['product_id', 'product_name', 'price']]` narrows the columns first. Sorting by `price` descending puts the most expensive products at the top. `.head(5)` then takes only the first 5 rows.",
-    "hints": [
-      "Sort by price descending, then use `.head(5)` to take the top rows",
-      "Select the required columns with `df[['product_id', 'product_name', 'price']]`"
-    ],
-    "concepts": ["column selection", "sort_values", "head"]
+    "concepts": [
+      "groupby",
+      "aggregation",
+      "sort_values",
+      "rename"
+    ]
   },
   {
     "id": 5006,
-    "order": 6,
+    "order": 3,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Fill Missing Salaries with Mean",
     "description": "You have a DataFrame `df_employees` loaded from the employees dataset.\n\n**Columns:** `employee_id`, `employee_name`, `email`, `salary`, `department_id`, `hire_date`, `country`\n\nSome employees have a null `salary`. Fill those null values with the mean salary of all employees (computed from non-null values). Return the full DataFrame with the filled values.",
-    "dataframes": { "df_employees": "employees.csv" },
-    "schema": { "df_employees": ["employee_id", "employee_name", "email", "salary", "department_id", "hire_date", "country"] },
+    "dataframes": {
+      "df_employees": "employees.csv"
+    },
+    "schema": {
+      "df_employees": [
+        "employee_id",
+        "employee_name",
+        "email",
+        "salary",
+        "department_id",
+        "hire_date",
+        "country"
+      ]
+    },
     "starter_code": "import pandas as pd\n\ndef solve(df_employees):\n    # Fill null salary values with the mean salary, return the full DataFrame\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_employees):\n    mean_salary = df_employees['salary'].mean()\n    result = df_employees.copy()\n    result['salary'] = result['salary'].fillna(mean_salary)\n    return result",
     "solution_code": "import pandas as pd\n\ndef solve(df_employees):\n    mean_salary = df_employees['salary'].mean()\n    result = df_employees.copy()\n    result['salary'] = result['salary'].fillna(mean_salary)\n    return result",
     "explanation": "`.mean()` on a Series automatically skips NaN values, giving the mean of non-null salaries. `.fillna(value)` replaces NaN entries with that value. Working on a `.copy()` of the DataFrame avoids mutating the original.",
     "hints": [
-      "Compute the mean with `df_employees['salary'].mean()` — pandas skips NaN automatically",
+      "Compute the mean with `df_employees['salary'].mean()` \u2014 pandas skips NaN automatically",
       "Use `.fillna(mean_salary)` to replace null values in the salary column"
     ],
-    "concepts": ["fillna", "mean", "missing values", "copy"]
+    "concepts": [
+      "fillna",
+      "mean",
+      "missing values",
+      "copy"
+    ]
   },
   {
     "id": 5007,
-    "order": 7,
+    "order": 4,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Extract Email Domain",
-    "description": "You have a DataFrame `df_users` loaded from the users dataset.\n\n**Columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `is_active`\n\nSome rows have null `email`. First drop those rows, then add a new column `email_domain` that contains the domain part of the email address (everything after the `@` symbol — e.g. `'gmail.com'` from `'user@gmail.com'`). Return the full DataFrame with the new column.",
-    "dataframes": { "df_users": "users.csv" },
-    "schema": { "df_users": ["user_id", "name", "email", "signup_date", "country", "acquisition_channel", "plan_tier", "is_active"] },
+    "description": "You have a DataFrame `df_users` loaded from the users dataset.\n\n**Columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `is_active`\n\nSome rows have null `email`. First drop those rows, then add a new column `email_domain` that contains the domain part of the email address (everything after the `@` symbol \u2014 e.g. `'gmail.com'` from `'user@gmail.com'`). Return the full DataFrame with the new column.",
+    "dataframes": {
+      "df_users": "users.csv"
+    },
+    "schema": {
+      "df_users": [
+        "user_id",
+        "name",
+        "email",
+        "signup_date",
+        "country",
+        "acquisition_channel",
+        "plan_tier",
+        "is_active"
+      ]
+    },
     "starter_code": "import pandas as pd\n\ndef solve(df_users):\n    # Drop rows with null email, then add 'email_domain' column\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_users):\n    result = df_users.dropna(subset=['email']).copy()\n    result['email_domain'] = result['email'].str.split('@').str[1]\n    return result.reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_users):\n    result = df_users.dropna(subset=['email']).copy()\n    result['email_domain'] = result['email'].str.split('@').str[1]\n    return result.reset_index(drop=True)",
@@ -130,17 +138,35 @@
       "Drop null emails first with `.dropna(subset=['email'])`",
       "Use `.str.split('@').str[1]` to extract the part after the '@'"
     ],
-    "concepts": ["str accessor", "string split", "dropna", "derived columns"]
+    "concepts": [
+      "str accessor",
+      "string split",
+      "dropna",
+      "derived columns"
+    ]
   },
   {
     "id": 5008,
-    "order": 8,
+    "order": 5,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Total Order Amount by Status",
     "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `net_amount`\n\nCompute the sum of `net_amount` for each `status`. Return a DataFrame with columns `['status', 'net_amount']`, sorted by `status` ascending.",
-    "dataframes": { "df_orders": "orders.csv" },
-    "schema": { "df_orders": ["order_id", "user_id", "order_date", "status", "gross_amount", "discount_amount", "net_amount", "payment_status"] },
+    "dataframes": {
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Return net_amount summed by status, columns: [status, net_amount]\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    result = df_orders.groupby('status', as_index=False)['net_amount'].sum()\n    return result.sort_values('status').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    result = df_orders.groupby('status', as_index=False)['net_amount'].sum()\n    return result.sort_values('status').reset_index(drop=True)",
@@ -149,55 +175,102 @@
       "Use `.groupby('status')['net_amount'].sum()` to aggregate",
       "Set `as_index=False` so the result has a `status` column rather than a status index"
     ],
-    "concepts": ["groupby", "aggregation", "sum", "as_index"]
+    "concepts": [
+      "groupby",
+      "aggregation",
+      "sum",
+      "as_index"
+    ]
   },
   {
     "id": 5009,
-    "order": 9,
+    "order": 6,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Remove Duplicate Products",
     "description": "You have a DataFrame `df_products` loaded from the products dataset.\n\n**Columns:** `product_id`, `product_name`, `category_id`, `brand`, `price`, `launch_date`, `is_active`\n\nRemove duplicate rows based on `product_id` (keep the first occurrence). Return the deduplicated DataFrame sorted by `product_id` ascending.",
-    "dataframes": { "df_products": "products.csv" },
-    "schema": { "df_products": ["product_id", "product_name", "category_id", "brand", "price", "launch_date", "is_active"] },
+    "dataframes": {
+      "df_products": "products.csv"
+    },
+    "schema": {
+      "df_products": [
+        "product_id",
+        "product_name",
+        "category_id",
+        "brand",
+        "price",
+        "launch_date",
+        "is_active"
+      ]
+    },
     "starter_code": "import pandas as pd\n\ndef solve(df_products):\n    # Remove duplicate product_id rows (keep first), return sorted by product_id\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_products):\n    return df_products.drop_duplicates(subset=['product_id'], keep='first').sort_values('product_id').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_products):\n    return df_products.drop_duplicates(subset=['product_id'], keep='first').sort_values('product_id').reset_index(drop=True)",
-    "explanation": "`.drop_duplicates(subset=['product_id'], keep='first')` scans the DataFrame and removes any row whose `product_id` has already appeared, retaining the first occurrence. Without `subset`, pandas would compare all columns simultaneously — specifying the key column(s) is more precise.",
+    "explanation": "`.drop_duplicates(subset=['product_id'], keep='first')` scans the DataFrame and removes any row whose `product_id` has already appeared, retaining the first occurrence. Without `subset`, pandas would compare all columns simultaneously \u2014 specifying the key column(s) is more precise.",
     "hints": [
       "Use `.drop_duplicates(subset=['product_id'])` to deduplicate on a specific column",
       "The default `keep='first'` retains the first occurrence of each duplicate"
     ],
-    "concepts": ["drop_duplicates", "deduplication", "sort_values"]
+    "concepts": [
+      "drop_duplicates",
+      "deduplication",
+      "sort_values"
+    ]
   },
   {
     "id": 5010,
-    "order": 10,
+    "order": 7,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Rename a Column",
     "description": "You have a DataFrame `df_employees` loaded from the employees dataset.\n\n**Columns:** `employee_id`, `employee_name`, `email`, `salary`, `department_id`, `hire_date`, `country`\n\nRename the column `salary` to `annual_salary`. Return the full DataFrame with the renamed column.",
-    "dataframes": { "df_employees": "employees.csv" },
-    "schema": { "df_employees": ["employee_id", "employee_name", "email", "salary", "department_id", "hire_date", "country"] },
+    "dataframes": {
+      "df_employees": "employees.csv"
+    },
+    "schema": {
+      "df_employees": [
+        "employee_id",
+        "employee_name",
+        "email",
+        "salary",
+        "department_id",
+        "hire_date",
+        "country"
+      ]
+    },
     "starter_code": "import pandas as pd\n\ndef solve(df_employees):\n    # Rename 'salary' to 'annual_salary', return the full DataFrame\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_employees):\n    return df_employees.rename(columns={'salary': 'annual_salary'})",
     "solution_code": "import pandas as pd\n\ndef solve(df_employees):\n    return df_employees.rename(columns={'salary': 'annual_salary'})",
     "explanation": "`.rename(columns={'old_name': 'new_name'})` returns a new DataFrame with the specified column(s) renamed. The original DataFrame is not modified. You can rename multiple columns at once by adding more key-value pairs to the dict.",
     "hints": [
-      "Use `.rename(columns={'salary': 'annual_salary'})` — the `columns` argument takes a mapping of old name to new name"
+      "Use `.rename(columns={'salary': 'annual_salary'})` \u2014 the `columns` argument takes a mapping of old name to new name"
     ],
-    "concepts": ["rename", "column manipulation"]
+    "concepts": [
+      "rename",
+      "column manipulation"
+    ]
   },
   {
     "id": 5011,
-    "order": 11,
+    "order": 8,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Top Products by Order Quantity",
     "description": "You have a DataFrame `df_order_items` loaded from the order_items dataset.\n\n**Columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n\nReturn the top 5 `product_id`s by total quantity ordered. Output columns: `product_id`, `total_quantity`. Sort by `total_quantity` descending.",
-    "dataframes": { "df_order_items": "order_items.csv" },
-    "schema": { "df_order_items": ["order_item_id", "order_id", "product_id", "quantity", "unit_price", "line_amount"] },
-    "starter_code": "import pandas as pd\n\ndef solve(df_order_items):\n    # Return top 5 products by total quantity ordered\n    # Columns: product_id, total_quantity — sorted by total_quantity descending\n    pass",
+    "dataframes": {
+      "df_order_items": "order_items.csv"
+    },
+    "schema": {
+      "df_order_items": [
+        "order_item_id",
+        "order_id",
+        "product_id",
+        "quantity",
+        "unit_price",
+        "line_amount"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_order_items):\n    # Return top 5 products by total quantity ordered\n    # Columns: product_id, total_quantity \u2014 sorted by total_quantity descending\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_order_items):\n    result = df_order_items.groupby('product_id', as_index=False)['quantity'].sum().rename(columns={'quantity': 'total_quantity'})\n    return result.sort_values('total_quantity', ascending=False).head(5).reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_order_items):\n    result = df_order_items.groupby('product_id', as_index=False)['quantity'].sum().rename(columns={'quantity': 'total_quantity'})\n    return result.sort_values('total_quantity', ascending=False).head(5).reset_index(drop=True)",
     "explanation": "`groupby('product_id')['quantity'].sum()` totals up the ordered quantity per product. After renaming the aggregated column to `total_quantity`, sorting descending and calling `.head(5)` limits the result to the five best-selling products.",
@@ -205,18 +278,36 @@
       "Use `.groupby('product_id')['quantity'].sum()` to aggregate total quantity per product",
       "Sort descending then call `.head(5)` to get the top 5"
     ],
-    "concepts": ["groupby", "aggregation", "sum", "sort_values", "head"]
+    "concepts": [
+      "groupby",
+      "aggregation",
+      "sum",
+      "sort_values",
+      "head"
+    ]
   },
   {
     "id": 5012,
-    "order": 12,
+    "order": 9,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "High-Salary Employees",
     "description": "You have a DataFrame `df_employees` loaded from the employees dataset.\n\n**Columns:** `employee_id`, `employee_name`, `email`, `salary`, `department_id`, `hire_date`, `country`\n\nReturn employees with `salary` greater than 60000. Include only columns `employee_id`, `employee_name`, `salary`. Sort by `salary` descending.",
-    "dataframes": { "df_employees": "employees.csv" },
-    "schema": { "df_employees": ["employee_id", "employee_name", "email", "salary", "department_id", "hire_date", "country"] },
-    "starter_code": "import pandas as pd\n\ndef solve(df_employees):\n    # Return employees with salary > 60000\n    # Columns: employee_id, employee_name, salary — sorted by salary descending\n    pass",
+    "dataframes": {
+      "df_employees": "employees.csv"
+    },
+    "schema": {
+      "df_employees": [
+        "employee_id",
+        "employee_name",
+        "email",
+        "salary",
+        "department_id",
+        "hire_date",
+        "country"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_employees):\n    # Return employees with salary > 60000\n    # Columns: employee_id, employee_name, salary \u2014 sorted by salary descending\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_employees):\n    result = df_employees[df_employees['salary'] > 60000][['employee_id', 'employee_name', 'salary']]\n    return result.sort_values('salary', ascending=False).reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_employees):\n    result = df_employees[df_employees['salary'] > 60000][['employee_id', 'employee_name', 'salary']]\n    return result.sort_values('salary', ascending=False).reset_index(drop=True)",
     "explanation": "Boolean indexing filters to rows where `salary > 60000`. Column selection with `[['employee_id', 'employee_name', 'salary']]` trims to the required columns. Sorting by `salary` descending shows the highest earners first.",
@@ -224,17 +315,34 @@
       "Apply the filter first: `df[df['salary'] > 60000]`",
       "Then select the three required columns and sort descending"
     ],
-    "concepts": ["boolean indexing", "column selection", "sort_values"]
+    "concepts": [
+      "boolean indexing",
+      "column selection",
+      "sort_values"
+    ]
   },
   {
     "id": 5013,
-    "order": 13,
+    "order": 10,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Orders Placed in 2023",
     "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `net_amount`\n\nFilter orders where `order_date` falls in the year 2023. Return columns `order_id`, `user_id`, `order_date`, `net_amount`, sorted by `order_date` ascending.",
-    "dataframes": { "df_orders": "orders.csv" },
-    "schema": { "df_orders": ["order_id", "user_id", "order_date", "status", "gross_amount", "discount_amount", "net_amount", "payment_status"] },
+    "dataframes": {
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Filter orders from 2023, return order_id, user_id, order_date, net_amount\n    # sorted by order_date ascending\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_date'] = pd.to_datetime(df['order_date'])\n    result = df[df['order_date'].dt.year == 2023][['order_id', 'user_id', 'order_date', 'net_amount']]\n    return result.sort_values('order_date').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_date'] = pd.to_datetime(df['order_date'])\n    result = df[df['order_date'].dt.year == 2023][['order_id', 'user_id', 'order_date', 'net_amount']]\n    return result.sort_values('order_date').reset_index(drop=True)",
@@ -243,17 +351,35 @@
       "Convert `order_date` to datetime first: `pd.to_datetime(df['order_date'])`",
       "Use `.dt.year == 2023` to filter rows from that year"
     ],
-    "concepts": ["datetime", "dt accessor", "boolean indexing", "pd.to_datetime"]
+    "concepts": [
+      "datetime",
+      "dt accessor",
+      "boolean indexing",
+      "pd.to_datetime"
+    ]
   },
   {
     "id": 5014,
-    "order": 14,
+    "order": 11,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Average Order Value per User",
     "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `net_amount`\n\nCompute the average `net_amount` per `user_id`. Return a DataFrame with columns `user_id` and `avg_order_value` (rounded to 2 decimal places). Sort by `avg_order_value` descending.",
-    "dataframes": { "df_orders": "orders.csv" },
-    "schema": { "df_orders": ["order_id", "user_id", "order_date", "status", "gross_amount", "discount_amount", "net_amount", "payment_status"] },
+    "dataframes": {
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Return user_id and avg_order_value (mean net_amount, rounded to 2dp)\n    # sorted by avg_order_value descending\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    result = df_orders.groupby('user_id', as_index=False)['net_amount'].mean().rename(columns={'net_amount': 'avg_order_value'})\n    result['avg_order_value'] = result['avg_order_value'].round(2)\n    return result.sort_values('avg_order_value', ascending=False).reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    result = df_orders.groupby('user_id', as_index=False)['net_amount'].mean().rename(columns={'net_amount': 'avg_order_value'})\n    result['avg_order_value'] = result['avg_order_value'].round(2)\n    return result.sort_values('avg_order_value', ascending=False).reset_index(drop=True)",
@@ -262,36 +388,72 @@
       "Use `.groupby('user_id')['net_amount'].mean()` to get per-user averages",
       "Apply `.round(2)` to limit to two decimal places"
     ],
-    "concepts": ["groupby", "mean", "round", "rename", "sort_values"]
+    "concepts": [
+      "groupby",
+      "mean",
+      "round",
+      "rename",
+      "sort_values"
+    ]
   },
   {
     "id": 5015,
-    "order": 15,
+    "order": 12,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Latest Order per User",
     "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `net_amount`\n\nReturn each user's most recent order. Output columns: `user_id`, `order_id`, `order_date`. Use `groupby` + `idxmax` to find the row with the latest `order_date` per user. Sort by `user_id` ascending.",
-    "dataframes": { "df_orders": "orders.csv" },
-    "schema": { "df_orders": ["order_id", "user_id", "order_date", "status", "gross_amount", "discount_amount", "net_amount", "payment_status"] },
+    "dataframes": {
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Return each user's most recent order: user_id, order_id, order_date\n    # Hint: use groupby + idxmax on order_date\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_date'] = pd.to_datetime(df['order_date'])\n    idx = df.groupby('user_id')['order_date'].idxmax()\n    result = df.loc[idx, ['user_id', 'order_id', 'order_date']]\n    return result.sort_values('user_id').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_date'] = pd.to_datetime(df['order_date'])\n    idx = df.groupby('user_id')['order_date'].idxmax()\n    result = df.loc[idx, ['user_id', 'order_id', 'order_date']]\n    return result.sort_values('user_id').reset_index(drop=True)",
-    "explanation": "`groupby('user_id')['order_date'].idxmax()` returns the index label of the row with the maximum `order_date` for each user. `df.loc[idx]` then selects those rows from the original DataFrame, giving one row per user — the most recent order.",
+    "explanation": "`groupby('user_id')['order_date'].idxmax()` returns the index label of the row with the maximum `order_date` for each user. `df.loc[idx]` then selects those rows from the original DataFrame, giving one row per user \u2014 the most recent order.",
     "hints": [
       "Use `groupby('user_id')['order_date'].idxmax()` to get the index of the latest order per user",
       "Pass the resulting index to `df.loc[idx]` to retrieve those rows"
     ],
-    "concepts": ["groupby", "idxmax", "loc", "datetime"]
+    "concepts": [
+      "groupby",
+      "idxmax",
+      "loc",
+      "datetime"
+    ]
   },
   {
     "id": 5016,
-    "order": 16,
+    "order": 13,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Support Tickets by Status",
     "description": "You have a DataFrame `df_support_tickets` loaded from the support_tickets dataset.\n\n**Columns:** `ticket_id`, `user_id`, `created_at`, `issue_type`, `priority`, `status`, `resolution_hours`\n\nCount the number of tickets for each `status`. Return a DataFrame with columns `status` and `ticket_count`, sorted by `ticket_count` descending.",
-    "dataframes": { "df_support_tickets": "support_tickets.csv" },
-    "schema": { "df_support_tickets": ["ticket_id", "user_id", "created_at", "issue_type", "priority", "status", "resolution_hours"] },
+    "dataframes": {
+      "df_support_tickets": "support_tickets.csv"
+    },
+    "schema": {
+      "df_support_tickets": [
+        "ticket_id",
+        "user_id",
+        "created_at",
+        "issue_type",
+        "priority",
+        "status",
+        "resolution_hours"
+      ]
+    },
     "starter_code": "import pandas as pd\n\ndef solve(df_support_tickets):\n    # Count tickets per status, return status and ticket_count sorted descending\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_support_tickets):\n    result = df_support_tickets.groupby('status', as_index=False).size().rename(columns={'size': 'ticket_count'})\n    return result.sort_values('ticket_count', ascending=False).reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_support_tickets):\n    result = df_support_tickets.groupby('status', as_index=False).size().rename(columns={'size': 'ticket_count'})\n    return result.sort_values('ticket_count', ascending=False).reset_index(drop=True)",
@@ -300,17 +462,33 @@
       "Use `.groupby('status').size()` to count rows per group",
       "Rename the resulting `size` column to `ticket_count`"
     ],
-    "concepts": ["groupby", "size", "rename", "sort_values"]
+    "concepts": [
+      "groupby",
+      "size",
+      "rename",
+      "sort_values"
+    ]
   },
   {
     "id": 5017,
-    "order": 17,
+    "order": 14,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Sessions by Device Type",
     "description": "You have a DataFrame `df_sessions` loaded from the sessions dataset.\n\n**Columns:** `session_id`, `user_id`, `session_start`, `device_type`, `traffic_source`, `country`\n\nCount the number of sessions per `device_type`. Return a DataFrame with columns `device_type` and `session_count`, sorted by `session_count` descending.",
-    "dataframes": { "df_sessions": "sessions.csv" },
-    "schema": { "df_sessions": ["session_id", "user_id", "session_start", "device_type", "traffic_source", "country"] },
+    "dataframes": {
+      "df_sessions": "sessions.csv"
+    },
+    "schema": {
+      "df_sessions": [
+        "session_id",
+        "user_id",
+        "session_start",
+        "device_type",
+        "traffic_source",
+        "country"
+      ]
+    },
     "starter_code": "import pandas as pd\n\ndef solve(df_sessions):\n    # Count sessions per device_type, return device_type and session_count\n    # sorted by session_count descending\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_sessions):\n    result = df_sessions.groupby('device_type', as_index=False).size().rename(columns={'size': 'session_count'})\n    return result.sort_values('session_count', ascending=False).reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_sessions):\n    result = df_sessions.groupby('device_type', as_index=False).size().rename(columns={'size': 'session_count'})\n    return result.sort_values('session_count', ascending=False).reset_index(drop=True)",
@@ -319,17 +497,33 @@
       "Use `.groupby('device_type').size()` to count rows per group",
       "Rename the `size` column to `session_count` with `.rename(columns={...})`"
     ],
-    "concepts": ["groupby", "size", "rename", "sort_values"]
+    "concepts": [
+      "groupby",
+      "size",
+      "rename",
+      "sort_values"
+    ]
   },
   {
     "id": 5018,
-    "order": 18,
+    "order": 15,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Payment Method Counts",
     "description": "You have a DataFrame `df_payments` loaded from the payments dataset.\n\n**Columns:** `payment_id`, `order_id`, `payment_date`, `payment_method`, `amount`, `status`\n\nCount the number of payments for each `payment_method`. Return a DataFrame with columns `payment_method` and `count`, sorted by `count` descending.",
-    "dataframes": { "df_payments": "payments.csv" },
-    "schema": { "df_payments": ["payment_id", "order_id", "payment_date", "payment_method", "amount", "status"] },
+    "dataframes": {
+      "df_payments": "payments.csv"
+    },
+    "schema": {
+      "df_payments": [
+        "payment_id",
+        "order_id",
+        "payment_date",
+        "payment_method",
+        "amount",
+        "status"
+      ]
+    },
     "starter_code": "import pandas as pd\n\ndef solve(df_payments):\n    # Count payments per payment_method, return payment_method and count\n    # sorted by count descending\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_payments):\n    result = df_payments.groupby('payment_method', as_index=False).size().rename(columns={'size': 'count'})\n    return result.sort_values('count', ascending=False).reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_payments):\n    result = df_payments.groupby('payment_method', as_index=False).size().rename(columns={'size': 'count'})\n    return result.sort_values('count', ascending=False).reset_index(drop=True)",
@@ -338,36 +532,33 @@
       "Use `.groupby('payment_method').size()` to count rows per method",
       "Rename the aggregated column to `count` before returning"
     ],
-    "concepts": ["groupby", "size", "rename", "sort_values"]
-  },
-  {
-    "id": 5019,
-    "order": 19,
-    "topic": "python_data",
-    "difficulty": "easy",
-    "title": "Distinct Product Statuses",
-    "description": "You have a DataFrame `df_products` loaded from the products dataset.\n\n**Columns:** `product_id`, `product_name`, `category_id`, `brand`, `price`, `launch_date`, `is_active`\n\nReturn the distinct values found in the `is_active` column. Return a DataFrame with a single column named `is_active`, sorted ascending.",
-    "dataframes": { "df_products": "products.csv" },
-    "schema": { "df_products": ["product_id", "product_name", "category_id", "brand", "price", "launch_date", "is_active"] },
-    "starter_code": "import pandas as pd\n\ndef solve(df_products):\n    # Return distinct values of is_active as a DataFrame with column 'is_active'\n    # sorted ascending\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_products):\n    result = pd.DataFrame({'is_active': sorted(df_products['is_active'].dropna().unique())})\n    return result.reset_index(drop=True)",
-    "solution_code": "import pandas as pd\n\ndef solve(df_products):\n    result = pd.DataFrame({'is_active': sorted(df_products['is_active'].dropna().unique())})\n    return result.reset_index(drop=True)",
-    "explanation": "`.unique()` returns an array of distinct values from the Series. Wrapping it in `sorted()` gives ascending order. `pd.DataFrame({'is_active': ...})` constructs a proper single-column DataFrame rather than returning a bare array or Series.",
-    "hints": [
-      "Use `.unique()` to get distinct values from a column",
-      "Wrap the result in `pd.DataFrame({'is_active': ...})` to return a DataFrame"
-    ],
-    "concepts": ["unique", "distinct values", "pd.DataFrame", "sort"]
+    "concepts": [
+      "groupby",
+      "size",
+      "rename",
+      "sort_values"
+    ]
   },
   {
     "id": 5020,
-    "order": 20,
+    "order": 16,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Events by Event Type",
     "description": "You have a DataFrame `df_events` loaded from the events dataset.\n\n**Columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n\nCount the number of events for each `event_name`. Return a DataFrame with columns `event_name` and `event_count`, sorted by `event_count` descending.",
-    "dataframes": { "df_events": "events.csv" },
-    "schema": { "df_events": ["event_id", "session_id", "user_id", "event_time", "event_name", "product_id"] },
+    "dataframes": {
+      "df_events": "events.csv"
+    },
+    "schema": {
+      "df_events": [
+        "event_id",
+        "session_id",
+        "user_id",
+        "event_time",
+        "event_name",
+        "product_id"
+      ]
+    },
     "starter_code": "import pandas as pd\n\ndef solve(df_events):\n    # Count events per event_name, return event_name and event_count\n    # sorted by event_count descending\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_events):\n    result = df_events.groupby('event_name', as_index=False).size().rename(columns={'size': 'event_count'})\n    return result.sort_values('event_count', ascending=False).reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_events):\n    result = df_events.groupby('event_name', as_index=False).size().rename(columns={'size': 'event_count'})\n    return result.sort_values('event_count', ascending=False).reset_index(drop=True)",
@@ -376,36 +567,34 @@
       "Use `.groupby('event_name').size()` to count occurrences of each event type",
       "Rename the `size` column to `event_count`"
     ],
-    "concepts": ["groupby", "size", "rename", "sort_values"]
-  },
-  {
-    "id": 5021,
-    "order": 21,
-    "topic": "python_data",
-    "difficulty": "easy",
-    "title": "Very High-Salary Employees",
-    "description": "You have a DataFrame `df_employees` loaded from the employees dataset.\n\n**Columns:** `employee_id`, `employee_name`, `email`, `salary`, `department_id`, `hire_date`, `country`\n\nReturn employees where `salary` is greater than 80000. Include columns `employee_id`, `employee_name`, `salary`, `department_id`. Sort by `salary` descending.",
-    "dataframes": { "df_employees": "employees.csv" },
-    "schema": { "df_employees": ["employee_id", "employee_name", "email", "salary", "department_id", "hire_date", "country"] },
-    "starter_code": "import pandas as pd\n\ndef solve(df_employees):\n    # Return employees with salary > 80000\n    # Columns: employee_id, employee_name, salary, department_id\n    # sorted by salary descending\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_employees):\n    result = df_employees[df_employees['salary'] > 80000][['employee_id', 'employee_name', 'salary', 'department_id']]\n    return result.sort_values('salary', ascending=False).reset_index(drop=True)",
-    "solution_code": "import pandas as pd\n\ndef solve(df_employees):\n    result = df_employees[df_employees['salary'] > 80000][['employee_id', 'employee_name', 'salary', 'department_id']]\n    return result.sort_values('salary', ascending=False).reset_index(drop=True)",
-    "explanation": "Chaining boolean indexing and column selection is idiomatic pandas: filter first with `df[df['salary'] > 80000]`, then immediately narrow the columns. Sorting by `salary` descending shows the top earners first.",
-    "hints": [
-      "Filter with `df[df['salary'] > 80000]` then select the four columns",
-      "Sort by `salary` with `ascending=False`"
-    ],
-    "concepts": ["boolean indexing", "column selection", "sort_values"]
+    "concepts": [
+      "groupby",
+      "size",
+      "rename",
+      "sort_values"
+    ]
   },
   {
     "id": 5022,
-    "order": 22,
+    "order": 17,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Employee Count by Department",
     "description": "You have a DataFrame `df_employees` loaded from the employees dataset.\n\n**Columns:** `employee_id`, `employee_name`, `email`, `salary`, `department_id`, `hire_date`, `country`\n\nCount the number of employees in each `department_id`. Return a DataFrame with columns `department_id` and `employee_count`, sorted by `department_id` ascending.",
-    "dataframes": { "df_employees": "employees.csv" },
-    "schema": { "df_employees": ["employee_id", "employee_name", "email", "salary", "department_id", "hire_date", "country"] },
+    "dataframes": {
+      "df_employees": "employees.csv"
+    },
+    "schema": {
+      "df_employees": [
+        "employee_id",
+        "employee_name",
+        "email",
+        "salary",
+        "department_id",
+        "hire_date",
+        "country"
+      ]
+    },
     "starter_code": "import pandas as pd\n\ndef solve(df_employees):\n    # Count employees per department_id\n    # Return department_id and employee_count sorted by department_id ascending\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_employees):\n    result = df_employees.groupby('department_id', as_index=False).size().rename(columns={'size': 'employee_count'})\n    return result.sort_values('department_id').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_employees):\n    result = df_employees.groupby('department_id', as_index=False).size().rename(columns={'size': 'employee_count'})\n    return result.sort_values('department_id').reset_index(drop=True)",
@@ -414,17 +603,33 @@
       "Use `.groupby('department_id').size()` to count rows per department",
       "Sort by `department_id` ascending (omit `ascending=False` for ascending order)"
     ],
-    "concepts": ["groupby", "size", "rename", "sort_values"]
+    "concepts": [
+      "groupby",
+      "size",
+      "rename",
+      "sort_values"
+    ]
   },
   {
     "id": 5023,
-    "order": 23,
+    "order": 18,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Revenue per Product",
     "description": "You have a DataFrame `df_order_items` loaded from the order_items dataset.\n\n**Columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n\nCompute total revenue per `product_id` using `line_amount` (which already equals `unit_price * quantity`). Return columns `product_id` and `total_revenue` (rounded to 2 decimal places), sorted by `total_revenue` descending.",
-    "dataframes": { "df_order_items": "order_items.csv" },
-    "schema": { "df_order_items": ["order_item_id", "order_id", "product_id", "quantity", "unit_price", "line_amount"] },
+    "dataframes": {
+      "df_order_items": "order_items.csv"
+    },
+    "schema": {
+      "df_order_items": [
+        "order_item_id",
+        "order_id",
+        "product_id",
+        "quantity",
+        "unit_price",
+        "line_amount"
+      ]
+    },
     "starter_code": "import pandas as pd\n\ndef solve(df_order_items):\n    # Sum line_amount per product_id to get total_revenue\n    # Return product_id and total_revenue (rounded to 2dp), sorted by total_revenue descending\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_order_items):\n    result = df_order_items.groupby('product_id', as_index=False)['line_amount'].sum().rename(columns={'line_amount': 'total_revenue'})\n    result['total_revenue'] = result['total_revenue'].round(2)\n    return result.sort_values('total_revenue', ascending=False).reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_order_items):\n    result = df_order_items.groupby('product_id', as_index=False)['line_amount'].sum().rename(columns={'line_amount': 'total_revenue'})\n    result['total_revenue'] = result['total_revenue'].round(2)\n    return result.sort_values('total_revenue', ascending=False).reset_index(drop=True)",
@@ -433,37 +638,37 @@
       "Sum `line_amount` per product using `.groupby('product_id')['line_amount'].sum()`",
       "Apply `.round(2)` to the aggregated column"
     ],
-    "concepts": ["groupby", "sum", "round", "rename", "sort_values"]
-  },
-  {
-    "id": 5024,
-    "order": 24,
-    "topic": "python_data",
-    "difficulty": "easy",
-    "title": "Products with Low Stock",
-    "description": "You have a DataFrame `df_products` loaded from the products dataset.\n\n**Columns:** `product_id`, `product_name`, `category_id`, `brand`, `price`, `launch_date`, `is_active`\n\nNote: stock information is not available in this dataset. Instead, filter products where `price` is less than 10 as a proxy for low-value items. Return columns `product_id`, `product_name`, `price`, sorted by `price` ascending.",
-    "dataframes": { "df_products": "products.csv" },
-    "schema": { "df_products": ["product_id", "product_name", "category_id", "brand", "price", "launch_date", "is_active"] },
-    "starter_code": "import pandas as pd\n\ndef solve(df_products):\n    # Return products with price < 10\n    # Columns: product_id, product_name, price — sorted by price ascending\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_products):\n    result = df_products[df_products['price'] < 10][['product_id', 'product_name', 'price']]\n    return result.sort_values('price').reset_index(drop=True)",
-    "solution_code": "import pandas as pd\n\ndef solve(df_products):\n    result = df_products[df_products['price'] < 10][['product_id', 'product_name', 'price']]\n    return result.sort_values('price').reset_index(drop=True)",
-    "explanation": "Boolean indexing `df[df['price'] < 10]` filters to low-priced products. Column selection trims to the three required columns. `sort_values('price')` sorts ascending by default, placing the cheapest items first.",
-    "hints": [
-      "Use `df[df['price'] < 10]` to filter for low-price products",
-      "Select only `product_id`, `product_name`, `price` and sort ascending"
-    ],
-    "concepts": ["boolean indexing", "column selection", "sort_values"]
+    "concepts": [
+      "groupby",
+      "sum",
+      "round",
+      "rename",
+      "sort_values"
+    ]
   },
   {
     "id": 5025,
-    "order": 25,
+    "order": 19,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Orders with Zero or Null Net Amount",
     "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `net_amount`\n\nReturn orders where `net_amount` is null or equal to zero. Output columns: `order_id`, `user_id`, `order_date`, `net_amount`. Sort by `order_id` ascending.",
-    "dataframes": { "df_orders": "orders.csv" },
-    "schema": { "df_orders": ["order_id", "user_id", "order_date", "status", "gross_amount", "discount_amount", "net_amount", "payment_status"] },
-    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Return orders where net_amount is null or zero\n    # Columns: order_id, user_id, order_date, net_amount — sorted by order_id\n    pass",
+    "dataframes": {
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Return orders where net_amount is null or zero\n    # Columns: order_id, user_id, order_date, net_amount \u2014 sorted by order_id\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    mask = df_orders['net_amount'].isna() | (df_orders['net_amount'] == 0)\n    result = df_orders[mask][['order_id', 'user_id', 'order_date', 'net_amount']]\n    return result.sort_values('order_id').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    mask = df_orders['net_amount'].isna() | (df_orders['net_amount'] == 0)\n    result = df_orders[mask][['order_id', 'user_id', 'order_date', 'net_amount']]\n    return result.sort_values('order_id').reset_index(drop=True)",
     "explanation": "`.isna()` produces a boolean Series that is True for null values. The `|` operator combines it with a zero-value check using OR logic. Wrapping in parentheses ensures correct operator precedence. The resulting mask filters rows that meet either condition.",
@@ -471,17 +676,35 @@
       "Use `.isna()` to detect nulls and `== 0` for zeros, then combine with `|`",
       "Combine conditions as: `df['col'].isna() | (df['col'] == 0)`"
     ],
-    "concepts": ["isna", "boolean operators", "filtering", "missing values"]
+    "concepts": [
+      "isna",
+      "boolean operators",
+      "filtering",
+      "missing values"
+    ]
   },
   {
     "id": 5026,
-    "order": 26,
+    "order": 20,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Extract Order Date (Date Only)",
     "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `net_amount`\n\nAdd a new column `order_day` containing only the date part of `order_date` (no time component). Return columns `order_id`, `user_id`, `order_day`, `net_amount`, sorted by `order_day` ascending.",
-    "dataframes": { "df_orders": "orders.csv" },
-    "schema": { "df_orders": ["order_id", "user_id", "order_date", "status", "gross_amount", "discount_amount", "net_amount", "payment_status"] },
+    "dataframes": {
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Add 'order_day' column (date part only from order_date)\n    # Return order_id, user_id, order_day, net_amount sorted by order_day\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_date'] = pd.to_datetime(df['order_date'])\n    df['order_day'] = df['order_date'].dt.date\n    result = df[['order_id', 'user_id', 'order_day', 'net_amount']]\n    return result.sort_values('order_day').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_date'] = pd.to_datetime(df['order_date'])\n    df['order_day'] = df['order_date'].dt.date\n    result = df[['order_id', 'user_id', 'order_day', 'net_amount']]\n    return result.sort_values('order_day').reset_index(drop=True)",
@@ -490,18 +713,36 @@
       "Convert to datetime first, then use `.dt.date` to extract the date part",
       "Store the result in a new column called `order_day`"
     ],
-    "concepts": ["datetime", "dt accessor", "derived columns", "pd.to_datetime"]
+    "concepts": [
+      "datetime",
+      "dt accessor",
+      "derived columns",
+      "pd.to_datetime"
+    ]
   },
   {
     "id": 5027,
-    "order": 27,
+    "order": 21,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Users Registered After 2022",
     "description": "You have a DataFrame `df_users` loaded from the users dataset.\n\n**Columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `is_active`\n\nReturn users where `signup_date` is after 2022-12-31 (i.e. in 2023 or later). Output columns: `user_id`, `name`, `email`, `signup_date`. Sort by `signup_date` ascending.",
-    "dataframes": { "df_users": "users.csv" },
-    "schema": { "df_users": ["user_id", "name", "email", "signup_date", "country", "acquisition_channel", "plan_tier", "is_active"] },
-    "starter_code": "import pandas as pd\n\ndef solve(df_users):\n    # Return users who signed up after 2022-12-31\n    # Columns: user_id, name, email, signup_date — sorted by signup_date ascending\n    pass",
+    "dataframes": {
+      "df_users": "users.csv"
+    },
+    "schema": {
+      "df_users": [
+        "user_id",
+        "name",
+        "email",
+        "signup_date",
+        "country",
+        "acquisition_channel",
+        "plan_tier",
+        "is_active"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_users):\n    # Return users who signed up after 2022-12-31\n    # Columns: user_id, name, email, signup_date \u2014 sorted by signup_date ascending\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_users):\n    df = df_users.copy()\n    df['signup_date'] = pd.to_datetime(df['signup_date'])\n    result = df[df['signup_date'] > '2022-12-31'][['user_id', 'name', 'email', 'signup_date']]\n    return result.sort_values('signup_date').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_users):\n    df = df_users.copy()\n    df['signup_date'] = pd.to_datetime(df['signup_date'])\n    result = df[df['signup_date'] > '2022-12-31'][['user_id', 'name', 'email', 'signup_date']]\n    return result.sort_values('signup_date').reset_index(drop=True)",
     "explanation": "After parsing `signup_date` with `pd.to_datetime()`, pandas allows direct string comparisons like `> '2022-12-31'` because it auto-converts the string to a Timestamp for comparison. This is concise and readable.",
@@ -509,17 +750,34 @@
       "Convert `signup_date` to datetime with `pd.to_datetime()`",
       "You can compare a datetime column directly to a date string: `df['signup_date'] > '2022-12-31'`"
     ],
-    "concepts": ["datetime", "pd.to_datetime", "boolean indexing", "date comparison"]
+    "concepts": [
+      "datetime",
+      "pd.to_datetime",
+      "boolean indexing",
+      "date comparison"
+    ]
   },
   {
     "id": 5028,
-    "order": 28,
+    "order": 22,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Product Count by Category",
     "description": "You have a DataFrame `df_products` loaded from the products dataset.\n\n**Columns:** `product_id`, `product_name`, `category_id`, `brand`, `price`, `launch_date`, `is_active`\n\nCount the number of products in each `category_id`. Return a DataFrame with columns `category_id` and `product_count`, sorted by `product_count` descending.",
-    "dataframes": { "df_products": "products.csv" },
-    "schema": { "df_products": ["product_id", "product_name", "category_id", "brand", "price", "launch_date", "is_active"] },
+    "dataframes": {
+      "df_products": "products.csv"
+    },
+    "schema": {
+      "df_products": [
+        "product_id",
+        "product_name",
+        "category_id",
+        "brand",
+        "price",
+        "launch_date",
+        "is_active"
+      ]
+    },
     "starter_code": "import pandas as pd\n\ndef solve(df_products):\n    # Count products per category_id, return category_id and product_count\n    # sorted by product_count descending\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_products):\n    result = df_products.groupby('category_id', as_index=False).size().rename(columns={'size': 'product_count'})\n    return result.sort_values('product_count', ascending=False).reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_products):\n    result = df_products.groupby('category_id', as_index=False).size().rename(columns={'size': 'product_count'})\n    return result.sort_values('product_count', ascending=False).reset_index(drop=True)",
@@ -528,17 +786,35 @@
       "Use `.groupby('category_id').size()` to count products per category",
       "Rename the `size` column to `product_count`"
     ],
-    "concepts": ["groupby", "size", "rename", "sort_values"]
+    "concepts": [
+      "groupby",
+      "size",
+      "rename",
+      "sort_values"
+    ]
   },
   {
     "id": 5029,
-    "order": 29,
+    "order": 23,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Total Revenue by Order Status",
     "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `net_amount`\n\nCompute the total `net_amount` for each `status`. Return a DataFrame with columns `status` and `total_revenue` (rounded to 2 decimal places), sorted by `total_revenue` descending.",
-    "dataframes": { "df_orders": "orders.csv" },
-    "schema": { "df_orders": ["order_id", "user_id", "order_date", "status", "gross_amount", "discount_amount", "net_amount", "payment_status"] },
+    "dataframes": {
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Sum net_amount per status, return status and total_revenue (rounded to 2dp)\n    # sorted by total_revenue descending\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    result = df_orders.groupby('status', as_index=False)['net_amount'].sum().rename(columns={'net_amount': 'total_revenue'})\n    result['total_revenue'] = result['total_revenue'].round(2)\n    return result.sort_values('total_revenue', ascending=False).reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    result = df_orders.groupby('status', as_index=False)['net_amount'].sum().rename(columns={'net_amount': 'total_revenue'})\n    result['total_revenue'] = result['total_revenue'].round(2)\n    return result.sort_values('total_revenue', ascending=False).reset_index(drop=True)",
@@ -547,19 +823,44 @@
       "Use `.groupby('status')['net_amount'].sum()` to aggregate",
       "Rename the result column to `total_revenue` and apply `.round(2)`"
     ],
-    "concepts": ["groupby", "sum", "round", "rename", "sort_values"]
+    "concepts": [
+      "groupby",
+      "sum",
+      "round",
+      "rename",
+      "sort_values"
+    ]
   },
   {
     "id": 5030,
-    "order": 30,
+    "order": 24,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Orders with Most Line Items",
     "description": "You have two DataFrames: `df_orders` (orders dataset) and `df_order_items` (order_items dataset).\n\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `net_amount`\n\n**df_order_items columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n\nJoin the two DataFrames on `order_id` and count the number of distinct line items (`order_item_id`) per order. Return columns `order_id` and `item_count`, sorted by `item_count` descending. Return only the top 10 orders.",
-    "dataframes": { "df_orders": "orders.csv", "df_order_items": "order_items.csv" },
+    "dataframes": {
+      "df_orders": "orders.csv",
+      "df_order_items": "order_items.csv"
+    },
     "schema": {
-      "df_orders": ["order_id", "user_id", "order_date", "status", "gross_amount", "discount_amount", "net_amount", "payment_status"],
-      "df_order_items": ["order_item_id", "order_id", "product_id", "quantity", "unit_price", "line_amount"]
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ],
+      "df_order_items": [
+        "order_item_id",
+        "order_id",
+        "product_id",
+        "quantity",
+        "unit_price",
+        "line_amount"
+      ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_orders, df_order_items):\n    # Join orders with order_items, count line items per order\n    # Return order_id and item_count, sorted by item_count descending, top 10\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders, df_order_items):\n    merged = df_orders[['order_id']].merge(df_order_items, on='order_id', how='inner')\n    result = merged.groupby('order_id', as_index=False)['order_item_id'].nunique().rename(columns={'order_item_id': 'item_count'})\n    return result.sort_values('item_count', ascending=False).head(10).reset_index(drop=True)",
@@ -569,6 +870,201 @@
       "Use `df_orders.merge(df_order_items, on='order_id')` to join the two DataFrames",
       "After the join, use `.groupby('order_id')['order_item_id'].nunique()` to count distinct items per order"
     ],
-    "concepts": ["merge", "join", "groupby", "nunique", "sort_values", "head"]
+    "concepts": [
+      "merge",
+      "join",
+      "groupby",
+      "nunique",
+      "sort_values",
+      "head"
+    ]
+  },
+  {
+    "id": 5031,
+    "order": 25,
+    "topic": "python_data",
+    "difficulty": "easy",
+    "title": "Extract email domain",
+    "description": "You have a DataFrame `df_users`.\n\n**Columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `acquisition_channel`, `plan_tier`, `is_active`\n\nExtract the domain part of `email` (everything after `@`) into a new column `domain`. Return `user_id`, `email`, `domain`, sorted by `user_id` ascending.",
+    "dataframes": {
+      "df_users": "users.csv"
+    },
+    "schema": {
+      "df_users": [
+        "user_id",
+        "name",
+        "email",
+        "signup_date",
+        "country",
+        "acquisition_channel",
+        "plan_tier",
+        "is_active"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_users):\n    # Extract email domain into a new column\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_users):\n    df = df_users.copy()\n    df['domain'] = df['email'].str.split('@').str[1]\n    return df[['user_id', 'email', 'domain']].sort_values('user_id').reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_users):\n    df = df_users.copy()\n    df['domain'] = df['email'].str.split('@').str[1]\n    return df[['user_id', 'email', 'domain']].sort_values('user_id').reset_index(drop=True)",
+    "explanation": "The `.str` accessor namespace exposes string methods on a Series. `str.split('@')` splits each email at `@`, returning a list per row. `.str[1]` then indexes into those lists to get the second element (the domain). Chaining `.str` accessors is a core pandas skill \u2014 it avoids slow Python-level loops and runs vectorized at C speed.",
+    "hints": [
+      "Use the `.str` accessor to call string methods vectorized: `df['email'].str.split('@')`",
+      "After splitting, `.str[1]` selects the second element (index 1) from each resulting list"
+    ],
+    "concepts": [
+      "str accessor",
+      "str.split",
+      "string extraction",
+      "vectorized string operations"
+    ]
+  },
+  {
+    "id": 5032,
+    "order": 26,
+    "topic": "python_data",
+    "difficulty": "easy",
+    "title": "Bin users by signup tenure",
+    "description": "You have a DataFrame `df_users`.\n\n**Columns:** `user_id`, `name`, `signup_date`, `plan_tier`, `is_active`\n\n1. Convert `signup_date` to datetime and compute `days_since_signup` = days between `signup_date` and `2025-01-01`.\n2. Use `pd.cut` with bins `[0, 90, 365, 730, float('inf')]` and labels `['new', 'recent', 'established', 'veteran']` to create a `tenure_group` column.\n3. Return `user_id`, `plan_tier`, `days_since_signup`, `tenure_group`, sorted by `user_id` ascending.",
+    "dataframes": {
+      "df_users": "users.csv"
+    },
+    "schema": {
+      "df_users": [
+        "user_id",
+        "name",
+        "email",
+        "signup_date",
+        "country",
+        "acquisition_channel",
+        "plan_tier",
+        "is_active"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_users):\n    # Compute days_since_signup and bin into tenure_group\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_users):\n    df = df_users.copy()\n    df['signup_date'] = pd.to_datetime(df['signup_date'])\n    ref = pd.to_datetime('2025-01-01')\n    df['days_since_signup'] = (ref - df['signup_date']).dt.days\n    df['tenure_group'] = pd.cut(\n        df['days_since_signup'],\n        bins=[0, 90, 365, 730, float('inf')],\n        labels=['new', 'recent', 'established', 'veteran']\n    )\n    return df[['user_id', 'plan_tier', 'days_since_signup', 'tenure_group']].sort_values('user_id').reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_users):\n    df = df_users.copy()\n    df['signup_date'] = pd.to_datetime(df['signup_date'])\n    ref = pd.to_datetime('2025-01-01')\n    df['days_since_signup'] = (ref - df['signup_date']).dt.days\n    df['tenure_group'] = pd.cut(\n        df['days_since_signup'],\n        bins=[0, 90, 365, 730, float('inf')],\n        labels=['new', 'recent', 'established', 'veteran']\n    )\n    return df[['user_id', 'plan_tier', 'days_since_signup', 'tenure_group']].sort_values('user_id').reset_index(drop=True)",
+    "explanation": "Subtracting two datetime Series returns a Timedelta Series; `.dt.days` extracts the integer day count. `pd.cut()` bins a numeric Series into labeled intervals \u2014 `bins` defines the bin edges (left-exclusive by default), `labels` names each bin. The result is a Categorical Series. This is the standard pattern for converting continuous metrics into discrete segments for cohort analysis.",
+    "hints": [
+      "Subtract two `pd.to_datetime()` values to get a Timedelta, then use `.dt.days` to get an integer",
+      "`pd.cut(series, bins=[...], labels=[...])` assigns each value to a named bin \u2014 bin edges define the boundaries"
+    ],
+    "concepts": [
+      "pd.cut",
+      "datetime arithmetic",
+      "binning",
+      "Categorical",
+      "tenure segmentation"
+    ]
+  },
+  {
+    "id": 5033,
+    "order": 27,
+    "topic": "python_data",
+    "difficulty": "easy",
+    "title": "Categorize orders by amount",
+    "description": "You have a DataFrame `df_orders`.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Use `pd.cut` on `net_amount` with bins `[0, 100, 500, 1000, float('inf')]` and labels `['small', 'medium', 'large', 'whale']` to create an `order_size` column.\n2. Count orders per `order_size`. Return a DataFrame with columns `order_size` and `count`, sorted by `order_size` (use the natural category order: small, medium, large, whale).",
+    "dataframes": {
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Bin net_amount into order_size categories, count per bin\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_size'] = pd.cut(\n        df['net_amount'],\n        bins=[0, 100, 500, 1000, float('inf')],\n        labels=['small', 'medium', 'large', 'whale']\n    )\n    result = df.groupby('order_size', observed=True).size().reset_index(name='count')\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_size'] = pd.cut(\n        df['net_amount'],\n        bins=[0, 100, 500, 1000, float('inf')],\n        labels=['small', 'medium', 'large', 'whale']\n    )\n    result = df.groupby('order_size', observed=True).size().reset_index(name='count')\n    return result",
+    "explanation": "`pd.cut()` assigns each `net_amount` to a labeled bin. The result is a Categorical column with an inherent order. `groupby('order_size', observed=True)` groups by the categorical, with `observed=True` to suppress empty-bin warnings in newer pandas versions. `.size()` counts rows per group. The categorical column retains its defined order in the output without an explicit sort.",
+    "hints": [
+      "Use `pd.cut(df['net_amount'], bins=[0,100,500,1000,float('inf')], labels=[...])` to create the category column",
+      "Group by the categorical column with `observed=True` to avoid deprecated-behavior warnings"
+    ],
+    "concepts": [
+      "pd.cut",
+      "Categorical",
+      "groupby",
+      "binning",
+      "value distribution"
+    ]
+  },
+  {
+    "id": 5034,
+    "order": 28,
+    "topic": "python_data",
+    "difficulty": "easy",
+    "title": "Filter tickets by keyword in issue type",
+    "description": "You have a DataFrame `df_support_tickets`.\n\n**Columns:** `ticket_id`, `user_id`, `created_at`, `issue_type`, `priority`, `status`, `resolution_hours`\n\nReturn all tickets where `issue_type` contains the substring `'billing'` (case-insensitive). Return `ticket_id`, `user_id`, `issue_type`, `status`, `priority`, sorted by `ticket_id` ascending.",
+    "dataframes": {
+      "df_support_tickets": "support_tickets.csv"
+    },
+    "schema": {
+      "df_support_tickets": [
+        "ticket_id",
+        "user_id",
+        "created_at",
+        "issue_type",
+        "priority",
+        "status",
+        "resolution_hours"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_support_tickets):\n    # Filter tickets where issue_type contains 'billing' (case-insensitive)\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_support_tickets):\n    mask = df_support_tickets['issue_type'].str.contains('billing', case=False, na=False)\n    result = df_support_tickets[mask][['ticket_id', 'user_id', 'issue_type', 'status', 'priority']]\n    return result.sort_values('ticket_id').reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_support_tickets):\n    mask = df_support_tickets['issue_type'].str.contains('billing', case=False, na=False)\n    result = df_support_tickets[mask][['ticket_id', 'user_id', 'issue_type', 'status', 'priority']]\n    return result.sort_values('ticket_id').reset_index(drop=True)",
+    "explanation": "`str.contains(pattern, case=False)` does a case-insensitive substring search, returning a boolean Series. `na=False` ensures NaN values map to False instead of NaN (which would fail boolean indexing). This is the pandas equivalent of SQL `WHERE LOWER(issue_type) LIKE '%billing%'` and is vectorized \u2014 no loops needed.",
+    "hints": [
+      "Use `df['col'].str.contains('billing', case=False, na=False)` to produce a boolean mask",
+      "Set `na=False` so that any NaN in issue_type is treated as non-matching rather than raising an error"
+    ],
+    "concepts": [
+      "str.contains",
+      "case-insensitive search",
+      "boolean mask",
+      "str accessor",
+      "substring filter"
+    ]
+  },
+  {
+    "id": 5035,
+    "order": 29,
+    "topic": "python_data",
+    "difficulty": "easy",
+    "title": "Revenue by year",
+    "description": "You have a DataFrame `df_orders`.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Convert `order_date` to datetime and extract the year into a column `year`.\n2. Group by `year` and compute:\n   - `total_revenue`: sum of `net_amount`, rounded to 2 decimal places\n   - `order_count`: number of orders\n3. Return `year`, `total_revenue`, `order_count`, sorted by `year` ascending.",
+    "dataframes": {
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Extract year from order_date, aggregate per year\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_date'] = pd.to_datetime(df['order_date'])\n    df['year'] = df['order_date'].dt.year\n    result = df.groupby('year', as_index=False).agg(\n        total_revenue=('net_amount', 'sum'),\n        order_count=('order_id', 'count')\n    )\n    result['total_revenue'] = result['total_revenue'].round(2)\n    return result.sort_values('year').reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_date'] = pd.to_datetime(df['order_date'])\n    df['year'] = df['order_date'].dt.year\n    result = df.groupby('year', as_index=False).agg(\n        total_revenue=('net_amount', 'sum'),\n        order_count=('order_id', 'count')\n    )\n    result['total_revenue'] = result['total_revenue'].round(2)\n    return result.sort_values('year').reset_index(drop=True)",
+    "explanation": "`pd.to_datetime()` converts the string column to datetime. `.dt.year` extracts the integer year. The named aggregation syntax `agg(col_name=('source_col', 'func'))` produces cleanly named output columns in a single call \u2014 cleaner than chaining `.rename()` after plain `.agg()`. This is the preferred modern pattern since pandas 0.25.",
+    "hints": [
+      "Use `.dt.year` to extract the year from a datetime Series",
+      "Named aggregation syntax: `groupby(...).agg(new_name=('source_col', 'func'))` produces named output columns directly"
+    ],
+    "concepts": [
+      "dt accessor",
+      "dt.year",
+      "named aggregation",
+      "groupby.agg",
+      "datetime"
+    ]
   }
 ]
