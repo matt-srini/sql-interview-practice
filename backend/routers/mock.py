@@ -363,6 +363,50 @@ async def start_session(
     if body.difficulty not in VALID_DIFFICULTIES:
         raise HTTPException(status_code=400, detail=f"Invalid difficulty. Must be one of: {', '.join(VALID_DIFFICULTIES)}")
 
+    # Enforce plan/daily-limit access gates (mirrors the /access endpoint — must stay in sync)
+    user_plan = current_user.get("plan", "free")
+    user_id = current_user["id"]
+    daily_usage = await get_daily_mock_usage(user_id)
+
+    check_track = body.track if body.track != "mixed" else "sql"
+    medium_unlocked = False
+    if body.track == "mixed":
+        for t in ["sql", "python", "python-data", "pyspark"]:
+            try:
+                solved = await _get_solved_ids_for_track(user_id, t)
+                catalog = _get_catalog_for_track(t)
+                grouped = catalog.get_questions_by_difficulty()
+                unlock_state = compute_unlock_state(user_plan, solved, grouped, track=t)
+                if any(v != "locked" for qid, v in unlock_state.items()
+                       if any(int(q["id"]) == qid for q in grouped.get("medium", []))):
+                    medium_unlocked = True
+                    break
+            except Exception:
+                pass
+    else:
+        try:
+            solved = await _get_solved_ids_for_track(user_id, check_track)
+            catalog = _get_catalog_for_track(check_track)
+            grouped = catalog.get_questions_by_difficulty()
+            unlock_state = compute_unlock_state(user_plan, solved, grouped, track=check_track)
+            medium_unlocked = any(
+                v != "locked" for qid, v in unlock_state.items()
+                if any(int(q["id"]) == qid for q in grouped.get("medium", []))
+            )
+        except Exception:
+            pass
+
+    access = compute_mock_access(
+        plan=user_plan,
+        track=check_track,
+        difficulty=body.difficulty,
+        medium_unlocked=medium_unlocked,
+        daily_medium_used=daily_usage.get("medium", 0),
+        daily_hard_used=daily_usage.get("hard", 0),
+    )
+    if not access["can_start"]:
+        raise HTTPException(status_code=403, detail=access["block_copy"] or "Access denied.")
+
     # Derive num_questions and time_limit_s
     if body.mode in MODE_CONFIGS:
         num_questions = MODE_CONFIGS[body.mode]["num_questions"]
