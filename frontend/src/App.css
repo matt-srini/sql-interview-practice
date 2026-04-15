@@ -6028,45 +6028,6 @@ select {
 }
 .tier-banner-cta:hover { text-decoration: underline; }
 
-/* ── Sidebar mini-card on locked rows ──────────────── */
-/* Rendered as a portal (position:fixed via inline style) so it escapes sidebar overflow */
-.sidebar-locked-mini-card {
-  z-index: 9000;
-  width: 230px;
-  background: var(--surface-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-  padding: 12px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.sidebar-locked-mini-card-headline {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text-strong);
-  margin: 0;
-}
-.sidebar-locked-mini-card-body {
-  font-size: 0.74rem;
-  color: var(--text-secondary);
-  margin: 0;
-  line-height: 1.4;
-}
-.sidebar-locked-mini-card-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 4px;
-}
-.sidebar-locked-mini-card-cta {
-  font-size: 0.76rem;
-  text-decoration: none;
-  font-weight: 600;
-}
-.sidebar-locked-mini-card-cta-secondary { color: var(--accent); }
-.sidebar-locked-mini-card-cta-secondary:hover { text-decoration: underline; }
 
 /* ── Preview-locked callout (QuestionPage) ─────────── */
 .preview-locked-callout {
