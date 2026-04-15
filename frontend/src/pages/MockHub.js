@@ -47,7 +47,7 @@ export default function MockHub() {
 
   const [mode, setMode] = useState('30min');
   const [track, setTrack] = useState('sql');
-  const [difficulty, setDifficulty] = useState('medium');
+  const [difficulty, setDifficulty] = useState('easy');
   const [numQuestions, setNumQuestions] = useState(2);
   const [timeMinutes, setTimeMinutes] = useState(30);
   const [starting, setStarting] = useState(false);
@@ -215,36 +215,39 @@ export default function MockHub() {
             {/* Difficulty with per-button pre-flight state */}
             <div className="mock-hub-config-row">
               <span className="mock-hub-config-label">Difficulty</span>
-              <div className="mock-config-pills mock-config-pills--with-chips">
+              <div className="mock-config-pills">
                 {DIFFICULTIES.map(d => {
                   const btnState = getDifficultyButtonState(d);
                   const isSelected = difficulty === d;
                   return (
-                    <div key={d} className="mock-diff-pill-wrap">
-                      <button
-                        type="button"
-                        className={`mock-config-pill ${isSelected ? 'active' : ''} ${btnState.blocked ? 'mock-config-pill--blocked' : ''}`}
-                        disabled={btnState.blocked && accessState !== null}
-                        onClick={() => { if (!btnState.blocked) { setDifficulty(d); setStartError(null); } }}
-                        aria-disabled={btnState.blocked}
-                      >
-                        {DIFFICULTY_LABELS[d]}
-                      </button>
-                      {btnState.chip && (
-                        <div className={`mock-diff-chip${btnState.blocked ? ' mock-diff-chip--blocked' : ' mock-diff-chip--info'}`}>
-                          <span>{btnState.chip}</span>
-                          {btnState.chipAction && (
-                            <div className="mock-diff-chip-action">{btnState.chipAction}</div>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                    <button
+                      key={d}
+                      type="button"
+                      className={`mock-config-pill ${isSelected ? 'active' : ''} ${btnState.blocked ? 'mock-config-pill--blocked' : ''}`}
+                      disabled={btnState.blocked && accessState !== null}
+                      onClick={() => { if (!btnState.blocked) { setDifficulty(d); setStartError(null); } }}
+                      aria-disabled={btnState.blocked}
+                    >
+                      {DIFFICULTY_LABELS[d]}
+                    </button>
                   );
                 })}
               </div>
             </div>
           </div>
         </section>
+
+        {/* Difficulty notice — shown below config card for medium/hard only */}
+        {(difficulty === 'medium' || difficulty === 'hard') && (() => {
+          const notice = getDifficultyButtonState(difficulty);
+          if (!notice.chip) return null;
+          return (
+            <div className={`mock-diff-notice${notice.blocked ? ' mock-diff-notice--blocked' : ''}`}>
+              <span>{notice.chip}</span>
+              {notice.chipAction && notice.chipAction}
+            </div>
+          );
+        })()}
 
         {/* Start error (fallback for unexpected server errors) */}
         {startError && (

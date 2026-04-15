@@ -103,7 +103,7 @@ def test_free_pyspark_caps_hard_at_10() -> None:
 
 def test_starter_path_done_unlocks_all_medium() -> None:
     catalog = _make_mock_catalog()
-    # No easy solved — but starter path completed
+    # No easy solved — but learning path completed
     state = compute_unlock_state(
         "free", set(), catalog, track="sql",
         path_state={"starter_done": True, "intermediate_done": False},
@@ -124,7 +124,7 @@ def test_intermediate_path_done_unlocks_full_hard_cap() -> None:
 
 
 def test_path_and_threshold_take_higher_limit() -> None:
-    """User solved 15 easy (→ 8 medium by threshold) and also completed starter path (→ all medium).
+    """User solved 15 easy (→ 8 medium by threshold) and also completed a learning path (→ all medium).
     The higher limit (all medium) should win."""
     catalog = _make_mock_catalog()
     solved = {q["id"] for q in catalog["easy"][:15]}
