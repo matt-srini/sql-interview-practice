@@ -72,7 +72,7 @@ A data interview practice platform covering four tracks. Users write SQL or Pyth
 | Query execution | DuckDB (in-memory, loaded once at startup from CSVs) |
 | Payments | Stripe Checkout + verified webhooks |
 | Rate limiting | Redis (production) / in-memory fallback (development) |
-| Testing | pytest + httpx (backend), Vitest + React Testing Library (frontend) |
+| Testing | pytest + httpx (backend), Vitest + React Testing Library (frontend unit), Playwright (frontend e2e) |
 
 ---
 
