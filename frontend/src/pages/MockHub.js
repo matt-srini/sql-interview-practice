@@ -224,8 +224,7 @@ export default function MockHub() {
                       key={d}
                       type="button"
                       className={`mock-config-pill ${isSelected ? 'active' : ''} ${btnState.blocked ? 'mock-config-pill--blocked' : ''}`}
-                      disabled={btnState.blocked && accessState !== null}
-                      onClick={() => { if (!btnState.blocked) { setDifficulty(d); setStartError(null); } }}
+                      onClick={() => { setDifficulty(d); setStartError(null); }}
                       aria-disabled={btnState.blocked}
                     >
                       {DIFFICULTY_LABELS[d]}
@@ -237,16 +236,43 @@ export default function MockHub() {
           </div>
         </section>
 
-        {/* Difficulty notice — shown below config card for medium/hard only */}
-        {(difficulty === 'medium' || difficulty === 'hard') && (() => {
-          const notice = getDifficultyButtonState(difficulty);
-          if (!notice.chip) return null;
-          return (
-            <div className={`mock-diff-notice${notice.blocked ? ' mock-diff-notice--blocked' : ''}`}>
-              <span>{notice.chip}</span>
-              {notice.chipAction && notice.chipAction}
-            </div>
-          );
+        {/* Difficulty notice — shown below config card for medium/hard/mixed */}
+        {(() => {
+          if (difficulty === 'medium' || difficulty === 'hard') {
+            const notice = getDifficultyButtonState(difficulty);
+            if (!notice.chip) return null;
+            return (
+              <div className={`mock-diff-notice${notice.blocked ? ' mock-diff-notice--blocked' : ''}`}>
+                <span>{notice.chip}</span>
+                {notice.chipAction && notice.chipAction}
+              </div>
+            );
+          }
+          if (difficulty === 'mixed' && accessState) {
+            const medBlocked = accessState.access?.medium?.can_start === false;
+            const hardBlocked = accessState.access?.hard?.can_start === false;
+            if (medBlocked && hardBlocked) {
+              return (
+                <div className="mock-diff-notice mock-diff-notice--info">
+                  <span>With your current access, this mix will only include easy questions.</span>
+                  {accessState.access?.medium?.needs_upgrade && (
+                    <UpgradeButton tier={accessState.access.medium.needs_upgrade} label="Unlock more with Pro" compact source="mock_mixed_notice" />
+                  )}
+                </div>
+              );
+            }
+            if (hardBlocked) {
+              return (
+                <div className="mock-diff-notice mock-diff-notice--info">
+                  <span>Hard questions aren't included yet — this mix will draw from easy and medium.</span>
+                  {accessState.access?.hard?.needs_upgrade && (
+                    <UpgradeButton tier={accessState.access.hard.needs_upgrade} label="Unlock hard with Pro" compact source="mock_mixed_hard_notice" />
+                  )}
+                </div>
+              );
+            }
+          }
+          return null;
         })()}
 
         {/* Start error (fallback for unexpected server errors) */}
