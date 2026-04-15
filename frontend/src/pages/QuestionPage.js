@@ -552,6 +552,9 @@ export default function QuestionPage() {
               />
 
               <div className="editor-footer question-action-dock">
+                {(running || submitting) && (
+                  <div className="execution-bar" aria-hidden="true" />
+                )}
                 <div className="button-row question-action-row">
                   {meta.hasRunCode && (
                     <button className="btn btn-secondary" onClick={handleRun} disabled={running || submitting || isLocked}>
@@ -582,6 +585,25 @@ export default function QuestionPage() {
           )}
 
           {runError && <div className="error-box">{runError}</div>}
+
+          {/* Skeleton run result — visible while query/code is executing */}
+          {running && !runError && (
+            <div className="results-card">
+              <div className="results-header">
+                <span>{topic === 'python' ? 'Running tests…' : 'Query Result'}</span>
+                <div className="skeleton-line skeleton-shimmer" style={{ width: '2.5rem', height: '11px' }} />
+              </div>
+              <div className="results-skeleton-body">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div
+                    key={i}
+                    className="results-skeleton-row skeleton-shimmer"
+                    style={{ animationDelay: `${(i - 1) * 60}ms` }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* SQL run result */}
           {isSQLRunResult && (
@@ -618,6 +640,15 @@ export default function QuestionPage() {
           )}
 
           {submitError && <div className="error-box">{submitError}</div>}
+
+          {/* Skeleton verdict — visible while submission is being evaluated */}
+          {submitting && !submitError && (
+            <div className="verdict-skeleton">
+              <div className="skeleton-line skeleton-shimmer" style={{ width: '5rem', height: '13px' }} />
+              <div className="skeleton-line skeleton-shimmer" style={{ width: '70%', height: '11px' }} />
+              <div className="skeleton-line skeleton-shimmer" style={{ width: '50%', height: '11px', animationDelay: '80ms' }} />
+            </div>
+          )}
 
           {submitResult && (
             <div className="submit-outcome">
