@@ -6156,9 +6156,6 @@ select {
 .path-card--pro:hover { opacity: 1; }
 
 /* ── Mock difficulty notice (below config card) ───────── */
-.mock-config-pill--blocked {
-  opacity: 0.55;
-}
 .mock-diff-notice {
   font-size: 0.82rem;
   color: var(--text-secondary);
@@ -6168,7 +6165,8 @@ select {
   align-items: center;
   gap: 0.75rem;
   flex-wrap: wrap;
-  margin-bottom: 0.5rem;
+  margin-top: -1.25rem;
+  margin-bottom: 1.5rem;
 }
 .mock-diff-notice--blocked {
   background: var(--warning-soft);
