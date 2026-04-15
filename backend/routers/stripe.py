@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.concurrency import run_in_threadpool
 
 from config import STRIPE_PRICE_ELITE, STRIPE_PRICE_PRO, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET
+from config import STRIPE_PRICE_LIFETIME_PRO, STRIPE_PRICE_LIFETIME_ELITE
 from db import get_user_by_id, get_user_by_stripe_customer_id, is_event_processed, record_plan_change
 from db import record_stripe_event, set_user_plan, set_user_stripe_customer_id
 from deps import get_current_user
@@ -24,9 +25,14 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/stripe", tags=["stripe"])
 
 PRICE_IDS = {
-    "pro": STRIPE_PRICE_PRO,
-    "elite": STRIPE_PRICE_ELITE,
+    "pro":            STRIPE_PRICE_PRO,
+    "elite":          STRIPE_PRICE_ELITE,
+    "lifetime_pro":   STRIPE_PRICE_LIFETIME_PRO,
+    "lifetime_elite": STRIPE_PRICE_LIFETIME_ELITE,
 }
+
+# Plans that use a one-time payment rather than a subscription
+LIFETIME_PLANS = {"lifetime_pro", "lifetime_elite"}
 
 
 def _require_stripe() -> Any:
@@ -39,10 +45,12 @@ def _require_stripe() -> Any:
 
 
 def _target_plan_is_allowed(current_plan: str, target_plan: str) -> bool:
-    allowed_targets = {
-        "free": {"pro", "elite"},
-        "pro": {"elite"},
-        "elite": set(),
+    allowed_targets: dict[str, set[str]] = {
+        "free":           {"pro", "elite", "lifetime_pro", "lifetime_elite"},
+        "pro":            {"elite", "lifetime_pro", "lifetime_elite"},
+        "lifetime_pro":   {"elite", "lifetime_elite"},
+        "elite":          set(),
+        "lifetime_elite": set(),
     }
     return target_plan in allowed_targets.get(current_plan, set())
 
@@ -142,19 +150,21 @@ async def create_checkout(
     stripe_client = _require_stripe()
     customer_id = await _ensure_customer_id(current_user, stripe_client)
     frontend_base_url = _frontend_base_url(request)
+    is_lifetime = body.plan in LIFETIME_PLANS
+    checkout_kwargs: dict[str, Any] = dict(
+        customer=customer_id,
+        line_items=[{"price": price_id, "quantity": 1}],
+        mode="payment" if is_lifetime else "subscription",
+        success_url=f"{frontend_base_url}/practice?upgraded=true",
+        cancel_url=f"{frontend_base_url}/practice",
+        metadata={
+            "user_id": str(current_user["id"]),
+            "target_plan": body.plan,
+        },
+        client_reference_id=str(current_user["id"]),
+    )
     session = await run_in_threadpool(
-        lambda: stripe_client.checkout.Session.create(
-            customer=customer_id,
-            line_items=[{"price": price_id, "quantity": 1}],
-            mode="subscription",
-            success_url=f"{frontend_base_url}/practice?upgraded=true",
-            cancel_url=f"{frontend_base_url}/practice",
-            metadata={
-                "user_id": str(current_user["id"]),
-                "target_plan": body.plan,
-            },
-            client_reference_id=str(current_user["id"]),
-        )
+        lambda: stripe_client.checkout.Session.create(**checkout_kwargs)
     )
     return CheckoutResponse(checkout_url=str(session.url))
 
@@ -195,7 +205,7 @@ async def stripe_webhook(request: Request) -> dict[str, str]:
     if event_type == "checkout.session.completed":
         user = await _resolve_event_user(event_object)
         target_plan = (event_object.get("metadata") or {}).get("target_plan")
-        if user and target_plan in {"pro", "elite"}:
+        if user and target_plan in {"pro", "elite", "lifetime_pro", "lifetime_elite"}:
             await _apply_plan_change(
                 user=user,
                 new_plan=str(target_plan),

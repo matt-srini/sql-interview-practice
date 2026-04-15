@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS users (
     name TEXT,
     pwd_hash TEXT,
     pwd_salt TEXT,
-    plan TEXT NOT NULL DEFAULT 'free' CHECK (plan IN ('free', 'pro', 'elite')),
+    plan TEXT NOT NULL DEFAULT 'free' CHECK (plan IN ('free', 'pro', 'elite', 'lifetime_pro', 'lifetime_elite')),
     stripe_customer_id TEXT UNIQUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     upgraded_at TIMESTAMPTZ
@@ -123,6 +123,34 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
 CREATE INDEX IF NOT EXISTS idx_oauth_accounts_user ON oauth_accounts(user_id);
 CREATE INDEX IF NOT EXISTS idx_reset_tokens_user ON password_reset_tokens(user_id);
 CREATE INDEX IF NOT EXISTS idx_reset_tokens_expires ON password_reset_tokens(expires_at);
+
+CREATE TABLE IF NOT EXISTS mock_sessions (
+    id BIGSERIAL PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    mode TEXT NOT NULL,
+    track TEXT NOT NULL,
+    difficulty TEXT,
+    started_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    ended_at TIMESTAMPTZ,
+    time_limit_s INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'active'
+);
+
+CREATE INDEX IF NOT EXISTS idx_mock_sessions_user_started ON mock_sessions(user_id, started_at DESC);
+
+CREATE TABLE IF NOT EXISTS mock_session_questions (
+    id BIGSERIAL PRIMARY KEY,
+    session_id BIGINT NOT NULL REFERENCES mock_sessions(id) ON DELETE CASCADE,
+    question_id INTEGER NOT NULL,
+    track TEXT NOT NULL,
+    position INTEGER NOT NULL,
+    is_solved BOOLEAN NOT NULL DEFAULT false,
+    submitted_at TIMESTAMPTZ,
+    final_code TEXT,
+    time_spent_s INTEGER
+);
+
+CREATE INDEX IF NOT EXISTS idx_mock_session_questions_session ON mock_session_questions(session_id);
 """
 
 
@@ -230,7 +258,7 @@ async def reset_database() -> None:
         raise RuntimeError("Database pool is not initialized")
 
     async with _engine.begin() as conn:
-        await conn.execute(text("TRUNCATE TABLE submissions, plan_changes, stripe_events, user_sample_seen, user_progress, sessions, users RESTART IDENTITY CASCADE"))
+        await conn.execute(text("TRUNCATE TABLE mock_session_questions, mock_sessions, submissions, plan_changes, stripe_events, user_sample_seen, user_progress, sessions, users RESTART IDENTITY CASCADE"))
 
 
 async def ensure_schema_admin(database_url: str | None = None) -> None:
@@ -249,7 +277,7 @@ async def reset_database_admin(database_url: str | None = None) -> None:
         async with engine.begin() as conn:
             await conn.execute(
                 text(
-                    "TRUNCATE TABLE submissions, plan_changes, stripe_events, user_sample_seen, user_progress, sessions, users RESTART IDENTITY CASCADE"
+                    "TRUNCATE TABLE mock_session_questions, mock_sessions, submissions, plan_changes, stripe_events, user_sample_seen, user_progress, sessions, users RESTART IDENTITY CASCADE"
                 )
             )
     finally:

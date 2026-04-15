@@ -6,6 +6,7 @@ import { TRACK_META } from '../contexts/TopicContext';
 import TrackProgressBar from '../components/TrackProgressBar';
 import PathProgressCard from '../components/PathProgressCard';
 import Topbar from '../components/Topbar';
+import UpgradeButton from '../components/UpgradeButton';
 import { useTheme } from '../App';
 
 const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
@@ -127,6 +128,20 @@ df = df.coalesce(10)`,
 export default function LandingPage() {
   const { user, logout } = useAuth();
   const { theme, setTheme, resolvedTheme } = useTheme();
+
+  const userPlan = user?.plan ?? 'free';
+
+  // Returns true if the user is already on this tier (incl. lifetime variants)
+  function isCurrentTier(tier) {
+    if (tier === 'pro')   return userPlan === 'pro'   || userPlan === 'lifetime_pro';
+    if (tier === 'elite') return userPlan === 'elite'  || userPlan === 'lifetime_elite';
+    return userPlan === 'free';
+  }
+
+  // Returns true if the user can upgrade to this tier (backend enforces exact rules)
+  function canUpgradeTo(tier) {
+    return !isCurrentTier(tier);
+  }
 
   function cycleTheme() {
     const next = theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system';
@@ -461,33 +476,72 @@ export default function LandingPage() {
         {/* Tier comparison */}
         <section className="landing-tier-section">
           <div className="landing-tier-inner">
-            <h2 className="landing-tier-title">What's included</h2>
+            <h2 className="landing-tier-title">Simple pricing</h2>
             <div className="landing-tier-grid">
+
+              {/* ── Free ── */}
               <div className="landing-tier-col">
                 <div className="landing-tier-col-header">
                   <span className="landing-tier-name">Free</span>
+                  <div className="landing-tier-price">
+                    <span className="landing-tier-price-amount">$0</span>
+                  </div>
                 </div>
                 <ul className="landing-tier-list">
-                  <li>All easy questions</li>
-                  <li>Unlock medium + hard via curated paths or solo practice</li>
+                  <li>All easy questions across all 4 tracks</li>
+                  <li>Unlock medium + hard via paths or solo practice</li>
                   <li>Easy mock interviews</li>
-                  <li>2 free learning paths per track</li>
+                  <li>2 learning paths per track</li>
                 </ul>
+                <div className="landing-tier-cta">
+                  {isCurrentTier('free') && (
+                    <span className="landing-tier-current">Current plan</span>
+                  )}
+                </div>
               </div>
+
+              {/* ── Pro ── */}
               <div className="landing-tier-col landing-tier-col--featured">
                 <div className="landing-tier-col-header">
+                  <span className="landing-tier-badge">Most popular</span>
                   <span className="landing-tier-name">Pro</span>
+                  <div className="landing-tier-price">
+                    <span className="landing-tier-price-amount">$9</span>
+                    <span className="landing-tier-price-period">/mo</span>
+                  </div>
                 </div>
                 <ul className="landing-tier-list">
                   <li>Everything in Free</li>
-                  <li>All medium + hard across all tracks</li>
+                  <li>All medium + hard across all 4 tracks</li>
                   <li>All learning paths</li>
                   <li>Daily hard mock interviews</li>
                 </ul>
+                <div className="landing-tier-cta">
+                  {isCurrentTier('pro') ? (
+                    <span className="landing-tier-current">Current plan</span>
+                  ) : canUpgradeTo('pro') && (
+                    <>
+                      <UpgradeButton tier="pro" source="landing_tier" />
+                      <UpgradeButton
+                        tier="lifetime_pro"
+                        label="Lifetime access — $99"
+                        compact
+                        className="landing-tier-lifetime-btn"
+                        source="landing_tier_lifetime"
+                      />
+                    </>
+                  )}
+                </div>
               </div>
+
+              {/* ── Elite ── */}
               <div className="landing-tier-col">
                 <div className="landing-tier-col-header">
                   <span className="landing-tier-name">Elite</span>
+                  <div className="landing-tier-price">
+                    <span className="landing-tier-price-amount">$19</span>
+                    <span className="landing-tier-price-period">/mo</span>
+                  </div>
                 </div>
                 <ul className="landing-tier-list">
                   <li>Everything in Pro</li>
@@ -495,7 +549,24 @@ export default function LandingPage() {
                   <li>Weak-spot insights after every session</li>
                   <li>Harder interview-realistic mock questions</li>
                 </ul>
+                <div className="landing-tier-cta">
+                  {isCurrentTier('elite') ? (
+                    <span className="landing-tier-current">Current plan</span>
+                  ) : canUpgradeTo('elite') && (
+                    <>
+                      <UpgradeButton tier="elite" source="landing_tier" />
+                      <UpgradeButton
+                        tier="lifetime_elite"
+                        label="Lifetime access — $149"
+                        compact
+                        className="landing-tier-lifetime-btn"
+                        source="landing_tier_lifetime"
+                      />
+                    </>
+                  )}
+                </div>
               </div>
+
             </div>
           </div>
         </section>

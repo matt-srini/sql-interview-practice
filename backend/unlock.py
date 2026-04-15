@@ -3,6 +3,25 @@ from __future__ import annotations
 from typing import Any
 
 
+# ── Lifetime plan normalisation ───────────────────────────────────────────────
+#
+# Lifetime plans ('lifetime_pro', 'lifetime_elite') grant the same access as
+# their base plan but are stored separately so they are never downgraded by a
+# subscription-deleted webhook (one-time purchases have no subscription).
+# All access-control functions call normalize_plan() first so the rest of the
+# logic only needs to handle 'free', 'pro', and 'elite'.
+
+_LIFETIME_PLAN_MAP: dict[str, str] = {
+    "lifetime_pro":   "pro",
+    "lifetime_elite": "elite",
+}
+
+
+def normalize_plan(plan: str) -> str:
+    """Map lifetime plan variants to their base plan for access-control checks."""
+    return _LIFETIME_PLAN_MAP.get(plan, plan)
+
+
 # ── Free-tier threshold tables ────────────────────────────────────────────────
 #
 # Each entry is (solved_threshold, questions_unlocked | None).
@@ -43,13 +62,15 @@ FREE_HARD_CAP_PYSPARK = 10
 
 # Daily mock session limits per plan × difficulty (None = unlimited)
 MOCK_DAILY_LIMITS: dict[str, dict[str, int | None]] = {
-    "free":  {"easy": None, "medium": 1,    "hard": None, "mixed": None},
-    "pro":   {"easy": None, "medium": None, "hard": 3,    "mixed": None},
-    "elite": {"easy": None, "medium": None, "hard": None, "mixed": None},
+    "free":           {"easy": None, "medium": 1,    "hard": None, "mixed": None},
+    "pro":            {"easy": None, "medium": None, "hard": 3,    "mixed": None},
+    "elite":          {"easy": None, "medium": None, "hard": None, "mixed": None},
+    "lifetime_pro":   {"easy": None, "medium": None, "hard": 3,    "mixed": None},
+    "lifetime_elite": {"easy": None, "medium": None, "hard": None, "mixed": None},
 }
 
-# Company-filtered mocks require Elite
-MOCK_COMPANY_FILTER_TIERS = {"elite"}
+# Company-filtered mocks require Elite (or lifetime equivalent)
+MOCK_COMPANY_FILTER_TIERS = {"elite", "lifetime_elite"}
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -124,6 +145,7 @@ def compute_unlock_state(
                intermediate_done=True → full hard cap unlocked.
                Either acts as an express-lane alternative to threshold grinding.
     """
+    plan = normalize_plan(plan)
     ordered_catalog = _sorted_catalog(catalog)
     solved_set = {int(qid) for qid in solved_ids}
     pyspark = _is_pyspark(track)
@@ -216,6 +238,7 @@ def compute_mock_access(
       daily_limit (int | None)
       daily_used (int | None)
     """
+    plan = normalize_plan(plan)
     _track_label = {
         "sql": "SQL", "python": "Python",
         "python-data": "Pandas", "pyspark": "PySpark",
