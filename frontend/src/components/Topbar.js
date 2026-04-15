@@ -94,6 +94,7 @@ export default function Topbar({ active }) {
           <button className="theme-toggle" onClick={cycleTheme} aria-label="Toggle theme">
             {themeIcon}
           </button>
+          <div className="topbar-sep" aria-hidden="true" />
 
           {user ? (
             <>

@@ -463,8 +463,15 @@ select {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.45rem;
+  gap: 0.875rem;
   margin-left: auto;
+}
+
+.topbar-sep {
+  width: 1px;
+  height: 18px;
+  background: var(--border-subtle);
+  flex-shrink: 0;
 }
 
 .app-practice-home {
@@ -1307,7 +1314,7 @@ select {
 .landing-topbar-right {
   margin-left: auto;
   justify-content: flex-end;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .landing-brand {
@@ -6148,36 +6155,26 @@ select {
 }
 .path-card--pro:hover { opacity: 1; }
 
-/* ── Mock difficulty chips (pre-flight state) ───────── */
-.mock-config-pills--with-chips { align-items: flex-start; }
-.mock-diff-pill-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-}
+/* ── Mock difficulty notice (below config card) ───────── */
 .mock-config-pill--blocked {
   opacity: 0.5;
   cursor: not-allowed;
 }
-.mock-diff-chip {
-  font-size: 0.72rem;
-  padding: 3px 8px;
-  border-radius: 10px;
-  max-width: 200px;
-  line-height: 1.3;
-}
-.mock-diff-chip--info {
-  background: var(--surface-card-soft);
+.mock-diff-notice {
+  font-size: 0.82rem;
   color: var(--text-secondary);
-  border: 1px solid var(--border-subtle);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
-.mock-diff-chip--blocked {
+.mock-diff-notice--blocked {
   background: var(--warning-soft);
   color: var(--warning);
   border: 1px solid rgba(196, 127, 23, 0.25);
 }
-.mock-diff-chip-action { margin-top: 4px; }
 
 /* ── Landing tier comparison section ───────────────── */
 .landing-tier-section {
