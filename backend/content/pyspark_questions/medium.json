@@ -723,5 +723,146 @@
       "driver memory",
       "data collection anti-patterns"
     ]
+  },
+  {
+    "id": 11326,
+    "order": 26,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "medium",
+    "title": "Delta Lake MERGE for upsert",
+    "description": "You have a Delta Lake table `customers`. A `updates` DataFrame contains new and modified records. You need to atomically upsert: update matching records (by `customer_id`) and insert new ones.\n\nWhich approach is correct?",
+    "code_snippet": null,
+    "options": [
+      "Read existing table, union with updates, call `.dropDuplicates(['customer_id'])`, then overwrite",
+      "Use `DeltaTable.forName(spark, 'customers').alias('t').merge(updates.alias('u'), 't.customer_id = u.customer_id').whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()`",
+      "Use `spark.sql('INSERT OVERWRITE customers SELECT * FROM updates')` for atomic replacement",
+      "Write updates to a staging table and reconcile every 5 minutes"
+    ],
+    "correct_option": 1,
+    "explanation": "`DeltaTable.merge()` is the purpose-built ACID upsert API: `whenMatchedUpdateAll()` updates existing records, `whenNotMatchedInsertAll()` inserts new ones. Option A (union + dropDuplicates + overwrite) reads the full table into a single shuffle, drops ACID guarantees, and has race conditions. Option C (INSERT OVERWRITE) replaces ALL data \u2014 not an upsert. Option D introduces staleness and is not atomic.",
+    "hints": [
+      "Delta Lake's merge API directly mirrors SQL MERGE INTO \u2014 it handles matched and unmatched rows in one atomic operation"
+    ],
+    "concepts": [
+      "Delta Lake",
+      "MERGE",
+      "upsert",
+      "ACID",
+      "whenMatchedUpdate",
+      "whenNotMatchedInsert"
+    ]
+  },
+  {
+    "id": 11327,
+    "order": 27,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "medium",
+    "title": "Delta Lake time travel recovery",
+    "description": "A junior engineer accidentally overwrites a Delta Lake table with bad data using `df.write.format('delta').mode('overwrite').save('/data/customers')`. How do you recover the previous version?",
+    "code_snippet": null,
+    "options": [
+      "Restore from the last S3 backup \u2014 Delta Lake does not support rollback",
+      "Use `spark.read.format('delta').option('versionAsOf', N).load('/data/customers')` to read the previous version, then overwrite",
+      "Run `delta_table.vacuum(0)` to purge bad data and restore the previous state",
+      "Open `_delta_log/` and manually delete the latest JSON commit file"
+    ],
+    "correct_option": 1,
+    "explanation": "Delta Lake's time travel lets you read any historical version with `option('versionAsOf', N)` or `option('timestampAsOf', timestamp)`. To recover: read the last good version and overwrite the table. Delta's transaction log preserves all previous data files until VACUUM removes them. Option A is wrong \u2014 time travel IS Delta's built-in rollback. Option C is catastrophically wrong \u2014 `vacuum(0)` deletes historical data files, making recovery impossible. Option D corrupts the ACID guarantees.",
+    "hints": [
+      "Delta Lake records every write in `_delta_log/` \u2014 use `option('versionAsOf', N)` to read a specific historical snapshot"
+    ],
+    "concepts": [
+      "Delta Lake",
+      "time travel",
+      "versionAsOf",
+      "transaction log",
+      "data recovery"
+    ]
+  },
+  {
+    "id": 11328,
+    "order": 28,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "medium",
+    "title": "Structured Streaming output modes",
+    "description": "You are aggregating streaming events by `user_id` to compute a running `total_spend`, writing to Kafka. Which output mode is correct?",
+    "code_snippet": "df.withWatermark('event_time', '5 minutes')\n  .groupBy('user_id')\n  .agg(F.sum('amount').alias('total_spend'))\n  .writeStream\n  .outputMode('???')\n  .format('kafka')\n  .start()",
+    "options": [
+      "append \u2014 only new rows added since the last trigger are written",
+      "complete \u2014 the full aggregated result table is written every trigger",
+      "update \u2014 only rows whose aggregated values changed since the last trigger are written",
+      "overwrite \u2014 each trigger overwrites the previous result in Kafka"
+    ],
+    "correct_option": 2,
+    "explanation": "`update` mode writes only changed rows \u2014 for a running sum, only user_ids whose `total_spend` was updated in this micro-batch. `append` is semantically wrong for aggregations: you can't append a running total since past values for the same key need updating. `complete` mode rewrites the entire result every trigger \u2014 expensive for large state. `overwrite` is not a valid Spark streaming output mode.",
+    "hints": [
+      "For a stateful aggregation updated over time: do you want ALL rows every trigger, only NEW rows, or only CHANGED rows?"
+    ],
+    "concepts": [
+      "structured streaming",
+      "output modes",
+      "update mode",
+      "append mode",
+      "stateful aggregation"
+    ]
+  },
+  {
+    "id": 11329,
+    "order": 29,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "medium",
+    "title": "Broadcast join for small lookup table",
+    "description": "You have a 500 GB `events` DataFrame and a 50 KB `country_codes` lookup DataFrame. You need to left join them on `country_code`. What is the most efficient approach?",
+    "code_snippet": null,
+    "options": [
+      "Join normally \u2014 let AQE choose the strategy",
+      "Use `events.join(broadcast(country_codes), on='country_code', how='left')` to send the small table to every executor",
+      "Repartition `events` to 1 partition to eliminate the shuffle",
+      "Convert `country_codes` to a Python dict and use a UDF for row-by-row lookup"
+    ],
+    "correct_option": 1,
+    "explanation": "Broadcasting `country_codes` (50 KB) sends it to every executor's memory, eliminating the shuffle of the 500 GB events table entirely \u2014 a local map-side lookup with no data movement. Option A may work if AQE detects the size at runtime, but explicit `broadcast()` is deterministic. Option C (repartition to 1) forces all 500 GB onto one executor \u2014 a crash. Option D (UDF dict) bypasses Catalyst, is Python-serialized, and is significantly slower.",
+    "hints": [
+      "When one table fits in each executor's memory, you can eliminate the shuffle entirely by replicating it everywhere"
+    ],
+    "concepts": [
+      "broadcast join",
+      "shuffle elimination",
+      "broadcast()",
+      "small table optimization",
+      "join strategy"
+    ]
+  },
+  {
+    "id": 11330,
+    "order": 30,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "medium",
+    "title": "Delta Lake schema evolution",
+    "description": "Your Delta table has schema `{id: long, name: string}`. You try to append a DataFrame with schema `{id: long, name: string, email: string}`. What happens by default, and how do you allow the new column?",
+    "code_snippet": "df_new.write.format('delta').mode('append').save('/data/customers')",
+    "options": [
+      "The write succeeds silently \u2014 Delta automatically adds `email` to the schema",
+      "An AnalysisException is raised \u2014 add `.option('mergeSchema', 'true')` to allow new columns",
+      "The `email` column is silently dropped to match the existing schema",
+      "Delta prompts you interactively to confirm the schema change"
+    ],
+    "correct_option": 1,
+    "explanation": "Delta Lake enforces schema compatibility by default. Appending with an extra column raises `AnalysisException: A schema mismatch detected`. To allow schema evolution, add `.option('mergeSchema', 'true')` to the write call or enable `spark.databricks.delta.schema.autoMerge.enabled=true` globally. Option A is wrong \u2014 Delta does NOT silently modify the schema to prevent accidental corruption. Option C is wrong \u2014 Delta rejects the write rather than dropping data. Option D is wrong \u2014 Spark has no interactive prompts.",
+    "hints": [
+      "Delta Lake's schema enforcement rejects writes that don't match \u2014 opt in to evolution with `mergeSchema=true`"
+    ],
+    "concepts": [
+      "Delta Lake",
+      "schema enforcement",
+      "schema evolution",
+      "mergeSchema",
+      "AnalysisException"
+    ]
   }
 ]
