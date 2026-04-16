@@ -315,3 +315,127 @@ class TestDashboardShape:
                 assert got == expected_total, (
                     f"dashboard {track}.total: expected {expected_total}, got {got}"
                 )
+
+
+# ---------------------------------------------------------------------------
+# Lifetime Pro — catalog and mock access (must mirror base Pro)
+# ---------------------------------------------------------------------------
+
+class TestLifetimeProCatalog:
+    """lifetime_pro users must have identical catalog access to pro users.
+
+    The plan value stored in the DB is 'lifetime_pro' verbatim; normalize_plan()
+    maps it to 'pro' for all access-control decisions.
+    """
+
+    def test_sql_catalog_fully_unlocked(self) -> None:
+        with TestClient(app) as client:
+            _make_user(client, plan="lifetime_pro")
+            states = _catalog_states(client, "/api/catalog")
+            assert all(s in ("unlocked", "solved") for s in states["easy"])
+            assert all(s in ("unlocked", "solved") for s in states["medium"])
+            # Pro caps hard — all should be unlocked (not locked)
+            assert all(s in ("unlocked", "solved") for s in states["hard"]), (
+                "lifetime_pro must unlock all hard SQL questions, same as pro"
+            )
+
+    def test_python_catalog_fully_unlocked(self) -> None:
+        with TestClient(app) as client:
+            _make_user(client, plan="lifetime_pro")
+            states = _catalog_states(client, "/api/python/catalog")
+            assert all(s in ("unlocked", "solved") for s in states["hard"]), (
+                "lifetime_pro must unlock all hard Python questions"
+            )
+
+    def test_profile_stores_lifetime_pro_verbatim(self) -> None:
+        """The profile endpoint must return 'lifetime_pro', not 'pro'.
+
+        Verbatim storage is what prevents subscription.deleted from downgrading
+        the user — do not normalise this value in the DB or API layer.
+        """
+        with TestClient(app) as client:
+            user = _make_user(client, plan="lifetime_pro")
+            profile = client.get("/api/user/profile", params={"user_id": user["id"]})
+            assert profile.status_code == 200
+            assert profile.json()["plan"] == "lifetime_pro", (
+                "plan must be stored and returned as 'lifetime_pro', not collapsed to 'pro'"
+            )
+
+    def test_mock_hard_allowed_within_daily_limit(self) -> None:
+        """lifetime_pro users may start hard mocks (same 3/day budget as pro)."""
+        with TestClient(app) as client:
+            _make_user(client, plan="lifetime_pro")
+            r = client.post(
+                "/api/mock/start",
+                json={"mode": "30min", "track": "sql", "difficulty": "hard"},
+            )
+            assert r.status_code == 200, (
+                f"lifetime_pro must be allowed to start hard mocks, got {r.status_code}: {r.json()}"
+            )
+
+    def test_company_filter_mock_blocked(self) -> None:
+        """Company-filtered mocks require elite tier — lifetime_pro must be blocked."""
+        with TestClient(app) as client:
+            _make_user(client, plan="lifetime_pro")
+            r = client.post(
+                "/api/mock/start",
+                json={"mode": "30min", "track": "sql", "difficulty": "hard",
+                      "company_filter": "Meta"},
+            )
+            assert r.status_code in (400, 403), (
+                f"lifetime_pro must not access company-filtered mocks, got {r.status_code}"
+            )
+
+
+# ---------------------------------------------------------------------------
+# Lifetime Elite — catalog and mock access (must mirror base Elite)
+# ---------------------------------------------------------------------------
+
+class TestLifetimeEliteCatalog:
+    """lifetime_elite users must have full catalog access identical to elite users."""
+
+    def test_sql_catalog_fully_unlocked(self) -> None:
+        with TestClient(app) as client:
+            _make_user(client, plan="lifetime_elite")
+            states = _catalog_states(client, "/api/catalog")
+            assert all(s in ("unlocked", "solved") for s in states["hard"]), (
+                "lifetime_elite must unlock all hard SQL questions"
+            )
+
+    def test_profile_stores_lifetime_elite_verbatim(self) -> None:
+        """The profile endpoint must return 'lifetime_elite', not 'elite'."""
+        with TestClient(app) as client:
+            user = _make_user(client, plan="lifetime_elite")
+            profile = client.get("/api/user/profile", params={"user_id": user["id"]})
+            assert profile.status_code == 200
+            assert profile.json()["plan"] == "lifetime_elite", (
+                "plan must be stored and returned as 'lifetime_elite', not collapsed to 'elite'"
+            )
+
+    def test_mock_hard_unlimited(self) -> None:
+        """lifetime_elite users have no daily cap on hard mocks."""
+        with TestClient(app) as client:
+            _make_user(client, plan="lifetime_elite")
+            # Start 4 hard mocks — beyond the pro daily cap of 3
+            for i in range(4):
+                r = client.post(
+                    "/api/mock/start",
+                    json={"mode": "30min", "track": "sql", "difficulty": "hard"},
+                )
+                assert r.status_code == 200, (
+                    f"lifetime_elite mock #{i + 1} must be allowed (no daily cap), "
+                    f"got {r.status_code}: {r.json()}"
+                )
+
+    def test_company_filter_mock_allowed(self) -> None:
+        """Company-filtered mocks must be accessible to lifetime_elite users."""
+        with TestClient(app) as client:
+            _make_user(client, plan="lifetime_elite")
+            r = client.post(
+                "/api/mock/start",
+                json={"mode": "30min", "track": "sql", "difficulty": "hard",
+                      "company_filter": "Meta"},
+            )
+            assert r.status_code == 200, (
+                f"lifetime_elite must access company-filtered mocks, got {r.status_code}: {r.json()}"
+            )

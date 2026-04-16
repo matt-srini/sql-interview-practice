@@ -202,30 +202,47 @@ async def stripe_webhook(request: Request) -> dict[str, str]:
         "customer": event_object.get("customer"),
     }
 
+    # resolved_user tracks the DB user found during event processing.  We use
+    # their actual primary key (rather than the raw metadata UUID) as the FK
+    # in stripe_events so we never write an orphaned user_id reference.
+    resolved_user: dict[str, Any] | None = None
+
     if event_type == "checkout.session.completed":
-        user = await _resolve_event_user(event_object)
+        resolved_user = await _resolve_event_user(event_object)
         target_plan = (event_object.get("metadata") or {}).get("target_plan")
-        if user and target_plan in {"pro", "elite", "lifetime_pro", "lifetime_elite"}:
+        if resolved_user and target_plan in {"pro", "elite", "lifetime_pro", "lifetime_elite"}:
             await _apply_plan_change(
-                user=user,
+                user=resolved_user,
                 new_plan=str(target_plan),
                 context="stripe-checkout",
                 stripe_event_id=event_id,
             )
     elif event_type == "customer.subscription.deleted":
-        user = await _resolve_event_user(event_object)
-        if user:
-            await _apply_plan_change(
-                user=user,
-                new_plan="free",
-                context="stripe-subscription-deleted",
-                stripe_event_id=event_id,
-            )
+        resolved_user = await _resolve_event_user(event_object)
+        if resolved_user:
+            if resolved_user.get("plan") in {"lifetime_pro", "lifetime_elite"}:
+                # Lifetime plans are one-time purchases — they have no subscription to
+                # delete.  A stale subscription.deleted event (e.g. from a prior monthly
+                # plan that was cancelled before the user switched to lifetime) must never
+                # strip lifetime access.
+                logger.info(
+                    "[stripe-webhook] subscription.deleted ignored — user is on a lifetime plan "
+                    "user_id=%s plan=%s",
+                    resolved_user["id"],
+                    resolved_user["plan"],
+                )
+            else:
+                await _apply_plan_change(
+                    user=resolved_user,
+                    new_plan="free",
+                    context="stripe-subscription-deleted",
+                    stripe_event_id=event_id,
+                )
     elif event_type == "invoice.payment_failed":
-        user = await _resolve_event_user(event_object)
+        resolved_user = await _resolve_event_user(event_object)
         logger.warning(
             "[stripe-webhook] invoice.payment_failed user_id=%s customer=%s",
-            None if user is None else user["id"],
+            None if resolved_user is None else resolved_user["id"],
             event_object.get("customer"),
         )
     else:
@@ -234,7 +251,9 @@ async def stripe_webhook(request: Request) -> dict[str, str]:
     await record_stripe_event(
         event_id,
         event_type,
-        user_id=payload_summary["user_id"],
+        # Use the verified DB user id — never the raw metadata UUID, which may
+        # reference a non-existent user and would violate the FK constraint.
+        user_id=str(resolved_user["id"]) if resolved_user else None,
         payload_summary=payload_summary,
     )
     return {"status": "processed" if event_type in {"checkout.session.completed", "customer.subscription.deleted"} else "ignored"}
