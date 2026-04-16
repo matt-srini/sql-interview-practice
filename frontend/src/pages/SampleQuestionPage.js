@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import api from '../api';
 import CodeEditor from '../components/CodeEditor';
@@ -42,6 +42,15 @@ export default function SampleQuestionPage() {
   const [submitError, setSubmitError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
+  const [editorTall, setEditorTall] = useState(() => {
+    try { return localStorage.getItem('editor-height-pref') === 'tall'; } catch { return false; }
+  });
+
+  // Refs for Monaco keyboard shortcuts
+  const handleRunRef = useRef(null);
+  const handleSubmitRef = useRef(null);
+  const runningRef = useRef(false);
+  const submittingRef = useRef(false);
 
   useEffect(() => {
     setQuestion(null);
@@ -158,6 +167,36 @@ export default function SampleQuestionPage() {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  // Keep shortcut refs current on every render
+  handleRunRef.current = handleRun;
+  handleSubmitRef.current = handleSubmit;
+  runningRef.current = running;
+  submittingRef.current = submitting;
+
+  function handleEditorMount(editor, monaco) {
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+      if (!runningRef.current && !submittingRef.current && meta.hasRunCode) {
+        handleRunRef.current();
+      }
+    });
+    editor.addCommand(
+      monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Enter,
+      () => {
+        if (!submittingRef.current && !runningRef.current) {
+          handleSubmitRef.current();
+        }
+      }
+    );
+  }
+
+  function toggleEditorHeight() {
+    setEditorTall((prev) => {
+      const next = !prev;
+      try { localStorage.setItem('editor-height-pref', next ? 'tall' : 'normal'); } catch {}
+      return next;
+    });
   }
 
   function renderExhaustedState() {
@@ -391,13 +430,25 @@ export default function SampleQuestionPage() {
               <div className="editor-wrapper editor-workspace">
                 <div className="editor-topbar">
                   <span className="editor-title">{editorTitle}</span>
-                  <span className="editor-topbar-note">{editorNote}</span>
+                  <div className="editor-topbar-actions">
+                    <span className="editor-topbar-note">{editorNote}</span>
+                    <button
+                      className="editor-expand-btn"
+                      onClick={toggleEditorHeight}
+                      title={editorTall ? 'Collapse editor' : 'Expand editor (⌘↵ run · ⌘⇧↵ submit)'}
+                      aria-label={editorTall ? 'Collapse editor' : 'Expand editor'}
+                    >
+                      {editorTall ? '⊟' : '⊞'}
+                    </button>
+                  </div>
                 </div>
 
                 <CodeEditor
                   value={code}
                   onChange={setCode}
                   language={meta.language}
+                  height={editorTall ? '560px' : '340px'}
+                  onMount={handleEditorMount}
                 />
 
                 <div className="editor-footer question-action-dock">

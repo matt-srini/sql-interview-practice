@@ -95,7 +95,18 @@ export default function QuestionPage() {
   const [solutionAnalysisOpen, setSolutionAnalysisOpen] = useState(false);
   const [showAltSolution, setShowAltSolution] = useState(false);
   const [submissionInsight, setSubmissionInsight] = useState(null);
+  const [editorTall, setEditorTall] = useState(() => {
+    try { return localStorage.getItem('editor-height-pref') === 'tall'; } catch { return false; }
+  });
   const priorAttemptCountRef = useRef(0);
+
+  // Refs used by Monaco keyboard commands to avoid stale closures.
+  // Updated inline on every render (before any early return that uses them).
+  const handleRunRef = useRef(null);
+  const handleSubmitRef = useRef(null);
+  const runningRef = useRef(false);
+  const submittingRef = useRef(false);
+  const isLockedRef = useRef(false);
 
   // MCQ state for PySpark
   const [selectedOption, setSelectedOption] = useState(null);
@@ -213,6 +224,42 @@ export default function QuestionPage() {
     }
   }
 
+  // Keep shortcut refs current on every render (safe to assign outside useEffect).
+  // Must appear after handleRun / handleSubmit are defined and before early returns.
+  handleRunRef.current = handleRun;
+  handleSubmitRef.current = handleSubmit;
+  runningRef.current = running;
+  submittingRef.current = submitting;
+  // isLockedRef.current is set after the !question guard below, where isLocked is computed.
+
+  // Registered as Monaco's onMount callback; wires Cmd/Ctrl+Enter → Run,
+  // Cmd/Ctrl+Shift+Enter → Submit. Refs ensure commands always call the latest handlers.
+  function handleEditorMount(editor, monaco) {
+    // Cmd/Ctrl + Enter → Run Query / Run Code  (safe, reversible, frequent)
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+      if (!runningRef.current && !submittingRef.current && !isLockedRef.current && meta.hasRunCode) {
+        handleRunRef.current();
+      }
+    });
+    // Cmd/Ctrl + Shift + Enter → Submit Answer  (deliberate, permanent)
+    editor.addCommand(
+      monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Enter,
+      () => {
+        if (!submittingRef.current && !runningRef.current && !isLockedRef.current) {
+          handleSubmitRef.current();
+        }
+      }
+    );
+  }
+
+  function toggleEditorHeight() {
+    setEditorTall((prev) => {
+      const next = !prev;
+      try { localStorage.setItem('editor-height-pref', next ? 'tall' : 'normal'); } catch {}
+      return next;
+    });
+  }
+
   // Delta hint: row/column diff diagnostic for wrong SQL submissions
   const deltaHint = useMemo(() => {
     if (!submitResult || submitResult.correct || topic !== 'sql') return null;
@@ -256,6 +303,8 @@ export default function QuestionPage() {
   }
 
   const isLocked = question.progress && question.progress.unlocked === false;
+  isLockedRef.current = isLocked; // keep Monaco shortcut guard fresh
+  const editorHeight = editorTall ? '560px' : '340px';
   const shouldShowFeedback = submitResult?.feedback?.length > 0
     && !(submitResult.correct && (submitResult.structure_correct ?? true));
   const schemaTableCount = Object.keys(question.schema ?? {}).length;
@@ -556,13 +605,25 @@ export default function QuestionPage() {
             <div className="editor-wrapper editor-workspace">
               <div className="editor-topbar">
                 <span className="editor-title">{editorTitle}</span>
-                <span className="editor-topbar-note">{editorNote}</span>
+                <div className="editor-topbar-actions">
+                  <span className="editor-topbar-note">{editorNote}</span>
+                  <button
+                    className="editor-expand-btn"
+                    onClick={toggleEditorHeight}
+                    title={editorTall ? 'Collapse editor' : 'Expand editor (⌘↵ run · ⌘⇧↵ submit)'}
+                    aria-label={editorTall ? 'Collapse editor' : 'Expand editor'}
+                  >
+                    {editorTall ? '⊟' : '⊞'}
+                  </button>
+                </div>
               </div>
 
               <CodeEditor
                 value={code}
                 onChange={setCode}
                 language={meta.language}
+                height={editorHeight}
+                onMount={handleEditorMount}
               />
 
               <div className="editor-footer question-action-dock">

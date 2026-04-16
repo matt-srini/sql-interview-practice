@@ -1,6 +1,17 @@
 import Editor from '@monaco-editor/react';
 
-export default function CodeEditor({ value, onChange, language = 'sql', height = '340px' }) {
+/**
+ * Language-agnostic Monaco editor wrapper.
+ *
+ * Props:
+ *   value        Current editor content
+ *   onChange     Called with new content on every keystroke
+ *   language     Monaco language id — 'sql' | 'python' (default: 'sql')
+ *   height       CSS height string passed to Monaco (default: '340px')
+ *   onMount      Optional (editor, monaco) callback forwarded to Monaco's onMount.
+ *                Use this to register keyboard commands via editor.addCommand().
+ */
+export default function CodeEditor({ value, onChange, language = 'sql', height = '340px', onMount }) {
   return (
     <Editor
       height={height}
@@ -8,6 +19,7 @@ export default function CodeEditor({ value, onChange, language = 'sql', height =
       theme="vs-dark"
       value={value}
       onChange={(val) => onChange(val ?? '')}
+      onMount={onMount}
       options={{
         minimap: { enabled: false },
         fontSize: 14,
