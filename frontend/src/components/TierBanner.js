@@ -8,10 +8,20 @@ import { Link } from 'react-router-dom';
  *   plan          'free' | 'pro' | 'elite'
  *   easySolved    number of easy questions solved in this track
  *   mediumSolved  number of medium questions solved in this track
+ *   easyTotal     total easy questions in this track
+ *   mediumTotal   total medium questions in this track
  *   mediumUnlocked  bool — has at least 1 medium unlocked?
  *   hardUnlocked    bool — has at least 1 hard unlocked?
  */
-export default function TierBanner({ plan, easySolved = 0, mediumSolved = 0, mediumUnlocked = false, hardUnlocked = false }) {
+export default function TierBanner({
+  plan,
+  easySolved = 0,
+  mediumSolved = 0,
+  easyTotal = 0,
+  mediumTotal = 0,
+  mediumUnlocked = false,
+  hardUnlocked = false,
+}) {
   if (plan === 'elite' || plan === 'pro') {
     const label = plan === 'elite' ? 'Elite' : 'Pro';
     return (
@@ -21,9 +31,24 @@ export default function TierBanner({ plan, easySolved = 0, mediumSolved = 0, med
     );
   }
 
-  // Free plan — show dynamic message based on progress stage
+  // Free plan — celebrate tier completions before asking for the next step
+  const easyComplete = easyTotal > 0 && easySolved >= easyTotal;
+  const mediumComplete = mediumTotal > 0 && mediumSolved >= mediumTotal;
+
+  let celebrate = null;
   let message;
-  if (!mediumUnlocked) {
+
+  if (mediumComplete && !hardUnlocked) {
+    // All medium done but hard still locked — prime upgrade moment
+    celebrate = `🏆 You've mastered all ${mediumTotal} medium questions!`;
+    message = 'Upgrade to Pro to unlock the full hard track.';
+  } else if (easyComplete && !hardUnlocked) {
+    // All easy done, medium open — encourage continuing
+    celebrate = `🎉 You've mastered all ${easyTotal} easy questions!`;
+    message = mediumUnlocked
+      ? 'Medium is fully open — keep the momentum going.'
+      : 'Solve 8 easy to unlock medium, or complete a learning path.';
+  } else if (!mediumUnlocked) {
     const needed = Math.max(0, 8 - easySolved);
     message = needed > 0
       ? `Free plan · All easy unlocked. Solve ${needed} more easy to unlock medium, or complete a learning path.`
@@ -38,8 +63,11 @@ export default function TierBanner({ plan, easySolved = 0, mediumSolved = 0, med
   }
 
   return (
-    <div className="tier-banner tier-banner-free">
-      <span className="tier-banner-text">{message}</span>
+    <div className={`tier-banner${celebrate ? ' tier-banner-celebrate' : ' tier-banner-free'}`}>
+      <span className="tier-banner-text">
+        {celebrate && <strong className="tier-banner-celebrate-lead">{celebrate} </strong>}
+        {message}
+      </span>
       <Link to="/auth?upgrade=1" className="tier-banner-cta">See plans →</Link>
     </div>
   );

@@ -127,6 +127,9 @@ export default function AppShell() {
   const lockedMediumCount = mediumGroup?.questions?.filter(q => q.state === 'locked').length ?? 0;
   const lockedHardCount = (catalog?.groups?.find(g => g.difficulty === 'hard'))?.questions?.filter(q => q.state === 'locked').length ?? 0;
   const showUnlockNudge = !!(user?.plan === 'free' && (lockedMediumCount > 0 || lockedHardCount > 0) && catalog);
+  const totalSolvedSidebar = catalog?.groups?.reduce(
+    (sum, g) => sum + g.questions.filter(q => q.state === 'solved').length, 0
+  ) ?? 0;
 
   function cycleTheme() {
     const next = theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system';
@@ -267,7 +270,13 @@ export default function AppShell() {
           {showUpgradeControls && (
             <div className="sidebar-upgrade-panel">
               <span className="upgrade-panel-label">
-                {user.plan === 'free' ? 'Questions unlock as you solve — or get full access instantly.' : 'Unlock the full challenge track'}
+                {user.plan === 'free' && totalSolvedSidebar >= 10
+                  ? `${totalSolvedSidebar} solved — upgrade for instant access to every question.`
+                  : user.plan === 'free' && totalSolvedSidebar > 0
+                  ? `${totalSolvedSidebar} question${totalSolvedSidebar !== 1 ? 's' : ''} down. Upgrade to unlock the full track.`
+                  : user.plan === 'free'
+                  ? 'Questions unlock as you solve — or get full access instantly.'
+                  : 'Unlock the full challenge track'}
               </span>
               <div className="upgrade-actions">
                 {user.plan === 'free' && (
