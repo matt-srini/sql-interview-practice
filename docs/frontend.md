@@ -86,6 +86,11 @@ Main practice screen. Layout and behavior vary by topic:
 - **Writing notes auto-expand**: the Solution Analysis section (`solutionAnalysisOpen`) auto-expands on a first-attempt correct solve
 - Submission history fetched with `limit: 20`; `priorAttemptCountRef` tracks attempt count before each submit to compute insight text
 - **Path context**: when `?path=slug` is in the URL, fetches path data and shows a path nav bar (breadcrumb + position counter + prev/next links)
+- **Keyboard shortcuts** (wired via Monaco `onMount` / `editor.addCommand`; refs prevent stale-closure bugs):
+  - `Cmd/Ctrl + Enter` → Run Query / Run Code (safe, reversible; guarded by `running`, `submitting`, `isLocked`, `meta.hasRunCode`)
+  - `Cmd/Ctrl + Shift + Enter` → Submit Answer (permanent; guarded by `running`, `submitting`, `isLocked`)
+  - Not active for MCQ (PySpark) questions — no editor is rendered
+- **Editor height toggle** (`⊞`/`⊟` button in the editor topbar): switches Monaco between 340 px (default) and 560 px. Preference is persisted to `localStorage` under the key `editor-height-pref`.
 
 ### SampleQuestionPage (`/sample/:topic/:difficulty`)
 
@@ -95,6 +100,8 @@ Standalone sample practice. No sidebar. No effect on challenge progression.
 - Left: `datanest` home link
 - Center: `←` back arrow (`<a href="/#landing-tracks">`) + track + difficulty label
 - Right: "Start the challenge" CTA → `/practice/:topic`
+
+Has the same **keyboard shortcuts** and **editor height toggle** as `QuestionPage` (same implementation pattern — refs for stale-closure safety, `localStorage` persistence). No `isLocked` guard since sample questions are always accessible.
 
 ### ProgressDashboard (`/dashboard`)
 
@@ -116,7 +123,7 @@ Curated path page. Shows breadcrumb (Learn → track → path title), overall pr
 |---|---|---|
 | AppShell | `components/AppShell.js` | Challenge workspace: fixed topbar with direct track nav, collapsible sidebar |
 | SidebarNav | `components/SidebarNav.js` | Question list grouped by difficulty; topic-aware NavLinks |
-| CodeEditor | `components/CodeEditor.js` | Language-agnostic Monaco editor (`language` prop: `'sql'` \| `'python'`) |
+| CodeEditor | `components/CodeEditor.js` | Language-agnostic Monaco editor (`language`, `height`, `onMount` props; always dark theme) |
 | SQLEditor | `components/SQLEditor.js` | Thin re-export of CodeEditor with `language="sql"` (backward compat) |
 | ResultsTable | `components/ResultsTable.js` | Tabular results with sticky headers and null value rendering |
 | SchemaViewer | `components/SchemaViewer.js` | Dataset table schema — table names and column token grid |
@@ -281,6 +288,17 @@ Defined in `:root` in `App.css`. Dark mode overrides in `@media (prefers-color-s
 | Inter | 400/500/600 | All UI text |
 | JetBrains Mono | 400/600 | Editor, results tables, inline code blocks |
 | Geist Mono | 300 | Showcase animation code block only |
+
+### Metadata pills
+
+Two pill variants used in question prompts:
+
+| Class | Style | Use |
+|---|---|---|
+| `.tag-concept` | Neutral fill (`rgba(0,0,0,0.04)`), `--text-secondary`, subtle border | Concept/skill tags — intentionally muted so they don't compete with question text |
+| `.tag-company` | Transparent bg, `--text-secondary`, `--border` | Company attribution tags |
+
+Both are kept visually quiet — neither should draw the eye away from the question description or schema.
 
 ### Buttons
 
