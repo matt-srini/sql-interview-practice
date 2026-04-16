@@ -65,7 +65,7 @@ async def change_plan(req: PlanChangeRequest) -> PlanChangeResult:
         raise HTTPException(status_code=404, detail="User not found")
 
     old_plan = user["plan"]
-    valid_plans = ("free", "pro", "elite")
+    valid_plans = ("free", "pro", "elite", "lifetime_pro", "lifetime_elite")
     if req.new_plan not in valid_plans:
         return PlanChangeResult(
             user_id=req.user_id,
@@ -84,9 +84,11 @@ async def change_plan(req: PlanChangeRequest) -> PlanChangeResult:
         )
 
     allowed_transitions = {
-        "free": {"pro", "elite"},
-        "pro": {"elite", "free"},
-        "elite": {"pro", "free"},
+        "free":           {"pro", "elite", "lifetime_pro", "lifetime_elite"},
+        "pro":            {"elite", "lifetime_pro", "lifetime_elite", "free"},
+        "elite":          {"pro", "lifetime_pro", "lifetime_elite", "free"},
+        "lifetime_pro":   {"pro", "elite", "lifetime_elite", "free"},
+        "lifetime_elite": {"pro", "elite", "lifetime_pro", "free"},
     }
     if req.new_plan not in allowed_transitions.get(old_plan, set()):
         return PlanChangeResult(

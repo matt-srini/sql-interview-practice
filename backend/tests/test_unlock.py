@@ -5,6 +5,7 @@ from unlock import (
     compute_mock_access,
     compute_unlock_state,
     get_next_questions,
+    normalize_plan,
 )
 from questions import get_questions_by_difficulty
 
@@ -228,5 +229,97 @@ def test_mock_access_elite_hard_unlimited() -> None:
 
 def test_mock_access_company_filter_requires_elite() -> None:
     result = compute_mock_access("pro", "sql", "hard", medium_unlocked=True, company_filter=True)
+    assert result["can_start"] is False
+    assert result["needs_upgrade"] == "elite"
+
+
+# ── normalize_plan ────────────────────────────────────────────────────────────
+
+def test_normalize_plan_returns_pro_for_lifetime_pro() -> None:
+    assert normalize_plan("lifetime_pro") == "pro"
+
+
+def test_normalize_plan_returns_elite_for_lifetime_elite() -> None:
+    assert normalize_plan("lifetime_elite") == "elite"
+
+
+def test_normalize_plan_passes_through_base_plans() -> None:
+    for plan in ("free", "pro", "elite"):
+        assert normalize_plan(plan) == plan, f"normalize_plan({plan!r}) should be a no-op"
+
+
+def test_normalize_plan_passes_through_unknown_values() -> None:
+    # Unknown plan names must not blow up — they pass through unchanged.
+    assert normalize_plan("enterprise") == "enterprise"
+
+
+# ── lifetime plan — unlock state (identical access to base plan) ──────────────
+
+def test_lifetime_pro_unlock_state_matches_pro() -> None:
+    """lifetime_pro must grant the same catalog access as pro — all medium + hard."""
+    catalog = _make_mock_catalog()
+    solved: set[int] = set()
+
+    pro_state      = compute_unlock_state("pro",          solved, catalog)
+    lifetime_state = compute_unlock_state("lifetime_pro", solved, catalog)
+
+    assert pro_state == lifetime_state, (
+        "lifetime_pro must grant exactly the same unlock state as pro"
+    )
+
+
+def test_lifetime_elite_unlock_state_matches_elite() -> None:
+    """lifetime_elite must grant full catalog access identical to elite."""
+    catalog = _make_mock_catalog()
+    solved: set[int] = set()
+
+    elite_state    = compute_unlock_state("elite",          solved, catalog)
+    lifetime_state = compute_unlock_state("lifetime_elite", solved, catalog)
+
+    assert elite_state == lifetime_state, (
+        "lifetime_elite must grant exactly the same unlock state as elite"
+    )
+
+
+# ── lifetime plan — mock access (CRITICAL: must not be blocked or downgraded) ─
+
+def test_lifetime_pro_mock_hard_within_daily_limit() -> None:
+    """lifetime_pro users get the same hard-mock daily budget as pro (3/day)."""
+    result = compute_mock_access("lifetime_pro", "sql", "hard", medium_unlocked=True, daily_hard_used=2)
+    assert result["can_start"] is True
+    assert result["daily_limit"] == 3
+
+
+def test_lifetime_pro_mock_hard_daily_cap() -> None:
+    """lifetime_pro daily hard cap is 3, same as pro."""
+    result = compute_mock_access("lifetime_pro", "sql", "hard", medium_unlocked=True, daily_hard_used=3)
+    assert result["can_start"] is False
+    assert result["needs_upgrade"] == "elite"
+
+
+def test_lifetime_elite_mock_hard_unlimited() -> None:
+    """lifetime_elite users have no daily cap on hard mocks, same as elite."""
+    result = compute_mock_access("lifetime_elite", "sql", "hard", medium_unlocked=True, daily_hard_used=99)
+    assert result["can_start"] is True
+    assert result["daily_limit"] is None
+
+
+def test_lifetime_elite_mock_company_filter_allowed() -> None:
+    """Company-filtered mocks require elite (or lifetime_elite) — must not be blocked."""
+    result = compute_mock_access(
+        "lifetime_elite", "sql", "hard",
+        medium_unlocked=True, company_filter=True,
+    )
+    assert result["can_start"] is True, (
+        "lifetime_elite must be allowed to use company-filtered mock interviews"
+    )
+
+
+def test_lifetime_pro_mock_company_filter_blocked() -> None:
+    """Company-filtered mocks must still be blocked for lifetime_pro (not elite tier)."""
+    result = compute_mock_access(
+        "lifetime_pro", "sql", "hard",
+        medium_unlocked=True, company_filter=True,
+    )
     assert result["can_start"] is False
     assert result["needs_upgrade"] == "elite"

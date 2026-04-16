@@ -70,6 +70,7 @@ class MockStartRequest(BaseModel):
     difficulty: str     # 'easy' | 'medium' | 'hard' | 'mixed'
     num_questions: int | None = None   # custom mode only, 1–5
     time_minutes: int | None = None    # custom mode only, 10–90
+    company_filter: str | None = None  # elite-only; e.g. "Meta", "Stripe"
 
 
 class MockSubmitRequest(BaseModel):
@@ -403,6 +404,7 @@ async def start_session(
         medium_unlocked=medium_unlocked,
         daily_medium_used=daily_usage.get("medium", 0),
         daily_hard_used=daily_usage.get("hard", 0),
+        company_filter=bool(body.company_filter),
     )
     if not access["can_start"]:
         raise HTTPException(status_code=403, detail=access["block_copy"] or "Access denied.")
