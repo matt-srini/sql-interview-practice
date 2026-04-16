@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { useCatalog } from '../catalogContext';
 import { useTopic } from '../contexts/TopicContext';
@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import TrackProgressBar from '../components/TrackProgressBar';
 import PathProgressCard from '../components/PathProgressCard';
 import TierBanner from '../components/TierBanner';
+import UpgradeButton from '../components/UpgradeButton';
 
 function pickNextQuestionId(catalog) {
   if (!catalog) return null;
@@ -57,6 +58,18 @@ export default function TrackHubPage() {
     const g = catalog?.groups?.find(x => x.difficulty === 'medium');
     return g ? g.questions.filter(q => q.state === 'solved').length : 0;
   }, [catalog]);
+  const easyTotal = useMemo(() => {
+    const g = catalog?.groups?.find(x => x.difficulty === 'easy');
+    return g ? g.questions.length : 0;
+  }, [catalog]);
+  const mediumTotal = useMemo(() => {
+    const g = catalog?.groups?.find(x => x.difficulty === 'medium');
+    return g ? g.questions.length : 0;
+  }, [catalog]);
+  const hardTotal = useMemo(() => {
+    const g = catalog?.groups?.find(x => x.difficulty === 'hard');
+    return g ? g.questions.length : 0;
+  }, [catalog]);
   const mediumUnlocked = useMemo(() => {
     const g = catalog?.groups?.find(x => x.difficulty === 'medium');
     return g ? g.questions.some(q => q.state !== 'locked') : false;
@@ -65,6 +78,16 @@ export default function TrackHubPage() {
     const g = catalog?.groups?.find(x => x.difficulty === 'hard');
     return g ? g.questions.some(q => q.state !== 'locked') : false;
   }, [catalog]);
+
+  // Milestone detection
+  const easyComplete = easyTotal > 0 && easySolved >= easyTotal;
+  const mediumComplete = mediumTotal > 0 && mediumSolved >= mediumTotal;
+  const hasLockedQuestions = useMemo(
+    () => catalog?.groups?.some(g => g.questions.some(q => q.state === 'locked')) ?? false,
+    [catalog]
+  );
+  // User has exhausted all accessible questions (nothing left to solve right now)
+  const allAccessibleSolved = continueId === null && totalSolved > 0;
 
   const [topicPaths, setTopicPaths] = useState([]);
   useEffect(() => {
@@ -100,6 +123,8 @@ export default function TrackHubPage() {
           plan={user?.plan ?? 'free'}
           easySolved={easySolved}
           mediumSolved={mediumSolved}
+          easyTotal={easyTotal}
+          mediumTotal={mediumTotal}
           mediumUnlocked={mediumUnlocked}
           hardUnlocked={hardUnlocked}
         />
@@ -112,11 +137,19 @@ export default function TrackHubPage() {
         </div>
 
         <div className="card track-hub-progress-card">
-          {continueId && (
+          {continueId ? (
             <div className="track-hub-actions">
               <button className="btn btn-primary" onClick={handleContinue}>
                 {totalSolved > 0 ? 'Continue where I left off' : 'Start practicing'} →
               </button>
+            </div>
+          ) : allAccessibleSolved && (
+            <div className="track-hub-actions">
+              {hasLockedQuestions ? (
+                <UpgradeButton tier="pro" label="Upgrade to unlock the rest" source="hub_allsolved" />
+              ) : (
+                <Link to="/" className="btn btn-secondary">Explore another track →</Link>
+              )}
             </div>
           )}
 
@@ -141,6 +174,66 @@ export default function TrackHubPage() {
             </div>
           )}
         </div>
+
+        {/* All-accessible-solved milestone — celebrates completion before showing the upgrade wall */}
+        {allAccessibleSolved && (user?.plan === 'free' || user?.plan === 'pro') && hasLockedQuestions && (
+          <div className="track-hub-milestone track-hub-milestone-upgrade">
+            <span className="track-hub-milestone-icon" aria-hidden="true">🏁</span>
+            <div className="track-hub-milestone-body">
+              <p className="track-hub-milestone-title">
+                You've solved every accessible {meta.label} question!
+              </p>
+              <p className="track-hub-milestone-desc">
+                {user?.plan === 'free'
+                  ? `That's ${totalSolved} questions down. Upgrade to unlock the full ${hardTotal > 0 ? `hard track (${hardTotal} questions)` : 'question bank'} and keep building.`
+                  : `That's real depth. Upgrade to Elite for full access and unlimited mock interviews.`}
+              </p>
+              <div className="track-hub-milestone-actions">
+                {user?.plan === 'free' && (
+                  <UpgradeButton tier="pro" label="Unlock Pro — all medium & hard" compact source="hub_milestone_allsolved" />
+                )}
+                <UpgradeButton tier="elite" label="Unlock Elite" compact source="hub_milestone_allsolved_elite" />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Full track completion — for Pro/Elite users who've solved everything */}
+        {allAccessibleSolved && !hasLockedQuestions && totalSolved > 0 && (
+          <div className="track-hub-milestone track-hub-milestone-complete">
+            <span className="track-hub-milestone-icon" aria-hidden="true">🏆</span>
+            <div className="track-hub-milestone-body">
+              <p className="track-hub-milestone-title">
+                Track complete — all {totalSolved} {meta.label} questions solved!
+              </p>
+              <p className="track-hub-milestone-desc">
+                Outstanding. Take a mock interview to put it under pressure, or pick up another track.
+              </p>
+              <div className="track-hub-milestone-actions">
+                <Link to="/mock" className="btn btn-primary btn-compact">Take a mock interview →</Link>
+                <Link to="/" className="btn btn-secondary btn-compact">Explore other tracks</Link>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Medium-complete milestone — all medium solved, hard partially locked */}
+        {!allAccessibleSolved && mediumComplete && (user?.plan === 'free') && (
+          <div className="track-hub-milestone track-hub-milestone-tier">
+            <span className="track-hub-milestone-icon" aria-hidden="true">🏆</span>
+            <div className="track-hub-milestone-body">
+              <p className="track-hub-milestone-title">
+                You've mastered all {mediumTotal} medium questions!
+              </p>
+              <p className="track-hub-milestone-desc">
+                Hard questions are partially unlocked. Upgrade to Pro for the full hard track and daily mock interviews.
+              </p>
+              <div className="track-hub-milestone-actions">
+                <UpgradeButton tier="pro" label="Unlock all hard questions" compact source="hub_milestone_medium_complete" />
+              </div>
+            </div>
+          </div>
+        )}
 
         {topicPaths.length > 0 && (
           <section className="trackhub-paths">

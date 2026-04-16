@@ -26,25 +26,32 @@ function titleCase(value) {
 }
 
 function DifficultyHeader({ difficulty, counts, collapsed, onToggle, unlockNudge }) {
+  const isComplete = counts.solved === counts.total && counts.total > 0;
   return (
-    <button className="sidebar-group-header" onClick={onToggle} aria-expanded={!collapsed}>
+    <button
+      className={`sidebar-group-header${isComplete ? ' sidebar-group-header-complete' : ''}`}
+      onClick={onToggle}
+      aria-expanded={!collapsed}
+    >
       <div className="sidebar-group-title">
         <span className={`badge badge-${difficulty}`}>{difficulty}</span>
         <div className="sidebar-group-copy">
           <span className="sidebar-group-name">{titleCase(difficulty)}</span>
           <span className="sidebar-group-meta">{counts.solved} solved · {counts.total} total</span>
-          {unlockNudge && (
+          {isComplete ? (
+            <span className="sidebar-group-complete">✓ Mastered</span>
+          ) : unlockNudge ? (
             <div className="sidebar-unlock-bar">
               <div className="sidebar-unlock-bar-track">
                 <div className="sidebar-unlock-bar-fill" style={{ width: `${unlockNudge.fillPct}%` }} />
               </div>
               <span className="sidebar-unlock-bar-label">{unlockNudge.gap} more to unlock</span>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
       <div className="sidebar-group-summary">
-        <span className="sidebar-group-count">
+        <span className={`sidebar-group-count${isComplete ? ' sidebar-group-count-complete' : ''}`}>
           {counts.solved}/{counts.total}
         </span>
         <span className="sidebar-chevron">{collapsed ? '▸' : '▾'}</span>

@@ -402,8 +402,22 @@ export default function QuestionPage() {
                 ? `Solve ${nextMediumNeeded} more medium question${nextMediumNeeded !== 1 ? 's' : ''} to unlock this.`
                 : null;
 
+              // Celebration context — lead with what the user has achieved
+              const progressSolved = difficulty === 'medium' ? easySolved : mediumSolved;
+              const progressLabel = difficulty === 'medium' ? 'easy' : 'medium';
+              const progressCelebration = progressSolved >= 15
+                ? `You've solved ${progressSolved} ${progressLabel} questions — strong work.`
+                : progressSolved >= 8
+                ? `You've solved ${progressSolved} ${progressLabel} questions — solid progress.`
+                : progressSolved > 0
+                ? `You've solved ${progressSolved} ${progressLabel} question${progressSolved !== 1 ? 's' : ''} so far.`
+                : null;
+
               return (
                 <div className="preview-locked-callout">
+                  {progressCelebration && (
+                    <p className="preview-locked-progress">{progressCelebration}</p>
+                  )}
                   {isThresholdLocked && solveMoreCopy ? (
                     <>
                       <p className="preview-locked-headline">Preview mode</p>
