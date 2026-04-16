@@ -131,16 +131,26 @@ export default function LandingPage() {
 
   const userPlan = user?.plan ?? 'free';
 
-  // Returns true if the user is already on this tier (incl. lifetime variants)
-  function isCurrentTier(tier) {
-    if (tier === 'pro')   return userPlan === 'pro'   || userPlan === 'lifetime_pro';
-    if (tier === 'elite') return userPlan === 'elite'  || userPlan === 'lifetime_elite';
-    return userPlan === 'free';
+  // What CTA state to show in the Pro column:
+  //   'current'      → user is on lifetime_pro (highest Pro billing, no action needed)
+  //   'lifetime_only'→ user is on monthly pro (can still switch to lifetime)
+  //   'both'         → user is on free (show monthly + lifetime buttons)
+  //   'none'         → user is on elite/lifetime_elite (Pro is below their tier)
+  function proColCta() {
+    if (userPlan === 'lifetime_pro')  return 'current';
+    if (userPlan === 'pro')           return 'lifetime_only';
+    if (userPlan === 'free')          return 'both';
+    return 'none'; // elite / lifetime_elite
   }
 
-  // Returns true if the user can upgrade to this tier (backend enforces exact rules)
-  function canUpgradeTo(tier) {
-    return !isCurrentTier(tier);
+  // What CTA state to show in the Elite column:
+  //   'current'      → user is on lifetime_elite (can't go higher)
+  //   'lifetime_only'→ user is on monthly elite (can switch to lifetime)
+  //   'both'         → user is on free / pro / lifetime_pro (show both buttons)
+  function eliteColCta() {
+    if (userPlan === 'lifetime_elite') return 'current';
+    if (userPlan === 'elite')          return 'lifetime_only';
+    return 'both';
   }
 
   function cycleTheme() {
@@ -494,7 +504,7 @@ export default function LandingPage() {
                   <li>2 learning paths per track</li>
                 </ul>
                 <div className="landing-tier-cta">
-                  {isCurrentTier('free') && (
+                  {userPlan === 'free' && (
                     <span className="landing-tier-current">Current plan</span>
                   )}
                 </div>
@@ -517,19 +527,20 @@ export default function LandingPage() {
                   <li>Daily hard mock interviews</li>
                 </ul>
                 <div className="landing-tier-cta">
-                  {isCurrentTier('pro') ? (
+                  {proColCta() === 'current' && (
                     <span className="landing-tier-current">Current plan</span>
-                  ) : canUpgradeTo('pro') && (
-                    <>
-                      <UpgradeButton tier="pro" source="landing_tier" />
-                      <UpgradeButton
-                        tier="lifetime_pro"
-                        label="Lifetime access — $99"
-                        compact
-                        className="landing-tier-lifetime-btn"
-                        source="landing_tier_lifetime"
-                      />
-                    </>
+                  )}
+                  {proColCta() === 'both' && (
+                    <UpgradeButton tier="pro" source="landing_tier" />
+                  )}
+                  {(proColCta() === 'both' || proColCta() === 'lifetime_only') && (
+                    <UpgradeButton
+                      tier="lifetime_pro"
+                      label={proColCta() === 'lifetime_only' ? 'Switch to lifetime — $99' : 'Lifetime access — $99'}
+                      compact
+                      className="landing-tier-lifetime-btn"
+                      source="landing_tier_lifetime"
+                    />
                   )}
                 </div>
               </div>
@@ -550,19 +561,20 @@ export default function LandingPage() {
                   <li>Harder interview-realistic mock questions</li>
                 </ul>
                 <div className="landing-tier-cta">
-                  {isCurrentTier('elite') ? (
+                  {eliteColCta() === 'current' && (
                     <span className="landing-tier-current">Current plan</span>
-                  ) : canUpgradeTo('elite') && (
-                    <>
-                      <UpgradeButton tier="elite" source="landing_tier" />
-                      <UpgradeButton
-                        tier="lifetime_elite"
-                        label="Lifetime access — $149"
-                        compact
-                        className="landing-tier-lifetime-btn"
-                        source="landing_tier_lifetime"
-                      />
-                    </>
+                  )}
+                  {eliteColCta() === 'both' && (
+                    <UpgradeButton tier="elite" source="landing_tier" />
+                  )}
+                  {(eliteColCta() === 'both' || eliteColCta() === 'lifetime_only') && (
+                    <UpgradeButton
+                      tier="lifetime_elite"
+                      label={eliteColCta() === 'lifetime_only' ? 'Switch to lifetime — $149' : 'Lifetime access — $149'}
+                      compact
+                      className="landing-tier-lifetime-btn"
+                      source="landing_tier_lifetime"
+                    />
                   )}
                 </div>
               </div>

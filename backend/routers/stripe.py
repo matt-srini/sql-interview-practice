@@ -49,7 +49,7 @@ def _target_plan_is_allowed(current_plan: str, target_plan: str) -> bool:
         "free":           {"pro", "elite", "lifetime_pro", "lifetime_elite"},
         "pro":            {"elite", "lifetime_pro", "lifetime_elite"},
         "lifetime_pro":   {"elite", "lifetime_elite"},
-        "elite":          set(),
+        "elite":          {"lifetime_elite"},
         "lifetime_elite": set(),
     }
     return target_plan in allowed_targets.get(current_plan, set())
