@@ -4469,7 +4469,7 @@ select {
 [data-theme="dark"] .sidebar-backdrop { background: rgba(0, 0, 0, 0.55); }
 [data-theme="dark"] .sidebar-group-header { background: rgba(255, 255, 255, 0.02); }
 [data-theme="dark"] .sidebar-group-header:hover { background: rgba(255, 255, 255, 0.04); }
-[data-theme="dark"] .sidebar-search { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); }
+[data-theme="dark"] .sidebar-filters-search { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); }
 [data-theme="dark"] .sidebar-question:hover { background: rgba(255, 255, 255, 0.03); }
 [data-theme="dark"] .shell-pill { background: rgba(255, 255, 255, 0.04); }
 [data-theme="dark"] .app-banner-success { color: #C7E8D7; }
@@ -4835,14 +4835,14 @@ select {
 /* ============================================================
    Sidebar concept filter
    ============================================================ */
-/* Sidebar search */
-.sidebar-search-wrap {
+/* Sidebar search (inside filters accordion) */
+.sidebar-filters-search-row {
   position: relative;
-  padding: 0.6rem 0.75rem 0.5rem;
+  padding: 0.6rem 0.85rem 0.5rem;
   border-bottom: 1px solid var(--border-subtle);
 }
 
-.sidebar-search {
+.sidebar-filters-search {
   width: 100%;
   box-sizing: border-box;
   padding: 0.38rem 2rem 0.38rem 0.65rem;
@@ -4850,17 +4850,17 @@ select {
   border-radius: var(--radius-sm);
   background: var(--surface-card);
   color: var(--text-strong);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-family: inherit;
   outline: none;
   transition: border-color 0.12s;
 }
 
-.sidebar-search:focus {
+.sidebar-filters-search:focus {
   border-color: var(--accent);
 }
 
-.sidebar-search::placeholder {
+.sidebar-filters-search::placeholder {
   color: var(--text-muted);
 }
 

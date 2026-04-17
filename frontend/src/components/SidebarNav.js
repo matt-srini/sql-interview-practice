@@ -308,9 +308,9 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
     clearCompanyFilters();
   }
 
-  const anyFilterActive = activeFilters.size > 0 || activeCompanyFilters.size > 0;
-  const totalActiveFilters = activeFilters.size + activeCompanyFilters.size;
   const searchTrim = searchQuery.trim().toLowerCase();
+  const anyFilterActive = activeFilters.size > 0 || activeCompanyFilters.size > 0 || searchTrim.length > 0;
+  const totalActiveFilters = activeFilters.size + activeCompanyFilters.size + (searchTrim.length > 0 ? 1 : 0);
 
   // Apply search + concept + company filters (AND logic)
   const filteredGroups = useMemo(() => {
@@ -337,20 +337,6 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
 
   return (
     <div className="sidebar-inner">
-      <div className="sidebar-search-wrap">
-        <input
-          className="sidebar-search"
-          type="search"
-          placeholder="Search questions…"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          aria-label="Search questions"
-        />
-        {searchQuery && (
-          <button className="sidebar-search-clear" onClick={() => setSearchQuery('')} aria-label="Clear search">×</button>
-        )}
-      </div>
-
       <div className="sidebar-filters-accordion">
         <button
           className={`sidebar-filters-toggle${anyFilterActive ? ' sidebar-filters-toggle-active' : ''}`}
@@ -367,7 +353,7 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
             {anyFilterActive && !filtersOpen && (
               <button
                 className="sidebar-concept-clear sidebar-filters-clear-inline"
-                onClick={(e) => { e.stopPropagation(); clearAllFilters(); }}
+                onClick={(e) => { e.stopPropagation(); clearAllFilters(); setSearchQuery(''); }}
                 title="Clear all filters"
               >
                 Clear
@@ -379,6 +365,19 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
 
         {filtersOpen && (
           <div className="sidebar-filters-body">
+            <div className="sidebar-filters-search-row">
+              <input
+                className="sidebar-filters-search"
+                type="search"
+                placeholder="Search questions…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label="Search questions"
+              />
+              {searchQuery && (
+                <button className="sidebar-search-clear" onClick={() => setSearchQuery('')} aria-label="Clear search">×</button>
+              )}
+            </div>
             <ConceptFilter
               groups={groups}
               activeFilters={activeFilters}
@@ -397,9 +396,9 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
 
       {anyFilterActive && filteredGroups.length === 0 && (
         <div className="sidebar-concept-empty">
-          No questions match these filters.{' '}
-          <button className="sidebar-concept-clear" onClick={clearAllFilters}>
-            Clear filters
+          No questions match.{' '}
+          <button className="sidebar-concept-clear" onClick={() => { clearAllFilters(); setSearchQuery(''); }}>
+            Clear all
           </button>
         </div>
       )}
