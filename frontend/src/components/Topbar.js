@@ -14,7 +14,7 @@ const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
  */
 export default function Topbar({ active }) {
   const { user, logout } = useAuth();
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [practiceOpen, setPracticeOpen] = useState(false);
   const dropdownRef = useRef(null);
   const location = useLocation();
@@ -39,10 +39,9 @@ export default function Topbar({ active }) {
     };
   }, [practiceOpen]);
 
-  function cycleTheme() {
-    setTheme(t => t === 'system' ? 'light' : t === 'light' ? 'dark' : 'system');
-  }
-  const themeIcon = theme === 'system' ? '◐' : resolvedTheme === 'dark' ? '☀' : '☾';
+  const isDark = theme === 'dark';
+  function toggleTheme() { setTheme(isDark ? 'light' : 'dark'); }
+  const themeIcon = isDark ? '☀' : '☾';
 
   return (
     <header className="topbar landing-topbar">
@@ -91,7 +90,7 @@ export default function Topbar({ active }) {
             Dashboard
           </Link>
 
-          <button className="theme-toggle" onClick={cycleTheme} aria-label="Toggle theme">
+          <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle dark mode">
             {themeIcon}
           </button>
           <div className="topbar-sep" aria-hidden="true" />

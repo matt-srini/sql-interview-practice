@@ -13,7 +13,7 @@ const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
 export default function AppShell() {
   const { catalog, loading, error, refresh } = useCatalog();
   const { user, logout, refreshUser } = useAuth();
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
   const [practiceOpen, setPracticeOpen] = useState(false);
@@ -131,12 +131,10 @@ export default function AppShell() {
     (sum, g) => sum + g.questions.filter(q => q.state === 'solved').length, 0
   ) ?? 0;
 
-  function cycleTheme() {
-    const next = theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system';
-    setTheme(next);
-  }
-  const themeIcon = theme === 'system' ? '◐' : resolvedTheme === 'dark' ? '☀' : '☾';
-  const themeLabel = theme === 'system' ? 'Theme: system' : theme === 'light' ? 'Theme: light' : 'Theme: dark';
+  const isDark = theme === 'dark';
+  function toggleTheme() { setTheme(isDark ? 'light' : 'dark'); }
+  const themeIcon = isDark ? '☀' : '☾';
+  const themeLabel = isDark ? 'Switch to light mode' : 'Switch to dark mode';
 
   return (
     <div className={`app-shell ${desktopCollapsed ? 'sidebar-collapsed' : ''}`}>
@@ -214,7 +212,7 @@ export default function AppShell() {
             </NavLink>
             <button
               className="theme-toggle"
-              onClick={cycleTheme}
+              onClick={toggleTheme}
               aria-label={themeLabel}
               title={themeLabel}
             >
