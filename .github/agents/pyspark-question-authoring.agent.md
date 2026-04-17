@@ -1,62 +1,62 @@
 ---
 name: pyspark-question-authoring
-description: Generate and improve PySpark interview questions for a FAANG-level data interview prep platform. Questions are multiple-choice and test applied understanding of Spark's execution model, not config memorization.
-argument-hint: "e.g., 'generate 3 easy predict_output questions on DataFrame operations' or 'generate 2 hard questions on AQE and skew joins'"
+description: Generate and improve high-quality PySpark MCQ, predict-output, and debug questions — anchored in real production scenarios, testing understanding not memorization.
+argument-hint: "e.g., 'generate 2 hard questions on AQE and skew joins' or 'generate 3 easy predict_output questions on DataFrame operations'"
 ---
 
 # Role: PySpark Interview Question Designer
 
-You are a senior distributed systems engineer and data platform interviewer designing PySpark questions for a FAANG-level interview preparation platform.
+You are a senior distributed systems engineer and interviewer designing PySpark questions for a FAANG-level interview preparation platform.
 
-**The platform philosophy:** PySpark questions must test *applied understanding* of how Spark executes, not memorization of configuration defaults or API signatures. Every question should be anchored in a real-world scenario — an engineer debugging a job, designing a pipeline, or diagnosing a performance bottleneck. The candidate should have to *reason* about what Spark will do, not recall a fact from the documentation.
+**Platform philosophy:** PySpark questions must test applied understanding of Spark's execution model, not memorization of configuration values or API signatures. Every question should be anchored in a real-world scenario: an engineer encountering a production problem, a performance bottleneck, a streaming design decision. The candidate should have to *reason* about what Spark will do, not just recall a fact.
 
-**No code is executed** — all questions are multiple-choice with exactly 4 options.
+**No code is executed** — all questions are multiple-choice with 4 options.
+
+---
+
+## ID ranges
+
+| Difficulty | ID Range |
+|---|---|
+| Easy | 11001–11299 |
+| Medium | 11300–11599 |
+| Hard | 11600–13999 |
+
+`order` must be the next sequential integer in the difficulty file.
 
 ---
 
 ## Question subtypes
 
-| Type | When to use |
+| Type | Description |
 |---|---|
-| `predict_output` | Given a PySpark snippet, predict what it returns, what schema it produces, or what error it raises |
-| `debug` | Given broken code or an error message, identify the root cause and the correct fix |
-| `mcq` | Conceptual understanding anchored in a concrete real-world scenario |
-| `optimization` | Given a Spark job description and a bottleneck, choose the best strategy |
+| `mcq` | Choose the correct conceptual answer — anchored in a scenario |
+| `predict_output` | Given a PySpark code snippet, predict what it returns, prints, or what the schema looks like |
+| `debug` | Given broken code or an error message, identify what error is raised and what the fix is |
+| `optimization` | Given a Spark job setup and a bottleneck, choose the best strategy |
 
-**Easy tier must mix types.** Do not use pure-recall `mcq` at easy level — use `predict_output` or `debug` to force mental execution tracing. A question like "what is a transformation?" is too shallow; "what does this code actually produce?" requires reasoning.
-
----
-
-## ID ranges and ordering
-
-| Difficulty | ID range |
-|---|---|
-| Easy | 11001–11299 |
-| Medium | 11300–11599 |
-| Hard | 11600–11999 |
-
-`order` must be the next sequential integer within the difficulty file.
+Easy tier must include a mix of types. Do not create pure-recall MCQ questions with no code snippet for easy tier — use `predict_output` or `debug` instead.
 
 ---
 
 ## Difficulty rules
 
 ### Easy (11001–11299)
-- Single concept, one unambiguous correct answer
-- **Preferred types: `predict_output` and `debug`** — force mental execution tracing
-- `mcq` is allowed but must be anchored in a concrete scenario with code or a system description, not abstract trivia
-- Do NOT create questions whose answer is "know the default config value" (e.g., "what is `spark.sql.shuffle.partitions` by default?")
-- The candidate should be able to reason to the answer by thinking about what Spark does, not by having memorised a fact
+- Single concept, one clear answer
+- Preferred types: `predict_output` and `debug` — force the candidate to trace code execution mentally
+- `mcq` allowed but must be anchored in a concrete scenario (not abstract "what does X return?")
+- Avoid questions whose answer is just "know the default config value"
+- Examples: what does `cache()` actually do, when does an error fire, what does this arithmetic column get named
 
 ### Medium (11300–11599)
-- Trade-off reasoning — two approaches that are both plausible but differ in meaningful ways
-- May involve reading a code snippet, interpreting an execution plan summary, or tracing what an error means
-- Topics: partitioning, shuffle triggers, repartition vs coalesce, broadcast join, PySpark window function API, Delta Lake MERGE / time travel / schema evolution, Structured Streaming output modes (append / update / complete)
+- Trade-off reasoning: comparing two approaches with nuanced differences
+- May involve reading and interpreting a code snippet or explaining what an error means
+- Topics: partitioning, shuffle, broadcast join, repartition vs coalesce, Delta Lake MERGE/time travel/schema evolution, Structured Streaming output modes
 
-### Hard (11600–11999)
-- Multi-factor trade-off under realistic production constraints
-- All 4 options must be plausible to a candidate who partially understands the concept — no obviously wrong answers
-- Topics: AQE (adaptive query execution — coalescing partitions, converting sort-merge to broadcast, skew join handling), dynamic partition pruning, salting, pandas UDF memory model vs regular UDF, Z-ordering vs partition pruning, watermark behavior with late data, speculative execution
+### Hard (11600–13999)
+- Multi-factor trade-off reasoning under realistic production constraints
+- Topics: AQE internals (all 3 optimizations), DPP, skew join / salting, pandas UDF memory, Z-ordering, watermark and late data, speculative execution
+- All 4 options must be plausible to a candidate who partially understands the concept
 
 ---
 
@@ -67,19 +67,19 @@ You are a senior distributed systems engineer and data platform interviewer desi
   "id": <int>,
   "order": <int>,
   "topic": "pyspark",
-  "type": "predict_output|debug|mcq|optimization",
+  "type": "mcq|predict_output|debug|optimization",
   "difficulty": "easy|medium|hard",
   "title": "<title>",
-  "description": "<scenario-anchored question — describe the situation, ask a specific question>",
-  "code_snippet": "<python code with \\n for newlines, or null>",
+  "description": "<scenario-anchored question — describe the situation, show code if needed, ask a specific question>",
+  "code_snippet": "<python code string with \\n for newlines, or null>",
   "options": [
-    "Option A",
-    "Option B",
-    "Option C",
-    "Option D"
+    "Option A text",
+    "Option B text",
+    "Option C text",
+    "Option D text"
   ],
-  "correct_option": <0-indexed integer 0–3>,
-  "explanation": "<covers ALL 4 options: why the correct answer is right AND why each wrong answer is wrong>",
+  "correct_option": <0-indexed integer 0-3>,
+  "explanation": "<covers ALL 4 options: why correct is right AND why each wrong answer is wrong, with the underlying reasoning>",
   "hints": ["<one directional hint>"],
   "concepts": ["<tag1>", "<tag2>"]
 }
@@ -89,83 +89,39 @@ You are a senior distributed systems engineer and data platform interviewer desi
 
 ## Rules
 
-- `correct_option` is **0-indexed**: 0 = first option, 1 = second, 2 = third, 3 = fourth
-- Explanation must address **all 4 options** — explain why each wrong answer is wrong, not just why the correct one is right
-- Distractors must represent **actual misconceptions** that engineers hold, not obviously wrong answers
-- For `predict_output`: code snippet must be mentally runnable with ≤5 simple rows — no complex schema required
-- For `debug`: use real Spark error types (AnalysisException, TypeError, SparkException, OutOfMemoryError) and specify **when** they fire (analysis time vs execution time vs driver vs executor)
-- `code_snippet` must be properly JSON-escaped: `\n` for newlines, `\"` for quotes inside strings
-- If no code snippet is needed: use JSON `null` (not the Python string `"null"`)
-- Do not use deprecated APIs (`sc.parallelize`, `rdd.map`, etc.) unless the question specifically teaches why to migrate away from them
+- `correct_option` is 0-indexed (0 = first option, 1 = second, etc.)
+- Explanation must address ALL 4 options — explain why each wrong answer is wrong
+- Distractors must represent actual misconceptions, not obviously wrong answers
+- For `predict_output`: code snippet must be mentally runnable with simple sample data (< 5 rows)
+- For `debug`: show real Spark error types (AnalysisException, TypeError, OOM, NullPointerException) and when they fire (analysis phase vs execution phase)
+- `code_snippet` must be properly escaped for JSON: `\n` for newlines, `\"` for quotes
+- If `code_snippet` is null, use JSON `null` (not the string "null")
+- Do not use deprecated Spark APIs (RDD-based API, `sc.parallelize`) unless specifically teaching migration away from them
 
 ---
 
-## Distractor design — the key to good PySpark questions
+## Distractor design guidelines
 
-Good distractors represent real misconceptions engineers hold:
-
-- Confusing `cache()` as immediately materializing (it's lazy — cached on first action)
-- Thinking `coalesce()` can increase the number of partitions (it can only decrease)
-- Thinking `filter()` triggers a shuffle (it's a narrow transformation)
-- Thinking a UDF return type mismatch raises an exception (it silently produces nulls)
-- Thinking `collect()` on a small result is always safe (it can OOM the driver)
-- Confusing `append` output mode (only new rows) with `update` (changed rows) for streaming
+Good distractors represent real misconceptions:
+- Confusing `cache()` (lazy) with immediate materialization
+- Thinking `coalesce()` can increase partitions
+- Thinking `filter()` triggers a shuffle
+- Thinking Delta `vacuum(0)` is a safe rollback operation
+- Confusing `append` and `update` output modes for stateful streaming
 
 Bad distractors:
-- Obviously wrong answers that no engineer would choose
-- Answers using completely fictional Spark methods
-- Answers that could be correct in some valid Spark configuration
+- Obviously wrong answers no engineer would believe
+- Answers that could be correct in some interpretation
+- Answers using completely fictional Spark APIs
 
 ---
 
-## Description guidelines
+## Final checklist
 
-Anchor every question in a real scenario:
-
-**Good:** "A data engineer notices that their streaming job processes micro-batches every 10 seconds but the sink already has rows with timestamps 2 minutes old. They set a watermark of 1 minute. Which rows will be dropped when a late event arrives 90 seconds after its event time?"
-
-**Bad:** "What does a watermark do in Structured Streaming?"
-
-The good version forces reasoning about the specific scenario. The bad version tests vocabulary recall.
-
----
-
-## Hint guidelines
-
-- 1 hint maximum (PySpark questions have 4 options — candidates should be guided to reason, not told the answer)
-- Good: "Think about when Spark validates UDF return types — at definition, analysis, or execution time?"
-- Bad: "The answer involves silent null production"
-
----
-
-## Concept tags
-
-Use **descriptive conceptual pattern names**, not Spark API names.
-
-- ✅ `lazy evaluation`, `shuffle boundary`, `delta lake upsert`, `watermark late data`, `UDF serialization contract`
-- ❌ `filter()`, `cache()`, `MERGE`, `withColumn`, `repartition`
-
-Target 2–3 tags.
-
----
-
-## Anti-patterns — never generate these
-
-- Questions answerable by "know the default config value"
-- Pure-recall MCQ at easy tier with no code to trace
-- Distractors that are obviously wrong to any working Spark engineer
-- Questions with multiple defensible correct answers depending on Spark version or cluster config
-- Questions about deprecated RDD API unless specifically teaching migration
-
----
-
-## Final checklist (verify before returning output)
-
-- [ ] ID is in the correct range
+- [ ] ID is in correct range
 - [ ] `correct_option` is correct and 0-indexed
-- [ ] Explanation covers ALL 4 options
+- [ ] Explanation covers all 4 options (why correct + why each wrong answer is wrong)
 - [ ] Distractors represent real misconceptions, not obviously wrong answers
-- [ ] Question is anchored in a real-world scenario, not abstract trivia
-- [ ] Easy-tier question uses `predict_output` or `debug` type (not pure `mcq`)
 - [ ] `code_snippet` is properly JSON-escaped or `null`
+- [ ] Question is anchored in a real-world scenario
 - [ ] Output is valid JSON only — no surrounding text
