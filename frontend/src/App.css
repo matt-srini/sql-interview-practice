@@ -4469,7 +4469,7 @@ select {
 [data-theme="dark"] .sidebar-backdrop { background: rgba(0, 0, 0, 0.55); }
 [data-theme="dark"] .sidebar-group-header { background: rgba(255, 255, 255, 0.02); }
 [data-theme="dark"] .sidebar-group-header:hover { background: rgba(255, 255, 255, 0.04); }
-[data-theme="dark"] .sidebar-filters-search { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); }
+
 [data-theme="dark"] .sidebar-question:hover { background: rgba(255, 255, 255, 0.03); }
 [data-theme="dark"] .shell-pill { background: rgba(255, 255, 255, 0.04); }
 [data-theme="dark"] .app-banner-success { color: #C7E8D7; }
@@ -4835,52 +4835,6 @@ select {
 /* ============================================================
    Sidebar concept filter
    ============================================================ */
-/* Sidebar search (inside filters accordion) */
-.sidebar-filters-search-row {
-  position: relative;
-  padding: 0.6rem 0.85rem 0.5rem;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.sidebar-filters-search {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 0.38rem 2rem 0.38rem 0.65rem;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-  background: var(--surface-card);
-  color: var(--text-strong);
-  font-size: 0.72rem;
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.12s;
-}
-
-.sidebar-filters-search:focus {
-  border-color: var(--accent);
-}
-
-.sidebar-filters-search::placeholder {
-  color: var(--text-muted);
-}
-
-.sidebar-search-clear {
-  position: absolute;
-  right: 1.1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text-muted);
-  font-size: 1rem;
-  line-height: 1;
-  padding: 0 2px;
-}
-
-.sidebar-search-clear:hover {
-  color: var(--text-strong);
-}
 
 /* Show all / show less easy rows */
 .sidebar-show-all-btn {

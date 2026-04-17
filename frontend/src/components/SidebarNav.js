@@ -274,7 +274,6 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
   const [activeFilters, setActiveFilters] = useState(new Set());
   const [activeCompanyFilters, setActiveCompanyFilters] = useState(new Set());
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [easyExpanded, setEasyExpanded] = useState(false);
 
   function toggleFilter(concept) {
@@ -308,20 +307,17 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
     clearCompanyFilters();
   }
 
-  const searchTrim = searchQuery.trim().toLowerCase();
-  const anyFilterActive = activeFilters.size > 0 || activeCompanyFilters.size > 0 || searchTrim.length > 0;
-  const totalActiveFilters = activeFilters.size + activeCompanyFilters.size + (searchTrim.length > 0 ? 1 : 0);
+  const anyFilterActive = activeFilters.size > 0 || activeCompanyFilters.size > 0;
+  const totalActiveFilters = activeFilters.size + activeCompanyFilters.size;
 
-  // Apply search + concept + company filters (AND logic)
+  // Apply concept + company filters (AND logic)
   const filteredGroups = useMemo(() => {
-    const hasSearch = searchTrim.length > 0;
-    if (!anyFilterActive && !hasSearch) return groups;
+    if (!anyFilterActive) return groups;
     return groups.map((g) => {
       const questions = g.questions.filter((q) => {
-        const searchMatch = !hasSearch || q.title.toLowerCase().includes(searchTrim);
         const conceptMatch = activeFilters.size === 0 || (q.concepts ?? []).some((c) => activeFilters.has(c));
         const companyMatch = activeCompanyFilters.size === 0 || (q.companies ?? []).some((c) => activeCompanyFilters.has(c));
-        return searchMatch && conceptMatch && companyMatch;
+        return conceptMatch && companyMatch;
       });
       return {
         ...g,
@@ -333,7 +329,7 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
         },
       };
     }).filter((g) => g.questions.length > 0);
-  }, [groups, activeFilters, activeCompanyFilters, anyFilterActive, searchTrim]);
+  }, [groups, activeFilters, activeCompanyFilters, anyFilterActive]);
 
   return (
     <div className="sidebar-inner">
@@ -353,7 +349,7 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
             {anyFilterActive && !filtersOpen && (
               <button
                 className="sidebar-concept-clear sidebar-filters-clear-inline"
-                onClick={(e) => { e.stopPropagation(); clearAllFilters(); setSearchQuery(''); }}
+                onClick={(e) => { e.stopPropagation(); clearAllFilters(); }}
                 title="Clear all filters"
               >
                 Clear
@@ -365,19 +361,6 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
 
         {filtersOpen && (
           <div className="sidebar-filters-body">
-            <div className="sidebar-filters-search-row">
-              <input
-                className="sidebar-filters-search"
-                type="search"
-                placeholder="Search questions…"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                aria-label="Search questions"
-              />
-              {searchQuery && (
-                <button className="sidebar-search-clear" onClick={() => setSearchQuery('')} aria-label="Clear search">×</button>
-              )}
-            </div>
             <ConceptFilter
               groups={groups}
               activeFilters={activeFilters}
@@ -397,7 +380,7 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
       {anyFilterActive && filteredGroups.length === 0 && (
         <div className="sidebar-concept-empty">
           No questions match.{' '}
-          <button className="sidebar-concept-clear" onClick={() => { clearAllFilters(); setSearchQuery(''); }}>
+          <button className="sidebar-concept-clear" onClick={clearAllFilters}>
             Clear all
           </button>
         </div>
@@ -411,7 +394,7 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
           : null;
         const sorted = g.questions.slice().sort((a, b) => a.order - b.order);
         const isEasy = g.difficulty === 'easy';
-        const showRowCap = isEasy && !easyExpanded && !searchTrim && sorted.length > EASY_ROW_DEFAULT;
+        const showRowCap = isEasy && !easyExpanded && sorted.length > EASY_ROW_DEFAULT;
         const visibleQuestions = showRowCap ? sorted.slice(0, EASY_ROW_DEFAULT) : sorted;
         const hiddenEasyCount = sorted.length - EASY_ROW_DEFAULT;
 
@@ -437,7 +420,7 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
                     Show all {sorted.length} easy →
                   </button>
                 )}
-                {isEasy && easyExpanded && hiddenEasyCount > 0 && !searchTrim && (
+                {isEasy && easyExpanded && hiddenEasyCount > 0 && (
                   <button
                     className="sidebar-show-all-btn sidebar-show-all-btn-less"
                     onClick={() => setEasyExpanded(false)}
