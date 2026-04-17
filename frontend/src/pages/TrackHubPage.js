@@ -237,9 +237,16 @@ export default function TrackHubPage() {
 
         {topicPaths.length > 0 && (
           <section className="trackhub-paths">
-            <h3 className="trackhub-paths-title">Learning paths</h3>
+            <div className="trackhub-paths-header">
+              <h3 className="trackhub-paths-title">Learning paths</h3>
+              {topicPaths.length > 2 && (
+                <Link to={`/learn/${topic}`} className="trackhub-paths-viewall">
+                  View all {topicPaths.length} →
+                </Link>
+              )}
+            </div>
             <div className="trackhub-paths-grid">
-              {topicPaths.map(p => (
+              {topicPaths.slice(0, 2).map(p => (
                 <PathProgressCard key={p.slug} path={p} compact />
               ))}
             </div>
