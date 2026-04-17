@@ -7,7 +7,6 @@ import TrackProgressBar from '../components/TrackProgressBar';
 import PathProgressCard from '../components/PathProgressCard';
 import Topbar from '../components/Topbar';
 import UpgradeButton from '../components/UpgradeButton';
-import { useTheme } from '../App';
 
 const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
 
@@ -127,8 +126,6 @@ df = df.coalesce(10)`,
 
 export default function LandingPage() {
   const { user, logout } = useAuth();
-  const { theme, setTheme, resolvedTheme } = useTheme();
-
   const userPlan = user?.plan ?? 'free';
 
   // What CTA state to show in the Pro column:
@@ -153,12 +150,6 @@ export default function LandingPage() {
     return 'both';
   }
 
-  function cycleTheme() {
-    const next = theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system';
-    setTheme(next);
-  }
-  const themeIcon = theme === 'system' ? '◐' : resolvedTheme === 'dark' ? '☀' : '☾';
-  const themeLabel = theme === 'system' ? 'Theme: system' : theme === 'light' ? 'Theme: light' : 'Theme: dark';
   const [dashData, setDashData] = useState(null);
   const [activeTab, setActiveTab] = useState(
     () => sessionStorage.getItem('landingActiveTab') || 'sql'
