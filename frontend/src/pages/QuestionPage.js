@@ -99,6 +99,7 @@ export default function QuestionPage() {
     try { return localStorage.getItem('editor-height-pref') === 'tall'; } catch { return false; }
   });
   const priorAttemptCountRef = useRef(0);
+  const verdictRef = useRef(null);
 
   // Refs used by Monaco keyboard commands to avoid stale closures.
   // Updated inline on every render (before any early return that uses them).
@@ -153,6 +154,14 @@ export default function QuestionPage() {
     setShowAltSolution(false);
     setSubmissionInsight(null);
   }, [id, meta.language, meta.hasMCQ]);
+
+  // Scroll the verdict into view after submission resolves so users don't
+  // have to hunt for results that appeared below the fold.
+  useEffect(() => {
+    if (submitResult) {
+      verdictRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [submitResult]);
 
   function formatRelativeTime(isoString) {
     const diff = Date.now() - new Date(isoString).getTime();
@@ -726,7 +735,7 @@ export default function QuestionPage() {
           )}
 
           {submitResult && (
-            <div className="submit-outcome">
+            <div className="submit-outcome" ref={verdictRef}>
               <div className={`verdict ${submitResult.correct ? 'verdict-correct' : 'verdict-incorrect'}`}>
                 <span className="verdict-label">{submitResult.correct ? 'Correct' : 'Keep iterating'}</span>
                 <p className="verdict-copy">
@@ -752,8 +761,8 @@ export default function QuestionPage() {
             </div>
           )}
 
-          {/* SQL submit: show compare grid */}
-          {submitResult && topic === 'sql' && submitResult.user_result && (
+          {/* SQL submit: show compare grid only on wrong answers — correct needs no diff */}
+          {submitResult && !submitResult.correct && topic === 'sql' && submitResult.user_result && (
             <div className="results-compare-grid">
               <div className="results-card">
                 <div className="results-header">
@@ -791,8 +800,8 @@ export default function QuestionPage() {
             </>
           )}
 
-          {/* Python-Data submit: show DataFrame output */}
-          {submitResult && topic === 'python-data' && submitResult.user_result && (
+          {/* Python-Data submit: show DataFrame output only on wrong answers */}
+          {submitResult && !submitResult.correct && topic === 'python-data' && submitResult.user_result && (
             <div className="results-compare-grid">
               <div className="results-card">
                 <div className="results-header">
