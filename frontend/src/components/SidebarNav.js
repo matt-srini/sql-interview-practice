@@ -270,6 +270,7 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
 
   const [activeFilters, setActiveFilters] = useState(new Set());
   const [activeCompanyFilters, setActiveCompanyFilters] = useState(new Set());
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   function toggleFilter(concept) {
     setActiveFilters((prev) => {
@@ -297,7 +298,13 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
     setActiveCompanyFilters(new Set());
   }
 
+  function clearAllFilters() {
+    clearFilters();
+    clearCompanyFilters();
+  }
+
   const anyFilterActive = activeFilters.size > 0 || activeCompanyFilters.size > 0;
+  const totalActiveFilters = activeFilters.size + activeCompanyFilters.size;
 
   // Apply concept + company filters (AND logic: question must satisfy both)
   const filteredGroups = useMemo(() => {
@@ -322,23 +329,54 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
 
   return (
     <div className="sidebar-inner">
-      <ConceptFilter
-        groups={groups}
-        activeFilters={activeFilters}
-        onToggle={toggleFilter}
-        onClear={clearFilters}
-      />
-      <CompanyFilter
-        groups={groups}
-        activeFilters={activeCompanyFilters}
-        onToggle={toggleCompanyFilter}
-        onClear={clearCompanyFilters}
-      />
+      <div className="sidebar-filters-accordion">
+        <button
+          className={`sidebar-filters-toggle${anyFilterActive ? ' sidebar-filters-toggle-active' : ''}`}
+          onClick={() => setFiltersOpen(v => !v)}
+          aria-expanded={filtersOpen}
+        >
+          <span className="sidebar-filters-toggle-label">
+            Filters
+            {totalActiveFilters > 0 && (
+              <span className="sidebar-filters-badge">{totalActiveFilters}</span>
+            )}
+          </span>
+          <span className="sidebar-filters-toggle-right">
+            {anyFilterActive && !filtersOpen && (
+              <button
+                className="sidebar-concept-clear sidebar-filters-clear-inline"
+                onClick={(e) => { e.stopPropagation(); clearAllFilters(); }}
+                title="Clear all filters"
+              >
+                Clear
+              </button>
+            )}
+            <span className="sidebar-chevron">{filtersOpen ? '▾' : '▸'}</span>
+          </span>
+        </button>
+
+        {filtersOpen && (
+          <div className="sidebar-filters-body">
+            <ConceptFilter
+              groups={groups}
+              activeFilters={activeFilters}
+              onToggle={toggleFilter}
+              onClear={clearFilters}
+            />
+            <CompanyFilter
+              groups={groups}
+              activeFilters={activeCompanyFilters}
+              onToggle={toggleCompanyFilter}
+              onClear={clearCompanyFilters}
+            />
+          </div>
+        )}
+      </div>
 
       {anyFilterActive && filteredGroups.length === 0 && (
         <div className="sidebar-concept-empty">
           No questions match these filters.{' '}
-          <button className="sidebar-concept-clear" onClick={() => { clearFilters(); clearCompanyFilters(); }}>
+          <button className="sidebar-concept-clear" onClick={clearAllFilters}>
             Clear filters
           </button>
         </div>
