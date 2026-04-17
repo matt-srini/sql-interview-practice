@@ -124,9 +124,9 @@ export default function ProgressDashboard() {
               </section>
             )}
 
-            {data?.recent_activity?.length > 0 && (
-              <section className="dashboard-section">
-                <h3 className="dashboard-section-title">Recent Activity</h3>
+            <section className="dashboard-section">
+              <h3 className="dashboard-section-title">Recent Activity</h3>
+              {data?.recent_activity?.length > 0 ? (
                 <div className="dashboard-activity-list">
                   {data.recent_activity.slice(0, 10).map((item, i) => {
                     const meta = TRACK_META[item.topic];
@@ -141,8 +141,13 @@ export default function ProgressDashboard() {
                     );
                   })}
                 </div>
-              </section>
-            )}
+              ) : (
+                <div className="dashboard-activity-empty">
+                  <span>You haven't solved any questions yet.</span>
+                  <Link to="/learn/sql" className="dashboard-activity-empty-cta">Start the SQL learning paths →</Link>
+                </div>
+              )}
+            </section>
           {mockHistory.length > 0 && (
             <section className="dashboard-section dashboard-mock-section">
               <div className="dashboard-section-header">
