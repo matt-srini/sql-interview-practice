@@ -173,7 +173,10 @@ describe('ProgressDashboard', () => {
     });
 
     renderDashboard();
-    expect(screen.getByText(/loading/i)).toBeInTheDocument();
+    // Use getAllByText: the immediately-resolved /mock/history promise can cause
+    // a React re-render during RTL's act() flush in CI, briefly producing two
+    // elements. The intent is just to assert at least one loading indicator is shown.
+    expect(screen.getAllByText(/loading/i).length).toBeGreaterThan(0);
 
     resolve({ data: makeDashboardPayload() });
     await waitFor(() => {

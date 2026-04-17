@@ -15,6 +15,11 @@ depends_on = None
 
 
 def upgrade() -> None:
+    # Drop both possible constraint names: the initial migration used
+    # 'ck_users_plan' but this migration originally referenced 'users_plan_check'.
+    # Drop both defensively so databases created via Alembic from scratch
+    # (e.g. CI) and those seeded via ensure_schema_admin both end up clean.
+    op.execute("ALTER TABLE users DROP CONSTRAINT IF EXISTS ck_users_plan")
     op.execute("ALTER TABLE users DROP CONSTRAINT IF EXISTS users_plan_check")
     op.execute(
         "ALTER TABLE users ADD CONSTRAINT users_plan_check "
