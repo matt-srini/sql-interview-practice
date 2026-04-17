@@ -4227,6 +4227,28 @@ select {
   margin-bottom: 1rem;
 }
 
+.dashboard-split {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.dashboard-split-main {
+  flex: 3;
+  min-width: 0;
+}
+
+.dashboard-split-aside {
+  flex: 2;
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .dashboard-split {
+    flex-direction: column;
+  }
+}
+
 .dashboard-track-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
