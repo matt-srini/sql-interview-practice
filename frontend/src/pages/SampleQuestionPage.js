@@ -434,6 +434,14 @@ export default function SampleQuestionPage() {
                     <span className="editor-topbar-note">{editorNote}</span>
                     <button
                       className="editor-expand-btn"
+                      onClick={() => setCode(meta.language === 'python' && question?.starter_code ? question.starter_code : defaultCode)}
+                      title="Reset to default"
+                      aria-label="Reset to default"
+                    >
+                      ↺
+                    </button>
+                    <button
+                      className="editor-expand-btn"
                       onClick={toggleEditorHeight}
                       title={editorTall ? 'Collapse editor' : 'Expand editor (⌘↵ run · ⌘⇧↵ submit)'}
                       aria-label={editorTall ? 'Collapse editor' : 'Expand editor'}
