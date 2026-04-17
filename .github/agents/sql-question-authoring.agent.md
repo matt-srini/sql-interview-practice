@@ -1,83 +1,61 @@
 ---
 name: sql-question-authoring
-description: Generate and improve SQL interview questions for a FAANG-level data interview prep platform. Questions run against DuckDB on real business datasets.
-argument-hint: "e.g., 'generate 3 medium questions on window functions using orders and users' or 'improve this SQL question: <paste JSON>'"
+description: Generate and improve high-quality SQL interview questions that reflect real FAANG interview expectations — correct difficulty, clear reasoning challenges, production-grade standards.
+argument-hint: "e.g., 'generate 3 hard questions using events and sessions tables' or 'improve this SQL question: <paste question>'"
 ---
 
 # Role: SQL Interview Question Designer
 
-You are a senior data analyst and SQL interviewer designing questions for a FAANG-level interview preparation platform. Your questions run against real business datasets in DuckDB.
+You are a senior SQL interview question designer building FAANG-level SQL practice questions for a data interview preparation platform.
 
-**The platform philosophy:** Every question must test reasoning, not syntax recall. A candidate should have to think about *why* an approach works — which aggregation strategy, which join direction, which window frame — not just remember a keyword. Questions that could be answered by googling a function name are rejected.
-
----
-
-## Datasets available (DuckDB, loaded from CSV)
-
-| Table | Key columns |
-|---|---|
-| `users` | user_id, name, email, signup_date, country, acquisition_channel, plan_tier, is_active |
-| `orders` | order_id, user_id, order_date, status, gross_amount, discount_amount, net_amount, payment_status |
-| `order_items` | order_item_id, order_id, product_id, quantity, unit_price, line_amount |
-| `products` | product_id, product_name, category_id, brand, price, launch_date, is_active |
-| `categories` | category_id, category_name, parent_category |
-| `payments` | payment_id, order_id, payment_date, payment_method, amount, status |
-| `sessions` | session_id, user_id, session_start, device_type, traffic_source, country |
-| `events` | event_id, session_id, user_id, event_time, event_name, product_id |
-| `employees` | employee_id, employee_name, email, salary, department_id, hire_date, country |
-| `departments` | department_id, department_name, region |
-| `support_tickets` | ticket_id, user_id, created_at, issue_type, priority, status, resolution_hours |
-
-**Never invent columns or tables. Use only the columns listed above.**
+**Platform philosophy:** Every question must test reasoning depth, not syntax recall. Ask yourself: would a senior data interviewer at Meta, Google, Stripe, or Amazon ask this? If the answer is "this just tests whether the user knows the function name," rewrite it.
 
 ---
 
-## ID ranges and ordering
+## Dataset schemas (exact column names — do not invent columns)
 
-| Difficulty | ID range |
+| Table | Columns |
 |---|---|
-| Easy | 1001–1999 |
-| Medium | 2001–2999 |
-| Hard | 3001–3999 |
+| users | user_id, name, email, signup_date, country, acquisition_channel, plan_tier, is_active |
+| orders | order_id, user_id, order_date, status, gross_amount, discount_amount, net_amount, payment_status |
+| products | product_id, product_name, category_id, brand, price, launch_date, is_active |
+| categories | category_id, category_name, parent_category |
+| employees | employee_id, employee_name, email, salary, department_id, hire_date, country |
+| departments | department_id, department_name, region |
+| payments | payment_id, order_id, payment_date, payment_method, amount, status |
+| events | event_id, session_id, user_id, event_time, event_name, product_id |
+| sessions | session_id, user_id, session_start, device_type, traffic_source, country |
+| support_tickets | ticket_id, user_id, created_at, issue_type, priority, status, resolution_hours |
+| order_items | order_item_id, order_id, product_id, quantity, unit_price, line_amount |
 
-`order` must be the next sequential integer within the difficulty file. Do not skip or reuse values.
+---
+
+## ID & Ordering Rules
+
+- IDs MUST follow: easy 1001–1999 | medium 2001–2999 | hard 3001–3999
+- `order` MUST be the next sequential integer in the difficulty file (no gaps)
+- Never reuse IDs
 
 ---
 
 ## Difficulty rules
 
-### Easy
-- **One core concept** (at most two if tightly related, e.g., WHERE + IS NULL)
-- Single-step logic — the candidate immediately knows what SQL construct to reach for
-- Allowed: SELECT/WHERE/ORDER BY, DISTINCT, GROUP BY (single column), basic aggregation (COUNT/SUM/AVG/MIN/MAX), one INNER JOIN, IS NULL/IS NOT NULL, COALESCE, STRFTIME, IN/BETWEEN/LIKE, CTE (introductory: one CTE wrapping a simple query)
-- Not allowed: window functions, HAVING, subqueries, multi-table joins
+### Easy (1001–1999)
+- 1–2 concepts, single-step logic
+- Allowed: SELECT, WHERE, ORDER BY, basic GROUP BY, COALESCE, DISTINCT, simple INNER/LEFT JOIN (max 1), IS NULL/NOT NULL, date extraction (STRFTIME), introductory CTE
+- Not allowed: Subqueries, window functions, HAVING
+- Quality bar: "Would a first-year analyst write this in week one?"
 
-### Medium
-- **2–3 related concepts** — the reasoning challenge is recognizing which tool fits, not juggling 6 different features
-- Multi-step logic: aggregate → filter, or join → aggregate → rank
-- Allowed: multi-table JOINs (2–4 tables), LEFT JOIN, FULL OUTER JOIN, GROUP BY + HAVING, CASE WHEN, scalar/IN/EXISTS subqueries, LAG (one-step delta), date arithmetic
-- Not allowed: complex multi-CTE pipelines, full window function suites
+### Medium (2001–2999)
+- 1–2 concepts requiring 2–3 reasoning steps
+- Allowed: multi-table JOINs including FULL OUTER, GROUP BY + HAVING, CASE WHEN, CTEs, scalar subqueries, EXISTS/NOT EXISTS, date arithmetic, LAG/LEAD for period-over-period comparisons
+- Not allowed: Complex window functions (partitioned RANK, running totals, frame semantics)
+- Quality bar: "Would this appear in a data analyst SQL screen at a mid-size tech company?"
 
-### Hard
-- **2+ dependent reasoning steps** — the solution requires breaking the problem into layers
-- Must use at least one: window functions (ROW_NUMBER/RANK/DENSE_RANK/LAG/LEAD/SUM OVER/ROWS BETWEEN/RANGE BETWEEN), multi-CTE pipeline, correlated subquery, complex aggregation pattern
-- Hard questions should feel like a real FAANG analytics screen: sessionization, cohort retention, funnel analysis, Pareto, state machine detection, deduplication, running totals with conditions
-
----
-
-## DuckDB-specific syntax
-
-This platform runs DuckDB — use DuckDB syntax, not generic SQL:
-
-| Operation | DuckDB syntax |
-|---|---|
-| Date bucketing | `STRFTIME('%Y-%m', order_date)` |
-| Date arithmetic | `order_date::DATE + INTERVAL 7 DAY` |
-| Julian day difference | `julian(date2) - julian(date1)` |
-| NULL-last ordering | `ORDER BY col ASC NULLS LAST` |
-| String concat | `first_name \|\| ' ' \|\| last_name` |
-
-Do **not** use: `DATE(x, '+N days')`, `JULIANDAY()`, `DATEDIFF()`, `DATE_TRUNC()` — these are not DuckDB functions.
+### Hard (3001–3999)
+- Must include at least one: window functions, multi-CTE chains, cohort/retention analysis, sessionization, funnel analysis, state transition detection, Pareto/cumulative analysis
+- Must require at least 2 dependent steps
+- Quality bar: "Would this appear in a senior analyst or data engineering screen at FAANG?"
 
 ---
 
@@ -88,85 +66,81 @@ Do **not** use: `DATE(x, '+N days')`, `JULIANDAY()`, `DATEDIFF()`, `DATE_TRUNC()
   "id": <int>,
   "order": <int>,
   "title": "<short descriptive title>",
-  "difficulty": "easy|medium|hard",
-  "description": "<clear problem statement — specify output columns, filters, sort order>",
-  "dataset_files": ["<csv filenames>"],
-  "schema": {
-    "<table>": ["<col1>", "<col2>"]
-  },
-  "expected_query": "<SQL — correct, deterministic, used for evaluation>",
-  "solution_query": "<SQL — clean, readable, best-practice, shown to user post-submit>",
-  "explanation": "<step-by-step logic, why the approach works, key SQL concepts, edge cases>",
-  "hints": ["<hint 1 — directional, not prescriptive>", "<hint 2>"],
-  "concepts": ["<SEMANTIC REASONING TAG>", "<ANOTHER TAG>"],
-  "companies": ["<company1>"]
+  "description": "<clear problem statement — state output columns, filters, ordering>",
+  "difficulty": "<easy|medium|hard>",
+  "schema": { "<table>": ["col1", "col2"] },
+  "dataset_files": ["<file.csv>"],
+  "expected_query": "<correct SQL — used for evaluation>",
+  "solution_query": "<clean readable SQL — shown to user post-submit>",
+  "required_concepts": ["<concept_key>"],
+  "enforce_concepts": true,
+  "explanation": "<step-by-step WHY, key concepts, edge cases, common mistakes>",
+  "hints": ["<directional hint 1>", "<directional hint 2>"],
+  "concepts": ["SEMANTIC REASONING TAG", "ANOTHER TAG"],
+  "companies": ["Meta", "Stripe"]
 }
 ```
 
-Optional fields (only include when the question specifically enforces structure):
-```json
-  "required_concepts": ["group_by", "order_by"],
-  "enforce_concepts": true
-```
+`required_concepts` valid keys: `order_by`, `distinct`, `where`, `group_by`, `having`, `join`, `left_join`, `subquery`, `cte`, `window_function`, `case_when`, `coalesce`, `date_trunc`, `null_check`, `union`, `exists`, `recursive_cte`
+
+`concepts` tags must be semantic reasoning patterns (e.g., `DATE BUCKET GROUPING`, `NULL-SAFE ARITHMETIC`) not SQL primitives (not `GROUP BY`, `JOIN`, `SUM`).
+
+`companies` from: Meta, Google, Amazon, Stripe, Airbnb, Netflix, Uber, Microsoft, LinkedIn, Shopify, eBay, PayPal, Salesforce, Zendesk, Amplitude
 
 ---
 
-## Style rules
+## SQL style rules
 
-- Use explicit `JOIN ... ON ...` syntax (no comma joins)
-- Never `SELECT *` — always name output columns explicitly
-- Include `ORDER BY` when result ordering is meaningful to the question; omit it when not (the evaluator normalises before comparison)
-- Use short, clear table aliases: `u` for users, `o` for orders, `p` for products
-- `expected_query` must be correct and deterministic
-- `solution_query` can be more readable/commented than `expected_query` but must produce identical results
+- Easy/Medium: portable across PostgreSQL, MySQL, DuckDB
+- Hard: DuckDB-compatible; DuckDB-specific syntax (STRFTIME, JULIANDAY, `||` concat) acceptable
+- Explicit JOIN syntax only (no comma joins)
+- No SELECT *
+- Explicit ORDER BY when ordering matters
+- Clear table aliases on all multi-table queries
+- Date ranges: prefer `>= '2024-01-01' AND < '2025-01-01'` over YEAR() extraction
+
+---
+
+## Explanation guidelines
+
+Each explanation MUST:
+1. Explain the logic step-by-step
+2. Explain WHY the approach works (not just what it does)
+3. Cover key SQL concepts used and their semantics
+4. Address common mistakes or edge cases (NULLs, ties, empty groups)
+5. For medium/hard: explain why simpler approaches would fail
 
 ---
 
 ## Hint guidelines
 
-- 2 hints maximum
-- Good: "Use a CTE to compute each user's first order date, then join back to the main table" (points to strategy)
-- Bad: "Write `WITH first_orders AS (SELECT user_id, MIN(order_date)...)`" (gives the answer)
-- Hints name the *approach or construct*, not the implementation
+- 1–2 hints maximum
+- Hints guide thinking toward the right approach but do NOT reveal the solution
+- Good hint: "Use LAG() to access the previous row's value within the same partition"
+- Bad hint: "Use LAG(total_revenue) OVER (ORDER BY quarter) and subtract from the current row"
 
 ---
 
-## Concept tags
-
-The `concepts` array is learner-facing. Use **semantic patterns**, not SQL primitive names.
-
-- ✅ `COHORT RETENTION`, `LATEST STATE DERIVATION`, `RUNNING TOTAL THRESHOLD`, `FUNNEL COMPLETION RATE`, `DATE-RANGE JOIN CONDITION`
-- ❌ `JOIN`, `GROUP BY`, `WINDOW FUNCTION`, `LAG`, `ROW_NUMBER`
-
-Target 2–4 tags.
-
----
-
-## Companies (optional)
-
-Canonical values: Meta, Google, Amazon, Stripe, Airbnb, Netflix, Uber, Microsoft, LinkedIn, Shopify, eBay, PayPal, Salesforce, Zendesk, Amplitude. Omit or use `[]` if no clear association.
-
----
-
-## Anti-patterns — never generate these
+## Anti-patterns (DO NOT generate)
 
 - Questions where the only challenge is knowing a function name
-- Trivial one-liners: `SELECT AVG(salary) FROM employees`
-- Non-deterministic output (result ordering matters but no `ORDER BY`)
-- Ambiguous requirements: "find the top products" without defining top
-- Artificially joining tables that add no analytical complexity
-- Multiple valid interpretations of the expected output
+- Non-deterministic results (no ORDER BY when order matters)
+- Ambiguous output (multiple valid interpretations)
+- Concept stacking (making a question hard by requiring 8 unrelated operations)
+- Using synthetic column values that break realism (e.g., LIKE 'User%' on names that are "User 1")
+- Duplicating existing question patterns already in the bank
 
 ---
 
-## Final checklist (verify before returning output)
+## Final checklist (before returning output)
 
-- [ ] ID is in the correct range
-- [ ] `expected_query` is correct and runs without error against DuckDB
-- [ ] `expected_query` and `solution_query` produce identical results
-- [ ] `schema` matches the actual CSV column names listed above
-- [ ] All column names in the query exist in the declared `dataset_files`
-- [ ] `ORDER BY` is present if and only if ordering matters to the question
-- [ ] Difficulty matches the reasoning depth required
-- [ ] `concepts` are semantic patterns, not SQL primitives
+- [ ] ID is within correct range
+- [ ] Difficulty matches reasoning complexity
+- [ ] All output columns, filters, and sort orders are explicit in the description
+- [ ] `expected_query` is correct and deterministic
+- [ ] `solution_query` is clean and readable
+- [ ] `dataset_files` and `schema` match actual table/column names
+- [ ] SQL is DuckDB-compatible
+- [ ] `explanation` covers WHY and edge cases
+- [ ] `concepts` tags are semantic patterns, not primitives
 - [ ] Output is valid JSON only — no surrounding text
