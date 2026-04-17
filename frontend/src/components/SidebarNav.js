@@ -5,6 +5,9 @@ import { useTopic } from '../contexts/TopicContext';
 // How many concept chips to show before the "show more" toggle
 const CHIP_VISIBLE_DEFAULT = 8;
 
+// How many rows to show before "Show all" in an easy group
+const EASY_ROW_DEFAULT = 10;
+
 // Mirror of backend/unlock.py thresholds (free plan progressive unlock, code tracks)
 const MEDIUM_THRESHOLDS = [8, 15, 25]; // easy_solved → medium unlocks
 const HARD_THRESHOLDS   = [8, 15, 22]; // medium_solved → hard unlocks
@@ -271,6 +274,8 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
   const [activeFilters, setActiveFilters] = useState(new Set());
   const [activeCompanyFilters, setActiveCompanyFilters] = useState(new Set());
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [easyExpanded, setEasyExpanded] = useState(false);
 
   function toggleFilter(concept) {
     setActiveFilters((prev) => {
@@ -305,15 +310,18 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
 
   const anyFilterActive = activeFilters.size > 0 || activeCompanyFilters.size > 0;
   const totalActiveFilters = activeFilters.size + activeCompanyFilters.size;
+  const searchTrim = searchQuery.trim().toLowerCase();
 
-  // Apply concept + company filters (AND logic: question must satisfy both)
+  // Apply search + concept + company filters (AND logic)
   const filteredGroups = useMemo(() => {
-    if (!anyFilterActive) return groups;
+    const hasSearch = searchTrim.length > 0;
+    if (!anyFilterActive && !hasSearch) return groups;
     return groups.map((g) => {
       const questions = g.questions.filter((q) => {
+        const searchMatch = !hasSearch || q.title.toLowerCase().includes(searchTrim);
         const conceptMatch = activeFilters.size === 0 || (q.concepts ?? []).some((c) => activeFilters.has(c));
         const companyMatch = activeCompanyFilters.size === 0 || (q.companies ?? []).some((c) => activeCompanyFilters.has(c));
-        return conceptMatch && companyMatch;
+        return searchMatch && conceptMatch && companyMatch;
       });
       return {
         ...g,
@@ -325,10 +333,24 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
         },
       };
     }).filter((g) => g.questions.length > 0);
-  }, [groups, activeFilters, activeCompanyFilters, anyFilterActive]);
+  }, [groups, activeFilters, activeCompanyFilters, anyFilterActive, searchTrim]);
 
   return (
     <div className="sidebar-inner">
+      <div className="sidebar-search-wrap">
+        <input
+          className="sidebar-search"
+          type="search"
+          placeholder="Search questions…"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          aria-label="Search questions"
+        />
+        {searchQuery && (
+          <button className="sidebar-search-clear" onClick={() => setSearchQuery('')} aria-label="Clear search">×</button>
+        )}
+      </div>
+
       <div className="sidebar-filters-accordion">
         <button
           className={`sidebar-filters-toggle${anyFilterActive ? ' sidebar-filters-toggle-active' : ''}`}
@@ -388,6 +410,12 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
         const nudge = g.difficulty === 'medium' && hasLockedQuestions ? mediumNudge
           : g.difficulty === 'hard' && hasLockedQuestions ? hardNudge
           : null;
+        const sorted = g.questions.slice().sort((a, b) => a.order - b.order);
+        const isEasy = g.difficulty === 'easy';
+        const showRowCap = isEasy && !easyExpanded && !searchTrim && sorted.length > EASY_ROW_DEFAULT;
+        const visibleQuestions = showRowCap ? sorted.slice(0, EASY_ROW_DEFAULT) : sorted;
+        const hiddenEasyCount = sorted.length - EASY_ROW_DEFAULT;
+
         return (
           <div className="sidebar-group" key={g.difficulty}>
             <DifficultyHeader
@@ -399,12 +427,25 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
             />
             {!collapsed && (
               <div className="sidebar-question-list">
-                {g.questions
-                  .slice()
-                  .sort((a, b) => a.order - b.order)
-                  .map((q) => (
-                    <QuestionRow key={q.id} q={q} onNavigate={onNavigate} topic={topic} />
-                  ))}
+                {visibleQuestions.map((q) => (
+                  <QuestionRow key={q.id} q={q} onNavigate={onNavigate} topic={topic} />
+                ))}
+                {showRowCap && (
+                  <button
+                    className="sidebar-show-all-btn"
+                    onClick={() => setEasyExpanded(true)}
+                  >
+                    Show all {sorted.length} easy →
+                  </button>
+                )}
+                {isEasy && easyExpanded && hiddenEasyCount > 0 && !searchTrim && (
+                  <button
+                    className="sidebar-show-all-btn sidebar-show-all-btn-less"
+                    onClick={() => setEasyExpanded(false)}
+                  >
+                    Show less ▴
+                  </button>
+                )}
               </div>
             )}
           </div>
