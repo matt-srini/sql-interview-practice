@@ -39,6 +39,14 @@ function GithubIcon() {
 
 const VALID_MODES = ['signin', 'signup', 'magic', 'forgot'];
 
+async function resendVerification() {
+  try {
+    await api.post('/auth/resend-verification');
+  } catch {
+    // Best-effort; ignore errors
+  }
+}
+
 const MODE_META = {
   signin: { title: 'Sign in', subtitle: 'Pick up your practice session' },
   signup: { title: 'Create account', subtitle: 'Save progress and unlock more practice' },
@@ -62,6 +70,8 @@ export default function AuthPage() {
   const [info, setInfo] = useState(null);
   const [passwordError, setPasswordError] = useState(null);
   const [oauthLoading, setOauthLoading] = useState(null); // 'google' | 'github' | null
+  const [signupEmail, setSignupEmail] = useState('');
+  const [resendStatus, setResendStatus] = useState('idle'); // 'idle' | 'sending' | 'sent'
 
   // Show error from OAuth redirect (e.g. ?error=...)
   useEffect(() => {
@@ -129,7 +139,10 @@ export default function AuthPage() {
           return;
         }
         await register(fields.email, fields.name, fields.password);
-        navigate('/');
+        setSignupEmail(fields.email);
+        setStatus('success');
+        setInfo(`We've sent a verification email to ${fields.email}. Click the link to verify your account.`);
+        return;
       } else if (mode === 'magic') {
         try {
           await requestMagicLink(fields.email);
@@ -370,6 +383,31 @@ export default function AuthPage() {
                 )}
               </button>
             </form>
+          )}
+
+          {/* Post-success: signup — check inbox */}
+          {isSuccess && mode === 'signup' && (
+            <div className="auth-post-success">
+              <button
+                type="button"
+                className="btn btn-primary auth-submit"
+                onClick={() => navigate('/')}
+              >
+                Continue to practice
+              </button>
+              <button
+                type="button"
+                className="auth-link-btn auth-link-subtle"
+                disabled={resendStatus !== 'idle'}
+                onClick={async () => {
+                  setResendStatus('sending');
+                  await resendVerification();
+                  setResendStatus('sent');
+                }}
+              >
+                {resendStatus === 'sent' ? 'Email resent!' : resendStatus === 'sending' ? 'Sending…' : `Resend verification email`}
+              </button>
+            </div>
           )}
 
           {/* Post-success: back to sign in */}

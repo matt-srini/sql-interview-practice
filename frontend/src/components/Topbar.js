@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
 import { useTheme } from '../App';
@@ -16,8 +17,22 @@ export default function Topbar({ active }) {
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const [practiceOpen, setPracticeOpen] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [resendStatus, setResendStatus] = useState('idle'); // 'idle' | 'sending' | 'sent'
   const dropdownRef = useRef(null);
   const location = useLocation();
+
+  const showVerifyBanner = !bannerDismissed && user?.email && user?.email_verified === false;
+
+  async function handleResend() {
+    setResendStatus('sending');
+    try {
+      await api.post('/auth/resend-verification');
+    } catch {
+      // best-effort
+    }
+    setResendStatus('sent');
+  }
 
   // Close when navigating away
   useEffect(() => { setPracticeOpen(false); }, [location.pathname]);
@@ -44,6 +59,7 @@ export default function Topbar({ active }) {
   const themeIcon = isDark ? '☀' : '☾';
 
   return (
+    <>
     <header className="topbar landing-topbar">
       <div className="container topbar-inner landing-topbar-inner">
         <div className="landing-topbar-left">
@@ -106,5 +122,29 @@ export default function Topbar({ active }) {
         </nav>
       </div>
     </header>
+    {showVerifyBanner && (
+      <div className="verify-email-banner" role="alert">
+        <span className="verify-email-banner__text">
+          Please verify your email address to access all features.
+        </span>
+        <button
+          type="button"
+          className="verify-email-banner__action"
+          disabled={resendStatus !== 'idle'}
+          onClick={handleResend}
+        >
+          {resendStatus === 'sent' ? 'Email sent!' : resendStatus === 'sending' ? 'Sending…' : 'Resend email'}
+        </button>
+        <button
+          type="button"
+          className="verify-email-banner__dismiss"
+          aria-label="Dismiss"
+          onClick={() => setBannerDismissed(true)}
+        >
+          ✕
+        </button>
+      </div>
+    )}
+    </>
   );
 }

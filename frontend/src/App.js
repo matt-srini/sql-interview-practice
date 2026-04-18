@@ -6,6 +6,7 @@ import { TopicProvider } from './contexts/TopicContext';
 import AppShell from './components/AppShell';
 import AuthPage from './pages/AuthPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
 import LandingPage from './pages/LandingPage';
 import MockHub from './pages/MockHub';
 import MockSession from './pages/MockSession';
@@ -84,6 +85,7 @@ export default function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
           <Route path="/dashboard" element={<ProgressDashboard />} />
           <Route path="/mock" element={<AuthRequired><MockHub /></AuthRequired>} />
           <Route path="/mock/:id" element={<AuthRequired><MockSession /></AuthRequired>} />

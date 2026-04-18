@@ -137,6 +137,9 @@ async def create_checkout(
     if current_user.get("email") is None:
         raise HTTPException(status_code=403, detail="Create an account before upgrading.")
 
+    if not current_user.get("email_verified"):
+        raise HTTPException(status_code=403, detail="Please verify your email address before upgrading.")
+
     if body.plan not in PRICE_IDS:
         raise HTTPException(status_code=400, detail="Invalid upgrade plan.")
 

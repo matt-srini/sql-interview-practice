@@ -28,3 +28,22 @@ def isolated_state(monkeypatch):
     asyncio.run(close_pool())
     asyncio.run(reset_database_admin())
     _clear_rate_limit_state()
+
+
+def verify_test_user(user_id: str) -> None:
+    """Mark a test user's email as verified using a direct synchronous psycopg2 connection.
+
+    Avoids event-loop conflicts with TestClient's internal asyncpg pool.
+    """
+    import psycopg2
+
+    db_url = os.environ.get("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/sql_practice_test")
+    # Strip asyncpg driver prefix if present
+    sync_url = db_url.replace("postgresql+asyncpg://", "postgresql://")
+    conn = psycopg2.connect(sync_url)
+    try:
+        with conn.cursor() as cur:
+            cur.execute("UPDATE users SET email_verified = true WHERE id = %s::uuid", (user_id,))
+        conn.commit()
+    finally:
+        conn.close()
