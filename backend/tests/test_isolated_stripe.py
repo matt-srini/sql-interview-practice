@@ -154,6 +154,7 @@ def _make_user(client: TestClient, plan: str = "free", suffix: str = "") -> dict
     )
     assert r.status_code == 201, r.text
     user = r.json()["user"]
+    verify_test_user(user["id"])
     if plan != "free":
         up = client.post(
             "/api/user/plan",
