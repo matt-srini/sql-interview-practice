@@ -18,6 +18,8 @@ export default function AppShell() {
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
   const [practiceOpen, setPracticeOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [verifyBannerDismissed, setVerifyBannerDismissed] = useState(false);
+  const [verifyResendStatus, setVerifyResendStatus] = useState('idle'); // 'idle' | 'sending' | 'sent'
   const [collapsedByDiff, setCollapsedByDiff] = useState({ easy: false, medium: true, hard: true });
   const [upgradePending, setUpgradePending] = useState(false);
   const [upgradeError, setUpgradeError] = useState('');
@@ -136,8 +138,43 @@ export default function AppShell() {
   const themeIcon = isDark ? '☀' : '☾';
   const themeLabel = isDark ? 'Switch to light mode' : 'Switch to dark mode';
 
+  const showVerifyBanner = !verifyBannerDismissed && user?.email && user?.email_verified === false;
+
+  async function handleVerifyResend() {
+    setVerifyResendStatus('sending');
+    try {
+      await api.post('/auth/resend-verification');
+    } catch {
+      // best-effort
+    }
+    setVerifyResendStatus('sent');
+  }
+
   return (
     <div className={`app-shell ${desktopCollapsed ? 'sidebar-collapsed' : ''}`}>
+      {showVerifyBanner && (
+        <div className="verify-email-banner" role="alert">
+          <span className="verify-email-banner__text">
+            Please verify your email address to access all features.
+          </span>
+          <button
+            type="button"
+            className="verify-email-banner__action"
+            disabled={verifyResendStatus !== 'idle'}
+            onClick={handleVerifyResend}
+          >
+            {verifyResendStatus === 'sent' ? 'Email sent!' : verifyResendStatus === 'sending' ? 'Sending…' : 'Resend email'}
+          </button>
+          <button
+            type="button"
+            className="verify-email-banner__dismiss"
+            aria-label="Dismiss"
+            onClick={() => setVerifyBannerDismissed(true)}
+          >
+            ✕
+          </button>
+        </div>
+      )}
       <header className="topbar app-topbar">
         <div className="topbar-inner app-topbar-inner">
           <div className="app-topbar-brand">

@@ -124,6 +124,19 @@ CREATE INDEX IF NOT EXISTS idx_oauth_accounts_user ON oauth_accounts(user_id);
 CREATE INDEX IF NOT EXISTS idx_reset_tokens_user ON password_reset_tokens(user_id);
 CREATE INDEX IF NOT EXISTS idx_reset_tokens_expires ON password_reset_tokens(expires_at);
 
+ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT false;
+
+CREATE TABLE IF NOT EXISTS email_verification_tokens (
+    token TEXT PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    expires_at TIMESTAMPTZ NOT NULL,
+    used_at TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_email_verification_tokens_user ON email_verification_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_email_verification_tokens_expires ON email_verification_tokens(expires_at);
+
 CREATE TABLE IF NOT EXISTS mock_sessions (
     id BIGSERIAL PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -185,6 +198,7 @@ def _user_from_mapping(row: RowMapping | None) -> dict[str, Any] | None:
         "email": row["email"],
         "name": row["name"],
         "plan": row["plan"],
+        "email_verified": bool(row.get("email_verified", False)),
         "stripe_customer_id": row.get("stripe_customer_id"),
         "created_at": row.get("created_at"),
         "upgraded_at": row.get("upgraded_at"),
@@ -338,7 +352,7 @@ async def get_user_credentials_by_email(email: str) -> dict[str, Any] | None:
         result = await session.execute(
             text(
                 """
-                SELECT id, email, name, plan, pwd_hash, pwd_salt
+                SELECT id, email, name, plan, email_verified, pwd_hash, pwd_salt
                 FROM users
                 WHERE email = :email
                 """
@@ -353,6 +367,7 @@ async def get_user_credentials_by_email(email: str) -> dict[str, Any] | None:
             "email": row["email"],
             "name": row["name"],
             "plan": row["plan"],
+            "email_verified": bool(row["email_verified"]),
             "pwd_hash": row["pwd_hash"],
             "pwd_salt": row["pwd_salt"],
         }
@@ -390,7 +405,7 @@ async def upgrade_anonymous_to_registered(user_id: str, email: str, name: str, p
                         upgraded_at = now()
                     WHERE id = CAST(:user_id AS UUID)
                       AND email IS NULL
-                    RETURNING id, email, name, plan, stripe_customer_id, created_at, upgraded_at
+                    RETURNING id, email, name, plan, email_verified, stripe_customer_id, created_at, upgraded_at
                     """
                 ),
                 {
@@ -440,7 +455,7 @@ async def get_session_user(token: str) -> dict[str, Any] | None:
         result = await session.execute(
             text(
                 """
-                SELECT u.id, u.email, u.name, u.plan, u.stripe_customer_id, u.created_at, u.upgraded_at
+                SELECT u.id, u.email, u.name, u.plan, u.email_verified, u.stripe_customer_id, u.created_at, u.upgraded_at
                 FROM sessions s
                 JOIN users u ON u.id = s.user_id
                 WHERE s.token = :token
@@ -1217,7 +1232,7 @@ async def get_or_create_oauth_user(
         result = await session.execute(
             text(
                 """
-                SELECT u.id, u.email, u.name, u.plan, u.stripe_customer_id, u.created_at, u.upgraded_at
+                SELECT u.id, u.email, u.name, u.plan, u.email_verified, u.stripe_customer_id, u.created_at, u.upgraded_at
                 FROM oauth_accounts oa
                 JOIN users u ON u.id = oa.user_id
                 WHERE oa.provider = :provider
@@ -1228,7 +1243,17 @@ async def get_or_create_oauth_user(
         )
         row = result.mappings().first()
         if row:
-            return _user_from_mapping(row)  # type: ignore[return-value]
+            # Ensure email_verified = true for OAuth users (OAuth proves email ownership)
+            if not row.get("email_verified"):
+                await session.execute(
+                    text("UPDATE users SET email_verified = true WHERE id = CAST(:uid AS UUID)"),
+                    {"uid": str(row["id"])},
+                )
+                await session.commit()
+            user = _user_from_mapping(row)  # type: ignore[return-value]
+            if user:
+                user["email_verified"] = True
+            return user  # type: ignore[return-value]
 
         # If email provided, check for existing user with that email
         user_id: str | None = None
@@ -1246,9 +1271,9 @@ async def get_or_create_oauth_user(
             result3 = await session.execute(
                 text(
                     """
-                    INSERT INTO users (email, name, pwd_hash, pwd_salt, plan)
-                    VALUES (:email, :name, NULL, NULL, 'free')
-                    RETURNING id, email, name, plan, stripe_customer_id, created_at, upgraded_at
+                    INSERT INTO users (email, name, pwd_hash, pwd_salt, plan, email_verified)
+                    VALUES (:email, :name, NULL, NULL, 'free', true)
+                    RETURNING id, email, name, plan, email_verified, stripe_customer_id, created_at, upgraded_at
                     """
                 ),
                 {"email": email, "name": name or email},
@@ -1260,7 +1285,7 @@ async def get_or_create_oauth_user(
             result4 = await session.execute(
                 text(
                     """
-                    SELECT id, email, name, plan, stripe_customer_id, created_at, upgraded_at
+                    SELECT id, email, name, plan, email_verified, stripe_customer_id, created_at, upgraded_at
                     FROM users WHERE id = CAST(:user_id AS UUID)
                     """
                 ),
@@ -1356,6 +1381,76 @@ async def update_password(user_id: str, new_password: str) -> None:
                 """
             ),
             {"pwd_hash": pwd_hash, "pwd_salt": pwd_salt, "user_id": user_id},
+        )
+        await session.commit()
+
+
+# ── Email verification tokens ─────────────────────────────────────────────────
+
+async def create_email_verification_token(user_id: str) -> str:
+    """Generate an email verification token valid for 24 hours."""
+    token = secrets.token_urlsafe(32)
+    expires_at = datetime.now(timezone.utc) + timedelta(hours=24)
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        # Invalidate any existing unused tokens for this user
+        await session.execute(
+            text(
+                """
+                UPDATE email_verification_tokens
+                SET used_at = now()
+                WHERE user_id = CAST(:user_id AS UUID)
+                  AND used_at IS NULL
+                  AND expires_at > now()
+                """
+            ),
+            {"user_id": user_id},
+        )
+        await session.execute(
+            text(
+                """
+                INSERT INTO email_verification_tokens (token, user_id, expires_at)
+                VALUES (:token, CAST(:user_id AS UUID), :expires_at)
+                """
+            ),
+            {"token": token, "user_id": user_id, "expires_at": expires_at},
+        )
+        await session.commit()
+    return token
+
+
+async def consume_email_verification_token(token: str) -> str | None:
+    """Validate and consume a verification token. Returns user_id or None if invalid."""
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                UPDATE email_verification_tokens
+                SET used_at = now()
+                WHERE token = :token
+                  AND used_at IS NULL
+                  AND expires_at > now()
+                RETURNING user_id
+                """
+            ),
+            {"token": token},
+        )
+        row = result.mappings().first()
+        if row is None:
+            await session.rollback()
+            return None
+        await session.commit()
+        return str(row["user_id"])
+
+
+async def mark_email_verified(user_id: str) -> None:
+    """Mark a user's email address as verified."""
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        await session.execute(
+            text("UPDATE users SET email_verified = true WHERE id = CAST(:user_id AS UUID)"),
+            {"user_id": user_id},
         )
         await session.commit()
 

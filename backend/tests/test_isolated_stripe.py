@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 
 import backend.main as main
 from routers import stripe as stripe_router
+from tests.conftest import verify_test_user
 
 
 app = main.app
@@ -22,7 +23,9 @@ def _register_user(client: TestClient, email: str = "isolated@example.com") -> d
         },
     )
     assert response.status_code == 201
-    return response.json()["user"]
+    user = response.json()["user"]
+    verify_test_user(user["id"])
+    return user
 
 
 def _configure_webhook(monkeypatch, event):

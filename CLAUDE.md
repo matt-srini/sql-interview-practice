@@ -162,7 +162,8 @@ sql-interview-practice/
 │   │       ├── MockSession.js          # Active mock session + summary at /mock/:id
 │   │       ├── SampleQuestionPage.js
 │   │       ├── AuthPage.js
-│   │       └── ResetPasswordPage.js    # Password reset token consumer at /auth/reset-password
+│   │       ├── ResetPasswordPage.js    # Password reset token consumer at /auth/reset-password
+│   │       └── VerifyEmailPage.js      # Email verification token consumer at /auth/verify-email
 │   └── package.json
 ├── docs/                           # Architecture and design reference docs (see docs/README.md)
 ├── TODO.md                         # Phased product upgrade backlog
@@ -181,6 +182,7 @@ sql-interview-practice/
 /                              → LandingPage (4-tile track grid)
 /auth                          → AuthPage (register / sign in / forgot password / OAuth)
 /auth/reset-password           → ResetPasswordPage (consume reset token, set new password)
+/auth/verify-email             → VerifyEmailPage (consume email verification token)
 /dashboard                     → ProgressDashboard (cross-track progress)
 /mock                          → MockHub (mode/track/difficulty selector + history)  [AuthRequired]
 /mock/:id                      → MockSession (active session + inline summary)        [AuthRequired]
@@ -316,7 +318,9 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 | POST | `/api/auth/login` | Authenticate, merge anonymous progress |
 | POST | `/api/auth/logout` | Delete session |
 | POST | `/api/auth/forgot-password` | Send password reset email (always returns 200 to prevent enumeration) |
-| POST | `/api/auth/reset-password` | Consume reset token, set new password |
+| POST | `/api/auth/reset-password` | Consume reset token, set new password (also marks email verified) |
+| POST | `/api/auth/verify-email` | Consume email verification token, mark account verified |
+| POST | `/api/auth/resend-verification` | Resend verification email to the current signed-in user |
 | GET | `/api/auth/oauth/{provider}/authorize` | Return OAuth authorization URL (`google` or `github`) |
 | GET | `/api/auth/oauth/{provider}/callback` | OAuth callback — exchange code, upsert user, set session cookie |
 | POST | `/api/stripe/create-checkout` | Stripe Checkout session |

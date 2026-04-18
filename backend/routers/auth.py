@@ -18,20 +18,23 @@ from config import (
     GOOGLE_CLIENT_SECRET,
 )
 from db import (
+    consume_email_verification_token,
     consume_password_reset_token,
+    create_email_verification_token,
     create_password_reset_token,
     create_session,
     delete_session,
     get_or_create_oauth_user,
     get_user_by_email,
     get_user_credentials_by_email,
+    mark_email_verified,
     merge_users,
     update_password,
     upgrade_anonymous_to_registered,
     verify_password,
 )
 from deps import clear_session_cookie, get_current_user, get_optional_current_user, set_session_cookie
-from email_service import email_available, send_password_reset_email
+from email_service import email_available, send_password_reset_email, send_verification_email
 from middleware.request_context import get_request_id
 
 
@@ -117,6 +120,10 @@ class MagicLinkRequest(BaseModel):
         return value
 
 
+class VerifyEmailRequest(BaseModel):
+    token: str
+
+
 class ForgotPasswordRequest(BaseModel):
     email: str
 
@@ -176,9 +183,18 @@ async def register(
 
     token = await create_session(user["id"])
     logger.info("[request_id=%s] Account created: user_id=%s", get_request_id(), user["id"])
+
+    if email_available():
+        verification_token = await create_email_verification_token(user["id"])
+        sent = await send_verification_email(body.email, verification_token)
+        if not sent:
+            logger.error("[request_id=%s] Failed to send verification email: user_id=%s", get_request_id(), user["id"])
+    else:
+        logger.warning("[request_id=%s] RESEND_API_KEY not configured, skipping verification email", get_request_id())
+
     payload = JSONResponse(
         status_code=201,
-        content={"user": {"id": user["id"], "email": user["email"], "name": user["name"], "plan": user["plan"]}},
+        content={"user": {"id": user["id"], "email": user["email"], "name": user["name"], "plan": user["plan"], "email_verified": user.get("email_verified", False)}},
     )
     set_session_cookie(payload, token)
     return payload
@@ -209,7 +225,7 @@ async def login(
     token = await create_session(candidate["id"])
     logger.info("[request_id=%s] Sign-in: user_id=%s", get_request_id(), candidate["id"])
     payload = JSONResponse(
-        content={"user": {"id": candidate["id"], "email": candidate["email"], "name": candidate["name"], "plan": candidate["plan"]}}
+        content={"user": {"id": candidate["id"], "email": candidate["email"], "name": candidate["name"], "plan": candidate["plan"], "email_verified": candidate.get("email_verified", False)}}
     )
     set_session_cookie(payload, token)
     return payload
@@ -230,8 +246,43 @@ async def me(session_user: dict[str, str | None] | None = Depends(get_optional_c
     if session_user is None or session_user.get("email") is None:
         return JSONResponse(status_code=401, content={"user": None})
     return JSONResponse(
-        content={"user": {"id": session_user["id"], "email": session_user["email"], "name": session_user["name"], "plan": session_user["plan"]}}
+        content={"user": {"id": session_user["id"], "email": session_user["email"], "name": session_user["name"], "plan": session_user["plan"], "email_verified": session_user.get("email_verified", False)}}
     )
+
+
+@router.post("/verify-email")
+async def verify_email(body: VerifyEmailRequest) -> JSONResponse:
+    """Consume an email verification token and mark the account as verified."""
+    user_id = await consume_email_verification_token(body.token)
+    if user_id is None:
+        return _err("This verification link is invalid or has expired.", status=400)
+    await mark_email_verified(user_id)
+    logger.info("[request_id=%s] Email verified: user_id=%s", get_request_id(), user_id)
+    return JSONResponse(content={"ok": True})
+
+
+@router.post("/resend-verification")
+async def resend_verification(
+    current_user: dict | None = Depends(get_optional_current_user),
+) -> JSONResponse:
+    """Resend the verification email. Always returns success to avoid timing attacks."""
+    if current_user is None or current_user.get("email") is None:
+        return JSONResponse(status_code=401, content={"error": "Not authenticated", "request_id": get_request_id()})
+
+    if current_user.get("email_verified"):
+        return JSONResponse(status_code=400, content={"error": "Email is already verified.", "request_id": get_request_id()})
+
+    if not email_available():
+        logger.warning("[request_id=%s] Resend-verification: RESEND_API_KEY not configured", get_request_id())
+    else:
+        token = await create_email_verification_token(current_user["id"])
+        sent = await send_verification_email(current_user["email"], token)
+        if sent:
+            logger.info("[request_id=%s] Verification email resent: user_id=%s", get_request_id(), current_user["id"])
+        else:
+            logger.error("[request_id=%s] Failed to resend verification email: user_id=%s", get_request_id(), current_user["id"])
+
+    return JSONResponse(content={"ok": True})
 
 
 @router.post("/magic-link")
@@ -275,6 +326,7 @@ async def reset_password(body: ResetPasswordRequest) -> JSONResponse:
         return _err("This reset link is invalid or has expired. Please request a new one.", status=400)
 
     await update_password(user_id, body.password)
+    await mark_email_verified(user_id)
     logger.info("[request_id=%s] Password reset: user_id=%s", get_request_id(), user_id)
     return JSONResponse(content={"ok": True})
 
