@@ -90,6 +90,102 @@ select {
 }
 
 /* ============================================================
+   Error Boundary
+   ============================================================ */
+.error-boundary-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  background: var(--bg-page);
+}
+
+.error-boundary-card {
+  width: min(100%, 480px);
+  padding: 2.4rem 2rem;
+  border-radius: 26px;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+
+.error-boundary-icon {
+  font-size: 2.4rem;
+  margin-bottom: 1rem;
+  color: var(--warning);
+}
+
+.error-boundary-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text-strong);
+  margin-bottom: 0.6rem;
+}
+
+.error-boundary-body {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  margin-bottom: 1.6rem;
+}
+
+.error-boundary-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.error-boundary-details {
+  margin-top: 1.4rem;
+  text-align: left;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.error-boundary-details summary {
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.error-boundary-details pre {
+  background: var(--surface-card-alt);
+  padding: 0.75rem;
+  border-radius: var(--radius-sm);
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ============================================================
+   404 Not Found page
+   ============================================================ */
+.not-found-card {
+  text-align: center;
+}
+
+.not-found-code {
+  font-size: clamp(4rem, 12vw, 7rem);
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  color: var(--text-soft);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.not-found-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 1.8rem;
+}
+
+/* ============================================================
    Auth page
    ============================================================ */
 .auth-page {
@@ -176,6 +272,23 @@ select {
 .auth-oauth-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.auth-oauth-btn--coming-soon {
+  justify-content: flex-start;
+}
+
+.auth-oauth-soon-badge {
+  margin-left: auto;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--surface-card-alt);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 0.15em 0.5em;
 }
 
 .auth-divider {

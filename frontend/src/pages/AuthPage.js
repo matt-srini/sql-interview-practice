@@ -69,7 +69,6 @@ export default function AuthPage() {
   const [error, setError] = useState(null);
   const [info, setInfo] = useState(null);
   const [passwordError, setPasswordError] = useState(null);
-  const [oauthLoading, setOauthLoading] = useState(null); // 'google' | 'github' | null
   const [signupEmail, setSignupEmail] = useState('');
   const [resendStatus, setResendStatus] = useState('idle'); // 'idle' | 'sending' | 'sent'
 
@@ -101,24 +100,6 @@ export default function AuthPage() {
     setFields((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     if (error) setError(null);
     if (e.target.name === 'password' && passwordError) setPasswordError(null);
-  }
-
-  async function handleOAuth(provider) {
-    setError(null);
-    setOauthLoading(provider);
-    try {
-      const res = await api.get(`/auth/oauth/${provider}/authorize`);
-      // Redirect the browser to the provider's auth page
-      window.location.href = res.data.url;
-    } catch (err) {
-      setOauthLoading(null);
-      const msg = err?.response?.data?.error;
-      if (err?.response?.status === 503) {
-        setError(`${provider.charAt(0).toUpperCase() + provider.slice(1)} sign-in is not configured yet.`);
-      } else {
-        setError(msg || `${provider} sign-in failed. Please try again.`);
-      }
-    }
   }
 
   async function handleSubmit(e) {
@@ -219,27 +200,30 @@ export default function AuthPage() {
           </div>
 
           {/* OAuth buttons — sign-in / sign-up only */}
+          {/* Buttons are disabled until OAuth provider credentials are configured in production */}
           {showOAuth && (
             <div className="auth-oauth">
               <button
                 type="button"
-                className="auth-oauth-btn"
-                onClick={() => handleOAuth('google')}
-                disabled={!!oauthLoading}
-                aria-label="Continue with Google"
+                className="auth-oauth-btn auth-oauth-btn--coming-soon"
+                disabled
+                aria-label="Continue with Google (coming soon)"
+                title="Google sign-in is coming soon"
               >
-                {oauthLoading === 'google' ? <span className="auth-spinner auth-spinner--sm" aria-hidden="true" /> : <GoogleIcon />}
+                <GoogleIcon />
                 <span>Continue with Google</span>
+                <span className="auth-oauth-soon-badge">Soon</span>
               </button>
               <button
                 type="button"
-                className="auth-oauth-btn"
-                onClick={() => handleOAuth('github')}
-                disabled={!!oauthLoading}
-                aria-label="Continue with GitHub"
+                className="auth-oauth-btn auth-oauth-btn--coming-soon"
+                disabled
+                aria-label="Continue with GitHub (coming soon)"
+                title="GitHub sign-in is coming soon"
               >
-                {oauthLoading === 'github' ? <span className="auth-spinner auth-spinner--sm" aria-hidden="true" /> : <GithubIcon />}
+                <GithubIcon />
                 <span>Continue with GitHub</span>
+                <span className="auth-oauth-soon-badge">Soon</span>
               </button>
               <div className="auth-divider" role="separator">
                 <span>or continue with email</span>

@@ -4,7 +4,9 @@ import { CatalogProvider } from './catalogContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { TopicProvider } from './contexts/TopicContext';
 import AppShell from './components/AppShell';
+import ErrorBoundary from './components/ErrorBoundary';
 import AuthPage from './pages/AuthPage';
+import NotFoundPage from './pages/NotFoundPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 import LandingPage from './pages/LandingPage';
@@ -81,32 +83,37 @@ export default function App() {
     <ThemeProvider>
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/auth" element={<AuthPage />} />
-          <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
-          <Route path="/dashboard" element={<ProgressDashboard />} />
-          <Route path="/mock" element={<AuthRequired><MockHub /></AuthRequired>} />
-          <Route path="/mock/:id" element={<AuthRequired><MockSession /></AuthRequired>} />
-          <Route path="/sample/:topic/:difficulty" element={<SampleQuestionPage />} />
-          <Route path="/sample/:difficulty" element={<LegacySampleRedirect />} />
+        <ErrorBoundary>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
+            <Route path="/dashboard" element={<ProgressDashboard />} />
+            <Route path="/mock" element={<AuthRequired><MockHub /></AuthRequired>} />
+            <Route path="/mock/:id" element={<AuthRequired><MockSession /></AuthRequired>} />
+            <Route path="/sample/:topic/:difficulty" element={<SampleQuestionPage />} />
+            <Route path="/sample/:difficulty" element={<LegacySampleRedirect />} />
 
-          {/* Legacy redirects — must come before the :topic wildcard */}
-          <Route path="/practice/questions/:id" element={<LegacyQuestionRedirect />} />
-          <Route path="/practice" element={<Navigate to="/practice/sql" replace />} />
-          <Route path="/questions/:id" element={<LegacyQuestionRedirect />} />
+            {/* Legacy redirects — must come before the :topic wildcard */}
+            <Route path="/practice/questions/:id" element={<LegacyQuestionRedirect />} />
+            <Route path="/practice" element={<Navigate to="/practice/sql" replace />} />
+            <Route path="/questions/:id" element={<LegacyQuestionRedirect />} />
 
-          {/* Learning paths */}
-          <Route path="/learn" element={<LearningPathsIndex />} />
-          <Route path="/learn/:topic" element={<LearningPathsIndex />} />
-          <Route path="/learn/:topic/:slug" element={<LearningPath />} />
+            {/* Learning paths */}
+            <Route path="/learn" element={<LearningPathsIndex />} />
+            <Route path="/learn/:topic" element={<LearningPathsIndex />} />
+            <Route path="/learn/:topic/:slug" element={<LearningPath />} />
 
-          {/* Topic-aware practice routes */}
-          <Route path="/practice/:topic" element={<TopicShell />}>
-            <Route path="questions/:id" element={<QuestionPage />} />
-          </Route>
-        </Routes>
+            {/* Topic-aware practice routes */}
+            <Route path="/practice/:topic" element={<TopicShell />}>
+              <Route path="questions/:id" element={<QuestionPage />} />
+            </Route>
+
+            {/* 404 catch-all */}
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </ErrorBoundary>
       </AuthProvider>
     </BrowserRouter>
     </ThemeProvider>
