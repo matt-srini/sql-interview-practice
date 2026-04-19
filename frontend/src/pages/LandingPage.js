@@ -1,4 +1,4 @@
-import { startTransition, useEffect, useMemo, useRef, useState } from 'react';
+import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
@@ -7,6 +7,7 @@ import TrackProgressBar from '../components/TrackProgressBar';
 import PathProgressCard from '../components/PathProgressCard';
 import Topbar from '../components/Topbar';
 import UpgradeButton from '../components/UpgradeButton';
+import { highlightCode } from './landingShowcaseHighlight';
 
 const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
 
@@ -42,15 +43,16 @@ const SAMPLE_TIERS = {
 
 const SHOWCASE_CARDS = [
   {
-    label: 'SQL',
-    color: '#5B6AF0',
+    topic: 'sql',
+    fileName: 'rolling_revenue.sql',
+    language: 'sql',
     difficulty: 'medium',
     title: '7-Day Rolling Revenue',
-    questionText: `-- Challenge: For each day, compute the sum
--- of order revenue over the past 7 days
--- (including today). Return: order_date,
--- daily_revenue, rolling_7d_revenue.`,
-    answerCode: `SELECT
+    briefParagraph:
+      "For each day, compute the sum of order revenue over the past 7 days (including today). The output should align one row per order_date in ascending order.",
+    returnsNote: 'Return: order_date, daily_revenue, rolling_7d_revenue',
+    concepts: ['window functions', 'rolling aggregates'],
+    solutionCode: `SELECT
   order_date,
   SUM(total_amount) AS daily_revenue,
   SUM(SUM(total_amount)) OVER (
@@ -63,35 +65,34 @@ GROUP BY order_date
 ORDER BY order_date;`,
   },
   {
-    label: 'Python',
-    color: '#2D9E6B',
+    topic: 'python',
+    fileName: 'coin_change.py',
+    language: 'python',
     difficulty: 'hard',
-    title: 'Coin Change (DP)',
-    questionText: `# Challenge: Given coin denominations and
-# an amount, return the minimum number of
-# coins needed. Return -1 if impossible.
-# Time: O(amount × coins). Space: O(amount).`,
-    answerCode: `def solve(coins, amount):
+    title: 'Coin Change — Minimum Coins',
+    briefParagraph:
+      "Given coin denominations and a target amount, return the minimum number of coins needed to make that amount. Return -1 if no combination works.",
+    returnsNote: 'Time: O(amount × coins) · Space: O(amount)',
+    concepts: ['dynamic programming', 'bottom-up DP'],
+    solutionCode: `def solve(coins, amount):
     dp = [float('inf')] * (amount + 1)
     dp[0] = 0
     for coin in coins:
         for x in range(coin, amount + 1):
-            dp[x] = min(dp[x],
-                        dp[x - coin] + 1)
-    return (dp[amount]
-            if dp[amount] != float('inf')
-            else -1)`,
+            dp[x] = min(dp[x], dp[x - coin] + 1)
+    return dp[amount] if dp[amount] != float('inf') else -1`,
   },
   {
-    label: 'Pandas',
-    color: '#C47F17',
+    topic: 'python-data',
+    fileName: 'user_avg_order.py',
+    language: 'python',
     difficulty: 'medium',
-    title: 'User Avg Order (Transform)',
-    questionText: `# Challenge: Add a column showing each
-# user's average order value on every row.
-# Use groupby + transform so the result
-# aligns with the original DataFrame index.`,
-    answerCode: `def solve(df_orders):
+    title: 'Per-User Average on Every Row',
+    briefParagraph:
+      "Add a column showing each user's average order value on every row. Use groupby + transform so the result aligns with the original DataFrame index.",
+    returnsNote: 'Return: order_id, user_id, net_amount, user_avg_order',
+    concepts: ['groupby.transform', 'broadcasting'],
+    solutionCode: `def solve(df_orders):
     df = df_orders.copy()
     df['user_avg_order'] = (
         df.groupby('user_id')['net_amount']
@@ -99,28 +100,25 @@ ORDER BY order_date;`,
           .round(2)
     )
     return df[['order_id', 'user_id',
-               'net_amount',
-               'user_avg_order']]`,
+               'net_amount', 'user_avg_order']]`,
   },
   {
-    label: 'PySpark',
-    color: '#D94F3D',
+    topic: 'pyspark',
+    fileName: 'coalesce_vs_repartition.py',
+    language: 'python',
     difficulty: 'medium',
-    title: 'repartition vs coalesce',
-    questionText: `# Challenge: You need to reduce a DataFrame
-# from 200 partitions to 10 for writing.
-# Which operation avoids a full shuffle,
-# and when does that matter?`,
-    answerCode: `# coalesce(10) — merges partitions locally,
-# no full shuffle. Best when REDUCING count.
-#
-# repartition(10) — full shuffle, even
-# distribution. Use when INCREASING or when
-# data is skewed across partitions.
-#
-# → For reducing: coalesce saves significant
-#   network I/O and shuffle overhead.
-df = df.coalesce(10)`,
+    title: 'coalesce vs repartition',
+    briefParagraph:
+      "You need to reduce a DataFrame from 200 partitions to 10 before writing. Which operation avoids a full shuffle, and when does each one matter?",
+    returnsNote: 'coalesce = narrow · repartition = wide (shuffle)',
+    concepts: ['partitions', 'shuffle tradeoffs'],
+    solutionCode: `# coalesce(n) — merges partitions locally, no full
+# shuffle. Best when REDUCING partition count.
+df.coalesce(10).write.parquet(path)
+
+# repartition(n) — full shuffle, even distribution.
+# Use when INCREASING count or when data is skewed.
+df.repartition(10, 'user_id')`,
   },
 ];
 
@@ -157,9 +155,8 @@ export default function LandingPage() {
 
   const showcaseRef = useRef(null);
   const [showcaseActiveIndex, setShowcaseActiveIndex] = useState(0);
-  const [showcaseDisplayed, setShowcaseDisplayed] = useState('');
-  const [showcasePhase, setShowcasePhase] = useState('question');
-  const showcaseTimers = useRef({ interval: null, timeout: null });
+  const [showcaseInView, setShowcaseInView] = useState(false);
+  const [showcasePaused, setShowcasePaused] = useState(false);
 
   const [paths, setPaths] = useState([]);
   const [displayedPaths, setDisplayedPaths] = useState([]);
@@ -201,60 +198,52 @@ export default function LandingPage() {
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
+  // Auto-rotate the IDE tabs — runs only when section is in view and not paused.
   useEffect(() => {
-    const card = SHOWCASE_CARDS[showcaseActiveIndex];
-    const timers = showcaseTimers.current;
-
-    if (timers.interval) clearInterval(timers.interval);
-    if (timers.timeout) clearTimeout(timers.timeout);
-
-    setShowcaseDisplayed('');
-    setShowcasePhase('question');
-
-    let i = 0;
-    const question = card.questionText;
-
-    timers.interval = setInterval(() => {
-      i++;
-      setShowcaseDisplayed(question.slice(0, i));
-      if (i >= question.length) {
-        clearInterval(timers.interval);
-        timers.timeout = setTimeout(() => {
-          setShowcasePhase('answer');
-          let j = 0;
-          const answer = card.answerCode;
-          const fullText = question + '\n\n' + answer;
-          const startLen = question.length + 2;
-          timers.interval = setInterval(() => {
-            j++;
-            setShowcaseDisplayed(fullText.slice(0, startLen + j));
-            if (j >= answer.length) {
-              clearInterval(timers.interval);
-              timers.timeout = setTimeout(() => {
-                setShowcaseActiveIndex(prev => (prev + 1) % SHOWCASE_CARDS.length);
-              }, 1500);
-            }
-          }, 10);
-        }, 800);
-      }
-    }, 12);
-
-    return () => {
-      if (timers.interval) clearInterval(timers.interval);
-      if (timers.timeout) clearTimeout(timers.timeout);
-    };
-  }, [showcaseActiveIndex]);
+    if (!showcaseInView || showcasePaused) return;
+    if (typeof window !== 'undefined' &&
+        window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    const id = setInterval(() => {
+      setShowcaseActiveIndex((prev) => (prev + 1) % SHOWCASE_CARDS.length);
+    }, 8000);
+    return () => clearInterval(id);
+  }, [showcaseInView, showcasePaused]);
 
   useEffect(() => {
     const el = showcaseRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) el.classList.add('is-visible'); },
-      { threshold: 0.1 }
+      ([entry]) => {
+        if (entry.isIntersecting) el.classList.add('is-visible');
+        setShowcaseInView(entry.isIntersecting);
+      },
+      { threshold: 0.2 }
     );
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
+
+  const handleShowcaseJump = useCallback((i) => {
+    setShowcaseActiveIndex(i);
+  }, []);
+
+  const handleIdeFocusCapture = useCallback(() => setShowcasePaused(true), []);
+  const handleIdeBlurCapture = useCallback((e) => {
+    if (!e.currentTarget.contains(e.relatedTarget)) setShowcasePaused(false);
+  }, []);
+  const handleIdePointerEnter = useCallback(() => setShowcasePaused(true), []);
+  const handleIdePointerLeave = useCallback(() => setShowcasePaused(false), []);
+
+  const activeCard = SHOWCASE_CARDS[showcaseActiveIndex];
+  const activeColor = TRACK_META[activeCard.topic]?.color ?? '#5B6AF0';
+  const activeCodeLineCount = useMemo(
+    () => activeCard.solutionCode.split('\n').length,
+    [activeCard]
+  );
+  const highlightedLines = useMemo(
+    () => highlightCode(activeCard.solutionCode, activeCard.language),
+    [activeCard]
+  );
 
   const trackTabs = useMemo(
     () =>
@@ -310,31 +299,120 @@ export default function LandingPage() {
         <section className="landing-showcase">
           <div className="landing-showcase-inner" ref={showcaseRef}>
             <div className="landing-showcase-header">
-              <span className="landing-showcase-eyebrow">All four tracks. Real interview problems.</span>
+              <span className="landing-showcase-eyebrow">350 questions · 4 tracks · real interview patterns</span>
               <h2 className="landing-showcase-title">See what you&rsquo;ll be solving.</h2>
+              <p className="landing-showcase-subtitle">
+                Read the problem. Study the solution. Build the intuition you&rsquo;ll draw on in the room.
+              </p>
             </div>
 
-            <div className="landing-showcase-grid">
-              {SHOWCASE_CARDS.map((card, i) => (
-                <div
-                  key={card.label}
-                  className={`showcase-card${showcaseActiveIndex === i ? ' is-active' : ''}`}
-                  style={showcaseActiveIndex === i ? { '--active-color': card.color } : {}}
-                >
-                  <div className="showcase-card-header">
-                    <span className="showcase-track-dot" style={{ background: card.color }} />
-                    <span className="showcase-track-label">{card.label}</span>
-                    <span className="showcase-difficulty-badge">{card.difficulty}</span>
-                  </div>
-                  <div className="showcase-question-title">{card.title}</div>
-                  <div className="showcase-phase-label">
-                    {showcaseActiveIndex === i ? (showcasePhase === 'question' ? 'Question' : 'Answer') : ''}
-                  </div>
-                  <pre className="showcase-code-block">
-                    <code>{showcaseActiveIndex === i ? showcaseDisplayed : ''}</code>
-                  </pre>
+            <div
+              className="landing-ide"
+              style={{ '--active-color': activeColor }}
+              onMouseEnter={handleIdePointerEnter}
+              onMouseLeave={handleIdePointerLeave}
+              onFocusCapture={handleIdeFocusCapture}
+              onBlurCapture={handleIdeBlurCapture}
+            >
+              <div className="landing-ide-chrome">
+                <span className="ide-traffic" aria-hidden="true">
+                  <i /><i /><i />
+                </span>
+                <div className="ide-tabs" role="tablist" aria-label="Track preview">
+                  {SHOWCASE_CARDS.map((card, i) => {
+                    const isActive = i === showcaseActiveIndex;
+                    const tabColor = TRACK_META[card.topic]?.color ?? '#5B6AF0';
+                    return (
+                      <button
+                        key={card.topic}
+                        type="button"
+                        role="tab"
+                        aria-selected={isActive}
+                        aria-controls="ide-body"
+                        tabIndex={isActive ? 0 : -1}
+                        className={`ide-tab${isActive ? ' is-active' : ''}`}
+                        style={{ '--tab-color': tabColor }}
+                        onClick={() => handleShowcaseJump(i)}
+                      >
+                        <span className="ide-tab-dot" aria-hidden="true" />
+                        <span className="ide-tab-filename">{card.fileName}</span>
+                      </button>
+                    );
+                  })}
                 </div>
-              ))}
+                <span className={`ide-difficulty-pill ide-difficulty-${activeCard.difficulty}`}>
+                  {activeCard.difficulty}
+                </span>
+              </div>
+
+              <div className="landing-ide-body" id="ide-body" role="tabpanel">
+                <div key={activeCard.topic} className="ide-body-inner">
+                  <div className="ide-brief">
+                    <span className="ide-brief-kicker">Problem</span>
+                    <h3 className="ide-brief-title">{activeCard.title}</h3>
+                    <div className="ide-brief-meta">
+                      <span className="ide-brief-meta-dot" style={{ background: activeColor }} />
+                      <span>{TRACK_META[activeCard.topic]?.label}</span>
+                      <span aria-hidden="true">·</span>
+                      <span>{activeCard.difficulty}</span>
+                    </div>
+                    <p className="ide-brief-para">{activeCard.briefParagraph}</p>
+                    {activeCard.returnsNote && (
+                      <p className="ide-brief-returns">{activeCard.returnsNote}</p>
+                    )}
+                    <div className="ide-brief-concepts">
+                      <span className="ide-brief-concepts-label">Concepts</span>
+                      <span className="ide-brief-concepts-value">
+                        {activeCard.concepts.join(' · ')}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="ide-code-pane" aria-label={`${activeCard.fileName} solution`}>
+                    <div className="ide-code-filename" aria-hidden="true">
+                      <span className="ide-code-filename-dot" style={{ background: activeColor }} />
+                      {activeCard.fileName}
+                    </div>
+                    <pre className="ide-code-block">
+                      <span className="ide-code-gutter" aria-hidden="true">
+                        {Array.from({ length: activeCodeLineCount }, (_, n) => (
+                          <span key={n}>{n + 1}</span>
+                        ))}
+                      </span>
+                      <code className={`ide-code ide-code--${activeCard.language}`}>
+                        {highlightedLines}
+                      </code>
+                    </pre>
+                  </div>
+                </div>
+              </div>
+
+              <div className="landing-ide-statusbar">
+                <div className="ide-statusbar-meta">
+                  <span className="ide-statusbar-lang">{activeCard.language.toUpperCase()}</span>
+                  <span aria-hidden="true" className="ide-statusbar-sep">·</span>
+                  <span className="ide-statusbar-lines">{activeCodeLineCount} lines</span>
+                </div>
+                <div className="ide-statusbar-dots" role="tablist" aria-label="Jump to track">
+                  {SHOWCASE_CARDS.map((card, i) => {
+                    const isActive = i === showcaseActiveIndex;
+                    const dotColor = TRACK_META[card.topic]?.color ?? '#5B6AF0';
+                    return (
+                      <button
+                        key={card.topic}
+                        type="button"
+                        role="tab"
+                        aria-selected={isActive}
+                        aria-label={`Show ${TRACK_META[card.topic]?.label}`}
+                        tabIndex={isActive ? 0 : -1}
+                        className={`ide-rotation-dot${isActive ? ' is-active' : ''}`}
+                        style={{ '--dot-color': dotColor }}
+                        onClick={() => handleShowcaseJump(i)}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
         </section>

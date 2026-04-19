@@ -41,7 +41,7 @@ Defined in `frontend/src/App.js`:
 Three stacked sections on a single scroll:
 
 1. **Hero** (`.landing-hero`, logged-out only) — centered headline, tagline, CTAs ("Explore tracks ↓" and "Create account")
-2. **Showcase** (`.landing-showcase`) — dark section (`#0C0C0A`), 4-card flex grid showing one animated question+answer per track; active card expands with a colored glow. Code font is Geist Mono weight 300. Auto-advances every ~5 s.
+2. **Showcase** (`.landing-showcase`) — "The Interview IDE": a single editor-style window framed by a theme-responsive surface (warm cream in light, deep black in dark) with a subtle 24px dot-grid overlay. The IDE window itself is always dark in both modes (Linear/Vercel pattern). Four filename tabs (`rolling_revenue.sql`, `coin_change.py`, `user_avg_order.py`, `coalesce_vs_repartition.py`) switch the split body between a problem brief (left, prose) and a syntax-highlighted solution (right, with line-number gutter). Bottom status bar shows language + line count + 4 rotation dots. Auto-rotates every 8 s when in view; pauses on hover, focus, or tab click. Fully honors `prefers-reduced-motion`.
 3. **Track selection** (`.landing-practice-section`, `id="landing-tracks"`) — pill nav selects a track; panel shows description, progress bar, CTA, and easy/medium/hard sample tiles. Mobile sample tiles use horizontal scroll.
 
 On mount, checks `window.location.hash` and scrolls to the matching element (used by the sample page back arrow → `/#landing-tracks`).
@@ -287,7 +287,7 @@ Defined in `:root` in `App.css`. Dark mode overrides in `@media (prefers-color-s
 |---|---|---|
 | Inter | 400/500/600 | All UI text |
 | JetBrains Mono | 400/600 | Editor, results tables, inline code blocks |
-| Geist Mono | 300 | Showcase animation code block only |
+| Geist Mono | 400/500 | Showcase IDE chrome, tabs, code, status bar |
 
 ### Metadata pills
 
@@ -322,7 +322,7 @@ All hover: `translateY(-1px)`, `150ms ease-out`. No transforms on disabled.
 
 ### Layout
 
-**Landing page:** Three stacked sections on one scroll — Hero (logged-out only) → Showcase (dark) → Track selection (light). Max-width 1040px centered for Track selection; Showcase is full-width.
+**Landing page:** Three stacked sections on one scroll — Hero (logged-out only) → Showcase (theme-responsive surface, always-dark IDE) → Track selection (light). Max-width 1040px centered for Track selection; Showcase is full-width.
 
 **App shell (challenge workspace):**
 - Sidebar: 328px, sticky, collapsible
@@ -342,13 +342,16 @@ Always dark. `#1e1e1e` background (Monaco `vs-dark`).
 - Font: JetBrains Mono, 14px
 - No minimap, word wrap on, tab size 2
 
-### Showcase card anatomy
+### Showcase IDE anatomy
 
-4 cards in `.landing-showcase-grid` (flex row, `align-items: stretch`):
-- Inactive: `opacity 0.38`, `flex-grow 1`, `min-height 300px`
-- Active (`.is-active`): `opacity 1`, `flex-grow 2.4`, `height 510px`, `translateY(-6px)`, colored glow border via `--active-color`
-- Code block: Geist Mono weight 300, `height 360px` on active, typing animation + cursor blink
-- Auto-advances through all 4 tracks; responsive: 2×2 at 960px, column at 560px
+Single `.landing-ide` window (max-width 1120px) inside `.landing-showcase`:
+- **Chrome bar** — three traffic-light dots, 4 filename tabs (`.ide-tab`, `.is-active` gets track-color bottom edge + top-inset glow), and a `.ide-difficulty-pill` on the right.
+- **Body** — `.ide-body-inner` is a 2fr/3fr grid: `.ide-brief` (kicker, title, meta, prose paragraph, returns note, concepts) + `.ide-code-pane` (filename header, `.ide-code-block` with `.ide-code-gutter` line numbers and syntax-highlighted `.ide-code`). Swapping tabs triggers a 350ms `ideSwap` crossfade.
+- **Status bar** — language + line count on the left; 4 clickable `.ide-rotation-dot` elements on the right (active dot is filled in the track color).
+- **Syntax highlighting** — `highlightCode(code, language)` from [landingShowcaseHighlight.js](frontend/src/pages/landingShowcaseHighlight.js) wraps keywords/strings/numbers/comments/function-calls in `.tok-kw / .tok-str / .tok-num / .tok-com / .tok-fn` spans. Colors shared across light/dark since the IDE is always dark.
+- **Theme-responsive surface** — section tokens (`--sc-surface`, `--sc-dot`, `--sc-ink`, `--sc-ink-soft`) switch under `[data-theme="dark"]`. The IDE window itself keeps fixed dark tokens (`--sc-ide-bg`, `--sc-ide-chrome-bg`, `--sc-ide-code-bg`) in both modes.
+- **Motion** — auto-rotates every 8 s when in view; pauses on pointer-enter, focus, or tab click. Fully honors `prefers-reduced-motion` (no rotation, no crossfade, no fade-in).
+- **Responsive** — ≤900px: body stacks (brief above code), paragraph clamps to 3 lines. ≤560px: tabs scroll horizontally, line count hidden, gutter narrows.
 
 ---
 
