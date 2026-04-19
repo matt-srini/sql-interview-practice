@@ -96,9 +96,26 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Accept", "X-Request-ID"],
+    expose_headers=["X-Request-ID", "X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Window", "Retry-After"],
 )
+
+@app.middleware("http")
+async def security_headers_middleware(request: Request, call_next):
+    """Attach security headers to every response."""
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    # X-XSS-Protection is obsolete in modern browsers; setting to 0 disables
+    # the broken IE/old-Chrome heuristic that could introduce vulnerabilities.
+    response.headers["X-XSS-Protection"] = "0"
+    if IS_PROD:
+        # 2 years, include subdomains — tells browsers to always use HTTPS
+        response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains"
+    return response
+
 
 rate_limiter: BaseRateLimiter = create_rate_limiter(
     max_requests=RATE_LIMIT_REQUESTS,
