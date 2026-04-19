@@ -141,17 +141,17 @@ describe('LandingPage tier section', () => {
       });
     });
 
-    it('shows $0 in the Free column', async () => {
+    it('shows ₹0 in the Free column', async () => {
       renderWithPlan(null);
       await waitFor(() => {
-        expect(screen.getByText('$0')).toBeInTheDocument();
+        expect(screen.getByText('₹0')).toBeInTheDocument();
       });
     });
 
-    it('shows $9 in the Pro column', async () => {
+    it('shows ₹799 in the Pro column', async () => {
       renderWithPlan(null);
       await waitFor(() => {
-        expect(screen.getByText('$9')).toBeInTheDocument();
+        expect(screen.getByText('₹799')).toBeInTheDocument();
       });
     });
 
@@ -164,10 +164,10 @@ describe('LandingPage tier section', () => {
       });
     });
 
-    it('shows $19 in the Elite column', async () => {
+    it('shows ₹1,599 in the Elite column', async () => {
       renderWithPlan(null);
       await waitFor(() => {
-        expect(screen.getByText('$19')).toBeInTheDocument();
+        expect(screen.getByText('₹1,599')).toBeInTheDocument();
       });
     });
 
@@ -196,10 +196,10 @@ describe('LandingPage tier section', () => {
       });
     });
 
-    it('shows "Lifetime access — $99" button in the Pro column', async () => {
+    it('shows "Lifetime access — ₹7,999" button in the Pro column', async () => {
       renderWithPlan('free');
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'Lifetime access — $99' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Lifetime access — ₹7,999' })).toBeInTheDocument();
       });
     });
 
@@ -210,10 +210,10 @@ describe('LandingPage tier section', () => {
       });
     });
 
-    it('shows "Lifetime access — $149" button in the Elite column', async () => {
+    it('shows "Lifetime access — ₹14,999" button in the Elite column', async () => {
       renderWithPlan('free');
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'Lifetime access — $149' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Lifetime access — ₹14,999' })).toBeInTheDocument();
       });
     });
 
@@ -236,10 +236,10 @@ describe('LandingPage tier section', () => {
       });
     });
 
-    it('shows "Switch to lifetime — $99" button in Pro column', async () => {
+    it('shows "Switch to lifetime — ₹7,999" button in Pro column', async () => {
       renderWithPlan('pro');
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'Switch to lifetime — $99' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Switch to lifetime — ₹7,999' })).toBeInTheDocument();
       });
     });
 
@@ -250,10 +250,10 @@ describe('LandingPage tier section', () => {
       });
     });
 
-    it('shows "Lifetime access — $149" button in Elite column', async () => {
+    it('shows "Lifetime access — ₹14,999" button in Elite column', async () => {
       renderWithPlan('pro');
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'Lifetime access — $149' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Lifetime access — ₹14,999' })).toBeInTheDocument();
       });
     });
   });
@@ -273,7 +273,7 @@ describe('LandingPage tier section', () => {
       await waitFor(() => {
         // proColCta() === 'current' — neither monthly nor lifetime Pro button rendered
         expect(screen.queryByRole('button', { name: 'Upgrade to Pro' })).not.toBeInTheDocument();
-        expect(screen.queryByRole('button', { name: /\$99/ })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /₹7,999/ })).not.toBeInTheDocument();
       });
     });
 
@@ -284,10 +284,10 @@ describe('LandingPage tier section', () => {
       });
     });
 
-    it('shows "Lifetime access — $149" button in Elite column', async () => {
+    it('shows "Lifetime access — ₹14,999" button in Elite column', async () => {
       renderWithPlan('lifetime_pro');
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'Lifetime access — $149' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Lifetime access — ₹14,999' })).toBeInTheDocument();
       });
     });
   });
@@ -300,14 +300,14 @@ describe('LandingPage tier section', () => {
       await waitFor(() => {
         // proColCta() === 'none' — neither monthly Pro nor lifetime Pro rendered
         expect(screen.queryByRole('button', { name: 'Upgrade to Pro' })).not.toBeInTheDocument();
-        expect(screen.queryByRole('button', { name: /\$99/ })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /₹7,999/ })).not.toBeInTheDocument();
       });
     });
 
-    it('shows "Switch to lifetime — $149" in the Elite column', async () => {
+    it('shows "Switch to lifetime — ₹14,999" in the Elite column', async () => {
       renderWithPlan('elite');
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'Switch to lifetime — $149' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Switch to lifetime — ₹14,999' })).toBeInTheDocument();
       });
     });
 

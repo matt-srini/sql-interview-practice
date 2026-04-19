@@ -48,12 +48,18 @@ IS_DEV = ENV == "development"
 IS_PROD = ENV == "production"
 
 DATABASE_URL = _getenv("DATABASE_URL", "postgresql://localhost:5432/sql_practice")
-STRIPE_SECRET_KEY = _getenv("STRIPE_SECRET_KEY")
-STRIPE_WEBHOOK_SECRET = _getenv("STRIPE_WEBHOOK_SECRET")
-STRIPE_PRICE_PRO            = _getenv("STRIPE_PRICE_PRO")
-STRIPE_PRICE_ELITE          = _getenv("STRIPE_PRICE_ELITE")
-STRIPE_PRICE_LIFETIME_PRO   = _getenv("STRIPE_PRICE_LIFETIME_PRO")
-STRIPE_PRICE_LIFETIME_ELITE = _getenv("STRIPE_PRICE_LIFETIME_ELITE")
+
+# Razorpay (replaces Stripe — India-friendly)
+RAZORPAY_KEY_ID = _getenv("RAZORPAY_KEY_ID")
+RAZORPAY_KEY_SECRET = _getenv("RAZORPAY_KEY_SECRET")
+RAZORPAY_WEBHOOK_SECRET = _getenv("RAZORPAY_WEBHOOK_SECRET")
+# Subscription plan IDs (recurring) — created in Razorpay dashboard
+RAZORPAY_PLAN_PRO   = _getenv("RAZORPAY_PLAN_PRO")
+RAZORPAY_PLAN_ELITE = _getenv("RAZORPAY_PLAN_ELITE")
+# Lifetime amounts are one-time Orders — amount in paise (₹1 = 100 paise)
+RAZORPAY_AMOUNT_LIFETIME_PRO   = _get_int("RAZORPAY_AMOUNT_LIFETIME_PRO", "799900")   # ₹7999
+RAZORPAY_AMOUNT_LIFETIME_ELITE = _get_int("RAZORPAY_AMOUNT_LIFETIME_ELITE", "1499900") # ₹14999
+RAZORPAY_CURRENCY = _getenv("RAZORPAY_CURRENCY", "INR")
 
 RATE_LIMIT_REQUESTS = _get_int("RATE_LIMIT_REQUESTS", "60")
 RATE_LIMIT_WINDOW_SECONDS = _get_int("RATE_LIMIT_WINDOW_SECONDS", "60")
@@ -85,11 +91,14 @@ if ENV == "production" and not REDIS_URL:
 if ENV == "production" and not DATABASE_URL:
 	raise RuntimeError("DATABASE_URL is required when ENV=production")
 
-if ENV == "production" and not STRIPE_SECRET_KEY:
-	raise RuntimeError("STRIPE_SECRET_KEY is required when ENV=production")
+if ENV == "production" and not RAZORPAY_KEY_ID:
+	raise RuntimeError("RAZORPAY_KEY_ID is required when ENV=production")
 
-if ENV == "production" and not STRIPE_WEBHOOK_SECRET:
-	raise RuntimeError("STRIPE_WEBHOOK_SECRET is required when ENV=production")
+if ENV == "production" and not RAZORPAY_KEY_SECRET:
+	raise RuntimeError("RAZORPAY_KEY_SECRET is required when ENV=production")
+
+if ENV == "production" and not RAZORPAY_WEBHOOK_SECRET:
+	raise RuntimeError("RAZORPAY_WEBHOOK_SECRET is required when ENV=production")
 
 
 def get_async_database_url() -> str:

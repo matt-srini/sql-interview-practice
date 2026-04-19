@@ -1,7 +1,7 @@
 /**
- * UpgradeButton component tests.
+ * UpgradeButton component tests — Razorpay flow.
  *
- * Covers label rendering, the Stripe Checkout flow (success + error paths),
+ * Covers label rendering, the Razorpay Checkout flow (success + error paths),
  * and all CSS class / attribute behaviour driven by props.
  */
 
@@ -20,9 +20,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { cleanup } from '@testing-library/react';
 
-// ---------------------------------------------------------------------------
-// Mock the api module — UpgradeButton only uses api.post
-// ---------------------------------------------------------------------------
 vi.mock('../api', () => ({
   default: { post: vi.fn() },
 }));
@@ -31,28 +28,47 @@ import api from '../api';
 import UpgradeButton from './UpgradeButton';
 
 // ---------------------------------------------------------------------------
-// Lifecycle hooks
+// Razorpay SDK mock — the real SDK is loaded via <script>; in jsdom we stub
+// window.Razorpay so loadRazorpayScript() short-circuits.
 // ---------------------------------------------------------------------------
+let lastRazorpayOpts = null;
+let lastRazorpayInstance = null;
+
+function installRazorpayMock() {
+  lastRazorpayOpts = null;
+  lastRazorpayInstance = null;
+  window.Razorpay = vi.fn().mockImplementation((opts) => {
+    lastRazorpayOpts = opts;
+    const inst = {
+      open: vi.fn(),
+      on: vi.fn(),
+      _trigger: (event, payload) => {
+        const handlers = inst.on.mock.calls.filter(([e]) => e === event);
+        handlers.forEach(([, cb]) => cb(payload));
+      },
+    };
+    lastRazorpayInstance = inst;
+    return inst;
+  });
+}
 
 beforeEach(() => {
   vi.clearAllMocks();
   mockAssign.mockReset();
+  installRazorpayMock();
 });
 
 afterEach(() => {
   cleanup();
+  delete window.Razorpay;
 });
-
-// ---------------------------------------------------------------------------
-// Helper
-// ---------------------------------------------------------------------------
 
 function renderButton(props = {}) {
   return render(<UpgradeButton {...props} />);
 }
 
 // ---------------------------------------------------------------------------
-// Tests
+// Label rendering
 // ---------------------------------------------------------------------------
 
 describe('Label rendering', () => {
@@ -71,95 +87,129 @@ describe('Label rendering', () => {
     expect(screen.getByRole('button', { name: 'Go Pro Now' })).toBeInTheDocument();
   });
 
-  it('renders "Upgrade to Pro" as default for lifetime_pro tier', () => {
-    // tierLabel = tier === 'elite' ? 'Elite' : 'Pro'
-    // 'lifetime_pro' !== 'elite', so tierLabel = 'Pro' → label = 'Upgrade to Pro'
+  it('renders "Upgrade to Lifetime Pro" for lifetime_pro tier', () => {
     renderButton({ tier: 'lifetime_pro' });
-    expect(screen.getByRole('button', { name: 'Upgrade to Pro' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Upgrade to Lifetime Pro' })).toBeInTheDocument();
   });
 
-  it('renders "Upgrade to Elite" as default for lifetime_elite tier', () => {
-    // 'lifetime_elite' !== 'elite' (strict equality), so tierLabel = 'Pro'
-    // The component produces 'Upgrade to Pro' for any non-'elite' tier string.
-    // We assert what the component actually renders for this tier value.
+  it('renders "Upgrade to Lifetime Elite" for lifetime_elite tier', () => {
     renderButton({ tier: 'lifetime_elite' });
-    expect(screen.getByRole('button', { name: 'Upgrade to Pro' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Upgrade to Lifetime Elite' })).toBeInTheDocument();
   });
 });
 
-describe('Success path', () => {
-  it('shows "Redirecting…" text while pending (api call in flight)', async () => {
-    // Never-resolving promise keeps the component frozen in pending state
-    api.post.mockImplementation(() => new Promise(() => {}));
+// ---------------------------------------------------------------------------
+// Success path — create-order + Razorpay modal + verify-payment
+// ---------------------------------------------------------------------------
+
+describe('Success path (subscription)', () => {
+  const subscriptionOrderResponse = {
+    data: {
+      subscription_id: 'sub_test_123',
+      order_id: null,
+      amount: 0,
+      currency: 'INR',
+      key_id: 'rzp_test_key',
+      name: 'datanest',
+      description: 'datanest Pro (monthly)',
+      prefill_email: 'u@example.com',
+      prefill_name: 'u',
+      is_subscription: true,
+    },
+  };
+
+  it('calls /razorpay/create-order with plan=pro on click', async () => {
+    api.post.mockResolvedValueOnce(subscriptionOrderResponse);
 
     renderButton({ tier: 'pro' });
     fireEvent.click(screen.getByRole('button'));
 
     await waitFor(() => {
-      expect(screen.getByText('Redirecting…')).toBeInTheDocument();
+      expect(api.post).toHaveBeenCalledWith('/razorpay/create-order', { plan: 'pro' });
     });
   });
 
-  it('disables button while pending', async () => {
-    api.post.mockImplementation(() => new Promise(() => {}));
+  it('opens Razorpay modal with subscription_id for subscription plans', async () => {
+    api.post.mockResolvedValueOnce(subscriptionOrderResponse);
 
     renderButton({ tier: 'pro' });
     fireEvent.click(screen.getByRole('button'));
 
     await waitFor(() => {
-      expect(screen.getByRole('button')).toBeDisabled();
+      expect(window.Razorpay).toHaveBeenCalled();
+      expect(lastRazorpayOpts.subscription_id).toBe('sub_test_123');
+      expect(lastRazorpayOpts.order_id).toBeUndefined();
+      expect(lastRazorpayInstance.open).toHaveBeenCalled();
     });
   });
 
-  it('calls api.post with /stripe/create-checkout and plan=pro on click', async () => {
-    api.post.mockResolvedValue({ data: { checkout_url: 'https://stripe.example/pro' } });
+  it('verifies payment and redirects on successful handler callback', async () => {
+    api.post
+      .mockResolvedValueOnce(subscriptionOrderResponse)      // create-order
+      .mockResolvedValueOnce({ data: { plan: 'pro' } });     // verify-payment
 
     renderButton({ tier: 'pro' });
     fireEvent.click(screen.getByRole('button'));
 
-    await waitFor(() => {
-      expect(api.post).toHaveBeenCalledWith('/stripe/create-checkout', { plan: 'pro' });
+    await waitFor(() => expect(lastRazorpayOpts).not.toBeNull());
+
+    // Simulate Razorpay's success callback
+    await lastRazorpayOpts.handler({
+      razorpay_payment_id: 'pay_test_abc',
+      razorpay_signature: 'sig_test',
+      razorpay_subscription_id: 'sub_test_123',
     });
-  });
-
-  it('calls api.post with plan=elite on click for elite tier', async () => {
-    api.post.mockResolvedValue({ data: { checkout_url: 'https://stripe.example/elite' } });
-
-    renderButton({ tier: 'elite' });
-    fireEvent.click(screen.getByRole('button'));
 
     await waitFor(() => {
-      expect(api.post).toHaveBeenCalledWith('/stripe/create-checkout', { plan: 'elite' });
-    });
-  });
-
-  it('calls api.post with plan=lifetime_pro on click', async () => {
-    api.post.mockResolvedValue({ data: { checkout_url: 'https://stripe.example/lifetime_pro' } });
-
-    renderButton({ tier: 'lifetime_pro', label: 'Lifetime access — $99' });
-    fireEvent.click(screen.getByRole('button'));
-
-    await waitFor(() => {
-      expect(api.post).toHaveBeenCalledWith('/stripe/create-checkout', { plan: 'lifetime_pro' });
-    });
-  });
-
-  it('redirects via window.location.assign with checkout_url on success', async () => {
-    const url = 'https://checkout.stripe.com/pay/cs_test_abc123';
-    api.post.mockResolvedValue({ data: { checkout_url: url } });
-
-    renderButton({ tier: 'pro' });
-    fireEvent.click(screen.getByRole('button'));
-
-    await waitFor(() => {
-      expect(mockAssign).toHaveBeenCalledWith(url);
+      expect(api.post).toHaveBeenNthCalledWith(2, '/razorpay/verify-payment', {
+        plan: 'pro',
+        razorpay_payment_id: 'pay_test_abc',
+        razorpay_signature: 'sig_test',
+        razorpay_order_id: undefined,
+        razorpay_subscription_id: 'sub_test_123',
+      });
+      expect(mockAssign).toHaveBeenCalledWith('/practice?upgraded=true');
     });
   });
 });
+
+describe('Success path (one-time lifetime)', () => {
+  const lifetimeOrderResponse = {
+    data: {
+      order_id: 'order_test_lt',
+      subscription_id: null,
+      amount: 799900,
+      currency: 'INR',
+      key_id: 'rzp_test_key',
+      name: 'datanest',
+      description: 'datanest Lifetime Pro',
+      prefill_email: 'u@example.com',
+      prefill_name: 'u',
+      is_subscription: false,
+    },
+  };
+
+  it('opens Razorpay modal with order_id + amount for lifetime plans', async () => {
+    api.post.mockResolvedValueOnce(lifetimeOrderResponse);
+
+    renderButton({ tier: 'lifetime_pro' });
+    fireEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => {
+      expect(lastRazorpayOpts.order_id).toBe('order_test_lt');
+      expect(lastRazorpayOpts.amount).toBe(799900);
+      expect(lastRazorpayOpts.subscription_id).toBeUndefined();
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Error path
+// ---------------------------------------------------------------------------
 
 describe('Error path', () => {
-  it('re-enables button after api error (does not stay in pending state)', async () => {
-    api.post.mockRejectedValue(new Error('Network error'));
+  it('re-enables button after create-order error', async () => {
+    api.post.mockRejectedValueOnce(new Error('Network error'));
 
     renderButton({ tier: 'pro' });
     fireEvent.click(screen.getByRole('button'));
@@ -169,8 +219,8 @@ describe('Error path', () => {
     });
   });
 
-  it('does not call window.location.assign on api error', async () => {
-    api.post.mockRejectedValue(new Error('Checkout failed'));
+  it('does not redirect on create-order error', async () => {
+    api.post.mockRejectedValueOnce(new Error('Network error'));
 
     renderButton({ tier: 'pro' });
     fireEvent.click(screen.getByRole('button'));
@@ -178,10 +228,13 @@ describe('Error path', () => {
     await waitFor(() => {
       expect(screen.getByRole('button')).not.toBeDisabled();
     });
-
     expect(mockAssign).not.toHaveBeenCalled();
   });
 });
+
+// ---------------------------------------------------------------------------
+// CSS classes and attributes
+// ---------------------------------------------------------------------------
 
 describe('CSS classes and attributes', () => {
   it('applies upgrade-btn-pro class for pro tier', () => {
