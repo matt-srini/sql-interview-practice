@@ -485,7 +485,7 @@ export default function LandingPage() {
                 <div className="landing-tier-col-header">
                   <span className="landing-tier-name">Free</span>
                   <div className="landing-tier-price">
-                    <span className="landing-tier-price-amount">$0</span>
+                    <span className="landing-tier-price-amount">₹0</span>
                   </div>
                 </div>
                 <ul className="landing-tier-list">
@@ -507,7 +507,7 @@ export default function LandingPage() {
                   <span className="landing-tier-badge">Most popular</span>
                   <span className="landing-tier-name">Pro</span>
                   <div className="landing-tier-price">
-                    <span className="landing-tier-price-amount">$9</span>
+                    <span className="landing-tier-price-amount">₹799</span>
                     <span className="landing-tier-price-period">/mo</span>
                   </div>
                 </div>
@@ -527,7 +527,7 @@ export default function LandingPage() {
                   {(proColCta() === 'both' || proColCta() === 'lifetime_only') && (
                     <UpgradeButton
                       tier="lifetime_pro"
-                      label={proColCta() === 'lifetime_only' ? 'Switch to lifetime — $99' : 'Lifetime access — $99'}
+                      label={proColCta() === 'lifetime_only' ? 'Switch to lifetime — ₹7,999' : 'Lifetime access — ₹7,999'}
                       compact
                       className="landing-tier-lifetime-btn"
                       source="landing_tier_lifetime"
@@ -541,7 +541,7 @@ export default function LandingPage() {
                 <div className="landing-tier-col-header">
                   <span className="landing-tier-name">Elite</span>
                   <div className="landing-tier-price">
-                    <span className="landing-tier-price-amount">$19</span>
+                    <span className="landing-tier-price-amount">₹1,599</span>
                     <span className="landing-tier-price-period">/mo</span>
                   </div>
                 </div>
@@ -561,7 +561,7 @@ export default function LandingPage() {
                   {(eliteColCta() === 'both' || eliteColCta() === 'lifetime_only') && (
                     <UpgradeButton
                       tier="lifetime_elite"
-                      label={eliteColCta() === 'lifetime_only' ? 'Switch to lifetime — $149' : 'Lifetime access — $149'}
+                      label={eliteColCta() === 'lifetime_only' ? 'Switch to lifetime — ₹14,999' : 'Lifetime access — ₹14,999'}
                       compact
                       className="landing-tier-lifetime-btn"
                       source="landing_tier_lifetime"

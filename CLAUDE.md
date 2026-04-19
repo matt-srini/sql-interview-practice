@@ -70,7 +70,7 @@ A data interview practice platform covering four tracks. Users write SQL or Pyth
 | Backend | Python, FastAPI, Uvicorn |
 | App state | PostgreSQL (identity, sessions, progress, plans, billing) |
 | Query execution | DuckDB (in-memory, loaded once at startup from CSVs) |
-| Payments | Stripe Checkout + verified webhooks |
+| Payments | Razorpay (Orders + Subscriptions) + verified webhooks |
 | Rate limiting | Redis (production) / in-memory fallback (development) |
 | Testing | pytest + httpx (backend), Vitest + React Testing Library (frontend unit), Playwright (frontend e2e) |
 
@@ -105,7 +105,7 @@ sql-interview-practice/
 │   ├── content/paths/              # Learning path configs (slug, title, description, topic, questions[])
 │   ├── datasets/                   # Committed CSVs + metadata JSON
 │   ├── middleware/                 # Request context, request_id, X-Request-ID
-│   ├── routers/                    # auth, system, catalog, questions, sample, plan, stripe, mock, paths, spa
+│   ├── routers/                    # auth, system, catalog, questions, sample, plan, razorpay, mock, paths, spa
 │   ├── scripts/                    # Dataset generator, anonymous user cleanup
 │   ├── tests/                      # API, evaluator, rate limiter tests
 │   ├── alembic/                    # Postgres migrations
@@ -323,8 +323,9 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 | POST | `/api/auth/resend-verification` | Resend verification email to the current signed-in user |
 | GET | `/api/auth/oauth/{provider}/authorize` | Return OAuth authorization URL (`google` or `github`) |
 | GET | `/api/auth/oauth/{provider}/callback` | OAuth callback — exchange code, upsert user, set session cookie |
-| POST | `/api/stripe/create-checkout` | Stripe Checkout session |
-| POST | `/api/stripe/webhook` | Verified, idempotent plan update |
+| POST | `/api/razorpay/create-order` | Create Razorpay Order (lifetime) or Subscription (pro/elite) |
+| POST | `/api/razorpay/verify-payment` | Verify HMAC on client callback, apply plan immediately (idempotent) |
+| POST | `/api/razorpay/webhook` | Verified, idempotent plan update (authoritative source of truth) |
 
 ---
 

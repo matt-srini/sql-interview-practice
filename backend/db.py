@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS users (
     pwd_hash TEXT,
     pwd_salt TEXT,
     plan TEXT NOT NULL DEFAULT 'free' CHECK (plan IN ('free', 'pro', 'elite', 'lifetime_pro', 'lifetime_elite')),
-    stripe_customer_id TEXT UNIQUE,
+    razorpay_customer_id TEXT UNIQUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     upgraded_at TIMESTAMPTZ
 );
@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS user_sample_seen (
     PRIMARY KEY (user_id, difficulty, question_id, topic)
 );
 
-CREATE TABLE IF NOT EXISTS stripe_events (
+CREATE TABLE IF NOT EXISTS payment_events (
     event_id TEXT PRIMARY KEY,
     event_type TEXT NOT NULL,
     user_id UUID REFERENCES users(id),
@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS plan_changes (
     old_plan TEXT NOT NULL,
     new_plan TEXT NOT NULL,
     context TEXT,
-    stripe_event_id TEXT,
+    payment_event_id TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -199,7 +199,7 @@ def _user_from_mapping(row: RowMapping | None) -> dict[str, Any] | None:
         "name": row["name"],
         "plan": row["plan"],
         "email_verified": bool(row.get("email_verified", False)),
-        "stripe_customer_id": row.get("stripe_customer_id"),
+        "razorpay_customer_id": row.get("razorpay_customer_id"),
         "created_at": row.get("created_at"),
         "upgraded_at": row.get("upgraded_at"),
     }
@@ -272,7 +272,7 @@ async def reset_database() -> None:
         raise RuntimeError("Database pool is not initialized")
 
     async with _engine.begin() as conn:
-        await conn.execute(text("TRUNCATE TABLE mock_session_questions, mock_sessions, submissions, plan_changes, stripe_events, user_sample_seen, user_progress, sessions, users RESTART IDENTITY CASCADE"))
+        await conn.execute(text("TRUNCATE TABLE mock_session_questions, mock_sessions, submissions, plan_changes, payment_events, user_sample_seen, user_progress, sessions, users RESTART IDENTITY CASCADE"))
 
 
 async def ensure_schema_admin(database_url: str | None = None) -> None:
@@ -291,7 +291,7 @@ async def reset_database_admin(database_url: str | None = None) -> None:
         async with engine.begin() as conn:
             await conn.execute(
                 text(
-                    "TRUNCATE TABLE mock_session_questions, mock_sessions, submissions, plan_changes, stripe_events, user_sample_seen, user_progress, sessions, users RESTART IDENTITY CASCADE"
+                    "TRUNCATE TABLE mock_session_questions, mock_sessions, submissions, plan_changes, payment_events, user_sample_seen, user_progress, sessions, users RESTART IDENTITY CASCADE"
                 )
             )
     finally:
@@ -304,7 +304,7 @@ async def get_user_by_id(user_id: str) -> dict[str, Any] | None:
         result = await session.execute(
             text(
                 """
-                SELECT id, email, name, plan, stripe_customer_id, created_at, upgraded_at
+                SELECT id, email, name, plan, razorpay_customer_id, created_at, upgraded_at
                 FROM users
                 WHERE id = CAST(:user_id AS UUID)
                 """
@@ -320,7 +320,7 @@ async def get_user_by_email(email: str) -> dict[str, Any] | None:
         result = await session.execute(
             text(
                 """
-                SELECT id, email, name, plan, stripe_customer_id, created_at, upgraded_at
+                SELECT id, email, name, plan, razorpay_customer_id, created_at, upgraded_at
                 FROM users
                 WHERE email = :email
                 """
@@ -330,15 +330,15 @@ async def get_user_by_email(email: str) -> dict[str, Any] | None:
         return _user_from_mapping(result.mappings().first())
 
 
-async def get_user_by_stripe_customer_id(customer_id: str) -> dict[str, Any] | None:
+async def get_user_by_razorpay_customer_id(customer_id: str) -> dict[str, Any] | None:
     session_factory = _session_factory_or_raise()
     async with session_factory() as session:
         result = await session.execute(
             text(
                 """
-                SELECT id, email, name, plan, stripe_customer_id, created_at, upgraded_at
+                SELECT id, email, name, plan, razorpay_customer_id, created_at, upgraded_at
                 FROM users
-                WHERE stripe_customer_id = :customer_id
+                WHERE razorpay_customer_id = :customer_id
                 """
             ),
             {"customer_id": customer_id},
@@ -381,7 +381,7 @@ async def create_anonymous_user() -> dict[str, Any]:
                 """
                 INSERT INTO users (email, name, pwd_hash, pwd_salt, plan)
                 VALUES (NULL, NULL, NULL, NULL, 'free')
-                RETURNING id, email, name, plan, stripe_customer_id, created_at, upgraded_at
+                RETURNING id, email, name, plan, razorpay_customer_id, created_at, upgraded_at
                 """
             )
         )
@@ -405,7 +405,7 @@ async def upgrade_anonymous_to_registered(user_id: str, email: str, name: str, p
                         upgraded_at = now()
                     WHERE id = CAST(:user_id AS UUID)
                       AND email IS NULL
-                    RETURNING id, email, name, plan, email_verified, stripe_customer_id, created_at, upgraded_at
+                    RETURNING id, email, name, plan, email_verified, razorpay_customer_id, created_at, upgraded_at
                     """
                 ),
                 {
@@ -455,7 +455,7 @@ async def get_session_user(token: str) -> dict[str, Any] | None:
         result = await session.execute(
             text(
                 """
-                SELECT u.id, u.email, u.name, u.plan, u.email_verified, u.stripe_customer_id, u.created_at, u.upgraded_at
+                SELECT u.id, u.email, u.name, u.plan, u.email_verified, u.razorpay_customer_id, u.created_at, u.upgraded_at
                 FROM sessions s
                 JOIN users u ON u.id = s.user_id
                 WHERE s.token = :token
@@ -628,7 +628,7 @@ async def set_user_plan(user_id: str, new_plan: str) -> dict[str, Any] | None:
                 UPDATE users
                 SET plan = :new_plan
                 WHERE id = CAST(:user_id AS UUID)
-                RETURNING id, email, name, plan, stripe_customer_id, created_at, upgraded_at
+                RETURNING id, email, name, plan, razorpay_customer_id, created_at, upgraded_at
                 """
             ),
             {
@@ -644,16 +644,16 @@ async def set_user_plan(user_id: str, new_plan: str) -> dict[str, Any] | None:
         return _user_from_mapping(row)
 
 
-async def set_user_stripe_customer_id(user_id: str, customer_id: str) -> dict[str, Any] | None:
+async def set_user_razorpay_customer_id(user_id: str, customer_id: str) -> dict[str, Any] | None:
     session_factory = _session_factory_or_raise()
     async with session_factory() as session:
         result = await session.execute(
             text(
                 """
                 UPDATE users
-                SET stripe_customer_id = :customer_id
+                SET razorpay_customer_id = :customer_id
                 WHERE id = CAST(:user_id AS UUID)
-                RETURNING id, email, name, plan, stripe_customer_id, created_at, upgraded_at
+                RETURNING id, email, name, plan, razorpay_customer_id, created_at, upgraded_at
                 """
             ),
             {
@@ -673,13 +673,13 @@ async def is_event_processed(event_id: str) -> bool:
     session_factory = _session_factory_or_raise()
     async with session_factory() as session:
         result = await session.execute(
-            text("SELECT 1 FROM stripe_events WHERE event_id = :event_id"),
+            text("SELECT 1 FROM payment_events WHERE event_id = :event_id"),
             {"event_id": event_id},
         )
         return result.first() is not None
 
 
-async def record_stripe_event(
+async def record_payment_event(
     event_id: str,
     event_type: str,
     *,
@@ -692,7 +692,7 @@ async def record_stripe_event(
         await session.execute(
             text(
                 """
-                INSERT INTO stripe_events (event_id, event_type, user_id, payload_summary)
+                INSERT INTO payment_events (event_id, event_type, user_id, payload_summary)
                 VALUES (:event_id, :event_type, CAST(:user_id AS UUID), CAST(:payload_summary AS JSONB))
                 ON CONFLICT (event_id) DO NOTHING
                 """
@@ -754,15 +754,15 @@ async def record_plan_change(
     new_plan: str,
     *,
     context: str | None = None,
-    stripe_event_id: str | None = None,
+    payment_event_id: str | None = None,
 ) -> None:
     session_factory = _session_factory_or_raise()
     async with session_factory() as session:
         await session.execute(
             text(
                 """
-                INSERT INTO plan_changes (user_id, old_plan, new_plan, context, stripe_event_id)
-                VALUES (CAST(:user_id AS UUID), :old_plan, :new_plan, :context, :stripe_event_id)
+                INSERT INTO plan_changes (user_id, old_plan, new_plan, context, payment_event_id)
+                VALUES (CAST(:user_id AS UUID), :old_plan, :new_plan, :context, :payment_event_id)
                 """
             ),
             {
@@ -770,7 +770,7 @@ async def record_plan_change(
                 "old_plan": old_plan,
                 "new_plan": new_plan,
                 "context": context,
-                "stripe_event_id": stripe_event_id,
+                "payment_event_id": payment_event_id,
             },
         )
         await session.commit()
@@ -1232,7 +1232,7 @@ async def get_or_create_oauth_user(
         result = await session.execute(
             text(
                 """
-                SELECT u.id, u.email, u.name, u.plan, u.email_verified, u.stripe_customer_id, u.created_at, u.upgraded_at
+                SELECT u.id, u.email, u.name, u.plan, u.email_verified, u.razorpay_customer_id, u.created_at, u.upgraded_at
                 FROM oauth_accounts oa
                 JOIN users u ON u.id = oa.user_id
                 WHERE oa.provider = :provider
@@ -1273,7 +1273,7 @@ async def get_or_create_oauth_user(
                     """
                     INSERT INTO users (email, name, pwd_hash, pwd_salt, plan, email_verified)
                     VALUES (:email, :name, NULL, NULL, 'free', true)
-                    RETURNING id, email, name, plan, email_verified, stripe_customer_id, created_at, upgraded_at
+                    RETURNING id, email, name, plan, email_verified, razorpay_customer_id, created_at, upgraded_at
                     """
                 ),
                 {"email": email, "name": name or email},
@@ -1285,7 +1285,7 @@ async def get_or_create_oauth_user(
             result4 = await session.execute(
                 text(
                     """
-                    SELECT id, email, name, plan, email_verified, stripe_customer_id, created_at, upgraded_at
+                    SELECT id, email, name, plan, email_verified, razorpay_customer_id, created_at, upgraded_at
                     FROM users WHERE id = CAST(:user_id AS UUID)
                     """
                 ),

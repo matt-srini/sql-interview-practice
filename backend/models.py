@@ -35,12 +35,36 @@ class UnlockState(BaseModel):
     access_map: dict[str, str]
 
 
-class CheckoutRequest(BaseModel):
+class CreateOrderRequest(BaseModel):
     plan: str
 
 
-class CheckoutResponse(BaseModel):
-    checkout_url: str
+class CreateOrderResponse(BaseModel):
+    # Exactly one of order_id / subscription_id is set depending on whether
+    # the target plan is a one-time (lifetime_*) or recurring (pro/elite) purchase.
+    order_id: Optional[str] = None
+    subscription_id: Optional[str] = None
+    amount: int                 # in paise (INR * 100)
+    currency: str
+    key_id: str
+    name: str                   # merchant display name shown in the Razorpay modal
+    description: str
+    prefill_email: Optional[str] = None
+    prefill_name: Optional[str] = None
+    is_subscription: bool
+
+
+class VerifyPaymentRequest(BaseModel):
+    plan: str
+    razorpay_payment_id: str
+    razorpay_signature: str
+    # One of the two below is provided depending on the flow
+    razorpay_order_id: Optional[str] = None
+    razorpay_subscription_id: Optional[str] = None
+
+
+class VerifyPaymentResponse(BaseModel):
+    plan: str
 
 
 class RunCodeRequest(BaseModel):

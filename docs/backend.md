@@ -18,7 +18,7 @@ Registered in `backend/main.py`:
 | `routers/questions.py` | `/api/questions` | SQL question detail, run query, submit (with repeat-attempt detection) |
 | `routers/sample.py` | `/api/sample` | Topic-aware sample questions, run, submit, reset |
 | `routers/plan.py` | `/api/user` | User profile, plan, unlock state |
-| `routers/stripe.py` | `/api/stripe` | Checkout creation, webhook handler |
+| `routers/razorpay.py` | `/api/razorpay` | Order/Subscription creation, client verify, webhook handler |
 | `routers/python_questions.py` | `/api/python` | Python algorithm catalog, detail, run-code, submit |
 | `routers/python_data_questions.py` | `/api/python-data` | Pandas catalog, detail, run-code, submit |
 | `routers/pyspark_questions.py` | `/api/pyspark` | PySpark catalog, detail, submit (MCQ only) |
@@ -102,12 +102,18 @@ Also available without `/api` prefix.
 | POST | `/api/user/plan` | Plan mutation (dev mode / tests) |
 | GET | `/api/user/unlocks` | Computed unlock state across full catalog |
 
-### Stripe — `/api/stripe`
+### Razorpay — `/api/razorpay`
 
 | Method | Path | Description |
 |---|---|---|
-| POST | `/api/stripe/create-checkout` | Creates Stripe Checkout session for authenticated user |
-| POST | `/api/stripe/webhook` | Verifies signature, applies idempotent plan change, records audit event |
+| POST | `/api/razorpay/create-order` | Creates a Razorpay Order (lifetime plans) or Subscription (pro/elite) for the authenticated user; returns modal-ready payload `{ order_id \| subscription_id, amount, currency, key_id, name, description, prefill_email, prefill_name, is_subscription }` |
+| POST | `/api/razorpay/verify-payment` | Verifies HMAC signature on the client-side Razorpay checkout callback and applies the plan change immediately. Idempotent via synthetic event id `verify:<payment_id>` shared with the webhook path |
+| POST | `/api/razorpay/webhook` | Verifies `X-Razorpay-Signature` against the raw body, dispatches `payment.captured` / `subscription.activated` / `subscription.charged` / `subscription.cancelled` / `subscription.halted` / `payment.failed`; authoritative source of truth. Lifetime plans are protected against stray subscription-cancel events |
+
+Signature formulas:
+- One-time order callback: HMAC-SHA256 of `"{order_id}|{payment_id}"` with `RAZORPAY_KEY_SECRET`
+- Subscription callback: HMAC-SHA256 of `"{payment_id}|{subscription_id}"` with `RAZORPAY_KEY_SECRET`
+- Webhook: HMAC-SHA256 of the raw request body with `RAZORPAY_WEBHOOK_SECRET`
 
 ### SPA / static
 
@@ -231,7 +237,7 @@ Files: `db.py`, `progress.py`, `unlock.py`
 | `user_progress` | Per-user solved question records |
 | `user_sample_seen` | Per-user sample exposure records |
 | `plan_changes` | Audit log of plan tier changes |
-| `stripe_events` | Idempotent Stripe webhook event records |
+| `payment_events` | Idempotent payment provider event records (Razorpay webhook ids + synthetic `verify:<payment_id>` ids from client callback) |
 
 **`user_progress` and `user_sample_seen` carry a `topic` column** (DEFAULT `'sql'`). All `db.py` progress functions accept `topic: str = "sql"`. Progress is independent per topic — solving SQL questions does not affect Python unlock state.
 
