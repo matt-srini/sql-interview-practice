@@ -61,7 +61,22 @@
       "Bash(../.venv/bin/python -m pytest tests/test_api.py::test_register_preserves_anonymous_progress_and_user_id -xvs)",
       "Bash(../.venv/bin/python -c ':*)",
       "Bash(../.venv/bin/python -m pytest tests/test_api.py::test_register_preserves_anonymous_progress_and_user_id tests/test_api.py::test_login_merges_existing_anonymous_progress -xvs)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(../.venv/bin/uvicorn main:app --reload --port 8000)",
+      "Bash(echo \"Backend PID: $!\")",
+      "Bash(npm run:*)",
+      "Bash(echo \"Frontend PID: $!\")",
+      "Bash(python3)",
+      "Bash(grep -n \"router\\\\|def \" /Users/matt/Work/projects/sql-interview-practice/backend/routers/*.py)",
+      "Bash(grep -l \"catalog\" /Users/matt/Work/projects/sql-interview-practice/backend/routers/*.py)",
+      "Bash(curl -s -c /tmp/elite_cookies.txt -X POST http://localhost:8000/api/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"matt.srini@gmail.com\",\"password\":\"Password123\"}')",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d,indent=2\\)\\)\")",
+      "Bash(curl -s -c /tmp/elite_cookies.txt -X POST http://localhost:8000/api/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"matt.srini@gmail.com\",\"password\":\"$qLM@t1209\"}')",
+      "Bash(../.venv/bin/python -m pytest tests/ -q)",
+      "Bash(DATABASE_URL=\"postgresql+asyncpg://postgres:postgres@localhost:5432/sql_practice\" ../.venv/bin/alembic upgrade head)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(d.get\\('slug'\\), d.get\\('title'\\), d.get\\('topic'\\)\\)\")",
+      "Bash(python3 -c 'import json,sys; d=json.load\\(open\\('\\\\''__TRACKED_VAR__'\\\\''\\)\\); print\\(d.get\\('\\\\''topic'\\\\''\\), d.get\\('\\\\''slug'\\\\''\\), d.get\\('\\\\''title'\\\\''\\)\\)')",
+      "Bash(npx vite *)"
     ]
   }
 }

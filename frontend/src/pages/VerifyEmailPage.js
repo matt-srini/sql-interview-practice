@@ -4,13 +4,18 @@ import api from '../api';
 import Topbar from '../components/Topbar';
 import { useAuth } from '../contexts/AuthContext';
 
+async function sendResendRequest() {
+  await api.post('/auth/resend-verification');
+}
+
 export default function VerifyEmailPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token') || '';
   const navigate = useNavigate();
-  const { refreshUser } = useAuth();
+  const { refreshUser, user } = useAuth();
 
   const [status, setStatus] = useState('loading'); // loading | success | error
+  const [resendStatus, setResendStatus] = useState('idle'); // idle | sending | sent
 
   useEffect(() => {
     if (!token) {
@@ -25,6 +30,16 @@ export default function VerifyEmailPage() {
       })
       .catch(() => setStatus('error'));
   }, [token, refreshUser]);
+
+  async function handleResend() {
+    setResendStatus('sending');
+    try {
+      await sendResendRequest();
+      setResendStatus('sent');
+    } catch {
+      setResendStatus('idle');
+    }
+  }
 
   return (
     <div className="auth-page">
@@ -62,9 +77,23 @@ export default function VerifyEmailPage() {
           {status === 'error' && (
             <>
               <div className="auth-alert auth-alert-error" role="alert">
-                This verification link is invalid or has expired.
+                This verification link is invalid or has expired. Links expire after 24 hours — check your spam folder or request a fresh one below.
               </div>
               <div className="auth-post-success">
+                {user && (
+                  <button
+                    type="button"
+                    className="btn btn-primary auth-submit"
+                    disabled={resendStatus === 'sending' || resendStatus === 'sent'}
+                    onClick={handleResend}
+                  >
+                    {resendStatus === 'sent'
+                      ? 'Email sent — check your inbox'
+                      : resendStatus === 'sending'
+                        ? 'Sending…'
+                        : 'Resend verification email'}
+                  </button>
+                )}
                 <button
                   type="button"
                   className="btn btn-secondary auth-submit"
@@ -76,12 +105,14 @@ export default function VerifyEmailPage() {
             </>
           )}
 
-          <div className="auth-footer">
-            <span className="auth-footer-text">Need a new link?</span>
-            <button type="button" className="auth-link-btn" onClick={() => navigate('/auth')}>
-              Sign in to resend
-            </button>
-          </div>
+          {status === 'error' && !user && (
+            <div className="auth-footer">
+              <span className="auth-footer-text">Need a new link?</span>
+              <button type="button" className="auth-link-btn" onClick={() => navigate('/auth')}>
+                Sign in to resend
+              </button>
+            </div>
+          )}
         </div>
       </main>
     </div>

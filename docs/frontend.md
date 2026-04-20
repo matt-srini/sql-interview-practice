@@ -38,23 +38,34 @@ Defined in `frontend/src/App.js`:
 
 ### LandingPage (`/`)
 
-Three stacked sections on a single scroll:
+Four stacked sections on a single scroll:
 
-1. **Hero** (`.landing-hero`, logged-out only) — centered headline, tagline, CTAs ("Explore tracks ↓" and "Create account")
+1. **Hero / Welcome** — logged-out: centered headline, tagline, CTAs ("Explore tracks ↓" and "Create account"). Logged-in: `LoggedInWelcome` component with Resume, Dashboard, and Mock cards. Below either block a `.landing-proof-row` shows three trust-signal stats (350 questions · 4 tracks · 11 real-world datasets · instant feedback).
 2. **Showcase** (`.landing-showcase`) — "The Interview IDE": a single editor-style window framed by a theme-responsive surface (warm cream in light, deep black in dark) with a subtle 24px dot-grid overlay. The IDE window itself is always dark in both modes (Linear/Vercel pattern). Four filename tabs (`rolling_revenue.sql`, `coin_change.py`, `user_avg_order.py`, `coalesce_vs_repartition.py`) switch the split body between a problem brief (left, prose) and a syntax-highlighted solution (right, with line-number gutter). Bottom status bar shows language + line count + 4 rotation dots. Auto-rotates every 8 s when in view; pauses on hover, focus, or tab click. Fully honors `prefers-reduced-motion`.
 3. **Track selection** (`.landing-practice-section`, `id="landing-tracks"`) — pill nav selects a track; panel shows description, progress bar, CTA, and easy/medium/hard sample tiles. Mobile sample tiles use horizontal scroll.
+4. **Pricing** (`id="landing-pricing"`) — three-column tier table with hard question counts derived from `TOTAL_EASY` / `TOTAL_QUESTIONS` constants. Free: 129 easy questions. Pro: all 350 questions + 3 mocks/day. Elite: everything + company filter + unlimited mocks.
+
+`TRACK_DIFFICULTIES` mirrors the real per-track/difficulty question counts (32/34/29 SQL, 30/29/24 Python, 29/30/23 Pandas, 38/30/22 PySpark). `TOTAL_EASY` and `TOTAL_QUESTIONS` are derived totals used in pricing copy.
 
 On mount, checks `window.location.hash` and scrolls to the matching element (used by the sample page back arrow → `/#landing-tracks`).
 
 ### AuthPage (`/auth`)
 
-Register or sign in. Supports email/password, Google OAuth, and GitHub OAuth. Also contains a "Forgot password?" flow that sends a reset email. On successful register, anonymous session is upgraded in place (progress preserved). On login, anonymous progress merges into an existing account. OAuth callbacks redirect back to `/` after setting a session cookie.
+Register or sign in. Supports email/password, Google OAuth (coming soon), and GitHub OAuth (coming soon). Also contains a "Forgot password?" flow that sends a reset email. On successful register, anonymous session is upgraded in place (progress preserved). On login, anonymous progress merges into an existing account.
+
+**Signup form:** includes a `passwordConfirm` field with inline blur-validation ("Passwords do not match") and disabled submit when there's a mismatch. Success message includes spam-folder guidance and 24h link expiry note.
+
+**OAuth buttons:** rendered with a "Soon" badge and `opacity: 0.65` via `.auth-oauth-btn--coming-soon`; `disabled` attribute not used to preserve hover affordance.
 
 ### ResetPasswordPage (`/auth/reset-password`)
 
 Consumes a password reset token (passed as `?token=…` query param) and lets the user set a new password. Redirects to `/auth` on success or if the token is invalid/expired.
 
-### TrackHubPage (`/practice/:topic`)
+### VerifyEmailPage (`/auth/verify-email`)
+
+Consumes an email verification token (`?token=…`). On error (expired/invalid), shows a message noting the 24h expiry, spam-folder guidance, and a direct "Resend verification email" button (calls `/api/auth/resend-verification`) if the user is currently signed in. Logged-out users in the error state see "Sign in to resend" footer link.
+
+
 
 Per-track landing rendered by `Outlet` when no question is active:
 - Track name + overall solved/total progress bar
@@ -180,7 +191,7 @@ Provides current topic and track metadata to the entire component tree.
   language: 'python',
   hasRunCode: true,
   hasMCQ: false,
-  totalQuestions: 10,
+  totalQuestions: 82,          // real question count (sql=95, python=83, python-data=82, pyspark=90)
   tagline: 'pandas · numpy · data wrangling',
 }
 ```

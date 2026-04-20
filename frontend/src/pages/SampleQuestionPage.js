@@ -229,12 +229,12 @@ export default function SampleQuestionPage() {
             <div className="section-heading">
               <div>
                 <span className="section-kicker">Sample track</span>
-                <h3>Sample set exhausted for {topicLabel}</h3>
+                <h3>You've seen all {totalSamples} {difficulty} samples for {topicLabel}</h3>
               </div>
               <span className="section-meta">{totalSamples} shown</span>
             </div>
             <p className="sample-challenge-copy">
-              You have seen all dedicated {difficulty} samples for this track. Reset the set or move into the full guided flow.
+              Ready for the full {meta.totalQuestions}-question {topicLabel} track? Pro unlocks every medium + hard question.
             </p>
             <div className="sample-challenge-actions">
               <button className="btn btn-secondary sample-challenge-button" onClick={handleResetSamples} disabled={resetting}>
@@ -381,7 +381,7 @@ export default function SampleQuestionPage() {
               <p className="sample-challenge-copy">
                 {remainingSamples > 0
                   ? `${remainingSamples} sample ${remainingSamples === 1 ? 'question remains' : 'questions remain'} in this ${difficulty} set.`
-                  : 'You have seen all dedicated samples in this difficulty. Continue with the guided sequence when you are ready.'}
+                  : `You've seen all ${totalSamples} ${difficulty} samples. The full ${topicLabel} track has ${meta.totalQuestions} questions — Pro unlocks medium + hard.`}
               </p>
               <div className="sample-challenge-actions">
                 {remainingSamples > 0 && (

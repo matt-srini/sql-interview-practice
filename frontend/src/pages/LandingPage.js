@@ -13,11 +13,16 @@ import { highlightCode } from './landingShowcaseHighlight';
 const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
 
 const TRACK_DIFFICULTIES = {
-  sql:           { easy: 30, medium: 30, hard: 26 },
-  python:        { easy: 30, medium: 25, hard: 20 },
-  'python-data': { easy: 30, medium: 25, hard: 20 },
-  pyspark:       { easy: 30, medium: 25, hard: 20 },
+  sql:           { easy: 32, medium: 34, hard: 29 },
+  python:        { easy: 30, medium: 29, hard: 24 },
+  'python-data': { easy: 29, medium: 30, hard: 23 },
+  pyspark:       { easy: 38, medium: 30, hard: 22 },
 };
+
+// Total easy questions across all tracks (used in pricing copy)
+const TOTAL_EASY = Object.values(TRACK_DIFFICULTIES).reduce((s, d) => s + d.easy, 0);
+// Total questions across all tracks
+const TOTAL_QUESTIONS = Object.values(TRACK_DIFFICULTIES).reduce((s, d) => s + d.easy + d.medium + d.hard, 0);
 
 const SAMPLE_TIERS = {
   sql: [
@@ -242,7 +247,7 @@ export default function LandingPage() {
   const handleIdePointerLeave = useCallback(() => setShowcasePaused(false), []);
 
   const activeCard = SHOWCASE_CARDS[showcaseActiveIndex];
-  const activeColor = TRACK_META[activeCard.topic]?.color ?? '#5B6AF0';
+  const activeColor = TRACK_META[activeCard.topic]?.color ?? 'var(--accent)';
   const activeCodeLineCount = useMemo(
     () => activeCard.solutionCode.split('\n').length,
     [activeCard]
@@ -305,6 +310,16 @@ export default function LandingPage() {
           </section>
         )}
 
+        <div className="landing-proof-row" aria-label="Platform stats">
+          <span className="landing-proof-stat"><strong>350</strong> questions</span>
+          <span className="landing-proof-sep" aria-hidden="true" />
+          <span className="landing-proof-stat"><strong>4</strong> tracks</span>
+          <span className="landing-proof-sep" aria-hidden="true" />
+          <span className="landing-proof-stat"><strong>11</strong> real-world datasets</span>
+          <span className="landing-proof-sep" aria-hidden="true" />
+          <span className="landing-proof-stat">instant feedback</span>
+        </div>
+
         <section className="landing-showcase">
           <div className="landing-showcase-inner" ref={showcaseRef}>
             <div className="landing-showcase-header">
@@ -330,7 +345,7 @@ export default function LandingPage() {
                 <div className="ide-tabs" role="tablist" aria-label="Track preview">
                   {SHOWCASE_CARDS.map((card, i) => {
                     const isActive = i === showcaseActiveIndex;
-                    const tabColor = TRACK_META[card.topic]?.color ?? '#5B6AF0';
+                    const tabColor = TRACK_META[card.topic]?.color ?? 'var(--accent)';
                     return (
                       <button
                         key={card.topic}
@@ -405,7 +420,7 @@ export default function LandingPage() {
                 <div className="ide-statusbar-dots" role="tablist" aria-label="Jump to track">
                   {SHOWCASE_CARDS.map((card, i) => {
                     const isActive = i === showcaseActiveIndex;
-                    const dotColor = TRACK_META[card.topic]?.color ?? '#5B6AF0';
+                    const dotColor = TRACK_META[card.topic]?.color ?? 'var(--accent)';
                     return (
                       <button
                         key={card.topic}
@@ -576,9 +591,9 @@ export default function LandingPage() {
                   </div>
                 </div>
                 <ul className="landing-tier-list">
-                  <li>All easy questions across all 4 tracks</li>
-                  <li>Unlock medium + hard via paths or solo practice</li>
-                  <li>Easy mock interviews</li>
+                  <li>{TOTAL_EASY} easy questions (32 SQL · 30 Python · 29 Pandas · 38 PySpark)</li>
+                  <li>Unlock medium + hard as you solve (batch-gated)</li>
+                  <li>1 mock interview per day</li>
                   <li>2 learning paths per track</li>
                 </ul>
                 <div className="landing-tier-cta">
@@ -600,9 +615,9 @@ export default function LandingPage() {
                 </div>
                 <ul className="landing-tier-list">
                   <li>Everything in Free</li>
-                  <li>All medium + hard across all 4 tracks</li>
+                  <li>All {TOTAL_QUESTIONS} questions — every medium + hard</li>
                   <li>All learning paths</li>
-                  <li>Daily hard mock interviews</li>
+                  <li>3 mock interviews per day (up to hard)</li>
                 </ul>
                 <div className="landing-tier-cta">
                   {proColCta() === 'current' && (
@@ -634,9 +649,9 @@ export default function LandingPage() {
                 </div>
                 <ul className="landing-tier-list">
                   <li>Everything in Pro</li>
-                  <li>Company-filtered mock interviews</li>
+                  <li>Company filter — Meta, Google, Stripe, Airbnb…</li>
+                  <li>Unlimited daily mock interviews</li>
                   <li>Weak-spot insights after every session</li>
-                  <li>Harder interview-realistic mock questions</li>
                 </ul>
                 <div className="landing-tier-cta">
                   {eliteColCta() === 'current' && (
