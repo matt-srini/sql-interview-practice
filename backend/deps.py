@@ -21,6 +21,7 @@ class RunQueryRequest(BaseModel):
 class SubmitRequest(BaseModel):
     query: str
     question_id: int
+    duration_ms: int | None = None
 
 
 def set_session_cookie(response: Response, token: str) -> None:

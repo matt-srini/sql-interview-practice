@@ -123,6 +123,7 @@ async def submit_pyspark_answer(
         question_id=int(body.question_id),
         is_correct=correct,
         code=None,
+        duration_ms=body.duration_ms,
     )
 
     return {

@@ -169,6 +169,7 @@ async def submit_python_data_code(
         question_id=int(body.question_id),
         is_correct=accepted,
         code=body.code,
+        duration_ms=body.duration_ms,
     )
 
     return result

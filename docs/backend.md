@@ -73,7 +73,7 @@ Also available without `/api` prefix at `/catalog`.
 | GET | `/api/questions` | Lightweight question list |
 | GET | `/api/questions/{id}` | Full question detail. 404 if not found. 403 if locked. Omits `solution_query`, `expected_query`, and `explanation` before submission. |
 | POST | `/api/run-query` | `{ query, question_id }` → `{ columns, rows, row_limit }`. Rejects locked questions. |
-| POST | `/api/submit` | `{ query, question_id }` → verdict + result comparison + solution material on acceptance. Marks question solved on correct submission. |
+| POST | `/api/submit` | `{ query, question_id, duration_ms? }` → verdict + result comparison + solution material on acceptance. Marks question solved on correct submission. |
 
 Submit response fields:
 - `correct` — final acceptance flag (drives progression)
@@ -134,7 +134,7 @@ Signature formulas:
 | GET | `/api/python/catalog` | Python catalog grouped by difficulty with per-user state |
 | GET | `/api/python/questions/{id}` | Question detail. Omits `solution_code`/`explanation` pre-submit. |
 | POST | `/api/python/run-code` | `{ code, question_id }` → test case results (public cases only). Guard checked first. |
-| POST | `/api/python/submit` | `{ code, question_id }` → verdict + hidden test summary + solution on correct |
+| POST | `/api/python/submit` | `{ code, question_id, duration_ms? }` → verdict + hidden test summary + solution on correct |
 
 ### Pandas — `/api/python-data`
 
@@ -143,7 +143,7 @@ Signature formulas:
 | GET | `/api/python-data/catalog` | Pandas catalog |
 | GET | `/api/python-data/questions/{id}` | Question detail including `dataframes` and `schema` maps |
 | POST | `/api/python-data/run-code` | `{ code, question_id }` → DataFrame result + `print_output` |
-| POST | `/api/python-data/submit` | `{ code, question_id }` → correct/incorrect + DataFrame comparison + solution on correct |
+| POST | `/api/python-data/submit` | `{ code, question_id, duration_ms? }` → correct/incorrect + DataFrame comparison + solution on correct |
 
 ### PySpark — `/api/pyspark`
 
@@ -151,7 +151,7 @@ Signature formulas:
 |---|---|---|
 | GET | `/api/pyspark/catalog` | PySpark catalog |
 | GET | `/api/pyspark/questions/{id}` | Question detail (options visible, `correct_option` hidden) |
-| POST | `/api/pyspark/submit` | `{ selected_option, question_id }` → `{ correct, explanation }`. No code execution. |
+| POST | `/api/pyspark/submit` | `{ selected_option, question_id, duration_ms? }` → `{ correct, explanation }`. No code execution. |
 
 ### Dashboard — `/api/dashboard`
 
@@ -159,7 +159,7 @@ Signature formulas:
 |---|---|---|
 | GET | `/api/dashboard` | Per-track solved counts, concepts, and recent activity for the current user |
 | GET | `/api/dashboard/insights` | Coaching metrics derived from submissions (per-track solve speed + accuracy, weakest concepts, streak, cross-track insight) |
-| GET | `/api/submissions` | Submission history for a question (`track`, `question_id`, `limit` query params; max 20) |
+| GET | `/api/submissions` | Submission history for a question (`track`, `question_id`, `limit` query params; max 20) including optional `duration_ms` when provided by clients |
 
 Response shape: `{ tracks: { sql, python, python_data, pyspark }, concepts_by_track, recent_activity }`. Each track includes `by_difficulty: { easy: { solved, total }, medium: { solved, total }, hard: { solved, total } }` — note both `solved` and `total` are included in each difficulty object, not bare integers.
 

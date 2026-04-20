@@ -97,10 +97,12 @@ export default function QuestionPage() {
   const [solutionAnalysisOpen, setSolutionAnalysisOpen] = useState(false);
   const [showAltSolution, setShowAltSolution] = useState(false);
   const [submissionInsight, setSubmissionInsight] = useState(null);
+  const [bookmarked, setBookmarked] = useState(false);
   const [editorTall, setEditorTall] = useState(() => {
     try { return localStorage.getItem('editor-height-pref') === 'tall'; } catch { return false; }
   });
   const [draftSaveState, setDraftSaveState] = useState('idle');
+  const [elapsedMs, setElapsedMs] = useState(0);
   const priorAttemptCountRef = useRef(0);
   const verdictRef = useRef(null);
 
@@ -113,10 +115,60 @@ export default function QuestionPage() {
   const isLockedRef = useRef(false);
   const draftHydratedRef = useRef(false);
   const draftSaveTimerRef = useRef(null);
+  const timerAccumRef = useRef(0);
+  const timerSegmentStartRef = useRef(null);
+  const timerIntervalRef = useRef(null);
 
   // MCQ state for PySpark
   const [selectedOption, setSelectedOption] = useState(null);
   const [schemaSheetOpen, setSchemaSheetOpen] = useState(false);
+
+  function pauseTimer() {
+    if (timerSegmentStartRef.current == null) return;
+    timerAccumRef.current += Date.now() - timerSegmentStartRef.current;
+    timerSegmentStartRef.current = null;
+    setElapsedMs(timerAccumRef.current);
+  }
+
+  function resumeTimer() {
+    if (!question || timerSegmentStartRef.current != null) return;
+    timerSegmentStartRef.current = Date.now();
+  }
+
+  function getElapsedDurationMs() {
+    const liveSegment = timerSegmentStartRef.current == null ? 0 : (Date.now() - timerSegmentStartRef.current);
+    return Math.max(0, Math.round(timerAccumRef.current + liveSegment));
+  }
+
+  function formatDuration(ms) {
+    if (!ms || ms <= 0) return null;
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${String(seconds).padStart(2, '0')}`;
+  }
+
+  function getBookmarkKey() {
+    return `bookmarks:${topic}`;
+  }
+
+  function readBookmarks() {
+    try {
+      const raw = localStorage.getItem(getBookmarkKey());
+      const parsed = JSON.parse(raw ?? '[]');
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter((value) => Number.isInteger(value));
+    } catch {
+      return [];
+    }
+  }
+
+  function writeBookmarks(ids) {
+    try {
+      localStorage.setItem(getBookmarkKey(), JSON.stringify(ids.slice(0, 20)));
+      window.dispatchEvent(new CustomEvent('bookmarks-updated', { detail: { topic } }));
+    } catch {}
+  }
 
   useEffect(() => {
     setQuestion(null);
@@ -182,7 +234,41 @@ export default function QuestionPage() {
     setSubmissionInsight(null);
     draftHydratedRef.current = false;
     setDraftSaveState('idle');
+    timerAccumRef.current = 0;
+    timerSegmentStartRef.current = null;
+    setElapsedMs(0);
+    setBookmarked(false);
   }, [id, meta.language, meta.hasMCQ]);
+
+  useEffect(() => {
+    const qid = Number(id);
+    setBookmarked(readBookmarks().includes(qid));
+  }, [id, topic]);
+
+  useEffect(() => {
+    if (!question) return undefined;
+    timerAccumRef.current = 0;
+    timerSegmentStartRef.current = document.hidden ? null : Date.now();
+    setElapsedMs(0);
+
+    const handleVisibility = () => {
+      if (document.hidden) pauseTimer();
+      else resumeTimer();
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    timerIntervalRef.current = setInterval(() => {
+      setElapsedMs(getElapsedDurationMs());
+    }, 1000);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+      pauseTimer();
+    };
+  }, [question]);
 
   useEffect(() => {
     if (meta.hasMCQ || !question || !draftHydratedRef.current) return undefined;
@@ -291,11 +377,11 @@ export default function QuestionPage() {
     try {
       let payload;
       if (meta.hasMCQ) {
-        payload = { selected_option: selectedOption, question_id: Number(id) };
+        payload = { selected_option: selectedOption, question_id: Number(id), duration_ms: getElapsedDurationMs() };
       } else if (meta.language === 'python') {
-        payload = { code, question_id: Number(id) };
+        payload = { code, question_id: Number(id), duration_ms: getElapsedDurationMs() };
       } else {
-        payload = { query: code, question_id: Number(id) };
+        payload = { query: code, question_id: Number(id), duration_ms: getElapsedDurationMs() };
       }
       const res = await api.post(submitApiPath, payload);
       setSubmitResult(res.data);
@@ -361,6 +447,20 @@ export default function QuestionPage() {
     } catch {}
     setCode(resetCode);
     setDraftSaveState('idle');
+  }
+
+  function toggleBookmark() {
+    const qid = Number(id);
+    const current = readBookmarks();
+    let next;
+    if (current.includes(qid)) {
+      next = current.filter((value) => value !== qid);
+      setBookmarked(false);
+    } else {
+      next = [qid, ...current.filter((value) => value !== qid)].slice(0, 20);
+      setBookmarked(true);
+    }
+    writeBookmarks(next);
   }
 
   // Delta hint: row/column diff diagnostic for wrong SQL submissions
@@ -431,6 +531,7 @@ export default function QuestionPage() {
     : meta.language === 'python'
     ? 'Python sandbox'
     : 'DuckDB sandbox';
+  const timerLabel = formatDuration(elapsedMs) ?? '0:00';
 
   // Submit button label
   const submitBtnLabel = submitting
@@ -485,7 +586,17 @@ export default function QuestionPage() {
               <div>
                 <div className="question-title-row">
                   <h2>{question.title}</h2>
-                  <span className={`badge badge-${question.difficulty}`}>{question.difficulty}</span>
+                  <div className="question-title-actions">
+                    <button
+                      className={`question-bookmark-btn${bookmarked ? ' question-bookmark-btn-active' : ''}`}
+                      onClick={toggleBookmark}
+                      aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark question'}
+                      title={bookmarked ? 'Remove bookmark' : 'Bookmark question'}
+                    >
+                      {bookmarked ? '★ Bookmarked' : '☆ Bookmark'}
+                    </button>
+                    <span className={`badge badge-${question.difficulty}`}>{question.difficulty}</span>
+                  </div>
                 </div>
                 {workspaceStatus && (
                   <p className="question-status-line">{workspaceStatus}</p>
@@ -711,6 +822,7 @@ export default function QuestionPage() {
               <div className="editor-topbar">
                 <span className="editor-title">{editorTitle}</span>
                 <div className="editor-topbar-actions">
+                  <span className="editor-topbar-timer" title="Elapsed time for this question">{timerLabel}</span>
                   <span className="editor-topbar-note">
                     {draftSaveState === 'saving' ? 'Saving draft…' : draftSaveState === 'saved' ? 'Draft saved' : editorNote}
                   </span>
@@ -1004,6 +1116,9 @@ export default function QuestionPage() {
                         {attempt.is_correct ? '✓' : '✗'}
                       </span>
                       <span className="past-attempt-time">{formatRelativeTime(attempt.submitted_at)}</span>
+                      {attempt.duration_ms ? (
+                        <span className="past-attempt-duration">{formatDuration(attempt.duration_ms)}</span>
+                      ) : null}
                       {attempt.code && (
                         <button
                           className="past-attempt-code-toggle"

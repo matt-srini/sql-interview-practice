@@ -92,6 +92,7 @@ CREATE TABLE IF NOT EXISTS submissions (
     question_id INTEGER NOT NULL,
     is_correct BOOLEAN NOT NULL,
     code TEXT,
+    duration_ms INTEGER,
     submitted_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -129,6 +130,7 @@ CREATE INDEX IF NOT EXISTS idx_reset_tokens_expires ON password_reset_tokens(exp
 ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS failed_login_attempts INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS login_locked_until TIMESTAMPTZ;
+ALTER TABLE submissions ADD COLUMN IF NOT EXISTS duration_ms INTEGER;
 
 CREATE TABLE IF NOT EXISTS email_verification_tokens (
     token TEXT PRIMARY KEY,
@@ -943,14 +945,15 @@ async def record_submission(
     question_id: int,
     is_correct: bool,
     code: str | None = None,
+    duration_ms: int | None = None,
 ) -> None:
     session_factory = _session_factory_or_raise()
     async with session_factory() as session:
         await session.execute(
             text(
                 """
-                INSERT INTO submissions (user_id, track, question_id, is_correct, code)
-                VALUES (CAST(:user_id AS UUID), :track, :question_id, :is_correct, :code)
+                INSERT INTO submissions (user_id, track, question_id, is_correct, code, duration_ms)
+                VALUES (CAST(:user_id AS UUID), :track, :question_id, :is_correct, :code, :duration_ms)
                 """
             ),
             {
@@ -959,6 +962,7 @@ async def record_submission(
                 "question_id": question_id,
                 "is_correct": is_correct,
                 "code": code,
+                "duration_ms": duration_ms,
             },
         )
         await session.commit()
@@ -1265,7 +1269,7 @@ async def get_submissions(
         result = await session.execute(
             text(
                 """
-                SELECT id, track, question_id, is_correct, code, submitted_at
+                                SELECT id, track, question_id, is_correct, code, duration_ms, submitted_at
                 FROM submissions
                 WHERE user_id = CAST(:user_id AS UUID)
                   AND track = :track
@@ -1284,6 +1288,7 @@ async def get_submissions(
                 "question_id": row["question_id"],
                 "is_correct": row["is_correct"],
                 "code": row["code"],
+                "duration_ms": row["duration_ms"],
                 "submitted_at": row["submitted_at"].isoformat() if row["submitted_at"] else None,
             }
             for row in rows
