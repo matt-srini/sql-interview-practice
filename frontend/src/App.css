@@ -4044,6 +4044,132 @@ select {
   letter-spacing: 0.02em;
 }
 
+.tag-concept-btn {
+  cursor: pointer;
+  background: var(--surface-card-alt);
+}
+
+.tag-concept-btn:hover {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border-subtle));
+  color: var(--text-strong);
+}
+
+.concept-panel {
+  position: fixed;
+  top: 82px;
+  right: 1rem;
+  width: min(420px, calc(100vw - 2rem));
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 1rem;
+  z-index: 70;
+}
+
+.concept-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.concept-panel-kicker {
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.66rem;
+  color: var(--text-muted);
+  margin-bottom: 0.2rem;
+}
+
+.concept-panel-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--text-strong);
+}
+
+.concept-panel-close {
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  width: 28px;
+  height: 28px;
+  background: var(--surface-card-alt);
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+
+.concept-panel-body {
+  margin: 0.85rem 0 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.concept-panel-example {
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-card-alt);
+  border-radius: 12px;
+  padding: 0.7rem 0.75rem;
+}
+
+.concept-panel-example-label {
+  display: inline-block;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 0.28rem;
+}
+
+.concept-panel-example p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.recommend-card {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  padding: 0.85rem 0.9rem;
+}
+
+.recommend-title {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.recommend-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.recommend-link {
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: var(--surface-card-alt);
+  padding: 0.55rem 0.6rem;
+  text-decoration: none;
+}
+
+.recommend-link-title {
+  display: block;
+  font-size: 0.83rem;
+  color: var(--text-strong);
+}
+
+.recommend-link-meta {
+  display: block;
+  margin-top: 0.18rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+
 /* ============================================================
    Track hub page
    ============================================================ */

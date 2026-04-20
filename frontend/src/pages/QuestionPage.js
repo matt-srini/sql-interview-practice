@@ -8,6 +8,7 @@ import TestCasePanel from '../components/TestCasePanel';
 import PrintOutputPanel from '../components/PrintOutputPanel';
 import VariablesPanel from '../components/VariablesPanel';
 import MCQPanel from '../components/MCQPanel';
+import ConceptPanel from '../components/ConceptPanel';
 import { useCatalog } from '../catalogContext';
 import { useTopic } from '../contexts/TopicContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -98,6 +99,7 @@ export default function QuestionPage() {
   const [showAltSolution, setShowAltSolution] = useState(false);
   const [submissionInsight, setSubmissionInsight] = useState(null);
   const [bookmarked, setBookmarked] = useState(false);
+  const [activeConcept, setActiveConcept] = useState(null);
   const [editorTall, setEditorTall] = useState(() => {
     try { return localStorage.getItem('editor-height-pref') === 'tall'; } catch { return false; }
   });
@@ -478,6 +480,35 @@ export default function QuestionPage() {
     return 'Row and column counts match — check individual values. Look for rounding, type casting, or NULL handling differences.';
   }, [submitResult, topic]);
 
+  const recommendedQuestions = useMemo(() => {
+    if (!submitResult?.correct || !question?.concepts?.length || !catalog?.groups) return [];
+    const conceptSet = new Set(question.concepts);
+    const matches = [];
+    for (const group of catalog.groups) {
+      for (const candidate of group.questions ?? []) {
+        if (Number(candidate.id) === Number(id)) continue;
+        if (candidate.state === 'solved') continue;
+        const overlap = (candidate.concepts ?? []).some((concept) => conceptSet.has(concept));
+        if (!overlap) continue;
+        matches.push(candidate);
+      }
+    }
+    const unique = [];
+    const seen = new Set();
+    for (const match of matches) {
+      if (seen.has(match.id)) continue;
+      seen.add(match.id);
+      unique.push(match);
+    }
+    unique.sort((a, b) => {
+      if (a.state === b.state) return (a.order ?? 999) - (b.order ?? 999);
+      if (a.state === 'unlocked') return -1;
+      if (b.state === 'unlocked') return 1;
+      return 0;
+    });
+    return unique.slice(0, 2);
+  }, [submitResult, question, catalog, id]);
+
   // Path nav bar derived values — must be before early returns (Rules of Hooks)
   const pathNavBar = useMemo(() => {
     if (!pathContext) return null;
@@ -607,7 +638,7 @@ export default function QuestionPage() {
             {question.concepts?.length > 0 && (
               <div className="concept-tags concept-tags-inline">
                 {question.concepts.map((concept) => (
-                  <span key={concept} className="tag-concept">{concept}</span>
+                  <button key={concept} className="tag-concept tag-concept-btn" onClick={() => setActiveConcept(concept)}>{concept}</button>
                 ))}
               </div>
             )}
@@ -1139,6 +1170,20 @@ export default function QuestionPage() {
 
           {submitResult && (
             <div className="post-submit-stack">
+              {recommendedQuestions.length > 0 && (
+                <div className="recommend-card">
+                  <div className="recommend-title">Similar questions to drill next</div>
+                  <div className="recommend-list">
+                    {recommendedQuestions.map((candidate) => (
+                      <Link key={candidate.id} className="recommend-link" to={`/practice/${topic}/questions/${candidate.id}`}>
+                        <span className="recommend-link-title">{candidate.title}</span>
+                        <span className="recommend-link-meta">{candidate.difficulty} · {candidate.state === 'locked' ? 'locked' : 'available'}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {topic === 'sql' && submitResult.quality &&
                 (submitResult.quality.efficiency_note ||
                  submitResult.quality.style_notes?.length > 0 ||
@@ -1229,6 +1274,10 @@ export default function QuestionPage() {
           )}
         </section>
       </div>
+
+      {activeConcept && (
+        <ConceptPanel concept={activeConcept} onClose={() => setActiveConcept(null)} />
+      )}
     </main>
   );
 }
