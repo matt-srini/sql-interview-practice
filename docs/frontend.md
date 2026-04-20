@@ -133,16 +133,18 @@ Curated path page. Shows breadcrumb (Learn → track → path title), overall pr
 | MCQPanel | `components/MCQPanel.js` | Radio-button MCQ with correct/wrong highlighting and explanation after submit |
 | TrackProgressBar | `components/TrackProgressBar.js` | Reusable horizontal progress bar with configurable color and label |
 | PathProgressCard | `components/PathProgressCard.js` | Path card with track color dot, progress bar, and CTA; used on LandingPage and TrackHubPage |
-| Topbar | `components/Topbar.js` | Shared top nav bar used by standalone pages (LandingPage, MockHub, MockSession, ProgressDashboard, AuthPage); includes Practice dropdown, Mock link, Dashboard link, and auth state |
+| Topbar | `components/Topbar.js` | Single unified top nav used by every page (landing, auth, 404, practice workspace, mock, dashboard, learning paths). Composition slots for `leftSlot`, `centerSlot`, `userExtras`, `belowTopbar`; three variants: `'landing'` (default, container-bounded), `'app'` (full-bleed workspace chrome), `'minimal'` (auth / verify / reset / 404 — brand + theme + user pill only). `showPricingLink` for logged-out visitors. |
+| LoggedInWelcome | `components/LoggedInWelcome.js` | Welcome-back block on `/` for authenticated users. Three cards: Resume (last-solved question via `/api/dashboard` recent_activity), Dashboard, Mock. Replaces the marketing hero for returning users. |
 | TierBanner | `components/TierBanner.js` | Inline upgrade prompt shown when a user hits a plan gate (e.g. locked hard questions); renders contextual copy and upgrade CTA |
 | UpgradeButton | `components/UpgradeButton.js` | Reusable upgrade CTA button; opens Stripe Checkout for the target plan tier |
 
 ### AppShell
 
-- Fixed topbar with three zones:
-  - **Left** (`app-topbar-brand`): hamburger on mobile, `datanest` brand link
-  - **Center** (`app-topbar-center`): mode pill (`.shell-pill-mode`) — e.g. "SQL · Challenge", "SQL · Path", "Python · Challenge" — shown only when a question is active (not on TrackHub). Dot color matches the track color.
-  - **Right** (`app-topbar-actions`): Practice ▾ dropdown (all 4 tracks), Mock link, theme toggle (cycles system/light/dark), plan pill (`.shell-pill-plan-free/pro/elite`)
+- Uses the shared `<Topbar variant="app" />` component (no inline topbar JSX). Passes these slots:
+  - `leftSlot` — hamburger sidebar toggle on mobile (`<900px`)
+  - `centerSlot` — mode pill (`.shell-pill-mode`), e.g. "SQL · Challenge" / "Python · Path"; hidden when at the TrackHub
+  - `userExtras` — plan pill (`.shell-pill-plan-free/pro/elite`)
+  - `belowTopbar` — upgrade confirmation / error banner
 - Desktop: sidebar 328px, collapsible; toggle is a `‹` icon button (`.sidebar-collapse-btn`); a `›` expand button (`.sidebar-expand-btn`) appears in the content area when collapsed
 - Mobile (<900px): sidebar becomes fixed overlay with backdrop; hamburger button in topbar
 - Upgrade panel shown for `free` and `pro` plan users; lives in the sidebar beneath the question list
@@ -255,11 +257,11 @@ All requests use `withCredentials: true` so the `session_token` cookie is sent d
 
 Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modules.
 
-**Philosophy:** Professional tool aesthetic — calm, fast, distraction-free. Designed for long sessions (30–90 min). Light mode primary, warm dark mode via `prefers-color-scheme`. The SQL editor pane always uses a dark background (`#1e1e1e`) regardless of color scheme — intentional two-tone split.
+**Philosophy:** Professional tool aesthetic — calm, fast, distraction-free. Designed for long sessions (30–90 min). Light mode primary, warm dark mode driven by the `[data-theme="dark"]` attribute. A bootstrap script in `index.html` sets `data-theme` pre-mount from `localStorage.theme` (explicit choice) or `matchMedia('(prefers-color-scheme: dark)')` (system default) — prevents theme-flash on first paint. The SQL editor pane always uses a dark background (`#1e1e1e`) regardless of scheme — intentional two-tone split.
 
 ### Color tokens
 
-Defined in `:root` in `App.css`. Dark mode overrides in `@media (prefers-color-scheme: dark)`.
+Defined in `:root` in `App.css`. Dark-mode overrides live under `[data-theme="dark"]` selectors (single source of truth). `theme` is managed by `ThemeProvider` in `App.js` (`{ theme, setTheme, isDark, cycleTheme, themeIcon, themeLabel }`) and persisted to `localStorage.theme`.
 
 | Token | Light | Dark | Use |
 |---|---|---|---|
@@ -368,7 +370,7 @@ Single `.landing-ide` window (max-width 1120px) inside `.landing-showcase`:
 
 ### MockHub (`pages/MockHub.js`)
 
-Self-contained page with its own topbar (Practice dropdown + Mock link + Dashboard + theme toggle). Does not use `AppShell`.
+Standalone page using the shared `<Topbar active="mock" />`. Does not use `AppShell`.
 
 **State:** `mode` ('30min'/'60min'/'custom'), `track`, `difficulty`, `numQuestions`, `timeMinutes`, `history[]`.
 

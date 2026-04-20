@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
@@ -8,14 +8,43 @@ import { useTheme } from '../App';
 const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
 
 /**
- * Shared top navigation bar used by all standalone pages.
+ * Shared top navigation bar used by every page.
+ *
+ * Variants:
+ *   - 'landing' (default) — container-bounded shell used on Landing / Mock /
+ *     Dashboard / Learning paths. Full nav.
+ *   - 'app' — full-bleed workspace chrome used inside the practice shell.
+ *     Has a center slot for the mode pill, extras slot for plan pill, and
+ *     a below-topbar slot for upgrade banners.
+ *   - 'minimal' — brand + theme toggle + user pill only. Used on the
+ *     auth / verify / reset / 404 pages where the extra nav is distracting.
  *
  * Props:
- *   active  — 'mock' | 'dashboard' | null   highlights the matching nav link
+ *   active          — 'mock' | 'dashboard' | null   force-highlight a nav link
+ *                                                   (NavLink auto-detection is
+ *                                                   the primary mechanism; this
+ *                                                   is a fallback for callers
+ *                                                   using the legacy API)
+ *   variant         — 'landing' | 'app' | 'minimal' (default 'landing')
+ *   leftSlot        — ReactNode rendered after the brand (e.g. mobile sidebar
+ *                     toggle)
+ *   centerSlot      — ReactNode rendered in the center region (only used
+ *                     when variant='app')
+ *   userExtras      — ReactNode rendered before the user name (e.g. plan pill)
+ *   belowTopbar     — ReactNode rendered under the topbar (e.g. upgrade banner)
+ *   showPricingLink — show a Pricing anchor (logged-out visitors only)
  */
-export default function Topbar({ active }) {
+export default function Topbar({
+  active = null,
+  variant = 'landing',
+  leftSlot = null,
+  centerSlot = null,
+  userExtras = null,
+  belowTopbar = null,
+  showPricingLink = false,
+}) {
   const { user, logout } = useAuth();
-  const { theme, setTheme } = useTheme();
+  const { cycleTheme, themeIcon, themeLabel } = useTheme();
   const [practiceOpen, setPracticeOpen] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [resendStatus, setResendStatus] = useState('idle'); // 'idle' | 'sending' | 'sent'
@@ -23,6 +52,10 @@ export default function Topbar({ active }) {
   const location = useLocation();
 
   const showVerifyBanner = !bannerDismissed && user?.email && user?.email_verified === false;
+
+  const isApp = variant === 'app';
+  const isMinimal = variant === 'minimal';
+  const showNav = !isMinimal;
 
   async function handleResend() {
     setResendStatus('sending');
@@ -34,10 +67,12 @@ export default function Topbar({ active }) {
     setResendStatus('sent');
   }
 
-  // Close when navigating away
-  useEffect(() => { setPracticeOpen(false); }, [location.pathname]);
+  // Close dropdown on route change
+  useEffect(() => {
+    setPracticeOpen(false);
+  }, [location.pathname]);
 
-  // Close on outside click or Escape
+  // Close dropdown on outside click or Escape
   useEffect(() => {
     if (!practiceOpen) return;
     const onMouseDown = (e) => {
@@ -45,7 +80,9 @@ export default function Topbar({ active }) {
         setPracticeOpen(false);
       }
     };
-    const onKey = (e) => { if (e.key === 'Escape') setPracticeOpen(false); };
+    const onKey = (e) => {
+      if (e.key === 'Escape') setPracticeOpen(false);
+    };
     document.addEventListener('mousedown', onMouseDown);
     document.addEventListener('keydown', onKey);
     return () => {
@@ -54,97 +91,163 @@ export default function Topbar({ active }) {
     };
   }, [practiceOpen]);
 
-  const isDark = theme === 'dark';
-  function toggleTheme() { setTheme(isDark ? 'light' : 'dark'); }
-  const themeIcon = isDark ? '☀' : '☾';
+  // Layout classes per variant
+  const headerClass = `topbar ${isApp ? 'app-topbar' : 'landing-topbar'}`;
+  const innerClass = isApp
+    ? 'topbar-inner app-topbar-inner'
+    : 'container topbar-inner landing-topbar-inner';
+  const brandRegionClass = isApp ? 'app-topbar-brand' : 'landing-topbar-left';
+  const brandLinkClass = `${isApp ? 'app-practice-home ' : ''}brand-wordmark`;
+  const actionsClass = isApp ? 'app-topbar-actions' : 'landing-topbar-right';
+  const practiceDropdownClass = `topbar-practice-dropdown${isApp ? ' app-practice-dropdown' : ''}`;
+
+  // Pricing anchor — stay on page if we're already on the landing page
+  const pricingHref =
+    location.pathname === '/' ? '#landing-pricing' : '/#landing-pricing';
+
+  // Show separator only when we have something on both sides of it
+  const hasRightOfSep = !!userExtras || !!user || (!user && showNav && !isMinimal);
+  const showSep = (showNav || !!user) && hasRightOfSep;
 
   return (
     <>
-    <header className="topbar landing-topbar">
-      <div className="container topbar-inner landing-topbar-inner">
-        <div className="landing-topbar-left">
-          <Link className="brand-wordmark" to="/">datanest</Link>
-        </div>
-        <nav className="landing-topbar-right" aria-label="Main navigation">
-          {/* Practice dropdown */}
-          <div className="topbar-practice-dropdown" ref={dropdownRef}>
-            <button
-              className={`topbar-auth-link topbar-practice-trigger${practiceOpen ? ' topbar-practice-trigger--open' : ''}`}
-              onClick={() => setPracticeOpen(v => !v)}
-              aria-haspopup="true"
-              aria-expanded={practiceOpen}
-              type="button"
-            >
-              Practice <span className="topbar-practice-caret">{practiceOpen ? '▴' : '▾'}</span>
-            </button>
-            {practiceOpen && (
-              <div className="topbar-practice-menu">
-                {TOPICS.map(t => (
-                  <Link
-                    key={t}
-                    className="topbar-practice-item"
-                    to={`/practice/${t}`}
-                    onClick={() => setPracticeOpen(false)}
-                  >
-                    {TRACK_META[t].label}
-                  </Link>
-                ))}
-              </div>
-            )}
+      <header className={headerClass}>
+        <div className={innerClass}>
+          {/* Brand region */}
+          <div className={brandRegionClass}>
+            {leftSlot}
+            <Link className={brandLinkClass} to="/">
+              datanest
+            </Link>
           </div>
 
-          <Link
-            className={`topbar-auth-link${active === 'mock' ? ' topbar-auth-link--active' : ''}`}
-            to="/mock"
-          >
-            Mock
-          </Link>
-          <Link
-            className={`topbar-auth-link${active === 'dashboard' ? ' topbar-auth-link--active' : ''}`}
-            to="/dashboard"
-          >
-            Dashboard
-          </Link>
+          {/* Center region — app variant only */}
+          {isApp && <div className="app-topbar-center">{centerSlot}</div>}
 
-          <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle dark mode">
-            {themeIcon}
+          {/* Actions region */}
+          <nav className={actionsClass} aria-label="Main navigation">
+            {showNav && (
+              <>
+                <div className={practiceDropdownClass} ref={dropdownRef}>
+                  <button
+                    className={`topbar-auth-link topbar-practice-trigger${practiceOpen ? ' topbar-practice-trigger--open' : ''}`}
+                    onClick={() => setPracticeOpen((v) => !v)}
+                    aria-haspopup="true"
+                    aria-expanded={practiceOpen}
+                    type="button"
+                  >
+                    Practice{' '}
+                    <span className="topbar-practice-caret">
+                      {practiceOpen ? '▴' : '▾'}
+                    </span>
+                  </button>
+                  {practiceOpen && (
+                    <div className="topbar-practice-menu">
+                      {TOPICS.map((t) => (
+                        <NavLink
+                          key={t}
+                          className={({ isActive }) =>
+                            `topbar-practice-item${isActive ? ' topbar-practice-item--active' : ''}`
+                          }
+                          to={`/practice/${t}`}
+                          onClick={() => setPracticeOpen(false)}
+                        >
+                          {TRACK_META[t].label}
+                        </NavLink>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <NavLink
+                  to="/mock"
+                  className={({ isActive }) =>
+                    `topbar-auth-link${isActive || active === 'mock' ? ' topbar-auth-link--active' : ''}`
+                  }
+                >
+                  Mock
+                </NavLink>
+                <NavLink
+                  to="/dashboard"
+                  className={({ isActive }) =>
+                    `topbar-auth-link${isActive || active === 'dashboard' ? ' topbar-auth-link--active' : ''}`
+                  }
+                >
+                  Dashboard
+                </NavLink>
+
+                {showPricingLink && !user && (
+                  <a className="topbar-auth-link" href={pricingHref}>
+                    Pricing
+                  </a>
+                )}
+              </>
+            )}
+
+            <button
+              className="theme-toggle"
+              onClick={cycleTheme}
+              aria-label={themeLabel}
+              title={themeLabel}
+            >
+              {themeIcon}
+            </button>
+
+            {showSep && <div className="topbar-sep" aria-hidden="true" />}
+
+            {userExtras}
+
+            {user && user.email ? (
+              <>
+                <span className="topbar-user-name">
+                  {user.name || user.email}
+                </span>
+                <button
+                  type="button"
+                  className="topbar-signout-btn"
+                  onClick={logout}
+                >
+                  Sign out
+                </button>
+              </>
+            ) : (
+              showNav && (
+                <Link className="topbar-auth-link" to="/auth">
+                  Sign in
+                </Link>
+              )
+            )}
+          </nav>
+        </div>
+        {belowTopbar}
+      </header>
+      {showVerifyBanner && (
+        <div className="verify-email-banner" role="alert">
+          <span className="verify-email-banner__text">
+            Please verify your email address to access all features.
+          </span>
+          <button
+            type="button"
+            className="verify-email-banner__action"
+            disabled={resendStatus !== 'idle'}
+            onClick={handleResend}
+          >
+            {resendStatus === 'sent'
+              ? 'Email sent!'
+              : resendStatus === 'sending'
+              ? 'Sending…'
+              : 'Resend email'}
           </button>
-          <div className="topbar-sep" aria-hidden="true" />
-
-          {user ? (
-            <>
-              <span className="topbar-user-name">{user.name || user.email}</span>
-              <button type="button" className="topbar-signout-btn" onClick={logout}>Sign out</button>
-            </>
-          ) : (
-            <Link className="topbar-auth-link" to="/auth">Sign in</Link>
-          )}
-        </nav>
-      </div>
-    </header>
-    {showVerifyBanner && (
-      <div className="verify-email-banner" role="alert">
-        <span className="verify-email-banner__text">
-          Please verify your email address to access all features.
-        </span>
-        <button
-          type="button"
-          className="verify-email-banner__action"
-          disabled={resendStatus !== 'idle'}
-          onClick={handleResend}
-        >
-          {resendStatus === 'sent' ? 'Email sent!' : resendStatus === 'sending' ? 'Sending…' : 'Resend email'}
-        </button>
-        <button
-          type="button"
-          className="verify-email-banner__dismiss"
-          aria-label="Dismiss"
-          onClick={() => setBannerDismissed(true)}
-        >
-          ✕
-        </button>
-      </div>
-    )}
+          <button
+            type="button"
+            className="verify-email-banner__dismiss"
+            aria-label="Dismiss"
+            onClick={() => setBannerDismissed(true)}
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </>
   );
 }

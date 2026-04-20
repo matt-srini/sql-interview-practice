@@ -41,8 +41,13 @@ function ThemeProvider({ children }) {
     localStorage.setItem('theme', value);
   }
 
+  const isDark = theme === 'dark';
+  const cycleTheme = () => setTheme(isDark ? 'light' : 'dark');
+  const themeIcon = isDark ? '☀' : '☾';
+  const themeLabel = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, isDark, cycleTheme, themeIcon, themeLabel }}>
       {children}
     </ThemeContext.Provider>
   );

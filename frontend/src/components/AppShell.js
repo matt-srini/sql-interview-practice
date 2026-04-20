@@ -1,25 +1,19 @@
 import { useEffect, useState } from 'react';
-import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import SidebarNav from './SidebarNav';
+import Topbar from './Topbar';
 import api from '../api';
 import { useCatalog } from '../catalogContext';
 import { useAuth } from '../contexts/AuthContext';
-import { TRACK_META, useTopic } from '../contexts/TopicContext';
+import { useTopic } from '../contexts/TopicContext';
 import TrackHubPage from '../pages/TrackHubPage';
-import { useTheme } from '../App';
-
-const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
 
 export default function AppShell() {
   const { catalog, loading, error, refresh } = useCatalog();
-  const { user, logout, refreshUser } = useAuth();
-  const { theme, setTheme } = useTheme();
+  const { user, refreshUser } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
-  const [practiceOpen, setPracticeOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [verifyBannerDismissed, setVerifyBannerDismissed] = useState(false);
-  const [verifyResendStatus, setVerifyResendStatus] = useState('idle'); // 'idle' | 'sending' | 'sent'
   const [collapsedByDiff, setCollapsedByDiff] = useState({ easy: false, medium: true, hard: true });
   const [upgradePending, setUpgradePending] = useState(false);
   const [upgradeError, setUpgradeError] = useState('');
@@ -49,24 +43,6 @@ export default function AppShell() {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [mobileOpen]);
-
-  // Close Practice dropdown on outside click or Escape
-  useEffect(() => {
-    if (!practiceOpen) return;
-    const handleClick = (e) => {
-      if (!e.target.closest('.app-practice-dropdown')) setPracticeOpen(false);
-    };
-    const handleKey = (e) => { if (e.key === 'Escape') setPracticeOpen(false); };
-    document.addEventListener('mousedown', handleClick);
-    document.addEventListener('keydown', handleKey);
-    return () => {
-      document.removeEventListener('mousedown', handleClick);
-      document.removeEventListener('keydown', handleKey);
-    };
-  }, [practiceOpen]);
-
-  // Close Practice dropdown on route change
-  useEffect(() => { setPracticeOpen(false); }, [location.pathname]);
 
   // Only auto-navigate to first question when the user lands on the old /practice path
   // For the new /:topic paths we show TrackHubPage instead
@@ -133,146 +109,49 @@ export default function AppShell() {
     (sum, g) => sum + g.questions.filter(q => q.state === 'solved').length, 0
   ) ?? 0;
 
-  const isDark = theme === 'dark';
-  function toggleTheme() { setTheme(isDark ? 'light' : 'dark'); }
-  const themeIcon = isDark ? '☀' : '☾';
-  const themeLabel = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+  const sidebarToggleNode = isMobile ? (
+    <button
+      className="btn btn-secondary sidebar-toggle"
+      onClick={handleSidebarToggle}
+      aria-label="Toggle question bank"
+      aria-expanded={mobileOpen}
+      aria-controls="sidebar"
+    >
+      <span className="sidebar-toggle-icon" aria-hidden="true">☰</span>
+      <span className="sidebar-toggle-label">Questions</span>
+    </button>
+  ) : null;
 
-  const showVerifyBanner = !verifyBannerDismissed && user?.email && user?.email_verified === false;
+  const modePillNode = !isAtHub ? (
+    <span
+      className={`shell-pill shell-pill-mode${pathSlug ? ' shell-pill-mode-path' : ''}`}
+      style={{ '--mode-dot-color': meta.color }}
+      aria-label={modeLabel}
+    >
+      <span className="shell-pill-mode-dot" aria-hidden="true" />
+      {modeLabel}
+    </span>
+  ) : null;
 
-  async function handleVerifyResend() {
-    setVerifyResendStatus('sending');
-    try {
-      await api.post('/auth/resend-verification');
-    } catch {
-      // best-effort
-    }
-    setVerifyResendStatus('sent');
-  }
+  const planPillNode = user ? (
+    <span className={planPillClass}>{planLabel}</span>
+  ) : null;
+
+  const banner = (upgradeError || upgradeSuccess) ? (
+    <div className={`app-banner ${upgradeError ? 'app-banner-error' : 'app-banner-success'}`}>
+      {upgradeError || 'Upgrade confirmed. Your access is refreshing now.'}
+    </div>
+  ) : null;
 
   return (
     <div className={`app-shell ${desktopCollapsed ? 'sidebar-collapsed' : ''}`}>
-      {showVerifyBanner && (
-        <div className="verify-email-banner" role="alert">
-          <span className="verify-email-banner__text">
-            Please verify your email address to access all features.
-          </span>
-          <button
-            type="button"
-            className="verify-email-banner__action"
-            disabled={verifyResendStatus !== 'idle'}
-            onClick={handleVerifyResend}
-          >
-            {verifyResendStatus === 'sent' ? 'Email sent!' : verifyResendStatus === 'sending' ? 'Sending…' : 'Resend email'}
-          </button>
-          <button
-            type="button"
-            className="verify-email-banner__dismiss"
-            aria-label="Dismiss"
-            onClick={() => setVerifyBannerDismissed(true)}
-          >
-            ✕
-          </button>
-        </div>
-      )}
-      <header className="topbar app-topbar">
-        <div className="topbar-inner app-topbar-inner">
-          <div className="app-topbar-brand">
-            {isMobile && (
-              <button
-                className="btn btn-secondary sidebar-toggle"
-                onClick={handleSidebarToggle}
-                aria-label="Toggle question bank"
-                aria-expanded={mobileOpen}
-                aria-controls="sidebar"
-              >
-                <span className="sidebar-toggle-icon" aria-hidden="true">☰</span>
-                <span className="sidebar-toggle-label">Questions</span>
-              </button>
-            )}
-            <Link className="app-practice-home brand-wordmark" to="/">datanest</Link>
-          </div>
-
-          <div className="app-topbar-center">
-            {!isAtHub && (
-              <span
-                className={`shell-pill shell-pill-mode${pathSlug ? ' shell-pill-mode-path' : ''}`}
-                style={{ '--mode-dot-color': meta.color }}
-                aria-label={modeLabel}
-              >
-                <span className="shell-pill-mode-dot" aria-hidden="true" />
-                {modeLabel}
-              </span>
-            )}
-          </div>
-
-          <div className="app-topbar-actions">
-            <div className="topbar-practice-dropdown app-practice-dropdown">
-              <button
-                className={`topbar-auth-link topbar-practice-trigger${practiceOpen ? ' topbar-practice-trigger--open' : ''}`}
-                onClick={() => setPracticeOpen(v => !v)}
-                aria-haspopup="true"
-                aria-expanded={practiceOpen}
-                type="button"
-              >
-                Practice <span className="topbar-practice-caret">{practiceOpen ? '▴' : '▾'}</span>
-              </button>
-              {practiceOpen && (
-                <div className="topbar-practice-menu">
-                  {TOPICS.map((track) => {
-                    const trackMeta = TRACK_META[track];
-                    return (
-                      <NavLink
-                        key={track}
-                        className={({ isActive }) => `topbar-practice-item${isActive ? ' topbar-practice-item--active' : ''}`}
-                        to={`/practice/${track}`}
-                        onClick={() => setPracticeOpen(false)}
-                      >
-                        {trackMeta.label}
-                      </NavLink>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-            <NavLink
-              className={({ isActive }) => `topbar-auth-link${isActive ? ' topbar-auth-link--active' : ''}`}
-              to="/mock"
-            >
-              Mock
-            </NavLink>
-            <NavLink
-              className={({ isActive }) => `topbar-auth-link${isActive ? ' topbar-auth-link--active' : ''}`}
-              to="/dashboard"
-            >
-              Dashboard
-            </NavLink>
-            <button
-              className="theme-toggle"
-              onClick={toggleTheme}
-              aria-label={themeLabel}
-              title={themeLabel}
-            >
-              {themeIcon}
-            </button>
-            <div className="topbar-sep" aria-hidden="true" />
-            {user ? (
-              <>
-                {<span className={planPillClass}>{planLabel}</span>}
-                <span className="topbar-user-name">{user.name || user.email}</span>
-                <button type="button" className="topbar-signout-btn" onClick={logout}>Sign out</button>
-              </>
-            ) : (
-              <Link className="topbar-auth-link" to="/auth">Sign in</Link>
-            )}
-          </div>
-        </div>
-        {(upgradeError || upgradeSuccess) && (
-          <div className={`app-banner ${upgradeError ? 'app-banner-error' : 'app-banner-success'}`}>
-            {upgradeError || 'Upgrade confirmed. Your access is refreshing now.'}
-          </div>
-        )}
-      </header>
+      <Topbar
+        variant="app"
+        leftSlot={sidebarToggleNode}
+        centerSlot={modePillNode}
+        userExtras={planPillNode}
+        belowTopbar={banner}
+      />
 
       <div className="app-body">
         <aside id="sidebar" className={`sidebar ${mobileOpen ? 'sidebar-open' : ''}`}>
