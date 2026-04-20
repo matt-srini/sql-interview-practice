@@ -114,6 +114,7 @@ export default function QuestionPage() {
   });
   const [draftSaveState, setDraftSaveState] = useState('idle');
   const [elapsedMs, setElapsedMs] = useState(0);
+  const [timerHidden, setTimerHidden] = useState(() => localStorage.getItem('timer-hidden') === '1');
 
   // Split pane
   const [leftPanelWidth, setLeftPanelWidth] = useState(() => {
@@ -1110,7 +1111,13 @@ export default function QuestionPage() {
               <div className="editor-topbar">
                 <span className="editor-title">{editorTitle}</span>
                 <div className="editor-topbar-actions">
-                  <span className="editor-topbar-timer" title="Elapsed time for this question">{timerLabel}</span>
+                  <button
+                    type="button"
+                    className={`editor-topbar-timer${timerHidden ? ' editor-topbar-timer--hidden' : ''}`}
+                    title={timerHidden ? 'Show timer' : 'Hide timer'}
+                    aria-label={timerHidden ? 'Show timer' : 'Hide timer'}
+                    onClick={() => setTimerHidden(v => { const next = !v; localStorage.setItem('timer-hidden', next ? '1' : '0'); return next; })}
+                  >{timerHidden ? '--:--' : timerLabel}</button>
                   <span className="editor-topbar-note">
                     {draftSaveState === 'saving' ? 'Saving draft…' : draftSaveState === 'saved' ? 'Draft saved' : editorNote}
                   </span>
