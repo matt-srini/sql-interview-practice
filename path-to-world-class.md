@@ -330,15 +330,15 @@ Update checkboxes as work lands. Do not delete completed items — the tracker i
 
 ### Phase 2 — Tighten the funnel
 
-- [ ] 2.1 Pricing tier copy with hard numbers
-- [ ] 2.2 Sample-exhausted state concrete CTA
-- [ ] 2.3 Above-the-fold trust signal (metrics row)
-- [ ] 2.4 OAuth disabled UX simplification
-- [ ] 2.5 Verify-email copy improvements
-- [ ] 2.6 Signup password-confirm client-side
-- [ ] 2.7 Remove hardcoded color fallbacks
-- [ ] Phase 2 verification + docs sync
-- [ ] Phase 2 commit
+- [x] 2.1 Pricing tier copy with hard numbers
+- [x] 2.2 Sample-exhausted state concrete CTA
+- [x] 2.3 Above-the-fold trust signal (metrics row)
+- [x] 2.4 OAuth disabled UX simplification
+- [x] 2.5 Verify-email copy improvements
+- [x] 2.6 Signup password-confirm client-side
+- [x] 2.7 Remove hardcoded color fallbacks
+- [x] Phase 2 verification + docs sync
+- [x] Phase 2 commit
 
 ### Phase 3 — Workspace power polish
 
