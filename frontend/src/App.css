@@ -1977,7 +1977,7 @@ select {
   padding: 1.75rem 2rem;
   background: var(--surface-card);
   border: 1px solid var(--border-subtle);
-  border-top: 2px solid color-mix(in srgb, var(--track-color) 22%, var(--surface-card-alt));
+  border-top: 1px solid var(--track-color);
   border-radius: var(--radius-md);
   animation: trackStripIn 220ms ease forwards;
 }
@@ -2230,14 +2230,13 @@ select {
   gap: 0.75rem;
   background: var(--surface-card);
   border: 1px solid var(--border-subtle);
-  border-top: 2px solid color-mix(in srgb, var(--tile-color, var(--accent)) 22%, var(--surface-card-alt));
+  border-top: 1px solid var(--tile-color, var(--accent));
   border-radius: 14px;
   transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .sample-tile:hover {
   border-color: color-mix(in srgb, var(--tile-color, var(--accent)) 12%, var(--border-subtle));
-  border-top-color: color-mix(in srgb, var(--tile-color, var(--accent)) 34%, var(--surface-card-alt));
   transform: translateY(-2px);
   box-shadow: var(--shadow-sm);
 }
