@@ -63,12 +63,13 @@ export default function AuthPage() {
     : 'signin';
 
   const [mode, setMode] = useState(initialMode);
-  const [fields, setFields] = useState({ email: '', name: '', password: '' });
+  const [fields, setFields] = useState({ email: '', name: '', password: '', passwordConfirm: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [status, setStatus] = useState('idle'); // 'idle' | 'loading' | 'success'
   const [error, setError] = useState(null);
   const [info, setInfo] = useState(null);
   const [passwordError, setPasswordError] = useState(null);
+  const [passwordConfirmError, setPasswordConfirmError] = useState(null);
   const [signupEmail, setSignupEmail] = useState('');
   const [resendStatus, setResendStatus] = useState('idle'); // 'idle' | 'sending' | 'sent'
 
@@ -91,6 +92,7 @@ export default function AuthPage() {
     setError(null);
     setInfo(null);
     setPasswordError(null);
+    setPasswordConfirmError(null);
     setStatus('idle');
     requestAnimationFrame(() => firstFieldRef.current?.focus());
   }
@@ -99,6 +101,15 @@ export default function AuthPage() {
     setFields((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     if (error) setError(null);
     if (e.target.name === 'password' && passwordError) setPasswordError(null);
+    if (e.target.name === 'passwordConfirm' && passwordConfirmError) setPasswordConfirmError(null);
+  }
+
+  function handlePasswordConfirmBlur() {
+    if (fields.passwordConfirm && fields.passwordConfirm !== fields.password) {
+      setPasswordConfirmError('Passwords do not match.');
+    } else {
+      setPasswordConfirmError(null);
+    }
   }
 
   async function handleSubmit(e) {
@@ -118,10 +129,15 @@ export default function AuthPage() {
           setPasswordError(complexityErr);
           return;
         }
+        if (fields.passwordConfirm !== fields.password) {
+          setStatus('idle');
+          setPasswordConfirmError('Passwords do not match.');
+          return;
+        }
         await register(fields.email, fields.name, fields.password);
         setSignupEmail(fields.email);
         setStatus('success');
-        setInfo(`We've sent a verification email to ${fields.email}. Click the link to verify your account.`);
+        setInfo(`We've sent a verification email to ${fields.email}. Click the link to verify your account. Check your spam folder if it doesn't arrive within a minute — links expire after 24 hours.`);
         return;
       } else if (mode === 'magic') {
         try {
@@ -158,6 +174,7 @@ export default function AuthPage() {
   const showOAuth = mode === 'signin' || mode === 'signup';
   const showPasswordField = mode === 'signin' || mode === 'signup';
   const showNameField = mode === 'signup';
+  const signupConfirmMismatch = mode === 'signup' && fields.passwordConfirm.length > 0 && fields.passwordConfirm !== fields.password;
 
   return (
     <div className="auth-page">
@@ -174,15 +191,14 @@ export default function AuthPage() {
           </div>
 
           {/* OAuth buttons — sign-in / sign-up only */}
-          {/* Buttons are disabled until OAuth provider credentials are configured in production */}
+          {/* Credentials not yet configured; buttons are intentionally inert */}
           {showOAuth && (
             <div className="auth-oauth">
               <button
                 type="button"
                 className="auth-oauth-btn auth-oauth-btn--coming-soon"
-                disabled
+                onClick={() => {}}
                 aria-label="Continue with Google (coming soon)"
-                title="Google sign-in is coming soon"
               >
                 <GoogleIcon />
                 <span>Continue with Google</span>
@@ -191,9 +207,8 @@ export default function AuthPage() {
               <button
                 type="button"
                 className="auth-oauth-btn auth-oauth-btn--coming-soon"
-                disabled
+                onClick={() => {}}
                 aria-label="Continue with GitHub (coming soon)"
-                title="GitHub sign-in is coming soon"
               >
                 <GithubIcon />
                 <span>Continue with GitHub</span>
@@ -319,11 +334,37 @@ export default function AuthPage() {
                 </div>
               )}
 
+              {/* Confirm password — signup only */}
+              {mode === 'signup' && (
+                <div className="auth-field">
+                  <label className="auth-label" htmlFor="auth-password-confirm">Confirm password</label>
+                  <input
+                    id="auth-password-confirm"
+                    name="passwordConfirm"
+                    type={showPassword ? 'text' : 'password'}
+                    className={`auth-input${passwordConfirmError ? ' auth-input--error' : ''}`}
+                    value={fields.passwordConfirm}
+                    onChange={handleChange}
+                    onBlur={handlePasswordConfirmBlur}
+                    autoComplete="new-password"
+                    required
+                    placeholder="Re-enter your password"
+                    aria-required="true"
+                    aria-describedby={passwordConfirmError ? 'auth-password-confirm-error' : undefined}
+                  />
+                  {passwordConfirmError && (
+                    <p id="auth-password-confirm-error" className="auth-field-hint auth-field-hint--error" role="alert">
+                      {passwordConfirmError}
+                    </p>
+                  )}
+                </div>
+              )}
+
               {/* Submit */}
               <button
                 type="submit"
                 className="btn btn-primary auth-submit"
-                disabled={isLoading}
+                disabled={isLoading || signupConfirmMismatch}
                 aria-busy={isLoading}
               >
                 {isLoading ? (

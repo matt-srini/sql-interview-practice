@@ -384,3 +384,203 @@ If the last known commit is Phase 1 partial, resume by:
 4. Continue from that task. Don't skip ahead.
 
 If anything in §3 (architecture decisions) looks wrong given the current code state, pause and ask the owner before reinventing. §3 is binding — it was negotiated up-front.
+
+---
+
+## 14. Imported backlog from TODO.md
+
+`TODO.md` is retired. This section is the canonical home for the remaining backlog that was still pending there.
+
+Rules for implementing agents:
+
+- Items already covered by Phases 1–4 above stay governed by those phases and are not duplicated here.
+- Items already shipped before the TODO retirement were intentionally excluded.
+- Treat the sections below as the post-Phase-4 backlog unless an owner explicitly reprioritizes them.
+
+### 14.1 Pre-launch operational checklist
+
+- Reserved email blocking is already live in `auth.py`; no further code work required.
+- Before launch, run `backend/scripts/seed_admin.py` once against the production Postgres database with a real admin email. The script is idempotent and safe to rerun for credential rotation.
+
+### 14.2 Core experience backlog
+
+#### Auto-save drafts
+
+- Debounce-save editor drafts to `localStorage` keyed by `{topic}:{questionId}`.
+- Restore drafts silently on question load.
+- Show a transient `Draft saved` indicator in the editor chrome.
+- Add `Clear draft` to reset to starter code.
+- Files: `frontend/src/pages/QuestionPage.js`, `frontend/src/pages/SampleQuestionPage.js`
+
+#### Daily streak system
+
+- Extend `GET /api/auth/me` with `streak_days` and `streak_at_risk`.
+- Compute streaks from solved-question activity.
+- Surface streak count in the topbar and add milestone / at-risk messaging.
+- Files: `backend/db.py`, `backend/routers/auth.py`, `frontend/src/components/AppShell.js`, `frontend/src/App.css`
+
+#### Wrong-answer diff visualization
+
+- Add row-level and cell-level diffing in `ResultsTable.js` for incorrect SQL submissions.
+- Add a summary line explaining extra / missing rows.
+- Add side-by-side output diffing for Python test failures.
+- Files: `frontend/src/components/ResultsTable.js`, `frontend/src/pages/QuestionPage.js`, `frontend/src/App.css`
+
+#### Progressive hint journey
+
+- Replace the current hint reveal flow with a 4-step scaffolded hint system: conceptual, approach, structure, full solution.
+- Add soft gating for full-solution reveal and wire new structured hint fields into question JSON.
+- Files: question JSON schema/content, `frontend/src/pages/QuestionPage.js`, `frontend/src/components/HintStepper.js`
+
+#### Concept explanation panel
+
+- Add `backend/content/concepts.json` mapping concept names to explanations and example snippets.
+- Clicking a concept pill opens a dismissible slide-in panel with explanation, example, and related-question links.
+- Files: `backend/content/concepts.json`, `frontend/src/components/ConceptPanel.js`, `frontend/src/pages/QuestionPage.js`, `frontend/src/App.css`
+
+#### Similar-question recommendations
+
+- After a correct solve, recommend up to 2 unsolved questions sharing at least one concept tag.
+- Keep `Continue to next` as the primary CTA; related recommendations are secondary.
+- Files: `frontend/src/pages/QuestionPage.js`, `frontend/src/App.css`
+
+#### Monaco editor quality upgrades
+
+- SQL schema-aware autocomplete from `question.schema`.
+- SQL formatting via `sql-formatter` and shortcut support.
+- Session-only query history in the editor topbar.
+- Persisted font-size controls.
+- Files: `frontend/src/components/CodeEditor.js`, `frontend/src/App.css`, `frontend/package.json`
+
+#### Skeleton loaders
+
+- Add skeleton states for `QuestionPage`, `SidebarNav`, `TrackHubPage`, and `ProgressDashboard`.
+- Introduce a reusable skeleton primitive and shimmer animation.
+- Files: `frontend/src/components/Skeleton.js`, affected page components, `frontend/src/App.css`
+
+#### Motion and transitions
+
+- Animate progress bars on refresh.
+- Add first-solve celebration and unlock toasts.
+- Add lightweight route fade-ins and button loading states.
+- Add milestone toasts for solve-count progress.
+- Files: `frontend/src/App.css`, `frontend/src/components/TrackProgressBar.js`, `frontend/src/pages/QuestionPage.js`, `frontend/package.json`
+
+#### Session goals and focus mode
+
+- Add a daily-goal widget persisted in `localStorage`.
+- Add focus mode that hides nonessential chrome and syncs to `?focus=1`.
+- Files: `frontend/src/components/AppShell.js`, `frontend/src/components/SidebarNav.js`, `frontend/src/pages/QuestionPage.js`, `frontend/src/App.css`
+
+#### Resizable split pane
+
+- Add a draggable divider between description and editor panels on desktop.
+- Persist width in `localStorage`; double-click resets to default.
+- Files: `frontend/src/components/AppShell.js` or `frontend/src/pages/QuestionPage.js`, `frontend/src/App.css`
+
+#### Result error clarity
+
+- Translate common DuckDB parser / binder / timeout errors into learner-friendly copy.
+- Highlight the relevant line in Monaco and link missing-table errors back to the schema viewer.
+- Files: `frontend/src/pages/QuestionPage.js`, `frontend/src/utils/sqlErrorParser.js`, `frontend/src/components/CodeEditor.js`
+
+#### Question bookmarks
+
+- Add local bookmark support with a question-header toggle and a bookmarked section in `SidebarNav`.
+- Cap stored bookmarks at 20, evicting oldest first.
+- Files: `frontend/src/pages/QuestionPage.js`, `frontend/src/components/SidebarNav.js`, `frontend/src/App.css`
+
+#### Per-question soft timer
+
+- Add an always-on elapsed timer in the editor topbar.
+- Pause timing on tab blur.
+- Include `duration_ms` in submissions and later compare against medians when data quality is good enough.
+- Files: `frontend/src/pages/QuestionPage.js`, `frontend/src/App.css`
+
+### 14.3 Discovery, onboarding, and product depth
+
+#### Onboarding
+
+- Add a first-visit walkthrough for track selection and sample questions.
+- Keep a visible skip action.
+- Reinforce first-solve celebration and empty-state guidance on track hubs.
+- Files: `frontend/src/components/OnboardingTooltip.js`, `frontend/src/pages/QuestionPage.js`, `frontend/src/pages/TrackHubPage.js`, `frontend/src/App.css`
+
+#### Question search
+
+- Add client-side full-text search over question title, description, and concepts.
+- Use `fuse.js` in the sidebar above concept filters.
+- Files: `frontend/src/components/SidebarNav.js`, `frontend/package.json`, `frontend/src/App.css`
+
+#### Accessibility baseline
+
+- Ensure full keyboard reachability, visible focus rings, icon-button labels, non-color-only states, and Monaco `aria-label` coverage.
+- Audit text contrast to WCAG AA and target Lighthouse accessibility >= 90 before public launch.
+- Files: `frontend/src/components/AppShell.js`, `frontend/src/components/SidebarNav.js`, `frontend/src/App.css`
+
+### 14.4 Platform foundations
+
+#### React Query adoption
+
+- Introduce `@tanstack/react-query` and start by migrating `catalogContext.js`, `QuestionPage`, and `ProgressDashboard`.
+- New server-driven pages should use query/mutation primitives from day one.
+- Files: `frontend/package.json`, `frontend/src/App.js`, migrated data-fetching surfaces
+
+#### TypeScript migration
+
+- Add `tsconfig.json` and migrate incrementally as touched files change.
+- Centralize API response types in `frontend/src/types/api.ts`.
+- Files: `frontend/tsconfig.json`, `frontend/vite.config.js`, new `.ts` / `.tsx` files
+
+#### Observability and analytics
+
+- Add Sentry for frontend and backend error capture.
+- Add PostHog event tracking for question, sample, mock, and plan-upgrade funnels.
+- Files: `backend/main.py`, `frontend/src/App.js`, `frontend/src/pages/QuestionPage.js`, `frontend/package.json`
+
+#### SEO
+
+- Add static meta tags in `frontend/index.html`.
+- Add dynamic page metadata via `react-helmet-async`.
+- Serve `robots.txt` and `sitemap.xml`; consider prerendering the landing page later.
+- Files: `frontend/index.html`, `frontend/public/robots.txt`, `backend/routers/system.py`, `frontend/package.json`
+
+#### CI/CD and validation
+
+- Extend CI to deploy on merge to `main`, validate question JSON, run dependency audits, lint the frontend, and enforce a bundle-size budget.
+- Files: `.github/workflows/ci.yml`, `backend/scripts/validate_questions.py`, `.eslintrc.js`
+
+#### Security hardening
+
+- Add HTTPS enforcement in production, security headers, CSRF review, stronger password validation, and account-lockout policy.
+- Files: `backend/main.py`, auth flow, session handling
+
+#### Database pool tuning
+
+- Make asyncpg pool sizing configurable in `config.py` and apply it in `db.py`.
+- Treat this as a prerequisite before higher-traffic scaling work.
+- Files: `backend/config.py`, `backend/db.py`
+
+#### Internal question management
+
+- Decide between an internal `/admin` UI and a GitHub/CI-based editing workflow.
+- If UI-based, require admin-only access, question search/filtering, form editing, and preview.
+
+### 14.5 Community and profile surfaces
+
+#### Phase 6: profile and leaderboard
+
+- Add `/profile` with profile header, badges, per-track stats, mock history, and activity heatmap.
+- Add `/leaderboard` with weekly / all-time views, per-track filtering, and opt-in visibility.
+- Add a recent-badges strip to `/dashboard` that links through to `/profile`.
+- New components: `BadgeCard.js`, `ActivityHeatmap.js`, `LeaderboardTable.js`
+
+#### Achievement badges
+
+- Compute badge unlocks from existing submission and mock-session activity.
+- Initial badge ideas: SQL Starter, Speed Demon, 7-Day Streak, Mock Pro.
+
+#### Discussion threads
+
+- Add per-question flat comment threads with auth, moderation, and rate limiting.
+- Start simple: no voting, no nesting, no public complexity until the core experience is stable.

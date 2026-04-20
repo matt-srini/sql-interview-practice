@@ -10,7 +10,7 @@ export const TRACK_META = {
     language: 'sql',
     hasRunCode: true,
     hasMCQ: false,
-    totalQuestions: 86,
+    totalQuestions: 95,
     tagline: 'easy · medium · hard',
   },
   python: {
@@ -21,7 +21,7 @@ export const TRACK_META = {
     language: 'python',
     hasRunCode: true,
     hasMCQ: false,
-    totalQuestions: 75,
+    totalQuestions: 83,
     tagline: 'algorithms · data structures · OOP',
   },
   'python-data': {
@@ -32,7 +32,7 @@ export const TRACK_META = {
     language: 'python',
     hasRunCode: true,
     hasMCQ: false,
-    totalQuestions: 75,
+    totalQuestions: 82,
     tagline: 'pandas · numpy · data wrangling',
   },
   pyspark: {
@@ -43,7 +43,7 @@ export const TRACK_META = {
     language: 'text',
     hasRunCode: false,
     hasMCQ: true,
-    totalQuestions: 75,
+    totalQuestions: 90,
     tagline: 'conceptual · MCQ · predict output',
   },
 };
