@@ -793,6 +793,18 @@ select {
   color: var(--warning);
 }
 
+.shell-pill-streak {
+  border-color: rgba(45, 158, 107, 0.26);
+  background: rgba(45, 158, 107, 0.09);
+  color: var(--success);
+}
+
+.shell-pill-streak-risk {
+  border-color: rgba(196, 127, 23, 0.34);
+  background: rgba(196, 127, 23, 0.12);
+  color: var(--warning);
+}
+
 /* Mode pill (center topbar — challenge/sample/path) */
 .app-topbar-center {
   flex: 1;
@@ -5066,6 +5078,8 @@ select {
 [data-theme="dark"] .shell-pill-mode-path { background: rgba(91,106,240,0.12); }
 [data-theme="dark"] .shell-pill-plan-free { background: rgba(255,255,255,0.03); color: var(--text-secondary); }
 [data-theme="dark"] .shell-pill-plan-elite { background: rgba(196,127,23,0.1); }
+[data-theme="dark"] .shell-pill-streak { background: rgba(45, 158, 107, 0.16); border-color: rgba(45, 158, 107, 0.28); color: #8BD2B0; }
+[data-theme="dark"] .shell-pill-streak-risk { background: rgba(196, 127, 23, 0.18); border-color: rgba(196, 127, 23, 0.34); color: #E2BD79; }
 [data-theme="dark"] .sidebar-unlock-nudge { background: rgba(255,255,255,0.02); }
 [data-theme="dark"] .delta-hint { background: rgba(91,106,240,0.06); border-color: rgba(91,106,240,0.18); }
 [data-theme="dark"] .feedback-title { color: var(--warning); }

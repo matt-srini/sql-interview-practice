@@ -30,6 +30,7 @@ from db import (
     create_session,
     delete_session,
     get_or_create_oauth_user,
+    get_user_streak_status,
     get_user_by_email,
     get_user_credentials_by_email,
     mark_email_verified,
@@ -290,8 +291,19 @@ async def logout(request: Request, response: Response) -> Response:
 async def me(session_user: dict[str, str | None] | None = Depends(get_optional_current_user)) -> JSONResponse:
     if session_user is None or session_user.get("email") is None:
         return JSONResponse(status_code=401, content={"user": None})
+    streak = await get_user_streak_status(session_user["id"])
     return JSONResponse(
-        content={"user": {"id": session_user["id"], "email": session_user["email"], "name": session_user["name"], "plan": session_user["plan"], "email_verified": session_user.get("email_verified", False)}}
+        content={
+            "user": {
+                "id": session_user["id"],
+                "email": session_user["email"],
+                "name": session_user["name"],
+                "plan": session_user["plan"],
+                "email_verified": session_user.get("email_verified", False),
+                "streak_days": streak["streak_days"],
+                "streak_at_risk": streak["streak_at_risk"],
+            }
+        }
     )
 
 

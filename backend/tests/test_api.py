@@ -555,6 +555,35 @@ def test_register_preserves_anonymous_progress_and_user_id() -> None:
         assert easy_questions[1]["state"] == "unlocked"
 
 
+def test_auth_me_includes_streak_metadata() -> None:
+    with TestClient(app) as client:
+        client.get("/api/catalog")
+        register = client.post(
+            "/api/auth/register",
+            json={"email": "streak-meta@example.com", "name": "Streak User", "password": "Password123"},
+        )
+        assert register.status_code == 201
+
+        me_before = client.get("/api/auth/me")
+        assert me_before.status_code == 200
+        assert me_before.json()["user"]["streak_days"] == 0
+        assert me_before.json()["user"]["streak_at_risk"] is False
+
+        first_easy_id = int(get_questions_by_difficulty()["easy"][0]["id"])
+        first_easy = get_question(first_easy_id)
+        assert first_easy is not None
+        submit = client.post(
+            "/api/submit",
+            json={"query": first_easy["solution_query"], "question_id": first_easy_id},
+        )
+        assert submit.status_code == 200
+
+        me_after = client.get("/api/auth/me")
+        assert me_after.status_code == 200
+        assert me_after.json()["user"]["streak_days"] >= 1
+        assert me_after.json()["user"]["streak_at_risk"] is False
+
+
 def test_login_merges_existing_anonymous_progress() -> None:
     first_easy_id = int(get_questions_by_difficulty()["easy"][0]["id"])
     first_easy = get_question(first_easy_id)

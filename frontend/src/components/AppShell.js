@@ -143,6 +143,22 @@ export default function AppShell() {
     <span className={planPillClass}>{planLabel}</span>
   ) : null;
 
+  const streakPillNode = user && typeof user.streak_days === 'number' && user.streak_days > 0 ? (
+    <span
+      className={`shell-pill shell-pill-streak${user.streak_at_risk ? ' shell-pill-streak-risk' : ''}`}
+      title={user.streak_at_risk ? 'Streak at risk: solve one question today' : 'Current solve streak'}
+    >
+      {user.streak_days}-day streak
+    </span>
+  ) : null;
+
+  const userExtrasNode = (
+    <>
+      {streakPillNode}
+      {planPillNode}
+    </>
+  );
+
   const banner = (upgradeError || upgradeSuccess) ? (
     <div className={`app-banner ${upgradeError ? 'app-banner-error' : 'app-banner-success'}`}>
       {upgradeError || 'Upgrade confirmed. Your access is refreshing now.'}
@@ -155,7 +171,7 @@ export default function AppShell() {
         variant="app"
         leftSlot={sidebarToggleNode}
         centerSlot={modePillNode}
-        userExtras={planPillNode}
+        userExtras={userExtrasNode}
         belowTopbar={banner}
       />
 

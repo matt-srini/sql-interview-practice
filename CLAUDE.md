@@ -287,7 +287,7 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 
 **Dashboard insights:** `GET /api/dashboard/insights` computes per-track solve count, median solve time, and accuracy from `submissions`; weakest concepts (bottom 3 with >=3 attempts); deterministic cross-track pacing insight (only when slow-fast gap >= 60s); and consecutive `streak_days` ending today. Results are cached in-process for 60 seconds per user.
 
-**Identity:** Anonymous visitors get real user rows + session cookies. Registration upgrades the session in place. Login merges anonymous progress into an existing account. Session cookie is `SameSite=Strict` (and secure in production by default).
+**Identity:** Anonymous visitors get real user rows + session cookies. Registration upgrades the session in place. Login merges anonymous progress into an existing account. `GET /api/auth/me` returns identity plus streak metadata (`streak_days`, `streak_at_risk`) used by the workspace topbar. Session cookie is `SameSite=Strict` (and secure in production by default).
 
 **Auth hardening:** Reserved local-part email prefixes are blocked on registration. Failed sign-in attempts are tracked in Postgres; after `LOGIN_LOCKOUT_MAX_ATTEMPTS` failures, the account is temporarily locked for `LOGIN_LOCKOUT_WINDOW_MINUTES`.
 
@@ -332,7 +332,7 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 | POST | `/api/sample/sql/run-query` | Execute SQL sample query |
 | POST | `/api/sample/{topic}/run-code` | Execute Python/Pandas sample code |
 | POST | `/api/sample/{topic}/submit` | Submit sample answer (no challenge progress impact) |
-| GET | `/api/auth/me` | Current user identity |
+| GET | `/api/auth/me` | Current user identity + streak metadata (`streak_days`, `streak_at_risk`) |
 | POST | `/api/auth/register` | Create account, upgrade anonymous session |
 | POST | `/api/auth/login` | Authenticate, merge anonymous progress |
 | POST | `/api/auth/logout` | Delete session |

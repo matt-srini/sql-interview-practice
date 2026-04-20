@@ -1322,6 +1322,47 @@ async def get_submission_events(user_id: str) -> list[dict[str, Any]]:
         ]
 
 
+async def get_user_streak_status(user_id: str) -> dict[str, Any]:
+    """Return streak metadata for auth/me payloads."""
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                SELECT DISTINCT DATE(submitted_at AT TIME ZONE 'UTC') AS solve_date
+                FROM submissions
+                WHERE user_id = CAST(:user_id AS UUID)
+                  AND is_correct = TRUE
+                ORDER BY solve_date DESC
+                """
+            ),
+            {"user_id": user_id},
+        )
+        rows = result.mappings().all()
+
+    solve_dates = {
+        row["solve_date"]
+        for row in rows
+        if row.get("solve_date") is not None
+    }
+
+    today = datetime.now(timezone.utc).date()
+    cursor = today
+    streak_days = 0
+    while cursor in solve_dates:
+        streak_days += 1
+        cursor -= timedelta(days=1)
+
+    streak_at_risk = False
+    if streak_days == 0 and (today - timedelta(days=1)) in solve_dates:
+        streak_at_risk = True
+
+    return {
+        "streak_days": streak_days,
+        "streak_at_risk": streak_at_risk,
+    }
+
+
 # ── OAuth accounts ────────────────────────────────────────────────────────────
 
 async def get_or_create_oauth_user(
