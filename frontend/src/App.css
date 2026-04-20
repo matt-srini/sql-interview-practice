@@ -89,6 +89,75 @@ select {
   padding: 0 1.5rem;
 }
 
+@keyframes route-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.route-transition {
+  animation: route-fade-in 0.18s ease;
+}
+
+.toast-viewport {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  width: min(24rem, calc(100vw - 2rem));
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  z-index: 120;
+  pointer-events: none;
+}
+
+.toast-item {
+  pointer-events: auto;
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--surface-card) 94%, var(--bg-page));
+  box-shadow: var(--shadow-md);
+  padding: 0.6rem 0.72rem;
+}
+
+.toast-item-success {
+  border-color: color-mix(in srgb, var(--success) 30%, var(--border-subtle));
+}
+
+.toast-item-title {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 640;
+  color: var(--text-strong);
+  line-height: 1.35;
+}
+
+.toast-item-message {
+  margin: 0.2rem 0 0;
+  font-size: 0.77rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.toast-item-dismiss {
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--surface-card-alt);
+  color: var(--text-secondary);
+  min-width: 1.55rem;
+  min-height: 1.55rem;
+  cursor: pointer;
+}
+
 /* ============================================================
    Error Boundary
    ============================================================ */
@@ -2299,6 +2368,93 @@ select {
   outline-offset: 2px;
 }
 
+/* Baseline keyboard visibility across the workspace */
+:where(
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  [role="button"],
+  [role="tab"]
+):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.onboarding-target-active {
+  position: relative;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 42%, transparent);
+  border-radius: 14px;
+}
+
+.onboarding-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+}
+
+.onboarding-backdrop {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--bg-page) 30%, transparent);
+  backdrop-filter: blur(1px);
+}
+
+.onboarding-tooltip {
+  position: fixed;
+  width: min(320px, calc(100vw - 2rem));
+  background: var(--surface-card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 0.9rem 0.95rem;
+  z-index: 1201;
+}
+
+.onboarding-tooltip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+
+.onboarding-tooltip-step {
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.onboarding-tooltip-skip {
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.onboarding-tooltip-title {
+  margin: 0 0 0.45rem;
+  font-size: 0.96rem;
+  color: var(--text-strong);
+}
+
+.onboarding-tooltip-copy {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  font-size: 0.84rem;
+}
+
+.onboarding-tooltip-actions {
+  margin-top: 0.8rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
 .sample-tile p {
   color: var(--text-secondary);
   font-size: 0.88rem;
@@ -2838,6 +2994,24 @@ select {
   flex-direction: column;
   border-radius: 14px;
   overflow: hidden;
+}
+
+@keyframes solve-pop {
+  0% {
+    transform: translateY(6px);
+    opacity: 0.6;
+  }
+  60% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.submit-outcome-celebrate {
+  animation: solve-pop 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .submit-outcome .verdict {
@@ -3587,6 +3761,47 @@ select {
   animation: pulse 1.5s ease-in-out infinite;
 }
 
+.skeleton-block {
+  display: block;
+  border-radius: 8px;
+}
+
+.sidebar-inner-loading {
+  gap: 0.62rem;
+}
+
+.sidebar-skeleton-search {
+  border-radius: 10px;
+}
+
+.sidebar-skeleton-group-head {
+  border-radius: 14px;
+}
+
+.sidebar-skeleton-list {
+  margin-top: 0.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.36rem;
+}
+
+.sidebar-skeleton-row {
+  border-radius: 10px;
+}
+
+.track-hub-loading,
+.dashboard-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.72rem;
+}
+
+.dashboard-loading-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
 /* ============================================================
    Execution state: scanning bar + skeleton loaders
    ============================================================ */
@@ -4043,7 +4258,7 @@ select {
 .track-progress-bar-fill {
   height: 100%;
   border-radius: 999px;
-  transition: width 0.4s ease;
+  transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
   opacity: 0.8;
 }
 
@@ -5665,6 +5880,14 @@ select {
   .landing-showcase-inner { transition: none; transform: none; opacity: 1; }
   .ide-body-inner { animation: none; }
   .ide-tab, .ide-rotation-dot, .landing-ide { transition: none; }
+  .route-transition,
+  .submit-outcome-celebrate,
+  .loading,
+  .skeleton-shimmer,
+  .track-progress-bar-fill {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 /* Progress bar — compact inside track cards */
@@ -5776,8 +5999,18 @@ select {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
   width: 100%;
-  padding: 0.6rem 0.85rem;
+  padding: 0.4rem 0.85rem;
+}
+
+.sidebar-filters-toggle-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 0.2rem 0;
   background: none;
   border: none;
   cursor: pointer;
@@ -5790,7 +6023,7 @@ select {
   transition: background 0.1s;
 }
 
-.sidebar-filters-toggle:hover {
+.sidebar-filters-toggle-main:hover {
   background: var(--surface-highlight);
   color: var(--text-strong);
 }

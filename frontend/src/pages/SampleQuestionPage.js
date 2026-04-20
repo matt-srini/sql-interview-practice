@@ -525,6 +525,7 @@ export default function SampleQuestionPage() {
                   language={meta.language}
                   height={editorTall ? '560px' : '340px'}
                   onMount={handleEditorMount}
+                  ariaLabel={`${topicLabel} sample editor`}
                 />
 
                 <div className="editor-footer question-action-dock">

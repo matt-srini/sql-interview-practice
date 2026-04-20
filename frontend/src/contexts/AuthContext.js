@@ -10,9 +10,12 @@ export function AuthProvider({ children }) {
   const refreshUser = useCallback(async () => {
     try {
       const res = await api.get('/auth/me');
-      setUser(res.data.user ?? null);
+      const nextUser = res.data.user ?? null;
+      setUser(nextUser);
+      return nextUser;
     } catch {
       setUser(null);
+      return null;
     }
   }, []);
 

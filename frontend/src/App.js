@@ -17,12 +17,19 @@ import QuestionPage from './pages/QuestionPage';
 import SampleQuestionPage from './pages/SampleQuestionPage';
 import LearningPath from './pages/LearningPath';
 import LearningPathsIndex from './pages/LearningPathsIndex';
+import ToastViewport from './components/ToastViewport';
 
 // ── Theme ──────────────────────────────────────────────────────
 export const ThemeContext = createContext(null);
 
 export function useTheme() {
   return useContext(ThemeContext);
+}
+
+export const ToastContext = createContext(null);
+
+export function useToast() {
+  return useContext(ToastContext) ?? { notify: () => {} };
 }
 
 function getSystemTheme() {
@@ -53,6 +60,47 @@ function ThemeProvider({ children }) {
   );
 }
 // ──────────────────────────────────────────────────────────────
+
+function ToastProvider({ children }) {
+  const [toasts, setToasts] = useState([]);
+
+  function dismissToast(id) {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  }
+
+  function notify(input) {
+    const payload = typeof input === 'string' ? { title: input } : (input ?? {});
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const toast = {
+      id,
+      title: payload.title ?? '',
+      message: payload.message ?? '',
+      tone: payload.tone ?? 'info',
+      durationMs: payload.durationMs ?? 3200,
+    };
+    setToasts((prev) => [...prev.slice(-3), toast]);
+
+    window.setTimeout(() => {
+      dismissToast(id);
+    }, toast.durationMs);
+  }
+
+  return (
+    <ToastContext.Provider value={{ notify }}>
+      {children}
+      <ToastViewport toasts={toasts} onDismiss={dismissToast} />
+    </ToastContext.Provider>
+  );
+}
+
+function RouteTransition({ children }) {
+  const location = useLocation();
+  return (
+    <div key={`${location.pathname}${location.search}`} className="route-transition">
+      {children}
+    </div>
+  );
+}
 
 function AuthRequired({ children }) {
   const { user, loading } = useAuth();
@@ -89,37 +137,41 @@ export default function App() {
     <ThemeProvider>
     <BrowserRouter>
       <AuthProvider>
-        <ErrorBoundary>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
-            <Route path="/dashboard" element={<ProgressDashboard />} />
-            <Route path="/mock" element={<AuthRequired><MockHub /></AuthRequired>} />
-            <Route path="/mock/:id" element={<AuthRequired><MockSession /></AuthRequired>} />
-            <Route path="/sample/:topic/:difficulty" element={<SampleQuestionPage />} />
-            <Route path="/sample/:difficulty" element={<LegacySampleRedirect />} />
+        <ToastProvider>
+          <ErrorBoundary>
+            <RouteTransition>
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/auth" element={<AuthPage />} />
+                <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
+                <Route path="/dashboard" element={<ProgressDashboard />} />
+                <Route path="/mock" element={<AuthRequired><MockHub /></AuthRequired>} />
+                <Route path="/mock/:id" element={<AuthRequired><MockSession /></AuthRequired>} />
+                <Route path="/sample/:topic/:difficulty" element={<SampleQuestionPage />} />
+                <Route path="/sample/:difficulty" element={<LegacySampleRedirect />} />
 
-            {/* Legacy redirects — must come before the :topic wildcard */}
-            <Route path="/practice/questions/:id" element={<LegacyQuestionRedirect />} />
-            <Route path="/practice" element={<Navigate to="/practice/sql" replace />} />
-            <Route path="/questions/:id" element={<LegacyQuestionRedirect />} />
+                {/* Legacy redirects — must come before the :topic wildcard */}
+                <Route path="/practice/questions/:id" element={<LegacyQuestionRedirect />} />
+                <Route path="/practice" element={<Navigate to="/practice/sql" replace />} />
+                <Route path="/questions/:id" element={<LegacyQuestionRedirect />} />
 
-            {/* Learning paths */}
-            <Route path="/learn" element={<LearningPathsIndex />} />
-            <Route path="/learn/:topic" element={<LearningPathsIndex />} />
-            <Route path="/learn/:topic/:slug" element={<LearningPath />} />
+                {/* Learning paths */}
+                <Route path="/learn" element={<LearningPathsIndex />} />
+                <Route path="/learn/:topic" element={<LearningPathsIndex />} />
+                <Route path="/learn/:topic/:slug" element={<LearningPath />} />
 
-            {/* Topic-aware practice routes */}
-            <Route path="/practice/:topic" element={<TopicShell />}>
-              <Route path="questions/:id" element={<QuestionPage />} />
-            </Route>
+                {/* Topic-aware practice routes */}
+                <Route path="/practice/:topic" element={<TopicShell />}>
+                  <Route path="questions/:id" element={<QuestionPage />} />
+                </Route>
 
-            {/* 404 catch-all */}
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </ErrorBoundary>
+                {/* 404 catch-all */}
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </RouteTransition>
+          </ErrorBoundary>
+        </ToastProvider>
       </AuthProvider>
     </BrowserRouter>
     </ThemeProvider>
