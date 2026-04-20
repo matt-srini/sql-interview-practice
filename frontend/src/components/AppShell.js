@@ -90,7 +90,7 @@ export default function AppShell() {
     }
   }
 
-  const { meta } = useTopic();
+  const { topic, meta } = useTopic();
   const pathSlug = new URLSearchParams(location.search).get('path');
   const modeLabel = pathSlug ? `${meta.label} · Path` : `${meta.label} · Challenge`;
 
@@ -100,7 +100,6 @@ export default function AppShell() {
   const planPillClass = `shell-pill shell-pill-plan shell-pill-plan-${user?.plan ?? 'free'}`;
 
   // Unlock nudge for free-plan users with locked questions
-  const easyGroup = catalog?.groups?.find(g => g.difficulty === 'easy');
   const mediumGroup = catalog?.groups?.find(g => g.difficulty === 'medium');
   const lockedMediumCount = mediumGroup?.questions?.filter(q => q.state === 'locked').length ?? 0;
   const lockedHardCount = (catalog?.groups?.find(g => g.difficulty === 'hard'))?.questions?.filter(q => q.state === 'locked').length ?? 0;
@@ -108,6 +107,13 @@ export default function AppShell() {
   const totalSolvedSidebar = catalog?.groups?.reduce(
     (sum, g) => sum + g.questions.filter(q => q.state === 'solved').length, 0
   ) ?? 0;
+  const unlockNudgeByTrack = {
+    sql: 'Medium unlocks at 8, 15, and 25 easy solves. Hard unlocks at 8, 15, and 22 medium solves (capped at 15 hard).',
+    python: 'Medium unlocks at 8, 15, and 25 easy solves. Hard unlocks at 8, 15, and 22 medium solves (capped at 15 hard).',
+    'python-data': 'Medium unlocks at 8, 15, and 25 easy solves. Hard unlocks at 8, 15, and 22 medium solves (capped at 15 hard).',
+    pyspark: 'Medium unlocks at 12, 20, and 30 easy solves. Hard unlocks at 15 and 22 medium solves (capped at 10 hard).',
+  };
+  const unlockNudgeCopy = unlockNudgeByTrack[topic] ?? unlockNudgeByTrack.sql;
 
   const sidebarToggleNode = isMobile ? (
     <button
@@ -178,7 +184,7 @@ export default function AppShell() {
           )}
           {showUnlockNudge && (
             <div className="sidebar-unlock-nudge">
-              Questions unlock as you solve them — medium opens after 10 easy solves, hard after 10 medium. The sequence builds real competence.
+              Questions unlock as you solve them. {unlockNudgeCopy} The sequence builds real competence.
             </div>
           )}
           {showUpgradeControls && (
