@@ -150,12 +150,14 @@ sql-interview-practice/
 │   │   │   ├── VariablesPanel.js   # Available DataFrames for Pandas questions
 │   │   │   ├── MCQPanel.js         # Radio-button MCQ for PySpark questions
 │   │   │   ├── ConceptPanel.js     # Slide-in concept explanation panel opened from concept pills
-│   │   │   ├── TrackProgressBar.js # Reusable horizontal progress bar
+│   │   │   ├── Skeleton.js         # Reusable shimmer/loading primitive used across workspace and dashboard
+│   │   │   ├── ToastViewport.js    # Global in-app milestone/unlock toast stack
+│   │   │   ├── TrackProgressBar.js # Reusable horizontal progress bar (animated fill)
 │   │   │   ├── PathProgressCard.js # Path card with topic dot, progress bar, CTA (used on Landing + TrackHub)
 │   │   │   └── Topbar.js           # Shared top nav bar used by all standalone pages (Practice dropdown, Mock, Dashboard, auth)
 │   │   └── pages/
 │   │       ├── LandingPage.js          # Fixed-topbar landing with track/sample tabs and compact progress panels
-│   │       ├── QuestionPage.js         # Topic-aware question page (all 4 tracks, shortcut popover, verdict-header solution reveal, draft autosave, soft timer, bookmarks)
+│   │       ├── QuestionPage.js         # Topic-aware question page (all 4 tracks, shortcuts, draft autosave, soft timer, bookmarks, unlock/streak milestone toasts)
 │   │       ├── TrackHubPage.js         # Per-track landing (progress, next-up summary, concept preview, paths)
 │   │       ├── LearningPath.js         # Curated path page at /learn/:topic/:slug (breadcrumb, progress, completion banner)
 │   │       ├── LearningPathsIndex.js   # Index of all paths at /learn and /learn/:topic (grouped + in-progress rail)
@@ -287,7 +289,7 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 
 **Dashboard insights:** `GET /api/dashboard/insights` computes per-track solve count, median solve time, and accuracy from `submissions`; weakest concepts (bottom 3 with >=3 attempts); deterministic cross-track pacing insight (only when slow-fast gap >= 60s); and consecutive `streak_days` ending today. Results are cached in-process for 60 seconds per user.
 
-**Identity:** Anonymous visitors get real user rows + session cookies. Registration upgrades the session in place. Login merges anonymous progress into an existing account. `GET /api/auth/me` returns identity plus streak metadata (`streak_days`, `streak_at_risk`) used by the workspace topbar. Session cookie is `SameSite=Strict` (and secure in production by default).
+**Identity:** Anonymous visitors get real user rows + session cookies. Registration upgrades the session in place. Login merges anonymous progress into an existing account. `GET /api/auth/me` returns identity plus streak metadata (`streak_days`, `streak_at_risk`) used by the workspace topbar and streak milestone toasts on solves. Session cookie is `SameSite=Strict` (and secure in production by default).
 
 **Auth hardening:** Reserved local-part email prefixes are blocked on registration. Failed sign-in attempts are tracked in Postgres; after `LOGIN_LOCKOUT_MAX_ATTEMPTS` failures, the account is temporarily locked for `LOGIN_LOCKOUT_WINDOW_MINUTES`.
 

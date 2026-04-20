@@ -8,6 +8,7 @@ import TrackProgressBar from '../components/TrackProgressBar';
 import PathProgressCard from '../components/PathProgressCard';
 import TierBanner from '../components/TierBanner';
 import UpgradeButton from '../components/UpgradeButton';
+import Skeleton from '../components/Skeleton';
 
 function pickNextQuestionId(catalog) {
   if (!catalog) return null;
@@ -103,7 +104,12 @@ export default function TrackHubPage() {
   if (loading) {
     return (
       <main className="container track-hub-page" style={{ paddingTop: '2rem' }}>
-        <p className="loading">Loading {meta.label} questions…</p>
+        <div className="track-hub-loading" aria-label={`Loading ${meta.label} questions`}>
+          <Skeleton width="11rem" height="0.95rem" />
+          <Skeleton width="20rem" height="2rem" />
+          <Skeleton width="90%" height="0.85rem" />
+          <Skeleton width="100%" height="10rem" />
+        </div>
       </main>
     );
   }

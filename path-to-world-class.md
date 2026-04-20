@@ -433,15 +433,15 @@ Each phase commit must:
 
 #### 7.3 Engagement and retention
 
-- [~] Daily streak system: `GET /api/auth/me` now includes `streak_days` + `streak_at_risk`, and AppShell renders streak pill; milestone toasts still pending
-- [ ] Motion/transitions pass (animated progress, celebrations, unlock toasts, route fades)
-- [ ] Reusable skeleton primitive rollout (QuestionPage, SidebarNav, TrackHubPage, ProgressDashboard)
+- [x] Daily streak system: `GET /api/auth/me` includes `streak_days` + `streak_at_risk`; AppShell renders streak pill; streak milestone toasts now trigger on question solves
+- [x] Motion/transitions pass (animated progress bars, first-solve celebration, unlock/streak toasts, route fade-ins)
+- [x] Reusable skeleton primitive rollout (QuestionPage, SidebarNav, TrackHubPage, ProgressDashboard)
 
 #### 7.4 Discovery and onboarding
 
-- [ ] Onboarding walkthrough with skip
+- [x] Onboarding walkthrough with skip
 - [x] Sidebar fuzzy question search (Fuse.js)
-- [ ] Accessibility baseline pass (keyboard reachability, labels, non-color states, Monaco aria-label, Lighthouse >= 90)
+- [x] Accessibility baseline pass (keyboard reachability, labels, non-color states, Monaco aria-label, Lighthouse >= 90)
 
 #### 7.5 Platform foundations
 

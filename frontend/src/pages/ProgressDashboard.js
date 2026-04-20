@@ -6,6 +6,7 @@ import { TRACK_META } from '../contexts/TopicContext';
 import TrackProgressBar from '../components/TrackProgressBar';
 import Topbar from '../components/Topbar';
 import InsightStrip from '../components/InsightStrip';
+import Skeleton from '../components/Skeleton';
 
 const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
 
@@ -75,7 +76,18 @@ export default function ProgressDashboard() {
           {user && <p className="page-subtitle">{user.name || user.email}</p>}
         </div>
 
-        {loading && <p className="loading">Loading dashboard…</p>}
+        {loading && (
+          <div className="dashboard-loading" aria-label="Loading dashboard">
+            <p className="loading">Loading dashboard…</p>
+            <Skeleton width="10rem" height="0.95rem" />
+            <div className="dashboard-loading-strip">
+              <Skeleton height="7rem" />
+              <Skeleton height="7rem" />
+              <Skeleton height="7rem" />
+            </div>
+            <Skeleton width="100%" height="15rem" />
+          </div>
+        )}
         {error && <p className="error-box">{error}</p>}
 
         {!loading && !error && (

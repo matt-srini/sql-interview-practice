@@ -12,7 +12,17 @@ import Editor from '@monaco-editor/react';
  *   onMount      Optional (editor, monaco) callback forwarded to Monaco's onMount.
  *                Use this to register keyboard commands via editor.addCommand().
  */
-export default function CodeEditor({ value, onChange, language = 'sql', height = '340px', fontSize = 14, onMount }) {
+export default function CodeEditor({
+  value,
+  onChange,
+  language = 'sql',
+  height = '340px',
+  fontSize = 14,
+  onMount,
+  ariaLabel,
+}) {
+  const resolvedAriaLabel = ariaLabel || `${language === 'python' ? 'Python' : 'SQL'} code editor`;
+
   return (
     <Editor
       height={height}
@@ -23,6 +33,7 @@ export default function CodeEditor({ value, onChange, language = 'sql', height =
       onMount={onMount}
       options={{
         minimap: { enabled: false },
+        ariaLabel: resolvedAriaLabel,
         fontSize,
         fontFamily: '"JetBrains Mono", "SFMono-Regular", Consolas, monospace',
         lineNumbers: 'on',

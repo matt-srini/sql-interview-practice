@@ -8,6 +8,7 @@ import PathProgressCard from '../components/PathProgressCard';
 import Topbar from '../components/Topbar';
 import LoggedInWelcome from '../components/LoggedInWelcome';
 import UpgradeButton from '../components/UpgradeButton';
+import OnboardingTooltip from '../components/OnboardingTooltip';
 import { highlightCode } from './landingShowcaseHighlight';
 
 const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
@@ -135,6 +136,7 @@ df.repartition(10, 'user_id')`,
 ];
 
 const SHOWCASE_ROTATE_MS = 8000;
+const LANDING_ONBOARDING_KEY = 'landingOnboardingSeen-v1';
 
 export default function LandingPage() {
   const { user, logout } = useAuth();
@@ -176,6 +178,10 @@ export default function LandingPage() {
   const [showcaseActiveIndex, setShowcaseActiveIndex] = useState(0);
   const [showcaseInView, setShowcaseInView] = useState(false);
   const [showcasePaused, setShowcasePaused] = useState(false);
+  const [onboardingOpen, setOnboardingOpen] = useState(false);
+
+  const showcaseTabRefs = useRef([]);
+  const showcaseDotRefs = useRef([]);
 
   const [paths, setPaths] = useState([]);
   const [displayedPaths, setDisplayedPaths] = useState([]);
@@ -212,6 +218,16 @@ export default function LandingPage() {
       setPaths(r.data);
       setDisplayedPaths(pickRandom(r.data, 4));
     }).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const seen = localStorage.getItem(LANDING_ONBOARDING_KEY);
+      if (!seen) setOnboardingOpen(true);
+    } catch {
+      setOnboardingOpen(true);
+    }
   }, []);
 
   // Scroll to hash on mount (e.g. /#landing-tracks from back arrow)
@@ -254,6 +270,26 @@ export default function LandingPage() {
 
   const handleShowcaseJump = useCallback((i) => {
     setShowcaseActiveIndex(i);
+  }, []);
+
+  const handleShowcaseKeyNav = useCallback((event, index, refs) => {
+    const max = SHOWCASE_CARDS.length - 1;
+    let nextIndex = null;
+    if (event.key === 'ArrowRight') nextIndex = index === max ? 0 : index + 1;
+    if (event.key === 'ArrowLeft') nextIndex = index === 0 ? max : index - 1;
+    if (event.key === 'Home') nextIndex = 0;
+    if (event.key === 'End') nextIndex = max;
+    if (nextIndex === null) return;
+    event.preventDefault();
+    setShowcaseActiveIndex(nextIndex);
+    refs.current[nextIndex]?.focus();
+  }, []);
+
+  const closeOnboarding = useCallback(() => {
+    setOnboardingOpen(false);
+    try {
+      localStorage.setItem(LANDING_ONBOARDING_KEY, '1');
+    } catch {}
   }, []);
 
   const handleIdeFocusCapture = useCallback(() => setShowcasePaused(true), []);
@@ -371,10 +407,12 @@ export default function LandingPage() {
                         role="tab"
                         aria-selected={isActive}
                         aria-controls="ide-body"
-                        tabIndex={isActive ? 0 : -1}
+                        tabIndex={0}
                         className={`ide-tab${isActive ? ' is-active' : ''}`}
                         style={{ '--tab-color': tabColor }}
                         onClick={() => handleShowcaseJump(i)}
+                        onKeyDown={(event) => handleShowcaseKeyNav(event, i, showcaseTabRefs)}
+                        ref={(el) => { showcaseTabRefs.current[i] = el; }}
                       >
                         <span className="ide-tab-dot" aria-hidden="true" />
                         <span className="ide-tab-filename">{card.fileName}</span>
@@ -446,10 +484,12 @@ export default function LandingPage() {
                         role="tab"
                         aria-selected={isActive}
                         aria-label={`Show ${TRACK_META[card.topic]?.label}`}
-                        tabIndex={isActive ? 0 : -1}
+                        tabIndex={0}
                         className={`ide-rotation-dot${isActive ? ' is-active' : ''}`}
                         style={{ '--dot-color': dotColor }}
                         onClick={() => handleShowcaseJump(i)}
+                        onKeyDown={(event) => handleShowcaseKeyNav(event, i, showcaseDotRefs)}
+                        ref={(el) => { showcaseDotRefs.current[i] = el; }}
                       />
                     );
                   })}
@@ -492,6 +532,8 @@ export default function LandingPage() {
                   className={`track-card${isActive ? ' is-active' : ''}`}
                   style={{ '--track-color': tab.color }}
                   onClick={() => handleTabChange(tab.id)}
+                  aria-pressed={isActive}
+                  aria-label={`Select ${tab.label} track`}
                 >
                   <div className="track-card-header">
                     <span className="track-card-dot" />
@@ -579,7 +621,7 @@ export default function LandingPage() {
                   <h2 className="landing-paths-title">Structured learning paths</h2>
                   <p className="landing-paths-sub">Curated sequences from basics to advanced.</p>
                 </div>
-                <button className="landing-paths-shuffle" onClick={shufflePaths} title="Shuffle paths">
+                <button className="landing-paths-shuffle" onClick={shufflePaths} title="Shuffle paths" aria-label="Shuffle learning paths">
                   ⇄ Shuffle
                 </button>
               </div>
@@ -693,6 +735,23 @@ export default function LandingPage() {
           </div>
         </section>
         )}
+
+        <OnboardingTooltip
+          isOpen={onboardingOpen}
+          onClose={closeOnboarding}
+          steps={[
+            {
+              targetSelector: '.track-cards-grid',
+              title: 'Start with a track',
+              body: 'Pick SQL, Python, Pandas, or PySpark to switch the practice lane and see the matching question counts.',
+            },
+            {
+              targetSelector: '.track-samples-strip',
+              title: 'Try free samples first',
+              body: 'Each track has three free samples per difficulty. Use these to warm up before opening the full challenge track.',
+            },
+          ]}
+        />
       </main>
     </>
   );

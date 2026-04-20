@@ -28,8 +28,10 @@ export function CatalogProvider({ children }) {
       const path = apiPathForTopic(topic);
       const res = await api.get(path);
       setCatalog(res.data);
+      return res.data;
     } catch (e) {
       setError('Failed to load question catalog. Is the backend running?');
+      return null;
     } finally {
       setLoading(false);
     }

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { NavLink, useSearchParams } from 'react-router-dom';
 import Fuse from 'fuse.js';
 import { useTopic } from '../contexts/TopicContext';
+import Skeleton from './Skeleton';
 
 // How many concept chips to show before the "show more" toggle
 const CHIP_VISIBLE_DEFAULT = 8;
@@ -271,7 +272,7 @@ function CompanyFilter({ groups, activeFilters, onToggle, onClear }) {
   );
 }
 
-export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNavigate, plan = 'free' }) {
+export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNavigate, plan = 'free', isLoading = false }) {
   const { topic } = useTopic();
   const [searchParams] = useSearchParams();
   const pathSlug = searchParams.get('path');
@@ -484,6 +485,26 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
       .filter(Boolean);
   }, [bookmarkedIds, groups]);
 
+  if (isLoading) {
+    return (
+      <div className="sidebar-inner sidebar-inner-loading" aria-label="Loading question bank">
+        <div className="sidebar-search-block">
+          <Skeleton className="sidebar-skeleton-search" height="2rem" />
+        </div>
+        {[0, 1, 2].map((groupIndex) => (
+          <div className="sidebar-group" key={`loading-${groupIndex}`}>
+            <Skeleton className="sidebar-skeleton-group-head" height="3.1rem" />
+            <div className="sidebar-question-list sidebar-skeleton-list">
+              {[0, 1, 2, 3].map((rowIndex) => (
+                <Skeleton key={`loading-${groupIndex}-${rowIndex}`} className="sidebar-skeleton-row" height="2.2rem" />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="sidebar-inner">
       <div className="sidebar-search-block">
@@ -511,30 +532,35 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
       </div>
 
       <div className="sidebar-filters-accordion">
-        <button
-          className={`sidebar-filters-toggle${anyFilterActive ? ' sidebar-filters-toggle-active' : ''}`}
-          onClick={() => setFiltersOpen(v => !v)}
-          aria-expanded={filtersOpen}
-        >
-          <span className="sidebar-filters-toggle-label">
-            Filters
-            {totalActiveFilters > 0 && (
-              <span className="sidebar-filters-badge">{totalActiveFilters}</span>
-            )}
-          </span>
-          <span className="sidebar-filters-toggle-right">
-            {anyFilterActive && !filtersOpen && (
-              <button
-                className="sidebar-concept-clear sidebar-filters-clear-inline"
-                onClick={(e) => { e.stopPropagation(); clearAllFilters(); }}
-                title="Clear all filters"
-              >
-                Clear
-              </button>
-            )}
-            <span className="sidebar-chevron">{filtersOpen ? '▾' : '▸'}</span>
-          </span>
-        </button>
+        <div className={`sidebar-filters-toggle${anyFilterActive ? ' sidebar-filters-toggle-active' : ''}`}>
+          <button
+            type="button"
+            className="sidebar-filters-toggle-main"
+            onClick={() => setFiltersOpen(v => !v)}
+            aria-expanded={filtersOpen}
+          >
+            <span className="sidebar-filters-toggle-label">
+              Filters
+              {totalActiveFilters > 0 && (
+                <span className="sidebar-filters-badge">{totalActiveFilters}</span>
+              )}
+            </span>
+            <span className="sidebar-filters-toggle-right">
+              <span className="sidebar-chevron">{filtersOpen ? '▾' : '▸'}</span>
+            </span>
+          </button>
+          {anyFilterActive && !filtersOpen && (
+            <button
+              type="button"
+              className="sidebar-concept-clear sidebar-filters-clear-inline"
+              onClick={clearAllFilters}
+              title="Clear all filters"
+              aria-label="Clear all filters"
+            >
+              Clear
+            </button>
+          )}
+        </div>
 
         {filtersOpen && (
           <div className="sidebar-filters-body">

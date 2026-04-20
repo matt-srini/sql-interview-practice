@@ -10,13 +10,16 @@ import PrintOutputPanel from '../components/PrintOutputPanel';
 import VariablesPanel from '../components/VariablesPanel';
 import MCQPanel from '../components/MCQPanel';
 import ConceptPanel from '../components/ConceptPanel';
+import Skeleton from '../components/Skeleton';
 import { useCatalog } from '../catalogContext';
 import { useTopic } from '../contexts/TopicContext';
 import { useAuth } from '../contexts/AuthContext';
 import UpgradeButton from '../components/UpgradeButton';
 import { parseSqlError } from '../utils/sqlErrorParser';
+import { useToast } from '../App';
 
 const HINT_STEP_LABELS = ['Conceptual hint', 'Approach hint', 'Structure hint', 'Final hint'];
+const STREAK_MILESTONES = [3, 7, 14, 30, 60, 100];
 
 const SQL_PLACEHOLDER = '-- Write your SQL query here\nSELECT ';
 const PYTHON_PLACEHOLDER = '# Write your solution here\n';
@@ -27,7 +30,8 @@ export default function QuestionPage() {
   const { catalog, refresh } = useCatalog();
   const { topic, meta } = useTopic();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
+  const { notify } = useToast();
 
   // Path context — set when arriving from a learning path (?path=slug)
   const pathSlug = searchParams.get('path');
@@ -102,6 +106,7 @@ export default function QuestionPage() {
   const [solutionAnalysisOpen, setSolutionAnalysisOpen] = useState(false);
   const [showAltSolution, setShowAltSolution] = useState(false);
   const [submissionInsight, setSubmissionInsight] = useState(null);
+  const [celebrateSolve, setCelebrateSolve] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
   const [activeConcept, setActiveConcept] = useState(null);
   const [editorTall, setEditorTall] = useState(() => {
@@ -527,12 +532,57 @@ export default function QuestionPage() {
       const res = await api.post(submitApiPath, payload);
       setSubmitResult(res.data);
       if (res.data.correct) {
-        await refresh();
+        const lockedBefore = catalog?.groups?.reduce(
+          (sum, group) => sum + group.questions.filter((entry) => entry.state === 'locked').length,
+          0
+        ) ?? 0;
+        const previousStreakDays = user?.streak_days ?? 0;
+        const refreshedCatalog = await refresh();
+        const lockedAfter = refreshedCatalog?.groups?.reduce(
+          (sum, group) => sum + group.questions.filter((entry) => entry.state === 'locked').length,
+          0
+        ) ?? lockedBefore;
+        const unlockedNow = Math.max(0, lockedBefore - lockedAfter);
+        if (unlockedNow > 0) {
+          notify({
+            tone: 'success',
+            title: `${unlockedNow} new question${unlockedNow !== 1 ? 's' : ''} unlocked`,
+            message: 'You just opened the next tier in this track.',
+          });
+        }
+
         const prior = priorAttemptCountRef.current;
-        if (prior === 0) setSubmissionInsight('First-attempt solve — the system logged your approach.');
+        if (prior === 0) {
+          setSubmissionInsight('First-attempt solve — the system logged your approach.');
+          setCelebrateSolve(true);
+          notify({
+            tone: 'success',
+            title: 'First-try solve',
+            message: 'Clean execution under pressure. Keep that tempo.',
+          });
+        }
         else if (prior >= 3) setSubmissionInsight('Took a few tries — that\'s the shape of real learning.');
         // Auto-open writing notes on first-attempt correct solve
         if (prior === 0) setSolutionAnalysisOpen(true);
+
+        const refreshedUser = await refreshUser();
+        const nextStreakDays = refreshedUser?.streak_days ?? previousStreakDays;
+        if (nextStreakDays > previousStreakDays) {
+          if (STREAK_MILESTONES.includes(nextStreakDays)) {
+            notify({
+              tone: 'success',
+              title: `${nextStreakDays}-day streak milestone`,
+              message: 'Consistency compounds. Keep your streak alive today.',
+              durationMs: 4200,
+            });
+          } else if (nextStreakDays === 1) {
+            notify({
+              tone: 'info',
+              title: 'Streak started',
+              message: 'You are on the board. Solve tomorrow to continue it.',
+            });
+          }
+        }
       }
       api.get('/submissions', { params: { track: topic, question_id: id, limit: 20 } })
         .then((r) => setPastAttempts(r.data))
@@ -667,6 +717,12 @@ export default function QuestionPage() {
     if (userCols !== expectedCols) return 'Row count matches but columns differ. Check your SELECT clause and column aliases.';
     return 'Row and column counts match — check individual values. Look for rounding, type casting, or NULL handling differences.';
   }, [submitResult, topic]);
+
+  useEffect(() => {
+    if (!celebrateSolve) return undefined;
+    const timer = window.setTimeout(() => setCelebrateSolve(false), 1600);
+    return () => window.clearTimeout(timer);
+  }, [celebrateSolve]);
 
   const recommendedQuestions = useMemo(() => {
     if (!submitResult?.correct || !question?.concepts?.length || !catalog?.groups) return [];
@@ -1163,6 +1219,7 @@ export default function QuestionPage() {
                 height={editorHeight}
                 fontSize={fontSize}
                 onMount={handleEditorMount}
+                ariaLabel={`${meta.label} challenge editor`}
               />
 
               <div className="editor-footer question-action-dock">
@@ -1207,13 +1264,13 @@ export default function QuestionPage() {
             <div className="results-card">
               <div className="results-header">
                 <span>{topic === 'python' ? 'Running tests…' : 'Query Result'}</span>
-                <div className="skeleton-line skeleton-shimmer" style={{ width: '2.5rem', height: '11px' }} />
+                <Skeleton className="skeleton-line" width="2.5rem" height="11px" />
               </div>
               <div className="results-skeleton-body">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <div
+                  <Skeleton
                     key={i}
-                    className="results-skeleton-row skeleton-shimmer"
+                    className="results-skeleton-row"
                     style={{ animationDelay: `${(i - 1) * 60}ms` }}
                   />
                 ))}
@@ -1260,22 +1317,22 @@ export default function QuestionPage() {
           {/* Skeleton verdict — visible while submission is being evaluated */}
           {submitting && !submitError && (
             <div className="verdict-skeleton">
-              <div className="skeleton-line skeleton-shimmer" style={{ width: '5rem', height: '13px' }} />
-              <div className="skeleton-line skeleton-shimmer" style={{ width: '70%', height: '11px' }} />
-              <div className="skeleton-line skeleton-shimmer" style={{ width: '50%', height: '11px', animationDelay: '80ms' }} />
+              <Skeleton className="skeleton-line" width="5rem" height="13px" />
+              <Skeleton className="skeleton-line" width="70%" height="11px" />
+              <Skeleton className="skeleton-line" width="50%" height="11px" style={{ animationDelay: '80ms' }} />
             </div>
           )}
 
           {submitting && !submitError && topic === 'sql' && (
             <div className="solution-analysis-skeleton">
-              <div className="skeleton-line skeleton-shimmer" style={{ width: '9rem', height: '12px' }} />
-              <div className="skeleton-line skeleton-shimmer" style={{ width: '75%', height: '10px' }} />
-              <div className="skeleton-line skeleton-shimmer" style={{ width: '84%', height: '10px', animationDelay: '70ms' }} />
+              <Skeleton className="skeleton-line" width="9rem" height="12px" />
+              <Skeleton className="skeleton-line" width="75%" height="10px" />
+              <Skeleton className="skeleton-line" width="84%" height="10px" style={{ animationDelay: '70ms' }} />
             </div>
           )}
 
           {submitResult && (
-            <div className="submit-outcome" ref={verdictRef}>
+            <div className={`submit-outcome${celebrateSolve ? ' submit-outcome-celebrate' : ''}`} ref={verdictRef}>
               <div className={`verdict ${submitResult.correct ? 'verdict-correct' : 'verdict-incorrect'}`}>
                 <div className="verdict-header-row">
                   <span className="verdict-label">{submitResult.correct ? 'Correct' : 'Keep iterating'}</span>

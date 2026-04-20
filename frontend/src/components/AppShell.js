@@ -296,7 +296,21 @@ export default function AppShell() {
           )}
         </aside>
 
-        {mobileOpen && <div className="sidebar-backdrop" onClick={() => setMobileOpen(false)} />}
+        {mobileOpen && (
+          <div
+            className="sidebar-backdrop"
+            onClick={() => setMobileOpen(false)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                setMobileOpen(false);
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label="Close question list"
+          />
+        )}
 
         <main className="content">
           {desktopCollapsed && !isMobile && (

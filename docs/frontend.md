@@ -32,6 +32,8 @@ Defined in `frontend/src/App.js`:
 
 `:topic` values: `sql` | `python` | `python-data` | `pyspark`
 
+App-level route changes now animate with a short fade-in wrapper (`.route-transition`) around the route tree.
+
 ---
 
 ## Pages
@@ -44,6 +46,8 @@ Four stacked sections on a single scroll:
 2. **Proof + showcase + companies** — `.landing-proof-row`, `.landing-showcase`, and `.landing-companies` are rendered only for logged-out visitors. The showcase is the same Interview IDE module (always-dark editor) and now respects `prefers-reduced-motion` at initial render plus media-query changes.
 3. **Track selection** (`.landing-practice-section`, `id="landing-tracks"`) — pill nav selects a track; panel shows description, progress bar, CTA, and easy/medium/hard sample tiles. Mobile sample tiles use horizontal scroll.
 4. **Pricing** (`id="landing-pricing"`) — three-column tier table with hard question counts derived from `TOTAL_EASY` / `TOTAL_QUESTIONS` constants. Free: 129 easy questions. Pro: all 350 questions + 3 mocks/day. Elite: everything + company filter + unlimited mocks. Hidden for `lifetime_elite` users.
+
+First-visit onboarding walkthrough now appears as a two-step tooltip flow (with a visible Skip control): step 1 highlights track selection, step 2 highlights free sample tiles. Completion/skip is persisted in `localStorage` (`landingOnboardingSeen-v1`).
 
 `TRACK_DIFFICULTIES` mirrors the real per-track/difficulty question counts (32/34/29 SQL, 30/29/24 Python, 29/30/23 Pandas, 38/30/22 PySpark). `TOTAL_EASY` and `TOTAL_QUESTIONS` are derived totals used in pricing copy.
 
@@ -96,6 +100,8 @@ Main practice screen. Layout and behavior vary by topic:
 - "Next Question" navigates to `/practice/:topic/questions/:nextId`
 - **Delta hint** (SQL only, wrong submissions): client-side row/column diff shows a targeted message — e.g. "Your output has 3 more rows than expected. Check for a missing filter or a JOIN that multiplies rows."
 - **Verdict insight line**: on first-attempt correct solve shows "First-attempt solve — the system logged your approach"; on 3+ attempts shows an encouraging note
+- **Milestone toasts**: correct solves now trigger lightweight in-app toasts for first-try solves, newly unlocked questions, and streak milestones (`3/7/14/30/60/100` days)
+- **First-solve celebration motion**: the verdict block gets a one-shot celebration animation on first-attempt correct submissions
 - **Writing notes auto-expand**: the Solution Analysis section (`solutionAnalysisOpen`) auto-expands on a first-attempt correct solve
 - Submission history fetched with `limit: 20`; `priorAttemptCountRef` tracks attempt count before each submit to compute insight text
 - **Path context**: when `?path=slug` is in the URL, fetches path data and shows a path nav bar (breadcrumb + position counter + prev/next links)
@@ -105,6 +111,7 @@ Main practice screen. Layout and behavior vary by topic:
   - `Cmd/Ctrl + Shift + Enter` → Submit Answer (permanent; guarded by `running`, `submitting`, `isLocked`)
   - Not active for MCQ (PySpark) questions — no editor is rendered
 - **Shortcut affordance + help popover**: Run/Submit buttons show inline `<kbd>` badges (`⌘↵`, `⌘⇧↵`) and editor chrome includes a `?` shortcut-help toggle. Pressing `?` outside editable fields opens/closes the same popover.
+- **Accessibility baseline hardening**: a shared focus-visible ring style now covers interactive controls (`a`, `button`, form inputs, tab controls, role-button surfaces), sidebar filter controls were refactored to avoid nested buttons, and mobile sidebar backdrop dismissal is keyboard reachable (Enter/Space).
 - **Editor height toggle** (`⊞`/`⊟` button in the editor topbar): switches Monaco between 340 px (default) and 560 px. Preference is persisted to `localStorage` under the key `editor-height-pref`.
 - **Draft autosave**: editor content is debounced to `localStorage` under `draft:{topic}:{questionId}` and restored silently on load; editor chrome shows "Saving draft…" / "Draft saved" state and includes a clear-draft control.
 - **Per-question soft timer**: editor topbar shows elapsed time; timer pauses on tab blur / hidden state and resumes on focus; `duration_ms` is attached on submit payloads and returned in submission history when available.
@@ -149,6 +156,7 @@ Cross-track progress overview. Fetches `GET /api/dashboard`, `GET /api/dashboard
 - Track cards now include `median_solve_seconds` and `accuracy_pct` rows from `/api/dashboard/insights`.
 - New users (no solves yet) see a dedicated empty state with CTAs into practice and learning paths.
 - `by_difficulty` still renders as "X/Y" counts per difficulty level (`{ solved, total }` objects, not plain integers).
+- Loading state now uses reusable skeleton tiles and cards instead of plain text.
 
 ### LearningPathsIndex (`/learn`, `/learn/:topic`)
 
@@ -173,7 +181,7 @@ When `solved_count === question_count`, a completion banner is shown with a "Wha
 |---|---|---|
 | AppShell | `components/AppShell.js` | Challenge workspace: fixed topbar with direct track nav, collapsible sidebar |
 | SidebarNav | `components/SidebarNav.js` | Question list grouped by difficulty; topic-aware NavLinks |
-| CodeEditor | `components/CodeEditor.js` | Language-agnostic Monaco editor (`language`, `height`, `fontSize`, `onMount` props; always dark theme) |
+| CodeEditor | `components/CodeEditor.js` | Language-agnostic Monaco editor (`language`, `height`, `fontSize`, `onMount`, `ariaLabel` props; always dark theme) |
 | SQLEditor | `components/SQLEditor.js` | Thin re-export of CodeEditor with `language="sql"` (backward compat) |
 | ResultsTable | `components/ResultsTable.js` | Tabular results with sticky headers, horizontal overflow cue, null value rendering, and optional `diffMode` for cell-level diff highlighting |
 | SchemaViewer | `components/SchemaViewer.js` | Dataset table schema with client-side search and click-to-copy column tokens |
@@ -183,9 +191,12 @@ When `solved_count === question_count`, a completion banner is shown with a "Wha
 | MCQPanel | `components/MCQPanel.js` | Radio-button MCQ with correct/wrong highlighting and explanation after submit |
 | ConceptPanel | `components/ConceptPanel.js` | Slide-in concept detail panel opened from concept pills on `QuestionPage` |
 | InsightStrip | `components/InsightStrip.js` | Dashboard coaching strip: cross-track insight, streak tile, weakest concept tile |
+| Skeleton | `components/Skeleton.js` | Reusable shimmer primitive (`skeleton-block` + `skeleton-shimmer`) used in QuestionPage, SidebarNav, TrackHubPage, ProgressDashboard |
 | TrackProgressBar | `components/TrackProgressBar.js` | Reusable horizontal progress bar with configurable color and label |
 | PathProgressCard | `components/PathProgressCard.js` | Path card with track color dot, progress bar, and CTA; used on LandingPage and TrackHubPage |
+| OnboardingTooltip | `components/OnboardingTooltip.js` | First-visit, target-anchored walkthrough tooltip with Back/Next/Skip and Esc-to-close support |
 | Topbar | `components/Topbar.js` | Single unified top nav used by every page (landing, auth, 404, practice workspace, mock, dashboard, learning paths). Composition slots for `leftSlot`, `centerSlot`, `userExtras`, `belowTopbar`; three variants: `'landing'` (default, container-bounded), `'app'` (full-bleed workspace chrome), `'minimal'` (auth / verify / reset / 404 — brand + theme + user pill only). `showPricingLink` for logged-out visitors. |
+| ToastViewport | `components/ToastViewport.js` | Global in-app toast stack (first-solve, unlock, and streak milestone feedback) rendered by `ToastProvider` |
 | LoggedInWelcome | `components/LoggedInWelcome.js` | Welcome-back block on `/` for authenticated users. Three cards: Resume (last-solved question via `/api/dashboard` recent_activity), Dashboard, Mock. Replaces the marketing hero for returning users. |
 | TierBanner | `components/TierBanner.js` | Inline upgrade prompt shown when a user hits a plan gate (e.g. locked hard questions); renders contextual copy and upgrade CTA |
 | UpgradeButton | `components/UpgradeButton.js` | Reusable upgrade CTA button; opens Stripe Checkout for the target plan tier |
