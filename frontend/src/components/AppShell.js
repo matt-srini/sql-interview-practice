@@ -99,6 +99,10 @@ export default function AppShell() {
   const [sessionGoal, setSessionGoal] = useState(() => {
     try { return Math.max(1, Math.min(20, parseInt(localStorage.getItem('session-goal') ?? '5', 10))); } catch { return 5; }
   });
+  const totalSolvedSidebar = catalog?.groups?.reduce(
+    (sum, g) => sum + g.questions.filter(q => q.state === 'solved').length, 0
+  ) ?? 0;
+
   const [sessionStartSolved, setSessionStartSolved] = useState(null);
   useEffect(() => {
     if (!catalog || sessionStartSolved !== null) return;
@@ -124,9 +128,6 @@ export default function AppShell() {
   const lockedMediumCount = mediumGroup?.questions?.filter(q => q.state === 'locked').length ?? 0;
   const lockedHardCount = (catalog?.groups?.find(g => g.difficulty === 'hard'))?.questions?.filter(q => q.state === 'locked').length ?? 0;
   const showUnlockNudge = !!(user?.plan === 'free' && (lockedMediumCount > 0 || lockedHardCount > 0) && catalog);
-  const totalSolvedSidebar = catalog?.groups?.reduce(
-    (sum, g) => sum + g.questions.filter(q => q.state === 'solved').length, 0
-  ) ?? 0;
   const unlockNudgeByTrack = {
     sql: 'Medium unlocks at 8, 15, and 25 easy solves. Hard unlocks at 8, 15, and 22 medium solves (capped at 15 hard).',
     python: 'Medium unlocks at 8, 15, and 25 easy solves. Hard unlocks at 8, 15, and 22 medium solves (capped at 15 hard).',
@@ -221,7 +222,7 @@ export default function AppShell() {
               ‹
             </button>
           )}
-          {loading && <div className="sidebar-loading">Loading…</div>}
+          {loading && <SidebarNav isLoading />}
           {error && <div className="sidebar-error">{error}</div>}
           {!loading && !error && catalog && (
             <SidebarNav
