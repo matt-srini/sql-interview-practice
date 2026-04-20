@@ -116,6 +116,15 @@ Main practice screen. Layout and behavior vary by topic:
 - **Past attempts revisit behavior**: submission history panel auto-expands when revisiting the same question as `localStorage.last_seen_question_id`.
 - **Solution reveal placement**: the "Review Official Solution" control now lives in the verdict header (instead of below feedback/hints) once reveal criteria are met.
 - **Submit skeleton** (SQL): while submit is in-flight, a placeholder skeleton appears where solution analysis/writing notes will render.
+- **Cell-level wrong-answer diff**: on wrong SQL/Pandas submissions, `ResultsTable` in "Your Output" highlights mismatched cells (red) and extra rows (amber) using `diffMode`/`expectedColumns`/`expectedRows` props. A diff summary badge above the table shows mismatch count, extra rows, and missing rows at a glance.
+- **Progressive hints stepper**: hints are revealed one at a time with labeled steps ("Conceptual hint", "Approach hint", etc.) in a stepwise card with animation. The soft gate on solution reveal remains: all hints must be exhausted before the solution can be shown.
+- **SQL schema autocomplete**: on SQL questions, a Monaco completion provider is registered when the editor mounts and updated when the question changes. It suggests table names and column names from `question.schema`, with dot-context (`table.col`) awareness.
+- **SQL formatter**: `Cmd/Ctrl + Shift + F` formats the editor SQL via `sql-formatter` with the `duckdb` dialect.
+- **Font-size persistence**: `Cmd/Ctrl + =` / `Cmd/Ctrl + -` adjust editor font size (range 11–24 px, default 14); persisted in `localStorage` under `editor-font-size`; the same value is passed to the `fontSize` prop of `CodeEditor`. A/+ and A/- buttons also appear in the editor topbar.
+- **Run history**: each "Run Query/Run Code" call prepends the code to a per-question history (up to 20 entries) stored in `sessionStorage` under `run-history:{topic}:{id}`. A `↑` button in the editor topbar opens a history popover; clicking an entry loads it into the editor.
+- **Resizable split pane**: a `split-divider` element between the left description panel and the right editor panel allows drag-to-resize. Left panel width defaults to 380 px (range 260–620), persisted in `localStorage` under `split-pane-width`. Double-clicking the divider resets to default. On mobile (≤ 980 px), the divider is hidden and the layout collapses to single-column.
+- **Focus mode**: when `?focus=1` is in the URL, AppShell automatically collapses the sidebar. A "⊞ Focus" / "⊡ Focus" toggle pill in the workspace topbar adds/removes the param. This narrows the workspace to just the editor + question panel.
+- **Session goal widget**: a small widget in the sidebar bottom tracks "questions solved this session" against a user-set target (1–20, default 5, stored in `localStorage` under `session-goal`). Session baseline is captured once from `catalog` on mount and stored in `sessionStorage` under `session-start-solved`. The widget shows a progress bar and a "Goal reached" message when the target is met.
 
 ### SampleQuestionPage (`/sample/:topic/:difficulty`)
 
@@ -164,9 +173,9 @@ When `solved_count === question_count`, a completion banner is shown with a "Wha
 |---|---|---|
 | AppShell | `components/AppShell.js` | Challenge workspace: fixed topbar with direct track nav, collapsible sidebar |
 | SidebarNav | `components/SidebarNav.js` | Question list grouped by difficulty; topic-aware NavLinks |
-| CodeEditor | `components/CodeEditor.js` | Language-agnostic Monaco editor (`language`, `height`, `onMount` props; always dark theme) |
+| CodeEditor | `components/CodeEditor.js` | Language-agnostic Monaco editor (`language`, `height`, `fontSize`, `onMount` props; always dark theme) |
 | SQLEditor | `components/SQLEditor.js` | Thin re-export of CodeEditor with `language="sql"` (backward compat) |
-| ResultsTable | `components/ResultsTable.js` | Tabular results with sticky headers, horizontal overflow cue (`→ X more columns`), and null value rendering |
+| ResultsTable | `components/ResultsTable.js` | Tabular results with sticky headers, horizontal overflow cue, null value rendering, and optional `diffMode` for cell-level diff highlighting |
 | SchemaViewer | `components/SchemaViewer.js` | Dataset table schema with client-side search and click-to-copy column tokens |
 | TestCasePanel | `components/TestCasePanel.js` | Python test case results (pass/fail per case, input/expected/actual, hidden summary) |
 | PrintOutputPanel | `components/PrintOutputPanel.js` | Captured stdout block (rendered only if non-empty) |
@@ -186,10 +195,12 @@ When `solved_count === question_count`, a completion banner is shown with a "Wha
 - Uses the shared `<Topbar variant="app" />` component (no inline topbar JSX). Passes these slots:
   - `leftSlot` — hamburger sidebar toggle on mobile (`<900px`)
   - `centerSlot` — mode pill (`.shell-pill-mode`), e.g. "SQL · Challenge" / "Python · Path"; hidden when at the TrackHub
-  - `userExtras` — streak pill (`.shell-pill-streak`) and plan pill (`.shell-pill-plan-free/pro/elite`)
+  - `userExtras` — focus mode toggle pill (`.shell-pill-focus`), streak pill (`.shell-pill-streak`) and plan pill (`.shell-pill-plan-free/pro/elite`)
   - `belowTopbar` — upgrade confirmation / error banner
 - Desktop: sidebar 328px, collapsible; toggle is a `‹` icon button (`.sidebar-collapse-btn`); a `›` expand button (`.sidebar-expand-btn`) appears in the content area when collapsed
 - Mobile (<900px): sidebar becomes fixed overlay with backdrop; hamburger button in topbar
+- **Focus mode**: reading `?focus=1` from the URL auto-collapses the sidebar; the focus toggle pill in the topbar adds/removes the param.
+- **Session goal widget**: shown in the sidebar for logged-in users. Tracks questions solved since the session started (captured once from catalog, stored in `sessionStorage`). Goal is adjustable (1–20), stored in `localStorage`.
 - Upgrade panel shown for `free` and `pro` plan users; lives in the sidebar beneath the question list
 - Unlock nudge message shown in sidebar for free-plan users who have locked questions
 - Unlock nudge message is track-aware and mirrors `backend/unlock.py` thresholds (code tracks vs. PySpark)
