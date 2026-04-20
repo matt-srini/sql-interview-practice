@@ -6,6 +6,7 @@ import { TRACK_META } from '../contexts/TopicContext';
 import TrackProgressBar from '../components/TrackProgressBar';
 import PathProgressCard from '../components/PathProgressCard';
 import Topbar from '../components/Topbar';
+import LoggedInWelcome from '../components/LoggedInWelcome';
 import UpgradeButton from '../components/UpgradeButton';
 import { highlightCode } from './landingShowcaseHighlight';
 
@@ -282,10 +283,12 @@ export default function LandingPage() {
 
   return (
     <>
-      <Topbar />
+      <Topbar showPricingLink={!user} />
 
       <main className="landing-page">
-        {!user && (
+        {user ? (
+          <LoggedInWelcome user={user} dashData={dashData} />
+        ) : (
           <section className="landing-hero">
             <div className="landing-hero-inner">
               <span className="landing-kicker">SQL · Python · PySpark · pandas</span>
@@ -559,7 +562,7 @@ export default function LandingPage() {
         )}
 
         {/* Tier comparison */}
-        <section className="landing-tier-section">
+        <section id="landing-pricing" className="landing-tier-section">
           <div className="landing-tier-inner">
             <h2 className="landing-tier-title">Simple pricing</h2>
             <div className="landing-tier-grid">

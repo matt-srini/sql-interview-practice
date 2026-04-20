@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api';
+import Topbar from '../components/Topbar';
 import { useAuth } from '../contexts/AuthContext';
-import { useTheme } from '../App';
 
 // ─── Password validation ─────────────────────────────────────────────────────
 
@@ -78,9 +78,8 @@ export default function AuthPage() {
     if (oauthError) setError(oauthError);
   }, [searchParams]);
 
-  const { login, register, requestMagicLink, user, logout } = useAuth();
+  const { login, register, requestMagicLink } = useAuth();
   const navigate = useNavigate();
-  const { cycleTheme, themeIcon, themeLabel } = useTheme();
   const firstFieldRef = useRef(null);
 
   useEffect(() => {
@@ -162,32 +161,7 @@ export default function AuthPage() {
 
   return (
     <div className="auth-page">
-      {/* ── Topbar ── */}
-      <header className="topbar landing-topbar">
-        <div className="container topbar-inner landing-topbar-inner">
-          <div className="landing-topbar-left">
-            <Link className="landing-brand brand-wordmark" to="/">datanest</Link>
-          </div>
-          <div className="landing-topbar-right">
-            <button
-              className="theme-toggle"
-              onClick={cycleTheme}
-              aria-label={themeLabel}
-              title={themeLabel}
-            >
-              {themeIcon}
-            </button>
-            {user && user.email ? (
-              <div className="topbar-user-pill">
-                <span className="topbar-user-name">{user.name || user.email}</span>
-                <button type="button" className="topbar-signout-btn" onClick={logout}>
-                  Sign out
-                </button>
-              </div>
-            ) : null}
-          </div>
-        </div>
-      </header>
+      <Topbar variant="minimal" />
 
       {/* ── Centered card ── */}
       <main className="auth-main">

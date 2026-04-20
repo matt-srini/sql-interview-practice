@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api';
-import { useTheme } from '../App';
+import Topbar from '../components/Topbar';
 
 function validatePassword(password) {
   if (password.length < 8) return 'Must be at least 8 characters.';
@@ -15,7 +15,6 @@ export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token') || '';
   const navigate = useNavigate();
-  const { cycleTheme, themeIcon, themeLabel } = useTheme();
 
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -56,18 +55,7 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="auth-page">
-      <header className="topbar landing-topbar">
-        <div className="container topbar-inner landing-topbar-inner">
-          <div className="landing-topbar-left">
-            <Link className="landing-brand brand-wordmark" to="/">datanest</Link>
-          </div>
-          <div className="landing-topbar-right">
-            <button className="theme-toggle" onClick={cycleTheme} aria-label={themeLabel} title={themeLabel}>
-              {themeIcon}
-            </button>
-          </div>
-        </div>
-      </header>
+      <Topbar variant="minimal" />
 
       <main className="auth-main">
         <div className="auth-card" role="main">

@@ -1564,6 +1564,106 @@ select {
   margin-top: 1.8rem;
 }
 
+/* ============================================================
+   Logged-in welcome — replaces marketing hero for returning users
+   ============================================================ */
+.landing-welcome {
+  width: 100%;
+  padding: 4rem 1.5rem 3rem;
+}
+
+.landing-welcome-inner {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.landing-welcome-heading {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.landing-welcome-title {
+  font-size: clamp(1.75rem, 3.6vw, 2.4rem);
+  line-height: 1.1;
+  margin: 0.6rem 0 0.5rem;
+  color: var(--text-strong);
+  letter-spacing: -0.02em;
+}
+
+.landing-welcome-copy {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.landing-welcome-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.9rem;
+  margin-top: 1.6rem;
+}
+
+.landing-welcome-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1.15rem 1.2rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  min-height: 120px;
+}
+
+.landing-welcome-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.landing-welcome-card--primary {
+  border-color: var(--accent-soft-strong);
+  background: var(--accent-soft);
+}
+
+.landing-welcome-card--primary:hover {
+  border-color: var(--accent);
+}
+
+.landing-welcome-card-kicker {
+  font-size: 0.74rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.landing-welcome-card-title {
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--text-strong);
+  line-height: 1.3;
+}
+
+.landing-welcome-card-cta {
+  margin-top: auto;
+  font-size: 0.85rem;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+@media (max-width: 900px) {
+  .landing-welcome {
+    padding: 3rem 1.25rem 2rem;
+  }
+  .landing-welcome-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .landing-companies {
   background: var(--bg-page);
   padding: 2.5rem 1.5rem;
@@ -3610,230 +3710,6 @@ select {
 }
 
 /* ============================================================
-   Dark mode overrides
-   ============================================================ */
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --bg-page:           #141413;
-    --surface-canvas:    #1C1C1A;
-    --surface-card:      #1C1C1A;
-    --surface-card-alt:  #242422;
-    --surface-card-soft: #1E1E1C;
-    --surface-highlight: #2A2A27;
-    --border-subtle: rgba(240, 238, 233, 0.08);
-    --border-strong: rgba(240, 238, 233, 0.14);
-    --text-strong:    #F0EEE9;
-    --text-primary:   #D8D5CE;
-    --text-secondary: #9B9891;
-    --text-muted:     #6B6760;
-    --text-soft:      #4A4743;
-    --accent:             #7B8AF5;
-    --accent-strong:      #9AA7F7;
-    --accent-soft:        rgba(123, 138, 245, 0.12);
-    --accent-soft-strong: rgba(123, 138, 245, 0.22);
-    --success:       #4CAF82;
-    --success-soft:  rgba(76, 175, 130, 0.12);
-    --warning:       #D4973A;
-    --warning-soft:  rgba(212, 151, 58, 0.12);
-    --danger:        #E06B5A;
-    --danger-soft:   rgba(224, 107, 90, 0.12);
-    --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.30);
-    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.30);
-    --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.40);
-    --brand-accent: #78A9CE;
-  }
-
-  body {
-    background: var(--bg-page);
-  }
-
-  .auth-page {
-    background: var(--bg-page);
-  }
-
-
-  .auth-card {
-    background: var(--surface-card);
-  }
-
-  .auth-input {
-    background: rgba(255, 255, 255, 0.04);
-    color: var(--text-strong);
-  }
-
-  .auth-alert-error {
-    color: #F0B8B1;
-  }
-
-  .auth-alert-info {
-    color: var(--accent-strong);
-  }
-
-  .app-topbar {
-    background: rgba(20, 20, 19, 0.92);
-  }
-
-  .topbar {
-    background: rgba(20, 20, 19, 0.92);
-  }
-
-  .sidebar {
-    background: var(--surface-card-alt);
-    border-color: var(--border-subtle);
-  }
-
-  .sidebar-backdrop {
-    background: rgba(0, 0, 0, 0.55);
-  }
-
-  .sidebar-group-header {
-    background: rgba(255, 255, 255, 0.02);
-  }
-
-  .sidebar-group-header:hover {
-    background: rgba(255, 255, 255, 0.04);
-  }
-
-  .sidebar-question:hover {
-    background: rgba(255, 255, 255, 0.03);
-  }
-
-  .shell-pill {
-    background: rgba(255, 255, 255, 0.04);
-  }
-
-  .app-banner-success {
-    color: #C7E8D7;
-  }
-
-  .app-banner-error {
-    color: #F0B8B1;
-  }
-
-  /* Cards in dark mode */
-  .card,
-  .results-card,
-  .solution-card,
-  .question-card,
-  .sample-tile {
-    background: var(--surface-card);
-    border-color: var(--border-subtle);
-  }
-
-  /* Schema */
-  .schema-table {
-    background: var(--surface-card-alt);
-  }
-
-  .schema-column-token {
-    background: rgba(255, 255, 255, 0.03);
-  }
-
-  /* Results table */
-  .results-header {
-    background: rgba(255, 255, 255, 0.03);
-  }
-
-  .results-table th {
-    background: rgba(255, 255, 255, 0.03);
-  }
-
-  .results-table tbody tr:nth-child(even) td {
-    background: rgba(255, 255, 255, 0.015);
-  }
-
-  .results-table tr:hover td {
-    background: rgba(255, 255, 255, 0.035);
-  }
-
-  /* Verdict */
-  .verdict-correct {
-    color: #B8E5CE;
-  }
-
-  .verdict-incorrect {
-    color: #F0C8C3;
-  }
-
-  /* Feedback */
-  .feedback-card {
-    background: rgba(255, 255, 255, 0.03);
-  }
-
-  .feedback-title {
-    color: var(--warning);
-  }
-
-  .feedback-icon {
-    color: var(--warning);
-  }
-
-  /* Locked callout */
-  .locked-callout {
-    color: var(--warning);
-  }
-
-  /* Badges */
-  .badge-easy   { background: rgba(76, 175, 130, 0.14); color: #7ECFA5; border-color: rgba(76, 175, 130, 0.28); }
-  .badge-medium { background: rgba(212, 151, 58, 0.14);  color: #E0B870; border-color: rgba(212, 151, 58, 0.28);  }
-  .badge-hard   { background: rgba(224, 107, 90, 0.14);  color: #EFA09A; border-color: rgba(224, 107, 90, 0.28);  }
-
-  /* Error box */
-  .error-box {
-    color: #F0C8C3;
-    border-color: rgba(224, 107, 90, 0.22);
-    border-left-color: var(--danger);
-  }
-
-  /* Hint */
-  .hint-card {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: var(--border-subtle);
-  }
-
-  /* Sidebar progress */
-  .sidebar-progress-card {
-    background: rgba(255, 255, 255, 0.03);
-  }
-
-  /* Sample reset notice */
-  .sample-reset-notice {
-    color: #B8E5CE;
-  }
-
-  /* Buttons outside editor in dark context */
-  .landing-actions .btn-secondary,
-  .sample-page-actions .btn-secondary,
-  .post-submit-stack .btn-secondary,
-  .sample-challenge-actions .btn-secondary,
-  .app-topbar .btn-secondary,
-  .auth-topbar-unused .btn-secondary {
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--text-primary);
-    border-color: var(--border-subtle);
-  }
-
-  .landing-actions .btn-secondary:not(:disabled):hover,
-  .sample-page-actions .btn-secondary:not(:disabled):hover,
-  .post-submit-stack .btn-secondary:not(:disabled):hover,
-  .sample-challenge-actions .btn-secondary:not(:disabled):hover,
-  .app-topbar .btn-secondary:not(:disabled):hover,
-  .auth-topbar-unused .btn-secondary:not(:disabled):hover {
-    background: rgba(255, 255, 255, 0.09);
-    border-color: var(--border-strong);
-  }
-
-  .btn-success {
-    color: var(--success);
-  }
-
-  .sidebar-error {
-    color: var(--danger);
-  }
-}
-
-/* ============================================================
    Track color tokens
    ============================================================ */
 :root {
@@ -4579,46 +4455,6 @@ select {
   .dashboard-track-grid {
     grid-template-columns: 1fr;
   }
-}
-
-/* ============================================================
-   Dark mode additions
-   ============================================================ */
-@media (prefers-color-scheme: dark) {
-  .track-tile {
-    background: var(--surface-card);
-    border-color: var(--border-subtle);
-  }
-
-  .mcq-option {
-    background: var(--surface-card-alt);
-  }
-
-  .mcq-option--correct {
-    color: #B8E5CE;
-  }
-
-  .mcq-option--wrong {
-    color: #F0C8C3;
-  }
-
-  .mcq-explanation {
-    background: var(--surface-card-alt);
-  }
-
-  .dashboard-track-card {
-    background: var(--surface-card);
-    border-color: var(--border-subtle);
-  }
-
-  .variable-row {
-    background: var(--surface-card-alt);
-  }
-
-  .variable-column-token {
-    background: rgba(255, 255, 255, 0.03);
-  }
-
 }
 
 /* ============================================================
