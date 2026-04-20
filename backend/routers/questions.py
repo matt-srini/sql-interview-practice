@@ -114,6 +114,7 @@ async def submit_answer(
         question_id=int(body.question_id),
         is_correct=accepted,
         code=body.query,
+        duration_ms=body.duration_ms,
     )
 
     return {

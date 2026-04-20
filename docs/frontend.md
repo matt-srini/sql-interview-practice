@@ -107,6 +107,8 @@ Main practice screen. Layout and behavior vary by topic:
 - **Shortcut affordance + help popover**: Run/Submit buttons show inline `<kbd>` badges (`⌘↵`, `⌘⇧↵`) and editor chrome includes a `?` shortcut-help toggle. Pressing `?` outside editable fields opens/closes the same popover.
 - **Editor height toggle** (`⊞`/`⊟` button in the editor topbar): switches Monaco between 340 px (default) and 560 px. Preference is persisted to `localStorage` under the key `editor-height-pref`.
 - **Draft autosave**: editor content is debounced to `localStorage` under `draft:{topic}:{questionId}` and restored silently on load; editor chrome shows "Saving draft…" / "Draft saved" state and includes a clear-draft control.
+- **Per-question soft timer**: editor topbar shows elapsed time; timer pauses on tab blur / hidden state and resumes on focus; `duration_ms` is attached on submit payloads and returned in submission history when available.
+- **Question bookmarks**: header toggle stores bookmarks in `localStorage` (`bookmarks:{topic}`), capped at 20, and SidebarNav renders a Bookmarked section above difficulty groups.
 - **Submit guard hardening**: `handleSubmit` now exits immediately when `submitting` is already true to prevent accidental double-submit races.
 - **Past attempts revisit behavior**: submission history panel auto-expands when revisiting the same question as `localStorage.last_seen_question_id`.
 - **Solution reveal placement**: the "Review Official Solution" control now lives in the verdict header (instead of below feedback/hints) once reveal criteria are met.
@@ -199,6 +201,7 @@ Accepts a `plan` prop (passed from AppShell) to drive progressive unlock behavio
 - **Locked question tooltip** (`title` attribute on the locked row `div`): explains exactly how many more solves are needed — e.g. "Solve 7 more easy questions to unlock this". Pro users see "Upgrade to Elite to unlock all hard questions" on hard rows.
 - Concept filter (chip grid, most-frequent first, expand/collapse) and Company filter (SQL only)
 - Supports deep-link concept drilling via `?concepts=slug1,slug2` query params on `/practice/:topic`; slugs are matched back to concept names and auto-applied as active filters.
+- Bookmarked questions rail reads per-topic IDs from `localStorage` and stays in sync with QuestionPage updates via `bookmarks-updated` window events.
 - Test coverage in `components/SidebarNav.test.js`
 
 ---

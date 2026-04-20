@@ -1144,6 +1144,19 @@ select {
   background: rgba(0, 0, 0, 0.04);
 }
 
+.sidebar-group-header-static {
+  cursor: default;
+}
+
+.sidebar-group-header-static:hover {
+  border-color: var(--border-subtle);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.sidebar-group-bookmarks {
+  margin-bottom: 0.35rem;
+}
+
 .sidebar-group-title {
   display: flex;
   align-items: flex-start;
@@ -2631,6 +2644,35 @@ select {
   color: var(--text-strong);
 }
 
+.question-title-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.question-bookmark-btn {
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-card-alt);
+  color: var(--text-secondary);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.question-bookmark-btn:hover {
+  border-color: color-mix(in srgb, var(--accent) 36%, var(--border-subtle));
+  color: var(--text-strong);
+}
+
+.question-bookmark-btn-active {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--border-subtle));
+  color: color-mix(in srgb, var(--accent) 70%, var(--text-strong));
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-card-alt));
+}
+
 .question-status-line {
   margin-top: 0.4rem;
   font-size: 0.76rem;
@@ -2829,6 +2871,19 @@ select {
   gap: 0.1rem;
 }
 
+.editor-topbar-timer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.1rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  background: var(--surface-card-alt);
+}
 .editor-title {
   font-size: 1rem;
   font-weight: 600;

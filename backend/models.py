@@ -75,8 +75,10 @@ class RunCodeRequest(BaseModel):
 class SubmitCodeRequest(BaseModel):
     code: str
     question_id: int
+    duration_ms: int | None = None
 
 
 class PySparkSubmitRequest(BaseModel):
     selected_option: int
     question_id: int
+    duration_ms: int | None = None

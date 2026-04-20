@@ -288,6 +288,7 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
   const [activeCompanyFilters, setActiveCompanyFilters] = useState(new Set());
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [easyExpanded, setEasyExpanded] = useState(false);
+  const [bookmarkedIds, setBookmarkedIds] = useState([]);
 
   const allConcepts = useMemo(() => buildConceptList(groups), [groups]);
 
@@ -325,6 +326,40 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
       setFiltersOpen(true);
     }
   }, [allConcepts, searchParams]);
+
+  useEffect(() => {
+    const key = `bookmarks:${topic}`;
+
+    const loadBookmarks = () => {
+      try {
+        const raw = localStorage.getItem(key);
+        const parsed = JSON.parse(raw ?? '[]');
+        if (Array.isArray(parsed)) {
+          setBookmarkedIds(parsed.filter((value) => Number.isInteger(value)).slice(0, 20));
+        } else {
+          setBookmarkedIds([]);
+        }
+      } catch {
+        setBookmarkedIds([]);
+      }
+    };
+
+    const handleStorage = (event) => {
+      if (!event.key || event.key === key) loadBookmarks();
+    };
+
+    const handleBookmarksUpdated = (event) => {
+      if (!event?.detail?.topic || event.detail.topic === topic) loadBookmarks();
+    };
+
+    loadBookmarks();
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener('bookmarks-updated', handleBookmarksUpdated);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('bookmarks-updated', handleBookmarksUpdated);
+    };
+  }, [topic]);
 
   function toggleFilter(concept) {
     setActiveFilters((prev) => {
@@ -381,6 +416,17 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
     }).filter((g) => g.questions.length > 0);
   }, [groups, activeFilters, activeCompanyFilters, anyFilterActive]);
 
+  const bookmarkedQuestions = useMemo(() => {
+    if (!bookmarkedIds.length) return [];
+    const byId = new Map();
+    groups.forEach((group) => {
+      group.questions.forEach((question) => byId.set(Number(question.id), question));
+    });
+    return bookmarkedIds
+      .map((id) => byId.get(Number(id)))
+      .filter(Boolean);
+  }, [bookmarkedIds, groups]);
+
   return (
     <div className="sidebar-inner">
       <div className="sidebar-filters-accordion">
@@ -433,6 +479,25 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
           <button className="sidebar-concept-clear" onClick={clearAllFilters}>
             Clear all
           </button>
+        </div>
+      )}
+
+      {bookmarkedQuestions.length > 0 && (
+        <div className="sidebar-group sidebar-group-bookmarks">
+          <div className="sidebar-group-header sidebar-group-header-static">
+            <div className="sidebar-group-title">
+              <span className="badge badge-medium">saved</span>
+              <div className="sidebar-group-copy">
+                <span className="sidebar-group-name">Bookmarked</span>
+                <span className="sidebar-group-meta">{bookmarkedQuestions.length} saved</span>
+              </div>
+            </div>
+          </div>
+          <div className="sidebar-question-list">
+            {bookmarkedQuestions.map((q) => (
+              <QuestionRow key={`bookmark-${q.id}`} q={q} onNavigate={onNavigate} topic={topic} pathSlug={pathSlug} />
+            ))}
+          </div>
         </div>
       )}
 

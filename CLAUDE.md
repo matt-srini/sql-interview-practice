@@ -140,7 +140,7 @@ sql-interview-practice/
 │   │   │   └── TopicContext.js     # TRACK_META, TopicProvider, useTopic()
 │   │   ├── components/
 │   │   │   ├── AppShell.js         # Challenge workspace shell, sidebar, track switcher
-│   │   │   ├── SidebarNav.js       # Question list, lock/solved/next states (topic-aware)
+│   │   │   ├── SidebarNav.js       # Question list, lock/solved/next states + bookmarks rail (topic-aware)
 │   │   │   ├── CodeEditor.js       # Language-agnostic Monaco editor wrapper
 │   │   │   ├── SQLEditor.js        # Thin re-export of CodeEditor with language="sql"
 │   │   │   ├── ResultsTable.js    # Tabular output with sticky headers + horizontal overflow cue
@@ -154,7 +154,7 @@ sql-interview-practice/
 │   │   │   └── Topbar.js           # Shared top nav bar used by all standalone pages (Practice dropdown, Mock, Dashboard, auth)
 │   │   └── pages/
 │   │       ├── LandingPage.js          # Fixed-topbar landing with track/sample tabs and compact progress panels
-│   │       ├── QuestionPage.js         # Topic-aware question page (all 4 tracks, shortcut popover, verdict-header solution reveal, draft autosave)
+│   │       ├── QuestionPage.js         # Topic-aware question page (all 4 tracks, shortcut popover, verdict-header solution reveal, draft autosave, soft timer, bookmarks)
 │   │       ├── TrackHubPage.js         # Per-track landing (progress, next-up summary, concept preview, paths)
 │   │       ├── LearningPath.js         # Curated path page at /learn/:topic/:slug (breadcrumb, progress, completion banner)
 │   │       ├── LearningPathsIndex.js   # Index of all paths at /learn and /learn/:topic (grouped + in-progress rail)
