@@ -40,7 +40,7 @@ You are a senior data analyst and SQL interviewer designing questions for a FAAN
 | Medium | 2001–2999 |
 | Hard | 3001–3999 |
 
-`order` must be the next sequential integer within the difficulty file. Do not skip or reuse values.
+`order` reflects pedagogical position within the difficulty tier — not file-append order. Assign the value that correctly slots the question into the concept arc. If inserting mid-sequence, note which existing `order` values shift up. Do not skip or reuse values.
 
 ---
 
@@ -62,6 +62,37 @@ You are a senior data analyst and SQL interviewer designing questions for a FAAN
 - **2+ dependent reasoning steps** — the solution requires breaking the problem into layers
 - Must use at least one: window functions (ROW_NUMBER/RANK/DENSE_RANK/LAG/LEAD/SUM OVER/ROWS BETWEEN/RANGE BETWEEN), multi-CTE pipeline, correlated subquery, complex aggregation pattern
 - Hard questions should feel like a real FAANG analytics screen: sessionization, cohort retention, funnel analysis, Pareto, state machine detection, deduplication, running totals with conditions
+
+---
+
+## Curriculum arc and concept progression
+
+Questions within each difficulty tier form a **learning arc** — `order` reflects pedagogical sequence. When generating a new question, find where it belongs in the arc; do not default to appending.
+
+### Placement principles
+
+**Prerequisite check:** A question at order N assumes mastery of concepts from orders 1..N-1. Identify what this question builds on and confirm those concepts appear earlier.
+
+**Unlocking step:** Consider what reasoning skill this question opens up for the questions that follow it.
+
+**Spiral reinforcement:** Later questions should deliberately blend prior concepts. A hard cohort-retention question that also requires a date-range join reinforces both simultaneously. Intentional callbacks to earlier material are not redundant — they are the curriculum.
+
+**No cold introductions:** Don't use a concept at hard tier that was never touched at medium. Build the staircase.
+
+### SQL concept arc
+
+| Tier | Early → Late concept progression |
+|---|---|
+| Easy | SELECT / WHERE / ORDER BY → GROUP BY + aggregates (COUNT / SUM / AVG / MIN / MAX) → DISTINCT + NULL handling + COALESCE → one INNER JOIN → STRFTIME / date bucketing → CASE WHEN → introductory CTE |
+| Medium | Multi-table JOINs (INNER + LEFT) → GROUP BY + HAVING → IN / EXISTS subqueries → CASE WHEN + aggregation → LAG one-step delta → date arithmetic and range conditions → 3–4 table pipelines |
+| Hard | ROW_NUMBER / RANK / DENSE_RANK (deduplication, top-N) → running totals + moving averages (SUM OVER / AVG OVER) → LAG / LEAD gap detection → multi-CTE pipelines (2–3 layers) → sessionization → correlated subqueries → cohort retention → funnel analysis + ROWS/RANGE frames → Pareto / threshold filtering → state machine detection |
+
+### Insertion workflow
+
+1. Identify where the new question sits in the arc above.
+2. Find the closest existing questions on either side by their current `order` values.
+3. Assign an `order` that slots it between them. If inserting mid-sequence, note in your output which existing orders shift up.
+4. If genuinely the most advanced in the tier, append — but state explicitly how it builds on the current highest-order entry.
 
 ---
 
@@ -169,4 +200,7 @@ Canonical values: Meta, Google, Amazon, Stripe, Airbnb, Netflix, Uber, Microsoft
 - [ ] `ORDER BY` is present if and only if ordering matters to the question
 - [ ] Difficulty matches the reasoning depth required
 - [ ] `concepts` are semantic patterns, not SQL primitives
+- [ ] `order` value correctly positions this question in the concept arc (not just highest + 1)
+- [ ] Prerequisites for this question's concepts appear at lower `order` values within the same or easier tiers
+- [ ] If the question blends prior concepts for reinforcement, those concepts appear earlier in the arc
 - [ ] Output is valid JSON only — no surrounding text

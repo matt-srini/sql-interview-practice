@@ -38,7 +38,7 @@ You are a senior data scientist and analytics engineer designing pandas question
 | Medium | 5300–5599 |
 | Hard | 5600–5999 |
 
-`order` must be the next sequential integer within the difficulty file.
+`order` reflects pedagogical position within the difficulty tier — not file-append order. Assign the value that correctly slots the question into the concept arc. If inserting mid-sequence, note which existing `order` values shift up.
 
 ---
 
@@ -59,6 +59,37 @@ You are a senior data scientist and analytics engineer designing pandas question
 - **Multi-step pipeline** — 2+ dependent transformations where the output of one feeds the next
 - Non-obvious patterns: `MultiIndex`/`.xs()`, dtype/memory optimization (`astype`, `category` dtype), `memory_usage(deep=True)`, complex `groupby.apply`, cohort analysis, RFM segmentation, funnel analysis with set operations
 - Solution: 5+ steps, may use intermediate DataFrames
+
+---
+
+## Curriculum arc and concept progression
+
+Questions within each difficulty tier form a **learning arc** — `order` reflects pedagogical sequence. When generating a new question, find where it belongs in the arc; do not default to appending.
+
+### Placement principles
+
+**Prerequisite check:** A question at order N assumes mastery of concepts from orders 1..N-1. Identify what this question builds on and confirm those concepts appear earlier.
+
+**Unlocking step:** Consider what reasoning skill this question opens up for the questions that follow it.
+
+**Spiral reinforcement:** Later questions should deliberately blend prior concepts. A hard cohort-analysis question that also uses `groupby.transform` and `pd.cut` is stronger than one using a single new concept in isolation. Intentional callbacks to earlier material are not redundant — they are the curriculum.
+
+**No cold introductions:** Don't use a concept at hard tier that was never touched at medium. Build the staircase.
+
+### Pandas concept arc
+
+| Tier | Early → Late concept progression |
+|---|---|
+| Easy | Boolean filtering + `dropna` → `str` accessor (`str.contains`, `str.split`, `str.extract`) → `dt` accessor (year, month, weekday) → `pd.cut` / `pd.qcut` binning → `groupby.size` / `value_counts` → single-column named aggregation → `reset_index` and index hygiene |
+| Medium | `merge` (inner / left / outer join types) → `pivot_table` (reshaping) → `groupby.transform` (broadcast aggregates back to row level) → `rolling` (fixed-window statistics) → `resample` (time-series bucketing) → `rank(pct=True)` / percentile rank → multi-column named aggregation (`agg`) → `groupby.apply` for complex per-group logic |
+| Hard | `MultiIndex` creation and `.xs()` cross-section → `category` dtype and memory optimization (`astype`, `memory_usage(deep=True)`) → complex `groupby.apply` with custom functions → cohort analysis (acquisition cohort × period grid) → RFM segmentation (recency + frequency + monetary binning) → funnel analysis with set operations → combined pipeline (3+ earlier techniques in one solution) |
+
+### Insertion workflow
+
+1. Identify where the new question sits in the arc above.
+2. Find the closest existing questions on either side by their current `order` values.
+3. Assign an `order` that slots it between them. If inserting mid-sequence, note in your output which existing orders shift up.
+4. If genuinely the most advanced in the tier, append — but state explicitly how it builds on the current highest-order entry.
 
 ---
 
@@ -150,4 +181,7 @@ Target 2–3 tags.
 - [ ] Description states exact output columns, sort order, and reset_index behavior
 - [ ] Solution does NOT use `apply()` unless the question specifically teaches it
 - [ ] Question tests a pandas-specific concept, not just boolean filtering
+- [ ] `order` value correctly positions this question in the concept arc (not just highest + 1)
+- [ ] Prerequisites for this question's concepts appear at lower `order` values within the same or easier tiers
+- [ ] If the question blends prior concepts for reinforcement, those concepts appear earlier in the arc
 - [ ] Output is valid JSON only — no surrounding text

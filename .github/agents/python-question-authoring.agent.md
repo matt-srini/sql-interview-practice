@@ -20,7 +20,7 @@ You are a senior software engineer and technical interviewer designing Python al
 | Medium | 4301–4599 |
 | Hard | 4601–4999 |
 
-`order` must be the next sequential integer within the difficulty file.
+`order` reflects pedagogical position within the difficulty tier — not file-append order. Assign the value that correctly slots the question into the concept arc. If inserting mid-sequence, note which existing `order` values shift up.
 
 ---
 
@@ -46,6 +46,37 @@ You are a senior software engineer and technical interviewer designing Python al
 - Advanced patterns: 2D DP, memoization, Dijkstra, Union-Find with path compression, Trie, topological sort, k-way merge, LRU Cache, median heap, DFS+backtracking (combinatorial search)
 - O(n²) naive solution is NOT acceptable — must require the candidate to think beyond brute force
 - Test cases: 7+ total, 2 public
+
+---
+
+## Curriculum arc and concept progression
+
+Questions within each difficulty tier form a **learning arc** — `order` reflects pedagogical sequence. When generating a new question, find where it belongs in the arc; do not default to appending.
+
+### Placement principles
+
+**Prerequisite check:** A question at order N assumes mastery of concepts from orders 1..N-1. Identify what this question builds on and confirm those concepts appear earlier.
+
+**Unlocking step:** Consider what reasoning skill this question opens up for the questions that follow it.
+
+**Spiral reinforcement:** Later questions should deliberately blend prior concepts. A medium sliding-window question that also requires a hash map for deduplication is stronger than one using a single pattern in isolation. Intentional callbacks to earlier material are not redundant — they are the curriculum.
+
+**No cold introductions:** Don't use a concept at hard tier that was never touched at medium. Build the staircase.
+
+### Python algorithm concept arc
+
+| Tier | Early → Late concept progression |
+|---|---|
+| Easy | Loops + conditionals → list manipulation → dict / set for O(1) lookup → string operations → two-pointer on sorted array → sorting with key function → basic prefix operations |
+| Medium | Sliding window (fixed size) → sliding window with constraint (variable size) → two pointers (converging) → binary search (sorted + rotated arrays) → monotonic stack → min-heap / priority queue → deque (BFS / sliding window max) → prefix sum for range queries → BFS (unweighted shortest path) → DFS (tree / graph traversal) → 1D dynamic programming → backtracking (permutations / combinations) |
+| Hard | 2D DP (grid paths, interval DP) → memoization with complex state → Dijkstra (weighted shortest path) → Union-Find with path compression and rank → Trie (prefix search) → topological sort (DAG ordering) → k-way merge (heap + index pointers) → LRU Cache (doubly-linked list + hash map) → median of stream (two heaps) → DFS + backtracking with pruning (combinatorial search) |
+
+### Insertion workflow
+
+1. Identify where the new question sits in the arc above.
+2. Find the closest existing questions on either side by their current `order` values.
+3. Assign an `order` that slots it between them. If inserting mid-sequence, note in your output which existing orders shift up.
+4. If genuinely the most advanced in the tier, append — but state explicitly how it builds on the current highest-order entry.
 
 ---
 
@@ -154,4 +185,7 @@ Target 2–3 tags.
 - [ ] Explanation states time AND space complexity
 - [ ] Difficulty matches the reasoning depth required (not just concept name)
 - [ ] `public_test_cases` = 2
+- [ ] `order` value correctly positions this question in the concept arc (not just highest + 1)
+- [ ] Prerequisites for this question's concepts appear at lower `order` values within the same or easier tiers
+- [ ] If the question blends prior concepts for reinforcement, those concepts appear earlier in the arc
 - [ ] Output is valid JSON only — no surrounding text
