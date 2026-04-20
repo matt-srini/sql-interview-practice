@@ -47,7 +47,7 @@ Four stacked sections on a single scroll:
 
 `TRACK_DIFFICULTIES` mirrors the real per-track/difficulty question counts (32/34/29 SQL, 30/29/24 Python, 29/30/23 Pandas, 38/30/22 PySpark). `TOTAL_EASY` and `TOTAL_QUESTIONS` are derived totals used in pricing copy.
 
-Landing consistency updates: unified landing widths (720 / 1040), `.landing-tier-inner` deduplicated, all landing border tokens normalized to `var(--border-subtle)`, company chips rendered as non-interactive spans, and active landing tab persistence stored in `localStorage` (`landingActiveTab`). The practice-track section now uses neutral card surfaces with fully opaque accent rails on track cards and opaque surface-mixed difficulty chips instead of tinted card fills.
+Landing consistency updates: unified landing widths (720 / 1040), `.landing-tier-inner` deduplicated, all landing border tokens normalized to `var(--border-subtle)`, company chips rendered as non-interactive spans, and active landing tab persistence stored in `localStorage` (`landingActiveTab`). The practice-track section now uses neutral card surfaces with fully opaque accent rails on track cards, sample strips, and sample tiles, plus opaque surface-mixed difficulty chips instead of tinted card fills.
 
 On mount, checks `window.location.hash` and scrolls to the matching element (used by the sample page back arrow → `/#landing-tracks`).
 
