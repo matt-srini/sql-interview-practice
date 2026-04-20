@@ -419,16 +419,17 @@ Each phase commit must:
 #### 7.2 Workspace depth
 
 - [x] Auto-save drafts (challenge + sample), restore, clear-draft controls
-- [ ] Wrong-answer diff (row/cell-level SQL diff + Python side-by-side failure diff)
+- [x] Wrong-answer diff (cell-level SQL/Pandas diff; diff summary badge; extra/missing row indicators)
 - [ ] Progressive hints (4-step scaffold + gated solution reveal)
+- [x] Progressive hints stepper (labeled steps: Conceptual/Approach/etc., animated reveal, soft gate on solution)
 - [x] Concept explanation panel from concept pills
 - [x] Similar-question recommendations after correct solves
-- [ ] Monaco upgrades (schema-aware autocomplete, formatter shortcut, query history, font-size persistence)
+- [x] Monaco upgrades: SQL schema-aware autocomplete, sql-formatter shortcut (⌘⇧F), run history popover, font-size persistence (⌘+/⌘−, A+/A− buttons)
 - [x] Result error clarity mapper (`sqlErrorParser`) with learner-friendly copy
 - [x] Question bookmarks (header toggle + Sidebar rail, localStorage cap 20)
 - [x] Per-question soft timer + `duration_ms` persistence in submissions
-- [ ] Resizable split pane
-- [ ] Session goals + focus mode (`?focus=1`)
+- [x] Resizable split pane (drag divider, localStorage persistence, double-click reset, mobile-safe)
+- [x] Session goals + focus mode (`?focus=1` sidebar collapse, session goal widget in sidebar)
 
 #### 7.3 Engagement and retention
 

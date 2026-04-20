@@ -92,14 +92,34 @@ export default function AppShell() {
 
   const { topic, meta } = useTopic();
   const pathSlug = new URLSearchParams(location.search).get('path');
+  const focusMode = new URLSearchParams(location.search).get('focus') === '1';
   const modeLabel = pathSlug ? `${meta.label} · Path` : `${meta.label} · Challenge`;
 
-  const showUpgradeControls = user && (user.plan === 'free' || user.plan === 'pro');
+  // Session goal tracking
+  const [sessionGoal, setSessionGoal] = useState(() => {
+    try { return Math.max(1, Math.min(20, parseInt(localStorage.getItem('session-goal') ?? '5', 10))); } catch { return 5; }
+  });
+  const [sessionStartSolved, setSessionStartSolved] = useState(null);
+  useEffect(() => {
+    if (!catalog || sessionStartSolved !== null) return;
+    const stored = sessionStorage.getItem('session-start-solved');
+    if (stored !== null) {
+      setSessionStartSolved(parseInt(stored, 10));
+    } else {
+      sessionStorage.setItem('session-start-solved', String(totalSolvedSidebar));
+      setSessionStartSolved(totalSolvedSidebar);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [catalog]);
 
-  const planLabel = user?.plan === 'elite' ? 'Elite' : user?.plan === 'pro' ? 'Pro' : 'Free';
+  const sessionSolvedNow = sessionStartSolved !== null ? Math.max(0, totalSolvedSidebar - sessionStartSolved) : 0;
+  const goalProgress = Math.min(1, sessionGoal > 0 ? sessionSolvedNow / sessionGoal : 0);
+  const goalMet = sessionSolvedNow >= sessionGoal;
+
+  const showUpgradeControls = user && (user.plan === 'free' || user.plan === 'pro');
   const planPillClass = `shell-pill shell-pill-plan shell-pill-plan-${user?.plan ?? 'free'}`;
 
-  // Unlock nudge for free-plan users with locked questions
+  const planLabel = user?.plan === 'elite' ? 'Elite' : user?.plan === 'pro' ? 'Pro' : 'Free';
   const mediumGroup = catalog?.groups?.find(g => g.difficulty === 'medium');
   const lockedMediumCount = mediumGroup?.questions?.filter(q => q.state === 'locked').length ?? 0;
   const lockedHardCount = (catalog?.groups?.find(g => g.difficulty === 'hard'))?.questions?.filter(q => q.state === 'locked').length ?? 0;
@@ -159,6 +179,20 @@ export default function AppShell() {
     </>
   );
 
+  const focusToggleNode = !isAtHub ? (
+    <a
+      href={focusMode
+        ? location.pathname + (location.search.replace(/[?&]focus=1/, '').replace(/^&/, '?') || '')
+        : location.pathname + (location.search ? location.search + '&focus=1' : '?focus=1')
+      }
+      className={`shell-pill shell-pill-focus${focusMode ? ' shell-pill-focus--active' : ''}`}
+      title={focusMode ? 'Exit focus mode' : 'Enter focus mode (hides sidebar)'}
+      aria-label={focusMode ? 'Exit focus mode' : 'Enter focus mode'}
+    >
+      {focusMode ? '⊡ Focus' : '⊞ Focus'}
+    </a>
+  ) : null;
+
   const banner = (upgradeError || upgradeSuccess) ? (
     <div className={`app-banner ${upgradeError ? 'app-banner-error' : 'app-banner-success'}`}>
       {upgradeError || 'Upgrade confirmed. Your access is refreshing now.'}
@@ -166,12 +200,12 @@ export default function AppShell() {
   ) : null;
 
   return (
-    <div className={`app-shell ${desktopCollapsed ? 'sidebar-collapsed' : ''}`}>
+    <div className={`app-shell ${desktopCollapsed || focusMode ? 'sidebar-collapsed' : ''}`}>
       <Topbar
         variant="app"
         leftSlot={sidebarToggleNode}
         centerSlot={modePillNode}
-        userExtras={userExtrasNode}
+        userExtras={<>{focusToggleNode}{userExtrasNode}</>}
         belowTopbar={banner}
       />
 
@@ -201,6 +235,39 @@ export default function AppShell() {
           {showUnlockNudge && (
             <div className="sidebar-unlock-nudge">
               Questions unlock as you solve them. {unlockNudgeCopy} The sequence builds real competence.
+            </div>
+          )}
+          {/* Session goal widget */}
+          {user && (
+            <div className={`session-goal-widget${goalMet ? ' session-goal-widget--met' : ''}`}>
+              <div className="session-goal-row">
+                <span className="session-goal-label">Session goal</span>
+                <div className="session-goal-controls">
+                  <button
+                    className="session-goal-adj"
+                    aria-label="Decrease goal"
+                    onClick={() => setSessionGoal((g) => {
+                      const next = Math.max(1, g - 1);
+                      try { localStorage.setItem('session-goal', String(next)); } catch {}
+                      return next;
+                    })}
+                  >−</button>
+                  <span className="session-goal-count">{sessionSolvedNow}/{sessionGoal}</span>
+                  <button
+                    className="session-goal-adj"
+                    aria-label="Increase goal"
+                    onClick={() => setSessionGoal((g) => {
+                      const next = Math.min(20, g + 1);
+                      try { localStorage.setItem('session-goal', String(next)); } catch {}
+                      return next;
+                    })}
+                  >+</button>
+                </div>
+              </div>
+              <div className="session-goal-bar" role="progressbar" aria-valuenow={sessionSolvedNow} aria-valuemax={sessionGoal}>
+                <div className="session-goal-fill" style={{ width: `${goalProgress * 100}%` }} />
+              </div>
+              {goalMet && <p className="session-goal-met">Goal reached — great session!</p>}
             </div>
           )}
           {showUpgradeControls && (

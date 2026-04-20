@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { format as formatSQL } from 'sql-formatter';
 import api from '../api';
 import CodeEditor from '../components/CodeEditor';
 import ResultsTable from '../components/ResultsTable';
@@ -14,6 +15,8 @@ import { useTopic } from '../contexts/TopicContext';
 import { useAuth } from '../contexts/AuthContext';
 import UpgradeButton from '../components/UpgradeButton';
 import { parseSqlError } from '../utils/sqlErrorParser';
+
+const HINT_STEP_LABELS = ['Conceptual hint', 'Approach hint', 'Structure hint', 'Final hint'];
 
 const SQL_PLACEHOLDER = '-- Write your SQL query here\nSELECT ';
 const PYTHON_PLACEHOLDER = '# Write your solution here\n';
@@ -106,6 +109,30 @@ export default function QuestionPage() {
   });
   const [draftSaveState, setDraftSaveState] = useState('idle');
   const [elapsedMs, setElapsedMs] = useState(0);
+
+  // Split pane
+  const [leftPanelWidth, setLeftPanelWidth] = useState(() => {
+    try {
+      const saved = localStorage.getItem('split-pane-width');
+      if (saved) return Math.max(280, Math.min(600, parseInt(saved, 10)));
+    } catch {}
+    return 380;
+  });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartXRef = useRef(0);
+  const dragStartWidthRef = useRef(0);
+
+  // Monaco: font-size persistence
+  const [fontSize, setFontSize] = useState(() => {
+    try { return Math.max(11, Math.min(24, parseInt(localStorage.getItem('editor-font-size') ?? '14', 10))); } catch { return 14; }
+  });
+
+  // Run history (sessionStorage, per question)
+  const runHistoryKey = useMemo(() => `run-history:${topic}:${id}`, [topic, id]);
+  const [runHistory, setRunHistory] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem(`run-history:${topic}:${id}`) ?? '[]'); } catch { return []; }
+  });
+  const [historyOpen, setHistoryOpen] = useState(false);
   const priorAttemptCountRef = useRef(0);
   const verdictRef = useRef(null);
 
@@ -121,6 +148,12 @@ export default function QuestionPage() {
   const timerAccumRef = useRef(0);
   const timerSegmentStartRef = useRef(null);
   const timerIntervalRef = useRef(null);
+
+  // Monaco instance refs (for schema autocomplete + format shortcut)
+  const monacoRef = useRef(null);
+  const editorRef = useRef(null);
+  const completionDisposableRef = useRef(null);
+  const questionRef = useRef(null);
 
   // MCQ state for PySpark
   const [selectedOption, setSelectedOption] = useState(null);
@@ -241,6 +274,11 @@ export default function QuestionPage() {
     timerSegmentStartRef.current = null;
     setElapsedMs(0);
     setBookmarked(false);
+    setHistoryOpen(false);
+    try {
+      const saved = sessionStorage.getItem(`run-history:${topic}:${id}`);
+      setRunHistory(saved ? JSON.parse(saved) : []);
+    } catch { setRunHistory([]); }
   }, [id, meta.language, meta.hasMCQ]);
 
   useEffect(() => {
@@ -294,6 +332,90 @@ export default function QuestionPage() {
   useEffect(() => () => {
     if (draftSaveTimerRef.current) clearTimeout(draftSaveTimerRef.current);
   }, []);
+
+  // Keep questionRef current for Monaco completion provider
+  useEffect(() => { questionRef.current = question; }, [question]);
+
+  // Register/update SQL schema autocomplete when question or monaco instance changes
+  useEffect(() => {
+    if (!monacoRef.current || topic !== 'sql') return undefined;
+    if (completionDisposableRef.current) {
+      completionDisposableRef.current.dispose();
+      completionDisposableRef.current = null;
+    }
+    const schema = question?.schema;
+    if (!schema || Object.keys(schema).length === 0) return undefined;
+    const disposable = monacoRef.current.languages.registerCompletionItemProvider('sql', {
+      triggerCharacters: ['.', ' '],
+      provideCompletionItems: (model, position) => {
+        const currentSchema = questionRef.current?.schema;
+        if (!currentSchema) return { suggestions: [] };
+        const word = model.getWordUntilPosition(position);
+        const range = {
+          startLineNumber: position.lineNumber, endLineNumber: position.lineNumber,
+          startColumn: word.startColumn, endColumn: word.endColumn,
+        };
+        const lineBefore = model.getValueInRange({
+          startLineNumber: position.lineNumber, startColumn: 1,
+          endLineNumber: position.lineNumber, endColumn: position.column,
+        });
+        // After a dot: suggest columns for that table
+        const dotMatch = lineBefore.match(/(\w+)\.(\w*)$/);
+        if (dotMatch) {
+          const tbl = dotMatch[1].toLowerCase();
+          const cols = currentSchema[tbl] ?? currentSchema[Object.keys(currentSchema).find((k) => k.toLowerCase() === tbl)];
+          if (cols) {
+            return {
+              suggestions: cols.map((col) => ({
+                label: col, kind: monacoRef.current.languages.CompletionItemKind.Field,
+                insertText: col, range, detail: `Column of ${tbl}`,
+              })),
+            };
+          }
+        }
+        // Default: suggest tables + all columns
+        const suggestions = [];
+        Object.entries(currentSchema).forEach(([tbl, cols]) => {
+          suggestions.push({
+            label: tbl, kind: monacoRef.current.languages.CompletionItemKind.Struct,
+            insertText: tbl, range, detail: `Table (${cols.length} columns)`,
+          });
+          cols.forEach((col) => suggestions.push({
+            label: col, kind: monacoRef.current.languages.CompletionItemKind.Field,
+            insertText: col, range, detail: `Column of ${tbl}`,
+          }));
+        });
+        return { suggestions };
+      },
+    });
+    completionDisposableRef.current = disposable;
+    return () => {
+      if (completionDisposableRef.current) {
+        completionDisposableRef.current.dispose();
+        completionDisposableRef.current = null;
+      }
+    };
+  }, [question?.schema, topic]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Split pane drag handlers
+  useEffect(() => {
+    if (!isDragging) return undefined;
+    function onMouseMove(e) {
+      const delta = e.clientX - dragStartXRef.current;
+      const newWidth = Math.max(260, Math.min(620, dragStartWidthRef.current + delta));
+      setLeftPanelWidth(newWidth);
+      try { localStorage.setItem('split-pane-width', String(newWidth)); } catch {}
+    }
+    function onMouseUp() {
+      setIsDragging(false);
+    }
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    return () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+  }, [isDragging]);
 
   useEffect(() => {
     const isEditableTarget = (target) => {
@@ -364,6 +486,14 @@ export default function QuestionPage() {
     setRunning(true);
     setRunResult(null);
     setRunError(null);
+    // Push to run history
+    if (code.trim()) {
+      setRunHistory((prev) => {
+        const deduped = [code, ...prev.filter((h) => h !== code)].slice(0, 20);
+        try { sessionStorage.setItem(runHistoryKey, JSON.stringify(deduped)); } catch {}
+        return deduped;
+      });
+    }
     try {
       const payload = meta.language === 'python'
         ? { code, question_id: Number(id) }
@@ -425,6 +555,9 @@ export default function QuestionPage() {
   // Registered as Monaco's onMount callback; wires Cmd/Ctrl+Enter → Run,
   // Cmd/Ctrl+Shift+Enter → Submit. Refs ensure commands always call the latest handlers.
   function handleEditorMount(editor, monaco) {
+    monacoRef.current = monaco;
+    editorRef.current = editor;
+
     // Cmd/Ctrl + Enter → Run Query / Run Code  (safe, reversible, frequent)
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
       if (!runningRef.current && !submittingRef.current && !isLockedRef.current && meta.hasRunCode) {
@@ -440,12 +573,58 @@ export default function QuestionPage() {
         }
       }
     );
+    // Cmd/Ctrl + Shift + F → Format SQL
+    if (meta.language === 'sql') {
+      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyF, () => {
+        const current = editor.getValue();
+        try {
+          const formatted = formatSQL(current, { language: 'duckdb', tabWidth: 2, keywordCase: 'upper' });
+          editor.setValue(formatted);
+        } catch {}
+      });
+    }
+    // Cmd/Ctrl + = / + → increase font size
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Equal, () => {
+      setFontSize((prev) => {
+        const next = Math.min(24, prev + 1);
+        try { localStorage.setItem('editor-font-size', String(next)); } catch {}
+        return next;
+      });
+    });
+    // Cmd/Ctrl + - → decrease font size
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Minus, () => {
+      setFontSize((prev) => {
+        const next = Math.max(11, prev - 1);
+        try { localStorage.setItem('editor-font-size', String(next)); } catch {}
+        return next;
+      });
+    });
   }
 
   function toggleEditorHeight() {
     setEditorTall((prev) => {
       const next = !prev;
       try { localStorage.setItem('editor-height-pref', next ? 'tall' : 'normal'); } catch {}
+      return next;
+    });
+  }
+
+  function handleDividerMouseDown(e) {
+    e.preventDefault();
+    dragStartXRef.current = e.clientX;
+    dragStartWidthRef.current = leftPanelWidth;
+    setIsDragging(true);
+  }
+
+  function handleDividerReset() {
+    setLeftPanelWidth(380);
+    try { localStorage.removeItem('split-pane-width'); } catch {}
+  }
+
+  function adjustFontSize(delta) {
+    setFontSize((prev) => {
+      const next = Math.max(11, Math.min(24, prev + delta));
+      try { localStorage.setItem('editor-font-size', String(next)); } catch {}
       return next;
     });
   }
@@ -619,7 +798,10 @@ export default function QuestionPage() {
           </div>
         </div>
       )}
-      <div className="question-page-inner">
+      <div
+        className={`question-page-inner${isDragging ? ' split-dragging' : ''}`}
+        style={{ gridTemplateColumns: `${leftPanelWidth}px 6px minmax(0, 1fr)`, columnGap: '0.6rem' }}
+      >
         <aside className="left-panel">
           <div className="card prompt-card prompt-card-main">
             <div className="section-heading">
@@ -813,6 +995,16 @@ export default function QuestionPage() {
           )}
         </aside>
 
+        {/* Draggable split divider */}
+        <div
+          className={`split-divider${isDragging ? ' split-divider--dragging' : ''}`}
+          onMouseDown={handleDividerMouseDown}
+          onDoubleClick={handleDividerReset}
+          title="Drag to resize · double-click to reset"
+          role="separator"
+          aria-label="Resize panels"
+        />
+
         <section className="right-panel">
           {/* PySpark: MCQ panel instead of editor */}
           {meta.hasMCQ ? (
@@ -866,6 +1058,38 @@ export default function QuestionPage() {
                   <span className="editor-topbar-note">
                     {draftSaveState === 'saving' ? 'Saving draft…' : draftSaveState === 'saved' ? 'Draft saved' : editorNote}
                   </span>
+                  {runHistory.length > 0 && (
+                    <div className="editor-history-wrap">
+                      <button
+                        className="editor-expand-btn"
+                        onClick={() => setHistoryOpen((v) => !v)}
+                        title="Run history"
+                        aria-label="Run history"
+                        aria-expanded={historyOpen}
+                      >
+                        ↑
+                      </button>
+                      {historyOpen && (
+                        <div className="history-popover" role="listbox" aria-label="Run history">
+                          {runHistory.map((entry, i) => (
+                            <button
+                              key={i}
+                              className="history-item"
+                              role="option"
+                              onClick={() => { setCode(entry); setHistoryOpen(false); }}
+                              title={entry}
+                            >
+                              {entry.slice(0, 60).replace(/\n/g, ' ')}{entry.length > 60 ? '…' : ''}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <div className="editor-font-controls">
+                    <button className="editor-expand-btn" onClick={() => adjustFontSize(-1)} title="Decrease font size" aria-label="Decrease font size">A−</button>
+                    <button className="editor-expand-btn" onClick={() => adjustFontSize(+1)} title="Increase font size" aria-label="Increase font size">A+</button>
+                  </div>
                   <button
                     className="editor-expand-btn"
                     onClick={() => setShortcutHelpOpen((open) => !open)}
@@ -912,6 +1136,19 @@ export default function QuestionPage() {
                     <span>Submit answer</span>
                     <kbd className="shortcut-kbd">⌘⇧↵</kbd>
                   </div>
+                  {meta.language === 'sql' && (
+                    <div className="workspace-shortcut-row">
+                      <span>Format SQL</span>
+                      <kbd className="shortcut-kbd">⌘⇧F</kbd>
+                    </div>
+                  )}
+                  <div className="workspace-shortcut-row">
+                    <span>Font size</span>
+                    <span className="shortcut-pair">
+                      <kbd className="shortcut-kbd">⌘+</kbd>
+                      <kbd className="shortcut-kbd">⌘−</kbd>
+                    </span>
+                  </div>
                   <div className="workspace-shortcut-row">
                     <span>Toggle this help</span>
                     <kbd className="shortcut-kbd">?</kbd>
@@ -924,6 +1161,7 @@ export default function QuestionPage() {
                 onChange={setCode}
                 language={meta.language}
                 height={editorHeight}
+                fontSize={fontSize}
                 onMount={handleEditorMount}
               />
 
@@ -1081,7 +1319,13 @@ export default function QuestionPage() {
                   <span>Your Output</span>
                   <span>{submitResult.user_result.rows.length} row{submitResult.user_result.rows.length !== 1 ? 's' : ''}</span>
                 </div>
-                <ResultsTable columns={submitResult.user_result.columns} rows={submitResult.user_result.rows} />
+                <ResultsTable
+                  columns={submitResult.user_result.columns}
+                  rows={submitResult.user_result.rows}
+                  diffMode
+                  expectedColumns={submitResult.expected_result.columns}
+                  expectedRows={submitResult.expected_result.rows}
+                />
               </div>
               <div className="results-card">
                 <div className="results-header">
@@ -1123,6 +1367,9 @@ export default function QuestionPage() {
                 <ResultsTable
                   columns={submitResult.user_result.columns ?? []}
                   rows={submitResult.user_result.rows ?? []}
+                  diffMode
+                  expectedColumns={submitResult.expected_result.columns ?? []}
+                  expectedRows={submitResult.expected_result.rows ?? []}
                 />
               </div>
               <div className="results-card">
@@ -1252,19 +1499,31 @@ export default function QuestionPage() {
                 </div>
               )}
 
-              {!submitResult.correct && question.hints?.slice(0, hintsShown).map((hint, index) => (
-                <div key={index} className="hint-card">
-                  <strong>Hint {index + 1}:</strong> {hint}
+              {!submitResult.correct && question.hints?.length > 0 && (
+                <div className="hint-stepper">
+                  <div className="hint-stepper-header">
+                    <span className="hint-stepper-title">Hints</span>
+                    <span className="hint-stepper-progress">{hintsShown}/{question.hints.length} revealed</span>
+                  </div>
+                  {question.hints.slice(0, hintsShown).map((hint, index) => (
+                    <div key={index} className="hint-step hint-step--revealed">
+                      <div className="hint-step-meta">
+                        <span className="hint-step-num">{index + 1}</span>
+                        <span className="hint-step-label">{HINT_STEP_LABELS[index] ?? `Hint ${index + 1}`}</span>
+                      </div>
+                      <p className="hint-step-content">{hint}</p>
+                    </div>
+                  ))}
+                  {hintsShown < question.hints.length && (
+                    <button
+                      className="hint-reveal-btn"
+                      onClick={() => setHintsShown((c) => c + 1)}
+                    >
+                      <span className="hint-reveal-arrow">→</span>
+                      Reveal {HINT_STEP_LABELS[hintsShown] ?? `Hint ${hintsShown + 1}`}
+                    </button>
+                  )}
                 </div>
-              ))}
-
-              {!submitResult.correct && hintsShown < (question.hints?.length ?? 0) && (
-                <button
-                  className="btn btn-secondary workspace-inline-action"
-                  onClick={() => setHintsShown((count) => count + 1)}
-                >
-                  Reveal Hint {hintsShown + 1}
-                </button>
               )}
 
               {showSolution && (

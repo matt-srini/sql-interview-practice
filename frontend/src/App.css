@@ -3123,7 +3123,7 @@ select {
 
 @media (max-width: 980px) {
   .question-page-inner {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
   }
 
   .left-panel {
@@ -7666,4 +7666,341 @@ select {
   background: var(--surface-card-soft) !important;
   transform: none !important;
   box-shadow: none !important;
+}
+
+/* ============================================================
+   Wrong-answer cell-level diff (ResultsTable diffMode)
+   ============================================================ */
+.diff-summary {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0.45rem 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 0.75rem;
+}
+.diff-summary-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.18rem 0.55rem;
+  border-radius: 20px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.diff-summary-mismatch {
+  background: rgba(217, 79, 61, 0.1);
+  color: var(--danger);
+  border: 1px solid rgba(217, 79, 61, 0.2);
+}
+.diff-summary-extra {
+  background: rgba(196, 127, 23, 0.1);
+  color: var(--warning);
+  border: 1px solid rgba(196, 127, 23, 0.2);
+}
+.diff-summary-missing {
+  background: rgba(91, 106, 240, 0.08);
+  color: var(--accent);
+  border: 1px solid rgba(91, 106, 240, 0.18);
+}
+.cell-diff-mismatch {
+  background: rgba(217, 79, 61, 0.12) !important;
+  color: var(--danger) !important;
+  font-weight: 500;
+}
+.cell-diff-match {
+  background: rgba(45, 158, 107, 0.07) !important;
+}
+.cell-diff-extra,
+.row-diff-extra td {
+  background: rgba(196, 127, 23, 0.08) !important;
+  opacity: 0.85;
+}
+[data-theme="dark"] .cell-diff-mismatch { background: rgba(217, 79, 61, 0.18) !important; }
+[data-theme="dark"] .cell-diff-match { background: rgba(45, 158, 107, 0.12) !important; }
+[data-theme="dark"] .cell-diff-extra,
+[data-theme="dark"] .row-diff-extra td { background: rgba(196, 127, 23, 0.12) !important; }
+
+/* ============================================================
+   Progressive hints stepper
+   ============================================================ */
+.hint-stepper {
+  width: 100%;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.hint-stepper-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 1rem;
+  background: var(--surface-card-alt, var(--surface-card));
+  border-bottom: 1px solid var(--border-subtle);
+}
+.hint-stepper-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+}
+.hint-stepper-progress {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.hint-step {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.hint-step--revealed {
+  animation: hint-reveal 0.2s ease;
+}
+@keyframes hint-reveal {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+.hint-step-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.45rem;
+}
+.hint-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.hint-step-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  opacity: 0.85;
+}
+.hint-step-content {
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
+  margin: 0;
+}
+.hint-reveal-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.7rem 1rem;
+  background: transparent;
+  border: none;
+  border-top: 1px dashed var(--border-subtle);
+  cursor: pointer;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--accent);
+  transition: background 0.15s, color 0.15s;
+  text-align: left;
+}
+.hint-reveal-btn:hover { background: rgba(91, 106, 240, 0.06); }
+.hint-reveal-arrow { font-size: 0.8rem; transition: transform 0.15s; }
+.hint-reveal-btn:hover .hint-reveal-arrow { transform: translateX(3px); }
+
+/* ============================================================
+   Split pane divider
+   ============================================================ */
+.split-divider {
+  width: 6px;
+  cursor: col-resize;
+  background: transparent;
+  position: relative;
+  align-self: stretch;
+  border-radius: 3px;
+  transition: background 0.15s;
+  z-index: 2;
+}
+.split-divider::before {
+  content: '';
+  position: absolute;
+  inset: 4px 1px;
+  border-radius: 3px;
+  background: var(--border-subtle);
+  transition: background 0.15s, transform 0.15s;
+}
+.split-divider:hover::before,
+.split-divider--dragging::before {
+  background: var(--accent);
+  transform: scaleX(1.4);
+}
+.split-dragging {
+  user-select: none;
+  cursor: col-resize;
+}
+/* On mobile, hide the divider and collapse to single column */
+@media (max-width: 900px) {
+  .split-divider { display: none; }
+}
+
+/* ============================================================
+   Editor history popover
+   ============================================================ */
+.editor-history-wrap { position: relative; }
+.history-popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 300px;
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md, 0 4px 16px rgba(0,0,0,0.12));
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+}
+.history-item {
+  padding: 0.55rem 0.75rem;
+  font-size: 0.75rem;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border-subtle);
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.1s;
+}
+.history-item:last-child { border-bottom: none; }
+.history-item:hover { background: var(--surface-card-alt, rgba(91,106,240,0.06)); color: var(--text-strong); }
+
+/* ============================================================
+   Editor font-size controls
+   ============================================================ */
+.editor-font-controls {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+.editor-font-controls .editor-expand-btn {
+  font-size: 0.66rem;
+  letter-spacing: -0.02em;
+  min-width: 24px;
+}
+
+/* ============================================================
+   Session goal widget (sidebar)
+   ============================================================ */
+.session-goal-widget {
+  margin: 0.6rem 0.75rem 0.5rem;
+  padding: 0.65rem 0.75rem 0.6rem;
+  background: var(--surface-card-alt, var(--surface-card));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+}
+.session-goal-widget--met {
+  border-color: rgba(45, 158, 107, 0.3);
+  background: rgba(45, 158, 107, 0.05);
+}
+.session-goal-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.45rem;
+}
+.session-goal-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.68rem;
+}
+.session-goal-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.session-goal-count {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--text-strong);
+  min-width: 2.5ch;
+  text-align: center;
+}
+.session-goal-adj {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--border-subtle);
+  background: none;
+  cursor: pointer;
+  font-size: 0.78rem;
+  line-height: 1;
+  color: var(--text-secondary);
+  transition: border-color 0.12s, color 0.12s;
+}
+.session-goal-adj:hover { border-color: var(--accent); color: var(--accent); }
+.session-goal-bar {
+  height: 4px;
+  background: var(--border-subtle);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.session-goal-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+.session-goal-widget--met .session-goal-fill { background: var(--success); }
+.session-goal-met {
+  margin: 0.4rem 0 0;
+  font-size: 0.72rem;
+  color: var(--success);
+  font-weight: 500;
+}
+
+/* ============================================================
+   Focus mode pill
+   ============================================================ */
+.shell-pill-focus {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-decoration: none;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.shell-pill-focus:hover { color: var(--text-strong); border-color: var(--accent); }
+.shell-pill-focus--active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(91, 106, 240, 0.08);
+}
+
+/* Shortcut pair (two adjacent kbds) */
+.shortcut-pair {
+  display: inline-flex;
+  gap: 0.2rem;
 }
