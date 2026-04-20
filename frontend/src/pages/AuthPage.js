@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api';
 import Topbar from '../components/Topbar';
 import { useAuth } from '../contexts/AuthContext';
@@ -81,6 +81,8 @@ export default function AuthPage() {
 
   const { login, register, requestMagicLink } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const returnTo = location.state?.from || null;
   const firstFieldRef = useRef(null);
 
   useEffect(() => {
@@ -121,7 +123,7 @@ export default function AuthPage() {
     try {
       if (mode === 'signin') {
         await login(fields.email, fields.password);
-        navigate('/');
+        navigate(returnTo || '/');
       } else if (mode === 'signup') {
         const complexityErr = validatePassword(fields.password);
         if (complexityErr) {
@@ -186,7 +188,7 @@ export default function AuthPage() {
 
           {/* Header */}
           <div className="auth-card-header">
-            <Link to="/" className="auth-back-link">← Back</Link>
+            <button type="button" className="auth-back-link" onClick={() => returnTo ? navigate(returnTo) : navigate(-1)}>← Back</button>
             <h1 className="auth-card-title">{meta.title}</h1>
             <p className="auth-card-subtitle">{meta.subtitle}</p>
           </div>
