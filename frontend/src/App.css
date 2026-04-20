@@ -3069,6 +3069,14 @@ select {
   font-size: 0.72rem;
   font-variant-numeric: tabular-nums;
   background: var(--surface-card-alt);
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.editor-topbar-timer:hover { opacity: 0.7; }
+.editor-topbar-timer--hidden {
+  opacity: 0.45;
+  letter-spacing: 0.04em;
 }
 .editor-title {
   font-size: 1rem;
