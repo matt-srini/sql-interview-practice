@@ -421,6 +421,7 @@ Each phase commit must:
 - [x] Workspace depth: similar-question recommendations after correct solves
 - [x] Workspace depth: SQL error clarity mapper (`sqlErrorParser`) + learner-friendly hints
 - [x] Discovery/onboarding: sidebar fuzzy question search (Fuse.js)
+- [~] Engagement/retention: `/api/auth/me` now returns `streak_days` + `streak_at_risk` and AppShell topbar renders streak pill (milestone toasts pending)
 
 ---
 

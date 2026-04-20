@@ -186,7 +186,7 @@ When `solved_count === question_count`, a completion banner is shown with a "Wha
 - Uses the shared `<Topbar variant="app" />` component (no inline topbar JSX). Passes these slots:
   - `leftSlot` — hamburger sidebar toggle on mobile (`<900px`)
   - `centerSlot` — mode pill (`.shell-pill-mode`), e.g. "SQL · Challenge" / "Python · Path"; hidden when at the TrackHub
-  - `userExtras` — plan pill (`.shell-pill-plan-free/pro/elite`)
+  - `userExtras` — streak pill (`.shell-pill-streak`) and plan pill (`.shell-pill-plan-free/pro/elite`)
   - `belowTopbar` — upgrade confirmation / error banner
 - Desktop: sidebar 328px, collapsible; toggle is a `‹` icon button (`.sidebar-collapse-btn`); a `›` expand button (`.sidebar-expand-btn`) appears in the content area when collapsed
 - Mobile (<900px): sidebar becomes fixed overlay with backdrop; hamburger button in topbar

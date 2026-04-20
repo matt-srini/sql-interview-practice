@@ -39,7 +39,7 @@ Registered in `backend/main.py`:
 | POST | `/api/auth/register` | Create account; upgrades anonymous session in place |
 | POST | `/api/auth/login` | Authenticate; merges anonymous progress into existing account |
 | POST | `/api/auth/logout` | Deletes session |
-| GET | `/api/auth/me` | Returns current user identity |
+| GET | `/api/auth/me` | Returns current user identity + streak metadata (`streak_days`, `streak_at_risk`) |
 | POST | `/api/auth/forgot-password` | Send password reset email (always returns 200 to prevent email enumeration) |
 | POST | `/api/auth/reset-password` | Consume reset token, set new password (400 if token invalid/expired) |
 | GET | `/api/auth/oauth/{provider}/authorize` | Return OAuth authorization URL (`google` or `github`) |
