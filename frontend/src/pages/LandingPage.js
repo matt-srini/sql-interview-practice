@@ -222,12 +222,14 @@ export default function LandingPage() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    let timer;
     try {
       const seen = localStorage.getItem(LANDING_ONBOARDING_KEY);
-      if (!seen) setOnboardingOpen(true);
+      if (!seen) timer = setTimeout(() => setOnboardingOpen(true), 10000);
     } catch {
-      setOnboardingOpen(true);
+      timer = setTimeout(() => setOnboardingOpen(true), 10000);
     }
+    return () => clearTimeout(timer);
   }, []);
 
   // Scroll to hash on mount (e.g. /#landing-tracks from back arrow)
@@ -742,13 +744,23 @@ export default function LandingPage() {
           steps={[
             {
               targetSelector: '.track-cards-grid',
-              title: 'Start with a track',
-              body: 'Pick SQL, Python, Pandas, or PySpark to switch the practice lane and see the matching question counts.',
+              title: 'Pick your track',
+              body: 'SQL, Python, Pandas, or PySpark — each has its own question bank with easy, medium, and hard tiers. Start with whichever matches your next interview.',
             },
             {
               targetSelector: '.track-samples-strip',
-              title: 'Try free samples first',
-              body: 'Each track has three free samples per difficulty. Use these to warm up before opening the full challenge track.',
+              title: 'Warm up with free samples',
+              body: 'Every track has 3 free sample questions per difficulty. No account needed — just open one and start writing.',
+            },
+            {
+              targetSelector: '.landing-paths',
+              title: 'Follow a learning path',
+              body: 'Paths are curated question sequences that build skill progressively. Completing a starter path also fast-tracks your unlock progress.',
+            },
+            {
+              targetSelector: '#landing-pricing',
+              title: 'Free to start, easy to upgrade',
+              body: 'All easy questions are free — no card required. Upgrade to Pro or Elite when you want full access to medium and hard questions.',
             },
           ]}
         />
