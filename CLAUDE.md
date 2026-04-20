@@ -154,6 +154,7 @@ sql-interview-practice/
 │   │   │   ├── ToastViewport.js    # Global in-app milestone/unlock toast stack
 │   │   │   ├── TrackProgressBar.js # Reusable horizontal progress bar (animated fill)
 │   │   │   ├── PathProgressCard.js # Path card with topic dot, progress bar, CTA (used on Landing + TrackHub)
+│   │   │   ├── OnboardingTooltip.js # First-visit walkthrough tooltip for landing track/sample discovery
 │   │   │   └── Topbar.js           # Shared top nav bar used by all standalone pages (Practice dropdown, Mock, Dashboard, auth)
 │   │   └── pages/
 │   │       ├── LandingPage.js          # Fixed-topbar landing with track/sample tabs and compact progress panels
@@ -230,6 +231,7 @@ PROOF + SHOWCASE + COMPANIES  (logged-out only)
 TRACK SELECTION  (all users, id="landing-tracks")
   Light section, pill nav (SQL/Python/Pandas/PySpark)
   Per-track panel: description · progress bar · CTA · 3 sample tiles
+  First-visit 2-step tooltip walkthrough highlights track selection and free sample tiles (dismissed with localStorage)
   Landing wrappers standardized to 1040px for card sections
 
 PRICING  (all users except `lifetime_elite`)
