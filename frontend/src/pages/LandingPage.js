@@ -66,41 +66,47 @@ ORDER BY order_date;`,
   },
   {
     topic: 'python',
-    fileName: 'coin_change.py',
+    fileName: 'trapping_rain_water.py',
     language: 'python',
     difficulty: 'hard',
-    title: 'Coin Change — Minimum Coins',
+    title: 'Trapping Rain Water',
     briefParagraph:
-      "Given coin denominations and a target amount, return the minimum number of coins needed to make that amount. Return -1 if no combination works.",
-    returnsNote: 'Time: O(amount × coins) · Space: O(amount)',
-    concepts: ['dynamic programming', 'bottom-up DP'],
-    solutionCode: `def solve(coins, amount):
-    dp = [float('inf')] * (amount + 1)
-    dp[0] = 0
-    for coin in coins:
-        for x in range(coin, amount + 1):
-            dp[x] = min(dp[x], dp[x - coin] + 1)
-    return dp[amount] if dp[amount] != float('inf') else -1`,
+      "Given an elevation map of unit-width bars, compute the total rainwater that can be trapped between them. Solve it in O(n) time and O(1) space.",
+    returnsNote: 'Two pointers · O(n) time · O(1) space',
+    concepts: ['two pointers', 'amortized analysis'],
+    solutionCode: `def solve(heights):
+    if not heights:
+        return 0
+    left, right = 0, len(heights) - 1
+    left_max = right_max = 0
+    water = 0
+    while left < right:
+        if heights[left] < heights[right]:
+            left_max = max(left_max, heights[left])
+            water += left_max - heights[left]
+            left += 1
+        else:
+            right_max = max(right_max, heights[right])
+            water += right_max - heights[right]
+            right -= 1
+    return water`,
   },
   {
     topic: 'python-data',
-    fileName: 'user_avg_order.py',
+    fileName: 'email_domain.py',
     language: 'python',
-    difficulty: 'medium',
-    title: 'Per-User Average on Every Row',
+    difficulty: 'easy',
+    title: 'Extract Email Domain',
     briefParagraph:
-      "Add a column showing each user's average order value on every row. Use groupby + transform so the result aligns with the original DataFrame index.",
-    returnsNote: 'Return: order_id, user_id, net_amount, user_avg_order',
-    concepts: ['groupby.transform', 'broadcasting'],
-    solutionCode: `def solve(df_orders):
-    df = df_orders.copy()
-    df['user_avg_order'] = (
-        df.groupby('user_id')['net_amount']
-          .transform('mean')
-          .round(2)
+      "Drop rows with a null email, then add an email_domain column holding everything after the @. Return the DataFrame with the new column appended.",
+    returnsNote: 'Return: original columns + email_domain',
+    concepts: ['string accessors', 'null handling'],
+    solutionCode: `def solve(df_users):
+    result = df_users.dropna(subset=['email']).copy()
+    result['email_domain'] = (
+        result['email'].str.split('@').str[1]
     )
-    return df[['order_id', 'user_id',
-               'net_amount', 'user_avg_order']]`,
+    return result.reset_index(drop=True)`,
   },
   {
     topic: 'pyspark',
