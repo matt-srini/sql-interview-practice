@@ -277,9 +277,15 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 
 **Dashboard insights:** `GET /api/dashboard/insights` computes per-track solve count, median solve time, and accuracy from `submissions`; weakest concepts (bottom 3 with >=3 attempts); deterministic cross-track pacing insight (only when slow-fast gap >= 60s); and consecutive `streak_days` ending today. Results are cached in-process for 60 seconds per user.
 
-**Identity:** Anonymous visitors get real user rows + session cookies. Registration upgrades the session in place. Login merges anonymous progress into an existing account.
+**Identity:** Anonymous visitors get real user rows + session cookies. Registration upgrades the session in place. Login merges anonymous progress into an existing account. Session cookie is `SameSite=Strict` (and secure in production by default).
+
+**Auth hardening:** Reserved local-part email prefixes are blocked on registration. Failed sign-in attempts are tracked in Postgres; after `LOGIN_LOCKOUT_MAX_ATTEMPTS` failures, the account is temporarily locked for `LOGIN_LOCKOUT_WINDOW_MINUTES`.
+
+**CSRF mitigation:** In production, mutating `/api/*` requests that include a session cookie require an `Origin` header matching configured app origins.
 
 **Error shape:** `{ error, request_id }` on all user-facing errors. `X-Request-ID` header on all responses.
+
+**Observability baseline:** Every response includes `X-Response-Time-Ms`; backend logs include request method, path, status, and latency keyed by `request_id`. Optional Sentry capture is enabled when `SENTRY_DSN` is configured.
 
 ---
 
