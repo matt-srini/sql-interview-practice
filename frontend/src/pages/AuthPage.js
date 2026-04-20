@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api';
 import Topbar from '../components/Topbar';
 import { useAuth } from '../contexts/AuthContext';
@@ -186,6 +186,7 @@ export default function AuthPage() {
 
           {/* Header */}
           <div className="auth-card-header">
+            <Link to="/" className="auth-back-link">← Back</Link>
             <h1 className="auth-card-title">{meta.title}</h1>
             <p className="auth-card-subtitle">{meta.subtitle}</p>
           </div>

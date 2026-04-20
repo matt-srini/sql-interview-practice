@@ -217,6 +217,18 @@ select {
   margin-bottom: 1.35rem;
 }
 
+.auth-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  margin-bottom: 1rem;
+  transition: color 0.15s;
+}
+.auth-back-link:hover { color: var(--text-strong); }
+
 .auth-card-title {
   font-size: clamp(1.95rem, 4vw, 2.45rem);
   line-height: 1.02;
