@@ -819,6 +819,14 @@ export default function QuestionPage() {
             </div>
           )}
 
+          {submitting && !submitError && topic === 'sql' && (
+            <div className="solution-analysis-skeleton">
+              <div className="skeleton-line skeleton-shimmer" style={{ width: '9rem', height: '12px' }} />
+              <div className="skeleton-line skeleton-shimmer" style={{ width: '75%', height: '10px' }} />
+              <div className="skeleton-line skeleton-shimmer" style={{ width: '84%', height: '10px', animationDelay: '70ms' }} />
+            </div>
+          )}
+
           {submitResult && (
             <div className="submit-outcome" ref={verdictRef}>
               <div className={`verdict ${submitResult.correct ? 'verdict-correct' : 'verdict-incorrect'}`}>

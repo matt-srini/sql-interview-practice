@@ -40,12 +40,14 @@ Defined in `frontend/src/App.js`:
 
 Four stacked sections on a single scroll:
 
-1. **Hero / Welcome** — logged-out: centered headline, tagline, CTAs ("Explore tracks ↓" and "Create account"). Logged-in: `LoggedInWelcome` component with Resume, Dashboard, and Mock cards. Below either block a `.landing-proof-row` shows three trust-signal stats (350 questions · 4 tracks · 11 real-world datasets · instant feedback).
-2. **Showcase** (`.landing-showcase`) — "The Interview IDE": a single editor-style window framed by a theme-responsive surface (warm cream in light, deep black in dark) with a subtle 24px dot-grid overlay. The IDE window itself is always dark in both modes (Linear/Vercel pattern). Four filename tabs (`rolling_revenue.sql`, `coin_change.py`, `user_avg_order.py`, `coalesce_vs_repartition.py`) switch the split body between a problem brief (left, prose) and a syntax-highlighted solution (right, with line-number gutter). Bottom status bar shows language + line count + 4 rotation dots. Auto-rotates every 8 s when in view; pauses on hover, focus, or tab click. Fully honors `prefers-reduced-motion`.
+1. **Hero / Welcome** — logged-out: centered headline, tagline, CTAs ("Explore tracks ↓" and "Create account"). Logged-in: `LoggedInWelcome` component with Resume, Dashboard, and Mock cards.
+2. **Proof + showcase + companies** — `.landing-proof-row`, `.landing-showcase`, and `.landing-companies` are rendered only for logged-out visitors. The showcase is the same Interview IDE module (always-dark editor) and now respects `prefers-reduced-motion` at initial render plus media-query changes.
 3. **Track selection** (`.landing-practice-section`, `id="landing-tracks"`) — pill nav selects a track; panel shows description, progress bar, CTA, and easy/medium/hard sample tiles. Mobile sample tiles use horizontal scroll.
-4. **Pricing** (`id="landing-pricing"`) — three-column tier table with hard question counts derived from `TOTAL_EASY` / `TOTAL_QUESTIONS` constants. Free: 129 easy questions. Pro: all 350 questions + 3 mocks/day. Elite: everything + company filter + unlimited mocks.
+4. **Pricing** (`id="landing-pricing"`) — three-column tier table with hard question counts derived from `TOTAL_EASY` / `TOTAL_QUESTIONS` constants. Free: 129 easy questions. Pro: all 350 questions + 3 mocks/day. Elite: everything + company filter + unlimited mocks. Hidden for `lifetime_elite` users.
 
 `TRACK_DIFFICULTIES` mirrors the real per-track/difficulty question counts (32/34/29 SQL, 30/29/24 Python, 29/30/23 Pandas, 38/30/22 PySpark). `TOTAL_EASY` and `TOTAL_QUESTIONS` are derived totals used in pricing copy.
+
+Landing consistency updates: unified landing widths (720 / 1040), `.landing-tier-inner` deduplicated, all landing border tokens normalized to `var(--border-subtle)`, company chips rendered as non-interactive spans, and active landing tab persistence stored in `localStorage` (`landingActiveTab`).
 
 On mount, checks `window.location.hash` and scrolls to the matching element (used by the sample page back arrow → `/#landing-tracks`).
 
@@ -97,6 +99,7 @@ Main practice screen. Layout and behavior vary by topic:
 - **Writing notes auto-expand**: the Solution Analysis section (`solutionAnalysisOpen`) auto-expands on a first-attempt correct solve
 - Submission history fetched with `limit: 20`; `priorAttemptCountRef` tracks attempt count before each submit to compute insight text
 - **Path context**: when `?path=slug` is in the URL, fetches path data and shows a path nav bar (breadcrumb + position counter + prev/next links)
+- **Path context persistence**: sidebar question links preserve `?path=slug` so breadcrumb/path nav remains active while moving within a path.
 - **Keyboard shortcuts** (wired via Monaco `onMount` / `editor.addCommand`; refs prevent stale-closure bugs):
   - `Cmd/Ctrl + Enter` → Run Query / Run Code (safe, reversible; guarded by `running`, `submitting`, `isLocked`, `meta.hasRunCode`)
   - `Cmd/Ctrl + Shift + Enter` → Submit Answer (permanent; guarded by `running`, `submitting`, `isLocked`)
@@ -106,6 +109,7 @@ Main practice screen. Layout and behavior vary by topic:
 - **Submit guard hardening**: `handleSubmit` now exits immediately when `submitting` is already true to prevent accidental double-submit races.
 - **Past attempts revisit behavior**: submission history panel auto-expands when revisiting the same question as `localStorage.last_seen_question_id`.
 - **Solution reveal placement**: the "Review Official Solution" control now lives in the verdict header (instead of below feedback/hints) once reveal criteria are met.
+- **Submit skeleton** (SQL): while submit is in-flight, a placeholder skeleton appears where solution analysis/writing notes will render.
 
 ### SampleQuestionPage (`/sample/:topic/:difficulty`)
 
@@ -117,6 +121,8 @@ Standalone sample practice. No sidebar. No effect on challenge progression.
 - Right: "Start the challenge" CTA → `/practice/:topic`
 
 Has the same **keyboard shortcuts** and **editor height toggle** as `QuestionPage` (same implementation pattern — refs for stale-closure safety, `localStorage` persistence). No `isLocked` guard since sample questions are always accessible.
+
+Loading state now renders a skeleton card instead of plain text while fetching a sample question.
 
 ### ProgressDashboard (`/dashboard`)
 

@@ -206,23 +206,31 @@ sql-interview-practice/
 
 ## Landing page structure
 
-Fixed topbar → centered hero (logged-out only) → dark showcase → light practice section.
+Fixed topbar → hero/welcome → proof/showcase/companies (logged-out only) → light practice section → pricing (hidden for `lifetime_elite`).
 
 ```
 TOPBAR
   "datanest"                             [Mock] [Dashboard] [name · Sign out] or [Login]
 
 HERO  (logged-out only)
-  Centered, max-width 620px inner wrapper
+  Centered, max-width 720px inner wrapper
   kicker · headline · copy · CTAs: [Explore tracks ↓] [Create account]
 
-SHOWCASE  (all users)
-  Dark section (#0C0C0A), 4-card flex row with per-track glow
-  Auto-advances every ~5s; typing animation on active card
+WELCOME  (logged-in only)
+  Returning-user panel with Resume / Dashboard / Mock cards
+  max-width 1040px wrapper
+
+PROOF + SHOWCASE + COMPANIES  (logged-out only)
+  Trust-signal metrics row + Interview IDE showcase + company strip
+  showcase auto-rotation runs on interval and honors prefers-reduced-motion at initial render
 
 TRACK SELECTION  (all users, id="landing-tracks")
   Light section, pill nav (SQL/Python/Pandas/PySpark)
   Per-track panel: description · progress bar · CTA · 3 sample tiles
+  Landing wrappers standardized to 1040px for card sections
+
+PRICING  (all users except `lifetime_elite`)
+  Free / Pro / Elite columns with monthly + lifetime CTAs
 ```
 
 ---

@@ -322,17 +322,17 @@ describe('LandingPage tier section', () => {
   // ── lifetime_elite user (plan='lifetime_elite') ────────────────────────────
 
   describe("lifetime_elite user (plan='lifetime_elite')", () => {
-    it('shows "Current plan" in the Elite column', async () => {
+    it('hides the pricing section', async () => {
       renderWithPlan('lifetime_elite');
       await waitFor(() => {
-        expect(screen.getByText('Current plan')).toBeInTheDocument();
+        expect(screen.queryByText('Simple pricing')).not.toBeInTheDocument();
       });
     });
 
     it('does not render any upgrade buttons', async () => {
       renderWithPlan('lifetime_elite');
       await waitFor(() => {
-        // proColCta() === 'none', eliteColCta() === 'current' — no buttons at all
+        // Pricing section is hidden for lifetime elite; no upgrade controls appear.
         expect(screen.queryByRole('button', { name: 'Upgrade to Pro' })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Upgrade to Elite' })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: /Switch to lifetime/ })).not.toBeInTheDocument();

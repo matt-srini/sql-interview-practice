@@ -134,6 +134,8 @@ df.repartition(10, 'user_id')`,
   },
 ];
 
+const SHOWCASE_ROTATE_MS = 8000;
+
 export default function LandingPage() {
   const { user, logout } = useAuth();
   const userPlan = user?.plan ?? 'free';
@@ -162,8 +164,13 @@ export default function LandingPage() {
 
   const [dashData, setDashData] = useState(null);
   const [activeTab, setActiveTab] = useState(
-    () => sessionStorage.getItem('landingActiveTab') || 'sql'
+    () => localStorage.getItem('landingActiveTab') || 'sql'
   );
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => (
+    typeof window !== 'undefined'
+    && window.matchMedia
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  ));
 
   const showcaseRef = useRef(null);
   const [showcaseActiveIndex, setShowcaseActiveIndex] = useState(0);
@@ -179,6 +186,18 @@ export default function LandingPage() {
   }
 
   const shufflePaths = () => setDisplayedPaths(pickRandom(paths, 4));
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const onChange = (event) => setPrefersReducedMotion(event.matches);
+    if (media.addEventListener) media.addEventListener('change', onChange);
+    else media.addListener(onChange);
+    return () => {
+      if (media.removeEventListener) media.removeEventListener('change', onChange);
+      else media.removeListener(onChange);
+    };
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -212,14 +231,12 @@ export default function LandingPage() {
 
   // Auto-rotate the IDE tabs — runs only when section is in view and not paused.
   useEffect(() => {
-    if (!showcaseInView || showcasePaused) return;
-    if (typeof window !== 'undefined' &&
-        window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    if (!showcaseInView || showcasePaused || prefersReducedMotion) return;
     const id = setInterval(() => {
       setShowcaseActiveIndex((prev) => (prev + 1) % SHOWCASE_CARDS.length);
-    }, 8000);
+    }, SHOWCASE_ROTATE_MS);
     return () => clearInterval(id);
-  }, [showcaseInView, showcasePaused]);
+  }, [showcaseInView, showcasePaused, prefersReducedMotion]);
 
   useEffect(() => {
     const el = showcaseRef.current;
@@ -282,7 +299,7 @@ export default function LandingPage() {
   );
 
   function handleTabChange(tabId) {
-    sessionStorage.setItem('landingActiveTab', tabId);
+    localStorage.setItem('landingActiveTab', tabId);
     startTransition(() => setActiveTab(tabId));
   }
 
@@ -310,25 +327,26 @@ export default function LandingPage() {
           </section>
         )}
 
-        <div className="landing-proof-row" aria-label="Platform stats">
-          <span className="landing-proof-stat"><strong>350</strong> questions</span>
-          <span className="landing-proof-sep" aria-hidden="true" />
-          <span className="landing-proof-stat"><strong>4</strong> tracks</span>
-          <span className="landing-proof-sep" aria-hidden="true" />
-          <span className="landing-proof-stat"><strong>11</strong> real-world datasets</span>
-          <span className="landing-proof-sep" aria-hidden="true" />
-          <span className="landing-proof-stat">instant feedback</span>
-        </div>
-
-        <section className="landing-showcase">
-          <div className="landing-showcase-inner" ref={showcaseRef}>
-            <div className="landing-showcase-header">
-              <span className="landing-showcase-eyebrow">350 questions · 4 tracks · real interview patterns</span>
-              <h2 className="landing-showcase-title">See what you&rsquo;ll be solving.</h2>
-              <p className="landing-showcase-subtitle">
-                Read the problem. Study the solution. Build the intuition you&rsquo;ll draw on in the room.
-              </p>
+        {!user && (
+          <>
+            <div className="landing-proof-row" aria-label="Platform stats">
+              <span className="landing-proof-stat"><strong>350</strong> questions</span>
+              <span className="landing-proof-sep" aria-hidden="true" />
+              <span className="landing-proof-stat"><strong>4</strong> tracks</span>
+              <span className="landing-proof-sep" aria-hidden="true" />
+              <span className="landing-proof-stat"><strong>11</strong> real-world datasets</span>
+              <span className="landing-proof-sep" aria-hidden="true" />
+              <span className="landing-proof-stat">instant feedback</span>
             </div>
+
+            <section className="landing-showcase">
+              <div className="landing-showcase-inner" ref={showcaseRef}>
+                <div className="landing-showcase-header">
+                  <h2 className="landing-showcase-title">See what you&rsquo;ll be solving.</h2>
+                  <p className="landing-showcase-subtitle">
+                    Read the problem. Study the solution. Build the intuition you&rsquo;ll draw on in the room.
+                  </p>
+                </div>
 
             <div
               className="landing-ide"
@@ -438,25 +456,23 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
-          </div>
-        </section>
+              </div>
+            </section>
 
-        <section className="landing-companies">
-          <div className="container">
-            <p className="landing-companies-label">Practice questions from top companies:</p>
-            <div className="landing-companies-row">
-              {['Meta', 'Google', 'Amazon', 'Stripe', 'Airbnb', 'Netflix', 'Uber', 'Microsoft', 'LinkedIn', 'Shopify'].map((company) => (
-                <a
-                  key={company}
-                  className="landing-company-chip"
-                  href="#landing-tracks"
-                >
-                  {company}
-                </a>
-              ))}
-            </div>
-          </div>
-        </section>
+            <section className="landing-companies">
+              <div className="landing-section-inner">
+                <p className="landing-companies-label">Practice questions from top companies:</p>
+                <div className="landing-companies-row">
+                  {['Meta', 'Google', 'Amazon', 'Stripe', 'Airbnb', 'Netflix', 'Uber', 'Microsoft', 'LinkedIn', 'Shopify'].map((company) => (
+                    <span key={company} className="landing-company-chip">
+                      {company}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </section>
+          </>
+        )}
 
         <section className="landing-practice-section" id="landing-tracks">
           <div className="landing-practice-heading">
@@ -519,7 +535,7 @@ export default function LandingPage() {
                       Free samples — {tab.label}
                     </h3>
                     <p className="track-samples-desc">
-                      3 questions per difficulty tier. No account required, no progress recorded.
+                      3 questions per difficulty tier. No account required and no progress recorded.
                     </p>
                   </div>
                   <div className="track-samples-actions">
@@ -557,7 +573,7 @@ export default function LandingPage() {
 
         {displayedPaths.length > 0 && (
           <section className="landing-paths">
-            <div className="container">
+            <div className="landing-section-inner">
               <div className="landing-paths-header">
                 <div>
                   <h2 className="landing-paths-title">Structured learning paths</h2>
@@ -577,6 +593,7 @@ export default function LandingPage() {
         )}
 
         {/* Tier comparison */}
+        {userPlan !== 'lifetime_elite' && (
         <section id="landing-pricing" className="landing-tier-section">
           <div className="landing-tier-inner">
             <h2 className="landing-tier-title">Simple pricing</h2>
@@ -675,6 +692,7 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+        )}
       </main>
     </>
   );

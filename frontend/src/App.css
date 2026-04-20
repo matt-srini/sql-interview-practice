@@ -1376,7 +1376,7 @@ select {
   position: sticky;
   top: 0;
   z-index: 30;
-  background: rgba(247, 247, 245, 0.92);
+  background: color-mix(in srgb, var(--bg-page) 92%, transparent);
   border-bottom: 1px solid var(--border-subtle);
   padding: 0;
   backdrop-filter: blur(18px);
@@ -1504,7 +1504,7 @@ select {
    Landing page
    ============================================================ */
 .landing-page {
-  min-height: calc(100vh - 68px);
+  min-height: calc(100vh - 64px);
   padding: 0;
   display: block;
   width: 100%;
@@ -1552,7 +1552,7 @@ select {
 }
 
 .landing-hero-inner {
-  max-width: 620px;
+  max-width: 720px;
   margin: 0 auto;
 }
 
@@ -1618,7 +1618,7 @@ select {
 }
 
 .landing-welcome-inner {
-  max-width: 980px;
+  max-width: 1040px;
   margin: 0 auto;
 }
 
@@ -1632,7 +1632,7 @@ select {
   line-height: 1.1;
   margin: 0.6rem 0 0.5rem;
   color: var(--text-strong);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
 }
 
 .landing-welcome-copy {
@@ -1665,8 +1665,13 @@ select {
 
 .landing-welcome-card:hover {
   border-color: var(--border-strong);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
   box-shadow: var(--shadow-sm);
+}
+
+.landing-section-inner {
+  max-width: 1040px;
+  margin: 0 auto;
 }
 
 .landing-welcome-card--primary {
@@ -1713,7 +1718,7 @@ select {
   background: var(--bg-page);
   padding: 2.5rem 1.5rem;
   text-align: center;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .landing-companies-label {
@@ -1735,26 +1740,18 @@ select {
 .landing-company-chip {
   padding: 5px 14px;
   border-radius: 999px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-subtle);
   background: var(--surface-card);
   font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-secondary);
-  text-decoration: none;
-  transition: border-color 0.15s, color 0.15s, background 0.15s;
-}
-
-.landing-company-chip:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--surface-raised, var(--surface-card));
 }
 
 /* ── Landing paths section ────────────────────────── */
 .landing-paths {
   background: var(--bg-page);
   padding: 3.5rem 1.5rem;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--border-subtle);
 }
 .landing-paths-header {
   display: flex;
@@ -1836,7 +1833,7 @@ select {
   gap: 0.875rem;
   padding: 1.5rem 1.5rem 1.25rem;
   background: var(--surface-card);
-  border: 1.5px solid var(--border-subtle);
+  border: 1px solid var(--border-subtle);
   border-left: 4px solid color-mix(in srgb, var(--track-color) 25%, var(--border-subtle));
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -1916,9 +1913,25 @@ select {
 .track-diff-chip--easy,
 .track-diff-chip--medium,
 .track-diff-chip--hard {
-  background: var(--surface-card-alt);
   color: var(--text-secondary);
-  border-color: var(--border-subtle);
+}
+
+.track-diff-chip--easy {
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+  color: color-mix(in srgb, var(--success) 86%, var(--text-strong));
+  border-color: color-mix(in srgb, var(--success) 28%, var(--border-subtle));
+}
+
+.track-diff-chip--medium {
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
+  color: color-mix(in srgb, var(--warning) 90%, var(--text-strong));
+  border-color: color-mix(in srgb, var(--warning) 28%, var(--border-subtle));
+}
+
+.track-diff-chip--hard {
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: color-mix(in srgb, var(--danger) 86%, var(--text-strong));
+  border-color: color-mix(in srgb, var(--danger) 28%, var(--border-subtle));
 }
 
 .track-card-progress {
@@ -1962,8 +1975,8 @@ select {
 .track-samples-strip {
   padding: 1.75rem 2rem;
   background: var(--surface-card);
-  border: 1.5px solid var(--border-subtle);
-  border-top: 2px solid color-mix(in srgb, var(--track-color) 30%, var(--border-subtle));
+  border: 1px solid var(--border-subtle);
+  border-top: 1px solid color-mix(in srgb, var(--track-color) 30%, var(--border-subtle));
   border-radius: var(--radius-md);
   animation: trackStripIn 220ms ease forwards;
 }
@@ -2122,7 +2135,7 @@ select {
   font-size: 1.2rem;
   font-weight: 700;
   color: var(--text-strong);
-  letter-spacing: -0.025em;
+  letter-spacing: -0.02em;
 }
 
 .landing-panel-header p {
@@ -2215,8 +2228,8 @@ select {
   padding: 1.25rem 1.4rem;
   gap: 0.75rem;
   background: var(--surface-card);
-  border: 1.5px solid var(--border-subtle);
-  border-top: 2px solid color-mix(in srgb, var(--tile-color, var(--accent)) 50%, var(--border-subtle));
+  border: 1px solid var(--border-subtle);
+  border-top: 1px solid color-mix(in srgb, var(--tile-color, var(--accent)) 50%, var(--border-subtle));
   border-radius: 14px;
   transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
@@ -2224,8 +2237,19 @@ select {
 .sample-tile:hover {
   border-color: color-mix(in srgb, var(--tile-color, var(--accent)) 30%, var(--border-subtle));
   border-top-color: color-mix(in srgb, var(--tile-color, var(--accent)) 70%, var(--border-subtle));
-  transform: translateY(-3px);
+  transform: translateY(-2px);
   box-shadow: var(--shadow-md);
+}
+
+.track-card:focus-visible,
+.sample-tile:focus-visible,
+.landing-welcome-card:focus-visible,
+.landing-company-chip:focus-visible,
+.landing-paths-shuffle:focus-visible,
+.landing-tier-col .btn:focus-visible,
+.landing-tier-col .upgrade-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .sample-tile p {
@@ -3567,6 +3591,32 @@ select {
   border-radius: 4px;
 }
 
+.sample-loading-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.sample-loading-editor {
+  margin-top: 0.35rem;
+  height: 240px;
+  border-radius: 8px;
+}
+
+.solution-analysis-skeleton {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 /* ============================================================
    Concept tags
    ============================================================ */
@@ -3606,7 +3656,7 @@ select {
   letter-spacing: 0.06em;
   background: transparent;
   color: var(--text-secondary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-subtle);
 }
 
 /* Dark-mode overrides for tag pills */
@@ -4781,7 +4831,6 @@ select {
 [data-theme="dark"] .auth-alert-error { color: #F0B8B1; }
 [data-theme="dark"] .auth-alert-info { color: var(--accent-strong); }
 [data-theme="dark"] .app-topbar { background: rgba(20, 20, 19, 0.92); }
-[data-theme="dark"] .topbar { background: rgba(20, 20, 19, 0.92); }
 [data-theme="dark"] .sidebar { background: var(--surface-card-alt); border-color: var(--border-subtle); }
 [data-theme="dark"] .sidebar-backdrop { background: rgba(0, 0, 0, 0.55); }
 [data-theme="dark"] .sidebar-group-header { background: rgba(255, 255, 255, 0.02); }
@@ -4971,7 +5020,7 @@ select {
   font-size: clamp(2rem, 4.2vw, 3rem);
   font-weight: 600;
   color: var(--sc-ink);
-  letter-spacing: -0.035em;
+  letter-spacing: -0.03em;
   line-height: 1.05;
   margin: 0;
 }
@@ -4993,7 +5042,7 @@ select {
   box-shadow:
     0 1px 0 rgba(255,255,255,0.04) inset,
     0 10px 30px rgba(0,0,0,0.18),
-    0 40px 80px -30px color-mix(in srgb, var(--active-color, #5B6AF0) 28%, transparent);
+    0 40px 80px -30px color-mix(in srgb, var(--active-color, var(--accent)) 28%, transparent);
   transition: box-shadow 0.5s ease;
   position: relative;
 }
@@ -5002,7 +5051,7 @@ select {
   box-shadow:
     0 1px 0 rgba(255,255,255,0.04) inset,
     0 10px 30px rgba(0,0,0,0.45),
-    0 40px 90px -30px color-mix(in srgb, var(--active-color, #5B6AF0) 36%, transparent);
+    0 40px 90px -30px color-mix(in srgb, var(--active-color, var(--accent)) 36%, transparent);
 }
 
 /* ── Chrome bar ───────────────────────── */
@@ -6242,7 +6291,7 @@ select {
   gap: 0.75rem;
   padding: 0.7rem 1rem;
   background: var(--surface-card);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
 }
 
@@ -6364,7 +6413,7 @@ select {
 .app-practice-dropdown-trigger.active,
 .app-practice-dropdown-trigger:hover {
   background: var(--surface-raised, var(--bg-page));
-  border-color: var(--border);
+  border-color: var(--border-subtle);
 }
 .app-practice-dropdown-caret {
   font-size: 0.65rem;
@@ -6375,7 +6424,7 @@ select {
   top: calc(100% + 6px);
   left: 0;
   background: var(--surface-card);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 0.45rem;
   min-width: 220px;
@@ -6460,7 +6509,7 @@ select {
   top: calc(100% + 6px);
   right: 0;
   background: var(--surface-card);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   padding: 0.3rem;
   min-width: 130px;
@@ -6529,15 +6578,16 @@ select {
   gap: 0.5rem;
   padding: 1.1rem 1.2rem;
   background: var(--surface-card);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   text-decoration: none;
   color: inherit;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
 .path-card:hover {
   border-color: var(--accent);
-  box-shadow: 0 2px 12px rgba(91, 106, 240, 0.1);
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--accent) 24%, transparent);
+  transform: translateY(-2px);
 }
 .path-card--compact {
   padding: 0.85rem 1rem;
@@ -6583,7 +6633,7 @@ select {
 .path-card-progress-bar {
   flex: 1;
   height: 4px;
-  background: var(--border);
+  background: var(--border-subtle);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -6656,7 +6706,7 @@ select {
 }
 .learn-header {
   background: var(--surface-card);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-subtle);
   padding: 2rem 1.5rem 2.5rem;
 }
 .learn-header-inner {
@@ -6699,7 +6749,7 @@ select {
 .learn-progress-bar {
   flex: 1;
   height: 6px;
-  background: var(--border);
+  background: var(--border-subtle);
   border-radius: 3px;
   overflow: hidden;
   max-width: 360px;
@@ -6730,12 +6780,12 @@ select {
   gap: 12px;
   padding: 14px 16px;
   background: var(--surface-card);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
 }
 .learn-question-row--solved {
   background: color-mix(in srgb, var(--success) 6%, var(--surface-card));
-  border-color: color-mix(in srgb, var(--success) 30%, var(--border));
+  border-color: color-mix(in srgb, var(--success) 30%, var(--border-subtle));
 }
 .learn-question-row--next {
   border-color: var(--accent);
@@ -6752,7 +6802,7 @@ select {
   padding: 10px 16px;
   margin-bottom: 4px;
   background: color-mix(in srgb, var(--warning) 7%, var(--surface-card));
-  border: 1px solid color-mix(in srgb, var(--warning) 22%, var(--border));
+  border: 1px solid color-mix(in srgb, var(--warning) 22%, var(--border-subtle));
   border-radius: var(--radius-sm);
   font-size: 13px;
   color: var(--text-secondary);
@@ -6817,7 +6867,7 @@ select {
   padding: 0.55rem 1rem;
   margin-bottom: 0.75rem;
   background: var(--surface-card);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   font-size: 0.82rem;
 }
@@ -6849,7 +6899,7 @@ select {
   white-space: nowrap;
   padding: 0.2rem 0.5rem;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-subtle);
   background: transparent;
   transition: background 0.12s, border-color 0.12s;
 }
@@ -6870,7 +6920,7 @@ select {
   color: var(--text-secondary);
   opacity: 0.45;
   cursor: default;
-  border-color: var(--border);
+  border-color: var(--border-subtle);
 }
 
 /* ── LearningPathsIndex page (/learn, /learn/:topic) ─── */
@@ -6880,7 +6930,7 @@ select {
 }
 .learn-index-header {
   background: var(--surface-card);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-subtle);
   padding: 2rem 1.5rem 2.5rem;
 }
 .learn-index-title {
@@ -7207,12 +7257,12 @@ select {
 
 /* ── Landing tier comparison section ───────────────── */
 .landing-tier-section {
-  padding: 48px 0 56px;
+  padding: 3rem 0 3.5rem;
   background: var(--surface-card-soft);
   border-top: 1px solid var(--border-subtle);
 }
 .landing-tier-inner {
-  max-width: 760px;
+  max-width: 1040px;
   margin: 0 auto;
   padding: 0 24px;
 }
@@ -7274,10 +7324,6 @@ select {
 }
 
 /* ── Tier section: prices, badges, CTAs ─────────────────────────────────── */
-
-.landing-tier-inner {
-  max-width: 840px;
-}
 
 .landing-tier-badge {
   display: inline-block;

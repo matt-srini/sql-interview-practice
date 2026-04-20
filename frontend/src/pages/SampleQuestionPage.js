@@ -265,7 +265,13 @@ export default function SampleQuestionPage() {
   if (!question) {
     return (
       <main className="container" style={{ paddingTop: '2rem' }}>
-        <p className="loading">Loading sample question…</p>
+        <div className="sample-loading-card">
+          <div className="skeleton-line skeleton-shimmer" style={{ width: '8rem', height: '12px' }} />
+          <div className="skeleton-line skeleton-shimmer" style={{ width: '65%', height: '26px' }} />
+          <div className="skeleton-line skeleton-shimmer" style={{ width: '92%', height: '11px' }} />
+          <div className="skeleton-line skeleton-shimmer" style={{ width: '88%', height: '11px' }} />
+          <div className="sample-loading-editor skeleton-shimmer" />
+        </div>
       </main>
     );
   }

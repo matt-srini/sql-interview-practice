@@ -9,7 +9,7 @@
 
 The landing-showcase redesign shipped ("The Interview IDE"). An experience audit of the full repo followed, run by three Explore agents plus spot-verification. This plan is the agreed multi-phase path to a world-class premium interview-practice platform (benchmarks: Linear, Vercel, Stripe, Raycast, LeetCode Premium, DataLemur).
 
-**Current state (as of 2026-04-20):** Phases 1, 2, 3, and 4 are complete. Next up: Polish batch.
+**Current state (as of 2026-04-20):** Phases 1, 2, 3, 4, landing consistency pass (§5.5), and the polish batch are complete.
 
 **Explicitly out of scope (owner decision):**
 
@@ -199,6 +199,46 @@ New router at `backend/routers/insights.py`, registered in `backend/main.py`.
 
 ---
 
+## 5.5. Landing consistency pass
+
+**Goal:** close the visual and structural gaps in the landing page surfaced by the 2026-04-20 UX audit. Two defect fixes + a twelve-item consistency sweep. Ships as one or two commits.
+
+### 5.5.1 Critical defects (fix first)
+
+| # | Task | Files |
+|---|---|---|
+| 5.5.1a | Replace all `var(--border)` with `var(--border-subtle)`. `--border` is not defined anywhere in App.css, so it falls back to `currentcolor` — visible broken borders on `.landing-companies`, `.landing-company-chip`, `.landing-paths`, `.path-card`, `.path-card-progress-bar`. ~20 hits across App.css; fix all at once. | [App.css](frontend/src/App.css) |
+| 5.5.1b | De-duplicate `.landing-tier-inner` (defined twice at [App.css:7214](frontend/src/App.css) `max-width: 760px` and [App.css:7278](frontend/src/App.css) `max-width: 840px`; the second wins, the first is dead). Consolidate into one rule with the intended value. | [App.css:7214,7278](frontend/src/App.css) |
+
+### 5.5.2 Visual consistency pass
+
+| # | Task | Files | Notes |
+|---|---|---|---|
+| 5.5.2a | Rationalize landing max-widths to 2–3 values (narrow text = 720, wide card = 1040, full bleed for showcase). Update `.landing-hero-inner` (620→720), `.landing-welcome-inner` (980→1040), `.landing-tier-inner` (→1040). Stop `.landing-companies` / `.landing-paths` from using the broader `.container` — use a landing-local 1040 wrapper. | [App.css](frontend/src/App.css) | Five different max-widths currently — eye chases left/right edges between sections. |
+| 5.5.2b | Unify landing section padding units to `rem`. Convert `.landing-tier-section` `48px 0 56px` to `rem`. | [App.css:7210](frontend/src/App.css) | Only section in px. |
+| 5.5.2c | Normalize card border weight to `1px` across `.track-card`, `.track-samples-strip`, `.sample-tile` (currently 1.5px; most other cards are 1px). | [App.css](frontend/src/App.css) | Calm > heavy. |
+| 5.5.2d | Normalize hover `translateY` to `-2px` on `.landing-welcome-card`, `.sample-tile`, `.path-card` (currently -1 / -3 / 0). | [App.css](frontend/src/App.css) | Microinteraction consistency. |
+| 5.5.2e | Collapse heading letter-spacing to two values: `-0.03em` for h1/h2, `-0.02em` for h3. | [App.css](frontend/src/App.css) | Lines 1539, 1635, 1814, 4974, 2125 currently drift. |
+| 5.5.2f | Replace hardcoded accent rgba fallbacks with `color-mix(in srgb, var(--accent) NN%, transparent)` in `.path-card:hover` box-shadow and `.landing-ide` box-shadow fallbacks. | [App.css:6540,4996,5005,5197](frontend/src/App.css) | Lets dark mode pick up the brighter `--accent` automatically. |
+| 5.5.2g | Switch `.topbar` background to `color-mix(in srgb, var(--bg-page) 92%, transparent)`; drop the explicit `[data-theme="dark"]` override. | [App.css:1379,4784](frontend/src/App.css) | Single source of truth. |
+| 5.5.2h | Fix inert `.track-diff-chip--easy/medium/hard` modifiers — either color-code them using the existing `.badge-easy/medium/hard` palette (recommend) or delete the no-op modifier classes. | [App.css:1916-1922](frontend/src/App.css) | Currently all three modifiers resolve to identical styles. |
+| 5.5.2i | Add `:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }` to `.track-card`, `.sample-tile`, `.landing-welcome-card`, `.landing-tier-col` CTAs, `.landing-company-chip`, `.landing-paths-shuffle`. | [App.css](frontend/src/App.css) | IDE already has focus rings on `.ide-tab` / `.ide-rotation-dot`; extend the pattern. |
+| 5.5.2j | Remove the duplicated proof line. Keep `.landing-proof-row` (stronger numbers: "350 questions · 4 tracks · 11 real-world datasets · instant feedback"); drop the showcase eyebrow "350 questions · 4 tracks · real interview patterns" from `.landing-showcase-header`. | [LandingPage.js:326](frontend/src/pages/LandingPage.js) | Two near-identical proof statements within 500px of each other. |
+| 5.5.2k | Company chips: either render as `<span>` (not `<a>`) since all ten chips href to the same `#landing-tracks` anchor, or wait until the Elite company-filter feature is in scope and wire them for real. Recommend `<span>` now. | [LandingPage.js:449-457](frontend/src/pages/LandingPage.js) | Link affordance promises filter behavior that doesn't exist. |
+| 5.5.2l | Gate marketing sections on `!user`: wrap `.landing-proof-row`, `.landing-showcase`, `.landing-companies` in the same `{!user && ...}` conditional that already gates the hero. Also hide `.landing-tier-section` when `userPlan === 'lifetime_elite'` (no upgrade path left). | [LandingPage.js:313-459,580-677](frontend/src/pages/LandingPage.js) | Industry pattern (Linear, Vercel, Stripe, GitHub, LeetCode Premium, DataLemur): marketing content disappears post-conversion. Net effect for logged-in users: Topbar → LoggedInWelcome → Practice section → Paths → Pricing (unless maxed). |
+
+### 5.5.3 Verification
+
+- `preview_start`; `preview_screenshot` landing across **light × dark × logged-in × logged-out × 1440 / 900 / 560 px** (12 screenshots). Compare logged-in vs logged-out — logged-in should now show only welcome + practice + paths + pricing (unless on `lifetime_elite`).
+- `preview_eval` — computed `border-color` on `.landing-companies`, `.path-card`, `.landing-company-chip` matches the design token (`rgba(26,26,24,0.08)` light, `rgba(240,238,233,0.08)` dark).
+- Keyboard-tab through landing: every interactive element has a visible focus ring.
+- `prefers-reduced-motion: reduce` → no regressions.
+- `cd backend && ../.venv/bin/python -m pytest tests/ -q` green.
+- Docs sync: [docs/frontend.md](docs/frontend.md) — note `--border` rename and the consolidated max-width scale.
+- Commit on `main` with `Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>`.
+
+---
+
 ## 6. Polish backlog (single commit after Phase 4)
 
 - Tighten sample-section defensive copy ("no account required, no progress recorded") to one line.
@@ -208,6 +248,9 @@ New router at `backend/routers/insights.py`, registered in `backend/main.py`.
 - Add `mailto:` to `ErrorBoundary` "contact us" link.
 - Path breadcrumb nav visible when user navigates via sidebar (not only from `/learn/...`).
 - Showcase: move `prefers-reduced-motion` check into initial state (avoids one tick of animation before suppression).
+- Reconcile showcase auto-rotate interval — code rotates every 8s ([LandingPage.js:220](frontend/src/pages/LandingPage.js)); pick the intended value and align.
+- Tighten `.landing-page min-height: calc(100vh - 68px)` to match the 64px mobile topbar breakpoint ([App.css:1507](frontend/src/App.css)).
+- Revisit whether the free-samples strip still earns its space after §5.5 simplifications — it partially duplicates the showcase (content decision, revisit during content QA pass).
 
 ---
 
@@ -338,15 +381,36 @@ Each phase commit must:
 - [x] 4.9 Empty states on dashboard, mock, learn
 - [x] Phase 4 docs sync + commit
 
-### Polish batch (after Phase 4)
+### Landing consistency pass (§5.5)
 
-- [ ] Sample-section copy tighten
-- [ ] Em-dash consistency in pricing CTAs
-- [ ] Skeleton loaders (sample page, solution analysis)
-- [ ] Landing tab `sessionStorage` → `localStorage`
-- [ ] `ErrorBoundary` mailto link
-- [ ] Path breadcrumb nav via sidebar
-- [ ] Showcase `prefers-reduced-motion` in initial state
+- [x] 5.5.1a Replace `var(--border)` with `var(--border-subtle)` across App.css
+- [x] 5.5.1b De-duplicate `.landing-tier-inner`
+- [x] 5.5.2a Rationalize landing max-widths (720 / 1040)
+- [x] 5.5.2b Unify landing padding units to `rem`
+- [x] 5.5.2c Normalize card border weight to 1px
+- [x] 5.5.2d Normalize hover translate to -2px
+- [x] 5.5.2e Collapse heading letter-spacing to two values
+- [x] 5.5.2f Replace hardcoded accent rgba with `color-mix`
+- [x] 5.5.2g Topbar background via `color-mix`; drop dark override
+- [x] 5.5.2h Fix/remove inert `.track-diff-chip--*` modifiers
+- [x] 5.5.2i Add `:focus-visible` rings to landing interactives
+- [x] 5.5.2j Remove duplicated proof line (drop showcase eyebrow)
+- [x] 5.5.2k Company chips → `<span>` until filter exists
+- [x] 5.5.2l Gate marketing sections + pricing on auth state
+- [x] §5.5 docs sync + commit
+
+### Polish batch (after §5.5)
+
+- [x] Sample-section copy tighten
+- [x] Em-dash consistency in pricing CTAs
+- [x] Skeleton loaders (sample page, solution analysis)
+- [x] Landing tab `sessionStorage` → `localStorage`
+- [x] `ErrorBoundary` mailto link
+- [x] Path breadcrumb nav via sidebar
+- [x] Showcase `prefers-reduced-motion` in initial state
+- [x] Reconcile showcase auto-rotate interval
+- [x] Tighten `.landing-page min-height` for mobile topbar
+- [x] Revisit free-samples strip vs showcase (content, retained as primary sample CTA strip)
 
 ---
 
@@ -355,7 +419,7 @@ Each phase commit must:
 Resume by:
 
 1. Read §9 (Progress tracker) — find the first unchecked box.
-2. Read the corresponding phase section (§4 = Phase 3, §5 = Phase 4) for the full spec.
+2. Read the corresponding phase section (§4 = Phase 3, §5 = Phase 4, §5.5 = Landing consistency pass) for the full spec.
 3. Check the relevant source files before writing any code — the spec was written pre-implementation and details may have shifted.
 4. Don't skip ahead.
 
