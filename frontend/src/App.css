@@ -1834,7 +1834,7 @@ select {
   padding: 1.5rem 1.5rem 1.25rem;
   background: var(--surface-card);
   border: 1px solid var(--border-subtle);
-  border-left: 2px solid color-mix(in srgb, var(--track-color) 26%, var(--surface-card-alt));
+  border-left: 1px solid var(--track-color);
   border-radius: var(--radius-md);
   cursor: pointer;
   text-align: left;
@@ -1844,7 +1844,6 @@ select {
 .track-card:hover {
   background: var(--surface-card);
   border-color: color-mix(in srgb, var(--track-color) 10%, var(--border-subtle));
-  border-left-color: color-mix(in srgb, var(--track-color) 42%, var(--surface-card));
   box-shadow: var(--shadow-sm);
   transform: translateY(-2px);
 }
@@ -1852,7 +1851,7 @@ select {
 .track-card.is-active {
   background: var(--surface-card);
   border-color: color-mix(in srgb, var(--track-color) 16%, var(--border-subtle));
-  border-left-color: color-mix(in srgb, var(--track-color) 58%, var(--surface-card));
+  border-left-width: 2px;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--track-color) 8%, var(--surface-card)), var(--shadow-sm);
 }
 
@@ -6653,7 +6652,8 @@ select {
   font-size: 0.82rem;
   font-weight: 600;
   color: var(--accent);
-  margin-top: 0.15rem;
+  margin-top: auto;
+  padding-top: 0.35rem;
 }
 
 /* ── TrackHub paths section ───────────────────────── */
@@ -7219,6 +7219,8 @@ select {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  white-space: nowrap;
+  flex-shrink: 0;
   background: var(--accent-soft);
   color: var(--accent-strong);
   border: 1px solid var(--accent-soft-strong);
