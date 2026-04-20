@@ -1,0 +1,16 @@
+{
+  "slug": "graph-and-tree-patterns",
+  "title": "Graph & Tree Traversal Patterns",
+  "description": "Strengthen traversal fluency across BFS, DFS, topological order, shortest path, and union-find connected-component reasoning.",
+  "topic": "python",
+  "questions": [
+    4329,
+    4607,
+    4614,
+    4615,
+    4622,
+    4623
+  ],
+  "tier": "pro",
+  "role": "advanced"
+}

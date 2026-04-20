@@ -1,0 +1,16 @@
+{
+  "slug": "time-series-analysis",
+  "title": "Time Series Analysis",
+  "description": "Practice monthly and weekly trend analysis with rolling windows, growth rates, anomaly detection, and basic forecasting patterns.",
+  "topic": "python-data",
+  "questions": [
+    5303,
+    5326,
+    5603,
+    5606,
+    5613,
+    5615
+  ],
+  "tier": "free",
+  "role": "advanced"
+}

@@ -1,0 +1,18 @@
+{
+  "slug": "query-optimization",
+  "title": "Spark Query Optimization",
+  "description": "Read plans like an engineer: understand Catalyst phases, AQE behavior, partition pruning, and runtime join strategy improvements.",
+  "topic": "pyspark",
+  "questions": [
+    11314,
+    11315,
+    11313,
+    11324,
+    11603,
+    11605,
+    11614,
+    11620
+  ],
+  "tier": "free",
+  "role": "advanced"
+}

@@ -1,0 +1,17 @@
+{
+  "slug": "streaming-fundamentals",
+  "title": "Structured Streaming Fundamentals",
+  "description": "Develop streaming intuition around output modes, stateful joins, watermarks, and exactly-once delivery semantics.",
+  "topic": "pyspark",
+  "questions": [
+    11316,
+    11317,
+    11328,
+    11615,
+    11616,
+    11618,
+    11621
+  ],
+  "tier": "pro",
+  "role": "advanced"
+}

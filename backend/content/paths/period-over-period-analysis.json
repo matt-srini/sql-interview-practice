@@ -1,0 +1,16 @@
+{
+  "slug": "period-over-period-analysis",
+  "title": "Period-over-Period Analysis",
+  "description": "Analyze trend shifts over time using monthly buckets, lag comparisons, rank changes, and post-peak decline detection.",
+  "topic": "sql",
+  "questions": [
+    1033,
+    2031,
+    3012,
+    3016,
+    3018,
+    3020
+  ],
+  "tier": "pro",
+  "role": "advanced"
+}

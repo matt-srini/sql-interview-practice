@@ -4,10 +4,10 @@
   "description": "Get fluent with the everyday pandas toolkit: boolean indexing, column selection, null handling, derived columns, and basic sorting.",
   "topic": "python-data",
   "questions": [
-    5001,
+    5003,
     5002,
-    5004,
-    5005,
+    5009,
+    5010,
     5006,
     5007
   ],

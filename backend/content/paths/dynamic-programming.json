@@ -1,0 +1,17 @@
+{
+  "slug": "dynamic-programming",
+  "title": "Dynamic Programming Foundations",
+  "description": "Progress from recurrence intuition to classic DP tables and optimization, covering 1D and 2D patterns used in coding interviews.",
+  "topic": "python",
+  "questions": [
+    4005,
+    4322,
+    4323,
+    4325,
+    4605,
+    4606,
+    4609
+  ],
+  "tier": "pro",
+  "role": "advanced"
+}
