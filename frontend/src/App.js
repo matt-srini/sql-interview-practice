@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { CatalogProvider } from './catalogContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { TopicProvider } from './contexts/TopicContext';
@@ -56,8 +56,9 @@ function ThemeProvider({ children }) {
 
 function AuthRequired({ children }) {
   const { user, loading } = useAuth();
+  const location = useLocation();
   if (loading) return null;
-  if (!user || user.email === null) return <Navigate to="/auth" replace />;
+  if (!user || user.email === null) return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
   return children;
 }
 

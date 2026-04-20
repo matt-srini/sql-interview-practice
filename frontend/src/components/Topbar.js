@@ -212,7 +212,7 @@ export default function Topbar({
               </>
             ) : (
               showNav && (
-                <Link className="topbar-auth-link" to="/auth">
+                <Link className="topbar-auth-link" to="/auth" state={{ from: location.pathname }}>
                   Sign in
                 </Link>
               )
