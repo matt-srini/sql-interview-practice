@@ -4427,6 +4427,64 @@ select {
   margin-bottom: 2.5rem;
 }
 
+.dashboard-insight-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.dashboard-insight-tile {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 1rem 1.1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.dashboard-insight-kicker {
+  margin: 0 0 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.dashboard-insight-copy,
+.dashboard-insight-muted {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.dashboard-insight-value {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: 1rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.dashboard-insight-track {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.dashboard-insight-link {
+  display: inline-flex;
+  margin-top: 0.55rem;
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.dashboard-insight-link:hover {
+  text-decoration: underline;
+}
+
 .dashboard-section-title {
   font-size: 0.78rem;
   font-weight: 600;
@@ -4505,6 +4563,25 @@ select {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+.dashboard-track-metrics {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.dashboard-track-metric-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.dashboard-track-metric-row strong {
+  color: var(--text-strong);
+  font-size: 0.82rem;
+  font-weight: 650;
 }
 
 .dashboard-diff-breakdown {
@@ -4603,8 +4680,33 @@ select {
   text-decoration: underline;
 }
 
+.dashboard-empty-state {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 1.2rem 1.3rem;
+}
+
+.dashboard-empty-copy {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.dashboard-empty-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
 @media (max-width: 700px) {
   .dashboard-track-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-insight-strip {
     grid-template-columns: 1fr;
   }
 }
@@ -5889,6 +5991,41 @@ select {
   margin-top: 0.5rem;
 }
 
+.mock-concept-summary {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.mock-concept-summary-title {
+  font-size: 0.74rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.mock-concept-summary-rows {
+  display: grid;
+  gap: 0.38rem;
+}
+
+.mock-concept-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+.mock-concept-name {
+  color: var(--text-strong);
+}
+
+.mock-concept-score {
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
 /* ── MockHub page ────────────────────────────────────────── */
 .mock-hub-page {
   min-height: 100vh;
@@ -6154,6 +6291,20 @@ select {
 .mock-hub-empty {
   color: var(--text-secondary);
   font-size: 0.9rem;
+}
+
+.mock-hub-empty-state {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+}
+
+.mock-hub-empty-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.7rem;
+  flex-wrap: wrap;
 }
 
 /* ── Nav dropdown ────────────────────────────────────────── */
@@ -6931,6 +7082,49 @@ select {
   background: var(--accent-soft);
   color: var(--accent-strong);
   border: 1px solid var(--accent-soft-strong);
+}
+
+.learn-path-complete-banner {
+  margin-top: 0.9rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 12px;
+  border: 1px solid rgba(45, 158, 107, 0.26);
+  background: rgba(45, 158, 107, 0.09);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  color: #1F5D3D;
+  font-size: 0.86rem;
+}
+
+[data-theme="dark"] .learn-path-complete-banner {
+  color: #9ED5B8;
+  background: rgba(45, 158, 107, 0.14);
+  border-color: rgba(45, 158, 107, 0.36);
+}
+
+.learn-index-progress-rail {
+  margin-bottom: 1.5rem;
+}
+
+.learn-index-empty {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+}
+
+.learn-index-empty p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.learn-index-empty-actions {
+  margin-top: 0.75rem;
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
 }
 
 /* ── Unlock cards (LearningPath bottom hint) ────────── */

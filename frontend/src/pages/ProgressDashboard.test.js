@@ -86,11 +86,27 @@ function makeDashboardPayload(overrides = {}) {
   };
 }
 
+function makeInsightsPayload(overrides = {}) {
+  return {
+    per_track: {
+      sql: { solve_count: 47, median_solve_seconds: 540, accuracy_pct: 0.82 },
+      python: { solve_count: 0, median_solve_seconds: null, accuracy_pct: 0 },
+      'python-data': { solve_count: 0, median_solve_seconds: null, accuracy_pct: 0 },
+      pyspark: { solve_count: 0, median_solve_seconds: null, accuracy_pct: 0 },
+    },
+    weakest_concepts: [],
+    cross_track_insight: null,
+    streak_days: 0,
+    ...overrides,
+  };
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
   // Default: mock history returns empty list
   api.get.mockImplementation((url) => {
     if (url === '/mock/history') return Promise.resolve({ data: [] });
+    if (url === '/dashboard/insights') return Promise.resolve({ data: makeInsightsPayload() });
     return Promise.resolve({ data: makeDashboardPayload() });
   });
 });
@@ -141,6 +157,7 @@ describe('ProgressDashboard', () => {
 
     api.get.mockImplementation((url) => {
       if (url === '/mock/history') return Promise.resolve({ data: [] });
+      if (url === '/dashboard/insights') return Promise.resolve({ data: makeInsightsPayload() });
       return Promise.resolve({ data: brokenPayload });
     });
 
@@ -169,6 +186,7 @@ describe('ProgressDashboard', () => {
     let resolve;
     api.get.mockImplementation((url) => {
       if (url === '/mock/history') return Promise.resolve({ data: [] });
+      if (url === '/dashboard/insights') return Promise.resolve({ data: makeInsightsPayload() });
       return new Promise((res) => { resolve = res; });
     });
 
@@ -187,6 +205,7 @@ describe('ProgressDashboard', () => {
   it('shows error state when the API fails', async () => {
     api.get.mockImplementation((url) => {
       if (url === '/mock/history') return Promise.resolve({ data: [] });
+      if (url === '/dashboard/insights') return Promise.resolve({ data: makeInsightsPayload() });
       return Promise.reject(new Error('Network error'));
     });
 
@@ -215,6 +234,7 @@ describe('ProgressDashboard', () => {
           ],
         });
       }
+      if (url === '/dashboard/insights') return Promise.resolve({ data: makeInsightsPayload() });
       return Promise.resolve({ data: makeDashboardPayload() });
     });
 

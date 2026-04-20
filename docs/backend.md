@@ -23,6 +23,7 @@ Registered in `backend/main.py`:
 | `routers/python_data_questions.py` | `/api/python-data` | Pandas catalog, detail, run-code, submit |
 | `routers/pyspark_questions.py` | `/api/pyspark` | PySpark catalog, detail, submit (MCQ only) |
 | `routers/dashboard.py` | `/api` | Cross-track progress dashboard, submission history |
+| `routers/insights.py` | `/api/dashboard` | Coaching insights: per-track speed/accuracy, weakest concepts, streak |
 | `routers/paths.py` | `/api/paths` | Learning path catalog and path detail with per-question state |
 | `routers/mock.py` | `/api/mock` | Mock interview sessions (start, submit, finish, history) |
 | `routers/spa.py` | — | Static assets + SPA fallback |
@@ -152,9 +153,35 @@ Signature formulas:
 | Method | Path | Description |
 |---|---|---|
 | GET | `/api/dashboard` | Per-track solved counts, concepts, and recent activity for the current user |
+| GET | `/api/dashboard/insights` | Coaching metrics derived from submissions (per-track solve speed + accuracy, weakest concepts, streak, cross-track insight) |
 | GET | `/api/submissions` | Submission history for a question (`track`, `question_id`, `limit` query params; max 20) |
 
 Response shape: `{ tracks: { sql, python, python_data, pyspark }, concepts_by_track, recent_activity }`. Each track includes `by_difficulty: { easy: { solved, total }, medium: { solved, total }, hard: { solved, total } }` — note both `solved` and `total` are included in each difficulty object, not bare integers.
+
+`GET /api/dashboard/insights` response shape:
+
+```json
+{
+    "per_track": {
+        "sql": { "solve_count": 28, "median_solve_seconds": 512, "accuracy_pct": 0.82 },
+        "python": { "solve_count": 12, "median_solve_seconds": 740, "accuracy_pct": 0.71 },
+        "python-data": { "solve_count": 5, "median_solve_seconds": 930, "accuracy_pct": 0.8 },
+        "pyspark": { "solve_count": 18, "median_solve_seconds": 120, "accuracy_pct": 0.88 }
+    },
+    "weakest_concepts": [
+        { "concept": "window functions", "track": "sql", "attempts": 8, "correct": 3, "accuracy_pct": 0.375 }
+    ],
+    "cross_track_insight": "You solve Python ~4 minutes slower than SQL. Try 3 Python mediums to close the gap.",
+    "streak_days": 7
+}
+```
+
+Notes:
+- `median_solve_seconds` is computed from first-attempt to first-correct duration per solved question, then medianed per track.
+- `weakest_concepts` returns bottom 3 concepts by accuracy where attempts >= 3.
+- `cross_track_insight` is deterministic and only returned when the slowest-vs-fastest median gap is at least 60 seconds.
+- `streak_days` counts consecutive calendar days ending today with at least one correct submission.
+- Endpoint is cached in-process for 60 seconds per user.
 
 ### Learning paths — `/api/paths`
 

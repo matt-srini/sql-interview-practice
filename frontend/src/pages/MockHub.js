@@ -332,8 +332,12 @@ export default function MockHub() {
         )}
 
         {!historyLoading && history.length === 0 && (
-          <section className="mock-hub-section">
-            <p className="mock-hub-empty">No mock sessions yet. Start your first one above.</p>
+          <section className="mock-hub-section mock-hub-empty-state">
+            <p className="mock-hub-empty">No mock sessions yet. Start your first interview simulation now.</p>
+            <div className="mock-hub-empty-actions">
+              <Link to="/practice/sql" className="btn btn-secondary btn-compact">Warm up in SQL</Link>
+              <Link to="/dashboard" className="btn btn-secondary btn-compact">View progress dashboard</Link>
+            </div>
           </section>
         )}
       </main>

@@ -20,6 +20,14 @@ export default function LearningPathsIndex() {
   }, []);
 
   const filtered = topic ? paths.filter(p => p.topic === topic) : paths;
+  const inProgressPaths = filtered
+    .filter((p) => p.solved_count >= 1 && p.solved_count < p.question_count)
+    .slice()
+    .sort((a, b) => {
+      const aPct = a.question_count > 0 ? a.solved_count / a.question_count : 0;
+      const bPct = b.question_count > 0 ? b.solved_count / b.question_count : 0;
+      return bPct - aPct;
+    });
 
   // Group by topic when showing all
   const grouped = TOPICS.map(t => ({
@@ -80,6 +88,19 @@ export default function LearningPathsIndex() {
         <div className="container">
           {loading && <p className="loading">Loading paths…</p>}
 
+          {!loading && inProgressPaths.length > 0 && (
+            <div className="learn-index-progress-rail">
+              <div className="learn-index-group-header">
+                <h2 className="learn-index-group-title">In progress</h2>
+              </div>
+              <div className="learn-index-grid">
+                {inProgressPaths.map((p) => (
+                  <PathProgressCard key={`in-progress-${p.slug}`} path={p} />
+                ))}
+              </div>
+            </div>
+          )}
+
           {!loading && grouped.map(({ topic: t, meta, paths: tPaths }) => (
             <div key={t} className="learn-index-group">
               {!topic && (
@@ -102,7 +123,13 @@ export default function LearningPathsIndex() {
           ))}
 
           {!loading && filtered.length === 0 && (
-            <p className="learn-index-empty">No paths found for this track yet.</p>
+            <div className="learn-index-empty">
+              <p>No paths found for this track yet.</p>
+              <div className="learn-index-empty-actions">
+                <Link to="/practice/sql" className="btn btn-primary">Start SQL practice</Link>
+                <Link to="/dashboard" className="btn btn-secondary">View dashboard</Link>
+              </div>
+            </div>
           )}
         </div>
       </section>
