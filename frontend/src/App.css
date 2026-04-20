@@ -1834,7 +1834,7 @@ select {
   padding: 1.5rem 1.5rem 1.25rem;
   background: var(--surface-card);
   border: 1px solid var(--border-subtle);
-  border-left: 4px solid color-mix(in srgb, var(--track-color) 25%, var(--border-subtle));
+  border-left: 2px solid color-mix(in srgb, var(--track-color) 26%, var(--surface-card-alt));
   border-radius: var(--radius-md);
   cursor: pointer;
   text-align: left;
@@ -1842,16 +1842,18 @@ select {
 }
 
 .track-card:hover {
-  background: color-mix(in srgb, var(--track-color) 4%, var(--surface-card));
+  background: var(--surface-card);
+  border-color: color-mix(in srgb, var(--track-color) 10%, var(--border-subtle));
+  border-left-color: color-mix(in srgb, var(--track-color) 42%, var(--surface-card));
   box-shadow: var(--shadow-sm);
   transform: translateY(-2px);
 }
 
 .track-card.is-active {
-  background: color-mix(in srgb, var(--track-color) 6%, var(--surface-card));
-  border-color: color-mix(in srgb, var(--track-color) 25%, var(--border-subtle));
-  border-left-color: color-mix(in srgb, var(--track-color) 60%, var(--border-subtle));
-  box-shadow: 0 4px 24px color-mix(in srgb, var(--track-color) 14%, transparent);
+  background: var(--surface-card);
+  border-color: color-mix(in srgb, var(--track-color) 16%, var(--border-subtle));
+  border-left-color: color-mix(in srgb, var(--track-color) 58%, var(--surface-card));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--track-color) 8%, var(--surface-card)), var(--shadow-sm);
 }
 
 .track-card-header {
@@ -1861,8 +1863,8 @@ select {
 }
 
 .track-card-dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: var(--track-color);
   flex-shrink: 0;
@@ -1917,21 +1919,21 @@ select {
 }
 
 .track-diff-chip--easy {
-  background: color-mix(in srgb, var(--success) 12%, transparent);
-  color: color-mix(in srgb, var(--success) 86%, var(--text-strong));
-  border-color: color-mix(in srgb, var(--success) 28%, var(--border-subtle));
+  background: color-mix(in srgb, var(--success) 10%, var(--surface-card-alt));
+  color: color-mix(in srgb, var(--success) 68%, var(--text-strong));
+  border-color: color-mix(in srgb, var(--success) 18%, var(--surface-card-alt));
 }
 
 .track-diff-chip--medium {
-  background: color-mix(in srgb, var(--warning) 12%, transparent);
-  color: color-mix(in srgb, var(--warning) 90%, var(--text-strong));
-  border-color: color-mix(in srgb, var(--warning) 28%, var(--border-subtle));
+  background: color-mix(in srgb, var(--warning) 10%, var(--surface-card-alt));
+  color: color-mix(in srgb, var(--warning) 68%, var(--text-strong));
+  border-color: color-mix(in srgb, var(--warning) 18%, var(--surface-card-alt));
 }
 
 .track-diff-chip--hard {
-  background: color-mix(in srgb, var(--danger) 12%, transparent);
-  color: color-mix(in srgb, var(--danger) 86%, var(--text-strong));
-  border-color: color-mix(in srgb, var(--danger) 28%, var(--border-subtle));
+  background: color-mix(in srgb, var(--danger) 10%, var(--surface-card-alt));
+  color: color-mix(in srgb, var(--danger) 68%, var(--text-strong));
+  border-color: color-mix(in srgb, var(--danger) 18%, var(--surface-card-alt));
 }
 
 .track-card-progress {
@@ -1967,7 +1969,7 @@ select {
 
 .track-card-active-label {
   font-size: 0.7rem;
-  color: var(--text-muted);
+  color: color-mix(in srgb, var(--track-color) 40%, var(--text-secondary));
   font-weight: 500;
 }
 
@@ -1976,7 +1978,7 @@ select {
   padding: 1.75rem 2rem;
   background: var(--surface-card);
   border: 1px solid var(--border-subtle);
-  border-top: 1px solid color-mix(in srgb, var(--track-color) 30%, var(--border-subtle));
+  border-top: 2px solid color-mix(in srgb, var(--track-color) 22%, var(--surface-card-alt));
   border-radius: var(--radius-md);
   animation: trackStripIn 220ms ease forwards;
 }
@@ -2229,16 +2231,16 @@ select {
   gap: 0.75rem;
   background: var(--surface-card);
   border: 1px solid var(--border-subtle);
-  border-top: 1px solid color-mix(in srgb, var(--tile-color, var(--accent)) 50%, var(--border-subtle));
+  border-top: 2px solid color-mix(in srgb, var(--tile-color, var(--accent)) 22%, var(--surface-card-alt));
   border-radius: 14px;
   transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .sample-tile:hover {
-  border-color: color-mix(in srgb, var(--tile-color, var(--accent)) 30%, var(--border-subtle));
-  border-top-color: color-mix(in srgb, var(--tile-color, var(--accent)) 70%, var(--border-subtle));
+  border-color: color-mix(in srgb, var(--tile-color, var(--accent)) 12%, var(--border-subtle));
+  border-top-color: color-mix(in srgb, var(--tile-color, var(--accent)) 34%, var(--surface-card-alt));
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
 }
 
 .track-card:focus-visible,
