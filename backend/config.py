@@ -65,6 +65,16 @@ RATE_LIMIT_REQUESTS = _get_int("RATE_LIMIT_REQUESTS", "60")
 RATE_LIMIT_WINDOW_SECONDS = _get_int("RATE_LIMIT_WINDOW_SECONDS", "60")
 REDIS_URL = _getenv("REDIS_URL")
 
+# Auth hardening
+LOGIN_LOCKOUT_MAX_ATTEMPTS = _get_int("LOGIN_LOCKOUT_MAX_ATTEMPTS", "5")
+LOGIN_LOCKOUT_WINDOW_MINUTES = _get_int("LOGIN_LOCKOUT_WINDOW_MINUTES", "15")
+
+# Security
+SECURE_COOKIES = (_getenv("SECURE_COOKIES", "true" if IS_PROD else "false") or "false").strip().lower() in {"1", "true", "yes", "on"}
+
+# Observability
+SENTRY_DSN = _getenv("SENTRY_DSN")
+
 # OAuth providers
 GOOGLE_CLIENT_ID = _getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = _getenv("GOOGLE_CLIENT_SECRET")

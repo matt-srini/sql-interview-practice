@@ -169,7 +169,11 @@ All queries share a single DuckDB connection via a thread-pool executor. At curr
 
 **Login:** Existing registered account absorbs any anonymous progress from the current session (merge at login time). The anonymous user row is then discarded.
 
-**Session token:** HttpOnly cookie, no expiry (server-side sessions managed in `sessions` table).
+**Lockout policy:** Repeated failed sign-in attempts are tracked in PostgreSQL (`failed_login_attempts`, `login_locked_until`). After `LOGIN_LOCKOUT_MAX_ATTEMPTS`, the account is temporarily locked for `LOGIN_LOCKOUT_WINDOW_MINUTES`.
+
+**Session token:** HttpOnly cookie with `SameSite=Strict` (and `secure` in production by default), server-side session lifecycle managed in `sessions` table.
+
+**CSRF model:** In production, mutating `/api/*` requests that present a session cookie must include an `Origin` matching configured app origins. This blocks cross-site request forgery for cookie-authenticated writes.
 
 ---
 
@@ -191,6 +195,7 @@ Applied as middleware to all routes except `/health`.
 - Attaches to `request.state.request_id`
 - Stored in a `contextvars.ContextVar` for structured logging
 - Returned as `X-Request-ID` response header
+- Returned with `X-Response-Time-Ms` latency header for each response
 - Included in all error payloads: `{ error, request_id }`
 - Log format: `[request_id=<id>] message`
 

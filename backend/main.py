@@ -1,5 +1,8 @@
 import logging
+import secrets
+import time
 from contextlib import asynccontextmanager
+from urllib.parse import urlparse
 
 from dotenv import load_dotenv
 
@@ -9,9 +12,10 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from config import ALLOWED_ORIGINS, IS_PROD, RATE_LIMIT_REQUESTS, RATE_LIMIT_WINDOW_SECONDS, REDIS_URL
+from config import ALLOWED_ORIGINS, APP_BASE_URL, ENV, FRONTEND_BASE_URL, IS_PROD, RATE_LIMIT_REQUESTS, RATE_LIMIT_WINDOW_SECONDS, REDIS_URL, SENTRY_DSN
 from database import close_query_engine, init_query_engine
 from db import close_pool, ensure_schema, init_pool
+from deps import CSRF_COOKIE_NAME, set_csrf_cookie
 from exceptions import AppError
 from middleware.request_context import get_request_id, request_context_middleware
 from rate_limiter import BaseRateLimiter, create_rate_limiter
@@ -37,6 +41,18 @@ for _handler in _root_logger.handlers:
     _handler.setFormatter(_formatter)
 
 logger = logging.getLogger(__name__)
+
+
+if SENTRY_DSN:
+    import sentry_sdk
+    from sentry_sdk.integrations.fastapi import FastApiIntegration
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        environment=ENV,
+        integrations=[FastApiIntegration()],
+        traces_sample_rate=0.0,
+    )
 
 
 @asynccontextmanager
@@ -102,6 +118,57 @@ app.add_middleware(
     expose_headers=["X-Request-ID", "X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Window", "Retry-After"],
 )
 
+
+def _normalize_origin(value: str | None) -> str | None:
+    if not value:
+        return None
+    parsed = urlparse(value)
+    if not parsed.scheme or not parsed.netloc:
+        return None
+    return f"{parsed.scheme}://{parsed.netloc}"
+
+
+_CSRF_ALLOWED_ORIGINS = {
+    origin
+    for origin in {
+        *(_normalize_origin(origin) for origin in ALLOWED_ORIGINS),
+        _normalize_origin(APP_BASE_URL),
+        _normalize_origin(FRONTEND_BASE_URL),
+    }
+    if origin is not None
+}
+
+
+@app.middleware("http")
+async def csrf_origin_protection_middleware(request: Request, call_next):
+    path = request.url.path
+    method = request.method.upper()
+    if method in {"GET", "HEAD", "OPTIONS"} or not path.startswith("/api/"):
+        return await call_next(request)
+
+    if path in {"/api/razorpay/webhook"}:
+        return await call_next(request)
+
+    if not IS_PROD:
+        return await call_next(request)
+
+    if not request.cookies.get("session_token"):
+        return await call_next(request)
+
+    origin = _normalize_origin(request.headers.get("origin"))
+    if origin is None or origin not in _CSRF_ALLOWED_ORIGINS:
+        request_id = getattr(request.state, "request_id", "-")
+        return JSONResponse(
+            status_code=403,
+            content={
+                "error": "CSRF protection blocked this request.",
+                "request_id": request_id,
+            },
+            headers={"X-Request-ID": request_id},
+        )
+
+    return await call_next(request)
+
 @app.middleware("http")
 async def security_headers_middleware(request: Request, call_next):
     """Attach security headers to every response."""
@@ -115,6 +182,10 @@ async def security_headers_middleware(request: Request, call_next):
     if IS_PROD:
         # 2 years, include subdomains — tells browsers to always use HTTPS
         response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains"
+
+    if request.cookies.get("session_token") and not request.cookies.get(CSRF_COOKIE_NAME):
+        set_csrf_cookie(response, secrets.token_urlsafe(24))
+
     return response
 
 
@@ -175,6 +246,24 @@ async def ip_rate_limit_middleware(request: Request, call_next):
 @app.middleware("http")
 async def request_id_middleware(request: Request, call_next):
     return await request_context_middleware(request, call_next)
+
+
+@app.middleware("http")
+async def request_timing_middleware(request: Request, call_next):
+    started = time.perf_counter()
+    response = await call_next(request)
+    duration_ms = (time.perf_counter() - started) * 1000.0
+    response.headers["X-Response-Time-Ms"] = f"{duration_ms:.2f}"
+    request_id = getattr(request.state, "request_id", "-")
+    logger.info(
+        "[request_id=%s] %s %s status=%s duration_ms=%.2f",
+        request_id,
+        request.method,
+        request.url.path,
+        response.status_code,
+        duration_ms,
+    )
+    return response
 
 
 app.include_router(system.router)

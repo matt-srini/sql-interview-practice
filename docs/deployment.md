@@ -155,6 +155,9 @@ docker run -p 8000:8000 \
   -e DATABASE_URL=postgresql://... \
   -e REDIS_URL=redis://... \
   -e ENV=production \
+  -e SECURE_COOKIES=true \
+  -e LOGIN_LOCKOUT_MAX_ATTEMPTS=5 \
+  -e LOGIN_LOCKOUT_WINDOW_MINUTES=15 \
   -e RAZORPAY_KEY_ID=... \
   -e RAZORPAY_KEY_SECRET=... \
   -e RAZORPAY_WEBHOOK_SECRET=... \
@@ -162,6 +165,7 @@ docker run -p 8000:8000 \
   -e RAZORPAY_PLAN_ELITE=... \
   -e RAZORPAY_AMOUNT_LIFETIME_PRO=799900 \
   -e RAZORPAY_AMOUNT_LIFETIME_ELITE=1499900 \
+  -e SENTRY_DSN=... \
   sql-practice
 ```
 
@@ -188,6 +192,10 @@ The `FRONTEND_DIST_DIR` env var defaults to `/app/frontend/dist` inside the imag
 | `FRONTEND_DIST_DIR` | — | Path to built SPA assets; defaults to `../frontend/dist` |
 | `RATE_LIMIT_REQUESTS` | — | Requests per window per IP; default `60` |
 | `RATE_LIMIT_WINDOW_SECONDS` | — | Window size in seconds; default `60` |
+| `SECURE_COOKIES` | — | Controls cookie `secure` attribute; defaults to `true` in production |
+| `LOGIN_LOCKOUT_MAX_ATTEMPTS` | — | Failed login attempts before temporary lock; default `5` |
+| `LOGIN_LOCKOUT_WINDOW_MINUTES` | — | Temporary login lock window; default `15` minutes |
+| `SENTRY_DSN` | — | Optional backend Sentry DSN for production error capture |
 
 In `production` mode, startup will fail fast if `DATABASE_URL`, `REDIS_URL`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, or `RAZORPAY_WEBHOOK_SECRET` are missing.
 
@@ -212,3 +220,18 @@ In `production` mode, startup will fail fast if `DATABASE_URL`, `REDIS_URL`, `RA
 - Restart on failure (up to 10 retries)
 
 Set the environment variables listed above in the Railway service settings. Railway provides managed Postgres and Redis as add-on services; copy their connection strings into `DATABASE_URL` and `REDIS_URL`.
+
+---
+
+## Pre-launch admin seed
+
+Run once against the production database after migrations complete (idempotent upsert):
+
+```bash
+cd backend
+DATABASE_URL="postgresql://..." \
+  ADMIN_EMAIL="admin@yourdomain.com" \
+  ADMIN_NAME="Admin" \
+  ADMIN_PASSWORD="ReplaceWithStrongPassword1" \
+  ../.venv/bin/python scripts/seed_admin.py
+```

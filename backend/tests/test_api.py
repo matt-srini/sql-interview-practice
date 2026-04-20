@@ -259,6 +259,15 @@ def test_rate_limit_headers_present() -> None:
         assert "X-RateLimit-Remaining" in resp.headers
 
 
+def test_anonymous_session_cookie_uses_strict_samesite() -> None:
+    with TestClient(app) as client:
+        resp = client.get("/catalog")
+        assert resp.status_code == 200
+        set_cookie = resp.headers.get("set-cookie", "")
+        assert "session_token=" in set_cookie
+        assert "samesite=strict" in set_cookie.lower()
+
+
 def test_rate_limit_enforced() -> None:
     main._clear_rate_limit_state()
     limiter = main.rate_limiter

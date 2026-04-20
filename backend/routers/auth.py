@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import logging
 import re
+import secrets
+from datetime import datetime, timezone
 import urllib.parse
 
 import httpx
@@ -14,10 +16,13 @@ from config import (
     FRONTEND_BASE_URL,
     GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET,
+    LOGIN_LOCKOUT_MAX_ATTEMPTS,
+    LOGIN_LOCKOUT_WINDOW_MINUTES,
     GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET,
 )
 from db import (
+    clear_login_lock_state,
     consume_email_verification_token,
     consume_password_reset_token,
     create_email_verification_token,
@@ -29,11 +34,12 @@ from db import (
     get_user_credentials_by_email,
     mark_email_verified,
     merge_users,
+    register_failed_login_attempt,
     update_password,
     upgrade_anonymous_to_registered,
     verify_password,
 )
-from deps import clear_session_cookie, get_current_user, get_optional_current_user, set_session_cookie
+from deps import clear_session_cookie, get_current_user, get_optional_current_user, set_csrf_cookie, set_session_cookie
 from email_service import email_available, send_password_reset_email, send_verification_email
 from middleware.request_context import get_request_id
 
@@ -197,6 +203,7 @@ async def register(
         content={"user": {"id": user["id"], "email": user["email"], "name": user["name"], "plan": user["plan"], "email_verified": user.get("email_verified", False)}},
     )
     set_session_cookie(payload, token)
+    set_csrf_cookie(payload, secrets.token_urlsafe(24))
     return payload
 
 
@@ -208,12 +215,49 @@ async def login(
     session_user: dict[str, str | None] | None = Depends(get_optional_current_user),
 ) -> Response:
     candidate = await get_user_credentials_by_email(body.email)
+    now = datetime.now(timezone.utc)
+
+    if candidate is not None and candidate.get("login_locked_until") is not None:
+        locked_until = candidate["login_locked_until"]
+        if locked_until.tzinfo is None:
+            locked_until = locked_until.replace(tzinfo=timezone.utc)
+        if locked_until > now:
+            logger.info(
+                "[request_id=%s] Login blocked by lockout: email=%s locked_until=%s",
+                get_request_id(),
+                body.email,
+                locked_until.isoformat(),
+            )
+            return _err("Too many failed sign-in attempts. Please try again in a few minutes.", status=429)
+
     if candidate is None or not candidate["pwd_hash"] or not candidate["pwd_salt"]:
         verify_password(body.password, "0" * 64, "0" * 64)
         return _err("Invalid email or password.", status=401)
 
     if not verify_password(body.password, candidate["pwd_hash"], candidate["pwd_salt"]):
+        await register_failed_login_attempt(
+            candidate["id"],
+            current_failed_attempts=int(candidate.get("failed_login_attempts") or 0),
+            max_attempts=LOGIN_LOCKOUT_MAX_ATTEMPTS,
+            lockout_window_minutes=LOGIN_LOCKOUT_WINDOW_MINUTES,
+        )
+        refreshed = await get_user_credentials_by_email(body.email)
+        if refreshed is not None and refreshed.get("login_locked_until") is not None:
+            locked_until = refreshed["login_locked_until"]
+            logger.info(
+                "[request_id=%s] Login failure updated state: email=%s attempts=%s locked_until=%s",
+                get_request_id(),
+                body.email,
+                refreshed.get("failed_login_attempts"),
+                locked_until,
+            )
+            if locked_until.tzinfo is None:
+                locked_until = locked_until.replace(tzinfo=timezone.utc)
+            if locked_until > now:
+                return _err("Too many failed sign-in attempts. Please try again in a few minutes.", status=429)
         return _err("Invalid email or password.", status=401)
+
+    await clear_login_lock_state(candidate["id"])
 
     if session_user and session_user["id"] != candidate["id"] and session_user.get("email") is None:
         await merge_users(session_user["id"], candidate["id"])
@@ -228,6 +272,7 @@ async def login(
         content={"user": {"id": candidate["id"], "email": candidate["email"], "name": candidate["name"], "plan": candidate["plan"], "email_verified": candidate.get("email_verified", False)}}
     )
     set_session_cookie(payload, token)
+    set_csrf_cookie(payload, secrets.token_urlsafe(24))
     return payload
 
 
@@ -411,14 +456,8 @@ async def oauth_callback(provider: str, request: Request) -> RedirectResponse:
     logger.info("[request_id=%s] OAuth sign-in: provider=%s user_id=%s", get_request_id(), provider, user["id"])
 
     response = RedirectResponse(url=f"{frontend_base}/", status_code=302)
-    response.set_cookie(
-        key="session_token",
-        value=token,
-        httponly=True,
-        samesite="lax",
-        max_age=30 * 24 * 3600,
-        path="/",
-    )
+    set_session_cookie(response, token)
+    set_csrf_cookie(response, secrets.token_urlsafe(24))
     return response
 
 

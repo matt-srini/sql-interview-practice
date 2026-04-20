@@ -35,6 +35,8 @@ CREATE TABLE IF NOT EXISTS users (
     name TEXT,
     pwd_hash TEXT,
     pwd_salt TEXT,
+    failed_login_attempts INTEGER NOT NULL DEFAULT 0,
+    login_locked_until TIMESTAMPTZ,
     plan TEXT NOT NULL DEFAULT 'free' CHECK (plan IN ('free', 'pro', 'elite', 'lifetime_pro', 'lifetime_elite')),
     razorpay_customer_id TEXT UNIQUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -125,6 +127,8 @@ CREATE INDEX IF NOT EXISTS idx_reset_tokens_user ON password_reset_tokens(user_i
 CREATE INDEX IF NOT EXISTS idx_reset_tokens_expires ON password_reset_tokens(expires_at);
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS failed_login_attempts INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS login_locked_until TIMESTAMPTZ;
 
 CREATE TABLE IF NOT EXISTS email_verification_tokens (
     token TEXT PRIMARY KEY,
@@ -352,7 +356,7 @@ async def get_user_credentials_by_email(email: str) -> dict[str, Any] | None:
         result = await session.execute(
             text(
                 """
-                SELECT id, email, name, plan, email_verified, pwd_hash, pwd_salt
+                SELECT id, email, name, plan, email_verified, pwd_hash, pwd_salt, failed_login_attempts, login_locked_until
                 FROM users
                 WHERE email = :email
                 """
@@ -370,6 +374,75 @@ async def get_user_credentials_by_email(email: str) -> dict[str, Any] | None:
             "email_verified": bool(row["email_verified"]),
             "pwd_hash": row["pwd_hash"],
             "pwd_salt": row["pwd_salt"],
+            "failed_login_attempts": int(row.get("failed_login_attempts") or 0),
+            "login_locked_until": row.get("login_locked_until"),
+        }
+
+
+async def clear_login_lock_state(user_id: str) -> None:
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        await session.execute(
+            text(
+                """
+                UPDATE users
+                SET failed_login_attempts = 0,
+                    login_locked_until = NULL
+                WHERE id = CAST(:user_id AS UUID)
+                """
+            ),
+            {"user_id": user_id},
+        )
+        await session.commit()
+
+
+async def register_failed_login_attempt(
+    user_id: str,
+    *,
+    current_failed_attempts: int,
+    max_attempts: int,
+    lockout_window_minutes: int,
+) -> dict[str, Any] | None:
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        should_lock = int(current_failed_attempts) + 1 >= int(max_attempts)
+        if should_lock:
+            statement = text(
+                """
+                UPDATE users
+                SET failed_login_attempts = 0,
+                    login_locked_until = now() + make_interval(mins => :lockout_window_minutes)
+                WHERE id = CAST(:user_id AS UUID)
+                RETURNING failed_login_attempts, login_locked_until
+                """
+            )
+            params = {
+                "user_id": user_id,
+                "lockout_window_minutes": lockout_window_minutes,
+            }
+        else:
+            statement = text(
+                """
+                UPDATE users
+                SET failed_login_attempts = failed_login_attempts + 1,
+                    login_locked_until = NULL
+                WHERE id = CAST(:user_id AS UUID)
+                RETURNING failed_login_attempts, login_locked_until
+                """
+            )
+            params = {"user_id": user_id}
+
+        result = await session.execute(
+            statement,
+            params,
+        )
+        await session.commit()
+        row = result.mappings().first()
+        if row is None:
+            return None
+        return {
+            "failed_login_attempts": int(row.get("failed_login_attempts") or 0),
+            "login_locked_until": row.get("login_locked_until"),
         }
 
 

@@ -3,10 +3,14 @@ from typing import Any
 from fastapi import HTTPException, Request, Response
 from pydantic import BaseModel
 
+from config import SECURE_COOKIES
 from db import SESSION_COOKIE_NAME, create_anonymous_user, create_session, get_session_user
 from progress import get_solved_question_ids
 from questions import get_public_question, get_questions_by_difficulty
 from unlock import compute_unlock_state, get_next_questions
+
+
+CSRF_COOKIE_NAME = "csrf_token"
 
 
 class RunQueryRequest(BaseModel):
@@ -24,7 +28,20 @@ def set_session_cookie(response: Response, token: str) -> None:
         key=SESSION_COOKIE_NAME,
         value=token,
         httponly=True,
-        samesite="lax",
+        samesite="strict",
+        secure=SECURE_COOKIES,
+        max_age=30 * 24 * 3600,
+        path="/",
+    )
+
+
+def set_csrf_cookie(response: Response, token: str) -> None:
+    response.set_cookie(
+        key=CSRF_COOKIE_NAME,
+        value=token,
+        httponly=False,
+        samesite="strict",
+        secure=SECURE_COOKIES,
         max_age=30 * 24 * 3600,
         path="/",
     )
@@ -32,6 +49,7 @@ def set_session_cookie(response: Response, token: str) -> None:
 
 def clear_session_cookie(response: Response) -> None:
     response.delete_cookie(key=SESSION_COOKIE_NAME, path="/")
+    response.delete_cookie(key=CSRF_COOKIE_NAME, path="/")
 
 
 async def get_optional_current_user(request: Request) -> dict[str, Any] | None:

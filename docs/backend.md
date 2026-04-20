@@ -47,6 +47,11 @@ Registered in `backend/main.py`:
 
 Anonymous visitors receive a real user row and session cookie. Registration upgrades that session rather than replacing it, preserving progress. OAuth sign-in uses `get_or_create_oauth_user()` — new users are created, returning users are looked up by `(provider, provider_user_id)`. Password reset emails require `RESEND_API_KEY` to be configured.
 
+Security controls on auth:
+- Reserved local-part email prefixes are blocked on registration (`admin`, `dev`, `tester`, etc.).
+- Login lockout policy: after `LOGIN_LOCKOUT_MAX_ATTEMPTS` failed sign-in attempts, the account is temporarily locked for `LOGIN_LOCKOUT_WINDOW_MINUTES`.
+- Session cookie uses `SameSite=Strict`; `secure` is controlled by `SECURE_COOKIES` (defaults to enabled in production).
+
 ### System
 
 | Method | Path | Response |
@@ -306,6 +311,10 @@ Solved questions remain solved permanently regardless of plan changes.
 - Redis-backed when `REDIS_URL` is set; in-memory fallback otherwise
 - Config: `RATE_LIMIT_REQUESTS`, `RATE_LIMIT_WINDOW_SECONDS` in `config.py`
 - Localhost bypass: requests from `127.0.0.1` / `::1` skip rate limiting in non-prod mode — safe for local dev and Playwright e2e tests
+
+**CSRF mitigation** — In production, mutating API requests (`POST`, `PUT`, `PATCH`, `DELETE`) that include a session cookie must carry an `Origin` header matching configured app origins (`ALLOWED_ORIGINS`, `APP_BASE_URL`, `FRONTEND_BASE_URL`). External webhook paths are exempt.
+
+**Response timing** — All responses include `X-Response-Time-Ms` for baseline latency observability.
 
 ---
 
