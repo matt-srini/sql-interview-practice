@@ -35,7 +35,7 @@ You are a senior distributed systems engineer and data platform interviewer desi
 | Medium | 11300–11599 |
 | Hard | 11600–11999 |
 
-`order` must be the next sequential integer within the difficulty file.
+`order` reflects pedagogical position within the difficulty tier — not file-append order. Assign the value that correctly slots the question into the concept arc. If inserting mid-sequence, note which existing `order` values shift up.
 
 ---
 
@@ -57,6 +57,37 @@ You are a senior distributed systems engineer and data platform interviewer desi
 - Multi-factor trade-off under realistic production constraints
 - All 4 options must be plausible to a candidate who partially understands the concept — no obviously wrong answers
 - Topics: AQE (adaptive query execution — coalescing partitions, converting sort-merge to broadcast, skew join handling), dynamic partition pruning, salting, pandas UDF memory model vs regular UDF, Z-ordering vs partition pruning, watermark behavior with late data, speculative execution
+
+---
+
+## Curriculum arc and concept progression
+
+Questions within each difficulty tier form a **learning arc** — `order` reflects pedagogical sequence. When generating a new question, find where it belongs in the arc; do not default to appending.
+
+### Placement principles
+
+**Prerequisite check:** A question at order N assumes mastery of concepts from orders 1..N-1. Identify what this question builds on and confirm those concepts appear earlier.
+
+**Unlocking step:** Consider what reasoning skill this question opens up for the questions that follow it.
+
+**Spiral reinforcement:** Later questions should deliberately blend prior concepts. A hard AQE question that also requires understanding of shuffle boundaries reinforces both simultaneously. Intentional callbacks to earlier material are not redundant — they are the curriculum.
+
+**No cold introductions:** Don't use a concept at hard tier that was never touched at medium. Build the staircase.
+
+### PySpark concept arc
+
+| Tier | Early → Late concept progression |
+|---|---|
+| Easy | Transformation vs. action (lazy evaluation) → narrow vs. wide transformations → DataFrame schema basics → basic `predict_output` (filter / select / withColumn) → UDF basic mechanics → `collect()` / `show()` driver implications → common `AnalysisException` debug patterns |
+| Medium | Partitioning and partition count → shuffle triggers (wide transformations) → `repartition` vs. `coalesce` → broadcast join conditions → PySpark window function API → Delta Lake MERGE / schema evolution / time travel → Structured Streaming output modes (append / update / complete) |
+| Hard | AQE partition coalescing and broadcast conversion → dynamic partition pruning → skew join detection and salting → pandas UDF memory model vs. regular UDF → Z-ordering vs. partition pruning trade-offs → watermark behavior with late data → speculative execution and straggler tasks |
+
+### Insertion workflow
+
+1. Identify where the new question sits in the arc above.
+2. Find the closest existing questions on either side by their current `order` values.
+3. Assign an `order` that slots it between them. If inserting mid-sequence, note in your output which existing orders shift up.
+4. If genuinely the most advanced in the tier, append — but state explicitly how it builds on the current highest-order entry.
 
 ---
 
@@ -168,4 +199,7 @@ Target 2–3 tags.
 - [ ] Question is anchored in a real-world scenario, not abstract trivia
 - [ ] Easy-tier question uses `predict_output` or `debug` type (not pure `mcq`)
 - [ ] `code_snippet` is properly JSON-escaped or `null`
+- [ ] `order` value correctly positions this question in the concept arc (not just highest + 1)
+- [ ] Prerequisites for this question's concepts appear at lower `order` values within the same or easier tiers
+- [ ] If the question blends prior concepts for reinforcement, those concepts appear earlier in the arc
 - [ ] Output is valid JSON only — no surrounding text
