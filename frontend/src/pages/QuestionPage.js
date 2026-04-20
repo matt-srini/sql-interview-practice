@@ -13,6 +13,7 @@ import { useCatalog } from '../catalogContext';
 import { useTopic } from '../contexts/TopicContext';
 import { useAuth } from '../contexts/AuthContext';
 import UpgradeButton from '../components/UpgradeButton';
+import { parseSqlError } from '../utils/sqlErrorParser';
 
 const SQL_PLACEHOLDER = '-- Write your SQL query here\nSELECT ';
 const PYTHON_PLACEHOLDER = '# Write your solution here\n';
@@ -344,6 +345,14 @@ export default function QuestionPage() {
     return `${Math.floor(hours / 24)}d ago`;
   }
 
+  function formatExecutionError(err, fallback) {
+    const raw = err.response?.data?.error ?? err.response?.data?.detail ?? fallback;
+    if (meta.language === 'sql') {
+      return parseSqlError(raw) ?? fallback;
+    }
+    return raw;
+  }
+
   const toggleAttemptCode = (attemptId) => setOpenAttemptCodes((prev) => {
     const next = new Set(prev);
     if (next.has(attemptId)) next.delete(attemptId); else next.add(attemptId);
@@ -362,7 +371,7 @@ export default function QuestionPage() {
       const res = await api.post(runApiPath, payload);
       setRunResult(res.data);
     } catch (err) {
-      setRunError(err.response?.data?.error ?? err.response?.data?.detail ?? 'Execution failed.');
+      setRunError(formatExecutionError(err, 'Execution failed.'));
     } finally {
       setRunning(false);
     }
@@ -399,7 +408,7 @@ export default function QuestionPage() {
         .then((r) => setPastAttempts(r.data))
         .catch(() => {});
     } catch (err) {
-      setSubmitError(err.response?.data?.error ?? err.response?.data?.detail ?? 'Submission failed.');
+      setSubmitError(formatExecutionError(err, 'Submission failed.'));
     } finally {
       setSubmitting(false);
     }
