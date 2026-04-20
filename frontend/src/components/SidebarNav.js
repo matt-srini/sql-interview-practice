@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { NavLink, useSearchParams } from 'react-router-dom';
+import Fuse from 'fuse.js';
 import { useTopic } from '../contexts/TopicContext';
 
 // How many concept chips to show before the "show more" toggle
@@ -289,6 +290,7 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [easyExpanded, setEasyExpanded] = useState(false);
   const [bookmarkedIds, setBookmarkedIds] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const allConcepts = useMemo(() => buildConceptList(groups), [groups]);
 
@@ -390,19 +392,74 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
   function clearAllFilters() {
     clearFilters();
     clearCompanyFilters();
+    setSearchQuery('');
   }
 
   const anyFilterActive = activeFilters.size > 0 || activeCompanyFilters.size > 0;
   const totalActiveFilters = activeFilters.size + activeCompanyFilters.size;
 
+  const searchMatchesById = useMemo(() => {
+    const query = searchQuery.trim();
+    if (!query) return null;
+    const normalizedQuery = query.toLowerCase();
+
+    const entries = [];
+    groups.forEach((group) => {
+      group.questions.forEach((question) => {
+        entries.push({
+          id: Number(question.id),
+          title: question.title ?? '',
+          concepts: question.concepts ?? [],
+          difficulty: group.difficulty ?? '',
+        });
+      });
+    });
+
+    if (entries.length === 0) return new Set();
+
+    const directMatches = entries
+      .filter((entry) => {
+        const title = String(entry.title || '').toLowerCase();
+        const difficulty = String(entry.difficulty || '').toLowerCase();
+        const concepts = (entry.concepts || []).join(' ').toLowerCase();
+        return title.includes(normalizedQuery)
+          || difficulty.includes(normalizedQuery)
+          || concepts.includes(normalizedQuery);
+      })
+      .map((entry) => Number(entry.id));
+
+    if (directMatches.length > 0) {
+      return new Set(directMatches);
+    }
+
+    const fuse = new Fuse(entries, {
+      includeScore: true,
+      threshold: 0.35,
+      ignoreLocation: true,
+      keys: [
+        { name: 'title', weight: 0.7 },
+        { name: 'concepts', weight: 0.2 },
+        { name: 'difficulty', weight: 0.1 },
+      ],
+    });
+
+    return new Set(
+      fuse
+        .search(query, { limit: 60 })
+        .filter((result) => (result.score ?? 1) <= 0.28)
+        .map((result) => Number(result.item.id))
+    );
+  }, [groups, searchQuery]);
+
   // Apply concept + company filters (AND logic)
   const filteredGroups = useMemo(() => {
-    if (!anyFilterActive) return groups;
+    if (!anyFilterActive && !searchMatchesById) return groups;
     return groups.map((g) => {
       const questions = g.questions.filter((q) => {
         const conceptMatch = activeFilters.size === 0 || (q.concepts ?? []).some((c) => activeFilters.has(c));
         const companyMatch = activeCompanyFilters.size === 0 || (q.companies ?? []).some((c) => activeCompanyFilters.has(c));
-        return conceptMatch && companyMatch;
+        const textMatch = !searchMatchesById || searchMatchesById.has(Number(q.id));
+        return conceptMatch && companyMatch && textMatch;
       });
       return {
         ...g,
@@ -414,7 +471,7 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
         },
       };
     }).filter((g) => g.questions.length > 0);
-  }, [groups, activeFilters, activeCompanyFilters, anyFilterActive]);
+  }, [groups, activeFilters, activeCompanyFilters, anyFilterActive, searchMatchesById]);
 
   const bookmarkedQuestions = useMemo(() => {
     if (!bookmarkedIds.length) return [];
@@ -429,6 +486,30 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
 
   return (
     <div className="sidebar-inner">
+      <div className="sidebar-search-block">
+        <label className="sidebar-search-label" htmlFor="sidebar-question-search">Search questions</label>
+        <div className="sidebar-search-input-wrap">
+          <input
+            id="sidebar-question-search"
+            type="search"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Title, concept, or difficulty"
+            className="sidebar-search-input"
+          />
+          {searchQuery.trim() && (
+            <button
+              className="sidebar-search-clear"
+              onClick={() => setSearchQuery('')}
+              aria-label="Clear question search"
+              title="Clear search"
+            >
+              ×
+            </button>
+          )}
+        </div>
+      </div>
+
       <div className="sidebar-filters-accordion">
         <button
           className={`sidebar-filters-toggle${anyFilterActive ? ' sidebar-filters-toggle-active' : ''}`}
@@ -473,7 +554,7 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
         )}
       </div>
 
-      {anyFilterActive && filteredGroups.length === 0 && (
+      {(anyFilterActive || searchMatchesById) && filteredGroups.length === 0 && (
         <div className="sidebar-concept-empty">
           No questions match.{' '}
           <button className="sidebar-concept-clear" onClick={clearAllFilters}>

@@ -204,6 +204,7 @@ Accepts a `plan` prop (passed from AppShell) to drive progressive unlock behavio
 - **Progressive unlock bar** (`.sidebar-unlock-bar`): shown in difficulty group headers when there are locked questions. Displays a progress bar filling toward the next unlock threshold plus a "{N} more to unlock" label. Thresholds mirror `backend/unlock.py` (e.g. SQL/Python/Pandas medium: 8→3, 15→8, 25→all; PySpark medium: 12→3, 20→8, 30→all).
 - **Locked question tooltip** (`title` attribute on the locked row `div`): explains exactly how many more solves are needed — e.g. "Solve 7 more easy questions to unlock this". Pro users see "Upgrade to Elite to unlock all hard questions" on hard rows.
 - Concept filter (chip grid, most-frequent first, expand/collapse) and Company filter (SQL only)
+- Fuzzy question search input (Fuse.js) over title/concepts/difficulty with inline clear control
 - Supports deep-link concept drilling via `?concepts=slug1,slug2` query params on `/practice/:topic`; slugs are matched back to concept names and auto-applied as active filters.
 - Bookmarked questions rail reads per-topic IDs from `localStorage` and stays in sync with QuestionPage updates via `bookmarks-updated` window events.
 - Test coverage in `components/SidebarNav.test.js`
