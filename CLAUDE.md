@@ -142,8 +142,8 @@ sql-interview-practice/
 │   │   │   ├── SidebarNav.js       # Question list, lock/solved/next states (topic-aware)
 │   │   │   ├── CodeEditor.js       # Language-agnostic Monaco editor wrapper
 │   │   │   ├── SQLEditor.js        # Thin re-export of CodeEditor with language="sql"
-│   │   │   ├── ResultsTable.js
-│   │   │   ├── SchemaViewer.js
+│   │   │   ├── ResultsTable.js    # Tabular output with sticky headers + horizontal overflow cue
+│   │   │   ├── SchemaViewer.js    # Schema browser with search + click-to-copy columns
 │   │   │   ├── TestCasePanel.js    # Python algorithm test case results
 │   │   │   ├── PrintOutputPanel.js # Captured stdout from Python execution
 │   │   │   ├── VariablesPanel.js   # Available DataFrames for Pandas questions
@@ -153,7 +153,7 @@ sql-interview-practice/
 │   │   │   └── Topbar.js           # Shared top nav bar used by all standalone pages (Practice dropdown, Mock, Dashboard, auth)
 │   │   └── pages/
 │   │       ├── LandingPage.js          # Fixed-topbar landing with track/sample tabs and compact progress panels
-│   │       ├── QuestionPage.js         # Topic-aware question page (all 4 tracks)
+│   │       ├── QuestionPage.js         # Topic-aware question page (all 4 tracks, shortcut popover, verdict-header solution reveal)
 │   │       ├── TrackHubPage.js         # Per-track landing (progress, next-up summary, concept preview, paths)
 │   │       ├── LearningPath.js         # Curated path page at /learn/:topic/:slug (breadcrumb, progress, question list)
 │   │       ├── LearningPathsIndex.js   # Index of all paths at /learn and /learn/:topic (grouped, filterable)

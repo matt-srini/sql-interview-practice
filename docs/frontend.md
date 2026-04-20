@@ -101,7 +101,11 @@ Main practice screen. Layout and behavior vary by topic:
   - `Cmd/Ctrl + Enter` → Run Query / Run Code (safe, reversible; guarded by `running`, `submitting`, `isLocked`, `meta.hasRunCode`)
   - `Cmd/Ctrl + Shift + Enter` → Submit Answer (permanent; guarded by `running`, `submitting`, `isLocked`)
   - Not active for MCQ (PySpark) questions — no editor is rendered
+- **Shortcut affordance + help popover**: Run/Submit buttons show inline `<kbd>` badges (`⌘↵`, `⌘⇧↵`) and editor chrome includes a `?` shortcut-help toggle. Pressing `?` outside editable fields opens/closes the same popover.
 - **Editor height toggle** (`⊞`/`⊟` button in the editor topbar): switches Monaco between 340 px (default) and 560 px. Preference is persisted to `localStorage` under the key `editor-height-pref`.
+- **Submit guard hardening**: `handleSubmit` now exits immediately when `submitting` is already true to prevent accidental double-submit races.
+- **Past attempts revisit behavior**: submission history panel auto-expands when revisiting the same question as `localStorage.last_seen_question_id`.
+- **Solution reveal placement**: the "Review Official Solution" control now lives in the verdict header (instead of below feedback/hints) once reveal criteria are met.
 
 ### SampleQuestionPage (`/sample/:topic/:difficulty`)
 
@@ -136,8 +140,8 @@ Curated path page. Shows breadcrumb (Learn → track → path title), overall pr
 | SidebarNav | `components/SidebarNav.js` | Question list grouped by difficulty; topic-aware NavLinks |
 | CodeEditor | `components/CodeEditor.js` | Language-agnostic Monaco editor (`language`, `height`, `onMount` props; always dark theme) |
 | SQLEditor | `components/SQLEditor.js` | Thin re-export of CodeEditor with `language="sql"` (backward compat) |
-| ResultsTable | `components/ResultsTable.js` | Tabular results with sticky headers and null value rendering |
-| SchemaViewer | `components/SchemaViewer.js` | Dataset table schema — table names and column token grid |
+| ResultsTable | `components/ResultsTable.js` | Tabular results with sticky headers, horizontal overflow cue (`→ X more columns`), and null value rendering |
+| SchemaViewer | `components/SchemaViewer.js` | Dataset table schema with client-side search and click-to-copy column tokens |
 | TestCasePanel | `components/TestCasePanel.js` | Python test case results (pass/fail per case, input/expected/actual, hidden summary) |
 | PrintOutputPanel | `components/PrintOutputPanel.js` | Captured stdout block (rendered only if non-empty) |
 | VariablesPanel | `components/VariablesPanel.js` | Available DataFrame variables with CSV source and column list |
@@ -160,6 +164,7 @@ Curated path page. Shows breadcrumb (Learn → track → path title), overall pr
 - Mobile (<900px): sidebar becomes fixed overlay with backdrop; hamburger button in topbar
 - Upgrade panel shown for `free` and `pro` plan users; lives in the sidebar beneath the question list
 - Unlock nudge message shown in sidebar for free-plan users who have locked questions
+- Unlock nudge message is track-aware and mirrors `backend/unlock.py` thresholds (code tracks vs. PySpark)
 
 ### SidebarNav
 
@@ -319,7 +324,7 @@ Three tiers: `.btn-primary` (accent fill, Submit), `.btn-secondary` (outlined, R
 
 All hover: `translateY(-1px)`, `150ms ease-out`. No transforms on disabled.
 
-`.btn-secondary` is context-sensitive: `rgba(255,255,255,0.07)` bg inside dark editor wrapper; `rgba(0,0,0,0.03)` outside.
+`.btn-secondary` is context-sensitive: `rgba(255,255,255,0.14)` bg inside dark editor wrapper (contrast-raised), `rgba(0,0,0,0.03)` outside.
 
 ### Radii and shadows
 

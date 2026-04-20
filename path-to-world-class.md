@@ -9,7 +9,7 @@
 
 The landing-showcase redesign shipped ("The Interview IDE"). An experience audit of the full repo followed, run by three Explore agents plus spot-verification. This plan is the agreed multi-phase path to a world-class premium interview-practice platform (benchmarks: Linear, Vercel, Stripe, Raycast, LeetCode Premium, DataLemur).
 
-**Current state (as of 2026-04-20):** Phases 1 and 2 are complete. Next up: Phase 3.
+**Current state (as of 2026-04-20):** Phases 1, 2, and 3 are complete. Next up: Phase 4.
 
 **Explicitly out of scope (owner decision):**
 
@@ -312,17 +312,17 @@ Each phase commit must:
 - [x] 2.7 Replace `'#5B6AF0'` fallbacks with `var(--accent)`
 - [x] Phase 2 docs sync + commit
 
-### Phase 3 — Workspace power polish ← **next**
+### Phase 3 — Workspace power polish ✓
 
-- [ ] 3.1 Keyboard shortcut badges (`⌘↵` / `⌘⇧↵`) + `?` help popover
-- [ ] 3.2 Results table: sticky header + horizontal-scroll cue
-- [ ] 3.3 Schema viewer: search + click-to-copy columns
-- [ ] 3.4 Submit double-click protection
-- [ ] 3.5 Solution-reveal button inside verdict card header
-- [ ] 3.6 Sidebar unlock thresholds: dynamic per-track copy
-- [ ] 3.7 Past-attempts panel expanded on return visit
-- [ ] 3.8 Secondary-button contrast ≥ 4.5:1 in dark chrome
-- [ ] Phase 3 docs sync + commit
+- [x] 3.1 Keyboard shortcut badges (`⌘↵` / `⌘⇧↵`) + `?` help popover
+- [x] 3.2 Results table: sticky header + horizontal-scroll cue
+- [x] 3.3 Schema viewer: search + click-to-copy columns
+- [x] 3.4 Submit double-click protection
+- [x] 3.5 Solution-reveal button inside verdict card header
+- [x] 3.6 Sidebar unlock thresholds: dynamic per-track copy
+- [x] 3.7 Past-attempts panel expanded on return visit
+- [x] 3.8 Secondary-button contrast ≥ 4.5:1 in dark chrome
+- [x] Phase 3 docs sync + commit
 
 ### Phase 4 — Meta depth
 

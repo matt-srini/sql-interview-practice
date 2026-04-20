@@ -92,6 +92,7 @@ export default function QuestionPage() {
   const [pastAttempts, setPastAttempts] = useState([]);
   const [pastAttemptsOpen, setPastAttemptsOpen] = useState(false);
   const [openAttemptCodes, setOpenAttemptCodes] = useState(new Set());
+  const [shortcutHelpOpen, setShortcutHelpOpen] = useState(false);
   const [solutionAnalysisOpen, setSolutionAnalysisOpen] = useState(false);
   const [showAltSolution, setShowAltSolution] = useState(false);
   const [submissionInsight, setSubmissionInsight] = useState(null);
@@ -134,6 +135,12 @@ export default function QuestionPage() {
       .catch(() => {});
   }, [id, topic, questionApiPath, meta.language, meta.hasMCQ, defaultCode]);
 
+  useEffect(() => () => {
+    try {
+      localStorage.setItem('last_seen_question_id', String(id));
+    } catch {}
+  }, [id]);
+
   useEffect(() => {
     if (meta.language === 'python') {
       setCode(PYTHON_PLACEHOLDER);
@@ -148,12 +155,46 @@ export default function QuestionPage() {
     setHintsShown(0);
     setSelectedOption(null);
     setPastAttempts([]);
-    setPastAttemptsOpen(false);
+    setPastAttemptsOpen(() => {
+      try {
+        return localStorage.getItem('last_seen_question_id') === String(id);
+      } catch {
+        return false;
+      }
+    });
     setOpenAttemptCodes(new Set());
+    setShortcutHelpOpen(false);
     setSolutionAnalysisOpen(false);
     setShowAltSolution(false);
     setSubmissionInsight(null);
   }, [id, meta.language, meta.hasMCQ]);
+
+  useEffect(() => {
+    const isEditableTarget = (target) => {
+      if (!target || !(target instanceof Element)) return false;
+      if (target.isContentEditable) return true;
+      const tag = target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+      return !!target.closest('.monaco-editor');
+    };
+
+    const handleKeyDown = (event) => {
+      const isHelpKey = event.key === '?' || (event.key === '/' && event.shiftKey);
+      if (isHelpKey && !event.metaKey && !event.ctrlKey && !event.altKey) {
+        if (isEditableTarget(event.target)) return;
+        event.preventDefault();
+        setShortcutHelpOpen((open) => !open);
+        return;
+      }
+
+      if (event.key === 'Escape') {
+        setShortcutHelpOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Scroll the verdict into view after submission resolves so users don't
   // have to hunt for results that appeared below the fold.
@@ -203,6 +244,7 @@ export default function QuestionPage() {
   }
 
   async function handleSubmit() {
+    if (submitting) return;
     priorAttemptCountRef.current = pastAttempts.length;
     setSubmitting(true);
     setSubmitResult(null);
@@ -349,6 +391,8 @@ export default function QuestionPage() {
     : meta.hasMCQ
     ? 'Submit Answer'
     : 'Submit Answer';
+  const canRevealSolution = !!submitResult
+    && (submitResult.correct || hintsShown >= (question.hints?.length ?? 0));
 
   const isSubmitDisabled = submitting || running || isLocked
     || (meta.hasMCQ && selectedOption === null);
@@ -620,6 +664,15 @@ export default function QuestionPage() {
               <div className="editor-topbar">
                 <span className="editor-title">{editorTitle}</span>
                 <div className="editor-topbar-actions">
+                  <button
+                    className="editor-expand-btn"
+                    onClick={() => setShortcutHelpOpen((open) => !open)}
+                    title="Keyboard shortcuts (?)"
+                    aria-label="Keyboard shortcuts"
+                    aria-expanded={shortcutHelpOpen}
+                  >
+                    ?
+                  </button>
                   <span className="editor-topbar-note">{editorNote}</span>
                   <button
                     className="editor-expand-btn"
@@ -640,6 +693,23 @@ export default function QuestionPage() {
                 </div>
               </div>
 
+              {shortcutHelpOpen && (
+                <div className="workspace-shortcut-popover" role="dialog" aria-label="Keyboard shortcuts">
+                  <div className="workspace-shortcut-row">
+                    <span>Run query/code</span>
+                    <kbd className="shortcut-kbd">⌘↵</kbd>
+                  </div>
+                  <div className="workspace-shortcut-row">
+                    <span>Submit answer</span>
+                    <kbd className="shortcut-kbd">⌘⇧↵</kbd>
+                  </div>
+                  <div className="workspace-shortcut-row">
+                    <span>Toggle this help</span>
+                    <kbd className="shortcut-kbd">?</kbd>
+                  </div>
+                </div>
+              )}
+
               <CodeEditor
                 value={code}
                 onChange={setCode}
@@ -655,11 +725,13 @@ export default function QuestionPage() {
                 <div className="button-row question-action-row">
                   {meta.hasRunCode && (
                     <button className="btn btn-secondary" onClick={handleRun} disabled={running || submitting || isLocked}>
-                      {running ? 'Running…' : meta.language === 'python' ? 'Run Code' : 'Run Query'}
+                      <span>{running ? 'Running…' : meta.language === 'python' ? 'Run Code' : 'Run Query'}</span>
+                      <kbd className="shortcut-kbd">⌘↵</kbd>
                     </button>
                   )}
                   <button className="btn btn-primary" onClick={handleSubmit} disabled={isSubmitDisabled}>
-                    {submitBtnLabel}
+                    <span>{submitBtnLabel}</span>
+                    <kbd className="shortcut-kbd">⌘⇧↵</kbd>
                   </button>
                   {submitResult?.correct && (pathNavBar?.next && !['locked'].includes(pathNavBar.next.state) ? (
                     <button
@@ -750,7 +822,17 @@ export default function QuestionPage() {
           {submitResult && (
             <div className="submit-outcome" ref={verdictRef}>
               <div className={`verdict ${submitResult.correct ? 'verdict-correct' : 'verdict-incorrect'}`}>
-                <span className="verdict-label">{submitResult.correct ? 'Correct' : 'Keep iterating'}</span>
+                <div className="verdict-header-row">
+                  <span className="verdict-label">{submitResult.correct ? 'Correct' : 'Keep iterating'}</span>
+                  {canRevealSolution && (
+                    <button
+                      className="btn btn-secondary workspace-inline-action verdict-solution-toggle"
+                      onClick={() => setShowSolution((value) => !value)}
+                    >
+                      {showSolution ? 'Hide Official Solution' : 'Review Official Solution'}
+                    </button>
+                  )}
+                </div>
                 <p className="verdict-copy">
                   {submitResult.correct
                     ? 'Your submission matches the expected result.'
@@ -948,15 +1030,6 @@ export default function QuestionPage() {
                   onClick={() => setHintsShown((count) => count + 1)}
                 >
                   Reveal Hint {hintsShown + 1}
-                </button>
-              )}
-
-              {(submitResult.correct || hintsShown >= (question.hints?.length ?? 0)) && (
-                <button
-                  className="btn btn-secondary workspace-inline-action"
-                  onClick={() => setShowSolution((value) => !value)}
-                >
-                  {showSolution ? 'Hide Official Solution' : 'Review Official Solution'}
                 </button>
               )}
 
