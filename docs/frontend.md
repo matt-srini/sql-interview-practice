@@ -111,6 +111,7 @@ Main practice screen. Layout and behavior vary by topic:
 - **Question bookmarks**: header toggle stores bookmarks in `localStorage` (`bookmarks:{topic}`), capped at 20, and SidebarNav renders a Bookmarked section above difficulty groups.
 - **Concept panel**: concept pills in the prompt are clickable and open a right-side concept explanation panel with interview example copy.
 - **Similar-question recommendations**: after a correct submission, up to two unsolved questions sharing concepts are suggested in a secondary recommendation card.
+- **SQL error clarity**: SQL run/submit failures pass through a client-side parser that maps common DuckDB errors (missing table/column, syntax, ambiguous refs, GROUP BY mismatch, divide-by-zero) into concise corrective hints, preserving line numbers when present.
 - **Submit guard hardening**: `handleSubmit` now exits immediately when `submitting` is already true to prevent accidental double-submit races.
 - **Past attempts revisit behavior**: submission history panel auto-expands when revisiting the same question as `localStorage.last_seen_question_id`.
 - **Solution reveal placement**: the "Review Official Solution" control now lives in the verdict header (instead of below feedback/hints) once reveal criteria are met.
