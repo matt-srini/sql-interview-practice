@@ -414,14 +414,51 @@ Each phase commit must:
 
 ### Post-Phase-4 backlog progress (rolling)
 
-- [x] Workspace depth: auto-save drafts + restore + clear in challenge/sample editors
-- [x] Workspace depth: per-question soft timer + `duration_ms` submission persistence
-- [x] Workspace depth: question bookmarks rail in sidebar (localStorage, cap 20)
-- [x] Workspace depth: concept explanation panel from concept pills
-- [x] Workspace depth: similar-question recommendations after correct solves
-- [x] Workspace depth: SQL error clarity mapper (`sqlErrorParser`) + learner-friendly hints
-- [x] Discovery/onboarding: sidebar fuzzy question search (Fuse.js)
-- [~] Engagement/retention: `/api/auth/me` now returns `streak_days` + `streak_at_risk` and AppShell topbar renders streak pill (milestone toasts pending)
+- Status key: `[x]` complete, `[~]` partial/in progress, `[ ]` not started
+
+#### 7.2 Workspace depth
+
+- [x] Auto-save drafts (challenge + sample), restore, clear-draft controls
+- [ ] Wrong-answer diff (row/cell-level SQL diff + Python side-by-side failure diff)
+- [ ] Progressive hints (4-step scaffold + gated solution reveal)
+- [x] Concept explanation panel from concept pills
+- [x] Similar-question recommendations after correct solves
+- [ ] Monaco upgrades (schema-aware autocomplete, formatter shortcut, query history, font-size persistence)
+- [x] Result error clarity mapper (`sqlErrorParser`) with learner-friendly copy
+- [x] Question bookmarks (header toggle + Sidebar rail, localStorage cap 20)
+- [x] Per-question soft timer + `duration_ms` persistence in submissions
+- [ ] Resizable split pane
+- [ ] Session goals + focus mode (`?focus=1`)
+
+#### 7.3 Engagement and retention
+
+- [~] Daily streak system: `GET /api/auth/me` now includes `streak_days` + `streak_at_risk`, and AppShell renders streak pill; milestone toasts still pending
+- [ ] Motion/transitions pass (animated progress, celebrations, unlock toasts, route fades)
+- [ ] Reusable skeleton primitive rollout (QuestionPage, SidebarNav, TrackHubPage, ProgressDashboard)
+
+#### 7.4 Discovery and onboarding
+
+- [ ] Onboarding walkthrough with skip
+- [x] Sidebar fuzzy question search (Fuse.js)
+- [ ] Accessibility baseline pass (keyboard reachability, labels, non-color states, Monaco aria-label, Lighthouse >= 90)
+
+#### 7.5 Platform foundations
+
+- [ ] React Query adoption (catalog + question + dashboard first)
+- [ ] TypeScript migration bootstrap (`tsconfig.json`, API types)
+- [ ] Observability expansion (frontend Sentry + PostHog events)
+- [ ] SEO pass (`react-helmet-async`, robots, sitemap, prerender)
+- [ ] CI/CD expansion (deploy-on-merge, ESLint, bundle budget)
+- [ ] Security hardening follow-through (headers/HTTPS/CSRF review/lockout policy audit)
+- [ ] DB pool tuning configurability
+
+#### 7.6 Community and profiles
+
+- [ ] `/profile` page
+- [ ] `/leaderboard`
+- [ ] Achievement badges
+- [ ] Per-question discussion threads
+- [ ] Internal question management workflow decision (`/admin` vs GitHub/CI)
 
 ---
 
@@ -429,7 +466,7 @@ Each phase commit must:
 
 Resume by:
 
-1. Read §9 (Progress tracker) — find the first unchecked box.
+1. Read §9 (Progress tracker) — find the first unchecked box in the Post-Phase-4 sections (7.2 → 7.6).
 2. Read the corresponding phase section (§4 = Phase 3, §5 = Phase 4, §5.5 = Landing consistency pass) for the full spec.
 3. Check the relevant source files before writing any code — the spec was written pre-implementation and details may have shifted.
 4. Don't skip ahead.
