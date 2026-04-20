@@ -42,6 +42,7 @@ export default function QuestionPage() {
   const submitApiPath = apiPrefix ? `${apiPrefix}/submit` : '/submit';
 
   const defaultCode = meta.language === 'python' ? PYTHON_PLACEHOLDER : SQL_PLACEHOLDER;
+  const draftKey = useMemo(() => `draft:${topic}:${id}`, [topic, id]);
 
   const nextQuestionId = useMemo(() => {
     if (!catalog) return null;
@@ -99,6 +100,7 @@ export default function QuestionPage() {
   const [editorTall, setEditorTall] = useState(() => {
     try { return localStorage.getItem('editor-height-pref') === 'tall'; } catch { return false; }
   });
+  const [draftSaveState, setDraftSaveState] = useState('idle');
   const priorAttemptCountRef = useRef(0);
   const verdictRef = useRef(null);
 
@@ -109,6 +111,8 @@ export default function QuestionPage() {
   const runningRef = useRef(false);
   const submittingRef = useRef(false);
   const isLockedRef = useRef(false);
+  const draftHydratedRef = useRef(false);
+  const draftSaveTimerRef = useRef(null);
 
   // MCQ state for PySpark
   const [selectedOption, setSelectedOption] = useState(null);
@@ -117,23 +121,32 @@ export default function QuestionPage() {
   useEffect(() => {
     setQuestion(null);
     setLoadError(null);
+    draftHydratedRef.current = false;
+    setDraftSaveState('idle');
     api
       .get(questionApiPath)
       .then((res) => {
         const q = res.data;
         setQuestion(q);
-        // For Python tracks use starter_code from question if available
-        if (meta.language === 'python' && q.starter_code) {
-          setCode(q.starter_code);
-        } else if (!meta.hasMCQ) {
-          setCode(defaultCode);
+        if (!meta.hasMCQ) {
+          const baseCode = meta.language === 'python' && q.starter_code ? q.starter_code : defaultCode;
+          let nextCode = baseCode;
+          try {
+            const savedDraft = localStorage.getItem(draftKey);
+            if (savedDraft && savedDraft.trim()) {
+              nextCode = savedDraft;
+              setDraftSaveState('saved');
+            }
+          } catch {}
+          setCode(nextCode);
         }
+        draftHydratedRef.current = true;
       })
       .catch((err) => setLoadError(err.response?.data?.detail ?? 'Failed to load question.'));
     api.get('/submissions', { params: { track: topic, question_id: id, limit: 20 } })
       .then((res) => setPastAttempts(res.data))
       .catch(() => {});
-  }, [id, topic, questionApiPath, meta.language, meta.hasMCQ, defaultCode]);
+  }, [id, topic, questionApiPath, meta.language, meta.hasMCQ, defaultCode, draftKey]);
 
   useEffect(() => () => {
     try {
@@ -167,7 +180,31 @@ export default function QuestionPage() {
     setSolutionAnalysisOpen(false);
     setShowAltSolution(false);
     setSubmissionInsight(null);
+    draftHydratedRef.current = false;
+    setDraftSaveState('idle');
   }, [id, meta.language, meta.hasMCQ]);
+
+  useEffect(() => {
+    if (meta.hasMCQ || !question || !draftHydratedRef.current) return undefined;
+    if (draftSaveTimerRef.current) clearTimeout(draftSaveTimerRef.current);
+    setDraftSaveState('saving');
+    draftSaveTimerRef.current = setTimeout(() => {
+      try {
+        localStorage.setItem(draftKey, code);
+        setDraftSaveState('saved');
+      } catch {
+        setDraftSaveState('idle');
+      }
+    }, 350);
+
+    return () => {
+      if (draftSaveTimerRef.current) clearTimeout(draftSaveTimerRef.current);
+    };
+  }, [code, question, meta.hasMCQ, draftKey]);
+
+  useEffect(() => () => {
+    if (draftSaveTimerRef.current) clearTimeout(draftSaveTimerRef.current);
+  }, []);
 
   useEffect(() => {
     const isEditableTarget = (target) => {
@@ -314,6 +351,16 @@ export default function QuestionPage() {
       try { localStorage.setItem('editor-height-pref', next ? 'tall' : 'normal'); } catch {}
       return next;
     });
+  }
+
+  function clearDraft() {
+    if (meta.hasMCQ) return;
+    const resetCode = meta.language === 'python' && question?.starter_code ? question.starter_code : defaultCode;
+    try {
+      localStorage.removeItem(draftKey);
+    } catch {}
+    setCode(resetCode);
+    setDraftSaveState('idle');
   }
 
   // Delta hint: row/column diff diagnostic for wrong SQL submissions
@@ -664,6 +711,9 @@ export default function QuestionPage() {
               <div className="editor-topbar">
                 <span className="editor-title">{editorTitle}</span>
                 <div className="editor-topbar-actions">
+                  <span className="editor-topbar-note">
+                    {draftSaveState === 'saving' ? 'Saving draft…' : draftSaveState === 'saved' ? 'Draft saved' : editorNote}
+                  </span>
                   <button
                     className="editor-expand-btn"
                     onClick={() => setShortcutHelpOpen((open) => !open)}
@@ -673,7 +723,14 @@ export default function QuestionPage() {
                   >
                     ?
                   </button>
-                  <span className="editor-topbar-note">{editorNote}</span>
+                  <button
+                    className="editor-expand-btn"
+                    onClick={clearDraft}
+                    title="Clear saved draft"
+                    aria-label="Clear saved draft"
+                  >
+                    ✕
+                  </button>
                   <button
                     className="editor-expand-btn"
                     onClick={() => setCode(meta.language === 'python' && question?.starter_code ? question.starter_code : defaultCode)}

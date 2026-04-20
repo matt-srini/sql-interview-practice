@@ -45,12 +45,19 @@ export default function SampleQuestionPage() {
   const [editorTall, setEditorTall] = useState(() => {
     try { return localStorage.getItem('editor-height-pref') === 'tall'; } catch { return false; }
   });
+  const [draftSaveState, setDraftSaveState] = useState('idle');
+  const draftKey = useMemo(
+    () => (question ? `sample-draft:${topic}:${difficulty}:${question.id}` : null),
+    [topic, difficulty, question]
+  );
 
   // Refs for Monaco keyboard shortcuts
   const handleRunRef = useRef(null);
   const handleSubmitRef = useRef(null);
   const runningRef = useRef(false);
   const submittingRef = useRef(false);
+  const draftHydratedRef = useRef(false);
+  const draftSaveTimerRef = useRef(null);
 
   useEffect(() => {
     setQuestion(null);
@@ -65,6 +72,8 @@ export default function SampleQuestionPage() {
     setSubmitResult(null);
     setSubmitError(null);
     setShowSolution(false);
+    draftHydratedRef.current = false;
+    setDraftSaveState('idle');
 
     api
       .get(`${sampleBasePath}/${difficulty}`)
@@ -72,9 +81,20 @@ export default function SampleQuestionPage() {
         const nextQuestion = res.data;
         setQuestion(nextQuestion);
         setSampleMeta(nextQuestion.sample ?? null);
-        if (meta.language === 'python' && nextQuestion.starter_code) {
-          setCode(nextQuestion.starter_code);
+        if (!meta.hasMCQ) {
+          const baseCode = meta.language === 'python' && nextQuestion.starter_code ? nextQuestion.starter_code : defaultCode;
+          const localDraftKey = `sample-draft:${topic}:${difficulty}:${nextQuestion.id}`;
+          let nextCode = baseCode;
+          try {
+            const savedDraft = localStorage.getItem(localDraftKey);
+            if (savedDraft && savedDraft.trim()) {
+              nextCode = savedDraft;
+              setDraftSaveState('saved');
+            }
+          } catch {}
+          setCode(nextCode);
         }
+        draftHydratedRef.current = true;
       })
       .catch((err) => {
         if (err.response?.status === 409) {
@@ -83,7 +103,29 @@ export default function SampleQuestionPage() {
         }
         setLoadError(err.response?.data?.detail ?? 'Failed to load sample question.');
       });
-  }, [defaultCode, difficulty, meta.language, sampleBasePath, reloadToken]);
+  }, [defaultCode, difficulty, meta.language, meta.hasMCQ, sampleBasePath, reloadToken, topic]);
+
+  useEffect(() => {
+    if (meta.hasMCQ || !question || !draftKey || !draftHydratedRef.current) return undefined;
+    if (draftSaveTimerRef.current) clearTimeout(draftSaveTimerRef.current);
+    setDraftSaveState('saving');
+    draftSaveTimerRef.current = setTimeout(() => {
+      try {
+        localStorage.setItem(draftKey, code);
+        setDraftSaveState('saved');
+      } catch {
+        setDraftSaveState('idle');
+      }
+    }, 350);
+
+    return () => {
+      if (draftSaveTimerRef.current) clearTimeout(draftSaveTimerRef.current);
+    };
+  }, [code, draftKey, meta.hasMCQ, question]);
+
+  useEffect(() => () => {
+    if (draftSaveTimerRef.current) clearTimeout(draftSaveTimerRef.current);
+  }, []);
 
   const topicLabel = meta.label;
   const shownSamples = sampleMeta?.shown_count ?? 0;
@@ -197,6 +239,16 @@ export default function SampleQuestionPage() {
       try { localStorage.setItem('editor-height-pref', next ? 'tall' : 'normal'); } catch {}
       return next;
     });
+  }
+
+  function clearDraft() {
+    if (meta.hasMCQ || !question || !draftKey) return;
+    const resetCode = meta.language === 'python' && question?.starter_code ? question.starter_code : defaultCode;
+    try {
+      localStorage.removeItem(draftKey);
+    } catch {}
+    setCode(resetCode);
+    setDraftSaveState('idle');
   }
 
   function renderExhaustedState() {
@@ -437,7 +489,17 @@ export default function SampleQuestionPage() {
                 <div className="editor-topbar">
                   <span className="editor-title">{editorTitle}</span>
                   <div className="editor-topbar-actions">
-                    <span className="editor-topbar-note">{editorNote}</span>
+                    <span className="editor-topbar-note">
+                      {draftSaveState === 'saving' ? 'Saving draft…' : draftSaveState === 'saved' ? 'Draft saved' : editorNote}
+                    </span>
+                    <button
+                      className="editor-expand-btn"
+                      onClick={clearDraft}
+                      title="Clear saved draft"
+                      aria-label="Clear saved draft"
+                    >
+                      ✕
+                    </button>
                     <button
                       className="editor-expand-btn"
                       onClick={() => setCode(meta.language === 'python' && question?.starter_code ? question.starter_code : defaultCode)}

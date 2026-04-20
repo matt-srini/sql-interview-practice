@@ -106,6 +106,7 @@ Main practice screen. Layout and behavior vary by topic:
   - Not active for MCQ (PySpark) questions — no editor is rendered
 - **Shortcut affordance + help popover**: Run/Submit buttons show inline `<kbd>` badges (`⌘↵`, `⌘⇧↵`) and editor chrome includes a `?` shortcut-help toggle. Pressing `?` outside editable fields opens/closes the same popover.
 - **Editor height toggle** (`⊞`/`⊟` button in the editor topbar): switches Monaco between 340 px (default) and 560 px. Preference is persisted to `localStorage` under the key `editor-height-pref`.
+- **Draft autosave**: editor content is debounced to `localStorage` under `draft:{topic}:{questionId}` and restored silently on load; editor chrome shows "Saving draft…" / "Draft saved" state and includes a clear-draft control.
 - **Submit guard hardening**: `handleSubmit` now exits immediately when `submitting` is already true to prevent accidental double-submit races.
 - **Past attempts revisit behavior**: submission history panel auto-expands when revisiting the same question as `localStorage.last_seen_question_id`.
 - **Solution reveal placement**: the "Review Official Solution" control now lives in the verdict header (instead of below feedback/hints) once reveal criteria are met.
@@ -121,6 +122,8 @@ Standalone sample practice. No sidebar. No effect on challenge progression.
 - Right: "Start the challenge" CTA → `/practice/:topic`
 
 Has the same **keyboard shortcuts** and **editor height toggle** as `QuestionPage` (same implementation pattern — refs for stale-closure safety, `localStorage` persistence). No `isLocked` guard since sample questions are always accessible.
+
+Sample editor drafts are auto-saved per sample question key (`sample-draft:{topic}:{difficulty}:{questionId}`), restored on load, and can be cleared from the editor topbar.
 
 Loading state now renders a skeleton card instead of plain text while fetching a sample question.
 

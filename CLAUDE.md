@@ -154,14 +154,14 @@ sql-interview-practice/
 │   │   │   └── Topbar.js           # Shared top nav bar used by all standalone pages (Practice dropdown, Mock, Dashboard, auth)
 │   │   └── pages/
 │   │       ├── LandingPage.js          # Fixed-topbar landing with track/sample tabs and compact progress panels
-│   │       ├── QuestionPage.js         # Topic-aware question page (all 4 tracks, shortcut popover, verdict-header solution reveal)
+│   │       ├── QuestionPage.js         # Topic-aware question page (all 4 tracks, shortcut popover, verdict-header solution reveal, draft autosave)
 │   │       ├── TrackHubPage.js         # Per-track landing (progress, next-up summary, concept preview, paths)
 │   │       ├── LearningPath.js         # Curated path page at /learn/:topic/:slug (breadcrumb, progress, completion banner)
 │   │       ├── LearningPathsIndex.js   # Index of all paths at /learn and /learn/:topic (grouped + in-progress rail)
 │   │       ├── ProgressDashboard.js    # Cross-track progress + coaching insights at /dashboard
 │   │       ├── MockHub.js              # Mock interview lobby at /mock (mode/track/difficulty selection + empty state)
 │   │       ├── MockSession.js          # Active mock session + post-mortem insights at /mock/:id
-│   │       ├── SampleQuestionPage.js
+│   │       ├── SampleQuestionPage.js   # Topic-aware sample page with per-question draft autosave
 │   │       ├── AuthPage.js
 │   │       ├── ResetPasswordPage.js    # Password reset token consumer at /auth/reset-password
 │   │       └── VerifyEmailPage.js      # Email verification token consumer at /auth/verify-email
