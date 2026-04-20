@@ -35,6 +35,7 @@ export default function LearningPath() {
   const pct = path && path.question_count > 0 ? (path.solved_count / path.question_count) * 100 : 0;
   const nextIndex = path ? path.questions.findIndex(q => q.state === 'unlocked') : -1;
   const topicLabel = meta.label;
+  const isCompleted = Boolean(path && path.question_count > 0 && path.solved_count === path.question_count);
 
   const firstLockedIdx = path ? path.questions.findIndex(q => q.state === 'locked') : -1;
   const firstLockedDiff = firstLockedIdx >= 0 ? path.questions[firstLockedIdx].difficulty : null;
@@ -140,6 +141,17 @@ export default function LearningPath() {
                   <span className="learn-progress-label">
                     {path.solved_count} / {path.question_count} complete
                   </span>
+                </div>
+              )}
+
+              {accessible && isCompleted && (
+                <div className="learn-path-complete-banner" role="status" aria-live="polite">
+                  <div>
+                    <strong>Path complete.</strong> You finished every question in this path.
+                  </div>
+                  <Link to={`/learn/${path.topic}`} className="btn btn-secondary btn-compact">
+                    What's next →
+                  </Link>
                 </div>
               )}
             </div>

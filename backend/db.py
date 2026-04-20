@@ -1217,6 +1217,33 @@ async def get_submissions(
         ]
 
 
+async def get_submission_events(user_id: str) -> list[dict[str, Any]]:
+    """Return all submission events for a user ordered oldest-first."""
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                SELECT track, question_id, is_correct, submitted_at
+                FROM submissions
+                WHERE user_id = CAST(:user_id AS UUID)
+                ORDER BY submitted_at ASC, id ASC
+                """
+            ),
+            {"user_id": user_id},
+        )
+        rows = result.mappings().all()
+        return [
+            {
+                "track": row["track"],
+                "question_id": row["question_id"],
+                "is_correct": bool(row["is_correct"]),
+                "submitted_at": row["submitted_at"],
+            }
+            for row in rows
+        ]
+
+
 # ── OAuth accounts ────────────────────────────────────────────────────────────
 
 async def get_or_create_oauth_user(

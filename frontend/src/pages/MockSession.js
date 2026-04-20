@@ -18,6 +18,14 @@ function timerClass(s) {
   return 'mock-timer';
 }
 
+function conceptSlug(concept) {
+  return String(concept || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 const TRACK_LABELS = {
   sql: 'SQL', python: 'Python', 'python-data': 'Pandas', pyspark: 'PySpark', mixed: 'Mixed',
 };
@@ -52,6 +60,7 @@ export default function MockSession() {
   const [mobileQuestionOpen, setMobileQuestionOpen] = useState(false);
   const [expandedSolutions, setExpandedSolutions] = useState({}); // {qId: bool}
   const [loadError, setLoadError] = useState(null);
+  const [insights, setInsights] = useState(null);
 
   const finishCalled = useRef(false);
 
@@ -114,6 +123,10 @@ export default function MockSession() {
         .then(r => initFromData(r.data))
         .catch(() => setLoadError('Failed to load session.'));
     }
+
+    api.get('/dashboard/insights')
+      .then(r => setInsights(r.data))
+      .catch(() => setInsights(null));
   }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Countdown timer
@@ -240,8 +253,56 @@ export default function MockSession() {
     const qs = sum?.questions || questions;
     const solvedCount = sum?.solved_count ?? Object.values(solved).filter(Boolean).length;
     const totalCount = sum?.total_count ?? questions.length;
+    const sessionAccuracy = totalCount > 0 ? (solvedCount / totalCount) : 0;
     const timeUsedS = sum?.time_used_s;
     const timeLimitS = sum?.time_limit_s ?? session?.time_limit_s;
+    const comparisonTrack = (sum?.track || session?.track) === 'mixed'
+      ? (qs[0]?.track || 'sql')
+      : (sum?.track || session?.track || 'sql');
+    const baselineAccuracy = insights?.per_track?.[comparisonTrack]?.accuracy_pct;
+
+    const conceptStats = {};
+    qs.forEach((question) => {
+      const questionTrack = question.track || comparisonTrack;
+      const keySolved = question.is_solved ?? solved[question.id];
+      (question.concepts || []).forEach((concept) => {
+        const key = `${questionTrack}::${concept}`;
+        if (!conceptStats[key]) {
+          conceptStats[key] = {
+            concept,
+            track: questionTrack,
+            attempts: 0,
+            correct: 0,
+          };
+        }
+        conceptStats[key].attempts += 1;
+        if (keySolved) conceptStats[key].correct += 1;
+      });
+    });
+
+    const conceptRows = Object.values(conceptStats)
+      .map((row) => ({
+        ...row,
+        accuracy: row.attempts > 0 ? row.correct / row.attempts : 0,
+      }))
+      .sort((a, b) => (a.accuracy - b.accuracy) || (b.attempts - a.attempts) || a.concept.localeCompare(b.concept));
+
+    const drillTrack = (sum?.track || session?.track) === 'mixed'
+      ? (conceptRows[0]?.track || 'sql')
+      : (sum?.track || session?.track || 'sql');
+    const drillConcepts = conceptRows
+      .filter((row) => row.track === drillTrack && row.attempts > 0 && row.accuracy < 1)
+      .slice(0, 2)
+      .map((row) => conceptSlug(row.concept))
+      .filter(Boolean);
+
+    let comparisonCopy = null;
+    if (typeof baselineAccuracy === 'number') {
+      const delta = Math.round((sessionAccuracy - baselineAccuracy) * 100);
+      if (delta > 0) comparisonCopy = `${delta}% above your session average`;
+      else if (delta < 0) comparisonCopy = `${Math.abs(delta)}% below your session average`;
+      else comparisonCopy = 'on par with your session average';
+    }
 
     function shareText() {
       const diff = session?.difficulty || sum?.difficulty || '';
@@ -262,7 +323,11 @@ export default function MockSession() {
             <div className="mock-summary-score" style={{
               color: solvedCount === 0 ? 'var(--danger)' : solvedCount > totalCount / 2 ? 'var(--success)' : 'var(--text-strong)',
             }}>
-              {status === 'finishing' ? 'Finishing…' : `${solvedCount} / ${totalCount} questions solved`}
+              {status === 'finishing'
+                ? 'Finishing…'
+                : comparisonCopy
+                  ? `${solvedCount}/${totalCount} correct, ${comparisonCopy}`
+                  : `${solvedCount}/${totalCount} questions solved`}
             </div>
             {timeUsedS != null && (
               <div className="mock-summary-time">
@@ -304,6 +369,28 @@ export default function MockSession() {
                 </div>
               );
             })}
+            <hr className="mock-summary-divider" />
+            {conceptRows.length > 0 && (
+              <div className="mock-concept-summary">
+                <div className="mock-concept-summary-title">Concept accuracy this session</div>
+                <div className="mock-concept-summary-rows">
+                  {conceptRows.map((row) => (
+                    <div key={`${row.track}-${row.concept}`} className="mock-concept-summary-row">
+                      <span className="mock-concept-name">{row.concept}</span>
+                      <span className="mock-concept-score">{row.correct} / {row.attempts}</span>
+                    </div>
+                  ))}
+                </div>
+                {drillConcepts.length > 0 && (
+                  <Link
+                    to={`/practice/${drillTrack}?concepts=${drillConcepts.join(',')}`}
+                    className="btn btn-secondary btn-compact"
+                  >
+                    Drill weak concepts →
+                  </Link>
+                )}
+              </div>
+            )}
             <hr className="mock-summary-divider" />
             <div className="mock-summary-actions">
               <button

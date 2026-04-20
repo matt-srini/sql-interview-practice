@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
 import TrackProgressBar from '../components/TrackProgressBar';
 import Topbar from '../components/Topbar';
+import InsightStrip from '../components/InsightStrip';
 
 const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
 
@@ -34,6 +35,7 @@ function formatMockTime(s) {
 export default function ProgressDashboard() {
   const { user } = useAuth();
   const [data, setData] = useState(null);
+  const [insights, setInsights] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mockHistory, setMockHistory] = useState([]);
@@ -47,10 +49,21 @@ export default function ProgressDashboard() {
       .catch(() => setError('Failed to load dashboard data.'))
       .finally(() => setLoading(false));
 
+    api
+      .get('/dashboard/insights')
+      .then((res) => setInsights(res.data))
+      .catch(() => setInsights(null));
+
     api.get('/mock/history')
       .then(r => setMockHistory(r.data.slice(0, 5)))
       .catch(() => {});
   }, []);
+
+  const totalSolved = TOPICS.reduce((sum, topic) => {
+    const trackData = data?.tracks?.[topic];
+    return sum + (trackData?.solved ?? 0);
+  }, 0);
+  const showDashboardEmpty = !loading && !error && totalSolved === 0;
 
   return (
     <>
@@ -67,6 +80,21 @@ export default function ProgressDashboard() {
 
         {!loading && !error && (
           <>
+            {showDashboardEmpty ? (
+              <section className="dashboard-section dashboard-empty-state">
+                <h3 className="dashboard-section-title">No progress yet</h3>
+                <p className="dashboard-empty-copy">
+                  Start solving any track to unlock your streak, concept weaknesses, and cross-track coaching.
+                </p>
+                <div className="dashboard-empty-actions">
+                  <Link to="/practice/sql" className="btn btn-primary">Start SQL practice</Link>
+                  <Link to="/learn" className="btn btn-secondary">Browse learning paths</Link>
+                </div>
+              </section>
+            ) : (
+              <InsightStrip insights={insights} />
+            )}
+
             <div className="dashboard-split">
               <div className="dashboard-split-main">
                 <section className="dashboard-section">
@@ -87,6 +115,24 @@ export default function ProgressDashboard() {
                           </div>
                           <div className="dashboard-track-card-body">
                             <TrackProgressBar solved={solved} total={total} color={meta.color} />
+                            <div className="dashboard-track-metrics">
+                              <div className="dashboard-track-metric-row">
+                                <span>Median solve time</span>
+                                <strong>
+                                  {typeof insights?.per_track?.[topic]?.median_solve_seconds === 'number'
+                                    ? `${Math.round(insights.per_track[topic].median_solve_seconds / 60)} min`
+                                    : '—'}
+                                </strong>
+                              </div>
+                              <div className="dashboard-track-metric-row">
+                                <span>Accuracy</span>
+                                <strong>
+                                  {typeof insights?.per_track?.[topic]?.accuracy_pct === 'number'
+                                    ? `${Math.round(insights.per_track[topic].accuracy_pct * 100)}%`
+                                    : '—'}
+                                </strong>
+                              </div>
+                            </div>
                             {Object.entries(byDiff).length > 0 && (
                               <div className="dashboard-diff-breakdown">
                                 {Object.entries(byDiff).map(([diff, counts]) => (

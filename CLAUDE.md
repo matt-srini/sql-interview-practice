@@ -105,7 +105,7 @@ sql-interview-practice/
 │   ├── content/paths/              # Learning path configs (slug, title, description, topic, questions[])
 │   ├── datasets/                   # Committed CSVs + metadata JSON
 │   ├── middleware/                 # Request context, request_id, X-Request-ID
-│   ├── routers/                    # auth, system, catalog, questions, sample, plan, razorpay, mock, paths, spa
+│   ├── routers/                    # auth, system, catalog, questions, sample, plan, razorpay, dashboard, insights, submissions, mock, paths, spa
 │   ├── scripts/                    # Dataset generator, anonymous user cleanup
 │   ├── tests/                      # API, evaluator, rate limiter tests
 │   ├── alembic/                    # Postgres migrations
@@ -155,11 +155,11 @@ sql-interview-practice/
 │   │       ├── LandingPage.js          # Fixed-topbar landing with track/sample tabs and compact progress panels
 │   │       ├── QuestionPage.js         # Topic-aware question page (all 4 tracks, shortcut popover, verdict-header solution reveal)
 │   │       ├── TrackHubPage.js         # Per-track landing (progress, next-up summary, concept preview, paths)
-│   │       ├── LearningPath.js         # Curated path page at /learn/:topic/:slug (breadcrumb, progress, question list)
-│   │       ├── LearningPathsIndex.js   # Index of all paths at /learn and /learn/:topic (grouped, filterable)
-│   │       ├── ProgressDashboard.js    # Cross-track progress overview at /dashboard
-│   │       ├── MockHub.js              # Mock interview lobby at /mock (mode/track/difficulty selection)
-│   │       ├── MockSession.js          # Active mock session + summary at /mock/:id
+│   │       ├── LearningPath.js         # Curated path page at /learn/:topic/:slug (breadcrumb, progress, completion banner)
+│   │       ├── LearningPathsIndex.js   # Index of all paths at /learn and /learn/:topic (grouped + in-progress rail)
+│   │       ├── ProgressDashboard.js    # Cross-track progress + coaching insights at /dashboard
+│   │       ├── MockHub.js              # Mock interview lobby at /mock (mode/track/difficulty selection + empty state)
+│   │       ├── MockSession.js          # Active mock session + post-mortem insights at /mock/:id
 │   │       ├── SampleQuestionPage.js
 │   │       ├── AuthPage.js
 │   │       ├── ResetPasswordPage.js    # Password reset token consumer at /auth/reset-password
@@ -275,6 +275,8 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 
 **Mock daily limits:** Free = 1 medium/day · Pro = 3 hard/day · Elite = unlimited.
 
+**Dashboard insights:** `GET /api/dashboard/insights` computes per-track solve count, median solve time, and accuracy from `submissions`; weakest concepts (bottom 3 with >=3 attempts); deterministic cross-track pacing insight (only when slow-fast gap >= 60s); and consecutive `streak_days` ending today. Results are cached in-process for 60 seconds per user.
+
 **Identity:** Anonymous visitors get real user rows + session cookies. Registration upgrades the session in place. Login merges anonymous progress into an existing account.
 
 **Error shape:** `{ error, request_id }` on all user-facing errors. `X-Request-ID` header on all responses.
@@ -300,6 +302,7 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 | GET | `/api/pyspark/catalog` | PySpark catalog |
 | POST | `/api/pyspark/submit` | Submit MCQ answer |
 | GET | `/api/dashboard` | Cross-track progress summary |
+| GET | `/api/dashboard/insights` | Coaching insights (speed, accuracy, weak concepts, streak) |
 | GET | `/api/submissions` | Submission history for a question (`track`, `question_id`, `limit` params) |
 | GET | `/api/paths` | All learning paths with per-user `solved_count` |
 | GET | `/api/paths/{slug}` | Path detail with per-question `state` (solved/unlocked/locked) |

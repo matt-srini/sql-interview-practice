@@ -9,7 +9,7 @@
 
 The landing-showcase redesign shipped ("The Interview IDE"). An experience audit of the full repo followed, run by three Explore agents plus spot-verification. This plan is the agreed multi-phase path to a world-class premium interview-practice platform (benchmarks: Linear, Vercel, Stripe, Raycast, LeetCode Premium, DataLemur).
 
-**Current state (as of 2026-04-20):** Phases 1, 2, and 3 are complete. Next up: Phase 4.
+**Current state (as of 2026-04-20):** Phases 1, 2, 3, and 4 are complete. Next up: Polish batch.
 
 **Explicitly out of scope (owner decision):**
 
@@ -326,17 +326,17 @@ Each phase commit must:
 
 ### Phase 4 — Meta depth
 
-- [ ] 4.0 `GET /api/dashboard/insights` endpoint + tests
-- [ ] 4.1 Fetch + render insights in `ProgressDashboard`
-- [ ] 4.2 `InsightStrip` component (3 tiles)
-- [ ] 4.3 Per-track cards: median solve time + accuracy
-- [ ] 4.4 Mock summary: session comparison header
-- [ ] 4.5 Mock summary: per-concept accuracy row
-- [ ] 4.6 Mock summary: "Drill weak concepts" CTA + sidebar `?concepts=` param
-- [ ] 4.7 Path completion celebration banner
-- [ ] 4.8 Path index: "In progress" rail
-- [ ] 4.9 Empty states on dashboard, mock, learn
-- [ ] Phase 4 docs sync + commit
+- [x] 4.0 `GET /api/dashboard/insights` endpoint + tests
+- [x] 4.1 Fetch + render insights in `ProgressDashboard`
+- [x] 4.2 `InsightStrip` component (3 tiles)
+- [x] 4.3 Per-track cards: median solve time + accuracy
+- [x] 4.4 Mock summary: session comparison header
+- [x] 4.5 Mock summary: per-concept accuracy row
+- [x] 4.6 Mock summary: "Drill weak concepts" CTA + sidebar `?concepts=` param
+- [x] 4.7 Path completion celebration banner
+- [x] 4.8 Path index: "In progress" rail
+- [x] 4.9 Empty states on dashboard, mock, learn
+- [x] Phase 4 docs sync + commit
 
 ### Polish batch (after Phase 4)
 

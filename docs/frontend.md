@@ -120,15 +120,25 @@ Has the same **keyboard shortcuts** and **editor height toggle** as `QuestionPag
 
 ### ProgressDashboard (`/dashboard`)
 
-Cross-track progress overview. 4-card grid with TrackProgressBar per track, concept tags, and recent activity. Fetches `GET /api/dashboard` on mount. The `by_difficulty` field in the response is `{ easy: { solved, total }, medium: { solved, total }, hard: { solved, total } }` — the dashboard renders these as "X/Y" counts per difficulty level.
+Cross-track progress overview. Fetches `GET /api/dashboard`, `GET /api/dashboard/insights`, and `GET /api/mock/history` on mount.
+
+- Returning users see an `InsightStrip` with 3 tiles: cross-track coaching sentence, streak days, weakest concept.
+- Track cards now include `median_solve_seconds` and `accuracy_pct` rows from `/api/dashboard/insights`.
+- New users (no solves yet) see a dedicated empty state with CTAs into practice and learning paths.
+- `by_difficulty` still renders as "X/Y" counts per difficulty level (`{ solved, total }` objects, not plain integers).
 
 ### LearningPathsIndex (`/learn`, `/learn/:topic`)
 
 Index of all learning paths. Grouped by track. Topic-filter pills narrow to a single track when `:topic` is present in the URL. Each path shown as a card with title, description, solved count, and a link to the path.
 
+- Adds an "In progress" rail above the grouped grids (`1 <= solved_count < question_count`), sorted by completion percentage descending.
+- Empty state upgraded from plain text to CTA card (`/practice/sql`, `/dashboard`).
+
 ### LearningPath (`/learn/:topic/:slug`)
 
 Curated path page. Shows breadcrumb (Learn → track → path title), overall progress bar, and a question list with per-question state (solved/unlocked/locked). Each question links to `/practice/:topic/questions/:id?path=:slug` so `QuestionPage` shows the path nav bar.
+
+When `solved_count === question_count`, a completion banner is shown with a "What's next" CTA back to the track's path index.
 
 ---
 
@@ -146,6 +156,7 @@ Curated path page. Shows breadcrumb (Learn → track → path title), overall pr
 | PrintOutputPanel | `components/PrintOutputPanel.js` | Captured stdout block (rendered only if non-empty) |
 | VariablesPanel | `components/VariablesPanel.js` | Available DataFrame variables with CSV source and column list |
 | MCQPanel | `components/MCQPanel.js` | Radio-button MCQ with correct/wrong highlighting and explanation after submit |
+| InsightStrip | `components/InsightStrip.js` | Dashboard coaching strip: cross-track insight, streak tile, weakest concept tile |
 | TrackProgressBar | `components/TrackProgressBar.js` | Reusable horizontal progress bar with configurable color and label |
 | PathProgressCard | `components/PathProgressCard.js` | Path card with track color dot, progress bar, and CTA; used on LandingPage and TrackHubPage |
 | Topbar | `components/Topbar.js` | Single unified top nav used by every page (landing, auth, 404, practice workspace, mock, dashboard, learning paths). Composition slots for `leftSlot`, `centerSlot`, `userExtras`, `belowTopbar`; three variants: `'landing'` (default, container-bounded), `'app'` (full-bleed workspace chrome), `'minimal'` (auth / verify / reset / 404 — brand + theme + user pill only). `showPricingLink` for logged-out visitors. |
@@ -176,6 +187,7 @@ Accepts a `plan` prop (passed from AppShell) to drive progressive unlock behavio
 - **Progressive unlock bar** (`.sidebar-unlock-bar`): shown in difficulty group headers when there are locked questions. Displays a progress bar filling toward the next unlock threshold plus a "{N} more to unlock" label. Thresholds mirror `backend/unlock.py` (e.g. SQL/Python/Pandas medium: 8→3, 15→8, 25→all; PySpark medium: 12→3, 20→8, 30→all).
 - **Locked question tooltip** (`title` attribute on the locked row `div`): explains exactly how many more solves are needed — e.g. "Solve 7 more easy questions to unlock this". Pro users see "Upgrade to Elite to unlock all hard questions" on hard rows.
 - Concept filter (chip grid, most-frequent first, expand/collapse) and Company filter (SQL only)
+- Supports deep-link concept drilling via `?concepts=slug1,slug2` query params on `/practice/:topic`; slugs are matched back to concept names and auto-applied as active filters.
 - Test coverage in `components/SidebarNav.test.js`
 
 ---
@@ -394,6 +406,8 @@ Standalone page using the shared `<Topbar active="mock" />`. Does not use `AppSh
 
 **Layout:** Mode cards (3) → config pills (track + difficulty) → custom controls (if mode=custom) → Start button → recent sessions table.
 
+When no history exists, shows a richer empty state with warm-up and dashboard CTAs.
+
 ### MockSession (`pages/MockSession.js`)
 
 Full-screen layout. Does not use `AppShell`. Has two states:
@@ -405,7 +419,9 @@ Full-screen layout. Does not use `AppShell`. Has two states:
 - Timer CSS states: neutral → `.mock-timer--warning` (<10min) → `.mock-timer--danger` (<3min, pulsing)
 
 **Summary state (after finish):**
-- Score card: X/Y solved, time used
+- Score card: `X/Y correct, Z% above/below your session average` (comparison against `GET /api/dashboard/insights` track accuracy baseline), plus time used
+- Per-concept session accuracy row (`correct/attempts`) built from concepts touched in this mock
+- "Drill weak concepts" CTA to `/practice/{track}?concepts={slug1,slug2}`
 - Per-question rows: title · solved badge · time spent · collapsible solution
 - Share CTA → `navigator.clipboard.writeText(...)`
 - "New mock interview" → `/mock`

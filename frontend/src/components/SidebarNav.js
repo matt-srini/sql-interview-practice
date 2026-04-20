@@ -1,5 +1,5 @@
-import { useMemo, useRef, useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { NavLink, useSearchParams } from 'react-router-dom';
 import { useTopic } from '../contexts/TopicContext';
 
 // How many concept chips to show before the "show more" toggle
@@ -26,6 +26,14 @@ function computeUnlockNudge(solved, thresholds) {
 function titleCase(value) {
   if (!value) return '';
   return `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
+}
+
+function conceptSlug(concept) {
+  return String(concept || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 function DifficultyHeader({ difficulty, counts, collapsed, onToggle, unlockNudge }) {
@@ -261,6 +269,7 @@ function CompanyFilter({ groups, activeFilters, onToggle, onClear }) {
 
 export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNavigate, plan = 'free' }) {
   const { topic } = useTopic();
+  const [searchParams] = useSearchParams();
   const groups = catalog?.groups ?? [];
 
   // Compute unlock nudges (free plan only)
@@ -275,6 +284,43 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
   const [activeCompanyFilters, setActiveCompanyFilters] = useState(new Set());
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [easyExpanded, setEasyExpanded] = useState(false);
+
+  const allConcepts = useMemo(() => buildConceptList(groups), [groups]);
+
+  useEffect(() => {
+    const raw = searchParams.get('concepts');
+    if (!raw) return;
+
+    const requested = raw
+      .split(',')
+      .map((part) => decodeURIComponent(part).trim().toLowerCase())
+      .filter(Boolean);
+
+    if (requested.length === 0 || allConcepts.length === 0) return;
+
+    const conceptBySlug = new Map(
+      allConcepts.map((concept) => [conceptSlug(concept), concept])
+    );
+    const conceptByName = new Map(
+      allConcepts.map((concept) => [String(concept).toLowerCase(), concept])
+    );
+
+    const selected = new Set();
+    requested.forEach((item) => {
+      const exact = conceptByName.get(item);
+      if (exact) {
+        selected.add(exact);
+        return;
+      }
+      const fromSlug = conceptBySlug.get(item);
+      if (fromSlug) selected.add(fromSlug);
+    });
+
+    if (selected.size > 0) {
+      setActiveFilters(selected);
+      setFiltersOpen(true);
+    }
+  }, [allConcepts, searchParams]);
 
   function toggleFilter(concept) {
     setActiveFilters((prev) => {
