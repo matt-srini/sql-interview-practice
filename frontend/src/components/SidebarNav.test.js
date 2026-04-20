@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { MemoryRouter, Route, Routes, useParams } from 'react-router-dom';
@@ -76,7 +76,7 @@ describe('SidebarNav', () => {
       ],
     };
 
-    renderWithRouter(
+    const view = renderWithRouter(
       <SidebarNav
         catalog={catalog}
         collapsedByDiff={{ easy: false }}
@@ -94,5 +94,42 @@ describe('SidebarNav', () => {
     // Unlocked question should navigate
     await user.click(screen.getByText('Second Highest Salary'));
     expect(await screen.findByText('Question 1')).toBeInTheDocument();
+  });
+
+  it('filters sidebar questions by fuzzy search query', async () => {
+    const user = userEvent.setup();
+    localStorage.clear();
+
+    const catalog = {
+      user_id: 'u1',
+      groups: [
+        {
+          difficulty: 'easy',
+          counts: { total: 2, solved: 0, unlocked: 2 },
+          questions: [
+            { id: 1, title: 'Revenue by Product', difficulty: 'easy', order: 1, state: 'unlocked', is_next: true, concepts: ['aggregation'] },
+            { id: 2, title: 'Session Retention Cohort', difficulty: 'easy', order: 2, state: 'unlocked', is_next: false, concepts: ['window functions'] },
+          ],
+        },
+      ],
+    };
+
+    const view = renderWithRouter(
+      <SidebarNav
+        catalog={catalog}
+        collapsedByDiff={{ easy: false }}
+        toggleDiff={() => {}}
+        onNavigate={() => {}}
+      />,
+      { initialEntries: ['/practice/sql'] }
+    );
+
+    const search = within(view.container).getByPlaceholderText('Title, concept, or difficulty');
+    await user.type(search, 'window funct');
+
+    expect(within(view.container).getByText('Session Retention Cohort')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(within(view.container).queryByText('Revenue by Product')).not.toBeInTheDocument();
+    });
   });
 });
