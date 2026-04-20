@@ -1,0 +1,17 @@
+{
+  "slug": "delta-lake-patterns",
+  "title": "Delta Lake Patterns",
+  "description": "Learn production Delta patterns across upserts, time travel, schema evolution, and storage-layout optimization tradeoffs.",
+  "topic": "pyspark",
+  "questions": [
+    11312,
+    11326,
+    11327,
+    11330,
+    11612,
+    11619,
+    11622
+  ],
+  "tier": "pro",
+  "role": "advanced"
+}

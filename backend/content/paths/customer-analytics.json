@@ -1,0 +1,16 @@
+{
+  "slug": "customer-analytics",
+  "title": "Customer Analytics",
+  "description": "Build product analytics depth with retention, engagement, churn, cohort behavior, and segmentation models like RFM.",
+  "topic": "python-data",
+  "questions": [
+    5305,
+    5330,
+    5601,
+    5611,
+    5617,
+    5620
+  ],
+  "tier": "pro",
+  "role": "advanced"
+}

@@ -53,6 +53,24 @@ datanest is **FAANG-level interview preparation**, not a syntax tutorial. The si
 
 Sample questions (no login, no progress): 3 per track × 3 difficulties = 9 per track = **36 total**.
 
+### Learning paths (curated sequences)
+
+| Track | Paths | Distribution |
+|---|---:|---|
+| SQL | 7 | 2 free shortcut paths (`starter`, `intermediate`) + 5 advanced (mixed free/pro) |
+| Python | 5 | 2 free shortcut paths (`starter`, `intermediate`) + 3 advanced (mixed free/pro) |
+| Pandas | 5 | 2 free shortcut paths (`starter`, `intermediate`) + 3 advanced (mixed free/pro) |
+| PySpark | 5 | 2 free shortcut paths (`starter`, `intermediate`) + 3 advanced (mixed free/pro) |
+| **Total** | **22** | |
+
+Authoring constraints for path files in `backend/content/paths/`:
+- Required fields: `slug`, `title`, `description`, `topic`, `questions`, `tier`, `role`
+- `topic` must be one of: `sql`, `python`, `python-data`, `pyspark`
+- `tier` must be `free` or `pro`
+- `role` must be `starter`, `intermediate`, or `advanced`
+- Exactly one `starter` and one `intermediate` path per track (used by unlock shortcuts)
+- Every `questions[]` ID must exist in the same track catalog and be unique within the path
+
 ---
 
 ## Concept coverage by track

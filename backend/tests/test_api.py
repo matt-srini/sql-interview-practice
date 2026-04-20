@@ -593,3 +593,68 @@ def test_login_merges_existing_anonymous_progress() -> None:
         easy_questions = sorted(easy["questions"], key=lambda q: q["order"])
         assert easy_questions[0]["state"] == "solved"
         assert easy_questions[1]["state"] == "unlocked"
+
+
+def test_learning_paths_list_returns_expanded_catalog() -> None:
+    expected_counts = {"sql": 7, "python": 5, "python-data": 5, "pyspark": 5}
+
+    with TestClient(app) as client:
+        resp = client.get("/api/paths")
+        assert resp.status_code == 200
+        payload = resp.json()
+
+        assert len(payload) == 22
+        counts_by_topic = {topic: 0 for topic in expected_counts}
+        for item in payload:
+            assert {
+                "slug",
+                "title",
+                "description",
+                "topic",
+                "tier",
+                "role",
+                "question_count",
+                "solved_count",
+                "accessible",
+            }.issubset(item.keys())
+            counts_by_topic[item["topic"]] += 1
+
+        assert counts_by_topic == expected_counts
+
+
+def test_learning_path_detail_for_new_free_path() -> None:
+    with TestClient(app) as client:
+        resp = client.get("/api/paths/joins-and-filtering")
+        assert resp.status_code == 200
+        payload = resp.json()
+
+        assert payload["slug"] == "joins-and-filtering"
+        assert payload["topic"] == "sql"
+        assert payload["tier"] == "free"
+        assert payload["role"] == "advanced"
+        assert payload["accessible"] is True
+        assert payload["question_count"] == 7
+        assert len(payload["questions"]) == 7
+
+        question_ids = [int(q["id"]) for q in payload["questions"]]
+        assert question_ids == [1016, 1017, 2001, 2003, 2033, 2032, 3024]
+        assert payload["questions"][0]["state"] == "unlocked"
+        assert payload["questions"][1]["state"] == "unlocked"
+
+
+def test_learning_path_detail_for_new_pro_path_is_preview_for_free_user() -> None:
+    with TestClient(app) as client:
+        resp = client.get("/api/paths/subqueries-and-existence")
+        assert resp.status_code == 200
+        payload = resp.json()
+
+        assert payload["slug"] == "subqueries-and-existence"
+        assert payload["topic"] == "sql"
+        assert payload["tier"] == "pro"
+        assert payload["accessible"] is False
+        assert payload["question_count"] == 6
+        assert len(payload["questions"]) == 6
+
+        states = [q["state"] for q in payload["questions"]]
+        assert states[:2] == ["unlocked", "unlocked"]
+        assert all(state == "locked" for state in states[2:])

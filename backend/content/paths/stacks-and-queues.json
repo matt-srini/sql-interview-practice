@@ -1,0 +1,16 @@
+{
+  "slug": "stacks-and-queues",
+  "title": "Stacks & Queue Patterns",
+  "description": "Build stack-first problem solving for validation, parsing, expression evaluation, and monotonic-structure style interview patterns.",
+  "topic": "python",
+  "questions": [
+    4011,
+    4309,
+    4314,
+    4315,
+    4604,
+    4620
+  ],
+  "tier": "free",
+  "role": "advanced"
+}

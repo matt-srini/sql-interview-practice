@@ -1,0 +1,16 @@
+{
+  "slug": "subqueries-and-existence",
+  "title": "Subqueries & Existence Logic",
+  "description": "Master nested logic with subqueries, correlated filters, and EXISTS/NOT EXISTS patterns for anti-joins and set-style reasoning.",
+  "topic": "sql",
+  "questions": [
+    2010,
+    2027,
+    2028,
+    2029,
+    3005,
+    3021
+  ],
+  "tier": "pro",
+  "role": "advanced"
+}

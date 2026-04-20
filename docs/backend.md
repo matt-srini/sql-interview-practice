@@ -197,6 +197,8 @@ Notes:
 
 Paths are defined as JSON files in `backend/content/paths/`. The `path_loader.py` module reads them at startup. Each path record has `slug`, `title`, `description`, `topic`, and `questions[]` (ordered list of question IDs). The `/api/paths/{slug}` response enriches each question entry with its catalog metadata and the user's current state.
 
+Current footprint: **22 paths total** (SQL 7, Python 5, Pandas 5, PySpark 5). Path records also include `tier` (`free`/`pro`) and `role` (`starter`/`intermediate`/`advanced`) for access and unlock-shortcut semantics.
+
 ---
 
 ## Query execution pipeline

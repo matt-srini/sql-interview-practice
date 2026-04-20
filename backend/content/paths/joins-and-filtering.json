@@ -1,0 +1,17 @@
+{
+  "slug": "joins-and-filtering",
+  "title": "Joins & Filtering Mastery",
+  "description": "Build confident join intuition from basic INNER/LEFT joins to reconciliation with FULL OUTER joins and advanced ranked outputs.",
+  "topic": "sql",
+  "questions": [
+    1016,
+    1017,
+    2001,
+    2003,
+    2033,
+    2032,
+    3024
+  ],
+  "tier": "free",
+  "role": "advanced"
+}

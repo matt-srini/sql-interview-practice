@@ -86,6 +86,7 @@ A data interview practice platform covering four tracks. Users write SQL or Pyth
 | PySpark | 90 (38 easy, 30 medium, 22 hard) | MCQ / predict-output / debug, evaluated by option selection | `backend/content/pyspark_questions/` |
 
 - **Sample questions:** 3 per track × 3 difficulties = 36 total (no login, no progress impact)
+- **Learning paths:** 22 total — SQL: 7, Python: 5, Pandas: 5, PySpark: 5 (each track keeps exactly one `starter` and one `intermediate` free shortcut path; additional paths are advanced, mixed free/pro)
 - Every question has `hints` (1–2 entries) and `concepts` (semantic pattern tags surfaced as pills)
 - SQL questions have a `companies` field (`["Meta", "Stripe", ...]`) used for the company filter in SidebarNav
 - SQL schemas validated against committed CSV headers at catalog load time

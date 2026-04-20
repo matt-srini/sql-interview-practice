@@ -1,0 +1,15 @@
+{
+  "slug": "reshaping-and-pivoting",
+  "title": "Reshaping & Pivoting",
+  "description": "Master pivot-table thinking with reshaping operations including crosstabs, stack/unstack flows, and matrix-style analytical outputs.",
+  "topic": "python-data",
+  "questions": [
+    5317,
+    5327,
+    5609,
+    5610,
+    5619
+  ],
+  "tier": "pro",
+  "role": "advanced"
+}
