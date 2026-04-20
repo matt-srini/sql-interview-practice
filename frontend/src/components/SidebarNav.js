@@ -109,14 +109,17 @@ function QuestionContent({ q, isActive = false }) {
   );
 }
 
-function QuestionRow({ q, onNavigate, topic }) {
+function QuestionRow({ q, onNavigate, topic, pathSlug }) {
   const stateClass = `sidebar-question-state-${q.state}`;
   const lockedClass = q.state === 'locked' ? ' sidebar-question-locked' : '';
+  const to = pathSlug
+    ? `/practice/${topic}/questions/${q.id}?path=${encodeURIComponent(pathSlug)}`
+    : `/practice/${topic}/questions/${q.id}`;
 
   // Locked questions navigate to preview mode — content visible, Run/Submit disabled.
   return (
     <NavLink
-      to={`/practice/${topic}/questions/${q.id}`}
+      to={to}
       className={({ isActive }) =>
         `sidebar-question${lockedClass} ${stateClass}${isActive ? ' sidebar-question-active' : ''}`
       }
@@ -270,6 +273,7 @@ function CompanyFilter({ groups, activeFilters, onToggle, onClear }) {
 export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNavigate, plan = 'free' }) {
   const { topic } = useTopic();
   const [searchParams] = useSearchParams();
+  const pathSlug = searchParams.get('path');
   const groups = catalog?.groups ?? [];
 
   // Compute unlock nudges (free plan only)
@@ -456,7 +460,7 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
             {!collapsed && (
               <div className="sidebar-question-list">
                 {visibleQuestions.map((q) => (
-                  <QuestionRow key={q.id} q={q} onNavigate={onNavigate} topic={topic} />
+                  <QuestionRow key={q.id} q={q} onNavigate={onNavigate} topic={topic} pathSlug={pathSlug} />
                 ))}
                 {showRowCap && (
                   <button
