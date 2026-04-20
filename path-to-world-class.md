@@ -412,6 +412,16 @@ Each phase commit must:
 - [x] Tighten `.landing-page min-height` for mobile topbar
 - [x] Revisit free-samples strip vs showcase (content, retained as primary sample CTA strip)
 
+### Post-Phase-4 backlog progress (rolling)
+
+- [x] Workspace depth: auto-save drafts + restore + clear in challenge/sample editors
+- [x] Workspace depth: per-question soft timer + `duration_ms` submission persistence
+- [x] Workspace depth: question bookmarks rail in sidebar (localStorage, cap 20)
+- [x] Workspace depth: concept explanation panel from concept pills
+- [x] Workspace depth: similar-question recommendations after correct solves
+- [x] Workspace depth: SQL error clarity mapper (`sqlErrorParser`) + learner-friendly hints
+- [x] Discovery/onboarding: sidebar fuzzy question search (Fuse.js)
+
 ---
 
 ## 10. Hand-off notes
