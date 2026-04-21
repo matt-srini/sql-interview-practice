@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import api from '../api';
+import { identifyUser, resetIdentity } from '../analytics';
 
 const AuthContext = createContext(null);
 
@@ -22,7 +23,11 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     api
       .get('/auth/me')
-      .then((res) => setUser(res.data.user ?? null))
+      .then((res) => {
+        const u = res.data.user ?? null;
+        setUser(u);
+        identifyUser(u);
+      })
       .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);
@@ -30,18 +35,21 @@ export function AuthProvider({ children }) {
   const login = useCallback(async (email, password) => {
     const res = await api.post('/auth/login', { email, password });
     setUser(res.data.user);
+    identifyUser(res.data.user);
     return res.data.user;
   }, []);
 
   const register = useCallback(async (email, name, password) => {
     const res = await api.post('/auth/register', { email, name, password });
     setUser(res.data.user);
+    identifyUser(res.data.user);
     return res.data.user;
   }, []);
 
   const logout = useCallback(async () => {
     await api.post('/auth/logout').catch(() => {});
     setUser(null);
+    resetIdentity();
   }, []);
 
   const requestMagicLink = useCallback(async (email) => {

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import api from '../api';
 import CodeEditor from '../components/CodeEditor';
 import MCQPanel from '../components/MCQPanel';
@@ -9,6 +10,7 @@ import SchemaViewer from '../components/SchemaViewer';
 import TestCasePanel from '../components/TestCasePanel';
 import VariablesPanel from '../components/VariablesPanel';
 import { TRACK_META } from '../contexts/TopicContext';
+import { track } from '../analytics';
 
 const SQL_PLACEHOLDER = '-- Write your SQL query here\nSELECT ';
 const PYTHON_PLACEHOLDER = '# Write your solution here\n';
@@ -204,6 +206,7 @@ export default function SampleQuestionPage() {
       }
       const res = await api.post(submitApiPath, payload);
       setSubmitResult(res.data);
+      track('sample_submitted', { track: topic, difficulty, question_id: Number(question?.id), correct: res.data.correct });
     } catch (err) {
       setSubmitError(err.response?.data?.error ?? err.response?.data?.detail ?? 'Submission failed.');
     } finally {
@@ -353,6 +356,11 @@ export default function SampleQuestionPage() {
 
   return (
     <>
+      <Helmet>
+        <title>Free {meta.label} Sample Questions ({difficulty}) — datanest</title>
+        <meta name="description" content={`Try free ${difficulty} ${meta.label} interview questions. No account required — instant feedback in a real execution environment.`} />
+        <meta property="og:title" content={`Free ${meta.label} Sample Questions — datanest`} />
+      </Helmet>
       <header className="topbar">
         <div className="topbar-inner sample-page-topbar">
           <div className="sample-topbar-left">

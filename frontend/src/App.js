@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { CatalogProvider } from './catalogContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { TopicProvider } from './contexts/TopicContext';
@@ -18,6 +19,7 @@ import SampleQuestionPage from './pages/SampleQuestionPage';
 import LearningPath from './pages/LearningPath';
 import LearningPathsIndex from './pages/LearningPathsIndex';
 import ToastViewport from './components/ToastViewport';
+import { trackPageView } from './analytics';
 
 // ── Theme ──────────────────────────────────────────────────────
 export const ThemeContext = createContext(null);
@@ -95,6 +97,7 @@ function ToastProvider({ children }) {
 
 function RouteTransition({ children }) {
   const location = useLocation();
+  useEffect(() => { trackPageView(); }, [location.pathname]);
   return (
     <div key={`${location.pathname}${location.search}`} className="route-transition">
       {children}
@@ -134,6 +137,7 @@ function LegacySampleRedirect() {
 
 export default function App() {
   return (
+    <HelmetProvider>
     <ThemeProvider>
     <BrowserRouter>
       <AuthProvider>
@@ -175,5 +179,6 @@ export default function App() {
       </AuthProvider>
     </BrowserRouter>
     </ThemeProvider>
+    </HelmetProvider>
   );
 }

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import api from '../api';
 import Topbar from '../components/Topbar';
 import { useAuth } from '../contexts/AuthContext';
@@ -180,6 +181,11 @@ export default function AuthPage() {
 
   return (
     <div className="auth-page">
+      <Helmet>
+        <title>Sign In — datanest</title>
+        <meta name="description" content="Sign in or create a free account to track your SQL, Python, Pandas, and PySpark interview practice progress." />
+        <meta name="robots" content="noindex" />
+      </Helmet>
       <Topbar variant="minimal" />
 
       {/* ── Centered card ── */}

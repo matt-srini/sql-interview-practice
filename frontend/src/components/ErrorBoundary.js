@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { Link } from 'react-router-dom';
+import * as Sentry from '@sentry/react';
 
 /**
  * React Error Boundary — catches unhandled JS exceptions in the component tree
@@ -18,8 +19,8 @@ export default class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
-    // Log to console in all envs; a future Sentry integration would go here
     console.error('[ErrorBoundary] Uncaught error:', error, info?.componentStack);
+    Sentry.captureException(error, { contexts: { react: { componentStack: info?.componentStack } } });
   }
 
   handleReset() {

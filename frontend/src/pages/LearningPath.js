@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import api from '../api';
 import { TRACK_META } from '../contexts/TopicContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -98,6 +99,11 @@ export default function LearningPath() {
 
   return (
     <div className="learn-page">
+      <Helmet>
+        <title>{path ? `${path.title} — datanest` : 'Learning Path — datanest'}</title>
+        {path && <meta name="description" content={`${path.title}: a curated ${meta.label} learning path on datanest. Practice interview-style questions with instant feedback.`} />}
+        <meta property="og:title" content={path ? `${path.title} — datanest` : 'Learning Path — datanest'} />
+      </Helmet>
       <Topbar />
 
       {loading && <div className="learn-loading">Loading path…</div>}

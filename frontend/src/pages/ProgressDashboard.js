@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
@@ -68,6 +69,11 @@ export default function ProgressDashboard() {
 
   return (
     <>
+      <Helmet>
+        <title>My Progress — datanest</title>
+        <meta name="description" content="Track your SQL, Python, Pandas, and PySpark interview practice progress, streaks, and coaching insights." />
+        <meta name="robots" content="noindex" />
+      </Helmet>
       <Topbar active="dashboard" />
 
       <main className="container dashboard-page">

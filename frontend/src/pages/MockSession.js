@@ -4,6 +4,7 @@ import api from '../api';
 import CodeEditor from '../components/CodeEditor';
 import MCQPanel from '../components/MCQPanel';
 import { TRACK_META } from '../contexts/TopicContext';
+import { track as trackEvent } from '../analytics';
 
 function formatTime(s) {
   if (s == null || s < 0) return '00:00';
@@ -71,6 +72,7 @@ export default function MockSession() {
     try {
       const r = await api.post(`/mock/${id}/finish`);
       setSummary(r.data);
+      trackEvent('mock_completed', { session_id: id, score: r.data.score, total: r.data.total, track: r.data.track });
       setStatus('completed');
     } catch (err) {
       console.error('Failed to finish session', err);

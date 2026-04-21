@@ -322,6 +322,39 @@ All requests use `withCredentials: true` so the `session_token` cookie is sent d
 
 ---
 
+## Observability
+
+### Sentry (error capture)
+
+Initialized in `index.js` when `VITE_SENTRY_DSN` is set. Uses `@sentry/react` with:
+- Browser tracing (10% sample rate)
+- Session Replay on errors (100% of error sessions, 0% baseline)
+- `ErrorBoundary.js` calls `Sentry.captureException()` on component crashes
+
+### PostHog (product analytics)
+
+Initialized via `analytics.js` when `VITE_POSTHOG_KEY` is set. All calls no-op when the key is absent.
+
+**Identity lifecycle:** `identifyUser()` on session restore / login / register; `resetIdentity()` on logout.
+
+**SPA page views:** Tracked on every route change via `RouteTransition` in `App.js`.
+
+**Key events:**
+
+| Event | Location | Properties |
+|---|---|---|
+| `question_submitted` | QuestionPage | `track`, `question_id`, `difficulty`, `correct` |
+| `question_solved` | QuestionPage | `track`, `question_id`, `difficulty`, `first_try` |
+| `sample_submitted` | SampleQuestionPage | `track`, `difficulty`, `question_id`, `correct` |
+| `mock_started` | MockHub | `mode`, `track`, `difficulty`, `session_id` |
+| `mock_completed` | MockSession | `session_id`, `score`, `total`, `track` |
+| `plan_upgrade_started` | UpgradeButton | `tier`, `source` |
+| `plan_upgraded` | UpgradeButton | `tier`, `source` |
+
+**Funnel:** Landing → Track selection → First question → First solve → Registration → Plan upgrade.
+
+---
+
 ## Design system
 
 Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modules.
