@@ -8245,3 +8245,21 @@ select {
   display: inline-flex;
   gap: 0.2rem;
 }
+
+/* ── Landing footer ── */
+.landing-footer { padding: 1.5rem 0; border-top: 1px solid var(--border-subtle); }
+.landing-footer-inner { max-width: 1040px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.landing-footer-copy { font-size: 0.8rem; color: var(--text-muted); }
+.landing-footer-links { display: flex; gap: 1.25rem; flex-wrap: wrap; }
+.landing-footer-links a { font-size: 0.8rem; color: var(--text-secondary); text-decoration: none; }
+.landing-footer-links a:hover { color: var(--text-strong); }
+.policy-card { width: min(100%, 720px) !important; }
+
+/* ── Policy pages ── */
+.policy-body h2 { font-size: 1rem; font-weight: 600; margin: 1.5rem 0 0.5rem; color: var(--text-strong); }
+.policy-body p, .policy-body li { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; margin: 0.4rem 0; }
+.policy-body ul { padding-left: 1.25rem; }
+.policy-body a { color: var(--accent); text-decoration: none; }
+.policy-body a:hover { text-decoration: underline; }
+.policy-footer-nav { margin-top: 2rem; padding-top: 1.25rem; border-top: 1px solid var(--border-subtle); }
+.contact-email { font-weight: 600; }

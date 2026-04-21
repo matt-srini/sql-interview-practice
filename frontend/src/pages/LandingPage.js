@@ -11,6 +11,7 @@ import LoggedInWelcome from '../components/LoggedInWelcome';
 import UpgradeButton from '../components/UpgradeButton';
 import OnboardingTooltip from '../components/OnboardingTooltip';
 import { highlightCode } from './landingShowcaseHighlight';
+import { detectCurrency, PRICES } from '../utils/currency';
 
 const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
 
@@ -142,6 +143,8 @@ const LANDING_ONBOARDING_KEY = 'landingOnboardingSeen-v1';
 export default function LandingPage() {
   const { user, logout } = useAuth();
   const userPlan = user?.plan ?? 'free';
+  const currency = detectCurrency();
+  const p = PRICES[currency];
 
   // What CTA state to show in the Pro column:
   //   'current'      → user is on lifetime_pro (highest Pro billing, no action needed)
@@ -656,7 +659,7 @@ export default function LandingPage() {
                 <div className="landing-tier-col-header">
                   <span className="landing-tier-name">Free</span>
                   <div className="landing-tier-price">
-                    <span className="landing-tier-price-amount">₹0</span>
+                    <span className="landing-tier-price-amount">Free</span>
                   </div>
                 </div>
                 <ul className="landing-tier-list">
@@ -678,8 +681,8 @@ export default function LandingPage() {
                   <span className="landing-tier-badge">Most popular</span>
                   <span className="landing-tier-name">Pro</span>
                   <div className="landing-tier-price">
-                    <span className="landing-tier-price-amount">₹799</span>
-                    <span className="landing-tier-price-period">/mo</span>
+                    <span className="landing-tier-price-amount">{p.pro}</span>
+                    <span className="landing-tier-price-period">{p.period}</span>
                   </div>
                 </div>
                 <ul className="landing-tier-list">
@@ -693,12 +696,12 @@ export default function LandingPage() {
                     <span className="landing-tier-current">Current plan</span>
                   )}
                   {proColCta() === 'both' && (
-                    <UpgradeButton tier="pro" source="landing_tier" />
+                    <UpgradeButton tier="pro" source="landing_tier" currency={currency} />
                   )}
                   {(proColCta() === 'both' || proColCta() === 'lifetime_only') && (
                     <UpgradeButton
                       tier="lifetime_pro"
-                      label={proColCta() === 'lifetime_only' ? 'Switch to lifetime — ₹7,999' : 'Lifetime access — ₹7,999'}
+                      label={proColCta() === 'lifetime_only' ? `Switch to lifetime — ${p.lifetimePro}` : `Lifetime access — ${p.lifetimePro}`}
                       compact
                       className="landing-tier-lifetime-btn"
                       source="landing_tier_lifetime"
@@ -712,8 +715,8 @@ export default function LandingPage() {
                 <div className="landing-tier-col-header">
                   <span className="landing-tier-name">Elite</span>
                   <div className="landing-tier-price">
-                    <span className="landing-tier-price-amount">₹1,599</span>
-                    <span className="landing-tier-price-period">/mo</span>
+                    <span className="landing-tier-price-amount">{p.elite}</span>
+                    <span className="landing-tier-price-period">{p.period}</span>
                   </div>
                 </div>
                 <ul className="landing-tier-list">
@@ -727,12 +730,12 @@ export default function LandingPage() {
                     <span className="landing-tier-current">Current plan</span>
                   )}
                   {eliteColCta() === 'both' && (
-                    <UpgradeButton tier="elite" source="landing_tier" />
+                    <UpgradeButton tier="elite" source="landing_tier" currency={currency} />
                   )}
                   {(eliteColCta() === 'both' || eliteColCta() === 'lifetime_only') && (
                     <UpgradeButton
                       tier="lifetime_elite"
-                      label={eliteColCta() === 'lifetime_only' ? 'Switch to lifetime — ₹14,999' : 'Lifetime access — ₹14,999'}
+                      label={eliteColCta() === 'lifetime_only' ? `Switch to lifetime — ${p.lifetimeElite}` : `Lifetime access — ${p.lifetimeElite}`}
                       compact
                       className="landing-tier-lifetime-btn"
                       source="landing_tier_lifetime"
@@ -745,6 +748,18 @@ export default function LandingPage() {
           </div>
         </section>
         )}
+
+        <footer className="landing-footer">
+          <div className="landing-footer-inner">
+            <span className="landing-footer-copy">&copy; 2025 datanest</span>
+            <nav className="landing-footer-links" aria-label="Legal">
+              <Link to="/privacy">Privacy Policy</Link>
+              <Link to="/terms">Terms &amp; Conditions</Link>
+              <Link to="/refund-policy">Refund Policy</Link>
+              <Link to="/contact">Contact Us</Link>
+            </nav>
+          </div>
+        </footer>
 
         <OnboardingTooltip
           isOpen={onboardingOpen}

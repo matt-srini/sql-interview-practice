@@ -18,6 +18,10 @@ import QuestionPage from './pages/QuestionPage';
 import SampleQuestionPage from './pages/SampleQuestionPage';
 import LearningPath from './pages/LearningPath';
 import LearningPathsIndex from './pages/LearningPathsIndex';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsPage from './pages/TermsPage';
+import RefundPolicyPage from './pages/RefundPolicyPage';
+import ContactPage from './pages/ContactPage';
 import ToastViewport from './components/ToastViewport';
 import { trackPageView } from './analytics';
 
@@ -159,6 +163,12 @@ export default function App() {
                 <Route path="/practice/questions/:id" element={<LegacyQuestionRedirect />} />
                 <Route path="/practice" element={<Navigate to="/practice/sql" replace />} />
                 <Route path="/questions/:id" element={<LegacyQuestionRedirect />} />
+
+                {/* Policy pages */}
+                <Route path="/privacy"       element={<PrivacyPolicyPage />} />
+                <Route path="/terms"         element={<TermsPage />} />
+                <Route path="/refund-policy" element={<RefundPolicyPage />} />
+                <Route path="/contact"       element={<ContactPage />} />
 
                 {/* Learning paths */}
                 <Route path="/learn" element={<LearningPathsIndex />} />
