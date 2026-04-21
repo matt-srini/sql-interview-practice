@@ -1,19 +1,20 @@
 # SQL Interview Practice Platform
 
-A SQL practice platform with a React frontend, a FastAPI backend, PostgreSQL-backed app state, and DuckDB-backed SQL execution. Users can work through gated challenge questions, try a separate sample track, run read-only SQL, and compare their output against expected results.
+A data interview practice platform with a React frontend, a FastAPI backend, PostgreSQL-backed app state, and DuckDB-backed SQL execution. Users can practice SQL, Python, Pandas, and PySpark across challenge and sample modes, with persistent progress, mock interviews, learning paths, and plan-aware unlocks.
 
 ---
 
 ## Current State
 
-- Challenge bank: 86 questions total
-  - Easy: 30
-  - Medium: 30
-  - Hard: 26
-- Sample bank: 9 questions total
-  - 3 per difficulty in backend/sample_questions.py
-- Challenge content is JSON-backed in backend/content/questions/
-- Sample content is Python-backed in backend/sample_questions.py
+- Challenge bank: 350 questions total across 4 tracks
+  - SQL: 95
+  - Python: 83
+  - Pandas: 82
+  - PySpark: 90
+- Sample bank: 36 questions total
+  - 3 per track × 3 difficulties
+- Challenge content is file-backed in `backend/content/`
+- Sample content is topic-aware and served from the sample API/router layer
 - Query execution uses a process-singleton in-memory DuckDB engine loaded once at startup
 - Question schemas are validated against the committed dataset headers at load time
 - Semantic reasoning tags (`concepts` field) are surfaced as pill badges on each question page
@@ -28,11 +29,11 @@ For the fuller architectural reference, see docs/project-blueprint.md.
 
 | Layer     | Technology                                                      |
 |-----------|-----------------------------------------------------------------|
-| Backend   | Python, FastAPI, PostgreSQL, DuckDB (query execution), Pandas   |
+| Backend   | Python, FastAPI, PostgreSQL, DuckDB (query execution)           |
 | Frontend  | React 18, React Router, Vite, Monaco Editor, Axios              |
-| Testing   | pytest, httpx, Vitest, React Testing Library                    |
+| Testing   | pytest, httpx, Vitest, React Testing Library, Playwright        |
 | Datasets  | Generated CSV files loaded into DuckDB                          |
-| Payments  | Stripe Checkout + verified webhooks + audit logging             |
+| Payments  | Razorpay Orders/Subscriptions + verified webhooks               |
 
 ---
 
@@ -45,7 +46,7 @@ sql-interview-practice/
 │   ├── content/questions/        # JSON-backed challenge questions
 │   ├── datasets/                 # Committed generated CSV datasets + metadata
 │   ├── middleware/               # Request context and request_id handling
-│   ├── routers/                  # API, SPA, plan/user profile, Stripe endpoints
+│   ├── routers/                  # API, SPA, auth, plans, Razorpay, mock, dashboard
 │   ├── scripts/                  # Dataset generation scripts
 │   ├── tests/                    # Backend tests
 │   ├── alembic/                  # Postgres migrations
@@ -55,7 +56,10 @@ sql-interview-practice/
 │   ├── main.py                   # FastAPI app wiring, middleware, exception handling
 │   ├── progress.py               # Challenge/sample progress helpers
 │   ├── questions.py              # Challenge catalog loader
-│   ├── sample_questions.py       # Sample question catalog
+│   ├── sample_questions.py       # SQL sample question catalog loader
+│   ├── python_questions.py       # Python question catalog loader
+│   ├── python_data_questions.py  # Pandas question catalog loader
+│   ├── pyspark_questions.py      # PySpark question catalog loader
 │   ├── sql_guard.py              # Read-only SQL validation
 │   └── ...
 ├── docs/
@@ -75,7 +79,7 @@ sql-interview-practice/
 
 ## Dataset Inventory
 
-The committed datasets live in backend/datasets/.
+The committed relational datasets live in `backend/datasets/` and are loaded into DuckDB at startup.
 
 | CSV | What it models | Current committed count |
 |-----|----------------|-------------------------|
@@ -150,13 +154,14 @@ cd backend
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/sql_practice" ../.venv/bin/python -m alembic upgrade head
 ```
 
-Optional Stripe environment for local checkout testing:
+Optional Razorpay environment for local checkout testing:
 
 ```bash
-export STRIPE_SECRET_KEY="sk_test_..."
-export STRIPE_WEBHOOK_SECRET="whsec_..."
-export STRIPE_PRICE_PRO="price_..."
-export STRIPE_PRICE_ELITE="price_..."
+export RAZORPAY_KEY_ID="rzp_test_..."
+export RAZORPAY_KEY_SECRET="..."
+export RAZORPAY_WEBHOOK_SECRET="..."
+export RAZORPAY_PLAN_PRO="plan_..."
+export RAZORPAY_PLAN_ELITE="plan_..."
 ```
 
 Run anonymous-session cleanup:

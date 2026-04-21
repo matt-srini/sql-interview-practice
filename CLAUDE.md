@@ -300,7 +300,7 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 
 **Error shape:** `{ error, request_id }` on all user-facing errors. `X-Request-ID` header on all responses.
 
-**Observability baseline:** Every response includes `X-Response-Time-Ms`; backend logs include request method, path, status, and latency keyed by `request_id`. Optional Sentry capture is enabled when `SENTRY_DSN` is configured (backend) or `VITE_SENTRY_DSN` (frontend — includes Session Replay on errors). PostHog product analytics fires on key funnel events (`question_submitted`, `question_solved`, `sample_submitted`, `mock_started`, `mock_completed`, `plan_upgrade_started`, `plan_upgraded`) when `VITE_POSTHOG_KEY` is set; SPA page views are tracked on route change.
+**Observability baseline:** Every response includes `X-Response-Time-Ms`; backend logs include request method, path, status, and latency keyed by `request_id`. Optional Sentry capture is enabled when `SENTRY_DSN` is configured (backend) or `VITE_SENTRY_DSN` (frontend — includes Session Replay on errors). In the single-service production deploy, frontend observability settings are injected into the SPA at request time by `routers/spa.py`, so Railway does not need Docker build args for Sentry/PostHog. Production frontend builds emit hidden sourcemaps and upload them to Sentry when `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECT` are present. PostHog product analytics fires on key funnel events (`question_submitted`, `question_solved`, `sample_submitted`, `mock_started`, `mock_completed`, `plan_upgrade_started`, `plan_upgraded`) when `VITE_POSTHOG_KEY` is set; SPA page views are tracked on route change.
 
 ---
 

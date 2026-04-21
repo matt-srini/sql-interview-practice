@@ -44,15 +44,18 @@ logger = logging.getLogger(__name__)
 
 
 if SENTRY_DSN:
-    import sentry_sdk
-    from sentry_sdk.integrations.fastapi import FastApiIntegration
-
-    sentry_sdk.init(
-        dsn=SENTRY_DSN,
-        environment=ENV,
-        integrations=[FastApiIntegration()],
-        traces_sample_rate=0.0,
-    )
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.fastapi import FastApiIntegration
+    except ModuleNotFoundError:
+        logger.warning("SENTRY_DSN is set but sentry_sdk is not installed; skipping Sentry init")
+    else:
+        sentry_sdk.init(
+            dsn=SENTRY_DSN,
+            environment=ENV,
+            integrations=[FastApiIntegration()],
+            traces_sample_rate=0.0,
+        )
 
 
 @asynccontextmanager

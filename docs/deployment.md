@@ -199,12 +199,60 @@ The `FRONTEND_DIST_DIR` env var defaults to `/app/frontend/dist` inside the imag
 | `SECURE_COOKIES` | — | Controls cookie `secure` attribute; defaults to `true` in production |
 | `LOGIN_LOCKOUT_MAX_ATTEMPTS` | — | Failed login attempts before temporary lock; default `5` |
 | `LOGIN_LOCKOUT_WINDOW_MINUTES` | — | Temporary login lock window; default `15` minutes |
+| `APP_BASE_URL` | Strongly recommended | Public backend origin used for OAuth callback URLs; in single-service deploys this is usually the same as the frontend origin |
+| `FRONTEND_BASE_URL` | Strongly recommended | Public frontend origin used in redirects and email links |
+| `ALLOWED_ORIGINS` | Strongly recommended | Comma-separated browser origins allowed by CORS and production CSRF checks |
+| `RESEND_API_KEY` | Recommended | Enables verification and password-reset emails |
+| `EMAIL_FROM` | Recommended | Sender identity for auth emails |
+| `GOOGLE_CLIENT_ID` | Optional | Enable Google OAuth login |
+| `GOOGLE_CLIENT_SECRET` | Optional | Enable Google OAuth login |
+| `GITHUB_CLIENT_ID` | Optional | Enable GitHub OAuth login |
+| `GITHUB_CLIENT_SECRET` | Optional | Enable GitHub OAuth login |
 | `SENTRY_DSN` | — | Optional backend Sentry DSN for production error capture |
-| `VITE_SENTRY_DSN` | — | Optional frontend Sentry DSN (set at build time via Vite) |
-| `VITE_POSTHOG_KEY` | — | PostHog project API key for product analytics (set at build time via Vite) |
+| `VITE_SENTRY_DSN` | — | Optional frontend Sentry DSN; read from runtime config in production and from Vite env in local dev |
+| `VITE_POSTHOG_KEY` | — | PostHog project API key for product analytics; read from runtime config in production and from Vite env in local dev |
 | `VITE_POSTHOG_HOST` | — | PostHog ingest host; defaults to `https://us.i.posthog.com` |
+| `SENTRY_AUTH_TOKEN` | Optional | Required only if you want the frontend build to upload sourcemaps to Sentry |
+| `SENTRY_ORG` | Optional | Sentry organization slug for frontend sourcemap upload |
+| `SENTRY_PROJECT` | Optional | Sentry project slug for frontend sourcemap upload |
+| `SENTRY_RELEASE` | Optional | Explicit release name for sourcemap upload; defaults to `RAILWAY_GIT_COMMIT_SHA` when available |
 
 In `production` mode, startup will fail fast if `DATABASE_URL`, `REDIS_URL`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, or `RAZORPAY_WEBHOOK_SECRET` are missing.
+
+### Production rollout order
+
+1. Provision Postgres and Redis.
+2. Set all production environment variables before the first deploy.
+3. Run Alembic migrations against the production Postgres database.
+4. Deploy the app container.
+5. Verify `GET /health`.
+6. Verify auth, email flows, payments, and Sentry/PostHog on the deployed URL.
+
+### Single-service production example
+
+For a single Railway-style deployment where FastAPI serves the built SPA and API from the same domain:
+
+```env
+ENV=production
+DATABASE_URL=postgresql://...
+REDIS_URL=redis://...
+SECURE_COOKIES=true
+
+APP_BASE_URL=https://your-app.up.railway.app
+FRONTEND_BASE_URL=https://your-app.up.railway.app
+ALLOWED_ORIGINS=https://your-app.up.railway.app
+
+SENTRY_DSN=https://...
+VITE_SENTRY_DSN=https://...
+VITE_POSTHOG_KEY=phc_...
+VITE_POSTHOG_HOST=https://us.i.posthog.com
+```
+
+The frontend observability values are injected into the SPA at request time by the backend router, so Railway does not need to pass them as Docker build args.
+
+### Frontend sourcemaps
+
+Frontend builds now emit hidden sourcemaps. If `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECT` are present during the build, Vite will upload those sourcemaps to Sentry automatically via `@sentry/vite-plugin`. If they are absent, the build still succeeds and simply skips upload.
 
 ### Razorpay dashboard setup
 

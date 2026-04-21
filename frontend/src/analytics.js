@@ -5,9 +5,10 @@
  * Event names follow a `noun_verb` convention (`question_submitted`, `mock_started`).
  */
 import posthog from 'posthog-js';
+import { getRuntimeConfig } from './runtimeConfig';
 
-const POSTHOG_KEY = import.meta.env.VITE_POSTHOG_KEY;
-const POSTHOG_HOST = import.meta.env.VITE_POSTHOG_HOST || 'https://us.i.posthog.com';
+const POSTHOG_KEY = getRuntimeConfig('VITE_POSTHOG_KEY');
+const POSTHOG_HOST = getRuntimeConfig('VITE_POSTHOG_HOST') || 'https://us.i.posthog.com';
 
 let _initialized = false;
 
