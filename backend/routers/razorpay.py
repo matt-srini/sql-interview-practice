@@ -12,11 +12,15 @@ from fastapi.concurrency import run_in_threadpool
 from config import (
     RAZORPAY_AMOUNT_LIFETIME_ELITE,
     RAZORPAY_AMOUNT_LIFETIME_PRO,
+    RAZORPAY_AMOUNT_LIFETIME_ELITE_USD,
+    RAZORPAY_AMOUNT_LIFETIME_PRO_USD,
     RAZORPAY_CURRENCY,
     RAZORPAY_KEY_ID,
     RAZORPAY_KEY_SECRET,
     RAZORPAY_PLAN_ELITE,
     RAZORPAY_PLAN_PRO,
+    RAZORPAY_PLAN_ELITE_USD,
+    RAZORPAY_PLAN_PRO_USD,
     RAZORPAY_WEBHOOK_SECRET,
 )
 from db import (
@@ -57,6 +61,13 @@ def _plan_ids() -> dict[str, str | None]:
     return {
         "pro":   RAZORPAY_PLAN_PRO,
         "elite": RAZORPAY_PLAN_ELITE,
+    }
+
+
+def _plan_ids_usd() -> dict[str, str | None]:
+    return {
+        "pro":   RAZORPAY_PLAN_PRO_USD,
+        "elite": RAZORPAY_PLAN_ELITE_USD,
     }
 
 
@@ -204,6 +215,11 @@ async def create_order(
     if body.plan not in ALL_PAID_PLANS:
         raise HTTPException(status_code=400, detail="Invalid upgrade plan.")
 
+    if body.currency not in {"INR", "USD"}:
+        raise HTTPException(status_code=400, detail="Unsupported currency. Must be INR or USD.")
+
+    requested_currency = body.currency
+
     if not _target_plan_is_allowed(current_user["plan"], body.plan):
         raise HTTPException(status_code=400, detail="This upgrade path is not available.")
 
@@ -214,7 +230,14 @@ async def create_order(
     name = current_user.get("name") or email
 
     if body.plan in LIFETIME_PLANS:
-        amount = _lifetime_amounts()[body.plan]
+        if requested_currency == "USD":
+            amount = (
+                RAZORPAY_AMOUNT_LIFETIME_PRO_USD
+                if body.plan == "lifetime_pro"
+                else RAZORPAY_AMOUNT_LIFETIME_ELITE_USD
+            )
+        else:
+            amount = _lifetime_amounts()[body.plan]
         if not amount or amount <= 0:
             raise HTTPException(status_code=503, detail="Lifetime amount is not configured.")
         description = "datanest Lifetime Pro" if body.plan == "lifetime_pro" else "datanest Lifetime Elite"
@@ -222,7 +245,7 @@ async def create_order(
         def _create_order() -> Any:
             return client.order.create({
                 "amount": int(amount),
-                "currency": RAZORPAY_CURRENCY,
+                "currency": requested_currency,
                 "payment_capture": 1,
                 "notes": {
                     "user_id": str(current_user["id"]),
@@ -235,7 +258,7 @@ async def create_order(
             order_id=str(order["id"]),
             subscription_id=None,
             amount=int(amount),
-            currency=RAZORPAY_CURRENCY,
+            currency=requested_currency,
             key_id=str(RAZORPAY_KEY_ID),
             name=display_name,
             description=description,
@@ -245,10 +268,19 @@ async def create_order(
         )
 
     # Recurring subscription (pro / elite)
-    plan_ids = _plan_ids()
-    plan_id = plan_ids.get(body.plan)
-    if not plan_id:
-        raise HTTPException(status_code=503, detail="Razorpay plan is not configured for this tier.")
+    if requested_currency == "USD":
+        plan_ids = _plan_ids_usd()
+        plan_id = plan_ids.get(body.plan)
+        if not plan_id:
+            raise HTTPException(
+                status_code=503,
+                detail="International checkout not available yet.",
+            )
+    else:
+        plan_ids = _plan_ids()
+        plan_id = plan_ids.get(body.plan)
+        if not plan_id:
+            raise HTTPException(status_code=503, detail="Razorpay plan is not configured for this tier.")
 
     # Keep a customer object so we can look up the user from the webhook payload
     customer_id = await _ensure_customer_id(current_user, client)
@@ -280,7 +312,7 @@ async def create_order(
         order_id=None,
         subscription_id=str(subscription["id"]),
         amount=0,
-        currency=RAZORPAY_CURRENCY,
+        currency=requested_currency,
         key_id=str(RAZORPAY_KEY_ID),
         name=display_name,
         description=description,

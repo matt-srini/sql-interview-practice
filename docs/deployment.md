@@ -188,6 +188,10 @@ The `FRONTEND_DIST_DIR` env var defaults to `/app/frontend/dist` inside the imag
 | `RAZORPAY_AMOUNT_LIFETIME_PRO` | — | Amount in paise for the Lifetime Pro one-time order (default `799900` = ₹7,999) |
 | `RAZORPAY_AMOUNT_LIFETIME_ELITE` | — | Amount in paise for the Lifetime Elite one-time order (default `1499900` = ₹14,999) |
 | `RAZORPAY_CURRENCY` | — | Currency code for Razorpay charges; defaults to `INR` |
+| `RAZORPAY_PLAN_PRO_USD` | — | Razorpay Plan id for the monthly Pro subscription billed in USD (set after international approval) |
+| `RAZORPAY_PLAN_ELITE_USD` | — | Razorpay Plan id for the monthly Elite subscription billed in USD (set after international approval) |
+| `RAZORPAY_AMOUNT_LIFETIME_PRO_USD` | — | Amount in cents for the USD Lifetime Pro one-time order (default `8900` = $89) |
+| `RAZORPAY_AMOUNT_LIFETIME_ELITE_USD` | — | Amount in cents for the USD Lifetime Elite one-time order (default `16900` = $169) |
 | `ALLOWED_ORIGINS` | — | Comma-separated CORS origins; defaults to localhost dev origins |
 | `FRONTEND_DIST_DIR` | — | Path to built SPA assets; defaults to `../frontend/dist` |
 | `RATE_LIMIT_REQUESTS` | — | Requests per window per IP; default `60` |

@@ -52,7 +52,7 @@ function tierLabel(tier) {
   }[tier] || 'Pro';
 }
 
-export default function UpgradeButton({ tier = 'pro', label, source, compact = false, className = '' }) {
+export default function UpgradeButton({ tier = 'pro', label, source, compact = false, className = '', currency = 'INR' }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(null);
 
@@ -62,7 +62,7 @@ export default function UpgradeButton({ tier = 'pro', label, source, compact = f
     setPending(true);
     setError(null);
     try {
-      const orderRes = await api.post('/razorpay/create-order', { plan: tier });
+      const orderRes = await api.post('/razorpay/create-order', { plan: tier, currency });
       const {
         order_id, subscription_id, amount, currency, key_id, name, description,
         prefill_email, prefill_name, is_subscription,

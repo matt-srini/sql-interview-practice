@@ -37,6 +37,7 @@ class UnlockState(BaseModel):
 
 class CreateOrderRequest(BaseModel):
     plan: str
+    currency: str = "INR"
 
 
 class CreateOrderResponse(BaseModel):
