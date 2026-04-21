@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
 import Topbar from '../components/Topbar';
 import UpgradeButton from '../components/UpgradeButton';
+import { track as trackEvent } from '../analytics';
 
 const TRACKS = ['sql', 'python', 'python-data', 'pyspark', 'mixed'];
 const DIFFICULTIES = ['easy', 'medium', 'hard', 'mixed'];
@@ -94,6 +96,7 @@ export default function MockHub() {
         ...(mode === 'custom' ? { num_questions: numQuestions, time_minutes: timeMinutes } : {}),
       };
       const r = await api.post('/mock/start', payload);
+      trackEvent('mock_started', { mode, track, difficulty, session_id: r.data.session_id });
       navigate(`/mock/${r.data.session_id}`, { state: { sessionData: r.data } });
     } catch (err) {
       const msg = err?.response?.data?.error || err?.response?.data?.detail || 'Failed to start session. Please try again.';
@@ -136,6 +139,11 @@ export default function MockHub() {
 
   return (
     <div className="mock-hub-page">
+      <Helmet>
+        <title>Mock Interview — datanest</title>
+        <meta name="description" content="Simulate real data interview conditions with timed SQL, Python, Pandas, and PySpark mock sessions." />
+        <meta name="robots" content="noindex" />
+      </Helmet>
       <Topbar active="mock" />
 
       <main className="mock-hub-main">

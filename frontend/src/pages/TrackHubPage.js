@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import api from '../api';
 import { useCatalog } from '../catalogContext';
 import { useTopic } from '../contexts/TopicContext';
@@ -124,6 +125,11 @@ export default function TrackHubPage() {
 
   return (
     <main className="container track-hub-page">
+      <Helmet>
+        <title>{meta.label} Practice — datanest</title>
+        <meta name="description" content={`Practice ${meta.label} interview questions on datanest. Curated challenges with instant feedback and real execution environments.`} />
+        <meta property="og:title" content={`${meta.label} Practice — datanest`} />
+      </Helmet>
       <div className="track-hub-inner">
         <TierBanner
           plan={user?.plan ?? 'free'}

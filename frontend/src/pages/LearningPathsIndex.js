@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import api from '../api';
 import { TRACK_META } from '../contexts/TopicContext';
 import PathProgressCard from '../components/PathProgressCard';
@@ -42,6 +43,11 @@ export default function LearningPathsIndex() {
 
   return (
     <div className="learn-index-page">
+      <Helmet>
+        <title>{pageTitle} — datanest</title>
+        <meta name="description" content={topic ? `Curated ${TRACK_META[topic]?.label ?? topic} learning paths to build interview-ready skills step by step.` : 'Curated SQL, Python, Pandas, and PySpark learning paths to build interview-ready skills step by step.'} />
+        <meta property="og:title" content={`${pageTitle} — datanest`} />
+      </Helmet>
       <Topbar />
 
       <section className="learn-index-header">

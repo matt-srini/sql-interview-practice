@@ -77,7 +77,19 @@
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(d.get\\('slug'\\), d.get\\('title'\\), d.get\\('topic'\\)\\)\")",
       "Bash(python3 -c 'import json,sys; d=json.load\\(open\\('\\\\''__TRACKED_VAR__'\\\\''\\)\\); print\\(d.get\\('\\\\''topic'\\\\''\\), d.get\\('\\\\''slug'\\\\''\\), d.get\\('\\\\''title'\\\\''\\)\\)')",
       "Bash(npx vite *)",
-      "Bash(DATABASE_URL=\"postgresql+asyncpg://postgres:postgres@localhost:5432/sql_practice\" ../.venv/bin/alembic current)"
+      "Bash(DATABASE_URL=\"postgresql+asyncpg://postgres:postgres@localhost:5432/sql_practice\" ../.venv/bin/alembic current)",
+      "WebSearch",
+      "WebFetch(domain:razorpay.com)",
+      "WebFetch(domain:linear.app)",
+      "WebFetch(domain:vercel.com)",
+      "WebFetch(domain:stripe.com)",
+      "WebFetch(domain:www.raycast.com)",
+      "WebFetch(domain:supabase.com)",
+      "WebFetch(domain:resend.com)",
+      "WebFetch(domain:arc.net)",
+      "WebFetch(domain:superhuman.com)",
+      "WebFetch(domain:culturedcode.com)",
+      "WebFetch(domain:exercism.org)"
     ]
   }
 }

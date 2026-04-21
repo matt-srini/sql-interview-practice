@@ -196,6 +196,9 @@ The `FRONTEND_DIST_DIR` env var defaults to `/app/frontend/dist` inside the imag
 | `LOGIN_LOCKOUT_MAX_ATTEMPTS` | — | Failed login attempts before temporary lock; default `5` |
 | `LOGIN_LOCKOUT_WINDOW_MINUTES` | — | Temporary login lock window; default `15` minutes |
 | `SENTRY_DSN` | — | Optional backend Sentry DSN for production error capture |
+| `VITE_SENTRY_DSN` | — | Optional frontend Sentry DSN (set at build time via Vite) |
+| `VITE_POSTHOG_KEY` | — | PostHog project API key for product analytics (set at build time via Vite) |
+| `VITE_POSTHOG_HOST` | — | PostHog ingest host; defaults to `https://us.i.posthog.com` |
 
 In `production` mode, startup will fail fast if `DATABASE_URL`, `REDIS_URL`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, or `RAZORPAY_WEBHOOK_SECRET` are missing.
 

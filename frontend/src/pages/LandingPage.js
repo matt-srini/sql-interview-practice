@@ -1,5 +1,6 @@
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
@@ -343,6 +344,13 @@ export default function LandingPage() {
 
   return (
     <>
+      <Helmet>
+        <title>datanest — SQL, Python &amp; Data Interview Practice</title>
+        <meta name="description" content="Practice SQL, Python, Pandas, and PySpark interview questions in a real execution environment. 350 questions, instant feedback, and curated learning paths for data professionals." />
+        <meta property="og:title" content="datanest — SQL, Python &amp; Data Interview Practice" />
+        <meta property="og:description" content="Practice SQL, Python, Pandas, and PySpark interview questions in a real execution environment. 350 questions, instant feedback, and curated learning paths." />
+        <meta property="og:url" content="https://datanest.app/" />
+      </Helmet>
       <Topbar showPricingLink={!user} />
 
       <main className="landing-page">

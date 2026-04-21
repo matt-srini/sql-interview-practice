@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { format as formatSQL } from 'sql-formatter';
 import api from '../api';
 import CodeEditor from '../components/CodeEditor';
@@ -17,6 +18,7 @@ import { useAuth } from '../contexts/AuthContext';
 import UpgradeButton from '../components/UpgradeButton';
 import { parseSqlError } from '../utils/sqlErrorParser';
 import { useToast } from '../App';
+import { track } from '../analytics';
 
 const HINT_STEP_LABELS = ['Conceptual hint', 'Approach hint', 'Structure hint', 'Final hint'];
 const STREAK_MILESTONES = [3, 7, 14, 30, 60, 100];
@@ -532,7 +534,9 @@ export default function QuestionPage() {
       }
       const res = await api.post(submitApiPath, payload);
       setSubmitResult(res.data);
+      track('question_submitted', { track: topic, question_id: Number(id), difficulty: question?.difficulty, correct: res.data.correct });
       if (res.data.correct) {
+        track('question_solved', { track: topic, question_id: Number(id), difficulty: question?.difficulty, first_try: priorAttemptCountRef.current === 0 });
         const lockedBefore = catalog?.groups?.reduce(
           (sum, group) => sum + group.questions.filter((entry) => entry.state === 'locked').length,
           0
@@ -823,6 +827,11 @@ export default function QuestionPage() {
 
   return (
     <main className="container question-page question-page-challenge">
+      <Helmet>
+        <title>{question ? `${question.title} — ${meta.label} — datanest` : `${meta.label} Practice — datanest`}</title>
+        {question && <meta name="description" content={`${question.title}: a ${question.difficulty} ${meta.label} interview question on datanest.`} />}
+        <meta name="robots" content="noindex" />
+      </Helmet>
       {pathNavBar && (
         <div className="path-nav-bar">
           <Link to={`/learn/${pathNavBar.path.topic}/${pathNavBar.path.slug}`} className="path-nav-back">

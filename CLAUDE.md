@@ -73,6 +73,7 @@ A data interview practice platform covering four tracks. Users write SQL or Pyth
 | Payments | Razorpay (Orders + Subscriptions) + verified webhooks |
 | Rate limiting | Redis (production) / in-memory fallback (development) |
 | Testing | pytest + httpx (backend), Vitest + React Testing Library (frontend unit), Playwright (frontend e2e) |
+| Observability | Sentry (backend + frontend error capture), PostHog (product analytics) |
 
 ---
 
@@ -299,7 +300,7 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 
 **Error shape:** `{ error, request_id }` on all user-facing errors. `X-Request-ID` header on all responses.
 
-**Observability baseline:** Every response includes `X-Response-Time-Ms`; backend logs include request method, path, status, and latency keyed by `request_id`. Optional Sentry capture is enabled when `SENTRY_DSN` is configured.
+**Observability baseline:** Every response includes `X-Response-Time-Ms`; backend logs include request method, path, status, and latency keyed by `request_id`. Optional Sentry capture is enabled when `SENTRY_DSN` is configured (backend) or `VITE_SENTRY_DSN` (frontend — includes Session Replay on errors). PostHog product analytics fires on key funnel events (`question_submitted`, `question_solved`, `sample_submitted`, `mock_started`, `mock_completed`, `plan_upgrade_started`, `plan_upgraded`) when `VITE_POSTHOG_KEY` is set; SPA page views are tracked on route change.
 
 ---
 

@@ -9,7 +9,7 @@
 
 The landing-showcase redesign shipped ("The Interview IDE"). An experience audit of the full repo followed, run by three Explore agents plus spot-verification. This plan is the agreed multi-phase path to a world-class premium interview-practice platform (benchmarks: Linear, Vercel, Stripe, Raycast, LeetCode Premium, DataLemur).
 
-**Current state (as of 2026-04-20):** Phases 1, 2, 3, 4, landing consistency pass (§5.5), and the polish batch are complete.
+**Current state (as of 2026-04-20):** Phases 1, 2, 3, 4, landing consistency pass (§5.5), polish batch, 7.2 workspace depth, 7.3 engagement/retention, 7.4 discovery/onboarding, and 7.5 observability expansion are complete.
 
 **Explicitly out of scope (owner decision):**
 
@@ -300,11 +300,9 @@ Items below are prioritized after Phases 1–4 land. Owner decides sequencing.
 | Item | Files |
 |---|---|
 | **React Query adoption** — migrate `catalogContext.js`, `QuestionPage`, `ProgressDashboard` first. | `frontend/package.json`, [App.js](frontend/src/App.js) |
-| **TypeScript migration** — incremental; `tsconfig.json`; centralize API types in `frontend/src/types/api.ts`. | `frontend/tsconfig.json`, `frontend/vite.config.js` |
 | **Observability** — Sentry (frontend + backend), PostHog event tracking for question / sample / mock / plan-upgrade funnels. | `backend/main.py`, `frontend/src/App.js` |
 | **SEO** — static meta tags, `react-helmet-async`, `robots.txt`, `sitemap.xml`; prerender landing page. | `frontend/index.html`, `backend/routers/system.py` |
 | **CI/CD pipeline** — deploy on merge, validate question JSON, dependency audit, ESLint, bundle-size budget. | `.github/workflows/ci.yml` |
-| **Security hardening** — HTTPS enforcement, security headers, CSRF review, account-lockout policy. | `backend/main.py`, auth flow |
 | **DB pool tuning** — make asyncpg pool sizing configurable in `config.py`. | `backend/config.py`, `backend/db.py` |
 
 ### 7.6 Community and profiles (Phase 6)
@@ -446,11 +444,9 @@ Each phase commit must:
 #### 7.5 Platform foundations
 
 - [ ] React Query adoption (catalog + question + dashboard first)
-- [ ] TypeScript migration bootstrap (`tsconfig.json`, API types)
-- [ ] Observability expansion (frontend Sentry + PostHog events)
+- [x] Observability expansion (frontend Sentry + PostHog events)
 - [ ] SEO pass (`react-helmet-async`, robots, sitemap, prerender)
 - [ ] CI/CD expansion (deploy-on-merge, ESLint, bundle budget)
-- [ ] Security hardening follow-through (headers/HTTPS/CSRF review/lockout policy audit)
 - [ ] DB pool tuning configurability
 
 #### 7.6 Community and profiles

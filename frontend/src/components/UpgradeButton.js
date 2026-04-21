@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import api from '../api';
+import { track } from '../analytics';
 
 /**
  * Shared upgrade CTA button. Opens the Razorpay Checkout modal for the given tier.
@@ -67,6 +68,7 @@ export default function UpgradeButton({ tier = 'pro', label, source, compact = f
         prefill_email, prefill_name, is_subscription,
       } = orderRes.data;
 
+      track('plan_upgrade_started', { tier, source });
       await loadRazorpayScript();
       if (!window.Razorpay) throw new Error('Razorpay SDK not available');
 
@@ -86,6 +88,7 @@ export default function UpgradeButton({ tier = 'pro', label, source, compact = f
               razorpay_order_id: resp.razorpay_order_id,
               razorpay_subscription_id: resp.razorpay_subscription_id,
             });
+            track('plan_upgraded', { tier, source });
             window.location.assign('/practice?upgraded=true');
           } catch (e) {
             setPending(false);
