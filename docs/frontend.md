@@ -326,14 +326,14 @@ All requests use `withCredentials: true` so the `session_token` cookie is sent d
 
 ### Sentry (error capture)
 
-Initialized in `index.js` when `VITE_SENTRY_DSN` is set. Uses `@sentry/react` with:
+Initialized in `index.js` when `VITE_SENTRY_DSN` is available. In local dev it comes from Vite env; in the deployed single-service app it is injected at request time into `window.__APP_CONFIG__` by `routers/spa.py`. Uses `@sentry/react` with:
 - Browser tracing (10% sample rate)
 - Session Replay on errors (100% of error sessions, 0% baseline)
 - `ErrorBoundary.js` calls `Sentry.captureException()` on component crashes
 
 ### PostHog (product analytics)
 
-Initialized via `analytics.js` when `VITE_POSTHOG_KEY` is set. All calls no-op when the key is absent.
+Initialized via `analytics.js` when `VITE_POSTHOG_KEY` is available. In local dev it comes from Vite env; in the deployed single-service app it is injected at request time into `window.__APP_CONFIG__` by `routers/spa.py`. All calls no-op when the key is absent.
 
 **Identity lifecycle:** `identifyUser()` on session restore / login / register; `resetIdentity()` on logout.
 
@@ -352,6 +352,8 @@ Initialized via `analytics.js` when `VITE_POSTHOG_KEY` is set. All calls no-op w
 | `plan_upgraded` | UpgradeButton | `tier`, `source` |
 
 **Funnel:** Landing → Track selection → First question → First solve → Registration → Plan upgrade.
+
+**Production sourcemaps:** `vite.config.js` emits hidden sourcemaps for production builds. If `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECT` are provided during build, `@sentry/vite-plugin` uploads them automatically.
 
 ---
 

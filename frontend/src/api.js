@@ -1,11 +1,12 @@
 import axios from 'axios';
+import { getRuntimeConfig } from './runtimeConfig';
 
 function trimTrailingSlash(value) {
   return value.replace(/\/+$/, '');
 }
 
 function getApiBaseUrl() {
-  const configuredBaseUrl = import.meta.env.VITE_BACKEND_URL?.trim();
+  const configuredBaseUrl = getRuntimeConfig('VITE_BACKEND_URL');
   if (configuredBaseUrl) {
     return `${trimTrailingSlash(configuredBaseUrl)}/api`;
   }

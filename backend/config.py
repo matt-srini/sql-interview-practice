@@ -79,6 +79,12 @@ SECURE_COOKIES = (_getenv("SECURE_COOKIES", "true" if IS_PROD else "false") or "
 
 # Observability
 SENTRY_DSN = _getenv("SENTRY_DSN")
+VITE_SENTRY_DSN = _getenv("VITE_SENTRY_DSN")
+VITE_POSTHOG_KEY = _getenv("VITE_POSTHOG_KEY")
+VITE_POSTHOG_HOST = _getenv("VITE_POSTHOG_HOST")
+
+# Frontend runtime config
+VITE_BACKEND_URL = _getenv("VITE_BACKEND_URL")
 
 # OAuth providers
 GOOGLE_CLIENT_ID = _getenv("GOOGLE_CLIENT_ID")

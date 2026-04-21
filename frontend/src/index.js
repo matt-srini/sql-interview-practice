@@ -3,10 +3,11 @@ import ReactDOM from 'react-dom/client';
 import * as Sentry from '@sentry/react';
 import App from './App';
 import { initAnalytics } from './analytics';
+import { getRuntimeConfig } from './runtimeConfig';
 import './App.css';
 
 // ── Sentry (frontend error capture) ─────────────────────────
-const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN;
+const SENTRY_DSN = getRuntimeConfig('VITE_SENTRY_DSN');
 if (SENTRY_DSN) {
   Sentry.init({
     dsn: SENTRY_DSN,

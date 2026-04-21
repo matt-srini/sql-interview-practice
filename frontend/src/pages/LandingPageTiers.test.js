@@ -141,10 +141,10 @@ describe('LandingPage tier section', () => {
       });
     });
 
-    it('shows ₹0 in the Free column', async () => {
+    it('shows "Free" in the Free column', async () => {
       renderWithPlan(null);
       await waitFor(() => {
-        expect(screen.getByText('₹0')).toBeInTheDocument();
+        expect(screen.getByText('Free', { selector: '.landing-tier-price-amount' })).toBeInTheDocument();
       });
     });
 

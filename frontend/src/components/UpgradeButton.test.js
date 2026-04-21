@@ -5,26 +5,36 @@
  * and all CSS class / attribute behaviour driven by props.
  */
 
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { cleanup } from '@testing-library/react';
+
+const { mockApiPost, mockTrack, mockAssign } = vi.hoisted(() => ({
+  mockApiPost: vi.fn(),
+  mockTrack: vi.fn(),
+  mockAssign: vi.fn(),
+}));
+
 // ---------------------------------------------------------------------------
 // Mock window.location.assign BEFORE any imports — jsdom marks the real
 // window.location as non-configurable, so vi.spyOn fails at call-site.
 // Shadow it here at module evaluation time instead.
 // ---------------------------------------------------------------------------
-const mockAssign = vi.fn();
 Object.defineProperty(window, 'location', {
   value: { ...window.location, assign: mockAssign },
   writable: true,
 });
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { cleanup } from '@testing-library/react';
-
 vi.mock('../api', () => ({
-  default: { post: vi.fn() },
+  default: {
+    post: (...args) => mockApiPost(...args),
+  },
 }));
 
-import api from '../api';
+vi.mock('../analytics', () => ({
+  track: (...args) => mockTrack(...args),
+}));
+
 import UpgradeButton from './UpgradeButton';
 
 // ---------------------------------------------------------------------------
@@ -53,7 +63,8 @@ function installRazorpayMock() {
 }
 
 beforeEach(() => {
-  vi.clearAllMocks();
+  mockApiPost.mockReset();
+  mockTrack.mockReset();
   mockAssign.mockReset();
   installRazorpayMock();
 });
@@ -119,18 +130,18 @@ describe('Success path (subscription)', () => {
   };
 
   it('calls /razorpay/create-order with plan=pro on click', async () => {
-    api.post.mockResolvedValueOnce(subscriptionOrderResponse);
+    mockApiPost.mockResolvedValueOnce(subscriptionOrderResponse);
 
     renderButton({ tier: 'pro' });
     fireEvent.click(screen.getByRole('button'));
 
     await waitFor(() => {
-      expect(api.post).toHaveBeenCalledWith('/razorpay/create-order', { plan: 'pro' });
+      expect(mockApiPost).toHaveBeenCalledWith('/razorpay/create-order', { plan: 'pro', currency: 'INR' });
     });
   });
 
   it('opens Razorpay modal with subscription_id for subscription plans', async () => {
-    api.post.mockResolvedValueOnce(subscriptionOrderResponse);
+    mockApiPost.mockResolvedValueOnce(subscriptionOrderResponse);
 
     renderButton({ tier: 'pro' });
     fireEvent.click(screen.getByRole('button'));
@@ -144,7 +155,7 @@ describe('Success path (subscription)', () => {
   });
 
   it('verifies payment and redirects on successful handler callback', async () => {
-    api.post
+    mockApiPost
       .mockResolvedValueOnce(subscriptionOrderResponse)      // create-order
       .mockResolvedValueOnce({ data: { plan: 'pro' } });     // verify-payment
 
@@ -161,7 +172,7 @@ describe('Success path (subscription)', () => {
     });
 
     await waitFor(() => {
-      expect(api.post).toHaveBeenNthCalledWith(2, '/razorpay/verify-payment', {
+      expect(mockApiPost).toHaveBeenNthCalledWith(2, '/razorpay/verify-payment', {
         plan: 'pro',
         razorpay_payment_id: 'pay_test_abc',
         razorpay_signature: 'sig_test',
@@ -190,7 +201,7 @@ describe('Success path (one-time lifetime)', () => {
   };
 
   it('opens Razorpay modal with order_id + amount for lifetime plans', async () => {
-    api.post.mockResolvedValueOnce(lifetimeOrderResponse);
+    mockApiPost.mockResolvedValueOnce(lifetimeOrderResponse);
 
     renderButton({ tier: 'lifetime_pro' });
     fireEvent.click(screen.getByRole('button'));
@@ -209,7 +220,7 @@ describe('Success path (one-time lifetime)', () => {
 
 describe('Error path', () => {
   it('re-enables button after create-order error', async () => {
-    api.post.mockRejectedValueOnce(new Error('Network error'));
+    mockApiPost.mockRejectedValueOnce(new Error('Network error'));
 
     renderButton({ tier: 'pro' });
     fireEvent.click(screen.getByRole('button'));
@@ -220,7 +231,7 @@ describe('Error path', () => {
   });
 
   it('does not redirect on create-order error', async () => {
-    api.post.mockRejectedValueOnce(new Error('Network error'));
+    mockApiPost.mockRejectedValueOnce(new Error('Network error'));
 
     renderButton({ tier: 'pro' });
     fireEvent.click(screen.getByRole('button'));
