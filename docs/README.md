@@ -13,6 +13,7 @@ This is the documentation hub for the datanest interview practice platform. Star
 | [frontend.md](./frontend.md) | Route tree, pages, components, design system, data flows |
 | [datasets.md](./datasets.md) | All 11 CSV tables — columns, row counts, intentional edge cases |
 | [deployment.md](./deployment.md) | Local dev setup, Docker, production build, environment variables, Railway |
+| [railway-razorpay-launch-checklist.md](./railway-razorpay-launch-checklist.md) | End-to-end launch checklist for local Razorpay test mode, Railway deployment, and live-mode cutover |
 | [content-authoring.md](./content-authoring.md) | Curriculum philosophy, question counts, concept coverage maps, per-track authoring rules, JSON schemas |
 | [USERGUIDE.md](./USERGUIDE.md) | End-user guide to the platform |
 
@@ -22,7 +23,7 @@ This is the documentation hub for the datanest interview practice platform. Star
 
 **What it is:** A data interview preparation platform with four tracks (SQL, Python, Pandas, PySpark), 350 questions, Monaco editor, instant feedback, and plan-gated progression.
 
-**Tech stack:** React 18 + Vite frontend · FastAPI backend · PostgreSQL (state) · DuckDB (SQL execution) · Python subprocess sandbox · Redis (rate limiting) · Stripe (billing) · Single Docker container on Railway.
+**Tech stack:** React 18 + Vite frontend · FastAPI backend · PostgreSQL (state) · DuckDB (SQL execution) · Python subprocess sandbox · Redis (rate limiting) · Razorpay (billing) · Single Docker container on Railway.
 
 **Two practice modes:**
 - **Challenge mode** (`/practice/:topic`) — plan-aware question bank, persistent progress, unlock gates
