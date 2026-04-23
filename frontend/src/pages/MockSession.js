@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import api from '../api';
 import CodeEditor from '../components/CodeEditor';
 import MCQPanel from '../components/MCQPanel';
@@ -42,6 +43,8 @@ export default function MockSession() {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isElite = user?.plan === 'elite' || user?.plan === 'lifetime_elite';
 
   const [session, setSession] = useState(null);
   const [questions, setQuestions] = useState([]);
@@ -261,7 +264,7 @@ export default function MockSession() {
     const comparisonTrack = (sum?.track || session?.track) === 'mixed'
       ? (qs[0]?.track || 'sql')
       : (sum?.track || session?.track || 'sql');
-    const baselineAccuracy = insights?.per_track?.[comparisonTrack]?.accuracy_pct;
+    const baselineAccuracy = isElite ? insights?.per_track?.[comparisonTrack]?.accuracy_pct : undefined;
 
     const conceptStats = {};
     qs.forEach((question) => {
@@ -372,7 +375,7 @@ export default function MockSession() {
               );
             })}
             <hr className="mock-summary-divider" />
-            {conceptRows.length > 0 && (
+            {isElite && conceptRows.length > 0 && (
               <div className="mock-concept-summary">
                 <div className="mock-concept-summary-title">Concept accuracy this session</div>
                 <div className="mock-concept-summary-rows">

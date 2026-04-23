@@ -195,7 +195,7 @@ def _public_question_payload(question: dict, track: str) -> dict:
     # Pandas: include available dataframes info
     if track == "python-data":
         payload["dataframes"] = {
-            name: {"description": info.get("description", "")}
+            name: {"description": info.get("description", "") if isinstance(info, dict) else str(info)}
             for name, info in question.get("dataframes", {}).items()
         }
     # PySpark: include options
