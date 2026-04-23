@@ -2855,6 +2855,35 @@ select {
   line-height: 1.72;
 }
 
+.description-code-block {
+  background: var(--surface-raised, #F0EEE9);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.9rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  overflow-x: auto;
+  margin: 0.6rem 0 0.2rem;
+  color: var(--text-strong);
+}
+
+[data-theme="dark"] .description-code-block {
+  background: rgba(255,255,255,0.06);
+}
+
+.description-inline-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.84em;
+  background: var(--surface-raised, #EEECEA);
+  border-radius: 4px;
+  padding: 0.1em 0.32em;
+  color: var(--text-strong);
+}
+
+[data-theme="dark"] .description-inline-code {
+  background: rgba(255,255,255,0.1);
+}
+
 .locked-callout {
   border-radius: 14px;
   border: 1px solid rgba(196, 127, 23, 0.22);
@@ -3276,7 +3305,14 @@ select {
 .landing-actions .btn-secondary,
 .sample-page-actions .btn-secondary,
 .post-submit-stack .btn-secondary,
-.sample-challenge-actions .btn-secondary {
+.sample-challenge-actions .btn-secondary,
+.dashboard-empty-actions .btn-secondary,
+.mock-hub-empty-actions .btn-secondary,
+.learn-index-empty-actions .btn-secondary,
+.preview-locked-actions .btn-secondary,
+.learn-unlock-card .btn-secondary,
+.learn-path-complete-banner .btn-secondary,
+.error-boundary-actions .btn-secondary {
   background: rgba(0, 0, 0, 0.03);
   color: var(--text-primary);
   border-color: var(--border-subtle);
@@ -3285,7 +3321,14 @@ select {
 .landing-actions .btn-secondary:not(:disabled):hover,
 .sample-page-actions .btn-secondary:not(:disabled):hover,
 .post-submit-stack .btn-secondary:not(:disabled):hover,
-.sample-challenge-actions .btn-secondary:not(:disabled):hover {
+.sample-challenge-actions .btn-secondary:not(:disabled):hover,
+.dashboard-empty-actions .btn-secondary:not(:disabled):hover,
+.mock-hub-empty-actions .btn-secondary:not(:disabled):hover,
+.learn-index-empty-actions .btn-secondary:not(:disabled):hover,
+.preview-locked-actions .btn-secondary:not(:disabled):hover,
+.learn-unlock-card .btn-secondary:not(:disabled):hover,
+.learn-path-complete-banner .btn-secondary:not(:disabled):hover,
+.error-boundary-actions .btn-secondary:not(:disabled):hover {
   background: rgba(0, 0, 0, 0.06);
   border-color: var(--border-strong);
 }
@@ -5320,13 +5363,27 @@ select {
 [data-theme="dark"] .post-submit-stack .btn-secondary,
 [data-theme="dark"] .sample-challenge-actions .btn-secondary,
 [data-theme="dark"] .app-topbar .btn-secondary,
-[data-theme="dark"] .auth-topbar-unused .btn-secondary { background: rgba(255, 255, 255, 0.05); color: var(--text-primary); border-color: var(--border-subtle); }
+[data-theme="dark"] .auth-topbar-unused .btn-secondary,
+[data-theme="dark"] .dashboard-empty-actions .btn-secondary,
+[data-theme="dark"] .mock-hub-empty-actions .btn-secondary,
+[data-theme="dark"] .learn-index-empty-actions .btn-secondary,
+[data-theme="dark"] .preview-locked-actions .btn-secondary,
+[data-theme="dark"] .learn-unlock-card .btn-secondary,
+[data-theme="dark"] .learn-path-complete-banner .btn-secondary,
+[data-theme="dark"] .error-boundary-actions .btn-secondary { background: rgba(255, 255, 255, 0.05); color: var(--text-primary); border-color: var(--border-subtle); }
 [data-theme="dark"] .landing-actions .btn-secondary:not(:disabled):hover,
 [data-theme="dark"] .sample-page-actions .btn-secondary:not(:disabled):hover,
 [data-theme="dark"] .post-submit-stack .btn-secondary:not(:disabled):hover,
 [data-theme="dark"] .sample-challenge-actions .btn-secondary:not(:disabled):hover,
 [data-theme="dark"] .app-topbar .btn-secondary:not(:disabled):hover,
-[data-theme="dark"] .auth-topbar-unused .btn-secondary:not(:disabled):hover { background: rgba(255, 255, 255, 0.09); border-color: var(--border-strong); }
+[data-theme="dark"] .auth-topbar-unused .btn-secondary:not(:disabled):hover,
+[data-theme="dark"] .dashboard-empty-actions .btn-secondary:not(:disabled):hover,
+[data-theme="dark"] .mock-hub-empty-actions .btn-secondary:not(:disabled):hover,
+[data-theme="dark"] .learn-index-empty-actions .btn-secondary:not(:disabled):hover,
+[data-theme="dark"] .preview-locked-actions .btn-secondary:not(:disabled):hover,
+[data-theme="dark"] .learn-unlock-card .btn-secondary:not(:disabled):hover,
+[data-theme="dark"] .learn-path-complete-banner .btn-secondary:not(:disabled):hover,
+[data-theme="dark"] .error-boundary-actions .btn-secondary:not(:disabled):hover { background: rgba(255, 255, 255, 0.09); border-color: var(--border-strong); }
 [data-theme="dark"] .btn-success { color: var(--success); }
 [data-theme="dark"] .sidebar-error { color: var(--danger); }
 [data-theme="dark"] .track-tile { background: var(--surface-card); border-color: var(--border-subtle); }
@@ -6317,7 +6374,7 @@ select {
 }
 .mock-question-description {
   font-size: 0.9rem;
-  color: var(--text-body);
+  color: var(--text-primary);
   line-height: 1.6;
   white-space: pre-wrap;
   margin: 0;
@@ -6359,7 +6416,7 @@ select {
   margin: 0;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.78rem;
-  color: var(--text-body);
+  color: var(--text-primary);
   line-height: 1.7;
 }
 
@@ -6534,7 +6591,7 @@ select {
 }
 .mock-solution-explanation {
   font-size: 0.875rem;
-  color: var(--text-body);
+  color: var(--text-primary);
   line-height: 1.6;
   margin: 0 0 0.75rem;
 }
@@ -6674,7 +6731,7 @@ select {
 .mock-custom-label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--text-body);
+  color: var(--text-primary);
   min-width: 140px;
 }
 .mock-custom-input {
@@ -6708,7 +6765,7 @@ select {
 .mock-hub-config-label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-body);
+  color: var(--text-primary);
   min-width: 80px;
 }
 .mock-config-pills {
@@ -6723,7 +6780,7 @@ select {
   cursor: pointer;
   font-size: 0.83rem;
   background: none;
-  color: var(--text-body);
+  color: var(--text-primary);
   transition: background 0.12s, color 0.12s, border-color 0.12s;
 }
 .mock-config-pill:hover {
@@ -6782,6 +6839,15 @@ select {
 .mock-access-error-actions .btn-secondary:hover {
   background: rgba(255, 255, 255, 0.9);
 }
+[data-theme="dark"] .mock-access-error-actions .btn-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(212, 151, 58, 0.35);
+  color: var(--text-primary);
+}
+[data-theme="dark"] .mock-access-error-actions .btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(212, 151, 58, 0.5);
+}
 
 .mock-access-error-hint {
   font-size: 0.78rem;
@@ -6839,7 +6905,7 @@ select {
 .mock-history-table td {
   padding: 0.625rem 0.75rem;
   border-bottom: 1px solid var(--border-subtle);
-  color: var(--text-body);
+  color: var(--text-primary);
   vertical-align: middle;
 }
 .mock-history-table tr:last-child td {
@@ -6993,7 +7059,7 @@ select {
   padding: 0.375rem 0.75rem;
   border-radius: 6px;
   text-decoration: none;
-  color: var(--text-body);
+  color: var(--text-primary);
   font-size: 0.875rem;
   white-space: nowrap;
 }
@@ -7565,7 +7631,8 @@ select {
   border-radius: 999px;
   font-size: 0.82rem;
   font-weight: 600;
-  color: var(--pill-color);
+  /* Darken text toward page background to ensure AA contrast for warm colors (amber/orange) */
+  color: color-mix(in srgb, var(--pill-color) 65%, var(--text-strong));
   border: 1.5px solid var(--pill-color);
   background: color-mix(in srgb, var(--pill-color) 10%, transparent);
   text-decoration: none;
@@ -7622,6 +7689,8 @@ select {
 .upgrade-btn { font-weight: 600; }
 .upgrade-btn-elite { background: linear-gradient(135deg, #5B6AF0, #9B59B6); }
 .upgrade-btn-elite:not(:disabled):hover { background: linear-gradient(135deg, #4A59DF, #8B49A6); }
+[data-theme="dark"] .upgrade-btn-elite { background: linear-gradient(135deg, #7B8AF5, #B87FD9); }
+[data-theme="dark"] .upgrade-btn-elite:not(:disabled):hover { background: linear-gradient(135deg, #9AA7F7, #CA96E8); }
 
 /* ── TierBanner ────────────────────────────────────── */
 .tier-banner {
@@ -7987,14 +8056,15 @@ select {
 /* Lifetime button — de-emphasised secondary CTA */
 .landing-tier-lifetime-btn {
   background: transparent !important;
-  color: var(--text-secondary) !important;
-  border: 1px solid var(--border-subtle) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-strong) !important;
   box-shadow: none !important;
   font-size: 0.78rem !important;
 }
 .landing-tier-lifetime-btn:not(:disabled):hover {
   color: var(--text-strong) !important;
   background: var(--surface-card-soft) !important;
+  border-color: var(--accent) !important;
   transform: none !important;
   box-shadow: none !important;
 }
