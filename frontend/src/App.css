@@ -1456,7 +1456,7 @@ select {
   background: var(--accent);
   border-radius: 2px;
   transition: width 0.4s ease;
-  opacity: 0.6;
+  opacity: 0.85;
 }
 
 .sidebar-unlock-bar-label {
@@ -5495,6 +5495,16 @@ select {
   position: relative;
 }
 
+/* Fallback: if JS observer never fires, reveal after a short animation delay */
+@supports (animation-timeline: scroll()) {
+  .landing-showcase-inner:not(.is-visible) {
+    animation: showcaseFallback 0.75s ease 1.5s forwards;
+  }
+}
+@keyframes showcaseFallback {
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .landing-showcase-inner.is-visible {
   opacity: 1;
   transform: translateY(0);
@@ -5970,7 +5980,7 @@ select {
 }
 
 .track-card .track-progress-bar-fill {
-  opacity: 0.75;
+  opacity: 0.9;
 }
 
 /* ============================================================
@@ -6882,14 +6892,14 @@ select {
   align-items: center;
   gap: 0.75rem;
   padding: 0.7rem 1rem;
-  background: var(--surface-card);
-  border: 1px solid var(--border-subtle);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-soft-strong);
   border-radius: var(--radius-sm);
 }
 
 .mock-hub-upgrade-nudge-label {
   font-size: 0.82rem;
-  color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 .mock-hub-history-title {
@@ -7161,6 +7171,9 @@ select {
 .topbar-auth-link--active {
   color: var(--accent);
   font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
 }
 
 /* ── Shared Topbar Practice dropdown ─────────────────────── */
@@ -7536,6 +7549,9 @@ select {
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
+.learn-question-difficulty--easy   { color: var(--success); }
+.learn-question-difficulty--medium { color: var(--warning); }
+.learn-question-difficulty--hard   { color: var(--danger);  }
 .learn-question-btn {
   font-size: 0.8rem;
   font-weight: 600;

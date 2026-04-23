@@ -7,12 +7,6 @@ import { useAuth } from '../contexts/AuthContext';
 import Topbar from '../components/Topbar';
 import UpgradeButton from '../components/UpgradeButton';
 
-const DIFFICULTY_COLORS = {
-  easy: 'var(--success)',
-  medium: 'var(--warning)',
-  hard: 'var(--danger)',
-};
-
 export default function LearningPath() {
   const { topic, slug } = useParams();
   const navigate = useNavigate();
@@ -190,8 +184,7 @@ export default function LearningPath() {
                         <Link to={questionUrl}>{q.title}</Link>
                       </span>
                       <span
-                        className="learn-question-difficulty"
-                        style={{ color: DIFFICULTY_COLORS[q.difficulty] }}
+                        className={`learn-question-difficulty learn-question-difficulty--${q.difficulty}`}
                       >
                         {q.difficulty}
                       </span>
