@@ -389,6 +389,8 @@ cd backend && DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:543
 | `docs/deployment.md` | Local dev, Docker, production image, env vars, Railway |
 | `docs/content-authoring.md` | Platform philosophy, question counts, concept coverage maps, per-track schemas, authoring rules |
 | `docs/USERGUIDE.md` | End-user guide to the platform |
+| `docs/features/mock.md` | Mock interview feature reference — plan gates, endpoints, coaching insights, test coverage |
+| `docs/features/dashboard.md` | Dashboard feature reference — plan gates, endpoints, coaching insights, streak logic, caching |
 
 **AI question authoring agents** (track-specific prompts for generating questions with Claude):
 

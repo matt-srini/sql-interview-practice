@@ -1,0 +1,124 @@
+# Mock Interview — Feature Reference
+
+## Overview
+
+The mock interview system lets users practise under real interview conditions: a countdown timer, no mid-session solutions, and a post-session debrief. It is accessible to all authenticated users at `/mock` (requires login).
+
+---
+
+## Session Modes
+
+| Mode | Time limit | Questions |
+|---|---|---|
+| Quick | 30 min | 2 |
+| Full | 60 min | 3 |
+| Custom | 10–90 min (user-set) | 1–5 (user-set) |
+
+Custom mode validates server-side: `num_questions` must be 1–5, `time_minutes` must be 10–90.
+
+---
+
+## Tracks and Difficulties
+
+**Tracks:** SQL, Python, Pandas, PySpark, Mixed (draws from all four)
+
+**Difficulties:** Easy, Medium, Hard, Mixed (blend)
+
+---
+
+## Plan-based Access Gates
+
+| Feature | Free | Pro | Elite / Lifetime Elite |
+|---|---|---|---|
+| Easy mocks | ✅ Unlimited | ✅ Unlimited | ✅ Unlimited |
+| Medium mocks | ✅ Unlimited easy · **1 medium/day** (requires medium unlocked in practice first) | ✅ Unlimited | ✅ Unlimited |
+| Hard mocks | ❌ Plan-locked (upgrade to Pro) | ✅ **3 hard/day** | ✅ Unlimited |
+| Mixed mocks | ✅ (restricted to unlocked difficulties) | ✅ | ✅ |
+| Company-filtered mocks | ❌ | ❌ | ✅ (SQL track only) |
+| Weak-spot insights in summary | ❌ | ❌ | ✅ |
+
+**Pre-flight access check:** `GET /api/mock/access?track=<track>` is called every time the track selector changes. It returns per-difficulty `can_start`, `daily_limit`, `daily_used`, `needs_upgrade`, and `block_copy` so the UI can render gate state without a round-trip on Start.
+
+---
+
+## Company Filter (Elite only)
+
+Elite users see a **Company** dropdown when the SQL track is selected. Selecting a company sends `company_filter: "Meta"` (etc.) in the start payload. The backend validates that the user has Elite tier before allowing the session to proceed.
+
+Available companies: Airbnb, Amazon, Amplitude, Databricks, Google, LinkedIn, Meta, Microsoft, Netflix, PayPal, Salesforce, Shopify, Snowflake, Stripe, Zendesk, eBay.
+
+---
+
+## Active Session (`/mock/:id`)
+
+- **Countdown timer** in the topbar — colour-coded: normal → amber (<10 min) → red (<3 min). Browser tab title updates with remaining time.
+- **Auto-finish** when timer reaches 0.
+- **Question navigation** — numbered dot tabs, each shows solved/unsolved state.
+- **Run code** — SQL, Python, and Pandas support running code against the live evaluator mid-session (same as practice mode). PySpark is MCQ-only.
+- **SQL schema viewer** — Description / Schema toggle in the left panel.
+- **Hints and concept tags** visible on each question.
+- **Submit per question** — returns correct/incorrect + feedback immediately. **No solution revealed mid-session** (verified by API; solutions are withheld from the `/submit` response).
+- **Exit confirmation** — clicking Exit or End Session shows a confirm dialog.
+- **Session reload recovery** — navigating back to `/mock/:id` restores state from the server. Remaining time is recomputed from `started_at`.
+- **Mobile** — collapsible left panel for the question description.
+
+---
+
+## Post-session Summary
+
+Shown after `POST /api/mock/:id/finish`:
+
+- **Score headline** — `X/Y correct`.
+- **(Elite)** Baseline comparison — `X% above/below your session average` pulled from `/api/dashboard/insights`.
+- **Time used** — `MM:SS used of MM:SS limit`.
+- **Per-question breakdown** — solved/unsolved badge, time spent, expandable **"See solution"** toggle (reference solution + explanation, revealed only after finish).
+- **(Elite) Concept accuracy table** — lists every concept that appeared in the session with `correct / attempted`, sorted worst-first.
+- **(Elite) "Drill weak concepts →"** — links to `/practice/:track?concepts=...` pre-filtered to the worst 2 concepts from the session.
+- **Share result** — copies a summary string to clipboard.
+
+---
+
+## History (`/mock` page)
+
+- Shows the last 20 sessions in a table: Date, Mode, Track, Difficulty, Score (X/Y), Time limit.
+- **Review →** for completed sessions, **Resume →** for in-progress ones.
+- Empty state links to practice tracks and the dashboard.
+
+---
+
+## How to Use (the `?` button on /mock)
+
+1. **Choose mode** — Quick (30 min, 2 questions), Full (60 min, 3 questions), or Custom.
+2. **Pick track and difficulty** — Difficulty buttons show live access state (remaining daily sessions or upgrade CTAs).
+3. **(Elite, SQL track)** Optionally select a **Company** filter.
+4. **Start** — the timer starts immediately.
+5. **During the session** — write your answer in the editor, run it to check, and submit each question. No solutions are shown yet.
+6. **End session** — click "End session" or let the timer run out.
+7. **Review** — see your score, solutions to every question, and (Elite) your concept weak-spots with a drill link.
+
+---
+
+## Backend Endpoints
+
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| GET | `/api/mock/access` | Required | Pre-flight: per-difficulty access state for a given track |
+| GET | `/api/mock/history` | Required | Last 20 sessions |
+| POST | `/api/mock/start` | Required | Start a session |
+| GET | `/api/mock/:id` | Required | Load/reload session state |
+| POST | `/api/mock/:id/submit` | Required | Submit one answer mid-session |
+| POST | `/api/mock/:id/finish` | Required | End session, get full summary with solutions |
+
+---
+
+## Test Coverage
+
+See `backend/tests/test_mock.py` for the full test suite covering:
+- Access endpoint (all plans, all difficulties)
+- Daily limit enforcement (free medium 1/day, pro hard 3/day, elite unlimited)
+- Full session lifecycle for all 4 tracks (SQL, Python, Pandas, PySpark)
+- Custom mode validation
+- Mixed track sessions
+- Company filter gating (free/pro blocked, elite/lifetime_elite allowed)
+- History endpoint shape
+- Solution visibility (absent during session, present after finish)
