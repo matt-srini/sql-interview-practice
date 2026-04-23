@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { TRACK_META } from '../contexts/TopicContext';
+import { useAuth } from '../contexts/AuthContext';
 
 function percent(value) {
   if (typeof value !== 'number' || Number.isNaN(value)) return '0%';
@@ -7,10 +8,21 @@ function percent(value) {
 }
 
 export default function InsightStrip({ insights }) {
+  const { user } = useAuth();
   if (!insights) return null;
 
   const weakest = insights.weakest_concepts?.[0] || null;
   const weakestTrack = weakest ? TRACK_META[weakest.track] : null;
+
+  const streakDays = insights.streak_days || 0;
+  let streakMessage;
+  if (streakDays === 0) {
+    streakMessage = 'Solve one question today to start a streak.';
+  } else if (user?.streak_at_risk) {
+    streakMessage = 'Solve one today to keep it alive.';
+  } else {
+    streakMessage = 'Great work! Come back tomorrow to keep it going.';
+  }
 
   return (
     <section className="dashboard-section dashboard-insight-strip" aria-label="Performance insights">
@@ -23,10 +35,8 @@ export default function InsightStrip({ insights }) {
 
       <div className="dashboard-insight-tile">
         <p className="dashboard-insight-kicker">Current streak</p>
-        <p className="dashboard-insight-value">{insights.streak_days || 0} day{insights.streak_days === 1 ? '' : 's'}</p>
-        <p className="dashboard-insight-muted">
-          {insights.streak_days > 0 ? 'Solve one today to keep it alive.' : 'Solve one question today to start a streak.'}
-        </p>
+        <p className="dashboard-insight-value">{streakDays} day{streakDays === 1 ? '' : 's'}</p>
+        <p className="dashboard-insight-muted">{streakMessage}</p>
       </div>
 
       <div className="dashboard-insight-tile">

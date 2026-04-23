@@ -194,7 +194,7 @@ export default function AuthPage() {
 
           {/* Header */}
           <div className="auth-card-header">
-            <button type="button" className="auth-back-link" onClick={() => returnTo ? navigate(returnTo) : navigate(-1)}>← Back</button>
+            <button type="button" className="auth-back-link" onClick={() => window.history.length > 1 ? navigate(-1) : navigate('/')}>← Back</button>
             <h1 className="auth-card-title">{meta.title}</h1>
             <p className="auth-card-subtitle">{meta.subtitle}</p>
           </div>
