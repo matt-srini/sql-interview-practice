@@ -130,7 +130,7 @@ export default function Topbar({
               <>
                 <div className={practiceDropdownClass} ref={dropdownRef}>
                   <button
-                    className={`topbar-auth-link topbar-practice-trigger${practiceOpen ? ' topbar-practice-trigger--open' : ''}`}
+                    className={`topbar-auth-link topbar-practice-trigger${practiceOpen ? ' topbar-practice-trigger--open' : ''}${location.pathname.startsWith('/practice') ? ' topbar-auth-link--active' : ''}`}
                     onClick={() => setPracticeOpen((v) => !v)}
                     aria-haspopup="true"
                     aria-expanded={practiceOpen}
@@ -143,6 +143,7 @@ export default function Topbar({
                   </button>
                   {practiceOpen && (
                     <div className="topbar-practice-menu">
+                      <div className="topbar-practice-menu-header">Tracks</div>
                       {TOPICS.map((t) => (
                         <NavLink
                           key={t}
@@ -152,6 +153,10 @@ export default function Topbar({
                           to={`/practice/${t}`}
                           onClick={() => setPracticeOpen(false)}
                         >
+                          <span
+                            className="topbar-practice-item-dot"
+                            style={{ background: TRACK_META[t].color }}
+                          />
                           {TRACK_META[t].label}
                         </NavLink>
                       ))}
