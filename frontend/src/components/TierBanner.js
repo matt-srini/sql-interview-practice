@@ -22,8 +22,9 @@ export default function TierBanner({
   mediumUnlocked = false,
   hardUnlocked = false,
 }) {
-  if (plan === 'elite' || plan === 'pro') {
-    const label = plan === 'elite' ? 'Elite' : 'Pro';
+  const normalisedPlan = plan?.startsWith('lifetime_') ? plan.replace('lifetime_', '') : plan;
+  if (normalisedPlan === 'elite' || normalisedPlan === 'pro') {
+    const label = normalisedPlan === 'elite' ? 'Elite' : 'Pro';
     return (
       <div className="tier-banner tier-banner-paid">
         <span className="tier-banner-text">{label} plan · Full practice access across all tracks.</span>

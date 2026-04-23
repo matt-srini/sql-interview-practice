@@ -120,14 +120,15 @@ export default function AppShell() {
   const goalProgress = Math.min(1, sessionGoal > 0 ? sessionSolvedNow / sessionGoal : 0);
   const goalMet = sessionSolvedNow >= sessionGoal;
 
-  const showUpgradeControls = user && (user.plan === 'free' || user.plan === 'pro');
-  const planPillClass = `shell-pill shell-pill-plan shell-pill-plan-${user?.plan ?? 'free'}`;
+  const normalisedPlan = user?.plan?.startsWith('lifetime_') ? user.plan.replace('lifetime_', '') : (user?.plan ?? 'free');
+  const showUpgradeControls = user && (normalisedPlan === 'free' || normalisedPlan === 'pro');
+  const planPillClass = `shell-pill shell-pill-plan shell-pill-plan-${normalisedPlan}`;
 
-  const planLabel = user?.plan === 'elite' ? 'Elite' : user?.plan === 'pro' ? 'Pro' : 'Free';
+  const planLabel = normalisedPlan === 'elite' ? 'Elite' : normalisedPlan === 'pro' ? 'Pro' : 'Free';
   const mediumGroup = catalog?.groups?.find(g => g.difficulty === 'medium');
   const lockedMediumCount = mediumGroup?.questions?.filter(q => q.state === 'locked').length ?? 0;
   const lockedHardCount = (catalog?.groups?.find(g => g.difficulty === 'hard'))?.questions?.filter(q => q.state === 'locked').length ?? 0;
-  const showUnlockNudge = !!(user?.plan === 'free' && (lockedMediumCount > 0 || lockedHardCount > 0) && catalog);
+  const showUnlockNudge = !!(normalisedPlan === 'free' && (lockedMediumCount > 0 || lockedHardCount > 0) && catalog);
   const unlockNudgeByTrack = {
     sql: 'Medium unlocks at 8, 15, and 25 easy solves. Hard unlocks at 8, 15, and 22 medium solves (capped at 15 hard).',
     python: 'Medium unlocks at 8, 15, and 25 easy solves. Hard unlocks at 8, 15, and 22 medium solves (capped at 15 hard).',
