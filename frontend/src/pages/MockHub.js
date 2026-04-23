@@ -50,10 +50,12 @@ export default function MockHub() {
   const [mode, setMode] = useState('30min');
   const [track, setTrack] = useState('sql');
   const [difficulty, setDifficulty] = useState('easy');
+  const [companyFilter, setCompanyFilter] = useState('');
   const [numQuestions, setNumQuestions] = useState(2);
   const [timeMinutes, setTimeMinutes] = useState(30);
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState(null);
+  const [showHelp, setShowHelp] = useState(false);
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(true);
 
@@ -94,6 +96,7 @@ export default function MockHub() {
         track,
         difficulty,
         ...(mode === 'custom' ? { num_questions: numQuestions, time_minutes: timeMinutes } : {}),
+        ...(companyFilter ? { company_filter: companyFilter } : {}),
       };
       const r = await api.post('/mock/start', payload);
       trackEvent('mock_started', { mode, track, difficulty, session_id: r.data.session_id });
@@ -150,7 +153,7 @@ export default function MockHub() {
         {/* Hero */}
         <section className="mock-hub-hero">
           <h1 className="mock-hub-title">Mock Interview</h1>
-          <p className="mock-hub-subtitle">Simulate real interview conditions with a countdown timer.</p>
+          <p className="mock-hub-subtitle">Simulate real interview conditions with a countdown timer.<button className="mock-help-btn" onClick={() => setShowHelp(true)} aria-label="How it works">?</button></p>
         </section>
 
         {/* Mode selector */}
@@ -212,13 +215,34 @@ export default function MockHub() {
                     key={t}
                     type="button"
                     className={`mock-config-pill ${track === t ? 'active' : ''}`}
-                    onClick={() => { setTrack(t); setStartError(null); }}
+                    onClick={() => { setTrack(t); setCompanyFilter(''); setStartError(null); }}
                   >
                     {TRACK_LABELS[t]}
                   </button>
                 ))}
               </div>
             </div>
+
+            {/* Company filter — Elite only, SQL track only */}
+            {track === 'sql' && (() => {
+              const normalisedPlan = user?.plan?.startsWith('lifetime_') ? user.plan.replace('lifetime_', '') : (user?.plan ?? 'free');
+              const isElite = normalisedPlan === 'elite';
+              return isElite ? (
+                <div className="mock-hub-config-row">
+                  <span className="mock-hub-config-label">Company</span>
+                  <select
+                    className="mock-config-select"
+                    value={companyFilter}
+                    onChange={e => setCompanyFilter(e.target.value)}
+                  >
+                    <option value="">All companies</option>
+                    {['Airbnb','Amazon','Amplitude','Databricks','Google','LinkedIn','Meta','Microsoft','Netflix','PayPal','Salesforce','Shopify','Snowflake','Stripe','Zendesk','eBay'].map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+              ) : null;
+            })()}
 
             {/* Difficulty with per-button pre-flight state */}
             <div className="mock-hub-config-row">
@@ -348,6 +372,23 @@ export default function MockHub() {
             </div>
           </section>
         )}
+      {showHelp && (
+        <div className="mock-help-overlay" role="dialog" aria-modal="true" aria-labelledby="mock-help-title">
+          <div className="mock-help-modal">
+            <div className="mock-help-modal-header">
+              <h2 id="mock-help-title">How mock interviews work</h2>
+              <button className="mock-help-close" onClick={() => setShowHelp(false)} aria-label="Close">✕</button>
+            </div>
+            <ol className="mock-help-steps">
+              <li>Choose mode — Quick (30 min, 2 questions), Full (60 min, 3 questions), or Custom.</li>
+              <li>Pick your track (SQL, Python, Pandas, PySpark, or Mixed) and difficulty.</li>
+              <li>During the session — a countdown timer runs. Write your answer and submit each question independently.</li>
+              <li>No solutions are revealed mid-session.</li>
+              <li>After finishing — you'll see your score, time used, and (Elite) concept weak-spots with a drill link.</li>
+            </ol>
+          </div>
+        </div>
+      )}
       </main>
     </div>
   );

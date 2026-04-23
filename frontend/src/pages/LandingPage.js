@@ -665,7 +665,7 @@ export default function LandingPage() {
                 <ul className="landing-tier-list">
                   <li>{TOTAL_EASY} easy questions (32 SQL · 30 Python · 29 Pandas · 38 PySpark)</li>
                   <li>Unlock medium + hard as you solve (batch-gated)</li>
-                  <li>1 mock interview per day</li>
+                  <li>Unlimited easy mocks · 1 medium mock/day</li>
                   <li>2 learning paths per track</li>
                 </ul>
                 <div className="landing-tier-cta">
@@ -689,7 +689,7 @@ export default function LandingPage() {
                   <li>Everything in Free</li>
                   <li>All {TOTAL_QUESTIONS} questions — every medium + hard</li>
                   <li>All learning paths</li>
-                  <li>3 mock interviews per day (up to hard)</li>
+                  <li>Unlimited easy + medium mocks · 3 hard mocks/day</li>
                 </ul>
                 <div className="landing-tier-cta">
                   {proColCta() === 'current' && (

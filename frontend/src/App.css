@@ -6873,6 +6873,96 @@ select {
   flex-wrap: wrap;
 }
 
+/* Mock help button */
+.mock-help-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid var(--text-secondary);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 8px;
+  vertical-align: middle;
+  transition: border-color 0.15s, color 0.15s;
+}
+.mock-help-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Mock help overlay */
+.mock-help-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.mock-help-modal {
+  background: var(--surface-card);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem 2rem;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+}
+.mock-help-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.mock-help-modal-header h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-strong);
+  margin: 0;
+}
+.mock-help-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
+}
+.mock-help-close:hover { color: var(--text-strong); }
+.mock-help-steps {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--text-strong);
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+.mock-help-steps li { margin-bottom: 0.5rem; }
+.mock-help-steps li:last-child { margin-bottom: 0; }
+
+/* Company filter select */
+.mock-config-select {
+  border: 1.5px solid var(--border-default, #E2E0DA);
+  border-radius: var(--radius-sm);
+  background: var(--bg-page);
+  color: var(--text-strong);
+  font-size: 0.85rem;
+  padding: 0.35rem 0.6rem;
+  cursor: pointer;
+  min-width: 160px;
+}
+.mock-config-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
 /* ── Nav dropdown ────────────────────────────────────────── */
 /* ── Legacy nav-dropdown (used by LandingPage topbar, MockHub, etc.) */
 .nav-dropdown {
