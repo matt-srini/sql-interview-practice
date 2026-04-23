@@ -663,7 +663,7 @@ export default function LandingPage() {
                   </div>
                 </div>
                 <ul className="landing-tier-list">
-                  <li>{TOTAL_EASY} easy questions (32 SQL · 30 Python · 29 Pandas · 38 PySpark)</li>
+                  <li>All easy questions (32 SQL · 30 Python · 29 Pandas · 38 PySpark)</li>
                   <li>Unlock medium + hard as you solve (batch-gated)</li>
                   <li>Unlimited easy mocks · 1 medium mock/day</li>
                   <li>2 learning paths per track</li>

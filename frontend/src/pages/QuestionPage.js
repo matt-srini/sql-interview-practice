@@ -17,6 +17,7 @@ import { useTopic } from '../contexts/TopicContext';
 import { useAuth } from '../contexts/AuthContext';
 import UpgradeButton from '../components/UpgradeButton';
 import { parseSqlError } from '../utils/sqlErrorParser';
+import { renderDescription } from '../utils/renderDescription';
 import { useToast } from '../App';
 import { track } from '../analytics';
 
@@ -25,6 +26,8 @@ const STREAK_MILESTONES = [3, 7, 14, 30, 60, 100];
 
 const SQL_PLACEHOLDER = '-- Write your SQL query here\nSELECT ';
 const PYTHON_PLACEHOLDER = '# Write your solution here\n';
+
+
 
 export default function QuestionPage() {
   const { id } = useParams();
@@ -908,7 +911,7 @@ export default function QuestionPage() {
               </div>
             )}
 
-            <p className="description-text">{question.description}</p>
+            <p className="description-text">{renderDescription(question.description)}</p>
 
             {/* PySpark: show code snippet (question stem) if present */}
             {meta.hasMCQ && question.code_snippet && (

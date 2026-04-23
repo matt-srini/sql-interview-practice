@@ -10,6 +10,7 @@ import SchemaViewer from '../components/SchemaViewer';
 import TestCasePanel from '../components/TestCasePanel';
 import VariablesPanel from '../components/VariablesPanel';
 import { TRACK_META } from '../contexts/TopicContext';
+import { renderDescription } from '../utils/renderDescription';
 import { track } from '../analytics';
 
 const SQL_PLACEHOLDER = '-- Write your SQL query here\nSELECT ';
@@ -406,7 +407,7 @@ export default function SampleQuestionPage() {
                 </div>
               )}
 
-              <p className="description-text">{question.description}</p>
+              <p className="description-text">{renderDescription(question.description)}</p>
 
               {meta.hasMCQ && question.code_snippet && (
                 <pre className="question-code-snippet">{question.code_snippet}</pre>

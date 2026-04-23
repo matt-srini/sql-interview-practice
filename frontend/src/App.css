@@ -7171,9 +7171,9 @@ select {
 .topbar-auth-link--active {
   color: var(--accent);
   font-weight: 600;
-  text-decoration: underline;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 3px;
+  background: var(--accent-soft);
+  padding: 3px 10px;
+  border-radius: 20px;
 }
 
 /* ── Shared Topbar Practice dropdown ─────────────────────── */
@@ -7191,6 +7191,11 @@ select {
   border: none;
   padding: 0;
 }
+.topbar-practice-trigger.topbar-auth-link--active {
+  background: var(--accent-soft);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
 .topbar-practice-trigger--open,
 .topbar-practice-trigger:hover {
   color: var(--accent);
@@ -7201,26 +7206,36 @@ select {
 }
 .topbar-practice-menu {
   position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
+  top: calc(100% + 10px);
+  left: 0;
   background: var(--surface-card);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  padding: 0.3rem;
-  min-width: 130px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06);
+  border-radius: var(--radius-md);
+  padding: 0.35rem;
+  min-width: 160px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.13), 0 2px 6px rgba(0,0,0,0.06);
   z-index: 500;
 }
+.topbar-practice-menu-header {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  padding: 0.3rem 0.75rem 0.4rem;
+}
 .topbar-practice-item {
-  display: block;
-  padding: 0.42rem 0.75rem;
-  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.48rem 0.75rem;
+  border-radius: 8px;
   text-decoration: none;
   color: var(--text-strong);
-  font-size: 0.84rem;
+  font-size: 0.85rem;
   font-weight: 500;
   white-space: nowrap;
-  transition: background 0.1s;
+  transition: background 0.12s;
 }
 .topbar-practice-item:hover {
   background: var(--bg-page);
@@ -7229,6 +7244,13 @@ select {
 .topbar-practice-item--active {
   color: var(--accent);
   font-weight: 600;
+  background: var(--accent-soft);
+}
+.topbar-practice-item-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 /* ── Responsive ──────────────────────────────────────────── */
