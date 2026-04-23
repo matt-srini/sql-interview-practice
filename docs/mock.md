@@ -111,18 +111,6 @@ Shown after `POST /api/mock/:id/finish`:
 
 ---
 
-## Known Deviations Fixed (April 2026)
-
-| # | Issue | Fix |
-|---|---|---|
-| DEV-1 | Free pricing bullet said "1 mock/day" — misleading (only medium is capped, easy is unlimited) | Updated to "Unlimited easy mocks · 1 medium/day" |
-| DEV-2 | Pro pricing bullet said "3 mock interviews/day (up to hard)" — misleading (only hard is capped, easy+medium are unlimited) | Updated to "Unlimited easy + medium mocks · 3 hard mocks/day" |
-| DEV-3 | Weak-spot insights (concept accuracy table + baseline comparison) shown to all users despite being marketed as Elite-only | Gated to Elite/lifetime_elite in `MockSession.js` |
-| DEV-4 | Company filter accepted by backend but no UI existed for Elite users | Added company select dropdown in `MockHub.js` (SQL + Elite only) |
-| PLAN-FIX | `lifetime_elite`/`lifetime_pro` plans not normalised in `AppShell.js` / `TierBanner.js` — showed "Free" pill and upgrade nudge | Normalised at render time |
-
----
-
 ## Test Coverage
 
 See `backend/tests/test_mock.py` for the full test suite covering:
