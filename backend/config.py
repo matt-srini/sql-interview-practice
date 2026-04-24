@@ -19,6 +19,14 @@ def _get_int(name: str, default: str) -> int:
 		raise RuntimeError(f"{name} must be a valid integer") from exc
 
 
+def _get_float(name: str, default: str) -> float:
+	value = _getenv(name, default)
+	try:
+		return float(value)  # type: ignore[arg-type]
+	except (TypeError, ValueError) as exc:
+		raise RuntimeError(f"{name} must be a valid float") from exc
+
+
 def _parse_origins(configured: str | None) -> list[str]:
 	if configured:
 		return [origin.strip() for origin in configured.split(",") if origin.strip()]
@@ -79,6 +87,8 @@ SECURE_COOKIES = (_getenv("SECURE_COOKIES", "true" if IS_PROD else "false") or "
 
 # Observability
 SENTRY_DSN = _getenv("SENTRY_DSN")
+SENTRY_RELEASE = _getenv("SENTRY_RELEASE")
+SENTRY_TRACES_SAMPLE_RATE = _get_float("SENTRY_TRACES_SAMPLE_RATE", "0.0")
 VITE_SENTRY_DSN = _getenv("VITE_SENTRY_DSN")
 VITE_POSTHOG_KEY = _getenv("VITE_POSTHOG_KEY")
 VITE_POSTHOG_HOST = _getenv("VITE_POSTHOG_HOST")

@@ -7,6 +7,7 @@ from config import SECURE_COOKIES
 from db import SESSION_COOKIE_NAME, create_anonymous_user, create_session, get_session_user
 from progress import get_solved_question_ids
 from questions import get_public_question, get_questions_by_difficulty
+from sentry_utils import set_sentry_user
 from unlock import compute_unlock_state, get_next_questions
 
 
@@ -57,17 +58,22 @@ async def get_optional_current_user(request: Request) -> dict[str, Any] | None:
     session_token = request.cookies.get(SESSION_COOKIE_NAME)
     if not session_token:
         return None
-    return await get_session_user(session_token)
+    user = await get_session_user(session_token)
+    if user is not None:
+        set_sentry_user(user, is_authenticated=bool(user.get("email")))
+    return user
 
 
 async def get_current_user(request: Request, response: Response) -> dict[str, Any]:
     existing = await get_optional_current_user(request)
     if existing is not None:
+        set_sentry_user(existing, is_authenticated=bool(existing.get("email")))
         return existing
 
     user = await create_anonymous_user()
     token = await create_session(user["id"])
     set_session_cookie(response, token)
+    set_sentry_user(user, is_authenticated=False)
     return user
 
 
