@@ -12,7 +12,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from config import ALLOWED_ORIGINS, APP_BASE_URL, ENV, FRONTEND_BASE_URL, IS_PROD, RATE_LIMIT_REQUESTS, RATE_LIMIT_WINDOW_SECONDS, REDIS_URL, SENTRY_DSN
+from config import ALLOWED_ORIGINS, APP_BASE_URL, FRONTEND_BASE_URL, IS_PROD, RATE_LIMIT_REQUESTS, RATE_LIMIT_WINDOW_SECONDS, REDIS_URL
 from database import close_query_engine, init_query_engine
 from db import close_pool, ensure_schema, init_pool
 from deps import CSRF_COOKIE_NAME, set_csrf_cookie
@@ -30,6 +30,7 @@ from routers import insights as insights_router
 from routers import submissions as submissions_router
 from routers import mock as mock_router
 from routers import paths as paths_router
+from sentry_utils import init_sentry
 
 
 LOG_FORMAT = "%(asctime)s [%(levelname)s] %(message)s"
@@ -43,19 +44,7 @@ for _handler in _root_logger.handlers:
 logger = logging.getLogger(__name__)
 
 
-if SENTRY_DSN:
-    try:
-        import sentry_sdk
-        from sentry_sdk.integrations.fastapi import FastApiIntegration
-    except ModuleNotFoundError:
-        logger.warning("SENTRY_DSN is set but sentry_sdk is not installed; skipping Sentry init")
-    else:
-        sentry_sdk.init(
-            dsn=SENTRY_DSN,
-            environment=ENV,
-            integrations=[FastApiIntegration()],
-            traces_sample_rate=0.0,
-        )
+init_sentry()
 
 
 @asynccontextmanager

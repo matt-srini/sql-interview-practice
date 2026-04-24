@@ -209,13 +209,14 @@ The `FRONTEND_DIST_DIR` env var defaults to `/app/frontend/dist` inside the imag
 | `GITHUB_CLIENT_ID` | Optional | Enable GitHub OAuth login |
 | `GITHUB_CLIENT_SECRET` | Optional | Enable GitHub OAuth login |
 | `SENTRY_DSN` | — | Optional backend Sentry DSN for production error capture |
+| `SENTRY_TRACES_SAMPLE_RATE` | — | Optional backend Sentry tracing sample rate from `0.0` to `1.0`; defaults to `0.0` |
 | `VITE_SENTRY_DSN` | — | Optional frontend Sentry DSN; read from runtime config in production and from Vite env in local dev |
 | `VITE_POSTHOG_KEY` | — | PostHog project API key for product analytics; read from runtime config in production and from Vite env in local dev |
 | `VITE_POSTHOG_HOST` | — | PostHog ingest host; defaults to `https://us.i.posthog.com` |
 | `SENTRY_AUTH_TOKEN` | Optional | Required only if you want the frontend build to upload sourcemaps to Sentry |
 | `SENTRY_ORG` | Optional | Sentry organization slug for frontend sourcemap upload |
 | `SENTRY_PROJECT` | Optional | Sentry project slug for frontend sourcemap upload |
-| `SENTRY_RELEASE` | Optional | Explicit release name for sourcemap upload; defaults to `RAILWAY_GIT_COMMIT_SHA` when available |
+| `SENTRY_RELEASE` | Optional | Release name used by backend Sentry and frontend sourcemap upload; defaults to `RAILWAY_GIT_COMMIT_SHA` when available on the frontend build |
 
 In `production` mode, startup will fail fast if `DATABASE_URL`, `REDIS_URL`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, or `RAZORPAY_WEBHOOK_SECRET` are missing.
 
@@ -243,12 +244,15 @@ FRONTEND_BASE_URL=https://your-app.up.railway.app
 ALLOWED_ORIGINS=https://your-app.up.railway.app
 
 SENTRY_DSN=https://...
+SENTRY_TRACES_SAMPLE_RATE=0.0
 VITE_SENTRY_DSN=https://...
 VITE_POSTHOG_KEY=phc_...
 VITE_POSTHOG_HOST=https://us.i.posthog.com
 ```
 
 The frontend observability values are injected into the SPA at request time by the backend router, so Railway does not need to pass them as Docker build args.
+
+For backend Sentry, the API automatically tags events with `request_id`, request metadata, and the current user/session context when available.
 
 ### Frontend sourcemaps
 

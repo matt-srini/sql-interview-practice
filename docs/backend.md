@@ -4,6 +4,21 @@
 
 FastAPI + Uvicorn. PostgreSQL for all product state. DuckDB for SQL query execution (in-memory, loaded at startup). Python/PySpark execution runs in subprocess sandboxes.
 
+## Observability
+
+Backend Sentry is initialized during app startup when `SENTRY_DSN` is set.
+
+What gets attached to backend events:
+- `request_id`
+- request path + method
+- current user id/email when a session is present
+- user plan and email-verification tags when available
+
+Behavior:
+- Expected 4xx-style app errors are filtered out before sending to Sentry
+- Performance tracing is off by default; enable it with `SENTRY_TRACES_SAMPLE_RATE`
+- `SENTRY_RELEASE` can be set to tag backend deploys/releases
+
 ---
 
 ## Routers

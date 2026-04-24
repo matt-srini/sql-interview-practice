@@ -9,6 +9,7 @@ from fastapi import Request
 from fastapi import HTTPException
 
 from exceptions import AppError
+from sentry_utils import set_sentry_request_context
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +39,7 @@ async def request_context_middleware(
     request.state.request_id = request_id
     token = _request_id_var.set(request_id)
     try:
+        set_sentry_request_context(request, request_id)
         client_ip = request.client.host if request.client else "unknown"
         prefix = f"[request_id={request_id}] "
         logger.info(
