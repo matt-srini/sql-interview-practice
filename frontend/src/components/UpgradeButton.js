@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api';
+import { useAuth } from '../contexts/AuthContext';
 import { track } from '../analytics';
 
 /**
@@ -25,17 +27,23 @@ function loadRazorpayScript() {
   _scriptPromise = new Promise((resolve, reject) => {
     const existing = document.querySelector(`script[src="${CHECKOUT_SCRIPT_SRC}"]`);
     if (existing) {
-      existing.addEventListener('load', () => resolve());
-      existing.addEventListener('error', () => reject(new Error('Razorpay script failed to load')));
+      existing.addEventListener('load', () => {
+        if (!window.Razorpay) { _scriptPromise = null; reject(new Error('blocked')); return; }
+        resolve();
+      });
+      existing.addEventListener('error', () => { _scriptPromise = null; reject(new Error('blocked')); });
       return;
     }
     const s = document.createElement('script');
     s.src = CHECKOUT_SCRIPT_SRC;
     s.async = true;
-    s.onload = () => resolve();
+    s.onload = () => {
+      if (!window.Razorpay) { _scriptPromise = null; reject(new Error('blocked')); return; }
+      resolve();
+    };
     s.onerror = () => {
       _scriptPromise = null;
-      reject(new Error('Razorpay script failed to load'));
+      reject(new Error('blocked'));
     };
     document.body.appendChild(s);
   });
@@ -53,30 +61,38 @@ function tierLabel(tier) {
 }
 
 export default function UpgradeButton({ tier = 'pro', label, source, compact = false, className = '', currency = 'INR' }) {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(null);
 
   const buttonLabel = label ?? `Upgrade to ${tierLabel(tier)}`;
 
   async function handleClick() {
+    if (!user) {
+      navigate('/auth', { state: { from: '/', upgradeTier: tier } });
+      return;
+    }
     setPending(true);
     setError(null);
     try {
       const orderRes = await api.post('/razorpay/create-order', { plan: tier, currency });
       const {
-        order_id, subscription_id, amount, currency, key_id, name, description,
+        order_id, subscription_id, amount, currency: checkoutCurrency, key_id, name, description,
         prefill_email, prefill_name, is_subscription,
       } = orderRes.data;
 
       track('plan_upgrade_started', { tier, source });
       await loadRazorpayScript();
-      if (!window.Razorpay) throw new Error('Razorpay SDK not available');
+      if (typeof window.Razorpay !== 'function') {
+        throw new Error('Razorpay SDK unavailable after load');
+      }
 
       const opts = {
         key: key_id,
         name,
         description,
-        currency,
+        currency: checkoutCurrency,
         prefill: { email: prefill_email || '', name: prefill_name || '' },
         theme: { color: '#5B6AF0' },
         handler: async (resp) => {
@@ -115,7 +131,21 @@ export default function UpgradeButton({ tier = 'pro', label, source, compact = f
       rzp.open();
     } catch (e) {
       setPending(false);
-      setError('Could not start checkout. Please try again.');
+      if (
+        e?.message === 'blocked'
+        || e?.message === 'Razorpay SDK not available'
+        || e?.message === 'Razorpay SDK unavailable after load'
+        || /Razorpay.*not a constructor/i.test(e?.message || '')
+      ) {
+        setError('Checkout was blocked — please disable any ad blocker for this site and try again.');
+      } else {
+        const message =
+          e?.response?.data?.error
+          || e?.response?.data?.detail
+          || e?.message
+          || 'Could not start checkout. Please try again.';
+        setError(message);
+      }
     }
   }
 
