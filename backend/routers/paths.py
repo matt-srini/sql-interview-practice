@@ -11,7 +11,7 @@ import questions as sql_mod
 from db import get_path_completion_state, get_solved_ids
 from deps import get_current_user
 from path_loader import get_all_paths, get_path
-from unlock import compute_unlock_state
+from unlock import compute_unlock_state, normalize_plan
 
 router = APIRouter()
 
@@ -39,7 +39,8 @@ async def _solved_for_topic(user_id: str, topic: str) -> set[int]:
 
 def _can_access_path(path: dict, user_plan: str) -> bool:
     """Free users can only access paths with tier='free'."""
-    if user_plan in ("pro", "elite"):
+    effective_plan = normalize_plan(user_plan)
+    if effective_plan in ("pro", "elite"):
         return True
     return path.get("tier", "pro") == "free"
 
