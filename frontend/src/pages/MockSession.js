@@ -45,6 +45,8 @@ export default function MockSession() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const isElite = user?.plan === 'elite' || user?.plan === 'lifetime_elite';
+  const isPro = user?.plan === 'pro' || user?.plan === 'lifetime_pro';
+  const isProOrElite = isPro || isElite;
 
   const [session, setSession] = useState(null);
   const [questions, setQuestions] = useState([]);
@@ -129,7 +131,7 @@ export default function MockSession() {
         .catch(() => setLoadError('Failed to load session.'));
     }
 
-    if (isElite) {
+    if (isProOrElite) {
       api.get('/dashboard/insights')
         .then(r => setInsights(r.data))
         .catch(() => setInsights(null));
@@ -266,7 +268,7 @@ export default function MockSession() {
     const comparisonTrack = (sum?.track || session?.track) === 'mixed'
       ? (qs[0]?.track || 'sql')
       : (sum?.track || session?.track || 'sql');
-    const baselineAccuracy = isElite ? insights?.per_track?.[comparisonTrack]?.accuracy_pct : undefined;
+    const baselineAccuracy = isProOrElite ? insights?.per_track?.[comparisonTrack]?.accuracy_pct : undefined;
 
     const conceptStats = {};
     qs.forEach((question) => {
@@ -320,9 +322,9 @@ export default function MockSession() {
     let comparisonCopy = null;
     if (typeof baselineAccuracy === 'number') {
       const delta = Math.round((sessionAccuracy - baselineAccuracy) * 100);
-      if (delta > 0) comparisonCopy = `${delta}% above your session average`;
-      else if (delta < 0) comparisonCopy = `${Math.abs(delta)}% below your session average`;
-      else comparisonCopy = 'on par with your session average';
+      if (delta > 0) comparisonCopy = `${delta}% above your historical accuracy`;
+      else if (delta < 0) comparisonCopy = `${Math.abs(delta)}% below your historical accuracy`;
+      else comparisonCopy = 'on par with your historical accuracy';
     }
 
     function shareText() {
@@ -391,25 +393,52 @@ export default function MockSession() {
               );
             })}
             <hr className="mock-summary-divider" />
-            {isElite && conceptRows.length > 0 && (
+            {isProOrElite && conceptRows.length > 0 && (
               <div className="mock-concept-summary">
-                <div className="mock-concept-summary-title">Concept accuracy this session</div>
+                <div className="mock-concept-summary-title">Concept breakdown</div>
                 <div className="mock-concept-summary-rows">
-                  {conceptRows.map((row) => (
-                    <div key={`${row.track}-${row.concept}`} className="mock-concept-summary-row">
-                      <span className="mock-concept-name">{row.concept}</span>
-                      <span className="mock-concept-score">{row.correct} / {row.attempts}</span>
-                    </div>
-                  ))}
+                  {conceptRows.map((row) => {
+                    const knownWeak = isElite && insights?.weakest_concepts?.find(
+                      w => w.concept === row.concept && w.track === row.track
+                    );
+                    return (
+                      <div key={`${row.track}-${row.concept}`} className={`mock-concept-summary-row${knownWeak ? ' mock-concept-summary-row--known-weak' : ''}`}>
+                        <span className="mock-concept-name">{row.concept}</span>
+                        {knownWeak && (
+                          <span className="mock-concept-known-weak-badge">known weakness</span>
+                        )}
+                        <span className="mock-concept-score">{row.correct} / {row.attempts}</span>
+                      </div>
+                    );
+                  })}
                 </div>
-                {drillConcepts.length > 0 && (
-                  <Link
-                    to={`/practice/${drillTrack}?concepts=${drillConcepts.join(',')}`}
-                    className="btn btn-secondary btn-compact"
-                  >
-                    Drill weak concepts →
-                  </Link>
-                )}
+                {drillConcepts.length > 0 && (() => {
+                  // Elite: prefer a path recommendation for the top weak session concept
+                  if (isElite) {
+                    const topWeak = conceptRows.find(r => r.track === drillTrack && r.accuracy < 1);
+                    const matchedInsight = topWeak && insights?.weakest_concepts?.find(
+                      w => w.concept === topWeak.concept && w.track === topWeak.track
+                    );
+                    if (matchedInsight?.recommended_path_slug) {
+                      return (
+                        <Link
+                          to={`/learn/${matchedInsight.track}/${matchedInsight.recommended_path_slug}`}
+                          className="btn btn-secondary btn-compact"
+                        >
+                          Study {matchedInsight.recommended_path_title} →
+                        </Link>
+                      );
+                    }
+                  }
+                  return (
+                    <Link
+                      to={`/practice/${drillTrack}?concepts=${drillConcepts.join(',')}`}
+                      className="btn btn-secondary btn-compact"
+                    >
+                      Drill weak concepts →
+                    </Link>
+                  );
+                })()}
               </div>
             )}
             <hr className="mock-summary-divider" />

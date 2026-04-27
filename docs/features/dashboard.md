@@ -70,7 +70,13 @@ Returns per-track coaching metrics, weakest concepts, the cross-track pace insig
     "pyspark":     { "solve_count": 3,  "median_solve_seconds": 30,  "accuracy_pct": 0.90 }
   },
   "weakest_concepts": [
-    { "concept": "window functions", "track": "sql", "attempts": 7, "correct": 2, "accuracy_pct": 0.286 }
+    {
+      "concept": "window functions", "track": "sql", "attempts": 7, "correct": 2, "accuracy_pct": 0.286,
+      "summary": "You're getting this wrong more often than not. This is your highest-priority gap right now.",
+      "recommended_path_slug": "window-functions-sql",
+      "recommended_path_title": "Window Functions",
+      "recommended_question_ids": [42, 55]
+    }
   ],
   "cross_track_insight": "You solve SQL ~4 minutes slower than PySpark. Try 3 SQL mediums to close the gap.",
   "streak_days": 3
@@ -80,7 +86,7 @@ Returns per-track coaching metrics, weakest concepts, the cross-track pace insig
 **Notes:**
 - `median_solve_seconds` is `null` when there are no solved questions on that track.
 - `accuracy_pct` is `0.0` when there are zero attempts on that track.
-- `weakest_concepts` contains at most 3 entries, sorted by `accuracy_pct` ascending (worst first), with `attempts` as the tiebreaker. Only concepts with ≥ 3 total attempts appear.
+- `weakest_concepts` contains at most 3 entries, sorted by recency-weighted accuracy ascending (worst first), with `attempts` as the tiebreaker. Only concepts with ≥ 3 total attempts appear. Attempts from the last 14 days count 1.5× so recent struggles surface ahead of stale history.
 - `cross_track_insight` is `null` when fewer than 2 tracks have data, or when the fastest–slowest gap is < 60 seconds.
 - `streak_days` is 0 when the user has not solved anything today.
 - Data source: `submissions` table (all attempts, not just first-correct).
@@ -99,7 +105,12 @@ Returns per-track coaching metrics, weakest concepts, the cross-track pace insig
 
 ### Weakest concepts
 
-A concept appears in `weakest_concepts` if it is tagged on a question the user has attempted ≥ 3 times (correct or incorrect). Concepts are ranked by accuracy ascending. At most 3 are returned.
+A concept appears in `weakest_concepts` if it is tagged on a question the user has attempted ≥ 3 times (correct or incorrect). Concepts are ranked by recency-weighted accuracy ascending (worst first). At most 3 are returned.
+
+Each entry is enriched with:
+- `summary` — a deterministic one-sentence coaching note keyed to accuracy bucket (< 30% → "highest-priority gap"; < 50% → "pattern isn't sticking"; < 70% → "breaks under new angles"; ≥ 70% → "not fully consistent yet").
+- `recommended_path_slug` / `recommended_path_title` — the most foundational accessible learning path that covers this concept (starter paths preferred over intermediate / advanced). Only present when a matching path exists and its tier is accessible under the user's plan.
+- `recommended_question_ids` — up to 2 unsolved question IDs on this concept, easiest-first. Free users only get easy questions; Pro/Elite get any difficulty.
 
 ### Cross-track pace insight
 

@@ -50,6 +50,9 @@ export default function InsightStrip({ insights }) {
             <p className="dashboard-insight-muted">
               {percent(weakest.accuracy_pct)} accuracy across {weakest.attempts} attempts
             </p>
+            {weakest.summary && (
+              <p className="dashboard-insight-coaching">{weakest.summary}</p>
+            )}
             {weakest.recommended_path_slug ? (
               <Link
                 to={`/learn/${weakest.track}/${weakest.recommended_path_slug}`}
@@ -63,6 +66,14 @@ export default function InsightStrip({ insights }) {
                 className="dashboard-insight-link"
               >
                 Drill this concept →
+              </Link>
+            )}
+            {weakest.recommended_question_ids?.[0] != null && (
+              <Link
+                to={`/practice/${weakest.track}/questions/${weakest.recommended_question_ids[0]}`}
+                className="dashboard-insight-link dashboard-insight-link--secondary"
+              >
+                Practice a question →
               </Link>
             )}
           </>

@@ -154,7 +154,7 @@ Loading state now renders a skeleton card instead of plain text while fetching a
 
 Cross-track progress overview. Fetches `GET /api/dashboard`, `GET /api/dashboard/insights`, and `GET /api/mock/history` on mount.
 
-- Returning users see an `InsightStrip` with 3 tiles: cross-track coaching sentence, streak days, weakest concept. When the backend returns `recommended_path_slug` on the weakest concept, the tile links to the learning path ("Study in {title} →") instead of the generic concept drill link.
+- Returning users see an `InsightStrip` with 3 tiles: cross-track coaching sentence, streak days, weakest concept. The weakest concept tile shows a `summary` coaching sentence (from the insights payload), a primary link to the recommended learning path when `recommended_path_slug` is present ("Study in {title} →"), and a secondary "Practice a question →" link to the first unsolved `recommended_question_ids` entry.
 - Track cards now include `median_solve_seconds` and `accuracy_pct` rows from `/api/dashboard/insights`.
 - New users (no solves yet) see a dedicated empty state with CTAs into practice and learning paths.
 - `by_difficulty` still renders as "X/Y" counts per difficulty level (`{ solved, total }` objects, not plain integers).
@@ -192,7 +192,7 @@ When `solved_count === question_count`, a completion banner is shown with a "Wha
 | VariablesPanel | `components/VariablesPanel.js` | Available DataFrame variables with CSV source and column list |
 | MCQPanel | `components/MCQPanel.js` | Radio-button MCQ with correct/wrong highlighting and explanation after submit |
 | ConceptPanel | `components/ConceptPanel.js` | Slide-in concept detail panel opened from concept pills on `QuestionPage` |
-| InsightStrip | `components/InsightStrip.js` | Dashboard coaching strip: cross-track insight, streak tile, weakest concept tile. Weakest concept links to recommended path when `recommended_path_slug` is present in the insight payload. |
+| InsightStrip | `components/InsightStrip.js` | Dashboard coaching strip: cross-track insight, streak tile, weakest concept tile. Weakest concept tile shows a coaching `summary` sentence, a primary path link ("Study in …") when `recommended_path_slug` is present, and a secondary "Practice a question →" link from `recommended_question_ids`. |
 | Skeleton | `components/Skeleton.js` | Reusable shimmer primitive (`skeleton-block` + `skeleton-shimmer`) used in QuestionPage, SidebarNav, TrackHubPage, ProgressDashboard |
 | TrackProgressBar | `components/TrackProgressBar.js` | Reusable horizontal progress bar with configurable color and label |
 | PathProgressCard | `components/PathProgressCard.js` | Path card with track color dot, progress bar, and CTA; used on LandingPage and TrackHubPage. Accepts optional `recommendationLabel` prop that replaces the tier badge with a contextual label ("Start here", "Recommended next", "Continue"). |
