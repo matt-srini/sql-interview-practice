@@ -23,10 +23,10 @@ Use this file as the operational source of truth. Tick items off one by one as y
 ### 0.1 Create or confirm the required accounts
 
 - [ ] Razorpay account exists and you can log in at https://dashboard.razorpay.com
-- [ ] Railway account exists at https://railway.com
+- [x] Railway account exists at https://railway.com
 - [x] GitHub repo is available and current code is pushed
 - [x] Resend account exists at https://resend.com if you want real verification emails during checkout testing
-- [ ] Sentry account exists at https://sentry.io if you want production error capture from the first deploy
+- [x] Sentry account exists at https://sentry.io if you want production error capture from the first deploy
 - [ ] PostHog account exists at https://posthog.com if you want product analytics from the first deploy
 
 ### 0.2 Confirm the current project state locally
@@ -35,6 +35,11 @@ Use this file as the operational source of truth. Tick items off one by one as y
 - [x] Frontend runs locally from `frontend/`
 - [x] Backend tests are green enough for deploy confidence
 - [x] You can log in locally and reach the pricing or upgrade UI
+
+Notes recorded from current setup:
+
+- Sentry is already configured at the account level for both frontend and backend local error tracking.
+- Railway account exists and is ready for project creation/deploy steps.
 
 ### 0.3 Know the environment variables this app expects
 
