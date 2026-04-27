@@ -1,5 +1,5 @@
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
@@ -141,7 +141,9 @@ const SHOWCASE_ROTATE_MS = 8000;
 const LANDING_ONBOARDING_KEY = 'landingOnboardingSeen-v1';
 
 export default function LandingPage() {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const userPlan = user?.plan ?? 'free';
   const currency = detectCurrency();
   const p = PRICES[currency];
@@ -167,6 +169,23 @@ export default function LandingPage() {
     if (userPlan === 'elite')          return 'lifetime_only';
     return 'both';
   }
+
+  // Plan pill for paying users
+  const rawPlan = user?.plan ?? 'free';
+  const normalisedPlan = rawPlan.startsWith('lifetime_') ? rawPlan.replace('lifetime_', '') : rawPlan;
+  const isPaying = normalisedPlan === 'pro' || normalisedPlan === 'elite';
+  const planPillClass = `shell-pill shell-pill-plan shell-pill-plan-${normalisedPlan}`;
+  const planLabel =
+    rawPlan === 'lifetime_elite' ? 'Lifetime Elite' :
+    rawPlan === 'lifetime_pro'   ? 'Lifetime Pro'   :
+    normalisedPlan === 'elite'   ? 'Elite'           :
+    normalisedPlan === 'pro'     ? 'Pro'             : null;
+  const planPillNode = user && isPaying && planLabel ? (
+    <span className={planPillClass}>{planLabel}</span>
+  ) : null;
+
+  // Post-upgrade banner
+  const [upgradeSuccess, setUpgradeSuccess] = useState(false);
 
   const [dashData, setDashData] = useState(null);
   const [activeTab, setActiveTab] = useState(
@@ -208,6 +227,13 @@ export default function LandingPage() {
       else media.removeListener(onChange);
     };
   }, []);
+
+  useEffect(() => {
+    if (!location.search.includes('upgraded=true')) return;
+    setUpgradeSuccess(true);
+    refreshUser().catch(() => {});
+    navigate({ pathname: '/' }, { replace: true });
+  }, [location.search, navigate, refreshUser]);
 
   useEffect(() => {
     if (user) {
@@ -354,9 +380,14 @@ export default function LandingPage() {
         <meta property="og:description" content="Practice SQL, Python, Pandas, and PySpark interview questions in a real execution environment. 350 questions, instant feedback, and curated learning paths." />
         <meta property="og:url" content="https://datanest.app/" />
       </Helmet>
-      <Topbar showPricingLink={!user} />
+      <Topbar showPricingLink={!user} userExtras={planPillNode} />
 
       <main className="landing-page">
+        {upgradeSuccess && (
+          <div className="landing-upgrade-banner">
+            Upgrade confirmed. Your access has been updated.
+          </div>
+        )}
         {user ? (
           <LoggedInWelcome user={user} dashData={dashData} />
         ) : (
@@ -698,7 +729,7 @@ export default function LandingPage() {
                     <span className="landing-tier-current">Current plan</span>
                   )}
                   {proColCta() === 'both' && (
-                    <UpgradeButton tier="pro" source="landing_tier" currency={currency} />
+                    <UpgradeButton tier="pro" source="landing_tier" currency={currency} successPath="/?upgraded=true" />
                   )}
                   {(proColCta() === 'both' || proColCta() === 'lifetime_only') && (
                     <UpgradeButton
@@ -707,6 +738,7 @@ export default function LandingPage() {
                       compact
                       className="landing-tier-lifetime-btn"
                       source="landing_tier_lifetime"
+                      successPath="/?upgraded=true"
                     />
                   )}
                 </div>
@@ -732,7 +764,7 @@ export default function LandingPage() {
                     <span className="landing-tier-current">Current plan</span>
                   )}
                   {eliteColCta() === 'both' && (
-                    <UpgradeButton tier="elite" source="landing_tier" currency={currency} />
+                    <UpgradeButton tier="elite" source="landing_tier" currency={currency} successPath="/?upgraded=true" />
                   )}
                   {(eliteColCta() === 'both' || eliteColCta() === 'lifetime_only') && (
                     <UpgradeButton
@@ -741,6 +773,7 @@ export default function LandingPage() {
                       compact
                       className="landing-tier-lifetime-btn"
                       source="landing_tier_lifetime"
+                      successPath="/?upgraded=true"
                     />
                   )}
                 </div>
