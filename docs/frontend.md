@@ -73,7 +73,7 @@ Consumes an email verification token (`?token=…`). On error (expired/invalid),
 
 ### Policy pages (`/privacy`, `/terms`, `/refund-policy`, `/contact`)
 
-Standalone policy screens with the minimal topbar and a centered policy card. Each policy page auto-scrolls to the top on mount, includes a top-right exit button (back to `/`), and ends with a "Back to home" footer button.
+Policy pages render as standalone screens when visited directly (minimal topbar, centered card, scroll-to-top on mount). When opened from the landing footer, they appear in a modal overlay that preserves the background route; the top-right close and footer "Close" button return to the previous view instead of redirecting to `/`.
 
 
 

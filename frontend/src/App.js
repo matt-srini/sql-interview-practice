@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { BrowserRouter, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { CatalogProvider } from './catalogContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -99,13 +99,88 @@ function ToastProvider({ children }) {
   );
 }
 
-function RouteTransition({ children }) {
+function RouteTransition({ children, transitionKey }) {
   const location = useLocation();
   useEffect(() => { trackPageView(); }, [location.pathname]);
   return (
-    <div key={`${location.pathname}${location.search}`} className="route-transition">
+    <div key={transitionKey ?? `${location.pathname}${location.search}`} className="route-transition">
       {children}
     </div>
+  );
+}
+
+function PolicyModal({ title, children, onClose }) {
+  return (
+    <div className="policy-overlay" role="dialog" aria-modal="true" aria-label={title} onClick={onClose}>
+      <div className="policy-modal" onClick={(event) => event.stopPropagation()}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function AppRoutes() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const backgroundLocation = location.state?.backgroundLocation;
+  const routeLocation = backgroundLocation || location;
+  const closePolicyModal = () => {
+    if (backgroundLocation) {
+      navigate(`${backgroundLocation.pathname}${backgroundLocation.search}`, { replace: true });
+      return;
+    }
+    navigate(-1);
+  };
+
+  return (
+    <RouteTransition transitionKey={`${routeLocation.pathname}${routeLocation.search}`}>
+      <Routes location={routeLocation}>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/dashboard" element={<ProgressDashboard />} />
+        <Route path="/mock" element={<AuthRequired><MockHub /></AuthRequired>} />
+        <Route path="/mock/:id" element={<AuthRequired><MockSession /></AuthRequired>} />
+        <Route path="/sample/:topic/:difficulty" element={<SampleQuestionPage />} />
+        <Route path="/sample/:difficulty" element={<LegacySampleRedirect />} />
+
+        {/* Legacy redirects — must come before the :topic wildcard */}
+        <Route path="/practice/questions/:id" element={<LegacyQuestionRedirect />} />
+        <Route path="/practice" element={<Navigate to="/practice/sql" replace />} />
+        <Route path="/questions/:id" element={<LegacyQuestionRedirect />} />
+
+        {/* Policy pages */}
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/refund-policy" element={<RefundPolicyPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+
+        {/* Learning paths */}
+        <Route path="/learn" element={<LearningPathsIndex />} />
+        <Route path="/learn/:topic" element={<LearningPathsIndex />} />
+        <Route path="/learn/:topic/:slug" element={<LearningPath />} />
+
+        {/* Topic-aware practice routes */}
+        <Route path="/practice/:topic" element={<TopicShell />}>
+          <Route path="questions/:id" element={<QuestionPage />} />
+        </Route>
+
+        {/* 404 catch-all */}
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+
+      {backgroundLocation && (
+        <PolicyModal title="Policy" onClose={closePolicyModal}>
+          <Routes>
+            <Route path="/privacy" element={<PrivacyPolicyPage isModal />} />
+            <Route path="/terms" element={<TermsPage isModal />} />
+            <Route path="/refund-policy" element={<RefundPolicyPage isModal />} />
+            <Route path="/contact" element={<ContactPage isModal />} />
+          </Routes>
+        </PolicyModal>
+      )}
+    </RouteTransition>
   );
 }
 
@@ -147,43 +222,7 @@ export default function App() {
       <AuthProvider>
         <ToastProvider>
           <ErrorBoundary>
-            <RouteTransition>
-              <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/auth" element={<AuthPage />} />
-                <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
-                <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
-                <Route path="/dashboard" element={<ProgressDashboard />} />
-                <Route path="/mock" element={<AuthRequired><MockHub /></AuthRequired>} />
-                <Route path="/mock/:id" element={<AuthRequired><MockSession /></AuthRequired>} />
-                <Route path="/sample/:topic/:difficulty" element={<SampleQuestionPage />} />
-                <Route path="/sample/:difficulty" element={<LegacySampleRedirect />} />
-
-                {/* Legacy redirects — must come before the :topic wildcard */}
-                <Route path="/practice/questions/:id" element={<LegacyQuestionRedirect />} />
-                <Route path="/practice" element={<Navigate to="/practice/sql" replace />} />
-                <Route path="/questions/:id" element={<LegacyQuestionRedirect />} />
-
-                {/* Policy pages */}
-                <Route path="/privacy"       element={<PrivacyPolicyPage />} />
-                <Route path="/terms"         element={<TermsPage />} />
-                <Route path="/refund-policy" element={<RefundPolicyPage />} />
-                <Route path="/contact"       element={<ContactPage />} />
-
-                {/* Learning paths */}
-                <Route path="/learn" element={<LearningPathsIndex />} />
-                <Route path="/learn/:topic" element={<LearningPathsIndex />} />
-                <Route path="/learn/:topic/:slug" element={<LearningPath />} />
-
-                {/* Topic-aware practice routes */}
-                <Route path="/practice/:topic" element={<TopicShell />}>
-                  <Route path="questions/:id" element={<QuestionPage />} />
-                </Route>
-
-                {/* 404 catch-all */}
-                <Route path="*" element={<NotFoundPage />} />
-              </Routes>
-            </RouteTransition>
+            <AppRoutes />
           </ErrorBoundary>
         </ToastProvider>
       </AuthProvider>
