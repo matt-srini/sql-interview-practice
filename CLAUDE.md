@@ -88,7 +88,7 @@ A data interview practice platform covering four tracks. Users write SQL or Pyth
 
 - **Sample questions:** 3 per track × 3 difficulties = 36 total (no login, no progress impact)
 - **Learning paths:** 22 total — SQL: 7, Python: 5, Pandas: 5, PySpark: 5 (each track keeps exactly one `starter` and one `intermediate` free shortcut path; additional paths are advanced, mixed free/pro)
-- Every question has `hints` (1–2 entries) and `concepts` (semantic pattern tags surfaced as pills)
+- Every question has `hints` (currently 1–3 entries across the bank; new content should target the active hint ladder) and `concepts` (semantic pattern tags surfaced as pills)
 - SQL questions have a `companies` field (`["Meta", "Stripe", ...]`) used for the company filter in SidebarNav
 - SQL schemas validated against committed CSV headers at catalog load time
 - Full concept coverage per track and authoring rules: see [`docs/content-authoring.md`](docs/content-authoring.md)
@@ -388,7 +388,9 @@ cd backend && DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:543
 | `docs/datasets.md` | All 11 dataset tables — columns, row counts, intentional edge cases |
 | `docs/deployment.md` | Local dev, Docker, production image, env vars, Railway |
 | `docs/content-authoring.md` | Platform philosophy, question counts, concept coverage maps, per-track schemas, authoring rules |
+| `docs/content-quality-remediation-plan.md` | Phased execution plan for question-quality, hinting, progression, and pricing-claim improvements |
 | `docs/USERGUIDE.md` | End-user guide to the platform |
+| `docs/features/pricing.md` | Pricing feature reference — plan entitlements, Razorpay flows, CTA states, webhook rules |
 | `docs/features/mock.md` | Mock interview feature reference — plan gates, endpoints, coaching insights, test coverage |
 | `docs/features/dashboard.md` | Dashboard feature reference — plan gates, endpoints, coaching insights, streak logic, caching |
 
