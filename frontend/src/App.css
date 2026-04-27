@@ -5032,6 +5032,24 @@ select {
   text-decoration: underline;
 }
 
+.dashboard-insight-coaching {
+  margin-top: 0.45rem;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.dashboard-insight-link--secondary {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.dashboard-insight-link--secondary:hover {
+  color: var(--accent);
+}
+
 .dashboard-section-title {
   font-size: 0.78rem;
   font-weight: 600;
@@ -6667,18 +6685,36 @@ select {
 .mock-concept-summary-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 0.5rem;
   font-size: 0.85rem;
+}
+.mock-concept-summary-row--known-weak .mock-concept-name {
+  color: var(--warning);
+}
+
+.mock-concept-known-weak-badge {
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: rgba(196, 127, 23, 0.12);
+  color: var(--warning);
+  border: 1px solid rgba(196, 127, 23, 0.25);
+  white-space: nowrap;
 }
 
 .mock-concept-name {
   color: var(--text-strong);
+  flex: 1;
 }
 
 .mock-concept-score {
   color: var(--text-secondary);
   font-family: var(--font-mono);
   font-size: 0.8rem;
+  margin-left: auto;
 }
 
 /* ── MockHub page ────────────────────────────────────────── */

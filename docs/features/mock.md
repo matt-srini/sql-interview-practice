@@ -35,7 +35,7 @@ Custom mode validates server-side: `num_questions` must be 1–5, `time_minutes`
 | Hard mocks | ❌ Plan-locked (upgrade to Pro) | ✅ **3 hard/day** | ✅ Unlimited |
 | Mixed mocks | ✅ (restricted to unlocked difficulties) | ✅ | ✅ |
 | Company-filtered mocks | ❌ | ❌ | ✅ (SQL track only) |
-| Weak-spot insights in summary | ❌ | ❌ | ✅ |
+| Weak-spot insights in summary | ❌ | ✅ | ✅ |
 
 **Pre-flight access check:** `GET /api/mock/access?track=<track>` is called every time the track selector changes. It returns per-difficulty `can_start`, `daily_limit`, `daily_used`, `needs_upgrade`, and `block_copy` so the UI can render gate state without a round-trip on Start.
 
@@ -69,11 +69,12 @@ Available companies: Airbnb, Amazon, Amplitude, Databricks, Google, LinkedIn, Me
 Shown after `POST /api/mock/:id/finish`:
 
 - **Score headline** — `X/Y correct`.
-- **(Elite)** Baseline comparison — `X% above/below your session average` pulled from `/api/dashboard/insights`.
+- **(Pro+)** Baseline comparison — `X% above/below your historical accuracy` pulled from `/api/dashboard/insights`.
 - **Time used** — `MM:SS used of MM:SS limit`.
 - **Per-question breakdown** — solved/unsolved badge, time spent, expandable **"See solution"** toggle (reference solution + explanation, revealed only after finish).
-- **(Elite) Concept accuracy table** — lists every concept that appeared in the session with `correct / attempted`, sorted worst-first.
-- **(Elite) "Drill weak concepts →"** — links to `/practice/:track?concepts=...` pre-filtered to the worst 2 concepts from the session.
+- **(Pro+) Concept breakdown table** — lists every concept that appeared in the session with `correct / attempted`, sorted worst-first.
+- **(Pro+) "Drill weak concepts →"** — links to `/practice/:track?concepts=...` pre-filtered to the worst 2 concepts from the session.
+- **(Elite) "Known weakness" badge** — when a session concept matches one of the user's cross-session `weakest_concepts` from the dashboard insights, the concept row is highlighted in amber and tagged "known weakness". Elite users also see a path recommendation link ("Study in {title} →") when `recommended_path_slug` is present; Pro users see a generic drill link.
 - **Share result** — copies a summary string to clipboard.
 
 ---

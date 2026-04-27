@@ -120,7 +120,7 @@ Any implementing agent should read these first before starting a phase:
 - [x] Phase 1 - Concept Taxonomy Repair
 - [x] Phase 2 - Hint System And Hint Content Overhaul
 - [x] Phase 3 - Guided Progression Upgrade
-- [ ] Phase 4 - Weak-Spot Insights V2
+- [x] Phase 4 - Weak-Spot Insights V2
 - [ ] Phase 5 - Track-Specific Content Remediation
 - [ ] Phase 6 - Pricing And Claim Realignment
 
@@ -359,15 +359,15 @@ Any implementing agent should read these first before starting a phase:
 
 ### Checklist
 
-- [ ] Decide which parts of concept analysis must move from frontend to backend.
-- [ ] Expand `backend/routers/insights.py` to return actionable recommendation objects, not just the bottom 3 concepts.
-- [ ] Add sample-size and recency logic so one bad session does not dominate results.
-- [ ] Decide whether to segment weak concepts by question difficulty.
-- [ ] Update mock summary UI to consume richer backend insight payloads.
-- [ ] Update dashboard UI to explain weak spots in plain English.
-- [ ] Fix misleading copy such as comparisons labeled `session average` when they are based on broader history.
+- [x] Decide which parts of concept analysis must move from frontend to backend.
+- [x] Expand `backend/routers/insights.py` to return actionable recommendation objects, not just the bottom 3 concepts.
+- [x] Add sample-size and recency logic so one bad session does not dominate results.
+- [x] Decide whether to segment weak concepts by question difficulty.
+- [x] Update mock summary UI to consume richer backend insight payloads.
+- [x] Update dashboard UI to explain weak spots in plain English.
+- [x] Fix misleading copy such as comparisons labeled `session average` when they are based on broader history.
 - [ ] Revisit Elite pricing copy and landing copy once the feature is upgraded.
-- [ ] Add or expand backend tests for the new insight behavior.
+- [x] Add or expand backend tests for the new insight behavior.
 
 ### Suggested insight payload shape
 

@@ -455,6 +455,58 @@ class TestInsightsEndpoint:
             assert w["attempts"] >= 3
             assert "accuracy_pct" in w
             assert "concept" in w
+            # Phase 4: coaching fields
+            assert "summary" in w, "weakest concept must include summary coaching text"
+            assert isinstance(w["summary"], str) and len(w["summary"]) > 0
+
+    def test_weakest_concept_summary_reflects_accuracy(self) -> None:
+        """Summary text must vary based on accuracy bucket."""
+        with TestClient(app) as client:
+            catalog_resp = client.get("/api/catalog")
+            user_id = catalog_resp.json()["user_id"]
+            q1, _ = _pick_sql_ids()
+            now = datetime.now(timezone.utc)
+            # 4 wrong, 0 correct → accuracy < 0.30
+            for i in range(4):
+                _insert_submission(user_id, track="sql", question_id=q1, is_correct=False,
+                                    submitted_at=now - timedelta(minutes=10 - i))
+            payload = client.get("/api/dashboard/insights").json()
+            assert len(payload["weakest_concepts"]) > 0
+            w = payload["weakest_concepts"][0]
+            assert "highest-priority" in w["summary"].lower() or "more often than not" in w["summary"].lower()
+
+    def test_weakest_concept_recommended_question_ids_type(self) -> None:
+        """recommended_question_ids, when present, must be a list of ints."""
+        with TestClient(app) as client:
+            catalog_resp = client.get("/api/catalog")
+            user_id = catalog_resp.json()["user_id"]
+            q1, _ = _pick_sql_ids()
+            now = datetime.now(timezone.utc)
+            for i in range(3):
+                _insert_submission(user_id, track="sql", question_id=q1, is_correct=(i == 2),
+                                    submitted_at=now - timedelta(minutes=5 - i))
+            payload = client.get("/api/dashboard/insights").json()
+            for w in payload["weakest_concepts"]:
+                if "recommended_question_ids" in w:
+                    assert isinstance(w["recommended_question_ids"], list)
+                    assert all(isinstance(qid, int) for qid in w["recommended_question_ids"])
+                    assert len(w["recommended_question_ids"]) <= 2
+
+    def test_weakest_concept_recommended_question_ids_not_already_solved(self) -> None:
+        """recommended_question_ids must not include questions the user has already solved."""
+        with TestClient(app) as client:
+            catalog_resp = client.get("/api/catalog")
+            user_id = catalog_resp.json()["user_id"]
+            q1, _ = _pick_sql_ids()
+            now = datetime.now(timezone.utc)
+            for i in range(3):
+                _insert_submission(user_id, track="sql", question_id=q1, is_correct=(i == 2),
+                                    submitted_at=now - timedelta(minutes=5 - i))
+            payload = client.get("/api/dashboard/insights").json()
+            for w in payload["weakest_concepts"]:
+                reco_ids = w.get("recommended_question_ids", [])
+                # q1 was solved (marked correct on 3rd attempt) — must not reappear as recommendation
+                assert q1 not in reco_ids, f"solved question {q1} must not appear in recommendations"
 
     def test_weakest_concepts_capped_at_3(self) -> None:
         """At most 3 entries must be returned in weakest_concepts."""
