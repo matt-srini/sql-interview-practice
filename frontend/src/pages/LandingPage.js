@@ -394,14 +394,13 @@ export default function LandingPage() {
           <section className="landing-hero">
             <div className="landing-hero-inner">
               <span className="landing-kicker">SQL · Python · PySpark · pandas</span>
-              <h1 className="landing-title">Get sharp at data interviews.</h1>
+              <h1 className="landing-title">Train your data thinking.</h1>
               <p className="landing-copy">
-                Four focused tracks covering query fluency, coding fundamentals, dataframe work, and Spark judgment.
-                Practice in a calm workspace with instant feedback and guided progression.
+                Four tracks — SQL, Python, pandas, and PySpark — structured around how data interviews actually work. Build the reasoning patterns that let you think clearly when it counts.
               </p>
               <div className="landing-actions">
                 <a className="btn btn-primary" href="#landing-tracks">Explore tracks ↓</a>
-                <Link className="btn btn-secondary" to="/auth">Create account</Link>
+                <Link className="btn btn-secondary" to="/auth">Start thinking →</Link>
               </div>
             </div>
           </section>
@@ -422,7 +421,7 @@ export default function LandingPage() {
             <section className="landing-showcase">
               <div className="landing-showcase-inner" ref={showcaseRef}>
                 <div className="landing-showcase-header">
-                  <h2 className="landing-showcase-title">See what you&rsquo;ll be solving.</h2>
+                  <h2 className="landing-showcase-title">This is what data interviews actually look like.</h2>
                   <p className="landing-showcase-subtitle">
                     Read the problem. Study the solution. Build the intuition you&rsquo;ll draw on in the room.
                   </p>
@@ -560,9 +559,9 @@ export default function LandingPage() {
 
         <section className="landing-practice-section" id="landing-tracks">
           <div className="landing-practice-heading">
-            <h2 className="landing-practice-title">Practice tracks</h2>
+            <h2 className="landing-practice-title">The full data interview curriculum</h2>
             <p className="landing-practice-copy">
-              Four focused tracks — from query fluency to distributed systems. Each with a structured challenge bank and free samples to explore first.
+              From SQL fundamentals to distributed Spark systems — every track structured around real interview patterns.
             </p>
           </div>
 
@@ -662,8 +661,8 @@ export default function LandingPage() {
             <div className="landing-section-inner">
               <div className="landing-paths-header">
                 <div>
-                  <h2 className="landing-paths-title">Structured learning paths</h2>
-                  <p className="landing-paths-sub">Curated sequences from basics to advanced.</p>
+                  <h2 className="landing-paths-title">Guided learning paths</h2>
+                  <p className="landing-paths-sub">Not random drilling — curated progressions that build real interview reasoning, track by track.</p>
                 </div>
                 <button className="landing-paths-shuffle" onClick={shufflePaths} title="Shuffle paths" aria-label="Shuffle learning paths">
                   ⇄ Shuffle
@@ -786,7 +785,7 @@ export default function LandingPage() {
 
         <footer className="landing-footer">
           <div className="landing-footer-inner">
-            <span className="landing-footer-copy">&copy; 2025 datathink</span>
+            <span className="landing-footer-copy">&copy; 2026 datathink</span>
             <nav className="landing-footer-links" aria-label="Legal">
               <Link to="/privacy" state={{ backgroundLocation: location }}>Privacy Policy</Link>
               <Link to="/terms" state={{ backgroundLocation: location }}>Terms &amp; Conditions</Link>
