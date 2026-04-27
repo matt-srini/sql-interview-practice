@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from fastapi import APIRouter
-from fastapi.responses import PlainTextResponse, Response
+from fastapi.responses import JSONResponse, PlainTextResponse, Response
 
 from config import FRONTEND_BASE_URL
 from database import get_loaded_tables
@@ -13,15 +13,18 @@ router = APIRouter()
 
 
 @router.get("/health")
-async def health() -> dict[str, Any]:
+async def health() -> Any:
     postgres_ok = await ping()
     tables_loaded = get_loaded_tables()
     if not postgres_ok or not tables_loaded:
-        return {
-            "status": "unhealthy",
-            "postgres": postgres_ok,
-            "tables_loaded": tables_loaded,
-        }
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "unhealthy",
+                "postgres": postgres_ok,
+                "tables_loaded": tables_loaded,
+            },
+        )
     return {
         "status": "healthy",
         "postgres": True,

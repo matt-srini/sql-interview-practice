@@ -285,12 +285,14 @@ Set the environment variables listed above in the Railway service settings. Rail
 For Dockerfile-based services on Railway, the application must listen on Railway's injected `PORT`. This repo's Docker image now binds Uvicorn to `${PORT}` with a fallback to `8000` for local container runs. If a Railway deploy shows "build succeeded" followed by a network or healthcheck failure, first verify:
 
 1. the container is listening on `${PORT}`
-2. `ENV=production`
-3. `DATABASE_URL`
+2. `ENV=production` — **required**. Without this, the app tries to auto-apply schema migrations at startup; if the DB isn't available yet the startup crashes before binding the port and Railway sees a healthcheck timeout instead of a clean 503.
+3. `DATABASE_URL` — must point to the Railway-provisioned Postgres service, not localhost. Add a PostgreSQL service in the Railway project, then reference it with `${{Postgres.DATABASE_URL}}` or copy the connection string directly.
 4. `REDIS_URL`
 5. `RAZORPAY_KEY_ID`
 6. `RAZORPAY_KEY_SECRET`
 7. `RAZORPAY_WEBHOOK_SECRET`
+
+**Healthcheck behaviour:** `/health` returns HTTP 200 when both Postgres and DuckDB are ready, and HTTP 503 when either is unavailable. Railway marks the deploy as failed on 503, which is intentional — it means a required environment variable is missing or the DB service isn't reachable yet.
 
 ---
 

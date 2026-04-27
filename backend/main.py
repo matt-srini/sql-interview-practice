@@ -52,7 +52,16 @@ async def lifespan(app: FastAPI):
     init_query_engine()
     await init_pool()
     if not IS_PROD:
-        await ensure_schema()
+        # In dev/staging, auto-apply schema so developers don't need to run
+        # migrations manually.  Swallow connection errors so the app still
+        # starts (and reports unhealthy via /health) when the DB isn't yet
+        # reachable — e.g. a Railway deploy where DATABASE_URL isn't set yet.
+        try:
+            await ensure_schema()
+        except Exception as exc:
+            logger.warning(
+                "ensure_schema skipped — database not reachable at startup: %s", exc
+            )
     yield
     close_query_engine()
     await close_pool()
