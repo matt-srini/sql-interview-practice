@@ -237,13 +237,19 @@ You do **not** need a purchased domain before the first deployment. Use Railway'
 
 ### 2.1 Decide the first public URL
 
-- [ ] Use the Railway-generated domain as the initial public app URL
-- [ ] Plan to use that same URL in:
+- [x] Use the Railway-generated domain as the initial public app URL
+- [x] Plan to use that same URL in:
   - `APP_BASE_URL`
   - `FRONTEND_BASE_URL`
   - `ALLOWED_ORIGINS`
   - Razorpay webhook URL
   - Razorpay website verification form
+
+Current launch host:
+
+- [x] Public app URL fixed to `https://datathink.co`
+- [x] Cloudflare domain already purchased and configured
+- [x] Backend environment already reflects the chosen public host
 
 ### 2.2 Prepare the site details you will submit to Razorpay later
 
@@ -251,13 +257,17 @@ Before you can generate **live** keys, Razorpay may require website verification
 
 Prepare these details now so you can paste them later:
 
-- [ ] Public app name: `datathink`
-- [ ] Short site description: `Data interview practice platform for SQL, Python, Pandas, and PySpark`
-- [ ] Support email address
-- [ ] Public website URL placeholder for now
-- [ ] Pricing description for Pro, Elite, Lifetime Pro, Lifetime Elite
-- [ ] Refund/cancellation wording if required by Razorpay review
-- [ ] Privacy policy and terms links if you plan to add them before live review
+- [x] Public app name: `datathink`
+- [x] Short site description: `Data interview practice platform for SQL, Python, Pandas, and PySpark`
+- [x] Support email address
+- [x] Public website URL placeholder for now
+- [x] Pricing description for Pro, Elite, Lifetime Pro, Lifetime Elite
+- [x] Refund/cancellation wording if required by Razorpay review
+- [x] Privacy policy and terms links if you plan to add them before live review
+
+### Phase 2 status
+
+- [x] Phase 2 complete: production identity is fixed to `https://datathink.co` and supporting site details/docs are prepared for Railway + Razorpay setup
 
 Razorpay area to revisit later:
 
