@@ -15,9 +15,31 @@ import io
 
 try:
     import resource
+    # Memory cap: 512 MB virtual address space
     resource.setrlimit(resource.RLIMIT_AS, (512 * 1024 * 1024, 512 * 1024 * 1024))
+    # CPU cap: 6 seconds (slightly above the 5s subprocess timeout so the
+    # timeout fires first, but this catches any slippage and prevents a
+    # tight CPU loop from monopolising a core).
+    resource.setrlimit(resource.RLIMIT_CPU, (6, 6))
 except Exception:
     pass
+
+
+_MAX_STDOUT_BYTES = 64 * 1024        # 64 KB per run
+_MAX_RESULT_ITEMS = 10_000           # max items in a returned list
+_MAX_RESULT_JSON_BYTES = 512 * 1024  # 512 KB serialised result
+
+
+class _BoundedStringIO(io.StringIO):
+    """StringIO that silently truncates writes beyond _MAX_STDOUT_BYTES."""
+
+    def write(self, s: str) -> int:
+        remaining = _MAX_STDOUT_BYTES - self.tell()
+        if remaining <= 0:
+            return 0
+        if len(s) > remaining:
+            s = s[:remaining] + "\n[output truncated]"
+        return super().write(s)
 
 
 def _run_algorithm(user_code: str, test_cases: list) -> dict:
@@ -35,11 +57,14 @@ def _run_algorithm(user_code: str, test_cases: list) -> dict:
     for case in test_cases:
         args = case.get("input", [])
         expected = case.get("expected")
-        stdout_capture = io.StringIO()
+        stdout_capture = _BoundedStringIO()
         old_stdout = sys.stdout
         sys.stdout = stdout_capture
         try:
             actual = solve_fn(*args)
+            # Guard against enormous return values
+            if isinstance(actual, (list, tuple)) and len(actual) > _MAX_RESULT_ITEMS:
+                raise ValueError(f"Result has {len(actual):,} items — limit is {_MAX_RESULT_ITEMS:,}")
             passed = _compare(actual, expected)
             results.append({
                 "input": args,
@@ -104,7 +129,7 @@ def _run_data(user_code: str, dataframes_spec: dict, csv_dir: str) -> dict:
     if solve_fn is None:
         return {"error": "No 'solve' function found in your code.", "result": None, "print_output": ""}
 
-    stdout_capture = io.StringIO()
+    stdout_capture = _BoundedStringIO()
     old_stdout = sys.stdout
     sys.stdout = stdout_capture
     try:
@@ -135,6 +160,9 @@ def _run_data(user_code: str, dataframes_spec: dict, csv_dir: str) -> dict:
         columns = ["result"]
     else:
         return {"error": f"solve() must return a DataFrame, Series, or ndarray, got {type(result).__name__}", "result": None, "print_output": print_output}
+
+    if len(result_json) > _MAX_RESULT_ITEMS:
+        return {"error": f"Result has {len(result_json):,} rows — limit is {_MAX_RESULT_ITEMS:,}", "result": None, "print_output": print_output}
 
     return {
         "error": None,
