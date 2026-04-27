@@ -423,7 +423,7 @@ export default function LandingPage() {
                 <div className="landing-showcase-header">
                   <h2 className="landing-showcase-title">This is what data interviews actually look like.</h2>
                   <p className="landing-showcase-subtitle">
-                    Real questions across all four tracks &mdash; see the depth and style of what you&rsquo;ll work through before you start.
+                    Real questions across all four tracks, from warm-up to stretch difficulty &mdash; so you know exactly what you&rsquo;re walking into.
                   </p>
                 </div>
 
