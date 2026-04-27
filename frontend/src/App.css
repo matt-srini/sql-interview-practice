@@ -8505,20 +8505,37 @@ select {
 .policy-card { width: min(100%, 720px) !important; position: relative; }
 
 /* ── Policy pages ── */
+.policy-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 220;
+}
+.policy-modal {
+  width: min(100%, 760px);
+  max-height: 85vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
 .policy-exit {
   position: absolute;
-  top: 1.1rem;
-  right: 1.1rem;
-  width: 32px;
-  height: 32px;
+  top: 0.85rem;
+  right: 0.85rem;
+  width: 24px;
+  height: 24px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
+  border-radius: 8px;
   border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
   text-decoration: none;
   font-weight: 600;
+  font-size: 0.75rem;
   background: var(--surface-card);
   transition: border-color 0.15s, color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
