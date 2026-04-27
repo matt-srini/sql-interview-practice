@@ -274,7 +274,6 @@ export default function AppShell() {
                     label="Unlock Pro"
                     source="sidebar_pro"
                     compact
-                    className="btn-secondary"
                     successPath={location.pathname + '?upgraded=true'}
                   />
                 )}
