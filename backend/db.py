@@ -251,6 +251,7 @@ async def init_pool() -> None:
         get_async_database_url(),
         future=True,
         pool_pre_ping=True,
+        connect_args={"timeout": 5},  # fail fast; health endpoint reports 503 otherwise
     )
     _session_factory = async_sessionmaker(_engine, expire_on_commit=False)
 
