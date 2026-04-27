@@ -25,7 +25,7 @@ Use this file as the operational source of truth. Tick items off one by one as y
 - [ ] Razorpay account exists and you can log in at https://dashboard.razorpay.com
 - [ ] Railway account exists at https://railway.com
 - [x] GitHub repo is available and current code is pushed
-- [ ] Resend account exists at https://resend.com if you want real verification emails during checkout testing
+- [x] Resend account exists at https://resend.com if you want real verification emails during checkout testing
 - [ ] Sentry account exists at https://sentry.io if you want production error capture from the first deploy
 - [ ] PostHog account exists at https://posthog.com if you want product analytics from the first deploy
 
@@ -87,12 +87,12 @@ This phase keeps everything local. It proves your app can create orders and subs
 
 ### 1.1 Confirm Razorpay test keys
 
-- [ ] In Razorpay dashboard, click **Switch to Test Mode** in the top bar or key area
-- [ ] Go to **Account & Settings**
-- [ ] Open **Website and app details** if prompted by the dashboard flow
-- [ ] Go to the **Websites & API keys** area
-- [ ] Confirm you already have a **Test Key Id** and **Test Key Secret**
-- [ ] Store them temporarily in a password manager or secure notes, not in source control
+- [x] In Razorpay dashboard, click **Switch to Test Mode** in the top bar or key area
+- [x] Go to **Account & Settings**
+- [x] Open **Website and app details** if prompted by the dashboard flow
+- [x] Go to the **Websites & API keys** area
+- [x] Confirm you already have a **Test Key Id** and **Test Key Secret**
+- [x] Store them temporarily in a password manager or secure notes, not in source control
 
 Useful entry points:
 
@@ -103,10 +103,10 @@ Useful entry points:
 
 ### 1.2 Create local backend env values
 
-- [ ] Open the local file `backend/.env`
-- [ ] Insert your current local database value
-- [ ] Insert your Razorpay **test** key id and secret
-- [ ] Leave live values out of local files for now
+- [x] Open the local file `backend/.env`
+- [x] Insert your current local database value
+- [x] Insert your Razorpay **test** key id and secret
+- [x] Leave live values out of local files for now
 
 Use this template:
 
@@ -138,11 +138,11 @@ This app uses:
 
 Steps in Razorpay:
 
-- [ ] Stay in **Test Mode**
-- [ ] Open **Subscriptions** in the left navigation
-- [ ] Go to the **Plans** section
-- [ ] Create a plan for **Pro monthly**
-- [ ] Create a plan for **Elite monthly**
+- [x] Stay in **Test Mode**
+- [x] Open **Subscriptions** in the left navigation
+- [x] Go to the **Plans** section
+- [x] Create a plan for **Pro monthly**
+- [x] Create a plan for **Elite monthly**
 
 Recommended values:
 
@@ -157,14 +157,14 @@ Recommended values:
   - Interval: `1`
   - Amount: `159900` paise or `1599` rupees depending on the UI field
 
-- [ ] Copy the test plan id for Pro into `RAZORPAY_PLAN_PRO`
-- [ ] Copy the test plan id for Elite into `RAZORPAY_PLAN_ELITE`
+- [x] Copy the test plan id for Pro into `RAZORPAY_PLAN_PRO`
+- [x] Copy the test plan id for Elite into `RAZORPAY_PLAN_ELITE`
 
 ### 1.4 Understand what does not need a Razorpay Plan
 
-- [ ] Confirm that **Lifetime Pro** does not need a Razorpay Plan object
-- [ ] Confirm that **Lifetime Elite** does not need a Razorpay Plan object
-- [ ] Keep these values in env only:
+- [x] Confirm that **Lifetime Pro** does not need a Razorpay Plan object
+- [x] Confirm that **Lifetime Elite** does not need a Razorpay Plan object
+- [x] Keep these values in env only:
 
 ```env
 RAZORPAY_AMOUNT_LIFETIME_PRO=799900
@@ -179,16 +179,16 @@ This codebase blocks checkout for users whose `email_verified` flag is false.
 
 Choose one path:
 
-- [ ] **Preferred:** Set up Resend so the app can send verification emails
+- [x] **Preferred:** Set up Resend so the app can send verification emails
 - [ ] **Temporary local-only fallback:** Manually mark your test user as verified in Postgres
 
 If using Resend:
 
-- [ ] Log in at https://resend.com
-- [ ] Create an API key
-- [ ] Add it to `backend/.env` as `RESEND_API_KEY`
-- [ ] Set `EMAIL_FROM` to a valid sender identity
-- [ ] Register a test account in your app and verify the email through the app flow
+- [x] Log in at https://resend.com
+- [x] Create an API key
+- [x] Add it to `backend/.env` as `RESEND_API_KEY`
+- [x] Set `EMAIL_FROM` to a valid sender identity
+- [x] Register a test account in your app and verify the email through the app flow
 
 If using the manual fallback locally:
 
@@ -205,12 +205,17 @@ WHERE email = 'your-test-email@example.com';
 
 ### 1.6 Run the local app and smoke-test checkout initialization
 
-- [ ] Start Postgres and Redis locally
-- [ ] Start the backend from `backend/`
-- [ ] Start the frontend from `frontend/`
-- [ ] Log in with a verified account
-- [ ] Click an upgrade button for a lifetime plan
-- [ ] Confirm no immediate backend error appears when the app tries to call `/api/razorpay/create-order`
+- [x] Start Postgres and Redis locally
+- [x] Start the backend from `backend/`
+- [x] Start the frontend from `frontend/`
+- [x] Log in with a verified account
+- [x] Click an upgrade button for a lifetime plan
+- [x] Confirm no immediate backend error appears when the app tries to call `/api/razorpay/create-order`
+
+### Phase 1 status
+
+- [x] Phase 1 complete: local Razorpay test-mode setup and checkout smoke test finished
+- [x] Razorpay test card flow validated end-to-end, including upgrade success
 
 If checkout fails immediately, verify:
 
