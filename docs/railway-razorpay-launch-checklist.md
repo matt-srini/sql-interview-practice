@@ -24,17 +24,17 @@ Use this file as the operational source of truth. Tick items off one by one as y
 
 - [ ] Razorpay account exists and you can log in at https://dashboard.razorpay.com
 - [ ] Railway account exists at https://railway.com
-- [ ] GitHub repo is available and current code is pushed
+- [x] GitHub repo is available and current code is pushed
 - [ ] Resend account exists at https://resend.com if you want real verification emails during checkout testing
 - [ ] Sentry account exists at https://sentry.io if you want production error capture from the first deploy
 - [ ] PostHog account exists at https://posthog.com if you want product analytics from the first deploy
 
 ### 0.2 Confirm the current project state locally
 
-- [ ] Backend runs locally from `backend/`
-- [ ] Frontend runs locally from `frontend/`
-- [ ] Backend tests are green enough for deploy confidence
-- [ ] You can log in locally and reach the pricing or upgrade UI
+- [x] Backend runs locally from `backend/`
+- [x] Frontend runs locally from `frontend/`
+- [x] Backend tests are green enough for deploy confidence
+- [x] You can log in locally and reach the pricing or upgrade UI
 
 ### 0.3 Know the environment variables this app expects
 
