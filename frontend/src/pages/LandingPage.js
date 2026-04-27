@@ -647,8 +647,8 @@ export default function LandingPage() {
           </section>
         )}
 
-        {/* Tier comparison */}
-        {userPlan !== 'lifetime_elite' && (
+        {/* Tier comparison — hidden for all paying users */}
+        {['free', null, undefined].includes(userPlan) && (
         <section id="landing-pricing" className="landing-tier-section">
           <div className="landing-tier-inner">
             <h2 className="landing-tier-title">Simple pricing</h2>
@@ -678,8 +678,10 @@ export default function LandingPage() {
               {/* ── Pro ── */}
               <div className="landing-tier-col landing-tier-col--featured">
                 <div className="landing-tier-col-header">
-                  <span className="landing-tier-badge">Most popular</span>
-                  <span className="landing-tier-name">Pro</span>
+                  <div className="landing-tier-name-row">
+                    <span className="landing-tier-name">Pro</span>
+                    <span className="landing-tier-badge">Most popular</span>
+                  </div>
                   <div className="landing-tier-price">
                     <span className="landing-tier-price-amount">{p.pro}</span>
                     <span className="landing-tier-price-period">{p.period}</span>
