@@ -129,10 +129,12 @@ export default function MockSession() {
         .catch(() => setLoadError('Failed to load session.'));
     }
 
-    api.get('/dashboard/insights')
-      .then(r => setInsights(r.data))
-      .catch(() => setInsights(null));
-  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (isElite) {
+      api.get('/dashboard/insights')
+        .then(r => setInsights(r.data))
+        .catch(() => setInsights(null));
+    }
+  }, [id, isElite]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Countdown timer
   useEffect(() => {
@@ -292,9 +294,23 @@ export default function MockSession() {
       }))
       .sort((a, b) => (a.accuracy - b.accuracy) || (b.attempts - a.attempts) || a.concept.localeCompare(b.concept));
 
-    const drillTrack = (sum?.track || session?.track) === 'mixed'
-      ? (conceptRows[0]?.track || 'sql')
-      : (sum?.track || session?.track || 'sql');
+    // For mixed sessions: pick the track with the most weak concepts, so the
+    // drill link targets the most actionable single track rather than whichever
+    // track happened to appear first in the question list.
+    const sessionTrack = sum?.track || session?.track || 'sql';
+    let drillTrack;
+    if (sessionTrack === 'mixed') {
+      const weakByTrack = {};
+      conceptRows.forEach((row) => {
+        if (row.attempts > 0 && row.accuracy < 1) {
+          weakByTrack[row.track] = (weakByTrack[row.track] ?? 0) + 1;
+        }
+      });
+      const bestEntry = Object.entries(weakByTrack).sort((a, b) => b[1] - a[1])[0];
+      drillTrack = bestEntry ? bestEntry[0] : (conceptRows[0]?.track || 'sql');
+    } else {
+      drillTrack = sessionTrack;
+    }
     const drillConcepts = conceptRows
       .filter((row) => row.track === drillTrack && row.attempts > 0 && row.accuracy < 1)
       .slice(0, 2)

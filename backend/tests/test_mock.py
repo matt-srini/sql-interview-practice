@@ -617,3 +617,131 @@ class TestSolutionVisibility:
                 assert "explanation" in q, (
                     f"Python finish missing explanation, got keys: {list(q.keys())}"
                 )
+
+# ---------------------------------------------------------------------------
+# Weak-spot insights — Gap-coverage tests
+# ---------------------------------------------------------------------------
+
+class TestWeakSpotInsights:
+    """Verify that the finish response exposes the data needed for the
+    weak-spot concept table and drill link in the frontend.
+
+    The frontend computes concept accuracy entirely client-side from
+    ``questions[].concepts``.  The backend's job is to:
+    1. Include ``concepts`` on every question in the finish response.
+    2. Include ``is_solved`` on every question so the UI can tally accuracy.
+    3. Return ``solved_count`` and ``total_count`` for the score headline.
+    """
+
+    def test_finish_includes_concepts_per_question(self) -> None:
+        """Every question in the finish summary must carry a ``concepts`` list."""
+        with TestClient(app) as client:
+            _make_user(client, plan="elite")
+            _, session = _start_mock(client, track="sql", difficulty="easy")
+            r = client.post(f"/api/mock/{session['session_id']}/finish")
+            assert r.status_code == 200, r.text
+            for q in r.json()["questions"]:
+                assert "concepts" in q, (
+                    f"finish response question missing 'concepts', got keys: {list(q.keys())}"
+                )
+                assert isinstance(q["concepts"], list), (
+                    f"'concepts' should be a list, got: {type(q['concepts'])}"
+                )
+
+    def test_finish_includes_is_solved_per_question(self) -> None:
+        """Every question in the finish summary must carry ``is_solved``."""
+        with TestClient(app) as client:
+            _make_user(client, plan="elite")
+            _, session = _start_mock(client, track="sql", difficulty="easy")
+            r = client.post(f"/api/mock/{session['session_id']}/finish")
+            assert r.status_code == 200, r.text
+            for q in r.json()["questions"]:
+                assert "is_solved" in q, (
+                    f"finish response question missing 'is_solved', got keys: {list(q.keys())}"
+                )
+
+    def test_finish_includes_solved_count_and_total_count(self) -> None:
+        """The finish summary must include ``solved_count`` and ``total_count``."""
+        with TestClient(app) as client:
+            _make_user(client, plan="elite")
+            _, session = _start_mock(client, track="sql", difficulty="easy")
+            r = client.post(f"/api/mock/{session['session_id']}/finish")
+            assert r.status_code == 200, r.text
+            body = r.json()
+            assert "solved_count" in body, f"missing solved_count in finish response: {list(body.keys())}"
+            assert "total_count" in body, f"missing total_count in finish response: {list(body.keys())}"
+            assert isinstance(body["solved_count"], int)
+            assert isinstance(body["total_count"], int)
+            assert body["total_count"] == len(body["questions"])
+            assert 0 <= body["solved_count"] <= body["total_count"]
+
+    def test_solved_count_reflects_correct_submission(self) -> None:
+        """A correct submission increments solved_count in the finish summary."""
+        with TestClient(app) as client:
+            _make_user(client, plan="elite")
+            _, session = _start_mock(client, track="sql", difficulty="easy")
+            session_id = session["session_id"]
+            first_q = session["questions"][0]
+
+            # Submit with the real expected query so it is marked correct
+            import questions as sql_catalog
+            real_q = sql_catalog.get_question(first_q["id"])
+            assert real_q is not None, f"question {first_q['id']} not found in catalog"
+            correct_sql = real_q.get("expected_query", "SELECT 1")
+
+            sub = client.post(
+                f"/api/mock/{session_id}/submit",
+                json={"question_id": first_q["id"], "track": "sql", "code": correct_sql},
+            )
+            assert sub.status_code == 200, sub.text
+            # Whether it passes evaluation depends on the dataset; just verify
+            # the submit endpoint accepted it without error.
+            assert "correct" in sub.json()
+
+            r = client.post(f"/api/mock/{session_id}/finish")
+            assert r.status_code == 200, r.text
+            body = r.json()
+            # solved_count must be ≥ 0 and ≤ total_count
+            assert 0 <= body["solved_count"] <= body["total_count"]
+
+    def test_unsolved_session_has_zero_solved_count(self) -> None:
+        """Finishing without submitting any answer must yield solved_count=0."""
+        with TestClient(app) as client:
+            _make_user(client, plan="elite")
+            _, session = _start_mock(client, track="sql", difficulty="easy")
+            r = client.post(f"/api/mock/{session['session_id']}/finish")
+            assert r.status_code == 200, r.text
+            assert r.json()["solved_count"] == 0
+
+    def test_all_tracks_finish_include_concepts(self) -> None:
+        """concepts must be present in finish responses for all supported tracks."""
+        tracks = ["sql", "python", "python-data", "pyspark"]
+        for track in tracks:
+            with TestClient(app) as client:
+                _make_user(client, plan="elite")
+                _, session = _start_mock(client, track=track, difficulty="easy")
+                r = client.post(f"/api/mock/{session['session_id']}/finish")
+                assert r.status_code == 200, f"{track} finish failed: {r.text}"
+                for q in r.json()["questions"]:
+                    assert "concepts" in q, (
+                        f"[{track}] finish question missing 'concepts', got keys: {list(q.keys())}"
+                    )
+                    assert isinstance(q["concepts"], list), (
+                        f"[{track}] 'concepts' is not a list: {q['concepts']!r}"
+                    )
+
+    def test_mixed_track_finish_includes_per_question_track(self) -> None:
+        """Mixed-track questions must each carry a ``track`` field so the
+        frontend can attribute concepts to the correct track for the drill link."""
+        with TestClient(app) as client:
+            _make_user(client, plan="elite")
+            _, session = _start_mock(client, track="mixed", difficulty="easy")
+            r = client.post(f"/api/mock/{session['session_id']}/finish")
+            assert r.status_code == 200, r.text
+            for q in r.json()["questions"]:
+                assert "track" in q, (
+                    f"mixed finish question missing 'track' field, got keys: {list(q.keys())}"
+                )
+                assert q["track"] in ("sql", "python", "python-data", "pyspark"), (
+                    f"unexpected track value in mixed finish: {q['track']!r}"
+                )

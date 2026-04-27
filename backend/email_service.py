@@ -55,6 +55,14 @@ async def send_verification_email(to_email: str, verification_token: str) -> boo
     <hr style="border: none; border-top: 1px solid #E5E3DE; margin: 24px 0;">
     <p style="color: #9B9790; font-size: 0.78rem; margin: 0;">
       datathink &mdash; Data interview practice
+    </p>
+  </div>
+</body>
+</html>
+"""
+
+    text_body = (
+        f"Verify your datathink email\n\n"
         f"Click the link below to verify your email address (expires in 24 hours):\n\n"
         f"{verify_url}\n\n"
         f"If you didn't create a datathink account, ignore this email."
