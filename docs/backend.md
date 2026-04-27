@@ -212,7 +212,9 @@ Notes:
 
 Paths are defined as JSON files in `backend/content/paths/`. The `path_loader.py` module reads them at startup. Each path record has `slug`, `title`, `description`, `topic`, and `questions[]` (ordered list of question IDs). The `/api/paths/{slug}` response enriches each question entry with its catalog metadata and the user's current state.
 
-Current footprint: **22 paths total** (SQL 7, Python 5, Pandas 5, PySpark 5). Path records also include `tier` (`free`/`pro`) and `role` (`starter`/`intermediate`/`advanced`) for access and unlock-shortcut semantics.
+Current footprint: **22 paths total** (SQL 7, Python 5, Pandas 5, PySpark 5). Path records also include `tier` (`free`/`pro`) and `role` (`starter`/`intermediate`/`advanced`) for access and unlock-shortcut semantics, plus `focus_concepts` (2–4 semantic concept tags), `outcomes` (one-sentence learning objective), and `recommended_after` (prerequisite path slugs).
+
+The `GET /api/dashboard/insights` endpoint uses `focus_concepts` to attach `recommended_path_slug` and `recommended_path_title` to each entry in `weakest_concepts`, routing users from a diagnosed weak area directly to the most relevant accessible path. Starter paths take priority over intermediate, which take priority over advanced in that matching.
 
 ---
 

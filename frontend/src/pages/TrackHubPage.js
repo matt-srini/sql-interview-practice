@@ -96,6 +96,30 @@ export default function TrackHubPage() {
     api.get('/paths').then(r => setTopicPaths(r.data.filter(p => p.topic === topic))).catch(() => {});
   }, [topic]);
 
+  // Sort paths: incomplete starter first, then intermediate, then advanced; complete paths last.
+  const sortedPaths = useMemo(() => {
+    const roleOrder = { starter: 0, intermediate: 1, advanced: 2 };
+    return [...topicPaths].sort((a, b) => {
+      const aComplete = a.question_count > 0 && a.solved_count === a.question_count;
+      const bComplete = b.question_count > 0 && b.solved_count === b.question_count;
+      if (aComplete !== bComplete) return aComplete ? 1 : -1;
+      return (roleOrder[a.role] ?? 3) - (roleOrder[b.role] ?? 3);
+    });
+  }, [topicPaths]);
+
+  // Pick the top recommendation: first incomplete accessible path in role order.
+  const recommendedPath = useMemo(() => sortedPaths.find(
+    p => p.accessible && !(p.question_count > 0 && p.solved_count === p.question_count)
+  ) ?? null, [sortedPaths]);
+
+  function getPathLabel(path) {
+    if (!path) return null;
+    if (path.role === 'starter' && path.solved_count === 0) return 'Start here';
+    if (path.role === 'starter') return 'Continue';
+    if (path.solved_count > 0) return 'Continue';
+    return 'Recommended next';
+  }
+
   function handleContinue() {
     if (continueId) {
       navigate(`/practice/${topic}/questions/${continueId}`);
@@ -247,19 +271,24 @@ export default function TrackHubPage() {
           </div>
         )}
 
-        {topicPaths.length > 0 && (
+        {sortedPaths.length > 0 && (
           <section className="trackhub-paths">
             <div className="trackhub-paths-header">
               <h3 className="trackhub-paths-title">Learning paths</h3>
-              {topicPaths.length > 2 && (
+              {sortedPaths.length > 2 && (
                 <Link to={`/learn/${topic}`} className="trackhub-paths-viewall">
-                  View all {topicPaths.length} →
+                  View all {sortedPaths.length} →
                 </Link>
               )}
             </div>
             <div className="trackhub-paths-grid">
-              {topicPaths.slice(0, 2).map(p => (
-                <PathProgressCard key={p.slug} path={p} compact />
+              {sortedPaths.slice(0, 2).map(p => (
+                <PathProgressCard
+                  key={p.slug}
+                  path={p}
+                  compact
+                  recommendationLabel={p.slug === recommendedPath?.slug ? getPathLabel(p) : null}
+                />
               ))}
             </div>
           </section>

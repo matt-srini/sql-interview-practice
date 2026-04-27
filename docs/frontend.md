@@ -81,9 +81,7 @@ Per-track landing rendered by `Outlet` when no question is active:
 - Track name + overall solved/total progress bar
 - Per-difficulty breakdown (easy/medium/hard bars)
 - "Continue where I left off" button → navigates to next unlocked question
-- Focus card with next unlocked question summary
-- Concept preview for the track
-- Solved concepts strip (concept tags from solved questions only)
+- Learning paths section: paths are sorted by role order (starter → intermediate → advanced) with incomplete paths before complete ones. The first incomplete accessible path gets a contextual `recommendationLabel` ("Start here" for an unstarted starter, "Continue" for an in-progress path, "Recommended next" for any other). Up to 2 paths shown; "View all N →" link to `/learn/:topic` when there are more.
 
 Uses `useCatalog()` for question/progress data.
 
@@ -156,7 +154,7 @@ Loading state now renders a skeleton card instead of plain text while fetching a
 
 Cross-track progress overview. Fetches `GET /api/dashboard`, `GET /api/dashboard/insights`, and `GET /api/mock/history` on mount.
 
-- Returning users see an `InsightStrip` with 3 tiles: cross-track coaching sentence, streak days, weakest concept.
+- Returning users see an `InsightStrip` with 3 tiles: cross-track coaching sentence, streak days, weakest concept. When the backend returns `recommended_path_slug` on the weakest concept, the tile links to the learning path ("Study in {title} →") instead of the generic concept drill link.
 - Track cards now include `median_solve_seconds` and `accuracy_pct` rows from `/api/dashboard/insights`.
 - New users (no solves yet) see a dedicated empty state with CTAs into practice and learning paths.
 - `by_difficulty` still renders as "X/Y" counts per difficulty level (`{ solved, total }` objects, not plain integers).
@@ -194,10 +192,10 @@ When `solved_count === question_count`, a completion banner is shown with a "Wha
 | VariablesPanel | `components/VariablesPanel.js` | Available DataFrame variables with CSV source and column list |
 | MCQPanel | `components/MCQPanel.js` | Radio-button MCQ with correct/wrong highlighting and explanation after submit |
 | ConceptPanel | `components/ConceptPanel.js` | Slide-in concept detail panel opened from concept pills on `QuestionPage` |
-| InsightStrip | `components/InsightStrip.js` | Dashboard coaching strip: cross-track insight, streak tile, weakest concept tile |
+| InsightStrip | `components/InsightStrip.js` | Dashboard coaching strip: cross-track insight, streak tile, weakest concept tile. Weakest concept links to recommended path when `recommended_path_slug` is present in the insight payload. |
 | Skeleton | `components/Skeleton.js` | Reusable shimmer primitive (`skeleton-block` + `skeleton-shimmer`) used in QuestionPage, SidebarNav, TrackHubPage, ProgressDashboard |
 | TrackProgressBar | `components/TrackProgressBar.js` | Reusable horizontal progress bar with configurable color and label |
-| PathProgressCard | `components/PathProgressCard.js` | Path card with track color dot, progress bar, and CTA; used on LandingPage and TrackHubPage |
+| PathProgressCard | `components/PathProgressCard.js` | Path card with track color dot, progress bar, and CTA; used on LandingPage and TrackHubPage. Accepts optional `recommendationLabel` prop that replaces the tier badge with a contextual label ("Start here", "Recommended next", "Continue"). |
 | OnboardingTooltip | `components/OnboardingTooltip.js` | First-visit, target-anchored walkthrough tooltip with Back/Next/Skip and Esc-to-close support |
 | Topbar | `components/Topbar.js` | Single unified top nav used by every page (landing, auth, 404, practice workspace, mock, dashboard, learning paths). Composition slots for `leftSlot`, `centerSlot`, `userExtras`, `belowTopbar`; three variants: `'landing'` (default, container-bounded), `'app'` (full-bleed workspace chrome), `'minimal'` (auth / verify / reset / 404 — brand + theme + user pill only). `showPricingLink` for logged-out visitors. |
 | ToastViewport | `components/ToastViewport.js` | Global in-app toast stack (first-solve, unlock, and streak milestone feedback) rendered by `ToastProvider` |

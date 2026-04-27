@@ -1,7 +1,7 @@
 {
   "slug": "funnel-and-events",
   "title": "Funnel & Event Analysis",
-  "description": "Work with event streams and conversion funnels \u2014 session analysis, step sequencing, drop-off detection, and funnel order enforcement.",
+  "description": "Work with event streams and conversion funnels — session analysis, step sequencing, drop-off detection, and funnel order enforcement.",
   "topic": "sql",
   "questions": [
     1024,
@@ -11,5 +11,8 @@
     3025
   ],
   "tier": "pro",
-  "role": "advanced"
+  "role": "advanced",
+  "focus_concepts": ["USER-PRODUCT JOURNEY MODELING", "SESSIONIZATION", "CONVERSION FUNNEL COMPUTATION"],
+  "outcomes": "You'll build event funnels, detect user journeys, and calculate conversion rates across steps from raw event streams.",
+  "recommended_after": ["window-functions-mastery"]
 }

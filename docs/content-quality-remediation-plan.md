@@ -119,7 +119,7 @@ Any implementing agent should read these first before starting a phase:
 
 - [x] Phase 1 - Concept Taxonomy Repair
 - [x] Phase 2 - Hint System And Hint Content Overhaul
-- [ ] Phase 3 - Guided Progression Upgrade
+- [x] Phase 3 - Guided Progression Upgrade
 - [ ] Phase 4 - Weak-Spot Insights V2
 - [ ] Phase 5 - Track-Specific Content Remediation
 - [ ] Phase 6 - Pricing And Claim Realignment
@@ -293,14 +293,14 @@ Any implementing agent should read these first before starting a phase:
 
 ### Checklist
 
-- [ ] Audit all files in `backend/content/paths/*.json` for curricular coherence.
-- [ ] Decide whether each path needs explicit `outcomes`, `focus_concepts`, and `recommended_after` metadata.
-- [ ] Extend path schema and loader if new metadata is added.
-- [ ] Update `docs/content-authoring.md` with path-authoring rules if schema changes.
-- [ ] Improve unlock and path recommendation copy in `backend/unlock.py` and the frontend surfaces that consume it.
-- [ ] Add a deterministic next-step recommender using solved state plus weak concepts.
-- [ ] Surface those recommendations in track hub, dashboard, or question page where they add the most value.
-- [ ] Ensure the recommendations do not conflict with free-tier access rules.
+- [x] Audit all files in `backend/content/paths/*.json` for curricular coherence.
+- [x] Decide whether each path needs explicit `outcomes`, `focus_concepts`, and `recommended_after` metadata.
+- [x] Extend path schema and loader if new metadata is added.
+- [x] Update `docs/content-authoring.md` with path-authoring rules if schema changes.
+- [x] Improve unlock and path recommendation copy in `backend/unlock.py` and the frontend surfaces that consume it.
+- [x] Add a deterministic next-step recommender using solved state plus weak concepts.
+- [x] Surface those recommendations in track hub, dashboard, or question page where they add the most value.
+- [x] Ensure the recommendations do not conflict with free-tier access rules.
 
 ### Implementation notes
 
@@ -568,3 +568,4 @@ Update this section whenever a phase or subphase lands.
 
 - 2026-04-27: Plan created from the full content, hinting, progression, and coaching audit. No remediation work shipped yet.
 - 2026-04-27: Phase 1 completed. Added explicit semantic concept-tag rules to `docs/content-authoring.md`, added concept-tag validation to `backend/scripts/validate_content.py`, and rewrote low-signal concept tags across all four question banks until `scripts/validate_content.py` passed again.
+- 2026-04-27: Phase 3 completed. Added `focus_concepts`, `outcomes`, and `recommended_after` to all 22 path JSONs. Extended `routers/paths.py` to return new fields. Upgraded `routers/insights.py` to attach `recommended_path_slug` / `recommended_path_title` to each `weakest_concepts` entry (concept→path index, starter paths preferred). TrackHubPage now sorts paths by role order (starter → intermediate → advanced, incomplete before complete) and labels the first recommended path. PathProgressCard accepts `recommendationLabel` prop. InsightStrip links weak concept to its recommended path when available. Docs updated in `content-authoring.md`, `backend.md`, `frontend.md`.

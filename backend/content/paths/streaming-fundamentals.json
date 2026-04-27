@@ -13,5 +13,8 @@
     11621
   ],
   "tier": "pro",
-  "role": "advanced"
+  "role": "advanced",
+  "focus_concepts": ["STATEFUL STREAMING PATTERN", "WATERMARK MANAGEMENT", "STRUCTURED STREAMING MODEL"],
+  "outcomes": "You'll understand Structured Streaming's unbounded-table model, event-time windowing, and watermarking for late data.",
+  "recommended_after": ["spark-performance"]
 }

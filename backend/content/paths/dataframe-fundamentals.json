@@ -12,5 +12,8 @@
     5007
   ],
   "tier": "free",
-  "role": "starter"
+  "role": "starter",
+  "focus_concepts": ["BOOLEAN INDEXING", "NULL-BASED ROW FILTERING", "OUTPUT SCHEMA SHAPING"],
+  "outcomes": "You'll get fluent with the everyday pandas toolkit — selection, filtering, null handling, derived columns, and sorting.",
+  "recommended_after": []
 }

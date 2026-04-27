@@ -14,5 +14,8 @@
     11620
   ],
   "tier": "free",
-  "role": "advanced"
+  "role": "advanced",
+  "focus_concepts": ["CATALYST OPTIMIZER REASONING", "ADAPTIVE QUERY EXECUTION", "PHYSICAL PLAN INTERPRETATION"],
+  "outcomes": "You'll read Spark query plans, understand Catalyst optimizer decisions, and know when to push hints or disable AQE.",
+  "recommended_after": ["spark-performance"]
 }

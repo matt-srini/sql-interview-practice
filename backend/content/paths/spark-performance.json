@@ -12,5 +12,8 @@
     11604
   ],
   "tier": "free",
-  "role": "intermediate"
+  "role": "intermediate",
+  "focus_concepts": ["PARTITION SHAPE CONTROL", "BROADCAST JOIN SELECTION", "SHUFFLE BOUNDARY DETECTION"],
+  "outcomes": "You'll diagnose and fix performance bottlenecks — over-partitioning, skew, and unnecessary shuffles — using the right join strategy.",
+  "recommended_after": ["spark-core-concepts"]
 }

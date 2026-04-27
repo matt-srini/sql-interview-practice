@@ -11,5 +11,8 @@
     5619
   ],
   "tier": "pro",
-  "role": "advanced"
+  "role": "advanced",
+  "focus_concepts": ["WIDE-FORM RESHAPING", "CROSS-TABULATION", "MULTI-INDEX FLATTENING"],
+  "outcomes": "You'll pivot, melt, stack, and unstack DataFrames to reshape data from long to wide form and back.",
+  "recommended_after": ["groupby-and-joins"]
 }

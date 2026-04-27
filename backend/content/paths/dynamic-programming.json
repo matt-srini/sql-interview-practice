@@ -13,5 +13,8 @@
     4609
   ],
   "tier": "pro",
-  "role": "advanced"
+  "role": "advanced",
+  "focus_concepts": ["OPTIMAL SUBSTRUCTURE DECOMPOSITION", "MEMOIZATION STRATEGY", "LINEAR STATE UPDATE"],
+  "outcomes": "You'll recognize DP patterns — prefix, interval, knapsack — and write both top-down memoized and bottom-up tabulated solutions.",
+  "recommended_after": ["sliding-window-patterns"]
 }

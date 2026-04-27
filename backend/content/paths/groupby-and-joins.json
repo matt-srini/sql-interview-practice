@@ -12,5 +12,8 @@
     5306
   ],
   "tier": "free",
-  "role": "intermediate"
+  "role": "intermediate",
+  "focus_concepts": ["GROUPED AGGREGATION", "MULTI-DATAFRAME ENTITY LINKING", "BROADCAST AGGREGATION"],
+  "outcomes": "You'll use groupby transforms and multi-DataFrame merges to compute per-group statistics and enrich tables.",
+  "recommended_after": ["dataframe-fundamentals"]
 }

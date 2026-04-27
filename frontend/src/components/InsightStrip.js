@@ -50,12 +50,21 @@ export default function InsightStrip({ insights }) {
             <p className="dashboard-insight-muted">
               {percent(weakest.accuracy_pct)} accuracy across {weakest.attempts} attempts
             </p>
-            <Link
-              to={`/practice/${weakest.track}?concepts=${encodeURIComponent(weakest.concept)}`}
-              className="dashboard-insight-link"
-            >
-              Drill this concept →
-            </Link>
+            {weakest.recommended_path_slug ? (
+              <Link
+                to={`/learn/${weakest.track}/${weakest.recommended_path_slug}`}
+                className="dashboard-insight-link"
+              >
+                Study in {weakest.recommended_path_title} →
+              </Link>
+            ) : (
+              <Link
+                to={`/practice/${weakest.track}?concepts=${encodeURIComponent(weakest.concept)}`}
+                className="dashboard-insight-link"
+              >
+                Drill this concept →
+              </Link>
+            )}
           </>
         ) : (
           <p className="dashboard-insight-muted">Need at least 3 attempts on a concept to identify a weak area.</p>
