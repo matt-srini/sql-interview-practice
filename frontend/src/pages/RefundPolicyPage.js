@@ -22,7 +22,7 @@ export default function RefundPolicyPage({ isModal = false }) {
         <button type="button" className="policy-exit" onClick={handleClose} aria-label="Close policy">X</button>
       )}
       <h1 className="auth-card-title">Refund Policy</h1>
-      <p className="policy-meta">Last updated: April 2025</p>
+      <p className="policy-meta">Last updated: April 2026</p>
 
       <div className="policy-body">
         <h2>Monthly subscriptions</h2>
