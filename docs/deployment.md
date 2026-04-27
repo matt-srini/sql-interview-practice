@@ -149,6 +149,8 @@ The production image is a single Docker container: FastAPI serves both the API a
 1. `frontend-build` (node:20-alpine) — runs `npm ci && npm run build`, outputs `frontend/dist/`
 2. `runtime` (python:3.11-slim) — installs Python deps, copies backend code and `frontend/dist/`
 
+The runtime container starts Uvicorn on `0.0.0.0` and binds to `${PORT}` when the platform injects one (for example Railway). For local Docker runs, it falls back to `8000`.
+
 ```bash
 docker build -t sql-practice .
 docker run -p 8000:8000 \
@@ -279,6 +281,16 @@ Frontend builds now emit hidden sourcemaps. If `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`
 - Restart on failure (up to 10 retries)
 
 Set the environment variables listed above in the Railway service settings. Railway provides managed Postgres and Redis as add-on services; copy their connection strings into `DATABASE_URL` and `REDIS_URL`.
+
+For Dockerfile-based services on Railway, the application must listen on Railway's injected `PORT`. This repo's Docker image now binds Uvicorn to `${PORT}` with a fallback to `8000` for local container runs. If a Railway deploy shows "build succeeded" followed by a network or healthcheck failure, first verify:
+
+1. the container is listening on `${PORT}`
+2. `ENV=production`
+3. `DATABASE_URL`
+4. `REDIS_URL`
+5. `RAZORPAY_KEY_ID`
+6. `RAZORPAY_KEY_SECRET`
+7. `RAZORPAY_WEBHOOK_SECRET`
 
 ---
 
