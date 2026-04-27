@@ -73,17 +73,46 @@ def upgrade() -> None:
         sa.Column("created_at", sa.TIMESTAMP(timezone=True), nullable=False, server_default=sa.text("now()")),
     )
 
+    op.create_table(
+        "oauth_accounts",
+        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, server_default=sa.text("gen_random_uuid()")),
+        sa.Column("user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
+        sa.Column("provider", sa.Text(), nullable=False),
+        sa.Column("provider_user_id", sa.Text(), nullable=False),
+        sa.Column("email", sa.Text(), nullable=True),
+        sa.Column("name", sa.Text(), nullable=True),
+        sa.Column("created_at", sa.TIMESTAMP(timezone=True), nullable=False, server_default=sa.text("now()")),
+        sa.UniqueConstraint("provider", "provider_user_id"),
+    )
+
+    op.create_table(
+        "password_reset_tokens",
+        sa.Column("token", sa.Text(), primary_key=True),
+        sa.Column("user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
+        sa.Column("created_at", sa.TIMESTAMP(timezone=True), nullable=False, server_default=sa.text("now()")),
+        sa.Column("expires_at", sa.TIMESTAMP(timezone=True), nullable=False),
+        sa.Column("used_at", sa.TIMESTAMP(timezone=True), nullable=True),
+    )
+
     op.create_index("idx_sessions_user", "sessions", ["user_id"])
     op.create_index("idx_sessions_expires", "sessions", ["expires_at"])
     op.create_index("idx_progress_user", "user_progress", ["user_id"])
     op.create_index("idx_plan_changes_user", "plan_changes", ["user_id"])
+    op.create_index("idx_oauth_accounts_user", "oauth_accounts", ["user_id"])
+    op.create_index("idx_reset_tokens_user", "password_reset_tokens", ["user_id"])
+    op.create_index("idx_reset_tokens_expires", "password_reset_tokens", ["expires_at"])
 
 
 def downgrade() -> None:
+    op.drop_index("idx_reset_tokens_expires", table_name="password_reset_tokens")
+    op.drop_index("idx_reset_tokens_user", table_name="password_reset_tokens")
+    op.drop_index("idx_oauth_accounts_user", table_name="oauth_accounts")
     op.drop_index("idx_plan_changes_user", table_name="plan_changes")
     op.drop_index("idx_progress_user", table_name="user_progress")
     op.drop_index("idx_sessions_expires", table_name="sessions")
     op.drop_index("idx_sessions_user", table_name="sessions")
+    op.drop_table("password_reset_tokens")
+    op.drop_table("oauth_accounts")
     op.drop_table("plan_changes")
     op.drop_table("stripe_events")
     op.drop_table("user_sample_seen")
