@@ -21,11 +21,24 @@ import { renderDescription } from '../utils/renderDescription';
 import { useToast } from '../App';
 import { track } from '../analytics';
 
-const HINT_STEP_LABELS = ['Conceptual hint', 'Approach hint', 'Structure hint', 'Final hint'];
+const HINT_STEP_LABELS_BY_DIFFICULTY = {
+  easy: ['Mental model', 'Tooling nudge'],
+  medium: ['Core pattern', 'Problem split', 'Implementation nudge'],
+  hard: ['Decomposition', 'State and dependencies', 'Final constraint'],
+};
 const STREAK_MILESTONES = [3, 7, 14, 30, 60, 100];
 
 const SQL_PLACEHOLDER = '-- Write your SQL query here\nSELECT ';
 const PYTHON_PLACEHOLDER = '# Write your solution here\n';
+
+function getHintStepLabels(question) {
+  const totalHints = question?.hints?.length ?? 0;
+  if (totalHints <= 0) return [];
+  if (totalHints === 1) return ['Guiding hint'];
+
+  const baseLabels = HINT_STEP_LABELS_BY_DIFFICULTY[question?.difficulty] ?? [];
+  return Array.from({ length: totalHints }, (_, index) => baseLabels[index] ?? `Hint ${index + 1}`);
+}
 
 
 
@@ -120,6 +133,8 @@ export default function QuestionPage() {
   const [draftSaveState, setDraftSaveState] = useState('idle');
   const [elapsedMs, setElapsedMs] = useState(0);
   const [timerHidden, setTimerHidden] = useState(() => localStorage.getItem('timer-hidden') === '1');
+  const hintStepLabels = useMemo(() => getHintStepLabels(question), [question]);
+  const hasSingleHint = hintStepLabels.length === 1;
 
   // Split pane
   const [leftPanelWidth, setLeftPanelWidth] = useState(() => {
@@ -1578,14 +1593,16 @@ export default function QuestionPage() {
               {!submitResult.correct && question.hints?.length > 0 && (
                 <div className="hint-stepper">
                   <div className="hint-stepper-header">
-                    <span className="hint-stepper-title">Hints</span>
-                    <span className="hint-stepper-progress">{hintsShown}/{question.hints.length} revealed</span>
+                    <span className="hint-stepper-title">{hasSingleHint ? 'Hint' : 'Hints'}</span>
+                    {!hasSingleHint && (
+                      <span className="hint-stepper-progress">{hintsShown}/{question.hints.length} revealed</span>
+                    )}
                   </div>
                   {question.hints.slice(0, hintsShown).map((hint, index) => (
                     <div key={index} className="hint-step hint-step--revealed">
                       <div className="hint-step-meta">
                         <span className="hint-step-num">{index + 1}</span>
-                        <span className="hint-step-label">{HINT_STEP_LABELS[index] ?? `Hint ${index + 1}`}</span>
+                        <span className="hint-step-label">{hintStepLabels[index] ?? `Hint ${index + 1}`}</span>
                       </div>
                       <p className="hint-step-content">{hint}</p>
                     </div>
@@ -1596,7 +1613,7 @@ export default function QuestionPage() {
                       onClick={() => setHintsShown((c) => c + 1)}
                     >
                       <span className="hint-reveal-arrow">→</span>
-                      Reveal {HINT_STEP_LABELS[hintsShown] ?? `Hint ${hintsShown + 1}`}
+                      Reveal {hintStepLabels[hintsShown] ?? `Hint ${hintsShown + 1}`}
                     </button>
                   )}
                 </div>

@@ -98,6 +98,79 @@ _RAW_CONCEPTS_BY_TRACK: dict[str, set[str]] = {
     },
 }
 
+_HINT_COUNT_RULES: dict[str, dict[str, tuple[int, int]]] = {
+    "sql": {
+        "easy": (2, 2),
+        "medium": (2, 3),
+        "hard": (2, 3),
+    },
+    "python": {
+        "easy": (2, 2),
+        "medium": (2, 3),
+        "hard": (2, 3),
+    },
+    "python-data": {
+        "easy": (2, 2),
+        "medium": (2, 3),
+        "hard": (2, 3),
+    },
+    "pyspark": {
+        "easy": (1, 2),
+        "medium": (2, 3),
+        "hard": (2, 3),
+    },
+}
+
+_FIRST_HINT_LEAK_PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
+    "sql": (
+        re.compile(r"\bwhere\b", re.IGNORECASE),
+        re.compile(r"\bgroup by\b", re.IGNORECASE),
+        re.compile(r"\border by\b", re.IGNORECASE),
+        re.compile(r"\bjoin\b", re.IGNORECASE),
+        re.compile(r"\bhaving\b", re.IGNORECASE),
+        re.compile(r"\bdistinct\b", re.IGNORECASE),
+        re.compile(r"\b(count|max|min|avg|sum)\s*\(", re.IGNORECASE),
+        re.compile(r"\b(row_number|dense_rank|rank|lag|lead)\b", re.IGNORECASE),
+    ),
+    "python": (
+        re.compile(r"\bdictionary\b", re.IGNORECASE),
+        re.compile(r"\bdict\b", re.IGNORECASE),
+        re.compile(r"\bset\b", re.IGNORECASE),
+        re.compile(r"\bdeque\b", re.IGNORECASE),
+        re.compile(r"\bheap(q)?\b", re.IGNORECASE),
+        re.compile(r"\bstack\b", re.IGNORECASE),
+        re.compile(r"\bqueue\b", re.IGNORECASE),
+        re.compile(r"\[::?-?1\]"),
+    ),
+    "python-data": (
+        re.compile(r"\bgroupby\b", re.IGNORECASE),
+        re.compile(r"\bmerge\b", re.IGNORECASE),
+        re.compile(r"\bdropna\b", re.IGNORECASE),
+        re.compile(r"\bfillna\b", re.IGNORECASE),
+        re.compile(r"\bsort_values\b", re.IGNORECASE),
+        re.compile(r"\brename\b", re.IGNORECASE),
+        re.compile(r"\btransform\b", re.IGNORECASE),
+        re.compile(r"\brolling\b", re.IGNORECASE),
+        re.compile(r"\bcumsum\b", re.IGNORECASE),
+        re.compile(r"\brank\b", re.IGNORECASE),
+        re.compile(r"\bto_datetime\b", re.IGNORECASE),
+        re.compile(r"\bpivot(_table)?\b", re.IGNORECASE),
+        re.compile(r"\.dt\b", re.IGNORECASE),
+        re.compile(r"\.str\b", re.IGNORECASE),
+    ),
+    "pyspark": (
+        re.compile(r"\bcollect\s*\(", re.IGNORECASE),
+        re.compile(r"\bcount\s*\(", re.IGNORECASE),
+        re.compile(r"\bfilter\s*\(", re.IGNORECASE),
+        re.compile(r"\bwithcolumn\b", re.IGNORECASE),
+        re.compile(r"\brepartition\b", re.IGNORECASE),
+        re.compile(r"\bcoalesce\b", re.IGNORECASE),
+        re.compile(r"\bcache\s*\(", re.IGNORECASE),
+        re.compile(r"\bbroadcast\b", re.IGNORECASE),
+        re.compile(r"\bcreateorreplace(temp)?view\b", re.IGNORECASE),
+    ),
+}
+
 
 def _normalize_concept(concept: str) -> str:
     return re.sub(r"\s+", " ", concept.strip().lower())
@@ -157,6 +230,58 @@ def _validate_concepts() -> None:
         if remaining > 0:
             joined += f"\n- ... and {remaining} more"
         raise ValueError(f"Concept validation failed:\n{joined}")
+
+
+def _validate_hints() -> None:
+    errors: list[str] = []
+
+    for track, file_path in _iter_question_files():
+        difficulty = file_path.stem
+        min_hints, max_hints = _HINT_COUNT_RULES[track][difficulty]
+
+        with file_path.open("r", encoding="utf-8") as handle:
+            questions = json.load(handle)
+
+        for question in questions:
+            qid = question.get("id", "<unknown>")
+            title = question.get("title", "<untitled>")
+            hints = question.get("hints")
+
+            if not isinstance(hints, list) or not hints:
+                errors.append(f"{track} {qid} {title}: hints must be a non-empty list")
+                continue
+
+            if len(hints) < min_hints or len(hints) > max_hints:
+                errors.append(
+                    f"{track} {qid} {title}: expected {min_hints}-{max_hints} hints, found {len(hints)}"
+                )
+
+            normalized_seen: set[str] = set()
+            for hint in hints:
+                if not isinstance(hint, str) or not hint.strip():
+                    errors.append(f"{track} {qid} {title}: hints must be non-empty strings")
+                    continue
+
+                normalized = re.sub(r"\s+", " ", hint.strip().lower())
+                if normalized in normalized_seen:
+                    errors.append(f"{track} {qid} {title}: duplicate hint '{hint}'")
+                    continue
+                normalized_seen.add(normalized)
+
+            first_hint = hints[0] if hints else ""
+            for pattern in _FIRST_HINT_LEAK_PATTERNS[track]:
+                if isinstance(first_hint, str) and pattern.search(first_hint):
+                    errors.append(
+                        f"{track} {qid} {title}: first hint is too implementation-specific ('{first_hint}')"
+                    )
+                    break
+
+    if errors:
+        joined = "\n".join(f"- {item}" for item in errors[:200])
+        remaining = len(errors) - min(len(errors), 200)
+        if remaining > 0:
+            joined += f"\n- ... and {remaining} more"
+        raise ValueError(f"Hint validation failed:\n{joined}")
 
 
 def _validate_paths(paths: list[dict], catalogs_by_topic: dict[str, dict[str, list[dict]]]) -> None:
@@ -252,6 +377,7 @@ def main() -> None:
     }
     _validate_paths(paths, catalogs_by_topic)
     _validate_concepts()
+    _validate_hints()
 
     print("Content validation passed")
 
