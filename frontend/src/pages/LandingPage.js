@@ -423,7 +423,7 @@ export default function LandingPage() {
                 <div className="landing-showcase-header">
                   <h2 className="landing-showcase-title">This is what data interviews actually look like.</h2>
                   <p className="landing-showcase-subtitle">
-                    Read the problem. Study the solution. Build the intuition you&rsquo;ll draw on in the room.
+                    Real questions across all four tracks &mdash; see the depth and style of what you&rsquo;ll work through before you start.
                   </p>
                 </div>
 
@@ -681,7 +681,7 @@ export default function LandingPage() {
         {['free', null, undefined].includes(userPlan) && (
         <section id="landing-pricing" className="landing-tier-section">
           <div className="landing-tier-inner">
-            <h2 className="landing-tier-title">Simple pricing</h2>
+            <h2 className="landing-tier-title">Straightforward pricing</h2>
             <div className="landing-tier-grid">
 
               {/* ── Free ── */}
