@@ -38,9 +38,22 @@ def upgrade() -> None:
     # Grandfather existing registered users — they were trusted at sign-up time
     op.execute("UPDATE users SET email_verified = true WHERE email IS NOT NULL AND pwd_hash IS NOT NULL")
 
-    # Grandfather OAuth users — OAuth proves email ownership
+    # Grandfather OAuth users — OAuth proves email ownership.
+    # Guard against fresh databases where oauth_accounts doesn't exist yet
+    # (it lives in db.py's ensure_schema, not in the migration chain).
     op.execute(
-        "UPDATE users SET email_verified = true WHERE id IN (SELECT DISTINCT user_id FROM oauth_accounts)"
+        """
+        DO $$
+        BEGIN
+            IF EXISTS (
+                SELECT 1 FROM information_schema.tables
+                WHERE table_schema = 'public' AND table_name = 'oauth_accounts'
+            ) THEN
+                UPDATE users SET email_verified = true
+                WHERE id IN (SELECT DISTINCT user_id FROM oauth_accounts);
+            END IF;
+        END $$
+        """
     )
 
 
