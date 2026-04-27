@@ -421,7 +421,7 @@ export default function LandingPage() {
             <section className="landing-showcase">
               <div className="landing-showcase-inner" ref={showcaseRef}>
                 <div className="landing-showcase-header">
-                  <h2 className="landing-showcase-title">This is what data interviews actually look like.</h2>
+                  <h2 className="landing-showcase-title">Know what you&rsquo;re walking into.</h2>
                   <p className="landing-showcase-subtitle">
                     Real questions across all four tracks, from warm-up to stretch difficulty &mdash; so you know exactly what you&rsquo;re walking into.
                   </p>
