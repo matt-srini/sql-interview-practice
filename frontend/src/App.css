@@ -1431,15 +1431,15 @@ select {
   margin-top: 1rem;
   padding: 0.9rem;
   border-radius: 14px;
-  border: 1px solid var(--border-subtle);
-  background: var(--surface-card);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--accent-soft-strong);
+  background: var(--accent-soft);
+  box-shadow: none;
 }
 
 .sidebar-upgrade-panel-copy {
   margin: 0 0 0.6rem;
   font-size: 0.78rem;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   line-height: 1.5;
 }
 
