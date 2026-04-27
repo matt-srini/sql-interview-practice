@@ -81,10 +81,67 @@ export default function AppShell() {
     setUpgradePending(true);
     setUpgradeError('');
     try {
-      const response = await api.post('/stripe/create-checkout', { plan });
-      window.location.assign(response.data.checkout_url);
+      const orderRes = await api.post('/razorpay/create-order', { plan, currency: 'INR' });
+      const {
+        order_id, subscription_id, amount, currency: checkoutCurrency, key_id, name, description,
+        prefill_email, prefill_name, is_subscription,
+      } = orderRes.data;
+
+      if (typeof window === 'undefined') {
+        throw new Error('Checkout is only available in the browser.');
+      }
+
+      const existingRazorpay = window.Razorpay;
+      if (typeof existingRazorpay !== 'function') {
+        throw new Error('Checkout was blocked — please disable any ad blocker for this site and try again.');
+      }
+
+      const options = {
+        key: key_id,
+        name,
+        description,
+        currency: checkoutCurrency,
+        prefill: { email: prefill_email || '', name: prefill_name || '' },
+        theme: { color: '#5B6AF0' },
+        handler: async (resp) => {
+          try {
+            await api.post('/razorpay/verify-payment', {
+              plan,
+              razorpay_payment_id: resp.razorpay_payment_id,
+              razorpay_signature: resp.razorpay_signature,
+              razorpay_order_id: resp.razorpay_order_id,
+              razorpay_subscription_id: resp.razorpay_subscription_id,
+            });
+            window.location.assign('/practice?upgraded=true');
+          } catch {
+            setUpgradeError('Payment received but verification failed. It will be applied shortly.');
+            setUpgradePending(false);
+          }
+        },
+        modal: {
+          ondismiss: () => setUpgradePending(false),
+        },
+      };
+
+      if (is_subscription) {
+        options.subscription_id = subscription_id;
+      } else {
+        options.order_id = order_id;
+        options.amount = amount;
+      }
+
+      const rzp = new existingRazorpay(options);
+      rzp.on('payment.failed', () => {
+        setUpgradeError('Payment failed. Please try again.');
+        setUpgradePending(false);
+      });
+      rzp.open();
     } catch (err) {
-      const message = err?.response?.data?.error || 'Unable to start checkout right now.';
+      const message =
+        err?.response?.data?.error
+        || err?.response?.data?.detail
+        || err?.message
+        || 'Unable to start checkout right now.';
       setUpgradeError(message);
       setUpgradePending(false);
     }
