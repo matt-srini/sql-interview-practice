@@ -180,7 +180,7 @@
       "Keep a result list; extend the last interval's end if the next interval overlaps, otherwise append a new one."
     ],
     "concepts": [
-      "sorting",
+      "ORDER-FIRST REASONING",
       "greedy",
       "interval problems"
     ]
@@ -362,7 +362,7 @@
     "concepts": [
       "two pointers",
       "greedy",
-      "array"
+      "INDEXED SEQUENCE REASONING"
     ]
   },
   {
@@ -459,7 +459,7 @@
     ],
     "concepts": [
       "dynamic programming",
-      "string",
+      "STRING PATTERN REASONING",
       "hash set"
     ]
   },
@@ -1082,7 +1082,7 @@
     ],
     "concepts": [
       "dynamic programming",
-      "string"
+      "STRING PATTERN REASONING"
     ]
   },
   {
@@ -1146,7 +1146,7 @@
       "Keep track of the best (longest) palindrome found by storing start and end indices."
     ],
     "concepts": [
-      "string",
+      "STRING PATTERN REASONING",
       "expand around center",
       "palindrome"
     ]
@@ -1289,7 +1289,7 @@
       "Only reverse a chunk if it has exactly k elements; leave smaller trailing chunks unchanged."
     ],
     "concepts": [
-      "array",
+      "INDEXED SEQUENCE REASONING",
       "in-place reversal",
       "linked list analog"
     ]
@@ -1751,7 +1751,7 @@
     "concepts": [
       "BFS",
       "graph",
-      "string",
+      "STRING PATTERN REASONING",
       "shortest path"
     ]
   },
@@ -1843,7 +1843,7 @@
       "topological sort",
       "graph",
       "BFS",
-      "string"
+      "STRING PATTERN REASONING"
     ]
   },
   {
@@ -2152,7 +2152,7 @@
     ],
     "concepts": [
       "dynamic programming",
-      "string",
+      "STRING PATTERN REASONING",
       "regular expression"
     ]
   },
@@ -2296,7 +2296,7 @@
     "concepts": [
       "sliding window",
       "binary search",
-      "sorting",
+      "ORDER-FIRST REASONING",
       "median"
     ]
   },
@@ -2533,7 +2533,7 @@
     ],
     "concepts": [
       "monotonic stack",
-      "array",
+      "INDEXED SEQUENCE REASONING",
       "greedy"
     ]
   },
@@ -2845,12 +2845,11 @@
       "Path compression in find(): `parent[x] = find(parent[x])` flattens the tree so future finds are O(1); union by rank keeps trees shallow"
     ],
     "concepts": [
-      "union-find",
-      "disjoint set union",
-      "path compression",
-      "union by rank",
-      "connected components",
-      "graph"
+      "CONNECTED-COMPONENT DISCOVERY",
+      "DISJOINT-SET MAINTENANCE",
+      "PATH-COMPRESSION OPTIMIZATION",
+      "UNION-BY-RANK HEURISTIC",
+      "GRAPH CONNECTIVITY"
     ]
   },
   {
@@ -3009,12 +3008,11 @@
       "Use a min-heap of (distance, node). Skip nodes where the popped distance is greater than the current best \u2014 those are stale entries"
     ],
     "concepts": [
-      "Dijkstra",
-      "min-heap",
-      "priority queue",
-      "shortest path",
-      "weighted graph",
-      "BFS variant"
+      "MIN-COST PATH RELAXATION",
+      "PRIORITY-ORDERED FRONTIER",
+      "WEIGHTED GRAPH TRAVERSAL",
+      "DISTANCE MAP MAINTENANCE",
+      "GREEDY SHORTEST-PATH EXPANSION"
     ]
   },
   {
@@ -3175,7 +3173,7 @@
       "priority queue",
       "k-way merge",
       "min-heap",
-      "sorting"
+      "ORDER-FIRST REASONING"
     ]
   },
   {

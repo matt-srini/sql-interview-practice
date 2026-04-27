@@ -15,6 +15,7 @@ This is the documentation hub for the datathink interview practice platform. Sta
 | [deployment.md](./deployment.md) | Local dev setup, Docker, production build, environment variables, Railway |
 | [railway-razorpay-launch-checklist.md](./railway-razorpay-launch-checklist.md) | End-to-end launch checklist for local Razorpay test mode, Railway deployment, and live-mode cutover |
 | [content-authoring.md](./content-authoring.md) | Curriculum philosophy, question counts, concept coverage maps, per-track authoring rules, JSON schemas |
+| [content-quality-remediation-plan.md](./content-quality-remediation-plan.md) | Phased implementation plan for improving question quality, hinting, guided progression, weak-spot analysis, and pricing-claim alignment |
 | [USERGUIDE.md](./USERGUIDE.md) | End-user guide to the platform |
 
 ---

@@ -160,7 +160,7 @@
       "collect() sends every row to a single process \u2014 the driver. Think about how much memory the driver process typically has"
     ],
     "concepts": [
-      "collect",
+      "DRIVER-SIDE MATERIALIZATION RISK",
       "driver memory",
       "OutOfMemoryError",
       "actions",
@@ -244,12 +244,11 @@
       "Low cluster utilization combined with a slow job is a classic indicator of data skew \u2014 a few tasks are doing all the work while the rest sit idle"
     ],
     "concepts": [
-      "Spark UI",
-      "skew diagnosis",
-      "stage detail",
-      "GC time",
-      "shuffle read/write",
-      "performance tuning"
+      "SPARK UI DIAGNOSIS",
+      "SKEW DIAGNOSIS",
+      "GC PRESSURE ANALYSIS",
+      "SHUFFLE BOTTLENECK DETECTION",
+      "PERFORMANCE TUNING"
     ]
   },
   {
@@ -274,7 +273,7 @@
     ],
     "concepts": [
       "checkpoint",
-      "cache",
+      "RECOMPUTATION TRADE-OFF",
       "fault tolerance",
       "DAG lineage",
       "iterative algorithms"
@@ -469,7 +468,7 @@
       "Only one of these operations uses a hash function on user_id to determine the destination partition \u2014 which one?"
     ],
     "concepts": [
-      "repartition",
+      "PARTITION SHAPE CONTROL",
       "hash partitioning",
       "co-location",
       "coalesce",
@@ -497,12 +496,11 @@
       "Checkpointing solves the 'no skipped records' half of exactly-once. What property of the sink solves the 'no duplicates' half?"
     ],
     "concepts": [
-      "exactly-once",
-      "structured streaming",
-      "checkpoint",
-      "idempotent sink",
-      "Delta Lake",
-      "delivery semantics"
+      "EXACTLY-ONCE DELIVERY SEMANTICS",
+      "STREAMING CHECKPOINT RECOVERY",
+      "IDEMPOTENT SINK DESIGN",
+      "DELTA LAKE STREAMING SINKS",
+      "FAILURE-SAFE OUTPUT HANDLING"
     ]
   },
   {
@@ -526,12 +524,11 @@
       "In an immutable file system, what must happen to a 10,000-row file when just 1 of its rows needs to change?"
     ],
     "concepts": [
-      "Delta Lake",
-      "write amplification",
-      "immutable files",
-      "VACUUM",
-      "OPTIMIZE",
-      "UPDATE cost"
+      "DELTA LAKE WRITE AMPLIFICATION",
+      "IMMUTABLE FILE REWRITE COST",
+      "TABLE MAINTENANCE TRADE-OFFS",
+      "UPDATE-PATH PERFORMANCE",
+      "STORAGE LAYOUT OPTIMIZATION"
     ]
   },
   {
@@ -555,12 +552,11 @@
       "AQE's job is to change the physical plan at runtime when real data sizes differ from compile-time estimates \u2014 which join type becomes optimal when one side is tiny?"
     ],
     "concepts": [
-      "AQE",
-      "join strategy switching",
-      "broadcast join",
-      "sort-merge join",
-      "runtime optimization",
-      "autoBroadcastJoinThreshold"
+      "ADAPTIVE QUERY EXECUTION",
+      "RUNTIME JOIN STRATEGY SWITCHING",
+      "BROADCAST ELIGIBILITY REASSESSMENT",
+      "SORT-MERGE FALLBACK LOGIC",
+      "RUNTIME OPTIMIZATION"
     ]
   },
   {
@@ -584,12 +580,11 @@
       "Watermark threshold = max_event_time_seen - watermark_delay. Events older than this threshold are dropped silently."
     ],
     "concepts": [
-      "structured streaming",
-      "watermark",
-      "late data",
-      "tumbling window",
-      "append mode",
-      "threshold"
+      "WATERMARK THRESHOLDING",
+      "LATE-DATA DISCARD RULES",
+      "STREAMING WINDOW FINALIZATION",
+      "APPEND-MODE EMISSION RULES",
+      "EVENT-TIME GUARANTEE BOUNDARIES"
     ]
   },
   {
@@ -613,12 +608,11 @@
       "Z-ordering works WITHIN existing partitions \u2014 it doesn't change partition structure but makes column statistics more effective for non-partition-key filters"
     ],
     "concepts": [
-      "Z-ordering",
-      "data skipping",
-      "column statistics",
-      "Delta Lake",
-      "OPTIMIZE",
-      "partition pruning vs data skipping"
+      "Z-ORDER CLUSTERING",
+      "DATA-SKIPPING PRUNING",
+      "COLUMN-STATISTICS FILTERING",
+      "DELTA TABLE LAYOUT OPTIMIZATION",
+      "PARTITION VS FILE-LEVEL PRUNING"
     ]
   }
 ]

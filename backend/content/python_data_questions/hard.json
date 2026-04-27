@@ -43,8 +43,8 @@
     "concepts": [
       "cohort analysis",
       "period arithmetic",
-      "pivot",
-      "nunique",
+      "WIDE-FORM RESHAPING",
+      "DISTINCT ENTITY COUNTING",
       "retention"
     ]
   },
@@ -87,10 +87,10 @@
       "Use `groupby('category_id')['total_revenue'].rank(pct=True)` to compute within-category percentile ranks"
     ],
     "concepts": [
-      "groupby",
+      "GROUPED AGGREGATION",
       "rank",
       "percentile",
-      "merge",
+      "MULTI-DATAFRAME ENTITY LINKING",
       "transform"
     ]
   },
@@ -127,7 +127,7 @@
     "concepts": [
       "rolling window",
       "datetime",
-      "groupby",
+      "GROUPED AGGREGATION",
       "moving average",
       "time series"
     ]
@@ -163,9 +163,9 @@
       "`rank(method='min', ascending=False)` gives rank 1 to the highest value, with ties sharing the lowest rank in the group"
     ],
     "concepts": [
-      "groupby",
+      "GROUPED AGGREGATION",
       "rank",
-      "sort_values",
+      "DETERMINISTIC RESULT ORDERING",
       "lifetime value"
     ]
   },
@@ -201,9 +201,9 @@
     ],
     "concepts": [
       "cumsum",
-      "groupby",
+      "GROUPED AGGREGATION",
       "window functions",
-      "sort_values",
+      "DETERMINISTIC RESULT ORDERING",
       "datetime"
     ]
   },
@@ -242,7 +242,7 @@
       "rolling window",
       "period",
       "time series",
-      "groupby"
+      "GROUPED AGGREGATION"
     ]
   },
   {
@@ -275,7 +275,7 @@
       "Compute the rate after aggregation: `resolved / total * 100`"
     ],
     "concepts": [
-      "groupby",
+      "GROUPED AGGREGATION",
       "named aggregation",
       "lambda",
       "datetime",
@@ -318,8 +318,8 @@
       "Use named aggregation with `'median'` as the aggfunc for median salary"
     ],
     "concepts": [
-      "merge",
-      "groupby",
+      "MULTI-DATAFRAME ENTITY LINKING",
+      "GROUPED AGGREGATION",
       "named aggregation",
       "median",
       "descriptive statistics"
@@ -368,9 +368,9 @@
     ],
     "concepts": [
       "crosstab",
-      "merge",
-      "pivot",
-      "sort_values",
+      "MULTI-DATAFRAME ENTITY LINKING",
+      "WIDE-FORM RESHAPING",
+      "DETERMINISTIC RESULT ORDERING",
       "frequency table"
     ]
   },
@@ -405,11 +405,11 @@
       "Use `.stack().reset_index()` to collapse the month columns back into rows"
     ],
     "concepts": [
-      "pivot",
+      "WIDE-FORM RESHAPING",
       "stack",
       "unstack",
       "reshape",
-      "groupby"
+      "GROUPED AGGREGATION"
     ]
   },
   {
@@ -464,7 +464,7 @@
       "multi-dataframe join",
       "normalisation",
       "weighted score",
-      "groupby",
+      "GROUPED AGGREGATION",
       "min-max scaling"
     ]
   },
@@ -519,7 +519,7 @@
     "concepts": [
       "funnel analysis",
       "set operations",
-      "nunique",
+      "DISTINCT ENTITY COUNTING",
       "DataFrame construction"
     ]
   },
@@ -592,8 +592,8 @@
     "concepts": [
       "self-join",
       "market basket analysis",
-      "merge",
-      "nunique",
+      "MULTI-DATAFRAME ENTITY LINKING",
+      "DISTINCT ENTITY COUNTING",
       "affinity"
     ]
   },
@@ -705,7 +705,7 @@
     "concepts": [
       "churn",
       "recency",
-      "groupby",
+      "GROUPED AGGREGATION",
       "timedelta",
       "datetime"
     ]
@@ -752,7 +752,7 @@
     "concepts": [
       "attribution",
       "timedelta",
-      "merge",
+      "MULTI-DATAFRAME ENTITY LINKING",
       "window join",
       "groupby any"
     ]
@@ -799,11 +799,11 @@
       "Add `pivot['Total'] = pivot.sum(axis=1)` after pivoting, then sort by it"
     ],
     "concepts": [
-      "pivot_table",
-      "merge",
+      "WIDE-FORM RESHAPING",
+      "MULTI-DATAFRAME ENTITY LINKING",
       "geographic analysis",
       "aggfunc",
-      "sort_values"
+      "DETERMINISTIC RESULT ORDERING"
     ]
   },
   {
@@ -837,12 +837,11 @@
       "Score recency in reverse: lower days = higher score (3); sum all three scores for the final RFM score"
     ],
     "concepts": [
-      "RFM segmentation",
-      "pd.cut",
-      "pd.qcut",
-      "groupby",
-      "customer analytics",
-      "apply"
+      "RFM SEGMENTATION",
+      "QUANTILE-BASED SCORING",
+      "VALUE BUCKETING",
+      "GROUPED CUSTOMER AGGREGATION",
+      "CUSTOMER-TIER CLASSIFICATION"
     ]
   },
   {
@@ -876,12 +875,11 @@
       "Low-cardinality string columns (few distinct values, many rows) benefit most from `.astype('category')` \u2014 pandas stores the strings once and uses integer codes"
     ],
     "concepts": [
-      "memory optimization",
-      "pd.Categorical",
-      "astype",
-      "dtype conversion",
-      "memory_usage",
-      "int32"
+      "MEMORY FOOTPRINT OPTIMIZATION",
+      "DTYPE DOWNSIZING",
+      "CATEGORICAL ENCODING",
+      "MEMORY USAGE AUDITING",
+      "LOSSLESS TYPE CONVERSION"
     ]
   },
   {
@@ -923,7 +921,7 @@
       "MultiIndex",
       "xs",
       "hierarchical indexing",
-      "groupby",
+      "GROUPED AGGREGATION",
       "cross-section"
     ]
   },
@@ -960,7 +958,7 @@
       "set operations",
       "conversion rate",
       "event analysis",
-      "nunique"
+      "DISTINCT ENTITY COUNTING"
     ]
   }
 ]

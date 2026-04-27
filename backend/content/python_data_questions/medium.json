@@ -41,10 +41,10 @@
       "Select only the required columns after merging, then sort by `order_id`"
     ],
     "concepts": [
-      "merge",
+      "MULTI-DATAFRAME ENTITY LINKING",
       "inner join",
       "column selection",
-      "sort_values"
+      "DETERMINISTIC RESULT ORDERING"
     ]
   },
   {
@@ -89,7 +89,7 @@
       "Select only `user_id` from df_orders before the merge to avoid extra columns"
     ],
     "concepts": [
-      "merge",
+      "MULTI-DATAFRAME ENTITY LINKING",
       "left join",
       "indicator",
       "anti-join pattern"
@@ -128,7 +128,7 @@
     "concepts": [
       "datetime",
       "to_period",
-      "groupby",
+      "GROUPED AGGREGATION",
       "aggregation",
       "date formatting"
     ]
@@ -172,11 +172,11 @@
       "Use `line_amount` (already unit_price * quantity) as the revenue column"
     ],
     "concepts": [
-      "merge",
-      "groupby",
+      "MULTI-DATAFRAME ENTITY LINKING",
+      "GROUPED AGGREGATION",
       "aggregation",
-      "rename",
-      "sort_values"
+      "OUTPUT SCHEMA SHAPING",
+      "DETERMINISTIC RESULT ORDERING"
     ]
   },
   {
@@ -210,7 +210,7 @@
       "Chain `.round(2)` directly on the transform result before assigning"
     ],
     "concepts": [
-      "groupby",
+      "GROUPED AGGREGATION",
       "transform",
       "derived columns",
       "broadcast aggregation"
@@ -248,9 +248,9 @@
     ],
     "concepts": [
       "datetime",
-      "groupby",
+      "GROUPED AGGREGATION",
       "rolling window",
-      "fillna",
+      "MISSING-VALUE IMPUTATION",
       "time series"
     ]
   },
@@ -284,7 +284,7 @@
       "`method='dense'` gives consecutive ranks with no gaps for tied values"
     ],
     "concepts": [
-      "groupby",
+      "GROUPED AGGREGATION",
       "rank",
       "dense rank",
       "window-style operations"
@@ -319,7 +319,7 @@
       "Divide each product's revenue by the scalar total and multiply by 100 for the percentage"
     ],
     "concepts": [
-      "groupby",
+      "GROUPED AGGREGATION",
       "aggregation",
       "percentage calculation",
       "scalar operations"
@@ -357,7 +357,7 @@
     ],
     "concepts": [
       "datetime",
-      "groupby",
+      "GROUPED AGGREGATION",
       "named aggregation",
       "agg",
       "date formatting"
@@ -393,7 +393,7 @@
       "Add `.astype(str)` to convert from Categorical to plain string"
     ],
     "concepts": [
-      "pd.cut",
+      "VALUE BUCKETING",
       "binning",
       "categorical",
       "derived columns"
@@ -449,11 +449,11 @@
       "Group by `['product_name', 'category_id']` and sum `line_amount`, then take `.head(10)` after sorting"
     ],
     "concepts": [
-      "merge",
+      "MULTI-DATAFRAME ENTITY LINKING",
       "multi-table join",
-      "groupby",
+      "GROUPED AGGREGATION",
       "aggregation",
-      "head"
+      "TOP-K RESULT EXTRACTION"
     ]
   },
   {
@@ -522,9 +522,9 @@
     ],
     "concepts": [
       "cumsum",
-      "groupby",
+      "GROUPED AGGREGATION",
       "running total",
-      "sort_values",
+      "DETERMINISTIC RESULT ORDERING",
       "window-style operations"
     ]
   },
@@ -568,10 +568,10 @@
       "Use `how='left'` so all orders are kept, then fill NaN payment columns with `'none'`"
     ],
     "concepts": [
-      "merge",
+      "MULTI-DATAFRAME ENTITY LINKING",
       "left join",
-      "fillna",
-      "rename",
+      "MISSING-VALUE IMPUTATION",
+      "OUTPUT SCHEMA SHAPING",
       "column conflicts"
     ]
   },
@@ -604,8 +604,8 @@
       "Filter for `> 1`, then `.reset_index()` to get a DataFrame with `user_id` as a column"
     ],
     "concepts": [
-      "groupby",
-      "nunique",
+      "GROUPED AGGREGATION",
+      "DISTINCT ENTITY COUNTING",
       "filtering aggregated results",
       "boolean indexing"
     ]
@@ -641,8 +641,8 @@
     "concepts": [
       "derived columns",
       "arithmetic operations",
-      "sort_values",
-      "head"
+      "DETERMINISTIC RESULT ORDERING",
+      "TOP-K RESULT EXTRACTION"
     ]
   },
   {
@@ -674,10 +674,10 @@
       "Use `.fillna(0).astype(int)` to replace missing device combinations with zero counts"
     ],
     "concepts": [
-      "pivot",
-      "groupby",
+      "WIDE-FORM RESHAPING",
+      "GROUPED AGGREGATION",
       "reshape",
-      "fillna",
+      "MISSING-VALUE IMPUTATION",
       "cross-tabulation"
     ]
   },
@@ -726,9 +726,9 @@
       "After aggregating by category, divide each row's revenue by the total revenue scalar for the percentage"
     ],
     "concepts": [
-      "merge",
+      "MULTI-DATAFRAME ENTITY LINKING",
       "multi-table join",
-      "groupby",
+      "GROUPED AGGREGATION",
       "percentage calculation"
     ]
   },
@@ -765,7 +765,7 @@
       "rank",
       "percentile",
       "derived columns",
-      "sort_values"
+      "DETERMINISTIC RESULT ORDERING"
     ]
   },
   {
@@ -808,7 +808,7 @@
       "Subtract the two datetime columns and use `.dt.days` to get integer days"
     ],
     "concepts": [
-      "merge",
+      "MULTI-DATAFRAME ENTITY LINKING",
       "datetime",
       "timedelta",
       "dt accessor",
@@ -844,7 +844,7 @@
       "The boolean column is simply `df['unit_price'] > df['avg_price']`"
     ],
     "concepts": [
-      "groupby",
+      "GROUPED AGGREGATION",
       "transform",
       "boolean column",
       "derived columns"
@@ -889,8 +889,8 @@
       "Then use `.groupby('category_id')['total_revenue'].idxmax()` to find the row index of the max per category, and `.loc[idx]` to select those rows"
     ],
     "concepts": [
-      "merge",
-      "groupby",
+      "MULTI-DATAFRAME ENTITY LINKING",
+      "GROUPED AGGREGATION",
       "idxmax",
       "per-group maximum"
     ]
@@ -928,7 +928,7 @@
     "concepts": [
       "datetime",
       "dayofweek",
-      "groupby",
+      "GROUPED AGGREGATION",
       "named aggregation",
       "map"
     ]
@@ -971,8 +971,8 @@
       "This is more efficient than merging first and grouping second on a large events table"
     ],
     "concepts": [
-      "merge",
-      "groupby",
+      "MULTI-DATAFRAME ENTITY LINKING",
+      "GROUPED AGGREGATION",
       "count",
       "aggregation before join pattern"
     ]
@@ -1007,7 +1007,7 @@
       "Pass a list to `ascending` in `sort_values` to mix ascending and descending: `ascending=[True, False]`"
     ],
     "concepts": [
-      "groupby",
+      "GROUPED AGGREGATION",
       "transform",
       "boolean column",
       "multi-column sort",
@@ -1045,7 +1045,7 @@
       "`resample('W-MON')` bins data into Monday-anchored weeks; each bin label is the Monday date"
     ],
     "concepts": [
-      "resample",
+      "TIME-BUCKETED RESAMPLING",
       "DatetimeIndex",
       "time series",
       "weekly aggregation",
@@ -1094,8 +1094,8 @@
       "Call `.reset_index()` after the pivot to convert the row index (country) back to a regular column"
     ],
     "concepts": [
-      "pivot_table",
-      "merge",
+      "WIDE-FORM RESHAPING",
+      "MULTI-DATAFRAME ENTITY LINKING",
       "reshaping",
       "cross-tabulation",
       "fill_value"
@@ -1141,7 +1141,7 @@
       "within-group ranking",
       "dense rank",
       "percentile rank",
-      "merge"
+      "MULTI-DATAFRAME ENTITY LINKING"
     ]
   },
   {
@@ -1228,7 +1228,7 @@
       "groupby apply",
       "retention analysis",
       "conditional aggregation",
-      "merge"
+      "MULTI-DATAFRAME ENTITY LINKING"
     ]
   }
 ]

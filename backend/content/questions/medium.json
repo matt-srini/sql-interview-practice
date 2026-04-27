@@ -35,9 +35,9 @@
       "Filter on both the order status and the payment status."
     ],
     "concepts": [
-      "INNER JOIN",
-      "WHERE",
-      "ORDER BY"
+      "REQUIRED ENTITY MATCHING",
+      "CONDITIONAL ROW FILTERING",
+      "DETERMINISTIC RESULT ORDERING"
     ],
     "complexity_hint": "O(n) scan with early filter pushdown. The two WHERE conditions reduce the result before sorting.",
     "companies": [
@@ -79,10 +79,10 @@
       "Use DISTINCT because the same product may appear in more than one refunded order."
     ],
     "concepts": [
-      "INNER JOIN",
-      "DISTINCT",
-      "WHERE",
-      "ORDER BY"
+      "REQUIRED ENTITY MATCHING",
+      "DEDUPLICATED RESULT SHAPING",
+      "CONDITIONAL ROW FILTERING",
+      "DETERMINISTIC RESULT ORDERING"
     ],
     "companies": [
       "Amazon",
@@ -118,9 +118,9 @@
       "After the join, look for NULL on a column from the employees table."
     ],
     "concepts": [
-      "LEFT JOIN",
-      "WHERE",
-      "ORDER BY"
+      "OPTIONAL ENTITY PRESERVATION",
+      "CONDITIONAL ROW FILTERING",
+      "DETERMINISTIC RESULT ORDERING"
     ],
     "complexity_hint": "LEFT JOIN anti-pattern: keep rows from the left table that have no match on the right. Can also be written with NOT IN or NOT EXISTS \u2014 LEFT JOIN + IS NULL is typically most performant.",
     "alternative_solution": {
@@ -167,10 +167,10 @@
       "Filter first, then group by country and sum the payment amount."
     ],
     "concepts": [
-      "INNER JOIN",
-      "GROUP BY",
-      "SUM",
-      "ORDER BY"
+      "REQUIRED ENTITY MATCHING",
+      "GROUPED AGGREGATION",
+      "VALUE AGGREGATION",
+      "DETERMINISTIC RESULT ORDERING"
     ],
     "complexity_hint": "O(n log n) due to GROUP BY sort. Filtering with WHERE before aggregation is the key to keeping this efficient.",
     "companies": [
@@ -213,11 +213,11 @@
       "Use HAVING, not WHERE, to keep only groups whose average net_amount is above 600."
     ],
     "concepts": [
-      "INNER JOIN",
-      "GROUP BY",
-      "AVG",
-      "HAVING",
-      "ORDER BY"
+      "REQUIRED ENTITY MATCHING",
+      "GROUPED AGGREGATION",
+      "AVERAGE-BASED BENCHMARKING",
+      "POST-AGGREGATION FILTERING",
+      "DETERMINISTIC RESULT ORDERING"
     ],
     "companies": [
       "Airbnb",
@@ -262,12 +262,11 @@
       "Use HAVING after GROUP BY to keep only users whose distinct payment method count is greater than 1."
     ],
     "concepts": [
-      "INNER JOIN",
-      "GROUP BY",
-      "COUNT",
-      "DISTINCT",
-      "HAVING",
-      "ORDER BY"
+      "REQUIRED ENTITY MATCHING",
+      "GROUPED AGGREGATION",
+      "DISTINCT PAYMENT-METHOD COUNTING",
+      "POST-AGGREGATION FILTERING",
+      "DETERMINISTIC RESULT ORDERING"
     ],
     "companies": [
       "Stripe"
@@ -303,11 +302,11 @@
       "Because the filter is on an aggregate, use HAVING rather than WHERE."
     ],
     "concepts": [
-      "WHERE",
-      "GROUP BY",
-      "AVG",
-      "HAVING",
-      "ORDER BY"
+      "CONDITIONAL ROW FILTERING",
+      "GROUPED AGGREGATION",
+      "AVERAGE-BASED BENCHMARKING",
+      "POST-AGGREGATION FILTERING",
+      "DETERMINISTIC RESULT ORDERING"
     ],
     "companies": [
       "Zendesk",
@@ -337,10 +336,10 @@
       "Group by the same CASE expression you use in the SELECT list."
     ],
     "concepts": [
-      "CASE WHEN",
-      "GROUP BY",
-      "COUNT",
-      "ORDER BY"
+      "RULE-BASED CLASSIFICATION",
+      "GROUPED AGGREGATION",
+      "ROW COUNT AGGREGATION",
+      "DETERMINISTIC RESULT ORDERING"
     ],
     "companies": [
       "Amazon",
@@ -376,11 +375,11 @@
       "Use CASE WHEN to create the salary_band, then group by both region and that derived band."
     ],
     "concepts": [
-      "CASE WHEN",
-      "INNER JOIN",
-      "GROUP BY",
-      "COUNT",
-      "ORDER BY"
+      "RULE-BASED CLASSIFICATION",
+      "REQUIRED ENTITY MATCHING",
+      "GROUPED AGGREGATION",
+      "ROW COUNT AGGREGATION",
+      "DETERMINISTIC RESULT ORDERING"
     ],
     "companies": [
       "Google",
@@ -424,10 +423,10 @@
       "The outer query should filter users based on whether their user_id appears in that inner result set."
     ],
     "concepts": [
-      "SUBQUERY",
-      "INNER JOIN",
-      "WHERE",
-      "ORDER BY"
+      "NESTED FILTER LOGIC",
+      "REQUIRED ENTITY MATCHING",
+      "CONDITIONAL ROW FILTERING",
+      "DETERMINISTIC RESULT ORDERING"
     ],
     "companies": [
       "Stripe",
@@ -476,10 +475,10 @@
       "Group by country after the joins."
     ],
     "concepts": [
-      "JOIN",
-      "COUNT DISTINCT",
-      "GROUP BY",
-      "ORDER BY"
+      "MULTI-TABLE ENTITY LINKING",
+      "DISTINCT ENTITY COUNTING",
+      "GROUPED AGGREGATION",
+      "DETERMINISTIC RESULT ORDERING"
     ],
     "companies": [
       "Stripe",
@@ -528,10 +527,10 @@
       "Apply the 2024 and completed-order filters before grouping."
     ],
     "concepts": [
-      "JOIN",
-      "COUNT DISTINCT",
-      "SUM",
-      "GROUP BY"
+      "MULTI-TABLE ENTITY LINKING",
+      "DISTINCT ENTITY COUNTING",
+      "VALUE AGGREGATION",
+      "GROUPED AGGREGATION"
     ],
     "companies": [
       "Amazon",
@@ -580,9 +579,9 @@
       "Count users, not rows."
     ],
     "concepts": [
-      "JOIN",
-      "COUNT DISTINCT",
-      "GROUP BY"
+      "MULTI-TABLE ENTITY LINKING",
+      "DISTINCT ENTITY COUNTING",
+      "GROUPED AGGREGATION"
     ],
     "companies": [
       "Amazon",
@@ -627,8 +626,8 @@
     ],
     "concepts": [
       "CORRELATED SUBQUERY",
-      "JOIN",
-      "ORDER BY"
+      "MULTI-TABLE ENTITY LINKING",
+      "DETERMINISTIC RESULT ORDERING"
     ],
     "companies": [
       "Google",
@@ -673,9 +672,9 @@
     ],
     "concepts": [
       "NOT EXISTS",
-      "SUBQUERY",
-      "WHERE",
-      "ORDER BY"
+      "NESTED FILTER LOGIC",
+      "CONDITIONAL ROW FILTERING",
+      "DETERMINISTIC RESULT ORDERING"
     ],
     "companies": [
       "Meta",
@@ -724,10 +723,10 @@
       "Use HAVING because you are comparing an aggregate result."
     ],
     "concepts": [
-      "SUBQUERY",
-      "HAVING",
-      "JOIN",
-      "GROUP BY"
+      "NESTED FILTER LOGIC",
+      "POST-AGGREGATION FILTERING",
+      "MULTI-TABLE ENTITY LINKING",
+      "GROUPED AGGREGATION"
     ],
     "companies": [
       "Amazon"
@@ -770,9 +769,9 @@
     ],
     "concepts": [
       "CONDITIONAL AGGREGATION",
-      "JOIN",
-      "HAVING",
-      "GROUP BY"
+      "MULTI-TABLE ENTITY LINKING",
+      "POST-AGGREGATION FILTERING",
+      "GROUPED AGGREGATION"
     ],
     "companies": [
       "Amazon",
@@ -810,8 +809,8 @@
     ],
     "concepts": [
       "CONDITIONAL AGGREGATION",
-      "GROUP BY",
-      "HAVING"
+      "GROUPED AGGREGATION",
+      "POST-AGGREGATION FILTERING"
     ],
     "companies": [
       "Zendesk"
@@ -857,10 +856,10 @@
       "Average only the orders that passed the earlier filters."
     ],
     "concepts": [
-      "JOIN",
-      "WHERE",
-      "HAVING",
-      "AVG"
+      "MULTI-TABLE ENTITY LINKING",
+      "CONDITIONAL ROW FILTERING",
+      "POST-AGGREGATION FILTERING",
+      "AVERAGE-BASED BENCHMARKING"
     ],
     "companies": [
       "Amazon",
@@ -913,11 +912,11 @@
       "The minimum order-count and unit thresholds belong in HAVING."
     ],
     "concepts": [
-      "JOIN",
-      "WHERE",
-      "HAVING",
-      "COUNT DISTINCT",
-      "SUM"
+      "MULTI-TABLE ENTITY LINKING",
+      "CONDITIONAL ROW FILTERING",
+      "POST-AGGREGATION FILTERING",
+      "DISTINCT ENTITY COUNTING",
+      "VALUE AGGREGATION"
     ],
     "companies": [
       "Amazon",
@@ -954,9 +953,9 @@
       "Use HAVING after grouping to keep only zero-hire departments."
     ],
     "concepts": [
-      "LEFT JOIN",
-      "GROUP BY",
-      "HAVING"
+      "OPTIONAL ENTITY PRESERVATION",
+      "GROUPED AGGREGATION",
+      "POST-AGGREGATION FILTERING"
     ],
     "companies": [
       "Google",
@@ -994,9 +993,9 @@
       "Filter the order date range before the grouping, but be careful where that filter is placed."
     ],
     "concepts": [
-      "LEFT JOIN",
-      "GROUP BY",
-      "HAVING"
+      "OPTIONAL ENTITY PRESERVATION",
+      "GROUPED AGGREGATION",
+      "POST-AGGREGATION FILTERING"
     ],
     "companies": [
       "Meta",
@@ -1035,9 +1034,9 @@
       "Group by the order columns before applying the zero-match condition."
     ],
     "concepts": [
-      "LEFT JOIN",
-      "GROUP BY",
-      "HAVING"
+      "OPTIONAL ENTITY PRESERVATION",
+      "GROUPED AGGREGATION",
+      "POST-AGGREGATION FILTERING"
     ],
     "companies": [
       "Stripe",
@@ -1075,10 +1074,10 @@
       "To average only launched products, let missing launch dates contribute NULL to AVG."
     ],
     "concepts": [
-      "JOIN",
-      "GROUP BY",
-      "HAVING",
-      "CASE WHEN"
+      "MULTI-TABLE ENTITY LINKING",
+      "GROUPED AGGREGATION",
+      "POST-AGGREGATION FILTERING",
+      "RULE-BASED CLASSIFICATION"
     ],
     "companies": [
       "Amazon"
@@ -1115,10 +1114,10 @@
       "The minimum-order rule should be applied after grouping."
     ],
     "concepts": [
-      "JOIN",
-      "GROUP BY",
-      "HAVING",
-      "CASE WHEN"
+      "MULTI-TABLE ENTITY LINKING",
+      "GROUPED AGGREGATION",
+      "POST-AGGREGATION FILTERING",
+      "RULE-BASED CLASSIFICATION"
     ],
     "companies": [
       "Amazon",
@@ -1156,10 +1155,10 @@
       "The minimum total-employee condition depends on the full grouped set, not just recent hires."
     ],
     "concepts": [
-      "JOIN",
-      "GROUP BY",
-      "HAVING",
-      "CASE WHEN"
+      "MULTI-TABLE ENTITY LINKING",
+      "GROUPED AGGREGATION",
+      "POST-AGGREGATION FILTERING",
+      "RULE-BASED CLASSIFICATION"
     ],
     "companies": [
       "Google",
@@ -1203,8 +1202,8 @@
     ],
     "concepts": [
       "NOT EXISTS",
-      "SUBQUERY",
-      "JOIN"
+      "NESTED FILTER LOGIC",
+      "MULTI-TABLE ENTITY LINKING"
     ],
     "companies": [
       "Amazon",
@@ -1242,9 +1241,9 @@
     ],
     "concepts": [
       "CORRELATED SUBQUERY",
-      "LEFT JOIN",
-      "GROUP BY",
-      "HAVING"
+      "OPTIONAL ENTITY PRESERVATION",
+      "GROUPED AGGREGATION",
+      "POST-AGGREGATION FILTERING"
     ],
     "companies": [
       "Google",
@@ -1294,10 +1293,10 @@
     ],
     "concepts": [
       "NOT EXISTS",
-      "SUBQUERY",
-      "JOIN",
-      "GROUP BY",
-      "HAVING"
+      "NESTED FILTER LOGIC",
+      "MULTI-TABLE ENTITY LINKING",
+      "GROUPED AGGREGATION",
+      "POST-AGGREGATION FILTERING"
     ],
     "companies": [
       "Amazon",
@@ -1342,10 +1341,10 @@
       "The country-level comparison belongs in HAVING because it depends on grouped totals."
     ],
     "concepts": [
-      "JOIN",
-      "GROUP BY",
-      "HAVING",
-      "CASE WHEN"
+      "MULTI-TABLE ENTITY LINKING",
+      "GROUPED AGGREGATION",
+      "POST-AGGREGATION FILTERING",
+      "RULE-BASED CLASSIFICATION"
     ],
     "companies": [
       "Stripe"
@@ -1524,7 +1523,7 @@
       "HAVING filters on the result of the aggregation \u2014 WHERE SUM(...) > 5000 is a syntax error"
     ],
     "concepts": [
-      "WHERE vs HAVING DISTINCTION",
+      "PRE VS POST AGGREGATION FILTERING",
       "MULTI-COLUMN SEGMENT AGGREGATION",
       "POST-AGGREGATION FILTER"
     ],
