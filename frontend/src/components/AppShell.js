@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import SidebarNav from './SidebarNav';
 import Topbar from './Topbar';
-import api from '../api';
+import UpgradeButton from './UpgradeButton';
 import { useCatalog } from '../catalogContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useTopic } from '../contexts/TopicContext';
@@ -15,8 +15,6 @@ export default function AppShell() {
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [collapsedByDiff, setCollapsedByDiff] = useState({ easy: false, medium: true, hard: true });
-  const [upgradePending, setUpgradePending] = useState(false);
-  const [upgradeError, setUpgradeError] = useState('');
   const [upgradeSuccess, setUpgradeSuccess] = useState(false);
 
   const location = useLocation();
@@ -53,7 +51,6 @@ export default function AppShell() {
   useEffect(() => {
     if (!location.search.includes('upgraded=true')) return;
     setUpgradeSuccess(true);
-    setUpgradeError('');
     refreshUser().catch(() => {});
     refresh().catch(() => {});
     navigate({ pathname: location.pathname }, { replace: true });
@@ -75,76 +72,6 @@ export default function AppShell() {
       return;
     }
     setDesktopCollapsed((value) => !value);
-  }
-
-  async function startCheckout(plan) {
-    setUpgradePending(true);
-    setUpgradeError('');
-    try {
-      const orderRes = await api.post('/razorpay/create-order', { plan, currency: 'INR' });
-      const {
-        order_id, subscription_id, amount, currency: checkoutCurrency, key_id, name, description,
-        prefill_email, prefill_name, is_subscription,
-      } = orderRes.data;
-
-      if (typeof window === 'undefined') {
-        throw new Error('Checkout is only available in the browser.');
-      }
-
-      const existingRazorpay = window.Razorpay;
-      if (typeof existingRazorpay !== 'function') {
-        throw new Error('Checkout was blocked — please disable any ad blocker for this site and try again.');
-      }
-
-      const options = {
-        key: key_id,
-        name,
-        description,
-        currency: checkoutCurrency,
-        prefill: { email: prefill_email || '', name: prefill_name || '' },
-        theme: { color: '#5B6AF0' },
-        handler: async (resp) => {
-          try {
-            await api.post('/razorpay/verify-payment', {
-              plan,
-              razorpay_payment_id: resp.razorpay_payment_id,
-              razorpay_signature: resp.razorpay_signature,
-              razorpay_order_id: resp.razorpay_order_id,
-              razorpay_subscription_id: resp.razorpay_subscription_id,
-            });
-            window.location.assign('/practice?upgraded=true');
-          } catch {
-            setUpgradeError('Payment received but verification failed. It will be applied shortly.');
-            setUpgradePending(false);
-          }
-        },
-        modal: {
-          ondismiss: () => setUpgradePending(false),
-        },
-      };
-
-      if (is_subscription) {
-        options.subscription_id = subscription_id;
-      } else {
-        options.order_id = order_id;
-        options.amount = amount;
-      }
-
-      const rzp = new existingRazorpay(options);
-      rzp.on('payment.failed', () => {
-        setUpgradeError('Payment failed. Please try again.');
-        setUpgradePending(false);
-      });
-      rzp.open();
-    } catch (err) {
-      const message =
-        err?.response?.data?.error
-        || err?.response?.data?.detail
-        || err?.message
-        || 'Unable to start checkout right now.';
-      setUpgradeError(message);
-      setUpgradePending(false);
-    }
   }
 
   const { topic, meta } = useTopic();
@@ -252,9 +179,9 @@ export default function AppShell() {
     </a>
   ) : null;
 
-  const banner = (upgradeError || upgradeSuccess) ? (
-    <div className={`app-banner ${upgradeError ? 'app-banner-error' : 'app-banner-success'}`}>
-      {upgradeError || 'Upgrade confirmed. Your access is refreshing now.'}
+  const banner = upgradeSuccess ? (
+    <div className="app-banner app-banner-success">
+      Upgrade confirmed. Your access is refreshing now.
     </div>
   ) : null;
 
@@ -331,24 +258,33 @@ export default function AppShell() {
           )}
           {showUpgradeControls && (
             <div className="sidebar-upgrade-panel">
-              <span className="upgrade-panel-label">
-                {user.plan === 'free' && totalSolvedSidebar >= 10
+              <p className="sidebar-upgrade-panel-copy">
+                {normalisedPlan === 'free' && totalSolvedSidebar >= 10
                   ? `${totalSolvedSidebar} solved — upgrade for instant access to every question.`
-                  : user.plan === 'free' && totalSolvedSidebar > 0
-                  ? `${totalSolvedSidebar} question${totalSolvedSidebar !== 1 ? 's' : ''} down. Upgrade to unlock the full track.`
-                  : user.plan === 'free'
+                  : normalisedPlan === 'free' && totalSolvedSidebar > 0
+                  ? `${totalSolvedSidebar} question${totalSolvedSidebar !== 1 ? 's' : ''} down — or get full access instantly.`
+                  : normalisedPlan === 'free'
                   ? 'Questions unlock as you solve — or get full access instantly.'
-                  : 'Unlock the full challenge track'}
-              </span>
+                  : 'Add company filters and unlimited mocks.'}
+              </p>
               <div className="upgrade-actions">
-                {user.plan === 'free' && (
-                  <button className="btn btn-secondary btn-compact" onClick={() => startCheckout('pro')} disabled={upgradePending}>
-                    Unlock Pro
-                  </button>
+                {normalisedPlan === 'free' && (
+                  <UpgradeButton
+                    tier="pro"
+                    label="Unlock Pro"
+                    source="sidebar_pro"
+                    compact
+                    className="btn-secondary"
+                    successPath={location.pathname + '?upgraded=true'}
+                  />
                 )}
-                <button className="btn btn-primary btn-compact" onClick={() => startCheckout('elite')} disabled={upgradePending}>
-                  {user.plan === 'free' ? 'Unlock Elite' : 'Upgrade to Elite'}
-                </button>
+                <UpgradeButton
+                  tier="elite"
+                  label={normalisedPlan === 'free' ? 'Unlock Elite' : 'Upgrade to Elite'}
+                  source="sidebar_elite"
+                  compact
+                  successPath={location.pathname + '?upgraded=true'}
+                />
               </div>
             </div>
           )}
