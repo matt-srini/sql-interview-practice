@@ -1430,10 +1430,16 @@ select {
 .sidebar-upgrade-panel {
   margin-top: 1rem;
   padding: 0.9rem;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--accent-soft-strong);
-  background: var(--accent-soft);
-  box-shadow: none;
+  background: var(--surface-card);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+[data-theme="dark"] .sidebar-upgrade-panel {
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface-card));
+  border-color: var(--accent-soft-strong);
+  box-shadow: 0 0 0 1px var(--accent-soft-strong);
 }
 
 .sidebar-upgrade-panel-copy {
