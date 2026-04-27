@@ -40,10 +40,10 @@ export default function PrivacyPolicyPage() {
             <p>Your account and progress data are retained for as long as your account is active. If you delete your account, your personal data is removed within 30 days.</p>
 
             <h2>Your rights</h2>
-            <p>You may request access to, correction of, or deletion of your personal data at any time by emailing <a href="mailto:support@datanest.app">support@datanest.app</a>. We will respond within 14 days.</p>
+            <p>You may request access to, correction of, or deletion of your personal data at any time by emailing <a href="mailto:support@datathink.co">support@datathink.co</a>. We will respond within 14 days.</p>
 
             <h2>Contact</h2>
-            <p>Questions about this policy: <a href="mailto:support@datanest.app">support@datanest.app</a></p>
+            <p>Questions about this policy: <a href="mailto:support@datathink.co">support@datathink.co</a></p>
           </div>
 
           <div className="policy-footer-nav">

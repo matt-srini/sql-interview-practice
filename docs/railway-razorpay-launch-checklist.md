@@ -55,7 +55,7 @@ The optional email variables are:
 
 ```env
 RESEND_API_KEY=
-EMAIL_FROM=datanest <noreply@yourdomain.com>
+EMAIL_FROM=datathink <noreply@yourdomain.com>
 ```
 
 The core deployment variables are:
@@ -147,12 +147,12 @@ Steps in Razorpay:
 Recommended values:
 
 - Pro monthly
-  - Plan name: `datanest Pro Monthly`
+  - Plan name: `datathink Pro Monthly`
   - Billing period: `Monthly`
   - Interval: `1`
   - Amount: `79900` paise if Razorpay asks for subunits, or `799` if it asks for rupees in the UI
 - Elite monthly
-  - Plan name: `datanest Elite Monthly`
+  - Plan name: `datathink Elite Monthly`
   - Billing period: `Monthly`
   - Interval: `1`
   - Amount: `159900` paise or `1599` rupees depending on the UI field
@@ -241,7 +241,7 @@ Before you can generate **live** keys, Razorpay may require website verification
 
 Prepare these details now so you can paste them later:
 
-- [ ] Public app name: `datanest`
+- [ ] Public app name: `datathink`
 - [ ] Short site description: `Data interview practice platform for SQL, Python, Pandas, and PySpark`
 - [ ] Support email address
 - [ ] Public website URL placeholder for now
@@ -578,8 +578,8 @@ Do this only after Razorpay approves the site.
 Live mode needs a fresh set of subscription plans. Test plan ids do not carry over.
 
 - [ ] In **Live Mode**, go to **Subscriptions** → **Plans**
-- [ ] Create `datanest Pro Monthly`
-- [ ] Create `datanest Elite Monthly`
+- [ ] Create `datathink Pro Monthly`
+- [ ] Create `datathink Elite Monthly`
 - [ ] Copy the live plan ids
 
 ### 11.3 Create the live webhook
@@ -689,7 +689,7 @@ RAZORPAY_AMOUNT_LIFETIME_ELITE=1499900
 RAZORPAY_CURRENCY=INR
 
 RESEND_API_KEY=replace_if_using_resend
-EMAIL_FROM=datanest <noreply@yourdomain.com>
+EMAIL_FROM=datathink <noreply@yourdomain.com>
 ```
 
 ### Railway app service variables with test mode
@@ -715,7 +715,7 @@ RAZORPAY_AMOUNT_LIFETIME_ELITE=1499900
 RAZORPAY_CURRENCY=INR
 
 RESEND_API_KEY=replace_if_using_resend
-EMAIL_FROM=datanest <noreply@yourdomain.com>
+EMAIL_FROM=datathink <noreply@yourdomain.com>
 
 SENTRY_DSN=replace_if_using_sentry
 VITE_SENTRY_DSN=replace_if_using_sentry
@@ -746,7 +746,7 @@ RAZORPAY_AMOUNT_LIFETIME_ELITE=1499900
 RAZORPAY_CURRENCY=INR
 
 RESEND_API_KEY=replace_if_using_resend
-EMAIL_FROM=datanest <noreply@yourdomain.com>
+EMAIL_FROM=datathink <noreply@yourdomain.com>
 
 SENTRY_DSN=replace_if_using_sentry
 VITE_SENTRY_DSN=replace_if_using_sentry

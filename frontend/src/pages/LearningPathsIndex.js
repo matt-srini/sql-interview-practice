@@ -44,9 +44,9 @@ export default function LearningPathsIndex() {
   return (
     <div className="learn-index-page">
       <Helmet>
-        <title>{pageTitle} — datanest</title>
+        <title>{pageTitle} — datathink</title>
         <meta name="description" content={topic ? `Curated ${TRACK_META[topic]?.label ?? topic} learning paths to build interview-ready skills step by step.` : 'Curated SQL, Python, Pandas, and PySpark learning paths to build interview-ready skills step by step.'} />
-        <meta property="og:title" content={`${pageTitle} — datanest`} />
+        <meta property="og:title" content={`${pageTitle} — datathink`} />
       </Helmet>
       <Topbar />
 

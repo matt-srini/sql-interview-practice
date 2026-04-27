@@ -138,7 +138,7 @@ Main practice screen. Layout and behavior vary by topic:
 Standalone sample practice. No sidebar. No effect on challenge progression.
 
 **Topbar** — three-column, full-width:
-- Left: `datanest` home link
+- Left: `datathink` home link
 - Center: `←` back arrow (`<a href="/#landing-tracks">`) + track + difficulty label
 - Right: "Start the challenge" CTA → `/practice/:topic`
 

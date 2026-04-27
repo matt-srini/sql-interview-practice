@@ -70,7 +70,7 @@ export default function ProgressDashboard() {
   return (
     <>
       <Helmet>
-        <title>My Progress — datanest</title>
+        <title>My Progress — datathink</title>
         <meta name="description" content="Track your SQL, Python, Pandas, and PySpark interview practice progress, streaks, and coaching insights." />
         <meta name="robots" content="noindex" />
       </Helmet>

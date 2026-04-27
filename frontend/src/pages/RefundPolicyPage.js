@@ -26,7 +26,7 @@ export default function RefundPolicyPage() {
             <p>To be considered, exception requests must be submitted within <strong>7 days</strong> of the transaction date.</p>
 
             <h2>How to request a review</h2>
-            <p>Email <a href="mailto:support@datanest.app">support@datanest.app</a> with the subject line "Billing dispute" and include:</p>
+            <p>Email <a href="mailto:support@datathink.co">support@datathink.co</a> with the subject line "Billing dispute" and include:</p>
             <ul>
               <li>Your registered email address</li>
               <li>Your Razorpay order or payment ID</li>
@@ -35,7 +35,7 @@ export default function RefundPolicyPage() {
             <p>We will respond within 5 business days.</p>
 
             <h2>Contact</h2>
-            <p><a href="mailto:support@datanest.app">support@datanest.app</a></p>
+            <p><a href="mailto:support@datathink.co">support@datathink.co</a></p>
           </div>
 
           <div className="policy-footer-nav">

@@ -104,7 +104,7 @@ GITHUB_CLIENT_SECRET = _getenv("GITHUB_CLIENT_SECRET")
 
 # Email / password reset
 RESEND_API_KEY = _getenv("RESEND_API_KEY")
-EMAIL_FROM = _getenv("EMAIL_FROM", "datanest <noreply@datanest.app>")
+EMAIL_FROM = _getenv("EMAIL_FROM", "datathink <noreply@datathink.co>")
 
 # Base URLs
 # APP_BASE_URL: backend server base (used for OAuth callback URIs — must match what you register with providers)

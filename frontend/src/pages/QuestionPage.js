@@ -831,8 +831,8 @@ export default function QuestionPage() {
   return (
     <main className="container question-page question-page-challenge">
       <Helmet>
-        <title>{question ? `${question.title} — ${meta.label} — datanest` : `${meta.label} Practice — datanest`}</title>
-        {question && <meta name="description" content={`${question.title}: a ${question.difficulty} ${meta.label} interview question on datanest.`} />}
+        <title>{question ? `${question.title} — ${meta.label} — datathink` : `${meta.label} Practice — datathink`}</title>
+        {question && <meta name="description" content={`${question.title}: a ${question.difficulty} ${meta.label} interview question on datathink.`} />}
         <meta name="robots" content="noindex" />
       </Helmet>
       {pathNavBar && (

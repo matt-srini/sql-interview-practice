@@ -181,8 +181,8 @@ All webhook events are deduped on `event.id` using the `payment_events` table:
   "amount": 0,
   "currency": "INR",
   "key_id": "rzp_live_...",
-  "name": "datanest",
-  "description": "datanest Pro (monthly)",
+  "name": "datathink",
+  "description": "datathink Pro (monthly)",
   "prefill_email": "user@example.com",
   "prefill_name": "User Name",
   "is_subscription": true
@@ -197,8 +197,8 @@ All webhook events are deduped on `event.id` using the `payment_events` table:
   "amount": 799900,
   "currency": "INR",
   "key_id": "rzp_live_...",
-  "name": "datanest",
-  "description": "datanest Lifetime Pro",
+  "name": "datathink",
+  "description": "datathink Lifetime Pro",
   "prefill_email": "user@example.com",
   "prefill_name": "User Name",
   "is_subscription": false

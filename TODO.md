@@ -1,6 +1,6 @@
 # Platform Upgrade TODO
 
-Phased roadmap to evolve datanest into a top-tier data interview practice platform. Remove items as they are shipped. Update `docs/` and `CLAUDE.md` when each phase lands.
+Phased roadmap to evolve datathink into a top-tier data interview practice platform. Remove items as they are shipped. Update `docs/` and `CLAUDE.md` when each phase lands.
 
 **Research basis:** Competitor analysis (DataLemur, StrataScratch, Interview Query, HackerRank, LeetCode) + user pain point research. Full strategic context in the Claude memory/plan file.
 
@@ -597,14 +597,14 @@ Infrastructure that must exist before significant user growth. Not features — 
 
 ### SEO — add in Phase 1 ✦ low effort, high compounding return
 
-**Problem:** `index.html` has `<title>datanest</title>` and nothing else. No description, no og:* tags, no structured data. A client-rendered React SPA with no meta tags gets zero organic traffic.
+**Problem:** `index.html` has `<title>datathink</title>` and nothing else. No description, no og:* tags, no structured data. A client-rendered React SPA with no meta tags gets zero organic traffic.
 
 **What to add:**
 
 1. **Static meta tags** in `frontend/index.html` (immediate):
    ```html
    <meta name="description" content="Practice SQL, Python, Pandas, and PySpark for data interviews. 311+ real interview questions with instant feedback." />
-   <meta property="og:title" content="datanest — Data Interview Practice" />
+   <meta property="og:title" content="datathink — Data Interview Practice" />
    <meta property="og:description" content="..." />
    <meta property="og:image" content="/og-image.png" />
    <meta name="twitter:card" content="summary_large_image" />
@@ -612,7 +612,7 @@ Infrastructure that must exist before significant user growth. Not features — 
 
 2. **Dynamic meta tags** per page using `react-helmet-async`:
    - Landing: brand description
-   - TrackHubPage: "Practice SQL interview questions — datanest"
+   - TrackHubPage: "Practice SQL interview questions — datathink"
    - QuestionPage: question title in `<title>` (helps with direct links)
 
 3. **robots.txt** and **sitemap.xml** served by FastAPI:
@@ -810,7 +810,7 @@ Question selection: 2 questions for 30-min, 3 for 60-min. Randomized from unlock
 - Tab list on left; full Monaco editor + run/submit on right
 - Timer hits zero → auto-submits current state → transitions to summary
 - Reload recovery: `GET /api/mock/:id` → compute `started_at + time_limit_s - now()`
-- Browser tab title: `"12:34 — Mock Interview | datanest"`
+- Browser tab title: `"12:34 — Mock Interview | datathink"`
 
 **MockSummary (inline after completion):**
 - Score card: X/Y solved · time used

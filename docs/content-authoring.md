@@ -2,7 +2,7 @@
 
 > **Navigation:** [Docs index](./README.md) · [Architecture](./architecture.md) · [Datasets](./datasets.md)
 
-This is the authoritative guide for creating, editing, and reviewing questions on datanest. It covers the philosophy behind the question bank, the quality bar every question must clear, per-track authoring rules, and the exact JSON schemas the catalog loaders expect.
+This is the authoritative guide for creating, editing, and reviewing questions on datathink. It covers the philosophy behind the question bank, the quality bar every question must clear, per-track authoring rules, and the exact JSON schemas the catalog loaders expect.
 
 **AI authoring agents** (use these when generating questions with Claude):
 - [`.github/agents/sql-question-authoring.agent.md`](../.github/agents/sql-question-authoring.agent.md)
@@ -14,7 +14,7 @@ This is the authoritative guide for creating, editing, and reviewing questions o
 
 ## Platform philosophy
 
-datanest is **FAANG-level interview preparation**, not a syntax tutorial. The single test every question must pass:
+datathink is **FAANG-level interview preparation**, not a syntax tutorial. The single test every question must pass:
 
 > *Would a senior data interviewer at Meta, Google, Stripe, or Amazon ask this in a 45-minute screen?*
 

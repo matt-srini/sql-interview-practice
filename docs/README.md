@@ -1,6 +1,6 @@
 # Documentation
 
-This is the documentation hub for the datanest interview practice platform. Start here, then follow the links into the specific area you need.
+This is the documentation hub for the datathink interview practice platform. Start here, then follow the links into the specific area you need.
 
 ---
 

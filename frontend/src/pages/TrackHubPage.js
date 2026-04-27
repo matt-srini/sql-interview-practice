@@ -126,9 +126,9 @@ export default function TrackHubPage() {
   return (
     <main className="container track-hub-page">
       <Helmet>
-        <title>{meta.label} Practice — datanest</title>
-        <meta name="description" content={`Practice ${meta.label} interview questions on datanest. Curated challenges with instant feedback and real execution environments.`} />
-        <meta property="og:title" content={`${meta.label} Practice — datanest`} />
+        <title>{meta.label} Practice — datathink</title>
+        <meta name="description" content={`Practice ${meta.label} interview questions on datathink. Curated challenges with instant feedback and real execution environments.`} />
+        <meta property="og:title" content={`${meta.label} Practice — datathink`} />
       </Helmet>
       <div className="track-hub-inner">
         <TierBanner
