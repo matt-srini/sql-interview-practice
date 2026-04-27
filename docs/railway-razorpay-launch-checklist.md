@@ -16,6 +16,24 @@ Use this file as the operational source of truth. Tick items off one by one as y
 - For this codebase, checkout is blocked until the user account is **email verified**. Plan that dependency before testing payments.
 - Prefer the free Railway-generated domain first. Buy and attach a custom domain later if needed.
 
+## Railway plan note
+
+Railway Hobby is acceptable for the first deployment, Razorpay test-mode validation, and a low-volume soft launch.
+
+Use Hobby if:
+
+- traffic is low
+- you are validating deploy and payment flows
+- you are watching Railway logs and Sentry closely
+
+Upgrade from Hobby if:
+
+- latency becomes inconsistent
+- the service restarts under load
+- concurrent practice sessions or in-memory DuckDB execution create CPU or memory pressure
+- webhook reliability becomes a concern
+- you begin pushing paid traffic or expecting meaningful usage volume
+
 ---
 
 ## Phase 0: Accounts and prerequisites
@@ -312,6 +330,11 @@ Useful pages:
 
 This generated Railway URL is enough for test deployments and Razorpay website verification submission later.
 
+Important startup note for this repo:
+
+- [ ] Confirm the app service is listening on Railway's injected `PORT` rather than a hardcoded `8000`
+- [ ] If a deploy shows build success followed by healthcheck failure, check `PORT` binding before changing timeouts or retries
+
 ---
 
 ## Phase 4: Configure Railway environment variables
@@ -383,6 +406,17 @@ If you skip this, registration still works, but verification emails are not sent
 - [ ] Add `VITE_SENTRY_DSN`
 - [ ] Add `VITE_POSTHOG_KEY`
 - [ ] Optionally change `VITE_POSTHOG_HOST` if your project uses another region
+
+### 4.7 Production startup sanity check
+
+- [ ] Confirm `ENV=production`
+- [ ] Confirm `DATABASE_URL` is set
+- [ ] Confirm `REDIS_URL` is set
+- [ ] Confirm `RAZORPAY_KEY_ID` is set
+- [ ] Confirm `RAZORPAY_KEY_SECRET` is set
+- [ ] Confirm `RAZORPAY_WEBHOOK_SECRET` is set
+
+These are required by the backend in production. Missing values can cause Railway startup failure before `/health` ever becomes reachable.
 
 ---
 
