@@ -261,7 +261,7 @@ export default function SampleQuestionPage() {
         <header className="topbar">
           <div className="topbar-inner sample-page-topbar">
             <div className="sample-topbar-left">
-              <Link className="sample-home-link brand-wordmark" to="/">datanest</Link>
+              <Link className="sample-home-link brand-wordmark" to="/">datathink</Link>
             </div>
             <div className="sample-topbar-center">
               <a className="sample-back-link" href="/#landing-tracks" aria-label="Back to track selection">←</a>
@@ -358,14 +358,14 @@ export default function SampleQuestionPage() {
   return (
     <>
       <Helmet>
-        <title>Free {meta.label} Sample Questions ({difficulty}) — datanest</title>
+        <title>Free {meta.label} Sample Questions ({difficulty}) — datathink</title>
         <meta name="description" content={`Try free ${difficulty} ${meta.label} interview questions. No account required — instant feedback in a real execution environment.`} />
-        <meta property="og:title" content={`Free ${meta.label} Sample Questions — datanest`} />
+        <meta property="og:title" content={`Free ${meta.label} Sample Questions — datathink`} />
       </Helmet>
       <header className="topbar">
         <div className="topbar-inner sample-page-topbar">
           <div className="sample-topbar-left">
-            <Link className="sample-home-link brand-wordmark" to="/">datanest</Link>
+            <Link className="sample-home-link brand-wordmark" to="/">datathink</Link>
           </div>
           <div className="sample-topbar-center">
             <a className="sample-back-link" href="/#landing-tracks" aria-label="Back to track selection">←</a>

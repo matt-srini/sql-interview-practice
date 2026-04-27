@@ -1,6 +1,6 @@
 # User Guide
 
-`datanest` is a data interview practice platform. Write SQL or Python, answer PySpark MCQs, get instant feedback, and work through progressively harder tracks.
+`datathink` is a data interview practice platform. Write SQL or Python, answer PySpark MCQs, get instant feedback, and work through progressively harder tracks.
 
 ---
 

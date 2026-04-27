@@ -182,7 +182,7 @@ export default function AuthPage() {
   return (
     <div className="auth-page">
       <Helmet>
-        <title>Sign In — datanest</title>
+        <title>Sign In — datathink</title>
         <meta name="description" content="Sign in or create a free account to track your SQL, Python, Pandas, and PySpark interview practice progress." />
         <meta name="robots" content="noindex" />
       </Helmet>

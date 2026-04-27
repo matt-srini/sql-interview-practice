@@ -143,7 +143,7 @@ export default function MockHub() {
   return (
     <div className="mock-hub-page">
       <Helmet>
-        <title>Mock Interview — datanest</title>
+        <title>Mock Interview — datathink</title>
         <meta name="description" content="Simulate real data interview conditions with timed SQL, Python, Pandas, and PySpark mock sessions." />
         <meta name="robots" content="noindex" />
       </Helmet>

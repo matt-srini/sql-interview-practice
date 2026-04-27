@@ -374,11 +374,11 @@ export default function LandingPage() {
   return (
     <>
       <Helmet>
-        <title>datanest — SQL, Python &amp; Data Interview Practice</title>
+        <title>datathink — SQL, Python &amp; Data Interview Practice</title>
         <meta name="description" content="Practice SQL, Python, Pandas, and PySpark interview questions in a real execution environment. 350 questions, instant feedback, and curated learning paths for data professionals." />
-        <meta property="og:title" content="datanest — SQL, Python &amp; Data Interview Practice" />
+        <meta property="og:title" content="datathink — SQL, Python &amp; Data Interview Practice" />
         <meta property="og:description" content="Practice SQL, Python, Pandas, and PySpark interview questions in a real execution environment. 350 questions, instant feedback, and curated learning paths." />
-        <meta property="og:url" content="https://datanest.app/" />
+        <meta property="og:url" content="https://datathink.co/" />
       </Helmet>
       <Topbar showPricingLink={!user} userExtras={planPillNode} />
 
@@ -786,7 +786,7 @@ export default function LandingPage() {
 
         <footer className="landing-footer">
           <div className="landing-footer-inner">
-            <span className="landing-footer-copy">&copy; 2025 datanest</span>
+            <span className="landing-footer-copy">&copy; 2025 datathink</span>
             <nav className="landing-footer-links" aria-label="Legal">
               <Link to="/privacy">Privacy Policy</Link>
               <Link to="/terms">Terms &amp; Conditions</Link>

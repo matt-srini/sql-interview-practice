@@ -94,9 +94,9 @@ export default function LearningPath() {
   return (
     <div className="learn-page">
       <Helmet>
-        <title>{path ? `${path.title} — datanest` : 'Learning Path — datanest'}</title>
-        {path && <meta name="description" content={`${path.title}: a curated ${meta.label} learning path on datanest. Practice interview-style questions with instant feedback.`} />}
-        <meta property="og:title" content={path ? `${path.title} — datanest` : 'Learning Path — datanest'} />
+        <title>{path ? `${path.title} — datathink` : 'Learning Path — datathink'}</title>
+        {path && <meta name="description" content={`${path.title}: a curated ${meta.label} learning path on datathink. Practice interview-style questions with instant feedback.`} />}
+        <meta property="og:title" content={path ? `${path.title} — datathink` : 'Learning Path — datathink'} />
       </Helmet>
       <Topbar />
 

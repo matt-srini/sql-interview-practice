@@ -215,7 +215,7 @@ Fixed topbar → hero/welcome → proof/showcase/companies (logged-out only) →
 
 ```
 TOPBAR
-  "datanest"                             [Mock] [Dashboard] [name · Sign out] or [Login]
+  "datathink"                             [Mock] [Dashboard] [name · Sign out] or [Login]
 
 HERO  (logged-out only)
   Centered, max-width 720px inner wrapper

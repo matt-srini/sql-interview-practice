@@ -2,7 +2,7 @@
 
 > **Navigation:** [Docs index](./README.md) · [Backend](./backend.md) · [Frontend](./frontend.md) · [Deployment](./deployment.md)
 
-Technical reference for the datanest platform — system design, data flows, execution models, and scaling considerations.
+Technical reference for the datathink platform — system design, data flows, execution models, and scaling considerations.
 
 ---
 

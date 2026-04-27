@@ -225,7 +225,7 @@ async def create_order(
 
     client = _require_razorpay_client()
 
-    display_name = "datanest"
+    display_name = "datathink"
     email = current_user["email"]
     name = current_user.get("name") or email
 
@@ -240,7 +240,7 @@ async def create_order(
             amount = _lifetime_amounts()[body.plan]
         if not amount or amount <= 0:
             raise HTTPException(status_code=503, detail="Lifetime amount is not configured.")
-        description = "datanest Lifetime Pro" if body.plan == "lifetime_pro" else "datanest Lifetime Elite"
+        description = "datathink Lifetime Pro" if body.plan == "lifetime_pro" else "datathink Lifetime Elite"
 
         def _create_order() -> Any:
             return client.order.create({
@@ -285,7 +285,7 @@ async def create_order(
     # Keep a customer object so we can look up the user from the webhook payload
     customer_id = await _ensure_customer_id(current_user, client)
 
-    description = "datanest Pro (monthly)" if body.plan == "pro" else "datanest Elite (monthly)"
+    description = "datathink Pro (monthly)" if body.plan == "pro" else "datathink Elite (monthly)"
 
     def _create_subscription() -> Any:
         return client.subscription.create({

@@ -34,7 +34,7 @@
 ## Sample flow
 
 - Visit `/sample/sql/easy` — returns first unseen easy SQL sample
-- Topbar: `datanest` at left edge, `← SQL sample` centered, `Start the challenge` at right edge
+- Topbar: `datathink` at left edge, `← SQL sample` centered, `Start the challenge` at right edge
 - Back arrow (`←`) navigates to `/` and smooth-scrolls to the track selection section
 - Run Query returns a results table; Submit shows verdict + compare grid
 - After 3 samples exhausted — 409 → exhaustion card with Reset and Take the challenge buttons

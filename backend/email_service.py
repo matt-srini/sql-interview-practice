@@ -14,7 +14,7 @@ from config import _getenv
 logger = logging.getLogger(__name__)
 
 RESEND_API_KEY: str | None = _getenv("RESEND_API_KEY")
-EMAIL_FROM: str = _getenv("EMAIL_FROM", "datanest <noreply@datanest.app>") or "datanest <noreply@datanest.app>"
+EMAIL_FROM: str = _getenv("EMAIL_FROM", "datathink <noreply@datathink.co>") or "datathink <noreply@datathink.co>"
 # Use FRONTEND_BASE_URL for links in emails so they go to the right place
 FRONTEND_BASE_URL: str = _getenv("FRONTEND_BASE_URL", _getenv("APP_BASE_URL", "http://localhost:5173")) or "http://localhost:5173"
 
@@ -41,7 +41,7 @@ async def send_verification_email(to_email: str, verification_token: str) -> boo
   <div style="max-width: 480px; margin: 0 auto; background: #fff; border-radius: 16px; padding: 40px; border: 1px solid #E5E3DE;">
     <h1 style="font-size: 1.4rem; font-weight: 700; color: #1A1A18; margin: 0 0 8px;">Verify your email</h1>
     <p style="color: #6B6862; line-height: 1.6; margin: 0 0 24px;">
-      Click the button below to verify your email address for datanest.
+      Click the button below to verify your email address for datathink.
       This link expires in <strong>24 hours</strong>.
     </p>
     <a href="{verify_url}"
@@ -50,22 +50,14 @@ async def send_verification_email(to_email: str, verification_token: str) -> boo
       Verify email address
     </a>
     <p style="color: #9B9790; font-size: 0.82rem; margin: 24px 0 0; line-height: 1.5;">
-      If you didn't create a datanest account, you can safely ignore this email.
+      If you didn't create a datathink account, you can safely ignore this email.
     </p>
     <hr style="border: none; border-top: 1px solid #E5E3DE; margin: 24px 0;">
     <p style="color: #9B9790; font-size: 0.78rem; margin: 0;">
-      datanest &mdash; Data interview practice
-    </p>
-  </div>
-</body>
-</html>
-"""
-
-    text_body = (
-        f"Verify your datanest email\n\n"
+      datathink &mdash; Data interview practice
         f"Click the link below to verify your email address (expires in 24 hours):\n\n"
         f"{verify_url}\n\n"
-        f"If you didn't create a datanest account, ignore this email."
+        f"If you didn't create a datathink account, ignore this email."
     )
 
     try:
@@ -79,7 +71,7 @@ async def send_verification_email(to_email: str, verification_token: str) -> boo
                 json={
                     "from": EMAIL_FROM,
                     "to": [to_email],
-                    "subject": "Verify your datanest email",
+                    "subject": "Verify your datathink email",
                     "html": html_body,
                     "text": text_body,
                 },
@@ -110,7 +102,7 @@ async def send_password_reset_email(to_email: str, reset_token: str) -> bool:
   <div style="max-width: 480px; margin: 0 auto; background: #fff; border-radius: 16px; padding: 40px; border: 1px solid #E5E3DE;">
     <h1 style="font-size: 1.4rem; font-weight: 700; color: #1A1A18; margin: 0 0 8px;">Reset your password</h1>
     <p style="color: #6B6862; line-height: 1.6; margin: 0 0 24px;">
-      Click the button below to set a new password for your datanest account.
+      Click the button below to set a new password for your datathink account.
       This link expires in <strong>1 hour</strong>.
     </p>
     <a href="{reset_url}"
@@ -124,7 +116,7 @@ async def send_password_reset_email(to_email: str, reset_token: str) -> bool:
     </p>
     <hr style="border: none; border-top: 1px solid #E5E3DE; margin: 24px 0;">
     <p style="color: #9B9790; font-size: 0.78rem; margin: 0;">
-      datanest &mdash; Data interview practice
+      datathink &mdash; Data interview practice
     </p>
   </div>
 </body>
@@ -132,7 +124,7 @@ async def send_password_reset_email(to_email: str, reset_token: str) -> bool:
 """
 
     text_body = (
-        f"Reset your datanest password\n\n"
+        f"Reset your datathink password\n\n"
         f"Click the link below to set a new password (expires in 1 hour):\n\n"
         f"{reset_url}\n\n"
         f"If you didn't request this, ignore this email."
@@ -149,7 +141,7 @@ async def send_password_reset_email(to_email: str, reset_token: str) -> bool:
                 json={
                     "from": EMAIL_FROM,
                     "to": [to_email],
-                    "subject": "Reset your datanest password",
+                    "subject": "Reset your datathink password",
                     "html": html_body,
                     "text": text_body,
                 },

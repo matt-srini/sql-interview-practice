@@ -12,16 +12,16 @@ export default function TermsPage() {
 
           <div className="policy-body">
             <h2>Acceptance</h2>
-            <p>By accessing or using datanest ("the Service") you agree to these Terms. If you do not agree, do not use the Service.</p>
+            <p>By accessing or using datathink ("the Service") you agree to these Terms. If you do not agree, do not use the Service.</p>
 
             <h2>Eligibility</h2>
             <p>You must be at least 18 years old and capable of entering a binding contract. By using the Service you represent that you meet this requirement.</p>
 
             <h2>Description of the Service</h2>
-            <p>datanest is an interactive data interview practice platform offering SQL, Python, Pandas, and PySpark question banks, mock interview sessions, and learning paths. Content is provided for personal, non-commercial skill development.</p>
+            <p>datathink is an interactive data interview practice platform offering SQL, Python, Pandas, and PySpark question banks, mock interview sessions, and learning paths. Content is provided for personal, non-commercial skill development.</p>
 
             <h2>Accounts</h2>
-            <p>You are responsible for maintaining the confidentiality of your account credentials. You must notify us immediately at <a href="mailto:support@datanest.app">support@datanest.app</a> if you suspect unauthorised access. We reserve the right to terminate accounts that violate these Terms.</p>
+            <p>You are responsible for maintaining the confidentiality of your account credentials. You must notify us immediately at <a href="mailto:support@datathink.co">support@datathink.co</a> if you suspect unauthorised access. We reserve the right to terminate accounts that violate these Terms.</p>
 
             <h2>Subscriptions and payments</h2>
             <ul>
@@ -45,13 +45,13 @@ export default function TermsPage() {
             </ul>
 
             <h2>Intellectual property</h2>
-            <p>All content on the platform — including question text, datasets, explanations, and code examples — is owned by datanest or its licensors. You are granted a limited, non-transferable licence to use it for personal practice only.</p>
+            <p>All content on the platform — including question text, datasets, explanations, and code examples — is owned by datathink or its licensors. You are granted a limited, non-transferable licence to use it for personal practice only.</p>
 
             <h2>Disclaimer of warranties</h2>
             <p>The Service is provided "as is" without warranties of any kind. We do not guarantee that the platform will be error-free, uninterrupted, or that practice questions will guarantee success in any interview.</p>
 
             <h2>Limitation of liability</h2>
-            <p>To the fullest extent permitted by law, datanest's liability for any claim arising from use of the Service is limited to the amount you paid in the 3 months preceding the claim.</p>
+            <p>To the fullest extent permitted by law, datathink's liability for any claim arising from use of the Service is limited to the amount you paid in the 3 months preceding the claim.</p>
 
             <h2>Governing law</h2>
             <p>These Terms are governed by the laws of India. Any disputes shall be subject to the exclusive jurisdiction of courts in India.</p>
@@ -60,7 +60,7 @@ export default function TermsPage() {
             <p>We may update these Terms from time to time. Continued use after changes are posted constitutes acceptance of the revised Terms.</p>
 
             <h2>Contact</h2>
-            <p><a href="mailto:support@datanest.app">support@datanest.app</a></p>
+            <p><a href="mailto:support@datathink.co">support@datathink.co</a></p>
           </div>
 
           <div className="policy-footer-nav">

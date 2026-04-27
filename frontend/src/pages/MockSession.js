@@ -157,11 +157,11 @@ export default function MockSession() {
   // Browser tab title
   useEffect(() => {
     if (status === 'active' && remainingS != null) {
-      document.title = `${formatTime(remainingS)} — Mock Interview | datanest`;
+      document.title = `${formatTime(remainingS)} — Mock Interview | datathink`;
     } else if (status === 'completed') {
-      document.title = 'Mock Interview Summary | datanest';
+      document.title = 'Mock Interview Summary | datathink';
     }
-    return () => { document.title = 'datanest'; };
+    return () => { document.title = 'datathink'; };
   }, [remainingS, status]);
 
   const currentQuestion = questions[activeQ] || null;

@@ -39,7 +39,7 @@ export default class ErrorBoundary extends Component {
           <h1 className="error-boundary-title">Something went wrong</h1>
           <p className="error-boundary-body">
             An unexpected error occurred. Try reloading — if the problem persists,{' '}
-            <a href="mailto:support@datanest.app">contact us</a> and we'll fix it promptly.
+            <a href="mailto:support@datathink.co">contact us</a> and we'll fix it promptly.
           </p>
           <div className="error-boundary-actions">
             <button

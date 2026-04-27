@@ -117,7 +117,7 @@ export default function Topbar({
           <div className={brandRegionClass}>
             {leftSlot}
             <Link className={brandLinkClass} to="/">
-              datanest
+              datathink
             </Link>
           </div>
 
