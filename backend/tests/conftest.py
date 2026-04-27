@@ -1,6 +1,7 @@
 import asyncio
 import os
 import sys
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -13,6 +14,14 @@ for path in (REPO_ROOT, BACKEND_ROOT):
 
 os.environ.setdefault("TESTING", "1")
 os.environ.setdefault("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/sql_practice_test")
+# Never let tests call the real Resend API regardless of what's in the environment.
+os.environ["RESEND_API_KEY"] = ""
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    """Stub out all email sending for the entire test session."""
+    patch("email_service.send_verification_email", new=AsyncMock(return_value=True)).start()
+    patch("email_service.send_password_reset_email", new=AsyncMock(return_value=True)).start()
 
 
 @pytest.fixture
