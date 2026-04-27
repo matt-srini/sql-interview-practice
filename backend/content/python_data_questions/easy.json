@@ -31,7 +31,7 @@
     ],
     "concepts": [
       "column selection",
-      "dropna",
+      "NULL-BASED ROW FILTERING",
       "missing values"
     ]
   },
@@ -66,10 +66,10 @@
       "Set `as_index=False` so the groupby key becomes a regular column, then rename the size column to 'count'"
     ],
     "concepts": [
-      "groupby",
+      "GROUPED AGGREGATION",
       "aggregation",
-      "sort_values",
-      "rename"
+      "DETERMINISTIC RESULT ORDERING",
+      "OUTPUT SCHEMA SHAPING"
     ]
   },
   {
@@ -102,10 +102,10 @@
       "Use `.fillna(mean_salary)` to replace null values in the salary column"
     ],
     "concepts": [
-      "fillna",
+      "MISSING-VALUE IMPUTATION",
       "mean",
       "missing values",
-      "copy"
+      "SAFE FRAME TRANSFORMATION"
     ]
   },
   {
@@ -139,9 +139,9 @@
       "Use `.str.split('@').str[1]` to extract the part after the '@'"
     ],
     "concepts": [
-      "str accessor",
+      "VECTORIZED STRING TRANSFORMATION",
       "string split",
-      "dropna",
+      "NULL-BASED ROW FILTERING",
       "derived columns"
     ]
   },
@@ -176,7 +176,7 @@
       "Set `as_index=False` so the result has a `status` column rather than a status index"
     ],
     "concepts": [
-      "groupby",
+      "GROUPED AGGREGATION",
       "aggregation",
       "sum",
       "as_index"
@@ -214,7 +214,7 @@
     "concepts": [
       "drop_duplicates",
       "deduplication",
-      "sort_values"
+      "DETERMINISTIC RESULT ORDERING"
     ]
   },
   {
@@ -246,7 +246,7 @@
       "Use `.rename(columns={'salary': 'annual_salary'})` \u2014 the `columns` argument takes a mapping of old name to new name"
     ],
     "concepts": [
-      "rename",
+      "OUTPUT SCHEMA SHAPING",
       "column manipulation"
     ]
   },
@@ -279,11 +279,11 @@
       "Sort descending then call `.head(5)` to get the top 5"
     ],
     "concepts": [
-      "groupby",
+      "GROUPED AGGREGATION",
       "aggregation",
       "sum",
-      "sort_values",
-      "head"
+      "DETERMINISTIC RESULT ORDERING",
+      "TOP-K RESULT EXTRACTION"
     ]
   },
   {
@@ -318,7 +318,7 @@
     "concepts": [
       "boolean indexing",
       "column selection",
-      "sort_values"
+      "DETERMINISTIC RESULT ORDERING"
     ]
   },
   {
@@ -389,11 +389,11 @@
       "Apply `.round(2)` to limit to two decimal places"
     ],
     "concepts": [
-      "groupby",
+      "GROUPED AGGREGATION",
       "mean",
       "round",
-      "rename",
-      "sort_values"
+      "OUTPUT SCHEMA SHAPING",
+      "DETERMINISTIC RESULT ORDERING"
     ]
   },
   {
@@ -427,7 +427,7 @@
       "Pass the resulting index to `df.loc[idx]` to retrieve those rows"
     ],
     "concepts": [
-      "groupby",
+      "GROUPED AGGREGATION",
       "idxmax",
       "loc",
       "datetime"
@@ -463,10 +463,10 @@
       "Rename the resulting `size` column to `ticket_count`"
     ],
     "concepts": [
-      "groupby",
-      "size",
-      "rename",
-      "sort_values"
+      "GROUPED AGGREGATION",
+      "ROW COUNT AGGREGATION",
+      "OUTPUT SCHEMA SHAPING",
+      "DETERMINISTIC RESULT ORDERING"
     ]
   },
   {
@@ -498,10 +498,10 @@
       "Rename the `size` column to `session_count` with `.rename(columns={...})`"
     ],
     "concepts": [
-      "groupby",
-      "size",
-      "rename",
-      "sort_values"
+      "GROUPED AGGREGATION",
+      "ROW COUNT AGGREGATION",
+      "OUTPUT SCHEMA SHAPING",
+      "DETERMINISTIC RESULT ORDERING"
     ]
   },
   {
@@ -533,10 +533,10 @@
       "Rename the aggregated column to `count` before returning"
     ],
     "concepts": [
-      "groupby",
-      "size",
-      "rename",
-      "sort_values"
+      "GROUPED AGGREGATION",
+      "ROW COUNT AGGREGATION",
+      "OUTPUT SCHEMA SHAPING",
+      "DETERMINISTIC RESULT ORDERING"
     ]
   },
   {
@@ -568,10 +568,10 @@
       "Rename the `size` column to `event_count`"
     ],
     "concepts": [
-      "groupby",
-      "size",
-      "rename",
-      "sort_values"
+      "GROUPED AGGREGATION",
+      "ROW COUNT AGGREGATION",
+      "OUTPUT SCHEMA SHAPING",
+      "DETERMINISTIC RESULT ORDERING"
     ]
   },
   {
@@ -604,10 +604,10 @@
       "Sort by `department_id` ascending (omit `ascending=False` for ascending order)"
     ],
     "concepts": [
-      "groupby",
-      "size",
-      "rename",
-      "sort_values"
+      "GROUPED AGGREGATION",
+      "ROW COUNT AGGREGATION",
+      "OUTPUT SCHEMA SHAPING",
+      "DETERMINISTIC RESULT ORDERING"
     ]
   },
   {
@@ -639,11 +639,11 @@
       "Apply `.round(2)` to the aggregated column"
     ],
     "concepts": [
-      "groupby",
+      "GROUPED AGGREGATION",
       "sum",
       "round",
-      "rename",
-      "sort_values"
+      "OUTPUT SCHEMA SHAPING",
+      "DETERMINISTIC RESULT ORDERING"
     ]
   },
   {
@@ -787,10 +787,10 @@
       "Rename the `size` column to `product_count`"
     ],
     "concepts": [
-      "groupby",
-      "size",
-      "rename",
-      "sort_values"
+      "GROUPED AGGREGATION",
+      "ROW COUNT AGGREGATION",
+      "OUTPUT SCHEMA SHAPING",
+      "DETERMINISTIC RESULT ORDERING"
     ]
   },
   {
@@ -824,11 +824,11 @@
       "Rename the result column to `total_revenue` and apply `.round(2)`"
     ],
     "concepts": [
-      "groupby",
+      "GROUPED AGGREGATION",
       "sum",
       "round",
-      "rename",
-      "sort_values"
+      "OUTPUT SCHEMA SHAPING",
+      "DETERMINISTIC RESULT ORDERING"
     ]
   },
   {
@@ -871,12 +871,11 @@
       "After the join, use `.groupby('order_id')['order_item_id'].nunique()` to count distinct items per order"
     ],
     "concepts": [
-      "merge",
-      "join",
-      "groupby",
-      "nunique",
-      "sort_values",
-      "head"
+      "MULTI-DATAFRAME ENTITY LINKING",
+      "GROUPED AGGREGATION",
+      "DISTINCT LINE-ITEM COUNTING",
+      "DETERMINISTIC RESULT ORDERING",
+      "TOP-K RESULT EXTRACTION"
     ]
   },
   {
@@ -910,8 +909,8 @@
       "After splitting, `.str[1]` selects the second element (index 1) from each resulting list"
     ],
     "concepts": [
-      "str accessor",
-      "str.split",
+      "VECTORIZED STRING TRANSFORMATION",
+      "DELIMITER-BASED STRING EXTRACTION",
       "string extraction",
       "vectorized string operations"
     ]
@@ -947,7 +946,7 @@
       "`pd.cut(series, bins=[...], labels=[...])` assigns each value to a named bin \u2014 bin edges define the boundaries"
     ],
     "concepts": [
-      "pd.cut",
+      "VALUE BUCKETING",
       "datetime arithmetic",
       "binning",
       "Categorical",
@@ -985,9 +984,9 @@
       "Group by the categorical column with `observed=True` to avoid deprecated-behavior warnings"
     ],
     "concepts": [
-      "pd.cut",
+      "VALUE BUCKETING",
       "Categorical",
-      "groupby",
+      "GROUPED AGGREGATION",
       "binning",
       "value distribution"
     ]
@@ -1025,7 +1024,7 @@
       "str.contains",
       "case-insensitive search",
       "boolean mask",
-      "str accessor",
+      "VECTORIZED STRING TRANSFORMATION",
       "substring filter"
     ]
   },

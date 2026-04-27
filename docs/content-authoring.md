@@ -153,6 +153,14 @@ For PySpark: hints should describe the concept at stake, not the correct answer.
 
 The `concepts` field is a **learner-facing semantic tag** describing the *analytical or algorithmic pattern*, not the raw API primitive.
 
+Treat `concepts` as the shared language for three user-facing systems:
+
+- question-level concept pills
+- weak-spot insights on dashboard and mock summary
+- future path and drill recommendations
+
+If a tag would read like parser jargon, library syntax, or method lookup help, it is too low-level.
+
 | Track | Good tags | Bad tags |
 |---|---|---|
 | SQL | `RUNNING TOTAL THRESHOLD`, `COHORT RETENTION`, `LATEST STATE DERIVATION`, `FUNNEL COMPLETION RATE` | `JOIN`, `GROUP BY`, `WINDOW FUNCTION`, `ROW_NUMBER` |
@@ -160,7 +168,30 @@ The `concepts` field is a **learner-facing semantic tag** describing the *analyt
 | Pandas | `time-series bucketing`, `percentile rank`, `multi-level aggregation` | `groupby`, `merge`, `resample` |
 | PySpark | `lazy evaluation`, `shuffle boundary detection`, `delta lake upsert` | `filter()`, `repartition()`, `MERGE` |
 
-Target 2–4 tags per question.
+Target 2–4 tags per question. 5 is acceptable only when a hard question genuinely teaches multiple dependent patterns.
+
+### Concept tag rules
+
+- Prefer *problem patterns* over *tool names*.
+- Prefer *what the learner is reasoning about* over *what function they happen to type*.
+- Tags should still make sense if the same problem were solved in a different syntax or library.
+- Tags must be distinct. Do not include near-duplicates like `JOIN` and `INNER JOIN` or `groupby` and `aggregation` unless they truly describe different mental models.
+- Do not use onboarding/meta tags like `CTE INTRODUCTION`, `WITH CLAUSE SYNTAX`, or `NAMED TEMPORARY RESULT SET`.
+
+### Track-specific anti-patterns
+
+- SQL: avoid raw clause/function tags such as `SELECT`, `WHERE`, `GROUP BY`, `HAVING`, `JOIN`, `COUNT`, `ROW_NUMBER`, `LAG`, `LEAD`.
+- Python: avoid raw implementation nouns such as `dict`, `set`, `heapq`, `for loop`, `array`, `string`, `iteration` when they are not framed as a reasoning pattern.
+- Pandas: avoid method names such as `groupby`, `merge`, `dropna`, `fillna`, `sort_values`, `resample`, `pivot_table`, `str.split`.
+- PySpark: avoid API/operator names such as `filter()`, `repartition()`, `withColumn`, `collect()`, `cache()`, `MERGE`.
+
+### Quick test
+
+Ask this before saving a tag:
+
+> If the user saw this tag in a weak-spot insight, would it teach them *what kind of thinking to improve*?
+
+If the answer is no, rewrite it.
 
 ---
 

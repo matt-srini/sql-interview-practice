@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -15,6 +16,147 @@ from questions import get_questions_by_difficulty
 
 
 BACKEND_ROOT = Path(__file__).resolve().parent.parent
+
+QUESTION_DIRS = {
+    "sql": BACKEND_ROOT / "content" / "questions",
+    "python": BACKEND_ROOT / "content" / "python_questions",
+    "python-data": BACKEND_ROOT / "content" / "python_data_questions",
+    "pyspark": BACKEND_ROOT / "content" / "pyspark_questions",
+}
+
+_RAW_CONCEPTS_BY_TRACK: dict[str, set[str]] = {
+    "sql": {
+        "select",
+        "where",
+        "order by",
+        "group by",
+        "join",
+        "inner join",
+        "left join",
+        "right join",
+        "full outer join",
+        "having",
+        "count",
+        "sum",
+        "avg",
+        "average",
+        "min",
+        "max",
+        "case when",
+        "row number",
+        "row_number",
+        "rank",
+        "dense rank",
+        "dense_rank",
+        "lag",
+        "lead",
+        "cte introduction",
+        "named temporary result set",
+        "with clause syntax",
+    },
+    "python": {
+        "dict",
+        "dictionary",
+        "set",
+        "heapq",
+        "for loop",
+        "array",
+        "string",
+        "iteration",
+        "sorting",
+    },
+    "python-data": {
+        "groupby",
+        "merge",
+        "dropna",
+        "fillna",
+        "sort values",
+        "sort_values",
+        "rename",
+        "resample",
+        "pivot table",
+        "pivot_table",
+        "str accessor",
+        "str split",
+        "str.split",
+        "copy",
+        "size",
+        "nunique",
+    },
+    "pyspark": {
+        "filter",
+        "filter()",
+        "repartition",
+        "repartition()",
+        "withcolumn",
+        "withcolumn()",
+        "collect",
+        "collect()",
+        "cache",
+        "cache()",
+        "merge",
+    },
+}
+
+
+def _normalize_concept(concept: str) -> str:
+    return re.sub(r"\s+", " ", concept.strip().lower())
+
+
+def _iter_question_files() -> list[tuple[str, Path]]:
+    files: list[tuple[str, Path]] = []
+    for track, directory in QUESTION_DIRS.items():
+        for file_path in sorted(directory.glob("*.json")):
+            if file_path.stem == "schemas":
+                continue
+            files.append((track, file_path))
+    return files
+
+
+def _validate_concepts() -> None:
+    errors: list[str] = []
+
+    for track, file_path in _iter_question_files():
+        with file_path.open("r", encoding="utf-8") as handle:
+            questions = json.load(handle)
+
+        for question in questions:
+            qid = question.get("id", "<unknown>")
+            title = question.get("title", "<untitled>")
+            concepts = question.get("concepts")
+
+            if not isinstance(concepts, list) or not concepts:
+                errors.append(f"{track} {qid} {title}: concepts must be a non-empty list")
+                continue
+
+            if len(concepts) < 2 or len(concepts) > 5:
+                errors.append(
+                    f"{track} {qid} {title}: expected 2-5 concept tags, found {len(concepts)}"
+                )
+
+            normalized_seen: set[str] = set()
+            for concept in concepts:
+                if not isinstance(concept, str) or not concept.strip():
+                    errors.append(f"{track} {qid} {title}: concept tags must be non-empty strings")
+                    continue
+
+                normalized = _normalize_concept(concept)
+                if normalized in normalized_seen:
+                    errors.append(f"{track} {qid} {title}: duplicate concept tag '{concept}'")
+                    continue
+                normalized_seen.add(normalized)
+
+                if normalized in _RAW_CONCEPTS_BY_TRACK[track]:
+                    errors.append(
+                        f"{track} {qid} {title}: concept tag '{concept}' is too syntax/API-level"
+                    )
+
+    if errors:
+        joined = "\n".join(f"- {item}" for item in errors[:200])
+        remaining = len(errors) - min(len(errors), 200)
+        if remaining > 0:
+            joined += f"\n- ... and {remaining} more"
+        raise ValueError(f"Concept validation failed:\n{joined}")
 
 
 def _validate_paths(paths: list[dict], catalogs_by_topic: dict[str, dict[str, list[dict]]]) -> None:
@@ -109,6 +251,7 @@ def main() -> None:
         "pyspark": pyspark_catalog,
     }
     _validate_paths(paths, catalogs_by_topic)
+    _validate_concepts()
 
     print("Content validation passed")
 

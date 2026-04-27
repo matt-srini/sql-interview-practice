@@ -115,7 +115,7 @@
     ],
     "concepts": [
       "hash map",
-      "sorting",
+      "ORDER-FIRST REASONING",
       "string manipulation"
     ]
   },
@@ -322,7 +322,7 @@
     ],
     "concepts": [
       "prefix product",
-      "array",
+      "INDEXED SEQUENCE REASONING",
       "two passes"
     ]
   },
@@ -398,7 +398,7 @@
     "concepts": [
       "bit manipulation",
       "XOR",
-      "array"
+      "INDEXED SEQUENCE REASONING"
     ]
   },
   {
@@ -761,7 +761,7 @@
     ],
     "concepts": [
       "two pointers",
-      "sorting",
+      "ORDER-FIRST REASONING",
       "deduplication"
     ]
   },
@@ -1149,7 +1149,7 @@
     "concepts": [
       "hash map",
       "frequency count",
-      "array"
+      "INDEXED SEQUENCE REASONING"
     ]
   },
   {
@@ -1230,7 +1230,7 @@
       "Count forward (n, n+1, n+2, ...) while the next number exists in the set."
     ],
     "concepts": [
-      "set",
+      "MEMBERSHIP-BASED DEDUPLICATION",
       "hash map",
       "sequence"
     ]
@@ -1425,7 +1425,7 @@
       "Three reversals in sequence: reverse the whole array, reverse the first k elements, then reverse the last n-k elements."
     ],
     "concepts": [
-      "array",
+      "INDEXED SEQUENCE REASONING",
       "in-place",
       "reversal trick"
     ]
@@ -1644,7 +1644,7 @@
     ],
     "concepts": [
       "greedy",
-      "array",
+      "INDEXED SEQUENCE REASONING",
       "reachability"
     ]
   },
@@ -1733,7 +1733,7 @@
       "Swap nums[i] with the smallest value to its right that is still larger than nums[i], then reverse the suffix after i."
     ],
     "concepts": [
-      "array",
+      "INDEXED SEQUENCE REASONING",
       "in-place",
       "permutation"
     ]
@@ -1911,7 +1911,7 @@
     ],
     "concepts": [
       "binary search",
-      "array",
+      "INDEXED SEQUENCE REASONING",
       "peak finding"
     ]
   },
@@ -2464,7 +2464,7 @@
       "You can check both the i-th row and i-th column in the same outer loop by reading board[i][j] for the row and board[j][i] for the column."
     ],
     "concepts": [
-      "set",
+      "MEMBERSHIP-BASED DEDUPLICATION",
       "matrix",
       "validation"
     ]
@@ -2551,7 +2551,7 @@
     "concepts": [
       "two pointers",
       "greedy",
-      "array"
+      "INDEXED SEQUENCE REASONING"
     ]
   },
   {

@@ -49,7 +49,7 @@
       "coalesce avoids a shuffle by merging partitions that already reside on the same executor \u2014 this only works when going from more to fewer partitions"
     ],
     "concepts": [
-      "repartition",
+      "PARTITION SHAPE CONTROL",
       "coalesce",
       "shuffle",
       "partitioning",
@@ -81,7 +81,7 @@
       "shuffle",
       "wide transformation",
       "narrow transformation",
-      "groupBy",
+      "WIDE-AGGREGATION SHUFFLE",
       "partitioning"
     ]
   },
@@ -167,7 +167,7 @@
       "OutOfMemoryError",
       "partition sizing",
       "executor memory",
-      "repartition",
+      "PARTITION SHAPE CONTROL",
       "performance tuning"
     ]
   },
@@ -570,12 +570,11 @@
       "Shuffle boundaries are the key concept \u2014 each side of a shuffle is a separate stage"
     ],
     "concepts": [
-      "job",
-      "stage",
-      "task",
-      "Spark UI",
-      "execution hierarchy",
-      "shuffle boundary"
+      "SPARK EXECUTION HIERARCHY",
+      "SPARK UI DIAGNOSIS",
+      "SHUFFLE BOUNDARY DETECTION",
+      "STAGE DECOMPOSITION",
+      "TASK SCHEDULING"
     ]
   },
   {
@@ -687,12 +686,11 @@
       "Think of it as partition pruning that happens dynamically at runtime, informed by what the dimension filter actually returns"
     ],
     "concepts": [
-      "dynamic partition pruning",
-      "DPP",
-      "star schema",
-      "partition pruning",
-      "Spark 3",
-      "I/O optimization"
+      "DYNAMIC PARTITION PRUNING",
+      "STAR-SCHEMA FILTER PUSHDOWN",
+      "PARTITION PRUNING",
+      "I-O REDUCTION",
+      "RUNTIME JOIN FILTERING"
     ]
   },
   {
@@ -718,7 +716,7 @@
     ],
     "concepts": [
       "driver OOM",
-      "collect",
+      "DRIVER-SIDE MATERIALIZATION RISK",
       "toPandas",
       "driver memory",
       "data collection anti-patterns"
@@ -745,12 +743,11 @@
       "Delta Lake's merge API directly mirrors SQL MERGE INTO \u2014 it handles matched and unmatched rows in one atomic operation"
     ],
     "concepts": [
-      "Delta Lake",
-      "MERGE",
-      "upsert",
-      "ACID",
-      "whenMatchedUpdate",
-      "whenNotMatchedInsert"
+      "DELTA LAKE UPSERT SEMANTICS",
+      "ACID TABLE MUTATION",
+      "MATCHED VS UNMATCHED WRITE PATHS",
+      "MERGE-CONDITION LOGIC",
+      "INCREMENTAL TABLE RECONCILIATION"
     ]
   },
   {

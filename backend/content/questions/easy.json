@@ -25,9 +25,9 @@
       "String comparisons are case-sensitive \u2014 match the exact value in the data"
     ],
     "concepts": [
-      "SELECT",
-      "WHERE",
-      "ORDER BY"
+      "COLUMN PROJECTION",
+      "CONDITIONAL ROW FILTERING",
+      "DETERMINISTIC RESULT ORDERING"
     ],
     "companies": [
       "Amazon",
@@ -59,9 +59,9 @@
       "String values in WHERE clauses must be wrapped in single quotes"
     ],
     "concepts": [
-      "SELECT",
-      "WHERE",
-      "ORDER BY"
+      "COLUMN PROJECTION",
+      "CONDITIONAL ROW FILTERING",
+      "DETERMINISTIC RESULT ORDERING"
     ],
     "companies": [
       "Meta",
@@ -92,9 +92,9 @@
       "ORDER BY salary DESC places the highest values first"
     ],
     "concepts": [
-      "SELECT",
-      "WHERE",
-      "ORDER BY"
+      "COLUMN PROJECTION",
+      "CONDITIONAL ROW FILTERING",
+      "DETERMINISTIC RESULT ORDERING"
     ],
     "companies": [
       "Google",
@@ -125,9 +125,9 @@
       "Date columns sort chronologically \u2014 ASC means earliest first"
     ],
     "concepts": [
-      "SELECT",
-      "WHERE",
-      "ORDER BY"
+      "COLUMN PROJECTION",
+      "CONDITIONAL ROW FILTERING",
+      "DETERMINISTIC RESULT ORDERING"
     ],
     "companies": [
       "Google",
@@ -156,8 +156,8 @@
       "No GROUP BY is needed when aggregating the entire table into a single result"
     ],
     "concepts": [
-      "SELECT",
-      "COUNT"
+      "COLUMN PROJECTION",
+      "ROW COUNT AGGREGATION"
     ],
     "companies": [
       "Amazon",
@@ -185,8 +185,8 @@
       "Use MAX() to find the largest value in a column"
     ],
     "concepts": [
-      "SELECT",
-      "MAX"
+      "COLUMN PROJECTION",
+      "EXTREMUM IDENTIFICATION"
     ],
     "companies": [
       "Amazon",
@@ -216,9 +216,9 @@
       "MIN() returns the smallest value in a column"
     ],
     "concepts": [
-      "SELECT",
-      "MIN",
-      "WHERE"
+      "COLUMN PROJECTION",
+      "LOWEST-VALUE IDENTIFICATION",
+      "CONDITIONAL ROW FILTERING"
     ],
     "companies": [
       "Zendesk",
@@ -248,10 +248,10 @@
       "Use the count alias in ORDER BY to sort by frequency"
     ],
     "concepts": [
-      "SELECT",
-      "GROUP BY",
-      "COUNT",
-      "ORDER BY"
+      "COLUMN PROJECTION",
+      "GROUPED AGGREGATION",
+      "ROW COUNT AGGREGATION",
+      "DETERMINISTIC RESULT ORDERING"
     ],
     "companies": [
       "Amazon",
@@ -281,10 +281,10 @@
       "SUM(net_amount) totals spending per group"
     ],
     "concepts": [
-      "SELECT",
-      "GROUP BY",
-      "SUM",
-      "ORDER BY"
+      "COLUMN PROJECTION",
+      "GROUPED AGGREGATION",
+      "VALUE AGGREGATION",
+      "DETERMINISTIC RESULT ORDERING"
     ],
     "companies": [
       "Amazon",
@@ -314,11 +314,11 @@
       "Use COUNT(ticket_id) in HAVING"
     ],
     "concepts": [
-      "SELECT",
-      "GROUP BY",
-      "COUNT",
-      "HAVING",
-      "ORDER BY"
+      "COLUMN PROJECTION",
+      "GROUPED AGGREGATION",
+      "ROW COUNT AGGREGATION",
+      "POST-AGGREGATION FILTERING",
+      "DETERMINISTIC RESULT ORDERING"
     ],
     "companies": [
       "Zendesk",
@@ -353,11 +353,11 @@
       "COUNT(o.order_id) returns 0 for users with no orders because NULL values are not counted by COUNT"
     ],
     "concepts": [
-      "SELECT",
-      "LEFT JOIN",
-      "COUNT",
-      "GROUP BY",
-      "ORDER BY"
+      "COLUMN PROJECTION",
+      "OPTIONAL ENTITY PRESERVATION",
+      "ROW COUNT AGGREGATION",
+      "GROUPED AGGREGATION",
+      "DETERMINISTIC RESULT ORDERING"
     ],
     "companies": [
       "Amazon",
@@ -394,9 +394,9 @@
       "Use table aliases to keep column references clear when joining two tables"
     ],
     "concepts": [
-      "SELECT",
-      "INNER JOIN",
-      "ORDER BY"
+      "COLUMN PROJECTION",
+      "REQUIRED ENTITY MATCHING",
+      "DETERMINISTIC RESULT ORDERING"
     ],
     "companies": [
       "Google",
@@ -427,10 +427,10 @@
       "BETWEEN is equivalent to >= lower AND <= upper"
     ],
     "concepts": [
-      "SELECT",
-      "WHERE",
-      "BETWEEN",
-      "ORDER BY"
+      "COLUMN PROJECTION",
+      "CONDITIONAL ROW FILTERING",
+      "RANGE FILTERING",
+      "DETERMINISTIC RESULT ORDERING"
     ],
     "companies": [
       "Amazon",
@@ -461,10 +461,10 @@
       "Compare signup_date to date string literals in 'YYYY-MM-DD' format"
     ],
     "concepts": [
-      "SELECT",
-      "WHERE",
-      "ORDER BY",
-      "dates"
+      "COLUMN PROJECTION",
+      "CONDITIONAL ROW FILTERING",
+      "DETERMINISTIC RESULT ORDERING",
+      "DATE-BASED FILTERING"
     ],
     "companies": [
       "Meta",
@@ -495,8 +495,8 @@
       "Put the allowed country codes inside parentheses after IN"
     ],
     "concepts": [
-      "WHERE",
-      "IN"
+      "CONDITIONAL ROW FILTERING",
+      "SET MEMBERSHIP FILTERING"
     ],
     "tags": [
       "easy",
@@ -533,9 +533,9 @@
       "Order the matching rows by category_id ascending"
     ],
     "concepts": [
-      "WHERE",
-      "IN",
-      "ORDER BY"
+      "CONDITIONAL ROW FILTERING",
+      "SET MEMBERSHIP FILTERING",
+      "DETERMINISTIC RESULT ORDERING"
     ],
     "tags": [
       "easy",
@@ -571,8 +571,8 @@
       "Filter event_name with LIKE before selecting the event columns"
     ],
     "concepts": [
-      "WHERE",
-      "LIKE"
+      "CONDITIONAL ROW FILTERING",
+      "PATTERN-BASED FILTERING"
     ],
     "tags": [
       "easy",
@@ -610,7 +610,7 @@
       "Both status columns belong in the result because both are part of the business rule"
     ],
     "concepts": [
-      "WHERE",
+      "CONDITIONAL ROW FILTERING",
       "OR"
     ],
     "tags": [
@@ -649,8 +649,8 @@
       "Wrap the OR conditions in parentheses so they stay grouped together"
     ],
     "concepts": [
-      "WHERE",
-      "AND",
+      "CONDITIONAL ROW FILTERING",
+      "MULTI-CONDITION FILTERING",
       "OR"
     ],
     "tags": [
@@ -689,8 +689,8 @@
       "Filter on email, but return the user columns requested in the prompt"
     ],
     "concepts": [
-      "WHERE",
-      "IS NULL"
+      "CONDITIONAL ROW FILTERING",
+      "NULL STATE FILTERING"
     ],
     "tags": [
       "easy",
@@ -727,8 +727,8 @@
       "Filter product_id first, then return the event details requested"
     ],
     "concepts": [
-      "WHERE",
-      "IS NOT NULL"
+      "CONDITIONAL ROW FILTERING",
+      "KNOWN-VALUE FILTERING"
     ],
     "tags": [
       "easy",
@@ -765,8 +765,8 @@
     ],
     "concepts": [
       "OR",
-      "GROUP BY",
-      "SUM"
+      "GROUPED AGGREGATION",
+      "VALUE AGGREGATION"
     ],
     "tags": [
       "easy",
@@ -811,7 +811,7 @@
     "concepts": [
       "PRE-AGGREGATION FILTERING",
       "MULTI-COLUMN ORDERING",
-      "GROUP COUNT"
+      "GROUP SIZE COMPARISON"
     ],
     "companies": [
       "Meta",
@@ -850,7 +850,7 @@
     "concepts": [
       "NULL-SAFE ARITHMETIC",
       "COALESCE DEFAULT SUBSTITUTION",
-      "COMPUTED COLUMN"
+      "DERIVED FIELD CREATION"
     ],
     "companies": [
       "Stripe",
@@ -970,7 +970,7 @@
     "concepts": [
       "IN CLAUSE FILTERING",
       "SET MEMBERSHIP TEST",
-      "ORDERED RESULT"
+      "DETERMINISTIC RESULT ORDERING"
     ],
     "companies": [
       "Google",
@@ -1003,7 +1003,7 @@
       "No GROUP BY is needed when aggregating over the entire table"
     ],
     "concepts": [
-      "MULTI-AGGREGATE SELECT",
+      "MULTI-METRIC SUMMARIZATION",
       "TABLE-WIDE SUMMARY",
       "SCALAR AGGREGATION"
     ],
@@ -1042,7 +1042,7 @@
     ],
     "concepts": [
       "CATEGORICAL SEGMENTATION",
-      "GROUP COUNT",
+      "GROUP SIZE COMPARISON",
       "DISTRIBUTION ANALYSIS"
     ],
     "companies": [
@@ -1121,9 +1121,9 @@
       "Reference the CTE name in the outer SELECT like a table; ORDER BY signup_month ASC ensures chronological output"
     ],
     "concepts": [
-      "CTE INTRODUCTION",
-      "NAMED TEMPORARY RESULT SET",
-      "WITH CLAUSE SYNTAX"
+      "STAGED QUERY DECOMPOSITION",
+      "TIME-BUCKETED SIGNUP TREND",
+      "MONTHLY ENTITY COUNTING"
     ],
     "companies": [
       "Meta",

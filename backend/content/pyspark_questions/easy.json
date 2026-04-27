@@ -154,7 +154,7 @@
       "PySpark DataFrames are immutable \u2014 adding a column always returns a new DataFrame via a specific method"
     ],
     "concepts": [
-      "withColumn",
+      "COLUMN-EXPRESSION TRANSFORMATION",
       "column expressions",
       "immutability",
       "derived columns"
@@ -211,7 +211,7 @@
       "wide transformations",
       "narrow transformations",
       "shuffle",
-      "groupBy",
+      "WIDE-AGGREGATION SHUFFLE",
       "partitioning"
     ]
   },
@@ -539,7 +539,7 @@
       "cast",
       "type conversion",
       "DoubleType",
-      "withColumn",
+      "COLUMN-EXPRESSION TRANSFORMATION",
       "schema"
     ]
   },
@@ -758,7 +758,7 @@
       "limit",
       "head",
       "transformations vs actions",
-      "collect",
+      "DRIVER-SIDE MATERIALIZATION RISK",
       "Row objects"
     ]
   },
@@ -896,7 +896,7 @@
     ],
     "concepts": [
       "count vs countDistinct",
-      "groupBy",
+      "WIDE-AGGREGATION SHUFFLE",
       "aggregation",
       "predict output"
     ]
@@ -978,7 +978,7 @@
       "Ask yourself: does `cache()` trigger a Spark job? Think about lazy vs eager evaluation"
     ],
     "concepts": [
-      "cache()",
+      "RECOMPUTATION TRADE-OFF",
       "lazy evaluation",
       "materialization timing",
       "persist",
@@ -1036,7 +1036,7 @@
     "concepts": [
       "narrow vs wide transformations",
       "shuffle",
-      "groupBy",
+      "WIDE-AGGREGATION SHUFFLE",
       "stage boundary",
       "performance"
     ]
