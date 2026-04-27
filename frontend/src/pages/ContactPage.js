@@ -1,12 +1,18 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Topbar from '../components/Topbar';
 
 export default function ContactPage() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="auth-page">
       <Topbar variant="minimal" />
       <main className="auth-main">
         <div className="auth-card policy-card" role="main">
+          <Link to="/" className="policy-exit" aria-label="Close policy">X</Link>
           <h1 className="auth-card-title">Contact Us</h1>
 
           <div className="policy-body">

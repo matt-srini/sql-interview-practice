@@ -8502,9 +8502,38 @@ select {
 .landing-footer-links { display: flex; gap: 1.25rem; flex-wrap: wrap; }
 .landing-footer-links a { font-size: 0.8rem; color: var(--text-secondary); text-decoration: none; }
 .landing-footer-links a:hover { color: var(--text-strong); }
-.policy-card { width: min(100%, 720px) !important; }
+.policy-card { width: min(100%, 720px) !important; position: relative; }
 
 /* ── Policy pages ── */
+.policy-exit {
+  position: absolute;
+  top: 1.1rem;
+  right: 1.1rem;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 600;
+  background: var(--surface-card);
+  transition: border-color 0.15s, color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+.policy-exit:hover {
+  color: var(--text-strong);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+.policy-exit:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--text-strong);
+}
 .policy-body h2 { font-size: 1rem; font-weight: 600; margin: 1.5rem 0 0.5rem; color: var(--text-strong); }
 .policy-body p, .policy-body li { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; margin: 0.4rem 0; }
 .policy-body ul { padding-left: 1.25rem; }

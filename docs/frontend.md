@@ -71,6 +71,10 @@ Consumes a password reset token (passed as `?token=…` query param) and lets th
 
 Consumes an email verification token (`?token=…`). On error (expired/invalid), shows a message noting the 24h expiry, spam-folder guidance, and a direct "Resend verification email" button (calls `/api/auth/resend-verification`) if the user is currently signed in. Logged-out users in the error state see "Sign in to resend" footer link.
 
+### Policy pages (`/privacy`, `/terms`, `/refund-policy`, `/contact`)
+
+Standalone policy screens with the minimal topbar and a centered policy card. Each policy page auto-scrolls to the top on mount, includes a top-right exit button (back to `/`), and ends with a "Back to home" footer button.
+
 
 
 Per-track landing rendered by `Outlet` when no question is active:
