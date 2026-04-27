@@ -12,7 +12,7 @@ export default function PathProgressCard({ path, compact = false }) {
   return (
     <Link
       to={`/learn/${path.topic}/${path.slug}`}
-      className={`path-card${compact ? ' path-card--compact' : ''}${isPro ? ' path-card--pro' : ''}`}
+      className={`path-card${compact ? ' path-card--compact' : ''}${isPro && !path.accessible ? ' path-card--pro' : ''}`}
     >
       <div className="path-card-header">
         <span className="path-card-dot" style={{ background: meta.color }} />
