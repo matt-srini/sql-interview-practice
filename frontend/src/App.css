@@ -1528,26 +1528,19 @@ select {
 .dashboard-brand {
   position: relative;
   display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
+  align-items: baseline;
   font-family: var(--font-brand);
-  font-weight: 650;
   letter-spacing: var(--brand-wordmark-tracking);
   color: var(--text-strong);
   text-transform: lowercase;
 }
 
-.brand-wordmark::before,
-.landing-brand::before,
-.app-practice-home::before,
-.dashboard-brand::before {
-  content: "";
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: linear-gradient(140deg, var(--brand-accent), var(--accent));
-  box-shadow: 0 0 0 3px rgba(47, 109, 154, 0.12);
-  flex: 0 0 auto;
+.brand-data {
+  font-weight: 300;
+}
+
+.brand-think {
+  font-weight: 650;
 }
 
 .landing-brand {

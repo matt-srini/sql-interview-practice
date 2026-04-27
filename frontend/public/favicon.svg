@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <rect width="32" height="32" rx="7" fill="#141413"/>
+  <text
+    font-family="'JetBrains Mono', 'SFMono-Regular', Consolas, monospace"
+    font-size="19"
+    font-weight="600"
+    text-anchor="middle"
+    x="16"
+    y="23"
+  ><tspan fill="#F0EEE9">d</tspan><tspan fill="#5B6AF0">t</tspan></text>
+</svg>

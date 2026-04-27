@@ -117,7 +117,7 @@ export default function Topbar({
           <div className={brandRegionClass}>
             {leftSlot}
             <Link className={brandLinkClass} to="/">
-              datathink
+              <span className="brand-data">data</span><span className="brand-think">think</span>
             </Link>
           </div>
 
