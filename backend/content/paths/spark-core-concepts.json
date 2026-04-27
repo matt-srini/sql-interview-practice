@@ -12,5 +12,8 @@
     11008
   ],
   "tier": "free",
-  "role": "starter"
+  "role": "starter",
+  "focus_concepts": ["LAZY EVALUATION MODEL", "DAG EXECUTION FLOW", "TRANSFORMATION VS ACTION CLASSIFICATION"],
+  "outcomes": "You'll internalize Spark's execution model — lazy evaluation, the DAG, wide vs narrow transformations — and reason about what triggers a job.",
+  "recommended_after": []
 }

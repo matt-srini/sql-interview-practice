@@ -11,5 +11,8 @@
     4306
   ],
   "tier": "free",
-  "role": "starter"
+  "role": "starter",
+  "focus_concepts": ["HASH MAP LOOKUP", "FREQUENCY COUNTING", "MEMBERSHIP-BASED DEDUPLICATION"],
+  "outcomes": "You'll build the hash map instinct that underlies most O(1) lookup problems — frequency maps, duplicate detection, and subarray tricks.",
+  "recommended_after": []
 }

@@ -71,6 +71,25 @@ Authoring constraints for path files in `backend/content/paths/`:
 - Exactly one `starter` and one `intermediate` path per track (used by unlock shortcuts)
 - Every `questions[]` ID must exist in the same track catalog and be unique within the path
 
+**Recommended additional fields (all paths should include these):**
+
+| Field | Type | Purpose |
+|---|---|---|
+| `focus_concepts` | `string[]` | 2–4 semantic concept tags this path trains. Must match the concept-tag style in `docs/content-authoring.md` (not raw syntax/API names). Used by the insights engine to route users from weak concepts to the right path. |
+| `outcomes` | `string` | One or two sentences starting with "You'll…" describing what the user will be able to do after completing this path. Shown in the UI as a learning objective. |
+| `recommended_after` | `string[]` | Slugs of paths that are good prerequisites. Empty array `[]` for starter paths. Used by the recommendation engine to respect curriculum order. |
+
+**Authoring rules for `focus_concepts`:**
+- Use the same semantic-tag style as question `concepts` fields (e.g. `GROUPED AGGREGATION`, not `GROUP BY`)
+- Pick concepts that the majority of questions in the path actually train
+- 2–4 concepts per path; don't list every concept that appears — only the defining ones
+- The insights engine maps `weakest_concepts` → `recommended_path_slug` by matching these tags, so accuracy matters
+
+**Authoring rules for `outcomes`:**
+- Start with "You'll…" (first-person, active voice)
+- Describe capability, not activity ("You'll analyze cohorts" not "This path covers cohorts")
+- Keep it to 1–2 sentences max
+
 ---
 
 ## Concept coverage by track

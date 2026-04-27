@@ -13,5 +13,8 @@
     3024
   ],
   "tier": "free",
-  "role": "advanced"
+  "role": "advanced",
+  "focus_concepts": ["REQUIRED ENTITY MATCHING", "OPTIONAL ENTITY PRESERVATION", "ANTI-JOIN PATTERNS"],
+  "outcomes": "You'll develop confident join intuition from basic INNER/LEFT joins through full outer reconciliation to anti-join patterns.",
+  "recommended_after": ["aggregation-patterns"]
 }

@@ -13,6 +13,8 @@ import pyspark_questions
 import questions as sql_questions
 from db import get_submission_events
 from deps import get_current_user
+from path_loader import get_all_paths
+from unlock import normalize_plan
 
 router = APIRouter(prefix="/api/dashboard")
 
@@ -34,6 +36,28 @@ _TOPIC_MODULES = {
 
 _CACHE_TTL_SECONDS = 60
 _insights_cache: dict[str, dict[str, Any]] = {}
+
+# Maps (track, concept) → (slug, title, tier) for the highest-priority matching path.
+# Starter paths take precedence over intermediate, which take precedence over advanced,
+# so the recommendation points to the most foundational accessible path first.
+def _build_concept_path_index() -> dict[tuple[str, str], tuple[str, str, str]]:
+    role_order = {"starter": 0, "intermediate": 1, "advanced": 2}
+    paths = sorted(
+        get_all_paths(),
+        key=lambda p: role_order.get(p.get("role", "advanced"), 2),
+    )
+    index: dict[tuple[str, str], tuple[str, str, str]] = {}
+    for path in paths:
+        track = path["topic"]
+        tier = path.get("tier", "pro")
+        for concept in path.get("focus_concepts", []):
+            key = (track, concept)
+            if key not in index:
+                index[key] = (path["slug"], path["title"], tier)
+    return index
+
+
+_CONCEPT_PATH_INDEX = _build_concept_path_index()
 
 
 def _build_concepts_lookup() -> dict[str, dict[int, list[str]]]:
@@ -138,6 +162,7 @@ async def get_dashboard_insights(
     current_user: dict[str, Any] = Depends(get_current_user),
 ) -> dict[str, Any]:
     user_id = current_user["id"]
+    effective_plan = normalize_plan(current_user.get("plan", "free"))
 
     cached = _cache_get(user_id)
     if cached is not None:
@@ -206,6 +231,15 @@ async def get_dashboard_insights(
     weakest_concepts.sort(
         key=lambda item: (item["accuracy_pct"], -item["attempts"], item["concept"])
     )
+
+    # Attach recommended path for each weak concept where one exists and is accessible
+    for entry in weakest_concepts[:3]:
+        lookup = _CONCEPT_PATH_INDEX.get((entry["track"], entry["concept"]))
+        if lookup:
+            slug, title, tier = lookup
+            if tier == "free" or effective_plan in ("pro", "elite"):
+                entry["recommended_path_slug"] = slug
+                entry["recommended_path_title"] = title
 
     payload = {
         "per_track": per_track,

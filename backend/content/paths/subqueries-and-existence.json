@@ -12,5 +12,8 @@
     3021
   ],
   "tier": "pro",
-  "role": "advanced"
+  "role": "advanced",
+  "focus_concepts": ["NESTED FILTER LOGIC", "ANTI-JOIN PATTERNS", "MULTI-TABLE ENTITY LINKING"],
+  "outcomes": "You'll use correlated subqueries, EXISTS/NOT EXISTS, and CTEs to solve multi-step filtering problems that can't be done in a single pass.",
+  "recommended_after": ["window-functions-mastery"]
 }

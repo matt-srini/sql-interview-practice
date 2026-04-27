@@ -13,5 +13,8 @@
     11622
   ],
   "tier": "pro",
-  "role": "advanced"
+  "role": "advanced",
+  "focus_concepts": ["ACID TRANSACTION MANAGEMENT", "SNAPSHOT ISOLATION", "PARTITION PRUNING STRATEGY"],
+  "outcomes": "You'll apply Delta Lake patterns — ACID writes, time travel, and optimized partitioning — to production data lake scenarios.",
+  "recommended_after": ["spark-performance"]
 }

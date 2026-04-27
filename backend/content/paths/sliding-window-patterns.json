@@ -10,5 +10,8 @@
     4603
   ],
   "tier": "free",
-  "role": "intermediate"
+  "role": "intermediate",
+  "focus_concepts": ["SLIDING WINDOW OPTIMIZATION", "TWO-POINTER REDUCTION", "MONOTONIC WINDOW MAINTENANCE"],
+  "outcomes": "You'll solve substring and subarray problems by maintaining a moving window instead of re-scanning, cutting O(n²) to O(n).",
+  "recommended_after": ["arrays-and-hashing"]
 }

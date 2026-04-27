@@ -12,5 +12,8 @@
     5615
   ],
   "tier": "free",
-  "role": "advanced"
+  "role": "advanced",
+  "focus_concepts": ["TIME-SERIES BUCKETING", "ROLLING WINDOW AGGREGATION", "PERIOD-OVER-PERIOD COMPARISON"],
+  "outcomes": "You'll handle date indexing, rolling statistics, period comparisons, and resample operations on time-indexed DataFrames.",
+  "recommended_after": ["groupby-and-joins"]
 }

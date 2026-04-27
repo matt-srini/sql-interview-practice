@@ -12,5 +12,8 @@
     5620
   ],
   "tier": "pro",
-  "role": "advanced"
+  "role": "advanced",
+  "focus_concepts": ["COHORT SEGMENTATION", "MULTI-STEP ANALYTICS PIPELINE", "BROADCAST AGGREGATION"],
+  "outcomes": "You'll build end-to-end customer analytics pipelines — cohort bucketing, rank-within-group, and revenue attribution.",
+  "recommended_after": ["groupby-and-joins"]
 }

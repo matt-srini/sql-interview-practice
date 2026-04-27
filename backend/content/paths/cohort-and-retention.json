@@ -12,5 +12,8 @@
     3017
   ],
   "tier": "pro",
-  "role": "advanced"
+  "role": "advanced",
+  "focus_concepts": ["COHORT RETENTION ANALYSIS", "STATE TRANSITION DETECTION", "PERIOD-OVER-PERIOD COMPARISON"],
+  "outcomes": "You'll analyze user cohorts, compute retention rates, and track lifecycle patterns using real product datasets.",
+  "recommended_after": ["window-functions-mastery"]
 }

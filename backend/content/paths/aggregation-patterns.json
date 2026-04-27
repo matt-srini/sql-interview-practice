@@ -13,5 +13,8 @@
     2011
   ],
   "tier": "free",
-  "role": "starter"
+  "role": "starter",
+  "focus_concepts": ["GROUPED AGGREGATION", "POST-AGGREGATION FILTERING", "CONDITIONAL AGGREGATION"],
+  "outcomes": "You'll build a complete aggregation toolkit and know when to use GROUP BY, HAVING, and conditional aggregation together.",
+  "recommended_after": []
 }
