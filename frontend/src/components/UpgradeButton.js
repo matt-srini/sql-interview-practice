@@ -60,7 +60,7 @@ function tierLabel(tier) {
   }[tier] || 'Pro';
 }
 
-export default function UpgradeButton({ tier = 'pro', label, source, compact = false, className = '', currency = 'INR' }) {
+export default function UpgradeButton({ tier = 'pro', label, source, compact = false, className = '', currency = 'INR', successPath = '/practice?upgraded=true' }) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [pending, setPending] = useState(false);
@@ -105,7 +105,7 @@ export default function UpgradeButton({ tier = 'pro', label, source, compact = f
               razorpay_subscription_id: resp.razorpay_subscription_id,
             });
             track('plan_upgraded', { tier, source });
-            window.location.assign('/practice?upgraded=true');
+            window.location.assign(successPath);
           } catch (e) {
             setPending(false);
             setError('Payment received but verification failed. It will be applied shortly.');
