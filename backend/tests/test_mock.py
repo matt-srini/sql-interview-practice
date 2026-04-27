@@ -15,7 +15,9 @@ fixture for DB reset, and _make_user / _start_mock helpers.
 from __future__ import annotations
 
 import os
+from datetime import datetime, timezone
 
+import psycopg2
 import pytest
 from fastapi.testclient import TestClient
 
@@ -744,4 +746,477 @@ class TestWeakSpotInsights:
                 )
                 assert q["track"] in ("sql", "python", "python-data", "pyspark"), (
                     f"unexpected track value in mixed finish: {q['track']!r}"
+                )
+
+
+# ---------------------------------------------------------------------------
+# Helpers shared by the new test classes below
+# ---------------------------------------------------------------------------
+
+def _db_conn():
+    db_url = os.environ.get(
+        "DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/sql_practice_test"
+    )
+    return psycopg2.connect(db_url.replace("postgresql+asyncpg://", "postgresql://"))
+
+
+def _insert_submission_direct(
+    user_id: str,
+    *,
+    track: str,
+    question_id: int,
+    is_correct: bool,
+    submitted_at: datetime | None = None,
+) -> None:
+    """Write directly to the submissions table, bypassing the HTTP layer."""
+    conn = _db_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO submissions (user_id, track, question_id, is_correct, code, submitted_at)
+                VALUES (%s::uuid, %s, %s, %s, %s, %s)
+                """,
+                (
+                    user_id,
+                    track,
+                    question_id,
+                    is_correct,
+                    "-- test",
+                    submitted_at or datetime.now(timezone.utc),
+                ),
+            )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def _pyspark_easy_with_concepts() -> tuple[int, int, list[str]]:
+    """Return (question_id, correct_option, concepts) for a PySpark easy question that
+    has at least one concept tag. Used for deterministic right/wrong submissions."""
+    import pyspark_questions as pyqs
+    easy = pyqs.get_questions_by_difficulty()["easy"]
+    for q in easy:
+        if q.get("concepts") and q.get("correct_option") is not None:
+            return int(q["id"]), int(q["correct_option"]), list(q["concepts"])
+    q = easy[0]
+    return int(q["id"]), int(q.get("correct_option", 0)), list(q.get("concepts", []))
+
+
+def _wrong_option(correct_option: int) -> int:
+    """Return an option index that is definitely not the correct answer."""
+    return 99 if correct_option != 99 else 98
+
+
+# ---------------------------------------------------------------------------
+# Submission tracking: is_solved accuracy and solved_count
+# ---------------------------------------------------------------------------
+
+class TestMockSubmissionTracking:
+    """Verify is_solved and solved_count accurately reflect right/wrong answers."""
+
+    def test_wrong_pyspark_answer_is_unsolved(self) -> None:
+        """Submitting the wrong MCQ option must mark the question is_solved=False."""
+        with TestClient(app) as client:
+            _make_user(client, plan="elite")
+            _, session = _start_mock(client, track="pyspark", difficulty="easy")
+            session_id = session["session_id"]
+            first_q = session["questions"][0]
+
+            import pyspark_questions as pyqs
+            real_q = pyqs.get_question(first_q["id"])
+            wrong_opt = _wrong_option(real_q["correct_option"])
+
+            client.post(
+                f"/api/mock/{session_id}/submit",
+                json={"question_id": first_q["id"], "track": "pyspark", "selected_option": wrong_opt},
+            )
+
+            r = client.post(f"/api/mock/{session_id}/finish")
+            assert r.status_code == 200, r.text
+            q_result = next(q for q in r.json()["questions"] if q["id"] == first_q["id"])
+            assert q_result["is_solved"] is False, (
+                f"Wrong MCQ answer should give is_solved=False, got: {q_result['is_solved']}"
+            )
+
+    def test_correct_pyspark_answer_is_solved(self) -> None:
+        """Submitting the correct MCQ option must mark the question is_solved=True."""
+        with TestClient(app) as client:
+            _make_user(client, plan="elite")
+            _, session = _start_mock(client, track="pyspark", difficulty="easy")
+            session_id = session["session_id"]
+            first_q = session["questions"][0]
+
+            import pyspark_questions as pyqs
+            real_q = pyqs.get_question(first_q["id"])
+            correct_opt = real_q["correct_option"]
+
+            client.post(
+                f"/api/mock/{session_id}/submit",
+                json={"question_id": first_q["id"], "track": "pyspark", "selected_option": correct_opt},
+            )
+
+            r = client.post(f"/api/mock/{session_id}/finish")
+            assert r.status_code == 200, r.text
+            q_result = next(q for q in r.json()["questions"] if q["id"] == first_q["id"])
+            assert q_result["is_solved"] is True, (
+                f"Correct MCQ answer should give is_solved=True, got: {q_result['is_solved']}"
+            )
+
+    def test_wrong_then_correct_marks_solved(self) -> None:
+        """Submit wrong first, then correct — is_solved must be True (correct wins)."""
+        with TestClient(app) as client:
+            _make_user(client, plan="elite")
+            _, session = _start_mock(client, track="pyspark", difficulty="easy")
+            session_id = session["session_id"]
+            first_q = session["questions"][0]
+
+            import pyspark_questions as pyqs
+            real_q = pyqs.get_question(first_q["id"])
+            correct_opt = real_q["correct_option"]
+            wrong_opt = _wrong_option(correct_opt)
+
+            client.post(
+                f"/api/mock/{session_id}/submit",
+                json={"question_id": first_q["id"], "track": "pyspark", "selected_option": wrong_opt},
+            )
+            client.post(
+                f"/api/mock/{session_id}/submit",
+                json={"question_id": first_q["id"], "track": "pyspark", "selected_option": correct_opt},
+            )
+
+            r = client.post(f"/api/mock/{session_id}/finish")
+            assert r.status_code == 200, r.text
+            q_result = next(q for q in r.json()["questions"] if q["id"] == first_q["id"])
+            assert q_result["is_solved"] is True, (
+                "A correct answer after a wrong one should still mark the question solved"
+            )
+
+    def test_correct_then_wrong_stays_solved(self) -> None:
+        """Submit correct first, then wrong again — is_solved must remain True (solved is sticky)."""
+        with TestClient(app) as client:
+            _make_user(client, plan="elite")
+            _, session = _start_mock(client, track="pyspark", difficulty="easy")
+            session_id = session["session_id"]
+            first_q = session["questions"][0]
+
+            import pyspark_questions as pyqs
+            real_q = pyqs.get_question(first_q["id"])
+            correct_opt = real_q["correct_option"]
+            wrong_opt = _wrong_option(correct_opt)
+
+            client.post(
+                f"/api/mock/{session_id}/submit",
+                json={"question_id": first_q["id"], "track": "pyspark", "selected_option": correct_opt},
+            )
+            client.post(
+                f"/api/mock/{session_id}/submit",
+                json={"question_id": first_q["id"], "track": "pyspark", "selected_option": wrong_opt},
+            )
+
+            r = client.post(f"/api/mock/{session_id}/finish")
+            assert r.status_code == 200, r.text
+            q_result = next(q for q in r.json()["questions"] if q["id"] == first_q["id"])
+            assert q_result["is_solved"] is True, (
+                "A wrong answer after a correct one must not un-solve the question"
+            )
+
+    def test_all_wrong_gives_zero_solved_count(self) -> None:
+        """Submitting the wrong answer to every question gives solved_count=0."""
+        with TestClient(app) as client:
+            _make_user(client, plan="elite")
+            _, session = _start_mock(client, track="pyspark", difficulty="easy")
+            session_id = session["session_id"]
+
+            import pyspark_questions as pyqs
+            for q in session["questions"]:
+                real_q = pyqs.get_question(q["id"])
+                wrong_opt = _wrong_option(real_q["correct_option"])
+                client.post(
+                    f"/api/mock/{session_id}/submit",
+                    json={"question_id": q["id"], "track": "pyspark", "selected_option": wrong_opt},
+                )
+
+            r = client.post(f"/api/mock/{session_id}/finish")
+            assert r.status_code == 200, r.text
+            body = r.json()
+            assert body["solved_count"] == 0, (
+                f"All wrong answers should give solved_count=0, got: {body['solved_count']}"
+            )
+            for q in body["questions"]:
+                assert q["is_solved"] is False, (
+                    f"All questions should be unsolved after all-wrong session, q={q['id']}"
+                )
+
+    def test_partial_correct_gives_accurate_solved_count(self) -> None:
+        """In a 2-question session, answering one correct and one wrong gives solved_count=1."""
+        with TestClient(app) as client:
+            _make_user(client, plan="elite")
+            _, session = _start_mock(
+                client, mode="custom", track="pyspark", difficulty="easy",
+                num_questions=2, time_minutes=10,
+            )
+            session_id = session["session_id"]
+            qs = session["questions"]
+            assert len(qs) == 2, f"expected 2 questions, got {len(qs)}"
+
+            import pyspark_questions as pyqs
+            first_real = pyqs.get_question(qs[0]["id"])
+            second_real = pyqs.get_question(qs[1]["id"])
+
+            # First: correct
+            client.post(
+                f"/api/mock/{session_id}/submit",
+                json={"question_id": qs[0]["id"], "track": "pyspark", "selected_option": first_real["correct_option"]},
+            )
+            # Second: wrong
+            client.post(
+                f"/api/mock/{session_id}/submit",
+                json={"question_id": qs[1]["id"], "track": "pyspark", "selected_option": _wrong_option(second_real["correct_option"])},
+            )
+
+            r = client.post(f"/api/mock/{session_id}/finish")
+            assert r.status_code == 200, r.text
+            body = r.json()
+            assert body["solved_count"] == 1, (
+                f"Expected solved_count=1 (1 correct, 1 wrong), got: {body['solved_count']}"
+            )
+            q_map = {q["id"]: q for q in body["questions"]}
+            assert q_map[qs[0]["id"]]["is_solved"] is True
+            assert q_map[qs[1]["id"]]["is_solved"] is False
+
+
+# ---------------------------------------------------------------------------
+# Plan-tier finish response: shape must be plan-agnostic (concept analysis is
+# computed client-side; the backend always returns the same finish shape)
+# ---------------------------------------------------------------------------
+
+class TestMockPlanTierFinish:
+    """Finish response shape must be identical for free, pro, and elite.
+
+    Concept breakdown, weak-spot badges, and historical accuracy are all
+    computed in MockSession.js using auth context.  The API must not
+    conditionally omit fields based on plan.
+    """
+
+    def _finish_field_set(self, client: TestClient, plan: str) -> set[str]:
+        _make_user(client, plan=plan)
+        _, session = _start_mock(client, track="pyspark", difficulty="easy")
+        r = client.post(f"/api/mock/{session['session_id']}/finish")
+        assert r.status_code == 200, r.text
+        body = r.json()
+        # Collect top-level keys + question-level keys from the first question
+        top_keys = set(body.keys())
+        q_keys = set(body["questions"][0].keys()) if body.get("questions") else set()
+        return top_keys, q_keys
+
+    def test_free_finish_has_expected_top_level_keys(self) -> None:
+        with TestClient(app) as client:
+            top_keys, _ = self._finish_field_set(client, "free")
+            for required in ("session_id", "solved_count", "total_count", "questions", "status"):
+                assert required in top_keys, f"free finish missing top-level key: {required!r}"
+
+    def test_pro_finish_has_same_shape_as_free(self) -> None:
+        with TestClient(app) as client_free:
+            free_top, free_q = self._finish_field_set(client_free, "free")
+        with TestClient(app) as client_pro:
+            pro_top, pro_q = self._finish_field_set(client_pro, "pro")
+
+        assert free_top == pro_top, (
+            f"Free and Pro finish top-level keys differ.\n"
+            f"  Free-only: {free_top - pro_top}\n"
+            f"  Pro-only:  {pro_top - free_top}"
+        )
+        assert free_q == pro_q, (
+            f"Free and Pro question-level keys differ.\n"
+            f"  Free-only: {free_q - pro_q}\n"
+            f"  Pro-only:  {pro_q - free_q}"
+        )
+
+    def test_elite_finish_has_same_shape_as_free(self) -> None:
+        with TestClient(app) as client_free:
+            free_top, free_q = self._finish_field_set(client_free, "free")
+        with TestClient(app) as client_elite:
+            elite_top, elite_q = self._finish_field_set(client_elite, "elite")
+
+        assert free_top == elite_top, (
+            f"Free and Elite finish top-level keys differ.\n"
+            f"  Free-only:  {free_top - elite_top}\n"
+            f"  Elite-only: {elite_top - free_top}"
+        )
+        assert free_q == elite_q, (
+            f"Free and Elite question-level keys differ.\n"
+            f"  Free-only:  {free_q - elite_q}\n"
+            f"  Elite-only: {elite_q - free_q}"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Mock sessions feed dashboard insights (Phase 4 behavior)
+# ---------------------------------------------------------------------------
+
+class TestMockFeedsInsights:
+    """Verify that wrong answers submitted in mock sessions flow into the
+    dashboard weak-concept insights pipeline.
+
+    Strategy: pick a PySpark question with concepts, seed 2 wrong submissions
+    directly into the DB (to reach the ≥3-attempt threshold cheaply), then
+    submit a third wrong answer through the mock endpoint.  The insights
+    endpoint must then list that concept in weakest_concepts.
+    """
+
+    def _pick_question_with_concept(self) -> tuple[int, str]:
+        """Return (question_id, concept) for a PySpark easy question with ≥1 concept."""
+        import pyspark_questions as pyqs
+        easy = pyqs.get_questions_by_difficulty()["easy"]
+        for q in easy:
+            if q.get("concepts"):
+                return int(q["id"]), q["concepts"][0]
+        pytest.skip("No PySpark easy question with concept tags found")
+
+    def test_mock_wrong_answers_appear_as_weak_concept(self) -> None:
+        """3 wrong submissions on a concept must make it appear in weakest_concepts."""
+        qid, concept = self._pick_question_with_concept()
+
+        import pyspark_questions as pyqs
+        real_q = pyqs.get_question(qid)
+        wrong_opt = _wrong_option(real_q["correct_option"])
+
+        with TestClient(app) as client:
+            user = _make_user(client, plan="pro")
+            user_id = user["id"]
+            now = datetime.now(timezone.utc)
+
+            # Pre-seed 2 wrong submissions directly (reach ≥3 with the mock submit below)
+            _insert_submission_direct(user_id, track="pyspark", question_id=qid, is_correct=False, submitted_at=now)
+            _insert_submission_direct(user_id, track="pyspark", question_id=qid, is_correct=False, submitted_at=now)
+
+            # Start a session and submit wrong to the same question if it appears;
+            # if not in the session, submit directly via DB for the 3rd attempt.
+            _, session = _start_mock(client, track="pyspark", difficulty="easy")
+            session_id = session["session_id"]
+            session_q_ids = {q["id"] for q in session["questions"]}
+
+            if qid in session_q_ids:
+                client.post(
+                    f"/api/mock/{session_id}/submit",
+                    json={"question_id": qid, "track": "pyspark", "selected_option": wrong_opt},
+                )
+            else:
+                # Seed 3rd attempt directly — still tests the insights pipeline
+                _insert_submission_direct(user_id, track="pyspark", question_id=qid, is_correct=False, submitted_at=now)
+
+            client.post(f"/api/mock/{session_id}/finish")
+
+            r = client.get("/api/dashboard/insights")
+            assert r.status_code == 200, r.text
+            weakest = r.json().get("weakest_concepts", [])
+            found = [(w["track"], w["concept"]) for w in weakest]
+            assert ("pyspark", concept) in found, (
+                f"Expected ('pyspark', {concept!r}) in weakest_concepts after 3 wrong attempts. "
+                f"Got: {found}"
+            )
+
+    def test_weak_concept_has_summary_text(self) -> None:
+        """weakest_concepts entries must each carry a non-empty summary string."""
+        qid, concept = self._pick_question_with_concept()
+        now = datetime.now(timezone.utc)
+
+        with TestClient(app) as client:
+            user = _make_user(client, plan="pro")
+            for _ in range(3):
+                _insert_submission_direct(
+                    user["id"], track="pyspark", question_id=qid, is_correct=False, submitted_at=now
+                )
+
+            r = client.get("/api/dashboard/insights")
+            assert r.status_code == 200, r.text
+            weakest = r.json().get("weakest_concepts", [])
+            assert len(weakest) > 0, "Expected at least one weak concept after 3 wrong submissions"
+            for w in weakest:
+                assert "summary" in w, f"weakest_concepts entry missing 'summary': {w}"
+                assert isinstance(w["summary"], str) and len(w["summary"]) > 0, (
+                    f"summary should be a non-empty string, got: {w['summary']!r}"
+                )
+
+    def test_weak_concept_summary_matches_accuracy_bucket(self) -> None:
+        """All-wrong submissions (0% accuracy) must produce the 'highest-priority gap' summary."""
+        qid, _ = self._pick_question_with_concept()
+        now = datetime.now(timezone.utc)
+
+        with TestClient(app) as client:
+            user = _make_user(client, plan="pro")
+            for _ in range(4):  # 0/4 = 0% accuracy
+                _insert_submission_direct(
+                    user["id"], track="pyspark", question_id=qid, is_correct=False, submitted_at=now
+                )
+
+            r = client.get("/api/dashboard/insights")
+            assert r.status_code == 200, r.text
+            weakest = r.json().get("weakest_concepts", [])
+            assert len(weakest) > 0
+            assert "highest-priority" in weakest[0]["summary"], (
+                f"0% accuracy should produce 'highest-priority gap' summary, got: {weakest[0]['summary']!r}"
+            )
+
+    def test_free_user_recommended_questions_only_easy(self) -> None:
+        """Free users must only receive easy recommended_question_ids (plan-gated)."""
+        import pyspark_questions as pyqs
+        qid, _ = self._pick_question_with_concept()
+        now = datetime.now(timezone.utc)
+
+        with TestClient(app) as client:
+            user = _make_user(client, plan="free")
+            for _ in range(3):
+                _insert_submission_direct(
+                    user["id"], track="pyspark", question_id=qid, is_correct=False, submitted_at=now
+                )
+
+            r = client.get("/api/dashboard/insights")
+            assert r.status_code == 200, r.text
+            weakest = r.json().get("weakest_concepts", [])
+            for w in weakest:
+                if "recommended_question_ids" not in w:
+                    continue
+                for rec_id in w["recommended_question_ids"]:
+                    real_q = pyqs.get_question(rec_id)
+                    if real_q is None:
+                        # Could be a non-pyspark track concept
+                        continue
+                    assert real_q.get("difficulty") == "easy", (
+                        f"Free user got a non-easy recommended question (id={rec_id}, "
+                        f"difficulty={real_q.get('difficulty')!r})"
+                    )
+
+    def test_pro_user_gets_recommended_question_ids(self) -> None:
+        """Pro users must receive recommended_question_ids on their weakest concept
+        when unsolved questions exist for that concept."""
+        qid, _ = self._pick_question_with_concept()
+        now = datetime.now(timezone.utc)
+
+        with TestClient(app) as client:
+            user = _make_user(client, plan="pro")
+            for _ in range(3):
+                _insert_submission_direct(
+                    user["id"], track="pyspark", question_id=qid, is_correct=False, submitted_at=now
+                )
+
+            r = client.get("/api/dashboard/insights")
+            assert r.status_code == 200, r.text
+            weakest = r.json().get("weakest_concepts", [])
+            assert len(weakest) > 0
+            w = weakest[0]
+            # recommended_question_ids is only present when there are unsolved questions for
+            # the concept; if it's present, it must be a non-empty list of ints
+            if "recommended_question_ids" in w:
+                recs = w["recommended_question_ids"]
+                assert isinstance(recs, list) and len(recs) > 0, (
+                    f"recommended_question_ids should be a non-empty list for pro, got: {recs!r}"
+                )
+                for rec_id in recs:
+                    assert isinstance(rec_id, int), (
+                        f"each recommended_question_id should be an int, got: {type(rec_id)}"
+                    )
+                assert len(recs) <= 2, (
+                    f"at most 2 recommended_question_ids expected, got {len(recs)}: {recs}"
                 )

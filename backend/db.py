@@ -1116,7 +1116,7 @@ async def submit_mock_question(
             text(
                 """
                 UPDATE mock_session_questions
-                SET is_solved = :is_solved,
+                SET is_solved = is_solved OR :is_solved,
                     final_code = :code,
                     submitted_at = now(),
                     time_spent_s = :time_spent_s
