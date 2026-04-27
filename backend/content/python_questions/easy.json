@@ -5,11 +5,11 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Two Sum",
-    "description": "Given a list of integers `nums` and an integer `target`, return the **indices** of the two numbers that add up to `target`. You may assume exactly one solution exists, and you may not use the same element twice.\n\n```\nsolve([2, 7, 11, 15], 9)  # \u2192 [0, 1]\nsolve([3, 2, 4], 6)       # \u2192 [1, 2]\n```",
+    "description": "Given a list of integers `nums` and an integer `target`, return the **indices** of the two numbers that add up to `target`. You may assume exactly one solution exists, and you may not use the same element twice.\n\n```\nsolve([2, 7, 11, 15], 9)  # → [0, 1]\nsolve([3, 2, 4], 6)       # → [1, 2]\n```",
     "starter_code": "def solve(nums: list, target: int) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(nums, target):\n    seen = {}\n    for i, n in enumerate(nums):\n        complement = target - n\n        if complement in seen:\n            return [seen[complement], i]\n        seen[n] = i\n    return []",
     "solution_code": "def solve(nums, target):\n    seen = {}\n    for i, n in enumerate(nums):\n        complement = target - n\n        if complement in seen:\n            return [seen[complement], i]\n        seen[n] = i\n    return []",
-    "explanation": "Use a hash map to store each number and its index as you iterate. For each number, check if its complement (target - number) is already in the map. This gives O(n) time vs O(n\u00b2) for the naive nested loop approach.",
+    "explanation": "Use a hash map to store each number and its index as you iterate. For each number, check if its complement (target - number) is already in the map. This gives O(n) time vs O(n²) for the naive nested loop approach.",
     "test_cases": [
       {
         "input": [
@@ -71,7 +71,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use a dictionary to store values you've already seen.",
+      "Track what you have already seen so each new value can be checked against the needed complement in constant time.",
       "For each number, check if (target - number) exists in your dictionary."
     ],
     "concepts": [
@@ -85,7 +85,7 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Palindrome Check",
-    "description": "Given a string `s`, return `True` if it is a palindrome, `False` otherwise. Ignore case and non-alphanumeric characters.\n\n```\nsolve('racecar')       # \u2192 True\nsolve('A man a plan a canal Panama')  # \u2192 True\nsolve('hello')         # \u2192 False\n```",
+    "description": "Given a string `s`, return `True` if it is a palindrome, `False` otherwise. Ignore case and non-alphanumeric characters.\n\n```\nsolve('racecar')       # → True\nsolve('A man a plan a canal Panama')  # → True\nsolve('hello')         # → False\n```",
     "starter_code": "def solve(s: str) -> bool:\n    # Your code here\n    pass",
     "expected_code": "def solve(s):\n    cleaned = ''.join(c.lower() for c in s if c.isalnum())\n    return cleaned == cleaned[::-1]",
     "solution_code": "def solve(s):\n    cleaned = ''.join(c.lower() for c in s if c.isalnum())\n    return cleaned == cleaned[::-1]",
@@ -138,7 +138,7 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "FizzBuzz Variant",
-    "description": "Given an integer `n`, return a list of strings for numbers 1 through n using these rules:\n- `'Fizz'` if divisible by 3\n- `'Buzz'` if divisible by 5\n- `'FizzBuzz'` if divisible by both 3 and 5\n- The number as a string otherwise\n\n```\nsolve(5)  # \u2192 ['1', '2', 'Fizz', '4', 'Buzz']\nsolve(15) # \u2192 ['1', '2', 'Fizz', '4', 'Buzz', 'Fizz', '7', '8', 'Fizz', 'Buzz', '11', 'Fizz', '13', '14', 'FizzBuzz']\n```",
+    "description": "Given an integer `n`, return a list of strings for numbers 1 through n using these rules:\n- `'Fizz'` if divisible by 3\n- `'Buzz'` if divisible by 5\n- `'FizzBuzz'` if divisible by both 3 and 5\n- The number as a string otherwise\n\n```\nsolve(5)  # → ['1', '2', 'Fizz', '4', 'Buzz']\nsolve(15) # → ['1', '2', 'Fizz', '4', 'Buzz', 'Fizz', '7', '8', 'Fizz', 'Buzz', '11', 'Fizz', '13', '14', 'FizzBuzz']\n```",
     "starter_code": "def solve(n: int) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(n):\n    result = []\n    for i in range(1, n + 1):\n        if i % 15 == 0:\n            result.append('FizzBuzz')\n        elif i % 3 == 0:\n            result.append('Fizz')\n        elif i % 5 == 0:\n            result.append('Buzz')\n        else:\n            result.append(str(i))\n    return result",
     "solution_code": "def solve(n):\n    result = []\n    for i in range(1, n + 1):\n        if i % 15 == 0:\n            result.append('FizzBuzz')\n        elif i % 3 == 0:\n            result.append('Fizz')\n        elif i % 5 == 0:\n            result.append('Buzz')\n        else:\n            result.append(str(i))\n    return result",
@@ -214,7 +214,7 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Count Vowels",
-    "description": "Given a string `s`, return the number of vowel characters (`a`, `e`, `i`, `o`, `u`) it contains. Case-insensitive.\n\n```\nsolve('hello')         # \u2192 2\nsolve('Python')        # \u2192 1\nsolve('aeiou AEIOU')   # \u2192 10\n```",
+    "description": "Given a string `s`, return the number of vowel characters (`a`, `e`, `i`, `o`, `u`) it contains. Case-insensitive.\n\n```\nsolve('hello')         # → 2\nsolve('Python')        # → 1\nsolve('aeiou AEIOU')   # → 10\n```",
     "starter_code": "def solve(s: str) -> int:\n    # Your code here\n    pass",
     "expected_code": "def solve(s):\n    return sum(1 for c in s if c.lower() in 'aeiou')",
     "solution_code": "def solve(s):\n    return sum(1 for c in s if c.lower() in 'aeiou')",
@@ -267,7 +267,7 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Fibonacci Sequence",
-    "description": "Given an integer `n`, return the `n`-th Fibonacci number (0-indexed).\n\nFibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, ...\n\n```\nsolve(0)  # \u2192 0\nsolve(1)  # \u2192 1\nsolve(6)  # \u2192 8\nsolve(9)  # \u2192 34\n```",
+    "description": "Given an integer `n`, return the `n`-th Fibonacci number (0-indexed).\n\nFibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, ...\n\n```\nsolve(0)  # → 0\nsolve(1)  # → 1\nsolve(6)  # → 8\nsolve(9)  # → 34\n```",
     "starter_code": "def solve(n: int) -> int:\n    # Your code here\n    pass",
     "expected_code": "def solve(n):\n    if n <= 1:\n        return n\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b",
     "solution_code": "def solve(n):\n    if n <= 1:\n        return n\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b",
@@ -320,7 +320,7 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Anagram Check",
-    "description": "Given two strings `s` and `t`, return `True` if `t` is an anagram of `s`, `False` otherwise. Ignore spaces and case.\n\n```\nsolve('listen', 'silent')     # \u2192 True\nsolve('triangle', 'integral') # \u2192 True\nsolve('hello', 'world')       # \u2192 False\n```",
+    "description": "Given two strings `s` and `t`, return `True` if `t` is an anagram of `s`, `False` otherwise. Ignore spaces and case.\n\n```\nsolve('listen', 'silent')     # → True\nsolve('triangle', 'integral') # → True\nsolve('hello', 'world')       # → False\n```",
     "starter_code": "def solve(s: str, t: str) -> bool:\n    # Your code here\n    pass",
     "expected_code": "def solve(s, t):\n    clean = lambda x: sorted(x.lower().replace(' ', ''))\n    return clean(s) == clean(t)",
     "solution_code": "def solve(s, t):\n    clean = lambda x: sorted(x.lower().replace(' ', ''))\n    return clean(s) == clean(t)",
@@ -379,7 +379,7 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Remove Duplicates",
-    "description": "Given a list `nums`, return a new list with duplicates removed. Preserve the original order of first occurrences.\n\n```\nsolve([1, 2, 2, 3, 1])     # \u2192 [1, 2, 3]\nsolve([4, 4, 4])            # \u2192 [4]\nsolve([1, 2, 3])            # \u2192 [1, 2, 3]\n```",
+    "description": "Given a list `nums`, return a new list with duplicates removed. Preserve the original order of first occurrences.\n\n```\nsolve([1, 2, 2, 3, 1])     # → [1, 2, 3]\nsolve([4, 4, 4])            # → [4]\nsolve([1, 2, 3])            # → [1, 2, 3]\n```",
     "starter_code": "def solve(nums: list) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(nums):\n    seen = set()\n    result = []\n    for n in nums:\n        if n not in seen:\n            seen.add(n)\n            result.append(n)\n    return result",
     "solution_code": "def solve(nums):\n    seen = set()\n    result = []\n    for n in nums:\n        if n not in seen:\n            seen.add(n)\n            result.append(n)\n    return result",
@@ -460,7 +460,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use a set to track which values you've already encountered.",
+      "You need constant-time memory of previously encountered values so you can preserve first-occurrence order without rescanning.",
       "Iterate through the list and only add unseen values to your result."
     ],
     "concepts": [
@@ -475,11 +475,11 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Find Maximum Without Built-in",
-    "description": "Given a list of integers `nums`, return the maximum value **without using the built-in `max()` function**.\n\n```\nsolve([3, 1, 4, 1, 5, 9, 2, 6])  # \u2192 9\nsolve([-5, -1, -3])               # \u2192 -1\nsolve([42])                       # \u2192 42\n```",
+    "description": "Given a list of integers `nums`, return the maximum value **without using the built-in `max()` function**.\n\n```\nsolve([3, 1, 4, 1, 5, 9, 2, 6])  # → 9\nsolve([-5, -1, -3])               # → -1\nsolve([42])                       # → 42\n```",
     "starter_code": "def solve(nums: list) -> int:\n    # Do not use max() or sorted()\n    pass",
     "expected_code": "def solve(nums):\n    current_max = nums[0]\n    for n in nums[1:]:\n        if n > current_max:\n            current_max = n\n    return current_max",
     "solution_code": "def solve(nums):\n    current_max = nums[0]\n    for n in nums[1:]:\n        if n > current_max:\n            current_max = n\n    return current_max",
-    "explanation": "Initialize the maximum with the first element, then scan through the rest updating it whenever you find a larger value. This linear scan is O(n) \u2014 the minimum complexity needed since you must check every element.",
+    "explanation": "Initialize the maximum with the first element, then scan through the rest updating it whenever you find a larger value. This linear scan is O(n) — the minimum complexity needed since you must check every element.",
     "test_cases": [
       {
         "input": [
@@ -541,7 +541,7 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Reverse a String",
-    "description": "Given a string `s`, return it reversed **without using `s[::-1]` or `reversed()`**.\n\n```\nsolve('hello')   # \u2192 'olleh'\nsolve('Python')  # \u2192 'nohtyP'\nsolve('a')       # \u2192 'a'\n```",
+    "description": "Given a string `s`, return it reversed **without using `s[::-1]` or `reversed()`**.\n\n```\nsolve('hello')   # → 'olleh'\nsolve('Python')  # → 'nohtyP'\nsolve('a')       # → 'a'\n```",
     "starter_code": "def solve(s: str) -> str:\n    # Do not use s[::-1] or reversed()\n    pass",
     "expected_code": "def solve(s):\n    result = []\n    for i in range(len(s) - 1, -1, -1):\n        result.append(s[i])\n    return ''.join(result)",
     "solution_code": "def solve(s):\n    result = []\n    for i in range(len(s) - 1, -1, -1):\n        result.append(s[i])\n    return ''.join(result)",
@@ -594,7 +594,7 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Factorial",
-    "description": "Given a non-negative integer `n`, return `n!` (n factorial) iteratively.\n\n```\nsolve(0)  # \u2192 1\nsolve(5)  # \u2192 120\nsolve(10) # \u2192 3628800\n```",
+    "description": "Given a non-negative integer `n`, return `n!` (n factorial) iteratively.\n\n```\nsolve(0)  # → 1\nsolve(5)  # → 120\nsolve(10) # → 3628800\n```",
     "starter_code": "def solve(n: int) -> int:\n    # Implement iteratively (no recursion)\n    pass",
     "expected_code": "def solve(n):\n    result = 1\n    for i in range(2, n + 1):\n        result *= i\n    return result",
     "solution_code": "def solve(n):\n    result = 1\n    for i in range(2, n + 1):\n        result *= i\n    return result",
@@ -641,7 +641,7 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Valid Parentheses",
-    "description": "A config-file validator needs to check bracket sequences. Given a string `s` containing only the characters `(`, `)`, `{`, `}`, `[`, and `]`, return `True` if every opening bracket has a matching closing bracket in the correct order.\n\n```\nsolve('()')      # \u2192 True\nsolve('()[]{}')\u200b # \u2192 True\nsolve('(]')      # \u2192 False\nsolve('{[]}')    # \u2192 True\n```",
+    "description": "A config-file validator needs to check bracket sequences. Given a string `s` containing only the characters `(`, `)`, `{`, `}`, `[`, and `]`, return `True` if every opening bracket has a matching closing bracket in the correct order.\n\n```\nsolve('()')      # → True\nsolve('()[]{}')​ # → True\nsolve('(]')      # → False\nsolve('{[]}')    # → True\n```",
     "starter_code": "def solve(s: str) -> bool:\n    # Your code here\n    pass",
     "expected_code": "def solve(s):\n    stack = []\n    mapping = {')': '(', '}': '{', ']': '['}\n    for char in s:\n        if char in mapping:\n            top = stack.pop() if stack else '#'\n            if mapping[char] != top:\n                return False\n        else:\n            stack.append(char)\n    return not stack",
     "solution_code": "def solve(s):\n    stack = []\n    mapping = {')': '(', '}': '{', ']': '['}\n    for char in s:\n        if char in mapping:\n            top = stack.pop() if stack else '#'\n            if mapping[char] != top:\n                return False\n        else:\n            stack.append(char)\n    return not stack",
@@ -686,7 +686,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use a stack: push opening brackets, and when you see a closing bracket, check that it matches the top of the stack.",
+      "Process the brackets in order while keeping track of the unmatched openings that still need closing.",
       "A dictionary mapping each closing bracket to its opener keeps the match check clean."
     ],
     "concepts": [
@@ -700,7 +700,7 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Binary Search",
-    "description": "A data pipeline stores sorted event IDs. Given a sorted list `nums` and a target ID `target`, return the index where `target` appears, or `-1` if it is not found. Implement iterative binary search \u2014 do not use `list.index()` or the `bisect` module.\n\n```\nsolve([1, 3, 5, 7, 9], 5)  # \u2192 2\nsolve([1, 3, 5, 7, 9], 6)  # \u2192 -1\nsolve([2], 2)               # \u2192 0\n```",
+    "description": "A data pipeline stores sorted event IDs. Given a sorted list `nums` and a target ID `target`, return the index where `target` appears, or `-1` if it is not found. Implement iterative binary search — do not use `list.index()` or the `bisect` module.\n\n```\nsolve([1, 3, 5, 7, 9], 5)  # → 2\nsolve([1, 3, 5, 7, 9], 6)  # → -1\nsolve([2], 2)               # → 0\n```",
     "starter_code": "def solve(nums: list, target: int) -> int:\n    # Your code here\n    pass",
     "expected_code": "def solve(nums, target):\n    lo, hi = 0, len(nums) - 1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        if nums[mid] == target:\n            return mid\n        elif nums[mid] < target:\n            lo = mid + 1\n        else:\n            hi = mid - 1\n    return -1",
     "solution_code": "def solve(nums, target):\n    lo, hi = 0, len(nums) - 1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        if nums[mid] == target:\n            return mid\n        elif nums[mid] < target:\n            lo = mid + 1\n        else:\n            hi = mid - 1\n    return -1",
@@ -767,7 +767,7 @@
     "public_test_cases": 2,
     "hints": [
       "Keep a `lo` and `hi` index. Compute `mid = (lo + hi) // 2` each iteration.",
-      "If `nums[mid]` is less than the target, the answer must be in the right half \u2014 move `lo` up."
+      "If `nums[mid]` is less than the target, the answer must be in the right half — move `lo` up."
     ],
     "concepts": [
       "binary search",
@@ -780,7 +780,7 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Count Occurrences",
-    "description": "Without using the built-in `.count()` method, count how many times a given error code `target` appears in a log list `nums`.\n\n```\nsolve([1, 2, 2, 3, 2], 2)  # \u2192 3\nsolve([], 1)                # \u2192 0\nsolve([5, 5, 5], 5)         # \u2192 3\nsolve([1, 2, 3], 4)         # \u2192 0\n```",
+    "description": "Without using the built-in `.count()` method, count how many times a given error code `target` appears in a log list `nums`.\n\n```\nsolve([1, 2, 2, 3, 2], 2)  # → 3\nsolve([], 1)                # → 0\nsolve([5, 5, 5], 5)         # → 3\nsolve([1, 2, 3], 4)         # → 0\n```",
     "starter_code": "def solve(nums: list, target) -> int:\n    # Do not use .count()\n    pass",
     "expected_code": "def solve(nums, target):\n    count = 0\n    for n in nums:\n        if n == target:\n            count += 1\n    return count",
     "solution_code": "def solve(nums, target):\n    count = 0\n    for n in nums:\n        if n == target:\n            count += 1\n    return count",
@@ -846,7 +846,7 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Sum of Digits",
-    "description": "A checksum is computed as the sum of the digits of a transaction ID. Given an integer `n`, return the sum of its digits. Treat negative integers as their absolute value.\n\n```\nsolve(123)   # \u2192 6\nsolve(-456)  # \u2192 15\nsolve(0)     # \u2192 0\nsolve(100)   # \u2192 1\n```",
+    "description": "A checksum is computed as the sum of the digits of a transaction ID. Given an integer `n`, return the sum of its digits. Treat negative integers as their absolute value.\n\n```\nsolve(123)   # → 6\nsolve(-456)  # → 15\nsolve(0)     # → 0\nsolve(100)   # → 1\n```",
     "starter_code": "def solve(n: int) -> int:\n    # Your code here\n    pass",
     "expected_code": "def solve(n):\n    return sum(int(d) for d in str(abs(n)))",
     "solution_code": "def solve(n):\n    return sum(int(d) for d in str(abs(n)))",
@@ -900,11 +900,11 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Is Prime",
-    "description": "A sharding system requires a prime number of shards for optimal hash distribution. Given a candidate integer `n`, return `True` if it is prime, `False` otherwise.\n\n```\nsolve(2)   # \u2192 True\nsolve(9)   # \u2192 False\nsolve(1)   # \u2192 False\nsolve(17)  # \u2192 True\n```",
+    "description": "A sharding system requires a prime number of shards for optimal hash distribution. Given a candidate integer `n`, return `True` if it is prime, `False` otherwise.\n\n```\nsolve(2)   # → True\nsolve(9)   # → False\nsolve(1)   # → False\nsolve(17)  # → True\n```",
     "starter_code": "def solve(n: int) -> bool:\n    # Your code here\n    pass",
     "expected_code": "def solve(n):\n    if n < 2:\n        return False\n    i = 2\n    while i * i <= n:\n        if n % i == 0:\n            return False\n        i += 1\n    return True",
     "solution_code": "def solve(n):\n    if n < 2:\n        return False\n    i = 2\n    while i * i <= n:\n        if n % i == 0:\n            return False\n        i += 1\n    return True",
-    "explanation": "Numbers less than 2 are not prime. For larger numbers, check all potential factors up to the square root \u2014 if n has a factor larger than its square root, it must also have one smaller than it, so you never need to go further.",
+    "explanation": "Numbers less than 2 are not prime. For larger numbers, check all potential factors up to the square root — if n has a factor larger than its square root, it must also have one smaller than it, so you never need to go further.",
     "test_cases": [
       {
         "input": [
@@ -960,7 +960,7 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Flatten One Level",
-    "description": "A paginated API returns results as a list of pages, where each page is a list of record IDs. Flatten one level to produce a single list of all record IDs in order.\n\n```\nsolve([[1, 2], [3], [4, 5, 6]])  # \u2192 [1, 2, 3, 4, 5, 6]\nsolve([])                         # \u2192 []\nsolve([[1, 2], [3, 4]])           # \u2192 [1, 2, 3, 4]\n```",
+    "description": "A paginated API returns results as a list of pages, where each page is a list of record IDs. Flatten one level to produce a single list of all record IDs in order.\n\n```\nsolve([[1, 2], [3], [4, 5, 6]])  # → [1, 2, 3, 4, 5, 6]\nsolve([])                         # → []\nsolve([[1, 2], [3, 4]])           # → [1, 2, 3, 4]\n```",
     "starter_code": "def solve(pages: list) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(pages):\n    result = []\n    for page in pages:\n        result.extend(page)\n    return result",
     "solution_code": "def solve(pages):\n    result = []\n    for page in pages:\n        result.extend(page)\n    return result",
@@ -1048,7 +1048,7 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Rotate List Left",
-    "description": "A circular task queue stores tasks in a list. Rotate it left by `k` positions so the element at index `k` becomes the new head. If the list is empty, return it unchanged.\n\n```\nsolve([1, 2, 3, 4, 5], 2)  # \u2192 [3, 4, 5, 1, 2]\nsolve([1, 2, 3], 0)         # \u2192 [1, 2, 3]\nsolve([1, 2, 3], 3)         # \u2192 [1, 2, 3]\n```",
+    "description": "A circular task queue stores tasks in a list. Rotate it left by `k` positions so the element at index `k` becomes the new head. If the list is empty, return it unchanged.\n\n```\nsolve([1, 2, 3, 4, 5], 2)  # → [3, 4, 5, 1, 2]\nsolve([1, 2, 3], 0)         # → [1, 2, 3]\nsolve([1, 2, 3], 3)         # → [1, 2, 3]\n```",
     "starter_code": "def solve(lst: list, k: int) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(lst, k):\n    if not lst:\n        return lst\n    k = k % len(lst)\n    return lst[k:] + lst[:k]",
     "solution_code": "def solve(lst, k):\n    if not lst:\n        return lst\n    k = k % len(lst)\n    return lst[k:] + lst[:k]",
@@ -1132,7 +1132,7 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Merge Two Sorted Lists",
-    "description": "Two independent event streams arrive pre-sorted by timestamp. Given two sorted lists `a` and `b`, merge them into a single sorted list.\n\n```\nsolve([1, 3, 5], [2, 4, 6])  # \u2192 [1, 2, 3, 4, 5, 6]\nsolve([], [1, 2])             # \u2192 [1, 2]\nsolve([1], [1])               # \u2192 [1, 1]\n```",
+    "description": "Two independent event streams arrive pre-sorted by timestamp. Given two sorted lists `a` and `b`, merge them into a single sorted list.\n\n```\nsolve([1, 3, 5], [2, 4, 6])  # → [1, 2, 3, 4, 5, 6]\nsolve([], [1, 2])             # → [1, 2]\nsolve([1], [1])               # → [1, 1]\n```",
     "starter_code": "def solve(a: list, b: list) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(a, b):\n    result = []\n    i = j = 0\n    while i < len(a) and j < len(b):\n        if a[i] <= b[j]:\n            result.append(a[i])\n            i += 1\n        else:\n            result.append(b[j])\n            j += 1\n    result.extend(a[i:])\n    result.extend(b[j:])\n    return result",
     "solution_code": "def solve(a, b):\n    result = []\n    i = j = 0\n    while i < len(a) and j < len(b):\n        if a[i] <= b[j]:\n            result.append(a[i])\n            i += 1\n        else:\n            result.append(b[j])\n            j += 1\n    result.extend(a[i:])\n    result.extend(b[j:])\n    return result",
@@ -1208,7 +1208,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use two index pointers \u2014 one for each list \u2014 and advance the one pointing at the smaller value.",
+      "Use two index pointers — one for each list — and advance the one pointing at the smaller value.",
       "After the loop, at least one list will still have elements; append them all to the result."
     ],
     "concepts": [
@@ -1223,8 +1223,8 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Check Power of 2",
-    "description": "A cache system uses power-of-2 bucket counts for efficient hash distribution. Given an integer `n`, return `True` if it is a positive power of 2. Use a loop that divides by 2 \u2014 do not use bit operations.\n\n```\nsolve(1)    # \u2192 True\nsolve(16)   # \u2192 True\nsolve(6)    # \u2192 False\nsolve(0)    # \u2192 False\nsolve(-4)   # \u2192 False\n```",
-    "starter_code": "def solve(n: int) -> bool:\n    # Use a loop \u2014 no bit operations allowed\n    pass",
+    "description": "A cache system uses power-of-2 bucket counts for efficient hash distribution. Given an integer `n`, return `True` if it is a positive power of 2. Use a loop that divides by 2 — do not use bit operations.\n\n```\nsolve(1)    # → True\nsolve(16)   # → True\nsolve(6)    # → False\nsolve(0)    # → False\nsolve(-4)   # → False\n```",
+    "starter_code": "def solve(n: int) -> bool:\n    # Use a loop — no bit operations allowed\n    pass",
     "expected_code": "def solve(n):\n    if n <= 0:\n        return False\n    while n > 1:\n        if n % 2 != 0:\n            return False\n        n //= 2\n    return True",
     "solution_code": "def solve(n):\n    if n <= 0:\n        return False\n    while n > 1:\n        if n % 2 != 0:\n            return False\n        n //= 2\n    return True",
     "explanation": "Reject non-positive numbers immediately. Then keep dividing by 2: if at any step the number is odd (and not 1), it is not a power of 2. If you reach 1, it is a power of 2.",
@@ -1283,7 +1283,7 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "First Non-Repeating Character",
-    "description": "Given a string `s` of token characters, find the first character that appears exactly once. Return that character, or an empty string `''` if every character repeats.\n\n```\nsolve('leetcode')  # \u2192 'l'\nsolve('aabb')      # \u2192 ''\nsolve('z')         # \u2192 'z'\n```",
+    "description": "Given a string `s` of token characters, find the first character that appears exactly once. Return that character, or an empty string `''` if every character repeats.\n\n```\nsolve('leetcode')  # → 'l'\nsolve('aabb')      # → ''\nsolve('z')         # → 'z'\n```",
     "starter_code": "def solve(s: str) -> str:\n    # Your code here\n    pass",
     "expected_code": "def solve(s):\n    counts = {}\n    for c in s:\n        counts[c] = counts.get(c, 0) + 1\n    for c in s:\n        if counts[c] == 1:\n            return c\n    return ''",
     "solution_code": "def solve(s):\n    counts = {}\n    for c in s:\n        counts[c] = counts.get(c, 0) + 1\n    for c in s:\n        if counts[c] == 1:\n            return c\n    return ''",
@@ -1322,7 +1322,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Build a frequency dictionary with a first pass over the string.",
+      "Separate 'how often does this character appear?' from 'where does it first appear in the original order?'.",
       "Make a second pass to find the first character whose count is exactly 1."
     ],
     "concepts": [
@@ -1337,7 +1337,7 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "String Compression",
-    "description": "Compress a telemetry signal string by replacing consecutive repeating characters with the character followed by its run count. Every character gets a count, even singletons.\n\n```\nsolve('aaabbc')   # \u2192 'a3b2c1'\nsolve('a')        # \u2192 'a1'\nsolve('')         # \u2192 ''\nsolve('abcd')     # \u2192 'a1b1c1d1'\n```",
+    "description": "Compress a telemetry signal string by replacing consecutive repeating characters with the character followed by its run count. Every character gets a count, even singletons.\n\n```\nsolve('aaabbc')   # → 'a3b2c1'\nsolve('a')        # → 'a1'\nsolve('')         # → ''\nsolve('abcd')     # → 'a1b1c1d1'\n```",
     "starter_code": "def solve(s: str) -> str:\n    # Your code here\n    pass",
     "expected_code": "def solve(s):\n    if not s:\n        return ''\n    result = []\n    current = s[0]\n    count = 1\n    for c in s[1:]:\n        if c == current:\n            count += 1\n        else:\n            result.append(current + str(count))\n            current = c\n            count = 1\n    result.append(current + str(count))\n    return ''.join(result)",
     "solution_code": "def solve(s):\n    if not s:\n        return ''\n    result = []\n    current = s[0]\n    count = 1\n    for c in s[1:]:\n        if c == current:\n            count += 1\n        else:\n            result.append(current + str(count))\n            current = c\n            count = 1\n    result.append(current + str(count))\n    return ''.join(result)",
@@ -1391,7 +1391,7 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Caesar Cipher",
-    "description": "Encode alert messages by shifting each letter `k` positions forward in the alphabet, wrapping `z` back to `a` (and `Z` back to `A`). Non-letter characters are left unchanged.\n\n```\nsolve('abc', 1)     # \u2192 'bcd'\nsolve('xyz', 3)     # \u2192 'abc'\nsolve('Hello!', 13) # \u2192 'Uryyb!'\nsolve('abc', 0)     # \u2192 'abc'\n```",
+    "description": "Encode alert messages by shifting each letter `k` positions forward in the alphabet, wrapping `z` back to `a` (and `Z` back to `A`). Non-letter characters are left unchanged.\n\n```\nsolve('abc', 1)     # → 'bcd'\nsolve('xyz', 3)     # → 'abc'\nsolve('Hello!', 13) # → 'Uryyb!'\nsolve('abc', 0)     # → 'abc'\n```",
     "starter_code": "def solve(s: str, k: int) -> str:\n    # Your code here\n    pass",
     "expected_code": "def solve(s, k):\n    result = []\n    for c in s:\n        if c.isalpha():\n            base = ord('A') if c.isupper() else ord('a')\n            result.append(chr((ord(c) - base + k) % 26 + base))\n        else:\n            result.append(c)\n    return ''.join(result)",
     "solution_code": "def solve(s, k):\n    result = []\n    for c in s:\n        if c.isalpha():\n            base = ord('A') if c.isupper() else ord('a')\n            result.append(chr((ord(c) - base + k) % 26 + base))\n        else:\n            result.append(c)\n    return ''.join(result)",
@@ -1450,8 +1450,8 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Missing Number",
-    "description": "A sequence of database record IDs should contain every integer from 1 to n. Given a list `nums` of n-1 IDs with exactly one missing, find the missing ID using the arithmetic sum formula. The value of n is `len(nums) + 1`.\n\n```\nsolve([1, 2, 4, 5])        # \u2192 3\nsolve([2])                  # \u2192 1\nsolve([1, 2, 3, 4, 6, 7])  # \u2192 5\n```",
-    "starter_code": "def solve(nums: list) -> int:\n    # Use the sum formula \u2014 avoid sorting\n    pass",
+    "description": "A sequence of database record IDs should contain every integer from 1 to n. Given a list `nums` of n-1 IDs with exactly one missing, find the missing ID using the arithmetic sum formula. The value of n is `len(nums) + 1`.\n\n```\nsolve([1, 2, 4, 5])        # → 3\nsolve([2])                  # → 1\nsolve([1, 2, 3, 4, 6, 7])  # → 5\n```",
+    "starter_code": "def solve(nums: list) -> int:\n    # Use the sum formula — avoid sorting\n    pass",
     "expected_code": "def solve(nums):\n    n = len(nums) + 1\n    expected = n * (n + 1) // 2\n    return expected - sum(nums)",
     "solution_code": "def solve(nums):\n    n = len(nums) + 1\n    expected = n * (n + 1) // 2\n    return expected - sum(nums)",
     "explanation": "The sum of integers 1 through n is n*(n+1)//2. Subtract the actual sum of the list from this expected total to find the missing value in O(n) time with O(1) extra space.",
@@ -1514,7 +1514,7 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Longest Common Prefix",
-    "description": "Group API route paths by their longest shared prefix for routing-table optimisation. Given a list of strings `strs`, return the longest string that is a prefix of all strings in the list. Return `''` if there is no common prefix or the list is empty.\n\n```\nsolve(['flower', 'flow', 'flight'])   # \u2192 'fl'\nsolve(['dog', 'racecar'])             # \u2192 ''\nsolve(['same', 'same', 'same'])       # \u2192 'same'\n```",
+    "description": "Group API route paths by their longest shared prefix for routing-table optimisation. Given a list of strings `strs`, return the longest string that is a prefix of all strings in the list. Return `''` if there is no common prefix or the list is empty.\n\n```\nsolve(['flower', 'flow', 'flight'])   # → 'fl'\nsolve(['dog', 'racecar'])             # → ''\nsolve(['same', 'same', 'same'])       # → 'same'\n```",
     "starter_code": "def solve(strs: list) -> str:\n    # Your code here\n    pass",
     "expected_code": "def solve(strs):\n    if not strs:\n        return ''\n    prefix = strs[0]\n    for s in strs[1:]:\n        while not s.startswith(prefix):\n            prefix = prefix[:-1]\n            if not prefix:\n                return ''\n    return prefix",
     "solution_code": "def solve(strs):\n    if not strs:\n        return ''\n    prefix = strs[0]\n    for s in strs[1:]:\n        while not s.startswith(prefix):\n            prefix = prefix[:-1]\n            if not prefix:\n                return ''\n    return prefix",
@@ -1572,7 +1572,7 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Remove Consecutive Duplicates",
-    "description": "A sensor emits a stream of readings where repeated consecutive values are noise. Given a list `nums`, return a new list keeping only the first occurrence of each consecutive run.\n\n```\nsolve([1, 1, 2, 3, 3, 3, 4])  # \u2192 [1, 2, 3, 4]\nsolve([1, 2, 3])               # \u2192 [1, 2, 3]\nsolve([5, 5, 5])               # \u2192 [5]\nsolve([])                      # \u2192 []\n```",
+    "description": "A sensor emits a stream of readings where repeated consecutive values are noise. Given a list `nums`, return a new list keeping only the first occurrence of each consecutive run.\n\n```\nsolve([1, 1, 2, 3, 3, 3, 4])  # → [1, 2, 3, 4]\nsolve([1, 2, 3])               # → [1, 2, 3]\nsolve([5, 5, 5])               # → [5]\nsolve([])                      # → []\n```",
     "starter_code": "def solve(nums: list) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(nums):\n    result = []\n    for n in nums:\n        if not result or result[-1] != n:\n            result.append(n)\n    return result",
     "solution_code": "def solve(nums):\n    result = []\n    for n in nums:\n        if not result or result[-1] != n:\n            result.append(n)\n    return result",
@@ -1647,7 +1647,7 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Chunk List",
-    "description": "Paginate a flat list of records into pages of size `n` for an API response. Return a list of sub-lists, each of length `n` (the last page may be shorter).\n\n```\nsolve([1, 2, 3, 4, 5, 6], 2)  # \u2192 [[1, 2], [3, 4], [5, 6]]\nsolve([1, 2, 3], 2)            # \u2192 [[1, 2], [3]]\nsolve([], 3)                   # \u2192 []\n```",
+    "description": "Paginate a flat list of records into pages of size `n` for an API response. Return a list of sub-lists, each of length `n` (the last page may be shorter).\n\n```\nsolve([1, 2, 3, 4, 5, 6], 2)  # → [[1, 2], [3, 4], [5, 6]]\nsolve([1, 2, 3], 2)            # → [[1, 2], [3]]\nsolve([], 3)                   # → []\n```",
     "starter_code": "def solve(lst: list, n: int) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(lst, n):\n    return [lst[i:i + n] for i in range(0, len(lst), n)]",
     "solution_code": "def solve(lst, n):\n    return [lst[i:i + n] for i in range(0, len(lst), n)]",
@@ -1747,8 +1747,8 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Is Palindrome Number",
-    "description": "Validate a numeric transaction reference by checking if it reads the same forwards and backwards. Given an integer `n`, return `True` if it is a palindrome. **Do not convert the integer to a string \u2014 use arithmetic only.**\n\n```\nsolve(121)   # \u2192 True\nsolve(123)   # \u2192 False\nsolve(-121)  # \u2192 False\nsolve(0)     # \u2192 True\n```",
-    "starter_code": "def solve(n: int) -> bool:\n    # Do not convert to string \u2014 use arithmetic only\n    pass",
+    "description": "Validate a numeric transaction reference by checking if it reads the same forwards and backwards. Given an integer `n`, return `True` if it is a palindrome. **Do not convert the integer to a string — use arithmetic only.**\n\n```\nsolve(121)   # → True\nsolve(123)   # → False\nsolve(-121)  # → False\nsolve(0)     # → True\n```",
+    "starter_code": "def solve(n: int) -> bool:\n    # Do not convert to string — use arithmetic only\n    pass",
     "expected_code": "def solve(n):\n    if n < 0:\n        return False\n    original = n\n    reversed_n = 0\n    while n > 0:\n        reversed_n = reversed_n * 10 + n % 10\n        n //= 10\n    return original == reversed_n",
     "solution_code": "def solve(n):\n    if n < 0:\n        return False\n    original = n\n    reversed_n = 0\n    while n > 0:\n        reversed_n = reversed_n * 10 + n % 10\n        n //= 10\n    return original == reversed_n",
     "explanation": "Negative numbers are never palindromes. For non-negative numbers, extract digits using `% 10` and build the reversed number by multiplying the running result by 10 before adding each digit. Compare with the original at the end.",
@@ -1792,7 +1792,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Negative numbers are never palindromes \u2014 return False immediately.",
+      "Negative numbers are never palindromes — return False immediately.",
       "Reverse the digits using n % 10 to extract the last digit and n //= 10 to remove it."
     ],
     "concepts": [
@@ -1807,7 +1807,7 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Matrix Transpose",
-    "description": "Convert a feature matrix from row-major to column-major format by transposing its rows and columns. Given a 2D list `matrix`, return its transpose.\n\n```\nsolve([[1, 2, 3], [4, 5, 6]])  # \u2192 [[1, 4], [2, 5], [3, 6]]\nsolve([[1, 2], [3, 4]])         # \u2192 [[1, 3], [2, 4]]\nsolve([[1]])                    # \u2192 [[1]]\n```",
+    "description": "Convert a feature matrix from row-major to column-major format by transposing its rows and columns. Given a 2D list `matrix`, return its transpose.\n\n```\nsolve([[1, 2, 3], [4, 5, 6]])  # → [[1, 4], [2, 5], [3, 6]]\nsolve([[1, 2], [3, 4]])         # → [[1, 3], [2, 4]]\nsolve([[1]])                    # → [[1]]\n```",
     "starter_code": "def solve(matrix: list) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(matrix):\n    if not matrix or not matrix[0]:\n        return []\n    rows = len(matrix)\n    cols = len(matrix[0])\n    return [[matrix[r][c] for r in range(rows)] for c in range(cols)]",
     "solution_code": "def solve(matrix):\n    if not matrix or not matrix[0]:\n        return []\n    rows = len(matrix)\n    cols = len(matrix[0])\n    return [[matrix[r][c] for r in range(rows)] for c in range(cols)]",
@@ -1899,7 +1899,7 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Second Largest",
-    "description": "Find the second-highest unique response latency in a list of recorded times. Given a list `nums`, return the second-largest distinct value, or `None` if there are fewer than 2 distinct values.\n\n```\nsolve([1, 2, 3, 4])      # \u2192 3\nsolve([5, 5, 5])          # \u2192 None\nsolve([1, 2])             # \u2192 1\nsolve([3, 1, 4, 1, 5, 9, 2, 6])  # \u2192 6\n```",
+    "description": "Find the second-highest unique response latency in a list of recorded times. Given a list `nums`, return the second-largest distinct value, or `None` if there are fewer than 2 distinct values.\n\n```\nsolve([1, 2, 3, 4])      # → 3\nsolve([5, 5, 5])          # → None\nsolve([1, 2])             # → 1\nsolve([3, 1, 4, 1, 5, 9, 2, 6])  # → 6\n```",
     "starter_code": "def solve(nums: list):\n    # Your code here\n    pass",
     "expected_code": "def solve(nums):\n    unique = sorted(set(nums))\n    if len(unique) < 2:\n        return None\n    return unique[-2]",
     "solution_code": "def solve(nums):\n    unique = sorted(set(nums))\n    if len(unique) < 2:\n        return None\n    return unique[-2]",
@@ -1959,7 +1959,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use set() to eliminate duplicates before finding the second largest.",
+      "Ignore repeated values before deciding which remaining value sits just below the maximum.",
       "After sorting the unique values, the second largest is at index -2."
     ],
     "concepts": [
@@ -1974,7 +1974,7 @@
     "topic": "python",
     "difficulty": "easy",
     "title": "Intersection of Two Lists",
-    "description": "Return the sorted list of user IDs present in both a feature-flag cohort and an A/B test group. Given two lists `a` and `b`, return a sorted list of their common elements with no duplicates.\n\n```\nsolve([1, 2, 2, 3], [2, 3, 4])   # \u2192 [2, 3]\nsolve([1], [2])                   # \u2192 []\nsolve([1, 2, 3], [3, 2, 1])      # \u2192 [1, 2, 3]\n```",
+    "description": "Return the sorted list of user IDs present in both a feature-flag cohort and an A/B test group. Given two lists `a` and `b`, return a sorted list of their common elements with no duplicates.\n\n```\nsolve([1, 2, 2, 3], [2, 3, 4])   # → [2, 3]\nsolve([1], [2])                   # → []\nsolve([1, 2, 3], [3, 2, 1])      # → [1, 2, 3]\n```",
     "starter_code": "def solve(a: list, b: list) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(a, b):\n    return sorted(set(a) & set(b))",
     "solution_code": "def solve(a, b):\n    return sorted(set(a) & set(b))",
@@ -2042,7 +2042,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Convert each list to a set first to remove duplicates and enable set operations.",
+      "Make membership checks cheap so you can detect shared values without nested loops.",
       "Use the & operator (set intersection) to find common elements, then sort the result."
     ],
     "concepts": [

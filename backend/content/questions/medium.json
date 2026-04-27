@@ -31,7 +31,7 @@
     "solution_query": "SELECT u.user_id, u.name, o.order_id, p.payment_method, p.amount\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nJOIN payments p ON o.order_id = p.order_id\nWHERE o.status = 'completed'\n AND p.status IN ('failed', 'chargeback')\nORDER BY p.amount DESC, o.order_id ASC;",
     "explanation": "This query joins users to their orders, then joins those orders to payments so each returned row has both customer and payment context. The two WHERE conditions are important because order status and payment status describe different stages of the transaction lifecycle. Filtering after the joins ensures only completed orders with failed or chargeback payments are returned. The ORDER BY clause makes the output deterministic and highlights the largest problematic payments first.",
     "hints": [
-      "Join users to orders on user_id, then join orders to payments on order_id.",
+      "Combine the sources that hold the needed attributes before you filter or shape the final result.",
       "Filter on both the order status and the payment status."
     ],
     "concepts": [
@@ -75,7 +75,7 @@
     "solution_query": "SELECT DISTINCT p.product_name, p.brand\nFROM orders o\nJOIN order_items oi ON o.order_id = oi.order_id\nJOIN products p ON oi.product_id = p.product_id\nWHERE o.payment_status = 'refunded'\nORDER BY p.product_name ASC;",
     "explanation": "The query first links refunded orders to their order items, then links those line items to products so product details can be returned. DISTINCT is necessary because the same product can appear in multiple refunded orders, and the question asks for unique products rather than one row per order item. The WHERE clause applies the business filter at the order level, while ORDER BY makes the final list deterministic and easy to review.",
     "hints": [
-      "You need orders to find refunded purchases and order_items to reach the product ids.",
+      "Combine the sources that hold the needed attributes before you filter or shape the final result.",
       "Use DISTINCT because the same product may appear in more than one refunded order."
     ],
     "concepts": [
@@ -114,7 +114,7 @@
     "solution_query": "SELECT d.department_id, d.department_name, d.region\nFROM departments d\nLEFT JOIN employees e ON d.department_id = e.department_id\nWHERE e.employee_id IS NULL\nORDER BY d.department_id ASC;",
     "explanation": "A LEFT JOIN keeps every department even when there is no matching employee row. After the join, departments with no employees will have NULL values from the employees table, so filtering on e.employee_id IS NULL isolates exactly those unmatched departments. This is a standard medium-level join pattern because it depends on understanding how NULLs behave after an outer join. ORDER BY department_id keeps the result deterministic.",
     "hints": [
-      "Use a LEFT JOIN so departments still appear even when they have no matching employee rows.",
+      "Keep the full reference list in view, then identify which entries never found a match on the related side.",
       "After the join, look for NULL on a column from the employees table."
     ],
     "concepts": [
@@ -122,10 +122,10 @@
       "CONDITIONAL ROW FILTERING",
       "DETERMINISTIC RESULT ORDERING"
     ],
-    "complexity_hint": "LEFT JOIN anti-pattern: keep rows from the left table that have no match on the right. Can also be written with NOT IN or NOT EXISTS \u2014 LEFT JOIN + IS NULL is typically most performant.",
+    "complexity_hint": "LEFT JOIN anti-pattern: keep rows from the left table that have no match on the right. Can also be written with NOT IN or NOT EXISTS — LEFT JOIN + IS NULL is typically most performant.",
     "alternative_solution": {
       "query": "SELECT d.department_id, d.department_name, d.region\nFROM departments d\nWHERE d.department_id NOT IN (\n  SELECT department_id FROM employees\n)\nORDER BY d.department_id ASC",
-      "explanation": "This alternative uses a NOT IN subquery instead of LEFT JOIN + IS NULL. Both produce identical results here, but NOT IN can silently return no rows if the subquery produces any NULLs \u2014 use LEFT JOIN + IS NULL in production for safety."
+      "explanation": "This alternative uses a NOT IN subquery instead of LEFT JOIN + IS NULL. Both produce identical results here, but NOT IN can silently return no rows if the subquery produces any NULLs — use LEFT JOIN + IS NULL in production for safety."
     },
     "companies": [
       "Google",
@@ -163,7 +163,7 @@
     "solution_query": "SELECT u.country, SUM(p.amount) AS total_paid_amount\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nJOIN payments p ON o.order_id = p.order_id\nWHERE o.status = 'completed'\n AND p.status = 'paid'\nGROUP BY u.country\nORDER BY total_paid_amount DESC, u.country ASC;",
     "explanation": "This query requires joining before aggregating because the country lives on users, the order completion state lives on orders, and the payment amount lives on payments. The WHERE clause narrows the data to completed orders with paid payments before the SUM is calculated. GROUP BY country then rolls those filtered rows up to one revenue total per country. ORDER BY surfaces the highest-revenue countries first and guarantees deterministic output.",
     "hints": [
-      "You need three tables because the country, order state, and payment amount are stored separately.",
+      "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
       "Filter first, then group by country and sum the payment amount."
     ],
     "concepts": [
@@ -209,7 +209,7 @@
     "enforce_concepts": false,
     "explanation": "The join links each order to user attributes so the aggregation can happen at the country and plan tier level. WHERE filters the dataset down to completed orders before grouping, which ensures cancelled orders do not affect the average. GROUP BY on two columns creates a segment-level view, and HAVING filters those aggregated segments after AVG has been computed. This is exactly the kind of medium reasoning where WHERE and HAVING must be used for different purposes.",
     "hints": [
-      "Group by both country and plan_tier because the result is at the segment level.",
+      "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
       "Use HAVING, not WHERE, to keep only groups whose average net_amount is above 600."
     ],
     "concepts": [
@@ -258,7 +258,7 @@
     "enforce_concepts": false,
     "explanation": "This query joins users to orders and then to payments so payment method behavior can be analyzed per user. COUNT(DISTINCT payment_method) is important because repeated use of the same method should count once, not once per payment row. WHERE limits the analysis to paid payments before the grouping happens. HAVING then filters the grouped results to only users who truly used more than one distinct payment method.",
     "hints": [
-      "You need DISTINCT inside COUNT because the question is about unique payment methods, not raw payment rows.",
+      "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
       "Use HAVING after GROUP BY to keep only users whose distinct payment method count is greater than 1."
     ],
     "concepts": [
@@ -298,7 +298,7 @@
     "enforce_concepts": false,
     "explanation": "The WHERE clause limits the input rows to resolved tickets because unresolved tickets should not affect resolution-time analysis. GROUP BY priority and issue_type creates a separate aggregate for each operational category. HAVING then removes groups whose average resolution time is not high enough to be considered slow. This structure demonstrates the medium-level difference between filtering raw rows first and filtering aggregated groups later.",
     "hints": [
-      "Filter to resolved tickets before you calculate the average resolution time.",
+      "Reduce the data to the requested segment first, then keep only the segments that clear the summary threshold.",
       "Because the filter is on an aggregate, use HAVING rather than WHERE."
     ],
     "concepts": [
@@ -332,7 +332,7 @@
     "solution_query": "SELECT CASE\n WHEN net_amount < 100 THEN 'low value'\n WHEN net_amount < 500 THEN 'mid value'\n ELSE 'high value'\n END AS order_value_band,\n COUNT(order_id) AS order_count\nFROM orders\nGROUP BY CASE\n WHEN net_amount < 100 THEN 'low value'\n WHEN net_amount < 500 THEN 'mid value'\n ELSE 'high value'\n END\nORDER BY order_count DESC, order_value_band ASC;",
     "explanation": "CASE WHEN creates a derived label for each order based on its net_amount, which turns a continuous numeric value into business-friendly categories. Because the output is summarized by those labels, the same CASE expression must appear in the GROUP BY clause. COUNT then measures how many orders fall into each band. The ORDER BY clause makes the summary deterministic and shows the most common band first.",
     "hints": [
-      "Use CASE WHEN to turn net_amount into a text bucket.",
+      "Collapse the data to the business grain named in the result before you calculate the summary values.",
       "Group by the same CASE expression you use in the SELECT list."
     ],
     "concepts": [
@@ -371,7 +371,7 @@
     "solution_query": "SELECT d.region,\n CASE WHEN e.salary >= 100000 THEN 'high salary' ELSE 'standard salary' END AS salary_band,\n COUNT(e.employee_id) AS employee_count\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nGROUP BY d.region,\n CASE WHEN e.salary >= 100000 THEN 'high salary' ELSE 'standard salary' END\nORDER BY d.region ASC, salary_band ASC;",
     "explanation": "The join is needed because the salary information is stored on employees while region is stored on departments. CASE WHEN derives a salary band for each employee row before aggregation. GROUP BY on region and the derived band produces one count per regional bucket. This introduces medium-level reasoning because the result depends on both a relationship and a computed category rather than a direct column group.",
     "hints": [
-      "Join employees to departments first so each employee row has a region.",
+      "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
       "Use CASE WHEN to create the salary_band, then group by both region and that derived band."
     ],
     "concepts": [
@@ -419,7 +419,7 @@
     "enforce_concepts": false,
     "explanation": "The subquery first identifies which user_ids are associated with at least one chargeback payment by joining orders to payments. The outer query then filters the users table to only those matching user_ids. This is a good introductory subquery pattern because the inner query solves a narrower set-membership problem and the outer query uses that result to fetch descriptive user columns. ORDER BY user_id keeps the final output deterministic.",
     "hints": [
-      "Use a subquery to identify the user_ids tied to chargeback payments.",
+      "Combine the sources that hold the needed attributes before you filter or shape the final result.",
       "The outer query should filter users based on whether their user_id appears in that inner result set."
     ],
     "concepts": [
@@ -470,7 +470,7 @@
     "enforce_concepts": false,
     "explanation": "This query joins users to orders and payments so each payment can be tied back to a user country. The WHERE clause filters to completed orders and paid payment rows before any aggregation happens, which keeps only the business events we care about. Because one order can have multiple paid payment rows, COUNT(DISTINCT o.order_id) is necessary to avoid counting the same order multiple times. SUM(p.amount) then adds the qualifying payment amounts, and the final ORDER BY makes the output deterministic.",
     "hints": [
-      "Filter completed orders and paid payments before grouping.",
+      "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
       "An order can match multiple payment rows, so think about how to count orders only once.",
       "Group by country after the joins."
     ],
@@ -522,7 +522,7 @@
     "enforce_concepts": false,
     "explanation": "The query starts by joining products to order_items so each line item is associated with a brand, then joins orders so order-level filters can be applied. The WHERE clause limits rows to completed orders from 2024 before aggregation, which prevents unrelated rows from affecting the totals. COUNT(DISTINCT oi.order_id) counts each qualifying order once per brand, even when multiple items from the same brand appear in that order. SUM(oi.quantity) measures total units sold, and the result is sorted deterministically.",
     "hints": [
-      "You need product details from one table and order status/date from another.",
+      "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
       "Count orders at the brand level without double-counting repeated line items in the same order.",
       "Apply the 2024 and completed-order filters before grouping."
     ],
@@ -574,7 +574,7 @@
     "enforce_concepts": false,
     "explanation": "This question requires combining two different user activities: purchasing and support engagement. Joining users to both orders and support_tickets creates one row for each matching order-ticket combination, which can multiply rows for the same user. COUNT(DISTINCT u.user_id) is therefore required to avoid inflated counts. The filters for completed orders and high-priority tickets belong in the WHERE clause because they determine which joined rows qualify before aggregation.",
     "hints": [
-      "A user must satisfy conditions from both the orders table and the support_tickets table.",
+      "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
       "Joining both activity tables can create duplicate user rows.",
       "Count users, not rows."
     ],
@@ -620,7 +620,7 @@
     "enforce_concepts": false,
     "explanation": "The outer query returns employee details along with the department name. The correlated subquery recalculates the average salary for the current employee's department by matching e2.department_id to e.department_id. Because that subquery depends on the outer row, it produces a department-specific comparison instead of one global average. The WHERE clause keeps only employees whose salary is above their own department average, and the ORDER BY produces a stable result.",
     "hints": [
-      "You need to compare each employee to a department-specific average, not one average for the whole company.",
+      "Combine the sources that hold the needed attributes before you filter or shape the final result.",
       "The subquery should reference the outer employee row through department_id.",
       "Join departments only to display the department name."
     ],
@@ -666,7 +666,7 @@
     "enforce_concepts": false,
     "explanation": "The outer query starts from users because the result needs user-level output, including people who may have no qualifying orders at all. NOT EXISTS is the correct anti-subquery pattern here because it checks whether any completed order is present for the current user. If none exists, that user remains in the result. The signup_date filter is applied in the outer WHERE clause so only early signups are evaluated, and the final ordering is deterministic.",
     "hints": [
-      "Start from the users table because you need to keep users even when matching orders do not exist.",
+      "Break the problem into stages so the reusable intermediate result exists before the final filter or comparison.",
       "Use an anti-subquery pattern to exclude users who have at least one completed order.",
       "Apply the signup-date filter in the outer query."
     ],
@@ -718,7 +718,7 @@
     "enforce_concepts": false,
     "explanation": "The outer query calculates total completed-order revenue per brand. The subquery in the HAVING clause computes the average of those brand-level revenue totals by first aggregating revenue per brand in a derived table and then averaging those results. This is different from averaging individual line items, which would answer a different question. HAVING is required because the comparison happens after the outer query has grouped rows by brand.",
     "hints": [
-      "First think about how to compute revenue per brand from completed orders.",
+      "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
       "The comparison target is an average of brand totals, not an average of individual order lines.",
       "Use HAVING because you are comparing an aggregate result."
     ],
@@ -763,7 +763,7 @@
     "enforce_concepts": false,
     "explanation": "This query uses conditional aggregation to produce two different counts from the same grouped set of order rows. After joining orders to users, rows are grouped by country. Each SUM(CASE WHEN ...) counts only the rows that match one status condition, while HAVING COUNT(o.order_id) >= 50 removes countries with too little activity. This pattern is useful when several related metrics need to be computed in a single grouped query.",
     "hints": [
-      "You need multiple counts from the same grouped rows, not separate queries.",
+      "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
       "Use CASE inside an aggregate to count only rows with one status at a time.",
       "Apply the minimum-total-orders rule with HAVING."
     ],
@@ -803,7 +803,7 @@
     "enforce_concepts": false,
     "explanation": "The query groups tickets by issue_type and then calculates multiple metrics from that same grouped data. Conditional SUM expressions separate resolved from unresolved tickets without needing multiple passes over the table. AVG(CASE WHEN status = 'resolved' THEN resolution_hours END) averages only resolved-ticket times because unresolved rows contribute NULL, which AVG ignores. HAVING enforces the minimum volume requirement after the grouping step.",
     "hints": [
-      "Use one grouped query to produce all four output columns.",
+      "Reduce the data to the requested segment first, then keep only the segments that clear the summary threshold.",
       "A CASE expression inside AVG can limit which rows contribute to the average.",
       "The minimum-ticket requirement belongs after grouping."
     ],
@@ -851,7 +851,7 @@
     "enforce_concepts": false,
     "explanation": "This problem combines row-level filters with group-level filters. The WHERE clause first limits rows to selected countries and qualifying orders in 2024 with sufficient net_amount. After those rows are filtered, the query groups by user and calculates both the order count and the average net amount. HAVING is then used to keep only users who still have at least 3 qualifying orders after all row-level filters have been applied.",
     "hints": [
-      "Decide which conditions should reduce rows before grouping and which should filter grouped results after aggregation.",
+      "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
       "The order count threshold must be evaluated after grouping by user.",
       "Average only the orders that passed the earlier filters."
     ],
@@ -907,7 +907,7 @@
     "enforce_concepts": false,
     "explanation": "This query requires filtering at multiple stages. The WHERE clause first removes products and orders that do not meet the launch-date, order-status, and date-range requirements, so only relevant detail rows remain. The grouped result is then produced at the category-and-brand level, where COUNT(DISTINCT oi.order_id) measures how many qualifying orders included that brand and SUM(oi.quantity) measures total units sold. HAVING applies the volume thresholds after those grouped metrics have been computed.",
     "hints": [
-      "Use WHERE for the product and order filters that apply before aggregation.",
+      "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
       "Group by both category_id and brand because both appear in the output.",
       "The minimum order-count and unit thresholds belong in HAVING."
     ],
@@ -948,7 +948,7 @@
     "solution_query": "SELECT d.department_id, d.department_name, COUNT(e.employee_id) AS hires_2024\nFROM departments d\nLEFT JOIN employees e\n  ON d.department_id = e.department_id\n AND e.hire_date >= '2024-01-01'\n AND e.hire_date < '2025-01-01'\nGROUP BY d.department_id, d.department_name\nHAVING COUNT(e.employee_id) = 0\nORDER BY d.department_id ASC;",
     "explanation": "This query starts from departments because departments with no matching hires still need to appear in the result. The date filter belongs inside the LEFT JOIN condition, not in the WHERE clause, so departments with no 2024 hires are preserved instead of being filtered out. After grouping by department, COUNT(e.employee_id) counts only matched 2024 hires, and HAVING COUNT(e.employee_id) = 0 keeps only departments with none. The final ORDER BY makes the output deterministic.",
     "hints": [
-      "Start from departments, not employees, because departments with no matching hires must still be considered.",
+      "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
       "If you put the hire-date filter in WHERE, the LEFT JOIN will behave like an INNER JOIN.",
       "Use HAVING after grouping to keep only zero-hire departments."
     ],
@@ -988,7 +988,7 @@
     "solution_query": "SELECT u.user_id, u.name, u.country\nFROM users u\nLEFT JOIN orders o\n  ON u.user_id = o.user_id\n AND o.order_date >= '2024-01-01'\n AND o.order_date < '2025-01-01'\nWHERE u.country IN ('US', 'UK', 'CA')\nGROUP BY u.user_id, u.name, u.country\nHAVING COUNT(o.order_id) = 0\nORDER BY u.user_id ASC;",
     "explanation": "The result must include users even when they have no 2024 orders, so the query starts from users and uses a LEFT JOIN to orders. The 2024 date filter is applied in the join condition so only 2024 orders can match, while users with no such orders remain in the joined result. The country filter belongs in WHERE because it applies to the driving users table. After grouping by user, COUNT(o.order_id) counts only matched 2024 orders, and HAVING COUNT(o.order_id) = 0 keeps the users with none. This is a join-correctness problem because moving the order-date filter to WHERE would incorrectly remove the users you need.",
     "hints": [
-      "Use users as the driving table because users with no matching 2024 orders must stay visible.",
+      "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
       "Filter the user list to the requested countries before applying the zero-order test.",
       "Filter the order date range before the grouping, but be careful where that filter is placed."
     ],
@@ -1029,7 +1029,7 @@
     "solution_query": "SELECT o.order_id, o.user_id, o.status AS order_status\nFROM orders o\nLEFT JOIN payments p\n  ON o.order_id = p.order_id\n AND p.status = 'paid'\nWHERE o.status = 'completed'\n AND o.order_date >= '2024-01-01'\n AND o.order_date < '2025-01-01'\nGROUP BY o.order_id, o.user_id, o.status\nHAVING COUNT(p.payment_id) = 0\nORDER BY o.order_id ASC;",
     "explanation": "This query checks for completed 2024 orders that never matched a paid payment row. The payment-status filter belongs in the LEFT JOIN condition so each order is tested specifically for a paid payment match. If the filter were moved into WHERE, orders without a paid payment would disappear before the final check. Grouping by order lets COUNT(p.payment_id) count only matching paid payments, and HAVING COUNT(p.payment_id) = 0 keeps the orders with none.",
     "hints": [
-      "You need every qualifying order to remain visible even when no paid payment row exists.",
+      "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
       "Join only to paid payments, then test which orders matched zero rows.",
       "Group by the order columns before applying the zero-match condition."
     ],
@@ -1069,7 +1069,7 @@
     "solution_query": "SELECT c.category_id, c.category_name,\n SUM(CASE WHEN p.launch_date IS NOT NULL THEN 1 ELSE 0 END) AS launched_product_count,\n SUM(CASE WHEN p.launch_date IS NULL THEN 1 ELSE 0 END) AS missing_launch_date_count,\n AVG(CASE WHEN p.launch_date IS NOT NULL THEN p.price END) AS avg_launched_price\nFROM categories c\nJOIN products p ON c.category_id = p.category_id\nGROUP BY c.category_id, c.category_name\nHAVING COUNT(p.product_id) >= 8\nORDER BY c.category_id ASC;",
     "explanation": "This is an aggregation edge-case question because one grouped result needs several metrics with different row-participation rules. The CASE expressions count launched and missing-launch-date products separately inside the same grouped query. AVG(CASE WHEN p.launch_date IS NOT NULL THEN p.price END) averages only the products with a known launch date because the others contribute NULL, which AVG ignores. GROUP BY is required for category-level output, and HAVING enforces the minimum total-product threshold after grouping.",
     "hints": [
-      "Use one grouped query to compute all category-level metrics.",
+      "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
       "CASE inside SUM can count rows with and without launch dates separately.",
       "To average only launched products, let missing launch dates contribute NULL to AVG."
     ],
@@ -1109,7 +1109,7 @@
     "solution_query": "SELECT u.country, u.plan_tier,\n SUM(CASE WHEN o.status = 'completed' THEN 1 ELSE 0 END) AS completed_order_count,\n SUM(CASE WHEN o.status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled_order_count\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nGROUP BY u.country, u.plan_tier\nHAVING COUNT(o.order_id) >= 25\nORDER BY u.country ASC, u.plan_tier ASC;",
     "explanation": "The core trap here is grouping at the right grain. Because the output is segmented by both country and plan_tier, both columns must appear in GROUP BY. Conditional aggregation then computes the completed and cancelled counts from the same grouped order rows. HAVING COUNT(o.order_id) >= 25 removes segments with too little activity only after the grouped totals have been calculated. This increases reasoning complexity without using more advanced SQL features.",
     "hints": [
-      "Match the grouping columns to the exact business segment named in the output.",
+      "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
       "Use CASE inside SUM to split one set of order rows into status-specific counts.",
       "The minimum-order rule should be applied after grouping."
     ],
@@ -1150,7 +1150,7 @@
     "solution_query": "SELECT d.department_name,\n SUM(CASE WHEN e.hire_date >= '2023-01-01' THEN 1 ELSE 0 END) AS recent_hire_count,\n SUM(CASE WHEN e.hire_date < '2023-01-01' THEN 1 ELSE 0 END) AS older_hire_count,\n AVG(CASE WHEN e.hire_date >= '2023-01-01' THEN e.salary END) AS avg_recent_hire_salary\nFROM departments d\nJOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_name\nHAVING COUNT(e.employee_id) >= 10\nORDER BY recent_hire_count DESC, d.department_name ASC;",
     "explanation": "This query combines conditional aggregation with a grouped staffing threshold. After joining departments to employees, the grouped rows are split into recent and older hires using separate CASE expressions inside SUM. AVG(CASE WHEN e.hire_date >= '2023-01-01' THEN e.salary END) calculates a recent-hire-only average because older hires contribute NULL, which AVG ignores. HAVING ensures that only departments with enough total employees are included, while the ORDER BY sorts by the recent-hire volume first.",
     "hints": [
-      "Use one grouped query per department rather than separate queries for recent and older hires.",
+      "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
       "CASE inside AVG can limit which employee salaries contribute to the average.",
       "The minimum total-employee condition depends on the full grouped set, not just recent hires."
     ],
@@ -1196,7 +1196,7 @@
     "solution_query": "SELECT p.product_id, p.product_name, p.brand\nFROM products p\nWHERE p.launch_date < '2024-01-01'\n AND NOT EXISTS (\n  SELECT 1\n  FROM order_items oi\n  JOIN orders o ON oi.order_id = o.order_id\n  WHERE oi.product_id = p.product_id\n   AND o.status = 'completed'\n )\nORDER BY p.product_id ASC;",
     "explanation": "The outer query starts from products because the result should include products that might have no matching order history at all. The NOT EXISTS subquery checks whether a completed-order match exists for the current product by joining order_items to orders and correlating back through oi.product_id = p.product_id. If no such completed-order row exists, the product stays in the result. This is a clean anti-match pattern that avoids accidental loss of products with no order-item rows.",
     "hints": [
-      "Start from products because products with no completed-order history must still be testable.",
+      "Break the problem into stages so the reusable intermediate result exists before the final filter or comparison.",
       "The subquery should look for evidence that a product appears in a completed order.",
       "Keep only products for which that evidence does not exist."
     ],
@@ -1235,7 +1235,7 @@
     "solution_query": "SELECT d.department_id, d.department_name, d.region, COUNT(e.employee_id) AS employee_count\nFROM departments d\nLEFT JOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_id, d.department_name, d.region\nHAVING COUNT(e.employee_id) > (\n  SELECT AVG(region_department_count)\n  FROM (\n    SELECT COUNT(e2.employee_id) AS region_department_count\n    FROM departments d2\n    LEFT JOIN employees e2 ON d2.department_id = e2.department_id\n    WHERE d2.region = d.region\n    GROUP BY d2.department_id\n  ) region_counts\n)\nORDER BY d.region ASC, employee_count DESC, d.department_id ASC;",
     "explanation": "The outer query computes one employee_count per department, including departments with zero employees because of the LEFT JOIN. The correlated subquery then calculates the average department headcount for the current outer region by building a region-specific list of department counts and averaging them. Including zero-employee departments in that inner grouped set matters because the description explicitly says they must affect the regional average. The HAVING comparison happens after the outer department count has been computed, which is why this is a nested aggregation subquery pattern.",
     "hints": [
-      "First compute one employee count per department in the outer query.",
+      "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
       "The comparison target is not a single global average; it changes with the outer row's region.",
       "Make sure zero-employee departments still participate in the regional average calculation."
     ],
@@ -1287,7 +1287,7 @@
     "solution_query": "SELECT u.user_id, u.name, COUNT(p.payment_id) AS refunded_payment_count, SUM(p.amount) AS refunded_amount\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nJOIN payments p ON o.order_id = p.order_id\nWHERE p.status = 'refunded'\n AND NOT EXISTS (\n  SELECT 1\n  FROM support_tickets st\n  WHERE st.user_id = u.user_id\n   AND st.status IN ('open', 'in_progress')\n )\nGROUP BY u.user_id, u.name\nHAVING COUNT(p.payment_id) >= 2\nORDER BY refunded_amount DESC, u.user_id ASC;",
     "explanation": "This is a business-logic question that combines payment behavior with support status. The main query joins users to their orders and payment rows, then filters to refunded payment rows only. The NOT EXISTS subquery removes any user who currently has an open or in-progress support ticket, which keeps the user-level business rule separate from the payment-row aggregation. After grouping by user, HAVING COUNT(p.payment_id) >= 2 enforces the repeated-refund threshold, and SUM(p.amount) measures the refund exposure.",
     "hints": [
-      "Aggregate refunded payment rows at the user level.",
+      "Break the problem into stages so the reusable intermediate result exists before the final filter or comparison.",
       "Handle the support-ticket exclusion as a separate user-level check, not by joining ticket rows into the main aggregation.",
       "Use HAVING for the minimum refund-count requirement."
     ],
@@ -1336,7 +1336,7 @@
     "solution_query": "SELECT u.country,\n SUM(CASE WHEN p.status = 'paid' THEN p.amount ELSE 0 END) AS paid_amount,\n SUM(CASE WHEN p.status IN ('failed', 'refunded') THEN p.amount ELSE 0 END) AS problematic_amount\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nJOIN payments p ON o.order_id = p.order_id\nWHERE o.status = 'completed'\n AND o.order_date >= '2024-01-01'\n AND o.order_date < '2025-01-01'\nGROUP BY u.country\nHAVING COUNT(p.payment_id) >= 20\n AND SUM(CASE WHEN p.status IN ('failed', 'refunded') THEN p.amount ELSE 0 END) > SUM(CASE WHEN p.status = 'paid' THEN p.amount ELSE 0 END)\nORDER BY problematic_amount DESC, u.country ASC;",
     "explanation": "The query joins users, orders, and payments so payment rows can be analyzed at the country level. The WHERE clause limits the detail rows to payments tied to completed 2024 orders before any aggregation occurs. Two CASE-based sums then split the grouped payment amount into paid and problematic buckets, and HAVING applies both the minimum-volume rule and the business comparison that problematic_amount must exceed paid_amount. This is more about layered business rules than about introducing a new SQL feature.",
     "hints": [
-      "First restrict the rows to payments tied to completed orders in 2024.",
+      "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
       "Use separate CASE-based sums for paid and problematic payment amounts.",
       "The country-level comparison belongs in HAVING because it depends on grouped totals."
     ],
@@ -1375,10 +1375,10 @@
       "order_by"
     ],
     "enforce_concepts": true,
-    "explanation": "A CTE first aggregates revenue per quarter. The quarter label is built by concatenating the year (STRFTIME('%Y')), '-Q', and the quarter number derived from the month. In the outer query, LAG(total_revenue) OVER (ORDER BY quarter) fetches the previous row's revenue \u2014 because quarters sort lexicographically in 'YYYY-QN' format, this gives the correct prior quarter. Subtracting gives qoq_change; the first row has no prior, so LAG returns NULL.",
+    "explanation": "A CTE first aggregates revenue per quarter. The quarter label is built by concatenating the year (STRFTIME('%Y')), '-Q', and the quarter number derived from the month. In the outer query, LAG(total_revenue) OVER (ORDER BY quarter) fetches the previous row's revenue — because quarters sort lexicographically in 'YYYY-QN' format, this gives the correct prior quarter. Subtracting gives qoq_change; the first row has no prior, so LAG returns NULL.",
     "hints": [
-      "First aggregate to quarterly revenue in a CTE, then apply LAG() in the outer SELECT",
-      "LAG(col) OVER (ORDER BY quarter) gives you the previous row's value \u2014 subtract it from the current row to get the change"
+      "Create row-to-row context within each entity first; the final filter or comparison happens after that derived state exists.",
+      "LAG(col) OVER (ORDER BY quarter) gives you the previous row's value — subtract it from the current row to get the change"
     ],
     "concepts": [
       "PERIOD-OVER-PERIOD COMPARISON",
@@ -1424,7 +1424,7 @@
     "enforce_concepts": true,
     "explanation": "FULL OUTER JOIN returns all rows from both tables, filling NULL for columns from the table with no match. COALESCE(o.order_id, p.order_id) produces a non-NULL order_id regardless of which side has the match. The CASE expression classifies each row: when p.order_id is NULL, only an order exists; when o.order_id is NULL, only a payment exists; otherwise both match. This reconciliation pattern is essential in financial data pipelines to detect payment gaps or orphaned transactions.",
     "hints": [
-      "FULL OUTER JOIN keeps all rows from both tables \u2014 rows with no match get NULLs on the other side",
+      "Think about reconciliation rather than matching only successes; the answer must preserve records from both sides, including misses.",
       "Use COALESCE(o.order_id, p.order_id) to get a non-null order_id regardless of which side matched"
     ],
     "concepts": [
@@ -1468,10 +1468,10 @@
       "order_by"
     ],
     "enforce_concepts": true,
-    "explanation": "The JOIN direction matters: LEFT JOIN from departments to employees preserves all department rows even when no employees exist. COUNT(e.employee_id) counts only non-NULL employee IDs \u2014 for departments with no employees, this returns 0 (not 1 or NULL). Using COUNT(*) instead would incorrectly count 1 for empty departments because the LEFT JOIN produces a row with NULLs. Grouping by department_id ensures uniqueness even if two departments share the same name.",
+    "explanation": "The JOIN direction matters: LEFT JOIN from departments to employees preserves all department rows even when no employees exist. COUNT(e.employee_id) counts only non-NULL employee IDs — for departments with no employees, this returns 0 (not 1 or NULL). Using COUNT(*) instead would incorrectly count 1 for empty departments because the LEFT JOIN produces a row with NULLs. Grouping by department_id ensures uniqueness even if two departments share the same name.",
     "hints": [
-      "Join FROM departments TO employees (departments is the left/driving table) so no department is lost",
-      "COUNT(e.employee_id) counts non-null values \u2014 returns 0 for departments with no employees, unlike COUNT(*)"
+      "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
+      "COUNT(e.employee_id) counts non-null values — returns 0 for departments with no employees, unlike COUNT(*)"
     ],
     "concepts": [
       "LEFT JOIN DIRECTION",
@@ -1517,10 +1517,10 @@
       "order_by"
     ],
     "enforce_concepts": true,
-    "explanation": "WHERE filters rows before aggregation (only completed orders contribute). GROUP BY produces one row per (country, plan_tier) combination. HAVING filters groups after aggregation \u2014 it's the only way to filter on aggregate values like SUM. Using WHERE SUM(...) > 5000 would be a syntax error. The distinction between WHERE (row-level filter) and HAVING (group-level filter) is one of the most commonly tested SQL concepts.",
+    "explanation": "WHERE filters rows before aggregation (only completed orders contribute). GROUP BY produces one row per (country, plan_tier) combination. HAVING filters groups after aggregation — it's the only way to filter on aggregate values like SUM. Using WHERE SUM(...) > 5000 would be a syntax error. The distinction between WHERE (row-level filter) and HAVING (group-level filter) is one of the most commonly tested SQL concepts.",
     "hints": [
-      "Use WHERE to filter rows before the GROUP BY, and HAVING to filter the aggregated groups after",
-      "HAVING filters on the result of the aggregation \u2014 WHERE SUM(...) > 5000 is a syntax error"
+      "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
+      "HAVING filters on the result of the aggregation — WHERE SUM(...) > 5000 is a syntax error"
     ],
     "concepts": [
       "PRE VS POST AGGREGATION FILTERING",

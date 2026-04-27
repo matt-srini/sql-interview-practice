@@ -137,15 +137,43 @@ print('Duplicate IDs:', set(dupes) or 'none')
 
 ## Hint guidelines (all tracks)
 
-Hints guide thinking toward the correct approach without revealing it. Two hints maximum per question.
+Hints guide thinking toward the correct approach without revealing it. The current bank ranges from 1 to 3 hints per question; new or rewritten content should follow the active ladder below instead of treating hints as free-form notes.
+
+| Difficulty | Target hint count | Hint ladder |
+|---|---|---|
+| Easy | 2 | Hint 1 identifies the mental model or operation class. Hint 2 points to the concrete tool or transformation family. |
+| Medium | 2-3 | Hint 1 identifies the core pattern. Hint 2 identifies the subproblem split or intermediate representation. Hint 3 names the tool or control-flow shape only if the problem genuinely needs it. |
+| Hard | 2-3 | Hint 1 identifies the decomposition strategy. Hint 2 identifies dependency ordering, state representation, or the bottleneck to isolate. Hint 3 points to final assembly or the constraint that commonly breaks solutions. |
+
+### Minimum counts by track
+
+| Track | Easy | Medium | Hard |
+|---|---|---|---|
+| SQL | 2 | 2-3 | 2-3 |
+| Python | 2 | 2-3 | 2-3 |
+| Pandas | 2 | 2-3 | 2-3 |
+| PySpark | 1-2 | 2-3 | 2-3 |
+
+PySpark easy is the only allowed single-hint exception. Those questions are fast concept checks, so one strong execution-oriented hint is acceptable as long as the UI does not pretend there is a multi-step ladder.
 
 **Good hint:** "Use a hash map to look up previously seen values in O(1) as you iterate"  
 **Bad hint:** "Use a dictionary where the key is the number and value is its index"
 
 Good hints name the *class of tool* or *direction of reasoning*. Bad hints describe the implementation.
 
-For SQL: hints should point to the SQL construct, not write the clause.  
-For PySpark: hints should describe the concept at stake, not the correct answer.
+Track-specific guidance:
+
+- SQL: point to the clause family or intermediate result shape, not the exact clause text to type.
+- Python: avoid naming the exact data structure in the first hint unless the entire learning objective is choosing that structure.
+- Pandas: prefer the transformation pattern over leaking the exact method chain immediately.
+- PySpark: focus on execution reasoning, plan consequences, or distractor elimination rather than answer restatement.
+
+### Hint anti-patterns
+
+- Do not make hint 1 read like the first line of the solution.
+- Do not paste code fragments, method chains, or exact clause text into hint 1.
+- Do not make hint 2 a disguised answer key by naming every required operation in order.
+- For PySpark MCQs, do not restate the correct option; hint through elimination logic or execution behavior instead.
 
 ---
 

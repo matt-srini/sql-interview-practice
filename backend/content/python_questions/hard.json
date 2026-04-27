@@ -5,11 +5,11 @@
     "topic": "python",
     "difficulty": "hard",
     "title": "Merge Intervals",
-    "description": "Given a list of intervals where each interval is `[start, end]`, merge all overlapping intervals and return the result sorted by start time.\n\n```\nsolve([[1,3],[2,6],[8,10],[15,18]])  # \u2192 [[1,6],[8,10],[15,18]]\nsolve([[1,4],[4,5]])                 # \u2192 [[1,5]]\nsolve([[1,4],[2,3]])                 # \u2192 [[1,4]]\nsolve([])                            # \u2192 []\n```",
+    "description": "Given a list of intervals where each interval is `[start, end]`, merge all overlapping intervals and return the result sorted by start time.\n\n```\nsolve([[1,3],[2,6],[8,10],[15,18]])  # → [[1,6],[8,10],[15,18]]\nsolve([[1,4],[4,5]])                 # → [[1,5]]\nsolve([[1,4],[2,3]])                 # → [[1,4]]\nsolve([])                            # → []\n```",
     "starter_code": "def solve(intervals: list) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(intervals):\n    if not intervals:\n        return []\n    intervals.sort(key=lambda x: x[0])\n    merged = [intervals[0]]\n    for start, end in intervals[1:]:\n        if start <= merged[-1][1]:\n            merged[-1][1] = max(merged[-1][1], end)\n        else:\n            merged.append([start, end])\n    return merged",
     "solution_code": "def solve(intervals):\n    if not intervals:\n        return []\n    intervals.sort(key=lambda x: x[0])\n    merged = [intervals[0]]\n    for start, end in intervals[1:]:\n        if start <= merged[-1][1]:\n            merged[-1][1] = max(merged[-1][1], end)\n        else:\n            merged.append([start, end])\n    return merged",
-    "explanation": "Sort intervals by start time. Then iterate: if the current interval's start is at or before the last merged interval's end, they overlap \u2014 extend the last merged interval's end to the max of the two ends. Otherwise push a new interval. Sorting is O(n log n); the merge pass is O(n). Total: O(n log n) time, O(n) space.",
+    "explanation": "Sort intervals by start time. Then iterate: if the current interval's start is at or before the last merged interval's end, they overlap — extend the last merged interval's end to the max of the two ends. Otherwise push a new interval. Sorting is O(n log n); the merge pass is O(n). Total: O(n log n) time, O(n) space.",
     "test_cases": [
       {
         "input": [
@@ -191,7 +191,7 @@
     "topic": "python",
     "difficulty": "hard",
     "title": "Minimum Window Substring",
-    "description": "Given strings `s` and `t`, return the **minimum window substring** of `s` that contains every character of `t` (including duplicates). Return `''` if no such window exists.\n\n```\nsolve('ADOBECODEBANC', 'ABC')  # \u2192 'BANC'\nsolve('a', 'a')               # \u2192 'a'\nsolve('a', 'b')               # \u2192 ''\nsolve('aa', 'aa')             # \u2192 'aa'\n```",
+    "description": "Given strings `s` and `t`, return the **minimum window substring** of `s` that contains every character of `t` (including duplicates). Return `''` if no such window exists.\n\n```\nsolve('ADOBECODEBANC', 'ABC')  # → 'BANC'\nsolve('a', 'a')               # → 'a'\nsolve('a', 'b')               # → ''\nsolve('aa', 'aa')             # → 'aa'\n```",
     "starter_code": "def solve(s: str, t: str) -> str:\n    # Your code here\n    pass",
     "expected_code": "def solve(s, t):\n    if not t or not s:\n        return ''\n    need = {}\n    for ch in t:\n        need[ch] = need.get(ch, 0) + 1\n    required = len(need)\n    formed = 0\n    window = {}\n    left = 0\n    min_len = float('inf')\n    min_start = 0\n    for right, ch in enumerate(s):\n        window[ch] = window.get(ch, 0) + 1\n        if ch in need and window[ch] == need[ch]:\n            formed += 1\n        while formed == required:\n            if right - left + 1 < min_len:\n                min_len = right - left + 1\n                min_start = left\n            left_ch = s[left]\n            window[left_ch] -= 1\n            if left_ch in need and window[left_ch] < need[left_ch]:\n                formed -= 1\n            left += 1\n    return s[min_start:min_start + min_len] if min_len != float('inf') else ''",
     "solution_code": "def solve(s, t):\n    if not t or not s:\n        return ''\n    need = {}\n    for ch in t:\n        need[ch] = need.get(ch, 0) + 1\n    required = len(need)\n    formed = 0\n    window = {}\n    left = 0\n    min_len = float('inf')\n    min_start = 0\n    for right, ch in enumerate(s):\n        window[ch] = window.get(ch, 0) + 1\n        if ch in need and window[ch] == need[ch]:\n            formed += 1\n        while formed == required:\n            if right - left + 1 < min_len:\n                min_len = right - left + 1\n                min_start = left\n            left_ch = s[left]\n            window[left_ch] -= 1\n            if left_ch in need and window[left_ch] < need[left_ch]:\n                formed -= 1\n            left += 1\n    return s[min_start:min_start + min_len] if min_len != float('inf') else ''",
@@ -264,11 +264,11 @@
     "topic": "python",
     "difficulty": "hard",
     "title": "Trapping Rain Water",
-    "description": "Given a list `heights` representing an elevation map where each value is the height of a bar of unit width, compute the total amount of rainwater that can be trapped.\n\n```\nsolve([0,1,0,2,1,0,1,3,2,1,2,1])  # \u2192 6\nsolve([4,2,0,3,2,5])               # \u2192 9\nsolve([1,0,1])                      # \u2192 1\nsolve([])                           # \u2192 0\n```",
+    "description": "Given a list `heights` representing an elevation map where each value is the height of a bar of unit width, compute the total amount of rainwater that can be trapped.\n\n```\nsolve([0,1,0,2,1,0,1,3,2,1,2,1])  # → 6\nsolve([4,2,0,3,2,5])               # → 9\nsolve([1,0,1])                      # → 1\nsolve([])                           # → 0\n```",
     "starter_code": "def solve(heights: list) -> int:\n    # Your code here\n    pass",
     "expected_code": "def solve(heights):\n    if not heights:\n        return 0\n    left, right = 0, len(heights) - 1\n    left_max = right_max = 0\n    water = 0\n    while left < right:\n        if heights[left] < heights[right]:\n            if heights[left] >= left_max:\n                left_max = heights[left]\n            else:\n                water += left_max - heights[left]\n            left += 1\n        else:\n            if heights[right] >= right_max:\n                right_max = heights[right]\n            else:\n                water += right_max - heights[right]\n            right -= 1\n    return water",
     "solution_code": "def solve(heights):\n    if not heights:\n        return 0\n    left, right = 0, len(heights) - 1\n    left_max = right_max = 0\n    water = 0\n    while left < right:\n        if heights[left] < heights[right]:\n            if heights[left] >= left_max:\n                left_max = heights[left]\n            else:\n                water += left_max - heights[left]\n            left += 1\n        else:\n            if heights[right] >= right_max:\n                right_max = heights[right]\n            else:\n                water += right_max - heights[right]\n            right -= 1\n    return water",
-    "explanation": "Two-pointer approach: maintain `left_max` and `right_max` as the tallest bars seen so far from each side. The side with the shorter current bar is the bottleneck \u2014 water trapped there equals `max_from_that_side - current_height`. Advance the pointer on the shorter side inward. This avoids the O(n) space of precomputing left/right max arrays. Time: O(n), Space: O(1).",
+    "explanation": "Two-pointer approach: maintain `left_max` and `right_max` as the tallest bars seen so far from each side. The side with the shorter current bar is the bottleneck — water trapped there equals `max_from_that_side - current_height`. Advance the pointer on the shorter side inward. This avoids the O(n) space of precomputing left/right max arrays. Time: O(n), Space: O(1).",
     "test_cases": [
       {
         "input": [
@@ -357,7 +357,7 @@
     "public_test_cases": 2,
     "hints": [
       "The water above any position equals min(max_left, max_right) - height[i]. Use two pointers to avoid storing all left/right maxima.",
-      "Process whichever side currently has the smaller bar \u2014 you already know the limiting wall from that side."
+      "Process whichever side currently has the smaller bar — you already know the limiting wall from that side."
     ],
     "concepts": [
       "two pointers",
@@ -371,11 +371,11 @@
     "topic": "python",
     "difficulty": "hard",
     "title": "Word Break",
-    "description": "Given a string `s` and a list of dictionary words `word_dict`, return `True` if `s` can be segmented into one or more space-separated words that all appear in `word_dict`.\n\n```\nsolve('leetcode', ['leet','code'])            # \u2192 True\nsolve('applepenapple', ['apple','pen'])        # \u2192 True\nsolve('catsandog', ['cats','dog','sand','cat','an'])  # \u2192 False\nsolve('', ['a'])                               # \u2192 True\n```",
+    "description": "Given a string `s` and a list of dictionary words `word_dict`, return `True` if `s` can be segmented into one or more space-separated words that all appear in `word_dict`.\n\n```\nsolve('leetcode', ['leet','code'])            # → True\nsolve('applepenapple', ['apple','pen'])        # → True\nsolve('catsandog', ['cats','dog','sand','cat','an'])  # → False\nsolve('', ['a'])                               # → True\n```",
     "starter_code": "def solve(s: str, word_dict: list) -> bool:\n    # Your code here\n    pass",
     "expected_code": "def solve(s, word_dict):\n    word_set = set(word_dict)\n    n = len(s)\n    dp = [False] * (n + 1)\n    dp[0] = True\n    for i in range(1, n + 1):\n        for j in range(i):\n            if dp[j] and s[j:i] in word_set:\n                dp[i] = True\n                break\n    return dp[n]",
     "solution_code": "def solve(s, word_dict):\n    word_set = set(word_dict)\n    n = len(s)\n    dp = [False] * (n + 1)\n    dp[0] = True\n    for i in range(1, n + 1):\n        for j in range(i):\n            if dp[j] and s[j:i] in word_set:\n                dp[i] = True\n                break\n    return dp[n]",
-    "explanation": "`dp[i]` is True if `s[:i]` can be segmented using dictionary words. Base case `dp[0] = True` (empty string). For each end index `i`, try all split points `j`: if `dp[j]` is True and `s[j:i]` is in the word set, then `dp[i] = True`. Convert `word_dict` to a set for O(1) lookups. Time: O(n\u00b2 * k) where k is average word length for slicing; Space: O(n + W).",
+    "explanation": "`dp[i]` is True if `s[:i]` can be segmented using dictionary words. Base case `dp[0] = True` (empty string). For each end index `i`, try all split points `j`: if `dp[j]` is True and `s[j:i]` is in the word set, then `dp[i] = True`. Convert `word_dict` to a set for O(1) lookups. Time: O(n² * k) where k is average word length for slicing; Space: O(n + W).",
     "test_cases": [
       {
         "input": [
@@ -454,7 +454,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Define dp[i] as True if the prefix s[:i] can be built from dictionary words; dp[0] = True as the empty string base case.",
+      "Ask whether progressively larger prefixes are solvable based on smaller prefixes you already know are valid.",
       "For each index i, scan back through all split points j < i: if dp[j] is True and s[j:i] is in the word set, set dp[i] = True."
     ],
     "concepts": [
@@ -469,7 +469,7 @@
     "topic": "python",
     "difficulty": "hard",
     "title": "Coin Change",
-    "description": "Given a list of coin denominations `coins` and an integer `amount`, return the **minimum number of coins** needed to make up `amount`. Return `-1` if it is not possible.\n\n```\nsolve([1,5,11], 15)  # \u2192 3  (5+5+5 or 11+1+1+1 \u2014 wait, 11+4 not possible; 5+5+5=3)\nsolve([1,5,6,9], 11) # \u2192 2  (5+6)\nsolve([2], 3)         # \u2192 -1\nsolve([1], 0)         # \u2192 0\n```",
+    "description": "Given a list of coin denominations `coins` and an integer `amount`, return the **minimum number of coins** needed to make up `amount`. Return `-1` if it is not possible.\n\n```\nsolve([1,5,11], 15)  # → 3  (5+5+5 or 11+1+1+1 — wait, 11+4 not possible; 5+5+5=3)\nsolve([1,5,6,9], 11) # → 2  (5+6)\nsolve([2], 3)         # → -1\nsolve([1], 0)         # → 0\n```",
     "starter_code": "def solve(coins: list, amount: int) -> int:\n    # Your code here\n    pass",
     "expected_code": "def solve(coins, amount):\n    dp = [float('inf')] * (amount + 1)\n    dp[0] = 0\n    for a in range(1, amount + 1):\n        for coin in coins:\n            if coin <= a:\n                dp[a] = min(dp[a], dp[a - coin] + 1)\n    return dp[amount] if dp[amount] != float('inf') else -1",
     "solution_code": "def solve(coins, amount):\n    dp = [float('inf')] * (amount + 1)\n    dp[0] = 0\n    for a in range(1, amount + 1):\n        for coin in coins:\n            if coin <= a:\n                dp[a] = min(dp[a], dp[a - coin] + 1)\n    return dp[amount] if dp[amount] != float('inf') else -1",
@@ -566,7 +566,7 @@
     "topic": "python",
     "difficulty": "hard",
     "title": "Number of Islands",
-    "description": "Given a 2D grid of `'1'` (land) and `'0'` (water) characters, return the number of islands. An island is surrounded by water and is formed by connecting adjacent land cells horizontally or vertically.\n\n```\nsolve([['1','1','1','1','0'],\n       ['1','1','0','1','0'],\n       ['1','1','0','0','0'],\n       ['0','0','0','0','0']])  # \u2192 1\n\nsolve([['1','1','0','0','0'],\n       ['1','1','0','0','0'],\n       ['0','0','1','0','0'],\n       ['0','0','0','1','1']])  # \u2192 3\n\nsolve([])  # \u2192 0\n```",
+    "description": "Given a 2D grid of `'1'` (land) and `'0'` (water) characters, return the number of islands. An island is surrounded by water and is formed by connecting adjacent land cells horizontally or vertically.\n\n```\nsolve([['1','1','1','1','0'],\n       ['1','1','0','1','0'],\n       ['1','1','0','0','0'],\n       ['0','0','0','0','0']])  # → 1\n\nsolve([['1','1','0','0','0'],\n       ['1','1','0','0','0'],\n       ['0','0','1','0','0'],\n       ['0','0','0','1','1']])  # → 3\n\nsolve([])  # → 0\n```",
     "starter_code": "def solve(grid: list) -> int:\n    # Your code here\n    pass",
     "expected_code": "def solve(grid):\n    if not grid or not grid[0]:\n        return 0\n    rows, cols = len(grid), len(grid[0])\n    count = 0\n    def dfs(r, c):\n        if r < 0 or r >= rows or c < 0 or c >= cols or grid[r][c] != '1':\n            return\n        grid[r][c] = '0'\n        dfs(r+1, c)\n        dfs(r-1, c)\n        dfs(r, c+1)\n        dfs(r, c-1)\n    for r in range(rows):\n        for c in range(cols):\n            if grid[r][c] == '1':\n                count += 1\n                dfs(r, c)\n    return count",
     "solution_code": "def solve(grid):\n    if not grid or not grid[0]:\n        return 0\n    rows, cols = len(grid), len(grid[0])\n    count = 0\n    def dfs(r, c):\n        if r < 0 or r >= rows or c < 0 or c >= cols or grid[r][c] != '1':\n            return\n        grid[r][c] = '0'\n        dfs(r+1, c)\n        dfs(r-1, c)\n        dfs(r, c+1)\n        dfs(r, c-1)\n    for r in range(rows):\n        for c in range(cols):\n            if grid[r][c] == '1':\n                count += 1\n                dfs(r, c)\n    return count",
@@ -708,7 +708,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Scan the grid; each time you encounter a '1', it's a new island \u2014 run DFS/BFS to mark the entire island as visited.",
+      "Scan the grid; each time you encounter a '1', it's a new island — run DFS/BFS to mark the entire island as visited.",
       "Mark visited cells by setting them to '0' in-place to avoid needing a separate visited set."
     ],
     "concepts": [
@@ -724,7 +724,7 @@
     "topic": "python",
     "difficulty": "hard",
     "title": "LRU Cache",
-    "description": "Implement an LRU (Least Recently Used) cache. The entry point is:\n\n```\nsolve(capacity, operations)\n```\n\nwhere `operations` is a list of tuples:\n- `('get', key)` \u2014 return the value if present, else `-1`. Marks key as recently used.\n- `('put', key, value)` \u2014 insert or update. Evict the LRU entry when over capacity. Return `None`.\n\n```\nsolve(2, [('put',1,1),('put',2,2),('get',1),('put',3,3),('get',2),('put',4,4),('get',1),('get',3),('get',4)])\n# \u2192 [None, None, 1, None, -1, None, -1, 3, 4]\n```",
+    "description": "Implement an LRU (Least Recently Used) cache. The entry point is:\n\n```\nsolve(capacity, operations)\n```\n\nwhere `operations` is a list of tuples:\n- `('get', key)` — return the value if present, else `-1`. Marks key as recently used.\n- `('put', key, value)` — insert or update. Evict the LRU entry when over capacity. Return `None`.\n\n```\nsolve(2, [('put',1,1),('put',2,2),('get',1),('put',3,3),('get',2),('put',4,4),('get',1),('get',3),('get',4)])\n# → [None, None, 1, None, -1, None, -1, 3, 4]\n```",
     "starter_code": "def solve(capacity: int, operations: list) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(capacity, operations):\n    cache = {}\n    order = []\n    results = []\n    for op in operations:\n        if op[0] == 'get':\n            key = op[1]\n            if key in cache:\n                order.remove(key)\n                order.append(key)\n                results.append(cache[key])\n            else:\n                results.append(-1)\n        else:\n            key, val = op[1], op[2]\n            if key in cache:\n                order.remove(key)\n            elif len(cache) == capacity:\n                lru = order.pop(0)\n                del cache[lru]\n            cache[key] = val\n            order.append(key)\n            results.append(None)\n    return results",
     "solution_code": "def solve(capacity, operations):\n    cache = {}\n    order = []\n    results = []\n    for op in operations:\n        if op[0] == 'get':\n            key = op[1]\n            if key in cache:\n                order.remove(key)\n                order.append(key)\n                results.append(cache[key])\n            else:\n                results.append(-1)\n        else:\n            key, val = op[1], op[2]\n            if key in cache:\n                order.remove(key)\n            elif len(cache) == capacity:\n                lru = order.pop(0)\n                del cache[lru]\n            cache[key] = val\n            order.append(key)\n            results.append(None)\n    return results",
@@ -1010,7 +1010,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "You need a data structure that supports O(1) lookup and tracks insertion/access order \u2014 a dict for values and a separate ordering structure.",
+      "You need one structure for instant lookup and another that always reveals which entry became stale first.",
       "On every get and put, move the accessed key to 'most recently used'; on eviction, remove the 'least recently used' (front of the order)."
     ],
     "concepts": [
@@ -1026,7 +1026,7 @@
     "topic": "python",
     "difficulty": "hard",
     "title": "Decode Ways",
-    "description": "A message is encoded using the mapping A\u21921, B\u21922, ..., Z\u219226. Given a string of digits `s`, return the **total number of ways** to decode it. A string with a leading zero or invalid two-digit code cannot be decoded.\n\n```\nsolve('12')   # \u2192 2  ('AB' or 'L')\nsolve('226')  # \u2192 3  ('BZ', 'VF', 'BBF')\nsolve('06')   # \u2192 0\nsolve('10')   # \u2192 1  ('J')\n```",
+    "description": "A message is encoded using the mapping A→1, B→2, ..., Z→26. Given a string of digits `s`, return the **total number of ways** to decode it. A string with a leading zero or invalid two-digit code cannot be decoded.\n\n```\nsolve('12')   # → 2  ('AB' or 'L')\nsolve('226')  # → 3  ('BZ', 'VF', 'BBF')\nsolve('06')   # → 0\nsolve('10')   # → 1  ('J')\n```",
     "starter_code": "def solve(s: str) -> int:\n    # Your code here\n    pass",
     "expected_code": "def solve(s):\n    if not s or s[0] == '0':\n        return 0\n    n = len(s)\n    dp = [0] * (n + 1)\n    dp[0] = 1\n    dp[1] = 1\n    for i in range(2, n + 1):\n        one_digit = int(s[i-1])\n        two_digit = int(s[i-2:i])\n        if one_digit != 0:\n            dp[i] += dp[i-1]\n        if 10 <= two_digit <= 26:\n            dp[i] += dp[i-2]\n    return dp[n]",
     "solution_code": "def solve(s):\n    if not s or s[0] == '0':\n        return 0\n    n = len(s)\n    dp = [0] * (n + 1)\n    dp[0] = 1\n    dp[1] = 1\n    for i in range(2, n + 1):\n        one_digit = int(s[i-1])\n        two_digit = int(s[i-2:i])\n        if one_digit != 0:\n            dp[i] += dp[i-1]\n        if 10 <= two_digit <= 26:\n            dp[i] += dp[i-2]\n    return dp[n]",
@@ -1078,7 +1078,7 @@
     "public_test_cases": 2,
     "hints": [
       "dp[i] = ways to decode the first i characters; think about taking the last 1 digit vs the last 2 digits.",
-      "A single digit is valid if it's 1\u20139. A two-digit pair is valid if it's 10\u201326."
+      "A single digit is valid if it's 1–9. A two-digit pair is valid if it's 10–26."
     ],
     "concepts": [
       "dynamic programming",
@@ -1091,11 +1091,11 @@
     "topic": "python",
     "difficulty": "hard",
     "title": "Longest Palindromic Substring",
-    "description": "Given a string `s`, return the **longest palindromic substring**. If there are ties, return the first one (leftmost). An empty string returns `''`.\n\n```\nsolve('babad')   # \u2192 'bab'  (or 'aba', return first)\nsolve('cbbd')    # \u2192 'bb'\nsolve('a')       # \u2192 'a'\nsolve('')        # \u2192 ''\n```",
+    "description": "Given a string `s`, return the **longest palindromic substring**. If there are ties, return the first one (leftmost). An empty string returns `''`.\n\n```\nsolve('babad')   # → 'bab'  (or 'aba', return first)\nsolve('cbbd')    # → 'bb'\nsolve('a')       # → 'a'\nsolve('')        # → ''\n```",
     "starter_code": "def solve(s: str) -> str:\n    # Your code here\n    pass",
     "expected_code": "def solve(s):\n    if not s:\n        return ''\n    start = end = 0\n    def expand(l, r):\n        while l >= 0 and r < len(s) and s[l] == s[r]:\n            l -= 1\n            r += 1\n        return l + 1, r - 1\n    for i in range(len(s)):\n        l1, r1 = expand(i, i)\n        l2, r2 = expand(i, i + 1)\n        if r1 - l1 > end - start:\n            start, end = l1, r1\n        if r2 - l2 > end - start:\n            start, end = l2, r2\n    return s[start:end+1]",
     "solution_code": "def solve(s):\n    if not s:\n        return ''\n    start = end = 0\n    def expand(l, r):\n        while l >= 0 and r < len(s) and s[l] == s[r]:\n            l -= 1\n            r += 1\n        return l + 1, r - 1\n    for i in range(len(s)):\n        l1, r1 = expand(i, i)\n        l2, r2 = expand(i, i + 1)\n        if r1 - l1 > end - start:\n            start, end = l1, r1\n        if r2 - l2 > end - start:\n            start, end = l2, r2\n    return s[start:end+1]",
-    "explanation": "Expand-around-center: for each character (odd-length center) and each adjacent pair (even-length center), expand outward as long as characters match. This gives all palindromes in O(n\u00b2) time without the O(n) space of Manacher's algorithm. Keep track of the longest found. Time: O(n\u00b2), Space: O(1).",
+    "explanation": "Expand-around-center: for each character (odd-length center) and each adjacent pair (even-length center), expand outward as long as characters match. This gives all palindromes in O(n²) time without the O(n) space of Manacher's algorithm. Keep track of the longest found. Time: O(n²), Space: O(1).",
     "test_cases": [
       {
         "input": [
@@ -1142,7 +1142,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Try expanding outward from each center position \u2014 there are 2n-1 possible centers (each character and each gap between characters).",
+      "Try expanding outward from each center position — there are 2n-1 possible centers (each character and each gap between characters).",
       "Keep track of the best (longest) palindrome found by storing start and end indices."
     ],
     "concepts": [
@@ -1157,7 +1157,7 @@
     "topic": "python",
     "difficulty": "hard",
     "title": "Reverse Nodes in K-Group",
-    "description": "Given a list `nums` and an integer `k`, reverse every group of `k` consecutive elements. If the remaining tail has fewer than `k` elements, leave it unchanged.\n\n```\nsolve([1,2,3,4,5], 2)  # \u2192 [2,1,4,3,5]\nsolve([1,2,3,4,5], 3)  # \u2192 [3,2,1,4,5]\nsolve([1,2,3,4,5], 1)  # \u2192 [1,2,3,4,5]\nsolve([], 2)            # \u2192 []\n```",
+    "description": "Given a list `nums` and an integer `k`, reverse every group of `k` consecutive elements. If the remaining tail has fewer than `k` elements, leave it unchanged.\n\n```\nsolve([1,2,3,4,5], 2)  # → [2,1,4,3,5]\nsolve([1,2,3,4,5], 3)  # → [3,2,1,4,5]\nsolve([1,2,3,4,5], 1)  # → [1,2,3,4,5]\nsolve([], 2)            # → []\n```",
     "starter_code": "def solve(nums: list, k: int) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(nums, k):\n    result = []\n    i = 0\n    while i < len(nums):\n        group = nums[i:i+k]\n        if len(group) == k:\n            result.extend(group[::-1])\n        else:\n            result.extend(group)\n        i += k\n    return result",
     "solution_code": "def solve(nums, k):\n    result = []\n    i = 0\n    while i < len(nums):\n        group = nums[i:i+k]\n        if len(group) == k:\n            result.extend(group[::-1])\n        else:\n            result.extend(group)\n        i += k\n    return result",
@@ -1300,7 +1300,7 @@
     "topic": "python",
     "difficulty": "hard",
     "title": "Maximal Rectangle",
-    "description": "Given a binary matrix (list of lists containing `0` and `1` integers), return the **area of the largest rectangle** containing only `1`s.\n\n```\nsolve([[1,0,1,0,0],\n       [1,0,1,1,1],\n       [1,1,1,1,1],\n       [1,0,0,1,0]])  # \u2192 6\n\nsolve([[0]])  # \u2192 0\nsolve([[1]])  # \u2192 1\n```",
+    "description": "Given a binary matrix (list of lists containing `0` and `1` integers), return the **area of the largest rectangle** containing only `1`s.\n\n```\nsolve([[1,0,1,0,0],\n       [1,0,1,1,1],\n       [1,1,1,1,1],\n       [1,0,0,1,0]])  # → 6\n\nsolve([[0]])  # → 0\nsolve([[1]])  # → 1\n```",
     "starter_code": "def solve(matrix: list) -> int:\n    # Your code here\n    pass",
     "expected_code": "def solve(matrix):\n    if not matrix or not matrix[0]:\n        return 0\n    cols = len(matrix[0])\n    heights = [0] * cols\n    max_area = 0\n    def largest_in_histogram(h):\n        stack = []\n        area = 0\n        for i, height in enumerate(h + [0]):\n            while stack and h[stack[-1]] > height:\n                top = stack.pop()\n                width = i if not stack else i - stack[-1] - 1\n                area = max(area, h[top] * width)\n            stack.append(i)\n        return area\n    for row in matrix:\n        for c in range(cols):\n            heights[c] = heights[c] + 1 if row[c] == 1 else 0\n        max_area = max(max_area, largest_in_histogram(heights))\n    return max_area",
     "solution_code": "def solve(matrix):\n    if not matrix or not matrix[0]:\n        return 0\n    cols = len(matrix[0])\n    heights = [0] * cols\n    max_area = 0\n    def largest_in_histogram(h):\n        stack = []\n        area = 0\n        for i, height in enumerate(h + [0]):\n            while stack and h[stack[-1]] > height:\n                top = stack.pop()\n                width = i if not stack else i - stack[-1] - 1\n                area = max(area, h[top] * width)\n            stack.append(i)\n        return area\n    for row in matrix:\n        for c in range(cols):\n            heights[c] = heights[c] + 1 if row[c] == 1 else 0\n        max_area = max(max_area, largest_in_histogram(heights))\n    return max_area",
@@ -1436,7 +1436,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Transform each row into a histogram of consecutive 1s (heights[c] = how many 1s stack above including this row; 0 if current cell is 0).",
+      "Turn each row into a running height profile so the 2D problem becomes a repeated 1D area problem.",
       "After each row update, apply the O(n) 'largest rectangle in histogram' algorithm using a monotonic stack."
     ],
     "concepts": [
@@ -1452,7 +1452,7 @@
     "topic": "python",
     "difficulty": "hard",
     "title": "Longest Increasing Subsequence",
-    "description": "Given a list of integers `nums`, return the **length** of the longest strictly increasing subsequence (LIS). Elements do not need to be contiguous.\n\n```\nsolve([10,9,2,5,3,7,101,18])  # \u2192 4  ([2,3,7,101])\nsolve([0,1,0,3,2,3])           # \u2192 4\nsolve([7,7,7,7])               # \u2192 1\nsolve([])                      # \u2192 0\n```",
+    "description": "Given a list of integers `nums`, return the **length** of the longest strictly increasing subsequence (LIS). Elements do not need to be contiguous.\n\n```\nsolve([10,9,2,5,3,7,101,18])  # → 4  ([2,3,7,101])\nsolve([0,1,0,3,2,3])           # → 4\nsolve([7,7,7,7])               # → 1\nsolve([])                      # → 0\n```",
     "starter_code": "def solve(nums: list) -> int:\n    # Aim for O(n log n)\n    pass",
     "expected_code": "def solve(nums):\n    if not nums:\n        return 0\n    tails = []\n    for n in nums:\n        lo, hi = 0, len(tails)\n        while lo < hi:\n            mid = (lo + hi) // 2\n            if tails[mid] < n:\n                lo = mid + 1\n            else:\n                hi = mid\n        if lo == len(tails):\n            tails.append(n)\n        else:\n            tails[lo] = n\n    return len(tails)",
     "solution_code": "def solve(nums):\n    if not nums:\n        return 0\n    tails = []\n    for n in nums:\n        lo, hi = 0, len(tails)\n        while lo < hi:\n            mid = (lo + hi) // 2\n            if tails[mid] < n:\n                lo = mid + 1\n            else:\n                hi = mid\n        if lo == len(tails):\n            tails.append(n)\n        else:\n            tails[lo] = n\n    return len(tails)",
@@ -1541,7 +1541,7 @@
     "public_test_cases": 2,
     "hints": [
       "Maintain a 'tails' array where tails[i] is the smallest tail value of all LIS of length i+1 seen so far.",
-      "Use binary search to find where to place each new number in 'tails' \u2014 replace the first tail that is >= the number."
+      "Use binary search to find where to place each new number in 'tails' — replace the first tail that is >= the number."
     ],
     "concepts": [
       "binary search",
@@ -1555,11 +1555,11 @@
     "topic": "python",
     "difficulty": "hard",
     "title": "Word Ladder",
-    "description": "Given `begin_word`, `end_word`, and a list `word_list`, return the **length of the shortest transformation sequence** from `begin_word` to `end_word`. Each step changes exactly one letter, and each intermediate word must be in `word_list`. Return `0` if no such sequence exists.\n\n```\nsolve('hit', 'cog', ['hot','dot','dog','lot','log','cog'])  # \u2192 5\nsolve('hit', 'cog', ['hot','dot','dog','lot','log'])        # \u2192 0\nsolve('a', 'c', ['a','b','c'])                              # \u2192 2\n```",
+    "description": "Given `begin_word`, `end_word`, and a list `word_list`, return the **length of the shortest transformation sequence** from `begin_word` to `end_word`. Each step changes exactly one letter, and each intermediate word must be in `word_list`. Return `0` if no such sequence exists.\n\n```\nsolve('hit', 'cog', ['hot','dot','dog','lot','log','cog'])  # → 5\nsolve('hit', 'cog', ['hot','dot','dog','lot','log'])        # → 0\nsolve('a', 'c', ['a','b','c'])                              # → 2\n```",
     "starter_code": "def solve(begin_word: str, end_word: str, word_list: list) -> int:\n    # Your code here\n    pass",
     "expected_code": "def solve(begin_word, end_word, word_list):\n    word_set = set(word_list)\n    if end_word not in word_set:\n        return 0\n    queue = [(begin_word, 1)]\n    visited = {begin_word}\n    while queue:\n        word, length = queue.pop(0)\n        for i in range(len(word)):\n            for c in 'abcdefghijklmnopqrstuvwxyz':\n                next_word = word[:i] + c + word[i+1:]\n                if next_word == end_word:\n                    return length + 1\n                if next_word in word_set and next_word not in visited:\n                    visited.add(next_word)\n                    queue.append((next_word, length + 1))\n    return 0",
     "solution_code": "def solve(begin_word, end_word, word_list):\n    word_set = set(word_list)\n    if end_word not in word_set:\n        return 0\n    queue = [(begin_word, 1)]\n    visited = {begin_word}\n    while queue:\n        word, length = queue.pop(0)\n        for i in range(len(word)):\n            for c in 'abcdefghijklmnopqrstuvwxyz':\n                next_word = word[:i] + c + word[i+1:]\n                if next_word == end_word:\n                    return length + 1\n                if next_word in word_set and next_word not in visited:\n                    visited.add(next_word)\n                    queue.append((next_word, length + 1))\n    return 0",
-    "explanation": "BFS on a graph where words are nodes connected if they differ by exactly one letter. Starting from `begin_word`, try replacing each position with every letter; if the resulting word is in `word_set` and unvisited, enqueue it. BFS guarantees the shortest path. Time: O(M\u00b2 * N) where M = word length, N = word count. Space: O(N).",
+    "explanation": "BFS on a graph where words are nodes connected if they differ by exactly one letter. Starting from `begin_word`, try replacing each position with every letter; if the resulting word is in `word_set` and unvisited, enqueue it. BFS guarantees the shortest path. Time: O(M² * N) where M = word length, N = word count. Space: O(N).",
     "test_cases": [
       {
         "input": [
@@ -1761,11 +1761,11 @@
     "topic": "python",
     "difficulty": "hard",
     "title": "Alien Dictionary",
-    "description": "You are given a list of words `words` sorted lexicographically according to an alien language's alphabet. Return a string of the unique characters in the correct alien alphabetical order. Return `''` if the ordering is invalid (cycle detected) or contradictory.\n\n```\nsolve(['wrt','wrf','er','ett','rftt'])  # \u2192 'wertf'\nsolve(['z','x'])                        # \u2192 'zx'\nsolve(['z','x','z'])                    # \u2192 ''  (cycle)\nsolve(['abc','ab'])                     # \u2192 ''  (invalid prefix)\n```",
+    "description": "You are given a list of words `words` sorted lexicographically according to an alien language's alphabet. Return a string of the unique characters in the correct alien alphabetical order. Return `''` if the ordering is invalid (cycle detected) or contradictory.\n\n```\nsolve(['wrt','wrf','er','ett','rftt'])  # → 'wertf'\nsolve(['z','x'])                        # → 'zx'\nsolve(['z','x','z'])                    # → ''  (cycle)\nsolve(['abc','ab'])                     # → ''  (invalid prefix)\n```",
     "starter_code": "def solve(words: list) -> str:\n    # Your code here\n    pass",
     "expected_code": "def solve(words):\n    adj = {c: set() for w in words for c in w}\n    in_degree = {c: 0 for c in adj}\n    for i in range(len(words) - 1):\n        w1, w2 = words[i], words[i+1]\n        min_len = min(len(w1), len(w2))\n        if len(w1) > len(w2) and w1[:min_len] == w2[:min_len]:\n            return ''\n        for j in range(min_len):\n            if w1[j] != w2[j]:\n                if w2[j] not in adj[w1[j]]:\n                    adj[w1[j]].add(w2[j])\n                    in_degree[w2[j]] += 1\n                break\n    queue = [c for c in in_degree if in_degree[c] == 0]\n    result = []\n    while queue:\n        c = queue.pop(0)\n        result.append(c)\n        for nb in sorted(adj[c]):\n            in_degree[nb] -= 1\n            if in_degree[nb] == 0:\n                queue.append(nb)\n    if len(result) != len(adj):\n        return ''\n    return ''.join(result)",
     "solution_code": "def solve(words):\n    adj = {c: set() for w in words for c in w}\n    in_degree = {c: 0 for c in adj}\n    for i in range(len(words) - 1):\n        w1, w2 = words[i], words[i+1]\n        min_len = min(len(w1), len(w2))\n        if len(w1) > len(w2) and w1[:min_len] == w2[:min_len]:\n            return ''\n        for j in range(min_len):\n            if w1[j] != w2[j]:\n                if w2[j] not in adj[w1[j]]:\n                    adj[w1[j]].add(w2[j])\n                    in_degree[w2[j]] += 1\n                break\n    queue = [c for c in in_degree if in_degree[c] == 0]\n    result = []\n    while queue:\n        c = queue.pop(0)\n        result.append(c)\n        for nb in sorted(adj[c]):\n            in_degree[nb] -= 1\n            if in_degree[nb] == 0:\n                queue.append(nb)\n    if len(result) != len(adj):\n        return ''\n    return ''.join(result)",
-    "explanation": "Compare adjacent words to derive character ordering constraints. For each adjacent pair, find the first differing character \u2014 that gives an edge in the ordering graph (c1 comes before c2). Detect invalid input (longer word is prefix of shorter). Then run Kahn's topological sort (BFS with in-degree tracking). If all characters are processed, return the order; otherwise a cycle exists and return ''. Time: O(C + N*L) where C=unique chars, N=words, L=avg length.",
+    "explanation": "Compare adjacent words to derive character ordering constraints. For each adjacent pair, find the first differing character — that gives an edge in the ordering graph (c1 comes before c2). Detect invalid input (longer word is prefix of shorter). Then run Kahn's topological sort (BFS with in-degree tracking). If all characters are processed, return the order; otherwise a cycle exists and return ''. Time: O(C + N*L) where C=unique chars, N=words, L=avg length.",
     "test_cases": [
       {
         "input": [
@@ -1852,7 +1852,7 @@
     "topic": "python",
     "difficulty": "hard",
     "title": "Median from Data Stream",
-    "description": "Implement a data structure that supports two operations:\n- `addNum(n)` \u2014 add integer `n` to the stream.\n- `findMedian()` \u2014 return the median of all numbers added so far as a `float`.\n\nEntry point: `solve(operations)` where operations are tuples `('addNum', n)` or `('findMedian',)`. Return a list of results (`None` for addNum, float median for findMedian).\n\n```\nsolve([('addNum',1),('addNum',2),('findMedian',),('addNum',3),('findMedian',)])\n# \u2192 [None, None, 1.5, None, 2.0]\n```",
+    "description": "Implement a data structure that supports two operations:\n- `addNum(n)` — add integer `n` to the stream.\n- `findMedian()` — return the median of all numbers added so far as a `float`.\n\nEntry point: `solve(operations)` where operations are tuples `('addNum', n)` or `('findMedian',)`. Return a list of results (`None` for addNum, float median for findMedian).\n\n```\nsolve([('addNum',1),('addNum',2),('findMedian',),('addNum',3),('findMedian',)])\n# → [None, None, 1.5, None, 2.0]\n```",
     "starter_code": "def solve(operations: list) -> list:\n    # Use two heaps (max-heap for lower half, min-heap for upper half)\n    pass",
     "expected_code": "import heapq\ndef solve(operations):\n    lo = []  # max-heap (negate values)\n    hi = []  # min-heap\n    results = []\n    for op in operations:\n        if op[0] == 'addNum':\n            n = op[1]\n            heapq.heappush(lo, -n)\n            heapq.heappush(hi, -heapq.heappop(lo))\n            if len(hi) > len(lo):\n                heapq.heappush(lo, -heapq.heappop(hi))\n            results.append(None)\n        else:\n            if len(lo) == len(hi):\n                results.append((-lo[0] + hi[0]) / 2.0)\n            else:\n                results.append(float(-lo[0]))\n    return results",
     "solution_code": "import heapq\ndef solve(operations):\n    lo = []  # max-heap (negate values)\n    hi = []  # min-heap\n    results = []\n    for op in operations:\n        if op[0] == 'addNum':\n            n = op[1]\n            heapq.heappush(lo, -n)\n            heapq.heappush(hi, -heapq.heappop(lo))\n            if len(hi) > len(lo):\n                heapq.heappush(lo, -heapq.heappop(hi))\n            results.append(None)\n        else:\n            if len(lo) == len(hi):\n                results.append((-lo[0] + hi[0]) / 2.0)\n            else:\n                results.append(float(-lo[0]))\n    return results",
@@ -2073,7 +2073,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use two heaps: a max-heap for the lower half and a min-heap for the upper half. Keep them balanced in size (lo >= hi in length by at most 1).",
+      "Keep the lower and upper halves balanced so the median always sits at their boundary.",
       "Python only has min-heap (heapq); simulate a max-heap by negating values."
     ],
     "concepts": [
@@ -2089,7 +2089,7 @@
     "topic": "python",
     "difficulty": "hard",
     "title": "Regular Expression Matching",
-    "description": "Given string `s` and pattern `p`, implement regular expression matching where:\n- `'.'` matches any single character.\n- `'*'` matches zero or more of the preceding element.\n\nThe match must cover the **entire** string.\n\n```\nsolve('aa', 'a')    # \u2192 False\nsolve('aa', 'a*')   # \u2192 True\nsolve('ab', '.*')   # \u2192 True\nsolve('aab', 'c*a*b') # \u2192 True\n```",
+    "description": "Given string `s` and pattern `p`, implement regular expression matching where:\n- `'.'` matches any single character.\n- `'*'` matches zero or more of the preceding element.\n\nThe match must cover the **entire** string.\n\n```\nsolve('aa', 'a')    # → False\nsolve('aa', 'a*')   # → True\nsolve('ab', '.*')   # → True\nsolve('aab', 'c*a*b') # → True\n```",
     "starter_code": "def solve(s: str, p: str) -> bool:\n    # Your code here\n    pass",
     "expected_code": "def solve(s, p):\n    m, n = len(s), len(p)\n    dp = [[False] * (n + 1) for _ in range(m + 1)]\n    dp[0][0] = True\n    for j in range(1, n + 1):\n        if p[j-1] == '*':\n            dp[0][j] = dp[0][j-2]\n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            if p[j-1] == '*':\n                dp[i][j] = dp[i][j-2]\n                if p[j-2] == '.' or p[j-2] == s[i-1]:\n                    dp[i][j] = dp[i][j] or dp[i-1][j]\n            elif p[j-1] == '.' or p[j-1] == s[i-1]:\n                dp[i][j] = dp[i-1][j-1]\n    return dp[m][n]",
     "solution_code": "def solve(s, p):\n    m, n = len(s), len(p)\n    dp = [[False] * (n + 1) for _ in range(m + 1)]\n    dp[0][0] = True\n    for j in range(1, n + 1):\n        if p[j-1] == '*':\n            dp[0][j] = dp[0][j-2]\n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            if p[j-1] == '*':\n                dp[i][j] = dp[i][j-2]\n                if p[j-2] == '.' or p[j-2] == s[i-1]:\n                    dp[i][j] = dp[i][j] or dp[i-1][j]\n            elif p[j-1] == '.' or p[j-1] == s[i-1]:\n                dp[i][j] = dp[i-1][j-1]\n    return dp[m][n]",
@@ -2148,7 +2148,7 @@
     "public_test_cases": 2,
     "hints": [
       "Define dp[i][j] as True if s[:i] matches p[:j]. The tricky case is '*': it either matches zero occurrences (ignore the preceding char + star) or one-or-more occurrences.",
-      "Initialise dp[0][j] carefully \u2014 patterns like 'a*b*c*' can match the empty string."
+      "Initialise dp[0][j] carefully — patterns like 'a*b*c*' can match the empty string."
     ],
     "concepts": [
       "dynamic programming",
@@ -2162,11 +2162,11 @@
     "topic": "python",
     "difficulty": "hard",
     "title": "Sliding Window Median",
-    "description": "Given a list `nums` and window size `k`, return a list of medians for each window of size `k` as floats. The window slides one position at a time.\n\n```\nsolve([1,3,-1,-3,5,3,6,7], 3)  # \u2192 [1.0, -1.0, -1.0, 3.0, 5.0, 6.0]\nsolve([1,2,3,4,5], 2)           # \u2192 [1.5, 2.5, 3.5, 4.5]\nsolve([1], 1)                   # \u2192 [1.0]\n```",
+    "description": "Given a list `nums` and window size `k`, return a list of medians for each window of size `k` as floats. The window slides one position at a time.\n\n```\nsolve([1,3,-1,-3,5,3,6,7], 3)  # → [1.0, -1.0, -1.0, 3.0, 5.0, 6.0]\nsolve([1,2,3,4,5], 2)           # → [1.5, 2.5, 3.5, 4.5]\nsolve([1], 1)                   # → [1.0]\n```",
     "starter_code": "def solve(nums: list, k: int) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(nums, k):\n    def get_median(window):\n        n = len(window)\n        if n % 2 == 1:\n            return float(window[n // 2])\n        return (window[n // 2 - 1] + window[n // 2]) / 2.0\n    if not nums or k == 0:\n        return []\n    window = sorted(nums[:k])\n    result = [get_median(window)]\n    for i in range(k, len(nums)):\n        # Remove outgoing element\n        old = nums[i - k]\n        lo, hi = 0, len(window) - 1\n        while lo < hi:\n            mid = (lo + hi) // 2\n            if window[mid] < old:\n                lo = mid + 1\n            else:\n                hi = mid\n        window.pop(lo)\n        # Insert new element in sorted order\n        new = nums[i]\n        lo, hi = 0, len(window)\n        while lo < hi:\n            mid = (lo + hi) // 2\n            if window[mid] < new:\n                lo = mid + 1\n            else:\n                hi = mid\n        window.insert(lo, new)\n        result.append(get_median(window))\n    return result",
     "solution_code": "def solve(nums, k):\n    def get_median(window):\n        n = len(window)\n        if n % 2 == 1:\n            return float(window[n // 2])\n        return (window[n // 2 - 1] + window[n // 2]) / 2.0\n    if not nums or k == 0:\n        return []\n    window = sorted(nums[:k])\n    result = [get_median(window)]\n    for i in range(k, len(nums)):\n        old = nums[i - k]\n        lo, hi = 0, len(window) - 1\n        while lo < hi:\n            mid = (lo + hi) // 2\n            if window[mid] < old:\n                lo = mid + 1\n            else:\n                hi = mid\n        window.pop(lo)\n        new = nums[i]\n        lo, hi = 0, len(window)\n        while lo < hi:\n            mid = (lo + hi) // 2\n            if window[mid] < new:\n                lo = mid + 1\n            else:\n                hi = mid\n        window.insert(lo, new)\n        result.append(get_median(window))\n    return result",
-    "explanation": "Maintain a sorted window of size k. For each new element, binary-search to remove the outgoing element and binary-search to insert the new element \u2014 both O(log k) for the search but O(k) for the list shift. Median is the middle element (odd k) or average of two middle elements (even k). Overall O(n*k) with sorted-list insertion; optimal O(n log k) uses two heaps or an order-statistics tree. Time: O(n*k), Space: O(k).",
+    "explanation": "Maintain a sorted window of size k. For each new element, binary-search to remove the outgoing element and binary-search to insert the new element — both O(log k) for the search but O(k) for the list shift. Median is the middle element (odd k) or average of two middle elements (even k). Overall O(n*k) with sorted-list insertion; optimal O(n log k) uses two heaps or an order-statistics tree. Time: O(n*k), Space: O(k).",
     "test_cases": [
       {
         "input": [
@@ -2306,11 +2306,11 @@
     "topic": "python",
     "difficulty": "hard",
     "title": "Serialize and Deserialize BST",
-    "description": "Given a list of integer values `values`, insert them one by one into a BST (Binary Search Tree). Serialize the resulting BST to a string, then deserialize that string back into a BST. Return the **inorder traversal** of the deserialized tree as a list (should be sorted).\n\n```\nsolve([5,3,7,1,4])  # \u2192 [1,3,4,5,7]\nsolve([4,2,6,1,3,5,7])  # \u2192 [1,2,3,4,5,6,7]\nsolve([1])          # \u2192 [1]\nsolve([])           # \u2192 []\n```",
+    "description": "Given a list of integer values `values`, insert them one by one into a BST (Binary Search Tree). Serialize the resulting BST to a string, then deserialize that string back into a BST. Return the **inorder traversal** of the deserialized tree as a list (should be sorted).\n\n```\nsolve([5,3,7,1,4])  # → [1,3,4,5,7]\nsolve([4,2,6,1,3,5,7])  # → [1,2,3,4,5,6,7]\nsolve([1])          # → [1]\nsolve([])           # → []\n```",
     "starter_code": "def solve(values: list) -> list:\n    # Build BST, serialize to string, deserialize, return inorder traversal\n    pass",
     "expected_code": "def solve(values):\n    class Node:\n        def __init__(self, val):\n            self.val = val\n            self.left = self.right = None\n    def insert(root, val):\n        if not root:\n            return Node(val)\n        if val < root.val:\n            root.left = insert(root.left, val)\n        else:\n            root.right = insert(root.right, val)\n        return root\n    def serialize(root):\n        if not root:\n            return '#'\n        return str(root.val) + ',' + serialize(root.left) + ',' + serialize(root.right)\n    def deserialize(data):\n        tokens = iter(data.split(','))\n        def build():\n            token = next(tokens)\n            if token == '#':\n                return None\n            node = Node(int(token))\n            node.left = build()\n            node.right = build()\n            return node\n        return build()\n    def inorder(root, result):\n        if root:\n            inorder(root.left, result)\n            result.append(root.val)\n            inorder(root.right, result)\n    root = None\n    for v in values:\n        root = insert(root, v)\n    data = serialize(root)\n    new_root = deserialize(data)\n    result = []\n    inorder(new_root, result)\n    return result",
     "solution_code": "def solve(values):\n    class Node:\n        def __init__(self, val):\n            self.val = val\n            self.left = self.right = None\n    def insert(root, val):\n        if not root:\n            return Node(val)\n        if val < root.val:\n            root.left = insert(root.left, val)\n        else:\n            root.right = insert(root.right, val)\n        return root\n    def serialize(root):\n        if not root:\n            return '#'\n        return str(root.val) + ',' + serialize(root.left) + ',' + serialize(root.right)\n    def deserialize(data):\n        tokens = iter(data.split(','))\n        def build():\n            token = next(tokens)\n            if token == '#':\n                return None\n            node = Node(int(token))\n            node.left = build()\n            node.right = build()\n            return node\n        return build()\n    def inorder(root, result):\n        if root:\n            inorder(root.left, result)\n            result.append(root.val)\n            inorder(root.right, result)\n    root = None\n    for v in values:\n        root = insert(root, v)\n    data = serialize(root)\n    new_root = deserialize(data)\n    result = []\n    inorder(new_root, result)\n    return result",
-    "explanation": "Build the BST by inserting values one by one following BST ordering rules. Serialize using preorder traversal: emit each node's value, then serialize left and right subtrees; use '#' for null nodes. Deserialize by consuming the preorder token stream \u2014 each '#' terminates a branch. The inorder traversal of any valid BST is always sorted. Time: O(n log n) average for construction, O(n) for serialize/deserialize/inorder. Space: O(n).",
+    "explanation": "Build the BST by inserting values one by one following BST ordering rules. Serialize using preorder traversal: emit each node's value, then serialize left and right subtrees; use '#' for null nodes. Deserialize by consuming the preorder token stream — each '#' terminates a branch. The inorder traversal of any valid BST is always sorted. Time: O(n log n) average for construction, O(n) for serialize/deserialize/inorder. Space: O(n).",
     "test_cases": [
       {
         "input": [
@@ -2430,7 +2430,7 @@
     "public_test_cases": 2,
     "hints": [
       "Serialize with a preorder traversal, using a sentinel (like '#') for null nodes so the structure can be fully recovered.",
-      "Deserialize by consuming the preorder token stream recursively \u2014 each call reads one token and recurses for left then right."
+      "Deserialize by consuming the preorder token stream recursively — each call reads one token and recurses for left then right."
     ],
     "concepts": [
       "binary search tree",
@@ -2445,11 +2445,11 @@
     "topic": "python",
     "difficulty": "hard",
     "title": "Largest Rectangle in Histogram",
-    "description": "Given a list `heights` where `heights[i]` is the height of the i-th bar in a histogram (each bar has unit width), return the **area of the largest rectangle** that can be formed within the histogram.\n\n```\nsolve([2,1,5,6,2,3])  # \u2192 10  (bars 5 and 6, width 2)\nsolve([2,4])           # \u2192 4\nsolve([1])             # \u2192 1\nsolve([])              # \u2192 0\n```",
+    "description": "Given a list `heights` where `heights[i]` is the height of the i-th bar in a histogram (each bar has unit width), return the **area of the largest rectangle** that can be formed within the histogram.\n\n```\nsolve([2,1,5,6,2,3])  # → 10  (bars 5 and 6, width 2)\nsolve([2,4])           # → 4\nsolve([1])             # → 1\nsolve([])              # → 0\n```",
     "starter_code": "def solve(heights: list) -> int:\n    # Use a monotonic stack for O(n)\n    pass",
     "expected_code": "def solve(heights):\n    stack = []\n    max_area = 0\n    for i, h in enumerate(heights + [0]):\n        while stack and heights[stack[-1]] > h:\n            height = heights[stack.pop()]\n            width = i if not stack else i - stack[-1] - 1\n            max_area = max(max_area, height * width)\n        stack.append(i)\n    return max_area",
     "solution_code": "def solve(heights):\n    stack = []\n    max_area = 0\n    for i, h in enumerate(heights + [0]):\n        while stack and heights[stack[-1]] > h:\n            height = heights[stack.pop()]\n            width = i if not stack else i - stack[-1] - 1\n            max_area = max(max_area, height * width)\n        stack.append(i)\n    return max_area",
-    "explanation": "Maintain a monotonic increasing stack of indices. When a shorter bar is encountered, pop taller bars and compute the rectangle area each popped bar could form \u2014 its height is `heights[popped]` and its width extends from just after the new stack top to just before the current index. Appending a sentinel `0` at the end flushes all remaining bars. Each bar is pushed and popped at most once. Time: O(n), Space: O(n).",
+    "explanation": "Maintain a monotonic increasing stack of indices. When a shorter bar is encountered, pop taller bars and compute the rectangle area each popped bar could form — its height is `heights[popped]` and its width extends from just after the new stack top to just before the current index. Appending a sentinel `0` at the end flushes all remaining bars. Each bar is pushed and popped at most once. Time: O(n), Space: O(n).",
     "test_cases": [
       {
         "input": [
@@ -2528,7 +2528,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use a monotonic increasing stack of indices. When you see a bar shorter than the stack's top, the top bar can no longer extend rightward \u2014 compute its maximum rectangle.",
+      "Track how far each bar can remain the limiting height, and finalize that span only when a shorter bar forces a decision.",
       "The width of the rectangle for a popped bar is: current index minus the new stack top index minus 1 (or just current index if the stack is empty)."
     ],
     "concepts": [
@@ -2543,11 +2543,11 @@
     "topic": "python",
     "difficulty": "hard",
     "title": "Implement a Trie",
-    "description": "Implement a Trie (prefix tree) that supports insert, search, and prefix matching.\n\nYour function receives two lists of equal length:\n- `operations`: list of strings, each either `'insert'`, `'search'`, or `'starts_with'`\n- `words`: the corresponding word or prefix for each operation\n\nReturn a list of results: `None` for `'insert'`, `True`/`False` for `'search'` and `'starts_with'`.\n\n```\nsolve(['insert','insert','search','starts_with','search'],\n      ['apple', 'app',   'apple', 'app',         'ap'])\n# \u2192 [None, None, True, True, False]\n\nsolve(['insert','search','starts_with'],\n      ['hello', 'hell',  'hel'])\n# \u2192 [None, False, True]\n```",
+    "description": "Implement a Trie (prefix tree) that supports insert, search, and prefix matching.\n\nYour function receives two lists of equal length:\n- `operations`: list of strings, each either `'insert'`, `'search'`, or `'starts_with'`\n- `words`: the corresponding word or prefix for each operation\n\nReturn a list of results: `None` for `'insert'`, `True`/`False` for `'search'` and `'starts_with'`.\n\n```\nsolve(['insert','insert','search','starts_with','search'],\n      ['apple', 'app',   'apple', 'app',         'ap'])\n# → [None, None, True, True, False]\n\nsolve(['insert','search','starts_with'],\n      ['hello', 'hell',  'hel'])\n# → [None, False, True]\n```",
     "starter_code": "def solve(operations: list, words: list) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(operations, words):\n    class TrieNode:\n        def __init__(self):\n            self.children = {}\n            self.is_end = False\n\n    root = TrieNode()\n\n    def insert(word):\n        node = root\n        for ch in word:\n            if ch not in node.children:\n                node.children[ch] = TrieNode()\n            node = node.children[ch]\n        node.is_end = True\n\n    def search(word):\n        node = root\n        for ch in word:\n            if ch not in node.children:\n                return False\n            node = node.children[ch]\n        return node.is_end\n\n    def starts_with(prefix):\n        node = root\n        for ch in prefix:\n            if ch not in node.children:\n                return False\n            node = node.children[ch]\n        return True\n\n    results = []\n    for op, word in zip(operations, words):\n        if op == 'insert':\n            insert(word)\n            results.append(None)\n        elif op == 'search':\n            results.append(search(word))\n        else:  # starts_with\n            results.append(starts_with(word))\n    return results",
     "solution_code": "def solve(operations, words):\n    class TrieNode:\n        def __init__(self):\n            self.children = {}\n            self.is_end = False\n\n    root = TrieNode()\n\n    def insert(word):\n        node = root\n        for ch in word:\n            if ch not in node.children:\n                node.children[ch] = TrieNode()\n            node = node.children[ch]\n        node.is_end = True\n\n    def search(word):\n        node = root\n        for ch in word:\n            if ch not in node.children:\n                return False\n            node = node.children[ch]\n        return node.is_end\n\n    def starts_with(prefix):\n        node = root\n        for ch in prefix:\n            if ch not in node.children:\n                return False\n            node = node.children[ch]\n        return True\n\n    results = []\n    for op, word in zip(operations, words):\n        if op == 'insert':\n            insert(word)\n            results.append(None)\n        elif op == 'search':\n            results.append(search(word))\n        else:\n            results.append(starts_with(word))\n    return results",
-    "explanation": "A Trie node holds a dict of children (one per character) and a boolean marking word endings. Insert: traverse the trie character by character, creating nodes as needed, then mark is_end=True. Search: traverse \u2014 if any character is missing return False, otherwise return whether the final node is_end. Starts_with: same traversal but return True regardless of is_end (any path reaching the end of the prefix is valid). Time per operation: O(m) where m is word length. Space: O(total characters inserted).",
+    "explanation": "A Trie node holds a dict of children (one per character) and a boolean marking word endings. Insert: traverse the trie character by character, creating nodes as needed, then mark is_end=True. Search: traverse — if any character is missing return False, otherwise return whether the final node is_end. Starts_with: same traversal but return True regardless of is_end (any path reaching the end of the prefix is valid). Time per operation: O(m) where m is word length. Space: O(total characters inserted).",
     "test_cases": [
       {
         "input": [
@@ -2697,7 +2697,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "A TrieNode needs two things: a dict mapping characters to child TrieNodes, and a boolean `is_end` that marks the end of a valid word",
+      "Model shared prefixes explicitly so insert, search, and prefix checks all walk the same branching structure.",
       "search() and starts_with() differ by one line: search checks node.is_end at the end; starts_with always returns True if it reaches the end of the prefix"
     ],
     "concepts": [
@@ -2714,11 +2714,11 @@
     "topic": "python",
     "difficulty": "hard",
     "title": "Number of connected components",
-    "description": "Given `n` nodes labeled `0` to `n-1` and a list of undirected edges, return the number of connected components in the graph.\n\n```\nsolve(5, [[0,1],[1,2],[3,4]])         # \u2192 2\nsolve(5, [[0,1],[1,2],[2,3],[3,4]])   # \u2192 1\nsolve(4, [])                          # \u2192 4\nsolve(1, [])                          # \u2192 1\n```\n\nImplement using Union-Find (Disjoint Set Union) with path compression and union by rank.",
+    "description": "Given `n` nodes labeled `0` to `n-1` and a list of undirected edges, return the number of connected components in the graph.\n\n```\nsolve(5, [[0,1],[1,2],[3,4]])         # → 2\nsolve(5, [[0,1],[1,2],[2,3],[3,4]])   # → 1\nsolve(4, [])                          # → 4\nsolve(1, [])                          # → 1\n```\n\nImplement using Union-Find (Disjoint Set Union) with path compression and union by rank.",
     "starter_code": "def solve(n: int, edges: list) -> int:\n    # Your code here\n    pass",
     "expected_code": "def solve(n, edges):\n    parent = list(range(n))\n    rank = [0] * n\n\n    def find(x):\n        if parent[x] != x:\n            parent[x] = find(parent[x])  # path compression\n        return parent[x]\n\n    def union(x, y):\n        px, py = find(x), find(y)\n        if px == py:\n            return False\n        if rank[px] < rank[py]:\n            px, py = py, px\n        parent[py] = px\n        if rank[px] == rank[py]:\n            rank[px] += 1\n        return True\n\n    components = n\n    for u, v in edges:\n        if union(u, v):\n            components -= 1\n    return components",
     "solution_code": "def solve(n, edges):\n    parent = list(range(n))\n    rank = [0] * n\n\n    def find(x):\n        if parent[x] != x:\n            parent[x] = find(parent[x])  # path compression\n        return parent[x]\n\n    def union(x, y):\n        px, py = find(x), find(y)\n        if px == py:\n            return False\n        if rank[px] < rank[py]:\n            px, py = py, px\n        parent[py] = px\n        if rank[px] == rank[py]:\n            rank[px] += 1\n        return True\n\n    components = n\n    for u, v in edges:\n        if union(u, v):\n            components -= 1\n    return components",
-    "explanation": "Union-Find starts with n components (each node is its own component). `find()` traverses parent pointers to the root, applying path compression (flattening the tree) for near-O(1) future lookups. `union()` merges two components: find their roots; if different, attach the shorter tree under the taller (union by rank) and decrement the component count. Final component count = n minus successful merges. Time: O(n * \u03b1(n)) \u2248 O(n) amortized. Space: O(n).",
+    "explanation": "Union-Find starts with n components (each node is its own component). `find()` traverses parent pointers to the root, applying path compression (flattening the tree) for near-O(1) future lookups. `union()` merges two components: find their roots; if different, attach the shorter tree under the taller (union by rank) and decrement the component count. Final component count = n minus successful merges. Time: O(n * α(n)) ≈ O(n) amortized. Space: O(n).",
     "test_cases": [
       {
         "input": [
@@ -2858,11 +2858,11 @@
     "topic": "python",
     "difficulty": "hard",
     "title": "Network delay time",
-    "description": "You are given a directed weighted graph of `n` nodes (labeled `1` to `n`), represented as `times = [[u, v, w], ...]` where there is a directed edge from `u` to `v` with travel time `w`. Given a source node `k`, return the minimum time for a signal to reach **all** nodes. Return `-1` if some node is unreachable.\n\n```\nsolve([[2,1,1],[2,3,1],[3,4,1]], 4, 2)  # \u2192 2\nsolve([[1,2,1]], 2, 1)                  # \u2192 1\nsolve([[1,2,1]], 2, 2)                  # \u2192 -1  (node 1 unreachable from 2)\nsolve([], 1, 1)                         # \u2192 0\n```",
+    "description": "You are given a directed weighted graph of `n` nodes (labeled `1` to `n`), represented as `times = [[u, v, w], ...]` where there is a directed edge from `u` to `v` with travel time `w`. Given a source node `k`, return the minimum time for a signal to reach **all** nodes. Return `-1` if some node is unreachable.\n\n```\nsolve([[2,1,1],[2,3,1],[3,4,1]], 4, 2)  # → 2\nsolve([[1,2,1]], 2, 1)                  # → 1\nsolve([[1,2,1]], 2, 2)                  # → -1  (node 1 unreachable from 2)\nsolve([], 1, 1)                         # → 0\n```",
     "starter_code": "def solve(times: list, n: int, k: int) -> int:\n    # Your code here\n    pass",
     "expected_code": "def solve(times, n, k):\n    import heapq\n    graph = [[] for _ in range(n + 1)]\n    for u, v, w in times:\n        graph[u].append((w, v))\n\n    dist = [float('inf')] * (n + 1)\n    dist[k] = 0\n    heap = [(0, k)]  # (distance, node)\n\n    while heap:\n        d, u = heapq.heappop(heap)\n        if d > dist[u]:\n            continue\n        for w, v in graph[u]:\n            if dist[u] + w < dist[v]:\n                dist[v] = dist[u] + w\n                heapq.heappush(heap, (dist[v], v))\n\n    max_dist = max(dist[1:])\n    return max_dist if max_dist != float('inf') else -1",
     "solution_code": "def solve(times, n, k):\n    import heapq\n    graph = [[] for _ in range(n + 1)]\n    for u, v, w in times:\n        graph[u].append((w, v))\n\n    dist = [float('inf')] * (n + 1)\n    dist[k] = 0\n    heap = [(0, k)]\n\n    while heap:\n        d, u = heapq.heappop(heap)\n        if d > dist[u]:\n            continue\n        for w, v in graph[u]:\n            if dist[u] + w < dist[v]:\n                dist[v] = dist[u] + w\n                heapq.heappush(heap, (dist[v], v))\n\n    max_dist = max(dist[1:])\n    return max_dist if max_dist != float('inf') else -1",
-    "explanation": "Dijkstra's algorithm with a min-heap finds the shortest path from source k to every other node. Initialize all distances to infinity except dist[k]=0. The heap always processes the smallest-distance node next. For each neighbor, relax the edge (update dist[v] if a shorter path is found). The `if d > dist[u]: continue` check skips stale heap entries. After processing, the answer is the maximum shortest-path distance \u2014 this is the time for the last node to receive the signal. If any node is still infinity (unreachable), return -1. Time: O((V+E) log V).",
+    "explanation": "Dijkstra's algorithm with a min-heap finds the shortest path from source k to every other node. Initialize all distances to infinity except dist[k]=0. The heap always processes the smallest-distance node next. For each neighbor, relax the edge (update dist[v] if a shorter path is found). The `if d > dist[u]: continue` check skips stale heap entries. After processing, the answer is the maximum shortest-path distance — this is the time for the last node to receive the signal. If any node is still infinity (unreachable), return -1. Time: O((V+E) log V).",
     "test_cases": [
       {
         "input": [
@@ -3004,8 +3004,8 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Build an adjacency list, then run Dijkstra from k \u2014 the answer is the maximum of all shortest distances (the last node to be reached)",
-      "Use a min-heap of (distance, node). Skip nodes where the popped distance is greater than the current best \u2014 those are stale entries"
+      "Build an adjacency list, then run Dijkstra from k — the answer is the maximum of all shortest distances (the last node to be reached)",
+      "Use a min-heap of (distance, node). Skip nodes where the popped distance is greater than the current best — those are stale entries"
     ],
     "concepts": [
       "MIN-COST PATH RELAXATION",
@@ -3021,7 +3021,7 @@
     "topic": "python",
     "difficulty": "hard",
     "title": "Merge K sorted lists",
-    "description": "Given a list of `k` sorted integer lists, merge them into a single sorted list.\n\n```\nsolve([[1,4,5],[1,3,4],[2,6]])  # \u2192 [1,1,2,3,4,4,5,6]\nsolve([])                       # \u2192 []\nsolve([[]])                     # \u2192 []\nsolve([[-1,1]])                 # \u2192 [-1,1]\n```",
+    "description": "Given a list of `k` sorted integer lists, merge them into a single sorted list.\n\n```\nsolve([[1,4,5],[1,3,4],[2,6]])  # → [1,1,2,3,4,4,5,6]\nsolve([])                       # → []\nsolve([[]])                     # → []\nsolve([[-1,1]])                 # → [-1,1]\n```",
     "starter_code": "def solve(lists: list) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(lists):\n    import heapq\n    heap = []\n    for i, lst in enumerate(lists):\n        if lst:\n            heapq.heappush(heap, (lst[0], i, 0))\n\n    result = []\n    while heap:\n        val, list_idx, elem_idx = heapq.heappop(heap)\n        result.append(val)\n        next_idx = elem_idx + 1\n        if next_idx < len(lists[list_idx]):\n            heapq.heappush(heap, (lists[list_idx][next_idx], list_idx, next_idx))\n    return result",
     "solution_code": "def solve(lists):\n    import heapq\n    heap = []\n    for i, lst in enumerate(lists):\n        if lst:\n            heapq.heappush(heap, (lst[0], i, 0))\n\n    result = []\n    while heap:\n        val, list_idx, elem_idx = heapq.heappop(heap)\n        result.append(val)\n        next_idx = elem_idx + 1\n        if next_idx < len(lists[list_idx]):\n            heapq.heappush(heap, (lists[list_idx][next_idx], list_idx, next_idx))\n    return result",
@@ -3165,7 +3165,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Seed a min-heap with the first element of each non-empty list. Store (value, list_index, element_index) so you can advance within the correct list after each pop",
+      "Always advance the smallest currently available candidate across the lists rather than merging whole lists at once.",
       "Each pop gives the global minimum; push the next element from that same list to maintain the invariant"
     ],
     "concepts": [
@@ -3182,11 +3182,11 @@
     "topic": "python",
     "difficulty": "hard",
     "title": "Word search in grid",
-    "description": "Given an `m x n` character grid and a target `word`, return `True` if the word exists in the grid. The word can be constructed from sequentially adjacent cells (horizontally or vertically). Each cell may only be used once per path.\n\n```\nboard = [[\"A\",\"B\",\"C\",\"E\"],[\"S\",\"F\",\"C\",\"S\"],[\"A\",\"D\",\"E\",\"E\"]]\nsolve(board, \"ABCCED\")  # \u2192 True\nsolve(board, \"SEE\")     # \u2192 True\nsolve(board, \"ABCB\")   # \u2192 False\n\nsolve([[\"a\"]], \"a\")    # \u2192 True\nsolve([[\"a\"]], \"b\")    # \u2192 False\n```",
+    "description": "Given an `m x n` character grid and a target `word`, return `True` if the word exists in the grid. The word can be constructed from sequentially adjacent cells (horizontally or vertically). Each cell may only be used once per path.\n\n```\nboard = [[\"A\",\"B\",\"C\",\"E\"],[\"S\",\"F\",\"C\",\"S\"],[\"A\",\"D\",\"E\",\"E\"]]\nsolve(board, \"ABCCED\")  # → True\nsolve(board, \"SEE\")     # → True\nsolve(board, \"ABCB\")   # → False\n\nsolve([[\"a\"]], \"a\")    # → True\nsolve([[\"a\"]], \"b\")    # → False\n```",
     "starter_code": "def solve(board: list, word: str) -> bool:\n    # Your code here\n    pass",
     "expected_code": "def solve(board, word):\n    rows, cols = len(board), len(board[0])\n\n    def dfs(r, c, idx):\n        if idx == len(word):\n            return True\n        if r < 0 or r >= rows or c < 0 or c >= cols:\n            return False\n        if board[r][c] != word[idx]:\n            return False\n        temp = board[r][c]\n        board[r][c] = '#'  # mark visited\n        found = (dfs(r+1, c, idx+1) or dfs(r-1, c, idx+1) or\n                 dfs(r, c+1, idx+1) or dfs(r, c-1, idx+1))\n        board[r][c] = temp  # restore\n        return found\n\n    for r in range(rows):\n        for c in range(cols):\n            if dfs(r, c, 0):\n                return True\n    return False",
     "solution_code": "def solve(board, word):\n    rows, cols = len(board), len(board[0])\n\n    def dfs(r, c, idx):\n        if idx == len(word):\n            return True\n        if r < 0 or r >= rows or c < 0 or c >= cols:\n            return False\n        if board[r][c] != word[idx]:\n            return False\n        temp = board[r][c]\n        board[r][c] = '#'\n        found = (dfs(r+1, c, idx+1) or dfs(r-1, c, idx+1) or\n                 dfs(r, c+1, idx+1) or dfs(r, c-1, idx+1))\n        board[r][c] = temp\n        return found\n\n    for r in range(rows):\n        for c in range(cols):\n            if dfs(r, c, 0):\n                return True\n    return False",
-    "explanation": "Try starting DFS from every cell. The DFS takes a position (r, c) and index into the word. Base case: if idx == len(word), all characters matched \u2014 return True. Guard: out of bounds or character mismatch \u2014 return False. Mark the current cell with '#' before recursing to prevent revisiting it on this path. After exploring all 4 neighbors, restore the original character (backtracking). This in-place marking avoids a separate visited set. Time: O(m*n*4^L) where L is word length. Space: O(L) recursion depth.",
+    "explanation": "Try starting DFS from every cell. The DFS takes a position (r, c) and index into the word. Base case: if idx == len(word), all characters matched — return True. Guard: out of bounds or character mismatch — return False. Mark the current cell with '#' before recursing to prevent revisiting it on this path. After exploring all 4 neighbors, restore the original character (backtracking). This in-place marking avoids a separate visited set. Time: O(m*n*4^L) where L is word length. Space: O(L) recursion depth.",
     "test_cases": [
       {
         "input": [
@@ -3324,7 +3324,7 @@
     "public_test_cases": 2,
     "hints": [
       "Use DFS with backtracking: mark the current cell as visited (e.g., replace with '#') before recursing, then restore it after",
-      "Try starting DFS from every cell in the grid \u2014 the first successful path returns True immediately"
+      "Try starting DFS from every cell in the grid — the first successful path returns True immediately"
     ],
     "concepts": [
       "backtracking",

@@ -118,7 +118,7 @@ Any implementing agent should read these first before starting a phase:
 ## 4. Progress Tracker
 
 - [x] Phase 1 - Concept Taxonomy Repair
-- [ ] Phase 2 - Hint System And Hint Content Overhaul
+- [x] Phase 2 - Hint System And Hint Content Overhaul
 - [ ] Phase 3 - Guided Progression Upgrade
 - [ ] Phase 4 - Weak-Spot Insights V2
 - [ ] Phase 5 - Track-Specific Content Remediation
@@ -220,16 +220,16 @@ Any implementing agent should read these first before starting a phase:
 
 ### Checklist
 
-- [ ] Expand `docs/content-authoring.md` with a strict hint ladder by difficulty.
-- [ ] Define minimum hint counts by difficulty and track.
-- [ ] Decide whether PySpark easy can stay at one hint or must be upgraded to two.
-- [ ] Add validation heuristics for overly explicit hints in `backend/scripts/validate_content.py`.
-- [ ] Rewrite SQL hints to keep easy hints concept-first and hard hints structure-first.
-- [ ] Rewrite Python hints to avoid immediately naming the exact data structure unless needed.
-- [ ] Rewrite Pandas hints to reduce direct method leakage where a pattern hint would teach better.
-- [ ] Rewrite PySpark hints to focus on execution reasoning and distractor elimination.
-- [ ] Adjust `frontend/src/pages/QuestionPage.js` so the labels match the actual number and type of hints.
-- [ ] If needed, replace the fixed four-label array with dynamic labels derived from hint count and question metadata.
+- [x] Expand `docs/content-authoring.md` with a strict hint ladder by difficulty.
+- [x] Define minimum hint counts by difficulty and track.
+- [x] Decide whether PySpark easy can stay at one hint or must be upgraded to two.
+- [x] Add validation heuristics for overly explicit hints in `backend/scripts/validate_content.py`.
+- [x] Rewrite SQL hints to keep easy hints concept-first and hard hints structure-first.
+- [x] Rewrite Python hints to avoid immediately naming the exact data structure unless needed.
+- [x] Rewrite Pandas hints to reduce direct method leakage where a pattern hint would teach better.
+- [x] Rewrite PySpark hints to focus on execution reasoning and distractor elimination.
+- [x] Adjust `frontend/src/pages/QuestionPage.js` so the labels match the actual number and type of hints.
+- [x] If needed, replace the fixed four-label array with dynamic labels derived from hint count and question metadata.
 
 ### Hint rubric to implement
 

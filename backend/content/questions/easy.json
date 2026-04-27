@@ -21,8 +21,8 @@
     "solution_query": "SELECT order_id, user_id, order_date, net_amount\nFROM orders\nWHERE status = 'completed'\nORDER BY order_id;",
     "explanation": "The WHERE clause filters rows before they are returned. Only orders where the status column equals the string 'completed' pass the filter. String comparisons are case-sensitive in most databases, so the value must match exactly. The status column is included in the schema because it is used in the WHERE clause even though it does not appear in the SELECT list. ORDER BY order_id ASC produces a deterministic result.",
     "hints": [
-      "Use a WHERE clause to filter rows by column value",
-      "String comparisons are case-sensitive \u2014 match the exact value in the data"
+      "Decide which rows qualify before you project columns or worry about the final ordering.",
+      "String comparisons are case-sensitive — match the exact value in the data"
     ],
     "concepts": [
       "COLUMN PROJECTION",
@@ -55,7 +55,7 @@
     "solution_query": "SELECT user_id, name, email\nFROM users\nWHERE country = 'US'\nORDER BY user_id;",
     "explanation": "WHERE country = 'US' applies a string equality filter that keeps only rows whose country column exactly matches 'US'. The country column is included in the schema because it is the filter column, even though it does not appear in the SELECT list. ORDER BY user_id ensures a deterministic output.",
     "hints": [
-      "Use WHERE to filter on the country column",
+      "Decide which rows qualify before you project columns or worry about the final ordering.",
       "String values in WHERE clauses must be wrapped in single quotes"
     ],
     "concepts": [
@@ -88,7 +88,7 @@
     "solution_query": "SELECT employee_id, employee_name, salary\nFROM employees\nWHERE salary > 80000\nORDER BY salary DESC;",
     "explanation": "WHERE salary > 80000 is a numeric comparison filter. Only employees whose salary value is strictly greater than 80000 are included. Numeric comparisons do not require quotes around the value. ORDER BY salary DESC places the highest earners at the top of the result.",
     "hints": [
-      "Use a comparison operator like > in the WHERE clause for numeric filters",
+      "Decide which rows qualify before you project columns or worry about the final ordering.",
       "ORDER BY salary DESC places the highest values first"
     ],
     "concepts": [
@@ -121,8 +121,8 @@
     "solution_query": "SELECT employee_id, employee_name, hire_date\nFROM employees\nWHERE hire_date IS NOT NULL\nORDER BY hire_date ASC;",
     "explanation": "WHERE hire_date IS NOT NULL filters out rows that do not have a known hire date before sorting begins. After that filter, ORDER BY hire_date ASC sorts the remaining employees from the earliest hire date to the most recent. This keeps the result focused on employees whose tenure can be evaluated and makes the final row order deterministic.",
     "hints": [
-      "Filter out missing hire dates before sorting",
-      "Date columns sort chronologically \u2014 ASC means earliest first"
+      "Decide which rows qualify before you project columns or worry about the final ordering.",
+      "Date columns sort chronologically — ASC means earliest first"
     ],
     "concepts": [
       "COLUMN PROJECTION",
@@ -152,7 +152,7 @@
     "solution_query": "SELECT COUNT(order_id) AS total_orders\nFROM orders;",
     "explanation": "COUNT(order_id) counts all non-NULL values of order_id. Because order_id is the primary key and is never NULL, this equals the total number of rows in the table. No GROUP BY is needed since we want a single aggregate across the entire table. The AS alias gives the output column a meaningful name.",
     "hints": [
-      "Use COUNT() to count rows in a table",
+      "Collapse the qualifying rows into a single summary value rather than returning row-level detail.",
       "No GROUP BY is needed when aggregating the entire table into a single result"
     ],
     "concepts": [
@@ -182,7 +182,8 @@
     "solution_query": "SELECT MAX(price) AS max_price\nFROM products;",
     "explanation": "MAX(price) scans all rows in the products table and returns the single highest value in the price column. NULL values are automatically ignored by MAX. No GROUP BY is needed since we want a single aggregate across the entire table. The result is one row with one column.",
     "hints": [
-      "Use MAX() to find the largest value in a column"
+      "Collapse the qualifying rows into a single summary value rather than returning row-level detail.",
+      "The result is a single summary row, so you do not need row-level detail or extra grouping unless the prompt asks for it."
     ],
     "concepts": [
       "COLUMN PROJECTION",
@@ -210,9 +211,9 @@
     ],
     "expected_query": "SELECT MIN(resolution_hours) AS min_resolution_hours\nFROM support_tickets\nWHERE status = 'resolved'",
     "solution_query": "SELECT MIN(resolution_hours) AS min_resolution_hours\nFROM support_tickets\nWHERE status = 'resolved';",
-    "explanation": "WHERE status = 'resolved' filters the table to only closed tickets before MIN runs. MIN(resolution_hours) returns the smallest resolution time among those rows \u2014 the ticket that was resolved fastest. Filtering first ensures we do not include NULL or irrelevant resolution_hours from tickets that are not yet resolved.",
+    "explanation": "WHERE status = 'resolved' filters the table to only closed tickets before MIN runs. MIN(resolution_hours) returns the smallest resolution time among those rows — the ticket that was resolved fastest. Filtering first ensures we do not include NULL or irrelevant resolution_hours from tickets that are not yet resolved.",
     "hints": [
-      "Filter to resolved tickets first using WHERE",
+      "Collapse the qualifying rows into a single summary value rather than returning row-level detail.",
       "MIN() returns the smallest value in a column"
     ],
     "concepts": [
@@ -242,9 +243,9 @@
     ],
     "expected_query": "SELECT status, COUNT(order_id) AS order_count\nFROM orders\nGROUP BY status\nORDER BY order_count DESC",
     "solution_query": "SELECT status, COUNT(order_id) AS order_count\nFROM orders\nGROUP BY status\nORDER BY order_count DESC;",
-    "explanation": "GROUP BY status groups all order rows that share the same status value into a single group. COUNT(order_id) counts the rows in each group. Every non-aggregated column in the SELECT list must appear in the GROUP BY clause \u2014 here that is status. ORDER BY order_count DESC lists the most common statuses first.",
+    "explanation": "GROUP BY status groups all order rows that share the same status value into a single group. COUNT(order_id) counts the rows in each group. Every non-aggregated column in the SELECT list must appear in the GROUP BY clause — here that is status. ORDER BY order_count DESC lists the most common statuses first.",
     "hints": [
-      "GROUP BY the column you want to count per group",
+      "Collapse the data to the business grain named in the result before you calculate the summary values.",
       "Use the count alias in ORDER BY to sort by frequency"
     ],
     "concepts": [
@@ -277,7 +278,7 @@
     "solution_query": "SELECT user_id, SUM(net_amount) AS total_spent\nFROM orders\nGROUP BY user_id\nORDER BY total_spent DESC;",
     "explanation": "GROUP BY user_id groups all orders belonging to the same user. SUM(net_amount) sums the net_amount for each group, giving the total spend per user. Users with multiple orders have their amounts summed together. ORDER BY total_spent DESC puts the highest spenders at the top.",
     "hints": [
-      "GROUP BY user_id to separate each user's orders",
+      "Collapse the data to the business grain named in the result before you calculate the summary values.",
       "SUM(net_amount) totals spending per group"
     ],
     "concepts": [
@@ -310,7 +311,7 @@
     "solution_query": "SELECT issue_type, COUNT(ticket_id) AS ticket_count\nFROM support_tickets\nGROUP BY issue_type\nHAVING COUNT(ticket_id) > 1\nORDER BY ticket_count DESC;",
     "explanation": "GROUP BY issue_type creates one aggregate group per issue type, and COUNT(ticket_id) measures how many tickets fall into each group. HAVING COUNT(ticket_id) > 1 then filters those aggregated groups after the counts have been calculated. This is different from WHERE, which filters individual rows before aggregation happens. ORDER BY ticket_count DESC shows the larger issue categories first.",
     "hints": [
-      "HAVING filters after aggregation",
+      "Reduce the data to the requested segment first, then keep only the segments that clear the summary threshold.",
       "Use COUNT(ticket_id) in HAVING"
     ],
     "concepts": [
@@ -347,9 +348,9 @@
     ],
     "expected_query": "SELECT u.user_id, u.name, COUNT(o.order_id) AS order_count\nFROM users u\nLEFT JOIN orders o ON u.user_id = o.user_id\nGROUP BY u.user_id, u.name\nORDER BY u.user_id",
     "solution_query": "SELECT u.user_id, u.name, COUNT(o.order_id) AS order_count\nFROM users u\nLEFT JOIN orders o ON u.user_id = o.user_id\nGROUP BY u.user_id, u.name\nORDER BY u.user_id;",
-    "explanation": "A LEFT JOIN keeps every row from the users table (the left side) even if there is no matching row in orders. COUNT(o.order_id) counts non-NULL order_id values per group \u2014 users with no orders will have NULL for o.order_id, so COUNT returns 0 for them, not NULL. GROUP BY u.user_id, u.name is required because u.name is a non-aggregated column in the SELECT list. ORDER BY u.user_id gives a deterministic result.",
+    "explanation": "A LEFT JOIN keeps every row from the users table (the left side) even if there is no matching row in orders. COUNT(o.order_id) counts non-NULL order_id values per group — users with no orders will have NULL for o.order_id, so COUNT returns 0 for them, not NULL. GROUP BY u.user_id, u.name is required because u.name is a non-aggregated column in the SELECT list. ORDER BY u.user_id gives a deterministic result.",
     "hints": [
-      "Use LEFT JOIN so users with no orders are still included in the result",
+      "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
       "COUNT(o.order_id) returns 0 for users with no orders because NULL values are not counted by COUNT"
     ],
     "concepts": [
@@ -390,7 +391,7 @@
     "solution_query": "SELECT e.employee_id, e.employee_name, e.salary, d.department_name\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nORDER BY e.employee_id;",
     "explanation": "An INNER JOIN (written as JOIN) links each employee row to its department using the shared foreign key department_id. Only employees that have a matching department_id in the departments table are returned. Table aliases (e, d) keep column references short and unambiguous when querying multiple tables. ORDER BY e.employee_id produces a deterministic result.",
     "hints": [
-      "JOIN on the column that links employees to departments",
+      "Combine the sources that hold the needed attributes before you filter or shape the final result.",
       "Use table aliases to keep column references clear when joining two tables"
     ],
     "concepts": [
@@ -421,9 +422,9 @@
     ],
     "expected_query": "SELECT product_id, product_name, price\nFROM products\nWHERE price BETWEEN 100 AND 500\nORDER BY price",
     "solution_query": "SELECT product_id, product_name, price\nFROM products\nWHERE price BETWEEN 100 AND 500\nORDER BY price;",
-    "explanation": "BETWEEN 100 AND 500 is a range filter that is inclusive on both ends \u2014 it is equivalent to WHERE price >= 100 AND price <= 500. This syntax is more readable than writing two separate conditions. ORDER BY price ASC arranges results from cheapest to most expensive within the range.",
+    "explanation": "BETWEEN 100 AND 500 is a range filter that is inclusive on both ends — it is equivalent to WHERE price >= 100 AND price <= 500. This syntax is more readable than writing two separate conditions. ORDER BY price ASC arranges results from cheapest to most expensive within the range.",
     "hints": [
-      "BETWEEN includes both the lower and upper bounds",
+      "Decide which rows qualify before you project columns or worry about the final ordering.",
       "BETWEEN is equivalent to >= lower AND <= upper"
     ],
     "concepts": [
@@ -457,7 +458,7 @@
     "solution_query": "SELECT user_id, name, signup_date\nFROM users\nWHERE signup_date >= '2024-01-01'\n  AND signup_date < '2025-01-01'\nORDER BY signup_date;",
     "explanation": "A half-open date range (>= '2024-01-01' AND < '2025-01-01') captures every date within the year 2024 without depending on time components. This approach is more portable than using YEAR() or EXTRACT() functions, which have slightly different syntax across PostgreSQL, MySQL, and SQL Server. ORDER BY signup_date ASC lists users in chronological order.",
     "hints": [
-      "Use a date range with >= and < to capture an entire year",
+      "Decide which rows qualify before you project columns or worry about the final ordering.",
       "Compare signup_date to date string literals in 'YYYY-MM-DD' format"
     ],
     "concepts": [
@@ -491,7 +492,7 @@
     "solution_query": "SELECT user_id, name, country\nFROM users\nWHERE country IN ('UK', 'IN', 'DE');",
     "explanation": "The IN operator checks whether a column matches any value in a short list of exact options. Here it keeps only users whose country is UK, IN, or DE without repeating the country column in several OR conditions. This is easier to read and maintain than writing multiple equality checks. The query returns only the requested identifying columns, which keeps the output focused on the business question.",
     "hints": [
-      "Use IN when one column can match any value from a fixed list",
+      "Decide which rows qualify before you project columns or worry about the final ordering.",
       "Put the allowed country codes inside parentheses after IN"
     ],
     "concepts": [
@@ -529,7 +530,7 @@
     "solution_query": "SELECT product_id, product_name, category_id\nFROM products\nWHERE category_id IN (3, 8, 14)\nORDER BY category_id ASC;",
     "explanation": "This query filters products to a small set of category IDs using IN. IN is the right choice when the same column needs to match one of several exact values, because it is more compact and clearer than chaining multiple OR comparisons. ORDER BY category_id ASC then groups the matching categories into a predictable sequence for review. Only the requested product columns are selected, so the result stays aligned with the prompt.",
     "hints": [
-      "Filter category_id with one IN list instead of multiple OR checks",
+      "Decide which rows qualify before you project columns or worry about the final ordering.",
       "Order the matching rows by category_id ascending"
     ],
     "concepts": [
@@ -567,7 +568,7 @@
     "solution_query": "SELECT event_id, user_id, event_name\nFROM events\nWHERE event_name LIKE '%checkout%';",
     "explanation": "The LIKE pattern '%checkout%' finds rows where the text 'checkout' appears anywhere inside event_name. The percent sign before and after the word means characters are allowed on both sides of the match, which makes this a contains search rather than a prefix or suffix search. This is useful when business event names follow a naming convention and you want to capture a family of related actions. The query then returns the key identifying fields for each matching event row.",
     "hints": [
-      "Put % on both sides of the word when you want a contains match",
+      "Decide which rows qualify before you project columns or worry about the final ordering.",
       "Filter event_name with LIKE before selecting the event columns"
     ],
     "concepts": [
@@ -606,7 +607,7 @@
     "solution_query": "SELECT order_id, status, payment_status, net_amount\nFROM orders\nWHERE status = 'cancelled' OR payment_status = 'failed';",
     "explanation": "OR makes the filter broader by keeping rows that satisfy either condition. In this case, an order appears in the result if it was cancelled, if its payment failed, or if both things are true for the same row. This is different from AND, which would require both conditions to be true at once. Returning both status columns helps explain why each order qualifies for the review list.",
     "hints": [
-      "Use OR when either condition should qualify the row",
+      "Decide which rows qualify before you project columns or worry about the final ordering.",
       "Both status columns belong in the result because both are part of the business rule"
     ],
     "concepts": [
@@ -645,7 +646,7 @@
     "solution_query": "SELECT user_id, name, country, plan_tier\nFROM users\nWHERE country = 'US'\n  AND (plan_tier = 'pro' OR plan_tier = 'enterprise');",
     "explanation": "This filter combines AND and OR to express a more precise business rule. The user must first be in the US, and then their plan_tier must be either pro or enterprise. Parentheses matter because they keep the two plan_tier checks together as one grouped condition. Without the parentheses, SQL operator precedence could change the result and allow rows that do not satisfy the full rule.",
     "hints": [
-      "Use AND for the country requirement and OR for the two allowed plan tiers",
+      "Decide which rows qualify before you project columns or worry about the final ordering.",
       "Wrap the OR conditions in parentheses so they stay grouped together"
     ],
     "concepts": [
@@ -685,7 +686,7 @@
     "solution_query": "SELECT user_id, name, country\nFROM users\nWHERE email IS NULL;",
     "explanation": "NULL represents missing or unknown data, so it cannot be tested with = NULL. The correct SQL syntax is IS NULL, which matches rows where the column truly has no value. Here email is used only in the filter while the output focuses on user identifiers and country. This is a common data-quality query for finding incomplete customer records.",
     "hints": [
-      "Use IS NULL instead of = NULL",
+      "Decide which rows qualify before you project columns or worry about the final ordering.",
       "Filter on email, but return the user columns requested in the prompt"
     ],
     "concepts": [
@@ -723,7 +724,7 @@
     "solution_query": "SELECT event_id, user_id, event_name, product_id\nFROM events\nWHERE product_id IS NOT NULL;",
     "explanation": "IS NOT NULL keeps only rows where the column contains a real value. In the events table, that means the event is associated with a specific product instead of leaving product_id blank. This is the correct SQL form for checking populated fields, because comparisons like <> NULL do not work the way beginners often expect. The query returns the event fields needed to inspect those product-linked actions.",
     "hints": [
-      "Use IS NOT NULL to keep rows with a populated value",
+      "Decide which rows qualify before you project columns or worry about the final ordering.",
       "Filter product_id first, then return the event details requested"
     ],
     "concepts": [
@@ -760,7 +761,7 @@
     "solution_query": "SELECT status, SUM(amount) AS total_amount\nFROM payments\nWHERE status = 'failed' OR status = 'refunded'\nGROUP BY status\nORDER BY total_amount DESC, status;",
     "explanation": "The WHERE clause uses OR to keep only the two requested payment statuses. After that filter is applied, GROUP BY status creates one group for each remaining status value and SUM(amount) adds the payment amounts within each group. This is a good beginner example of combining a multi-value filter with a simple aggregation. ORDER BY total_amount DESC makes the grouped output deterministic and surfaces the larger total first.",
     "hints": [
-      "Use OR to keep the two allowed status values",
+      "Collapse the data to the business grain named in the result before you calculate the summary values.",
       "After filtering, group by status and sum the amount column"
     ],
     "concepts": [
@@ -805,7 +806,7 @@
     "enforce_concepts": true,
     "explanation": "Filtering with WHERE before GROUP BY is the correct pattern for pre-aggregation filtering. `COUNT(*)` counts all rows that pass the filter per group. The dual ORDER BY (count DESC, country ASC) produces a deterministic result when two countries share the same user count.",
     "hints": [
-      "Apply the WHERE filter before the GROUP BY so only active users are counted",
+      "Collapse the data to the business grain named in the result before you calculate the summary values.",
       "Use a secondary ORDER BY column (country) to break ties deterministically"
     ],
     "concepts": [
@@ -842,9 +843,9 @@
       "coalesce"
     ],
     "enforce_concepts": true,
-    "explanation": "COALESCE(discount_amount, 0) replaces NULL values with 0 so the subtraction never produces NULL. Without COALESCE, any row where discount_amount IS NULL would yield NULL for final_amount \u2014 a silent bug that propagates through downstream aggregations. This pattern (null-safe arithmetic) is ubiquitous in financial reporting queries.",
+    "explanation": "COALESCE(discount_amount, 0) replaces NULL values with 0 so the subtraction never produces NULL. Without COALESCE, any row where discount_amount IS NULL would yield NULL for final_amount — a silent bug that propagates through downstream aggregations. This pattern (null-safe arithmetic) is ubiquitous in financial reporting queries.",
     "hints": [
-      "Subtracting NULL from any value gives NULL \u2014 use COALESCE to provide a safe default",
+      "Focus on which column defines the ranking and what direction the result should follow.",
       "COALESCE returns its first non-NULL argument, so COALESCE(discount_amount, 0) returns 0 when discount is missing"
     ],
     "concepts": [
@@ -883,8 +884,8 @@
     "enforce_concepts": true,
     "explanation": "STRFTIME('%Y-%m', order_date) truncates each date to its year-month string. Grouping on this string produces one row per calendar month. Sorting the 'YYYY-MM' string lexicographically gives correct chronological order because ISO format is zero-padded. This is the foundational pattern for time-series aggregations in analytics.",
     "hints": [
-      "Use STRFTIME('%Y-%m', order_date) to extract the year-month portion of each date",
-      "Group by the derived month string \u2014 'YYYY-MM' sorts correctly as a string"
+      "Collapse the data to the business grain named in the result before you calculate the summary values.",
+      "Group by the derived month string — 'YYYY-MM' sorts correctly as a string"
     ],
     "concepts": [
       "DATE BUCKET GROUPING",
@@ -924,7 +925,7 @@
     "enforce_concepts": true,
     "explanation": "Using `>= '2024-01-01' AND < '2025-01-01'` is the portable, precise way to filter a full calendar year. It works correctly regardless of whether dates include time components, and avoids functions like YEAR() that can prevent index use in production databases. Prefer this half-open interval pattern over BETWEEN or YEAR() extraction.",
     "hints": [
-      "Filter with a half-open interval: launch_date >= '2024-01-01' AND launch_date < '2025-01-01'",
+      "Decide which rows qualify before you project columns or worry about the final ordering.",
       "Order by launch_date DESC to show the most recent products first"
     ],
     "concepts": [
@@ -964,7 +965,7 @@
     "enforce_concepts": true,
     "explanation": "The IN operator is a cleaner alternative to multiple OR conditions when filtering against a known set of values. `country IN ('US', 'UK')` is equivalent to `country = 'US' OR country = 'UK'` but is more readable and easier to extend. Ordering by salary DESC surfaces the highest-paid employees first.",
     "hints": [
-      "Use WHERE with IN ('US', 'UK') to filter rows by country",
+      "Decide which rows qualify before you project columns or worry about the final ordering.",
       "IN is equivalent to country = 'US' OR country = 'UK' but more readable; ORDER BY makes results deterministic"
     ],
     "concepts": [
@@ -997,9 +998,9 @@
     "solution_query": "SELECT MAX(net_amount) AS max_order,\n       MIN(net_amount) AS min_order\nFROM orders;",
     "required_concepts": [],
     "enforce_concepts": false,
-    "explanation": "Multiple aggregate functions can be computed in a single SELECT without a GROUP BY \u2014 the entire table acts as one group. MAX and MIN scan all rows and return the extreme values. Naming output columns with AS makes results self-documenting. This pattern is foundational for summary statistics queries.",
+    "explanation": "Multiple aggregate functions can be computed in a single SELECT without a GROUP BY — the entire table acts as one group. MAX and MIN scan all rows and return the extreme values. Naming output columns with AS makes results self-documenting. This pattern is foundational for summary statistics queries.",
     "hints": [
-      "MAX and MIN can be computed together in a single SELECT",
+      "Collapse the qualifying rows into a single summary value rather than returning row-level detail.",
       "No GROUP BY is needed when aggregating over the entire table"
     ],
     "concepts": [
@@ -1037,7 +1038,7 @@
     "enforce_concepts": true,
     "explanation": "Grouping by a categorical column and counting is the canonical segmentation query. The result shows the distribution of users across plan tiers, which directly maps to subscription revenue breakdowns. Ordering by count descending surfaces the dominant tier first.",
     "hints": [
-      "GROUP BY plan_tier, then COUNT(*) to get users per tier",
+      "Collapse the data to the business grain named in the result before you calculate the summary values.",
       "ORDER BY the count column descending to see the largest tier first"
     ],
     "concepts": [
@@ -1076,10 +1077,10 @@
       "order_by"
     ],
     "enforce_concepts": true,
-    "explanation": "Combining IS NOT NULL with a comparison operator (`> 0`) requires both conditions with AND. The IS NOT NULL check is needed because `NULL > 0` evaluates to NULL (not true), which would silently exclude those rows anyway \u2014 but being explicit is a best practice that makes intent clear. This combined pattern is common in any query that filters on an optional numeric field.",
+    "explanation": "Combining IS NOT NULL with a comparison operator (`> 0`) requires both conditions with AND. The IS NOT NULL check is needed because `NULL > 0` evaluates to NULL (not true), which would silently exclude those rows anyway — but being explicit is a best practice that makes intent clear. This combined pattern is common in any query that filters on an optional numeric field.",
     "hints": [
-      "Use WHERE to filter rows: combine IS NOT NULL with > 0 using AND",
-      "ORDER BY discount_amount DESC puts the largest discounts first; NULL > 0 evaluates to NULL \u2014 state both conditions explicitly"
+      "Decide which rows qualify before you project columns or worry about the final ordering.",
+      "ORDER BY discount_amount DESC puts the largest discounts first; NULL > 0 evaluates to NULL — state both conditions explicitly"
     ],
     "concepts": [
       "NULL CHECK COMBINED WITH COMPARISON",
@@ -1115,9 +1116,9 @@
       "order_by"
     ],
     "enforce_concepts": true,
-    "explanation": "A CTE (Common Table Expression) defined with `WITH name AS (...)` creates a named temporary result set that lives only for the duration of the query. The CTE is defined first, then referenced in the main SELECT just like a table. CTEs make complex queries readable by naming intermediate steps \u2014 they are fundamental to writing maintainable SQL at any level. Here the CTE computes monthly counts, and the outer query retrieves and sorts them.",
+    "explanation": "A CTE (Common Table Expression) defined with `WITH name AS (...)` creates a named temporary result set that lives only for the duration of the query. The CTE is defined first, then referenced in the main SELECT just like a table. CTEs make complex queries readable by naming intermediate steps — they are fundamental to writing maintainable SQL at any level. Here the CTE computes monthly counts, and the outer query retrieves and sorts them.",
     "hints": [
-      "Start with WITH monthly_signups AS (...) then put your GROUP BY query inside",
+      "Break the problem into stages so the reusable intermediate result exists before the final filter or comparison.",
       "Reference the CTE name in the outer SELECT like a table; ORDER BY signup_month ASC ensures chronological output"
     ],
     "concepts": [
@@ -1155,9 +1156,9 @@
       "order_by"
     ],
     "enforce_concepts": true,
-    "explanation": "Multi-column GROUP BY produces one row per unique combination of the grouped columns \u2014 here, one row per (priority, status) pair. This is the standard approach for cross-tabulating two categorical dimensions before pivoting. The result is effectively a raw pivot table in long format, which is the input for most BI tools and dashboards.",
+    "explanation": "Multi-column GROUP BY produces one row per unique combination of the grouped columns — here, one row per (priority, status) pair. This is the standard approach for cross-tabulating two categorical dimensions before pivoting. The result is effectively a raw pivot table in long format, which is the input for most BI tools and dashboards.",
     "hints": [
-      "List both columns in GROUP BY: GROUP BY priority, status",
+      "Collapse the data to the business grain named in the result before you calculate the summary values.",
       "ORDER BY priority, status gives a predictable result; each unique combination becomes one row"
     ],
     "concepts": [
