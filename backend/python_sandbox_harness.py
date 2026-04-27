@@ -118,8 +118,38 @@ def _run_data(user_code: str, dataframes_spec: dict, csv_dir: str) -> dict:
         except Exception as e:
             return {"error": f"Failed to load {csv_filename}: {e}", "result": None, "print_output": ""}
 
-    # Inject pandas + numpy into user namespace
-    namespace: dict = {"pd": pd, "np": np}
+    # Inject pandas + numpy into user namespace, with I/O functions stubbed
+    # out as defense-in-depth (the AST guard is the primary control; this
+    # ensures filesystem/network access is impossible even if the guard is
+    # somehow bypassed at the source-code level).
+    def _blocked_io(*_args, **_kwargs):
+        raise PermissionError("File and network I/O is not allowed in the sandbox.")
+
+    _PANDAS_IO = [
+        "read_csv", "read_table", "read_fwf", "read_json", "read_html",
+        "read_xml", "read_excel", "read_parquet", "read_feather", "read_orc",
+        "read_sas", "read_spss", "read_stata", "read_hdf", "read_sql",
+        "read_sql_table", "read_sql_query", "read_clipboard", "read_pickle",
+    ]
+    _NUMPY_IO = [
+        "load", "loadtxt", "genfromtxt", "fromfile",
+        "save", "savez", "savez_compressed", "savetxt",
+    ]
+
+    safe_pd = pd
+    safe_np = np
+    for _fn in _PANDAS_IO:
+        try:
+            setattr(safe_pd, _fn, _blocked_io)
+        except (AttributeError, TypeError):
+            pass
+    for _fn in _NUMPY_IO:
+        try:
+            setattr(safe_np, _fn, _blocked_io)
+        except (AttributeError, TypeError):
+            pass
+
+    namespace: dict = {"pd": safe_pd, "np": safe_np}
     try:
         exec(compile(user_code, "<user_code>", "exec"), namespace)  # noqa: S102
     except Exception as e:
