@@ -16,16 +16,18 @@ import { detectCurrency, PRICES } from '../utils/currency';
 const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
 
 const TRACK_DIFFICULTIES = {
-  sql:           { easy: 32, medium: 34, hard: 29 },
-  python:        { easy: 30, medium: 29, hard: 24 },
-  'python-data': { easy: 22, medium: 31, hard: 23 },
-  pyspark:       { easy: 38, medium: 38, hard: 26 },
+  sql:           { label: 'SQL',    easy: 32, medium: 34, hard: 29 },
+  python:        { label: 'Python', easy: 30, medium: 29, hard: 24 },
+  'python-data': { label: 'Pandas', easy: 22, medium: 31, hard: 23 },
+  pyspark:       { label: 'PySpark',easy: 38, medium: 38, hard: 26 },
 };
 
 // Total easy questions across all tracks (used in pricing copy)
 const TOTAL_EASY = Object.values(TRACK_DIFFICULTIES).reduce((s, d) => s + d.easy, 0);
 // Total questions across all tracks
 const TOTAL_QUESTIONS = Object.values(TRACK_DIFFICULTIES).reduce((s, d) => s + d.easy + d.medium + d.hard, 0);
+// "32 SQL · 30 Python · 22 Pandas · 38 PySpark" — built from TRACK_DIFFICULTIES so it stays in sync
+const FREE_EASY_SUMMARY = Object.values(TRACK_DIFFICULTIES).map(d => `${d.easy} ${d.label}`).join(' · ');
 
 const SAMPLE_TIERS = {
   sql: [
@@ -693,7 +695,7 @@ export default function LandingPage() {
                   </div>
                 </div>
                 <ul className="landing-tier-list">
-                  <li>All easy questions (32 SQL · 30 Python · 22 Pandas · 38 PySpark)</li>
+                  <li>All easy questions ({FREE_EASY_SUMMARY})</li>
                   <li>Unlock medium + hard as you solve (batch-gated)</li>
                   <li>Unlimited easy mocks · 1 medium mock/day</li>
                   <li>3 learning paths per track</li>
