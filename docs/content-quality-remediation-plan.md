@@ -121,7 +121,7 @@ Any implementing agent should read these first before starting a phase:
 - [x] Phase 2 - Hint System And Hint Content Overhaul
 - [x] Phase 3 - Guided Progression Upgrade
 - [x] Phase 4 - Weak-Spot Insights V2
-- [ ] Phase 5 - Track-Specific Content Remediation
+- [x] Phase 5 - Track-Specific Content Remediation
 - [ ] Phase 6 - Pricing And Claim Realignment
 
 ---
@@ -424,19 +424,19 @@ This phase is track-specific and should be executed in subphases.
 
 ### 5A - SQL cleanup
 
-- [ ] Audit SQL easy questions against the documented easy-tier rules.
-- [ ] Remove or reclassify any easy questions that violate the difficulty contract.
-- [ ] Review SQL tag consistency after Phase 1.
-- [ ] Review SQL hint quality after Phase 2.
-- [ ] Remove any other low-value or repetitive SQL questions discovered during the audit.
+- [x] Audit SQL easy questions against the documented easy-tier rules.
+- [x] Remove or reclassify any easy questions that violate the difficulty contract.
+- [x] Review SQL tag consistency after Phase 1.
+- [x] Review SQL hint quality after Phase 2.
+- [x] Remove any other low-value or repetitive SQL questions discovered during the audit.
 
 ### 5B - Python differentiation
 
-- [ ] Audit the Python bank for overreliance on generic LeetCode classics.
-- [ ] Decide the intended product position for Python: general interview track or data-role-specific coding track.
-- [ ] If staying premium-data-focused, add more realistic data/engineering problem framing.
-- [ ] Add questions about tradeoffs, data handling, or production-adjacent reasoning where appropriate.
-- [ ] Rewrite overly generic problem statements so more of the bank reflects the platform philosophy.
+- [x] Audit the Python bank for overreliance on generic LeetCode classics.
+- [x] Decide the intended product position for Python: general interview track or data-role-specific coding track.
+- [x] If staying premium-data-focused, add more realistic data/engineering problem framing.
+- [x] Add questions about tradeoffs, data handling, or production-adjacent reasoning where appropriate.
+- [x] Rewrite overly generic problem statements so more of the bank reflects the platform philosophy.
 
 ### 5C - Pandas deduplication and polish
 
