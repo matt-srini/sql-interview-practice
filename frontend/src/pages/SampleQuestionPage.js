@@ -10,6 +10,7 @@ import SchemaViewer from '../components/SchemaViewer';
 import TestCasePanel from '../components/TestCasePanel';
 import VariablesPanel from '../components/VariablesPanel';
 import { TRACK_META } from '../contexts/TopicContext';
+import { useTheme } from '../App';
 import { renderDescription } from '../utils/renderDescription';
 import { track } from '../analytics';
 
@@ -20,6 +21,7 @@ export default function SampleQuestionPage() {
   const { topic: rawTopic, difficulty } = useParams();
   const topic = TRACK_META[rawTopic] ? rawTopic : 'sql';
   const meta = TRACK_META[topic];
+  const { isDark } = useTheme();
 
   const defaultCode = meta.language === 'python' ? PYTHON_PLACEHOLDER : SQL_PLACEHOLDER;
   const sampleBasePath = `/sample/${topic}`;
@@ -261,7 +263,15 @@ export default function SampleQuestionPage() {
         <header className="topbar">
           <div className="topbar-inner sample-page-topbar">
             <div className="sample-topbar-left">
-              <Link className="sample-home-link brand-wordmark" to="/">datathink</Link>
+              <Link className="sample-home-link brand-wordmark" to="/">
+                <div className="brand-lockup" aria-hidden="true">
+                  {isDark ? (
+                    <img src="/branding/lockup-reverse-no-bg.svg" alt="datathink" className="brand-lockup-img" height="72" />
+                  ) : (
+                    <img src="/branding/lockup-normal-no-bg.svg" alt="datathink" className="brand-lockup-img" height="72" />
+                  )}
+                </div>
+              </Link>
             </div>
             <div className="sample-topbar-center">
               <a className="sample-back-link" href="/#landing-tracks" aria-label="Back to track selection">←</a>
@@ -365,7 +375,15 @@ export default function SampleQuestionPage() {
       <header className="topbar">
         <div className="topbar-inner sample-page-topbar">
           <div className="sample-topbar-left">
-            <Link className="sample-home-link brand-wordmark" to="/">datathink</Link>
+            <Link className="sample-home-link brand-wordmark" to="/">
+              <div className="brand-lockup" aria-hidden="true">
+                {isDark ? (
+                  <img src="/branding/lockup-reverse-no-bg.svg" alt="datathink" className="brand-lockup-img" height="72" />
+                ) : (
+                  <img src="/branding/lockup-normal-no-bg.svg" alt="datathink" className="brand-lockup-img" height="72" />
+                )}
+              </div>
+            </Link>
           </div>
           <div className="sample-topbar-center">
             <a className="sample-back-link" href="/#landing-tracks" aria-label="Back to track selection">←</a>

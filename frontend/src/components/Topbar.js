@@ -44,7 +44,7 @@ export default function Topbar({
   showPricingLink = false,
 }) {
   const { user, logout } = useAuth();
-  const { cycleTheme, themeIcon, themeLabel } = useTheme();
+  const { cycleTheme, themeIcon, themeLabel, isDark } = useTheme();
   const [practiceOpen, setPracticeOpen] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [resendStatus, setResendStatus] = useState('idle'); // 'idle' | 'sending' | 'sent'
@@ -117,7 +117,23 @@ export default function Topbar({
           <div className={brandRegionClass}>
             {leftSlot}
             <Link className={brandLinkClass} to="/">
-              <span className="brand-data">data</span><span className="brand-think">think</span>
+              <div className="brand-lockup" aria-hidden="true">
+                {isDark ? (
+                  <img
+                    src="/branding/lockup-reverse-no-bg.svg"
+                    alt="datathink"
+                    className="brand-lockup-img"
+                    height="72"
+                  />
+                ) : (
+                  <img
+                    src="/branding/lockup-normal-no-bg.svg"
+                    alt="datathink"
+                    className="brand-lockup-img"
+                    height="72"
+                  />
+                )}
+              </div>
             </Link>
           </div>
 
