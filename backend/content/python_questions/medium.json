@@ -4,8 +4,8 @@
     "order": 1,
     "topic": "python",
     "difficulty": "medium",
-    "title": "Group Anagrams",
-    "description": "Given a list of strings `words`, group them into sublists where all strings in a sublist are anagrams of each other. Return the groups with each inner list sorted alphabetically, and the outer list sorted by each group's first element.\n\n```\nsolve(['eat', 'tea', 'tan', 'ate', 'nat', 'bat'])\n# → [['ate', 'eat', 'tea'], ['bat'], ['ant', 'tan', 'nat']] — inner sorted\n# actual → [['ate', 'eat', 'tea'], ['bat'], ['nat', 'tan']]\n\nsolve([''])          # → [['']]\nsolve(['a'])         # → [['a']]\n```",
+    "title": "Group Product Code Variants",
+    "description": "Product codes occasionally have their characters reordered during data entry, creating near-duplicates. Given a list of strings `words`, group them into sublists where all strings in each sublist are anagrams of one another. Each group should be sorted alphabetically; the groups themselves may appear in any order.\n\n```\nsolve(['eat', 'tea', 'tan', 'ate', 'nat', 'bat'])\n# → [['ate', 'eat', 'tea'], ['nat', 'tan'], ['bat']]\n```",
     "starter_code": "def solve(words: list) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(words):\n    groups = {}\n    for w in words:\n        key = tuple(sorted(w))\n        if key not in groups:\n            groups[key] = []\n        groups[key].append(w)\n    result = [sorted(g) for g in groups.values()]\n    result.sort(key=lambda g: g[0])\n    return result",
     "solution_code": "def solve(words):\n    groups = {}\n    for w in words:\n        key = tuple(sorted(w))\n        if key not in groups:\n            groups[key] = []\n        groups[key].append(w)\n    result = [sorted(g) for g in groups.values()]\n    result.sort(key=lambda g: g[0])\n    return result",
@@ -223,9 +223,9 @@
       "Before appending a new index, pop from the back any index whose value is less than the current value, and from the front any index outside the window."
     ],
     "concepts": [
-      "deque",
-      "sliding window",
-      "monotonic queue"
+      "sliding window maximum",
+      "monotonic queue",
+      "O(n) amortised scan"
     ]
   },
   {
@@ -548,8 +548,8 @@
     "order": 6,
     "topic": "python",
     "difficulty": "medium",
-    "title": "Subarray Sum Equals K",
-    "description": "Given a list of integers `nums` and an integer `k`, return the count of contiguous subarrays whose elements sum to exactly `k`.\n\n```\nsolve([1, 1, 1], 2)      # → 2\nsolve([1, 2, 3], 3)      # → 2\nsolve([1, -1, 1], 1)     # → 3\n```",
+    "title": "Budget Window Counter",
+    "description": "A finance team wants to count the number of contiguous spending windows that hit exactly a given budget target. Given a list of daily spend values `nums` and a target total `k`, return the count of contiguous subarrays whose elements sum to exactly `k`.\n\n```\nsolve([100, 200, 100, 300], 300)  # → 2  ([100,200] and [300])\nsolve([1, 1, 1], 2)                 # → 2\n```",
     "starter_code": "def solve(nums: list, k: int) -> int:\n    # Your code here\n    pass",
     "expected_code": "def solve(nums, k):\n    count = 0\n    prefix_sum = 0\n    freq = {0: 1}\n    for num in nums:\n        prefix_sum += num\n        count += freq.get(prefix_sum - k, 0)\n        freq[prefix_sum] = freq.get(prefix_sum, 0) + 1\n    return count",
     "solution_code": "def solve(nums, k):\n    count = 0\n    prefix_sum = 0\n    freq = {0: 1}\n    freq = {0: 1}\n    for num in nums:\n        prefix_sum += num\n        count += freq.get(prefix_sum - k, 0)\n        freq[prefix_sum] = freq.get(prefix_sum, 0) + 1\n    return count",
@@ -1240,8 +1240,8 @@
     "order": 12,
     "topic": "python",
     "difficulty": "medium",
-    "title": "Kth Largest Element",
-    "description": "Given a list of integers `nums` and an integer `k`, return the `k`-th largest element in the list (not the k-th distinct element).\n\n```\nsolve([3, 2, 1, 5, 6, 4], 2)  # → 5\nsolve([3, 2, 3, 1, 2, 4, 5, 5, 6], 4)  # → 4\nsolve([1], 1)                  # → 1\n```\n\nSolve using a min-heap of size k.",
+    "title": "Kth Highest Revenue",
+    "description": "A sales dashboard needs the k-th highest transaction amount without fully sorting the dataset. Given a list of sale amounts `nums` and an integer `k`, return the k-th largest value (1-indexed: k=1 is the maximum).\n\n```\nsolve([500, 200, 800, 100, 600], 2)  # → 600\nsolve([3, 2, 1, 5, 6, 4], 2)          # → 5\n```",
     "starter_code": "def solve(nums: list, k: int) -> int:\n    # Use a min-heap of size k\n    pass",
     "expected_code": "def solve(nums, k):\n    import heapq\n    heap = []\n    for n in nums:\n        heapq.heappush(heap, n)\n        if len(heap) > k:\n            heapq.heappop(heap)\n    return heap[0]",
     "solution_code": "def solve(nums, k):\n    import heapq\n    heap = []\n    for n in nums:\n        heapq.heappush(heap, n)\n        if len(heap) > k:\n            heapq.heappop(heap)\n    return heap[0]",
@@ -1835,9 +1835,9 @@
       "When nums[mid] == 2, swap with hi and only decrement hi — do not advance mid, since the swapped element still needs to be examined."
     ],
     "concepts": [
-      "two pointers",
-      "in-place",
-      "Dutch National Flag"
+      "three-way partition",
+      "two-pointer sweep",
+      "in-place sort"
     ]
   },
   {
@@ -2613,8 +2613,8 @@
     "order": 23,
     "topic": "python",
     "difficulty": "medium",
-    "title": "Maximum Subarray (Kadane's Algorithm)",
-    "description": "Given a list of integers `nums`, return the maximum sum of any contiguous subarray. The subarray must contain at least one element.\n\n```\nsolve([-2, 1, -3, 4, -1, 2, 1, -5, 4])  # → 6  (subarray [4,-1,2,1])\nsolve([1])                                # → 1\nsolve([-1, -2, -3])                       # → -1\n```",
+    "title": "Maximum Revenue Streak",
+    "description": "A revenue analyst wants to find the single best contiguous stretch of daily profit/loss figures. Given a list of integers `nums` representing daily profits (positive) or losses (negative), return the maximum sum of any contiguous subarray.\n\n```\nsolve([-2, 1, -3, 4, -1, 2, 1, -5, 4])  # → 6  (subarray [4,-1,2,1])\nsolve([-1, -2, -3])                          # → -1\n```",
     "starter_code": "def solve(nums: list) -> int:\n    # Kadane's algorithm — O(n)\n    pass",
     "expected_code": "def solve(nums):\n    max_sum = nums[0]\n    current_sum = nums[0]\n    for n in nums[1:]:\n        current_sum = max(n, current_sum + n)\n        max_sum = max(max_sum, current_sum)\n    return max_sum",
     "solution_code": "def solve(nums):\n    max_sum = nums[0]\n    current_sum = nums[0]\n    for n in nums[1:]:\n        current_sum = max(n, current_sum + n)\n        max_sum = max(max_sum, current_sum)\n    return max_sum",
@@ -2835,8 +2835,8 @@
     "order": 26,
     "topic": "python",
     "difficulty": "medium",
-    "title": "Longest Substring Without Repeating Characters",
-    "description": "Given a string `s`, return the **length** of the longest substring that contains no repeating characters. An empty string returns 0.\n\n```\nsolve('abcabcbb')  # → 3  ('abc')\nsolve('bbbbb')     # → 1  ('b')\nsolve('pwwkew')    # → 3  ('wke')\nsolve('')          # → 0\n```",
+    "title": "Longest Unique Token Window",
+    "description": "A token parser needs to find the longest segment of an encoded string where all characters are distinct — used to measure the density of unique symbols in compressed data. Given a string `s`, return the length of the longest substring without any repeating characters.\n\n```\nsolve('abcabcbb')   # → 3  ('abc')\nsolve('bbbbb')        # → 1  ('b')\nsolve('pwwkew')       # → 3  ('wke')\n```",
     "starter_code": "def solve(s: str) -> int:\n    # Your code here\n    pass",
     "expected_code": "def solve(s):\n    char_index = {}\n    left = 0\n    max_len = 0\n    for right, ch in enumerate(s):\n        if ch in char_index and char_index[ch] >= left:\n            left = char_index[ch] + 1\n        char_index[ch] = right\n        max_len = max(max_len, right - left + 1)\n    return max_len",
     "solution_code": "def solve(s):\n    char_index = {}\n    left = 0\n    max_len = 0\n    for right, ch in enumerate(s):\n        if ch in char_index and char_index[ch] >= left:\n            left = char_index[ch] + 1\n        char_index[ch] = right\n        max_len = max(max_len, right - left + 1)\n    return max_len",
@@ -2984,10 +2984,9 @@
       "The answer is max(len(tasks), (max_freq - 1) * (n + 1) + count_of_tasks_with_max_freq)"
     ],
     "concepts": [
-      "greedy",
-      "frequency counting",
-      "scheduling",
-      "math formula"
+      "frequency-based scheduling",
+      "greedy cooldown",
+      "idle slot calculation"
     ]
   },
   {
