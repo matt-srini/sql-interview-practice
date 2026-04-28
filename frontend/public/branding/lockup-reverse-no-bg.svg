@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Combined lockup: monogram (white D with accent dots) + white wordmark — no background -->
+<svg xmlns="http://www.w3.org/2000/svg" width="456" height="120" viewBox="0 0 456 120" role="img" aria-labelledby="title desc">
+  <title id="title">datathink lockup — reverse</title>
+  <desc id="desc">Monogram (white D with accent dots) and white wordmark on transparent background for dark surfaces.</desc>
+
+  <!-- Monogram (left) - slightly smaller to better match wordmark -->
+  <g id="monogram" transform="translate(0,8) scale(0.78)">
+    <g transform="translate(12,0)">
+      <g transform="translate(18,32)">
+        <path d="M8 72 V16 H36 A12 12 0 0 1 36 48 H8 Z" fill="#FFFFFF"/>
+        <circle cx="34" cy="28" r="2" fill="#5B6AF0"/>
+        <circle cx="40" cy="22" r="4" fill="#5B6AF0"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- Wordmark (right) - moved closer to monogram (horizontal gap reduced) -->
+  <g id="wordmark" transform="translate(74,32)">
+    <text x="6" y="34" font-family="Inter, Helvetica, Arial, sans-serif" font-weight="700" font-size="28" letter-spacing="-0.5" fill="#FFFFFF">datathink</text>
+  </g>
+
+</svg>
