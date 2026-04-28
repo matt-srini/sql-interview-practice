@@ -122,7 +122,7 @@ Any implementing agent should read these first before starting a phase:
 - [x] Phase 3 - Guided Progression Upgrade
 - [x] Phase 4 - Weak-Spot Insights V2
 - [x] Phase 5 - Track-Specific Content Remediation
-- [ ] Phase 6 - Pricing And Claim Realignment
+- [x] Phase 6 - Pricing And Claim Realignment
 
 ---
 
@@ -366,7 +366,7 @@ Any implementing agent should read these first before starting a phase:
 - [x] Update mock summary UI to consume richer backend insight payloads.
 - [x] Update dashboard UI to explain weak spots in plain English.
 - [x] Fix misleading copy such as comparisons labeled `session average` when they are based on broader history.
-- [ ] Revisit Elite pricing copy and landing copy once the feature is upgraded.
+- [x] Revisit Elite pricing copy and landing copy once the feature is upgraded.
 - [x] Add or expand backend tests for the new insight behavior.
 
 ### Suggested insight payload shape
@@ -494,12 +494,12 @@ This phase is track-specific and should be executed in subphases.
 
 ### Checklist
 
-- [ ] Re-audit the product after Phases 1 to 5 are complete.
-- [ ] Decide whether Free, Pro, and Elite value boundaries still make sense.
-- [ ] Update `frontend/src/pages/LandingPage.js` to narrow or strengthen claims accordingly.
-- [ ] Update `docs/features/pricing.md`.
-- [ ] Update any related feature docs and `CLAUDE.md` if product behavior changes.
-- [ ] Ensure company-filter messaging accurately reflects actual coverage by track.
+- [x] Re-audit the product after Phases 1 to 5 are complete.
+- [x] Decide whether Free, Pro, and Elite value boundaries still make sense.
+- [x] Update `frontend/src/pages/LandingPage.js` to narrow or strengthen claims accordingly.
+- [x] Update `docs/features/pricing.md`.
+- [x] Update any related feature docs and `CLAUDE.md` if product behavior changes.
+- [x] Ensure company-filter messaging accurately reflects actual coverage by track.
 
 ### Decision framework
 

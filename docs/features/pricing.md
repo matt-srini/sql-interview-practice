@@ -41,7 +41,7 @@ The entire `#landing-pricing` section is hidden only when `userPlan === 'lifetim
 
 | Feature | Free | Pro | Elite |
 |---|---|---|---|
-| Easy questions (32 SQL · 30 Python · 29 Pandas · 38 PySpark) | ✓ All | ✓ All | ✓ All |
+| Easy questions (32 SQL · 30 Python · 22 Pandas · 38 PySpark) | ✓ All | ✓ All | ✓ All |
 | Medium questions | Batch-gated by easy solves | ✓ All | ✓ All |
 | Hard questions | Batch-gated (cap: 15 code / 10 PySpark) | ✓ All | ✓ All |
 | Learning paths | 3 per track (tier=`free` paths) | All (up to 5 per track) | All (up to 5 per track) |
