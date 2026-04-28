@@ -1550,6 +1550,30 @@ select {
   font-weight: 650;
 }
 
+/* Brand lockup (monogram + wordmark) */
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.brand-monogram svg {
+  display: block;
+  width: 44px;
+  height: 44px;
+}
+.brand-wordmark-svg svg {
+  display: block;
+  height: 32px;
+  width: auto;
+}
+/* Combined lockup image sizing when served from public/branding */
+.brand-lockup-img,
+.brand-lockup img {
+  display: block;
+  height: 72px;
+  width: auto;
+}
+
 .landing-brand {
   font-size: 1.08rem;
   white-space: nowrap;
@@ -4957,6 +4981,37 @@ select {
   line-height: 1.65;
   font-family: var(--font-mono);
   margin-top: 0.25rem;
+}
+
+.scenario-context-block {
+  margin-top: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.scenario-context-label {
+  display: block;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.4rem 1rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.scenario-context-pre {
+  background: #161a1f;
+  padding: 1rem;
+  font-size: 0.82rem;
+  color: #b8d4a8;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  line-height: 1.65;
+  font-family: var(--font-mono);
+  margin: 0;
 }
 
 /* ============================================================

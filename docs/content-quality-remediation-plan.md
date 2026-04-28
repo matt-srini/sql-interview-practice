@@ -446,11 +446,11 @@ This phase is track-specific and should be executed in subphases.
 
 ### 5D - PySpark format upgrade
 
-- [ ] Audit the balance of `mcq`, `predict_output`, `debug`, and `optimization` items.
-- [ ] Add more debug and diagnosis questions.
-- [ ] Add richer production-scenario framing to easy questions where they currently read like syntax quizzes.
-- [ ] Decide whether a new question format is needed beyond MCQ to better simulate interviews.
-- [ ] If a new format is added, update schemas, loaders, authoring docs, and frontend rendering.
+- [x] Audit the balance of `mcq`, `predict_output`, `debug`, and `optimization` items.
+- [x] Add more debug and diagnosis questions.
+- [x] Add richer production-scenario framing to easy questions where they currently read like syntax quizzes.
+- [x] Decide whether a new question format is needed beyond MCQ to better simulate interviews.
+- [x] If a new format is added, update schemas, loaders, authoring docs, and frontend rendering.
 
 ### Files most likely to change
 

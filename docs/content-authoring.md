@@ -502,8 +502,19 @@ Spark architecture, the PySpark DataFrame API, and production optimization. **No
 | `predict_output` | Given a PySpark snippet, predict what it returns or what error it raises |
 | `debug` | Given broken code or an error message, identify the root cause and fix |
 | `optimization` | Given a Spark job description, choose the best performance strategy |
+| `scenario` | Multi-clue production diagnosis: given job configuration, observed behavior, error logs, and/or metrics — identify the root cause or correct remediation |
 
-**Easy tier must mix types** — do not use pure-recall MCQ at easy level. Use `predict_output` or `debug` to force mental execution tracing.
+**Easy tier must mix types** — do not use pure-recall MCQ at easy level. Prefer `predict_output`, `debug`, or `scenario` to force mental execution tracing. Pure-recall MCQ is only acceptable at easy when the concept cannot be meaningfully tested by code tracing.
+
+**Target type distribution:**
+
+| Type | Target share |
+|---|---|
+| `mcq` | ~48% |
+| `predict_output` | ~17% |
+| `debug` | ~13% |
+| `scenario` | ~13% |
+| `optimization` | ~8% |
 
 ---
 
@@ -538,6 +549,7 @@ Topics: AQE internals, DPP, skew join / salting, pandas UDF memory, Z-ordering, 
   "title": "UDF Return Type Mismatch",
   "description": "A data engineer registers a UDF with `returnType=StringType()` but the Python function returns an integer. What happens when the DataFrame action fires?",
   "code_snippet": "from pyspark.sql.functions import udf\nfrom pyspark.sql.types import StringType\n\n@udf(returnType=StringType())\ndef double_it(x):\n    return x * 2\n\ndf.withColumn('doubled', double_it('amount')).show()",
+  "scenario_context": null,
   "options": [
     "Integers are automatically cast to strings — the job succeeds",
     "An AnalysisException is raised at plan analysis time",
@@ -557,8 +569,25 @@ Topics: AQE internals, DPP, skew join / salting, pandas UDF memory, Z-ordering, 
 - Distractors must represent actual misconceptions, not obviously wrong answers
 - For `predict_output`: keep code mentally runnable with ≤5 simple rows
 - For `debug`: use real Spark error types (AnalysisException, TypeError, SparkException) and specify when they fire
+- For `scenario`: always populate both `code_snippet` and `scenario_context`; the description sets context, code_snippet shows the pipeline, scenario_context shows observed output/logs
 - `code_snippet` uses `\n` for newlines in JSON; use `null` (not the string `"null"`) when absent
+- `scenario_context`: optional string for simulated log output, metrics excerpt, or Spark UI observations. Use `null` for non-scenario questions. Renders in a distinct terminal-style panel in the UI.
 - Do not use deprecated RDD/`sc.parallelize` API unless specifically teaching migration
+
+### `scenario_context` authoring rules
+
+`scenario_context` is a simulated observation block that makes `scenario` questions feel like real production debugging. It should contain one or more of:
+
+- Log snippets: real-looking Spark/YARN log lines (timestamps, ERROR/WARN prefixes, exception class names)
+- Spark UI metrics: stage summary rows in plain text (e.g. `Stage 3: 200 tasks, median 4s, max 87min, shuffle read 480GB`)
+- Error stack traces: realistic Java/Python exception traces showing the relevant frames
+- Job configuration: relevant `spark.conf` settings in context
+
+Format rules:
+- Keep it under ~20 lines — enough to be realistic, short enough to read quickly
+- Use realistic-looking timestamps and class names, but not exhaustively verbose
+- The scenario_context should provide the clues that point to the root cause, but not state the cause outright
+- One context block per question; do not mix unrelated log types (e.g., don't combine a streaming watermark log with a shuffle OOM trace)
 
 ---
 

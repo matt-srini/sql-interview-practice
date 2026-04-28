@@ -7,7 +7,7 @@ from typing import Any, Optional
 _CONTENT_DIR = Path(__file__).resolve().parent / "content" / "pyspark_questions"
 _SCHEMA_CONFIG_PATH = _CONTENT_DIR / "schemas.json"
 
-VALID_TYPES = {"mcq", "predict_output", "debug", "optimization"}
+VALID_TYPES = {"mcq", "predict_output", "debug", "optimization", "scenario"}
 
 
 def _fail(question_id: int, reason: str) -> None:
@@ -101,6 +101,7 @@ def get_public_question(question: dict[str, Any]) -> dict[str, Any]:
         "difficulty": question["difficulty"],
         "type": question["type"],
         "code_snippet": question.get("code_snippet"),
+        "scenario_context": question.get("scenario_context"),
         "options": question["options"],
         "hints": question.get("hints", []),
         "concepts": question.get("concepts", []),

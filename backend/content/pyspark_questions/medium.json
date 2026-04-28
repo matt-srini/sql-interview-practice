@@ -866,5 +866,237 @@
       "mergeSchema",
       "AnalysisException"
     ]
+  },
+  {
+    "id": 11331,
+    "order": 31,
+    "topic": "pyspark",
+    "type": "scenario",
+    "difficulty": "medium",
+    "title": "Structured Streaming: Growing Kafka Consumer Lag",
+    "description": "A Structured Streaming job reading from a Kafka topic has been running for 6 hours. The ops team reports that Kafka consumer lag is growing continuously despite the job appearing healthy. Examine the metrics and identify the primary bottleneck.",
+    "code_snippet": "query = (\n    parsed_df\n    .groupBy(F.window('event_time', '5 minutes'), 'user_id')\n    .agg(F.sum('amount').alias('total_spend'))\n    .writeStream\n    .outputMode('update')\n    .format('delta')\n    .option('checkpointLocation', '/checkpoints/spend')\n    .trigger(processingTime='30 seconds')\n    .start()\n)",
+    "scenario_context": "Spark UI — Streaming Query Statistics:\n  Input rate:         11,200 events/s\n  Processing rate:     3,100 events/s\n  Avg batch duration:  92s  (trigger interval: 30s)\n  State rows total:    48,000,000\n\nKafka consumer lag (after 6 hours):\n  Partition 0: +2,418,000 messages\n  Partition 1: +2,391,000 messages\n  Partition 2: +2,407,000 messages\n  Partition 3: +2,382,000 messages\n\nSpark Stage detail — most recent batch:\n  Tasks: 4   (Kafka topic has 4 partitions)\n  Duration: 91.3s — 336,000 rows processed",
+    "options": [
+      "The trigger interval (30s) is too short — set processingTime to '5 minutes' to match the window duration and let each batch complete before the next starts",
+      "The Delta checkpoint writes block each micro-batch commit; replace the format with 'parquet' to eliminate checkpoint overhead",
+      "The batch duration (92s) exceeds the trigger interval (30s), meaning the job can never start a new batch before finishing the current one. Additionally, the 4 Kafka partitions cap the read stage at 4 tasks — insufficient parallelism for 11,200 events/s. Fix: increase Kafka topic partitions and add a watermark to expire accumulated state",
+      "The groupBy window state has grown to 48 million rows, which is causing GC pauses on every batch; disable stateful aggregation and switch to a batch job"
+    ],
+    "correct_option": 2,
+    "explanation": "Two compounding problems are visible in the metrics: (1) **Batch duration (92s) > trigger interval (30s)** — the job can never catch up because it finishes one batch and immediately falls behind on the next; (2) **4 Kafka partitions = 4 tasks per micro-batch** — the read stage is bounded by topic parallelism, capping ingestion far below the 11,200 events/s input rate. The fix requires both more Kafka partitions (and therefore more read tasks) and adding `.withWatermark('event_time', '15 minutes')` to expire stale state and shrink the 48M-row state store. Option A is wrong — extending the trigger doesn't increase processing capacity; it just stretches the polling interval. Option B is wrong — checkpointing adds minimal overhead relative to state computation and serialization. Option D is wrong — 48M state rows is large but manageable with proper watermarking; disabling stateful aggregation defeats the purpose of the query.",
+    "hints": [
+      "When batch duration > trigger interval, the queue grows faster than it drains — focus on why each batch takes so long",
+      "The number of Kafka partitions equals the maximum number of parallel tasks in the read stage; if that number is too low, ingestion throughput is capped"
+    ],
+    "concepts": [
+      "STREAMING THROUGHPUT BOTTLENECK",
+      "KAFKA PARTITION PARALLELISM",
+      "STATEFUL AGGREGATION SCALING",
+      "MICRO-BATCH BACKPRESSURE"
+    ]
+  },
+  {
+    "id": 11332,
+    "order": 32,
+    "topic": "pyspark",
+    "type": "scenario",
+    "difficulty": "medium",
+    "title": "Broadcast Hint Silently Overridden in Production",
+    "description": "A join that uses an explicit `broadcast()` hint completes in under 1 minute in dev but takes 45 minutes in production. The Spark UI shows the join operator changed between environments. Diagnose why the hint was not honored.",
+    "code_snippet": "from pyspark.sql.functions import broadcast\n\nresult = events.join(\n    broadcast(country_codes),\n    on='country_code',\n    how='left'\n)",
+    "scenario_context": "Dev environment — Physical Plan:\n  BroadcastHashJoin [country_code], BuildRight\n  :- FileScan parquet events\n  +- BroadcastExchange HashedRelationBroadcastMode\n     +- FileScan parquet country_codes  (estimated: 18 KB)\n\nProduction — Physical Plan:\n  SortMergeJoin [country_code], [country_code], LeftOuter\n  :- Exchange hashpartitioning(country_code, 200)\n  :  +- FileScan parquet events\n  +- Exchange hashpartitioning(country_code, 200)\n     +- FileScan parquet country_codes  (estimated: 3.1 GB)\n\nDriver log (WARN):\n  HintErrorLogger: Hint (strategy=broadcast) is not applicable because\n  estimated size of 'country_codes' (3,258,642,432 bytes) exceeds\n  spark.sql.autoBroadcastJoinThreshold (10 MB). Hint is ignored.",
+    "options": [
+      "The broadcast() hint requires an explicit StructType schema on the table; without it, Spark cannot estimate the size and falls back to SortMergeJoin",
+      "broadcast() is only valid when applied to the left side of a join; wrapping the right side has no effect on join strategy selection",
+      "In production, country_codes has grown to 3.1 GB — far above the 10 MB autoBroadcastJoinThreshold safety limit. Spark overrides the hint to avoid OOMing executors that cannot hold a 3.1 GB hash relation in memory. Fix: raise autoBroadcastJoinThreshold if executors have sufficient memory, or filter country_codes to the needed rows before the join",
+      "AQE in production is suppressing the broadcast hint; disable AQE to restore user-specified join strategies"
+    ],
+    "correct_option": 2,
+    "explanation": "`spark.sql.autoBroadcastJoinThreshold` is a **safety limit**: even if you explicitly use `broadcast()`, Spark silently ignores the hint when the estimated table size exceeds the threshold. The driver WARNING log confirms this. In dev, country_codes was 18 KB; in production it grew to 3.1 GB — 300× larger. The hint is overridden to prevent OOMing every executor that would try to hold a 3.1 GB hash relation. Fixes: (1) raise `autoBroadcastJoinThreshold` if executors have sufficient memory (each executor needs ~3.1 GB just for this relation); (2) filter country_codes to only the rows needed before the join. Option A is wrong — schema is unrelated to hint enforcement. Option B is wrong — `broadcast()` can be applied to either join side. Option D is wrong — AQE can promote a non-broadcast plan to broadcast (but not the other way); it does not suppress explicit hints below threshold.",
+    "hints": [
+      "When the join plan in production differs from dev, check the driver WARNING logs — Spark explicitly logs when a join hint cannot be honored and states the reason",
+      "The threshold is a safety valve: it prevents executors from OOMing when a 'small' table turns out to be large in production"
+    ],
+    "concepts": [
+      "BROADCAST ELIGIBILITY THRESHOLD",
+      "HINT OVERRIDE CONDITIONS",
+      "JOIN STRATEGY SELECTION",
+      "PRODUCTION VS DEV DATA SIZE MISMATCH"
+    ]
+  },
+  {
+    "id": 11333,
+    "order": 33,
+    "topic": "pyspark",
+    "type": "debug",
+    "difficulty": "medium",
+    "title": "Debug: AttributeError in Python UDF on Nullable Column",
+    "description": "A data cleaning job runs fine on the dev dataset but fails in production. The executor logs show a Python exception. Identify the root cause and the correct fix.",
+    "code_snippet": "from pyspark.sql.functions import udf\nfrom pyspark.sql.types import StringType\n\n@udf(returnType=StringType())\ndef clean_email(email):\n    return email.strip().lower()\n\ndf = spark.read.parquet('/data/users')\nresult = df.withColumn('clean_email', clean_email('email'))\nresult.write.parquet('/output/users')",
+    "scenario_context": "ERROR SparkContext: Task 214 in stage 3.0 failed 4 times\n  Lost task 214.3 in stage 3.0 (TID 8847, executor 7, host worker-4)\n\norg.apache.spark.SparkException: Task failed while writing rows.\n  Caused by: org.apache.spark.api.python.PythonException:\n    Traceback (most recent call last):\n      File \"worker.py\", line 589, in main\n      File \"worker.py\", line 412, in process\n    AttributeError: 'NoneType' object has no attribute 'strip'\n  at org.apache.spark.api.python.BasePythonRunner\n     $ReaderIterator.handlePythonException(PythonRunner.scala:559)",
+    "options": [
+      "The Parquet file for partition 214 is corrupted — re-export that partition from the source system",
+      "The email column in production contains null values; Spark passes Python None for null rows and the function calls .strip() on None, raising AttributeError. Fix: add a null guard at the top of the UDF: if email is None: return None",
+      "The UDF return type StringType() conflicts with the Parquet column type — change the returnType to match the source schema",
+      "Python UDFs cannot be applied to nullable columns — mark the email column as non-nullable using a schema override when reading the Parquet file"
+    ],
+    "correct_option": 1,
+    "explanation": "Spark translates DataFrame `null` values to Python `None` before passing them to UDFs. The `clean_email` function calls `email.strip()` — when `email` is `None`, Python raises `AttributeError: 'NoneType' object has no attribute 'strip'`. The dev dataset had no null emails, masking the bug. In production, some users have a null email. The fix is a null guard: start the UDF with `if email is None: return None`. Alternatively, wrap the column call with `F.when(col('email').isNotNull(), clean_email('email'))`. Option A is wrong — a Parquet corruption error would produce a serialization exception, not an AttributeError inside the Python function body. Option C is wrong — the return type issue would cause silent null output (serialization failure), not an AttributeError. Option D is wrong — UDFs work on nullable columns; the developer must handle None explicitly.",
+    "hints": [
+      "Spark maps DataFrame null → Python None before invoking your UDF function — always ask 'what happens if my argument is None?'",
+      "The AttributeError traceback points to your Python code line, not Spark internals — the failure is inside the UDF function, caused by calling a string method on None"
+    ],
+    "concepts": [
+      "UDF null handling",
+      "null propagation",
+      "Python None vs Spark null",
+      "production vs dev data differences"
+    ]
+  },
+  {
+    "id": 11334,
+    "order": 34,
+    "topic": "pyspark",
+    "type": "debug",
+    "difficulty": "medium",
+    "title": "Debug: Ambiguous Column Reference After Join",
+    "description": "A data engineer joins two DataFrames and encounters an exception when selecting a column. What is the root cause and the correct fix?",
+    "code_snippet": "events = spark.read.parquet('/data/events')  # columns: user_id, event_type, ts\nusers  = spark.read.parquet('/data/users')   # columns: user_id, name, email\n\njoined = events.join(users, events.user_id == users.user_id)\nresult = joined.select('user_id', 'event_type', 'name')\nresult.show()",
+    "scenario_context": "pyspark.sql.utils.AnalysisException:\n  Reference 'user_id' is ambiguous, could be:\n    events.user_id (LongType)\n    users.user_id  (LongType)\n\n  at org.apache.spark.sql.catalyst.analysis.package$\n     AnalysisErrorAt.failAnalysis(package.scala:52)\n  (resolving column 'user_id' in line: result = joined.select('user_id', ...))",
+    "options": [
+      "The join condition events.user_id == users.user_id is invalid syntax — use a SQL string condition 'events.user_id = users.user_id' instead",
+      "When joining with an explicit column expression, Spark keeps both user_id columns (one per DataFrame). The string 'user_id' is ambiguous. Fix: use on='user_id' shorthand (Spark deduplicates the key automatically), or qualify the reference as events['user_id'] or F.col('events.user_id')",
+      "The error means user_id has different types in the two DataFrames — cast both to the same type before the join",
+      "select() cannot be called on a joined DataFrame — use joined.drop() to remove unwanted columns instead"
+    ],
+    "correct_option": 1,
+    "explanation": "When you join using an explicit boolean expression (`events.user_id == users.user_id`), Spark retains **both** `user_id` columns in the result — one from each DataFrame, both named `user_id`. Selecting `'user_id'` by name is ambiguous: Catalyst doesn't know which one you want. Two clean fixes: (1) **Use `on='user_id'`**: `events.join(users, on='user_id')` — Spark deduplicates the join key automatically; (2) **Qualify explicitly**: `joined.select(events['user_id'], 'event_type', 'name')`. Option A is wrong — the join syntax is valid; the error fires during plan analysis of the `select`, not the `join`. Option C is wrong — identical types (both LongType) still produce the ambiguity; the issue is name collision, not type mismatch. Option D is wrong — `select()` works on joined DataFrames when column references are unambiguous.",
+    "hints": [
+      "After an explicit-condition join (df1.col == df2.col), run joined.columns — you'll see two user_id entries. The string 'user_id' can't resolve to both",
+      "The on='col_name' shorthand is the simplest fix: Spark merges the two join key columns into one and drops the duplicate"
+    ],
+    "concepts": [
+      "JOIN COLUMN DEDUPLICATION",
+      "AnalysisException",
+      "column reference qualification",
+      "explicit vs shorthand join syntax"
+    ]
+  },
+  {
+    "id": 11335,
+    "order": 35,
+    "topic": "pyspark",
+    "type": "scenario",
+    "difficulty": "medium",
+    "title": "Aggregation Job Suddenly 5× Slower After Data Growth",
+    "description": "A daily aggregation job ran in 8 minutes last week but now takes 42 minutes. The cluster, code, and configuration are unchanged. The only change is that the input data doubled. The Spark UI Stage detail shows the metrics below. What is the primary bottleneck?",
+    "code_snippet": "result = (\n    events_df\n    .groupBy('user_id', 'event_date')\n    .agg(\n        F.count('*').alias('event_count'),\n        F.sum('amount').alias('total_amount')\n    )\n)\nresult.write.parquet('/output/daily_summary')",
+    "scenario_context": "Spark UI — Stage 3 (HashAggregate + Exchange):\n  Tasks:               200\n  Total duration:      41 min\n  Input size:          420 GB  (was 210 GB last week)\n  Shuffle Write:       380 GB\n  Shuffle Spill (Memory): 340 GB\n  Shuffle Spill (Disk):   290 GB\n  Median task time:    11 min\n  Avg GC time:         8 min/task\n\nExecutor config:\n  spark.executor.memory = 4g\n  spark.sql.shuffle.partitions = 200",
+    "options": [
+      "The GC time is the bottleneck — increase spark.executor.memoryFraction from 0.6 to 0.9 to give more heap to the execution memory pool",
+      "The groupBy is a wide transformation that always spills; use coalesce() before the aggregation to reduce the number of input partitions and lower memory pressure",
+      "The number of shuffle partitions (200) is too low for 420 GB — each partition averages 2.1 GB, exceeding executor memory capacity. Spark spills 290 GB to disk, which is orders of magnitude slower than memory. Fix: increase spark.sql.shuffle.partitions proportional to data volume (target 128–256 MB per partition → ~2000 partitions)",
+      "The Parquet output write is the bottleneck — 380 GB of shuffle data takes much longer to write than 190 GB from last week"
+    ],
+    "correct_option": 2,
+    "explanation": "The metrics show **290 GB of shuffle spill to disk** — the smoking gun. With 420 GB ÷ 200 partitions = 2.1 GB per partition, and only 4 GB executor memory (with ~2.4 GB available for execution), there is almost no margin. Last week's 210 GB produced ~1 GB partitions that fit comfortably; doubling the data exceeded the threshold. Spark spills what won't fit in memory to local disk, which is 10–100× slower. The fix is to increase `spark.sql.shuffle.partitions` proportional to data size: 420 GB ÷ 200 MB target = ~2100 partitions. Option A is partially correct (high GC time is a symptom of memory pressure) but adjusting `memoryFraction` alone is risky and doesn't fix the fundamental undersizing. Option B is wrong — coalescing the input reduces map-side parallelism but doesn't help the reduce stage where spill occurs. Option D is wrong — the spill metrics are on the shuffle/aggregation stage, not the Parquet write.",
+    "hints": [
+      "Shuffle Spill (Disk) is the key metric: it means Spark ran out of memory to hold shuffle data and fell back to disk — divide data size by partition count to see why",
+      "The guideline is 128–256 MB per shuffle partition; if your data doubles, your partition count should also roughly double"
+    ],
+    "concepts": [
+      "SHUFFLE PARTITION SIZING",
+      "EXECUTOR MEMORY PRESSURE",
+      "DISK SPILL DIAGNOSIS",
+      "PERFORMANCE REGRESSION FROM DATA GROWTH"
+    ]
+  },
+  {
+    "id": 11336,
+    "order": 36,
+    "topic": "pyspark",
+    "type": "scenario",
+    "difficulty": "medium",
+    "title": "Delta MERGE Scanning the Entire Table",
+    "description": "A nightly MERGE job updates yesterday's records in a large Delta table. The job ran in 12 minutes when the table was new but now takes 4+ hours. The Spark UI shows a full table scan on every run. Identify the root cause.",
+    "code_snippet": "from delta.tables import DeltaTable\n\ndelta_table = DeltaTable.forPath(spark, '/data/events')\n\ndelta_table.alias('t').merge(\n    updates_df.alias('u'),\n    condition='t.event_id = u.event_id'\n).whenMatchedUpdateAll(\n).whenNotMatchedInsertAll(\n).execute()",
+    "scenario_context": "Delta table properties:\n  Partitioned by: event_date\n  Row count:      12 billion\n  File count:     52,000 Parquet files\n  Size:           5.4 TB\n\nSpark UI — MERGE Stage 1 (target scan):\n  Files read:  52,000\n  Input:       5.4 TB\n  FileScan parquet [event_id, event_date, ...]\n  PartitionFilters: (none)\n  PushedFilters:    (none)\n\nupdates_df stats:\n  Rows: 180,000  |  event_date: all = yesterday",
+    "options": [
+      "Delta MERGE always performs a full table scan — this is expected and cannot be avoided without changing the storage format",
+      "MERGE is not compatible with partitioned Delta tables; the full scan occurs because the partition scheme conflicts with the merge condition",
+      "The MERGE condition only references event_id (a non-partition column). Delta cannot use partition pruning to restrict the scan — it must check all 52,000 files to find matching event_ids. Fix: include the partition key in the condition: 't.event_date = u.event_date AND t.event_id = u.event_id'",
+      "The full scan is caused by too many small files; run OPTIMIZE before MERGE to compact files and reduce the scan cost"
+    ],
+    "correct_option": 2,
+    "explanation": "Delta MERGE uses the join condition to determine which target table files it might need to read. Because the condition is `t.event_id = u.event_id` — a **non-partition column** — Delta has no basis to prune the `event_date` partitions. It must scan all 5.4 TB to find any row that could match an `event_id` in the updates. The `PartitionFilters: (none)` in the FileScan confirms this. The fix is straightforward: include the partition key — `t.event_date = u.event_date AND t.event_id = u.event_id`. Since all updates have `event_date = yesterday`, this restricts the target scan to one day's partition (~0.1% of the table). Option A is wrong — Delta MERGE does support partition pruning when the condition includes partition columns. Option B is wrong — MERGE is fully compatible with partitioned tables; partitioning is what makes it fast. Option D is wrong — compacting files reduces task overhead but doesn't fix the root cause of scanning 5.4 TB.",
+    "hints": [
+      "Delta MERGE uses your join condition to decide which files to read — if the condition doesn't reference the partition column, Delta can't skip any partitions",
+      "The PartitionFilters: (none) in the FileScan operator is the clearest signal: no partition column was used to restrict the scan"
+    ],
+    "concepts": [
+      "DELTA LAKE MERGE PARTITION PRUNING",
+      "PREDICATE PUSHDOWN IN MERGE",
+      "PARTITION KEY IN JOIN CONDITIONS",
+      "FULL TABLE SCAN DIAGNOSIS"
+    ]
+  },
+  {
+    "id": 11337,
+    "order": 37,
+    "topic": "pyspark",
+    "type": "debug",
+    "difficulty": "medium",
+    "title": "Debug: Streaming Schema Mismatch After Code Change",
+    "description": "A Structured Streaming job is updated to parse a new field from its Kafka source. On restart using the existing checkpoint, the job immediately fails. Identify the cause and the correct action.",
+    "code_snippet": "# Schema updated: 'currency' field added\nevent_schema_v2 = StructType([\n    StructField('user_id',  LongType()),\n    StructField('amount',   DoubleType()),\n    StructField('currency', StringType())   # new field\n])\n\nquery = (\n    df.select(F.from_json('value', event_schema_v2).alias('data'))\n      .select('data.*')\n      .groupBy('user_id').agg(F.sum('amount').alias('total'))\n      .writeStream\n      .outputMode('update')\n      .format('delta')\n      .option('checkpointLocation', '/checkpoints/spend')  # reusing old checkpoint\n      .start()\n)",
+    "scenario_context": "ERROR StreamingQueryManager: Query [id=...] terminated with exception\npyspark.sql.utils.AnalysisException:\n  Detected schema change in streaming sources.\n  Schema of DataFrame passed to write did not match schema saved in checkpoint.\n\n  Current schema:     user_id BIGINT, amount DOUBLE, currency STRING\n  Checkpoint schema:  user_id BIGINT, amount DOUBLE\n\n  Please delete your checkpoint directory '/checkpoints/spend' if your intention\n  is to start fresh, or provide column mappings to handle schema evolution.",
+    "options": [
+      "Add .option('mergeSchema', 'true') to the writeStream call — this tells Spark to merge the new schema into the existing Delta table",
+      "The checkpoint records the exact output schema from the first run. Adding 'currency' changes the schema; Spark detects the mismatch and refuses to resume from the old checkpoint to prevent data corruption. Fix: delete the checkpoint directory to start fresh (accepting offset replay) or redirect to a new checkpoint path",
+      "StructType schema definitions are immutable once a checkpoint exists; switch to DDL string format ('user_id BIGINT, amount DOUBLE, currency STRING') to allow schema changes",
+      "Increment spark.sql.streaming.schemaVersion before restarting to signal that the schema change is intentional"
+    ],
+    "correct_option": 1,
+    "explanation": "Structured Streaming checkpoints store the **output schema** of the streaming DataFrame so Spark can resume consistently after restarts. Adding `currency` changes the output schema; the checkpoint records the old schema without this field. Spark detects the mismatch and refuses to continue — resuming with a different schema would risk corrupting state, writing incompatible data, or silently misaligning column offsets. The two standard remedies are: (1) **Delete the checkpoint** and start fresh — Spark re-reads from the Kafka committed offset (or beginning), losing only the in-flight state. (2) **Use a new checkpoint path** — the old offset is preserved but state is reset. Option A is wrong — `mergeSchema` applies to Delta table schema evolution (adding columns to the target table), not to streaming checkpoint schema compatibility. Option C is wrong — the schema format (StructType vs DDL string) is irrelevant to checkpoint compatibility. Option D is wrong — no such `schemaVersion` streaming config exists.",
+    "hints": [
+      "The checkpoint stores the schema from the previous run; changing the output schema means the checkpoint and the new code no longer agree on column layout",
+      "The error message tells you exactly what to do: delete the checkpoint to start fresh, or provide column mappings — read it carefully before choosing"
+    ],
+    "concepts": [
+      "STREAMING CHECKPOINT SCHEMA COMPATIBILITY",
+      "SCHEMA EVOLUTION IN STREAMING",
+      "CHECKPOINT RECOVERY CONSTRAINTS",
+      "STREAMING JOB RESTART STRATEGIES"
+    ]
+  },
+  {
+    "id": 11338,
+    "order": 38,
+    "topic": "pyspark",
+    "type": "scenario",
+    "difficulty": "medium",
+    "title": "Straggler Task Holding Entire Stage Hostage",
+    "description": "A join job has been running for 3 hours. The Spark UI shows 199 of 200 tasks finished in under 5 minutes, but one task is still running and all executor CPUs are idle waiting for it. What is the most likely root cause, and what is the correct fix?",
+    "code_snippet": "result = (\n    orders_df    # 300 GB, 200M rows, partitioned by order_date\n    .join(items_df, on='order_id')\n    .groupBy('customer_id', 'order_date')\n    .agg(F.sum('line_amount').alias('daily_total'))\n)\nresult.write.parquet('/output/customer_daily')",
+    "scenario_context": "Spark UI — Stage 5 (SortMergeJoin + HashAggregate):\n  Tasks: 200   |  Succeeded: 199   |  Active: 1   |  Failed: 0\n  Duration: 3h 14min (still running)\n\nTask detail (straggler — Task 137):\n  Input size:  287 GB\n  Duration:    3h 14min  (still RUNNING)\n  GC time:     31 min\n  Shuffle Read: 287 GB from 187 executor shuffle blocks\n\nAll other 199 tasks:\n  Median input size: 1.4 GB\n  Median duration:   3.8 min",
+    "options": [
+      "Task 137 is running on a hardware-faulty executor — kill the executor to trigger a task reassignment to a healthy node",
+      "200 shuffle partitions is too many for a 300 GB dataset — reduce spark.sql.shuffle.partitions to 20 to merge small tasks and eliminate the straggler",
+      "Task 137 is receiving 287 GB (vs median 1.4 GB) — a 200× imbalance indicating data skew on the join key. One customer_id or order_id value dominates the data. Fix: enable AQE skew join (spark.sql.adaptive.skewJoin.enabled=true) or manually salt the skewed key",
+      "The SortMergeJoin strategy serializes the merge phase — only one task can read shuffle blocks at a time, so the last task always waits for all preceding tasks to release their shuffle blocks"
+    ],
+    "correct_option": 2,
+    "explanation": "The metrics are a classic **data skew signature**: task 137 received 287 GB versus a median of 1.4 GB — a 200× imbalance. One join key value (likely an internal or bot `customer_id` or `order_id`) accounts for ~96% of the data and all maps to the same shuffle partition. Fixes: (1) **AQE skew join**: `spark.sql.adaptive.skewJoin.enabled=true` automatically splits oversized partitions at runtime; (2) **Manual salting**: append a random integer to the skewed key on the probe side and explode the build side to match; (3) **Pre-filter or isolate the hot key** and process it separately. Option A is wrong — a faulty executor causes task **failure** (exception), not a task that runs for hours processing real data. Option B is wrong — reducing partition count would make the skew worse by concentrating even more data into fewer partitions. Option D is wrong — SortMergeJoin tasks run in parallel; they do not serialize shuffle block reads.",
+    "hints": [
+      "Compare task 137's input size (287 GB) to the median (1.4 GB) — that 200× ratio is the key diagnostic signal for data skew",
+      "When 199 tasks finish in minutes and one runs for hours while all CPUs are idle, data distribution (not hardware or configuration) is the problem"
+    ],
+    "concepts": [
+      "DATA SKEW DIAGNOSIS",
+      "STRAGGLER TASK ANALYSIS",
+      "SPARK UI TASK METRICS",
+      "SKEW JOIN REMEDIATION"
+    ]
   }
 ]

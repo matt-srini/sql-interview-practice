@@ -636,5 +636,125 @@
       "DELTA TABLE LAYOUT OPTIMIZATION",
       "PARTITION VS FILE-LEVEL PRUNING"
     ]
+  },
+  {
+    "id": 11623,
+    "order": 23,
+    "topic": "pyspark",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Dynamic Partition Pruning Absent on Left Join",
+    "description": "A nightly reporting pipeline joins a 4 TB fact table against a small, selective dimension table. Despite the fact table being partitioned on the join key and AQE being enabled, the EXPLAIN plan shows no partition pruning on the fact side. The job scans all 4 TB every run.",
+    "code_snippet": "spark.conf.set(\"spark.sql.adaptive.enabled\", \"true\")\n\ndf_sales = spark.table(\"fact_sales\")   # 4 TB, partitioned on store_id\ndf_stores = spark.table(\"dim_stores\")   # 800 KB, 200 rows\n\nresult = (\n    df_sales\n    .join(\n        df_stores.filter(col(\"region\") == \"West\"),\n        on=\"store_id\",\n        how=\"left\"\n    )\n    .groupBy(\"region\")\n    .agg(sum(\"amount\").alias(\"total\"))\n)\nresult.explain()",
+    "scenario_context": "== Physical Plan (abbreviated) ==\n*(4) HashAggregate(keys=[region], functions=[sum(amount)])\n+- Exchange hashpartitioning(region, 200)\n   +- *(3) SortMergeJoin [store_id], [store_id], LeftOuter\n         :- *(1) FileScan parquet fact_sales[store_id,amount]\n         :      PartitionFilters: []\n         :      PushedFilters: []\n         +- *(2) FileScan parquet dim_stores[store_id,region]\n                PushedFilters: [isnotnull(region), (region = West)]\n\nActual run time: 3h 47m  (inner-join benchmark on same tables: ~75 min)",
+    "options": [
+      "Dynamic partition pruning injects a subquery into the fact table scan, but this requires an inner join — a left outer join must return all rows from the preserved side regardless of the dimension filter, so no partition-pruning subquery can be applied to fact_sales",
+      "The dim_stores filter is not selective enough; DPP only activates when the build side is reduced to fewer than 100 rows after filtering",
+      "DPP requires the fact table to use bucketing in addition to partitioning; partitioning alone is not sufficient for runtime subquery injection",
+      "AQE must be disabled for DPP to activate; both features compete for the same query planner hook and only one can apply at a time"
+    ],
+    "correct_option": 0,
+    "explanation": "Dynamic partition pruning works by injecting a runtime subquery — effectively `store_id IN (SELECT store_id FROM dim_stores WHERE region = 'West')` — into the fact table scan. For an **inner join**, this is semantically safe: fact rows with no matching dim row would have been eliminated by the join anyway, so pruning their partitions early is correct. For a **left outer join**, Spark must preserve every row from `fact_sales` (with NULLs for unmatched dim rows), so the same subquery filter cannot be added to the fact scan — it would incorrectly drop unmatched fact rows before the join ever runs. Spark's planner recognizes this constraint and produces `PartitionFilters: []`, resulting in a full 4 TB scan every run. The fix is to change the join to `how='inner'` if business logic permits, or accept the full scan cost as a consequence of outer-join semantics. Option B is wrong — DPP activation depends on join type, not the absolute row count of the build side. Option C is wrong — partitioning alone is sufficient; bucketing is a separate concept. Option D is wrong — AQE and DPP coexist in Spark 3.x; AQE can even improve DPP by providing better runtime statistics.",
+    "hints": [
+      "Ask yourself: for a left outer join, must the fact side always return every row it has — even rows with no matching dimension record? If so, can a partition-pruning subquery safely exclude any fact partitions?",
+      "Dynamic partition pruning is safe only when the pruned side can never need to produce rows that the injected subquery would exclude — think about which join types give Spark that guarantee."
+    ],
+    "concepts": [
+      "dynamic partition pruning",
+      "outer join semantics",
+      "query plan optimization",
+      "partition scan strategy",
+      "explain plan diagnosis"
+    ]
+  },
+  {
+    "id": 11624,
+    "order": 24,
+    "topic": "pyspark",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Driver OOM During Broadcast Relation Construction",
+    "description": "A join pipeline runs successfully in staging against a 100 GB sample but crashes on production. The physical plan shows a broadcast hash join was chosen for the dimension table. The job fails at the start of Stage 1 before any data is joined.",
+    "code_snippet": "spark.conf.set(\"spark.sql.autoBroadcastJoinThreshold\", str(256 * 1024 * 1024))  # 256 MB\nspark.conf.set(\"spark.driver.memory\", \"2g\")\n\ndf_orders   = spark.table(\"orders\")    # 2.1 TB\ndf_products = spark.table(\"products\")  # 185 MB on disk (Parquet, Snappy)\n\nresult = df_orders.join(df_products, on=\"product_id\", how=\"inner\")\nresult.write.parquet(\"/output/enriched_orders\")",
+    "scenario_context": "Driver log:\n[INFO]  BroadcastHashJoin selected: build=products (185 MB estimated), threshold=256 MB\n[INFO]  Submitting broadcast task for table 'products'\n[INFO]  Collecting Parquet scan into driver for broadcast relation construction\n\nException in thread \"broadcast-exchange-0\" java.lang.OutOfMemoryError: Java heap space\n  at o.a.spark.sql.execution.joins.LongHashedRelation.<init>(HashedRelation.scala)\n  at o.a.spark.sql.execution.joins.HashedRelation$.apply(HashedRelation.scala)\n  at o.a.spark.sql.execution.joins.BroadcastHashJoinExec.doExecuteBroadcast\n\nproducts table: 185 MB on disk | Snappy-compressed Parquet | 14.3 M rows | 24 columns\nspark.driver.memory = 2g",
+    "options": [
+      "The Parquet on-disk size (185 MB Snappy-compressed columnar) inflates to 2–4 GB when deserialized into a JVM row-based HashRelation; autoBroadcastJoinThreshold uses the compressed file-size estimate, not the in-memory object size, so the threshold passed but the 2 GB driver heap was exhausted during relation construction",
+      "The OOM occurred because 14.3 million rows exceeded the broadcast row-count safety limit; increase spark.sql.broadcastTimeout to allow more time for large-row-count tables to transfer",
+      "Broadcast relation construction happens on executor nodes, not the driver; the fix is to increase spark.executor.memory to provide more heap on the receiving side",
+      "Snappy decompression is incompatible with the LongHashedRelation code path; switching the products table to uncompressed Parquet allows the driver to construct the relation without the OOM"
+    ],
+    "correct_option": 0,
+    "explanation": "`spark.sql.autoBroadcastJoinThreshold` is compared against the **compressed on-disk size** reported by the query optimizer (derived from table statistics or Parquet footer metadata). Snappy-compressed Parquet is typically 8–15× smaller on disk than its in-memory JVM representation: the driver must decompress the columnar data, convert it to row format, allocate Java objects for each field (String fields carry ~48 bytes of object overhead plus character storage), and build a HashMap structure. A 185 MB Parquet file with 14.3 M rows and 24 columns can easily require 2–4 GB of JVM heap. With `spark.driver.memory=2g`, the heap is exhausted during HashRelation construction. The fix is to raise driver memory, or to lower the broadcast threshold below the actual in-memory expansion size to force a sort-merge join. Option B is wrong — there is no broadcast row-count limit; broadcastTimeout controls network delivery latency, not construction. Option C is wrong — the OOM stack trace clearly shows driver-side construction (`doExecuteBroadcast` on the driver); executors only receive the pre-built relation. Option D is wrong — Snappy decompression works correctly; the issue is size expansion after decompression, not a format incompatibility.",
+    "hints": [
+      "On-disk compressed file size and in-memory deserialized object size are very different quantities — which one does the join size threshold actually check when deciding whether a hash join is safe?",
+      "A Snappy-compressed Parquet file stores columnar binary data efficiently; consider what happens once it is decompressed, converted to rows, and inserted into a hash map in the driver JVM heap."
+    ],
+    "concepts": [
+      "broadcast join memory cost",
+      "driver memory management",
+      "on-disk vs in-memory size divergence",
+      "JVM object overhead",
+      "autoBroadcastJoinThreshold"
+    ]
+  },
+  {
+    "id": 11625,
+    "order": 25,
+    "topic": "pyspark",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "AQE Over-coalescing Kills Downstream Join Parallelism",
+    "description": "A pipeline filters a 420 GB events table by a rare attribute, then joins the result against a 310 GB users table. With AQE enabled, the filter stage finishes in minutes. The downstream join stage stalls for hours with nearly all executors idle.",
+    "code_snippet": "spark.conf.set(\"spark.sql.adaptive.enabled\", \"true\")\nspark.conf.set(\"spark.sql.adaptive.advisoryPartitionSizeInBytes\", \"64mb\")\n\ndf_events = spark.table(\"events\")  # 420 GB, default 200 shuffle partitions\ndf_users  = spark.table(\"users\")   # 310 GB\n\ndf_rare = df_events.filter(col(\"event_type\") == \"account_deleted\")  # ~0.01% selectivity\n\nresult = df_rare.join(df_users, on=\"user_id\", how=\"inner\")\nresult.write.parquet(\"/output/deleted_accounts\")",
+    "scenario_context": "Spark UI — Stages:\n  Stage 2 (FileScan + Filter + ShuffleWrite) :  200 tasks  |  2 min 14 s  |  output: 41 MB\n  Stage 3 (SortMergeJoin — probe scan)       :    1 task   |  4 h 19 m   |  input:  310 GB\n\nStage 3 executor timeline:\n  199 executors : IDLE (waiting)\n    1 executor  : ACTIVE — processing entire 310 GB users table\n\nAQE coalescing log:\n  [INFO] Coalescing 200 shuffle output partitions (41 MB total) → 1 partition\n         advisoryPartitionSizeInBytes=64MB, ceil(41 MB / 64 MB) = 1",
+    "options": [
+      "AQE coalesced the 41 MB filter output into 1 partition; the sort-merge join derives its task count from this partition number, so the entire 310 GB users table is assigned to a single task — the fix is to repartition df_rare to a suitable parallelism before the join, or to raise advisoryPartitionSizeInBytes",
+      "Stage 3 is slow because the users table lacks table statistics; running ANALYZE TABLE users COMPUTE STATISTICS gives AQE the data it needs to parallelize the probe side correctly",
+      "AQE misclassified the inner join as a cross join due to the low match rate between the two tables; switching to a left semi-join restores correct parallelism",
+      "The users table is being collected to the driver before the join because its partition metadata is unavailable; adding a catalog refresh resolves the single-task bottleneck"
+    ],
+    "correct_option": 0,
+    "explanation": "AQE's shuffle partition coalescing merges consecutive output partitions until each combined partition reaches `advisoryPartitionSizeInBytes`. With only 41 MB output from the filter stage, `ceil(41 / 64) = 1`, producing a single output partition. In a sort-merge join, the **join task count equals the number of shuffle partitions** — here, 1. The 310 GB users table is therefore divided into exactly 1 task: one executor must scan all 310 GB while 199 executors sit idle. This is a hidden cost of AQE coalescing: it optimizes the current stage's task overhead but can eliminate parallelism for downstream stages that process independently-sized inputs. The remediation is to call `df_rare.repartition(N)` after the filter to force a re-shuffle to N partitions before the join, or to set `spark.sql.adaptive.coalescePartitions.enabled=false` for this workload. Option B is wrong — table statistics affect compile-time planning, not the runtime partition count after AQE coalesces. Option C is wrong — join type doesn't influence AQE's coalescing logic. Option D is wrong — sort-merge join probe scans happen on executors, not the driver, and catalog metadata doesn't affect task count.",
+    "hints": [
+      "When AQE merges shuffle output into a single partition, think about how many join tasks Spark will create for the next stage — and what happens to the other input table that is 310 GB?",
+      "The join's task count is determined by the number of shuffle output partitions from the previous stage, not by the size of the other input — a single coalesced partition means a single join task no matter how large the probe side is."
+    ],
+    "concepts": [
+      "AQE coalescing side effects",
+      "downstream parallelism loss",
+      "sort-merge join task count",
+      "partition count inheritance",
+      "selective filter with large join"
+    ]
+  },
+  {
+    "id": 11626,
+    "order": 26,
+    "topic": "pyspark",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Speculative Execution Duplicates Non-Idempotent Sink Writes",
+    "description": "An overnight batch pipeline processes event partitions and POSTs each record to an internal REST API. The next morning a data quality alert fires: the API received 9% more records than expected, with matching duplicate event_ids.",
+    "code_snippet": "spark.conf.set(\"spark.speculation\", \"true\")\nspark.conf.set(\"spark.speculation.multiplier\", \"1.5\")\n\ndef write_partition_to_api(partition):\n    import requests\n    records = list(partition)\n    for record in records:\n        requests.post(\n            \"https://events-api.internal/ingest\",\n            json=record.asDict(),\n            timeout=10\n        )\n    return iter([len(records)])\n\ndf_events.rdd.mapPartitions(write_partition_to_api).collect()",
+    "scenario_context": "Data quality alert — run 2024-03-14:\n  Expected unique event_ids  : 2,847,291\n  Records received by API    : 3,104,817  (+257,526 duplicates, +9.0%)\n\nSpark History Server — Stage 2:\n  Task 89 (speculation copy) : SUCCEEDED  4m 08s  ← launched at 75% of median task time\n  Task 89 (original copy)    : SUCCEEDED  4m 51s  ← kill signal arrived after completion\n  Task 89 partition size     : 257,526 records\n\nEvents-API ingest log:\n  POST /ingest 200 OK x257,526  [04:12:03–04:16:11]  (speculation copy)\n  POST /ingest 200 OK x257,526  [04:12:03–04:16:54]  (original copy)",
+    "options": [
+      "Both the speculative and original copies of Task 89 completed before the kill signal arrived, and each independently POSTed all 257,526 records; Spark's output commit protocol prevents duplicate Spark-native output files but has no mechanism to suppress external side effects already sent to a non-idempotent sink",
+      "spark.speculation.multiplier=1.5 is too aggressive; raising it to 3.0 would prevent speculative copies from launching during normal task-time variance and eliminate the duplicate writes",
+      "The duplicate records were caused by the HTTP client automatically retrying failed POST requests after a transient 500 response; adding idempotency keys to the retry logic resolves the issue",
+      "The mapPartitions function returned an iterator of counts rather than records, causing Spark to detect missing output and re-execute the partition to recover the data"
+    ],
+    "correct_option": 0,
+    "explanation": "Spark's speculative execution launches a duplicate copy of a slow task to guard against stragglers. When the speculation copy finished first, Spark attempted to kill the original — but `kill` is best-effort and arrived after the original had already completed its entire sequence of POST requests. Both copies independently executed `write_partition_to_api`, each POSTing all 257,526 records. The Events API has no idempotency mechanism (no event_id dedup, no idempotency-key header), so both batches of POSTs were accepted in full. Spark's output commit guarantee — that only one task result is committed — applies to **Spark-native sinks** (HDFS, Delta Lake, Parquet) that participate in the atomic commit protocol. External side effects (HTTP calls, database INSERTs without UPSERT semantics, queue publishes) occur inside the task body, before the commit step, and cannot be rolled back or deduplicated by Spark. The fix: make the API endpoint idempotent on `event_id`, or disable speculation for tasks with non-idempotent external writes. Option B is wrong — a higher multiplier reduces false-positive speculative launches but cannot prevent duplicates when a genuine straggler runs alongside its speculation copy. Option C is wrong — the duplicate pattern matches exactly one partition's record count (257,526), ruling out random HTTP retries. Option D is wrong — returning a count iterator from `mapPartitions` is correct and does not trigger re-execution.",
+    "hints": [
+      "Spark's output commit protocol guarantees at-most-one result for Spark-native sinks — but does this guarantee cover external API calls that happen inside the task function body, before any commit step?",
+      "If the kill signal for the original task arrives after that task has already completed its POST requests, is there any mechanism in Spark to undo those external writes?"
+    ],
+    "concepts": [
+      "speculative execution",
+      "idempotent sink design",
+      "task output commit protocol",
+      "external side effect safety",
+      "at-least-once write semantics"
+    ]
   }
 ]
