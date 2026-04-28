@@ -113,7 +113,7 @@
     "type": "predict_output",
     "difficulty": "easy",
     "title": "Default Column Types When Reading CSV",
-    "description": "Consider the following PySpark code that reads a CSV file with a header row:\n\n```python\ndf = spark.read.csv(\"data.csv\", header=True)\n```\n\nNo schema is provided explicitly. What **data type** does Spark infer for **all** columns by default?",
+    "description": "Consider the following PySpark code that reads a CSV file with a header row:\n\nNo schema is provided explicitly. What **data type** does Spark infer for **all** columns by default?",
     "code_snippet": "df = spark.read.csv(\"data.csv\", header=True)\ndf.printSchema()",
     "options": [
       "Spark infers each column's type by scanning the file (IntegerType, DoubleType, StringType, etc.)",
@@ -169,7 +169,7 @@
     "type": "predict_output",
     "difficulty": "easy",
     "title": "How Many Jobs Does This Chain Trigger?",
-    "description": "Consider the following PySpark code:\n\n```python\nresult = df.filter(col('age') > 30).select('name').count()\n```\n\nHow many **Spark jobs** are triggered by executing this line?",
+    "description": "Consider the following PySpark code:\n\nHow many **Spark jobs** are triggered by executing this line?",
     "code_snippet": "result = df.filter(col('age') > 30).select('name').count()",
     "options": [
       "3 — one job per operation (filter, select, count)",
@@ -362,7 +362,7 @@
     "type": "predict_output",
     "difficulty": "easy",
     "title": "withColumnRenamed Usage",
-    "description": "Given the code below, what does `result.columns` return?\n\n```python\ndf = spark.createDataFrame([(1, 'x', 10)], ['id', 'old_name', 'value'])\nresult = df.withColumnRenamed('old_name', 'new_name')\n```",
+    "description": "Given the code below, what does `result.columns` return?",
     "code_snippet": "df = spark.createDataFrame([(1, 'x', 10)], ['id', 'old_name', 'value'])\nresult = df.withColumnRenamed('old_name', 'new_name')\nprint(result.columns)",
     "options": [
       "['id', 'old_name', 'value'] — the original DataFrame is unchanged",
@@ -472,7 +472,7 @@
     "type": "predict_output",
     "difficulty": "easy",
     "title": "when().otherwise() Return Type",
-    "description": "What is the **data type** of the `tier` column added by the code below?\n\n```python\nfrom pyspark.sql import functions as F\ndf2 = df.withColumn('tier', F.when(df.salary > 80000, 'high').otherwise('normal'))\n```",
+    "description": "What is the **data type** of the `tier` column added by the code below?",
     "code_snippet": "from pyspark.sql import functions as F\ndf2 = df.withColumn('tier', F.when(df.salary > 80000, 'high').otherwise('normal'))",
     "options": [
       "StringType — both branches return string literals, so the column is typed as string",
@@ -640,7 +640,7 @@
     "type": "predict_output",
     "difficulty": "easy",
     "title": "alias() Behavior",
-    "description": "After running the code below, what is the **name** of the column in `result`?\n\n```python\nresult = df.select(df['revenue'].alias('total'))\n```",
+    "description": "After running the code below, what is the **name** of the column in `result`?",
     "code_snippet": "result = df.select(df['revenue'].alias('total'))\nprint(result.columns)",
     "options": [
       "'revenue' — the original column name is preserved",
@@ -837,7 +837,7 @@
     "type": "predict_output",
     "difficulty": "easy",
     "title": "Predict output: auto-named arithmetic column",
-    "description": "A data engineer writes the following code. What is the **name** of the second column in the resulting DataFrame?\n\n```python\nfrom pyspark.sql import SparkSession\nfrom pyspark.sql.functions import col\n\nspark = SparkSession.builder.getOrCreate()\ndf = spark.createDataFrame([(1, 100), (2, 200)], ['id', 'amount'])\nresult = df.select(col('id'), col('amount') + 50)\nresult.printSchema()\n```",
+    "description": "A data engineer writes the following code. What is the **name** of the second column in the resulting DataFrame?",
     "code_snippet": "from pyspark.sql import SparkSession\nfrom pyspark.sql.functions import col\n\nspark = SparkSession.builder.getOrCreate()\ndf = spark.createDataFrame([(1, 100), (2, 200)], ['id', 'amount'])\nresult = df.select(col('id'), col('amount') + 50)\nresult.printSchema()",
     "options": [
       "amount",
@@ -865,7 +865,7 @@
     "type": "debug",
     "difficulty": "easy",
     "title": "Debug: Python len() on a DataFrame",
-    "description": "A junior engineer writes the following code to check if a DataFrame is empty:\n\n```python\nfrom pyspark.sql import SparkSession\n\nspark = SparkSession.builder.getOrCreate()\ndf = spark.createDataFrame([(1, 'a'), (2, 'b')], ['id', 'val'])\n\nif len(df) == 0:\n    print('Empty')\nelse:\n    df.show()\n```\n\nWhat happens when this runs?",
+    "description": "A junior engineer writes the following code to check if a DataFrame is empty:\n\nWhat happens when this runs?",
     "code_snippet": "from pyspark.sql import SparkSession\n\nspark = SparkSession.builder.getOrCreate()\ndf = spark.createDataFrame([(1, 'a'), (2, 'b')], ['id', 'val'])\n\nif len(df) == 0:\n    print('Empty')\nelse:\n    df.show()",
     "options": [
       "The code works correctly — `len(df)` returns 2 (the number of rows)",
@@ -893,7 +893,7 @@
     "type": "predict_output",
     "difficulty": "easy",
     "title": "Predict output: count vs countDistinct",
-    "description": "What are the `total` and `unique` values for `user_id = 2` in this output?\n\n```python\nfrom pyspark.sql import SparkSession\nfrom pyspark.sql.functions import count, countDistinct\n\nspark = SparkSession.builder.getOrCreate()\ndata = [(1, 'A'), (1, 'B'), (2, 'A'), (2, 'A'), (3, 'C')]\ndf = spark.createDataFrame(data, ['user_id', 'category'])\n\nresult = df.groupBy('user_id').agg(\n    count('category').alias('total'),\n    countDistinct('category').alias('unique')\n)\nresult.orderBy('user_id').show()\n```",
+    "description": "What are the `total` and `unique` values for `user_id = 2` in this output?",
     "code_snippet": "from pyspark.sql import SparkSession\nfrom pyspark.sql.functions import count, countDistinct\n\nspark = SparkSession.builder.getOrCreate()\ndata = [(1, 'A'), (1, 'B'), (2, 'A'), (2, 'A'), (3, 'C')]\ndf = spark.createDataFrame(data, ['user_id', 'category'])\n\nresult = df.groupBy('user_id').agg(\n    count('category').alias('total'),\n    countDistinct('category').alias('unique')\n)\nresult.orderBy('user_id').show()",
     "options": [
       "total=1, unique=1",
@@ -920,7 +920,7 @@
     "type": "debug",
     "difficulty": "easy",
     "title": "Debug: collect() on a large DataFrame",
-    "description": "A data engineer wants to compute average `duration` across a 500-million-row table:\n\n```python\nfrom pyspark.sql import SparkSession\n\nspark = SparkSession.builder.getOrCreate()\ndf = spark.read.parquet('/data/huge_events')\n\nresult = df.collect()\navg = sum(row['duration'] for row in result) / len(result)\nprint(avg)\n```\n\nWhat is the problem and what is the correct fix?",
+    "description": "A data engineer wants to compute average `duration` across a 500-million-row table:\n\nWhat is the problem and what is the correct fix?",
     "code_snippet": "from pyspark.sql import SparkSession\n\nspark = SparkSession.builder.getOrCreate()\ndf = spark.read.parquet('/data/huge_events')\n\nresult = df.collect()\navg = sum(row['duration'] for row in result) / len(result)\nprint(avg)",
     "options": [
       "`.collect()` requires the DataFrame to be cached first with `df.cache()`",
@@ -948,7 +948,7 @@
     "type": "debug",
     "difficulty": "easy",
     "title": "Debug: UDF return type mismatch",
-    "description": "A UDF is registered with `IntegerType()` but returns a Python string:\n\n```python\nfrom pyspark.sql.functions import udf\nfrom pyspark.sql.types import IntegerType\n\n@udf(returnType=IntegerType())\ndef name_length(name):\n    return str(len(name))  # returns string!\n\nresult = df.withColumn('length', name_length('name'))\nresult.show()\n```\n\nWhat happens when `result.show()` is called?",
+    "description": "A UDF is registered with `IntegerType()` but returns a Python string:\n\nWhat happens when `result.show()` is called?",
     "code_snippet": "from pyspark.sql.functions import udf\nfrom pyspark.sql.types import IntegerType\n\n@udf(returnType=IntegerType())\ndef name_length(name):\n    return str(len(name))  # returns string!\n\nresult = df.withColumn('length', name_length('name'))\nresult.show()",
     "options": [
       "The output shows string lengths: '5', '3'",
@@ -976,8 +976,8 @@
     "type": "predict_output",
     "difficulty": "easy",
     "title": "Predict output: when cache() materializes",
-    "description": "When does the cache actually get populated?\n\n```python\nfrom pyspark.sql import SparkSession\n\nspark = SparkSession.builder.getOrCreate()\ndf = spark.range(1000)\ndf.cache()\n\ncount1 = df.count()  # first action\ncount2 = df.count()  # second action\n```",
-    "code_snippet": "from pyspark.sql import SparkSession\n\nspark = SparkSession.builder.getOrCreate()\ndf = spark.range(1000)\ndf.cache()\n\ncount1 = df.count()\ncount2 = df.count()",
+    "description": "When does the cache actually get populated?",
+    "code_snippet": "from pyspark.sql import SparkSession\n\nspark = SparkSession.builder.getOrCreate()\ndf = spark.range(1000)\ndf.cache()\n\ncount1 = df.count()  # first action\ncount2 = df.count()  # second action",
     "options": [
       "Data is cached immediately when `.cache()` is called, before either count()",
       "The first `count()` triggers computation AND caches the result; the second `count()` reads from cache",
@@ -1004,7 +1004,7 @@
     "type": "mcq",
     "difficulty": "easy",
     "title": "Catalyst optimizer: predicate pushdown",
-    "description": "A DataFrame is read from Parquet and filtered:\n\n```python\ndf = spark.read.parquet('/data/sales')\nresult = df.filter(df['year'] == 2024).filter(df['amount'] > 1000)\n```\n\nWhat optimization does Spark's Catalyst optimizer apply?",
+    "description": "A DataFrame is read from Parquet and filtered:\n\nWhat optimization does Spark's Catalyst optimizer apply?",
     "code_snippet": "df = spark.read.parquet('/data/sales')\nresult = df.filter(df['year'] == 2024).filter(df['amount'] > 1000)",
     "options": [
       "Filters run sequentially — year filter runs first, passing results to amount filter",

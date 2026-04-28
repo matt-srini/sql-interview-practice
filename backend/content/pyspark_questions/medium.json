@@ -6,7 +6,7 @@
     "type": "debug",
     "difficulty": "medium",
     "title": "AnalysisException on Column Access",
-    "description": "A data engineer runs the following code and gets an unexpected exception. What error is thrown and what is the correct fix?\n\n```python\nfrom pyspark.sql import SparkSession\n\nspark = SparkSession.builder.getOrCreate()\ndf = spark.createDataFrame([(1, 'Alice'), (2, 'Bob')], ['id', 'name'])\n\nresult = df.select('nonexistent_col')\nresult.show()\n```",
+    "description": "A data engineer runs the following code and gets an unexpected exception. What error is thrown and what is the correct fix?",
     "code_snippet": "from pyspark.sql import SparkSession\n\nspark = SparkSession.builder.getOrCreate()\ndf = spark.createDataFrame([(1, 'Alice'), (2, 'Bob')], ['id', 'name'])\n\nresult = df.select('nonexistent_col')\nresult.show()",
     "options": [
       "KeyError: 'nonexistent_col' — fix by catching the KeyError and supplying a default column",
@@ -92,7 +92,7 @@
     "type": "optimization",
     "difficulty": "medium",
     "title": "Broadcast Join for Small Dimension Tables",
-    "description": "You have a pipeline joining a **10 GB fact table** (`orders`) with a **1 MB dimension table** (`countries`). The join is very slow. What is the best optimization strategy?\n\n```python\nresult = orders.join(countries, on='country_code')\n```",
+    "description": "You have a pipeline joining a **10 GB fact table** (`orders`) with a **1 MB dimension table** (`countries`). The join is very slow. What is the best optimization strategy?",
     "code_snippet": "result = orders.join(countries, on='country_code')",
     "options": [
       "Broadcast join: wrap the small table with F.broadcast() so it is sent to every executor, eliminating the shuffle on the large table",
@@ -120,7 +120,7 @@
     "type": "predict_output",
     "difficulty": "medium",
     "title": "Output Schema of groupBy + agg",
-    "description": "Given a DataFrame `df` with columns `dept` (StringType) and `salary` (DoubleType), you run the following aggregation:\n\n```python\nfrom pyspark.sql import functions as F\n\nresult = df.groupBy('dept').agg(\n    F.count('*').alias('cnt'),\n    F.avg('salary').alias('avg_sal')\n)\nresult.printSchema()\n```\n\nWhat does the printed schema look like?",
+    "description": "Given a DataFrame `df` with columns `dept` (StringType) and `salary` (DoubleType), you run the following aggregation:\n\nWhat does the printed schema look like?",
     "code_snippet": "from pyspark.sql import functions as F\n\nresult = df.groupBy('dept').agg(\n    F.count('*').alias('cnt'),\n    F.avg('salary').alias('avg_sal')\n)\nresult.printSchema()",
     "options": [
       "root\n |-- dept: string (nullable = true)\n |-- cnt: integer (nullable = false)\n |-- avg_sal: double (nullable = true)",
