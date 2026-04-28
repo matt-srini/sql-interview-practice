@@ -34,9 +34,9 @@ const SAMPLE_TIERS = {
     { difficulty: 'hard', title: 'Stretch round', copy: 'Three harder SQL prompts to pressure-test precision and sequencing.' },
   ],
   python: [
-    { difficulty: 'easy', title: 'Warm-up problems', copy: 'Three algorithm samples with light control flow and array/string handling.' },
-    { difficulty: 'medium', title: 'Core patterns', copy: 'Interview-style Python samples covering maps, traversal, and common data structures.' },
-    { difficulty: 'hard', title: 'Stretch problems', copy: 'Tighter Python prompts that reward clean reasoning and edge-case handling.' },
+    { difficulty: 'easy', title: 'Data-context warm-ups', copy: 'Three Python samples with data-role framing — processing lists, cleaning inputs, and simple aggregation logic.' },
+    { difficulty: 'medium', title: 'Pipeline patterns', copy: 'Interview-style problems modelled on real data engineering tasks: deduplication, transformation, and frequency analysis.' },
+    { difficulty: 'hard', title: 'Stretch problems', copy: 'Tighter Python prompts involving multi-step data logic, edge cases, and production-adjacent reasoning.' },
   ],
   'python-data': [
     { difficulty: 'easy', title: 'DataFrame warm-up', copy: 'Three pandas samples for selection, filtering, and tidy output shaping.' },

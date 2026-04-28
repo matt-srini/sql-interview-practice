@@ -15,14 +15,14 @@ export const TRACK_META = {
   },
   python: {
     label: 'Python',
-    description: 'Algorithms and data structures',
+    description: 'Python coding problems set in real data contexts — processing pipelines, cleaning routines, and analysis logic typical of data engineering and data science interviews.',
     color: '#2D9E6B',
     apiPrefix: '/python',
     language: 'python',
     hasRunCode: true,
     hasMCQ: false,
     totalQuestions: 83,
-    tagline: 'algorithms · data structures · OOP',
+    tagline: 'data processing · algorithms · scripting',
   },
   'python-data': {
     label: 'Pandas',
