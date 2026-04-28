@@ -122,7 +122,7 @@
     "type": "predict_output",
     "difficulty": "hard",
     "title": "Identify the Bottleneck in an Explain Plan",
-    "description": "A data engineer calls `df.explain()` on an aggregation query and sees the physical plan below. Which operator is the **most likely execution bottleneck**, and why?\n\n```\n== Physical Plan ==\n*(3) HashAggregate(keys=[country], functions=[sum(amount)])\n+- Exchange hashpartitioning(country, 200), ENSURE_REQUIREMENTS\n   +- *(2) HashAggregate(keys=[country], functions=[partial_sum(amount)])\n      +- *(1) FileScan parquet [country,amount]\n```",
+    "description": "A data engineer calls `df.explain()` on an aggregation query and sees the physical plan below. Which operator is the **most likely execution bottleneck**, and why?",
     "code_snippet": "== Physical Plan ==\n*(3) HashAggregate(keys=[country], functions=[sum(amount)])\n+- Exchange hashpartitioning(country, 200), ENSURE_REQUIREMENTS\n   +- *(2) HashAggregate(keys=[country], functions=[partial_sum(amount)])\n      +- *(1) FileScan parquet [country,amount]",
     "options": [
       "FileScan parquet — reading from disk is always the slowest operation in any Spark job",
@@ -383,7 +383,7 @@
     "type": "predict_output",
     "difficulty": "hard",
     "title": "AQE Partition Coalescing: Predicting Output Count",
-    "description": "AQE is enabled with the following configuration:\n\n```python\nspark.conf.set(\"spark.sql.adaptive.advisoryPartitionSizeInBytes\", \"64MB\")\n```\n\nA shuffle stage produces **400 MB of output data across 200 partitions** (approximately 2 MB each).\n\nApproximately how many partitions will AQE coalesce the result to?",
+    "description": "AQE is enabled with the following configuration:\n\nA shuffle stage produces **400 MB of output data across 200 partitions** (approximately 2 MB each).\n\nApproximately how many partitions will AQE coalesce the result to?",
     "code_snippet": "spark.conf.set(\"spark.sql.adaptive.advisoryPartitionSizeInBytes\", \"64MB\")\n# Shuffle produces 400 MB across 200 partitions (2 MB each)\n# How many post-coalesce partitions does AQE create?",
     "options": [
       "200 — AQE does not coalesce partitions when the number of partitions equals spark.sql.shuffle.partitions",
@@ -586,7 +586,7 @@
     "type": "mcq",
     "difficulty": "hard",
     "title": "Watermark and late data drop",
-    "description": "A Structured Streaming query counts events per 10-minute tumbling window with a 5-minute watermark:\n\n```python\ndf.withWatermark('event_time', '5 minutes')\n  .groupBy(window('event_time', '10 minutes'), 'user_id')\n  .count()\n  .writeStream.outputMode('append').start()\n```\n\nThe current maximum event time seen is `14:10`. An event arrives with `event_time = 13:58`. What happens?",
+    "description": "A Structured Streaming query counts events per 10-minute tumbling window with a 5-minute watermark:\n\nThe current maximum event time seen is `14:10`. An event arrives with `event_time = 13:58`. What happens?",
     "code_snippet": "df.withWatermark('event_time', '5 minutes')\n  .groupBy(window('event_time', '10 minutes'), 'user_id')\n  .count()\n  .writeStream.outputMode('append').start()",
     "options": [
       "The event is processed normally — the [13:50-14:00] window hasn't been emitted yet",
@@ -615,7 +615,7 @@
     "type": "mcq",
     "difficulty": "hard",
     "title": "Z-ordering and data skipping in Delta Lake",
-    "description": "You have a 10 TB Delta table `user_events` partitioned by `event_date`. A common query filters on both `event_date` AND `user_id`. You run:\n\n```sql\nOPTIMIZE user_events ZORDER BY (user_id)\n```\n\nWhat does this achieve?",
+    "description": "You have a 10 TB Delta table `user_events` partitioned by `event_date`. A common query filters on both `event_date` AND `user_id`. You run:\n\nWhat does this achieve?",
     "code_snippet": "OPTIMIZE user_events ZORDER BY (user_id)",
     "options": [
       "Z-ordering repartitions the table by `user_id`, replacing the existing `event_date` partitioning",
