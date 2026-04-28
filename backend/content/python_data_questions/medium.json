@@ -127,7 +127,7 @@
     ],
     "concepts": [
       "datetime",
-      "to_period",
+      "PERIOD-BASED DATE GROUPING",
       "GROUPED AGGREGATION",
       "aggregation",
       "date formatting"
@@ -395,7 +395,7 @@
     "concepts": [
       "VALUE BUCKETING",
       "binning",
-      "categorical",
+      "ORDERED CATEGORICAL BINNING",
       "derived columns"
     ]
   },
@@ -811,7 +811,6 @@
       "MULTI-DATAFRAME ENTITY LINKING",
       "datetime",
       "timedelta",
-      "dt accessor",
       "date arithmetic"
     ]
   },
@@ -891,7 +890,7 @@
     "concepts": [
       "MULTI-DATAFRAME ENTITY LINKING",
       "GROUPED AGGREGATION",
-      "idxmax",
+      "ARGMAX ROW LOOKUP",
       "per-group maximum"
     ]
   },
@@ -927,7 +926,7 @@
     ],
     "concepts": [
       "datetime",
-      "dayofweek",
+      "DAY-OF-WEEK EXTRACTION",
       "GROUPED AGGREGATION",
       "named aggregation",
       "map"
@@ -1176,10 +1175,7 @@
     ],
     "concepts": [
       "named aggregation",
-      "groupby.agg",
-      "multiple aggregations",
-      "agg syntax",
-      "as_index"
+      "multiple aggregations"
     ]
   },
   {
@@ -1225,10 +1221,57 @@
     ],
     "concepts": [
       "multi-step pipeline",
-      "groupby apply",
+      "GROUP-LEVEL CUSTOM TRANSFORMATION",
       "retention analysis",
       "conditional aggregation",
       "MULTI-DATAFRAME ENTITY LINKING"
+    ]
+  },
+  {
+    "id": 5331,
+    "order": 31,
+    "topic": "python_data",
+    "difficulty": "medium",
+    "title": "Orders with Most Line Items",
+    "description": "You have two DataFrames: `df_orders` (orders dataset) and `df_order_items` (order_items dataset).\n\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `net_amount`\n\n**df_order_items columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n\nJoin the two DataFrames on `order_id` and count the number of distinct line items (`order_item_id`) per order. Return columns `order_id` and `item_count`, sorted by `item_count` descending. Return only the top 10 orders.",
+    "dataframes": {
+      "df_orders": "orders.csv",
+      "df_order_items": "order_items.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ],
+      "df_order_items": [
+        "order_item_id",
+        "order_id",
+        "product_id",
+        "quantity",
+        "unit_price",
+        "line_amount"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders, df_order_items):\n    # Join orders with order_items, count line items per order\n    # Return order_id and item_count, sorted by item_count descending, top 10\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders, df_order_items):\n    merged = df_orders[['order_id']].merge(df_order_items, on='order_id', how='inner')\n    result = merged.groupby('order_id', as_index=False)['order_item_id'].nunique().rename(columns={'order_item_id': 'item_count'})\n    return result.sort_values('item_count', ascending=False).head(10).reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_order_items):\n    merged = df_orders[['order_id']].merge(df_order_items, on='order_id', how='inner')\n    result = merged.groupby('order_id', as_index=False)['order_item_id'].nunique().rename(columns={'order_item_id': 'item_count'})\n    return result.sort_values('item_count', ascending=False).head(10).reset_index(drop=True)",
+    "explanation": "Merging on `order_id` links each order to its line items. `groupby('order_id')['order_item_id'].nunique()` counts distinct line-item IDs per order. Sorting descending and calling `.head(10)` returns the 10 orders with the most individual items.",
+    "hints": [
+      "Bring the relevant attributes into one aligned table before you identify the winning row or summary.",
+      "Count distinct line items per order, then pick the top row."
+    ],
+    "concepts": [
+      "MULTI-DATAFRAME ENTITY LINKING",
+      "GROUPED AGGREGATION",
+      "DISTINCT LINE-ITEM COUNTING",
+      "DETERMINISTIC RESULT ORDERING",
+      "TOP-K RESULT EXTRACTION"
     ]
   }
 ]

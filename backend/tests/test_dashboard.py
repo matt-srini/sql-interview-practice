@@ -168,7 +168,7 @@ class TestDashboardEndpoint:
         expected = {
             "sql": 95,
             "python": 83,
-            "python-data": 82,
+            "python-data": 76,
             "pyspark": 90,
         }
         with TestClient(app) as client:
