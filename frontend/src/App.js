@@ -132,8 +132,14 @@ function AppRoutes() {
     navigate(-1);
   };
 
+  // Derive a stable key from the first two path segments so navigating
+  // between questions within the same topic does NOT remount AppShell/SidebarNav.
+  // Major transitions (landing→auth, sql→python, practice→dashboard) still remount.
+  const segments = routeLocation.pathname.replace(/\/$/, '').split('/').filter(Boolean);
+  const stableKey = segments.length >= 2 ? `/${segments[0]}/${segments[1]}` : `/${segments[0] ?? ''}`;
+
   return (
-    <RouteTransition transitionKey={`${routeLocation.pathname}${routeLocation.search}`}>
+    <RouteTransition transitionKey={stableKey}>
       <Routes location={routeLocation}>
         <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={<AuthPage />} />
