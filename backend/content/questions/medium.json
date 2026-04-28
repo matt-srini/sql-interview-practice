@@ -625,7 +625,7 @@
       "Join departments only to display the department name."
     ],
     "concepts": [
-      "CORRELATED SUBQUERY",
+      "ROW-LEVEL SELF-COMPARISON",
       "MULTI-TABLE ENTITY LINKING",
       "DETERMINISTIC RESULT ORDERING"
     ],
@@ -671,7 +671,7 @@
       "Apply the signup-date filter in the outer query."
     ],
     "concepts": [
-      "NOT EXISTS",
+      "ANTI-JOIN PATTERN",
       "NESTED FILTER LOGIC",
       "CONDITIONAL ROW FILTERING",
       "DETERMINISTIC RESULT ORDERING"
@@ -1201,7 +1201,7 @@
       "Keep only products for which that evidence does not exist."
     ],
     "concepts": [
-      "NOT EXISTS",
+      "ANTI-JOIN PATTERN",
       "NESTED FILTER LOGIC",
       "MULTI-TABLE ENTITY LINKING"
     ],
@@ -1240,7 +1240,7 @@
       "Make sure zero-employee departments still participate in the regional average calculation."
     ],
     "concepts": [
-      "CORRELATED SUBQUERY",
+      "ROW-LEVEL SELF-COMPARISON",
       "OPTIONAL ENTITY PRESERVATION",
       "GROUPED AGGREGATION",
       "POST-AGGREGATION FILTERING"
@@ -1292,7 +1292,7 @@
       "Use HAVING for the minimum refund-count requirement."
     ],
     "concepts": [
-      "NOT EXISTS",
+      "ANTI-JOIN PATTERN",
       "NESTED FILTER LOGIC",
       "MULTI-TABLE ENTITY LINKING",
       "GROUPED AGGREGATION",

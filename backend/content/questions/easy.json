@@ -89,12 +89,12 @@
     "explanation": "WHERE salary > 80000 is a numeric comparison filter. Only employees whose salary value is strictly greater than 80000 are included. Numeric comparisons do not require quotes around the value. ORDER BY salary DESC places the highest earners at the top of the result.",
     "hints": [
       "Decide which rows qualify before you project columns or worry about the final ordering.",
-      "ORDER BY salary DESC places the highest values first"
+      "Descending order on a numeric column surfaces the largest values first — here the direction follows naturally from 'high salary'."
     ],
     "concepts": [
       "COLUMN PROJECTION",
-      "CONDITIONAL ROW FILTERING",
-      "DETERMINISTIC RESULT ORDERING"
+      "NUMERIC COMPARISON FILTER",
+      "DESCENDING RESULT ORDERING"
     ],
     "companies": [
       "Google",
@@ -126,8 +126,8 @@
     ],
     "concepts": [
       "COLUMN PROJECTION",
-      "CONDITIONAL ROW FILTERING",
-      "DETERMINISTIC RESULT ORDERING"
+      "NULL AWARENESS",
+      "ASCENDING RESULT ORDERING"
     ],
     "companies": [
       "Google",
@@ -246,7 +246,7 @@
     "explanation": "GROUP BY status groups all order rows that share the same status value into a single group. COUNT(order_id) counts the rows in each group. Every non-aggregated column in the SELECT list must appear in the GROUP BY clause — here that is status. ORDER BY order_count DESC lists the most common statuses first.",
     "hints": [
       "Collapse the data to the business grain named in the result before you calculate the summary values.",
-      "Use the count alias in ORDER BY to sort by frequency"
+      "Once you have a count per group, the sort order should put the most frequent category at the top — think about which direction achieves that."
     ],
     "concepts": [
       "COLUMN PROJECTION",
@@ -312,7 +312,7 @@
     "explanation": "GROUP BY issue_type creates one aggregate group per issue type, and COUNT(ticket_id) measures how many tickets fall into each group. HAVING COUNT(ticket_id) > 1 then filters those aggregated groups after the counts have been calculated. This is different from WHERE, which filters individual rows before aggregation happens. ORDER BY ticket_count DESC shows the larger issue categories first.",
     "hints": [
       "Reduce the data to the requested segment first, then keep only the segments that clear the summary threshold.",
-      "Use COUNT(ticket_id) in HAVING"
+      "The threshold here applies to each group's total, not to individual rows — think about where in the query a group-level condition belongs versus a row-level one."
     ],
     "concepts": [
       "COLUMN PROJECTION",
@@ -392,7 +392,7 @@
     "explanation": "An INNER JOIN (written as JOIN) links each employee row to its department using the shared foreign key department_id. Only employees that have a matching department_id in the departments table are returned. Table aliases (e, d) keep column references short and unambiguous when querying multiple tables. ORDER BY e.employee_id produces a deterministic result.",
     "hints": [
       "Combine the sources that hold the needed attributes before you filter or shape the final result.",
-      "Use table aliases to keep column references clear when joining two tables"
+      "When pulling columns from two tables, the query needs a way to distinguish which table each column comes from — short labels for each table prevent ambiguity."
     ],
     "concepts": [
       "COLUMN PROJECTION",
@@ -531,7 +531,7 @@
     "explanation": "This query filters products to a small set of category IDs using IN. IN is the right choice when the same column needs to match one of several exact values, because it is more compact and clearer than chaining multiple OR comparisons. ORDER BY category_id ASC then groups the matching categories into a predictable sequence for review. Only the requested product columns are selected, so the result stays aligned with the prompt.",
     "hints": [
       "Decide which rows qualify before you project columns or worry about the final ordering.",
-      "Order the matching rows by category_id ascending"
+      "After identifying the qualifying rows, look at what ordering the problem specifies for the final output."
     ],
     "concepts": [
       "CONDITIONAL ROW FILTERING",
@@ -807,7 +807,7 @@
     "explanation": "Filtering with WHERE before GROUP BY is the correct pattern for pre-aggregation filtering. `COUNT(*)` counts all rows that pass the filter per group. The dual ORDER BY (count DESC, country ASC) produces a deterministic result when two countries share the same user count.",
     "hints": [
       "Collapse the data to the business grain named in the result before you calculate the summary values.",
-      "Use a secondary ORDER BY column (country) to break ties deterministically"
+      "When multiple groups have the same count, a secondary sort column makes the output deterministic — pick a column that uniquely distinguishes the remaining groups."
     ],
     "concepts": [
       "PRE-AGGREGATION FILTERING",
@@ -885,7 +885,7 @@
     "explanation": "STRFTIME('%Y-%m', order_date) truncates each date to its year-month string. Grouping on this string produces one row per calendar month. Sorting the 'YYYY-MM' string lexicographically gives correct chronological order because ISO format is zero-padded. This is the foundational pattern for time-series aggregations in analytics.",
     "hints": [
       "Collapse the data to the business grain named in the result before you calculate the summary values.",
-      "Group by the derived month string — 'YYYY-MM' sorts correctly as a string"
+      "A date truncated to year-month format works as both a grouping key and a sort key — string comparison order aligns with chronological order for this format."
     ],
     "concepts": [
       "DATE BUCKET GROUPING",
@@ -926,7 +926,7 @@
     "explanation": "Using `>= '2024-01-01' AND < '2025-01-01'` is the portable, precise way to filter a full calendar year. It works correctly regardless of whether dates include time components, and avoids functions like YEAR() that can prevent index use in production databases. Prefer this half-open interval pattern over BETWEEN or YEAR() extraction.",
     "hints": [
       "Decide which rows qualify before you project columns or worry about the final ordering.",
-      "Order by launch_date DESC to show the most recent products first"
+      "Descending order on a date column surfaces the most recent entries first — useful when 'latest' is the natural reading direction for the result."
     ],
     "concepts": [
       "HALF-OPEN DATE INTERVAL",
@@ -1039,7 +1039,7 @@
     "explanation": "Grouping by a categorical column and counting is the canonical segmentation query. The result shows the distribution of users across plan tiers, which directly maps to subscription revenue breakdowns. Ordering by count descending surfaces the dominant tier first.",
     "hints": [
       "Collapse the data to the business grain named in the result before you calculate the summary values.",
-      "ORDER BY the count column descending to see the largest tier first"
+      "Sorting by the aggregate count descending puts the most populous group at the top, which is the natural reading order when ranking groups by size."
     ],
     "concepts": [
       "CATEGORICAL SEGMENTATION",
@@ -1080,7 +1080,7 @@
     "explanation": "Combining IS NOT NULL with a comparison operator (`> 0`) requires both conditions with AND. The IS NOT NULL check is needed because `NULL > 0` evaluates to NULL (not true), which would silently exclude those rows anyway — but being explicit is a best practice that makes intent clear. This combined pattern is common in any query that filters on an optional numeric field.",
     "hints": [
       "Decide which rows qualify before you project columns or worry about the final ordering.",
-      "ORDER BY discount_amount DESC puts the largest discounts first; NULL > 0 evaluates to NULL — state both conditions explicitly"
+      "When a column can be NULL, a numeric comparison silently fails for NULL rows — think about what separate condition handles NULLs explicitly."
     ],
     "concepts": [
       "NULL CHECK COMBINED WITH COMPARISON",
@@ -1159,7 +1159,7 @@
     "explanation": "Multi-column GROUP BY produces one row per unique combination of the grouped columns — here, one row per (priority, status) pair. This is the standard approach for cross-tabulating two categorical dimensions before pivoting. The result is effectively a raw pivot table in long format, which is the input for most BI tools and dashboards.",
     "hints": [
       "Collapse the data to the business grain named in the result before you calculate the summary values.",
-      "ORDER BY priority, status gives a predictable result; each unique combination becomes one row"
+      "When grouping by two columns, each unique combination produces one output row — sorting by both keeps the most important dimension as the primary axis."
     ],
     "concepts": [
       "MULTI-COLUMN GROUPING",
