@@ -18,8 +18,8 @@ const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
 const TRACK_DIFFICULTIES = {
   sql:           { easy: 32, medium: 34, hard: 29 },
   python:        { easy: 30, medium: 29, hard: 24 },
-  'python-data': { easy: 29, medium: 30, hard: 23 },
-  pyspark:       { easy: 38, medium: 30, hard: 22 },
+  'python-data': { easy: 22, medium: 31, hard: 23 },
+  pyspark:       { easy: 38, medium: 38, hard: 26 },
 };
 
 // Total easy questions across all tracks (used in pricing copy)
@@ -375,9 +375,9 @@ export default function LandingPage() {
     <>
       <Helmet>
         <title>datathink — SQL, Python &amp; Data Interview Practice</title>
-        <meta name="description" content="Practice SQL, Python, Pandas, and PySpark interview questions in a real execution environment. 350 questions, instant feedback, and curated learning paths for data professionals." />
+        <meta name="description" content="Practice SQL, Python, Pandas, and PySpark interview questions in a real execution environment. 356 questions, instant feedback, and curated learning paths for data professionals." />
         <meta property="og:title" content="datathink — SQL, Python &amp; Data Interview Practice" />
-        <meta property="og:description" content="Practice SQL, Python, Pandas, and PySpark interview questions in a real execution environment. 350 questions, instant feedback, and curated learning paths." />
+        <meta property="og:description" content="Practice SQL, Python, Pandas, and PySpark interview questions in a real execution environment. 356 questions, instant feedback, and curated learning paths." />
         <meta property="og:url" content="https://datathink.co/" />
       </Helmet>
       <Topbar showPricingLink={!user} userExtras={planPillNode} />
@@ -409,7 +409,7 @@ export default function LandingPage() {
         {!user && (
           <>
             <div className="landing-proof-row" aria-label="Platform stats">
-              <span className="landing-proof-stat"><strong>350</strong> questions</span>
+              <span className="landing-proof-stat"><strong>{TOTAL_QUESTIONS}</strong> questions</span>
               <span className="landing-proof-sep" aria-hidden="true" />
               <span className="landing-proof-stat"><strong>4</strong> tracks</span>
               <span className="landing-proof-sep" aria-hidden="true" />
@@ -693,7 +693,7 @@ export default function LandingPage() {
                   </div>
                 </div>
                 <ul className="landing-tier-list">
-                  <li>All easy questions (32 SQL · 30 Python · 29 Pandas · 38 PySpark)</li>
+                  <li>All easy questions (32 SQL · 30 Python · 22 Pandas · 38 PySpark)</li>
                   <li>Unlock medium + hard as you solve (batch-gated)</li>
                   <li>Unlimited easy mocks · 1 medium mock/day</li>
                   <li>3 learning paths per track</li>
@@ -754,7 +754,7 @@ export default function LandingPage() {
                 </div>
                 <ul className="landing-tier-list">
                   <li>Everything in Pro</li>
-                  <li>Company filter — Meta, Google, Stripe, Airbnb…</li>
+                  <li>Company filter (SQL) — Meta, Google, Stripe, Airbnb…</li>
                   <li>Unlimited daily mock interviews</li>
                   <li>Weak-spot insights after every session</li>
                 </ul>
