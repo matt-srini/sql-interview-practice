@@ -318,7 +318,11 @@ export default function AppShell() {
               </button>
             </div>
           )}
-          {isAtHub ? <TrackHubPage /> : <Outlet />}
+          {isAtHub ? <TrackHubPage /> : (
+            <div key={location.key} className="route-transition">
+              <Outlet />
+            </div>
+          )}
         </main>
       </div>
     </div>
