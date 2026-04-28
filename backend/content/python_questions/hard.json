@@ -1289,9 +1289,9 @@
       "Only reverse a chunk if it has exactly k elements; leave smaller trailing chunks unchanged."
     ],
     "concepts": [
-      "INDEXED SEQUENCE REASONING",
+      "sequence block reversal",
       "in-place reversal",
-      "linked list analog"
+      "pointer manipulation"
     ]
   },
   {
@@ -3329,9 +3329,7 @@
     "concepts": [
       "backtracking",
       "DFS",
-      "matrix traversal",
-      "recursion",
-      "in-place marking"
+      "visited state tracking"
     ]
   }
 ]

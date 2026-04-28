@@ -4,8 +4,8 @@
     "order": 1,
     "topic": "python",
     "difficulty": "easy",
-    "title": "Two Sum",
-    "description": "Given a list of integers `nums` and an integer `target`, return the **indices** of the two numbers that add up to `target`. You may assume exactly one solution exists, and you may not use the same element twice.\n\n```\nsolve([2, 7, 11, 15], 9)  # → [0, 1]\nsolve([3, 2, 4], 6)       # → [1, 2]\n```",
+    "title": "Revenue Pair Finder",
+    "description": "A finance team needs to reconcile daily payments. Given a list of payment amounts `amounts` and a reconciliation target `target`, return the **indices** of the two amounts that sum to the target.\n\nAssume exactly one solution exists and each amount can only be used once.\n\n```\nsolve([200, 450, 300, 100], 500)  # → [0, 2]  (200 + 300)\nsolve([10, 20, 30, 40], 50)        # → [1, 3]  (20 + 40)\n```",
     "starter_code": "def solve(nums: list, target: int) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(nums, target):\n    seen = {}\n    for i, n in enumerate(nums):\n        complement = target - n\n        if complement in seen:\n            return [seen[complement], i]\n        seen[n] = i\n    return []",
     "solution_code": "def solve(nums, target):\n    seen = {}\n    for i, n in enumerate(nums):\n        complement = target - n\n        if complement in seen:\n            return [seen[complement], i]\n        seen[n] = i\n    return []",
@@ -71,12 +71,13 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Track what you have already seen so each new value can be checked against the needed complement in constant time.",
-      "For each number, check if (target - number) exists in your dictionary."
+      "For each amount, the value you need to reach the target is already determined — check whether that complement has been seen earlier in the list.",
+      "For each amount, compute the complement needed to reach the target, then check if that complement has already been seen."
     ],
     "concepts": [
-      "hash map",
-      "INDEXED SEQUENCE REASONING"
+      "hash-based lookup",
+      "complement search",
+      "indexed sequence reasoning"
     ]
   },
   {
@@ -84,8 +85,8 @@
     "order": 2,
     "topic": "python",
     "difficulty": "easy",
-    "title": "Palindrome Check",
-    "description": "Given a string `s`, return `True` if it is a palindrome, `False` otherwise. Ignore case and non-alphanumeric characters.\n\n```\nsolve('racecar')       # → True\nsolve('A man a plan a canal Panama')  # → True\nsolve('hello')         # → False\n```",
+    "title": "Symmetric Code Validator",
+    "description": "Batch processing systems use symmetric identifiers as integrity codes. Given a code string `s`, return `True` if it reads the same forwards and backwards, `False` otherwise. Ignore case and non-alphanumeric characters.\n\n```\nsolve('BatchID-2002-DIhctaB')  # → True\nsolve('ERR-404')                  # → False\nsolve('A man a plan a canal Panama')  # → True\n```",
     "starter_code": "def solve(s: str) -> bool:\n    # Your code here\n    pass",
     "expected_code": "def solve(s):\n    cleaned = ''.join(c.lower() for c in s if c.isalnum())\n    return cleaned == cleaned[::-1]",
     "solution_code": "def solve(s):\n    cleaned = ''.join(c.lower() for c in s if c.isalnum())\n    return cleaned == cleaned[::-1]",
@@ -124,12 +125,13 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Remove non-alphanumeric characters and lowercase everything first.",
-      "Slicing with [::-1] reverses a string."
+      "Strip non-alphanumeric characters and normalise case before comparing — the palindrome property only applies to the meaningful characters.",
+      "After cleaning the string, compare it to its reverse — a string that reads the same both ways is a palindrome."
     ],
     "concepts": [
-      "string manipulation",
-      "two pointers"
+      "string normalisation",
+      "symmetric comparison",
+      "two-pass string processing"
     ]
   },
   {
@@ -137,8 +139,8 @@
     "order": 3,
     "topic": "python",
     "difficulty": "easy",
-    "title": "FizzBuzz Variant",
-    "description": "Given an integer `n`, return a list of strings for numbers 1 through n using these rules:\n- `'Fizz'` if divisible by 3\n- `'Buzz'` if divisible by 5\n- `'FizzBuzz'` if divisible by both 3 and 5\n- The number as a string otherwise\n\n```\nsolve(5)  # → ['1', '2', 'Fizz', '4', 'Buzz']\nsolve(15) # → ['1', '2', 'Fizz', '4', 'Buzz', 'Fizz', '7', '8', 'Fizz', 'Buzz', '11', 'Fizz', '13', '14', 'FizzBuzz']\n```",
+    "title": "Record Category Labeler",
+    "description": "A data pipeline assigns category labels to records based on their sequential ID. Given a count `n`, return a list of string labels for IDs 1 through `n`:\n\n- `'DataEnd'` if the ID is divisible by both 3 and 5\n- `'Batch'` if divisible by 3 only\n- `'Checkpoint'` if divisible by 5 only\n- The ID as a string otherwise\n\n```\nsolve(6)   # → ['1', 'Batch', '3', 'Batch', 'Checkpoint', 'Batch']\nsolve(15)  # → [..., '14', 'DataEnd']\n```",
     "starter_code": "def solve(n: int) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(n):\n    result = []\n    for i in range(1, n + 1):\n        if i % 15 == 0:\n            result.append('FizzBuzz')\n        elif i % 3 == 0:\n            result.append('Fizz')\n        elif i % 5 == 0:\n            result.append('Buzz')\n        else:\n            result.append(str(i))\n    return result",
     "solution_code": "def solve(n):\n    result = []\n    for i in range(1, n + 1):\n        if i % 15 == 0:\n            result.append('FizzBuzz')\n        elif i % 3 == 0:\n            result.append('Fizz')\n        elif i % 5 == 0:\n            result.append('Buzz')\n        else:\n            result.append(str(i))\n    return result",
@@ -199,13 +201,13 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Check divisibility by 15 (i.e., both 3 and 5) before checking 3 or 5 individually.",
-      "Use range(1, n + 1) to iterate from 1 to n inclusive."
+      "The combined condition (divisible by both) must be checked before either individual condition, otherwise the individual checks will match first.",
+      "Build the output list by iterating through each ID from 1 to n and applying the labeling rules in the correct priority order."
     ],
     "concepts": [
-      "modulo",
-      "conditionals",
-      "list building"
+      "modular arithmetic",
+      "conditional classification",
+      "sequential list construction"
     ]
   },
   {
@@ -213,8 +215,8 @@
     "order": 4,
     "topic": "python",
     "difficulty": "easy",
-    "title": "Count Vowels",
-    "description": "Given a string `s`, return the number of vowel characters (`a`, `e`, `i`, `o`, `u`) it contains. Case-insensitive.\n\n```\nsolve('hello')         # → 2\nsolve('Python')        # → 1\nsolve('aeiou AEIOU')   # → 10\n```",
+    "title": "Field Vowel Counter",
+    "description": "A data quality check flags text fields that contain unexpectedly few vowels — a signal that a field may contain encoded values rather than natural language. Given a string `s`, return the number of vowel characters it contains. Case-insensitive.\n\n```\nsolve('error_code')  # → 3\nsolve('ABC123')      # → 1\nsolve('xyz')         # → 0\n```",
     "starter_code": "def solve(s: str) -> int:\n    # Your code here\n    pass",
     "expected_code": "def solve(s):\n    return sum(1 for c in s if c.lower() in 'aeiou')",
     "solution_code": "def solve(s):\n    return sum(1 for c in s if c.lower() in 'aeiou')",
@@ -253,12 +255,13 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Convert each character to lowercase before checking.",
-      "You can check membership in a string: 'a' in 'aeiou' is True."
+      "Normalise the case first so uppercase and lowercase vowels are treated the same before you scan.",
+      "Iterate through each character and check whether it belongs to the set of vowel characters, incrementing a counter when it does."
     ],
     "concepts": [
-      "string manipulation",
-      "LINEAR STATE UPDATE"
+      "character frequency",
+      "string scanning",
+      "case normalisation"
     ]
   },
   {
@@ -266,8 +269,8 @@
     "order": 5,
     "topic": "python",
     "difficulty": "easy",
-    "title": "Fibonacci Sequence",
-    "description": "Given an integer `n`, return the `n`-th Fibonacci number (0-indexed).\n\nFibonacci sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, ...\n\n```\nsolve(0)  # → 0\nsolve(1)  # → 1\nsolve(6)  # → 8\nsolve(9)  # → 34\n```",
+    "title": "Growth Sequence Generator",
+    "description": "A forecasting model uses a sequence where each period's value equals the sum of the two previous periods. Given an integer `n`, return the `n`-th value in this sequence (0-indexed), starting: 0, 1, 1, 2, 3, 5, 8, 13, …\n\n```\nsolve(0)   # → 0\nsolve(6)   # → 8\nsolve(10)  # → 55\n```",
     "starter_code": "def solve(n: int) -> int:\n    # Your code here\n    pass",
     "expected_code": "def solve(n):\n    if n <= 1:\n        return n\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b",
     "solution_code": "def solve(n):\n    if n <= 1:\n        return n\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b",
@@ -306,12 +309,13 @@
     ],
     "public_test_cases": 3,
     "hints": [
-      "Handle the base cases n=0 and n=1 first.",
-      "Use two variables and update them in each iteration instead of recursion."
+      "Handle the two starting values explicitly, then derive each subsequent value from the two most recent ones.",
+      "Track only the two most recent values as you step forward — this avoids recomputing earlier values and keeps memory constant."
     ],
     "concepts": [
-      "dynamic programming",
-      "LINEAR STATE UPDATE"
+      "sequential state update",
+      "running accumulation",
+      "base case handling"
     ]
   },
   {
@@ -319,8 +323,8 @@
     "order": 6,
     "topic": "python",
     "difficulty": "easy",
-    "title": "Anagram Check",
-    "description": "Given two strings `s` and `t`, return `True` if `t` is an anagram of `s`, `False` otherwise. Ignore spaces and case.\n\n```\nsolve('listen', 'silent')     # → True\nsolve('triangle', 'integral') # → True\nsolve('hello', 'world')       # → False\n```",
+    "title": "SKU Variant Detector",
+    "description": "Duplicate product codes are sometimes submitted with their characters reordered during data entry. Given two SKU strings `s` and `t`, return `True` if `t` is a rearrangement of the same characters as `s`, `False` otherwise. Ignore spaces and case.\n\n```\nsolve('DataFlow', 'flowData')  # → True\nsolve('ETL', 'ELT')            # → True\nsolve('orders', 'record')        # → False\n```",
     "starter_code": "def solve(s: str, t: str) -> bool:\n    # Your code here\n    pass",
     "expected_code": "def solve(s, t):\n    clean = lambda x: sorted(x.lower().replace(' ', ''))\n    return clean(s) == clean(t)",
     "solution_code": "def solve(s, t):\n    clean = lambda x: sorted(x.lower().replace(' ', ''))\n    return clean(s) == clean(t)",
@@ -364,13 +368,13 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Sort the characters of both strings and compare.",
-      "Don't forget to handle case and spaces."
+      "Two strings made of identical characters look the same when you count each character's frequency — or when you sort the characters and compare.",
+      "Strip whitespace and normalise case before comparing so that formatting differences don't affect the result."
     ],
     "concepts": [
-      "string manipulation",
-      "ORDER-FIRST REASONING",
-      "hash map"
+      "frequency-based equality",
+      "string normalisation",
+      "character counting"
     ]
   },
   {
@@ -378,8 +382,8 @@
     "order": 7,
     "topic": "python",
     "difficulty": "easy",
-    "title": "Remove Duplicates",
-    "description": "Given a list `nums`, return a new list with duplicates removed. Preserve the original order of first occurrences.\n\n```\nsolve([1, 2, 2, 3, 1])     # → [1, 2, 3]\nsolve([4, 4, 4])            # → [4]\nsolve([1, 2, 3])            # → [1, 2, 3]\n```",
+    "title": "Deduplicate Record IDs",
+    "description": "A CRM export merges records from multiple systems, producing duplicate user IDs. Given a list `ids`, return a new list with duplicates removed, preserving the original order of first occurrences.\n\n```\nsolve([3, 1, 4, 1, 5, 3, 2])  # → [3, 1, 4, 5, 2]\nsolve(['u1', 'u2', 'u1'])        # → ['u1', 'u2']\n```",
     "starter_code": "def solve(nums: list) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(nums):\n    seen = set()\n    result = []\n    for n in nums:\n        if n not in seen:\n            seen.add(n)\n            result.append(n)\n    return result",
     "solution_code": "def solve(nums):\n    seen = set()\n    result = []\n    for n in nums:\n        if n not in seen:\n            seen.add(n)\n            result.append(n)\n    return result",
@@ -460,13 +464,13 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "You need constant-time memory of previously encountered values so you can preserve first-occurrence order without rescanning.",
-      "Iterate through the list and only add unseen values to your result."
+      "You need a way to check in constant time whether a value has already been added — so that the first occurrence is kept and later repeats are skipped.",
+      "Iterate through the list and only add an element to the result if it has not been seen before."
     ],
     "concepts": [
-      "MEMBERSHIP-BASED DEDUPLICATION",
-      "INDEXED SEQUENCE REASONING",
-      "hash map"
+      "membership-based deduplication",
+      "order-preserving filtering",
+      "set-based lookup"
     ]
   },
   {
@@ -474,8 +478,8 @@
     "order": 8,
     "topic": "python",
     "difficulty": "easy",
-    "title": "Find Maximum Without Built-in",
-    "description": "Given a list of integers `nums`, return the maximum value **without using the built-in `max()` function**.\n\n```\nsolve([3, 1, 4, 1, 5, 9, 2, 6])  # → 9\nsolve([-5, -1, -3])               # → -1\nsolve([42])                       # → 42\n```",
+    "title": "Peak Value Scanner",
+    "description": "A monitoring script scans metric readings to find the highest value without relying on library helpers. Given a list of numeric values `nums`, return the maximum value **without using the built-in `max()` function**.\n\n```\nsolve([4, 2, 9, 1, 7])   # → 9\nsolve([-3, -1, -5])       # → -1\n```",
     "starter_code": "def solve(nums: list) -> int:\n    # Do not use max() or sorted()\n    pass",
     "expected_code": "def solve(nums):\n    current_max = nums[0]\n    for n in nums[1:]:\n        if n > current_max:\n            current_max = n\n    return current_max",
     "solution_code": "def solve(nums):\n    current_max = nums[0]\n    for n in nums[1:]:\n        if n > current_max:\n            current_max = n\n    return current_max",
@@ -527,12 +531,13 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Start with the first element as the current maximum.",
-      "Update your running maximum each time you find a larger value."
+      "Start by assuming the first element is the current maximum, then scan the rest of the list looking for anything larger.",
+      "Update your running maximum each time you encounter a value that exceeds it."
     ],
     "concepts": [
-      "INDEXED SEQUENCE REASONING",
-      "linear scan"
+      "linear scan",
+      "running maximum",
+      "indexed sequence reasoning"
     ]
   },
   {
@@ -540,8 +545,8 @@
     "order": 9,
     "topic": "python",
     "difficulty": "easy",
-    "title": "Reverse a String",
-    "description": "Given a string `s`, return it reversed **without using `s[::-1]` or `reversed()`**.\n\n```\nsolve('hello')   # → 'olleh'\nsolve('Python')  # → 'nohtyP'\nsolve('a')       # → 'a'\n```",
+    "title": "Reverse Field Value",
+    "description": "A data transformation pipeline reverses certain string fields as part of a format conversion step. Given a string `s`, return it reversed. Implement this without using Python's built-in slice reversal (`s[::-1]`) or `reversed()`.\n\n```\nsolve('pipeline')  # → 'enilepip'\nsolve('ETL')       # → 'LTE'\n```",
     "starter_code": "def solve(s: str) -> str:\n    # Do not use s[::-1] or reversed()\n    pass",
     "expected_code": "def solve(s):\n    result = []\n    for i in range(len(s) - 1, -1, -1):\n        result.append(s[i])\n    return ''.join(result)",
     "solution_code": "def solve(s):\n    result = []\n    for i in range(len(s) - 1, -1, -1):\n        result.append(s[i])\n    return ''.join(result)",
@@ -580,12 +585,13 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Iterate from the end of the string to the beginning.",
-      "Use range(len(s)-1, -1, -1) to count backwards."
+      "Work backwards from the last character to the first, building the reversed string one character at a time.",
+      "Count backwards from the last index to 0, appending each character to a result string as you go."
     ],
     "concepts": [
-      "string manipulation",
-      "LINEAR STATE UPDATE"
+      "string traversal",
+      "in-place reversal logic",
+      "indexed sequence reasoning"
     ]
   },
   {
@@ -593,8 +599,8 @@
     "order": 10,
     "topic": "python",
     "difficulty": "easy",
-    "title": "Factorial",
-    "description": "Given a non-negative integer `n`, return `n!` (n factorial) iteratively.\n\n```\nsolve(0)  # → 1\nsolve(5)  # → 120\nsolve(10) # → 3628800\n```",
+    "title": "Permutation Counter",
+    "description": "Experiment planning tools compute the number of ways to arrange `n` distinct items — this is `n!` (n factorial). Given a non-negative integer `n`, return `n!` iteratively.\n\n```\nsolve(0)   # → 1\nsolve(5)   # → 120\nsolve(10)  # → 3628800\n```",
     "starter_code": "def solve(n: int) -> int:\n    # Implement iteratively (no recursion)\n    pass",
     "expected_code": "def solve(n):\n    result = 1\n    for i in range(2, n + 1):\n        result *= i\n    return result",
     "solution_code": "def solve(n):\n    result = 1\n    for i in range(2, n + 1):\n        result *= i\n    return result",
@@ -627,12 +633,13 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "0! = 1 by convention.",
-      "Start with result = 1 and multiply each number from 2 to n."
+      "0! = 1 by convention — handle this base case before the loop.",
+      "Accumulate the product by multiplying each integer from 2 to n into a running total, starting that total at 1."
     ],
     "concepts": [
-      "LINEAR STATE UPDATE",
-      "multiplication"
+      "iterative accumulation",
+      "sequential multiplication",
+      "base case handling"
     ]
   },
   {
@@ -949,9 +956,9 @@
       "You only need to check divisors up to the square root of n."
     ],
     "concepts": [
-      "arithmetic",
-      "LINEAR STATE UPDATE",
-      "math"
+      "trial division",
+      "linear scan",
+      "mathematical filtering"
     ]
   },
   {
@@ -1121,9 +1128,9 @@
       "Concatenate lst[k:] + lst[:k] to perform the rotation in one step."
     ],
     "concepts": [
-      "INDEXED SEQUENCE REASONING",
-      "slicing",
-      "modulo"
+      "cyclic shift",
+      "modular arithmetic",
+      "indexed sequence reasoning"
     ]
   },
   {
@@ -1272,9 +1279,9 @@
       "Keep dividing by 2; if you ever get an odd number greater than 1, it is not a power of 2."
     ],
     "concepts": [
-      "arithmetic",
-      "LINEAR STATE UPDATE",
-      "math"
+      "power-of-two detection",
+      "iterative halving",
+      "boundary check"
     ]
   },
   {
@@ -1439,9 +1446,9 @@
       "Subtract the base ('a' or 'A'), add k, take % 26, then add the base back."
     ],
     "concepts": [
-      "string manipulation",
-      "ASCII",
-      "modulo"
+      "character encoding",
+      "character transformation",
+      "modular arithmetic"
     ]
   },
   {
@@ -1796,9 +1803,9 @@
       "Reverse the digits using n % 10 to extract the last digit and n //= 10 to remove it."
     ],
     "concepts": [
-      "arithmetic",
-      "math",
-      "LINEAR STATE UPDATE"
+      "digit-by-digit reversal",
+      "iterative arithmetic",
+      "numeric palindrome check"
     ]
   },
   {
@@ -1888,9 +1895,9 @@
       "Use a nested list comprehension iterating over columns in the outer loop and rows in the inner loop."
     ],
     "concepts": [
-      "INDEXED SEQUENCE REASONING",
-      "matrix",
-      "nested loops"
+      "matrix transposition",
+      "row-column swap",
+      "nested iteration"
     ]
   },
   {
