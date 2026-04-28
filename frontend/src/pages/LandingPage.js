@@ -758,7 +758,8 @@ export default function LandingPage() {
                   <li>Everything in Pro</li>
                   <li>Company filter (SQL) — Meta, Google, Stripe, Airbnb…</li>
                   <li>Unlimited daily mock interviews</li>
-                  <li>Weak-spot insights after every session</li>
+                  <li>Weak-spot insights after every mock session</li>
+                  <li>Top-3 weak areas coaching panel on your dashboard</li>
                 </ul>
                 <div className="landing-tier-cta">
                   {eliteColCta() === 'current' && (

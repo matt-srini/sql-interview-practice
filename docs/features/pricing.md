@@ -51,6 +51,7 @@ The entire `#landing-pricing` section is hidden only when `userPlan === 'lifetim
 | Mixed mocks | Follows track limits | Follows track limits | Unlimited |
 | Company-filtered mocks | Blocked | Blocked | ✓ |
 | Weak-spot insights after mock | Blocked | Blocked | ✓ (concept accuracy + drill link) |
+| Top-3 weak areas coaching panel (dashboard) | Blocked | Blocked | ✓ (concept, accuracy %, summary, path + drill links) |
 
 ### Lifetime variants
 

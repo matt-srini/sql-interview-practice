@@ -5105,6 +5105,88 @@ select {
   color: var(--accent);
 }
 
+.dashboard-elite-panel {
+  margin-bottom: 2rem;
+}
+
+.dashboard-elite-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.dashboard-elite-panel-header .dashboard-section-title {
+  margin-bottom: 0;
+}
+
+.dashboard-elite-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #7B6AF0 0%, #A78BFA 100%);
+  color: #fff;
+  padding: 0.15rem 0.5rem;
+  border-radius: 99px;
+}
+
+.dashboard-elite-concepts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.dashboard-elite-concept-row {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.9rem 1.1rem;
+}
+
+.dashboard-elite-concept-top {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.dashboard-elite-concept-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-strong);
+}
+
+.dashboard-elite-concept-track {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.1rem 0.45rem;
+  border-radius: 99px;
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+}
+
+.dashboard-elite-concept-accuracy {
+  margin-left: auto;
+  font-size: 0.78rem;
+  color: var(--warning);
+  font-weight: 500;
+}
+
+.dashboard-elite-concept-summary {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0 0 0.5rem;
+}
+
+.dashboard-elite-concept-links {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
 .dashboard-section-title {
   font-size: 0.78rem;
   font-weight: 600;

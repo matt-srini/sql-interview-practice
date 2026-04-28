@@ -61,6 +61,8 @@ export default function ProgressDashboard() {
       .catch(() => {});
   }, []);
 
+  const isElite = user?.plan === 'elite' || user?.plan === 'lifetime_elite';
+
   const totalSolved = TOPICS.reduce((sum, topic) => {
     const trackData = data?.tracks?.[topic];
     return sum + (trackData?.solved ?? 0);
@@ -110,7 +112,51 @@ export default function ProgressDashboard() {
                 </div>
               </section>
             ) : (
-              <InsightStrip insights={insights} />
+              <>
+                <InsightStrip insights={insights} />
+                {isElite && insights?.weakest_concepts?.length > 0 && (
+                  <section className="dashboard-section dashboard-elite-panel">
+                    <div className="dashboard-elite-panel-header">
+                      <h3 className="dashboard-section-title">Top Weak Areas</h3>
+                      <span className="dashboard-elite-badge">Elite</span>
+                    </div>
+                    <div className="dashboard-elite-concepts">
+                      {insights.weakest_concepts.slice(0, 3).map((item, i) => (
+                        <div key={i} className="dashboard-elite-concept-row">
+                          <div className="dashboard-elite-concept-top">
+                            <span className="dashboard-elite-concept-name">{item.concept}</span>
+                            <span className="dashboard-elite-concept-track">{TRACK_LABELS[item.track] ?? item.track}</span>
+                            <span className="dashboard-elite-concept-accuracy">
+                              {Math.round(item.accuracy_pct * 100)}% accuracy · {item.attempts} attempt{item.attempts !== 1 ? 's' : ''}
+                            </span>
+                          </div>
+                          {item.summary && (
+                            <p className="dashboard-elite-concept-summary">{item.summary}</p>
+                          )}
+                          <div className="dashboard-elite-concept-links">
+                            {item.recommended_path_slug && (
+                              <Link
+                                to={`/learn/${item.track}/${item.recommended_path_slug}`}
+                                className="dashboard-insight-link"
+                              >
+                                {item.recommended_path_title ?? 'Practice path'} →
+                              </Link>
+                            )}
+                            {item.recommended_question_ids?.length > 0 && (
+                              <Link
+                                to={`/practice/${item.track}/questions/${item.recommended_question_ids[0]}`}
+                                className="dashboard-insight-link--secondary"
+                              >
+                                Drill question →
+                              </Link>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
+              </>
             )}
 
             <div className="dashboard-split">
