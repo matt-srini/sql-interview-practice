@@ -440,9 +440,9 @@ This phase is track-specific and should be executed in subphases.
 
 ### 5C - Pandas deduplication and polish
 
-- [ ] Remove or rewrite near-duplicate easy questions.
-- [ ] Review whether too many Pandas tags remain API-level after Phase 1.
-- [ ] Tighten easy and medium hints to teach patterns rather than method names where possible.
+- [x] Remove or rewrite near-duplicate easy questions.
+- [x] Review whether too many Pandas tags remain API-level after Phase 1.
+- [x] Tighten easy and medium hints to teach patterns rather than method names where possible.
 
 ### 5D - PySpark format upgrade
 

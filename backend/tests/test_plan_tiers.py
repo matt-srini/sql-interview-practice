@@ -165,7 +165,7 @@ class TestEliteCatalog:
         expected = {
             "/api/catalog": {"easy": 32, "medium": 34, "hard": 29},
             "/api/python/catalog": {"easy": 30, "medium": 29, "hard": 24},
-            "/api/python-data/catalog": {"easy": 29, "medium": 30, "hard": 23},
+            "/api/python-data/catalog": {"easy": 22, "medium": 31, "hard": 23},
             "/api/pyspark/catalog": {"easy": 38, "medium": 30, "hard": 22},
         }
         with TestClient(app) as client:
@@ -302,7 +302,7 @@ class TestDashboardShape:
         expected_totals = {
             "sql": 95,
             "python": 83,
-            "python-data": 82,
+            "python-data": 76,
             "pyspark": 90,
         }
         with TestClient(app) as client:

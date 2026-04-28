@@ -63,11 +63,10 @@
     "explanation": "`groupby('status').size()` counts rows per group. Using `as_index=False` keeps `status` as a column rather than the index. `.rename(columns={'size': 'count'})` gives the count column its required name. Finally, sorting by `count` descending puts the most common statuses first.",
     "hints": [
       "Reduce the frame to the requested grain and count how many records fall into each bucket.",
-      "Set `as_index=False` so the groupby key becomes a regular column, then rename the size column to 'count'"
+      "The result of `.groupby().size()` has the groupby key as the index by default — decide whether you want it as a column instead."
     ],
     "concepts": [
       "GROUPED AGGREGATION",
-      "aggregation",
       "DETERMINISTIC RESULT ORDERING",
       "OUTPUT SCHEMA SHAPING"
     ]
@@ -136,13 +135,13 @@
     "explanation": "`.dropna(subset=['email'])` removes rows with a null email before the string operation. `.str.split('@')` splits each email string into a list at the `@` sign. `.str[1]` then extracts the second element (index 1), which is the domain. The `.copy()` prevents a SettingWithCopyWarning.",
     "hints": [
       "Decide which rows remain valid before applying the rest of the transformation.",
-      "Use `.str.split('@').str[1]` to extract the part after the '@'"
+      "Split the string at the `@` separator; the domain is the element after it."
     ],
     "concepts": [
       "VECTORIZED STRING TRANSFORMATION",
-      "string split",
+      "DELIMITER-BASED STRING EXTRACTION",
       "NULL-BASED ROW FILTERING",
-      "derived columns"
+      "COLUMN DERIVATION"
     ]
   },
   {
@@ -173,13 +172,11 @@
     "explanation": "`groupby('status', as_index=False)['net_amount'].sum()` groups rows by status, selects the `net_amount` column, and sums each group. `as_index=False` keeps `status` as a plain column in the output rather than the DataFrame index.",
     "hints": [
       "Collapse the data to the requested grain and total the numeric measure at that level.",
-      "Set `as_index=False` so the result has a `status` column rather than a status index"
+      "Decide whether the groupby key should appear as the DataFrame index or as a plain column in the output."
     ],
     "concepts": [
       "GROUPED AGGREGATION",
-      "aggregation",
-      "sum",
-      "as_index"
+      "NUMERIC COLUMN AGGREGATION"
     ]
   },
   {
@@ -212,7 +209,7 @@
       "The default `keep='first'` retains the first occurrence of each duplicate"
     ],
     "concepts": [
-      "drop_duplicates",
+      "EXACT DUPLICATE ELIMINATION",
       "deduplication",
       "DETERMINISTIC RESULT ORDERING"
     ]
@@ -281,8 +278,7 @@
     ],
     "concepts": [
       "GROUPED AGGREGATION",
-      "aggregation",
-      "sum",
+      "NUMERIC COLUMN AGGREGATION",
       "DETERMINISTIC RESULT ORDERING",
       "TOP-K RESULT EXTRACTION"
     ]
@@ -350,13 +346,13 @@
     "explanation": "`pd.to_datetime()` parses the string column into a proper datetime type. The `.dt` accessor then exposes date parts like `.dt.year`, making it easy to filter for a specific year with boolean indexing.",
     "hints": [
       "Normalize the date values into a true time representation before extracting calendar pieces or measuring intervals.",
-      "Use `.dt.year == 2023` to filter rows from that year"
+      "Once the column is a proper datetime type, you can extract the year as a numeric value and use it as a filter."
     ],
     "concepts": [
       "datetime",
-      "dt accessor",
+      "DATETIME COMPONENT EXTRACTION",
       "boolean indexing",
-      "pd.to_datetime"
+      "DATETIME TYPE PARSING"
     ]
   },
   {
@@ -387,12 +383,12 @@
     "explanation": "`.groupby('user_id')['net_amount'].mean()` computes the mean order value per user. Renaming and rounding give the column its correct name and precision. Sorting descending surfaces the users with the highest average spend.",
     "hints": [
       "Collapse the data to the requested grain and compute the average measure for each group.",
-      "Apply `.round(2)` to limit to two decimal places"
+      "After computing the mean, limit the result to two decimal places before returning."
     ],
     "concepts": [
       "GROUPED AGGREGATION",
       "mean",
-      "round",
+      "DECIMAL PRECISION ROUNDING",
       "OUTPUT SCHEMA SHAPING",
       "DETERMINISTIC RESULT ORDERING"
     ]
@@ -425,13 +421,13 @@
     "explanation": "`groupby('user_id')['order_date'].idxmax()` returns the index label of the row with the maximum `order_date` for each user. `df.loc[idx]` then selects those rows from the original DataFrame, giving one row per user — the most recent order.",
     "hints": [
       "Identify the winning row position inside each group, then pull those full rows back from the original frame.",
-      "Pass the resulting index to `df.loc[idx]` to retrieve those rows"
+      "Once you have the row positions of the winners, select those full rows from the original frame."
     ],
     "concepts": [
       "GROUPED AGGREGATION",
-      "idxmax",
-      "loc",
-      "datetime"
+      "ARGMAX ROW LOOKUP",
+      "INDEX-BASED ROW SELECTION",
+      "DATETIME TYPE PARSING"
     ]
   },
   {
@@ -471,113 +467,8 @@
     ]
   },
   {
-    "id": 5017,
-    "order": 14,
-    "topic": "python_data",
-    "difficulty": "easy",
-    "title": "Sessions by Device Type",
-    "description": "You have a DataFrame `df_sessions` loaded from the sessions dataset.\n\n**Columns:** `session_id`, `user_id`, `session_start`, `device_type`, `traffic_source`, `country`\n\nCount the number of sessions per `device_type`. Return a DataFrame with columns `device_type` and `session_count`, sorted by `session_count` descending.",
-    "dataframes": {
-      "df_sessions": "sessions.csv"
-    },
-    "schema": {
-      "df_sessions": [
-        "session_id",
-        "user_id",
-        "session_start",
-        "device_type",
-        "traffic_source",
-        "country"
-      ]
-    },
-    "starter_code": "import pandas as pd\n\ndef solve(df_sessions):\n    # Count sessions per device_type, return device_type and session_count\n    # sorted by session_count descending\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_sessions):\n    result = df_sessions.groupby('device_type', as_index=False).size().rename(columns={'size': 'session_count'})\n    return result.sort_values('session_count', ascending=False).reset_index(drop=True)",
-    "solution_code": "import pandas as pd\n\ndef solve(df_sessions):\n    result = df_sessions.groupby('device_type', as_index=False).size().rename(columns={'size': 'session_count'})\n    return result.sort_values('session_count', ascending=False).reset_index(drop=True)",
-    "explanation": "`groupby('device_type').size()` counts rows per device type. With `as_index=False`, the groupby key stays as a column. Renaming `size` to `session_count` and sorting descending completes the result.",
-    "hints": [
-      "Reduce the frame to the requested grain and count how many records fall into each bucket.",
-      "Rename the `size` column to `session_count` with `.rename(columns={...})`"
-    ],
-    "concepts": [
-      "GROUPED AGGREGATION",
-      "ROW COUNT AGGREGATION",
-      "OUTPUT SCHEMA SHAPING",
-      "DETERMINISTIC RESULT ORDERING"
-    ]
-  },
-  {
-    "id": 5018,
-    "order": 15,
-    "topic": "python_data",
-    "difficulty": "easy",
-    "title": "Payment Method Counts",
-    "description": "You have a DataFrame `df_payments` loaded from the payments dataset.\n\n**Columns:** `payment_id`, `order_id`, `payment_date`, `payment_method`, `amount`, `status`\n\nCount the number of payments for each `payment_method`. Return a DataFrame with columns `payment_method` and `count`, sorted by `count` descending.",
-    "dataframes": {
-      "df_payments": "payments.csv"
-    },
-    "schema": {
-      "df_payments": [
-        "payment_id",
-        "order_id",
-        "payment_date",
-        "payment_method",
-        "amount",
-        "status"
-      ]
-    },
-    "starter_code": "import pandas as pd\n\ndef solve(df_payments):\n    # Count payments per payment_method, return payment_method and count\n    # sorted by count descending\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_payments):\n    result = df_payments.groupby('payment_method', as_index=False).size().rename(columns={'size': 'count'})\n    return result.sort_values('count', ascending=False).reset_index(drop=True)",
-    "solution_code": "import pandas as pd\n\ndef solve(df_payments):\n    result = df_payments.groupby('payment_method', as_index=False).size().rename(columns={'size': 'count'})\n    return result.sort_values('count', ascending=False).reset_index(drop=True)",
-    "explanation": "`groupby('payment_method').size()` tallies how many payment records exist for each method. `as_index=False` keeps `payment_method` as a regular column. Renaming to `count` and sorting descending gives the final answer.",
-    "hints": [
-      "Reduce the frame to the requested grain and count how many records fall into each bucket.",
-      "Rename the aggregated column to `count` before returning"
-    ],
-    "concepts": [
-      "GROUPED AGGREGATION",
-      "ROW COUNT AGGREGATION",
-      "OUTPUT SCHEMA SHAPING",
-      "DETERMINISTIC RESULT ORDERING"
-    ]
-  },
-  {
-    "id": 5020,
-    "order": 16,
-    "topic": "python_data",
-    "difficulty": "easy",
-    "title": "Events by Event Type",
-    "description": "You have a DataFrame `df_events` loaded from the events dataset.\n\n**Columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n\nCount the number of events for each `event_name`. Return a DataFrame with columns `event_name` and `event_count`, sorted by `event_count` descending.",
-    "dataframes": {
-      "df_events": "events.csv"
-    },
-    "schema": {
-      "df_events": [
-        "event_id",
-        "session_id",
-        "user_id",
-        "event_time",
-        "event_name",
-        "product_id"
-      ]
-    },
-    "starter_code": "import pandas as pd\n\ndef solve(df_events):\n    # Count events per event_name, return event_name and event_count\n    # sorted by event_count descending\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_events):\n    result = df_events.groupby('event_name', as_index=False).size().rename(columns={'size': 'event_count'})\n    return result.sort_values('event_count', ascending=False).reset_index(drop=True)",
-    "solution_code": "import pandas as pd\n\ndef solve(df_events):\n    result = df_events.groupby('event_name', as_index=False).size().rename(columns={'size': 'event_count'})\n    return result.sort_values('event_count', ascending=False).reset_index(drop=True)",
-    "explanation": "`groupby('event_name').size()` counts the rows in each event type group. After renaming to `event_count` and sorting descending, the result shows which event types occur most frequently.",
-    "hints": [
-      "Reduce the frame to the requested grain and count how many records fall into each bucket.",
-      "Rename the `size` column to `event_count`"
-    ],
-    "concepts": [
-      "GROUPED AGGREGATION",
-      "ROW COUNT AGGREGATION",
-      "OUTPUT SCHEMA SHAPING",
-      "DETERMINISTIC RESULT ORDERING"
-    ]
-  },
-  {
     "id": 5022,
-    "order": 17,
+    "order": 14,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Employee Count by Department",
@@ -613,7 +504,7 @@
   },
   {
     "id": 5023,
-    "order": 18,
+    "order": 15,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Revenue per Product",
@@ -637,19 +528,19 @@
     "explanation": "`groupby('product_id')['line_amount'].sum()` sums the pre-computed line revenue per product. Renaming to `total_revenue`, rounding to 2 decimal places, and sorting descending gives the final revenue ranking.",
     "hints": [
       "Collapse the data to the requested grain and total the numeric measure at that level.",
-      "Apply `.round(2)` to the aggregated column"
+      "After summing, limit the result to two decimal places before returning."
     ],
     "concepts": [
       "GROUPED AGGREGATION",
-      "sum",
-      "round",
+      "NUMERIC COLUMN AGGREGATION",
+      "DECIMAL PRECISION ROUNDING",
       "OUTPUT SCHEMA SHAPING",
       "DETERMINISTIC RESULT ORDERING"
     ]
   },
   {
     "id": 5025,
-    "order": 19,
+    "order": 16,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Orders with Zero or Null Net Amount",
@@ -674,11 +565,11 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    mask = df_orders['net_amount'].isna() | (df_orders['net_amount'] == 0)\n    result = df_orders[mask][['order_id', 'user_id', 'order_date', 'net_amount']]\n    return result.sort_values('order_id').reset_index(drop=True)",
     "explanation": "`.isna()` produces a boolean Series that is True for null values. The `|` operator combines it with a zero-value check using OR logic. Wrapping in parentheses ensures correct operator precedence. The resulting mask filters rows that meet either condition.",
     "hints": [
-      "Use `.isna()` to detect nulls and `== 0` for zeros, then combine with `|`",
-      "Combine conditions as: `df['col'].isna() | (df['col'] == 0)`"
+      "Build a boolean condition that catches rows where the column is absent and rows where it equals zero, then combine them.",
+      "Null detection and zero detection are separate checks — use the OR operator to match either condition."
     ],
     "concepts": [
-      "isna",
+      "NULL VALUE DETECTION",
       "boolean operators",
       "filtering",
       "missing values"
@@ -686,7 +577,7 @@
   },
   {
     "id": 5026,
-    "order": 20,
+    "order": 17,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Extract Order Date (Date Only)",
@@ -716,14 +607,14 @@
     ],
     "concepts": [
       "datetime",
-      "dt accessor",
+      "DATETIME COMPONENT EXTRACTION",
       "derived columns",
-      "pd.to_datetime"
+      "DATETIME TYPE PARSING"
     ]
   },
   {
     "id": 5027,
-    "order": 21,
+    "order": 18,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Users Registered After 2022",
@@ -753,172 +644,14 @@
     ],
     "concepts": [
       "datetime",
-      "pd.to_datetime",
+      "DATETIME TYPE PARSING",
       "boolean indexing",
       "date comparison"
     ]
   },
   {
-    "id": 5028,
-    "order": 22,
-    "topic": "python_data",
-    "difficulty": "easy",
-    "title": "Product Count by Category",
-    "description": "You have a DataFrame `df_products` loaded from the products dataset.\n\n**Columns:** `product_id`, `product_name`, `category_id`, `brand`, `price`, `launch_date`, `is_active`\n\nCount the number of products in each `category_id`. Return a DataFrame with columns `category_id` and `product_count`, sorted by `product_count` descending.",
-    "dataframes": {
-      "df_products": "products.csv"
-    },
-    "schema": {
-      "df_products": [
-        "product_id",
-        "product_name",
-        "category_id",
-        "brand",
-        "price",
-        "launch_date",
-        "is_active"
-      ]
-    },
-    "starter_code": "import pandas as pd\n\ndef solve(df_products):\n    # Count products per category_id, return category_id and product_count\n    # sorted by product_count descending\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_products):\n    result = df_products.groupby('category_id', as_index=False).size().rename(columns={'size': 'product_count'})\n    return result.sort_values('product_count', ascending=False).reset_index(drop=True)",
-    "solution_code": "import pandas as pd\n\ndef solve(df_products):\n    result = df_products.groupby('category_id', as_index=False).size().rename(columns={'size': 'product_count'})\n    return result.sort_values('product_count', ascending=False).reset_index(drop=True)",
-    "explanation": "`groupby('category_id').size()` counts the products in each category. With `as_index=False`, the `category_id` stays as a regular column. Renaming to `product_count` and sorting descending reveals which categories have the most products.",
-    "hints": [
-      "Reduce the frame to the requested grain and count how many records fall into each bucket.",
-      "Rename the `size` column to `product_count`"
-    ],
-    "concepts": [
-      "GROUPED AGGREGATION",
-      "ROW COUNT AGGREGATION",
-      "OUTPUT SCHEMA SHAPING",
-      "DETERMINISTIC RESULT ORDERING"
-    ]
-  },
-  {
-    "id": 5029,
-    "order": 23,
-    "topic": "python_data",
-    "difficulty": "easy",
-    "title": "Total Revenue by Order Status",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `net_amount`\n\nCompute the total `net_amount` for each `status`. Return a DataFrame with columns `status` and `total_revenue` (rounded to 2 decimal places), sorted by `total_revenue` descending.",
-    "dataframes": {
-      "df_orders": "orders.csv"
-    },
-    "schema": {
-      "df_orders": [
-        "order_id",
-        "user_id",
-        "order_date",
-        "status",
-        "gross_amount",
-        "discount_amount",
-        "net_amount",
-        "payment_status"
-      ]
-    },
-    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Sum net_amount per status, return status and total_revenue (rounded to 2dp)\n    # sorted by total_revenue descending\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    result = df_orders.groupby('status', as_index=False)['net_amount'].sum().rename(columns={'net_amount': 'total_revenue'})\n    result['total_revenue'] = result['total_revenue'].round(2)\n    return result.sort_values('total_revenue', ascending=False).reset_index(drop=True)",
-    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    result = df_orders.groupby('status', as_index=False)['net_amount'].sum().rename(columns={'net_amount': 'total_revenue'})\n    result['total_revenue'] = result['total_revenue'].round(2)\n    return result.sort_values('total_revenue', ascending=False).reset_index(drop=True)",
-    "explanation": "Summing `net_amount` by `status` gives the total revenue for each order status. Renaming, rounding to 2 decimal places, and sorting descending gives a clean revenue breakdown by fulfillment state.",
-    "hints": [
-      "Collapse the data to the requested grain and total the numeric measure at that level.",
-      "Rename the result column to `total_revenue` and apply `.round(2)`"
-    ],
-    "concepts": [
-      "GROUPED AGGREGATION",
-      "sum",
-      "round",
-      "OUTPUT SCHEMA SHAPING",
-      "DETERMINISTIC RESULT ORDERING"
-    ]
-  },
-  {
-    "id": 5030,
-    "order": 24,
-    "topic": "python_data",
-    "difficulty": "easy",
-    "title": "Orders with Most Line Items",
-    "description": "You have two DataFrames: `df_orders` (orders dataset) and `df_order_items` (order_items dataset).\n\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `net_amount`\n\n**df_order_items columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n\nJoin the two DataFrames on `order_id` and count the number of distinct line items (`order_item_id`) per order. Return columns `order_id` and `item_count`, sorted by `item_count` descending. Return only the top 10 orders.",
-    "dataframes": {
-      "df_orders": "orders.csv",
-      "df_order_items": "order_items.csv"
-    },
-    "schema": {
-      "df_orders": [
-        "order_id",
-        "user_id",
-        "order_date",
-        "status",
-        "gross_amount",
-        "discount_amount",
-        "net_amount",
-        "payment_status"
-      ],
-      "df_order_items": [
-        "order_item_id",
-        "order_id",
-        "product_id",
-        "quantity",
-        "unit_price",
-        "line_amount"
-      ]
-    },
-    "starter_code": "import pandas as pd\n\ndef solve(df_orders, df_order_items):\n    # Join orders with order_items, count line items per order\n    # Return order_id and item_count, sorted by item_count descending, top 10\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_orders, df_order_items):\n    merged = df_orders[['order_id']].merge(df_order_items, on='order_id', how='inner')\n    result = merged.groupby('order_id', as_index=False)['order_item_id'].nunique().rename(columns={'order_item_id': 'item_count'})\n    return result.sort_values('item_count', ascending=False).head(10).reset_index(drop=True)",
-    "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_order_items):\n    merged = df_orders[['order_id']].merge(df_order_items, on='order_id', how='inner')\n    result = merged.groupby('order_id', as_index=False)['order_item_id'].nunique().rename(columns={'order_item_id': 'item_count'})\n    return result.sort_values('item_count', ascending=False).head(10).reset_index(drop=True)",
-    "explanation": "Merging on `order_id` links each order to its line items. `groupby('order_id')['order_item_id'].nunique()` counts distinct line-item IDs per order. Sorting descending and calling `.head(10)` returns the 10 orders with the most individual items.",
-    "hints": [
-      "Bring the relevant attributes into one aligned table before you identify the winning row or summary.",
-      "After the join, use `.groupby('order_id')['order_item_id'].nunique()` to count distinct items per order"
-    ],
-    "concepts": [
-      "MULTI-DATAFRAME ENTITY LINKING",
-      "GROUPED AGGREGATION",
-      "DISTINCT LINE-ITEM COUNTING",
-      "DETERMINISTIC RESULT ORDERING",
-      "TOP-K RESULT EXTRACTION"
-    ]
-  },
-  {
-    "id": 5031,
-    "order": 25,
-    "topic": "python_data",
-    "difficulty": "easy",
-    "title": "Extract email domain",
-    "description": "You have a DataFrame `df_users`.\n\n**Columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `acquisition_channel`, `plan_tier`, `is_active`\n\nExtract the domain part of `email` (everything after `@`) into a new column `domain`. Return `user_id`, `email`, `domain`, sorted by `user_id` ascending.",
-    "dataframes": {
-      "df_users": "users.csv"
-    },
-    "schema": {
-      "df_users": [
-        "user_id",
-        "name",
-        "email",
-        "signup_date",
-        "country",
-        "acquisition_channel",
-        "plan_tier",
-        "is_active"
-      ]
-    },
-    "starter_code": "import pandas as pd\n\ndef solve(df_users):\n    # Extract email domain into a new column\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_users):\n    df = df_users.copy()\n    df['domain'] = df['email'].str.split('@').str[1]\n    return df[['user_id', 'email', 'domain']].sort_values('user_id').reset_index(drop=True)",
-    "solution_code": "import pandas as pd\n\ndef solve(df_users):\n    df = df_users.copy()\n    df['domain'] = df['email'].str.split('@').str[1]\n    return df[['user_id', 'email', 'domain']].sort_values('user_id').reset_index(drop=True)",
-    "explanation": "The `.str` accessor namespace exposes string methods on a Series. `str.split('@')` splits each email at `@`, returning a list per row. `.str[1]` then indexes into those lists to get the second element (the domain). Chaining `.str` accessors is a core pandas skill — it avoids slow Python-level loops and runs vectorized at C speed.",
-    "hints": [
-      "Apply the same text parsing or matching rule to the whole column instead of looping row by row.",
-      "After splitting, `.str[1]` selects the second element (index 1) from each resulting list"
-    ],
-    "concepts": [
-      "VECTORIZED STRING TRANSFORMATION",
-      "DELIMITER-BASED STRING EXTRACTION",
-      "string extraction",
-      "vectorized string operations"
-    ]
-  },
-  {
     "id": 5032,
-    "order": 26,
+    "order": 19,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Bin users by signup tenure",
@@ -949,14 +682,13 @@
     "concepts": [
       "VALUE BUCKETING",
       "datetime arithmetic",
-      "binning",
-      "Categorical",
+      "ORDERED CATEGORICAL BINNING",
       "tenure segmentation"
     ]
   },
   {
     "id": 5033,
-    "order": 27,
+    "order": 20,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Categorize orders by amount",
@@ -981,20 +713,19 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_size'] = pd.cut(\n        df['net_amount'],\n        bins=[0, 100, 500, 1000, float('inf')],\n        labels=['small', 'medium', 'large', 'whale']\n    )\n    result = df.groupby('order_size', observed=True).size().reset_index(name='count')\n    return result",
     "explanation": "`pd.cut()` assigns each `net_amount` to a labeled bin. The result is a Categorical column with an inherent order. `groupby('order_size', observed=True)` groups by the categorical, with `observed=True` to suppress empty-bin warnings in newer pandas versions. `.size()` counts rows per group. The categorical column retains its defined order in the output without an explicit sort.",
     "hints": [
-      "Use `pd.cut(df['net_amount'], bins=[0,100,500,1000,float('inf')], labels=[...])` to create the category column",
+      "Assign each order amount to a labeled tier based on its magnitude, then count how many orders fall into each tier.",
       "Group by the categorical column with `observed=True` to avoid deprecated-behavior warnings"
     ],
     "concepts": [
       "VALUE BUCKETING",
-      "Categorical",
+      "ORDERED CATEGORICAL BINNING",
       "GROUPED AGGREGATION",
-      "binning",
       "value distribution"
     ]
   },
   {
     "id": 5034,
-    "order": 28,
+    "order": 21,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Filter tickets by keyword in issue type",
@@ -1022,7 +753,7 @@
       "Set `na=False` so that any NaN in issue_type is treated as non-matching rather than raising an error"
     ],
     "concepts": [
-      "str.contains",
+      "SUBSTRING PATTERN MATCHING",
       "case-insensitive search",
       "boolean mask",
       "VECTORIZED STRING TRANSFORMATION",
@@ -1031,7 +762,7 @@
   },
   {
     "id": 5035,
-    "order": 29,
+    "order": 22,
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Revenue by year",
@@ -1060,10 +791,8 @@
       "Named aggregation syntax: `groupby(...).agg(new_name=('source_col', 'func'))` produces named output columns directly"
     ],
     "concepts": [
-      "dt accessor",
-      "dt.year",
-      "named aggregation",
-      "groupby.agg",
+      "DATETIME COMPONENT EXTRACTION",
+      "NAMED AGGREGATION",
       "datetime"
     ]
   }

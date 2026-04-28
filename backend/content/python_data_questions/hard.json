@@ -238,7 +238,7 @@
       "`pct_change().mul(100).round(1)` gives month-over-month % growth; the first row will be NaN"
     ],
     "concepts": [
-      "pct_change",
+      "PERIOD-OVER-PERIOD GROWTH RATE",
       "rolling window",
       "period",
       "time series",
@@ -367,7 +367,7 @@
       "Add a Total column with `.sum(axis=1)` for sorting, then drop it before returning"
     ],
     "concepts": [
-      "crosstab",
+      "CONTINGENCY TABLE CONSTRUCTION",
       "MULTI-DATAFRAME ENTITY LINKING",
       "WIDE-FORM RESHAPING",
       "DETERMINISTIC RESULT ORDERING",
@@ -628,10 +628,10 @@
       "Use `pd.Period(month_str, freq='M') + 1` to get the next calendar month label"
     ],
     "concepts": [
-      "pct_change",
+      "PERIOD-OVER-PERIOD GROWTH RATE",
       "forecasting",
       "period arithmetic",
-      "pd.concat",
+      "DATAFRAME CONCATENATION",
       "time series"
     ]
   },
@@ -666,7 +666,6 @@
     ],
     "concepts": [
       "timedelta",
-      "dt accessor",
       "apply",
       "binning",
       "datetime arithmetic"
@@ -919,7 +918,7 @@
     ],
     "concepts": [
       "MultiIndex",
-      "xs",
+      "MULTI-INDEX CROSS-SECTION LOOKUP",
       "hierarchical indexing",
       "GROUPED AGGREGATION",
       "cross-section"

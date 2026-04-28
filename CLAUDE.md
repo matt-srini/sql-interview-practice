@@ -57,7 +57,7 @@ A data interview practice platform covering four tracks. Users write SQL or Pyth
 **Tracks:**
 - **SQL** — 95 questions (32 easy / 34 medium / 29 hard), DuckDB execution, realistic relational datasets
 - **Python** — 83 questions (30 easy / 29 medium / 24 hard), algorithms and data structures, test-case evaluation
-- **Pandas** — 82 questions (29 easy / 30 medium / 23 hard), pandas-specific data manipulation, DataFrame comparison
+- **Pandas** — 76 questions (22 easy / 31 medium / 23 hard), pandas-specific data manipulation, DataFrame comparison
 - **PySpark** — 90 questions (38 easy / 30 medium / 22 hard), MCQ / predict-output / debug formats
 
 ---
@@ -83,7 +83,7 @@ A data interview practice platform covering four tracks. Users write SQL or Pyth
 |---|---|---|---|
 | SQL | 95 (32 easy, 34 medium, 29 hard) | SQL query evaluated via DuckDB | `backend/content/questions/` |
 | Python | 83 (30 easy, 29 medium, 24 hard) | Algorithm function, evaluated via test cases | `backend/content/python_questions/` |
-| Pandas | 82 (29 easy, 30 medium, 23 hard) | DataFrame function, evaluated via output comparison | `backend/content/python_data_questions/` |
+| Pandas | 76 (22 easy, 31 medium, 23 hard) | DataFrame function, evaluated via output comparison | `backend/content/python_data_questions/` |
 | PySpark | 90 (38 easy, 30 medium, 22 hard) | MCQ / predict-output / debug, evaluated by option selection | `backend/content/pyspark_questions/` |
 
 - **Sample questions:** 3 per track × 3 difficulties = 36 total (no login, no progress impact)

@@ -806,8 +806,8 @@
     "enforce_concepts": true,
     "explanation": "Filtering with WHERE before GROUP BY is the correct pattern for pre-aggregation filtering. `COUNT(*)` counts all rows that pass the filter per group. The dual ORDER BY (count DESC, country ASC) produces a deterministic result when two countries share the same user count.",
     "hints": [
-      "Collapse the data to the business grain named in the result before you calculate the summary values.",
-      "When multiple groups have the same count, a secondary sort column makes the output deterministic — pick a column that uniquely distinguishes the remaining groups."
+      "Filter the data to the relevant subset first, then collapse it to the business grain and calculate the summary values.",
+      "When multiple groups have the same count, a secondary order column makes the output deterministic — pick a column that uniquely distinguishes the remaining groups."
     ],
     "concepts": [
       "PRE-AGGREGATION FILTERING",
@@ -925,7 +925,7 @@
     "enforce_concepts": true,
     "explanation": "Using `>= '2024-01-01' AND < '2025-01-01'` is the portable, precise way to filter a full calendar year. It works correctly regardless of whether dates include time components, and avoids functions like YEAR() that can prevent index use in production databases. Prefer this half-open interval pattern over BETWEEN or YEAR() extraction.",
     "hints": [
-      "Decide which rows qualify before you project columns or worry about the final ordering.",
+      "Filter to the qualifying rows before you project columns or worry about the final ordering.",
       "Descending order on a date column surfaces the most recent entries first — useful when 'latest' is the natural reading direction for the result."
     ],
     "concepts": [
@@ -965,7 +965,7 @@
     "enforce_concepts": true,
     "explanation": "The IN operator is a cleaner alternative to multiple OR conditions when filtering against a known set of values. `country IN ('US', 'UK')` is equivalent to `country = 'US' OR country = 'UK'` but is more readable and easier to extend. Ordering by salary DESC surfaces the highest-paid employees first.",
     "hints": [
-      "Decide which rows qualify before you project columns or worry about the final ordering.",
+      "Filter to the qualifying rows before you project columns or worry about the final ordering.",
       "IN is equivalent to country = 'US' OR country = 'UK' but more readable; ORDER BY makes results deterministic"
     ],
     "concepts": [
@@ -1079,7 +1079,7 @@
     "enforce_concepts": true,
     "explanation": "Combining IS NOT NULL with a comparison operator (`> 0`) requires both conditions with AND. The IS NOT NULL check is needed because `NULL > 0` evaluates to NULL (not true), which would silently exclude those rows anyway — but being explicit is a best practice that makes intent clear. This combined pattern is common in any query that filters on an optional numeric field.",
     "hints": [
-      "Decide which rows qualify before you project columns or worry about the final ordering.",
+      "Filter to the qualifying rows before you project columns or worry about the final ordering.",
       "When a column can be NULL, a numeric comparison silently fails for NULL rows — think about what separate condition handles NULLs explicitly."
     ],
     "concepts": [
@@ -1119,7 +1119,7 @@
     "explanation": "A CTE (Common Table Expression) defined with `WITH name AS (...)` creates a named temporary result set that lives only for the duration of the query. The CTE is defined first, then referenced in the main SELECT just like a table. CTEs make complex queries readable by naming intermediate steps — they are fundamental to writing maintainable SQL at any level. Here the CTE computes monthly counts, and the outer query retrieves and sorts them.",
     "hints": [
       "Break the problem into stages so the reusable intermediate result exists before the final filter or comparison.",
-      "Reference the CTE name in the outer SELECT like a table; ORDER BY signup_month ASC ensures chronological output"
+      "Reference the CTE name in the outer SELECT like a table; grouping by the extracted date part and ordering by it ensures chronological output."
     ],
     "concepts": [
       "STAGED QUERY DECOMPOSITION",
@@ -1159,7 +1159,7 @@
     "explanation": "Multi-column GROUP BY produces one row per unique combination of the grouped columns — here, one row per (priority, status) pair. This is the standard approach for cross-tabulating two categorical dimensions before pivoting. The result is effectively a raw pivot table in long format, which is the input for most BI tools and dashboards.",
     "hints": [
       "Collapse the data to the business grain named in the result before you calculate the summary values.",
-      "When grouping by two columns, each unique combination produces one output row — sorting by both keeps the most important dimension as the primary axis."
+      "When grouping by two columns, each unique combination produces one output row — ordering by both keeps the most important dimension as the primary sort axis."
     ],
     "concepts": [
       "MULTI-COLUMN GROUPING",

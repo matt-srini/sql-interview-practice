@@ -32,7 +32,7 @@ export const TRACK_META = {
     language: 'python',
     hasRunCode: true,
     hasMCQ: false,
-    totalQuestions: 82,
+    totalQuestions: 76,
     tagline: 'pandas · numpy · data wrangling',
   },
   pyspark: {
