@@ -55,7 +55,7 @@ vi.mock('../contexts/TopicContext', () => ({
       label: 'Pandas',
       description: 'pandas and numpy data manipulation',
       color: '#C47F17',
-      totalQuestions: 82,
+      totalQuestions: 76,
     },
     pyspark: {
       label: 'PySpark',
