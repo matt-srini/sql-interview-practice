@@ -933,6 +933,14 @@ export default function QuestionPage() {
               <pre className="question-code-snippet">{question.code_snippet}</pre>
             )}
 
+            {/* PySpark scenario type: show observed output / logs panel */}
+            {meta.hasMCQ && question.scenario_context && (
+              <div className="scenario-context-block">
+                <span className="scenario-context-label">Observed output / logs</span>
+                <pre className="scenario-context-pre">{question.scenario_context}</pre>
+              </div>
+            )}
+
             {isLocked && (() => {
               const plan = user?.plan ?? 'free';
               const difficulty = question?.difficulty;

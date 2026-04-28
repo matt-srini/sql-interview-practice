@@ -137,27 +137,29 @@
     "id": 11006,
     "order": 6,
     "topic": "pyspark",
-    "type": "mcq",
+    "type": "predict_output",
     "difficulty": "easy",
-    "title": "Adding a Column with withColumn",
-    "description": "You want to add a new column `discounted_price` to a DataFrame `df` that contains a `price` column, where the discounted price is 90% of the original.\n\nWhich of the following correctly adds the new column?",
-    "code_snippet": null,
+    "title": "Immutable DataFrame: Pandas-Style Assignment",
+    "description": "A developer migrating from pandas tries to add a discounted-price column using Python item assignment. What happens when this code runs?",
+    "code_snippet": "from pyspark.sql import SparkSession\n\nspark = SparkSession.builder.getOrCreate()\ndf = spark.createDataFrame([(1, 100.0), (2, 200.0)], ['id', 'price'])\ndf['discounted_price'] = df['price'] * 0.9\nprint(df.columns)",
+    "scenario_context": null,
     "options": [
-      "df.addColumn('discounted_price', df['price'] * 0.9)",
-      "df['discounted_price'] = df['price'] * 0.9",
-      "df.withColumn('discounted_price', df['price'] * 0.9)",
-      "df.select('discounted_price', df['price'] * 0.9)"
+      "['id', 'price', 'discounted_price'] — item assignment adds the column in place",
+      "TypeError is raised — PySpark DataFrames do not support item assignment via df[col] = ...",
+      "['id', 'price'] — the assignment silently does nothing because DataFrames are immutable",
+      "The code runs without error but df.columns still shows ['id', 'price'] because a new DataFrame is returned but not captured"
     ],
-    "correct_option": 2,
-    "explanation": "`withColumn(colName, col_expression)` is the correct DataFrame method to add or replace a column. It returns a **new** DataFrame — DataFrames in Spark are immutable. Option B looks like Python attribute assignment but does not work on Spark DataFrames. `addColumn` does not exist, and `select` with two arguments in that form would not produce the desired result.",
+    "correct_option": 1,
+    "explanation": "PySpark DataFrames are immutable and do not implement Python's `__setitem__` protocol. Attempting `df['col'] = expr` raises a `TypeError` at the Python level — the assignment is rejected before Spark processes anything. This is a common pandas migration trap: pandas DataFrames support `__setitem__`, PySpark DataFrames do not. The correct pattern is `df = df.withColumn('discounted_price', df['price'] * 0.9)`, which returns a **new** DataFrame (note the reassignment). Option A is wrong — no in-place mutation is possible. Option C is wrong — a TypeError is raised, not silently swallowed. Option D describes a different bug (forgetting to capture the return value of withColumn) but the actual error here fires before reaching withColumn.",
     "hints": [
-      "PySpark DataFrames are immutable — adding a column always returns a new DataFrame via a specific method"
+      "pandas allows df['col'] = expr; PySpark DataFrames deliberately do not — what Python protocol is missing that would allow this?",
+      "The fix always involves capturing the return value: df = df.withColumn(...)"
     ],
     "concepts": [
       "COLUMN-EXPRESSION TRANSFORMATION",
-      "column expressions",
-      "immutability",
-      "derived columns"
+      "DataFrame immutability",
+      "pandas migration traps",
+      "TypeError"
     ]
   },
   {
@@ -219,27 +221,29 @@
     "id": 11009,
     "order": 9,
     "topic": "pyspark",
-    "type": "mcq",
+    "type": "predict_output",
     "difficulty": "easy",
-    "title": "Registering a DataFrame as a SQL View",
-    "description": "You want to query a PySpark DataFrame using standard SQL syntax via `spark.sql(...)`. Before you can do that, you need to register the DataFrame as a temporary view.\n\nWhich method registers a DataFrame as a **temporary SQL view** named `'orders'`?",
-    "code_snippet": null,
+    "title": "SQL Query Without Registering a View",
+    "description": "A data engineer creates a DataFrame and immediately queries it by name via `spark.sql`. What happens when the action fires?",
+    "code_snippet": "from pyspark.sql import SparkSession\n\nspark = SparkSession.builder.getOrCreate()\ndf = spark.createDataFrame([(1, 'order_A'), (2, 'order_B')], ['id', 'name'])\n\n# No createOrReplaceTempView call\nresult = spark.sql('SELECT * FROM orders LIMIT 5')\nresult.show()",
+    "scenario_context": null,
     "options": [
-      "df.registerTable('orders')",
-      "df.createOrReplaceTempView('orders')",
-      "spark.registerDataFrame(df, 'orders')",
-      "df.toSQL('orders')"
+      "The query runs successfully against `df` — Spark recognises the last created DataFrame",
+      "AnalysisException: Table or view not found: orders",
+      "The query returns an empty DataFrame because no data has been registered under that name",
+      "A NameError is raised at Python level before Spark parses the SQL"
     ],
     "correct_option": 1,
-    "explanation": "`df.createOrReplaceTempView('orders')` registers the DataFrame under the name `'orders'` in the current SparkSession's catalog. You can then query it with `spark.sql('SELECT * FROM orders WHERE ...')`. The view is session-scoped and is dropped when the SparkSession ends. `createOrReplaceTempView` is the standard, idiomatic method — the other options do not exist.",
+    "explanation": "The Spark catalog has no knowledge of `df` by the name `orders` — `createOrReplaceTempView('orders')` was never called. When `spark.sql(...)` tries to resolve the table reference `orders`, Catalyst's analysis phase fails with `AnalysisException: Table or view not found: orders`. The fix is to call `df.createOrReplaceTempView('orders')` before the query. Option A is wrong — Spark does not implicitly bind DataFrames to their Python variable names. Option C is wrong — the error fires during plan analysis, not as an empty result. Option D is wrong — the query string is just a Python string literal; Python never touches `orders` as a name.",
     "hints": [
-      "The method you need is on the DataFrame itself, takes a string name, and has 'view' in its name"
+      "Spark's catalog is separate from Python's namespace — the DataFrame variable name 'df' means nothing to spark.sql()",
+      "The exception fires during plan analysis when Spark cannot find the table name in its session catalog"
     ],
     "concepts": [
-      "Spark SQL",
-      "createOrReplaceTempView",
-      "catalog",
-      "temp view"
+      "Spark SQL catalog",
+      "AnalysisException",
+      "session-scoped views",
+      "plan analysis phase"
     ]
   },
   {
@@ -409,27 +413,29 @@
     "id": 11016,
     "order": 16,
     "topic": "pyspark",
-    "type": "mcq",
+    "type": "predict_output",
     "difficulty": "easy",
-    "title": "SparkSession Entry Point",
-    "description": "You are writing a new PySpark script and need to create a SparkSession (or reuse one if it already exists).\n\nWhat is the **correct** way to obtain a SparkSession?",
-    "code_snippet": null,
+    "title": "getOrCreate: Two Calls, One Session?",
+    "description": "A script calls `SparkSession.builder.getOrCreate()` twice with different app names. Predict what the second call returns and what `spark2.conf.get('spark.app.name')` prints.",
+    "code_snippet": "from pyspark.sql import SparkSession\n\nspark1 = SparkSession.builder.appName('JobA').getOrCreate()\nspark2 = SparkSession.builder.appName('JobB').getOrCreate()\n\nprint(spark1 is spark2)\nprint(spark2.conf.get('spark.app.name'))",
+    "scenario_context": null,
     "options": [
-      "SparkSession.builder.appName(\"MyApp\").getOrCreate()",
-      "SparkContext(\"local\", \"MyApp\")",
-      "pyspark.session.create(appName=\"MyApp\")",
-      "Spark.init(appName=\"MyApp\")"
+      "False\\nJobB — two separate SparkSessions are created with their own configs",
+      "True\\nJobA — getOrCreate returns the existing session; builder config on the second call is ignored",
+      "True\\nJobB — getOrCreate returns the existing session but merges the new config into it",
+      "False\\nJobA — two sessions exist but both inherit the first session's config"
     ],
-    "correct_option": 0,
-    "explanation": "`SparkSession.builder.appName(\"MyApp\").getOrCreate()` is the idiomatic entry point since Spark 2.0. The builder pattern lets you chain configuration options before calling `getOrCreate()`, which either creates a new session or returns an existing active one. Option B creates a low-level `SparkContext` (the RDD-era entry point) — you can still do this, but it bypasses the higher-level DataFrame API. Options C and D do not exist in the PySpark API.",
+    "correct_option": 1,
+    "explanation": "`getOrCreate()` returns the **existing active SparkSession** if one already exists in the JVM — it does not create a new one. This means `spark2` and `spark1` are the same object (`spark1 is spark2` is `True`). The `.appName('JobB')` builder call is silently ignored because the session already exists. The app name remains `'JobA'`. This behavior is why `getOrCreate` is safe to call multiple times in shared or library code — it never creates a duplicate session. Option A is wrong — only one SparkSession can be active per JVM. Option C is wrong — the second builder config is not merged. Option D is wrong — there is only one session.",
     "hints": [
-      "The modern PySpark entry point uses a builder pattern and has 'getOrCreate' in it"
+      "getOrCreate is an idempotent factory: it 'gets' when one exists, 'creates' only when none does",
+      "Configuration on the builder only takes effect when a new session is actually created, not on subsequent getOrCreate calls"
     ],
     "concepts": [
-      "SparkSession",
-      "builder pattern",
-      "getOrCreate",
-      "entry point"
+      "SparkSession singleton",
+      "getOrCreate semantics",
+      "session lifecycle",
+      "idempotent factory"
     ]
   },
   {
@@ -519,28 +525,29 @@
     "id": 11020,
     "order": 20,
     "topic": "pyspark",
-    "type": "mcq",
+    "type": "predict_output",
     "difficulty": "easy",
-    "title": "Casting Column Types",
-    "description": "A DataFrame has a column `price` that was read as `StringType`. You want to cast it to `DoubleType` for arithmetic operations.\n\nWhat is the **correct** PySpark syntax?",
-    "code_snippet": null,
+    "title": "Cast Failure: What Happens to Invalid Rows?",
+    "description": "A DataFrame column `value` is `StringType`. A data engineer casts it to `IntegerType`. Predict the output when the cast encounters a non-numeric string.",
+    "code_snippet": "from pyspark.sql import SparkSession\n\nspark = SparkSession.builder.getOrCreate()\ndata = [('123',), ('abc',), ('456',)]\ndf = spark.createDataFrame(data, ['value'])\nresult = df.withColumn('num', df['value'].cast('integer'))\nresult.show()",
+    "scenario_context": null,
     "options": [
-      "df.withColumn('price', df['price'].cast('double'))",
-      "df['price'].astype(float)",
-      "df.cast('price', DoubleType())",
-      "df.withColumn('price', double(df['price']))"
+      "AnalysisException is raised at plan analysis time because 'abc' is not a valid integer",
+      "A SparkException propagates from the executor when the task encounters 'abc'",
+      "The cast succeeds: '123' → 123, 'abc' → null, '456' → 456",
+      "The cast silently coerces 'abc' to 0 to avoid null values in the output"
     ],
-    "correct_option": 0,
-    "explanation": "`df['price'].cast('double')` (or equivalently `.cast(DoubleType())`) is the correct PySpark Column method for type casting. Wrapping it in `withColumn` replaces the existing column with the cast version. Option B is pandas syntax — `.astype()` does not exist on PySpark Columns. Option C inverts the argument order and calls `cast` on the DataFrame rather than a Column, which is not valid. Option D uses `double()` as if it were a function — no such standalone function exists in the PySpark API.",
+    "correct_option": 2,
+    "explanation": "Spark's `.cast()` uses **silent null-on-failure semantics**: rows whose values cannot be converted to the target type become `null` instead of raising an error. Here `'123'` and `'456'` cast cleanly to integers 123 and 456; `'abc'` cannot be parsed as an integer, so it becomes `null`. This is intentional — Spark handles large, potentially dirty datasets and prefers null over job failure for invalid values. Option A is wrong — `cast` is not validated during plan analysis. Option B is wrong — no executor-level exception is raised; the null is produced silently. Option D is wrong — Spark never coerces to 0; only `null` is used for failed casts.",
     "hints": [
-      "Look for a `.cast()` method — which object does it belong to in PySpark?"
+      "Spark's cast is lenient by design: it never raises an error for a single bad row — ask what value appears instead",
+      "Compare this to database type coercion: SQL also produces NULL (not an error) for an invalid CAST on most engines"
     ],
     "concepts": [
-      "cast",
-      "type conversion",
-      "DoubleType",
       "COLUMN-EXPRESSION TRANSFORMATION",
-      "schema"
+      "cast null-on-failure",
+      "type coercion semantics",
+      "null production"
     ]
   },
   {
@@ -601,27 +608,29 @@
     "id": 11023,
     "order": 23,
     "topic": "pyspark",
-    "type": "mcq",
+    "type": "predict_output",
     "difficulty": "easy",
-    "title": "The lit() Function",
-    "description": "You want to add a constant column `version` with the integer value `100` to every row in a DataFrame.\n\nWhat does `F.lit(100)` do in a PySpark expression?",
-    "code_snippet": null,
+    "title": "lit() Column: Nullability in the Schema",
+    "description": "A constant column is added with `F.lit(100)`. Predict what `df2.printSchema()` shows for the `max_score` column — specifically its nullability.",
+    "code_snippet": "from pyspark.sql import SparkSession\nfrom pyspark.sql import functions as F\n\nspark = SparkSession.builder.getOrCreate()\ndf = spark.createDataFrame([('Alice', 85), ('Bob', 92)], ['name', 'score'])\ndf2 = df.withColumn('max_score', F.lit(100))\ndf2.printSchema()",
+    "scenario_context": null,
     "options": [
-      "Creates a Column object representing the constant value 100, which can be used in `withColumn` or `select`",
-      "Limits the DataFrame to 100 rows",
-      "Creates a Python list of length 100",
-      "Filters rows where any column equals 100"
+      "max_score: integer (nullable = true) — Spark marks all added columns nullable by default",
+      "max_score: long (nullable = false) — Python int literals are promoted to LongType",
+      "max_score: integer (nullable = false) — lit() columns are non-nullable because the constant can never be null",
+      "max_score: integer (nullable = true) — literals might be null if F.lit(None) is later chained"
     ],
-    "correct_option": 0,
-    "explanation": "`F.lit(value)` (**lit**eral) wraps a Python scalar value into a Spark **Column** object representing that constant. You can then use it wherever a Column expression is expected: `df.withColumn('version', F.lit(100))` adds a column where every row has the value 100. Option B describes `.limit(100)`. Option C has no PySpark equivalent — `lit` does not create lists. Option D describes a filter operation, not a literal value.",
+    "correct_option": 2,
+    "explanation": "`F.lit(100)` creates a Column backed by a non-null constant. Spark infers the type as `IntegerType` (Python `int` maps to `IntegerType` inside `lit`, unlike arithmetic on LongType columns) and marks the column `nullable = false` because a constant literal can never produce a null value at runtime. Option A is wrong — `lit` columns are explicitly non-nullable. Option B is wrong — `lit(100)` produces `IntegerType`, not `LongType` (contrast with `F.count('*')` which always produces `LongType`). Option D is wrong — `nullable = false` is determined at plan time from the constant; chaining is a separate operation.",
     "hints": [
-      "The name 'lit' is short for 'literal' — what does creating a literal mean in a column expression context?"
+      "A constant can never be null — does Spark reflect that in the schema, or does it always mark columns nullable?",
+      "int literals in lit() map to IntegerType; contrast with count() aggregates which always produce LongType"
     ],
     "concepts": [
-      "lit",
       "literal column",
-      "constant column",
-      "functions"
+      "nullable vs non-nullable",
+      "IntegerType inference",
+      "schema analysis"
     ]
   },
   {
@@ -655,27 +664,28 @@
     "id": 11025,
     "order": 25,
     "topic": "pyspark",
-    "type": "mcq",
+    "type": "predict_output",
     "difficulty": "easy",
-    "title": "printSchema() Return Value",
-    "description": "You call `df.printSchema()` in your PySpark script and want to capture the schema information in a variable for programmatic use.\n\nWhat does `df.printSchema()` return in Python?",
-    "code_snippet": null,
+    "title": "Capturing printSchema() in a Variable",
+    "description": "A new engineer tries to capture the schema for programmatic inspection. What does the `print(type(schema_str))` line output?",
+    "code_snippet": "from pyspark.sql import SparkSession\n\nspark = SparkSession.builder.getOrCreate()\ndf = spark.createDataFrame([(1, 'Alice')], ['id', 'name'])\n\nschema_str = df.printSchema()\nprint(type(schema_str))",
+    "scenario_context": null,
     "options": [
-      "None — it prints the schema tree to stdout and returns nothing",
-      "A StructType object representing the schema",
-      "A list of (column_name, dtype) tuples",
-      "A dict mapping column names to their data type strings"
+      "<class 'pyspark.sql.types.StructType'>",
+      "<class 'NoneType'>",
+      "<class 'str'>",
+      "<class 'dict'>"
     ],
-    "correct_option": 0,
-    "explanation": "`df.printSchema()` is a **side-effect method** — it prints a human-readable tree of column names and types to stdout and returns `None`. You cannot capture its output in a variable meaningfully. To work with the schema programmatically, use `df.schema` (returns a `StructType` object) or `df.dtypes` (returns a list of `(name, typeString)` tuples). Option B describes `df.schema`. Option C describes `df.dtypes`. Option D does not correspond to any PySpark API.",
+    "correct_option": 1,
+    "explanation": "`df.printSchema()` is a **side-effect method** — it writes a human-readable schema tree to stdout and returns `None`. Assigning the return value to `schema_str` gives you `None`, so `type(schema_str)` is `NoneType`. To capture the schema programmatically: `df.schema` returns a `StructType` object (option A), and `df.dtypes` returns a list of `(name, typeString)` tuples. These are the right tools when you need the schema for code that branches on column types. Option C would apply to methods that return a string representation. Option D has no equivalent in PySpark's schema API.",
     "hints": [
-      "Methods that 'print' something usually return None — how would you get the schema as a Python object instead?"
+      "Methods whose name starts with 'print' typically write to stdout and return None — just like Python's built-in print()",
+      "If you need the schema as a Python object, use df.schema (StructType) or df.dtypes (list of tuples)"
     ],
     "concepts": [
-      "printSchema",
-      "schema",
+      "schema inspection",
+      "side-effect methods",
       "StructType",
-      "dtypes",
       "return values"
     ]
   },
@@ -683,27 +693,29 @@
     "id": 11026,
     "order": 26,
     "topic": "pyspark",
-    "type": "mcq",
+    "type": "debug",
     "difficulty": "easy",
-    "title": "Reading Multi-Line JSON",
-    "description": "Your team stores data as pretty-printed JSON files where each record spans multiple lines. When you try to read one with `spark.read.json(path)`, the results are malformed.\n\nWhat option must you set to correctly read **multi-line JSON** files?",
-    "code_snippet": null,
+    "title": "Debug: Malformed Output From Multi-Line JSON",
+    "description": "A team stores each record as pretty-printed JSON spanning multiple lines. After reading the file, almost every column is null and there are far more rows than records. What is the root cause?",
+    "code_snippet": "from pyspark.sql import SparkSession\n\nspark = SparkSession.builder.getOrCreate()\ndf = spark.read.json('/data/events.json')\ndf.show(5)\n# output: almost all columns null, row count ~6x expected",
+    "scenario_context": "Sample of events.json:\n{\n  \"id\": 1,\n  \"user\": \"alice\",\n  \"amount\": 99.50\n}\n{\n  \"id\": 2,\n  \"user\": \"bob\",\n  \"amount\": 12.00\n}\n\nActual df.show(5) output:\n+------+------+------+\n|amount|    id|  user|\n+------+------+------+\n|  null|  null|  null|\n|  null|  null|  null|\n|  null|  null|  null|\n|  null|  null|  null|\n|  null|  null|  null|\n+------+------+------+",
     "options": [
-      "spark.read.option(\"multiLine\", True).json(path)",
-      "spark.read.json(path, format='multiline')",
-      "spark.read.option(\"lines\", \"multiple\").json(path)",
-      "No option is needed — Spark auto-detects multi-line JSON records"
+      "The JSON file is corrupted — the records should be re-exported from the source system",
+      "By default, Spark's JSON reader expects one JSON object per line; pretty-printed records span multiple lines, so each line is parsed as a separate incomplete object. Fix: add .option('multiLine', True)",
+      "Spark read.json does not support the curly-brace format — the files must be converted to CSV first",
+      "The schema inference failed because the file is too small — add inferSchema=True to force type detection"
     ],
-    "correct_option": 0,
-    "explanation": "By default, Spark's JSON reader expects **one JSON object per line** (newline-delimited JSON / NDJSON format). For pretty-printed multi-line JSON, you must pass `option(\"multiLine\", True)` so Spark reads across line boundaries when parsing each record. Option B uses an invalid `format` keyword argument for `.json()`. Option C uses a non-existent option key. Option D is incorrect — without the option, multi-line records will be misread or produce null/error rows.",
+    "correct_option": 1,
+    "explanation": "Spark's JSON reader defaults to **newline-delimited JSON (NDJSON)**: it splits the file on newlines and parses each line as one record. Pretty-printed JSON spans multiple lines per record, so Spark parses individual lines like `{`, `\"id\": 1,`, `\"user\": \"alice\",` as separate malformed records — most produce all nulls. The fix is `.option('multiLine', True)`, which tells Spark to treat each complete JSON object (possibly spanning many lines) as one record. Option A is wrong — the file content is valid JSON, just not line-delimited. Option C is wrong — Spark natively reads JSON in both NDJSON and multi-line modes. Option D is wrong — inferSchema is unrelated to multiLine behavior and does not fix this.",
     "hints": [
-      "The key option name contains the word 'multiLine' — check the capitalization carefully"
+      "Spark's JSON reader splits on newlines by default — what does that mean for a record that spans 5 lines?",
+      "The row count being 6× too high is the key clue: each line of the pretty-printed object is being treated as a separate row"
     ],
     "concepts": [
-      "JSON reading",
-      "multiLine",
-      "NDJSON",
-      "read options"
+      "JSON parsing behavior",
+      "NDJSON vs multi-line JSON",
+      "silent null production",
+      "read option debugging"
     ]
   },
   {

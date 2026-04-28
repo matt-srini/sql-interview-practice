@@ -232,6 +232,48 @@ def _validate_concepts() -> None:
         raise ValueError(f"Concept validation failed:\n{joined}")
 
 
+def _validate_pyspark_scenario_questions() -> None:
+    """Validate scenario-type PySpark questions have required observation anchors and rich options."""
+    errors: list[str] = []
+    pyspark_dir = BACKEND_ROOT / "content" / "pyspark_questions"
+
+    for file_path in sorted(pyspark_dir.glob("*.json")):
+        if file_path.stem == "schemas":
+            continue
+        with file_path.open("r", encoding="utf-8") as handle:
+            questions = json.load(handle)
+
+        for question in questions:
+            if question.get("type") != "scenario":
+                continue
+            qid = question.get("id", "<unknown>")
+            title = question.get("title", "<untitled>")
+
+            # Must have non-empty description
+            if not str(question.get("description", "")).strip():
+                errors.append(f"pyspark {qid} {title}: scenario type requires a non-empty description")
+
+            # Must have at least one observation anchor: code_snippet or scenario_context
+            has_code = bool(str(question.get("code_snippet") or "").strip())
+            has_context = bool(str(question.get("scenario_context") or "").strip())
+            if not (has_code or has_context):
+                errors.append(
+                    f"pyspark {qid} {title}: scenario type must have code_snippet or scenario_context (at least one observation anchor)"
+                )
+
+            # All 4 option strings must be substantive (>=20 chars each)
+            options = question.get("options", [])
+            for i, opt in enumerate(options):
+                if isinstance(opt, str) and len(opt.strip()) < 20:
+                    errors.append(
+                        f"pyspark {qid} {title}: scenario option {i} is too short (< 20 chars) — distractors must be substantive"
+                    )
+
+    if errors:
+        joined = "\n".join(f"- {item}" for item in errors)
+        raise ValueError(f"PySpark scenario validation failed:\n{joined}")
+
+
 def _validate_hints() -> None:
     errors: list[str] = []
 
@@ -378,6 +420,7 @@ def main() -> None:
     _validate_paths(paths, catalogs_by_topic)
     _validate_concepts()
     _validate_hints()
+    _validate_pyspark_scenario_questions()
 
     print("Content validation passed")
 
