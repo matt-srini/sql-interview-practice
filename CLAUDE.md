@@ -292,7 +292,9 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 
 **Mock daily limits:** Free = 1 medium/day · Pro = 3 hard/day · Elite = unlimited.
 
-**Dashboard insights:** `GET /api/dashboard/insights` computes per-track solve count, median solve time, and accuracy from `submissions`; weakest concepts (bottom 3 with >=3 attempts); deterministic cross-track pacing insight (only when slow-fast gap >= 60s); and consecutive `streak_days` ending today. Results are cached in-process for 60 seconds per user.
+**Elite mock exclusives:** (1) Focus mode — `focus_concepts` param in `/start` filters pool to concept-tagged questions; (2) Mock history analytics — `GET /api/mock/analytics` returns score trends, concept breakdown, and track/difficulty splits over last 50 sessions.
+
+**Dashboard insights:** `GET /api/dashboard/insights` computes per-track solve count, median solve time, and accuracy from `submissions`; weakest concepts (bottom 3 with >=3 attempts); deterministic cross-track pacing insight (only when slow-fast gap >= 60s); consecutive `streak_days` ending today; and (Elite only) `readiness_scores` (per-track 0–100 score from practice coverage + mock accuracy + concept strength) and `study_plan` (ordered list of 3–5 personalised next steps). Results are cached in-process for 60 seconds per user.
 
 **Identity:** Anonymous visitors get real user rows + session cookies. Registration upgrades the session in place. Login merges anonymous progress into an existing account. `GET /api/auth/me` returns identity plus streak metadata (`streak_days`, `streak_at_risk`) used by the workspace topbar and streak milestone toasts on solves. Session cookie is `SameSite=Strict` (and secure in production by default).
 
@@ -330,7 +332,8 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 | GET | `/api/paths` | All learning paths with per-user `solved_count` |
 | GET | `/api/paths/{slug}` | Path detail with per-question `state` (solved/unlocked/locked) |
 | GET | `/api/mock/history` | Past mock sessions list (last 20) |
-| POST | `/api/mock/start` | Start a mock session `{ mode, track, difficulty }` → `{ session_id, questions[], time_limit_s, started_at }` |
+| GET | `/api/mock/analytics` | Elite only: aggregate analytics over last 50 sessions |
+| POST | `/api/mock/start` | Start a mock session `{ mode, track, difficulty, focus_concepts? }` → `{ session_id, questions[], time_limit_s, started_at, focus_fallback }` |
 | GET | `/api/mock/{id}` | Session state for reload recovery |
 | POST | `/api/mock/{id}/submit` | Submit answer mid-session → `{ correct, feedback }` (no solution revealed) |
 | POST | `/api/mock/{id}/finish` | End session → full summary with per-question solutions |

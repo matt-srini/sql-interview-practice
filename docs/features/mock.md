@@ -35,8 +35,10 @@ Custom mode validates server-side: `num_questions` must be 1–5, `time_minutes`
 | Hard mocks | ❌ Plan-locked (upgrade to Pro) | ✅ **3 hard/day** | ✅ Unlimited |
 | Mixed mocks | ✅ (restricted to unlocked difficulties) | ✅ | ✅ |
 | Company-filtered mocks | ❌ | ❌ | ✅ (SQL track only) |
+| Focus mode (concept-targeted sessions) | ❌ | ❌ | ✅ |
 | Weak-spot insights in summary | ❌ | ✅ | ✅ |
 | **Session debrief (coaching narrative)** | ❌ | ❌ | ✅ |
+| Mock history analytics | ❌ | ❌ | ✅ |
 
 **Pre-flight access check:** `GET /api/mock/access?track=<track>` is called every time the track selector changes. It returns per-difficulty `can_start`, `daily_limit`, `daily_used`, `needs_upgrade`, and `block_copy` so the UI can render gate state without a round-trip on Start.
 
@@ -47,6 +49,32 @@ Custom mode validates server-side: `num_questions` must be 1–5, `time_minutes`
 Elite users see a **Company** dropdown when the SQL track is selected. Selecting a company sends `company_filter: "Meta"` (etc.) in the start payload. The backend validates that the user has Elite tier before allowing the session to proceed.
 
 Available companies: Airbnb, Amazon, Amplitude, Databricks, Google, LinkedIn, Meta, Microsoft, Netflix, PayPal, Salesforce, Shopify, Snowflake, Stripe, Zendesk, eBay.
+
+---
+
+## Focus Mode (Elite only)
+
+Elite users can enable **Focus mode** on the mock setup page. When active, a concept pill multi-select appears (1–3 concepts max). The session pool is filtered to questions tagged with the selected concepts.
+
+**Fallback:** if fewer matching questions exist than needed, the session fills remaining slots from the general pool and sets `focus_fallback: true` in the `/start` response. The session page shows a subtle notice when this happens.
+
+**Request:** `focus_concepts: ["WINDOW FUNCTIONS", "COHORT RETENTION"]` in the `POST /api/mock/start` body.
+
+---
+
+## Mock History Analytics (Elite only)
+
+`GET /api/mock/analytics` returns aggregated stats over the last 50 completed sessions:
+
+- `total_sessions`, `sessions_last_30d`
+- `avg_score_pct`, `best_score_pct`, `avg_time_used_pct`
+- `track_breakdown`: per-track session count and avg score
+- `difficulty_breakdown`: per-difficulty session count and avg score
+- `score_trend`: last 10 session scores (chronological, for sparkline)
+- `top_concepts`: top 5 by attempt count (with accuracy)
+- `weak_concepts`: worst 3 concepts by accuracy (≥3 attempts, <60%)
+
+Returns 403 for non-Elite plans. Panel appears on MockHub.js above the history table.
 
 ---
 
@@ -112,7 +140,8 @@ Shown after `POST /api/mock/:id/finish`:
 |---|---|---|---|
 | GET | `/api/mock/access` | Required | Pre-flight: per-difficulty access state for a given track |
 | GET | `/api/mock/history` | Required | Last 20 sessions |
-| POST | `/api/mock/start` | Required | Start a session |
+| GET | `/api/mock/analytics` | Required (Elite) | Aggregate analytics over last 50 sessions — scores, trends, concepts |
+| POST | `/api/mock/start` | Required | Start a session; accepts `focus_concepts` for Elite focus mode |
 | GET | `/api/mock/:id` | Required | Load/reload session state |
 | POST | `/api/mock/:id/submit` | Required | Submit one answer mid-session |
 | POST | `/api/mock/:id/finish` | Required | End session, get full summary with solutions |

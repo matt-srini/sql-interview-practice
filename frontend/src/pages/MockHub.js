@@ -43,9 +43,19 @@ function formatDuration(timeLimitS, timeUsedS) {
   return limit ? `${limit} min` : '—';
 }
 
+const TRACK_CONCEPT_MAP = {
+  sql: ['AGGREGATION','WINDOW FUNCTIONS','JOINS','SUBQUERY PATTERNS','CTEs','DATE FUNCTIONS','GROUP BY','FILTERING','COHORT RETENTION','FUNNEL ANALYSIS','RANKING','SELF JOIN','SET OPERATIONS','CASE WHEN','STRING FUNCTIONS'],
+  python: ['SORTING','BINARY SEARCH','HASH MAPS','TWO POINTERS','SLIDING WINDOW','RECURSION','DYNAMIC PROGRAMMING','GRAPHS','TREES','LINKED LISTS','HEAPS','STACK / QUEUE','BIT MANIPULATION'],
+  'python-data': ['GROUPBY','MERGING','PIVOTING','FILTERING','AGGREGATION','WINDOW FUNCTIONS','RESHAPING','TIME SERIES','STRING METHODS','APPLY/MAP','COHORT ANALYSIS','MULTI-INDEX'],
+  pyspark: ['DATAFRAME API','GROUPBY','JOINS','WINDOW FUNCTIONS','UDFs','PARTITIONING','AGGREGATION','STREAMING','CACHING','BROADCAST JOIN'],
+};
+
 export default function MockHub() {
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  const normalisedPlan = user?.plan?.startsWith('lifetime_') ? user.plan.replace('lifetime_', '') : (user?.plan ?? 'free');
+  const isElite = normalisedPlan === 'elite';
 
   const [mode, setMode] = useState('30min');
   const [track, setTrack] = useState('sql');
@@ -59,6 +69,14 @@ export default function MockHub() {
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(true);
 
+  // Focus mode (Elite only)
+  const [focusMode, setFocusMode] = useState(false);
+  const [focusConcepts, setFocusConcepts] = useState([]);
+
+  // Analytics (Elite only)
+  const [analytics, setAnalytics] = useState(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+
   // Pre-flight access state from /api/mock/access
   const [accessState, setAccessState] = useState(null);
   const [accessLoading, setAccessLoading] = useState(false);
@@ -69,6 +87,16 @@ export default function MockHub() {
       .catch(() => {})
       .finally(() => setHistoryLoading(false));
   }, []);
+
+  // Fetch analytics for Elite users
+  useEffect(() => {
+    if (!isElite) return;
+    setAnalyticsLoading(true);
+    api.get('/mock/analytics')
+      .then(r => setAnalytics(r.data))
+      .catch(() => setAnalytics(null))
+      .finally(() => setAnalyticsLoading(false));
+  }, [isElite]);
 
   // Fetch access state whenever track changes
   useEffect(() => {
@@ -97,6 +125,7 @@ export default function MockHub() {
         difficulty,
         ...(mode === 'custom' ? { num_questions: numQuestions, time_minutes: timeMinutes } : {}),
         ...(companyFilter ? { company_filter: companyFilter } : {}),
+        ...(isElite && focusMode && focusConcepts.length > 0 ? { focus_concepts: focusConcepts } : {}),
       };
       const r = await api.post('/mock/start', payload);
       trackEvent('mock_started', { mode, track, difficulty, session_id: r.data.session_id });
@@ -225,8 +254,6 @@ export default function MockHub() {
 
             {/* Company filter — Elite only, SQL track only */}
             {track === 'sql' && (() => {
-              const normalisedPlan = user?.plan?.startsWith('lifetime_') ? user.plan.replace('lifetime_', '') : (user?.plan ?? 'free');
-              const isElite = normalisedPlan === 'elite';
               return isElite ? (
                 <div className="mock-hub-config-row">
                   <span className="mock-hub-config-label">Company</span>
@@ -267,6 +294,44 @@ export default function MockHub() {
             </div>
           </div>
         </section>
+
+        {/* Focus mode — Elite only */}
+        {isElite && track !== 'mixed' && (
+          <section className="mock-hub-section mock-focus-section">
+            <label className="mock-focus-label">
+              <input
+                type="checkbox"
+                checked={focusMode}
+                onChange={e => { setFocusMode(e.target.checked); setFocusConcepts([]); }}
+              />
+              <span>Focus mode</span>
+              <span className="mock-focus-label-sub">— target specific concepts in this session</span>
+            </label>
+            {focusMode && (
+              <div className="mock-focus-concepts">
+                {(TRACK_CONCEPT_MAP[track] || []).map(c => {
+                  const selected = focusConcepts.includes(c);
+                  const disabled = !selected && focusConcepts.length >= 3;
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      className={`mock-focus-concept-pill${selected ? ' selected' : ''}`}
+                      onClick={() => {
+                        if (selected) setFocusConcepts(prev => prev.filter(x => x !== c));
+                        else if (!disabled) setFocusConcepts(prev => [...prev, c]);
+                      }}
+                      disabled={disabled}
+                    >
+                      {c}
+                    </button>
+                  );
+                })}
+                <p className="mock-focus-hint">Select 1–3 concepts. Session draws from questions tagged with them.</p>
+              </div>
+            )}
+          </section>
+        )}
 
         {/* Difficulty notice — shown below config card for medium/hard/mixed */}
         {(() => {
@@ -321,6 +386,79 @@ export default function MockHub() {
             {starting ? 'Starting…' : 'Start Mock Interview'}
           </button>
         </section>
+
+        {/* Elite analytics panel */}
+        {isElite && (
+          <section className="mock-hub-section mock-analytics-panel">
+            <div className="mock-analytics-header">
+              <span className="mock-analytics-elite-badge">Elite</span>
+              <h2 className="mock-analytics-title">Mock Analytics</h2>
+            </div>
+            {analyticsLoading && (
+              <p className="mock-analytics-loading">Loading analytics…</p>
+            )}
+            {!analyticsLoading && analytics && analytics.total_sessions > 0 && (
+              <>
+                <p className="mock-analytics-summary">
+                  {analytics.total_sessions} session{analytics.total_sessions !== 1 ? 's' : ''} total
+                  {analytics.sessions_last_30d > 0 && ` · ${analytics.sessions_last_30d} this month`}
+                </p>
+                <div className="mock-analytics-stat-row">
+                  <div className="mock-analytics-stat">
+                    <span className="mock-analytics-stat-value">{analytics.avg_score_pct}%</span>
+                    <span className="mock-analytics-stat-label">Avg score</span>
+                  </div>
+                  <div className="mock-analytics-stat">
+                    <span className="mock-analytics-stat-value">{analytics.best_score_pct}%</span>
+                    <span className="mock-analytics-stat-label">Best score</span>
+                  </div>
+                  <div className="mock-analytics-stat">
+                    <span className="mock-analytics-stat-value">{analytics.avg_time_used_pct}%</span>
+                    <span className="mock-analytics-stat-label">Avg time used</span>
+                  </div>
+                </div>
+                {analytics.score_trend.length > 1 && (
+                  <div className="mock-analytics-sparkline-wrap">
+                    <span className="mock-analytics-sparkline-label">Score trend (last {analytics.score_trend.length})</span>
+                    <div className="mock-analytics-sparkline">
+                      {analytics.score_trend.map((score, i) => {
+                        const heightPct = Math.max(10, score);
+                        const colorClass = score >= 75 ? 'good' : score >= 50 ? 'mid' : 'low';
+                        return (
+                          <div
+                            key={i}
+                            className={`mock-analytics-sparkline-bar ${colorClass}`}
+                            style={{ height: `${heightPct}%` }}
+                            title={`${score}%`}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                <div className="mock-analytics-concepts">
+                  {analytics.top_concepts[0] && (
+                    <div className="mock-analytics-concept-row">
+                      <span className="mock-analytics-concept-label strongest">Strongest:</span>
+                      <span className="mock-analytics-concept-name">{analytics.top_concepts[0].concept}</span>
+                      <span className="mock-analytics-concept-acc">{analytics.top_concepts[0].accuracy_pct}%</span>
+                    </div>
+                  )}
+                  {analytics.weak_concepts[0] && (
+                    <div className="mock-analytics-concept-row">
+                      <span className="mock-analytics-concept-label needswork">Needs work:</span>
+                      <span className="mock-analytics-concept-name">{analytics.weak_concepts[0].concept}</span>
+                      <span className="mock-analytics-concept-acc">{analytics.weak_concepts[0].accuracy_pct}%</span>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+            {!analyticsLoading && (!analytics || analytics.total_sessions === 0) && (
+              <p className="mock-analytics-empty">Complete your first mock session to see analytics here.</p>
+            )}
+          </section>
+        )}
 
         {/* Recent sessions */}
         {!historyLoading && history.length > 0 && (
@@ -382,9 +520,11 @@ export default function MockHub() {
             <ol className="mock-help-steps">
               <li>Choose mode — Quick (30 min, 2 questions), Full (60 min, 3 questions), or Custom.</li>
               <li>Pick your track (SQL, Python, Pandas, PySpark, or Mixed) and difficulty.</li>
+              <li><strong>(Elite)</strong> Optionally enable <strong>Focus mode</strong> to target specific concepts — your session draws from questions tagged with those concepts.</li>
               <li>During the session — a countdown timer runs. Write your answer and submit each question independently.</li>
               <li>No solutions are revealed mid-session.</li>
-              <li>After finishing — you'll see your score, time used, and (Elite) concept weak-spots with a drill link.</li>
+              <li>After finishing — you'll see your score, time used, and (Elite) a coaching debrief with concept weak-spots and a priority action.</li>
+              <li><strong>(Elite)</strong> Check your <strong>Mock analytics</strong> panel to track score trends and concept performance across all sessions.</li>
             </ol>
           </div>
         </div>

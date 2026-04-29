@@ -15,6 +15,8 @@ from __future__ import annotations
 
 import logging
 import random
+from collections import defaultdict
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -40,7 +42,7 @@ from db import (
 from deps import get_current_user
 from evaluator import evaluate
 from python_evaluator import evaluate_python_code, evaluate_python_data_code
-from routers.insights import build_session_debrief
+from routers.insights import _CONCEPTS_LOOKUP, build_session_debrief
 from unlock import compute_mock_access, compute_unlock_state, normalize_plan
 
 logger = logging.getLogger(__name__)
@@ -75,6 +77,7 @@ class MockStartRequest(BaseModel):
     num_questions: int | None = None   # custom mode only, 1–5
     time_minutes: int | None = None    # custom mode only, 10–90
     company_filter: str | None = None  # elite-only; e.g. "Meta", "Stripe"
+    focus_concepts: list[str] | None = None  # elite-only; up to 3 concept names
 
 
 class MockSubmitRequest(BaseModel):
@@ -159,7 +162,8 @@ async def _select_questions(
     difficulty: str,
     num_questions: int,
     user: dict,
-) -> list[dict]:
+    focus_concepts: list[str] | None = None,
+) -> tuple[list[dict], bool]:
     """
     Select `num_questions` questions for a mock session with freshness scoring.
 
@@ -167,7 +171,11 @@ async def _select_questions(
     are preferred. Only falls back to previously-seen (stale) questions when the
     fresh pool is exhausted.
 
-    Returns list of {"question_id", "track", "position"} dicts.
+    When focus_concepts is provided (Elite only), the pool is filtered to questions
+    tagged with those concepts. If fewer matching questions exist than needed, the
+    selection falls back to the full pool (focus_fallback=True).
+
+    Returns (list[{"question_id", "track", "position"}], focus_fallback_bool).
     """
     user_plan = user.get("plan", "free")
     user_id = user["id"]
@@ -181,6 +189,22 @@ async def _select_questions(
     else:
         solved = await _get_solved_ids_for_track(user_id, track)
         pool = _pool_for_track(track, difficulty, user_plan, solved)
+
+    # Focus filtering (Elite only)
+    focus_fallback = False
+    if focus_concepts:
+        normalized_fc = [c.upper() for c in focus_concepts]
+        focus_pool = [
+            q for q in pool
+            if any(c.upper() in normalized_fc for c in q.get("concepts", []))
+        ]
+        if len(focus_pool) >= num_questions:
+            pool = focus_pool
+        else:
+            # Not enough focused questions — top up from general pool
+            focus_fallback = True
+            non_focus = [q for q in pool if q not in focus_pool]
+            pool = focus_pool + non_focus
 
     # Freshness scoring: prefer questions this user has never seen in mock before
     mocked_ids = await get_previously_mocked_ids(user_id)
@@ -200,7 +224,7 @@ async def _select_questions(
             ),
         )
 
-    return [
+    selected = [
         {
             "question_id": int(q["id"]),
             "track": q["_track"],
@@ -208,6 +232,7 @@ async def _select_questions(
         }
         for i, q in enumerate(chosen_raw)
     ]
+    return selected, focus_fallback
 
 
 def _public_question_payload(question: dict, track: str) -> dict:
@@ -334,6 +359,160 @@ def _evaluate_submission(
     return False, {"error": f"Unknown track: {track}"}
 
 
+# ── Analytics helper ──────────────────────────────────────────────────────────
+
+def _parse_iso_dt(s: str | None) -> datetime | None:
+    """Parse an ISO-8601 datetime string (with or without Z suffix) to a timezone-aware datetime."""
+    if not s:
+        return None
+    return datetime.fromisoformat(s.replace("Z", "+00:00"))
+
+
+def _compute_mock_analytics(
+    sessions: list[dict],
+    events: list[dict],
+) -> dict[str, Any]:
+    """
+    Pure function — compute aggregate analytics from sessions + submission events.
+
+    sessions : list from get_mock_history (session_id, mode, track, difficulty,
+               started_at, ended_at, time_limit_s, status, total_count, solved_count)
+    events   : list from get_submission_events (track, question_id, is_correct,
+               submitted_at)
+
+    Returns a dict with:
+      total_sessions, sessions_last_30d, avg_score_pct, best_score_pct,
+      avg_time_used_pct, track_breakdown, difficulty_breakdown, score_trend,
+      top_concepts, weak_concepts
+    """
+    completed = [
+        s for s in sessions
+        if s.get("status") == "completed" and (s.get("total_count") or 0) > 0
+    ]
+
+    empty: dict[str, Any] = {
+        "total_sessions": 0,
+        "sessions_last_30d": 0,
+        "avg_score_pct": 0.0,
+        "best_score_pct": 0.0,
+        "avg_time_used_pct": 0.0,
+        "track_breakdown": {},
+        "difficulty_breakdown": {},
+        "score_trend": [],
+        "top_concepts": [],
+        "weak_concepts": [],
+    }
+    if not completed:
+        return empty
+
+    now = datetime.now(UTC)
+    cutoff_30d = now - timedelta(days=30)
+
+    # Score per session (0–100)
+    def _score(s: dict) -> float:
+        return s["solved_count"] / s["total_count"] * 100
+
+    scores = [_score(s) for s in completed]
+    avg_score_pct = round(sum(scores) / len(scores), 1)
+    best_score_pct = round(max(scores), 1)
+
+    # Sessions last 30 days (by ended_at or started_at)
+    sessions_last_30d = sum(
+        1 for s in completed
+        if (_parse_iso_dt(s.get("ended_at")) or _parse_iso_dt(s.get("started_at")) or datetime.min.replace(tzinfo=UTC)) >= cutoff_30d
+    )
+
+    # Avg time-used pct (time used / time_limit, proxy from ended_at - started_at)
+    time_pcts: list[float] = []
+    for s in completed:
+        limit = s.get("time_limit_s") or 0
+        if limit <= 0:
+            continue
+        started = _parse_iso_dt(s.get("started_at"))
+        ended = _parse_iso_dt(s.get("ended_at"))
+        if started and ended:
+            used_s = min(int((ended - started).total_seconds()), limit)
+            time_pcts.append(used_s / limit * 100)
+    avg_time_used_pct = round(sum(time_pcts) / len(time_pcts), 1) if time_pcts else 0.0
+
+    # Score trend: last 10 completed sessions, chronological
+    sorted_completed = sorted(
+        completed,
+        key=lambda s: s.get("ended_at") or s.get("started_at") or "",
+    )
+    score_trend = [round(_score(s), 1) for s in sorted_completed[-10:]]
+
+    # Track breakdown
+    track_stats: dict[str, dict[str, Any]] = defaultdict(lambda: {"sessions": 0, "score_sum": 0.0})
+    for s in completed:
+        t = s.get("track", "sql")
+        track_stats[t]["sessions"] += 1
+        track_stats[t]["score_sum"] += _score(s)
+    track_breakdown = {
+        t: {
+            "sessions": v["sessions"],
+            "avg_score_pct": round(v["score_sum"] / v["sessions"], 1),
+        }
+        for t, v in track_stats.items()
+    }
+
+    # Difficulty breakdown
+    diff_stats: dict[str, dict[str, Any]] = defaultdict(lambda: {"sessions": 0, "score_sum": 0.0})
+    for s in completed:
+        d = s.get("difficulty", "medium")
+        diff_stats[d]["sessions"] += 1
+        diff_stats[d]["score_sum"] += _score(s)
+    difficulty_breakdown = {
+        d: {
+            "sessions": v["sessions"],
+            "avg_score_pct": round(v["score_sum"] / v["sessions"], 1),
+        }
+        for d, v in diff_stats.items()
+    }
+
+    # Concept accuracy from submission events
+    concept_attempts: dict[str, int] = defaultdict(int)
+    concept_correct: dict[str, int] = defaultdict(int)
+    for event in events:
+        track_key = event.get("track", "sql")
+        qid = int(event.get("question_id", 0))
+        concepts = _CONCEPTS_LOOKUP.get(track_key, {}).get(qid, [])
+        for concept in concepts:
+            concept_attempts[concept] += 1
+            if event.get("is_correct"):
+                concept_correct[concept] += 1
+
+    all_concept_stats = [
+        {
+            "concept": c,
+            "correct": concept_correct.get(c, 0),
+            "attempted": concept_attempts[c],
+            "accuracy_pct": round(concept_correct.get(c, 0) / concept_attempts[c] * 100, 1),
+        }
+        for c in concept_attempts
+        if concept_attempts[c] >= 3
+    ]
+
+    top_concepts = sorted(all_concept_stats, key=lambda x: -x["attempted"])[:5]
+    weak_concepts = sorted(
+        [c for c in all_concept_stats if c["accuracy_pct"] < 60],
+        key=lambda x: x["accuracy_pct"],
+    )[:3]
+
+    return {
+        "total_sessions": len(completed),
+        "sessions_last_30d": sessions_last_30d,
+        "avg_score_pct": avg_score_pct,
+        "best_score_pct": best_score_pct,
+        "avg_time_used_pct": avg_time_used_pct,
+        "track_breakdown": track_breakdown,
+        "difficulty_breakdown": difficulty_breakdown,
+        "score_trend": score_trend,
+        "top_concepts": top_concepts,
+        "weak_concepts": weak_concepts,
+    }
+
+
 # ── Endpoints ──────────────────────────────────────────────────────────────────
 
 @router.get("/access")
@@ -409,6 +588,21 @@ async def get_history(
     return await get_mock_history(current_user["id"], limit=20)
 
 
+@router.get("/analytics")
+async def get_analytics(
+    current_user: dict[str, Any] = Depends(get_current_user),
+) -> dict[str, Any]:
+    """
+    Elite-only: return aggregate analytics over the user's last 50 mock sessions.
+    Includes score trends, concept accuracy breakdown, track/difficulty splits.
+    """
+    if normalize_plan(current_user.get("plan", "free")) != "elite":
+        raise HTTPException(status_code=403, detail="Elite plan required")
+    sessions = await get_mock_history(current_user["id"], limit=50)
+    events = await get_submission_events(current_user["id"])
+    return _compute_mock_analytics(sessions, events)
+
+
 @router.post("/start")
 async def start_session(
     body: MockStartRequest,
@@ -481,8 +675,19 @@ async def start_session(
     else:
         raise HTTPException(status_code=400, detail="Invalid mode. Must be '30min', '60min', or 'custom'.")
 
+    # Validate focus_concepts (Elite only, max 3 items)
+    focus_concepts: list[str] | None = None
+    if body.focus_concepts:
+        if normalize_plan(user_plan) != "elite":
+            raise HTTPException(status_code=403, detail="Focus mode requires Elite plan")
+        if len(body.focus_concepts) > 3:
+            raise HTTPException(status_code=422, detail="focus_concepts must have at most 3 items")
+        focus_concepts = [c.upper() for c in body.focus_concepts if c.strip()]
+
     # Select questions
-    selected = await _select_questions(body.track, body.difficulty, num_questions, current_user)
+    selected, focus_fallback = await _select_questions(
+        body.track, body.difficulty, num_questions, current_user, focus_concepts
+    )
 
     # Fetch question details for response
     question_details: list[dict] = []
@@ -513,6 +718,7 @@ async def start_session(
     return {
         **session,
         "questions": question_details,
+        "focus_fallback": focus_fallback,
     }
 
 

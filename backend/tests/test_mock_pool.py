@@ -333,9 +333,12 @@ class TestFreshnessScoring:
             patch("routers.mock._get_solved_ids_for_track", AsyncMock(return_value=set())),
         ):
             user = {"id": "00000000-0000-0000-0000-000000000001", "plan": plan}
-            return asyncio.run(
+            result = asyncio.run(
                 _select_questions("sql", "easy", num_questions, user)
             )
+            # _select_questions returns (selected_list, focus_fallback_bool)
+            selected_list, _focus_fallback = result
+            return selected_list
 
     def test_fresh_questions_preferred_over_stale(self) -> None:
         pool = [

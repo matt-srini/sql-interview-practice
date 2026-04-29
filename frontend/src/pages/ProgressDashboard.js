@@ -104,7 +104,7 @@ export default function ProgressDashboard() {
               <section className="dashboard-section dashboard-empty-state">
                 <h3 className="dashboard-section-title">No progress yet</h3>
                 <p className="dashboard-empty-copy">
-                  Start solving any track to unlock your streak, concept weaknesses, and cross-track coaching.
+                  Start solving questions across any track — once you have some history, your personalised study plan, readiness scores, and concept coaching will appear here.
                 </p>
                 <div className="dashboard-empty-actions">
                   <Link to="/practice/sql" className="btn btn-primary">Start SQL practice</Link>
@@ -113,6 +113,49 @@ export default function ProgressDashboard() {
               </section>
             ) : (
               <>
+                {/* Personalised study plan — Elite */}
+                {isElite && insights?.study_plan?.length > 0 ? (
+                  <section className="dashboard-section study-plan-section">
+                    <div className="study-plan-header">
+                      <span className="study-plan-badge">Elite</span>
+                      <h3 className="study-plan-title">Your study plan</h3>
+                      <p className="study-plan-subtitle">Personalised for where you are right now.</p>
+                    </div>
+                    <ol className="study-plan-list">
+                      {insights.study_plan.map((step, i) => {
+                        const typeLabel = {
+                          concept_drill: 'Drill concept',
+                          learning_path: 'Learning path',
+                          mock_session: 'Run a mock',
+                          practice_hard: 'Practice hard',
+                        }[step.type] ?? step.type;
+                        return (
+                          <li key={i} className={`study-plan-step study-plan-step--${step.type}`}>
+                            <div className="study-plan-step-meta">
+                              <span className="study-plan-step-number">{i + 1}</span>
+                              <span className="study-plan-step-type">{typeLabel}</span>
+                            </div>
+                            <div className="study-plan-step-body">
+                              <p className="study-plan-step-title">{step.title}</p>
+                              <p className="study-plan-step-desc">{step.description}</p>
+                            </div>
+                            <Link to={step.cta_href} className="study-plan-step-cta">{step.cta_label}</Link>
+                          </li>
+                        );
+                      })}
+                    </ol>
+                  </section>
+                ) : !isElite ? (
+                  <section className="dashboard-section study-plan-section study-plan-section--locked">
+                    <div className="study-plan-header">
+                      <h3 className="study-plan-title">Your study plan</h3>
+                      <p className="study-plan-subtitle">
+                        <Link to="/#landing-pricing">Upgrade to Elite</Link> to unlock a personalised next-steps plan based on your weak areas, practice gaps, and mock performance.
+                      </p>
+                    </div>
+                  </section>
+                ) : null}
+
                 <InsightStrip insights={insights} />
                 {isElite && insights?.weakest_concepts?.length > 0 && (
                   <section className="dashboard-section dashboard-elite-panel">
@@ -207,6 +250,15 @@ export default function ProgressDashboard() {
                                 ))}
                               </div>
                             )}
+                            {/* Readiness badge — Elite */}
+                            {isElite && insights?.readiness_scores?.[topic] ? (
+                              <div className={`readiness-badge readiness-badge--${insights.readiness_scores[topic].label.toLowerCase().replace(/\s+/g, '-')}`}>
+                                <span className="readiness-badge-score">{insights.readiness_scores[topic].score}</span>
+                                <span className="readiness-badge-label">{insights.readiness_scores[topic].label}</span>
+                              </div>
+                            ) : !isElite ? (
+                              <span className="readiness-gate-teaser">Readiness score — <Link to="/#landing-pricing" onClick={e => e.stopPropagation()}>Elite</Link></span>
+                            ) : null}
                           </div>
                         </Link>
                       );
