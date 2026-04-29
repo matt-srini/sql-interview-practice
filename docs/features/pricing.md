@@ -51,8 +51,13 @@ The entire `#landing-pricing` section is hidden only when `userPlan === 'lifetim
 | Mixed mocks | Follows track limits | Follows track limits | Unlimited |
 | Fresh mock question bank (medium + hard) | Blocked | ✓ | ✓ |
 | Company-filtered mocks | Blocked | Blocked | ✓ |
+| Focus mode mock (concept targeting) | Blocked | Blocked | ✓ |
+| Mock history analytics | Blocked | Blocked | ✓ |
 | Weakest concept coaching (dashboard) | Blocked | ✓ | ✓ |
 | Top-3 weak areas coaching panel (dashboard) | Blocked | Blocked | ✓ (concept, accuracy %, summary, path + drill links) |
+| Interview readiness score (per-track) | Blocked | Blocked | ✓ |
+| Personalised study plan | Blocked | Blocked | ✓ |
+| Post-mock coaching debrief | Blocked | Blocked | ✓ |
 
 ### Lifetime variants
 

@@ -8948,3 +8948,382 @@ select {
 .policy-body a:hover { text-decoration: underline; }
 .policy-footer-nav { margin-top: 2rem; padding-top: 1.25rem; border-top: 1px solid var(--border-subtle); }
 .contact-email { font-weight: 600; }
+
+/* ─── Focus mode (Elite) ────────────────────────────────────────────────────── */
+.mock-focus-section {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 1rem;
+  margin-top: 0.25rem;
+}
+.mock-focus-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--text-strong);
+}
+.mock-focus-label input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.mock-focus-label-sub {
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+.mock-focus-concepts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+.mock-focus-concept-pill {
+  font-size: 0.72rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+.mock-focus-concept-pill.selected {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.mock-focus-concept-pill:hover:not(:disabled):not(.selected) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.mock-focus-concept-pill:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.mock-focus-hint {
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+  margin-top: 0.4rem;
+  width: 100%;
+}
+.mock-focus-fallback-notice {
+  background: color-mix(in srgb, var(--warning) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warning) 30%, transparent);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.9rem;
+  font-size: 0.82rem;
+  color: var(--warning);
+  margin-bottom: 0.75rem;
+}
+
+/* ─── Mock analytics panel (Elite) ─────────────────────────────────────────── */
+.mock-analytics-panel {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+}
+.mock-analytics-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+.mock-analytics-elite-badge {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--accent);
+  color: #fff;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+}
+.mock-analytics-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+}
+.mock-analytics-summary {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin: 0 0 1rem;
+}
+.mock-analytics-loading,
+.mock-analytics-empty {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+.mock-analytics-stat-row {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+.mock-analytics-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.mock-analytics-stat-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-strong);
+  line-height: 1;
+}
+.mock-analytics-stat-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+}
+.mock-analytics-sparkline-wrap {
+  margin-bottom: 1rem;
+}
+.mock-analytics-sparkline-label {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.mock-analytics-sparkline {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 40px;
+}
+.mock-analytics-sparkline-bar {
+  flex: 1;
+  min-width: 8px;
+  max-width: 20px;
+  border-radius: 2px 2px 0 0;
+  transition: height 0.3s ease;
+}
+.mock-analytics-sparkline-bar.good  { background: var(--success); }
+.mock-analytics-sparkline-bar.mid   { background: var(--warning); }
+.mock-analytics-sparkline-bar.low   { background: var(--danger); }
+.mock-analytics-concepts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.82rem;
+}
+.mock-analytics-concept-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.mock-analytics-concept-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-width: 6rem;
+}
+.mock-analytics-concept-label.strongest { color: var(--success); }
+.mock-analytics-concept-label.needswork { color: var(--danger); }
+.mock-analytics-concept-name {
+  color: var(--text-secondary);
+}
+.mock-analytics-concept-acc {
+  font-weight: 600;
+  color: var(--text-strong);
+  margin-left: auto;
+}
+
+/* ─── Interview readiness score (Elite) ─────────────────────────────────────── */
+.readiness-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 99px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-top: 0.6rem;
+  border: 1px solid transparent;
+}
+.readiness-badge--strong,
+.readiness-badge--strong .readiness-badge-score {
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+  border-color: color-mix(in srgb, var(--success) 30%, transparent);
+  color: var(--success);
+}
+.readiness-badge--interview-ready,
+.readiness-badge--interview-ready .readiness-badge-score {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+  color: var(--accent);
+}
+.readiness-badge--getting-there,
+.readiness-badge--getting-there .readiness-badge-score {
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
+  border-color: color-mix(in srgb, var(--warning) 30%, transparent);
+  color: var(--warning);
+}
+.readiness-badge--building,
+.readiness-badge--early-stage,
+.readiness-badge--building .readiness-badge-score,
+.readiness-badge--early-stage .readiness-badge-score {
+  background: var(--surface-raised, rgba(0,0,0,0.04));
+  border-color: var(--border-subtle);
+  color: var(--text-secondary);
+}
+.readiness-badge-score {
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.readiness-badge-label {
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+.readiness-gate-teaser {
+  display: block;
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+}
+.readiness-gate-teaser a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.readiness-gate-teaser a:hover {
+  text-decoration: underline;
+}
+
+/* ─── Personalised study plan (Elite) ───────────────────────────────────────── */
+.study-plan-section {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+}
+.study-plan-section--locked {
+  opacity: 0.72;
+}
+.study-plan-header {
+  margin-bottom: 1.25rem;
+}
+.study-plan-badge {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--accent);
+  color: #fff;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.35rem;
+}
+.study-plan-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0.2rem 0 0.25rem;
+  color: var(--text-strong);
+}
+.study-plan-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+.study-plan-subtitle a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.study-plan-subtitle a:hover {
+  text-decoration: underline;
+}
+.study-plan-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+.study-plan-step {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-raised, rgba(255,255,255,0.02));
+  border-left-width: 3px;
+}
+.study-plan-step--mock_session  { border-left-color: var(--accent); }
+.study-plan-step--concept_drill { border-left-color: var(--warning); }
+.study-plan-step--learning_path { border-left-color: var(--success); }
+.study-plan-step--practice_hard { border-left-color: var(--danger); }
+.study-plan-step-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 2.8rem;
+  text-align: center;
+}
+.study-plan-step-number {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1;
+}
+.study-plan-step-type {
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-secondary);
+  margin-top: 0.15rem;
+  white-space: nowrap;
+}
+.study-plan-step-body {
+  flex: 1;
+  min-width: 0;
+}
+.study-plan-step-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0 0 0.2rem;
+  color: var(--text-strong);
+}
+.study-plan-step-desc {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+.study-plan-step-cta {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.study-plan-step-cta:hover {
+  text-decoration: underline;
+}
+@media (max-width: 600px) {
+  .study-plan-step {
+    flex-wrap: wrap;
+  }
+  .study-plan-step-cta {
+    margin-left: 3.8rem;
+    margin-top: 0.25rem;
+  }
+  .study-plan-section {
+    padding: 1rem 1.25rem;
+  }
+}

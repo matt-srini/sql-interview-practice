@@ -11,7 +11,7 @@ import python_data_questions
 import python_questions
 import pyspark_questions
 import questions as sql_questions
-from db import get_submission_events
+from db import get_mock_history, get_submission_events
 from deps import get_current_user
 from path_loader import get_all_paths
 from unlock import normalize_plan
@@ -315,15 +315,310 @@ async def get_dashboard_insights(
         if reco_ids:
             entry["recommended_question_ids"] = reco_ids
 
+    # Elite-only: readiness scores and study plan (adds one extra DB call for mock history,
+    # only on cache misses — result is cached for 60s like the rest of the payload).
+    readiness_scores: dict[str, Any] | None = None
+    study_plan: list[dict[str, Any]] | None = None
+    if effective_plan == "elite":
+        mock_sessions_for_elite = await get_mock_history(user_id, limit=20)
+        readiness_scores = _compute_readiness_scores(
+            per_track_solved_question_ids=per_track_solved_question_ids,
+            mock_sessions=mock_sessions_for_elite,
+            concept_attempts=concept_attempts,
+            concept_correct=concept_correct,
+            effective_plan=effective_plan,
+        )
+        study_plan = build_study_plan(
+            weakest_concepts=weakest_concepts[:3],
+            per_track_solved_question_ids=per_track_solved_question_ids,
+            mock_sessions=mock_sessions_for_elite,
+            readiness_scores=readiness_scores,
+            effective_plan=effective_plan,
+        )
+
     payload = {
         "per_track": per_track,
         "weakest_concepts": weakest_concepts[:3],
         "cross_track_insight": _build_cross_track_insight(per_track),
         "streak_days": _compute_streak_days(correct_dates),
+        "readiness_scores": readiness_scores,
+        "study_plan": study_plan,
     }
 
     _cache_set(user_id, payload)
     return payload
+
+
+# ---------------------------------------------------------------------------
+# Readiness score (Elite-only)
+# ---------------------------------------------------------------------------
+
+def _compute_readiness_scores(
+    per_track_solved_question_ids: dict[str, set[int]],
+    mock_sessions: list[dict[str, Any]],
+    concept_attempts: dict[tuple[str, str], int],
+    concept_correct: dict[tuple[str, str], int],
+    effective_plan: str,
+) -> dict[str, dict[str, Any]] | None:
+    """
+    Compute per-track interview readiness scores (0–100) for Elite users.
+
+    Score components (each track scored independently):
+      1. Practice coverage (40 pts):
+           Easy:   min(solved_easy / total_easy, 1.0) × 10
+           Medium: min(solved_medium / total_medium, 1.0) × 20
+           Hard:   min(solved_hard / (total_hard × 0.4), 1.0) × 10
+      2. Mock accuracy (35 pts):
+           Average score across last 5 completed sessions for this track.
+           0 pts when the user has never run a mock for this track.
+      3. Concept strength (25 pts):
+           Counts concepts with ≥3 attempts. Strong (≥70% accuracy) − weak (<60%)
+           gaps scaled to a max of 8 well-rounded concepts.
+
+    Returns None for non-Elite plans.
+    Labels: <40 Early stage · 40–64 Building · 65–79 Getting there · 80–89 Interview ready · 90+ Strong
+    """
+    if effective_plan != "elite":
+        return None
+
+    label_thresholds = [
+        (90, "Strong"),
+        (80, "Interview ready"),
+        (65, "Getting there"),
+        (40, "Building"),
+        (0, "Early stage"),
+    ]
+
+    def _label(score: int) -> str:
+        for threshold, lbl in label_thresholds:
+            if score >= threshold:
+                return lbl
+        return "Early stage"
+
+    scores: dict[str, dict[str, Any]] = {}
+
+    for track in _TRACK_ORDER:
+        solved_ids = per_track_solved_question_ids.get(track, set())
+        module = _TOPIC_MODULES[track]
+        grouped = module.get_questions_by_difficulty()
+
+        easy_ids   = {int(q["id"]) for q in grouped.get("easy", [])}
+        medium_ids = {int(q["id"]) for q in grouped.get("medium", [])}
+        hard_ids   = {int(q["id"]) for q in grouped.get("hard", [])}
+
+        total_easy   = len(easy_ids)
+        total_medium = len(medium_ids)
+        total_hard   = len(hard_ids)
+
+        solved_easy   = len(solved_ids & easy_ids)
+        solved_medium = len(solved_ids & medium_ids)
+        solved_hard   = len(solved_ids & hard_ids)
+
+        # Component 1: practice coverage (40 pts)
+        easy_pts   = (min(solved_easy   / total_easy,   1.0) * 10) if total_easy   else 0.0
+        medium_pts = (min(solved_medium / total_medium, 1.0) * 20) if total_medium else 0.0
+        hard_threshold = total_hard * 0.4
+        hard_pts = (min(solved_hard / hard_threshold, 1.0) * 10) if hard_threshold else 0.0
+        practice_pts = easy_pts + medium_pts + hard_pts
+
+        # Component 2: mock accuracy (35 pts)
+        track_sessions = [
+            s for s in mock_sessions
+            if s.get("status") == "completed"
+            and (s.get("track") == track or s.get("track") == "mixed")
+            and (s.get("total_count") or 0) > 0
+        ][-5:]
+        if track_sessions:
+            avg_mock = sum(s["solved_count"] / s["total_count"] for s in track_sessions) / len(track_sessions)
+            mock_pts = avg_mock * 35.0
+        else:
+            mock_pts = 0.0
+
+        # Component 3: concept strength (25 pts)
+        strong = 0
+        weak = 0
+        for (t, _concept), attempts in concept_attempts.items():
+            if t != track or attempts < 3:
+                continue
+            correct = concept_correct.get((t, _concept), 0)
+            accuracy = correct / attempts
+            if accuracy >= 0.70:
+                strong += 1
+            elif accuracy < 0.60:
+                weak += 1
+        max_expected_strong = 8
+        raw_concept = max(0.0, (strong - weak * 1.5)) / max_expected_strong * 25.0
+        concept_pts = min(raw_concept, 25.0)
+
+        total = round(min(practice_pts + mock_pts + concept_pts, 100.0))
+        scores[track] = {
+            "score": total,
+            "label": _label(total),
+            "components": {
+                "practice": round(practice_pts, 1),
+                "mock_accuracy": round(mock_pts, 1),
+                "concept_strength": round(concept_pts, 1),
+            },
+        }
+
+    return scores
+
+
+# ---------------------------------------------------------------------------
+# Personalised study plan (Elite-only)
+# ---------------------------------------------------------------------------
+
+def build_study_plan(
+    weakest_concepts: list[dict[str, Any]],
+    per_track_solved_question_ids: dict[str, set[int]],
+    mock_sessions: list[dict[str, Any]],
+    readiness_scores: dict[str, dict[str, Any]] | None,
+    effective_plan: str,
+) -> list[dict[str, Any]] | None:
+    """
+    Generate a personalised study plan for Elite users: an ordered list of
+    3–5 actionable steps based on weak areas and practice gaps.
+
+    Action types: concept_drill · learning_path · mock_session · practice_hard
+    Each action has: type, title, description, cta_label, cta_href, track, priority.
+
+    Returns None for non-Elite plans.
+    """
+    if effective_plan != "elite":
+        return None
+
+    actions: list[dict[str, Any]] = []
+    seen_type_track: set[tuple[str, str | None]] = set()
+
+    def _add(
+        type_: str,
+        title: str,
+        description: str,
+        cta_label: str,
+        cta_href: str,
+        track: str | None = None,
+    ) -> None:
+        key = (type_, track)
+        if key in seen_type_track or len(actions) >= 5:
+            return
+        seen_type_track.add(key)
+        actions.append({
+            "type": type_,
+            "title": title,
+            "description": description,
+            "cta_label": cta_label,
+            "cta_href": cta_href,
+            "track": track,
+            "priority": len(actions) + 1,
+        })
+
+    # Step 1: Lowest-readiness track → target its worst concept
+    if readiness_scores:
+        lowest_track = min(
+            _TRACK_ORDER,
+            key=lambda t: readiness_scores.get(t, {}).get("score", 100),
+        )
+        track_concepts = [c for c in weakest_concepts if c.get("track") == lowest_track]
+        if track_concepts:
+            worst = track_concepts[0]
+            concept = worst["concept"]
+            track_label = _TRACK_LABELS.get(lowest_track, lowest_track)
+            path_info = _CONCEPT_PATH_INDEX.get((lowest_track, concept))
+            if path_info:
+                slug, path_title, _ = path_info
+                _add(
+                    "learning_path",
+                    path_title,
+                    f"Your {track_label} readiness is lowest. {concept.title()} is your sharpest gap — this path targets it directly.",
+                    "Start path →",
+                    f"/learn/{lowest_track}/{slug}",
+                    track=lowest_track,
+                )
+            else:
+                concept_slug = concept.lower().replace(" ", "_")
+                _add(
+                    "concept_drill",
+                    f"Drill {concept.title()} — {track_label}",
+                    f"Your {track_label} readiness is lowest. More focused practice on {concept.title()} will move the needle fastest.",
+                    "Drill now →",
+                    f"/practice/{lowest_track}?concepts={concept_slug}",
+                    track=lowest_track,
+                )
+
+    # Step 2: Top 2 weakest concepts across all tracks
+    for item in weakest_concepts[:2]:
+        track = item.get("track", "sql")
+        concept = item["concept"]
+        track_label = _TRACK_LABELS.get(track, track)
+        accuracy_pct = round(item["accuracy_pct"] * 100)
+        path_info = _CONCEPT_PATH_INDEX.get((track, concept))
+        if path_info:
+            slug, path_title, _ = path_info
+            _add(
+                "learning_path",
+                path_title,
+                f"Covers {concept.title()} — you're at {accuracy_pct}% accuracy in {track_label}.",
+                "Start path →",
+                f"/learn/{track}/{slug}",
+                track=track,
+            )
+        else:
+            concept_slug = concept.lower().replace(" ", "_")
+            _add(
+                "concept_drill",
+                f"Drill {concept.title()} — {track_label}",
+                f"You're at {accuracy_pct}% accuracy. Deliberate repetition on {concept.title()} will close this gap.",
+                "Drill now →",
+                f"/practice/{track}?concepts={concept_slug}",
+                track=track,
+            )
+
+    # Step 3: Hard practice gap (track with lowest solved-hard ratio, if < 30%)
+    worst_hard_track: str | None = None
+    worst_hard_ratio = 1.0
+    for track in _TRACK_ORDER:
+        module = _TOPIC_MODULES[track]
+        grouped = module.get_questions_by_difficulty()
+        total_hard = len(grouped.get("hard", []))
+        if total_hard == 0:
+            continue
+        hard_ids = {int(q["id"]) for q in grouped.get("hard", [])}
+        solved_hard = len(per_track_solved_question_ids.get(track, set()) & hard_ids)
+        ratio = solved_hard / total_hard
+        if ratio < worst_hard_ratio:
+            worst_hard_ratio = ratio
+            worst_hard_track = track
+
+    if worst_hard_track and worst_hard_ratio < 0.3:
+        track_label = _TRACK_LABELS.get(worst_hard_track, worst_hard_track)
+        _add(
+            "practice_hard",
+            f"Push into {track_label} hard questions",
+            f"Only {round(worst_hard_ratio * 100)}% hard coverage — interviewers expect you to handle tough edge cases.",
+            "Go to hard →",
+            f"/practice/{worst_hard_track}",
+            track=worst_hard_track,
+        )
+
+    # Step 4: Mock boost — fewer than 3 completed mocks in the last 14 days
+    cutoff_14d = datetime.now(UTC) - timedelta(days=14)
+    recent_mocks = sum(
+        1 for s in mock_sessions
+        if s.get("status") == "completed"
+        and s.get("ended_at")
+        and datetime.fromisoformat(s["ended_at"].replace("Z", "+00:00")) >= cutoff_14d
+    )
+    if recent_mocks < 3:
+        _add(
+            "mock_session",
+            "Run a timed mock interview",
+            "Simulated interviews improve time management and pressure recall under real conditions.",
+            "Start mock →",
+            "/mock",
+            track=None,
+        )
+
+    return actions or None
 
 
 # ---------------------------------------------------------------------------

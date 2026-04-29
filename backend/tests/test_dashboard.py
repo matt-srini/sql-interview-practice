@@ -288,6 +288,8 @@ class TestInsightsEndpoint:
                 "weakest_concepts",
                 "cross_track_insight",
                 "streak_days",
+                "readiness_scores",
+                "study_plan",
             }
 
     def test_per_track_has_all_four_tracks(self) -> None:

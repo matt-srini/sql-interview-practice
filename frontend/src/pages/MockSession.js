@@ -69,6 +69,7 @@ export default function MockSession() {
   const [insights, setInsights] = useState(null);
 
   const [showFollowUpBanner, setShowFollowUpBanner] = useState(false);
+  const [focusFallback, setFocusFallback] = useState(false);
 
   const finishCalled = useRef(false);
   const bannerTimerRef = useRef(null);
@@ -99,6 +100,7 @@ export default function MockSession() {
       status: data.status,
     });
     setQuestions(data.questions || []);
+    if (data.focus_fallback) setFocusFallback(true);
 
     // Restore codes and solved state from server
     const initialCodes = {};
@@ -594,6 +596,13 @@ export default function MockSession() {
             >
               ✕ Close
             </button>
+          )}
+
+          {/* Focus mode fallback notice */}
+          {focusFallback && (
+            <div className="mock-focus-fallback-notice">
+              Not enough focus concept questions — session includes similar questions to fill the gap.
+            </div>
           )}
 
           {q && (

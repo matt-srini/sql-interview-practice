@@ -1,6 +1,6 @@
 # Dashboard Feature Reference
 
-The dashboard is the cross-track progress hub at `/dashboard` (`ProgressDashboard.js`). It surfaces track overview statistics, coaching insights, streak state, and mock interview history for any authenticated user. All tiers (Free, Pro, Elite, and lifetime variants) can access the full dashboard — there are no plan-gated sections on this page.
+The dashboard is the cross-track progress hub at `/dashboard` (`ProgressDashboard.js`). It surfaces track overview statistics, coaching insights, streak state, and mock interview history for any authenticated user. Elite users see additional exclusive sections: a personalised study plan, per-track interview readiness scores, and the Top-3 weak areas coaching panel.
 
 ---
 
@@ -8,8 +8,10 @@ The dashboard is the cross-track progress hub at `/dashboard` (`ProgressDashboar
 
 | Section | Description |
 |---|---|
-| **Track Overview** | Four track cards (SQL, Python, Pandas, PySpark). Each shows solved/total, an animated progress bar, median solve time, accuracy %, and an easy/medium/hard breakdown. Data comes from both `/api/dashboard` (solve counts) and `/api/dashboard/insights` (timing + accuracy). |
+| **Track Overview** | Four track cards (SQL, Python, Pandas, PySpark). Each shows solved/total, an animated progress bar, median solve time, accuracy %, easy/medium/hard breakdown, and (Elite) a per-track readiness score badge. Data from `/api/dashboard` + `/api/dashboard/insights`. |
+| **Personalised study plan** | **(Elite)** An ordered list of 3–5 next steps based on weak concepts, practice gaps, and mock frequency. Non-Elite users see a gated upgrade prompt. |
 | **Coaching Insights strip** | Three tiles: Cross-track pace coaching, Current streak, Weakest concept. Hidden when `totalSolved === 0` and replaced by an empty-state CTA. |
+| **Top-3 Weak Areas** | **(Elite)** Concept rows with accuracy %, coaching summary, and drill/path links. |
 | **Recent Activity** | Up to 10 most-recently-solved questions across all tracks. Each row shows track, difficulty badge, question title, and relative time. |
 | **Concepts by Track** | Tags of concepts covered by solved questions, grouped by track. Only rendered when at least one concept exists. |
 | **Mock Interviews** | Last 5 mock sessions in a compact table with date, mode, track, difficulty, score, and a Review/Resume link. Hidden when no mock history exists. |
@@ -18,7 +20,13 @@ The dashboard is the cross-track progress hub at `/dashboard` (`ProgressDashboar
 
 ## Plan-gated sections
 
-There are **no plan-gated sections** on the dashboard. All tiers see the full page. Differences across plans affect what questions can be solved (and therefore what data populates the page), not the dashboard UI itself.
+| Section | Free | Pro | Elite |
+|---|---|---|---|
+| Track Overview (basic stats) | ✅ | ✅ | ✅ |
+| Coaching Insights strip | ✅ (streak + pace only) | ✅ (all 3 tiles) | ✅ |
+| Top-3 Weak Areas panel | ❌ | ❌ | ✅ |
+| Per-track readiness score badges | ❌ (upgrade teaser shown) | ❌ (upgrade teaser shown) | ✅ |
+| Personalised study plan | ❌ (locked section shown) | ❌ (locked section shown) | ✅ |
 
 ---
 
@@ -111,6 +119,34 @@ Each entry is enriched with:
 - `summary` — a deterministic one-sentence coaching note keyed to accuracy bucket (< 30% → "highest-priority gap"; < 50% → "pattern isn't sticking"; < 70% → "breaks under new angles"; ≥ 70% → "not fully consistent yet").
 - `recommended_path_slug` / `recommended_path_title` — the most foundational accessible learning path that covers this concept (starter paths preferred over intermediate / advanced). Only present when a matching path exists and its tier is accessible under the user's plan.
 - `recommended_question_ids` — up to 2 unsolved question IDs on this concept, easiest-first. Free users only get easy questions; Pro/Elite get any difficulty.
+
+### Interview readiness score (Elite only)
+
+`readiness_scores` in `/api/dashboard/insights` returns per-track scores (0–100) for Elite users (`null` for other plans). Each score has three components:
+
+| Component | Points | How it is computed |
+|---|---|---|
+| Practice coverage | 40 max | Easy (10): `min(solved/total, 1) × 10`. Medium (20): `min(solved/total, 1) × 20`. Hard (10): `min(solved/(total×0.4), 1) × 10` — only 40% hard coverage needed for full 10 pts. |
+| Mock accuracy | 35 max | Average score across last 5 completed sessions for this track. 0 pts if no mock history for this track. |
+| Concept strength | 25 max | `max(0, strong_count − weak_count×1.5) / 8 × 25` — where strong = concepts ≥ 70% accuracy (≥3 attempts), weak = concepts < 60% (≥3 attempts). Max denominator of 8 represents a well-rounded candidate. |
+
+**Label thresholds:** < 40 → "Early stage" · 40–64 → "Building" · 65–79 → "Getting there" · 80–89 → "Interview ready" · 90+ → "Strong"
+
+The score badge on each track card is colour-coded: green (Strong/Interview ready), amber (Getting there), grey (Building/Early stage).
+
+### Personalised study plan (Elite only)
+
+`study_plan` in `/api/dashboard/insights` returns an ordered list of 3–5 action items for Elite users (`null` otherwise). Each item has:
+- `type`: `concept_drill` | `learning_path` | `mock_session` | `practice_hard`
+- `title`, `description`, `cta_label`, `cta_href`, `track`, `priority`
+
+**Generation algorithm:**
+1. Lowest-readiness track → target its worst concept (path if available, else drill link)
+2. Top 2 weakest concepts across all tracks → path or drill action
+3. Track with < 30% hard question coverage → `practice_hard` action
+4. Fewer than 3 completed mocks in the last 14 days → `mock_session` action
+
+Actions are deduplicated (no two of the same type + track), and capped at 5 total.
 
 ### Cross-track pace insight
 

@@ -760,8 +760,12 @@ export default function LandingPage() {
                   <li>Everything in Pro</li>
                   <li>Unlimited hard mock interviews — no daily cap</li>
                   <li>Company filter (SQL) — Meta, Google, Stripe, Airbnb…</li>
-                  <li>Top-3 weak areas coaching panel on your dashboard</li>
-                  <li>Post-mock path recommendations</li>
+                  <li>Focus mode — target weak concepts directly in a timed mock</li>
+                  <li>Mock history analytics — trends, concept breakdown, score trajectory</li>
+                  <li>Interview readiness score — per-track 0–100 signal</li>
+                  <li>Personalised study plan — prioritised next steps based on your gaps</li>
+                  <li>Post-mock coaching debrief with priority action</li>
+                  <li>Top-3 weak areas panel with path recommendations</li>
                 </ul>
                 <div className="landing-tier-cta">
                   {eliteColCta() === 'current' && (
