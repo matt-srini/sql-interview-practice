@@ -68,7 +68,10 @@ export default function MockSession() {
   const [loadError, setLoadError] = useState(null);
   const [insights, setInsights] = useState(null);
 
+  const [showFollowUpBanner, setShowFollowUpBanner] = useState(false);
+
   const finishCalled = useRef(false);
+  const bannerTimerRef = useRef(null);
 
   const handleFinish = useCallback(async () => {
     if (finishCalled.current) return;
@@ -101,7 +104,8 @@ export default function MockSession() {
     const initialCodes = {};
     const initialSolved = {};
     (data.questions || []).forEach(q => {
-      initialCodes[q.id] = q.final_code || DEFAULT_CODE[q.track] || '';
+      // Debug questions pre-fill the editor with starter_code unless the user already submitted
+      initialCodes[q.id] = q.final_code || (q.type === 'debug' ? (q.starter_code || '') : null) || DEFAULT_CODE[q.track] || '';
       initialSolved[q.id] = q.is_solved || false;
     });
     setCodes(initialCodes);
@@ -157,6 +161,20 @@ export default function MockSession() {
     }, 1000);
     return () => clearInterval(t);
   }, [remainingS === null, status]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Follow-up banner: show for 3s when user navigates to an is_follow_up question
+  useEffect(() => {
+    if (!currentQuestion?.is_follow_up) {
+      setShowFollowUpBanner(false);
+      return;
+    }
+    setShowFollowUpBanner(true);
+    if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
+    bannerTimerRef.current = setTimeout(() => setShowFollowUpBanner(false), 3000);
+    return () => {
+      if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
+    };
+  }, [currentQuestion?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Browser tab title
   useEffect(() => {
@@ -226,6 +244,24 @@ export default function MockSession() {
       setResults(prev => ({ ...prev, [q.id]: r.data }));
       if (r.data.correct) {
         setSolved(prev => ({ ...prev, [q.id]: true }));
+        // If a follow-up was injected, re-fetch the session to get the updated question list
+        if (r.data.follow_up_injected) {
+          try {
+            const sessionResp = await api.get(`/mock/${id}`);
+            const updatedQuestions = sessionResp.data.questions || [];
+            setQuestions(updatedQuestions);
+            // Init codes for any newly injected questions
+            setCodes(prev => {
+              const next = { ...prev };
+              updatedQuestions.forEach(uq => {
+                if (next[uq.id] === undefined) {
+                  next[uq.id] = uq.final_code || (uq.type === 'debug' ? (uq.starter_code || '') : null) || DEFAULT_CODE[uq.track] || '';
+                }
+              });
+              return next;
+            });
+          } catch (_) { /* session state is still correct, follow-up is just missing */ }
+        }
       }
     } catch (err) {
       const errMsg = err?.response?.data?.detail || 'Submission failed';
@@ -488,6 +524,9 @@ export default function MockSession() {
               onClick={() => setActiveQ(i)}
             >
               Q{i + 1}
+              {question.is_follow_up && (
+                <span className="mock-follow-up-badge" title="Interviewer follow-up">↩</span>
+              )}
               <span className={`mock-q-dot ${solved[question.id] ? 'solved' : 'unsolved'}`} />
             </button>
           ))}
@@ -521,14 +560,24 @@ export default function MockSession() {
 
           {q && (
             <>
+              {/* Follow-up fade-in banner */}
+              {q.is_follow_up && showFollowUpBanner && (
+                <div className="mock-follow-up-banner" aria-live="polite">
+                  Interviewer follow-up ↓
+                </div>
+              )}
+
               <div className="mock-question-meta">
                 <span className={`badge badge-${q.difficulty}`}>{q.difficulty}</span>
+                {q.is_follow_up && (
+                  <span className="mock-follow-up-badge">Follow-up</span>
+                )}
                 <span className="mock-question-track">{TRACK_LABELS[q.track]}</span>
               </div>
               <h2 className="mock-question-title">{q.title}</h2>
 
-              {/* Description / Schema toggle (SQL only) */}
-              {q.track === 'sql' && q.schema && (
+              {/* Description / Schema toggle (SQL only, skip for reverse which has its own view) */}
+              {q.track === 'sql' && q.schema && q.type !== 'reverse' && (
                 <div className="mock-view-toggle">
                   <button
                     className={`mock-view-btn ${questionView === 'description' ? 'active' : ''}`}
@@ -545,8 +594,48 @@ export default function MockSession() {
                 </div>
               )}
 
-              {questionView === 'description' ? (
-                <p className="mock-question-description">{q.description}</p>
+              {questionView === 'description' || q.type === 'reverse' ? (
+                <>
+                  {/* Scenario framing: description IS the scenario brief */}
+                  {q.framing === 'scenario' && (
+                    <div className="mock-scenario-brief">
+                      <span className="mock-scenario-brief-label">Scenario</span>
+                      <p>{q.description}</p>
+                    </div>
+                  )}
+
+                  {/* Reverse SQL: show target result table instead of description */}
+                  {q.type === 'reverse' ? (
+                    <div className="mock-reverse-block">
+                      <p className="mock-reverse-prompt">Write a query that produces this result:</p>
+                      {q.result_preview?.length > 0 && (
+                        <div className="result-table-wrap">
+                          <table className="result-table">
+                            <thead>
+                              <tr>
+                                {Object.keys(q.result_preview[0]).map(col => (
+                                  <th key={col}>{col}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {q.result_preview.map((row, i) => (
+                                <tr key={i}>
+                                  {Object.values(row).map((cell, j) => (
+                                    <td key={j}>{String(cell ?? '')}</td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  ) : q.framing !== 'scenario' ? (
+                    /* Normal description (hidden for scenario — already shown above) */
+                    <p className="mock-question-description">{q.description}</p>
+                  ) : null}
+                </>
               ) : (
                 <div className="mock-schema">
                   {Object.entries(q.schema || {}).map(([table, cols]) => (
@@ -583,6 +672,17 @@ export default function MockSession() {
 
           {q && meta && !meta.hasMCQ && (
             <>
+              {/* Debug question: show error callout and "fix the bug" prompt */}
+              {q.type === 'debug' && (
+                <p className="mock-debug-prompt">Fix the bug in the code below.</p>
+              )}
+              {q.type === 'debug' && q.debug_error && (
+                <div className="mock-debug-error" role="alert">
+                  <span className="mock-debug-error-label">Error output</span>
+                  <pre className="mock-debug-error-pre">{q.debug_error}</pre>
+                </div>
+              )}
+
               <div className="mock-editor-wrapper">
                 <CodeEditor
                   value={getCode(q)}

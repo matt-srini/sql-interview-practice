@@ -7234,6 +7234,114 @@ select {
   border-color: var(--accent);
 }
 
+/* ── Mock session — new question format renderers ────────────────────────── */
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Follow-up badge on question tab */
+.mock-follow-up-badge {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: var(--accent);
+  color: #fff;
+  padding: 0.08rem 0.4rem;
+  border-radius: 99px;
+  margin-left: 0.35rem;
+  vertical-align: middle;
+  line-height: 1.5;
+}
+
+/* Follow-up fade-in banner */
+.mock-follow-up-banner {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--accent);
+  margin-bottom: 0.75rem;
+  animation: fadeInDown 0.28s ease;
+}
+
+/* Scenario framing brief */
+.mock-scenario-brief {
+  background: var(--surface-raised, rgba(0,0,0,0.03));
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 0.7rem 0.95rem;
+  margin-bottom: 0.9rem;
+  font-size: 0.87rem;
+  color: var(--text-secondary);
+}
+.mock-scenario-brief p { margin: 0; line-height: 1.6; }
+
+.mock-scenario-brief-label {
+  display: block;
+  font-style: normal;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.3rem;
+}
+
+/* Reverse SQL result preview */
+.mock-reverse-block { margin-bottom: 0.5rem; }
+.mock-reverse-prompt {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+/* Debug error callout */
+.mock-debug-prompt {
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.mock-debug-error {
+  border: 1px solid color-mix(in srgb, var(--danger) 38%, transparent);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 0.85rem;
+}
+
+.mock-debug-error-label {
+  display: block;
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  padding: 0.25rem 0.7rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--danger);
+}
+
+.mock-debug-error-pre {
+  background: #1a0f0f;
+  color: #f08080;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  white-space: pre-wrap;
+  overflow-x: auto;
+  margin: 0;
+  line-height: 1.6;
+}
+
+[data-theme="dark"] .mock-scenario-brief {
+  background: rgba(255,255,255,0.03);
+}
+
 /* ── Nav dropdown ────────────────────────────────────────── */
 /* ── Legacy nav-dropdown (used by LandingPage topbar, MockHub, etc.) */
 .nav-dropdown {
