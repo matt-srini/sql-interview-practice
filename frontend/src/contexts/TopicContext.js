@@ -43,7 +43,7 @@ export const TRACK_META = {
     language: 'text',
     hasRunCode: false,
     hasMCQ: true,
-    totalQuestions: 90,
+    totalQuestions: 102,
     tagline: 'conceptual · MCQ · predict output',
   },
 };

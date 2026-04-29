@@ -255,7 +255,7 @@ def _run_progression() -> None:
         assert _accessible_count(_catalog_states(client, "hard")) == 8, \
             "Expected 8 hard accessible after 21 medium"
 
-        # ── Solve 22nd medium — full hard cap (15) unlocks ───────────────────
+        # ── Solve 22nd medium — full hard cap unlocks ────────────────────────
         _solve(client, medium_ids[21])
 
         hard_states = _catalog_states(client, "hard")
