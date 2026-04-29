@@ -34,7 +34,7 @@
     "complexity_hint": "Two-stage pattern: aggregate first (subquery), then apply a window function on the aggregated rows. The window SUM(...) OVER () computes the grand total without collapsing rows.",
     "alternative_solution": {
       "query": "WITH tier_revenue AS (\n  SELECT u.plan_tier, SUM(o.net_amount) AS total_completed_revenue\n  FROM users u\n  JOIN orders o ON u.user_id = o.user_id\n  WHERE o.status = 'completed'\n  GROUP BY u.plan_tier\n)\nSELECT plan_tier, total_completed_revenue,\n  ROUND(100.0 * total_completed_revenue / SUM(total_completed_revenue) OVER (), 2) AS revenue_share_pct\nFROM tier_revenue\nORDER BY total_completed_revenue DESC, plan_tier ASC",
-      "explanation": "This version uses a CTE (WITH clause) instead of an inline subquery. Both approaches produce identical results. CTEs are generally preferred when the intermediate result is referenced more than once, or when readability is the priority — the named step makes the two-stage intent explicit."
+      "explanation": "This version uses a CTE (WITH clause) instead of an inline subquery. Both approaches produce identical results. CTEs are generally preferred when the intermediate result is referenced more than once, or when readability is the priority \u2014 the named step makes the two-stage intent explicit."
     },
     "companies": [
       "Meta",
@@ -1101,7 +1101,7 @@
     "explanation": "A CTE aggregates per-session: COUNT(*) for events, COUNT(DISTINCT product_id) for unique products, and MAX(CASE WHEN...) flags for cart and purchase presence (MAX of 0/1 across all events in the session is 1 if any event matches). The formula combines these into a weighted score. The outer query joins to sessions for device/channel context, then filters on the score. Note: the WHERE clause must repeat the formula (or use a nested query/second CTE) because aliases from SELECT cannot be referenced in WHERE in standard SQL.",
     "hints": [
       "Break the problem into stages so the reusable intermediate result exists before the final filter or comparison.",
-      "You cannot reference a SELECT alias in WHERE — either repeat the expression or wrap in a second CTE"
+      "You cannot reference a SELECT alias in WHERE \u2014 either repeat the expression or wrap in a second CTE"
     ],
     "concepts": [
       "CONDITIONAL FLAG AGGREGATION",
@@ -1120,7 +1120,7 @@
     "id": 3028,
     "order": 28,
     "title": "ROWS vs RANGE: running total divergence",
-    "description": "For each order, compute two running total columns using different window frame semantics:\n1. `running_rows`: `SUM(net_amount) OVER (ORDER BY order_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)`\n2. `running_range`: `SUM(net_amount) OVER (ORDER BY order_date RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)`\n\nWhen `order_date` has duplicate values (multiple orders on the same date), ROWS and RANGE produce different results. Return `order_id`, `order_date`, `net_amount`, `running_rows`, `running_range` — but **only** for orders where `running_rows != running_range`. Order by `order_date` ASC, `order_id` ASC.\n\nThis reveals the dates where tied values cause the two frame semantics to diverge.",
+    "description": "For each order, compute two running total columns using different window frame semantics:\n1. `running_rows`: `SUM(net_amount) OVER (ORDER BY order_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)`\n2. `running_range`: `SUM(net_amount) OVER (ORDER BY order_date RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)`\n\nWhen `order_date` has duplicate values (multiple orders on the same date), ROWS and RANGE produce different results. Return `order_id`, `order_date`, `net_amount`, `running_rows`, `running_range` \u2014 but **only** for orders where `running_rows != running_range`. Order by `order_date` ASC, `order_id` ASC.\n\nThis reveals the dates where tied values cause the two frame semantics to diverge.",
     "difficulty": "hard",
     "schema": {
       "orders": [
@@ -1140,10 +1140,10 @@
       "where"
     ],
     "enforce_concepts": true,
-    "explanation": "ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW includes exactly the rows from the start of the partition up to the physical current row — each tied row gets a different running total. RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW treats all rows with the same ORDER BY value as peers and includes all of them together — every tied row gets the same running total (the sum including all peers). When ties exist, ROWS gives an incremental per-row total while RANGE gives all tied rows the same 'as if all were included' total. The WHERE clause filters to only divergent rows, exposing exactly the dates with ties.",
+    "explanation": "ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW includes exactly the rows from the start of the partition up to the physical current row \u2014 each tied row gets a different running total. RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW treats all rows with the same ORDER BY value as peers and includes all of them together \u2014 every tied row gets the same running total (the sum including all peers). When ties exist, ROWS gives an incremental per-row total while RANGE gives all tied rows the same 'as if all were included' total. The WHERE clause filters to only divergent rows, exposing exactly the dates with ties.",
     "hints": [
       "Compare the two cumulative interpretations only after both running totals have been computed over the same ordered events.",
-      "You cannot reference window function aliases in WHERE — use a CTE to compute both, then filter in the outer query"
+      "You cannot reference window function aliases in WHERE \u2014 use a CTE to compute both, then filter in the outer query"
     ],
     "concepts": [
       "ROWS vs RANGE FRAME SEMANTICS",
@@ -1190,10 +1190,10 @@
       "case_when"
     ],
     "enforce_concepts": true,
-    "explanation": "Two CTEs decompose the problem: `signups_2024` filters the user cohort; `first_qualifying` finds each user's first completed order within 7 days of signup using a date-range join condition. The final LEFT JOIN preserves all 2024 signups — users with no qualifying order get NULL from the right side. CASE WHEN fq.user_id IS NOT NULL THEN 1 ELSE 0 END produces the conversion flag. JULIANDAY arithmetic computes the day difference as a number. NULLS LAST sorts non-converting users to the end.",
+    "explanation": "Two CTEs decompose the problem: `signups_2024` filters the user cohort; `first_qualifying` finds each user's first completed order within 7 days of signup using a date-range join condition. The final LEFT JOIN preserves all 2024 signups \u2014 users with no qualifying order get NULL from the right side. CASE WHEN fq.user_id IS NOT NULL THEN 1 ELSE 0 END produces the conversion flag. JULIANDAY arithmetic computes the day difference as a number. NULLS LAST sorts non-converting users to the end.",
     "hints": [
       "Break the problem into stages so the reusable intermediate result exists before the final filter or comparison.",
-      "LEFT JOIN the first_qualifying CTE back to all signups — users with no qualifying order will have NULL on the right side, which maps to converted=0"
+      "LEFT JOIN the first_qualifying CTE back to all signups \u2014 users with no qualifying order will have NULL on the right side, which maps to converted=0"
     ],
     "concepts": [
       "CONVERSION FUNNEL ANALYSIS",
@@ -1207,5 +1207,800 @@
       "Airbnb",
       "LinkedIn"
     ]
+  },
+  {
+    "id": 3030,
+    "order": 30,
+    "mock_only": true,
+    "framing": "scenario",
+    "follow_up_id": 3034,
+    "title": "Payment failure trend by method and month",
+    "description": "The payments team asks: 'How much revenue are we losing to failed payments, and does the failure rate vary by method over time?' Write a query that, for each `payment_method` and calendar month (`YYYY-MM`), returns `payment_method`, `month`, `paid_count`, `failed_count`, `total_paid_amount` (rounded to 2 dp), and `failure_rate_pct` (failed / total \u00d7 100, rounded to 1 dp). Include only rows where the total attempt count for that method+month is at least 10. Order by `month` ascending, then `failure_rate_pct` descending.",
+    "difficulty": "hard",
+    "schema": {
+      "payments": [
+        "payment_id",
+        "payment_method",
+        "payment_date",
+        "status",
+        "amount"
+      ]
+    },
+    "dataset_files": [
+      "payments.csv"
+    ],
+    "expected_query": "SELECT payment_method, strftime(payment_date, '%Y-%m') AS month,\n       COUNT(CASE WHEN status = 'paid' THEN 1 END) AS paid_count,\n       COUNT(CASE WHEN status = 'failed' THEN 1 END) AS failed_count,\n       ROUND(SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END),2) AS total_paid_amount,\n       ROUND(COUNT(CASE WHEN status = 'failed' THEN 1 END) * 100.0 / COUNT(*), 1) AS failure_rate_pct\nFROM payments\nGROUP BY payment_method, month\nHAVING COUNT(*) >= 10\nORDER BY month ASC, failure_rate_pct DESC",
+    "solution_query": "SELECT payment_method,\n       strftime(payment_date, '%Y-%m') AS month,\n       COUNT(CASE WHEN status = 'paid' THEN 1 END) AS paid_count,\n       COUNT(CASE WHEN status = 'failed' THEN 1 END) AS failed_count,\n       ROUND(SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END), 2) AS total_paid_amount,\n       ROUND(COUNT(CASE WHEN status = 'failed' THEN 1 END) * 100.0 / COUNT(*), 1) AS failure_rate_pct\nFROM payments\nGROUP BY payment_method, month\nHAVING COUNT(*) >= 10\nORDER BY month ASC, failure_rate_pct DESC;",
+    "required_concepts": [
+      "group_by",
+      "case_when",
+      "having",
+      "date_functions"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Conditional aggregation counts paid/failed rows without subqueries. SUM(CASE WHEN status='paid' THEN amount ELSE 0 END) sums only paid amounts. HAVING COUNT(*) >= 10 excludes thin slices (method+month combos with fewer than 10 attempts) from the trend. ORDER BY month ASC, failure_rate_pct DESC makes the trend chronological within each month.",
+    "hints": [
+      "Use CASE WHEN inside COUNT/SUM to differentiate paid vs failed in one pass.",
+      "HAVING COUNT(*) >= 10 filters after aggregation \u2014 you can't use WHERE for a condition on the total row count."
+    ],
+    "concepts": [
+      "CONDITIONAL AGGREGATION",
+      "PAYMENT FAILURE ANALYSIS",
+      "HAVING THRESHOLD"
+    ],
+    "companies": []
+  },
+  {
+    "id": 3031,
+    "order": 31,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "High-volume support users",
+    "description": "The support team lead asks: 'Which users are filing too many tickets, and how slow are we resolving them?' Write a query that returns `user_id`, `name`, `ticket_count`, `avg_resolution_hours` (rounded to 1 dp), and `max_resolution_hours` (rounded to 0 dp). Include only users with more than 3 tickets regardless of status. Order by `avg_resolution_hours` descending.",
+    "difficulty": "hard",
+    "schema": {
+      "users": [
+        "user_id",
+        "name"
+      ],
+      "support_tickets": [
+        "ticket_id",
+        "user_id",
+        "resolution_hours"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "support_tickets.csv"
+    ],
+    "expected_query": "SELECT u.user_id, u.name, COUNT(t.ticket_id) AS ticket_count,\n       ROUND(AVG(t.resolution_hours),1) AS avg_resolution_hours,\n       ROUND(MAX(t.resolution_hours),0) AS max_resolution_hours\nFROM users u\nJOIN support_tickets t ON u.user_id = t.user_id\nGROUP BY u.user_id, u.name\nHAVING COUNT(t.ticket_id) > 3\nORDER BY avg_resolution_hours DESC",
+    "solution_query": "SELECT u.user_id, u.name,\n       COUNT(t.ticket_id) AS ticket_count,\n       ROUND(AVG(t.resolution_hours), 1) AS avg_resolution_hours,\n       ROUND(MAX(t.resolution_hours), 0) AS max_resolution_hours\nFROM users u\nJOIN support_tickets t ON u.user_id = t.user_id\nGROUP BY u.user_id, u.name\nHAVING COUNT(t.ticket_id) > 3\nORDER BY avg_resolution_hours DESC;",
+    "required_concepts": [
+      "join",
+      "group_by",
+      "having",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "JOIN connects users to their tickets. GROUP BY user produces per-user aggregates. HAVING COUNT(ticket_id) > 3 filters to users with more than 3 tickets \u2014 this condition can only be expressed with HAVING, not WHERE, because it filters on an aggregate. ORDER BY avg_resolution_hours DESC surfaces the most-delayed users first.",
+    "hints": [
+      "Think about which filter applies before aggregation and which applies after grouping.",
+      "GROUP BY user_id and name together to keep the name column accessible."
+    ],
+    "concepts": [
+      "HAVING ON COUNT",
+      "JOIN AGGREGATE",
+      "SUPPORT ANALYSIS"
+    ],
+    "companies": []
+  },
+  {
+    "id": 3032,
+    "order": 32,
+    "mock_only": true,
+    "framing": "scenario",
+    "follow_up_id": 3036,
+    "title": "Top 3 products per category with top flag",
+    "description": "Your data team lead asks: 'For each category, show the top 3 products by revenue and flag the #1 product.' Using window functions, return `category_name`, `product_name`, `total_revenue` (rounded to 2 dp), `revenue_rank` (1 = highest within the category), and `is_top` (1 if rank = 1, else 0). Include only ranks 1\u20133. Order by `category_name` ascending, then `revenue_rank` ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "order_items": [
+        "product_id",
+        "line_amount"
+      ],
+      "products": [
+        "product_id",
+        "category_id",
+        "product_name"
+      ],
+      "categories": [
+        "category_id",
+        "category_name"
+      ]
+    },
+    "dataset_files": [
+      "order_items.csv",
+      "products.csv",
+      "categories.csv"
+    ],
+    "expected_query": "WITH ranked AS (\n    SELECT c.category_name, p.product_name,\n           ROUND(SUM(oi.line_amount),2) AS total_revenue,\n           RANK() OVER (PARTITION BY c.category_id ORDER BY SUM(oi.line_amount) DESC) AS revenue_rank\n    FROM order_items oi\n    JOIN products p ON oi.product_id = p.product_id\n    JOIN categories c ON p.category_id = c.category_id\n    GROUP BY c.category_name, c.category_id, p.product_name\n)\nSELECT category_name, product_name, total_revenue, revenue_rank,\n       CASE WHEN revenue_rank = 1 THEN 1 ELSE 0 END AS is_top\nFROM ranked\nWHERE revenue_rank <= 3\nORDER BY category_name, revenue_rank",
+    "solution_query": "WITH ranked AS (\n    SELECT c.category_name, p.product_name,\n           ROUND(SUM(oi.line_amount), 2) AS total_revenue,\n           RANK() OVER (PARTITION BY c.category_id ORDER BY SUM(oi.line_amount) DESC) AS revenue_rank\n    FROM order_items oi\n    JOIN products p ON oi.product_id = p.product_id\n    JOIN categories c ON p.category_id = c.category_id\n    GROUP BY c.category_name, c.category_id, p.product_name\n)\nSELECT category_name, product_name, total_revenue, revenue_rank,\n       CASE WHEN revenue_rank = 1 THEN 1 ELSE 0 END AS is_top\nFROM ranked\nWHERE revenue_rank <= 3\nORDER BY category_name, revenue_rank;",
+    "required_concepts": [
+      "cte",
+      "window_functions",
+      "join",
+      "group_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The CTE aggregates revenue per product per category and applies RANK() OVER (PARTITION BY category_id ORDER BY SUM(line_amount) DESC) to rank within each category. The outer query filters to ranks 1\u20133 and adds the is_top flag using CASE WHEN. PARTITION BY category_id (not category_name) is more robust when names could be duplicated across parent categories.",
+    "hints": [
+      "Start by computing each product's total revenue, then apply a per-category ranking in a second step.",
+      "Filter the CTE output (WHERE revenue_rank <= 3) in the outer query \u2014 you can't filter on a window function alias in the same SELECT."
+    ],
+    "concepts": [
+      "WINDOW RANK WITH PARTITION",
+      "TOP-N PER GROUP",
+      "CTE FILTER"
+    ],
+    "companies": []
+  },
+  {
+    "id": 3033,
+    "order": 33,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Department salary spread and percentiles",
+    "description": "HR wants to identify departments where pay is unusually spread. Write a query that computes for each department: `department_name`, `headcount`, `min_salary`, `max_salary`, `salary_range` (max minus min, rounded to 2 dp), `p25_salary` (25th percentile, rounded to 2 dp), and `p75_salary` (75th percentile, rounded to 2 dp). Include only departments with at least 10 employees. Order by `salary_range` descending.",
+    "difficulty": "hard",
+    "schema": {
+      "employees": [
+        "employee_id",
+        "department_id",
+        "salary"
+      ],
+      "departments": [
+        "department_id",
+        "department_name"
+      ]
+    },
+    "dataset_files": [
+      "employees.csv",
+      "departments.csv"
+    ],
+    "expected_query": "SELECT d.department_name, COUNT(*) AS headcount,\n       ROUND(MIN(e.salary),2) AS min_salary, ROUND(MAX(e.salary),2) AS max_salary,\n       ROUND(MAX(e.salary) - MIN(e.salary),2) AS salary_range,\n       ROUND(PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY e.salary),2) AS p25_salary,\n       ROUND(PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY e.salary),2) AS p75_salary\nFROM departments d\nJOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_name\nHAVING COUNT(*) >= 10\nORDER BY salary_range DESC",
+    "solution_query": "SELECT d.department_name,\n       COUNT(*) AS headcount,\n       ROUND(MIN(e.salary), 2) AS min_salary,\n       ROUND(MAX(e.salary), 2) AS max_salary,\n       ROUND(MAX(e.salary) - MIN(e.salary), 2) AS salary_range,\n       ROUND(PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY e.salary), 2) AS p25_salary,\n       ROUND(PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY e.salary), 2) AS p75_salary\nFROM departments d\nJOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_name\nHAVING COUNT(*) >= 10\nORDER BY salary_range DESC;",
+    "required_concepts": [
+      "join",
+      "group_by",
+      "having",
+      "percentile"
+    ],
+    "enforce_concepts": true,
+    "explanation": "PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY salary) computes the 25th percentile using linear interpolation. It's an ordered-set aggregate \u2014 syntactically different from window functions. salary_range = MAX - MIN measures the spread. HAVING COUNT(*) >= 10 excludes departments too small for meaningful percentiles.",
+    "hints": [
+      "Two statistical functions can compute the 25th and 75th percentile from an ordered set of values.",
+      "HAVING COUNT(*) >= 10 restricts to departments large enough for percentiles to be meaningful."
+    ],
+    "concepts": [
+      "PERCENTILE_CONT",
+      "ORDERED-SET AGGREGATE",
+      "SALARY DISTRIBUTION"
+    ],
+    "companies": []
+  },
+  {
+    "id": 3034,
+    "order": 34,
+    "mock_only": true,
+    "title": "Cumulative paid revenue by payment method",
+    "description": "For each payment method, compute `monthly_paid_amount` (sum of paid amounts per month, rounded to 2 dp) and `cumulative_paid_amount` (running total of paid revenue ordered by month, rounded to 2 dp). Return `payment_method`, `month` (formatted `YYYY-MM`), `monthly_paid_amount`, and `cumulative_paid_amount`. Order by `payment_method` ascending, then `month` ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "payments": [
+        "payment_id",
+        "payment_method",
+        "payment_date",
+        "status",
+        "amount"
+      ]
+    },
+    "dataset_files": [
+      "payments.csv"
+    ],
+    "expected_query": "SELECT payment_method, strftime(payment_date, '%Y-%m') AS month,\n       ROUND(SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END),2) AS monthly_paid_amount,\n       ROUND(SUM(SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END)) OVER (PARTITION BY payment_method ORDER BY strftime(payment_date, '%Y-%m')),2) AS cumulative_paid_amount\nFROM payments\nGROUP BY payment_method, month\nORDER BY payment_method, month",
+    "solution_query": "SELECT payment_method,\n       strftime(payment_date, '%Y-%m') AS month,\n       ROUND(SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END), 2) AS monthly_paid_amount,\n       ROUND(SUM(SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END))\n             OVER (PARTITION BY payment_method ORDER BY strftime(payment_date, '%Y-%m')), 2) AS cumulative_paid_amount\nFROM payments\nGROUP BY payment_method, month\nORDER BY payment_method, month;",
+    "required_concepts": [
+      "window_functions",
+      "group_by",
+      "date_functions",
+      "case_when"
+    ],
+    "enforce_concepts": true,
+    "explanation": "SUM(SUM(...)) OVER (...) is the key pattern: the inner SUM is the GROUP BY aggregate (monthly total); the outer SUM is the window function (running total). PARTITION BY payment_method resets the running total per method. ORDER BY month inside the window ensures chronological accumulation.",
+    "hints": [
+      "A cumulative total resets at the start of each payment method and grows as you step through months chronologically.",
+      "SUM(SUM(...)) OVER (...): the outer SUM accumulates the aggregated monthly values produced by the inner SUM."
+    ],
+    "concepts": [
+      "RUNNING TOTAL",
+      "NESTED AGGREGATION IN WINDOW",
+      "PAYMENT TREND ANALYSIS"
+    ],
+    "companies": []
+  },
+  {
+    "id": 3035,
+    "order": 35,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "30-day conversion rate by channel and country",
+    "description": "The growth team asks: 'Among users who signed up in 2024, what percentage converted (placed at least one completed order) within 30 days of signup? Break it down by acquisition channel and country.' Return `acquisition_channel`, `country`, `total_signups`, `converted_count`, and `conversion_rate_pct` (rounded to 1 dp). Exclude channel+country combinations with fewer than 5 signups. Order by `conversion_rate_pct` descending.",
+    "difficulty": "hard",
+    "schema": {
+      "users": [
+        "user_id",
+        "acquisition_channel",
+        "country",
+        "signup_date"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv"
+    ],
+    "expected_query": "WITH signups AS (\n    SELECT user_id, acquisition_channel, country, signup_date\n    FROM users\n    WHERE signup_date >= '2024-01-01' AND signup_date < '2025-01-01'\n),\nconverted AS (\n    SELECT DISTINCT s.user_id\n    FROM signups s\n    JOIN orders o ON s.user_id = o.user_id\n    WHERE o.status = 'completed'\n      AND o.order_date <= s.signup_date + INTERVAL 30 DAY\n)\nSELECT s.acquisition_channel, s.country,\n       COUNT(DISTINCT s.user_id) AS total_signups,\n       COUNT(DISTINCT c.user_id) AS converted_count,\n       ROUND(COUNT(DISTINCT c.user_id) * 100.0 / COUNT(DISTINCT s.user_id), 1) AS conversion_rate_pct\nFROM signups s\nLEFT JOIN converted c ON s.user_id = c.user_id\nGROUP BY s.acquisition_channel, s.country\nHAVING COUNT(DISTINCT s.user_id) >= 5\nORDER BY conversion_rate_pct DESC",
+    "solution_query": "WITH signups AS (\n    SELECT user_id, acquisition_channel, country, signup_date\n    FROM users\n    WHERE signup_date >= '2024-01-01' AND signup_date < '2025-01-01'\n),\nconverted AS (\n    SELECT DISTINCT s.user_id\n    FROM signups s\n    JOIN orders o ON s.user_id = o.user_id\n    WHERE o.status = 'completed'\n      AND o.order_date <= s.signup_date + INTERVAL 30 DAY\n)\nSELECT s.acquisition_channel, s.country,\n       COUNT(DISTINCT s.user_id) AS total_signups,\n       COUNT(DISTINCT c.user_id) AS converted_count,\n       ROUND(COUNT(DISTINCT c.user_id) * 100.0 / COUNT(DISTINCT s.user_id), 1) AS conversion_rate_pct\nFROM signups s\nLEFT JOIN converted c ON s.user_id = c.user_id\nGROUP BY s.acquisition_channel, s.country\nHAVING COUNT(DISTINCT s.user_id) >= 5\nORDER BY conversion_rate_pct DESC;",
+    "required_concepts": [
+      "cte",
+      "left_join",
+      "having",
+      "date_functions"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Two CTEs separate concerns: `signups` filters the 2024 cohort; `converted` finds users who placed a completed order within 30 days of signup using a date-range condition in the JOIN. The final LEFT JOIN preserves all signups \u2014 non-converters have NULL on the right side, contributing 0 to converted_count. HAVING filters small channel+country combos.",
+    "hints": [
+      "Separate the problem: first isolate the 2024 signup cohort, then find which of those users placed a qualifying order within the time window.",
+      "LEFT JOIN the converted CTE so non-converting users still appear in the denominator."
+    ],
+    "concepts": [
+      "CONVERSION FUNNEL",
+      "DATE-RANGE JOIN",
+      "MULTI-DIMENSION COHORT"
+    ],
+    "companies": []
+  },
+  {
+    "id": 3036,
+    "order": 36,
+    "mock_only": true,
+    "title": "Product ranking with cumulative revenue and category share",
+    "description": "Extend the top-3-products-per-category analysis: for each product in the top 3 within its category, also compute `cumulative_revenue` (running total of `total_revenue` within the category ordered by rank ascending, rounded to 2 dp) and `category_revenue_share` (each product's percentage of its category's total revenue, rounded to 1 dp). Return `category_name`, `product_name`, `total_revenue`, `revenue_rank`, `is_top`, `cumulative_revenue`, and `category_revenue_share`. Order by `category_name`, `revenue_rank`.",
+    "difficulty": "hard",
+    "schema": {
+      "order_items": [
+        "product_id",
+        "line_amount"
+      ],
+      "products": [
+        "product_id",
+        "category_id",
+        "product_name"
+      ],
+      "categories": [
+        "category_id",
+        "category_name"
+      ]
+    },
+    "dataset_files": [
+      "order_items.csv",
+      "products.csv",
+      "categories.csv"
+    ],
+    "expected_query": "WITH product_revenue AS (\n    SELECT c.category_name, c.category_id, p.product_name,\n           ROUND(SUM(oi.line_amount),2) AS total_revenue\n    FROM order_items oi\n    JOIN products p ON oi.product_id = p.product_id\n    JOIN categories c ON p.category_id = c.category_id\n    GROUP BY c.category_name, c.category_id, p.product_name\n),\ncat_totals AS (\n    SELECT category_id, SUM(total_revenue) AS cat_total FROM product_revenue GROUP BY category_id\n),\nranked AS (\n    SELECT pr.category_name, pr.category_id, pr.product_name, pr.total_revenue,\n           RANK() OVER (PARTITION BY pr.category_id ORDER BY pr.total_revenue DESC) AS revenue_rank,\n           CASE WHEN RANK() OVER (PARTITION BY pr.category_id ORDER BY pr.total_revenue DESC) = 1 THEN 1 ELSE 0 END AS is_top\n    FROM product_revenue pr\n),\nfiltered AS (\n    SELECT r.*, ct.cat_total FROM ranked r JOIN cat_totals ct ON r.category_id = ct.category_id\n    WHERE r.revenue_rank <= 3\n)\nSELECT category_name, product_name, total_revenue, revenue_rank, is_top,\n       ROUND(SUM(total_revenue) OVER (PARTITION BY category_id ORDER BY revenue_rank),2) AS cumulative_revenue,\n       ROUND(total_revenue * 100.0 / cat_total, 1) AS category_revenue_share\nFROM filtered\nORDER BY category_name, revenue_rank",
+    "solution_query": "WITH product_revenue AS (\n    SELECT c.category_name, c.category_id, p.product_name,\n           ROUND(SUM(oi.line_amount), 2) AS total_revenue\n    FROM order_items oi\n    JOIN products p ON oi.product_id = p.product_id\n    JOIN categories c ON p.category_id = c.category_id\n    GROUP BY c.category_name, c.category_id, p.product_name\n),\ncat_totals AS (\n    SELECT category_id, SUM(total_revenue) AS cat_total\n    FROM product_revenue GROUP BY category_id\n),\nranked AS (\n    SELECT pr.category_name, pr.category_id, pr.product_name, pr.total_revenue,\n           RANK() OVER (PARTITION BY pr.category_id ORDER BY pr.total_revenue DESC) AS revenue_rank,\n           CASE WHEN RANK() OVER (PARTITION BY pr.category_id ORDER BY pr.total_revenue DESC) = 1\n                THEN 1 ELSE 0 END AS is_top\n    FROM product_revenue pr\n),\nfiltered AS (\n    SELECT r.*, ct.cat_total\n    FROM ranked r JOIN cat_totals ct ON r.category_id = ct.category_id\n    WHERE r.revenue_rank <= 3\n)\nSELECT category_name, product_name, total_revenue, revenue_rank, is_top,\n       ROUND(SUM(total_revenue) OVER (PARTITION BY category_id ORDER BY revenue_rank), 2) AS cumulative_revenue,\n       ROUND(total_revenue * 100.0 / cat_total, 1) AS category_revenue_share\nFROM filtered\nORDER BY category_name, revenue_rank;",
+    "required_concepts": [
+      "cte",
+      "window_functions",
+      "join",
+      "group_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Four CTEs build up incrementally: product_revenue aggregates per-product revenue; cat_totals captures category-level totals; ranked applies window ranking; filtered joins in the category total for the share calculation. The final SELECT adds the running total (SUM OVER with ORDER BY revenue_rank) and the percentage share.",
+    "hints": [
+      "Carry the cat_total through by joining cat_totals into the filtered CTE \u2014 you'll need it for the share calculation.",
+      "SUM(total_revenue) OVER (PARTITION BY category_id ORDER BY revenue_rank) computes the cumulative revenue as you move down each category's ranking."
+    ],
+    "concepts": [
+      "MULTI-CTE PIPELINE",
+      "WINDOW RUNNING TOTAL",
+      "REVENUE SHARE PER GROUP"
+    ],
+    "companies": []
+  },
+  {
+    "id": 3037,
+    "order": 37,
+    "mock_only": true,
+    "type": "reverse",
+    "title": "Write the query \u2014 monthly completed-order volume (2024)",
+    "description": "Write a SQL query that produces the result table shown below. The result shows each calendar month in 2024 with the count of completed orders and total completed revenue.",
+    "difficulty": "hard",
+    "schema": {
+      "orders": [
+        "order_id",
+        "order_date",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv"
+    ],
+    "result_preview": [
+      {
+        "month": "2024-01",
+        "order_count": 117,
+        "revenue": 250865.21
+      },
+      {
+        "month": "2024-02",
+        "order_count": 94,
+        "revenue": 210020.22
+      },
+      {
+        "month": "2024-03",
+        "order_count": 94,
+        "revenue": 195469.63
+      },
+      {
+        "month": "2024-04",
+        "order_count": 88,
+        "revenue": 220226.92
+      },
+      {
+        "month": "2024-05",
+        "order_count": 109,
+        "revenue": 267304.42
+      },
+      {
+        "month": "2024-06",
+        "order_count": 87,
+        "revenue": 216505.86
+      },
+      {
+        "month": "2024-07",
+        "order_count": 91,
+        "revenue": 194206.14
+      },
+      {
+        "month": "2024-08",
+        "order_count": 95,
+        "revenue": 228038.21
+      }
+    ],
+    "expected_query": "SELECT strftime(order_date, '%Y-%m') AS month, COUNT(*) AS order_count, ROUND(SUM(net_amount),2) AS revenue\nFROM orders\nWHERE status = 'completed' AND order_date >= '2024-01-01' AND order_date < '2025-01-01'\nGROUP BY month\nORDER BY month",
+    "solution_query": "SELECT strftime(order_date, '%Y-%m') AS month,\n       COUNT(*) AS order_count,\n       ROUND(SUM(net_amount), 2) AS revenue\nFROM orders\nWHERE status = 'completed'\n  AND order_date >= '2024-01-01'\n  AND order_date < '2025-01-01'\nGROUP BY month\nORDER BY month;",
+    "required_concepts": [
+      "group_by",
+      "date_functions",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "strftime(order_date, '%Y-%m') extracts the year-month string. WHERE constrains to completed orders in 2024 only. GROUP BY month aggregates per calendar month. ORDER BY month produces the chronological trend. The result shows 8 of 12 months \u2014 the full query returns all 12.",
+    "hints": [
+      "Use strftime to extract year-month from order_date.",
+      "The result shows only 8 months for display \u2014 your query should return all 12 months in 2024."
+    ],
+    "concepts": [
+      "REVERSE SQL",
+      "MONTHLY TREND",
+      "DATE EXTRACTION"
+    ],
+    "companies": []
+  },
+  {
+    "id": 3038,
+    "order": 38,
+    "mock_only": true,
+    "type": "reverse",
+    "title": "Write the query \u2014 user acquisition funnel by channel",
+    "description": "Write a SQL query that produces the result table shown below. The result shows, for each acquisition channel, the total number of signed-up users, how many of them ever placed at least one completed order, and the conversion rate.",
+    "difficulty": "hard",
+    "schema": {
+      "users": [
+        "user_id",
+        "acquisition_channel"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv"
+    ],
+    "result_preview": [
+      {
+        "acquisition_channel": "organic",
+        "signups": 177,
+        "converted": 119,
+        "conversion_rate": 67.2
+      },
+      {
+        "acquisition_channel": "paid_search",
+        "signups": 141,
+        "converted": 87,
+        "conversion_rate": 61.7
+      },
+      {
+        "acquisition_channel": "direct",
+        "signups": 96,
+        "converted": 61,
+        "conversion_rate": 63.5
+      },
+      {
+        "acquisition_channel": "paid_social",
+        "signups": 88,
+        "converted": 59,
+        "conversion_rate": 67.0
+      },
+      {
+        "acquisition_channel": "referral",
+        "signups": 54,
+        "converted": 32,
+        "conversion_rate": 59.3
+      },
+      {
+        "acquisition_channel": "partner",
+        "signups": 44,
+        "converted": 30,
+        "conversion_rate": 68.2
+      }
+    ],
+    "expected_query": "SELECT u.acquisition_channel, COUNT(DISTINCT u.user_id) AS signups,\n       COUNT(DISTINCT CASE WHEN o.status = 'completed' THEN u.user_id END) AS converted,\n       ROUND(COUNT(DISTINCT CASE WHEN o.status = 'completed' THEN u.user_id END) * 100.0 / COUNT(DISTINCT u.user_id), 1) AS conversion_rate\nFROM users u\nLEFT JOIN orders o ON u.user_id = o.user_id\nGROUP BY u.acquisition_channel\nORDER BY signups DESC",
+    "solution_query": "SELECT u.acquisition_channel,\n       COUNT(DISTINCT u.user_id) AS signups,\n       COUNT(DISTINCT CASE WHEN o.status = 'completed' THEN u.user_id END) AS converted,\n       ROUND(\n           COUNT(DISTINCT CASE WHEN o.status = 'completed' THEN u.user_id END)\n           * 100.0 / COUNT(DISTINCT u.user_id),\n       1) AS conversion_rate\nFROM users u\nLEFT JOIN orders o ON u.user_id = o.user_id\nGROUP BY u.acquisition_channel\nORDER BY signups DESC;",
+    "required_concepts": [
+      "left_join",
+      "group_by",
+      "case_when",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "LEFT JOIN keeps all users including those with no orders. COUNT(DISTINCT CASE WHEN o.status = 'completed' THEN u.user_id END) counts unique users who placed a completed order \u2014 DISTINCT prevents counting the same user twice if they have multiple completed orders. The ratio gives conversion rate.",
+    "hints": [
+      "Every user should appear in the signup count \u2014 even users who never placed an order.",
+      "COUNT(DISTINCT CASE WHEN ...) counts unique converted users \u2014 without DISTINCT a multi-order user would be over-counted."
+    ],
+    "concepts": [
+      "REVERSE SQL",
+      "ACQUISITION FUNNEL",
+      "LEFT JOIN AGGREGATE"
+    ],
+    "companies": []
+  },
+  {
+    "id": 3039,
+    "order": 39,
+    "mock_only": true,
+    "type": "reverse",
+    "title": "Write the query \u2014 top products per category with rank",
+    "description": "Write a SQL query that produces the result table shown below. The result shows the top-revenue product in each category, along with the second-place product where revenue is close. The `revenue_rank` column is the product's rank within its category (1 = highest).",
+    "difficulty": "hard",
+    "schema": {
+      "order_items": [
+        "product_id",
+        "line_amount"
+      ],
+      "products": [
+        "product_id",
+        "category_id",
+        "product_name"
+      ],
+      "categories": [
+        "category_id",
+        "category_name"
+      ]
+    },
+    "dataset_files": [
+      "order_items.csv",
+      "products.csv",
+      "categories.csv"
+    ],
+    "result_preview": [
+      {
+        "category_name": "Category 12",
+        "product_name": "Product 153",
+        "total_revenue": 96106.5,
+        "revenue_rank": 1
+      },
+      {
+        "category_name": "Category 12",
+        "product_name": "Product 244",
+        "total_revenue": 92605.25,
+        "revenue_rank": 2
+      },
+      {
+        "category_name": "Category 5",
+        "product_name": "Product 152",
+        "total_revenue": 91987.42,
+        "revenue_rank": 1
+      },
+      {
+        "category_name": "Category 14",
+        "product_name": "Product 217",
+        "total_revenue": 91255.3,
+        "revenue_rank": 1
+      },
+      {
+        "category_name": "Category 3",
+        "product_name": "Product 45",
+        "total_revenue": 90680.04,
+        "revenue_rank": 1
+      },
+      {
+        "category_name": "Category 10",
+        "product_name": "Product 117",
+        "total_revenue": 89593.05,
+        "revenue_rank": 1
+      },
+      {
+        "category_name": "Category 6",
+        "product_name": "Product 154",
+        "total_revenue": 87871.67,
+        "revenue_rank": 1
+      },
+      {
+        "category_name": "Category 3",
+        "product_name": "Product 222",
+        "total_revenue": 87586.4,
+        "revenue_rank": 2
+      }
+    ],
+    "expected_query": "WITH ranked AS (\n    SELECT c.category_name, p.product_name, ROUND(SUM(oi.line_amount),2) AS total_revenue,\n           RANK() OVER (PARTITION BY c.category_id ORDER BY SUM(oi.line_amount) DESC) AS revenue_rank\n    FROM order_items oi\n    JOIN products p ON oi.product_id = p.product_id\n    JOIN categories c ON p.category_id = c.category_id\n    GROUP BY c.category_name, c.category_id, p.product_name\n)\nSELECT category_name, product_name, total_revenue, revenue_rank\nFROM ranked\nWHERE revenue_rank <= 2\nORDER BY total_revenue DESC\nLIMIT 8",
+    "solution_query": "WITH ranked AS (\n    SELECT c.category_name, p.product_name,\n           ROUND(SUM(oi.line_amount), 2) AS total_revenue,\n           RANK() OVER (PARTITION BY c.category_id ORDER BY SUM(oi.line_amount) DESC) AS revenue_rank\n    FROM order_items oi\n    JOIN products p ON oi.product_id = p.product_id\n    JOIN categories c ON p.category_id = c.category_id\n    GROUP BY c.category_name, c.category_id, p.product_name\n)\nSELECT category_name, product_name, total_revenue, revenue_rank\nFROM ranked\nWHERE revenue_rank <= 2\nORDER BY total_revenue DESC\nLIMIT 8;",
+    "required_concepts": [
+      "cte",
+      "window_functions",
+      "join",
+      "group_by",
+      "limit"
+    ],
+    "enforce_concepts": true,
+    "explanation": "RANK() OVER (PARTITION BY category_id ORDER BY SUM(line_amount) DESC) ranks products within each category by revenue. Filtering to revenue_rank <= 2 keeps only the top two per category. ORDER BY total_revenue DESC then LIMIT 8 shows the 8 highest-revenue products across those top slots.",
+    "hints": [
+      "Compare each product's revenue only to other products in the same category \u2014 position matters within the group, not across all categories.",
+      "Filter on revenue_rank <= 2 in the outer WHERE after defining the CTE."
+    ],
+    "concepts": [
+      "REVERSE SQL",
+      "WINDOW RANK WITH PARTITION",
+      "TOP-N PER GROUP"
+    ],
+    "companies": []
+  },
+  {
+    "id": 3040,
+    "order": 40,
+    "mock_only": true,
+    "type": "reverse",
+    "title": "Write the query \u2014 department salary bands",
+    "description": "Write a SQL query that produces the result table shown below. The result shows departments with at least 10 employees: their headcount, min/max/average salary, ordered by average salary descending.",
+    "difficulty": "hard",
+    "schema": {
+      "employees": [
+        "employee_id",
+        "department_id",
+        "salary"
+      ],
+      "departments": [
+        "department_id",
+        "department_name"
+      ]
+    },
+    "dataset_files": [
+      "employees.csv",
+      "departments.csv"
+    ],
+    "result_preview": [
+      {
+        "department_name": "Department 4",
+        "headcount": 19,
+        "min_salary": 52829.65,
+        "max_salary": 180196.8,
+        "avg_salary": 128011.66
+      },
+      {
+        "department_name": "Department 1",
+        "headcount": 24,
+        "min_salary": 54685.24,
+        "max_salary": 187450.38,
+        "avg_salary": 126472.65
+      },
+      {
+        "department_name": "Department 6",
+        "headcount": 23,
+        "min_salary": 50405.12,
+        "max_salary": 184178.09,
+        "avg_salary": 124420.34
+      },
+      {
+        "department_name": "Department 9",
+        "headcount": 18,
+        "min_salary": 56186.72,
+        "max_salary": 185883.58,
+        "avg_salary": 119059.36
+      },
+      {
+        "department_name": "Department 2",
+        "headcount": 18,
+        "min_salary": 50815.04,
+        "max_salary": 158267.94,
+        "avg_salary": 112364.19
+      }
+    ],
+    "expected_query": "SELECT d.department_name, COUNT(*) AS headcount,\n       ROUND(MIN(e.salary),2) AS min_salary, ROUND(MAX(e.salary),2) AS max_salary,\n       ROUND(AVG(e.salary),2) AS avg_salary\nFROM departments d\nJOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_name\nHAVING COUNT(*) >= 10\nORDER BY avg_salary DESC\nLIMIT 5",
+    "solution_query": "SELECT d.department_name,\n       COUNT(*) AS headcount,\n       ROUND(MIN(e.salary), 2) AS min_salary,\n       ROUND(MAX(e.salary), 2) AS max_salary,\n       ROUND(AVG(e.salary), 2) AS avg_salary\nFROM departments d\nJOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_name\nHAVING COUNT(*) >= 10\nORDER BY avg_salary DESC\nLIMIT 5;",
+    "required_concepts": [
+      "join",
+      "group_by",
+      "having",
+      "aggregate",
+      "limit"
+    ],
+    "enforce_concepts": true,
+    "explanation": "JOIN connects departments to employees. GROUP BY department aggregates four salary metrics. HAVING COUNT(*) >= 10 excludes small departments. ORDER BY avg_salary DESC sorts by pay level. LIMIT 5 trims to the top-paying departments shown in the result.",
+    "hints": [
+      "The result includes only departments above a minimum size \u2014 that threshold must be applied after aggregating.",
+      "The result has 5 rows \u2014 LIMIT 5 after ORDER BY avg_salary DESC."
+    ],
+    "concepts": [
+      "REVERSE SQL",
+      "HAVING THRESHOLD",
+      "SALARY BAND ANALYSIS"
+    ],
+    "companies": []
+  },
+  {
+    "id": 3041,
+    "order": 41,
+    "mock_only": true,
+    "type": "debug",
+    "title": "Fix the query \u2014 wrong PARTITION BY column",
+    "description": "The query below should rank each session within a user's history by start time, and count how many sessions each user has by traffic source. It fails with an error. Find and fix the bug.",
+    "difficulty": "hard",
+    "schema": {
+      "sessions": [
+        "session_id",
+        "user_id",
+        "session_start",
+        "traffic_source",
+        "device_type"
+      ]
+    },
+    "dataset_files": [
+      "sessions.csv"
+    ],
+    "debug_error": "Binder Error: Referenced column \"traffic_type\" not found in FROM clause!\nCandidate bindings: \"traffic_source\", \"device_type\", \"country\"\n\nLINE 2:        COUNT(*) OVER (PARTITION BY user_id, traffic_type ORDER BY session_start) AS rank_in_user\n                                                    ^",
+    "starter_query": "SELECT user_id, session_id, device_type, traffic_source,\n       COUNT(*) OVER (PARTITION BY user_id, traffic_type ORDER BY session_start) AS rank_in_user\nFROM sessions\nORDER BY user_id, session_start",
+    "expected_query": "SELECT user_id, session_id, device_type, traffic_source,\n       COUNT(*) OVER (PARTITION BY user_id, traffic_source ORDER BY session_start) AS rank_in_user\nFROM sessions\nORDER BY user_id, session_start",
+    "solution_query": "SELECT user_id, session_id, device_type, traffic_source,\n       COUNT(*) OVER (PARTITION BY user_id, traffic_source ORDER BY session_start) AS rank_in_user\nFROM sessions\nORDER BY user_id, session_start;",
+    "required_concepts": [
+      "window_functions"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The PARTITION BY clause references `traffic_type`, but the column in the sessions table is named `traffic_source`. Fix: replace `traffic_type` with `traffic_source`. This is a common mistake when table column names don't match your mental model \u2014 the error message's 'Candidate bindings' hint shows the correct name.",
+    "hints": [
+      "The error message shows 'Candidate bindings: traffic_source' \u2014 that's the correct column name.",
+      "Window function PARTITION BY references must use exact column names from the source table."
+    ],
+    "concepts": [
+      "WINDOW FUNCTION PARTITION",
+      "DEBUG SQL",
+      "COLUMN NAME ERRORS"
+    ],
+    "companies": []
+  },
+  {
+    "id": 3042,
+    "order": 42,
+    "mock_only": true,
+    "type": "debug",
+    "title": "Fix the query \u2014 CTE column alias mismatch in window function",
+    "description": "The query below uses a CTE to compute per-department statistics, then ranks departments by average salary. It fails with an error. Find and fix the bug.",
+    "difficulty": "hard",
+    "schema": {
+      "employees": [
+        "employee_id",
+        "department_id",
+        "salary"
+      ],
+      "departments": [
+        "department_id",
+        "department_name"
+      ]
+    },
+    "dataset_files": [
+      "employees.csv",
+      "departments.csv"
+    ],
+    "debug_error": "Binder Error: Referenced column \"avg_salary\" not found in FROM clause!\nCandidate bindings: \"avg_sal\"\n\nLINE 9:            RANK() OVER (ORDER BY avg_salary DESC) AS pay_rank\n                                         ^",
+    "starter_query": "WITH dept_stats AS (\n    SELECT d.department_name, COUNT(*) AS emp_count, AVG(e.salary) AS avg_sal\n    FROM employees e\n    JOIN departments d ON e.department_id = d.department_id\n    GROUP BY d.department_name\n),\nranked AS (\n    SELECT department_name, emp_count, avg_sal,\n           RANK() OVER (ORDER BY avg_salary DESC) AS pay_rank\n    FROM dept_stats\n)\nSELECT * FROM ranked ORDER BY pay_rank",
+    "expected_query": "WITH dept_stats AS (\n    SELECT d.department_name, COUNT(*) AS emp_count, ROUND(AVG(e.salary),2) AS avg_sal\n    FROM employees e\n    JOIN departments d ON e.department_id = d.department_id\n    GROUP BY d.department_name\n),\nranked AS (\n    SELECT department_name, emp_count, avg_sal,\n           RANK() OVER (ORDER BY avg_sal DESC) AS pay_rank\n    FROM dept_stats\n)\nSELECT * FROM ranked ORDER BY pay_rank",
+    "solution_query": "WITH dept_stats AS (\n    SELECT d.department_name,\n           COUNT(*) AS emp_count,\n           ROUND(AVG(e.salary), 2) AS avg_sal\n    FROM employees e\n    JOIN departments d ON e.department_id = d.department_id\n    GROUP BY d.department_name\n),\nranked AS (\n    SELECT department_name, emp_count, avg_sal,\n           RANK() OVER (ORDER BY avg_sal DESC) AS pay_rank\n    FROM dept_stats\n)\nSELECT * FROM ranked ORDER BY pay_rank;",
+    "required_concepts": [
+      "cte",
+      "window_functions"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The CTE aliases the average salary column as `avg_sal`. The `ranked` CTE references it as `avg_salary` inside the window function \u2014 a name that was never defined. Fix: change `avg_salary` to `avg_sal` in the RANK() OVER clause. CTEs expose exactly the column names defined inside them; you cannot use a different alias in a downstream reference.",
+    "hints": [
+      "Check the column names defined inside dept_stats \u2014 whatever alias is used there must be referenced exactly downstream.",
+      "The error shows 'Candidate bindings: avg_sal' \u2014 that's the correct name to use in the RANK() OVER clause."
+    ],
+    "concepts": [
+      "CTE COLUMN CONSISTENCY",
+      "WINDOW RANK",
+      "DEBUG SQL"
+    ],
+    "companies": []
+  },
+  {
+    "id": 3043,
+    "order": 43,
+    "mock_only": true,
+    "type": "debug",
+    "title": "Fix the query \u2014 table name typo in JOIN",
+    "description": "The query below should return the top 10 products by revenue, along with their category name and brand. It fails with an error. Find and fix the bug.",
+    "difficulty": "hard",
+    "schema": {
+      "order_items": [
+        "product_id",
+        "line_amount"
+      ],
+      "products": [
+        "product_id",
+        "category_id",
+        "product_name",
+        "brand"
+      ],
+      "categories": [
+        "category_id",
+        "category_name"
+      ]
+    },
+    "dataset_files": [
+      "order_items.csv",
+      "products.csv",
+      "categories.csv"
+    ],
+    "debug_error": "Catalog Error: Table with name product does not exist!\nDid you mean \"products\"?\n\nLINE 4: JOIN product p ON oi.product_id = p.product_id\n             ^",
+    "starter_query": "SELECT c.category_name, p.product_name, p.brand,\n       SUM(oi.quantity) AS total_qty, ROUND(SUM(oi.line_amount), 2) AS total_revenue\nFROM order_items oi\nJOIN product p ON oi.product_id = p.product_id\nJOIN categories c ON p.category_id = c.category_id\nGROUP BY c.category_name, p.product_name, p.brand\nORDER BY total_revenue DESC\nLIMIT 10",
+    "expected_query": "SELECT c.category_name, p.product_name, p.brand,\n       ROUND(SUM(oi.line_amount), 2) AS total_revenue\nFROM order_items oi\nJOIN products p ON oi.product_id = p.product_id\nJOIN categories c ON p.category_id = c.category_id\nGROUP BY c.category_name, p.product_name, p.brand\nORDER BY total_revenue DESC\nLIMIT 10",
+    "solution_query": "SELECT c.category_name, p.product_name, p.brand,\n       ROUND(SUM(oi.line_amount), 2) AS total_revenue\nFROM order_items oi\nJOIN products p ON oi.product_id = p.product_id\nJOIN categories c ON p.category_id = c.category_id\nGROUP BY c.category_name, p.product_name, p.brand\nORDER BY total_revenue DESC\nLIMIT 10;",
+    "required_concepts": [
+      "join",
+      "group_by",
+      "limit"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The table is named `products` (plural) but the query references `product` (singular). DuckDB cannot resolve the table name and raises a Catalog Error. Fix: change `product` to `products` in the JOIN clause. The error message 'Did you mean products?' gives the answer directly.",
+    "hints": [
+      "The error 'Table with name product does not exist' means the table name is wrong.",
+      "Check your FROM/JOIN clauses \u2014 the database table is named products, not product."
+    ],
+    "concepts": [
+      "TABLE NAME ERRORS",
+      "DEBUG SQL",
+      "CATALOG ERROR"
+    ],
+    "companies": []
   }
 ]
