@@ -7,6 +7,6 @@ export function detectCurrency() {
 }
 
 export const PRICES = {
-  INR: { pro: '₹799', elite: '₹1,599', period: '/mo', lifetimePro: '₹7,999', lifetimeElite: '₹14,999' },
-  USD: { pro: '$9',   elite: '$18',     period: '/mo', lifetimePro: '$89',    lifetimeElite: '$169'     },
+  INR: { pro: '₹999', elite: '₹1,999', period: '/mo', lifetimePro: '₹11,999', lifetimeElite: '₹19,999' },
+  USD: { pro: '$12',  elite: '$22',     period: '/mo', lifetimePro: '$129',     lifetimeElite: '$229'    },
 };
