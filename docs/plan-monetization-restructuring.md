@@ -32,7 +32,7 @@ Full implementation spec: `/Users/matt/.claude/plans/you-are-working-on-jazzy-su
 - [x] `backend/routers/mock.py` — freshness scoring in `_select_questions()`
 - [x] `backend/routers/mock.py` — follow-up injection in submit handler
 - [x] `backend/tests/test_mock_pool.py` — full test suite (pool composition, freshness, catalog filter)
-- [ ] `backend/tests/test_mock_session.py` — follow-up injection tests
+- [x] `backend/tests/test_mock_session.py` — follow-up injection tests
 - [x] `backend/tests/test_unlock.py` — cap tests already covered by existing test suite
 - [x] `pytest tests/ -q` passes
 
@@ -88,7 +88,7 @@ Full implementation spec: `/Users/matt/.claude/plans/you-are-working-on-jazzy-su
 - [x] `frontend/src/pages/LandingPage.js` — Pro tier bullets include fresh mock bank + weakest concept dashboard
 - [x] `frontend/src/pages/LandingPage.js` — Elite tier bullets accurate
 - [x] `docs/features/pricing.md` — plan-feature table updated
-- [ ] Browser check: `/#landing-pricing` renders correctly
+- [x] Browser check: `/#landing-pricing` renders correctly
 
 ---
 
