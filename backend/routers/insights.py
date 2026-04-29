@@ -324,3 +324,225 @@ async def get_dashboard_insights(
 
     _cache_set(user_id, payload)
     return payload
+
+
+# ---------------------------------------------------------------------------
+# Session debrief (Elite-only, called from mock.py finish endpoint)
+# ---------------------------------------------------------------------------
+
+def build_session_debrief(
+    enriched_questions: list[dict[str, Any]],
+    session_meta: dict[str, Any],
+    submission_events: list[dict[str, Any]],
+    effective_plan: str,
+) -> dict[str, Any] | None:
+    """
+    Generate a template-based coaching debrief for a completed mock session.
+    Elite-only — returns None for other plans.
+
+    enriched_questions : list from finish_session (has is_solved, concepts,
+                         time_spent_s, is_follow_up, track, title, difficulty)
+    session_meta       : dict with solved_count, total_count, time_used_s,
+                         time_limit_s, difficulty, track
+    submission_events  : from get_submission_events(user_id) for historical context
+    effective_plan     : normalized plan string
+    """
+    if effective_plan != "elite":
+        return None
+
+    total_count = len(enriched_questions)
+    if total_count == 0:
+        return None
+
+    solved_count = sum(1 for q in enriched_questions if q.get("is_solved"))
+    time_used_s: int | None = session_meta.get("time_used_s")
+    time_limit_s: int = session_meta.get("time_limit_s") or 1800
+    session_difficulty: str = session_meta.get("difficulty") or "medium"
+    session_track: str = session_meta.get("track") or "sql"
+
+    # ── Build concept accuracy map from historical events ────────────────────
+    # (track, concept) → (correct_total, attempt_total)
+    hist_concept: dict[tuple[str, str], tuple[int, int]] = {}
+    session_q_ids = {int(q.get("id", 0)) for q in enriched_questions}
+    for event in submission_events:
+        t = event.get("track", "sql")
+        qid = int(event.get("question_id", 0))
+        if qid in session_q_ids:
+            continue  # exclude this session's questions from historical baseline
+        for concept in _CONCEPTS_LOOKUP.get(t, {}).get(qid, []):
+            key = (t, concept)
+            c, a = hist_concept.get(key, (0, 0))
+            hist_concept[key] = (c + (1 if event.get("is_correct") else 0), a + 1)
+
+    # ── Session concept accuracy map ─────────────────────────────────────────
+    sess_concept: dict[str, dict[str, Any]] = {}
+    for q in enriched_questions:
+        is_solved = bool(q.get("is_solved"))
+        q_track = q.get("track") or session_track
+        for concept in q.get("concepts") or []:
+            key = f"{q_track}::{concept}"
+            if key not in sess_concept:
+                sess_concept[key] = {
+                    "concept": concept, "track": q_track, "correct": 0, "attempts": 0,
+                }
+            sess_concept[key]["attempts"] += 1
+            if is_solved:
+                sess_concept[key]["correct"] += 1
+
+    strong = [v for v in sess_concept.values() if v["correct"] == v["attempts"] and v["attempts"] > 0]
+    weak = sorted(
+        [v for v in sess_concept.values() if v["correct"] < v["attempts"] and v["attempts"] > 0],
+        key=lambda x: (x["correct"] / x["attempts"], -x["attempts"]),
+    )
+
+    # ── 1. Headline ──────────────────────────────────────────────────────────
+    accuracy = solved_count / total_count
+
+    if accuracy == 1.0:
+        score_part = (
+            "Perfect session — all questions solved"
+            if total_count > 1
+            else "Perfect session — question solved"
+        )
+    elif accuracy >= 0.67:
+        score_part = f"Solid session — {solved_count} of {total_count} solved"
+    elif accuracy >= 0.34:
+        score_part = f"Partial session — {solved_count} of {total_count} solved"
+    else:
+        score_part = f"Tough session — {solved_count} of {total_count} solved"
+
+    time_part = ""
+    if time_used_s is not None and time_limit_s:
+        ratio = time_used_s / time_limit_s
+        if ratio < 0.5 and accuracy == 1.0:
+            time_part = ", finishing well inside the time limit"
+        elif ratio < 0.65 and accuracy >= 0.67:
+            time_part = " with time to spare"
+        elif ratio > 0.92:
+            time_part = ", right up to the time limit"
+
+    headline = score_part + time_part + "."
+
+    # ── 2. Patterns ──────────────────────────────────────────────────────────
+    patterns: list[str] = []
+
+    # Strong concepts
+    if strong and len(strong) <= 2:
+        names = " and ".join(c["concept"] for c in strong[:2])
+        patterns.append(f"You handled {names} confidently.")
+    elif strong and len(strong) > 2:
+        patterns.append(f"You were solid across {len(strong)} concepts — the gaps are narrow and specific.")
+
+    # Weak concepts
+    if weak:
+        top = weak[0]
+        name = top["concept"]
+        hist_correct, hist_attempts = hist_concept.get((top["track"], name), (0, 0))
+        is_known_weak = hist_attempts >= 3 and (hist_correct / hist_attempts) < 0.6
+
+        if top["correct"] == 0:
+            if is_known_weak:
+                patterns.append(
+                    f"{name} remains your toughest area — the same gap showed up again. "
+                    "This is your highest-priority concept right now."
+                )
+            else:
+                patterns.append(
+                    f"Every question involving {name} went unsolved — "
+                    "this is the clearest gap from this session."
+                )
+        else:
+            pct = int(100 * top["correct"] / top["attempts"])
+            if is_known_weak:
+                patterns.append(
+                    f"You got {top['correct']} of {top['attempts']} {name} questions right, "
+                    "but your history shows this concept still needs deliberate work."
+                )
+            else:
+                patterns.append(
+                    f"{name} was inconsistent ({pct}% this session). "
+                    "Try articulating the approach before writing code next time."
+                )
+
+    # Follow-up performance
+    follow_ups = [q for q in enriched_questions if q.get("is_follow_up")]
+    if follow_ups:
+        fu_solved = sum(1 for q in follow_ups if q.get("is_solved"))
+        if fu_solved == len(follow_ups):
+            patterns.append(
+                "You handled the follow-up question correctly too — "
+                "a good sign you can stay sharp when complexity escalates."
+            )
+        else:
+            patterns.append(
+                "The follow-up question caught you out — these harder variants "
+                "expose the edges of a concept you're still internalising."
+            )
+
+    # Time-sink pattern (only meaningful with 2+ questions)
+    if total_count >= 2 and time_used_s:
+        timed_qs = [q for q in enriched_questions if q.get("time_spent_s") is not None]
+        if timed_qs:
+            max_q = max(timed_qs, key=lambda q: q["time_spent_s"])
+            max_t = max_q["time_spent_s"]
+            if max_t > 0 and (max_t / time_used_s) > 0.55:
+                mins, secs = divmod(max_t, 60)
+                t_str = f"{mins}m {secs}s" if mins else f"{secs}s"
+                label = max_q.get("title") or f"Q{max_q.get('position', '?')}"
+                patterns.append(
+                    f'"{label}" absorbed most of your time ({t_str}) — '
+                    "worth revisiting to see where you slowed down."
+                )
+
+    # ── 3. Priority action ───────────────────────────────────────────────────
+    priority_action: str | None = None
+    priority_path_slug: str | None = None
+    priority_path_title: str | None = None
+    priority_question_ids: list[int] = []
+
+    if not weak:
+        if session_difficulty == "medium":
+            priority_action = (
+                "You're handling this difficulty well. "
+                "Try a hard session to push your ceiling."
+            )
+        elif session_difficulty == "hard":
+            priority_action = (
+                "Excellent — consistent hard-session performance is what "
+                "separates interview-ready candidates. Keep the cadence up."
+            )
+        else:
+            priority_action = (
+                "Good warmup. Move to a medium or hard session for a more realistic challenge."
+            )
+    else:
+        top = weak[0]
+        concept_name = top["concept"]
+        track = top["track"]
+        path_lookup = _CONCEPT_PATH_INDEX.get((track, concept_name))
+        if path_lookup:
+            slug, title, _tier = path_lookup
+            priority_path_slug = slug
+            priority_path_title = title
+            priority_action = f'Work through the "{title}" path to reinforce {concept_name}.'
+        else:
+            track_label = {"sql": "SQL", "python": "Python", "python-data": "Pandas", "pyspark": "PySpark"}.get(track, track)
+            priority_action = (
+                f"Drill {concept_name} in {track_label} practice mode — "
+                "filter by that concept tag and aim for 3 consecutive correct answers."
+            )
+
+        # Recommend unseen drill questions
+        candidate_qs = _CONCEPT_QUESTION_INDEX.get(top["track"], {}).get(concept_name, [])
+        priority_question_ids = [
+            int(q["id"]) for q in candidate_qs if int(q["id"]) not in session_q_ids
+        ][:2]
+
+    return {
+        "headline": headline,
+        "patterns": [p for p in patterns if p],
+        "priority_action": priority_action,
+        "priority_path_slug": priority_path_slug,
+        "priority_path_title": priority_path_title,
+        "priority_question_ids": priority_question_ids,
+    }

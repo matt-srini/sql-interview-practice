@@ -393,6 +393,44 @@ export default function MockSession() {
                 Used {formatTime(timeUsedS)} of {formatTime(timeLimitS)}
               </div>
             )}
+            {/* Elite coaching debrief — shown before per-question detail */}
+            {sum?.debrief && (
+              <>
+                <hr className="mock-summary-divider" />
+                <div className="mock-debrief">
+                  <div className="mock-debrief-header">
+                    <span className="mock-debrief-badge">Session debrief</span>
+                  </div>
+                  <p className="mock-debrief-headline">{sum.debrief.headline}</p>
+                  {sum.debrief.patterns?.length > 0 && (
+                    <ul className="mock-debrief-patterns">
+                      {sum.debrief.patterns.map((p, i) => (
+                        <li key={i} className="mock-debrief-pattern">{p}</li>
+                      ))}
+                    </ul>
+                  )}
+                  {sum.debrief.priority_action && (
+                    <div className="mock-debrief-action">
+                      <span className="mock-debrief-action-label">Next step</span>
+                      {sum.debrief.priority_path_slug ? (
+                        <span>
+                          {sum.debrief.priority_action.replace(/^Work through the "[^"]+" path to reinforce /, 'Reinforce ')}
+                          {' '}
+                          <Link
+                            to={`/learn/${sum.track || session?.track || 'sql'}/${sum.debrief.priority_path_slug}`}
+                            className="mock-debrief-path-link"
+                          >
+                            {sum.debrief.priority_path_title} →
+                          </Link>
+                        </span>
+                      ) : (
+                        <span>{sum.debrief.priority_action}</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
             <hr className="mock-summary-divider" />
             {qs.map((q, i) => {
               const isSolved = q.is_solved ?? solved[q.id];
