@@ -43,14 +43,15 @@ The entire `#landing-pricing` section is hidden only when `userPlan === 'lifetim
 |---|---|---|---|
 | Easy questions (32 SQL · 30 Python · 22 Pandas · 38 PySpark) | ✓ All | ✓ All | ✓ All |
 | Medium questions | Batch-gated by easy solves | ✓ All | ✓ All |
-| Hard questions | Batch-gated (cap: 15 code / 10 PySpark) | ✓ All | ✓ All |
+| Hard questions | Batch-gated (cap: **8** code / **5** PySpark) | ✓ All (no cap) | ✓ All (no cap) |
 | Learning paths | 3 per track (tier=`free` paths) | All (up to 5 per track) | All (up to 5 per track) |
 | Easy mocks | Unlimited | Unlimited | Unlimited |
 | Medium mocks | 1 per day | Unlimited | Unlimited |
 | Hard mocks | Blocked | 3 per day | Unlimited |
 | Mixed mocks | Follows track limits | Follows track limits | Unlimited |
+| Fresh mock question bank (medium + hard) | Blocked | ✓ | ✓ |
 | Company-filtered mocks | Blocked | Blocked | ✓ |
-| Weak-spot insights after mock | Blocked | Blocked | ✓ (concept accuracy + drill link) |
+| Weakest concept coaching (dashboard) | Blocked | ✓ | ✓ |
 | Top-3 weak areas coaching panel (dashboard) | Blocked | Blocked | ✓ (concept, accuracy %, summary, path + drill links) |
 
 ### Lifetime variants

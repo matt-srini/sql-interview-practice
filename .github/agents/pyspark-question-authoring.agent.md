@@ -203,3 +203,57 @@ Target 2–3 tags.
 - [ ] Prerequisites for this question's concepts appear at lower `order` values within the same or easier tiers
 - [ ] If the question blends prior concepts for reinforcement, those concepts appear earlier in the arc
 - [ ] Output is valid JSON only — no surrounding text
+
+---
+
+## Mock-only questions
+
+Mock-only questions (`"mock_only": true`) are exclusive to mock interview sessions and never appear in the practice catalog.
+
+### Required field
+
+```json
+"mock_only": true
+```
+
+PySpark mock-only questions follow the same MCQ/predict_output/debug/optimization/scenario format as practice questions. The full question schema is unchanged.
+
+### Follow-up pairs
+
+```json
+"follow_up_id": 11627  // on the parent question
+```
+
+The follow-up is injected after a correct answer in a mock session. Rules:
+- Escalates **exactly one dimension**: harder edge case, production failure mode, performance variant, or extended scenario
+- Feels like a natural interviewer follow-up ("What if the job runs for 100 iterations?", "Now the cluster has 4× the data")
+- The follow-up itself must not have `follow_up_id` (no chaining)
+
+### Scenario questions (`type: "scenario"`)
+
+PySpark uses `type: "scenario"` (not `framing: "scenario"`). Scenario questions require:
+
+```json
+"type": "scenario",
+"description": "...",          // short summary of the failure/situation
+"code_snippet": "...",         // the Spark code being analyzed (can be null)
+"scenario_context": "...",     // metrics, logs, Spark UI output, error messages
+"options": ["...", "...", "...", "..."],  // 4 substantive options (≥20 chars each)
+"correct_option": 0,           // 0-indexed
+"explanation": "..."           // detailed explanation referencing the evidence
+```
+
+`scenario_context` should contain realistic observation anchors: Spark UI stage metrics, GC times, shuffle sizes, task counts, error log lines. Make the evidence specific enough that only one option is clearly correct from the data.
+
+### Distractor quality
+
+All 4 options must be plausible and technically literate. Weak distractors ("it works fine", "this is a Spark bug") are not acceptable. Each wrong option should describe a real Spark phenomenon or correct behaviour in a different context.
+
+### Mock-only checklist addition
+
+- [ ] `"mock_only": true` present
+- [ ] `correct_option` is 0-indexed and definitely correct
+- [ ] All 4 options are substantive (≥20 chars), technically plausible
+- [ ] If `type: "scenario"`: `scenario_context` contains specific numerical evidence
+- [ ] If `follow_up_id`: follow-up escalates exactly one dimension, no `follow_up_id` of its own
+- [ ] `hints[0]` does not mention: `collect(`, `count(`, `filter(`, `withColumn`, `repartition`, `coalesce`, `cache(`, `broadcast`, `createOrReplaceView`

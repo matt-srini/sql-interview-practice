@@ -185,3 +185,60 @@ Target 2–3 tags.
 - [ ] Prerequisites for this question's concepts appear at lower `order` values within the same or easier tiers
 - [ ] If the question blends prior concepts for reinforcement, those concepts appear earlier in the arc
 - [ ] Output is valid JSON only — no surrounding text
+
+---
+
+## Mock-only questions
+
+Mock-only questions (`"mock_only": true`) are exclusive to mock interview sessions and never appear in the practice catalog.
+
+### Required field
+
+```json
+"mock_only": true
+```
+
+### Follow-up pairs
+
+```json
+"follow_up_id": 5624  // on the parent question
+```
+
+The follow-up is injected after a correct answer in a mock session. Rules:
+- Escalates **exactly one dimension**: monthly/weekly breakdown, add a rank or percentage, include a filter not in the parent, handle an edge case
+- Feels like a natural interviewer pivot
+- The follow-up itself must not have `follow_up_id` (no chaining)
+
+### Scenario framing
+
+```json
+"framing": "scenario"
+```
+
+Adds a styled narrative brief block in MockSession. The `description` field holds the business narrative (≤3 sentences). Use the existing 11 datasets as the data source.
+
+### Debug Pandas (`type: "debug"`)
+
+```json
+"type": "debug",
+"debug_error": "KeyError: 'acquisition_channel'",
+"starter_code": "def solve(df_orders, df_users):\n    return df_orders.groupby('acquisition_channel')['net_amount'].sum()"
+```
+
+Rules:
+- `debug_error` must be a realistic Python/Pandas error string
+- `starter_code` must have **exactly one bug** that produces the stated error
+- The fix must be minimal — change one thing
+
+### Dataset usage
+
+Pandas mock-only questions use the 11 existing CSV datasets via the `dataframes` field. Frame questions around fresh business KPIs not covered in the practice bank.
+
+### Mock-only checklist addition
+
+- [ ] `"mock_only": true` present
+- [ ] `dataframes` and `schema` fields correctly reference existing CSV files
+- [ ] `expected_code` is correct and runs cleanly against the actual CSV data
+- [ ] If `follow_up_id`: follow-up escalates exactly one dimension, no `follow_up_id` of its own
+- [ ] If `type: "debug"`: exactly one bug, realistic error message
+- [ ] If `framing: "scenario"`: description ≤3 sentences, business context is concrete
