@@ -41,13 +41,14 @@ Full implementation spec: `/Users/matt/.claude/plans/you-are-working-on-jazzy-su
 ## Phase C — Frontend changes
 *MockSession renderers for debug, reverse SQL, scenario framing, follow-up UI.*
 
-- [ ] `frontend/src/pages/MockSession.js` — follow-up badge on question tab
-- [ ] `frontend/src/pages/MockSession.js` — follow-up banner (fade-in, 3s auto-dismiss)
-- [ ] `frontend/src/pages/MockSession.js` — scenario framing brief block (`framing === "scenario"`)
-- [ ] `frontend/src/pages/MockSession.js` — reverse SQL renderer (`type === "reverse"` → ResultsTable)
-- [ ] `frontend/src/pages/MockSession.js` — debug renderer (`type === "debug"` → error callout + pre-fill editor)
-- [ ] `frontend/src/App.css` — `.mock-follow-up-badge`, `.mock-follow-up-banner`, `.mock-scenario-brief`, `.mock-debug-error` added
-- [ ] Browser smoke test: existing mock flow unaffected
+- [x] `frontend/src/pages/MockSession.js` — follow-up badge on question tab
+- [x] `frontend/src/pages/MockSession.js` — follow-up banner (fade-in, 3s auto-dismiss)
+- [x] `frontend/src/pages/MockSession.js` — scenario framing brief block (`framing === "scenario"`)
+- [x] `frontend/src/pages/MockSession.js` — reverse SQL renderer (`type === "reverse"` → result table)
+- [x] `frontend/src/pages/MockSession.js` — debug renderer (`type === "debug"` → error callout + pre-fill editor)
+- [x] `frontend/src/pages/MockSession.js` — follow-up injection: re-fetches session on `follow_up_injected`
+- [x] `frontend/src/App.css` — `.mock-follow-up-badge`, `.mock-follow-up-banner`, `.mock-scenario-brief`, `.mock-debug-error` added
+- [x] Browser smoke test: existing mock flow unaffected (build clean, no JS errors)
 
 ---
 
