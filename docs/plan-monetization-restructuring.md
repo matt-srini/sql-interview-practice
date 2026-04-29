@@ -62,10 +62,10 @@ Full implementation spec: `/Users/matt/.claude/plans/you-are-working-on-jazzy-su
 - [x] `validate_content.py` passes clean
 
 ### Pandas (batch 2)
-- [ ] ~10 mock-only medium questions (standard + debug)
-- [ ] ~14 mock-only hard questions (standard + debug + scenario framing)
-- [ ] 5 follow-up pairs authored
-- [ ] `validate_content.py` passes clean
+- [x] ~10 mock-only medium questions (standard + debug)
+- [x] ~14 mock-only hard questions (standard + debug + scenario framing)
+- [x] 5 follow-up pairs authored
+- [x] `validate_content.py` passes clean
 
 ### Python (batch 3)
 - [ ] ~8 mock-only medium questions
