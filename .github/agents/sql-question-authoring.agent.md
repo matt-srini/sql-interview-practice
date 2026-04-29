@@ -204,3 +204,80 @@ Canonical values: Meta, Google, Amazon, Stripe, Airbnb, Netflix, Uber, Microsoft
 - [ ] Prerequisites for this question's concepts appear at lower `order` values within the same or easier tiers
 - [ ] If the question blends prior concepts for reinforcement, those concepts appear earlier in the arc
 - [ ] Output is valid JSON only — no surrounding text
+
+
+---
+
+## Mock-only questions
+
+Mock-only questions (`"mock_only": true`) are exclusive to mock interview sessions and never appear in the practice catalog. They give Pro/Elite users a fresh pool they have not seen during practice.
+
+### Required field
+
+```json
+"mock_only": true
+```
+
+All other fields follow the standard SQL question schema. IDs continue from the current maximum; orders continue from the current maximum within the difficulty file.
+
+### Follow-up pairs
+
+```json
+// On the parent question:
+"follow_up_id": 2050
+
+// The follow-up question (a separate entry, also mock_only: true):
+{
+  "id": 2050,
+  "mock_only": true,
+  ...
+}
+```
+
+The follow-up is injected after the parent is answered correctly in a mock session. Rules:
+- The follow-up escalates **exactly one dimension** (scale, business rule, schema change, or performance constraint)
+- The follow-up must feel like a natural interviewer pivot, not a disconnected question
+- Never chain follow-ups: the follow-up itself must not have `follow_up_id`
+
+### Scenario framing
+
+```json
+"framing": "scenario"
+```
+
+Adds a styled narrative brief block in MockSession. The `description` field holds the business narrative (≤3 sentences). Keep it grounded in the datasets below. Do not give away the approach.
+
+### Reverse SQL (`type: "reverse"`)
+
+```json
+"type": "reverse",
+"result_preview": [
+  {"region": "North", "total_revenue": 142500.00},
+  {"region": "South", "total_revenue": 98300.00}
+]
+```
+
+Rules:
+- `result_preview` is required, non-empty, ≤8 rows, ≤4 columns
+- Column names must be clear and match exactly what `expected_query` produces
+- Run `expected_query` in DuckDB against the actual dataset to verify the preview data is correct
+- The `expected_query` field still holds the reference solution used for evaluation
+
+### Debug SQL (`type: "debug"`)
+
+```json
+"type": "debug",
+"debug_error": "Binder Error: Referenced column \"net_amount\" not found in FROM clause!",
+"starter_query": "SELECT u.user_id, SUM(net_amount) AS total
+FROM users u
+GROUP BY u.user_id"
+```
+
+Rules:
+- `debug_error` must be a realistic DuckDB/SQL error string (copy from actual DuckDB output)
+- `starter_query` must have **exactly one bug** that produces the stated error
+- The fix must be minimal — change one thing
+
+### Content cap
+
+≤15% of any batch can reinforce a concept already in the practice bank. The rest must cover fresh business angles using the 11 existing datasets (different KPIs, time windows, multi-table relationships not explored in practice questions).

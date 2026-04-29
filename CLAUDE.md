@@ -81,10 +81,12 @@ A data interview practice platform covering four tracks. Users write SQL or Pyth
 
 | Track | Questions | Format | Location |
 |---|---|---|---|
-| SQL | 95 (32 easy, 34 medium, 29 hard) | SQL query evaluated via DuckDB | `backend/content/questions/` |
-| Python | 83 (30 easy, 29 medium, 24 hard) | Algorithm function, evaluated via test cases | `backend/content/python_questions/` |
-| Pandas | 76 (22 easy, 31 medium, 23 hard) | DataFrame function, evaluated via output comparison | `backend/content/python_data_questions/` |
-| PySpark | 102 (38 easy, 38 medium, 26 hard) | MCQ / predict-output / debug / scenario, evaluated by option selection | `backend/content/pyspark_questions/` |
+| SQL | 95 practice (32 easy, 34 medium, 29 hard) + **33 mock-only** | SQL query evaluated via DuckDB | `backend/content/questions/` |
+| Python | 83 practice (30 easy, 29 medium, 24 hard) + **20 mock-only** | Algorithm function, evaluated via test cases | `backend/content/python_questions/` |
+| Pandas | 76 practice (22 easy, 31 medium, 23 hard) + **24 mock-only** | DataFrame function, evaluated via output comparison | `backend/content/python_data_questions/` |
+| PySpark | 102 practice (38 easy, 38 medium, 26 hard) + **20 mock-only** | MCQ / predict-output / debug / scenario, evaluated by option selection | `backend/content/pyspark_questions/` |
+
+Mock-only questions (`mock_only: true`) are excluded from the practice catalog and only appear in mock sessions for Pro/Elite users. See [docs/content-authoring.md](docs/content-authoring.md) for the full mock-only authoring spec.
 
 - **Sample questions:** 3 per track × 3 difficulties = 36 total (no login, no progress impact)
 - **Learning paths:** 22 total — SQL: 7, Python: 5, Pandas: 5, PySpark: 5 (each track keeps exactly one `starter` and one `intermediate` free shortcut path; additional paths are advanced, mixed free/pro)

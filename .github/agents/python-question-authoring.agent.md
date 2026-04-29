@@ -189,3 +189,48 @@ Target 2–3 tags.
 - [ ] Prerequisites for this question's concepts appear at lower `order` values within the same or easier tiers
 - [ ] If the question blends prior concepts for reinforcement, those concepts appear earlier in the arc
 - [ ] Output is valid JSON only — no surrounding text
+
+---
+
+## Mock-only questions
+
+Mock-only questions (`"mock_only": true`) are exclusive to mock interview sessions and never appear in the practice catalog.
+
+### Required field
+
+```json
+"mock_only": true
+```
+
+### Follow-up pairs
+
+```json
+"follow_up_id": 4626  // on the parent question
+```
+
+The follow-up is injected after a correct answer in a mock session. Rules:
+- Escalates **exactly one dimension** (scale, edge case, optimization constraint, variant of the same problem)
+- Feels like a natural interviewer escalation ("What if inputs can be negative?", "Now return the actual subarray, not just the sum")
+- The follow-up itself must not have `follow_up_id` (no chaining)
+
+### Scenario framing
+
+```json
+"framing": "scenario"
+```
+
+Wraps the algorithm in a real-world business context. The `description` field holds the narrative (≤3 sentences). Examples: "A delivery platform needs to assign courier IDs to route segments..." — the actual algorithmic ask is unchanged, just framed.
+
+### Content rules
+
+- Python mock-only questions are **algorithm problems** — the same format as practice questions (test cases, `expected_code`, `solution_code`, etc.)
+- No `dataframes` or CSV data needed; problems are self-contained
+- Cover algorithms not yet in the practice bank at this difficulty, or novel variations of existing concepts
+- ≤15% of a batch may reinforce an existing practice concept
+
+### Mock-only checklist addition
+
+- [ ] `"mock_only": true` present
+- [ ] Test cases are correct and deterministic (verify by running `expected_code` manually)
+- [ ] If `follow_up_id`: follow-up escalates exactly one dimension, no `follow_up_id` of its own
+- [ ] If `framing: "scenario"`: description ≤3 sentences, business context is concrete

@@ -74,20 +74,20 @@ Full implementation spec: `/Users/matt/.claude/plans/you-are-working-on-jazzy-su
 - [x] `validate_content.py` passes clean
 
 ### PySpark (batch 4)
-- [ ] ~10 mock-only medium questions (MCQ/predict_output + scenario type)
-- [ ] ~10 mock-only hard questions (MCQ/predict_output + scenario type)
-- [ ] 5 follow-up pairs authored
-- [ ] `validate_content.py` passes clean
+- [x] ~10 mock-only medium questions (MCQ/predict_output + scenario type)
+- [x] ~10 mock-only hard questions (MCQ/predict_output + scenario type)
+- [x] 5 follow-up pairs authored
+- [x] `validate_content.py` passes clean
 
 ---
 
 ## Phase E — Landing page & pricing copy sync
 *Update pricing bullets and pricing.md to reflect shipped plan gates.*
 
-- [ ] `frontend/src/pages/LandingPage.js` — Free tier bullets updated (hard cap: 8 per track)
-- [ ] `frontend/src/pages/LandingPage.js` — Pro tier bullets include fresh mock bank + weakest concept dashboard
-- [ ] `frontend/src/pages/LandingPage.js` — Elite tier bullets accurate
-- [ ] `docs/features/pricing.md` — plan-feature table updated
+- [x] `frontend/src/pages/LandingPage.js` — Free tier bullets updated (hard cap: 8 per track)
+- [x] `frontend/src/pages/LandingPage.js` — Pro tier bullets include fresh mock bank + weakest concept dashboard
+- [x] `frontend/src/pages/LandingPage.js` — Elite tier bullets accurate
+- [x] `docs/features/pricing.md` — plan-feature table updated
 - [ ] Browser check: `/#landing-pricing` renders correctly
 
 ---
@@ -95,9 +95,9 @@ Full implementation spec: `/Users/matt/.claude/plans/you-are-working-on-jazzy-su
 ## Phase F — Docs sync
 *Authoring spec, CLAUDE.md content footprint, authoring agents.*
 
-- [ ] `docs/content-authoring.md` — mock-only question spec section added
-- [ ] `CLAUDE.md` — content footprint table updated with Phase D counts
-- [ ] `.github/agents/sql-question-authoring.agent.md` — mock-only spec added
-- [ ] `.github/agents/python-question-authoring.agent.md` — mock-only spec added
-- [ ] `.github/agents/pandas-question-authoring.agent.md` — mock-only spec added
-- [ ] `.github/agents/pyspark-question-authoring.agent.md` — mock-only spec added
+- [x] `docs/content-authoring.md` — mock-only question spec section added
+- [x] `CLAUDE.md` — content footprint table updated with Phase D counts
+- [x] `.github/agents/sql-question-authoring.agent.md` — mock-only spec added
+- [x] `.github/agents/python-question-authoring.agent.md` — mock-only spec added
+- [x] `.github/agents/pandas-question-authoring.agent.md` — mock-only spec added
+- [x] `.github/agents/pyspark-question-authoring.agent.md` — mock-only spec added

@@ -696,9 +696,9 @@ export default function LandingPage() {
                 </div>
                 <ul className="landing-tier-list">
                   <li>All easy questions ({FREE_EASY_SUMMARY})</li>
-                  <li>Unlock medium + hard as you solve (batch-gated)</li>
-                  <li>Unlimited easy mocks · 1 medium mock/day</li>
-                  <li>3 learning paths per track</li>
+                  <li>Medium + hard unlock as you solve (hard cap: 8 per track)</li>
+                  <li>Easy mock interviews (unlimited) · 1 medium mock/day</li>
+                  <li>Streak tracking</li>
                 </ul>
                 <div className="landing-tier-cta">
                   {userPlan === 'free' && (
@@ -720,10 +720,12 @@ export default function LandingPage() {
                   </div>
                 </div>
                 <ul className="landing-tier-list">
-                  <li>Everything in Free</li>
-                  <li>All {TOTAL_QUESTIONS} questions — every medium + hard</li>
-                  <li>All learning paths</li>
-                  <li>Unlimited easy + medium mocks · 3 hard mocks/day</li>
+                  <li>Everything in Free — no hard cap</li>
+                  <li>All {TOTAL_QUESTIONS} questions, every medium + hard</li>
+                  <li>Unlimited medium mocks · 3 hard mocks/day</li>
+                  <li>Fresh mock question bank — questions you haven't seen in practice</li>
+                  <li>Your weakest concept + drill recommendations on the dashboard</li>
+                  <li>All 22 learning paths</li>
                 </ul>
                 <div className="landing-tier-cta">
                   {proColCta() === 'current' && (
@@ -756,10 +758,10 @@ export default function LandingPage() {
                 </div>
                 <ul className="landing-tier-list">
                   <li>Everything in Pro</li>
+                  <li>Unlimited hard mock interviews — no daily cap</li>
                   <li>Company filter (SQL) — Meta, Google, Stripe, Airbnb…</li>
-                  <li>Unlimited daily mock interviews</li>
-                  <li>Weak-spot insights after every mock session</li>
                   <li>Top-3 weak areas coaching panel on your dashboard</li>
+                  <li>Post-mock path recommendations</li>
                 </ul>
                 <div className="landing-tier-cta">
                   {eliteColCta() === 'current' && (

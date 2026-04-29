@@ -675,3 +675,117 @@ Sample questions are a completely separate system:
 - Keep sample questions simpler than challenge questions — they're the platform demo for new visitors
 
 **Never assign a challenge question ID (4-digit) to a sample question, and never reuse IDs across tracks.**
+
+---
+
+## Mock-only questions
+
+Mock-only questions are exclusive to mock interview sessions — they never appear in the practice catalog. They give Pro and Elite users a genuinely fresh pool of unseen questions in mock mode.
+
+### The `mock_only` flag
+
+```json
+"mock_only": true
+```
+
+- **Effect on the catalog loader:** `QUESTIONS` (the filtered practice list) excludes `mock_only` questions. `_ALL_QUESTIONS` and `_INDEX` include them so the mock router can fetch them by ID.
+- **Effect on the mock pool:** `get_mock_questions_by_difficulty()` returns only `mock_only: true` questions. Pro and Elite users get the practice catalog + mock-only bank in their pool; Free users get only unlocked practice questions.
+- **Effect on `validate_content.py`:** the script validates mock-only questions with the same rules as practice questions (concepts, hints, schema).
+
+### Follow-up pairs
+
+```json
+// On the parent question:
+"follow_up_id": 4330
+
+// The follow-up question is a separate question entry (also mock_only: true)
+```
+
+When a user answers the parent question correctly in a mock session, the follow-up is injected as the next position in the session with `is_follow_up: true`. The follow-up banner appears in MockSession and the question tab shows a "Follow-up" badge.
+
+**Authoring rules for follow-up pairs:**
+- The parent should be medium or hard difficulty
+- The follow-up escalates **exactly one dimension**: scale constraint, additional business rule, schema change, or performance requirement
+- The follow-up must feel like a natural interviewer pivot ("What if the dataset was 10× larger?", "Now add a monthly breakdown")
+- Never chain follow-ups: `follow_up_id` chains are limited to depth 1 (the follow-up itself should not have a `follow_up_id`)
+
+### Scenario framing (SQL, Pandas, Python)
+
+```json
+"framing": "scenario"
+```
+
+Adds a styled narrative brief block above the question in MockSession. The `description` field holds the business narrative (≤3 sentences, sets up real-world context and ambiguity). The question `prompt` contains the actual ask.
+
+**Good scenario framing:** "Your team is preparing a cohort analysis for the board. The `orders` table holds 18 months of transaction data including cancelled orders. Leadership wants to understand revenue retention month-over-month."
+
+**Avoid:** abstract scenarios that add no context ("You are given a dataset..."), overly long briefs (>3 sentences), or scenarios that give away the approach.
+
+### Reverse SQL questions (`type: "reverse"`)
+
+Applies to SQL only. The user sees a result table and must write the query that produces it.
+
+```json
+"type": "reverse",
+"result_preview": [
+  {"region": "North", "total_revenue": 142500.00},
+  {"region": "South", "total_revenue": 98300.00}
+]
+```
+
+**Rules:**
+- `result_preview` is required and must be a non-empty array
+- Maximum 8 rows, maximum 4 columns (UI fit constraint)
+- Column names must be clear and self-documenting
+- The data in `result_preview` must exactly match what `expected_query` produces against the real datasets — run the query in DuckDB to confirm
+- The `expected_query` field still holds the reference solution used for evaluation
+
+### Debug questions (`type: "debug"`)
+
+The user sees an error callout and broken starter code, and must fix the bug.
+
+```json
+"type": "debug",
+"debug_error": "KeyError: 'acquisition_channel'",
+"starter_code": "def solve(df_orders, df_users):\n    return df_orders.groupby('acquisition_channel')['net_amount'].sum()"
+```
+
+**For SQL:** use `starter_query` instead of `starter_code`.
+
+**Rules:**
+- `debug_error` must be a realistic error string (e.g., `AnalysisException: Reference 'user_id' is ambiguous`, `KeyError: 'revenue'`) — not made-up
+- The starter code must have **exactly one bug** that produces the stated error
+- The fix must be minimal (change one thing) and the corrected code is the `expected_query`/`expected_code`
+- Write the `debug_error` exactly as it would appear in a real stack trace
+
+### Business datasets for mock content
+
+Mock-only questions should use the 11 existing practice datasets so SQL queries and Pandas code run against real data. For Python algorithm questions, no dataset is needed.
+
+| Dataset | Tables / key columns |
+|---|---|
+| users | user_id, name, email, signup_date, country, acquisition_channel, plan_tier, is_active |
+| orders | order_id, user_id, order_date, status, net_amount, payment_method |
+| order_items | order_item_id, order_id, product_id, quantity, unit_price |
+| products | product_id, name, category_id, price, stock_quantity |
+| categories | category_id, name, parent_category_id |
+| employees | employee_id, name, department_id, salary, hire_date, manager_id |
+| departments | department_id, name, budget, location |
+| events | event_id, user_id, event_type, event_time, page, session_id |
+| sessions | session_id, user_id, start_time, end_time, traffic_source, device_type |
+| payments | payment_id, order_id, amount, payment_date, payment_method, status |
+| support_tickets | ticket_id, user_id, subject, status, created_at, resolved_at, resolution_hours |
+
+**For SQL/Pandas mock questions:** frame the question in a business context drawn from these datasets but use fresh angles not covered in the practice bank (different aggregations, time windows, joins, business KPIs).
+
+### Mock-only question checklist
+
+In addition to the standard authoring checklist, every `mock_only` question must pass:
+
+- [ ] `"mock_only": true` present
+- [ ] Uses a concept angle not already in the practice bank for this difficulty level
+- [ ] If `follow_up_id` set: follow-up escalates exactly one dimension and is itself `mock_only: true`; follow-up has no `follow_up_id` of its own
+- [ ] If `type: "reverse"`: `result_preview` present, ≤8 rows, ≤4 columns, data matches `expected_query` output exactly
+- [ ] If `type: "debug"`: exactly one bug in `starter_code`/`starter_query`, `debug_error` is a realistic error string
+- [ ] If `framing: "scenario"`: description is ≤3 sentences, sets up real business context
+- [ ] `python scripts/validate_content.py` passes clean after authoring
