@@ -56,10 +56,10 @@ Full implementation spec: `/Users/matt/.claude/plans/you-are-working-on-jazzy-su
 *~105 new mock-only questions across 4 tracks. Run validate_content.py after each batch.*
 
 ### SQL (batch 1)
-- [ ] ~19 mock-only medium questions (standard + reverse + debug)
-- [ ] ~14 mock-only hard questions (standard + reverse + debug + scenario framing)
-- [ ] 6 follow-up pairs authored
-- [ ] `validate_content.py` passes clean
+- [x] ~19 mock-only medium questions (standard + reverse + debug)
+- [x] ~14 mock-only hard questions (standard + reverse + debug + scenario framing)
+- [x] 6 follow-up pairs authored
+- [x] `validate_content.py` passes clean
 
 ### Pandas (batch 2)
 - [ ] ~10 mock-only medium questions (standard + debug)

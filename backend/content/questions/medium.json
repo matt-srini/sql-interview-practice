@@ -122,10 +122,10 @@
       "CONDITIONAL ROW FILTERING",
       "DETERMINISTIC RESULT ORDERING"
     ],
-    "complexity_hint": "LEFT JOIN anti-pattern: keep rows from the left table that have no match on the right. Can also be written with NOT IN or NOT EXISTS — LEFT JOIN + IS NULL is typically most performant.",
+    "complexity_hint": "LEFT JOIN anti-pattern: keep rows from the left table that have no match on the right. Can also be written with NOT IN or NOT EXISTS \u2014 LEFT JOIN + IS NULL is typically most performant.",
     "alternative_solution": {
       "query": "SELECT d.department_id, d.department_name, d.region\nFROM departments d\nWHERE d.department_id NOT IN (\n  SELECT department_id FROM employees\n)\nORDER BY d.department_id ASC",
-      "explanation": "This alternative uses a NOT IN subquery instead of LEFT JOIN + IS NULL. Both produce identical results here, but NOT IN can silently return no rows if the subquery produces any NULLs — use LEFT JOIN + IS NULL in production for safety."
+      "explanation": "This alternative uses a NOT IN subquery instead of LEFT JOIN + IS NULL. Both produce identical results here, but NOT IN can silently return no rows if the subquery produces any NULLs \u2014 use LEFT JOIN + IS NULL in production for safety."
     },
     "companies": [
       "Google",
@@ -1375,10 +1375,10 @@
       "order_by"
     ],
     "enforce_concepts": true,
-    "explanation": "A CTE first aggregates revenue per quarter. The quarter label is built by concatenating the year (STRFTIME('%Y')), '-Q', and the quarter number derived from the month. In the outer query, LAG(total_revenue) OVER (ORDER BY quarter) fetches the previous row's revenue — because quarters sort lexicographically in 'YYYY-QN' format, this gives the correct prior quarter. Subtracting gives qoq_change; the first row has no prior, so LAG returns NULL.",
+    "explanation": "A CTE first aggregates revenue per quarter. The quarter label is built by concatenating the year (STRFTIME('%Y')), '-Q', and the quarter number derived from the month. In the outer query, LAG(total_revenue) OVER (ORDER BY quarter) fetches the previous row's revenue \u2014 because quarters sort lexicographically in 'YYYY-QN' format, this gives the correct prior quarter. Subtracting gives qoq_change; the first row has no prior, so LAG returns NULL.",
     "hints": [
       "Create row-to-row context within each entity first; the final filter or comparison happens after that derived state exists.",
-      "LAG(col) OVER (ORDER BY quarter) gives you the previous row's value — subtract it from the current row to get the change"
+      "LAG(col) OVER (ORDER BY quarter) gives you the previous row's value \u2014 subtract it from the current row to get the change"
     ],
     "concepts": [
       "PERIOD-OVER-PERIOD COMPARISON",
@@ -1468,10 +1468,10 @@
       "order_by"
     ],
     "enforce_concepts": true,
-    "explanation": "The JOIN direction matters: LEFT JOIN from departments to employees preserves all department rows even when no employees exist. COUNT(e.employee_id) counts only non-NULL employee IDs — for departments with no employees, this returns 0 (not 1 or NULL). Using COUNT(*) instead would incorrectly count 1 for empty departments because the LEFT JOIN produces a row with NULLs. Grouping by department_id ensures uniqueness even if two departments share the same name.",
+    "explanation": "The JOIN direction matters: LEFT JOIN from departments to employees preserves all department rows even when no employees exist. COUNT(e.employee_id) counts only non-NULL employee IDs \u2014 for departments with no employees, this returns 0 (not 1 or NULL). Using COUNT(*) instead would incorrectly count 1 for empty departments because the LEFT JOIN produces a row with NULLs. Grouping by department_id ensures uniqueness even if two departments share the same name.",
     "hints": [
       "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
-      "COUNT(e.employee_id) counts non-null values — returns 0 for departments with no employees, unlike COUNT(*)"
+      "COUNT(e.employee_id) counts non-null values \u2014 returns 0 for departments with no employees, unlike COUNT(*)"
     ],
     "concepts": [
       "LEFT JOIN DIRECTION",
@@ -1517,10 +1517,10 @@
       "order_by"
     ],
     "enforce_concepts": true,
-    "explanation": "WHERE filters rows before aggregation (only completed orders contribute). GROUP BY produces one row per (country, plan_tier) combination. HAVING filters groups after aggregation — it's the only way to filter on aggregate values like SUM. Using WHERE SUM(...) > 5000 would be a syntax error. The distinction between WHERE (row-level filter) and HAVING (group-level filter) is one of the most commonly tested SQL concepts.",
+    "explanation": "WHERE filters rows before aggregation (only completed orders contribute). GROUP BY produces one row per (country, plan_tier) combination. HAVING filters groups after aggregation \u2014 it's the only way to filter on aggregate values like SUM. Using WHERE SUM(...) > 5000 would be a syntax error. The distinction between WHERE (row-level filter) and HAVING (group-level filter) is one of the most commonly tested SQL concepts.",
     "hints": [
       "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
-      "HAVING filters on the result of the aggregation — WHERE SUM(...) > 5000 is a syntax error"
+      "HAVING filters on the result of the aggregation \u2014 WHERE SUM(...) > 5000 is a syntax error"
     ],
     "concepts": [
       "PRE VS POST AGGREGATION FILTERING",
@@ -1533,5 +1533,920 @@
       "Meta",
       "LinkedIn"
     ]
+  },
+  {
+    "id": 2035,
+    "order": 35,
+    "mock_only": true,
+    "follow_up_id": 2050,
+    "title": "Revenue and reach by acquisition channel",
+    "description": "For each user acquisition channel, compute the total net revenue from completed orders and the count of distinct users who placed at least one completed order. Return `acquisition_channel`, `total_revenue` (rounded to 2 decimal places), and `user_count`, ordered by `total_revenue` descending.",
+    "difficulty": "medium",
+    "schema": {
+      "orders": [
+        "order_id",
+        "user_id",
+        "status",
+        "net_amount"
+      ],
+      "users": [
+        "user_id",
+        "acquisition_channel"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv",
+      "users.csv"
+    ],
+    "expected_query": "SELECT u.acquisition_channel, ROUND(SUM(o.net_amount),2) AS total_revenue, COUNT(DISTINCT u.user_id) AS user_count\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nWHERE o.status = 'completed'\nGROUP BY u.acquisition_channel\nORDER BY total_revenue DESC",
+    "solution_query": "SELECT u.acquisition_channel,\n       ROUND(SUM(o.net_amount), 2) AS total_revenue,\n       COUNT(DISTINCT u.user_id) AS user_count\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nWHERE o.status = 'completed'\nGROUP BY u.acquisition_channel\nORDER BY total_revenue DESC;",
+    "required_concepts": [
+      "join",
+      "group_by",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "JOIN links users to their orders. WHERE filters to completed orders only. GROUP BY acquisition_channel produces one row per channel. COUNT(DISTINCT user_id) prevents double-counting buyers who placed multiple orders. ROUND(SUM(...), 2) normalises currency output.",
+    "hints": [
+      "Think about which table holds the channel attribute and which holds the revenue \u2014 combine them, then aggregate.",
+      "COUNT(DISTINCT user_id) \u2014 not COUNT(order_id) \u2014 gives the number of unique buyers per channel."
+    ],
+    "concepts": [
+      "ACQUISITION CHANNEL ANALYSIS",
+      "DISTINCT COUNT",
+      "REVENUE AGGREGATION"
+    ],
+    "companies": []
+  },
+  {
+    "id": 2036,
+    "order": 36,
+    "mock_only": true,
+    "title": "Support ticket resolution time by priority",
+    "description": "For each ticket priority level, compute the count of resolved tickets and the average resolution time. Return `priority`, `ticket_count`, and `avg_resolution_hours` (rounded to 1 decimal place), ordered by `avg_resolution_hours` descending.",
+    "difficulty": "medium",
+    "schema": {
+      "support_tickets": [
+        "ticket_id",
+        "priority",
+        "status",
+        "resolution_hours"
+      ]
+    },
+    "dataset_files": [
+      "support_tickets.csv"
+    ],
+    "expected_query": "SELECT priority, COUNT(*) AS ticket_count, ROUND(AVG(resolution_hours),1) AS avg_resolution_hours\nFROM support_tickets\nWHERE status = 'resolved'\nGROUP BY priority\nORDER BY avg_resolution_hours DESC",
+    "solution_query": "SELECT priority,\n       COUNT(*) AS ticket_count,\n       ROUND(AVG(resolution_hours), 1) AS avg_resolution_hours\nFROM support_tickets\nWHERE status = 'resolved'\nGROUP BY priority\nORDER BY avg_resolution_hours DESC;",
+    "required_concepts": [
+      "group_by",
+      "aggregate",
+      "where"
+    ],
+    "enforce_concepts": true,
+    "explanation": "WHERE status = 'resolved' ensures we only average over completed tickets. GROUP BY priority produces four rows. AVG(resolution_hours) computes the mean resolution time. ORDER BY avg_resolution_hours DESC surfaces the most-delayed priority first.",
+    "hints": [
+      "Filter to resolved tickets before aggregating \u2014 unresolved tickets have no meaningful resolution_hours.",
+      "ORDER BY the computed alias to rank priorities by average delay."
+    ],
+    "concepts": [
+      "CONDITIONAL FILTERING",
+      "AVERAGE AGGREGATION",
+      "SUPPORT SLA ANALYSIS"
+    ],
+    "companies": []
+  },
+  {
+    "id": 2037,
+    "order": 37,
+    "mock_only": true,
+    "title": "Top 10 products by order frequency",
+    "description": "For each product, compute the number of distinct orders that included it (`order_frequency`) and its total line revenue. Return `product_name`, `order_frequency`, and `total_revenue` (rounded to 2 decimal places) for the 10 most frequently ordered products, sorted by `order_frequency` descending.",
+    "difficulty": "medium",
+    "schema": {
+      "order_items": [
+        "order_id",
+        "product_id",
+        "line_amount"
+      ],
+      "products": [
+        "product_id",
+        "product_name"
+      ]
+    },
+    "dataset_files": [
+      "order_items.csv",
+      "products.csv"
+    ],
+    "expected_query": "SELECT p.product_name, COUNT(DISTINCT oi.order_id) AS order_frequency, ROUND(SUM(oi.line_amount),2) AS total_revenue\nFROM order_items oi\nJOIN products p ON oi.product_id = p.product_id\nGROUP BY p.product_name\nORDER BY order_frequency DESC\nLIMIT 10",
+    "solution_query": "SELECT p.product_name,\n       COUNT(DISTINCT oi.order_id) AS order_frequency,\n       ROUND(SUM(oi.line_amount), 2) AS total_revenue\nFROM order_items oi\nJOIN products p ON oi.product_id = p.product_id\nGROUP BY p.product_name\nORDER BY order_frequency DESC\nLIMIT 10;",
+    "required_concepts": [
+      "join",
+      "group_by",
+      "aggregate",
+      "limit"
+    ],
+    "enforce_concepts": true,
+    "explanation": "JOIN links order_items to products. COUNT(DISTINCT order_id) counts unique orders containing each product \u2014 a product appearing twice in one order counts once. SUM(line_amount) totals revenue. LIMIT 10 trims to the top products after ORDER BY.",
+    "hints": [
+      "One product can appear in the same order multiple times \u2014 think carefully about what 'order frequency' really means here.",
+      "Use LIMIT after ORDER BY to get only the top 10."
+    ],
+    "concepts": [
+      "PRODUCT FREQUENCY ANALYSIS",
+      "DISTINCT COUNT",
+      "TOP-N QUERY"
+    ],
+    "companies": []
+  },
+  {
+    "id": 2038,
+    "order": 38,
+    "mock_only": true,
+    "follow_up_id": 2051,
+    "title": "Above-average spenders",
+    "description": "Identify users whose total net amount from completed orders exceeds the average total spend across all users who placed at least one completed order. Return `user_id`, `name`, `country`, and `total_spend` (rounded to 2 decimal places), ordered by `total_spend` descending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "name",
+        "country"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv"
+    ],
+    "expected_query": "WITH user_spend AS (\n    SELECT u.user_id, u.name, u.country, ROUND(SUM(o.net_amount),2) AS total_spend\n    FROM users u\n    JOIN orders o ON u.user_id = o.user_id\n    WHERE o.status = 'completed'\n    GROUP BY u.user_id, u.name, u.country\n)\nSELECT user_id, name, country, total_spend\nFROM user_spend\nWHERE total_spend > (SELECT AVG(total_spend) FROM user_spend)\nORDER BY total_spend DESC",
+    "solution_query": "WITH user_spend AS (\n    SELECT u.user_id, u.name, u.country,\n           ROUND(SUM(o.net_amount), 2) AS total_spend\n    FROM users u\n    JOIN orders o ON u.user_id = o.user_id\n    WHERE o.status = 'completed'\n    GROUP BY u.user_id, u.name, u.country\n)\nSELECT user_id, name, country, total_spend\nFROM user_spend\nWHERE total_spend > (SELECT AVG(total_spend) FROM user_spend)\nORDER BY total_spend DESC;",
+    "required_concepts": [
+      "cte",
+      "subquery",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "A CTE computes total_spend per user. The outer WHERE filters against a scalar subquery that reads AVG(total_spend) from the same CTE. This two-pass approach is necessary because you cannot reference an aggregate result in a WHERE clause on the same query level.",
+    "hints": [
+      "Compute total spend per user in a CTE, then filter in the outer query.",
+      "The subquery AVG(total_spend) references the CTE \u2014 define the CTE first, then use it in the subquery."
+    ],
+    "concepts": [
+      "SUBQUERY FILTER",
+      "CTE REUSE",
+      "SPEND ANALYSIS"
+    ],
+    "companies": []
+  },
+  {
+    "id": 2039,
+    "order": 39,
+    "mock_only": true,
+    "title": "Department salary overview",
+    "description": "For each department, compute the headcount, minimum salary, maximum salary, and average salary. Return `department_name`, `headcount`, `min_salary`, `max_salary`, and `avg_salary` (rounded to 2 decimal places), ordered by `headcount` descending.",
+    "difficulty": "medium",
+    "schema": {
+      "employees": [
+        "employee_id",
+        "department_id",
+        "salary"
+      ],
+      "departments": [
+        "department_id",
+        "department_name"
+      ]
+    },
+    "dataset_files": [
+      "employees.csv",
+      "departments.csv"
+    ],
+    "expected_query": "SELECT d.department_name, COUNT(e.employee_id) AS headcount,\n       MIN(e.salary) AS min_salary, MAX(e.salary) AS max_salary,\n       ROUND(AVG(e.salary),2) AS avg_salary\nFROM departments d\nJOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_name\nORDER BY headcount DESC",
+    "solution_query": "SELECT d.department_name,\n       COUNT(e.employee_id) AS headcount,\n       MIN(e.salary) AS min_salary,\n       MAX(e.salary) AS max_salary,\n       ROUND(AVG(e.salary), 2) AS avg_salary\nFROM departments d\nJOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_name\nORDER BY headcount DESC;",
+    "required_concepts": [
+      "join",
+      "group_by",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "JOIN links departments to employees. GROUP BY department_name aggregates per department. MIN/MAX return exact salary range endpoints. AVG is rounded for clean display. COUNT(employee_id) counts employees per department.",
+    "hints": [
+      "Combine the two tables, then summarise at the department level.",
+      "MIN and MAX return exact column values and don't need ROUND. Only AVG needs rounding."
+    ],
+    "concepts": [
+      "SALARY ANALYSIS",
+      "MULTI-AGGREGATE GROUP BY",
+      "HR ANALYTICS"
+    ],
+    "companies": []
+  },
+  {
+    "id": 2040,
+    "order": 40,
+    "mock_only": true,
+    "title": "Payment failure rate by method",
+    "description": "For each payment method, compute the number of successful (`paid`) payments, the number of `failed` payments, and the failure rate as a percentage. Return `payment_method`, `paid_count`, `failed_count`, and `failure_rate_pct` (rounded to 1 decimal place, calculated as failed count / total count \u00d7 100), ordered by `failure_rate_pct` descending.",
+    "difficulty": "medium",
+    "schema": {
+      "payments": [
+        "payment_id",
+        "payment_method",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "payments.csv"
+    ],
+    "expected_query": "SELECT payment_method,\n       COUNT(CASE WHEN status = 'paid' THEN 1 END) AS paid_count,\n       COUNT(CASE WHEN status = 'failed' THEN 1 END) AS failed_count,\n       ROUND(COUNT(CASE WHEN status = 'failed' THEN 1 END) * 100.0 / COUNT(*), 1) AS failure_rate_pct\nFROM payments\nGROUP BY payment_method\nORDER BY failure_rate_pct DESC",
+    "solution_query": "SELECT payment_method,\n       COUNT(CASE WHEN status = 'paid' THEN 1 END) AS paid_count,\n       COUNT(CASE WHEN status = 'failed' THEN 1 END) AS failed_count,\n       ROUND(COUNT(CASE WHEN status = 'failed' THEN 1 END) * 100.0 / COUNT(*), 1) AS failure_rate_pct\nFROM payments\nGROUP BY payment_method\nORDER BY failure_rate_pct DESC;",
+    "required_concepts": [
+      "group_by",
+      "case_when",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Conditional aggregation with CASE WHEN counts specific status values without needing subqueries. COUNT(CASE WHEN ... THEN 1 END) returns NULL for non-matching rows, so only matches are counted. Multiplying by 100.0 forces float division. COUNT(*) in the denominator includes all statuses to compute the correct rate.",
+    "hints": [
+      "Use CASE WHEN inside COUNT to count only rows matching a condition.",
+      "Multiply by 100.0, not 100, to avoid integer division truncating to 0."
+    ],
+    "concepts": [
+      "CONDITIONAL AGGREGATION",
+      "FAILURE RATE CALCULATION",
+      "PAYMENTS ANALYSIS"
+    ],
+    "companies": []
+  },
+  {
+    "id": 2041,
+    "order": 41,
+    "mock_only": true,
+    "title": "Session breakdown by device type",
+    "description": "For each device type, compute the total number of sessions, the number of distinct users, and the average sessions per user. Return `device_type`, `session_count`, `user_count`, and `sessions_per_user` (rounded to 1 decimal place), ordered by `session_count` descending.",
+    "difficulty": "medium",
+    "schema": {
+      "sessions": [
+        "session_id",
+        "user_id",
+        "device_type"
+      ]
+    },
+    "dataset_files": [
+      "sessions.csv"
+    ],
+    "expected_query": "SELECT device_type, COUNT(*) AS session_count, COUNT(DISTINCT user_id) AS user_count,\n       ROUND(COUNT(*) * 1.0 / COUNT(DISTINCT user_id), 1) AS sessions_per_user\nFROM sessions\nGROUP BY device_type\nORDER BY session_count DESC",
+    "solution_query": "SELECT device_type,\n       COUNT(*) AS session_count,\n       COUNT(DISTINCT user_id) AS user_count,\n       ROUND(COUNT(*) * 1.0 / COUNT(DISTINCT user_id), 1) AS sessions_per_user\nFROM sessions\nGROUP BY device_type\nORDER BY session_count DESC;",
+    "required_concepts": [
+      "group_by",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "COUNT(*) counts all session rows. COUNT(DISTINCT user_id) counts unique users per device type. The ratio gives average engagement intensity. Multiplying by 1.0 forces float division before ROUND.",
+    "hints": [
+      "Think about what 'sessions per user' means: it's a ratio between two separate aggregation results for the same device type.",
+      "Multiply by 1.0 before dividing to prevent integer truncation."
+    ],
+    "concepts": [
+      "SESSION ANALYSIS",
+      "DISTINCT COUNT",
+      "ENGAGEMENT METRICS"
+    ],
+    "companies": []
+  },
+  {
+    "id": 2042,
+    "order": 42,
+    "mock_only": true,
+    "follow_up_id": 2052,
+    "title": "Category revenue share",
+    "description": "For each product category, compute the total line revenue and its percentage share of total revenue across all categories. Return `category_name`, `total_revenue` (rounded to 2 decimal places), and `revenue_pct` (rounded to 1 decimal place), ordered by `total_revenue` descending.",
+    "difficulty": "medium",
+    "schema": {
+      "order_items": [
+        "product_id",
+        "line_amount"
+      ],
+      "products": [
+        "product_id",
+        "category_id"
+      ],
+      "categories": [
+        "category_id",
+        "category_name"
+      ]
+    },
+    "dataset_files": [
+      "order_items.csv",
+      "products.csv",
+      "categories.csv"
+    ],
+    "expected_query": "WITH cat_revenue AS (\n    SELECT c.category_name, ROUND(SUM(oi.line_amount),2) AS total_revenue\n    FROM order_items oi\n    JOIN products p ON oi.product_id = p.product_id\n    JOIN categories c ON p.category_id = c.category_id\n    GROUP BY c.category_name\n),\ntotal AS (SELECT SUM(total_revenue) AS grand_total FROM cat_revenue)\nSELECT cr.category_name, cr.total_revenue,\n       ROUND(cr.total_revenue * 100.0 / t.grand_total, 1) AS revenue_pct\nFROM cat_revenue cr\nCROSS JOIN total t\nORDER BY cr.total_revenue DESC",
+    "solution_query": "WITH cat_revenue AS (\n    SELECT c.category_name, ROUND(SUM(oi.line_amount), 2) AS total_revenue\n    FROM order_items oi\n    JOIN products p ON oi.product_id = p.product_id\n    JOIN categories c ON p.category_id = c.category_id\n    GROUP BY c.category_name\n),\ntotal AS (SELECT SUM(total_revenue) AS grand_total FROM cat_revenue)\nSELECT cr.category_name, cr.total_revenue,\n       ROUND(cr.total_revenue * 100.0 / t.grand_total, 1) AS revenue_pct\nFROM cat_revenue cr\nCROSS JOIN total t\nORDER BY cr.total_revenue DESC;",
+    "required_concepts": [
+      "cte",
+      "join",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Two CTEs chain the calculation: cat_revenue aggregates per-category revenue; total sums across all categories. CROSS JOIN with the single-row total CTE makes grand_total available for the percentage calculation. Multiplying by 100.0 forces float division.",
+    "hints": [
+      "Compute per-category revenue in one CTE, the overall total in a second CTE.",
+      "CROSS JOIN with the single-row total CTE makes grand_total available in every result row."
+    ],
+    "concepts": [
+      "REVENUE SHARE",
+      "CROSS JOIN WITH SCALAR",
+      "MULTI-CTE PATTERN"
+    ],
+    "companies": []
+  },
+  {
+    "id": 2043,
+    "order": 43,
+    "mock_only": true,
+    "type": "reverse",
+    "follow_up_id": 2053,
+    "title": "Write the query \u2014 payment method revenue summary",
+    "description": "Write a SQL query that produces the result table shown below. The result summarises completed (`paid`) payments: for each payment method, return the count of paid transactions and the total amount collected, ordered by total amount descending.",
+    "difficulty": "medium",
+    "schema": {
+      "payments": [
+        "payment_id",
+        "payment_method",
+        "status",
+        "amount"
+      ]
+    },
+    "dataset_files": [
+      "payments.csv"
+    ],
+    "result_preview": [
+      {
+        "payment_method": "card",
+        "payment_count": 2234,
+        "total_amount": 4321785.13
+      },
+      {
+        "payment_method": "paypal",
+        "payment_count": 708,
+        "total_amount": 1422593.68
+      },
+      {
+        "payment_method": "bank_transfer",
+        "payment_count": 456,
+        "total_amount": 906409.02
+      },
+      {
+        "payment_method": "wallet",
+        "payment_count": 291,
+        "total_amount": 590495.89
+      }
+    ],
+    "expected_query": "SELECT payment_method, COUNT(*) AS payment_count, ROUND(SUM(amount),2) AS total_amount\nFROM payments\nWHERE status = 'paid'\nGROUP BY payment_method\nORDER BY total_amount DESC",
+    "solution_query": "SELECT payment_method,\n       COUNT(*) AS payment_count,\n       ROUND(SUM(amount), 2) AS total_amount\nFROM payments\nWHERE status = 'paid'\nGROUP BY payment_method\nORDER BY total_amount DESC;",
+    "required_concepts": [
+      "group_by",
+      "aggregate",
+      "where"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Filter to status = 'paid' before aggregating. GROUP BY payment_method produces one row per method. COUNT(*) counts transactions; SUM(amount) totals collected revenue. The column names in the result table tell you exactly what aliases to use.",
+    "hints": [
+      "Filter to only paid transactions before grouping.",
+      "Read the result column names carefully \u2014 they tell you what to compute and what alias to give each output column."
+    ],
+    "concepts": [
+      "REVERSE SQL",
+      "PAYMENTS AGGREGATION",
+      "FILTERED GROUP BY"
+    ],
+    "companies": []
+  },
+  {
+    "id": 2044,
+    "order": 44,
+    "mock_only": true,
+    "type": "reverse",
+    "title": "Write the query \u2014 department headcount and average pay",
+    "description": "Write a SQL query that produces the result table shown below. The result shows the top 5 departments by headcount, with each department's average salary.",
+    "difficulty": "medium",
+    "schema": {
+      "employees": [
+        "employee_id",
+        "department_id",
+        "salary"
+      ],
+      "departments": [
+        "department_id",
+        "department_name"
+      ]
+    },
+    "dataset_files": [
+      "employees.csv",
+      "departments.csv"
+    ],
+    "result_preview": [
+      {
+        "department_name": "Department 8",
+        "headcount": 30,
+        "avg_salary": 111068.93
+      },
+      {
+        "department_name": "Department 7",
+        "headcount": 29,
+        "avg_salary": 110016.88
+      },
+      {
+        "department_name": "Department 1",
+        "headcount": 24,
+        "avg_salary": 126472.65
+      },
+      {
+        "department_name": "Department 6",
+        "headcount": 23,
+        "avg_salary": 124420.34
+      },
+      {
+        "department_name": "Department 10",
+        "headcount": 19,
+        "avg_salary": 107284.64
+      }
+    ],
+    "expected_query": "SELECT d.department_name, COUNT(e.employee_id) AS headcount, ROUND(AVG(e.salary),2) AS avg_salary\nFROM departments d\nJOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_name\nORDER BY headcount DESC\nLIMIT 5",
+    "solution_query": "SELECT d.department_name,\n       COUNT(e.employee_id) AS headcount,\n       ROUND(AVG(e.salary), 2) AS avg_salary\nFROM departments d\nJOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_name\nORDER BY headcount DESC\nLIMIT 5;",
+    "required_concepts": [
+      "join",
+      "group_by",
+      "aggregate",
+      "limit"
+    ],
+    "enforce_concepts": true,
+    "explanation": "JOIN connects departments to employees. GROUP BY department aggregates headcount and average salary. The result has 5 rows \u2014 LIMIT 5 after ORDER BY headcount DESC returns the largest departments only.",
+    "hints": [
+      "The headcount and salary live in one table; the department name lives in another \u2014 combine them before aggregating.",
+      "The result has only 5 rows \u2014 LIMIT 5 after ORDER BY."
+    ],
+    "concepts": [
+      "REVERSE SQL",
+      "HR HEADCOUNT ANALYSIS",
+      "TOP-N QUERY"
+    ],
+    "companies": []
+  },
+  {
+    "id": 2045,
+    "order": 45,
+    "mock_only": true,
+    "type": "reverse",
+    "title": "Write the query \u2014 top 5 countries by completed revenue",
+    "description": "Write a SQL query that produces the result table shown below. The result shows the top 5 countries ranked by total completed-order revenue, along with the number of distinct buyers from each country.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "country"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv"
+    ],
+    "result_preview": [
+      {
+        "country": "US",
+        "users": 122,
+        "revenue": 2504538.47
+      },
+      {
+        "country": "IN",
+        "users": 56,
+        "revenue": 1497772.54
+      },
+      {
+        "country": "UK",
+        "users": 41,
+        "revenue": 836106.08
+      },
+      {
+        "country": "BR",
+        "users": 23,
+        "revenue": 727843.13
+      },
+      {
+        "country": "AU",
+        "users": 34,
+        "revenue": 615120.2
+      }
+    ],
+    "expected_query": "SELECT u.country, COUNT(DISTINCT u.user_id) AS users, ROUND(SUM(o.net_amount),2) AS revenue\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nWHERE o.status = 'completed'\nGROUP BY u.country\nORDER BY revenue DESC\nLIMIT 5",
+    "solution_query": "SELECT u.country,\n       COUNT(DISTINCT u.user_id) AS users,\n       ROUND(SUM(o.net_amount), 2) AS revenue\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nWHERE o.status = 'completed'\nGROUP BY u.country\nORDER BY revenue DESC\nLIMIT 5;",
+    "required_concepts": [
+      "join",
+      "group_by",
+      "aggregate",
+      "limit"
+    ],
+    "enforce_concepts": true,
+    "explanation": "JOIN links users to orders. WHERE filters to completed orders. GROUP BY country aggregates revenue and distinct buyers. COUNT(DISTINCT user_id) avoids inflating buyer count for multi-order users. LIMIT 5 after ORDER BY revenue DESC returns the top 5 countries.",
+    "hints": [
+      "Filter to completed orders before grouping.",
+      "The result has 5 rows \u2014 LIMIT 5 after ORDER BY revenue DESC."
+    ],
+    "concepts": [
+      "REVERSE SQL",
+      "GEO REVENUE ANALYSIS",
+      "DISTINCT COUNT"
+    ],
+    "companies": []
+  },
+  {
+    "id": 2046,
+    "order": 46,
+    "mock_only": true,
+    "type": "reverse",
+    "title": "Write the query \u2014 resolved ticket priority analysis",
+    "description": "Write a SQL query that produces the result table shown below. The result shows the count of resolved support tickets and the average resolution time for each priority level, ordered by average resolution time descending.",
+    "difficulty": "medium",
+    "schema": {
+      "support_tickets": [
+        "ticket_id",
+        "priority",
+        "status",
+        "resolution_hours"
+      ]
+    },
+    "dataset_files": [
+      "support_tickets.csv"
+    ],
+    "result_preview": [
+      {
+        "priority": "high",
+        "ticket_count": 155,
+        "avg_hours": 67.1
+      },
+      {
+        "priority": "urgent",
+        "ticket_count": 36,
+        "avg_hours": 64.4
+      },
+      {
+        "priority": "medium",
+        "ticket_count": 282,
+        "avg_hours": 58.4
+      },
+      {
+        "priority": "low",
+        "ticket_count": 312,
+        "avg_hours": 57.9
+      }
+    ],
+    "expected_query": "SELECT priority, COUNT(*) AS ticket_count, ROUND(AVG(resolution_hours),1) AS avg_hours\nFROM support_tickets\nWHERE status = 'resolved'\nGROUP BY priority\nORDER BY avg_hours DESC",
+    "solution_query": "SELECT priority,\n       COUNT(*) AS ticket_count,\n       ROUND(AVG(resolution_hours), 1) AS avg_hours\nFROM support_tickets\nWHERE status = 'resolved'\nGROUP BY priority\nORDER BY avg_hours DESC;",
+    "required_concepts": [
+      "group_by",
+      "aggregate",
+      "where"
+    ],
+    "enforce_concepts": true,
+    "explanation": "WHERE status = 'resolved' filters to completed tickets. GROUP BY priority creates four groups. AVG(resolution_hours) averaged over each group gives mean resolution time. ROUND to 1dp matches the result format. ORDER BY avg_hours DESC surfaces the slowest priority first.",
+    "hints": [
+      "Filter to resolved tickets first.",
+      "Read the column names in the result table \u2014 they tell you both what to compute and the alias to use."
+    ],
+    "concepts": [
+      "REVERSE SQL",
+      "SUPPORT TICKET ANALYSIS",
+      "AVG AGGREGATION"
+    ],
+    "companies": []
+  },
+  {
+    "id": 2047,
+    "order": 47,
+    "mock_only": true,
+    "type": "debug",
+    "title": "Fix the query \u2014 missing GROUP BY column",
+    "description": "The query below should return total completed-order revenue broken down by both `country` and `plan_tier`. It fails with an error. Find and fix the bug.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "country",
+        "plan_tier"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv"
+    ],
+    "debug_error": "Binder Error: column \"plan_tier\" must appear in the GROUP BY clause or must be part of an aggregate function.\nEither add it to the GROUP BY list, or use \"ANY_VALUE(plan_tier)\" if the exact value is not important.\n\nLINE 1: SELECT u.country, u.plan_tier, SUM(o.net_amount) AS total_revenue\n                          ^",
+    "starter_query": "SELECT u.country, u.plan_tier, SUM(o.net_amount) AS total_revenue\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nWHERE o.status = 'completed'\nGROUP BY u.country\nORDER BY total_revenue DESC",
+    "expected_query": "SELECT u.country, u.plan_tier, ROUND(SUM(o.net_amount),2) AS total_revenue\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nWHERE o.status = 'completed'\nGROUP BY u.country, u.plan_tier\nORDER BY total_revenue DESC",
+    "solution_query": "SELECT u.country, u.plan_tier,\n       ROUND(SUM(o.net_amount), 2) AS total_revenue\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nWHERE o.status = 'completed'\nGROUP BY u.country, u.plan_tier\nORDER BY total_revenue DESC;",
+    "required_concepts": [
+      "group_by",
+      "join"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Every non-aggregated column in SELECT must appear in GROUP BY. Here `plan_tier` is selected but missing from GROUP BY \u2014 fix by adding `u.plan_tier` to the GROUP BY clause. This is one of the most commonly tested SQL concepts.",
+    "hints": [
+      "Every non-aggregated column in the SELECT list must also appear in the aggregation clause.",
+      "The error message tells you exactly which column is missing."
+    ],
+    "concepts": [
+      "GROUP BY RULES",
+      "DEBUG SQL",
+      "MULTI-COLUMN GROUP BY"
+    ],
+    "companies": []
+  },
+  {
+    "id": 2048,
+    "order": 48,
+    "mock_only": true,
+    "type": "debug",
+    "title": "Fix the query \u2014 wrong table alias in WHERE",
+    "description": "The query below should return each department's headcount and average salary for US-based employees only. It fails with an error. Find and fix the bug.",
+    "difficulty": "medium",
+    "schema": {
+      "employees": [
+        "employee_id",
+        "department_id",
+        "salary",
+        "country"
+      ],
+      "departments": [
+        "department_id",
+        "department_name"
+      ]
+    },
+    "dataset_files": [
+      "employees.csv",
+      "departments.csv"
+    ],
+    "debug_error": "Binder Error: Referenced table \"emp\" not found!\nCandidate tables: \"e\"\n\nLINE 4: WHERE emp.country = 'US'\n              ^",
+    "starter_query": "SELECT department_name, COUNT(*) AS headcount, ROUND(AVG(salary), 2) AS avg_salary\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nWHERE emp.country = 'US'\nGROUP BY department_name\nORDER BY headcount DESC",
+    "expected_query": "SELECT department_name, COUNT(*) AS headcount, ROUND(AVG(salary),2) AS avg_salary\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nWHERE e.country = 'US'\nGROUP BY department_name\nORDER BY headcount DESC",
+    "solution_query": "SELECT department_name,\n       COUNT(*) AS headcount,\n       ROUND(AVG(salary), 2) AS avg_salary\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nWHERE e.country = 'US'\nGROUP BY department_name\nORDER BY headcount DESC;",
+    "required_concepts": [
+      "join",
+      "group_by",
+      "where"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The FROM clause aliases `employees` as `e`. All column references to that table must use `e.column`. The WHERE clause incorrectly references `emp.country` \u2014 an alias that was never defined. Fix: change `emp.country` to `e.country`.",
+    "hints": [
+      "The error says 'Referenced table emp not found' \u2014 check your FROM aliases.",
+      "If you aliased the table as `e`, every reference must use `e.`, not `emp.` or the full table name."
+    ],
+    "concepts": [
+      "TABLE ALIASES",
+      "DEBUG SQL",
+      "WHERE CLAUSE"
+    ],
+    "companies": []
+  },
+  {
+    "id": 2049,
+    "order": 49,
+    "mock_only": true,
+    "type": "debug",
+    "title": "Fix the query \u2014 wrong CTE column reference",
+    "description": "The query below uses a CTE to compute revenue per acquisition channel and then selects from it. It fails with an error. Find and fix the bug.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "acquisition_channel"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv"
+    ],
+    "debug_error": "Binder Error: Referenced column \"channel\" not found in FROM clause!\nCandidate bindings: \"acquisition_channel\"\n\nLINE 8: SELECT channel, user_cnt, ROUND(revenue, 2) AS total_revenue\n               ^",
+    "starter_query": "WITH channel_stats AS (\n    SELECT u.acquisition_channel, COUNT(DISTINCT u.user_id) AS user_cnt, SUM(o.net_amount) AS revenue\n    FROM users u\n    JOIN orders o ON u.user_id = o.user_id\n    WHERE o.status = 'completed'\n    GROUP BY u.acquisition_channel\n)\nSELECT channel, user_cnt, ROUND(revenue, 2) AS total_revenue\nFROM channel_stats\nORDER BY total_revenue DESC",
+    "expected_query": "WITH channel_stats AS (\n    SELECT u.acquisition_channel, COUNT(DISTINCT u.user_id) AS user_cnt, SUM(o.net_amount) AS revenue\n    FROM users u\n    JOIN orders o ON u.user_id = o.user_id\n    WHERE o.status = 'completed'\n    GROUP BY u.acquisition_channel\n)\nSELECT acquisition_channel, user_cnt, ROUND(revenue, 2) AS total_revenue\nFROM channel_stats\nORDER BY total_revenue DESC",
+    "solution_query": "WITH channel_stats AS (\n    SELECT u.acquisition_channel,\n           COUNT(DISTINCT u.user_id) AS user_cnt,\n           SUM(o.net_amount) AS revenue\n    FROM users u\n    JOIN orders o ON u.user_id = o.user_id\n    WHERE o.status = 'completed'\n    GROUP BY u.acquisition_channel\n)\nSELECT acquisition_channel, user_cnt,\n       ROUND(revenue, 2) AS total_revenue\nFROM channel_stats\nORDER BY total_revenue DESC;",
+    "required_concepts": [
+      "cte",
+      "join",
+      "group_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "A CTE exposes the exact column names defined inside it. The CTE defines `acquisition_channel`, but the outer SELECT references `channel` \u2014 a name that doesn't exist. Fix: use `acquisition_channel` in the outer SELECT. The error's 'Candidate bindings' hint tells you the correct column name.",
+    "hints": [
+      "CTEs expose exactly the column names defined in their inner SELECT \u2014 you can't abbreviate them.",
+      "The error message shows 'Candidate bindings: acquisition_channel' \u2014 use that exact name."
+    ],
+    "concepts": [
+      "CTE COLUMN REFERENCES",
+      "DEBUG SQL",
+      "ALIASING RULES"
+    ],
+    "companies": []
+  },
+  {
+    "id": 2050,
+    "order": 50,
+    "mock_only": true,
+    "title": "Monthly revenue by acquisition channel",
+    "description": "Break down completed-order revenue by acquisition channel and calendar month. For each combination, return `acquisition_channel`, `month` (formatted `YYYY-MM` using `strftime`), `total_revenue` (rounded to 2 decimal places), and `order_count`. Include only rows where `total_revenue` exceeds 50 000. Order by `month` ascending, then `total_revenue` descending.",
+    "difficulty": "medium",
+    "schema": {
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "net_amount"
+      ],
+      "users": [
+        "user_id",
+        "acquisition_channel"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv",
+      "users.csv"
+    ],
+    "expected_query": "SELECT u.acquisition_channel, strftime(o.order_date, '%Y-%m') AS month,\n       ROUND(SUM(o.net_amount),2) AS total_revenue, COUNT(o.order_id) AS order_count\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nWHERE o.status = 'completed'\nGROUP BY u.acquisition_channel, month\nHAVING SUM(o.net_amount) > 50000\nORDER BY month ASC, total_revenue DESC",
+    "solution_query": "SELECT u.acquisition_channel,\n       strftime(o.order_date, '%Y-%m') AS month,\n       ROUND(SUM(o.net_amount), 2) AS total_revenue,\n       COUNT(o.order_id) AS order_count\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nWHERE o.status = 'completed'\nGROUP BY u.acquisition_channel, month\nHAVING SUM(o.net_amount) > 50000\nORDER BY month ASC, total_revenue DESC;",
+    "required_concepts": [
+      "join",
+      "group_by",
+      "having",
+      "date_functions"
+    ],
+    "enforce_concepts": true,
+    "explanation": "strftime(order_date, '%Y-%m') extracts the year-month string for grouping. GROUP BY includes both acquisition_channel and the computed month alias. HAVING filters after aggregation \u2014 only channel+month combos with > 50 000 revenue appear. ORDER BY month ASC sorts chronologically; secondary total_revenue DESC ranks channels within each month.",
+    "hints": [
+      "Use strftime to extract the year-month string from order_date.",
+      "HAVING filters on aggregate results \u2014 WHERE can't reference SUM(net_amount)."
+    ],
+    "concepts": [
+      "DATE TRUNCATION",
+      "HAVING VS WHERE",
+      "MULTI-DIMENSION AGGREGATION"
+    ],
+    "companies": []
+  },
+  {
+    "id": 2051,
+    "order": 51,
+    "mock_only": true,
+    "title": "Top-spender loyalty tier segmentation",
+    "description": "Compute each user's total spend, order count, and average order value from completed orders. Assign a `loyalty_tier`: `'Platinum'` if total spend > 20 000, `'Gold'` if > 10 000, otherwise `'Silver'`. Return only users whose total spend is at or above the 80th percentile. Columns: `user_id`, `name`, `country`, `total_spend`, `order_count`, `avg_order_value` (both rounded to 2 dp), and `loyalty_tier`. Order by `total_spend` descending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "name",
+        "country"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv"
+    ],
+    "expected_query": "WITH user_spend AS (\n    SELECT u.user_id, u.name, u.country,\n           ROUND(SUM(o.net_amount),2) AS total_spend,\n           COUNT(o.order_id) AS order_count,\n           ROUND(AVG(o.net_amount),2) AS avg_order_value\n    FROM users u\n    JOIN orders o ON u.user_id = o.user_id\n    WHERE o.status = 'completed'\n    GROUP BY u.user_id, u.name, u.country\n),\npercentile AS (\n    SELECT PERCENTILE_CONT(0.80) WITHIN GROUP (ORDER BY total_spend) AS p80\n    FROM user_spend\n)\nSELECT us.user_id, us.name, us.country, us.total_spend, us.order_count, us.avg_order_value,\n       CASE WHEN us.total_spend > 20000 THEN 'Platinum'\n            WHEN us.total_spend > 10000 THEN 'Gold'\n            ELSE 'Silver'\n       END AS loyalty_tier\nFROM user_spend us\nCROSS JOIN percentile p\nWHERE us.total_spend >= p.p80\nORDER BY us.total_spend DESC",
+    "solution_query": "WITH user_spend AS (\n    SELECT u.user_id, u.name, u.country,\n           ROUND(SUM(o.net_amount), 2) AS total_spend,\n           COUNT(o.order_id) AS order_count,\n           ROUND(AVG(o.net_amount), 2) AS avg_order_value\n    FROM users u\n    JOIN orders o ON u.user_id = o.user_id\n    WHERE o.status = 'completed'\n    GROUP BY u.user_id, u.name, u.country\n),\npercentile AS (\n    SELECT PERCENTILE_CONT(0.80) WITHIN GROUP (ORDER BY total_spend) AS p80\n    FROM user_spend\n)\nSELECT us.user_id, us.name, us.country, us.total_spend,\n       us.order_count, us.avg_order_value,\n       CASE WHEN us.total_spend > 20000 THEN 'Platinum'\n            WHEN us.total_spend > 10000 THEN 'Gold'\n            ELSE 'Silver'\n       END AS loyalty_tier\nFROM user_spend us\nCROSS JOIN percentile p\nWHERE us.total_spend >= p.p80\nORDER BY us.total_spend DESC;",
+    "required_concepts": [
+      "cte",
+      "case_when",
+      "percentile"
+    ],
+    "enforce_concepts": true,
+    "explanation": "user_spend CTE aggregates per-user metrics. percentile CTE uses PERCENTILE_CONT(0.80) WITHIN GROUP to compute the 80th-percentile threshold. CROSS JOIN with the single-row percentile CTE makes p80 available in WHERE. CASE WHEN evaluates loyalty thresholds in descending order (most exclusive first).",
+    "hints": [
+      "Computing a percentile threshold requires a special ordered-set aggregate function \u2014 think about which SQL function handles percentiles.",
+      "CROSS JOIN the single-row percentile CTE to make p80 available in the WHERE filter."
+    ],
+    "concepts": [
+      "PERCENTILE FUNCTION",
+      "LOYALTY TIERING",
+      "CASE WHEN LADDER"
+    ],
+    "companies": []
+  },
+  {
+    "id": 2052,
+    "order": 52,
+    "mock_only": true,
+    "title": "Category revenue ranking with parent and gap",
+    "description": "For each product category compute `total_revenue` (rounded to 2 dp), `revenue_rank` (1 = highest, using `RANK()`), `parent_category`, and `revenue_vs_top` \u2014 how far each category's revenue is below the top category (positive number, rounded to 2 dp). Order by `revenue_rank` ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "order_items": [
+        "product_id",
+        "line_amount"
+      ],
+      "products": [
+        "product_id",
+        "category_id"
+      ],
+      "categories": [
+        "category_id",
+        "category_name",
+        "parent_category"
+      ]
+    },
+    "dataset_files": [
+      "order_items.csv",
+      "products.csv",
+      "categories.csv"
+    ],
+    "expected_query": "WITH cat_revenue AS (\n    SELECT c.category_name, c.category_id, ROUND(SUM(oi.line_amount),2) AS total_revenue\n    FROM order_items oi\n    JOIN products p ON oi.product_id = p.product_id\n    JOIN categories c ON p.category_id = c.category_id\n    GROUP BY c.category_name, c.category_id\n)\nSELECT cr.category_name, cr.total_revenue,\n       RANK() OVER (ORDER BY cr.total_revenue DESC) AS revenue_rank,\n       c.parent_category,\n       ROUND(MAX(cr.total_revenue) OVER () - cr.total_revenue, 2) AS revenue_vs_top\nFROM cat_revenue cr\nJOIN categories c ON cr.category_id = c.category_id\nORDER BY revenue_rank",
+    "solution_query": "WITH cat_revenue AS (\n    SELECT c.category_name, c.category_id,\n           ROUND(SUM(oi.line_amount), 2) AS total_revenue\n    FROM order_items oi\n    JOIN products p ON oi.product_id = p.product_id\n    JOIN categories c ON p.category_id = c.category_id\n    GROUP BY c.category_name, c.category_id\n)\nSELECT cr.category_name, cr.total_revenue,\n       RANK() OVER (ORDER BY cr.total_revenue DESC) AS revenue_rank,\n       c.parent_category,\n       ROUND(MAX(cr.total_revenue) OVER () - cr.total_revenue, 2) AS revenue_vs_top\nFROM cat_revenue cr\nJOIN categories c ON cr.category_id = c.category_id\nORDER BY revenue_rank;",
+    "required_concepts": [
+      "cte",
+      "window_functions",
+      "join"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The CTE computes per-category revenue. RANK() OVER (ORDER BY total_revenue DESC) assigns global rank. MAX(total_revenue) OVER () \u2014 with no PARTITION BY \u2014 returns the single highest revenue across all rows, enabling the gap calculation. A second JOIN to categories fetches parent_category, which wasn't needed during aggregation.",
+    "hints": [
+      "Assign each category a position in the global revenue ranking before computing the gap to the top.",
+      "MAX(...) OVER () with no PARTITION BY returns the maximum across all result rows \u2014 use it to compute the gap to the top."
+    ],
+    "concepts": [
+      "WINDOW RANK",
+      "GLOBAL WINDOW MAX",
+      "CATEGORY ANALYSIS"
+    ],
+    "companies": []
+  },
+  {
+    "id": 2053,
+    "order": 53,
+    "mock_only": true,
+    "title": "Department salary rank and above-average count",
+    "description": "For each department, compute the headcount, average salary (rounded to 2 dp), salary rank across all departments (1 = highest average salary, using `RANK()`), and the count of employees whose individual salary exceeds the company-wide average. Return `department_name`, `headcount`, `avg_salary`, `salary_rank`, and `above_avg_count`, ordered by `salary_rank` ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "employees": [
+        "employee_id",
+        "department_id",
+        "salary"
+      ],
+      "departments": [
+        "department_id",
+        "department_name"
+      ]
+    },
+    "dataset_files": [
+      "employees.csv",
+      "departments.csv"
+    ],
+    "expected_query": "SELECT d.department_name, COUNT(e.employee_id) AS headcount,\n       ROUND(AVG(e.salary),2) AS avg_salary,\n       RANK() OVER (ORDER BY AVG(e.salary) DESC) AS salary_rank,\n       COUNT(CASE WHEN e.salary > (SELECT AVG(salary) FROM employees) THEN 1 END) AS above_avg_count\nFROM departments d\nJOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_name, d.department_id\nORDER BY salary_rank",
+    "solution_query": "SELECT d.department_name,\n       COUNT(e.employee_id) AS headcount,\n       ROUND(AVG(e.salary), 2) AS avg_salary,\n       RANK() OVER (ORDER BY AVG(e.salary) DESC) AS salary_rank,\n       COUNT(CASE WHEN e.salary > (SELECT AVG(salary) FROM employees) THEN 1 END) AS above_avg_count\nFROM departments d\nJOIN employees e ON d.department_id = e.department_id\nGROUP BY d.department_name, d.department_id\nORDER BY salary_rank;",
+    "required_concepts": [
+      "window_functions",
+      "group_by",
+      "subquery",
+      "case_when"
+    ],
+    "enforce_concepts": true,
+    "explanation": "RANK() OVER (ORDER BY AVG(e.salary) DESC) applies a window function to the aggregated value \u2014 valid after GROUP BY. The scalar subquery (SELECT AVG(salary) FROM employees) computes the company-wide average and is used inside CASE WHEN for the above_avg_count. GROUP BY must include department_id to ensure unique grouping.",
+    "hints": [
+      "A position/ordering function can be applied to the per-department averages that aggregation produces.",
+      "Use a scalar subquery to compute the company-wide average salary inside CASE WHEN."
+    ],
+    "concepts": [
+      "WINDOW RANK ON AGGREGATES",
+      "SCALAR SUBQUERY IN CASE",
+      "HR SALARY ANALYSIS"
+    ],
+    "companies": []
   }
 ]
