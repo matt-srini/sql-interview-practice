@@ -36,6 +36,7 @@ Custom mode validates server-side: `num_questions` must be 1–5, `time_minutes`
 | Mixed mocks | ✅ (restricted to unlocked difficulties) | ✅ | ✅ |
 | Company-filtered mocks | ❌ | ❌ | ✅ (SQL track only) |
 | Weak-spot insights in summary | ❌ | ✅ | ✅ |
+| **Session debrief (coaching narrative)** | ❌ | ❌ | ✅ |
 
 **Pre-flight access check:** `GET /api/mock/access?track=<track>` is called every time the track selector changes. It returns per-difficulty `can_start`, `daily_limit`, `daily_used`, `needs_upgrade`, and `block_copy` so the UI can render gate state without a round-trip on Start.
 
@@ -74,6 +75,12 @@ Shown after `POST /api/mock/:id/finish`:
 - **Per-question breakdown** — solved/unsolved badge, time spent, expandable **"See solution"** toggle (reference solution + explanation, revealed only after finish).
 - **(Pro+) Concept breakdown table** — lists every concept that appeared in the session with `correct / attempted`, sorted worst-first.
 - **(Pro+) "Drill weak concepts →"** — links to `/practice/:track?concepts=...` pre-filtered to the worst 2 concepts from the session.
+- **(Elite) Session debrief** — a coaching narrative panel shown above the per-question list. Generated server-side (template-based, no external AI) from session data and submission history. Contains:
+  - **Headline** — one-sentence overall verdict with score and time context.
+  - **Patterns** — up to 3 observations: which concepts were strong/weak, follow-up question performance, and whether a single question dominated session time.
+  - **Priority action** — the single most important next step, with a direct link to the recommended learning path when one exists.
+  - Historical context: if a session concept matches a known weak area in the user's submission history (≥3 past attempts, <60% accuracy), the pattern observation uses stronger "known weakness" language.
+  - Returned as `debrief` in the `POST /api/mock/:id/finish` response. `null` for non-Elite plans.
 - **(Elite) "Known weakness" badge** — when a session concept matches one of the user's cross-session `weakest_concepts` from the dashboard insights, the concept row is highlighted in amber and tagged "known weakness". Elite users also see a path recommendation link ("Study in {title} →") when `recommended_path_slug` is present; Pro users see a generic drill link.
 - **Share result** — copies a summary string to clipboard.
 
@@ -123,3 +130,10 @@ See `backend/tests/test_mock.py` for the full test suite covering:
 - Company filter gating (free/pro blocked, elite/lifetime_elite allowed)
 - History endpoint shape
 - Solution visibility (absent during session, present after finish)
+
+`backend/tests/test_session_debrief.py` covers the debrief builder in isolation (27 unit tests):
+- Plan gating (Elite-only; None for Pro/Free/empty)
+- Headline generation across all score/time combinations
+- Pattern observations (strong concepts, weak concepts, follow-up, time-sink, known-weakness language)
+- Priority action and path recommendation logic
+- Response shape (all required keys, no internal keys leaked)

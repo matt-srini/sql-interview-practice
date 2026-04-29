@@ -31,6 +31,7 @@ from db import (
     get_mock_history,
     get_mock_session,
     get_previously_mocked_ids,
+    get_submission_events,
     inject_follow_up_question,
     mark_solved,
     record_submission,
@@ -39,7 +40,8 @@ from db import (
 from deps import get_current_user
 from evaluator import evaluate
 from python_evaluator import evaluate_python_code, evaluate_python_data_code
-from unlock import compute_mock_access, compute_unlock_state
+from routers.insights import build_session_debrief
+from unlock import compute_mock_access, compute_unlock_state, normalize_plan
 
 logger = logging.getLogger(__name__)
 
@@ -123,7 +125,6 @@ def _pool_for_track(
     Mock-only questions bypass the unlock gate entirely — they are always included
     for Pro/Elite users and are never shown in the practice catalog.
     """
-    from unlock import normalize_plan
     effective_plan = normalize_plan(user_plan)
     include_mock_only = effective_plan in ("pro", "elite") and difficulty != "easy"
 
@@ -654,4 +655,11 @@ async def finish_session(
             "is_follow_up": q_row.get("is_follow_up", False),
         })
 
-    return {**summary, "questions": enriched_questions}
+    # Build Elite coaching debrief (template-based, no external AI needed)
+    debrief = None
+    effective_plan = normalize_plan(current_user.get("plan", "free"))
+    if effective_plan == "elite":
+        events = await get_submission_events(current_user["id"])
+        debrief = build_session_debrief(enriched_questions, summary, events, effective_plan)
+
+    return {**summary, "questions": enriched_questions, "debrief": debrief}

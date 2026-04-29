@@ -6854,6 +6854,99 @@ select {
   margin-left: auto;
 }
 
+/* ── Mock session debrief (Elite) ───────────────────────── */
+.mock-debrief {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.1rem 1.25rem;
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface-card));
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+  border-radius: var(--radius-sm);
+}
+
+.mock-debrief-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mock-debrief-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  padding: 2px 8px;
+  border-radius: 99px;
+}
+
+.mock-debrief-headline {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-strong);
+  margin: 0;
+  line-height: 1.45;
+}
+
+.mock-debrief-patterns {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.mock-debrief-pattern {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  padding-left: 1rem;
+  position: relative;
+}
+
+.mock-debrief-pattern::before {
+  content: '·';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.mock-debrief-action {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.mock-debrief-action-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.mock-debrief-action > span:last-child {
+  font-size: 0.875rem;
+  color: var(--text-strong);
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.mock-debrief-path-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.mock-debrief-path-link:hover {
+  text-decoration: underline;
+}
+
 /* ── MockHub page ────────────────────────────────────────── */
 .mock-hub-page {
   min-height: 100vh;
