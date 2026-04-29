@@ -169,7 +169,7 @@ class TestDashboardEndpoint:
             "sql": 95,
             "python": 83,
             "python-data": 76,
-            "pyspark": 90,
+            "pyspark": 102,
         }
         with TestClient(app) as client:
             _make_user(client, plan="elite")

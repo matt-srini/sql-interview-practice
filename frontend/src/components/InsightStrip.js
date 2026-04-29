@@ -11,7 +11,8 @@ export default function InsightStrip({ insights }) {
   const { user } = useAuth();
   if (!insights) return null;
 
-  const weakest = insights.weakest_concepts?.[0] || null;
+  const isPaid = user?.plan && user.plan !== 'free';
+  const weakest = isPaid ? (insights.weakest_concepts?.[0] || null) : null;
   const weakestTrack = weakest ? TRACK_META[weakest.track] : null;
 
   const streakDays = insights.streak_days || 0;
@@ -41,7 +42,12 @@ export default function InsightStrip({ insights }) {
 
       <div className="dashboard-insight-tile">
         <p className="dashboard-insight-kicker">Weakest concept</p>
-        {weakest ? (
+        {!isPaid ? (
+          <p className="dashboard-insight-muted">
+            <Link to="/#landing-pricing" className="dashboard-insight-link">Upgrade to Pro</Link>
+            {' '}to see your weakest concept and get drill recommendations.
+          </p>
+        ) : weakest ? (
           <>
             <p className="dashboard-insight-value">
               {weakest.concept}

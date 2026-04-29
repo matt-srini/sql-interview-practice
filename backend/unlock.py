@@ -44,7 +44,7 @@ _FREE_HARD_THRESHOLDS_CODE: list[tuple[int, int]] = [
     (8, 3),       # 8 medium solved → 3 hard
 ]
 
-FREE_HARD_CAP_CODE = 15
+FREE_HARD_CAP_CODE = 8
 
 # PySpark (MCQ-only) — higher thresholds because MCQ recognition is lower-effort
 _FREE_MEDIUM_THRESHOLDS_PYSPARK: list[tuple[int, int | None]] = [
@@ -58,7 +58,7 @@ _FREE_HARD_THRESHOLDS_PYSPARK: list[tuple[int, int]] = [
     (15, 5),      # 15 medium solved → 5 hard
 ]
 
-FREE_HARD_CAP_PYSPARK = 10
+FREE_HARD_CAP_PYSPARK = 5
 
 # Daily mock session limits per plan × difficulty (None = unlimited)
 MOCK_DAILY_LIMITS: dict[str, dict[str, int | None]] = {
@@ -118,7 +118,7 @@ def _free_hard_limit(
     thresholds = _FREE_HARD_THRESHOLDS_PYSPARK if pyspark else _FREE_HARD_THRESHOLDS_CODE
     for solved_threshold, limit in thresholds:
         if medium_solved >= solved_threshold:
-            return min(limit, total_hard)
+            return min(limit, cap, total_hard)  # cap is always enforced regardless of threshold
     return 0
 
 

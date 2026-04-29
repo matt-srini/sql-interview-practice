@@ -67,7 +67,7 @@ def test_free_unlocks_3_hard_after_8_medium() -> None:
     assert state[catalog["hard"][3]["id"]] == "locked"
 
 
-def test_free_caps_hard_at_15_code_track() -> None:
+def test_free_caps_hard_at_cap_code_track() -> None:
     catalog = _make_mock_catalog(easy=30, medium=25, hard=20)
     solved = {q["id"] for q in catalog["easy"][:25]} | {q["id"] for q in catalog["medium"][:22]}
     state = compute_unlock_state("free", solved, catalog, track="sql")
@@ -92,7 +92,7 @@ def test_free_pyspark_unlocks_3_medium_at_12_easy() -> None:
     assert state[catalog["medium"][3]["id"]] == "locked"
 
 
-def test_free_pyspark_caps_hard_at_10() -> None:
+def test_free_pyspark_caps_hard_at_cap() -> None:
     catalog = _make_mock_catalog(easy=30, medium=25, hard=15)
     solved = {q["id"] for q in catalog["easy"][:30]} | {q["id"] for q in catalog["medium"][:22]}
     state = compute_unlock_state("free", solved, catalog, track="pyspark")
