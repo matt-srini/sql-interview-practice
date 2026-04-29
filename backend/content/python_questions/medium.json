@@ -5,11 +5,11 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Group Product Code Variants",
-    "description": "Product codes occasionally have their characters reordered during data entry, creating near-duplicates. Given a list of strings `words`, group them into sublists where all strings in each sublist are anagrams of one another. Each group should be sorted alphabetically; the groups themselves may appear in any order.\n\n```\nsolve(['eat', 'tea', 'tan', 'ate', 'nat', 'bat'])\n# → [['ate', 'eat', 'tea'], ['nat', 'tan'], ['bat']]\n```",
+    "description": "Product codes occasionally have their characters reordered during data entry, creating near-duplicates. Given a list of strings `words`, group them into sublists where all strings in each sublist are anagrams of one another. Each group should be sorted alphabetically; the groups themselves may appear in any order.\n\n```\nsolve(['eat', 'tea', 'tan', 'ate', 'nat', 'bat'])\n# \u2192 [['ate', 'eat', 'tea'], ['nat', 'tan'], ['bat']]\n```",
     "starter_code": "def solve(words: list) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(words):\n    groups = {}\n    for w in words:\n        key = tuple(sorted(w))\n        if key not in groups:\n            groups[key] = []\n        groups[key].append(w)\n    result = [sorted(g) for g in groups.values()]\n    result.sort(key=lambda g: g[0])\n    return result",
     "solution_code": "def solve(words):\n    groups = {}\n    for w in words:\n        key = tuple(sorted(w))\n        if key not in groups:\n            groups[key] = []\n        groups[key].append(w)\n    result = [sorted(g) for g in groups.values()]\n    result.sort(key=lambda g: g[0])\n    return result",
-    "explanation": "The key insight is that two strings are anagrams if and only if they have the same sorted-character tuple. Use a dictionary keyed on that tuple to group strings in O(n·k log k) where k is the max word length. Sorting each group and the outer list gives a deterministic output. The naive O(n²) pairwise comparison approach is both slower and harder to implement.",
+    "explanation": "The key insight is that two strings are anagrams if and only if they have the same sorted-character tuple. Use a dictionary keyed on that tuple to group strings in O(n\u00b7k log k) where k is the max word length. Sorting each group and the outer list gives a deterministic output. The naive O(n\u00b2) pairwise comparison approach is both slower and harder to implement.",
     "test_cases": [
       {
         "input": [
@@ -125,11 +125,11 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Sliding Window Maximum",
-    "description": "Given a list of integers `nums` and a window size `k`, return a list of the maximum value in each contiguous window of size `k`.\n\n```\nsolve([1, 3, -1, -3, 5, 3, 6, 7], 3)  # → [3, 3, 5, 5, 6, 7]\nsolve([1], 1)                           # → [1]\nsolve([4, 3, 2, 1], 2)                  # → [4, 3, 2]\n```\n\nAim for O(n) using a deque.",
+    "description": "Given a list of integers `nums` and a window size `k`, return a list of the maximum value in each contiguous window of size `k`.\n\n```\nsolve([1, 3, -1, -3, 5, 3, 6, 7], 3)  # \u2192 [3, 3, 5, 5, 6, 7]\nsolve([1], 1)                           # \u2192 [1]\nsolve([4, 3, 2, 1], 2)                  # \u2192 [4, 3, 2]\n```\n\nAim for O(n) using a deque.",
     "starter_code": "def solve(nums: list, k: int) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(nums, k):\n    from collections import deque\n    dq = deque()  # stores indices, front is always the max\n    result = []\n    for i, val in enumerate(nums):\n        # remove indices out of the current window\n        while dq and dq[0] < i - k + 1:\n            dq.popleft()\n        # remove indices whose values are smaller than current\n        while dq and nums[dq[-1]] < val:\n            dq.pop()\n        dq.append(i)\n        if i >= k - 1:\n            result.append(nums[dq[0]])\n    return result",
     "solution_code": "def solve(nums, k):\n    from collections import deque\n    dq = deque()  # stores indices, front is always the max\n    result = []\n    for i, val in enumerate(nums):\n        while dq and dq[0] < i - k + 1:\n            dq.popleft()\n        while dq and nums[dq[-1]] < val:\n            dq.pop()\n        dq.append(i)\n        if i >= k - 1:\n            result.append(nums[dq[0]])\n    return result",
-    "explanation": "Maintain a monotonic decreasing deque of indices. For each new element, pop from the back any index whose value is smaller (they can never be the window max). Pop from the front any index that has fallen outside the current window. The front is always the index of the current window's maximum. Each index is pushed and popped at most once, giving O(n) overall vs O(n·k) for the brute-force approach.",
+    "explanation": "Maintain a monotonic decreasing deque of indices. For each new element, pop from the back any index whose value is smaller (they can never be the window max). Pop from the front any index that has fallen outside the current window. The front is always the index of the current window's maximum. Each index is pushed and popped at most once, giving O(n) overall vs O(n\u00b7k) for the brute-force approach.",
     "test_cases": [
       {
         "input": [
@@ -234,11 +234,11 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Product of Array Except Self",
-    "description": "Given a list of integers `nums`, return a list `output` where `output[i]` is the product of all elements in `nums` except `nums[i]`. Do **not** use division, and solve in O(n).\n\n```\nsolve([1, 2, 3, 4])   # → [24, 12, 8, 6]\nsolve([-1, 1, 0, -3, 3])  # → [0, 0, 9, 0, 0]\n```",
-    "starter_code": "def solve(nums: list) -> list:\n    # No division allowed — O(n)\n    pass",
+    "description": "Given a list of integers `nums`, return a list `output` where `output[i]` is the product of all elements in `nums` except `nums[i]`. Do **not** use division, and solve in O(n).\n\n```\nsolve([1, 2, 3, 4])   # \u2192 [24, 12, 8, 6]\nsolve([-1, 1, 0, -3, 3])  # \u2192 [0, 0, 9, 0, 0]\n```",
+    "starter_code": "def solve(nums: list) -> list:\n    # No division allowed \u2014 O(n)\n    pass",
     "expected_code": "def solve(nums):\n    n = len(nums)\n    result = [1] * n\n    prefix = 1\n    for i in range(n):\n        result[i] = prefix\n        prefix *= nums[i]\n    suffix = 1\n    for i in range(n - 1, -1, -1):\n        result[i] *= suffix\n        suffix *= nums[i]\n    return result",
     "solution_code": "def solve(nums):\n    n = len(nums)\n    result = [1] * n\n    prefix = 1\n    for i in range(n):\n        result[i] = prefix\n        prefix *= nums[i]\n    suffix = 1\n    for i in range(n - 1, -1, -1):\n        result[i] *= suffix\n        suffix *= nums[i]\n    return result",
-    "explanation": "Two passes: the first pass fills each position with the product of all elements to its left (prefix product). The second pass multiplies each position by the product of all elements to its right (suffix product). The result at each index is prefix × suffix, which is the product of all other elements. This avoids division and runs in O(n) time with O(1) extra space (output array doesn't count).",
+    "explanation": "Two passes: the first pass fills each position with the product of all elements to its left (prefix product). The second pass multiplies each position by the product of all elements to its right (suffix product). The result at each index is prefix \u00d7 suffix, which is the product of all other elements. This avoids division and runs in O(n) time with O(1) extra space (output array doesn't count).",
     "test_cases": [
       {
         "input": [
@@ -332,8 +332,8 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Find Missing Number (XOR)",
-    "description": "Given a list `nums` containing `n - 1` distinct integers in the range `[0, n]`, find the one missing number. Solve in O(n) time and O(1) space using XOR.\n\n```\nsolve([3, 0, 1])       # → 2\nsolve([0, 1])           # → 2\nsolve([9,6,4,2,3,5,7,0,1])  # → 8\n```",
-    "starter_code": "def solve(nums: list) -> int:\n    # Use XOR — O(n) time, O(1) space\n    pass",
+    "description": "Given a list `nums` containing `n - 1` distinct integers in the range `[0, n]`, find the one missing number. Solve in O(n) time and O(1) space using XOR.\n\n```\nsolve([3, 0, 1])       # \u2192 2\nsolve([0, 1])           # \u2192 2\nsolve([9,6,4,2,3,5,7,0,1])  # \u2192 8\n```",
+    "starter_code": "def solve(nums: list) -> int:\n    # Use XOR \u2014 O(n) time, O(1) space\n    pass",
     "expected_code": "def solve(nums):\n    n = len(nums)  # missing range is 0..n\n    xor = 0\n    for i in range(n + 1):\n        xor ^= i\n    for num in nums:\n        xor ^= num\n    return xor",
     "solution_code": "def solve(nums):\n    n = len(nums)\n    xor = 0\n    for i in range(n + 1):\n        xor ^= i\n    for num in nums:\n        xor ^= num\n    return xor",
     "explanation": "XOR every number from 0 to n, then XOR all numbers in the array. Every number that appears in both cancels out (x ^ x = 0), leaving only the missing number. This is O(n) time and O(1) space. An alternative is sum(range(n+1)) - sum(nums), which is equally elegant but the XOR approach avoids any overflow concern in languages without big integers.",
@@ -392,7 +392,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "XOR has the property that x ^ x = 0 and x ^ 0 = x — use this to cancel out paired numbers.",
+      "XOR has the property that x ^ x = 0 and x ^ 0 = x \u2014 use this to cancel out paired numbers.",
       "XOR all numbers from 0 to n, then XOR all elements in the array; the surviving value is the missing one."
     ],
     "concepts": [
@@ -407,11 +407,11 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Spiral Matrix",
-    "description": "Given an `n × m` 2D matrix (list of lists), return all elements in spiral order starting from the top-left, going clockwise.\n\n```\nsolve([[1,2,3],[4,5,6],[7,8,9]])\n# → [1, 2, 3, 6, 9, 8, 7, 4, 5]\n\nsolve([[1,2,3,4],[5,6,7,8],[9,10,11,12]])\n# → [1, 2, 3, 4, 8, 12, 11, 10, 9, 5, 6, 7]\n```",
+    "description": "Given an `n \u00d7 m` 2D matrix (list of lists), return all elements in spiral order starting from the top-left, going clockwise.\n\n```\nsolve([[1,2,3],[4,5,6],[7,8,9]])\n# \u2192 [1, 2, 3, 6, 9, 8, 7, 4, 5]\n\nsolve([[1,2,3,4],[5,6,7,8],[9,10,11,12]])\n# \u2192 [1, 2, 3, 4, 8, 12, 11, 10, 9, 5, 6, 7]\n```",
     "starter_code": "def solve(matrix: list) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(matrix):\n    result = []\n    if not matrix:\n        return result\n    top, bottom, left, right = 0, len(matrix) - 1, 0, len(matrix[0]) - 1\n    while top <= bottom and left <= right:\n        for col in range(left, right + 1):\n            result.append(matrix[top][col])\n        top += 1\n        for row in range(top, bottom + 1):\n            result.append(matrix[row][right])\n        right -= 1\n        if top <= bottom:\n            for col in range(right, left - 1, -1):\n                result.append(matrix[bottom][col])\n            bottom -= 1\n        if left <= right:\n            for row in range(bottom, top - 1, -1):\n                result.append(matrix[row][left])\n            left += 1\n    return result",
     "solution_code": "def solve(matrix):\n    result = []\n    if not matrix:\n        return result\n    top, bottom, left, right = 0, len(matrix) - 1, 0, len(matrix[0]) - 1\n    while top <= bottom and left <= right:\n        for col in range(left, right + 1):\n            result.append(matrix[top][col])\n        top += 1\n        for row in range(top, bottom + 1):\n            result.append(matrix[row][right])\n        right -= 1\n        if top <= bottom:\n            for col in range(right, left - 1, -1):\n                result.append(matrix[bottom][col])\n            bottom -= 1\n        if left <= right:\n            for row in range(bottom, top - 1, -1):\n                result.append(matrix[row][left])\n            left += 1\n    return result",
-    "explanation": "Maintain four boundary pointers (top, bottom, left, right) and peel off the outermost layer in four passes (right across top, down right side, left across bottom, up left side), shrinking the boundaries after each pass. Guard the bottom and left passes with boundary checks to handle non-square matrices and single-row/column remainders correctly. Time complexity is O(n·m).",
+    "explanation": "Maintain four boundary pointers (top, bottom, left, right) and peel off the outermost layer in four passes (right across top, down right side, left across bottom, up left side), shrinking the boundaries after each pass. Guard the bottom and left passes with boundary checks to handle non-square matrices and single-row/column remainders correctly. Time complexity is O(n\u00b7m).",
     "test_cases": [
       {
         "input": [
@@ -549,11 +549,11 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Budget Window Counter",
-    "description": "A finance team wants to count the number of contiguous spending windows that hit exactly a given budget target. Given a list of daily spend values `nums` and a target total `k`, return the count of contiguous subarrays whose elements sum to exactly `k`.\n\n```\nsolve([100, 200, 100, 300], 300)  # → 2  ([100,200] and [300])\nsolve([1, 1, 1], 2)                 # → 2\n```",
+    "description": "A finance team wants to count the number of contiguous spending windows that hit exactly a given budget target. Given a list of daily spend values `nums` and a target total `k`, return the count of contiguous subarrays whose elements sum to exactly `k`.\n\n```\nsolve([100, 200, 100, 300], 300)  # \u2192 2  ([100,200] and [300])\nsolve([1, 1, 1], 2)                 # \u2192 2\n```",
     "starter_code": "def solve(nums: list, k: int) -> int:\n    # Your code here\n    pass",
     "expected_code": "def solve(nums, k):\n    count = 0\n    prefix_sum = 0\n    freq = {0: 1}\n    for num in nums:\n        prefix_sum += num\n        count += freq.get(prefix_sum - k, 0)\n        freq[prefix_sum] = freq.get(prefix_sum, 0) + 1\n    return count",
     "solution_code": "def solve(nums, k):\n    count = 0\n    prefix_sum = 0\n    freq = {0: 1}\n    freq = {0: 1}\n    for num in nums:\n        prefix_sum += num\n        count += freq.get(prefix_sum - k, 0)\n        freq[prefix_sum] = freq.get(prefix_sum, 0) + 1\n    return count",
-    "explanation": "A subarray from index i to j sums to k if prefix_sum[j] - prefix_sum[i-1] == k, i.e., prefix_sum[i-1] == prefix_sum[j] - k. Maintain a frequency map of all prefix sums seen so far. For each new prefix sum, look up how many previous prefix sums equal (current - k) — each match gives one valid subarray. Initialize {0: 1} to handle subarrays starting from index 0. This runs in O(n) time and O(n) space, vastly better than O(n²) brute force.",
+    "explanation": "A subarray from index i to j sums to k if prefix_sum[j] - prefix_sum[i-1] == k, i.e., prefix_sum[i-1] == prefix_sum[j] - k. Maintain a frequency map of all prefix sums seen so far. For each new prefix sum, look up how many previous prefix sums equal (current - k) \u2014 each match gives one valid subarray. Initialize {0: 1} to handle subarrays starting from index 0. This runs in O(n) time and O(n) space, vastly better than O(n\u00b2) brute force.",
     "test_cases": [
       {
         "input": [
@@ -628,11 +628,11 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "3Sum",
-    "description": "Given a list of integers `nums`, return all unique triplets `[a, b, c]` such that `a + b + c == 0`. The solution set must not contain duplicate triplets. Each inner list should be sorted in ascending order.\n\n```\nsolve([-1, 0, 1, 2, -1, -4])  # → [[-1, -1, 2], [-1, 0, 1]]\nsolve([0, 0, 0])               # → [[0, 0, 0]]\nsolve([1, 2, -3])              # → [[-3, 1, 2]]\n```",
+    "description": "Given a list of integers `nums`, return all unique triplets `[a, b, c]` such that `a + b + c == 0`. The solution set must not contain duplicate triplets. Each inner list should be sorted in ascending order.\n\n```\nsolve([-1, 0, 1, 2, -1, -4])  # \u2192 [[-1, -1, 2], [-1, 0, 1]]\nsolve([0, 0, 0])               # \u2192 [[0, 0, 0]]\nsolve([1, 2, -3])              # \u2192 [[-3, 1, 2]]\n```",
     "starter_code": "def solve(nums: list) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(nums):\n    nums.sort()\n    result = []\n    for i in range(len(nums) - 2):\n        if i > 0 and nums[i] == nums[i - 1]:\n            continue\n        lo, hi = i + 1, len(nums) - 1\n        while lo < hi:\n            s = nums[i] + nums[lo] + nums[hi]\n            if s == 0:\n                result.append([nums[i], nums[lo], nums[hi]])\n                while lo < hi and nums[lo] == nums[lo + 1]:\n                    lo += 1\n                while lo < hi and nums[hi] == nums[hi - 1]:\n                    hi -= 1\n                lo += 1\n                hi -= 1\n            elif s < 0:\n                lo += 1\n            else:\n                hi -= 1\n    return result",
     "solution_code": "def solve(nums):\n    nums.sort()\n    result = []\n    for i in range(len(nums) - 2):\n        if i > 0 and nums[i] == nums[i - 1]:\n            continue\n        lo, hi = i + 1, len(nums) - 1\n        while lo < hi:\n            s = nums[i] + nums[lo] + nums[hi]\n            if s == 0:\n                result.append([nums[i], nums[lo], nums[hi]])\n                while lo < hi and nums[lo] == nums[lo + 1]:\n                    lo += 1\n                while lo < hi and nums[hi] == nums[hi - 1]:\n                    hi -= 1\n                lo += 1\n                hi -= 1\n            elif s < 0:\n                lo += 1\n            else:\n                hi -= 1\n    return result",
-    "explanation": "Sort the array first. Fix the first element in a loop and use two pointers (lo, hi) on the remaining subarray to find pairs that sum to the negative of the fixed element. Skip duplicate values for the fixed element and for lo/hi after finding a match to avoid duplicate triplets. Overall O(n²) time — better than O(n³) brute force, and sorting enables the two-pointer technique.",
+    "explanation": "Sort the array first. Fix the first element in a loop and use two pointers (lo, hi) on the remaining subarray to find pairs that sum to the negative of the fixed element. Skip duplicate values for the fixed element and for lo/hi after finding a match to avoid duplicate triplets. Overall O(n\u00b2) time \u2014 better than O(n\u00b3) brute force, and sorting enables the two-pointer technique.",
     "test_cases": [
       {
         "input": [
@@ -771,11 +771,11 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Generate Parentheses",
-    "description": "Given a positive integer `n`, return all combinations of `n` pairs of well-formed (valid) parentheses as a list of strings. Order within the list does not matter.\n\n```\nsolve(1)  # → ['()']\nsolve(2)  # → ['(())', '()()']\nsolve(3)  # → ['((()))', '(()())', '(())()', '()(())', '()()()']\n```",
+    "description": "Given a positive integer `n`, return all combinations of `n` pairs of well-formed (valid) parentheses as a list of strings. Order within the list does not matter.\n\n```\nsolve(1)  # \u2192 ['()']\nsolve(2)  # \u2192 ['(())', '()()']\nsolve(3)  # \u2192 ['((()))', '(()())', '(())()', '()(())', '()()()']\n```",
     "starter_code": "def solve(n: int) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(n):\n    result = []\n    def backtrack(s, open_count, close_count):\n        if len(s) == 2 * n:\n            result.append(s)\n            return\n        if open_count < n:\n            backtrack(s + '(', open_count + 1, close_count)\n        if close_count < open_count:\n            backtrack(s + ')', open_count, close_count + 1)\n    backtrack('', 0, 0)\n    return sorted(result)",
     "solution_code": "def solve(n):\n    result = []\n    def backtrack(s, open_count, close_count):\n        if len(s) == 2 * n:\n            result.append(s)\n            return\n        if open_count < n:\n            backtrack(s + '(', open_count + 1, close_count)\n        if close_count < open_count:\n            backtrack(s + ')', open_count, close_count + 1)\n    backtrack('', 0, 0)\n    return sorted(result)",
-    "explanation": "Use backtracking with two counters: the number of open and close parentheses used so far. We can add '(' as long as open_count < n, and add ')' only when close_count < open_count (so we never close more than we've opened). This generates only valid strings — no post-filtering needed. The number of valid combinations is the n-th Catalan number C(n), so the output size grows quickly.",
+    "explanation": "Use backtracking with two counters: the number of open and close parentheses used so far. We can add '(' as long as open_count < n, and add ')' only when close_count < open_count (so we never close more than we've opened). This generates only valid strings \u2014 no post-filtering needed. The number of valid combinations is the n-th Catalan number C(n), so the output size grows quickly.",
     "test_cases": [
       {
         "input": [
@@ -853,7 +853,7 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Minimum Stack",
-    "description": "Implement a stack that supports `push`, `pop`, `top`, and `get_min` — all in O(1) time. Given a list of operations as tuples, return the results.\n\nOperation format:\n- `('push', val)` — push val, return `None`\n- `('pop',)` — pop the top element, return `None`\n- `('top',)` — return the top element\n- `('get_min',)` — return the current minimum\n\n```\nsolve([('push',5),('push',3),('get_min',),('push',1),('get_min',),('pop',),('get_min',)])\n# → [None, None, 3, None, 1, None, 3]\n```",
+    "description": "Implement a stack that supports `push`, `pop`, `top`, and `get_min` \u2014 all in O(1) time. Given a list of operations as tuples, return the results.\n\nOperation format:\n- `('push', val)` \u2014 push val, return `None`\n- `('pop',)` \u2014 pop the top element, return `None`\n- `('top',)` \u2014 return the top element\n- `('get_min',)` \u2014 return the current minimum\n\n```\nsolve([('push',5),('push',3),('get_min',),('push',1),('get_min',),('pop',),('get_min',)])\n# \u2192 [None, None, 3, None, 1, None, 3]\n```",
     "starter_code": "def solve(operations: list) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(operations):\n    stack = []    # stores (value, current_min)\n    results = []\n    for op in operations:\n        if op[0] == 'push':\n            val = op[1]\n            current_min = val if not stack else min(val, stack[-1][1])\n            stack.append((val, current_min))\n            results.append(None)\n        elif op[0] == 'pop':\n            stack.pop()\n            results.append(None)\n        elif op[0] == 'top':\n            results.append(stack[-1][0])\n        elif op[0] == 'get_min':\n            results.append(stack[-1][1])\n    return results",
     "solution_code": "def solve(operations):\n    stack = []    # stores (value, current_min)\n    results = []\n    for op in operations:\n        if op[0] == 'push':\n            val = op[1]\n            current_min = val if not stack else min(val, stack[-1][1])\n            stack.append((val, current_min))\n            results.append(None)\n        elif op[0] == 'pop':\n            stack.pop()\n            results.append(None)\n        elif op[0] == 'top':\n            results.append(stack[-1][0])\n        elif op[0] == 'get_min':\n            results.append(stack[-1][1])\n    return results",
@@ -1049,7 +1049,7 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Intersection of Two Arrays II",
-    "description": "Given two lists `nums1` and `nums2`, return a list of their intersection including duplicates. Each element in the result should appear as many times as it appears in **both** arrays. The result order does not matter.\n\n```\nsolve([1, 2, 2, 1], [2, 2])         # → [2, 2]\nsolve([4, 9, 5], [9, 4, 9, 8, 4])  # → [4, 9]  (or [9, 4])\nsolve([1, 2, 2, 3], [2, 2, 4])     # → [2, 2]\n```\n\nReturn the result sorted for determinism.",
+    "description": "Given two lists `nums1` and `nums2`, return a list of their intersection including duplicates. Each element in the result should appear as many times as it appears in **both** arrays. The result order does not matter.\n\n```\nsolve([1, 2, 2, 1], [2, 2])         # \u2192 [2, 2]\nsolve([4, 9, 5], [9, 4, 9, 8, 4])  # \u2192 [4, 9]  (or [9, 4])\nsolve([1, 2, 2, 3], [2, 2, 4])     # \u2192 [2, 2]\n```\n\nReturn the result sorted for determinism.",
     "starter_code": "def solve(nums1: list, nums2: list) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(nums1, nums2):\n    freq = {}\n    for n in nums1:\n        freq[n] = freq.get(n, 0) + 1\n    result = []\n    for n in nums2:\n        if freq.get(n, 0) > 0:\n            result.append(n)\n            freq[n] -= 1\n    return sorted(result)",
     "solution_code": "def solve(nums1, nums2):\n    freq = {}\n    for n in nums1:\n        freq[n] = freq.get(n, 0) + 1\n    result = []\n    for n in nums2:\n        if freq.get(n, 0) > 0:\n            result.append(n)\n            freq[n] -= 1\n    return sorted(result)",
@@ -1158,11 +1158,11 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Longest Consecutive Sequence",
-    "description": "Given an unsorted list of integers `nums`, return the length of the longest sequence of consecutive integers (e.g. 1, 2, 3, 4). Solve in O(n).\n\n```\nsolve([100, 4, 200, 1, 3, 2])    # → 4  (sequence: 1,2,3,4)\nsolve([0, 3, 7, 2, 5, 8, 4, 6, 0, 1])  # → 9\nsolve([])                         # → 0\n```",
+    "description": "Given an unsorted list of integers `nums`, return the length of the longest sequence of consecutive integers (e.g. 1, 2, 3, 4). Solve in O(n).\n\n```\nsolve([100, 4, 200, 1, 3, 2])    # \u2192 4  (sequence: 1,2,3,4)\nsolve([0, 3, 7, 2, 5, 8, 4, 6, 0, 1])  # \u2192 9\nsolve([])                         # \u2192 0\n```",
     "starter_code": "def solve(nums: list) -> int:\n    # O(n) using a set\n    pass",
     "expected_code": "def solve(nums):\n    num_set = set(nums)\n    best = 0\n    for n in num_set:\n        if n - 1 not in num_set:  # start of a sequence\n            length = 1\n            while n + length in num_set:\n                length += 1\n            best = max(best, length)\n    return best",
     "solution_code": "def solve(nums):\n    num_set = set(nums)\n    best = 0\n    for n in num_set:\n        if n - 1 not in num_set:\n            length = 1\n            while n + length in num_set:\n                length += 1\n            best = max(best, length)\n    return best",
-    "explanation": "Convert the array to a set for O(1) lookups. Only start counting a sequence from a number n where n-1 is NOT in the set (i.e., n is a sequence start). Count upward while n+length exists in the set. Each number is visited at most twice overall, giving O(n) time. The naive O(n²) approach re-scans from every element; sorting and scanning is O(n log n).",
+    "explanation": "Convert the array to a set for O(1) lookups. Only start counting a sequence from a number n where n-1 is NOT in the set (i.e., n is a sequence start). Count upward while n+length exists in the set. Each number is visited at most twice overall, giving O(n) time. The naive O(n\u00b2) approach re-scans from every element; sorting and scanning is O(n log n).",
     "test_cases": [
       {
         "input": [
@@ -1241,7 +1241,7 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Kth Highest Revenue",
-    "description": "A sales dashboard needs the k-th highest transaction amount without fully sorting the dataset. Given a list of sale amounts `nums` and an integer `k`, return the k-th largest value (1-indexed: k=1 is the maximum).\n\n```\nsolve([500, 200, 800, 100, 600], 2)  # → 600\nsolve([3, 2, 1, 5, 6, 4], 2)          # → 5\n```",
+    "description": "A sales dashboard needs the k-th highest transaction amount without fully sorting the dataset. Given a list of sale amounts `nums` and an integer `k`, return the k-th largest value (1-indexed: k=1 is the maximum).\n\n```\nsolve([500, 200, 800, 100, 600], 2)  # \u2192 600\nsolve([3, 2, 1, 5, 6, 4], 2)          # \u2192 5\n```",
     "starter_code": "def solve(nums: list, k: int) -> int:\n    # Use a min-heap of size k\n    pass",
     "expected_code": "def solve(nums, k):\n    import heapq\n    heap = []\n    for n in nums:\n        heapq.heappush(heap, n)\n        if len(heap) > k:\n            heapq.heappop(heap)\n    return heap[0]",
     "solution_code": "def solve(nums, k):\n    import heapq\n    heap = []\n    for n in nums:\n        heapq.heappush(heap, n)\n        if len(heap) > k:\n            heapq.heappop(heap)\n    return heap[0]",
@@ -1333,7 +1333,7 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Rotate Array K Steps",
-    "description": "Given a list `nums` and an integer `k`, rotate the list to the **right** by `k` steps in-place and return the modified list.\n\n```\nsolve([1, 2, 3, 4, 5, 6, 7], 3)  # → [5, 6, 7, 1, 2, 3, 4]\nsolve([-1, -100, 3, 99], 2)       # → [3, 99, -1, -100]\nsolve([1, 2], 3)                   # → [2, 1]\n```",
+    "description": "Given a list `nums` and an integer `k`, rotate the list to the **right** by `k` steps in-place and return the modified list.\n\n```\nsolve([1, 2, 3, 4, 5, 6, 7], 3)  # \u2192 [5, 6, 7, 1, 2, 3, 4]\nsolve([-1, -100, 3, 99], 2)       # \u2192 [3, 99, -1, -100]\nsolve([1, 2], 3)                   # \u2192 [2, 1]\n```",
     "starter_code": "def solve(nums: list, k: int) -> list:\n    # Rotate in-place using reversal trick\n    pass",
     "expected_code": "def solve(nums, k):\n    n = len(nums)\n    k = k % n\n    def reverse(lo, hi):\n        while lo < hi:\n            nums[lo], nums[hi] = nums[hi], nums[lo]\n            lo += 1\n            hi -= 1\n    reverse(0, n - 1)\n    reverse(0, k - 1)\n    reverse(k, n - 1)\n    return nums",
     "solution_code": "def solve(nums, k):\n    n = len(nums)\n    k = k % n\n    def reverse(lo, hi):\n        while lo < hi:\n            nums[lo], nums[hi] = nums[hi], nums[lo]\n            lo += 1\n            hi -= 1\n    reverse(0, n - 1)\n    reverse(0, k - 1)\n    reverse(k, n - 1)\n    return nums",
@@ -1436,7 +1436,7 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Decode String",
-    "description": "Given an encoded string, decode it. The encoding rule is `k[encoded_string]`, meaning the `encoded_string` inside the brackets is repeated exactly `k` times. `k` is always a positive integer. Brackets may be nested.\n\n```\nsolve('3[a]2[bc]')      # → 'aaabcbc'\nsolve('3[a2[c]]')       # → 'accaccacc'\nsolve('2[abc]3[cd]ef')  # → 'abcabccdcdcdef'\n```",
+    "description": "Given an encoded string, decode it. The encoding rule is `k[encoded_string]`, meaning the `encoded_string` inside the brackets is repeated exactly `k` times. `k` is always a positive integer. Brackets may be nested.\n\n```\nsolve('3[a]2[bc]')      # \u2192 'aaabcbc'\nsolve('3[a2[c]]')       # \u2192 'accaccacc'\nsolve('2[abc]3[cd]ef')  # \u2192 'abcabccdcdcdef'\n```",
     "starter_code": "def solve(s: str) -> str:\n    # Use a stack\n    pass",
     "expected_code": "def solve(s):\n    stack = []\n    current_str = ''\n    current_num = 0\n    for ch in s:\n        if ch.isdigit():\n            current_num = current_num * 10 + int(ch)\n        elif ch == '[':\n            stack.append((current_str, current_num))\n            current_str = ''\n            current_num = 0\n        elif ch == ']':\n            prev_str, num = stack.pop()\n            current_str = prev_str + num * current_str\n        else:\n            current_str += ch\n    return current_str",
     "solution_code": "def solve(s):\n    stack = []\n    current_str = ''\n    current_num = 0\n    for ch in s:\n        if ch.isdigit():\n            current_num = current_num * 10 + int(ch)\n        elif ch == '[':\n            stack.append((current_str, current_num))\n            current_str = ''\n            current_num = 0\n        elif ch == ']':\n            prev_str, num = stack.pop()\n            current_str = prev_str + num * current_str\n        else:\n            current_str += ch\n    return current_str",
@@ -1490,11 +1490,11 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Evaluate Reverse Polish Notation",
-    "description": "Given a list of tokens in Reverse Polish Notation (postfix), evaluate the expression and return the integer result. Valid operators are `+`, `-`, `*`, `/` (integer division truncating toward zero).\n\n```\nsolve(['2','1','+','3','*'])        # → 9\nsolve(['4','13','5','/','+'])       # → 6\nsolve(['10','6','9','3','+','-1','*','/'])  # → -2\n```",
+    "description": "Given a list of tokens in Reverse Polish Notation (postfix), evaluate the expression and return the integer result. Valid operators are `+`, `-`, `*`, `/` (integer division truncating toward zero).\n\n```\nsolve(['2','1','+','3','*'])        # \u2192 9\nsolve(['4','13','5','/','+'])       # \u2192 6\nsolve(['10','6','9','3','+','-1','*','/'])  # \u2192 -2\n```",
     "starter_code": "def solve(tokens: list) -> int:\n    # Use a stack\n    pass",
     "expected_code": "def solve(tokens):\n    stack = []\n    ops = {'+', '-', '*', '/'}\n    for t in tokens:\n        if t in ops:\n            b = stack.pop()\n            a = stack.pop()\n            if t == '+':\n                stack.append(a + b)\n            elif t == '-':\n                stack.append(a - b)\n            elif t == '*':\n                stack.append(a * b)\n            elif t == '/':\n                stack.append(int(a / b))  # truncate toward zero\n        else:\n            stack.append(int(t))\n    return stack[0]",
     "solution_code": "def solve(tokens):\n    stack = []\n    ops = {'+', '-', '*', '/'}\n    for t in tokens:\n        if t in ops:\n            b = stack.pop()\n            a = stack.pop()\n            if t == '+':\n                stack.append(a + b)\n            elif t == '-':\n                stack.append(a - b)\n            elif t == '*':\n                stack.append(a * b)\n            elif t == '/':\n                stack.append(int(a / b))\n        else:\n            stack.append(int(t))\n    return stack[0]",
-    "explanation": "Use a stack. For each token: push numbers as integers. For operators, pop two operands (b then a — order matters for - and /), apply the operator, and push the result. Use int(a / b) rather than a // b to truncate toward zero for negative numbers (Python's // floors toward negative infinity). The stack will contain exactly one value at the end: the result.",
+    "explanation": "Use a stack. For each token: push numbers as integers. For operators, pop two operands (b then a \u2014 order matters for - and /), apply the operator, and push the result. Use int(a / b) rather than a // b to truncate toward zero for negative numbers (Python's // floors toward negative infinity). The stack will contain exactly one value at the end: the result.",
     "test_cases": [
       {
         "input": [
@@ -1564,7 +1564,7 @@
     "public_test_cases": 2,
     "hints": [
       "The expression resolves from the inside out as operators consume the most recent unresolved values.",
-      "For division, use int(a / b) — not a // b — to truncate toward zero (important for negative numbers)."
+      "For division, use int(a / b) \u2014 not a // b \u2014 to truncate toward zero (important for negative numbers)."
     ],
     "concepts": [
       "stack",
@@ -1578,11 +1578,11 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Jump Game",
-    "description": "Given a list `nums` where `nums[i]` is the maximum number of steps you can jump forward from index `i`, return `True` if you can reach the last index starting from index 0, or `False` otherwise.\n\n```\nsolve([2, 3, 1, 1, 4])  # → True\nsolve([3, 2, 1, 0, 4])  # → False\nsolve([0])               # → True\n```",
+    "description": "Given a list `nums` where `nums[i]` is the maximum number of steps you can jump forward from index `i`, return `True` if you can reach the last index starting from index 0, or `False` otherwise.\n\n```\nsolve([2, 3, 1, 1, 4])  # \u2192 True\nsolve([3, 2, 1, 0, 4])  # \u2192 False\nsolve([0])               # \u2192 True\n```",
     "starter_code": "def solve(nums: list) -> bool:\n    # Greedy approach\n    pass",
     "expected_code": "def solve(nums):\n    max_reach = 0\n    for i, jump in enumerate(nums):\n        if i > max_reach:\n            return False\n        max_reach = max(max_reach, i + jump)\n    return True",
     "solution_code": "def solve(nums):\n    max_reach = 0\n    for i, jump in enumerate(nums):\n        if i > max_reach:\n            return False\n        max_reach = max(max_reach, i + jump)\n    return True",
-    "explanation": "Track the farthest index reachable so far (max_reach). For each index i, if i > max_reach, it means we can't reach index i — return False. Otherwise, update max_reach = max(max_reach, i + nums[i]). If we complete the loop, the last index was reachable. This greedy O(n) approach beats the O(n²) DP approach that checks all subproblems explicitly.",
+    "explanation": "Track the farthest index reachable so far (max_reach). For each index i, if i > max_reach, it means we can't reach index i \u2014 return False. Otherwise, update max_reach = max(max_reach, i + nums[i]). If we complete the loop, the last index was reachable. This greedy O(n) approach beats the O(n\u00b2) DP approach that checks all subproblems explicitly.",
     "test_cases": [
       {
         "input": [
@@ -1654,11 +1654,11 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Next Permutation",
-    "description": "Given a list of integers `nums`, rearrange the elements into the next lexicographically greater permutation. If no such permutation exists (the array is descending), rearrange to the smallest permutation (ascending order). Modify in-place and return the list.\n\n```\nsolve([1, 2, 3])  # → [1, 3, 2]\nsolve([3, 2, 1])  # → [1, 2, 3]\nsolve([1, 1, 5])  # → [1, 5, 1]\n```",
+    "description": "Given a list of integers `nums`, rearrange the elements into the next lexicographically greater permutation. If no such permutation exists (the array is descending), rearrange to the smallest permutation (ascending order). Modify in-place and return the list.\n\n```\nsolve([1, 2, 3])  # \u2192 [1, 3, 2]\nsolve([3, 2, 1])  # \u2192 [1, 2, 3]\nsolve([1, 1, 5])  # \u2192 [1, 5, 1]\n```",
     "starter_code": "def solve(nums: list) -> list:\n    # In-place modification\n    pass",
     "expected_code": "def solve(nums):\n    n = len(nums)\n    i = n - 2\n    while i >= 0 and nums[i] >= nums[i + 1]:\n        i -= 1\n    if i >= 0:\n        j = n - 1\n        while nums[j] <= nums[i]:\n            j -= 1\n        nums[i], nums[j] = nums[j], nums[i]\n    lo, hi = i + 1, n - 1\n    while lo < hi:\n        nums[lo], nums[hi] = nums[hi], nums[lo]\n        lo += 1\n        hi -= 1\n    return nums",
     "solution_code": "def solve(nums):\n    n = len(nums)\n    i = n - 2\n    while i >= 0 and nums[i] >= nums[i + 1]:\n        i -= 1\n    if i >= 0:\n        j = n - 1\n        while nums[j] <= nums[i]:\n            j -= 1\n        nums[i], nums[j] = nums[j], nums[i]\n    lo, hi = i + 1, n - 1\n    while lo < hi:\n        nums[lo], nums[hi] = nums[hi], nums[lo]\n        lo += 1\n        hi -= 1\n    return nums",
-    "explanation": "Step 1: find the rightmost index i where nums[i] < nums[i+1] (the first descent from the right). Step 2: find the rightmost index j > i where nums[j] > nums[i] and swap them. Step 3: reverse the suffix after index i (it was descending, now it becomes ascending — the smallest suffix). If no descent is found (fully descending array), just reverse the whole array. O(n) time, O(1) space.",
+    "explanation": "Step 1: find the rightmost index i where nums[i] < nums[i+1] (the first descent from the right). Step 2: find the rightmost index j > i where nums[j] > nums[i] and swap them. Step 3: reverse the suffix after index i (it was descending, now it becomes ascending \u2014 the smallest suffix). If no descent is found (fully descending array), just reverse the whole array. O(n) time, O(1) space.",
     "test_cases": [
       {
         "input": [
@@ -1729,7 +1729,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Find the rightmost index i where nums[i] < nums[i+1]. This is the 'pivot' — the digit that needs to increase.",
+      "Find the rightmost index i where nums[i] < nums[i+1]. This is the 'pivot' \u2014 the digit that needs to increase.",
       "Swap nums[i] with the smallest value to its right that is still larger than nums[i], then reverse the suffix after i."
     ],
     "concepts": [
@@ -1744,7 +1744,7 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Sort Colors (Dutch National Flag)",
-    "description": "Given a list `nums` containing only `0`s, `1`s, and `2`s, sort them in-place so all 0s come first, then 1s, then 2s. Use only constant extra space (no counting sort). Return the modified list.\n\n```\nsolve([2, 0, 2, 1, 1, 0])  # → [0, 0, 1, 1, 2, 2]\nsolve([2, 0, 1])             # → [0, 1, 2]\nsolve([0])                   # → [0]\n```",
+    "description": "Given a list `nums` containing only `0`s, `1`s, and `2`s, sort them in-place so all 0s come first, then 1s, then 2s. Use only constant extra space (no counting sort). Return the modified list.\n\n```\nsolve([2, 0, 2, 1, 1, 0])  # \u2192 [0, 0, 1, 1, 2, 2]\nsolve([2, 0, 1])             # \u2192 [0, 1, 2]\nsolve([0])                   # \u2192 [0]\n```",
     "starter_code": "def solve(nums: list) -> list:\n    # One pass, three pointers (Dutch National Flag)\n    pass",
     "expected_code": "def solve(nums):\n    lo, mid, hi = 0, 0, len(nums) - 1\n    while mid <= hi:\n        if nums[mid] == 0:\n            nums[lo], nums[mid] = nums[mid], nums[lo]\n            lo += 1\n            mid += 1\n        elif nums[mid] == 1:\n            mid += 1\n        else:\n            nums[mid], nums[hi] = nums[hi], nums[mid]\n            hi -= 1\n    return nums",
     "solution_code": "def solve(nums):\n    lo, mid, hi = 0, 0, len(nums) - 1\n    while mid <= hi:\n        if nums[mid] == 0:\n            nums[lo], nums[mid] = nums[mid], nums[lo]\n            lo += 1\n            mid += 1\n        elif nums[mid] == 1:\n            mid += 1\n        else:\n            nums[mid], nums[hi] = nums[hi], nums[mid]\n            hi -= 1\n    return nums",
@@ -1832,7 +1832,7 @@
     "public_test_cases": 2,
     "hints": [
       "Use three pointers: lo (end of 0-region), mid (current element), hi (start of 2-region).",
-      "When nums[mid] == 2, swap with hi and only decrement hi — do not advance mid, since the swapped element still needs to be examined."
+      "When nums[mid] == 2, swap with hi and only decrement hi \u2014 do not advance mid, since the swapped element still needs to be examined."
     ],
     "concepts": [
       "three-way partition",
@@ -1846,11 +1846,11 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Find Peak Element",
-    "description": "Given a list `nums`, return the index of any peak element — an element that is strictly greater than its neighbors. You may assume `nums[-1]` and `nums[n]` are negative infinity. There is at least one peak. Solve in O(log n).\n\n```\nsolve([1, 2, 3, 1])   # → 2\nsolve([1, 2, 1, 3, 5, 6, 4])  # → 1 or 5 (any valid peak index)\n```",
-    "starter_code": "def solve(nums: list) -> int:\n    # Binary search — O(log n)\n    pass",
+    "description": "Given a list `nums`, return the index of any peak element \u2014 an element that is strictly greater than its neighbors. You may assume `nums[-1]` and `nums[n]` are negative infinity. There is at least one peak. Solve in O(log n).\n\n```\nsolve([1, 2, 3, 1])   # \u2192 2\nsolve([1, 2, 1, 3, 5, 6, 4])  # \u2192 1 or 5 (any valid peak index)\n```",
+    "starter_code": "def solve(nums: list) -> int:\n    # Binary search \u2014 O(log n)\n    pass",
     "expected_code": "def solve(nums):\n    lo, hi = 0, len(nums) - 1\n    while lo < hi:\n        mid = (lo + hi) // 2\n        if nums[mid] < nums[mid + 1]:\n            lo = mid + 1\n        else:\n            hi = mid\n    return lo",
     "solution_code": "def solve(nums):\n    lo, hi = 0, len(nums) - 1\n    while lo < hi:\n        mid = (lo + hi) // 2\n        if nums[mid] < nums[mid + 1]:\n            lo = mid + 1\n        else:\n            hi = mid\n    return lo",
-    "explanation": "Binary search works because: if nums[mid] < nums[mid+1], a peak must exist in the right half (the slope is going up, so we'll either keep climbing or eventually descend — either way there's a peak). Otherwise a peak exists in the left half including mid (nums[mid] >= nums[mid+1] means mid itself might be a peak or there's one to the left). Converges to a single peak index in O(log n). Linear scan is O(n).",
+    "explanation": "Binary search works because: if nums[mid] < nums[mid+1], a peak must exist in the right half (the slope is going up, so we'll either keep climbing or eventually descend \u2014 either way there's a peak). Otherwise a peak exists in the left half including mid (nums[mid] >= nums[mid+1] means mid itself might be a peak or there's one to the left). Converges to a single peak index in O(log n). Linear scan is O(n).",
     "test_cases": [
       {
         "input": [
@@ -1907,7 +1907,7 @@
     "public_test_cases": 2,
     "hints": [
       "Use binary search: compare nums[mid] with nums[mid+1] to decide which half must contain a peak.",
-      "If nums[mid] < nums[mid+1], the right half is ascending and must contain a peak — move lo to mid+1. Otherwise move hi to mid."
+      "If nums[mid] < nums[mid+1], the right half is ascending and must contain a peak \u2014 move lo to mid+1. Otherwise move hi to mid."
     ],
     "concepts": [
       "binary search",
@@ -1921,7 +1921,7 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Valid Sudoku (Rows and Columns)",
-    "description": "Given a 9×9 Sudoku board as a list of lists (with `'.'` for empty cells), return `True` if all rows and all columns contain no duplicate digits (1–9). You do not need to validate the 3×3 boxes.\n\nEach row and column should contain digits 1–9 with no repetition among filled cells.\n\n```\nboard = [\n  ['5','3','.','.','7','.','.','.','.'],\n  ['6','.','.','1','9','5','.','.','.'],\n  ... (valid board)\n]\nsolve(board)  # → True\n```",
+    "description": "Given a 9\u00d79 Sudoku board as a list of lists (with `'.'` for empty cells), return `True` if all rows and all columns contain no duplicate digits (1\u20139). You do not need to validate the 3\u00d73 boxes.\n\nEach row and column should contain digits 1\u20139 with no repetition among filled cells.\n\n```\nboard = [\n  ['5','3','.','.','7','.','.','.','.'],\n  ['6','.','.','1','9','5','.','.','.'],\n  ... (valid board)\n]\nsolve(board)  # \u2192 True\n```",
     "starter_code": "def solve(board: list) -> bool:\n    # Check rows and columns only\n    pass",
     "expected_code": "def solve(board):\n    for i in range(9):\n        row_seen = set()\n        col_seen = set()\n        for j in range(9):\n            r = board[i][j]\n            c = board[j][i]\n            if r != '.':\n                if r in row_seen:\n                    return False\n                row_seen.add(r)\n            if c != '.':\n                if c in col_seen:\n                    return False\n                col_seen.add(c)\n    return True",
     "solution_code": "def solve(board):\n    for i in range(9):\n        row_seen = set()\n        col_seen = set()\n        for j in range(9):\n            r = board[i][j]\n            c = board[j][i]\n            if r != '.':\n                if r in row_seen:\n                    return False\n                row_seen.add(r)\n            if c != '.':\n                if c in col_seen:\n                    return False\n                col_seen.add(c)\n    return True",
@@ -2475,11 +2475,11 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Container With Most Water",
-    "description": "Given a list `heights` where `heights[i]` represents the height of a vertical line at position `i`, find two lines that together with the x-axis form a container that holds the most water. Return the maximum area.\n\n```\nsolve([1, 8, 6, 2, 5, 4, 8, 3, 7])  # → 49\nsolve([1, 1])                         # → 1\nsolve([4, 3, 2, 1, 4])               # → 16\n```\n\nArea = min(heights[l], heights[r]) * (r - l).",
-    "starter_code": "def solve(heights: list) -> int:\n    # Two pointers — O(n)\n    pass",
+    "description": "Given a list `heights` where `heights[i]` represents the height of a vertical line at position `i`, find two lines that together with the x-axis form a container that holds the most water. Return the maximum area.\n\n```\nsolve([1, 8, 6, 2, 5, 4, 8, 3, 7])  # \u2192 49\nsolve([1, 1])                         # \u2192 1\nsolve([4, 3, 2, 1, 4])               # \u2192 16\n```\n\nArea = min(heights[l], heights[r]) * (r - l).",
+    "starter_code": "def solve(heights: list) -> int:\n    # Two pointers \u2014 O(n)\n    pass",
     "expected_code": "def solve(heights):\n    lo, hi = 0, len(heights) - 1\n    max_area = 0\n    while lo < hi:\n        area = min(heights[lo], heights[hi]) * (hi - lo)\n        max_area = max(max_area, area)\n        if heights[lo] < heights[hi]:\n            lo += 1\n        else:\n            hi -= 1\n    return max_area",
     "solution_code": "def solve(heights):\n    lo, hi = 0, len(heights) - 1\n    max_area = 0\n    while lo < hi:\n        area = min(heights[lo], heights[hi]) * (hi - lo)\n        max_area = max(max_area, area)\n        if heights[lo] < heights[hi]:\n            lo += 1\n        else:\n            hi -= 1\n    return max_area",
-    "explanation": "Start with the widest possible container (lo=0, hi=n-1). The area is min(h[lo], h[hi]) * width. To possibly increase area, we must increase the minimum height — move the shorter pointer inward. Moving the taller pointer can only decrease width without guaranteeing a height increase, so it's never optimal. This greedy two-pointer approach is O(n) vs O(n²) for brute force.",
+    "explanation": "Start with the widest possible container (lo=0, hi=n-1). The area is min(h[lo], h[hi]) * width. To possibly increase area, we must increase the minimum height \u2014 move the shorter pointer inward. Moving the taller pointer can only decrease width without guaranteeing a height increase, so it's never optimal. This greedy two-pointer approach is O(n) vs O(n\u00b2) for brute force.",
     "test_cases": [
       {
         "input": [
@@ -2546,7 +2546,7 @@
     "public_test_cases": 2,
     "hints": [
       "Start with two pointers at the leftmost and rightmost positions. The width is hi - lo.",
-      "Always move the pointer at the shorter height inward — keeping the taller side and shrinking the width is the only way to potentially increase area."
+      "Always move the pointer at the shorter height inward \u2014 keeping the taller side and shrinking the width is the only way to potentially increase area."
     ],
     "concepts": [
       "two pointers",
@@ -2560,11 +2560,11 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Climbing Stairs",
-    "description": "You are climbing a staircase with `n` steps. At each step you can climb 1 or 2 steps. Return the number of distinct ways to reach the top.\n\n```\nsolve(1)   # → 1\nsolve(2)   # → 2\nsolve(5)   # → 8\nsolve(10)  # → 89\n```",
+    "description": "You are climbing a staircase with `n` steps. At each step you can climb 1 or 2 steps. Return the number of distinct ways to reach the top.\n\n```\nsolve(1)   # \u2192 1\nsolve(2)   # \u2192 2\nsolve(5)   # \u2192 8\nsolve(10)  # \u2192 89\n```",
     "starter_code": "def solve(n: int) -> int:\n    # Dynamic programming\n    pass",
     "expected_code": "def solve(n):\n    if n <= 2:\n        return n\n    prev2, prev1 = 1, 2\n    for _ in range(3, n + 1):\n        prev2, prev1 = prev1, prev1 + prev2\n    return prev1",
     "solution_code": "def solve(n):\n    if n <= 2:\n        return n\n    prev2, prev1 = 1, 2\n    for _ in range(3, n + 1):\n        prev2, prev1 = prev1, prev1 + prev2\n    return prev1",
-    "explanation": "The recurrence is dp[n] = dp[n-1] + dp[n-2] — identical to Fibonacci. To reach step n, you either came from step n-1 (1-step jump) or step n-2 (2-step jump). Base cases: dp[1]=1, dp[2]=2. Use two rolling variables instead of an array to keep space O(1) while time remains O(n). The naive recursive solution is O(2^n).",
+    "explanation": "The recurrence is dp[n] = dp[n-1] + dp[n-2] \u2014 identical to Fibonacci. To reach step n, you either came from step n-1 (1-step jump) or step n-2 (2-step jump). Base cases: dp[1]=1, dp[2]=2. Use two rolling variables instead of an array to keep space O(1) while time remains O(n). The naive recursive solution is O(2^n).",
     "test_cases": [
       {
         "input": [
@@ -2600,7 +2600,7 @@
     "public_test_cases": 2,
     "hints": [
       "The number of ways to reach step n equals the number of ways to reach step n-1 plus the number of ways to reach step n-2.",
-      "This is exactly the Fibonacci recurrence — use two rolling variables to keep space O(1)."
+      "This is exactly the Fibonacci recurrence \u2014 use two rolling variables to keep space O(1)."
     ],
     "concepts": [
       "dynamic programming",
@@ -2614,11 +2614,11 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Maximum Revenue Streak",
-    "description": "A revenue analyst wants to find the single best contiguous stretch of daily profit/loss figures. Given a list of integers `nums` representing daily profits (positive) or losses (negative), return the maximum sum of any contiguous subarray.\n\n```\nsolve([-2, 1, -3, 4, -1, 2, 1, -5, 4])  # → 6  (subarray [4,-1,2,1])\nsolve([-1, -2, -3])                          # → -1\n```",
-    "starter_code": "def solve(nums: list) -> int:\n    # Kadane's algorithm — O(n)\n    pass",
+    "description": "A revenue analyst wants to find the single best contiguous stretch of daily profit/loss figures. Given a list of integers `nums` representing daily profits (positive) or losses (negative), return the maximum sum of any contiguous subarray.\n\n```\nsolve([-2, 1, -3, 4, -1, 2, 1, -5, 4])  # \u2192 6  (subarray [4,-1,2,1])\nsolve([-1, -2, -3])                          # \u2192 -1\n```",
+    "starter_code": "def solve(nums: list) -> int:\n    # Kadane's algorithm \u2014 O(n)\n    pass",
     "expected_code": "def solve(nums):\n    max_sum = nums[0]\n    current_sum = nums[0]\n    for n in nums[1:]:\n        current_sum = max(n, current_sum + n)\n        max_sum = max(max_sum, current_sum)\n    return max_sum",
     "solution_code": "def solve(nums):\n    max_sum = nums[0]\n    current_sum = nums[0]\n    for n in nums[1:]:\n        current_sum = max(n, current_sum + n)\n        max_sum = max(max_sum, current_sum)\n    return max_sum",
-    "explanation": "Kadane's algorithm: maintain a running sum current_sum. At each element, decide whether to extend the existing subarray (current_sum + n) or start fresh at the current element (n) — take the max. Track the global maximum across all positions. Initialise both with nums[0] to correctly handle all-negative arrays. O(n) time, O(1) space. A naive O(n²) approach checks every subarray.",
+    "explanation": "Kadane's algorithm: maintain a running sum current_sum. At each element, decide whether to extend the existing subarray (current_sum + n) or start fresh at the current element (n) \u2014 take the max. Track the global maximum across all positions. Initialise both with nums[0] to correctly handle all-negative arrays. O(n) time, O(1) space. A naive O(n\u00b2) approach checks every subarray.",
     "test_cases": [
       {
         "input": [
@@ -2678,7 +2678,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "At each position, decide: extend the current subarray (add current element) or start a new subarray at this element — pick whichever is larger.",
+      "At each position, decide: extend the current subarray (add current element) or start a new subarray at this element \u2014 pick whichever is larger.",
       "Track the global maximum alongside the running sum. Initialize both with nums[0] to handle all-negative arrays."
     ],
     "concepts": [
@@ -2693,11 +2693,11 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Word Pattern Match",
-    "description": "Given a pattern string `pattern` (e.g. `'abba'`) and a list of words `words` (e.g. `['dog','cat','cat','dog']`), return `True` if the words follow the pattern with a one-to-one (bijective) mapping between each pattern letter and a word.\n\n```\nsolve('abba', ['dog', 'cat', 'cat', 'dog'])  # → True\nsolve('abba', ['dog', 'cat', 'cat', 'fish']) # → False\nsolve('aaaa', ['dog', 'dog', 'dog', 'dog'])  # → True\nsolve('abba', ['dog', 'dog', 'dog', 'dog'])  # → False\n```",
-    "starter_code": "def solve(pattern: str, words: list) -> bool:\n    # Bijective mapping — both directions\n    pass",
+    "description": "Given a pattern string `pattern` (e.g. `'abba'`) and a list of words `words` (e.g. `['dog','cat','cat','dog']`), return `True` if the words follow the pattern with a one-to-one (bijective) mapping between each pattern letter and a word.\n\n```\nsolve('abba', ['dog', 'cat', 'cat', 'dog'])  # \u2192 True\nsolve('abba', ['dog', 'cat', 'cat', 'fish']) # \u2192 False\nsolve('aaaa', ['dog', 'dog', 'dog', 'dog'])  # \u2192 True\nsolve('abba', ['dog', 'dog', 'dog', 'dog'])  # \u2192 False\n```",
+    "starter_code": "def solve(pattern: str, words: list) -> bool:\n    # Bijective mapping \u2014 both directions\n    pass",
     "expected_code": "def solve(pattern, words):\n    if len(pattern) != len(words):\n        return False\n    char_to_word = {}\n    word_to_char = {}\n    for ch, w in zip(pattern, words):\n        if ch in char_to_word:\n            if char_to_word[ch] != w:\n                return False\n        else:\n            if w in word_to_char:\n                return False\n            char_to_word[ch] = w\n            word_to_char[w] = ch\n    return True",
     "solution_code": "def solve(pattern, words):\n    if len(pattern) != len(words):\n        return False\n    char_to_word = {}\n    word_to_char = {}\n    for ch, w in zip(pattern, words):\n        if ch in char_to_word:\n            if char_to_word[ch] != w:\n                return False\n        else:\n            if w in word_to_char:\n                return False\n            char_to_word[ch] = w\n            word_to_char[w] = ch\n    return True",
-    "explanation": "Maintain two dictionaries for the bijection: char_to_word (pattern letter → word) and word_to_char (word → pattern letter). For each pair, if the letter is already mapped, verify it maps to the same word. If the letter is new, verify the word isn't already mapped to a different letter (prevents two letters mapping to the same word). Both checks are necessary for a true bijection.",
+    "explanation": "Maintain two dictionaries for the bijection: char_to_word (pattern letter \u2192 word) and word_to_char (word \u2192 pattern letter). For each pair, if the letter is already mapped, verify it maps to the same word. If the letter is new, verify the word isn't already mapped to a different letter (prevents two letters mapping to the same word). Both checks are necessary for a true bijection.",
     "test_cases": [
       {
         "input": [
@@ -2763,7 +2763,7 @@
     "public_test_cases": 2,
     "hints": [
       "Maintain two dictionaries: one mapping each pattern character to a word, and one mapping each word back to a character.",
-      "For a true bijection, two different pattern characters cannot map to the same word — check both directions."
+      "For a true bijection, two different pattern characters cannot map to the same word \u2014 check both directions."
     ],
     "concepts": [
       "hash map",
@@ -2777,11 +2777,11 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Longest Common Subsequence",
-    "description": "Given two strings `s1` and `s2`, return the length of their longest common subsequence (LCS). A subsequence does not need to be contiguous.\n\n```\nsolve('abcde', 'ace')    # → 3  ('ace')\nsolve('abc', 'abc')      # → 3\nsolve('abc', 'def')      # → 0\nsolve('oxcpqrsvwf', 'shmtulqrypy')  # → 2\n```",
-    "starter_code": "def solve(s1: str, s2: str) -> int:\n    # Dynamic programming — O(m*n)\n    pass",
+    "description": "Given two strings `s1` and `s2`, return the length of their longest common subsequence (LCS). A subsequence does not need to be contiguous.\n\n```\nsolve('abcde', 'ace')    # \u2192 3  ('ace')\nsolve('abc', 'abc')      # \u2192 3\nsolve('abc', 'def')      # \u2192 0\nsolve('oxcpqrsvwf', 'shmtulqrypy')  # \u2192 2\n```",
+    "starter_code": "def solve(s1: str, s2: str) -> int:\n    # Dynamic programming \u2014 O(m*n)\n    pass",
     "expected_code": "def solve(s1, s2):\n    m, n = len(s1), len(s2)\n    dp = [[0] * (n + 1) for _ in range(m + 1)]\n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            if s1[i - 1] == s2[j - 1]:\n                dp[i][j] = dp[i - 1][j - 1] + 1\n            else:\n                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])\n    return dp[m][n]",
     "solution_code": "def solve(s1, s2):\n    m, n = len(s1), len(s2)\n    dp = [[0] * (n + 1) for _ in range(m + 1)]\n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            if s1[i - 1] == s2[j - 1]:\n                dp[i][j] = dp[i - 1][j - 1] + 1\n            else:\n                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])\n    return dp[m][n]",
-    "explanation": "Build an (m+1) × (n+1) DP table where dp[i][j] = LCS length of s1[:i] and s2[:j]. Recurrence: if characters match, dp[i][j] = dp[i-1][j-1] + 1; otherwise take the max of skipping one character from either string: max(dp[i-1][j], dp[i][j-1]). Base cases are zero (empty prefix). Answer is dp[m][n]. Time O(m·n), space O(m·n) — improvable to O(min(m,n)) with a rolling array. Naive recursion is O(2^(m+n)).",
+    "explanation": "Build an (m+1) \u00d7 (n+1) DP table where dp[i][j] = LCS length of s1[:i] and s2[:j]. Recurrence: if characters match, dp[i][j] = dp[i-1][j-1] + 1; otherwise take the max of skipping one character from either string: max(dp[i-1][j], dp[i][j-1]). Base cases are zero (empty prefix). Answer is dp[m][n]. Time O(m\u00b7n), space O(m\u00b7n) \u2014 improvable to O(min(m,n)) with a rolling array. Naive recursion is O(2^(m+n)).",
     "test_cases": [
       {
         "input": [
@@ -2836,7 +2836,7 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Longest Unique Token Window",
-    "description": "A token parser needs to find the longest segment of an encoded string where all characters are distinct — used to measure the density of unique symbols in compressed data. Given a string `s`, return the length of the longest substring without any repeating characters.\n\n```\nsolve('abcabcbb')   # → 3  ('abc')\nsolve('bbbbb')        # → 1  ('b')\nsolve('pwwkew')       # → 3  ('wke')\n```",
+    "description": "A token parser needs to find the longest segment of an encoded string where all characters are distinct \u2014 used to measure the density of unique symbols in compressed data. Given a string `s`, return the length of the longest substring without any repeating characters.\n\n```\nsolve('abcabcbb')   # \u2192 3  ('abc')\nsolve('bbbbb')        # \u2192 1  ('b')\nsolve('pwwkew')       # \u2192 3  ('wke')\n```",
     "starter_code": "def solve(s: str) -> int:\n    # Your code here\n    pass",
     "expected_code": "def solve(s):\n    char_index = {}\n    left = 0\n    max_len = 0\n    for right, ch in enumerate(s):\n        if ch in char_index and char_index[ch] >= left:\n            left = char_index[ch] + 1\n        char_index[ch] = right\n        max_len = max(max_len, right - left + 1)\n    return max_len",
     "solution_code": "def solve(s):\n    char_index = {}\n    left = 0\n    max_len = 0\n    for right, ch in enumerate(s):\n        if ch in char_index and char_index[ch] >= left:\n            left = char_index[ch] + 1\n        char_index[ch] = right\n        max_len = max(max_len, right - left + 1)\n    return max_len",
@@ -2902,7 +2902,7 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Task scheduler",
-    "description": "Given a list of CPU tasks (characters `A`-`Z`) and a cooldown period `n` between identical tasks, return the minimum number of intervals needed to complete all tasks. The CPU can be idle during cooldown.\n\n```\nsolve(['A','A','A','B','B','B'], 2)  # → 8  (A→B→idle→A→B→idle→A→B)\nsolve(['A','A','A','B','B','B'], 0)  # → 6\nsolve(['A'], 2)                      # → 1\n```",
+    "description": "Given a list of CPU tasks (characters `A`-`Z`) and a cooldown period `n` between identical tasks, return the minimum number of intervals needed to complete all tasks. The CPU can be idle during cooldown.\n\n```\nsolve(['A','A','A','B','B','B'], 2)  # \u2192 8  (A\u2192B\u2192idle\u2192A\u2192B\u2192idle\u2192A\u2192B)\nsolve(['A','A','A','B','B','B'], 0)  # \u2192 6\nsolve(['A'], 2)                      # \u2192 1\n```",
     "starter_code": "def solve(tasks: list, n: int) -> int:\n    # Your code here\n    pass",
     "expected_code": "def solve(tasks, n):\n    from collections import Counter\n    counts = Counter(tasks)\n    max_count = max(counts.values())\n    max_count_tasks = sum(1 for v in counts.values() if v == max_count)\n    # Formula: (max_count - 1) * (n + 1) + max_count_tasks\n    # But if we have many task types, they fill the cooldown slots\n    return max(len(tasks), (max_count - 1) * (n + 1) + max_count_tasks)",
     "solution_code": "def solve(tasks, n):\n    from collections import Counter\n    counts = Counter(tasks)\n    max_count = max(counts.values())\n    max_count_tasks = sum(1 for v in counts.values() if v == max_count)\n    return max(len(tasks), (max_count - 1) * (n + 1) + max_count_tasks)",
@@ -2980,7 +2980,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "The bottleneck is the most frequent task — build a mental model of 'frames' of length (n+1) separated by the most frequent task",
+      "The bottleneck is the most frequent task \u2014 build a mental model of 'frames' of length (n+1) separated by the most frequent task",
       "The answer is max(len(tasks), (max_freq - 1) * (n + 1) + count_of_tasks_with_max_freq)"
     ],
     "concepts": [
@@ -2995,11 +2995,11 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Find all anagrams in a string",
-    "description": "Given strings `s` and `p`, return a sorted list of start indices in `s` where `p`'s anagram begins.\n\n```\nsolve('cbaebabacd', 'abc')  # → [0, 6]\nsolve('abab', 'ab')         # → [0, 1, 2]\nsolve('aa', 'bb')           # → []\n```",
+    "description": "Given strings `s` and `p`, return a sorted list of start indices in `s` where `p`'s anagram begins.\n\n```\nsolve('cbaebabacd', 'abc')  # \u2192 [0, 6]\nsolve('abab', 'ab')         # \u2192 [0, 1, 2]\nsolve('aa', 'bb')           # \u2192 []\n```",
     "starter_code": "def solve(s: str, p: str) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(s, p):\n    from collections import Counter\n    if len(p) > len(s):\n        return []\n    need = Counter(p)\n    window = Counter(s[:len(p)])\n    result = []\n    if window == need:\n        result.append(0)\n    for i in range(len(p), len(s)):\n        c_in = s[i]\n        c_out = s[i - len(p)]\n        window[c_in] += 1\n        window[c_out] -= 1\n        if window[c_out] == 0:\n            del window[c_out]\n        if window == need:\n            result.append(i - len(p) + 1)\n    return result",
     "solution_code": "def solve(s, p):\n    from collections import Counter\n    if len(p) > len(s):\n        return []\n    need = Counter(p)\n    window = Counter(s[:len(p)])\n    result = []\n    if window == need:\n        result.append(0)\n    for i in range(len(p), len(s)):\n        c_in, c_out = s[i], s[i - len(p)]\n        window[c_in] += 1\n        window[c_out] -= 1\n        if window[c_out] == 0:\n            del window[c_out]\n        if window == need:\n            result.append(i - len(p) + 1)\n    return result",
-    "explanation": "Fixed-size sliding window of length len(p). Initialize the window with the first len(p) characters. Slide right one character at a time: add the incoming character, remove the outgoing character, delete zero-count entries. Compare the window Counter to the target Counter — they are equal iff the window is an anagram of p. Time: O(|s| * 26) = O(|s|) since Counter comparison is O(alphabet size). Space: O(|p|).",
+    "explanation": "Fixed-size sliding window of length len(p). Initialize the window with the first len(p) characters. Slide right one character at a time: add the incoming character, remove the outgoing character, delete zero-count entries. Compare the window Counter to the target Counter \u2014 they are equal iff the window is an anagram of p. Time: O(|s| * 26) = O(|s|) since Counter comparison is O(alphabet size). Space: O(|p|).",
     "test_cases": [
       {
         "input": [
@@ -3059,7 +3059,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use a fixed-size sliding window of length len(p) — slide one character at a time, adding one and removing one",
+      "Use a fixed-size sliding window of length len(p) \u2014 slide one character at a time, adding one and removing one",
       "Compare frequency counters: the window is an anagram of p iff their Counter objects are equal"
     ],
     "concepts": [
@@ -3076,11 +3076,11 @@
     "topic": "python",
     "difficulty": "medium",
     "title": "Minimum height trees",
-    "description": "For a tree of `n` nodes (labeled `0` to `n-1`) given as undirected edges, the **Minimum Height Tree (MHT)** is rooted at the node that minimizes height. Return a sorted list of all valid root labels.\n\n```\nsolve(4, [[1,0],[1,2],[1,3]])           # → [1]\nsolve(6, [[3,0],[3,1],[3,2],[3,4],[5,4]])  # → [3, 4]\nsolve(1, [])                            # → [0]\nsolve(2, [[0,1]])                       # → [0, 1]\n```",
+    "description": "For a tree of `n` nodes (labeled `0` to `n-1`) given as undirected edges, the **Minimum Height Tree (MHT)** is rooted at the node that minimizes height. Return a sorted list of all valid root labels.\n\n```\nsolve(4, [[1,0],[1,2],[1,3]])           # \u2192 [1]\nsolve(6, [[3,0],[3,1],[3,2],[3,4],[5,4]])  # \u2192 [3, 4]\nsolve(1, [])                            # \u2192 [0]\nsolve(2, [[0,1]])                       # \u2192 [0, 1]\n```",
     "starter_code": "def solve(n: int, edges: list) -> list:\n    # Your code here\n    pass",
     "expected_code": "def solve(n, edges):\n    if n == 1:\n        return [0]\n    adj = [set() for _ in range(n)]\n    for u, v in edges:\n        adj[u].add(v)\n        adj[v].add(u)\n    leaves = [i for i in range(n) if len(adj[i]) == 1]\n    remaining = n\n    while remaining > 2:\n        remaining -= len(leaves)\n        new_leaves = []\n        for leaf in leaves:\n            neighbor = next(iter(adj[leaf]))\n            adj[neighbor].remove(leaf)\n            if len(adj[neighbor]) == 1:\n                new_leaves.append(neighbor)\n        leaves = new_leaves\n    return sorted(leaves)",
     "solution_code": "def solve(n, edges):\n    if n == 1:\n        return [0]\n    adj = [set() for _ in range(n)]\n    for u, v in edges:\n        adj[u].add(v)\n        adj[v].add(u)\n    leaves = [i for i in range(n) if len(adj[i]) == 1]\n    remaining = n\n    while remaining > 2:\n        remaining -= len(leaves)\n        new_leaves = []\n        for leaf in leaves:\n            neighbor = next(iter(adj[leaf]))\n            adj[neighbor].remove(leaf)\n            if len(adj[neighbor]) == 1:\n                new_leaves.append(neighbor)\n        leaves = new_leaves\n    return sorted(leaves)",
-    "explanation": "The MHT root(s) are the center(s) of the tree — at most 2. Algorithm: iteratively trim all current leaves (nodes with degree 1) until 1 or 2 nodes remain. Each round removes the outermost layer. The remaining nodes are the tree's centroid(s). This is topological-sort-style BFS: start from leaves inward. Stop when remaining <= 2. Time: O(n). Space: O(n).",
+    "explanation": "The MHT root(s) are the center(s) of the tree \u2014 at most 2. Algorithm: iteratively trim all current leaves (nodes with degree 1) until 1 or 2 nodes remain. Each round removes the outermost layer. The remaining nodes are the tree's centroid(s). This is topological-sort-style BFS: start from leaves inward. Stop when remaining <= 2. Time: O(n). Space: O(n).",
     "test_cases": [
       {
         "input": [
@@ -3197,7 +3197,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "The MHT roots are the center(s) of the tree — iteratively remove leaf nodes (degree 1) until 1 or 2 nodes remain",
+      "The MHT roots are the center(s) of the tree \u2014 iteratively remove leaf nodes (degree 1) until 1 or 2 nodes remain",
       "Each iteration removes the outermost ring of leaves; nodes that become degree-1 after removal become the next round's leaves"
     ],
     "concepts": [
@@ -3206,6 +3206,842 @@
       "BFS",
       "tree center",
       "graph"
+    ]
+  },
+  {
+    "id": 4330,
+    "order": 30,
+    "topic": "python",
+    "difficulty": "medium",
+    "mock_only": true,
+    "follow_up_id": 4626,
+    "title": "Count subarrays with sum exactly K",
+    "description": "Given an integer array `nums` and an integer `k`, return the total number of **contiguous subarrays** whose elements sum to exactly `k`.\n\n```\nsolve([1, 1, 1], 2)  # \u2192 2  (indices [0,1] and [1,2])\nsolve([1, 2, 3], 3)  # \u2192 2  ([1,2] and [3])\nsolve([1,-1,0], 0)   # \u2192 3  ([1,-1], [-1,0,... wait]\n```\n\nThe array may contain negative numbers. Aim for O(n) time.",
+    "starter_code": "def solve(nums: list, k: int) -> int:\n    # Your code here\n    pass",
+    "expected_code": "def solve(nums: list, k: int) -> int:\n    count = 0\n    prefix_sum = 0\n    freq = {0: 1}\n    for n in nums:\n        prefix_sum += n\n        count += freq.get(prefix_sum - k, 0)\n        freq[prefix_sum] = freq.get(prefix_sum, 0) + 1\n    return count",
+    "solution_code": "def solve(nums: list, k: int) -> int:\n    count = 0\n    prefix_sum = 0\n    freq = {0: 1}\n    for n in nums:\n        prefix_sum += n\n        count += freq.get(prefix_sum - k, 0)\n        freq[prefix_sum] = freq.get(prefix_sum, 0) + 1\n    return count",
+    "explanation": "A subarray nums[i..j] has sum k if prefix_sum[j] - prefix_sum[i-1] == k, i.e., prefix_sum[i-1] == prefix_sum[j] - k. Maintain a frequency map of prefix sums seen so far. For each position, look up how many earlier prefix sums equal current_prefix - k. Initialise freq={0:1} to handle subarrays starting at index 0.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            1,
+            1,
+            1
+          ],
+          2
+        ],
+        "expected": 2
+      },
+      {
+        "input": [
+          [
+            1,
+            2,
+            3
+          ],
+          3
+        ],
+        "expected": 2
+      },
+      {
+        "input": [
+          [
+            1,
+            -1,
+            0
+          ],
+          0
+        ],
+        "expected": 3
+      },
+      {
+        "input": [
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          0
+        ],
+        "expected": 10
+      },
+      {
+        "input": [
+          [
+            -1,
+            -1,
+            1
+          ],
+          0
+        ],
+        "expected": 1
+      },
+      {
+        "input": [
+          [
+            3,
+            4,
+            7,
+            2,
+            -3,
+            1,
+            4,
+            2
+          ],
+          7
+        ],
+        "expected": 4
+      }
+    ],
+    "public_test_cases": 2,
+    "hints": [
+      "Track the running total as you scan left-to-right. For each position, ask: how many earlier running totals, when subtracted from the current total, give exactly K?",
+      "A frequency map of prefix sums makes the lookup O(1). Don't forget to seed it with {0: 1} to handle subarrays that start at index 0."
+    ],
+    "concepts": [
+      "prefix sum",
+      "hash map counting",
+      "subarray"
+    ]
+  },
+  {
+    "id": 4331,
+    "order": 31,
+    "topic": "python",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Group anagrams",
+    "description": "Given a list of strings, group anagrams together. Return the groups as a list of sorted lists, with the outer list also sorted.\n\n```\nsolve([\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"])\n# \u2192 [[\"ate\",\"eat\",\"tea\"],[\"bat\"],[\"nat\",\"tan\"]]\n\nsolve([\"\"])  # \u2192 [[\"\"]]\nsolve([\"a\"])  # \u2192 [[\"a\"]]\n```",
+    "starter_code": "def solve(strs: list) -> list:\n    # Your code here\n    pass",
+    "expected_code": "def solve(strs: list) -> list:\n    groups = {}\n    for s in strs:\n        key = ''.join(sorted(s))\n        groups.setdefault(key, []).append(s)\n    return sorted([sorted(v) for v in groups.values()])",
+    "solution_code": "def solve(strs: list) -> list:\n    groups = {}\n    for s in strs:\n        key = ''.join(sorted(s))\n        groups.setdefault(key, []).append(s)\n    return sorted([sorted(v) for v in groups.values()])",
+    "explanation": "Two strings are anagrams if and only if their sorted characters are identical. Use the sorted-character string as a hash key. All strings sharing a key are grouped together. Sort each group internally and sort the outer list for a deterministic result.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            "eat",
+            "tea",
+            "tan",
+            "ate",
+            "nat",
+            "bat"
+          ]
+        ],
+        "expected": [
+          [
+            "ate",
+            "eat",
+            "tea"
+          ],
+          [
+            "bat"
+          ],
+          [
+            "nat",
+            "tan"
+          ]
+        ]
+      },
+      {
+        "input": [
+          [
+            ""
+          ]
+        ],
+        "expected": [
+          [
+            ""
+          ]
+        ]
+      },
+      {
+        "input": [
+          [
+            "a"
+          ]
+        ],
+        "expected": [
+          [
+            "a"
+          ]
+        ]
+      },
+      {
+        "input": [
+          [
+            "abc",
+            "bca",
+            "cba",
+            "xyz",
+            "zyx"
+          ]
+        ],
+        "expected": [
+          [
+            "abc",
+            "bca",
+            "cba"
+          ],
+          [
+            "xyz",
+            "zyx"
+          ]
+        ]
+      },
+      {
+        "input": [
+          [
+            "ab",
+            "ba",
+            "cd",
+            "dc",
+            "a"
+          ]
+        ],
+        "expected": [
+          [
+            "a"
+          ],
+          [
+            "ab",
+            "ba"
+          ],
+          [
+            "cd",
+            "dc"
+          ]
+        ]
+      }
+    ],
+    "public_test_cases": 2,
+    "hints": [
+      "Two strings are anagrams if and only if they have identical character counts. Think about a canonical form that both would share.",
+      "Sort the characters of each word to get its canonical key. Words that are anagrams will produce the same sorted key."
+    ],
+    "concepts": [
+      "hash map grouping",
+      "anagram detection",
+      "string canonicalization"
+    ]
+  },
+  {
+    "id": 4332,
+    "order": 32,
+    "topic": "python",
+    "difficulty": "medium",
+    "mock_only": true,
+    "follow_up_id": 4627,
+    "title": "Minimum meeting rooms",
+    "description": "Given a list of meeting time intervals `[start, end]`, return the minimum number of conference rooms required to hold all meetings simultaneously.\n\n```\nsolve([[0,30],[5,10],[15,20]])  # \u2192 2\nsolve([[7,10],[2,4]])           # \u2192 1\nsolve([[1,5],[2,6],[3,7]])      # \u2192 3\n```\n\nIntervals are inclusive at start, exclusive at end.",
+    "starter_code": "def solve(intervals: list) -> int:\n    # Your code here\n    pass",
+    "expected_code": "import heapq\n\ndef solve(intervals: list) -> int:\n    if not intervals:\n        return 0\n    intervals.sort(key=lambda x: x[0])\n    heap = []\n    for start, end in intervals:\n        if heap and heap[0] <= start:\n            heapq.heapreplace(heap, end)\n        else:\n            heapq.heappush(heap, end)\n    return len(heap)",
+    "solution_code": "import heapq\n\ndef solve(intervals: list) -> int:\n    if not intervals:\n        return 0\n    intervals.sort(key=lambda x: x[0])\n    heap = []\n    for start, end in intervals:\n        if heap and heap[0] <= start:\n            heapq.heapreplace(heap, end)\n        else:\n            heapq.heappush(heap, end)\n    return len(heap)",
+    "explanation": "Sort meetings by start time. Maintain a min-heap of end times (one slot per room in use). For each meeting, if the earliest-ending room finishes at or before the current meeting's start, reuse that room (replace its end time). Otherwise, open a new room. The heap size at the end equals the minimum rooms needed.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            [
+              0,
+              30
+            ],
+            [
+              5,
+              10
+            ],
+            [
+              15,
+              20
+            ]
+          ]
+        ],
+        "expected": 2
+      },
+      {
+        "input": [
+          [
+            [
+              7,
+              10
+            ],
+            [
+              2,
+              4
+            ]
+          ]
+        ],
+        "expected": 1
+      },
+      {
+        "input": [
+          [
+            [
+              1,
+              5
+            ],
+            [
+              2,
+              6
+            ],
+            [
+              3,
+              7
+            ]
+          ]
+        ],
+        "expected": 3
+      },
+      {
+        "input": [
+          [
+            [
+              1,
+              10
+            ]
+          ]
+        ],
+        "expected": 1
+      },
+      {
+        "input": [
+          [
+            [
+              0,
+              30
+            ],
+            [
+              5,
+              10
+            ],
+            [
+              15,
+              20
+            ],
+            [
+              10,
+              20
+            ]
+          ]
+        ],
+        "expected": 3
+      },
+      {
+        "input": [
+          [
+            [
+              1,
+              4
+            ],
+            [
+              2,
+              5
+            ],
+            [
+              3,
+              6
+            ],
+            [
+              4,
+              7
+            ]
+          ]
+        ],
+        "expected": 3
+      }
+    ],
+    "public_test_cases": 2,
+    "hints": [
+      "Sort meetings by start time. As you process each meeting, check whether any currently running meeting finishes before the new one starts.",
+      "Track the end times of all ongoing meetings in a structure that always surfaces the earliest-ending one in O(log n). If it ends before or at the new meeting's start, reuse that room."
+    ],
+    "concepts": [
+      "interval scheduling",
+      "greedy algorithm",
+      "priority queue"
+    ]
+  },
+  {
+    "id": 4333,
+    "order": 33,
+    "topic": "python",
+    "difficulty": "medium",
+    "mock_only": true,
+    "follow_up_id": 4628,
+    "title": "Majority element",
+    "description": "Given a non-empty integer array, find the element that appears **more than \u230an/2\u230b times**. You may assume such an element always exists.\n\n```\nsolve([3,2,3])           # \u2192 3\nsolve([2,2,1,1,1,2,2])  # \u2192 2\n```\n\nSolve in O(n) time and O(1) space.",
+    "starter_code": "def solve(nums: list) -> int:\n    # Your code here\n    pass",
+    "expected_code": "def solve(nums: list) -> int:\n    count = 0\n    candidate = None\n    for n in nums:\n        if count == 0:\n            candidate = n\n        count += 1 if n == candidate else -1\n    return candidate",
+    "solution_code": "def solve(nums: list) -> int:\n    count = 0\n    candidate = None\n    for n in nums:\n        if count == 0:\n            candidate = n\n        count += 1 if n == candidate else -1\n    return candidate",
+    "explanation": "Boyer-Moore Voting: maintain a candidate and a count. When count hits 0, adopt the current element as the new candidate. When the current element matches the candidate, increment; otherwise decrement. Because the majority element appears > n/2 times, it can never be fully cancelled out and will be the surviving candidate.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            [
+              3,
+              2,
+              3
+            ]
+          ]
+        ],
+        "expected": 3
+      },
+      {
+        "input": [
+          [
+            [
+              2,
+              2,
+              1,
+              1,
+              1,
+              2,
+              2
+            ]
+          ]
+        ],
+        "expected": 2
+      },
+      {
+        "input": [
+          [
+            [
+              1
+            ]
+          ]
+        ],
+        "expected": 1
+      },
+      {
+        "input": [
+          [
+            [
+              5,
+              5,
+              5,
+              3,
+              5,
+              1,
+              5
+            ]
+          ]
+        ],
+        "expected": 5
+      },
+      {
+        "input": [
+          [
+            [
+              1,
+              1,
+              2,
+              2,
+              2,
+              1,
+              1
+            ]
+          ]
+        ],
+        "expected": 1
+      }
+    ],
+    "public_test_cases": 2,
+    "hints": [
+      "If the majority element appears more than half the time, what happens to a running tally when you add 1 for a match and subtract 1 for any mismatch?",
+      "When the tally reaches 0, the current leading candidate has been cancelled out. Adopt whatever element comes next as the new candidate."
+    ],
+    "concepts": [
+      "Boyer-Moore voting",
+      "linear scan",
+      "frequency tracking"
+    ]
+  },
+  {
+    "id": 4334,
+    "order": 34,
+    "topic": "python",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Run-length encode a string",
+    "description": "Given a string `s`, return its run-length encoding. Consecutive identical characters are compressed to `<count><char>`.\n\n```\nsolve(\"aabcccdddd\")  # \u2192 \"2a1b3c4d\"\nsolve(\"abcd\")        # \u2192 \"1a1b1c1d\"\nsolve(\"\")            # \u2192 \"\"\nsolve(\"aaaa\")        # \u2192 \"4a\"\n```\n\nThe input contains only lowercase ASCII letters.",
+    "starter_code": "def solve(s: str) -> str:\n    # Your code here\n    pass",
+    "expected_code": "def solve(s: str) -> str:\n    if not s:\n        return \"\"\n    result = []\n    count = 1\n    for i in range(1, len(s)):\n        if s[i] == s[i-1]:\n            count += 1\n        else:\n            result.append(f\"{count}{s[i-1]}\")\n            count = 1\n    result.append(f\"{count}{s[-1]}\")\n    return \"\".join(result)",
+    "solution_code": "def solve(s: str) -> str:\n    if not s:\n        return \"\"\n    result = []\n    count = 1\n    for i in range(1, len(s)):\n        if s[i] == s[i-1]:\n            count += 1\n        else:\n            result.append(f\"{count}{s[i-1]}\")\n            count = 1\n    result.append(f\"{count}{s[-1]}\")\n    return \"\".join(result)",
+    "explanation": "Walk through the string, tracking consecutive identical characters with a counter. When the character changes (or at the end), emit the count followed by the character. Initialise count=1 and start the loop from index 1 so each step compares the current character to the previous one.",
+    "test_cases": [
+      {
+        "input": [
+          "aabcccdddd"
+        ],
+        "expected": "2a1b3c4d"
+      },
+      {
+        "input": [
+          "abcd"
+        ],
+        "expected": "1a1b1c1d"
+      },
+      {
+        "input": [
+          ""
+        ],
+        "expected": ""
+      },
+      {
+        "input": [
+          "aaaa"
+        ],
+        "expected": "4a"
+      },
+      {
+        "input": [
+          "aabbcc"
+        ],
+        "expected": "2a2b2c"
+      },
+      {
+        "input": [
+          "aaabbaaa"
+        ],
+        "expected": "3a2b3a"
+      }
+    ],
+    "public_test_cases": 2,
+    "hints": [
+      "Walk through the characters one by one, keeping a counter for how many identical characters you've seen in a row.",
+      "When the character changes, write the count and the previous character to the result, then reset the counter to 1."
+    ],
+    "concepts": [
+      "string encoding",
+      "run-length compression",
+      "character grouping"
+    ]
+  },
+  {
+    "id": 4335,
+    "order": 35,
+    "topic": "python",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Spiral matrix traversal",
+    "description": "Given an `m x n` matrix, return all elements in **spiral order** (clockwise from the top-left corner).\n\n```\nsolve([[1,2,3],[4,5,6],[7,8,9]])\n# \u2192 [1,2,3,6,9,8,7,4,5]\n\nsolve([[1,2],[3,4]])\n# \u2192 [1,2,4,3]\n```",
+    "starter_code": "def solve(matrix: list) -> list:\n    # Your code here\n    pass",
+    "expected_code": "def solve(matrix: list) -> list:\n    if not matrix:\n        return []\n    result = []\n    top, bottom = 0, len(matrix) - 1\n    left, right = 0, len(matrix[0]) - 1\n    while top <= bottom and left <= right:\n        for col in range(left, right + 1):\n            result.append(matrix[top][col])\n        top += 1\n        for row in range(top, bottom + 1):\n            result.append(matrix[row][right])\n        right -= 1\n        if top <= bottom:\n            for col in range(right, left - 1, -1):\n                result.append(matrix[bottom][col])\n            bottom -= 1\n        if left <= right:\n            for row in range(bottom, top - 1, -1):\n                result.append(matrix[row][left])\n            left += 1\n    return result",
+    "solution_code": "def solve(matrix: list) -> list:\n    if not matrix:\n        return []\n    result = []\n    top, bottom = 0, len(matrix) - 1\n    left, right = 0, len(matrix[0]) - 1\n    while top <= bottom and left <= right:\n        for col in range(left, right + 1):\n            result.append(matrix[top][col])\n        top += 1\n        for row in range(top, bottom + 1):\n            result.append(matrix[row][right])\n        right -= 1\n        if top <= bottom:\n            for col in range(right, left - 1, -1):\n                result.append(matrix[bottom][col])\n            bottom -= 1\n        if left <= right:\n            for row in range(bottom, top - 1, -1):\n                result.append(matrix[row][left])\n            left += 1\n    return result",
+    "explanation": "Maintain four boundary pointers: top, bottom, left, right. In each round: traverse the top row left-to-right, then the right column top-to-bottom, then (if rows remain) the bottom row right-to-left, then (if columns remain) the left column bottom-to-top. After each traversal, shrink the corresponding boundary. Guard the bottom and left passes to avoid double-counting in single-row or single-column matrices.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            [
+              1,
+              2,
+              3
+            ],
+            [
+              4,
+              5,
+              6
+            ],
+            [
+              7,
+              8,
+              9
+            ]
+          ]
+        ],
+        "expected": [
+          1,
+          2,
+          3,
+          6,
+          9,
+          8,
+          7,
+          4,
+          5
+        ]
+      },
+      {
+        "input": [
+          [
+            [
+              1,
+              2,
+              3,
+              4
+            ],
+            [
+              5,
+              6,
+              7,
+              8
+            ],
+            [
+              9,
+              10,
+              11,
+              12
+            ]
+          ]
+        ],
+        "expected": [
+          1,
+          2,
+          3,
+          4,
+          8,
+          12,
+          11,
+          10,
+          9,
+          5,
+          6,
+          7
+        ]
+      },
+      {
+        "input": [
+          [
+            [
+              1
+            ]
+          ]
+        ],
+        "expected": [
+          1
+        ]
+      },
+      {
+        "input": [
+          [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              4
+            ]
+          ]
+        ],
+        "expected": [
+          1,
+          2,
+          4,
+          3
+        ]
+      },
+      {
+        "input": [
+          [
+            [
+              1,
+              2,
+              3
+            ]
+          ]
+        ],
+        "expected": [
+          1,
+          2,
+          3
+        ]
+      },
+      {
+        "input": [
+          [
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ]
+          ]
+        ],
+        "expected": [
+          1,
+          2,
+          3
+        ]
+      }
+    ],
+    "public_test_cases": 2,
+    "hints": [
+      "Think of the matrix as having four shrinking boundaries \u2014 top, bottom, left, right. After traversing each edge, move that boundary one step inward.",
+      "Be careful not to traverse a row or column twice when the matrix shrinks to a single row or column mid-way through."
+    ],
+    "concepts": [
+      "matrix traversal",
+      "boundary simulation",
+      "direction tracking"
+    ]
+  },
+  {
+    "id": 4336,
+    "order": 36,
+    "topic": "python",
+    "difficulty": "medium",
+    "mock_only": true,
+    "follow_up_id": 4629,
+    "title": "Maximum sum subarray (Kadane's algorithm)",
+    "description": "Given an integer array `nums`, find the **contiguous subarray** with the largest sum and return its sum.\n\n```\nsolve([-2,1,-3,4,-1,2,1,-5,4])  # \u2192 6  ([4,-1,2,1])\nsolve([1])                        # \u2192 1\nsolve([5,4,-1,7,8])               # \u2192 23\nsolve([-1,-2,-3])                 # \u2192 -1\n```",
+    "starter_code": "def solve(nums: list) -> int:\n    # Your code here\n    pass",
+    "expected_code": "def solve(nums: list) -> int:\n    max_sum = nums[0]\n    curr_sum = nums[0]\n    for n in nums[1:]:\n        curr_sum = max(n, curr_sum + n)\n        max_sum = max(max_sum, curr_sum)\n    return max_sum",
+    "solution_code": "def solve(nums: list) -> int:\n    max_sum = nums[0]\n    curr_sum = nums[0]\n    for n in nums[1:]:\n        curr_sum = max(n, curr_sum + n)\n        max_sum = max(max_sum, curr_sum)\n    return max_sum",
+    "explanation": "At each position, you decide: is it better to extend the previous best subarray (curr_sum + n) or start fresh from this element (n)? Take the larger of the two as the new curr_sum. Track the running maximum across all positions. Initialise both values from nums[0] to handle all-negative arrays correctly.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            -2,
+            1,
+            -3,
+            4,
+            -1,
+            2,
+            1,
+            -5,
+            4
+          ]
+        ],
+        "expected": 6
+      },
+      {
+        "input": [
+          [
+            1
+          ]
+        ],
+        "expected": 1
+      },
+      {
+        "input": [
+          [
+            5,
+            4,
+            -1,
+            7,
+            8
+          ]
+        ],
+        "expected": 23
+      },
+      {
+        "input": [
+          [
+            -1,
+            -2,
+            -3
+          ]
+        ],
+        "expected": -1
+      },
+      {
+        "input": [
+          [
+            1,
+            -1,
+            1,
+            -1,
+            1
+          ]
+        ],
+        "expected": 1
+      },
+      {
+        "input": [
+          [
+            -2,
+            -1
+          ]
+        ],
+        "expected": -1
+      }
+    ],
+    "public_test_cases": 2,
+    "hints": [
+      "At each position, you have two choices: extend the running subarray, or start a fresh one here. Take whichever gives the larger value.",
+      "Initialise both your running sum and your best-seen sum from the first element \u2014 this handles arrays where all values are negative."
+    ],
+    "concepts": [
+      "Kadane algorithm",
+      "dynamic programming",
+      "subarray"
+    ]
+  },
+  {
+    "id": 4337,
+    "order": 37,
+    "topic": "python",
+    "difficulty": "medium",
+    "mock_only": true,
+    "follow_up_id": 4630,
+    "title": "Unique paths in a grid",
+    "description": "A robot starts at the top-left corner of an `m \u00d7 n` grid and moves only right or down. Return the number of distinct paths to reach the bottom-right corner.\n\n```\nsolve(3, 7)  # \u2192 28\nsolve(3, 2)  # \u2192 3\nsolve(1, 1)  # \u2192 1\n```",
+    "starter_code": "def solve(m: int, n: int) -> int:\n    # Your code here\n    pass",
+    "expected_code": "def solve(m: int, n: int) -> int:\n    dp = [[1] * n for _ in range(m)]\n    for i in range(1, m):\n        for j in range(1, n):\n            dp[i][j] = dp[i-1][j] + dp[i][j-1]\n    return dp[m-1][n-1]",
+    "solution_code": "def solve(m: int, n: int) -> int:\n    dp = [[1] * n for _ in range(m)]\n    for i in range(1, m):\n        for j in range(1, n):\n            dp[i][j] = dp[i-1][j] + dp[i][j-1]\n    return dp[m-1][n-1]",
+    "explanation": "Every cell in the first row and first column has exactly one path (go only right or only down respectively). For every other cell, paths = paths from above + paths from the left. Fill the DP table row by row. dp[m-1][n-1] holds the answer. The initialisation to all-1s handles the boundary rows and columns correctly.",
+    "test_cases": [
+      {
+        "input": [
+          3,
+          7
+        ],
+        "expected": 28
+      },
+      {
+        "input": [
+          3,
+          2
+        ],
+        "expected": 3
+      },
+      {
+        "input": [
+          7,
+          3
+        ],
+        "expected": 28
+      },
+      {
+        "input": [
+          1,
+          1
+        ],
+        "expected": 1
+      },
+      {
+        "input": [
+          2,
+          2
+        ],
+        "expected": 2
+      },
+      {
+        "input": [
+          5,
+          5
+        ],
+        "expected": 70
+      }
+    ],
+    "public_test_cases": 2,
+    "hints": [
+      "Break the problem into smaller sub-problems. The number of paths to any cell equals the number of paths from the cell above it plus the number of paths from the cell to its left.",
+      "The first row and first column each have exactly one path \u2014 there's only one way to reach them (move only right, or only down). Use that as your base case."
+    ],
+    "concepts": [
+      "dynamic programming",
+      "grid DP",
+      "combinatorics"
     ]
   }
 ]
