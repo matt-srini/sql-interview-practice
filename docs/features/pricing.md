@@ -116,8 +116,8 @@ The `amount` for subscriptions is `0` — the actual amount is resolved from the
 
 | Plan | INR (paise) | USD (cents) |
 |---|---|---|
-| `lifetime_pro` | 799,900 (₹7,999) | 8,900 ($89) |
-| `lifetime_elite` | 1,499,900 (₹14,999) | 16,900 ($169) |
+| `lifetime_pro` | 1,199,900 (₹11,999) | 12,900 ($129) |
+| `lifetime_elite` | 1,999,900 (₹19,999) | 22,900 ($229) |
 
 Monthly amounts are set in the Razorpay dashboard plan and not stored in the application.
 

@@ -78,8 +78,8 @@ def _configure_razorpay(monkeypatch, *, configure_plans: bool = True):
         "RAZORPAY_PLAN_ELITE",
         "plan_elite_test" if configure_plans else None,
     )
-    monkeypatch.setattr(razorpay_router, "RAZORPAY_AMOUNT_LIFETIME_PRO", 799900)
-    monkeypatch.setattr(razorpay_router, "RAZORPAY_AMOUNT_LIFETIME_ELITE", 1499900)
+    monkeypatch.setattr(razorpay_router, "RAZORPAY_AMOUNT_LIFETIME_PRO", 1199900)
+    monkeypatch.setattr(razorpay_router, "RAZORPAY_AMOUNT_LIFETIME_ELITE", 1999900)
     monkeypatch.setattr(razorpay_router, "RAZORPAY_CURRENCY", "INR")
     return calls
 
@@ -140,9 +140,9 @@ def test_create_order_for_lifetime_pro_returns_order_id_with_amount(monkeypatch)
         body = r.json()
         assert body["order_id"] == "order_test_rzp"
         assert body["subscription_id"] is None
-        assert body["amount"] == 799900
+        assert body["amount"] == 1199900
         assert body["is_subscription"] is False
-        assert calls["orders"][0]["amount"] == 799900
+        assert calls["orders"][0]["amount"] == 1199900
         assert calls["orders"][0]["currency"] == "INR"
 
 
@@ -153,7 +153,7 @@ def test_create_order_for_lifetime_elite_uses_correct_amount(monkeypatch) -> Non
         _register_user(client)
         r = client.post("/api/razorpay/create-order", json={"plan": "lifetime_elite"})
         assert r.status_code == 200
-        assert calls["orders"][0]["amount"] == 1499900
+        assert calls["orders"][0]["amount"] == 1999900
 
 
 def test_create_order_rejects_anonymous_users(monkeypatch) -> None:
