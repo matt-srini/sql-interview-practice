@@ -30,6 +30,8 @@ from db import (
     get_daily_mock_usage,
     get_mock_history,
     get_mock_session,
+    get_previously_mocked_ids,
+    inject_follow_up_question,
     mark_solved,
     record_submission,
     submit_mock_question,
@@ -109,23 +111,46 @@ def _pool_for_track(
     solved_ids: set[int],
 ) -> list[dict]:
     """
-    Return a list of question dicts that are unlocked (not locked) for the given
-    track and difficulty, tagged with their track name.
+    Build the mock question pool for a given track/difficulty/plan combination.
+
+    Pool rules:
+      Easy:   practice catalog only (all plans)
+      Medium: Free      → practice catalog, filtered to unlocked questions only
+              Pro/Elite → practice catalog (all medium) + mock-only medium bank
+      Hard:   Free      → caller blocks this before reaching here (plan_locked)
+              Pro/Elite → practice catalog (all hard) + mock-only hard bank
+
+    Mock-only questions bypass the unlock gate entirely — they are always included
+    for Pro/Elite users and are never shown in the practice catalog.
     """
+    from unlock import normalize_plan
+    effective_plan = normalize_plan(user_plan)
+    include_mock_only = effective_plan in ("pro", "elite") and difficulty != "easy"
+
     catalog = _get_catalog_for_track(track)
     grouped = catalog.get_questions_by_difficulty()
     unlock_state = compute_unlock_state(user_plan, solved_ids, grouped, track=track)
 
-    all_questions: list[dict] = []
+    pool: list[dict] = []
+
+    # Standard practice questions — filtered to unlocked/solved state
     for diff, qs in grouped.items():
         if difficulty != "mixed" and diff != difficulty:
             continue
         for q in qs:
-            state = unlock_state.get(int(q["id"]), "locked")
-            if state != "locked":
-                all_questions.append({**q, "_track": track})
+            if unlock_state.get(int(q["id"]), "locked") != "locked":
+                pool.append({**q, "_track": track, "_mock_only": False})
 
-    return all_questions
+    # Mock-only questions — bypass unlock gate entirely
+    if include_mock_only:
+        mock_grouped = catalog.get_mock_questions_by_difficulty()
+        for diff, qs in mock_grouped.items():
+            if difficulty != "mixed" and diff != difficulty:
+                continue
+            for q in qs:
+                pool.append({**q, "_track": track, "_mock_only": True})
+
+    return pool
 
 
 async def _select_questions(
@@ -135,7 +160,12 @@ async def _select_questions(
     user: dict,
 ) -> list[dict]:
     """
-    Select `num_questions` questions for a mock session.
+    Select `num_questions` questions for a mock session with freshness scoring.
+
+    Freshness scoring: questions never seen by this user in any past mock session
+    are preferred. Only falls back to previously-seen (stale) questions when the
+    fresh pool is exhausted.
+
     Returns list of {"question_id", "track", "position"} dicts.
     """
     user_plan = user.get("plan", "free")
@@ -151,7 +181,16 @@ async def _select_questions(
         solved = await _get_solved_ids_for_track(user_id, track)
         pool = _pool_for_track(track, difficulty, user_plan, solved)
 
-    if len(pool) < num_questions:
+    # Freshness scoring: prefer questions this user has never seen in mock before
+    mocked_ids = await get_previously_mocked_ids(user_id)
+    fresh = [q for q in pool if int(q["id"]) not in mocked_ids]
+    stale = [q for q in pool if int(q["id"]) in mocked_ids]
+
+    if len(fresh) >= num_questions:
+        chosen_raw = random.sample(fresh, num_questions)
+    elif len(fresh) + len(stale) >= num_questions:
+        chosen_raw = fresh + random.sample(stale, num_questions - len(fresh))
+    else:
         raise HTTPException(
             status_code=400,
             detail=(
@@ -160,14 +199,13 @@ async def _select_questions(
             ),
         )
 
-    chosen = random.sample(pool, num_questions)
     return [
         {
             "question_id": int(q["id"]),
             "track": q["_track"],
             "position": i + 1,
         }
-        for i, q in enumerate(chosen)
+        for i, q in enumerate(chosen_raw)
     ]
 
 
@@ -182,9 +220,24 @@ def _public_question_payload(question: dict, track: str) -> dict:
         "concepts": question.get("concepts", []),
         "hints": question.get("hints", []),
     }
+    # New mock-only question format fields.
+    # These keys are always present (None when not applicable) so the response
+    # shape is consistent regardless of which question is selected.
+    payload["type"] = question.get("type")
+    payload["framing"] = question.get("framing")
+    # result_preview, debug_error, starter_code only apply to SQL and Pandas;
+    # PySpark uses "debug" type differently (MCQ-style, no code editor).
+    if track in ("sql", "python-data"):
+        payload["result_preview"] = question.get("result_preview") if question.get("type") == "reverse" else None
+        payload["debug_error"] = question.get("debug_error") if question.get("type") == "debug" else None
+        # starter_query for SQL, starter_code for Pandas
+        payload["starter_code"] = (
+            question.get("starter_query") or question.get("starter_code")
+        ) if question.get("type") == "debug" else None
     # SQL: include schema
     if track == "sql":
         payload["schema"] = question.get("schema", {})
+        payload["dataset_files"] = question.get("dataset_files", [])
     # Python: include test case inputs (no expected outputs)
     if track == "python":
         public_cases = [
@@ -201,7 +254,9 @@ def _public_question_payload(question: dict, track: str) -> dict:
     # PySpark: include options
     if track == "pyspark":
         payload["options"] = question.get("options", [])
-        payload["question_type"] = question.get("question_type", "mcq")
+        payload["question_type"] = question.get("type", "mcq")
+        payload["code_snippet"] = question.get("code_snippet")
+        payload["scenario_context"] = question.get("scenario_context")
     return payload
 
 
@@ -441,6 +496,7 @@ async def start_session(
             "is_solved": False,
             "final_code": None,
             "time_spent_s": None,
+            "is_follow_up": False,
         })
 
     # Persist session
@@ -481,6 +537,7 @@ async def get_session(
             "is_solved": q_row["is_solved"],
             "final_code": q_row["final_code"],
             "time_spent_s": q_row["time_spent_s"],
+            "is_follow_up": q_row.get("is_follow_up", False),
         })
 
     return {**session, "questions": enriched_questions}
@@ -546,8 +603,29 @@ async def submit_answer(
             code=body.code,
         )
 
+    # Follow-up injection: if this question has a follow_up_id and was answered correctly,
+    # inject the follow-up question after the current position (but never at the last position)
+    follow_up_injected = False
+    follow_up_id = question.get("follow_up_id") if question else None
+    if follow_up_id and accepted:
+        session_questions = session.get("questions", [])
+        current_position = next(
+            (sq["position"] for sq in session_questions if sq["question_id"] == body.question_id),
+            None,
+        )
+        if current_position is not None:
+            max_position = max((sq["position"] for sq in session_questions), default=0)
+            # Only inject if not at the last position — avoid bloating an already-final question
+            if current_position < max_position:
+                await inject_follow_up_question(
+                    session_id=session_id,
+                    follow_up_question_id=follow_up_id,
+                    after_position=current_position,
+                )
+                follow_up_injected = True
+
     # Return lean result — no solutions mid-session
-    return result
+    return {**result, "follow_up_injected": follow_up_injected}
 
 
 @router.post("/{session_id}/finish")
@@ -573,6 +651,7 @@ async def finish_session(
             "is_solved": q_row["is_solved"],
             "final_code": q_row["final_code"],
             "time_spent_s": q_row["time_spent_s"],
+            "is_follow_up": q_row.get("is_follow_up", False),
         })
 
     return {**summary, "questions": enriched_questions}

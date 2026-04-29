@@ -66,8 +66,9 @@ def _load_questions() -> list[dict[str, Any]]:
     return questions
 
 
-QUESTIONS: list[dict[str, Any]] = _load_questions()
-_INDEX: dict[int, dict[str, Any]] = {int(q["id"]): q for q in QUESTIONS}
+_ALL_QUESTIONS: list[dict[str, Any]] = _load_questions()
+QUESTIONS: list[dict[str, Any]] = [q for q in _ALL_QUESTIONS if not q.get("mock_only")]
+_INDEX: dict[int, dict[str, Any]] = {int(q["id"]): q for q in _ALL_QUESTIONS}
 
 
 def get_all_questions() -> list[dict[str, Any]]:
@@ -94,6 +95,18 @@ def get_public_question(question: dict[str, Any]) -> dict[str, Any]:
         "concepts": question.get("concepts", []),
         "public_test_cases": public_count,
         "test_cases": question.get("test_cases", [])[:public_count],
+    }
+
+
+def get_mock_questions_by_difficulty() -> dict[str, list[dict[str, Any]]]:
+    """Return only mock_only=True questions, grouped by difficulty, sorted by order."""
+    mock_qs = [q for q in _ALL_QUESTIONS if q.get("mock_only") is True]
+    grouped: dict[str, list[dict[str, Any]]] = {"easy": [], "medium": [], "hard": []}
+    for q in mock_qs:
+        grouped[q["difficulty"]].append(q)
+    return {
+        diff: sorted(qs, key=lambda x: int(x.get("order", 0)))
+        for diff, qs in grouped.items()
     }
 
 

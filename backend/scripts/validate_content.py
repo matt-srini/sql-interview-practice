@@ -326,6 +326,86 @@ def _validate_hints() -> None:
         raise ValueError(f"Hint validation failed:\n{joined}")
 
 
+def _validate_mock_fields() -> None:
+    """Validate new mock-only question fields: mock_only, follow_up_id, framing, type=reverse/debug."""
+    errors: list[str] = []
+
+    # Pass 1: collect all question IDs per track for follow_up_id cross-reference
+    all_ids_by_track: dict[str, set[int]] = {track: set() for track in QUESTION_DIRS}
+    for track, file_path in _iter_question_files():
+        with file_path.open("r", encoding="utf-8") as handle:
+            questions = json.load(handle)
+        for q in questions:
+            qid = q.get("id")
+            if qid is not None:
+                all_ids_by_track[track].add(int(qid))
+
+    # Pass 2: validate per-question mock fields
+    for track, file_path in _iter_question_files():
+        with file_path.open("r", encoding="utf-8") as handle:
+            questions = json.load(handle)
+
+        for q in questions:
+            qid = q.get("id", "<unknown>")
+            title = q.get("title", "<untitled>")
+
+            # mock_only must be boolean if present
+            if "mock_only" in q and not isinstance(q["mock_only"], bool):
+                errors.append(
+                    f"{track} {qid} {title}: mock_only must be boolean, got {type(q['mock_only']).__name__}"
+                )
+
+            # follow_up_id must be integer if present, and must resolve within the same track
+            if "follow_up_id" in q:
+                if not isinstance(q["follow_up_id"], int):
+                    errors.append(f"{track} {qid} {title}: follow_up_id must be an integer")
+                elif int(q["follow_up_id"]) not in all_ids_by_track[track]:
+                    errors.append(
+                        f"{track} {qid} {title}: follow_up_id {q['follow_up_id']} does not exist in this track"
+                    )
+
+            # framing — allowed values only
+            if "framing" in q and q["framing"] not in ("scenario",):
+                errors.append(
+                    f"{track} {qid} {title}: framing must be 'scenario', got '{q['framing']}'"
+                )
+
+            # type: "reverse" requires non-empty result_preview (SQL and Pandas only)
+            if q.get("type") == "reverse" and track in ("sql", "python-data"):
+                result_preview = q.get("result_preview")
+                if not isinstance(result_preview, list) or len(result_preview) == 0:
+                    errors.append(
+                        f"{track} {qid} {title}: type=reverse requires non-empty result_preview array"
+                    )
+                elif len(result_preview) > 8:
+                    errors.append(
+                        f"{track} {qid} {title}: result_preview must have ≤8 rows for UI fit"
+                    )
+
+            # type: "debug" requires debug_error and starter_code/starter_query (SQL and Pandas only)
+            # Note: PySpark uses "debug" type differently (MCQ-style), no debug_error needed there
+            if q.get("type") == "debug" and track in ("sql", "python-data"):
+                if not str(q.get("debug_error", "") or "").strip():
+                    errors.append(
+                        f"{track} {qid} {title}: type=debug requires non-empty debug_error string"
+                    )
+                has_starter = (
+                    bool(str(q.get("starter_code", "") or "").strip())
+                    or bool(str(q.get("starter_query", "") or "").strip())
+                )
+                if not has_starter:
+                    errors.append(
+                        f"{track} {qid} {title}: type=debug requires starter_code (Python/Pandas) or starter_query (SQL)"
+                    )
+
+    if errors:
+        joined = "\n".join(f"- {item}" for item in errors[:200])
+        remaining = len(errors) - min(len(errors), 200)
+        if remaining > 0:
+            joined += f"\n- ... and {remaining} more"
+        raise ValueError(f"Mock field validation failed:\n{joined}")
+
+
 def _validate_paths(paths: list[dict], catalogs_by_topic: dict[str, dict[str, list[dict]]]) -> None:
     valid_topics = {"sql", "python", "python-data", "pyspark"}
     valid_tiers = {"free", "pro"}
@@ -421,6 +501,7 @@ def main() -> None:
     _validate_concepts()
     _validate_hints()
     _validate_pyspark_scenario_questions()
+    _validate_mock_fields()
 
     print("Content validation passed")
 
