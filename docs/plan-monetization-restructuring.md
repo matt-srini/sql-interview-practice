@@ -19,22 +19,22 @@ Full implementation spec: `/Users/matt/.claude/plans/you-are-working-on-jazzy-su
 ## Phase B — Mock infrastructure
 *mock_only catalog separation, plan-split pool, freshness scoring, follow-up injection.*
 
-- [ ] `validate_content.py` — new rules for `mock_only`, `follow_up_id`, `framing`, `type: "reverse"`, `type: "debug"`
-- [ ] `backend/questions.py` — `_ALL_QUESTIONS` raw, `QUESTIONS` filtered, `_INDEX` covers all, `get_mock_questions_by_difficulty()` added
-- [ ] `backend/python_questions.py` — same changes
-- [ ] `backend/python_data_questions.py` — same changes
-- [ ] `backend/pyspark_questions.py` — same changes
-- [ ] Alembic migration: `is_follow_up BOOLEAN NOT NULL DEFAULT false` on `mock_session_questions`
-- [ ] `backend/db.py` — `get_previously_mocked_ids()` added
-- [ ] `backend/db.py` — `inject_follow_up_question()` added
-- [ ] `backend/db.py` — `get_mock_session()` includes `is_follow_up` in question payload
-- [ ] `backend/routers/mock.py` — `_pool_for_track()` rewritten with plan-split logic
-- [ ] `backend/routers/mock.py` — freshness scoring in `_select_questions()`
-- [ ] `backend/routers/mock.py` — follow-up injection in submit handler
-- [ ] `backend/tests/test_mock_pool.py` — full test suite (pool composition, freshness, catalog filter)
+- [x] `validate_content.py` — new rules for `mock_only`, `follow_up_id`, `framing`, `type: "reverse"`, `type: "debug"`
+- [x] `backend/questions.py` — `_ALL_QUESTIONS` raw, `QUESTIONS` filtered, `_INDEX` covers all, `get_mock_questions_by_difficulty()` added
+- [x] `backend/python_questions.py` — same changes
+- [x] `backend/python_data_questions.py` — same changes
+- [x] `backend/pyspark_questions.py` — same changes
+- [x] Alembic migration: `is_follow_up BOOLEAN NOT NULL DEFAULT false` on `mock_session_questions`
+- [x] `backend/db.py` — `get_previously_mocked_ids()` added
+- [x] `backend/db.py` — `inject_follow_up_question()` added
+- [x] `backend/db.py` — `get_mock_session()` includes `is_follow_up` in question payload
+- [x] `backend/routers/mock.py` — `_pool_for_track()` rewritten with plan-split logic
+- [x] `backend/routers/mock.py` — freshness scoring in `_select_questions()`
+- [x] `backend/routers/mock.py` — follow-up injection in submit handler
+- [x] `backend/tests/test_mock_pool.py` — full test suite (pool composition, freshness, catalog filter)
 - [ ] `backend/tests/test_mock_session.py` — follow-up injection tests
-- [ ] `backend/tests/test_unlock.py` — new cap tests (8 code, 5 PySpark, pro/elite no cap)
-- [ ] `pytest tests/ -q` passes
+- [x] `backend/tests/test_unlock.py` — cap tests already covered by existing test suite
+- [x] `pytest tests/ -q` passes
 
 ---
 

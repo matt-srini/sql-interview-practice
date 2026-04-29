@@ -166,10 +166,13 @@ CREATE TABLE IF NOT EXISTS mock_session_questions (
     is_solved BOOLEAN NOT NULL DEFAULT false,
     submitted_at TIMESTAMPTZ,
     final_code TEXT,
-    time_spent_s INTEGER
+    time_spent_s INTEGER,
+    is_follow_up BOOLEAN NOT NULL DEFAULT false
 );
 
 CREATE INDEX IF NOT EXISTS idx_mock_session_questions_session ON mock_session_questions(session_id);
+
+ALTER TABLE mock_session_questions ADD COLUMN IF NOT EXISTS is_follow_up BOOLEAN NOT NULL DEFAULT false;
 """
 
 
@@ -1064,7 +1067,8 @@ async def get_mock_session(session_id: int, user_id: str) -> dict[str, Any] | No
                     ms.started_at, ms.ended_at, ms.time_limit_s, ms.status,
                     msq.id AS msq_id,
                     msq.question_id, msq.track AS q_track, msq.position,
-                    msq.is_solved, msq.submitted_at, msq.final_code, msq.time_spent_s
+                    msq.is_solved, msq.submitted_at, msq.final_code, msq.time_spent_s,
+                    msq.is_follow_up
                 FROM mock_sessions ms
                 LEFT JOIN mock_session_questions msq ON msq.session_id = ms.id
                 WHERE ms.id = :session_id AND ms.user_id = CAST(:user_id AS UUID)
@@ -1098,6 +1102,7 @@ async def get_mock_session(session_id: int, user_id: str) -> dict[str, Any] | No
                     "submitted_at": row["submitted_at"].isoformat() if row["submitted_at"] else None,
                     "final_code": row["final_code"],
                     "time_spent_s": row["time_spent_s"],
+                    "is_follow_up": bool(row.get("is_follow_up", False)),
                 })
         session_data["questions"] = question_rows
         return session_data
@@ -1171,7 +1176,8 @@ async def finish_mock_session(session_id: int, user_id: str) -> dict[str, Any] |
                     ms.mode, ms.track, ms.difficulty,
                     ms.started_at, ms.ended_at, ms.time_limit_s, ms.status,
                     msq.question_id, msq.track AS q_track, msq.position,
-                    msq.is_solved, msq.submitted_at, msq.final_code, msq.time_spent_s
+                    msq.is_solved, msq.submitted_at, msq.final_code, msq.time_spent_s,
+                    msq.is_follow_up
                 FROM mock_sessions ms
                 LEFT JOIN mock_session_questions msq ON msq.session_id = ms.id
                 WHERE ms.id = :session_id AND ms.user_id = CAST(:user_id AS UUID)
@@ -1209,12 +1215,88 @@ async def finish_mock_session(session_id: int, user_id: str) -> dict[str, Any] |
                     "submitted_at": row["submitted_at"].isoformat() if row["submitted_at"] else None,
                     "final_code": row["final_code"],
                     "time_spent_s": row["time_spent_s"],
+                    "is_follow_up": bool(row.get("is_follow_up", False)),
                 })
         session_out["questions"] = question_rows
         solved_count = sum(1 for q in question_rows if q["is_solved"])
         session_out["solved_count"] = solved_count
         session_out["total_count"] = len(question_rows)
         return session_out
+
+
+async def get_previously_mocked_ids(user_id: str) -> set[int]:
+    """Return all question IDs this user has ever seen across all mock sessions."""
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                SELECT DISTINCT msq.question_id
+                FROM mock_session_questions msq
+                JOIN mock_sessions ms ON ms.id = msq.session_id
+                WHERE ms.user_id = CAST(:user_id AS UUID)
+                """
+            ),
+            {"user_id": user_id},
+        )
+        rows = result.mappings().all()
+        return {row["question_id"] for row in rows}
+
+
+async def inject_follow_up_question(
+    session_id: int,
+    follow_up_question_id: int,
+    after_position: int,
+) -> None:
+    """
+    Insert a follow-up question immediately after `after_position` in a mock session.
+    Shifts all subsequent positions by 1 to make room.
+    The follow-up is marked is_follow_up=true.
+    """
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        # Get the track from the parent question row
+        result = await session.execute(
+            text(
+                """
+                SELECT track FROM mock_session_questions
+                WHERE session_id = :session_id AND position = :position
+                """
+            ),
+            {"session_id": session_id, "position": after_position},
+        )
+        row = result.mappings().first()
+        track = row["track"] if row else "sql"
+
+        # Shift existing positions after the insertion point
+        await session.execute(
+            text(
+                """
+                UPDATE mock_session_questions
+                SET position = position + 1
+                WHERE session_id = :session_id AND position > :after_position
+                """
+            ),
+            {"session_id": session_id, "after_position": after_position},
+        )
+
+        # Insert the follow-up question
+        await session.execute(
+            text(
+                """
+                INSERT INTO mock_session_questions
+                  (session_id, question_id, track, position, is_follow_up)
+                VALUES (:session_id, :question_id, :track, :position, true)
+                """
+            ),
+            {
+                "session_id": session_id,
+                "question_id": follow_up_question_id,
+                "track": track,
+                "position": after_position + 1,
+            },
+        )
+        await session.commit()
 
 
 async def get_mock_history(user_id: str, limit: int = 20) -> list[dict[str, Any]]:
