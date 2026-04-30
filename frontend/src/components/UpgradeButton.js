@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
@@ -68,6 +68,13 @@ export default function UpgradeButton({ tier = 'pro', label, source, compact = f
 
   const buttonLabel = label ?? `Upgrade to ${tierLabel(tier)}`;
 
+  // Preload the Razorpay checkout script as soon as the button appears so it's
+  // already cached when the user clicks. Silently swallow errors here — the
+  // real error handling is in handleClick.
+  useEffect(() => {
+    loadRazorpayScript().catch(() => {});
+  }, []);
+
   async function handleClick() {
     if (!user) {
       navigate('/auth', { state: { from: '/', upgradeTier: tier } });
@@ -76,14 +83,18 @@ export default function UpgradeButton({ tier = 'pro', label, source, compact = f
     setPending(true);
     setError(null);
     try {
-      const orderRes = await api.post('/razorpay/create-order', { plan: tier, currency });
+      // Fire the backend order creation and script load in parallel — both are
+      // independent and each can take 300–800ms on their own.
+      const [orderRes] = await Promise.all([
+        api.post('/razorpay/create-order', { plan: tier, currency }),
+        loadRazorpayScript(),
+      ]);
       const {
         order_id, subscription_id, amount, currency: checkoutCurrency, key_id, name, description,
         prefill_email, prefill_name, is_subscription,
       } = orderRes.data;
 
       track('plan_upgrade_started', { tier, source });
-      await loadRazorpayScript();
       if (typeof window.Razorpay !== 'function') {
         throw new Error('Razorpay SDK unavailable after load');
       }
