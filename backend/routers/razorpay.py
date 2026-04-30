@@ -198,6 +198,27 @@ def _verify_webhook_signature(raw_body: bytes, signature: str) -> bool:
 
 
 # ---------------------------------------------------------------------------
+# Endpoint 0: ensure-customer  (pre-warm — call in background when pricing renders)
+# ---------------------------------------------------------------------------
+
+@router.post("/ensure-customer")
+async def ensure_customer(
+    current_user: dict[str, Any] = Depends(get_current_user),
+) -> dict[str, bool]:
+    """Pre-create the Razorpay customer so create-order only needs one API call."""
+    if not current_user.get("email"):
+        return {"ok": False}
+    if current_user.get("razorpay_customer_id"):
+        return {"ok": True}
+    try:
+        client = _require_razorpay_client()
+        await _ensure_customer_id(current_user, client)
+    except HTTPException:
+        pass
+    return {"ok": True}
+
+
+# ---------------------------------------------------------------------------
 # Endpoint 1: create-order
 # ---------------------------------------------------------------------------
 

@@ -68,12 +68,16 @@ export default function UpgradeButton({ tier = 'pro', label, source, compact = f
 
   const buttonLabel = label ?? `Upgrade to ${tierLabel(tier)}`;
 
-  // Preload the Razorpay checkout script as soon as the button appears so it's
-  // already cached when the user clicks. Silently swallow errors here — the
-  // real error handling is in handleClick.
+  // Preload the checkout script and pre-warm the Razorpay customer record as
+  // soon as the button appears. For monthly plans, create-order makes two
+  // sequential Razorpay API calls (customer + subscription); pre-warming
+  // ensures the customer already exists so only one call is needed on click.
   useEffect(() => {
     loadRazorpayScript().catch(() => {});
-  }, []);
+    if (user?.email) {
+      api.post('/razorpay/ensure-customer').catch(() => {});
+    }
+  }, [user?.email]);
 
   async function handleClick() {
     if (!user) {
