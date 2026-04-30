@@ -164,6 +164,8 @@ export default function MockSession() {
     return () => clearInterval(t);
   }, [remainingS === null, status]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const currentQuestion = questions[activeQ] || null;
+
   // Follow-up banner: show for 3s when user navigates to an is_follow_up question
   useEffect(() => {
     if (!currentQuestion?.is_follow_up) {
@@ -187,8 +189,6 @@ export default function MockSession() {
     }
     return () => { document.title = 'datathink'; };
   }, [remainingS, status]);
-
-  const currentQuestion = questions[activeQ] || null;
 
   function getCode(q) {
     if (!q) return '';
