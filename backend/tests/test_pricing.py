@@ -72,10 +72,10 @@ def _configure(monkeypatch) -> None:
     monkeypatch.setattr(razorpay_router, "RAZORPAY_PLAN_ELITE", "plan_elite_test")
     monkeypatch.setattr(razorpay_router, "RAZORPAY_PLAN_PRO_USD", "plan_pro_usd_test")
     monkeypatch.setattr(razorpay_router, "RAZORPAY_PLAN_ELITE_USD", "plan_elite_usd_test")
-    monkeypatch.setattr(razorpay_router, "RAZORPAY_AMOUNT_LIFETIME_PRO", 799900)
-    monkeypatch.setattr(razorpay_router, "RAZORPAY_AMOUNT_LIFETIME_ELITE", 1499900)
-    monkeypatch.setattr(razorpay_router, "RAZORPAY_AMOUNT_LIFETIME_PRO_USD", 8900)
-    monkeypatch.setattr(razorpay_router, "RAZORPAY_AMOUNT_LIFETIME_ELITE_USD", 16900)
+    monkeypatch.setattr(razorpay_router, "RAZORPAY_AMOUNT_LIFETIME_PRO", 1199900)
+    monkeypatch.setattr(razorpay_router, "RAZORPAY_AMOUNT_LIFETIME_ELITE", 1999900)
+    monkeypatch.setattr(razorpay_router, "RAZORPAY_AMOUNT_LIFETIME_PRO_USD", 12900)
+    monkeypatch.setattr(razorpay_router, "RAZORPAY_AMOUNT_LIFETIME_ELITE_USD", 22900)
     monkeypatch.setattr(razorpay_router, "RAZORPAY_CURRENCY", "INR")
 
 
@@ -239,7 +239,7 @@ class TestFreeUserCreateOrder:
             assert data["order_id"] == "order_test_pricing"
             assert data["is_subscription"] is False
             assert data["subscription_id"] is None
-            assert data["amount"] == 799900
+            assert data["amount"] == 1199900
             assert data["currency"] == "INR"
 
     def test_create_order_lifetime_elite_inr(self, monkeypatch) -> None:
@@ -251,7 +251,7 @@ class TestFreeUserCreateOrder:
             data = r.json()
             assert data["order_id"] == "order_test_pricing"
             assert data["is_subscription"] is False
-            assert data["amount"] == 1499900
+            assert data["amount"] == 1999900
 
     def test_create_order_pro_monthly_usd(self, monkeypatch) -> None:
         _configure(monkeypatch)
@@ -270,7 +270,7 @@ class TestFreeUserCreateOrder:
             r = client.post("/api/razorpay/create-order", json={"plan": "lifetime_pro", "currency": "USD"})
             assert r.status_code == 200, r.text
             data = r.json()
-            assert data["amount"] == 8900
+            assert data["amount"] == 12900
             assert data["currency"] == "USD"
             assert data["is_subscription"] is False
 
@@ -281,7 +281,7 @@ class TestFreeUserCreateOrder:
             r = client.post("/api/razorpay/create-order", json={"plan": "lifetime_elite", "currency": "USD"})
             assert r.status_code == 200, r.text
             data = r.json()
-            assert data["amount"] == 16900
+            assert data["amount"] == 22900
             assert data["currency"] == "USD"
 
     def test_create_order_invalid_plan_returns_400(self, monkeypatch) -> None:
@@ -369,7 +369,7 @@ class TestEliteUserUpgrades:
             assert r.status_code == 200, r.text
             data = r.json()
             assert data["is_subscription"] is False
-            assert data["amount"] == 1499900
+            assert data["amount"] == 1999900
 
     def test_elite_cannot_buy_same_plan_elite(self, monkeypatch) -> None:
         _configure(monkeypatch)

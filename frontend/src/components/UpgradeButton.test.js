@@ -8,11 +8,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { cleanup } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 
-const { mockApiPost, mockTrack, mockAssign } = vi.hoisted(() => ({
+const { mockApiPost, mockTrack, mockAssign, mockUseAuth } = vi.hoisted(() => ({
   mockApiPost: vi.fn(),
   mockTrack: vi.fn(),
   mockAssign: vi.fn(),
+  mockUseAuth: vi.fn(),
 }));
 
 // ---------------------------------------------------------------------------
@@ -33,6 +35,10 @@ vi.mock('../api', () => ({
 
 vi.mock('../analytics', () => ({
   track: (...args) => mockTrack(...args),
+}));
+
+vi.mock('../contexts/AuthContext', () => ({
+  useAuth: () => mockUseAuth(),
 }));
 
 import UpgradeButton from './UpgradeButton';
@@ -66,6 +72,7 @@ beforeEach(() => {
   mockApiPost.mockReset();
   mockTrack.mockReset();
   mockAssign.mockReset();
+  mockUseAuth.mockReturnValue({ user: { id: 'user-1', plan: 'free' } });
   installRazorpayMock();
 });
 
@@ -75,7 +82,11 @@ afterEach(() => {
 });
 
 function renderButton(props = {}) {
-  return render(<UpgradeButton {...props} />);
+  return render(
+    <MemoryRouter>
+      <UpgradeButton {...props} />
+    </MemoryRouter>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -189,7 +200,7 @@ describe('Success path (one-time lifetime)', () => {
     data: {
       order_id: 'order_test_lt',
       subscription_id: null,
-      amount: 799900,
+      amount: 1199900,
       currency: 'INR',
       key_id: 'rzp_test_key',
       name: 'datathink',
@@ -208,7 +219,7 @@ describe('Success path (one-time lifetime)', () => {
 
     await waitFor(() => {
       expect(lastRazorpayOpts.order_id).toBe('order_test_lt');
-      expect(lastRazorpayOpts.amount).toBe(799900);
+      expect(lastRazorpayOpts.amount).toBe(1199900);
       expect(lastRazorpayOpts.subscription_id).toBeUndefined();
     });
   });
