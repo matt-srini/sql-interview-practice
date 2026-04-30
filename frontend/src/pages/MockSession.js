@@ -210,6 +210,7 @@ export default function MockSession() {
 
     setRunning(true);
     setRunResults(prev => ({ ...prev, [q.id]: null }));
+    setResults(prev => ({ ...prev, [q.id]: null }));
     try {
       const endpoint = track === 'sql'
         ? '/run-query'
@@ -694,8 +695,8 @@ export default function MockSession() {
                     <div className="mock-reverse-block">
                       <p className="mock-reverse-prompt">Write a query that produces this result:</p>
                       {q.result_preview?.length > 0 && (
-                        <div className="result-table-wrap">
-                          <table className="result-table">
+                        <div className="results-scroll">
+                          <table className="results-table">
                             <thead>
                               <tr>
                                 {Object.keys(q.result_preview[0]).map(col => (
@@ -799,8 +800,8 @@ export default function MockSession() {
               {currentRunResult && !currentRunResult.error && currentRunResult.columns && (
                 <div className="mock-run-result">
                   <div className="mock-run-result-label">Run result</div>
-                  <div className="result-table-wrap">
-                    <table className="result-table">
+                  <div className="results-scroll">
+                    <table className="results-table">
                       <thead>
                         <tr>{currentRunResult.columns.map(c => <th key={c}>{c}</th>)}</tr>
                       </thead>
