@@ -3354,7 +3354,16 @@ select {
 .learn-path-complete-banner .btn-secondary,
 .error-boundary-actions .btn-secondary,
 .mock-topbar .btn-secondary,
-.mock-summary-card .btn-secondary {
+.mock-summary-card .btn-secondary,
+.mock-shell .btn-secondary,
+.auth-card .btn-secondary,
+.not-found-actions .btn-secondary,
+.onboarding-tooltip-actions .btn-secondary,
+.track-hub-actions .btn-secondary,
+.track-hub-milestone-actions .btn-secondary,
+.track-samples-actions .btn-secondary,
+.policy-footer-nav .btn-secondary,
+.mock-diff-notice .btn-secondary {
   background: rgba(0, 0, 0, 0.03);
   color: var(--text-primary);
   border-color: var(--border-subtle);
@@ -3372,7 +3381,16 @@ select {
 .learn-path-complete-banner .btn-secondary:not(:disabled):hover,
 .error-boundary-actions .btn-secondary:not(:disabled):hover,
 .mock-topbar .btn-secondary:not(:disabled):hover,
-.mock-summary-card .btn-secondary:not(:disabled):hover {
+.mock-summary-card .btn-secondary:not(:disabled):hover,
+.mock-shell .btn-secondary:not(:disabled):hover,
+.auth-card .btn-secondary:not(:disabled):hover,
+.not-found-actions .btn-secondary:not(:disabled):hover,
+.onboarding-tooltip-actions .btn-secondary:not(:disabled):hover,
+.track-hub-actions .btn-secondary:not(:disabled):hover,
+.track-hub-milestone-actions .btn-secondary:not(:disabled):hover,
+.track-samples-actions .btn-secondary:not(:disabled):hover,
+.policy-footer-nav .btn-secondary:not(:disabled):hover,
+.mock-diff-notice .btn-secondary:not(:disabled):hover {
   background: rgba(0, 0, 0, 0.06);
   border-color: var(--border-strong);
 }
