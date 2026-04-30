@@ -54,6 +54,7 @@ export default function MockSession() {
   const [codes, setCodes] = useState({});
   const [results, setResults] = useState({});       // {qId: verdict}
   const [solved, setSolved] = useState({});         // {qId: bool}
+  const [flagged, setFlagged] = useState({});       // {qId: bool}
   const [mcqSelections, setMcqSelections] = useState({}); // {qId: int}
   const [submitting, setSubmitting] = useState(false);
   const [running, setRunning] = useState(false);
@@ -277,6 +278,18 @@ export default function MockSession() {
   function handleExitConfirm() {
     setShowExitConfirm(false);
     handleFinish().then(() => navigate('/mock'));
+  }
+
+  function toggleFlag(qId) {
+    setFlagged(prev => ({ ...prev, [qId]: !prev[qId] }));
+  }
+
+  function goToFirstIncomplete() {
+    setShowExitConfirm(false);
+    const firstFlagged = questions.findIndex(q => flagged[q.id] && !solved[q.id]);
+    const firstUnsolved = questions.findIndex(q => !solved[q.id]);
+    const target = firstFlagged !== -1 ? firstFlagged : firstUnsolved;
+    if (target !== -1) setActiveQ(target);
   }
 
   // ── Loading / error states ─────────────────────────────────────────────────
@@ -557,22 +570,36 @@ export default function MockSession() {
           ◀ Exit
         </button>
 
-        {/* Question dots */}
-        <div className="mock-q-tabs">
-          {questions.map((question, i) => (
-            <button
-              key={question.id}
-              type="button"
-              className={`mock-q-tab ${activeQ === i ? 'active' : ''}`}
-              onClick={() => setActiveQ(i)}
-            >
-              Q{i + 1}
-              {question.is_follow_up && (
-                <span className="mock-follow-up-badge" title="Interviewer follow-up">↩</span>
-              )}
-              <span className={`mock-q-dot ${solved[question.id] ? 'solved' : 'unsolved'}`} />
-            </button>
-          ))}
+        {/* Question navigation */}
+        <div className="mock-q-nav">
+          <button
+            className="mock-nav-arrow"
+            onClick={() => setActiveQ(a => a - 1)}
+            disabled={activeQ === 0}
+            aria-label="Previous question"
+          >←</button>
+          <div className="mock-q-tabs">
+            {questions.map((question, i) => (
+              <button
+                key={question.id}
+                type="button"
+                className={`mock-q-tab ${activeQ === i ? 'active' : ''}`}
+                onClick={() => setActiveQ(i)}
+              >
+                Q{i + 1}
+                {question.is_follow_up && (
+                  <span className="mock-follow-up-badge" title="Interviewer follow-up">↩</span>
+                )}
+                <span className={`mock-q-dot ${solved[question.id] ? 'solved' : flagged[question.id] ? 'flagged' : 'unsolved'}`} />
+              </button>
+            ))}
+          </div>
+          <button
+            className="mock-nav-arrow"
+            onClick={() => setActiveQ(a => a + 1)}
+            disabled={activeQ >= questions.length - 1}
+            aria-label="Next question"
+          >→</button>
         </div>
 
         {/* Timer */}
@@ -625,6 +652,14 @@ export default function MockSession() {
                 <span className="mock-question-track">{TRACK_LABELS[q.track]}</span>
               </div>
               <h2 className="mock-question-title">{q.title}</h2>
+
+              <button
+                className={`mock-flag-btn ${flagged[q.id] ? 'mock-flag-btn--active' : ''}`}
+                onClick={() => toggleFlag(q.id)}
+                title={flagged[q.id] ? 'Remove flag' : 'Flag for review'}
+              >
+                {flagged[q.id] ? '⚑ Flagged' : '⚐ Flag for review'}
+              </button>
 
               {/* Description / Schema toggle (SQL only, skip for reverse which has its own view) */}
               {q.track === 'sql' && q.schema && q.type !== 'reverse' && (
@@ -822,10 +857,18 @@ export default function MockSession() {
                   {currentResult.feedback.map((f, i) => <li key={i}>{f}</li>)}
                 </ul>
               )}
+              {!currentResult.error && !currentResult.correct && activeQ < questions.length - 1 && (
+                <button
+                  className="btn btn-secondary mock-skip-btn"
+                  onClick={() => setActiveQ(activeQ + 1)}
+                >
+                  Skip for now →
+                </button>
+              )}
             </div>
           )}
 
-          {/* Next question prompt */}
+          {/* Next question prompt (correct answer) */}
           {solved[q?.id] && activeQ < questions.length - 1 && (
             <button
               className="btn btn-secondary"
@@ -837,23 +880,70 @@ export default function MockSession() {
         </div>
       </div>
 
-      {/* Exit confirmation modal */}
-      {showExitConfirm && (
-        <div className="mock-modal-overlay" onClick={() => setShowExitConfirm(false)}>
-          <div className="mock-modal" onClick={e => e.stopPropagation()}>
-            <h3 className="mock-modal-title">End this session?</h3>
-            <p className="mock-modal-body">Your progress will be saved and you'll see a summary.</p>
-            <div className="mock-modal-actions">
-              <button className="btn btn-secondary" onClick={() => setShowExitConfirm(false)}>
-                Keep going
-              </button>
-              <button className="btn btn-primary" onClick={handleExitConfirm}>
-                End and see summary
-              </button>
+      {/* Pre-submission review modal */}
+      {showExitConfirm && (() => {
+        const flaggedUnsolved = questions.filter(q => flagged[q.id] && !solved[q.id]);
+        const unattempted = questions.filter(q => !results[q.id] && !solved[q.id]);
+        const hasIncomplete = flaggedUnsolved.length > 0 || unattempted.length > 0;
+        const warningParts = [
+          flaggedUnsolved.length > 0 && `${flaggedUnsolved.length} flagged question${flaggedUnsolved.length > 1 ? 's' : ''}`,
+          unattempted.length > 0 && `${unattempted.length} unattempted question${unattempted.length > 1 ? 's' : ''}`,
+        ].filter(Boolean);
+        return (
+          <div className="mock-modal-overlay" onClick={() => setShowExitConfirm(false)}>
+            <div className="mock-modal mock-modal--review" onClick={e => e.stopPropagation()}>
+              <h3 className="mock-modal-title">
+                {hasIncomplete ? 'Review before submitting' : 'Ready to end your session?'}
+              </h3>
+              <ul className="mock-review-list">
+                {questions.map((question, i) => {
+                  const isSolved = solved[question.id];
+                  const isFlagged = flagged[question.id] && !solved[question.id];
+                  return (
+                    <li
+                      key={question.id}
+                      className={`mock-review-item ${isSolved ? 'mock-review-item--solved' : isFlagged ? 'mock-review-item--flagged' : 'mock-review-item--unsolved'}`}
+                      onClick={() => { setShowExitConfirm(false); setActiveQ(i); }}
+                    >
+                      <span className="mock-review-qnum">Q{i + 1}</span>
+                      <span className="mock-review-qtitle">{question.title}</span>
+                      <span className="mock-review-status">
+                        {isSolved ? '✓' : isFlagged ? '⚑' : '○'}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+              {hasIncomplete && (
+                <p className="mock-modal-warning">
+                  {warningParts.join(' and ')} remaining. Go back to review, or end the session now.
+                </p>
+              )}
+              <div className="mock-modal-actions">
+                {hasIncomplete ? (
+                  <>
+                    <button className="btn btn-secondary" onClick={goToFirstIncomplete}>
+                      Go back and review
+                    </button>
+                    <button className="btn btn-primary mock-btn--end" onClick={handleExitConfirm}>
+                      End session anyway
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button className="btn btn-secondary" onClick={() => setShowExitConfirm(false)}>
+                      Keep going
+                    </button>
+                    <button className="btn btn-primary" onClick={handleExitConfirm}>
+                      End session
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

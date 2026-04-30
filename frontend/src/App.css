@@ -6562,6 +6562,60 @@ select {
 .mock-q-dot.unsolved {
   background: var(--border-strong);
 }
+.mock-q-dot.flagged {
+  background: var(--warning);
+}
+
+/* ── Q nav arrows ────────────────────────────────────────── */
+.mock-q-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.mock-nav-arrow {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  padding: 4px 8px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  line-height: 1;
+  transition: background 0.1s, color 0.1s;
+}
+.mock-nav-arrow:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+.mock-nav-arrow:not(:disabled):hover {
+  background: var(--surface-raised, var(--border-subtle));
+  color: var(--text-strong);
+}
+
+/* ── Flag button ─────────────────────────────────────────── */
+.mock-flag-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border-subtle);
+  background: none;
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+}
+.mock-flag-btn:hover {
+  border-color: var(--warning);
+  color: var(--warning);
+}
+.mock-flag-btn--active {
+  border-color: var(--warning);
+  color: var(--warning);
+  background: var(--warning-soft, rgba(196, 127, 23, 0.08));
+}
 
 /* ── Question panel content ──────────────────────────────── */
 .mock-question-meta {
@@ -6714,6 +6768,83 @@ select {
   display: flex;
   gap: 0.75rem;
   justify-content: flex-end;
+}
+
+/* ── Skip button (in verdict area) ──────────────────────── */
+.mock-skip-btn {
+  margin-top: 0.625rem;
+}
+
+/* ── Review modal ────────────────────────────────────────── */
+.mock-modal--review {
+  max-width: 480px;
+}
+.mock-review-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mock-review-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: background 0.1s, border-color 0.1s;
+}
+.mock-review-item:hover {
+  border-color: var(--border-subtle);
+}
+.mock-review-item--solved {
+  background: var(--success-soft, rgba(45, 158, 107, 0.08));
+}
+.mock-review-item--flagged {
+  background: var(--warning-soft, rgba(196, 127, 23, 0.08));
+}
+.mock-review-item--unsolved {
+  background: var(--surface-raised, var(--border-subtle));
+}
+.mock-review-qnum {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  min-width: 24px;
+}
+.mock-review-qtitle {
+  flex: 1;
+  font-size: 0.875rem;
+  color: var(--text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mock-review-status {
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+.mock-review-item--solved .mock-review-status { color: var(--success); }
+.mock-review-item--flagged .mock-review-status { color: var(--warning); }
+.mock-review-item--unsolved .mock-review-status { color: var(--text-secondary); }
+.mock-modal-warning {
+  font-size: 0.825rem;
+  color: var(--warning);
+  margin: 0 0 1rem;
+  line-height: 1.5;
+}
+.mock-btn--end {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+.mock-btn--end:hover {
+  background: #c0392b;
+  border-color: #c0392b;
 }
 
 /* ── Summary ─────────────────────────────────────────────── */
