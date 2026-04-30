@@ -1,15 +1,10 @@
 /**
  * LandingPage tier section tests.
  *
- * Verifies that the Free / Pro / Elite pricing columns show the correct CTAs
- * (upgrade buttons, "Current plan" badge, lifetime-switch links) for every
- * plan state a user can be in.
+ * Verifies that anonymous/free users see the Free / Pro / Elite pricing
+ * columns, and that paid users no longer see landing-tier upgrade CTAs.
  *
- * The tier CTA logic lives in proColCta() / eliteColCta() inside LandingPage:
- *   proColCta():  'lifetime_pro' → 'current' | 'pro' → 'lifetime_only' |
- *                 'free' → 'both' | elite variants → 'none'
- *   eliteColCta(): 'lifetime_elite' → 'current' | 'elite' → 'lifetime_only' |
- *                  others → 'both'
+ * The tier section is now intentionally hidden for all paying users.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, cleanup } from '@testing-library/react';
@@ -68,6 +63,19 @@ vi.mock('../contexts/TopicContext', () => ({
   useTopic: () => ({ topic: 'sql', meta: { label: 'SQL' } }),
 }));
 
+vi.mock('../utils/currency', () => ({
+  detectCurrency: () => 'INR',
+  PRICES: {
+    INR: {
+      pro: '₹999',
+      elite: '₹1,999',
+      period: '/mo',
+      lifetimePro: '₹11,999',
+      lifetimeElite: '₹19,999',
+    },
+  },
+}));
+
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import LandingPage from './LandingPage';
@@ -119,6 +127,7 @@ beforeEach(() => {
     if (url === '/paths')    return Promise.resolve({ data: [] });
     return Promise.resolve({ data: {} });
   });
+  api.post.mockResolvedValue({ data: {} });
 });
 
 afterEach(() => {
@@ -134,10 +143,10 @@ describe('LandingPage tier section', () => {
   // ── Pricing display ────────────────────────────────────────────────────────
 
   describe('Pricing display', () => {
-    it('shows section heading "Simple pricing"', async () => {
+    it('shows section heading "Straightforward pricing"', async () => {
       renderWithPlan(null);
       await waitFor(() => {
-        expect(screen.getByText('Simple pricing')).toBeInTheDocument();
+        expect(screen.getByText('Straightforward pricing')).toBeInTheDocument();
       });
     });
 
@@ -148,10 +157,10 @@ describe('LandingPage tier section', () => {
       });
     });
 
-    it('shows ₹799 in the Pro column', async () => {
+    it('shows ₹999 in the Pro column', async () => {
       renderWithPlan(null);
       await waitFor(() => {
-        expect(screen.getByText('₹799')).toBeInTheDocument();
+        expect(screen.getByText('₹999')).toBeInTheDocument();
       });
     });
 
@@ -164,10 +173,10 @@ describe('LandingPage tier section', () => {
       });
     });
 
-    it('shows ₹1,599 in the Elite column', async () => {
+    it('shows ₹1,999 in the Elite column', async () => {
       renderWithPlan(null);
       await waitFor(() => {
-        expect(screen.getByText('₹1,599')).toBeInTheDocument();
+        expect(screen.getByText('₹1,999')).toBeInTheDocument();
       });
     });
 
@@ -196,10 +205,10 @@ describe('LandingPage tier section', () => {
       });
     });
 
-    it('shows "Lifetime access — ₹7,999" button in the Pro column', async () => {
+    it('shows "Lifetime access — ₹11,999" button in the Pro column', async () => {
       renderWithPlan('free');
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'Lifetime access — ₹7,999' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Lifetime access — ₹11,999' })).toBeInTheDocument();
       });
     });
 
@@ -210,10 +219,10 @@ describe('LandingPage tier section', () => {
       });
     });
 
-    it('shows "Lifetime access — ₹14,999" button in the Elite column', async () => {
+    it('shows "Lifetime access — ₹19,999" button in the Elite column', async () => {
       renderWithPlan('free');
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'Lifetime access — ₹14,999' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Lifetime access — ₹19,999' })).toBeInTheDocument();
       });
     });
 
@@ -226,118 +235,21 @@ describe('LandingPage tier section', () => {
     });
   });
 
-  // ── monthly pro user (plan='pro') ─────────────────────────────────────────
+  // ── paying users ─────────────────────────────────────────────────────────
 
-  describe("monthly pro user (plan='pro')", () => {
-    it('does not show "Upgrade to Pro" monthly button in Pro column', async () => {
-      renderWithPlan('pro');
-      await waitFor(() => {
-        expect(screen.queryByRole('button', { name: 'Upgrade to Pro' })).not.toBeInTheDocument();
-      });
-    });
-
-    it('shows "Switch to lifetime — ₹7,999" button in Pro column', async () => {
-      renderWithPlan('pro');
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'Switch to lifetime — ₹7,999' })).toBeInTheDocument();
-      });
-    });
-
-    it('shows "Upgrade to Elite" button in Elite column', async () => {
-      renderWithPlan('pro');
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'Upgrade to Elite' })).toBeInTheDocument();
-      });
-    });
-
-    it('shows "Lifetime access — ₹14,999" button in Elite column', async () => {
-      renderWithPlan('pro');
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'Lifetime access — ₹14,999' })).toBeInTheDocument();
-      });
-    });
-  });
-
-  // ── lifetime_pro user (plan='lifetime_pro') ────────────────────────────────
-
-  describe("lifetime_pro user (plan='lifetime_pro')", () => {
-    it('shows "Current plan" in the Pro column', async () => {
-      renderWithPlan('lifetime_pro');
-      await waitFor(() => {
-        expect(screen.getByText('Current plan')).toBeInTheDocument();
-      });
-    });
-
-    it('does not show any upgrade button in the Pro column', async () => {
-      renderWithPlan('lifetime_pro');
-      await waitFor(() => {
-        // proColCta() === 'current' — neither monthly nor lifetime Pro button rendered
-        expect(screen.queryByRole('button', { name: 'Upgrade to Pro' })).not.toBeInTheDocument();
-        expect(screen.queryByRole('button', { name: /₹7,999/ })).not.toBeInTheDocument();
-      });
-    });
-
-    it('shows "Upgrade to Elite" button in Elite column', async () => {
-      renderWithPlan('lifetime_pro');
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'Upgrade to Elite' })).toBeInTheDocument();
-      });
-    });
-
-    it('shows "Lifetime access — ₹14,999" button in Elite column', async () => {
-      renderWithPlan('lifetime_pro');
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'Lifetime access — ₹14,999' })).toBeInTheDocument();
-      });
-    });
-  });
-
-  // ── monthly elite user (plan='elite') ─────────────────────────────────────
-
-  describe("monthly elite user (plan='elite')", () => {
-    it('shows no CTA buttons in the Pro column', async () => {
-      renderWithPlan('elite');
-      await waitFor(() => {
-        // proColCta() === 'none' — neither monthly Pro nor lifetime Pro rendered
-        expect(screen.queryByRole('button', { name: 'Upgrade to Pro' })).not.toBeInTheDocument();
-        expect(screen.queryByRole('button', { name: /₹7,999/ })).not.toBeInTheDocument();
-      });
-    });
-
-    it('shows "Switch to lifetime — ₹14,999" in the Elite column', async () => {
-      renderWithPlan('elite');
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'Switch to lifetime — ₹14,999' })).toBeInTheDocument();
-      });
-    });
-
-    it('does not show "Upgrade to Elite" monthly button', async () => {
-      renderWithPlan('elite');
-      await waitFor(() => {
-        expect(screen.queryByRole('button', { name: 'Upgrade to Elite' })).not.toBeInTheDocument();
-      });
-    });
-  });
-
-  // ── lifetime_elite user (plan='lifetime_elite') ────────────────────────────
-
-  describe("lifetime_elite user (plan='lifetime_elite')", () => {
-    it('hides the pricing section', async () => {
-      renderWithPlan('lifetime_elite');
-      await waitFor(() => {
-        expect(screen.queryByText('Simple pricing')).not.toBeInTheDocument();
-      });
-    });
-
-    it('does not render any upgrade buttons', async () => {
-      renderWithPlan('lifetime_elite');
-      await waitFor(() => {
-        // Pricing section is hidden for lifetime elite; no upgrade controls appear.
-        expect(screen.queryByRole('button', { name: 'Upgrade to Pro' })).not.toBeInTheDocument();
-        expect(screen.queryByRole('button', { name: 'Upgrade to Elite' })).not.toBeInTheDocument();
-        expect(screen.queryByRole('button', { name: /Switch to lifetime/ })).not.toBeInTheDocument();
-        expect(screen.queryByRole('button', { name: /Lifetime access/ })).not.toBeInTheDocument();
-      });
-    });
+  describe('paying users', () => {
+    it.each(['pro', 'lifetime_pro', 'elite', 'lifetime_elite'])(
+      "hides the pricing section for plan='%s'",
+      async (plan) => {
+        renderWithPlan(plan);
+        await waitFor(() => {
+          expect(screen.queryByText('Straightforward pricing')).not.toBeInTheDocument();
+          expect(screen.queryByRole('button', { name: 'Upgrade to Pro' })).not.toBeInTheDocument();
+          expect(screen.queryByRole('button', { name: 'Upgrade to Elite' })).not.toBeInTheDocument();
+          expect(screen.queryByRole('button', { name: /Switch to lifetime/ })).not.toBeInTheDocument();
+          expect(screen.queryByRole('button', { name: /Lifetime access/ })).not.toBeInTheDocument();
+        });
+      }
+    );
   });
 });

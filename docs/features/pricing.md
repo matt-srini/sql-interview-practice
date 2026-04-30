@@ -90,18 +90,18 @@ normalize_plan("free")           # → "free"  (unchanged)
 4. The frontend loads the Razorpay Checkout JS SDK and opens the modal.
 5. On success Razorpay fires `handler(resp)` with `razorpay_payment_id`, `razorpay_signature`, and either `razorpay_order_id` (one-time) or `razorpay_subscription_id` (recurring).
 6. `POST /api/razorpay/verify-payment` is called. The backend verifies the HMAC signature and applies the plan upgrade.
-7. The page redirects to `/practice?upgraded=true`.
+7. The landing page redirects to `/?upgraded=true`.
 
 ### Starting state: Pro user
 
-- Pro column: shows lifetime Pro button only ("Switch to lifetime — ₹7,999").
-- Elite column: shows monthly Elite button + lifetime Elite button.
+- The landing pricing section is hidden for paying users.
+- Plan upgrades remain available from other gated surfaces where an upgrade is relevant.
 - Pro user cannot create an order for `pro` (same plan) — backend returns 400.
 
 ### Starting state: Elite user
 
-- Pro column: no CTA shown.
-- Elite column: shows lifetime Elite button only ("Switch to lifetime — ₹14,999").
+- The landing pricing section is hidden for paying users.
+- Plan upgrades remain available from other gated surfaces where an upgrade is relevant.
 - Elite user cannot create an order for `pro` or `elite` — backend returns 400.
 
 ---
@@ -201,7 +201,7 @@ All webhook events are deduped on `event.id` using the `payment_events` table:
 {
   "order_id": "order_abc123",
   "subscription_id": null,
-  "amount": 799900,
+  "amount": 1199900,
   "currency": "INR",
   "key_id": "rzp_live_...",
   "name": "datathink",

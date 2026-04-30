@@ -52,8 +52,8 @@ def _configure(monkeypatch):
     monkeypatch.setattr(razorpay_router, "RAZORPAY_WEBHOOK_SECRET", WEBHOOK_SECRET)
     monkeypatch.setattr(razorpay_router, "RAZORPAY_PLAN_PRO", "plan_pro_iso")
     monkeypatch.setattr(razorpay_router, "RAZORPAY_PLAN_ELITE", "plan_elite_iso")
-    monkeypatch.setattr(razorpay_router, "RAZORPAY_AMOUNT_LIFETIME_PRO", 799900)
-    monkeypatch.setattr(razorpay_router, "RAZORPAY_AMOUNT_LIFETIME_ELITE", 1499900)
+    monkeypatch.setattr(razorpay_router, "RAZORPAY_AMOUNT_LIFETIME_PRO", 1199900)
+    monkeypatch.setattr(razorpay_router, "RAZORPAY_AMOUNT_LIFETIME_ELITE", 1999900)
     monkeypatch.setattr(razorpay_router, "RAZORPAY_CURRENCY", "INR")
 
 

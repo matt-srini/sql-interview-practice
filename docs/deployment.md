@@ -44,8 +44,8 @@ RAZORPAY_KEY_SECRET=...
 RAZORPAY_WEBHOOK_SECRET=...
 RAZORPAY_PLAN_PRO=plan_...            # monthly subscription plan id
 RAZORPAY_PLAN_ELITE=plan_...          # monthly subscription plan id
-RAZORPAY_AMOUNT_LIFETIME_PRO=799900   # amount in paise (₹7,999)
-RAZORPAY_AMOUNT_LIFETIME_ELITE=1499900 # amount in paise (₹14,999)
+RAZORPAY_AMOUNT_LIFETIME_PRO=1199900   # amount in paise (₹11,999)
+RAZORPAY_AMOUNT_LIFETIME_ELITE=1999900 # amount in paise (₹19,999)
 RAZORPAY_CURRENCY=INR
 ```
 
@@ -165,8 +165,8 @@ docker run -p 8000:8000 \
   -e RAZORPAY_WEBHOOK_SECRET=... \
   -e RAZORPAY_PLAN_PRO=... \
   -e RAZORPAY_PLAN_ELITE=... \
-  -e RAZORPAY_AMOUNT_LIFETIME_PRO=799900 \
-  -e RAZORPAY_AMOUNT_LIFETIME_ELITE=1499900 \
+  -e RAZORPAY_AMOUNT_LIFETIME_PRO=1199900 \
+  -e RAZORPAY_AMOUNT_LIFETIME_ELITE=1999900 \
   -e SENTRY_DSN=... \
   sql-practice
 ```
@@ -187,13 +187,13 @@ The `FRONTEND_DIST_DIR` env var defaults to `/app/frontend/dist` inside the imag
 | `RAZORPAY_WEBHOOK_SECRET` | Yes | Secret configured on the Razorpay webhook endpoint |
 | `RAZORPAY_PLAN_PRO` | Yes (for subs) | Razorpay Plan id backing the monthly Pro subscription |
 | `RAZORPAY_PLAN_ELITE` | Yes (for subs) | Razorpay Plan id backing the monthly Elite subscription |
-| `RAZORPAY_AMOUNT_LIFETIME_PRO` | — | Amount in paise for the Lifetime Pro one-time order (default `799900` = ₹7,999) |
-| `RAZORPAY_AMOUNT_LIFETIME_ELITE` | — | Amount in paise for the Lifetime Elite one-time order (default `1499900` = ₹14,999) |
+| `RAZORPAY_AMOUNT_LIFETIME_PRO` | — | Amount in paise for the Lifetime Pro one-time order (default `1199900` = ₹11,999) |
+| `RAZORPAY_AMOUNT_LIFETIME_ELITE` | — | Amount in paise for the Lifetime Elite one-time order (default `1999900` = ₹19,999) |
 | `RAZORPAY_CURRENCY` | — | Currency code for Razorpay charges; defaults to `INR` |
 | `RAZORPAY_PLAN_PRO_USD` | — | Razorpay Plan id for the monthly Pro subscription billed in USD (set after international approval) |
 | `RAZORPAY_PLAN_ELITE_USD` | — | Razorpay Plan id for the monthly Elite subscription billed in USD (set after international approval) |
-| `RAZORPAY_AMOUNT_LIFETIME_PRO_USD` | — | Amount in cents for the USD Lifetime Pro one-time order (default `8900` = $89) |
-| `RAZORPAY_AMOUNT_LIFETIME_ELITE_USD` | — | Amount in cents for the USD Lifetime Elite one-time order (default `16900` = $169) |
+| `RAZORPAY_AMOUNT_LIFETIME_PRO_USD` | — | Amount in cents for the USD Lifetime Pro one-time order (default `12900` = $129) |
+| `RAZORPAY_AMOUNT_LIFETIME_ELITE_USD` | — | Amount in cents for the USD Lifetime Elite one-time order (default `22900` = $229) |
 | `ALLOWED_ORIGINS` | — | Comma-separated CORS origins; defaults to localhost dev origins |
 | `FRONTEND_DIST_DIR` | — | Path to built SPA assets; defaults to `../frontend/dist` |
 | `RATE_LIMIT_REQUESTS` | — | Requests per window per IP; default `60` |
@@ -265,8 +265,8 @@ Frontend builds now emit hidden sourcemaps. If `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`
 1. Sign up at [dashboard.razorpay.com](https://dashboard.razorpay.com) with an Indian business (PAN + bank account for KYC).
 2. Under **Settings → API Keys**, generate keys for Test mode first. Copy `Key Id` → `RAZORPAY_KEY_ID` and `Key Secret` → `RAZORPAY_KEY_SECRET`. Repeat under Live mode once KYC is approved.
 3. Under **Subscriptions → Plans**, create two plans:
-   - Pro monthly: amount `₹799` (79900 paise), period `monthly`, interval `1` → copy Plan id → `RAZORPAY_PLAN_PRO`.
-   - Elite monthly: amount `₹1599` (159900 paise), period `monthly`, interval `1` → `RAZORPAY_PLAN_ELITE`.
+   - Pro monthly: amount `₹999` (99900 paise), period `monthly`, interval `1` → copy Plan id → `RAZORPAY_PLAN_PRO`.
+   - Elite monthly: amount `₹1,999` (199900 paise), period `monthly`, interval `1` → `RAZORPAY_PLAN_ELITE`.
 4. Lifetime plans do **not** need Plan objects — the backend creates a one-time Order with the amount read from `RAZORPAY_AMOUNT_LIFETIME_PRO` / `RAZORPAY_AMOUNT_LIFETIME_ELITE` (paise).
 5. Under **Settings → Webhooks**, add `https://<host>/api/razorpay/webhook` and subscribe to: `payment.captured`, `payment.failed`, `subscription.activated`, `subscription.charged`, `subscription.cancelled`, `subscription.halted`. Paste the generated secret into `RAZORPAY_WEBHOOK_SECRET`.
 6. Test mode cards: `4111 1111 1111 1111`, any future expiry, any CVV, OTP `1234`.
