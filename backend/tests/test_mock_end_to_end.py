@@ -269,6 +269,60 @@ class TestEndToEndScoring:
             )
             assert len(summary["questions"]) == 2
 
+    def test_all_questions_answered_correctly_gives_perfect_score(self) -> None:
+        """Answering every question correctly → solved_count == total_count."""
+        with TestClient(app) as client:
+            _make_user(client, plan="elite")
+            session = _start_pyspark(client, num_questions=3)
+            session_id = session["session_id"]
+            qs = session["questions"]
+            assert len(qs) == 3
+
+            for q in qs:
+                result = _submit(client, session_id, q["id"], _correct_option(q["id"]))
+                assert result["correct"] is True, f"Q{q['id']} should be correct"
+
+            summary = _finish(client, session_id)
+            assert summary["solved_count"] == summary["total_count"], (
+                f"All correct → solved_count ({summary['solved_count']}) "
+                f"should equal total_count ({summary['total_count']})"
+            )
+            assert summary["total_count"] == 3
+
+    def test_all_questions_answered_wrongly_gives_zero_score(self) -> None:
+        """Answering every question wrongly → solved_count == 0."""
+        with TestClient(app) as client:
+            _make_user(client, plan="elite")
+            session = _start_pyspark(client, num_questions=3)
+            session_id = session["session_id"]
+            qs = session["questions"]
+
+            for q in qs:
+                result = _submit(client, session_id, q["id"], _wrong_option(q["id"]))
+                assert result["correct"] is False, f"Q{q['id']} should be wrong"
+
+            summary = _finish(client, session_id)
+            assert summary["solved_count"] == 0, (
+                f"All wrong → solved_count should be 0, got {summary['solved_count']}"
+            )
+            assert summary["total_count"] == 3
+
+    def test_finish_after_all_questions_answered_has_status_completed(self) -> None:
+        """Finishing after all questions are answered returns a completed summary."""
+        with TestClient(app) as client:
+            _make_user(client, plan="elite")
+            session = _start_pyspark(client, num_questions=2)
+            session_id = session["session_id"]
+            qs = session["questions"]
+
+            for q in qs:
+                _submit(client, session_id, q["id"], _correct_option(q["id"]))
+
+            summary = _finish(client, session_id)
+            assert summary.get("status") == "completed", (
+                f"Finished session should have status='completed', got: {summary.get('status')!r}"
+            )
+
 
 # ── 2. Elite session debrief (end-to-end) ────────────────────────────────────
 
