@@ -3352,7 +3352,9 @@ select {
 .preview-locked-actions .btn-secondary,
 .learn-unlock-card .btn-secondary,
 .learn-path-complete-banner .btn-secondary,
-.error-boundary-actions .btn-secondary {
+.error-boundary-actions .btn-secondary,
+.mock-topbar .btn-secondary,
+.mock-summary-card .btn-secondary {
   background: rgba(0, 0, 0, 0.03);
   color: var(--text-primary);
   border-color: var(--border-subtle);
@@ -3368,7 +3370,9 @@ select {
 .preview-locked-actions .btn-secondary:not(:disabled):hover,
 .learn-unlock-card .btn-secondary:not(:disabled):hover,
 .learn-path-complete-banner .btn-secondary:not(:disabled):hover,
-.error-boundary-actions .btn-secondary:not(:disabled):hover {
+.error-boundary-actions .btn-secondary:not(:disabled):hover,
+.mock-topbar .btn-secondary:not(:disabled):hover,
+.mock-summary-card .btn-secondary:not(:disabled):hover {
   background: rgba(0, 0, 0, 0.06);
   border-color: var(--border-strong);
 }

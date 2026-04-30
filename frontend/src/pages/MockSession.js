@@ -67,6 +67,7 @@ export default function MockSession() {
   const [expandedSolutions, setExpandedSolutions] = useState({}); // {qId: bool}
   const [loadError, setLoadError] = useState(null);
   const [insights, setInsights] = useState(null);
+  const [shareCopied, setShareCopied] = useState(false);
 
   const [showFollowUpBanner, setShowFollowUpBanner] = useState(false);
   const [focusFallback, setFocusFallback] = useState(false);
@@ -523,9 +524,11 @@ export default function MockSession() {
                 className="btn btn-secondary"
                 onClick={() => {
                   navigator.clipboard?.writeText(shareText()).catch(() => {});
+                  setShareCopied(true);
+                  setTimeout(() => setShareCopied(false), 2000);
                 }}
               >
-                Share result
+                {shareCopied ? '✓ Copied!' : 'Share result'}
               </button>
               <button className="btn btn-primary" onClick={() => navigate('/mock')}>
                 New mock interview
