@@ -810,7 +810,9 @@ export default function MockSession() {
               {currentResult.error
                 ? `Error: ${currentResult.error}`
                 : currentResult.correct
-                  ? '✓ Correct! Move to the next question.'
+                  ? activeQ < questions.length - 1
+                    ? '✓ Correct! Move to the next question.'
+                    : '✓ Correct! All done — end your session.'
                   : '✗ Not quite — review your logic and try again.'}
               {!currentResult.error && !currentResult.correct && currentResult.feedback?.length > 0 && (
                 <ul className="mock-feedback-list">
