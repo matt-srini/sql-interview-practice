@@ -53,7 +53,8 @@ export function AuthProvider({ children }) {
   }, []);
 
   const requestMagicLink = useCallback(async (email) => {
-    await api.post('/auth/magic-link', { email });
+    const res = await api.post('/auth/magic-link', { email });
+    return res.data;
   }, []);
 
   return (

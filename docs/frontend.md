@@ -57,11 +57,13 @@ On mount, checks `window.location.hash` and scrolls to the matching element (use
 
 ### AuthPage (`/auth`)
 
-Register or sign in. Supports email/password, Google OAuth (coming soon), and GitHub OAuth (coming soon). Also contains a "Forgot password?" flow that sends a reset email. On successful register, anonymous session is upgraded in place (progress preserved). On login, anonymous progress merges into an existing account.
+Register or sign in. Supports email/password, provider-gated Google/GitHub OAuth, magic-link request, and a "Forgot password?" flow that sends a reset email. On successful register, anonymous session is upgraded in place (progress preserved). On login, anonymous progress merges into an existing account.
 
 **Signup form:** includes a `passwordConfirm` field with inline blur-validation ("Passwords do not match") and disabled submit when there's a mismatch. Success message includes spam-folder guidance and 24h link expiry note.
 
-**OAuth buttons:** rendered with a "Soon" badge and `opacity: 0.65` via `.auth-oauth-btn--coming-soon`; `disabled` attribute not used to preserve hover affordance.
+**OAuth buttons:** rendered only for providers returned by `GET /api/config` (`oauth_providers`). Clicking a provider button calls `/api/auth/oauth/{provider}/authorize` and redirects the browser to the provider URL.
+
+**Magic-link UX:** submitting in `mode=magic` always shows a non-enumerating success message. In non-production environments without email delivery configured, backend may return a `dev_magic_link` and the page renders a direct developer-only callback link.
 
 ### ResetPasswordPage (`/auth/reset-password`)
 
@@ -270,7 +272,7 @@ Exposes `{ catalog, loading, error, refresh }`. Resets when topic changes.
 
 ### `contexts/AuthContext.js`
 
-Provides `{ user, loading, logout, refreshUser }`. Fetches `/api/auth/me` on mount.
+Provides `{ user, loading, login, register, logout, requestMagicLink, refreshUser }`. Fetches `/api/auth/me` on mount.
 
 ---
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import re
 import secrets
+import hashlib
 from datetime import datetime, timezone
 import urllib.parse
 
@@ -12,8 +13,14 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel, field_validator
 
 from config import (
+    AUTH_RATE_LIMIT_REQUESTS,
+    AUTH_RATE_LIMIT_WINDOW_SECONDS,
+    AUTH_TOKEN_ISSUE_RATE_LIMIT_REQUESTS,
+    AUTH_TOKEN_ISSUE_RATE_LIMIT_WINDOW_SECONDS,
     APP_BASE_URL,
     FRONTEND_BASE_URL,
+    IS_PROD,
+    REDIS_URL,
     GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET,
     LOGIN_LOCKOUT_MAX_ATTEMPTS,
@@ -23,8 +30,12 @@ from config import (
 )
 from db import (
     clear_login_lock_state,
+    consume_magic_link_token,
+    consume_oauth_state_token,
     consume_email_verification_token,
     consume_password_reset_token,
+    create_magic_link_token,
+    create_oauth_state_token,
     create_email_verification_token,
     create_password_reset_token,
     create_session,
@@ -41,8 +52,9 @@ from db import (
     verify_password,
 )
 from deps import clear_session_cookie, get_current_user, get_optional_current_user, set_csrf_cookie, set_session_cookie
-from email_service import email_available, send_password_reset_email, send_verification_email
+from email_service import email_available, send_magic_link_email, send_password_reset_email, send_verification_email
 from middleware.request_context import get_request_id
+from rate_limiter import create_rate_limiter
 
 
 logger = logging.getLogger(__name__)
@@ -56,8 +68,17 @@ _RESERVED_EMAIL_PREFIXES: frozenset[str] = frozenset({
     "automation", "auto", "author",
 })
 
-# OAuth state param length (random bytes for CSRF prevention stored in session cookie)
-_OAUTH_STATE_BYTES = 16
+_auth_rate_limiter = create_rate_limiter(
+    max_requests=AUTH_RATE_LIMIT_REQUESTS,
+    window_seconds=AUTH_RATE_LIMIT_WINDOW_SECONDS,
+    redis_url=REDIS_URL,
+)
+
+_auth_token_issue_limiter = create_rate_limiter(
+    max_requests=AUTH_TOKEN_ISSUE_RATE_LIMIT_REQUESTS,
+    window_seconds=AUTH_TOKEN_ISSUE_RATE_LIMIT_WINDOW_SECONDS,
+    redis_url=REDIS_URL,
+)
 
 # OAuth redirect URIs — provider will redirect back here after auth
 def _oauth_callback_url(provider: str) -> str:
@@ -166,6 +187,40 @@ def _err(message: str, status: int = 400) -> JSONResponse:
         status_code=status,
         content={"error": message, "request_id": get_request_id()},
     )
+
+
+def _hash_user_agent(request: Request) -> str | None:
+    user_agent = request.headers.get("user-agent", "").strip()
+    if not user_agent:
+        return None
+    return hashlib.sha256(user_agent.encode("utf-8")).hexdigest()
+
+
+def _coarse_ip_prefix(request: Request) -> str | None:
+    raw_ip = request.client.host if request.client and request.client.host else None
+    if not raw_ip:
+        return None
+    if ":" in raw_ip:
+        # IPv6: keep only first 4 hextets as a coarse prefix.
+        return ":".join(raw_ip.split(":")[:4])
+    parts = raw_ip.split(".")
+    if len(parts) == 4:
+        # IPv4: /24-ish coarse prefix.
+        return ".".join(parts[:3])
+    return raw_ip
+
+
+def _check_auth_limits(request: Request, *, issue_token: bool = False) -> JSONResponse | None:
+    key = request.client.host if request.client and request.client.host else "unknown"
+    baseline = _auth_rate_limiter.check(f"auth:{key}")
+    if not baseline.allowed:
+        return _err("Too many auth attempts. Please try again shortly.", status=429)
+
+    if issue_token:
+        decision = _auth_token_issue_limiter.check(f"auth-token:{key}")
+        if not decision.allowed:
+            return _err("Too many auth token requests. Please wait and try again.", status=429)
+    return None
 
 
 # ── Standard auth ─────────────────────────────────────────────────────────────
@@ -343,9 +398,48 @@ async def resend_verification(
 
 
 @router.post("/magic-link")
-async def request_magic_link(body: MagicLinkRequest) -> JSONResponse:
-    logger.info("[request_id=%s] Magic link requested (stub): email=%s", get_request_id(), body.email)
-    return _err("Magic link sign-in is not yet available.", status=501)
+async def request_magic_link(body: MagicLinkRequest, request: Request) -> JSONResponse:
+    limited = _check_auth_limits(request, issue_token=True)
+    if limited is not None:
+        return limited
+
+    user = await get_user_by_email(body.email)
+    if user is None:
+        logger.info("[request_id=%s] Magic link requested: no account for email=%s", get_request_id(), body.email)
+        return JSONResponse(content={"ok": True})
+
+    token = await create_magic_link_token(user["id"])
+    if email_available():
+        sent = await send_magic_link_email(body.email, token)
+        if not sent:
+            logger.error("[request_id=%s] Failed to send magic-link email: user_id=%s", get_request_id(), user["id"])
+    else:
+        if not IS_PROD:
+            logger.warning("[request_id=%s] RESEND_API_KEY not configured, magic-link dev fallback enabled", get_request_id())
+            callback = f"{APP_BASE_URL.rstrip('/')}/api/auth/magic-link/callback?token={urllib.parse.quote(token)}"
+            return JSONResponse(content={"ok": True, "dev_magic_link": callback})
+        logger.warning("[request_id=%s] RESEND_API_KEY not configured, magic-link email not sent in production", get_request_id())
+
+    return JSONResponse(content={"ok": True})
+
+
+@router.get("/magic-link/callback")
+async def magic_link_callback(token: str) -> RedirectResponse:
+    frontend_base = (FRONTEND_BASE_URL or APP_BASE_URL or "http://localhost:5173").rstrip("/")
+
+    def _redirect_error(msg: str) -> RedirectResponse:
+        params = urllib.parse.urlencode({"error": msg})
+        return RedirectResponse(url=f"{frontend_base}/auth?{params}", status_code=302)
+
+    user_id = await consume_magic_link_token(token)
+    if user_id is None:
+        return _redirect_error("This sign-in link is invalid or has expired.")
+
+    token_value = await create_session(user_id)
+    response = RedirectResponse(url=f"{frontend_base}/", status_code=302)
+    set_session_cookie(response, token_value)
+    set_csrf_cookie(response, secrets.token_urlsafe(24))
+    return response
 
 
 # ── Password reset ────────────────────────────────────────────────────────────
@@ -393,12 +487,17 @@ async def reset_password(body: ResetPasswordRequest) -> JSONResponse:
 @router.get("/oauth/{provider}/authorize")
 async def oauth_authorize(provider: str, request: Request) -> JSONResponse:
     """Return the OAuth authorization URL for the given provider."""
-    import secrets as _secrets
+    limited = _check_auth_limits(request, issue_token=True)
+    if limited is not None:
+        return limited
+
+    user_agent_hash = _hash_user_agent(request)
+    ip_prefix = _coarse_ip_prefix(request)
 
     if provider == "google":
         if not GOOGLE_CLIENT_ID:
             return _err("Google sign-in is not configured.", status=503)
-        state = _secrets.token_urlsafe(_OAUTH_STATE_BYTES)
+        state = await create_oauth_state_token(user_agent_hash=user_agent_hash, ip_prefix=ip_prefix)
         params = {
             "client_id": GOOGLE_CLIENT_ID,
             "redirect_uri": _oauth_callback_url("google"),
@@ -413,7 +512,7 @@ async def oauth_authorize(provider: str, request: Request) -> JSONResponse:
     if provider == "github":
         if not GITHUB_CLIENT_ID:
             return _err("GitHub sign-in is not configured.", status=503)
-        state = _secrets.token_urlsafe(_OAUTH_STATE_BYTES)
+        state = await create_oauth_state_token(user_agent_hash=user_agent_hash, ip_prefix=ip_prefix)
         params = {
             "client_id": GITHUB_CLIENT_ID,
             "redirect_uri": _oauth_callback_url("github"),
@@ -433,6 +532,7 @@ async def oauth_authorize(provider: str, request: Request) -> JSONResponse:
 async def oauth_callback(provider: str, request: Request) -> RedirectResponse:
     """Handle OAuth callback — exchange code for token, upsert user, set session."""
     code = request.query_params.get("code")
+    state = request.query_params.get("state")
     error = request.query_params.get("error")
     frontend_base = (FRONTEND_BASE_URL or APP_BASE_URL or "http://localhost:5173").rstrip("/")
 
@@ -442,6 +542,25 @@ async def oauth_callback(provider: str, request: Request) -> RedirectResponse:
 
     if error or not code:
         return _redirect_error("OAuth sign-in was cancelled or failed.")
+
+    if not state:
+        return _redirect_error("OAuth state is missing. Please try again.")
+
+    state_validation = await consume_oauth_state_token(
+        state,
+        user_agent_hash=_hash_user_agent(request),
+        ip_prefix=_coarse_ip_prefix(request),
+    )
+    if not state_validation.get("valid"):
+        return _redirect_error("OAuth state is invalid or expired. Please try again.")
+    if state_validation.get("user_agent_mismatch") or state_validation.get("ip_prefix_mismatch"):
+        logger.warning(
+            "[request_id=%s] OAuth state mismatch signal: provider=%s ua_mismatch=%s ip_mismatch=%s",
+            get_request_id(),
+            provider,
+            state_validation.get("user_agent_mismatch"),
+            state_validation.get("ip_prefix_mismatch"),
+        )
 
     try:
         if provider == "google":

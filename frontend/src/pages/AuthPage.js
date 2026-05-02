@@ -73,6 +73,8 @@ export default function AuthPage() {
   const [passwordConfirmError, setPasswordConfirmError] = useState(null);
   const [signupEmail, setSignupEmail] = useState('');
   const [resendStatus, setResendStatus] = useState('idle'); // 'idle' | 'sending' | 'sent'
+  const [oauthProviders, setOauthProviders] = useState([]);
+  const [devMagicLink, setDevMagicLink] = useState(null);
 
   // Show error from OAuth redirect (e.g. ?error=...)
   useEffect(() => {
@@ -90,14 +92,49 @@ export default function AuthPage() {
     window.scrollTo(0, 0);
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    api
+      .get('/config')
+      .then((res) => {
+        if (!active) return;
+        const providers = Array.isArray(res?.data?.oauth_providers) ? res.data.oauth_providers : [];
+        setOauthProviders(providers);
+      })
+      .catch(() => {
+        if (!active) return;
+        setOauthProviders([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   function switchMode(next) {
     setMode(next);
     setError(null);
     setInfo(null);
     setPasswordError(null);
     setPasswordConfirmError(null);
+    setDevMagicLink(null);
     setStatus('idle');
     requestAnimationFrame(() => firstFieldRef.current?.focus());
+  }
+
+  async function handleOAuth(provider) {
+    setError(null);
+    setInfo(null);
+    try {
+      const { data } = await api.get(`/auth/oauth/${provider}/authorize`);
+      if (!data?.url) {
+        setError('OAuth provider is unavailable right now. Please try email sign-in.');
+        return;
+      }
+      window.location.href = data.url;
+    } catch (err) {
+      const msg = err?.response?.data?.error;
+      setError(msg || 'Could not start OAuth sign-in. Please try again.');
+    }
   }
 
   function handleChange(e) {
@@ -119,6 +156,7 @@ export default function AuthPage() {
     e.preventDefault();
     setError(null);
     setInfo(null);
+    setDevMagicLink(null);
     setStatus('loading');
 
     try {
@@ -143,17 +181,11 @@ export default function AuthPage() {
         setInfo(`We've sent a verification email to ${fields.email}. Click the link to verify your account. Check your spam folder if it doesn't arrive within a minute — links expire after 24 hours.`);
         return;
       } else if (mode === 'magic') {
-        try {
-          await requestMagicLink(fields.email);
-          setStatus('success');
-          setInfo('If an account exists for that address, a sign-in link is on its way.');
-        } catch (err) {
-          setStatus('success');
-          setInfo(
-            err?.response?.status === 501
-              ? 'Magic link sign-in is not yet available. Please sign in with email and password.'
-              : 'If an account exists for that address, a sign-in link is on its way.'
-          );
+        const res = await requestMagicLink(fields.email);
+        setStatus('success');
+        setInfo('If an account exists for that address, a sign-in link is on its way.');
+        if (res?.dev_magic_link) {
+          setDevMagicLink(res.dev_magic_link);
         }
         return;
       } else if (mode === 'forgot') {
@@ -175,6 +207,9 @@ export default function AuthPage() {
   const isSuccess = status === 'success';
   const meta = MODE_META[mode];
   const showOAuth = mode === 'signin' || mode === 'signup';
+  const hasGoogle = oauthProviders.includes('google');
+  const hasGithub = oauthProviders.includes('github');
+  const hasAnyOAuth = hasGoogle || hasGithub;
   const showPasswordField = mode === 'signin' || mode === 'signup';
   const showNameField = mode === 'signup';
   const signupConfirmMismatch = mode === 'signup' && fields.passwordConfirm.length > 0 && fields.passwordConfirm !== fields.password;
@@ -204,28 +239,30 @@ export default function AuthPage() {
 
           {/* OAuth buttons — sign-in / sign-up only */}
           {/* Credentials not yet configured; buttons are intentionally inert */}
-          {showOAuth && (
+          {showOAuth && hasAnyOAuth && (
             <div className="auth-oauth">
-              <button
-                type="button"
-                className="auth-oauth-btn auth-oauth-btn--coming-soon"
-                onClick={() => {}}
-                aria-label="Continue with Google (coming soon)"
-              >
-                <GoogleIcon />
-                <span>Continue with Google</span>
-                <span className="auth-oauth-soon-badge">Soon</span>
-              </button>
-              <button
-                type="button"
-                className="auth-oauth-btn auth-oauth-btn--coming-soon"
-                onClick={() => {}}
-                aria-label="Continue with GitHub (coming soon)"
-              >
-                <GithubIcon />
-                <span>Continue with GitHub</span>
-                <span className="auth-oauth-soon-badge">Soon</span>
-              </button>
+              {hasGoogle && (
+                <button
+                  type="button"
+                  className="auth-oauth-btn"
+                  onClick={() => handleOAuth('google')}
+                  aria-label="Continue with Google"
+                >
+                  <GoogleIcon />
+                  <span>Continue with Google</span>
+                </button>
+              )}
+              {hasGithub && (
+                <button
+                  type="button"
+                  className="auth-oauth-btn"
+                  onClick={() => handleOAuth('github')}
+                  aria-label="Continue with GitHub"
+                >
+                  <GithubIcon />
+                  <span>Continue with GitHub</span>
+                </button>
+              )}
               <div className="auth-divider" role="separator">
                 <span>or continue with email</span>
               </div>
@@ -424,6 +461,11 @@ export default function AuthPage() {
           {/* Post-success: back to sign in */}
           {isSuccess && (mode === 'magic' || mode === 'forgot') && (
             <div className="auth-post-success">
+              {mode === 'magic' && devMagicLink && (
+                <a className="auth-link-btn" href={devMagicLink}>
+                  Open dev magic link
+                </a>
+              )}
               <button
                 type="button"
                 className="btn btn-secondary auth-submit"
