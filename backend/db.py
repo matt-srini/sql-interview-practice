@@ -14,7 +14,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
-from config import get_async_database_url
+from config import MAGIC_LINK_TTL_MINUTES, OAUTH_STATE_TTL_MINUTES, get_async_database_url
 
 
 logger = logging.getLogger(__name__)
@@ -142,6 +142,28 @@ CREATE TABLE IF NOT EXISTS email_verification_tokens (
 
 CREATE INDEX IF NOT EXISTS idx_email_verification_tokens_user ON email_verification_tokens(user_id);
 CREATE INDEX IF NOT EXISTS idx_email_verification_tokens_expires ON email_verification_tokens(expires_at);
+
+CREATE TABLE IF NOT EXISTS oauth_states (
+    state_token TEXT PRIMARY KEY,
+    user_agent_hash TEXT,
+    ip_prefix TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    expires_at TIMESTAMPTZ NOT NULL,
+    used_at TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_oauth_states_expires ON oauth_states(expires_at);
+
+CREATE TABLE IF NOT EXISTS magic_link_tokens (
+    token TEXT PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    expires_at TIMESTAMPTZ NOT NULL,
+    used_at TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_magic_link_tokens_user ON magic_link_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_magic_link_tokens_expires ON magic_link_tokens(expires_at);
 
 CREATE TABLE IF NOT EXISTS mock_sessions (
     id BIGSERIAL PRIMARY KEY,
@@ -1682,6 +1704,174 @@ async def mark_email_verified(user_id: str) -> None:
             {"user_id": user_id},
         )
         await session.commit()
+
+
+# ── OAuth state tokens ───────────────────────────────────────────────────────
+
+async def create_oauth_state_token(
+    *,
+    user_agent_hash: str | None = None,
+    ip_prefix: str | None = None,
+) -> str:
+    """Generate an OAuth state token valid for a short window."""
+    token = secrets.token_urlsafe(32)
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=max(1, OAUTH_STATE_TTL_MINUTES))
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        await session.execute(
+            text(
+                """
+                INSERT INTO oauth_states (state_token, user_agent_hash, ip_prefix, expires_at)
+                VALUES (:token, :user_agent_hash, :ip_prefix, :expires_at)
+                """
+            ),
+            {
+                "token": token,
+                "user_agent_hash": user_agent_hash,
+                "ip_prefix": ip_prefix,
+                "expires_at": expires_at,
+            },
+        )
+        await session.commit()
+    return token
+
+
+async def consume_oauth_state_token(
+    token: str,
+    *,
+    user_agent_hash: str | None = None,
+    ip_prefix: str | None = None,
+) -> dict[str, bool]:
+    """Consume an OAuth state token once and surface mismatch signals.
+
+    Returns a dictionary containing:
+    - valid: token existed, not expired, and not previously used
+    - user_agent_mismatch: best-effort signal only (never blocks)
+    - ip_prefix_mismatch: best-effort signal only (never blocks)
+    """
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                UPDATE oauth_states
+                SET used_at = now()
+                WHERE state_token = :token
+                  AND used_at IS NULL
+                  AND expires_at > now()
+                RETURNING user_agent_hash, ip_prefix
+                """
+            ),
+            {"token": token},
+        )
+        row = result.mappings().first()
+        if row is None:
+            await session.rollback()
+            return {
+                "valid": False,
+                "user_agent_mismatch": False,
+                "ip_prefix_mismatch": False,
+            }
+
+        expected_ua = row.get("user_agent_hash")
+        expected_ip_prefix = row.get("ip_prefix")
+        user_agent_mismatch = bool(expected_ua and user_agent_hash and expected_ua != user_agent_hash)
+        ip_prefix_mismatch = bool(expected_ip_prefix and ip_prefix and expected_ip_prefix != ip_prefix)
+
+        await session.commit()
+        return {
+            "valid": True,
+            "user_agent_mismatch": user_agent_mismatch,
+            "ip_prefix_mismatch": ip_prefix_mismatch,
+        }
+
+
+# ── Magic-link tokens ────────────────────────────────────────────────────────
+
+async def create_magic_link_token(user_id: str) -> str:
+    """Generate a magic-link token valid for a short window."""
+    token = secrets.token_urlsafe(32)
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=max(1, MAGIC_LINK_TTL_MINUTES))
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        await session.execute(
+            text(
+                """
+                UPDATE magic_link_tokens
+                SET used_at = now()
+                WHERE user_id = CAST(:user_id AS UUID)
+                  AND used_at IS NULL
+                  AND expires_at > now()
+                """
+            ),
+            {"user_id": user_id},
+        )
+        await session.execute(
+            text(
+                """
+                INSERT INTO magic_link_tokens (token, user_id, expires_at)
+                VALUES (:token, CAST(:user_id AS UUID), :expires_at)
+                """
+            ),
+            {"token": token, "user_id": user_id, "expires_at": expires_at},
+        )
+        await session.commit()
+    return token
+
+
+async def consume_magic_link_token(token: str) -> str | None:
+    """Validate and consume a magic-link token. Returns user_id or None if invalid."""
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                UPDATE magic_link_tokens
+                SET used_at = now()
+                WHERE token = :token
+                  AND used_at IS NULL
+                  AND expires_at > now()
+                RETURNING user_id
+                """
+            ),
+            {"token": token},
+        )
+        row = result.mappings().first()
+        if row is None:
+            await session.rollback()
+            return None
+        await session.commit()
+        return str(row["user_id"])
+
+
+async def prune_expired_auth_tokens() -> dict[str, int]:
+    """Delete expired/used auth tokens to keep token tables small."""
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        oauth_deleted = await session.execute(
+            text(
+                """
+                DELETE FROM oauth_states
+                WHERE expires_at <= now()
+                   OR used_at IS NOT NULL
+                """
+            )
+        )
+        magic_deleted = await session.execute(
+            text(
+                """
+                DELETE FROM magic_link_tokens
+                WHERE expires_at <= now()
+                   OR used_at IS NOT NULL
+                """
+            )
+        )
+        await session.commit()
+
+    return {
+        "oauth_states": int(oauth_deleted.rowcount or 0),
+        "magic_link_tokens": int(magic_deleted.rowcount or 0),
+    }
 
 
 # ── Path completion state ──────────────────────────────────────────────────────

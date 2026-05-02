@@ -1,5 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
+from urllib.parse import urlparse
 
 import backend.main as main
 from routers import auth as auth_router
@@ -112,3 +113,57 @@ def test_reserved_email_prefix_rejected_on_registration() -> None:
             },
         )
         assert response.status_code == 422
+
+
+def test_oauth_callback_allows_best_effort_state_mismatch(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def _fake_exchange_google_code(_code: str) -> dict:
+        return {
+            "id": "google-user-123",
+            "email": "oauth-user@example.com",
+            "name": "OAuth User",
+        }
+
+    monkeypatch.setattr(auth_router, "GOOGLE_CLIENT_ID", "google-client-id")
+    monkeypatch.setattr(auth_router, "GOOGLE_CLIENT_SECRET", "google-client-secret")
+    monkeypatch.setattr(auth_router, "_exchange_google_code", _fake_exchange_google_code)
+
+    with TestClient(app) as client:
+        authorize = client.get(
+            "/api/auth/oauth/google/authorize",
+            headers={"User-Agent": "UA-Original"},
+        )
+        assert authorize.status_code == 200
+        state = authorize.json()["state"]
+
+        callback = client.get(
+            f"/api/auth/oauth/google/callback?code=ok&state={state}",
+            headers={"User-Agent": "UA-Changed"},
+            follow_redirects=False,
+        )
+        assert callback.status_code == 302
+        assert callback.headers.get("location") == "http://localhost:5173/"
+        assert "session_token=" in callback.headers.get("set-cookie", "")
+
+
+def test_magic_link_dev_fallback_callback_signs_user_in() -> None:
+    with TestClient(app) as client:
+        _register_user(client, "magic@example.com")
+        client.post("/api/auth/logout")
+
+        req = client.post("/api/auth/magic-link", json={"email": "magic@example.com"})
+        assert req.status_code == 200
+        payload = req.json()
+        assert payload["ok"] is True
+        assert "dev_magic_link" in payload
+
+        parsed = urlparse(payload["dev_magic_link"])
+        callback_path = parsed.path + (f"?{parsed.query}" if parsed.query else "")
+
+        callback = client.get(callback_path, follow_redirects=False)
+        assert callback.status_code == 302
+        assert callback.headers.get("location") == "http://localhost:5173/"
+        assert "session_token=" in callback.headers.get("set-cookie", "")
+
+        me = client.get("/api/auth/me")
+        assert me.status_code == 200
+        assert me.json()["user"]["email"] == "magic@example.com"

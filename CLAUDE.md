@@ -296,7 +296,9 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 
 **Dashboard insights:** `GET /api/dashboard/insights` computes per-track solve count, median solve time, and accuracy from `submissions`; weakest concepts (bottom 3 with >=3 attempts); deterministic cross-track pacing insight (only when slow-fast gap >= 60s); consecutive `streak_days` ending today; and (Elite only) `readiness_scores` (per-track 0–100 score from practice coverage + mock accuracy + concept strength) and `study_plan` (ordered list of 3–5 personalised next steps). Results are cached in-process for 60 seconds per user.
 
-**Identity:** Anonymous visitors get real user rows + session cookies. Registration upgrades the session in place. Login merges anonymous progress into an existing account. `GET /api/auth/me` returns identity plus streak metadata (`streak_days`, `streak_at_risk`) used by the workspace topbar and streak milestone toasts on solves. Session cookie is `SameSite=Strict` (and secure in production by default).
+**Identity:** Anonymous visitors get real user rows + session cookies. Registration upgrades the session in place. Login merges anonymous progress into an existing account. `GET /api/auth/me` returns identity plus streak metadata (`streak_days`, `streak_at_risk`) used by the workspace topbar and streak milestone toasts on solves. Session cookie is `HttpOnly` + `SameSite=Lax` (and secure in production by default).
+
+**OAuth + magic-link hardening:** OAuth `/authorize` now creates a short-lived, one-time server-side `state` token validated+consumed in `/callback`. User-agent/IP-prefix mismatches are logged as risk signals but are best-effort only (do not hard-block valid callbacks). Magic-link auth is available via `POST /api/auth/magic-link` and `GET /api/auth/magic-link/callback` with short-lived, single-use tokens.
 
 **Auth hardening:** Reserved local-part email prefixes are blocked on registration. Failed sign-in attempts are tracked in Postgres; after `LOGIN_LOCKOUT_MAX_ATTEMPTS` failures, the account is temporarily locked for `LOGIN_LOCKOUT_WINDOW_MINUTES`.
 
@@ -350,8 +352,10 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 | POST | `/api/auth/reset-password` | Consume reset token, set new password (also marks email verified) |
 | POST | `/api/auth/verify-email` | Consume email verification token, mark account verified |
 | POST | `/api/auth/resend-verification` | Resend verification email to the current signed-in user |
+| POST | `/api/auth/magic-link` | Request one-time magic-link sign-in email (non-enumerating response) |
+| GET | `/api/auth/magic-link/callback` | Consume magic-link token, create session, redirect to frontend |
 | GET | `/api/auth/oauth/{provider}/authorize` | Return OAuth authorization URL (`google` or `github`) |
-| GET | `/api/auth/oauth/{provider}/callback` | OAuth callback — exchange code, upsert user, set session cookie |
+| GET | `/api/auth/oauth/{provider}/callback` | OAuth callback — validate+consume state, exchange code, upsert user, set session cookie |
 | POST | `/api/razorpay/create-order` | Create Razorpay Order (lifetime) or Subscription (pro/elite) |
 | POST | `/api/razorpay/verify-payment` | Verify HMAC on client callback, apply plan immediately (idempotent) |
 | POST | `/api/razorpay/webhook` | Verified, idempotent plan update (authoritative source of truth) |

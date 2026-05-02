@@ -198,9 +198,15 @@ The `FRONTEND_DIST_DIR` env var defaults to `/app/frontend/dist` inside the imag
 | `FRONTEND_DIST_DIR` | — | Path to built SPA assets; defaults to `../frontend/dist` |
 | `RATE_LIMIT_REQUESTS` | — | Requests per window per IP; default `60` |
 | `RATE_LIMIT_WINDOW_SECONDS` | — | Window size in seconds; default `60` |
+| `AUTH_RATE_LIMIT_REQUESTS` | — | Requests per window for auth endpoints (`/api/auth/*`); default `20` |
+| `AUTH_RATE_LIMIT_WINDOW_SECONDS` | — | Window size in seconds for auth endpoint limiter; default `60` |
+| `AUTH_TOKEN_ISSUE_RATE_LIMIT_REQUESTS` | — | Stricter limiter for token-issuing auth routes (OAuth authorize, magic-link request); default `5` |
+| `AUTH_TOKEN_ISSUE_RATE_LIMIT_WINDOW_SECONDS` | — | Window size for token-issuing limiter; default `300` |
 | `SECURE_COOKIES` | — | Controls cookie `secure` attribute; defaults to `true` in production |
 | `LOGIN_LOCKOUT_MAX_ATTEMPTS` | — | Failed login attempts before temporary lock; default `5` |
 | `LOGIN_LOCKOUT_WINDOW_MINUTES` | — | Temporary login lock window; default `15` minutes |
+| `MAGIC_LINK_TTL_MINUTES` | — | Magic-link token TTL in minutes; default `10` |
+| `OAUTH_STATE_TTL_MINUTES` | — | OAuth state token TTL in minutes; default `5` |
 | `APP_BASE_URL` | Strongly recommended | Public backend origin used for OAuth callback URLs; in single-service deploys this is usually the same as the frontend origin |
 | `FRONTEND_BASE_URL` | Strongly recommended | Public frontend origin used in redirects and email links |
 | `ALLOWED_ORIGINS` | Strongly recommended | Comma-separated browser origins allowed by CORS and production CSRF checks |
@@ -221,6 +227,13 @@ The `FRONTEND_DIST_DIR` env var defaults to `/app/frontend/dist` inside the imag
 | `SENTRY_RELEASE` | Optional | Release name used by backend Sentry and frontend sourcemap upload; defaults to `RAILWAY_GIT_COMMIT_SHA` when available on the frontend build |
 
 In `production` mode, startup will fail fast if `DATABASE_URL`, `REDIS_URL`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, or `RAZORPAY_WEBHOOK_SECRET` are missing.
+
+OAuth provider callback URIs should be configured as:
+- `${APP_BASE_URL}/api/auth/oauth/google/callback`
+- `${APP_BASE_URL}/api/auth/oauth/github/callback`
+
+Magic-link callback uses:
+- `${APP_BASE_URL}/api/auth/magic-link/callback?token=...`
 
 ### Production rollout order
 

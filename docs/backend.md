@@ -27,8 +27,8 @@ Registered in `backend/main.py`:
 
 | Router file | Prefix | Purpose |
 |---|---|---|
-| `routers/auth.py` | `/api/auth` | Register, login, logout, current user, forgot/reset password, OAuth (Google + GitHub) |
-| `routers/system.py` | — | Health check |
+| `routers/auth.py` | `/api/auth` | Register, login, logout, current user, forgot/reset password, magic-link, OAuth (Google + GitHub) |
+| `routers/system.py` | — | Health check, runtime config |
 | `routers/catalog.py` | `/api/catalog` | SQL catalog by difficulty |
 | `routers/questions.py` | `/api/questions` | SQL question detail, run query, submit (with repeat-attempt detection) |
 | `routers/sample.py` | `/api/sample` | Topic-aware sample questions, run, submit, reset |
@@ -57,21 +57,25 @@ Registered in `backend/main.py`:
 | GET | `/api/auth/me` | Returns current user identity + streak metadata (`streak_days`, `streak_at_risk`) |
 | POST | `/api/auth/forgot-password` | Send password reset email (always returns 200 to prevent email enumeration) |
 | POST | `/api/auth/reset-password` | Consume reset token, set new password (400 if token invalid/expired) |
+| POST | `/api/auth/magic-link` | Request one-time sign-in link (non-enumerating response) |
+| GET | `/api/auth/magic-link/callback` | Consume magic-link token, create session cookie, redirect to frontend |
 | GET | `/api/auth/oauth/{provider}/authorize` | Return OAuth authorization URL (`google` or `github`) |
-| GET | `/api/auth/oauth/{provider}/callback` | OAuth callback — exchange code, upsert user, set session cookie, redirect to `/` |
+| GET | `/api/auth/oauth/{provider}/callback` | OAuth callback — validates one-time state, exchanges code, upserts user, sets session cookie, redirects to frontend |
 
-Anonymous visitors receive a real user row and session cookie. Registration upgrades that session rather than replacing it, preserving progress. OAuth sign-in uses `get_or_create_oauth_user()` — new users are created, returning users are looked up by `(provider, provider_user_id)`. Password reset emails require `RESEND_API_KEY` to be configured.
+Anonymous visitors receive a real user row and session cookie. Registration upgrades that session rather than replacing it, preserving progress. OAuth sign-in uses `get_or_create_oauth_user()` — new users are created, returning users are looked up by `(provider, provider_user_id)`. Password reset and magic-link email delivery require `RESEND_API_KEY`.
 
 Security controls on auth:
 - Reserved local-part email prefixes are blocked on registration (`admin`, `dev`, `tester`, etc.).
 - Login lockout policy: after `LOGIN_LOCKOUT_MAX_ATTEMPTS` failed sign-in attempts, the account is temporarily locked for `LOGIN_LOCKOUT_WINDOW_MINUTES`.
-- Session cookie uses `SameSite=Strict`; `secure` is controlled by `SECURE_COOKIES` (defaults to enabled in production).
+- Session cookie uses `HttpOnly` + `SameSite=Lax`; `secure` is controlled by `SECURE_COOKIES` (defaults to enabled in production).
+- OAuth state is server-generated, one-time-use, and short-lived; user-agent/IP-prefix mismatches are logged as risk signals and do not hard-block callback completion.
 
 ### System
 
 | Method | Path | Response |
 |---|---|---|
 | GET | `/health` | `{ status, postgres, tables_loaded }` |
+| GET | `/api/config` | Runtime frontend flags, currently `{ oauth_providers: ["google"|"github", ...] }` |
 
 ### Catalog — `/api/catalog`
 
