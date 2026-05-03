@@ -117,6 +117,7 @@ GOOGLE_CLIENT_SECRET = _getenv("GOOGLE_CLIENT_SECRET")
 GOOGLE_REDIRECT_URI = _getenv("GOOGLE_REDIRECT_URI")
 GITHUB_CLIENT_ID = _getenv("GITHUB_CLIENT_ID")
 GITHUB_CLIENT_SECRET = _getenv("GITHUB_CLIENT_SECRET")
+GITHUB_REDIRECT_URI = _getenv("GITHUB_REDIRECT_URI")
 
 # Email / password reset
 RESEND_API_KEY = _getenv("RESEND_API_KEY")
@@ -131,6 +132,11 @@ if (GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET) and not GOOGLE_REDIRECT_URI:
 	if IS_PROD:
 		raise RuntimeError("GOOGLE_REDIRECT_URI is required when Google OAuth is configured in production")
 	logger.warning("GOOGLE_REDIRECT_URI is not set; Google OAuth may fail with redirect_uri_mismatch")
+
+if (GITHUB_CLIENT_ID or GITHUB_CLIENT_SECRET) and not GITHUB_REDIRECT_URI:
+	if IS_PROD:
+		raise RuntimeError("GITHUB_REDIRECT_URI is required when GitHub OAuth is configured in production")
+	logger.warning("GITHUB_REDIRECT_URI is not set; GitHub OAuth may fail with redirect_uri_mismatch")
 
 
 if ENV == "production" and not REDIS_URL:

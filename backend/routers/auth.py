@@ -23,6 +23,7 @@ from config import (
     REDIS_URL,
     GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET,
+    GITHUB_REDIRECT_URI,
     LOGIN_LOCKOUT_MAX_ATTEMPTS,
     LOGIN_LOCKOUT_WINDOW_MINUTES,
     GOOGLE_CLIENT_ID,
@@ -512,13 +513,13 @@ async def oauth_authorize(provider: str, request: Request) -> JSONResponse:
         return JSONResponse(content={"url": url, "state": state})
 
     if provider == "github":
-        if not GITHUB_CLIENT_ID:
+        if not GITHUB_CLIENT_ID or not GITHUB_CLIENT_SECRET or not GITHUB_REDIRECT_URI:
             return _err("GitHub sign-in is not configured.", status=503)
         state = await create_oauth_state_token(user_agent_hash=user_agent_hash, ip_prefix=ip_prefix)
         params = {
             "client_id": GITHUB_CLIENT_ID,
-            "redirect_uri": _oauth_callback_url("github"),
-            "scope": "user:email",
+            "redirect_uri": GITHUB_REDIRECT_URI,
+            "scope": "read:user user:email",
             "state": state,
         }
         url = "https://github.com/login/oauth/authorize?" + urllib.parse.urlencode(params)
@@ -629,6 +630,8 @@ async def _exchange_google_code(code: str) -> dict | None:
 
 async def _exchange_github_code(code: str) -> dict | None:
     """Exchange GitHub auth code for user info."""
+    if not GITHUB_CLIENT_ID or not GITHUB_CLIENT_SECRET or not GITHUB_REDIRECT_URI:
+        return None
     async with httpx.AsyncClient(timeout=10.0) as client:
         token_resp = await client.post(
             "https://github.com/login/oauth/access_token",
@@ -637,7 +640,7 @@ async def _exchange_github_code(code: str) -> dict | None:
                 "client_id": GITHUB_CLIENT_ID,
                 "client_secret": GITHUB_CLIENT_SECRET,
                 "code": code,
-                "redirect_uri": _oauth_callback_url("github"),
+                "redirect_uri": GITHUB_REDIRECT_URI,
             },
         )
         if token_resp.status_code != 200:
