@@ -313,13 +313,35 @@ For Dockerfile-based services on Railway, the application must listen on Railway
 
 ## Pre-launch admin seed
 
-Run once against the production database after migrations complete (idempotent upsert):
+Run once against the production database after migrations complete (idempotent upsert).
+
+Credentials can be passed as CLI args or read from `backend/.env` — any env vars present in that file are loaded automatically by the script.
+
+**Seed your personal admin account:**
 
 ```bash
 cd backend
 DATABASE_URL="postgresql://..." \
-  ADMIN_EMAIL="admin@yourdomain.com" \
+  ADMIN_EMAIL="admin@datathink.co" \
   ADMIN_NAME="Admin" \
   ADMIN_PASSWORD="ReplaceWithStrongPassword1" \
   ../.venv/bin/python scripts/seed_admin.py
 ```
+
+The `--plan` flag accepts `free`, `pro`, `elite`, `lifetime_pro`, or `lifetime_elite` (default: `elite`).
+
+**Seed QA test accounts (all `@datathink.co`, bypasses registration restrictions):**
+
+Add `QA_SEED_PASSWORD` to `backend/.env`, then:
+
+```bash
+cd backend
+
+../.venv/bin/python scripts/seed_admin.py --email qa_free@datathink.co          --name "QA Free"           --plan free
+../.venv/bin/python scripts/seed_admin.py --email qa_pro@datathink.co           --name "QA Pro"            --plan pro
+../.venv/bin/python scripts/seed_admin.py --email qa_pro_lifetime@datathink.co  --name "QA Pro Lifetime"   --plan lifetime_pro
+../.venv/bin/python scripts/seed_admin.py --email qa_elite@datathink.co         --name "QA Elite"          --plan elite
+../.venv/bin/python scripts/seed_admin.py --email qa_elite_lifetime@datathink.co --name "QA Elite Lifetime" --plan lifetime_elite
+```
+
+All seeded accounts are created with `email_verified = true` and are idempotent — safe to re-run to reset credentials or plan.
