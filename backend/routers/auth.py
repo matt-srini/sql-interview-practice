@@ -65,9 +65,14 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
-_RESERVED_EMAIL_PREFIXES: frozenset[str] = frozenset({
-    "admin", "dev", "developer", "test", "tester",
-    "automation", "auto", "author",
+# Domains owned by us — no self-registration allowed; accounts must be seeded via seed_admin.py
+_BLOCKED_REGISTRATION_DOMAINS: frozenset[str] = frozenset({
+    "datathink.co",
+})
+
+# System/infrastructure addresses that cannot receive email — reject to avoid unverifiable accounts
+_UNDELIVERABLE_PREFIXES: frozenset[str] = frozenset({
+    "noreply", "no-reply", "postmaster", "mailer-daemon", "bounce", "devnull",
 })
 
 _auth_rate_limiter = create_rate_limiter(
@@ -100,9 +105,11 @@ class RegisterRequest(BaseModel):
         value = value.strip().lower()
         if not _EMAIL_RE.match(value):
             raise ValueError("Invalid email address")
-        local = value.split("@")[0]
-        if local in _RESERVED_EMAIL_PREFIXES:
-            raise ValueError("That email address is not available for registration")
+        local, _, domain = value.partition("@")
+        if domain in _BLOCKED_REGISTRATION_DOMAINS:
+            raise ValueError("That email domain is not available for self-registration")
+        if local in _UNDELIVERABLE_PREFIXES:
+            raise ValueError("That email address cannot receive mail")
         return value
 
     @field_validator("name")
