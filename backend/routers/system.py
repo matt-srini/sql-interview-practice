@@ -4,7 +4,15 @@ from typing import Any
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse, PlainTextResponse, Response
 
-from config import FRONTEND_BASE_URL, GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+from config import (
+    FRONTEND_BASE_URL,
+    GITHUB_CLIENT_ID,
+    GITHUB_CLIENT_SECRET,
+    GITHUB_REDIRECT_URI,
+    GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET,
+    GOOGLE_REDIRECT_URI,
+)
 from database import get_loaded_tables
 from db import ping
 from path_loader import get_all_paths
@@ -35,9 +43,9 @@ async def health() -> Any:
 @router.get("/api/config")
 async def runtime_config() -> dict[str, list[str]]:
     oauth_providers: list[str] = []
-    if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
+    if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET and GOOGLE_REDIRECT_URI:
         oauth_providers.append("google")
-    if GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET:
+    if GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET and GITHUB_REDIRECT_URI:
         oauth_providers.append("github")
     return {"oauth_providers": oauth_providers}
 

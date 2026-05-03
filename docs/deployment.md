@@ -214,8 +214,10 @@ The `FRONTEND_DIST_DIR` env var defaults to `/app/frontend/dist` inside the imag
 | `EMAIL_FROM` | Recommended | Sender identity for auth emails |
 | `GOOGLE_CLIENT_ID` | Optional | Enable Google OAuth login |
 | `GOOGLE_CLIENT_SECRET` | Optional | Enable Google OAuth login |
+| `GOOGLE_REDIRECT_URI` | Recommended | Explicit Google OAuth callback URL; required in production when Google OAuth credentials are configured |
 | `GITHUB_CLIENT_ID` | Optional | Enable GitHub OAuth login |
 | `GITHUB_CLIENT_SECRET` | Optional | Enable GitHub OAuth login |
+| `GITHUB_REDIRECT_URI` | Recommended | Explicit GitHub OAuth callback URL; required in production when GitHub OAuth credentials are configured |
 | `SENTRY_DSN` | — | Optional backend Sentry DSN for production error capture |
 | `SENTRY_TRACES_SAMPLE_RATE` | — | Optional backend Sentry tracing sample rate from `0.0` to `1.0`; defaults to `0.0` |
 | `VITE_SENTRY_DSN` | — | Optional frontend Sentry DSN; read from runtime config in production and from Vite env in local dev |
@@ -228,9 +230,9 @@ The `FRONTEND_DIST_DIR` env var defaults to `/app/frontend/dist` inside the imag
 
 In `production` mode, startup will fail fast if `DATABASE_URL`, `REDIS_URL`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, or `RAZORPAY_WEBHOOK_SECRET` are missing.
 
-OAuth provider callback URIs should be configured as:
-- `${APP_BASE_URL}/api/auth/oauth/google/callback`
-- `${APP_BASE_URL}/api/auth/oauth/github/callback`
+OAuth provider callback URIs should be configured exactly as the redirect vars below:
+- `${GOOGLE_REDIRECT_URI}`
+- `${GITHUB_REDIRECT_URI}`
 
 Magic-link callback uses:
 - `${APP_BASE_URL}/api/auth/magic-link/callback?token=...`

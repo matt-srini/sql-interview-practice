@@ -69,13 +69,14 @@ Security controls on auth:
 - Login lockout policy: after `LOGIN_LOCKOUT_MAX_ATTEMPTS` failed sign-in attempts, the account is temporarily locked for `LOGIN_LOCKOUT_WINDOW_MINUTES`.
 - Session cookie uses `HttpOnly` + `SameSite=Lax`; `secure` is controlled by `SECURE_COOKIES` (defaults to enabled in production).
 - OAuth state is server-generated, one-time-use, and short-lived; user-agent/IP-prefix mismatches are logged as risk signals and do not hard-block callback completion.
+- Google OAuth authorize scope is `openid email profile`; GitHub OAuth authorize scope is `read:user user:email`.
 
 ### System
 
 | Method | Path | Response |
 |---|---|---|
 | GET | `/health` | `{ status, postgres, tables_loaded }` |
-| GET | `/api/config` | Runtime frontend flags, currently `{ oauth_providers: ["google"|"github", ...] }` |
+| GET | `/api/config` | Runtime frontend flags, currently `{ oauth_providers: ["google"|"github", ...] }` (providers are listed only when client id, client secret, and redirect URI are all configured) |
 
 ### Catalog — `/api/catalog`
 
