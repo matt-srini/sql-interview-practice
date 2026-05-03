@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 from pathlib import Path
 
@@ -41,6 +42,8 @@ def _parse_origins(configured: str | None) -> list[str]:
 # ---------------------------------------------------------------------------
 # Paths used by SPA/static serving
 # ---------------------------------------------------------------------------
+
+logger = logging.getLogger(__name__)
 
 BACKEND_DIR = Path(__file__).resolve().parent
 FRONTEND_DIST_DIR = Path(_getenv("FRONTEND_DIST_DIR", str(BACKEND_DIR.parent / "frontend" / "dist")))
@@ -102,9 +105,16 @@ VITE_POSTHOG_HOST = _getenv("VITE_POSTHOG_HOST")
 # Frontend runtime config
 VITE_BACKEND_URL = _getenv("VITE_BACKEND_URL")
 
+# Base URLs
+# APP_BASE_URL: backend server base (used for OAuth callback URIs — must match what you register with providers)
+# FRONTEND_BASE_URL: where to redirect users after OAuth (defaults to APP_BASE_URL in production single-service deploys)
+APP_BASE_URL = _getenv("APP_BASE_URL", "http://localhost:8000")
+FRONTEND_BASE_URL = _getenv("FRONTEND_BASE_URL", "http://localhost:5173")
+
 # OAuth providers
 GOOGLE_CLIENT_ID = _getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = _getenv("GOOGLE_CLIENT_SECRET")
+GOOGLE_REDIRECT_URI = _getenv("GOOGLE_REDIRECT_URI")
 GITHUB_CLIENT_ID = _getenv("GITHUB_CLIENT_ID")
 GITHUB_CLIENT_SECRET = _getenv("GITHUB_CLIENT_SECRET")
 
@@ -114,14 +124,13 @@ EMAIL_FROM = _getenv("EMAIL_FROM", "datathink <noreply@datathink.co>")
 MAGIC_LINK_TTL_MINUTES = _get_int("MAGIC_LINK_TTL_MINUTES", "10")
 OAUTH_STATE_TTL_MINUTES = _get_int("OAUTH_STATE_TTL_MINUTES", "5")
 
-# Base URLs
-# APP_BASE_URL: backend server base (used for OAuth callback URIs — must match what you register with providers)
-# FRONTEND_BASE_URL: where to redirect users after OAuth (defaults to APP_BASE_URL in production single-service deploys)
-APP_BASE_URL = _getenv("APP_BASE_URL", "http://localhost:8000")
-FRONTEND_BASE_URL = _getenv("FRONTEND_BASE_URL", "http://localhost:5173")
-
 _origins_raw = _getenv("ALLOWED_ORIGINS") or _getenv("CORS_ALLOW_ORIGINS")
 ALLOWED_ORIGINS = _parse_origins(_origins_raw)
+
+if (GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET) and not GOOGLE_REDIRECT_URI:
+	if IS_PROD:
+		raise RuntimeError("GOOGLE_REDIRECT_URI is required when Google OAuth is configured in production")
+	logger.warning("GOOGLE_REDIRECT_URI is not set; Google OAuth may fail with redirect_uri_mismatch")
 
 
 if ENV == "production" and not REDIS_URL:

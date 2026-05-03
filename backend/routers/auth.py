@@ -27,6 +27,7 @@ from config import (
     LOGIN_LOCKOUT_WINDOW_MINUTES,
     GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET,
+    GOOGLE_REDIRECT_URI,
 )
 from db import (
     clear_login_lock_state,
@@ -495,16 +496,17 @@ async def oauth_authorize(provider: str, request: Request) -> JSONResponse:
     ip_prefix = _coarse_ip_prefix(request)
 
     if provider == "google":
-        if not GOOGLE_CLIENT_ID:
+        if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET or not GOOGLE_REDIRECT_URI:
             return _err("Google sign-in is not configured.", status=503)
         state = await create_oauth_state_token(user_agent_hash=user_agent_hash, ip_prefix=ip_prefix)
         params = {
             "client_id": GOOGLE_CLIENT_ID,
-            "redirect_uri": _oauth_callback_url("google"),
+            "redirect_uri": GOOGLE_REDIRECT_URI,
             "response_type": "code",
             "scope": "openid email profile",
             "state": state,
-            "access_type": "online",
+            "access_type": "offline",
+            "prompt": "consent",
         }
         url = "https://accounts.google.com/o/oauth2/v2/auth?" + urllib.parse.urlencode(params)
         return JSONResponse(content={"url": url, "state": state})
@@ -521,9 +523,6 @@ async def oauth_authorize(provider: str, request: Request) -> JSONResponse:
         }
         url = "https://github.com/login/oauth/authorize?" + urllib.parse.urlencode(params)
         return JSONResponse(content={"url": url, "state": state})
-
-    if provider == "apple":
-        return _err("Apple sign-in is not yet available.", status=503)
 
     return _err("Unknown provider.", status=404)
 
@@ -594,6 +593,8 @@ async def oauth_callback(provider: str, request: Request) -> RedirectResponse:
 
 async def _exchange_google_code(code: str) -> dict | None:
     """Exchange Google auth code for user info."""
+    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET or not GOOGLE_REDIRECT_URI:
+        return None
     async with httpx.AsyncClient(timeout=10.0) as client:
         token_resp = await client.post(
             "https://oauth2.googleapis.com/token",
@@ -601,7 +602,7 @@ async def _exchange_google_code(code: str) -> dict | None:
                 "code": code,
                 "client_id": GOOGLE_CLIENT_ID,
                 "client_secret": GOOGLE_CLIENT_SECRET,
-                "redirect_uri": _oauth_callback_url("google"),
+                "redirect_uri": GOOGLE_REDIRECT_URI,
                 "grant_type": "authorization_code",
             },
         )
