@@ -3536,6 +3536,17 @@ select {
   border-color: var(--border-strong);
 }
 
+/* Restore dark-editor button style inside mock — overrides the broad .mock-shell override above */
+.mock-shell .editor-footer .btn-secondary {
+  background: rgba(255, 255, 255, 0.14);
+  color: #D8D5CE;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.mock-shell .editor-footer .btn-secondary:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
 .app-topbar .btn-secondary,
 .auth-topbar-unused .btn-secondary {
   background: rgba(0, 0, 0, 0.03);
@@ -6641,7 +6652,7 @@ select {
 .mock-body {
   flex: 1;
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: minmax(380px, 2fr) minmax(0, 3fr);
   overflow: hidden;
 }
 .mock-left-panel {
