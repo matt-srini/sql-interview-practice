@@ -12,6 +12,7 @@ import SchemaViewer from '../components/SchemaViewer';
 import Skeleton from '../components/Skeleton';
 import { TRACK_META } from '../contexts/TopicContext';
 import { track as trackEvent } from '../analytics';
+import { renderDescription } from '../utils/renderDescription';
 
 function formatTime(s) {
   if (s == null || s < 0) return '00:00';
@@ -727,7 +728,7 @@ export default function MockSession() {
                   {q.framing === 'scenario' && (
                     <div className="mock-scenario-brief">
                       <span className="mock-scenario-brief-label">Scenario</span>
-                      <p>{q.description}</p>
+                      <p>{renderDescription(q.description)}</p>
                     </div>
                   )}
 
@@ -760,7 +761,7 @@ export default function MockSession() {
                     </div>
                   ) : q.framing !== 'scenario' ? (
                     /* Normal description (hidden for scenario — already shown above) */
-                    <p className="mock-question-description">{q.description}</p>
+                    <p className="mock-question-description">{renderDescription(q.description)}</p>
                   ) : null}
                 </>
               ) : (
