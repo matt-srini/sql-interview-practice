@@ -263,7 +263,7 @@ export default function SampleQuestionPage() {
         <header className="topbar">
           <div className="topbar-inner sample-page-topbar">
             <div className="sample-topbar-left">
-              <Link className="sample-home-link brand-wordmark" to="/">
+              <Link className="sample-home-link brand-wordmark" to="/#landing-top">
                 <div className="brand-lockup" aria-hidden="true">
                   {isDark ? (
                       <img src="/branding/lockup-normal-no-bar-reverse-no-bg.svg" alt="datathink" className="brand-lockup-img" height="72" />
@@ -375,7 +375,7 @@ export default function SampleQuestionPage() {
       <header className="topbar">
         <div className="topbar-inner sample-page-topbar">
           <div className="sample-topbar-left">
-            <Link className="sample-home-link brand-wordmark" to="/">
+            <Link className="sample-home-link brand-wordmark" to="/#landing-top">
               <div className="brand-lockup" aria-hidden="true">
                 {isDark ? (
                   <img src="/branding/lockup-normal-no-bar-reverse-no-bg.svg" alt="datathink" className="brand-lockup-img" height="72" />

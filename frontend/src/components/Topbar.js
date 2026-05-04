@@ -138,7 +138,7 @@ export default function Topbar({
           {/* Brand region */}
           <div className={brandRegionClass}>
             {leftSlot}
-            <Link className={brandLinkClass} to="/">
+            <Link className={brandLinkClass} to="/#landing-top">
               <div className="brand-lockup" aria-hidden="true">
                 {isDark ? (
                   <img
