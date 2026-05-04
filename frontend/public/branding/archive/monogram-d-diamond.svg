@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" role="img" aria-labelledby="title desc">
+  <title id="title">datathink monogram sample - D with diamond</title>
+  <desc id="desc">Solid D monogram with a small diamond accent above the letter.</desc>
+
+  <g transform="translate(0,2)">
+    <path d="M34 96 V24 H52 A14 14 0 0 1 52 60 H34 Z" fill="#5B6AF0"/>
+    <rect x="38" y="12" width="10" height="10" transform="rotate(45 43 17)" fill="#FFFFFF"/>
+  </g>
+</svg>
