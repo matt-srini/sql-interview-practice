@@ -174,7 +174,8 @@ CREATE TABLE IF NOT EXISTS mock_sessions (
     started_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     ended_at TIMESTAMPTZ,
     time_limit_s INTEGER NOT NULL,
-    status TEXT NOT NULL DEFAULT 'active'
+    status TEXT NOT NULL DEFAULT 'active',
+    focus_fallback BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE INDEX IF NOT EXISTS idx_mock_sessions_user_started ON mock_sessions(user_id, started_at DESC);
@@ -195,6 +196,7 @@ CREATE TABLE IF NOT EXISTS mock_session_questions (
 CREATE INDEX IF NOT EXISTS idx_mock_session_questions_session ON mock_session_questions(session_id);
 
 ALTER TABLE mock_session_questions ADD COLUMN IF NOT EXISTS is_follow_up BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE mock_sessions ADD COLUMN IF NOT EXISTS focus_fallback BOOLEAN NOT NULL DEFAULT false;
 """
 
 
@@ -1029,15 +1031,16 @@ async def create_mock_session(
     difficulty: str | None,
     time_limit_s: int,
     questions: list[dict],  # [{"question_id": int, "track": str, "position": int}]
+    focus_fallback: bool = False,
 ) -> dict[str, Any]:
     session_factory = _session_factory_or_raise()
     async with session_factory() as session:
         result = await session.execute(
             text(
                 """
-                INSERT INTO mock_sessions (user_id, mode, track, difficulty, time_limit_s)
-                VALUES (CAST(:user_id AS UUID), :mode, :track, :difficulty, :time_limit_s)
-                RETURNING id, user_id, mode, track, difficulty, started_at, time_limit_s, status
+                INSERT INTO mock_sessions (user_id, mode, track, difficulty, time_limit_s, focus_fallback)
+                VALUES (CAST(:user_id AS UUID), :mode, :track, :difficulty, :time_limit_s, :focus_fallback)
+                RETURNING id, user_id, mode, track, difficulty, started_at, time_limit_s, status, focus_fallback
                 """
             ),
             {
@@ -1046,6 +1049,7 @@ async def create_mock_session(
                 "track": track,
                 "difficulty": difficulty,
                 "time_limit_s": time_limit_s,
+                "focus_fallback": focus_fallback,
             },
         )
         session_row = result.mappings().first()
@@ -1074,6 +1078,7 @@ async def create_mock_session(
             "started_at": session_row["started_at"].isoformat(),
             "time_limit_s": session_row["time_limit_s"],
             "status": session_row["status"],
+            "focus_fallback": bool(session_row["focus_fallback"]),
         }
 
 
@@ -1087,6 +1092,7 @@ async def get_mock_session(session_id: int, user_id: str) -> dict[str, Any] | No
                     ms.id AS session_id,
                     ms.mode, ms.track, ms.difficulty,
                     ms.started_at, ms.ended_at, ms.time_limit_s, ms.status,
+                    ms.focus_fallback,
                     msq.id AS msq_id,
                     msq.question_id, msq.track AS q_track, msq.position,
                     msq.is_solved, msq.submitted_at, msq.final_code, msq.time_spent_s,
@@ -1112,6 +1118,7 @@ async def get_mock_session(session_id: int, user_id: str) -> dict[str, Any] | No
             "ended_at": first["ended_at"].isoformat() if first["ended_at"] else None,
             "time_limit_s": first["time_limit_s"],
             "status": first["status"],
+            "focus_fallback": bool(first["focus_fallback"]) if first["focus_fallback"] is not None else False,
         }
         question_rows = []
         for row in rows:
