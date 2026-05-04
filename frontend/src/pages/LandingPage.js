@@ -264,6 +264,12 @@ export default function LandingPage() {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    if (location.pathname !== '/') return;
+    if (location.hash) return;
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, [location.pathname]);
+
   // Scroll to hash whenever landing is opened with or switched to a hash.
   useEffect(() => {
     const hash = location.hash;
