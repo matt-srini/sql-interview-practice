@@ -830,6 +830,11 @@ export default function LandingPage() {
               body: 'Paths are curated question sequences that build skill progressively. Completing a starter path also fast-tracks your unlock progress.',
             },
             {
+              targetSelector: 'a[href="/mock"]',
+              title: 'Simulate a real interview',
+              body: 'When you\'re ready to test yourself under pressure, try a mock interview — a timed set of questions with a full debrief at the end. Find it in the top nav.',
+            },
+            {
               targetSelector: '#landing-pricing',
               title: 'Free to start, easy to upgrade',
               body: 'All easy questions are free — no card required. Upgrade to Pro or Elite when you want full access to medium and hard questions.',
