@@ -4,6 +4,12 @@ import { useAuth } from '../contexts/AuthContext';
 import api from '../api';
 import CodeEditor from '../components/CodeEditor';
 import MCQPanel from '../components/MCQPanel';
+import ResultsTable from '../components/ResultsTable';
+import TestCasePanel from '../components/TestCasePanel';
+import PrintOutputPanel from '../components/PrintOutputPanel';
+import VariablesPanel from '../components/VariablesPanel';
+import SchemaViewer from '../components/SchemaViewer';
+import Skeleton from '../components/Skeleton';
 import { TRACK_META } from '../contexts/TopicContext';
 import { track as trackEvent } from '../analytics';
 
@@ -72,9 +78,20 @@ export default function MockSession() {
 
   const [showFollowUpBanner, setShowFollowUpBanner] = useState(false);
   const [focusFallback, setFocusFallback] = useState(false);
+  const [fontSize, setFontSize] = useState(() => {
+    try { return parseInt(localStorage.getItem('mock-editor-font-size') || '14', 10); } catch { return 14; }
+  });
+  const [editorTall, setEditorTall] = useState(false);
+  const [shortcutHelpOpen, setShortcutHelpOpen] = useState(false);
+
+  const editorHeight = editorTall ? '560px' : '340px';
 
   const finishCalled = useRef(false);
   const bannerTimerRef = useRef(null);
+  const handleRunRef = useRef(null);
+  const handleSubmitRef = useRef(null);
+  const runningRef = useRef(false);
+  const submittingRef = useRef(false);
 
   const handleFinish = useCallback(async () => {
     if (finishCalled.current) return;
@@ -291,6 +308,30 @@ export default function MockSession() {
     const firstUnsolved = questions.findIndex(q => !solved[q.id]);
     const target = firstFlagged !== -1 ? firstFlagged : firstUnsolved;
     if (target !== -1) setActiveQ(target);
+  }
+
+  // Keep shortcut refs current on every render (safe to assign outside useEffect)
+  handleRunRef.current = handleRun;
+  handleSubmitRef.current = handleSubmit;
+  runningRef.current = running;
+  submittingRef.current = submitting;
+
+  function adjustFontSize(delta) {
+    setFontSize(prev => {
+      const next = Math.min(24, Math.max(11, prev + delta));
+      try { localStorage.setItem('mock-editor-font-size', String(next)); } catch {}
+      return next;
+    });
+  }
+
+  function handleEditorMount(editor, monaco) {
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+      if (!runningRef.current && !submittingRef.current) handleRunRef.current?.();
+    });
+    editor.addCommand(
+      monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Enter,
+      () => { if (!submittingRef.current) handleSubmitRef.current?.(); }
+    );
   }
 
   // ── Loading / error states ─────────────────────────────────────────────────
@@ -723,16 +764,7 @@ export default function MockSession() {
                   ) : null}
                 </>
               ) : (
-                <div className="mock-schema">
-                  {Object.entries(q.schema || {}).map(([table, cols]) => (
-                    <div key={table} className="mock-schema-table">
-                      <div className="mock-schema-table-name">{table}</div>
-                      <ul className="mock-schema-cols">
-                        {cols.map(col => <li key={col}>{col}</li>)}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
+                <SchemaViewer schema={q.schema || {}} />
               )}
 
               {q.concepts?.length > 0 && (
@@ -741,6 +773,10 @@ export default function MockSession() {
                     <span key={c} className="tag-concept">{c}</span>
                   ))}
                 </div>
+              )}
+
+              {q.track === 'python-data' && Object.keys(q.dataframes ?? {}).length > 0 && (
+                <VariablesPanel dataframes={q.dataframes} schema={{}} />
               )}
             </>
           )}
@@ -769,51 +805,134 @@ export default function MockSession() {
                 </div>
               )}
 
-              <div className="mock-editor-wrapper">
+              <div className="editor-wrapper editor-workspace">
+                <div className="editor-topbar">
+                  <span className="editor-title">
+                    {q.track === 'sql' ? 'SQL Editor' : q.track === 'python' ? 'Python' : q.track === 'python-data' ? 'Pandas' : 'Code Editor'}
+                  </span>
+                  <div className="editor-topbar-actions">
+                    <button className="editor-expand-btn" onClick={() => adjustFontSize(-1)} title="Decrease font size" aria-label="Decrease font size">A−</button>
+                    <button className="editor-expand-btn" onClick={() => adjustFontSize(+1)} title="Increase font size" aria-label="Increase font size">A+</button>
+                    <button
+                      className="editor-expand-btn"
+                      onClick={() => setShortcutHelpOpen(v => !v)}
+                      title="Keyboard shortcuts"
+                      aria-label="Keyboard shortcuts"
+                      aria-expanded={shortcutHelpOpen}
+                    >?</button>
+                    <button
+                      className="editor-expand-btn"
+                      onClick={() => setCode(q.id, DEFAULT_CODE[q.track] || '')}
+                      title="Reset to default"
+                      aria-label="Reset to default"
+                    >↺</button>
+                    <button
+                      className="editor-expand-btn"
+                      onClick={() => setEditorTall(v => !v)}
+                      title={editorTall ? 'Collapse editor' : 'Expand editor'}
+                      aria-label={editorTall ? 'Collapse editor' : 'Expand editor'}
+                    >{editorTall ? '⊟' : '⊞'}</button>
+                  </div>
+                </div>
+
+                {shortcutHelpOpen && (
+                  <div className="workspace-shortcut-popover" role="dialog" aria-label="Keyboard shortcuts">
+                    {meta.hasRunCode && (
+                      <div className="workspace-shortcut-row">
+                        <span>{q.track === 'sql' ? 'Run query' : 'Run code'}</span>
+                        <kbd className="shortcut-kbd">⌘↵</kbd>
+                      </div>
+                    )}
+                    <div className="workspace-shortcut-row">
+                      <span>Submit answer</span>
+                      <kbd className="shortcut-kbd">⌘⇧↵</kbd>
+                    </div>
+                  </div>
+                )}
+
                 <CodeEditor
                   value={getCode(q)}
                   onChange={val => setCode(q.id, val)}
                   language={meta.language}
-                  height="340px"
+                  height={editorHeight}
+                  fontSize={fontSize}
+                  onMount={handleEditorMount}
+                  ariaLabel={`${TRACK_LABELS[q.track]} mock interview editor`}
                 />
-              </div>
-              <div className="mock-action-row">
-                {meta.hasRunCode && (
-                  <button
-                    className="btn btn-secondary"
-                    onClick={handleRun}
-                    disabled={running || submitting}
-                  >
-                    {running ? 'Running…' : 'Run'}
-                  </button>
-                )}
-                <button
-                  className="btn btn-primary"
-                  onClick={handleSubmit}
-                  disabled={submitting || solved[q.id]}
-                >
-                  {submitting ? 'Checking…' : solved[q.id] ? '✓ Solved' : 'Submit'}
-                </button>
+                <div className="editor-footer question-action-dock">
+                  <div className="button-row question-action-row">
+                    {meta.hasRunCode && (
+                      <button
+                        className="btn btn-secondary"
+                        onClick={handleRun}
+                        disabled={running || submitting}
+                      >
+                        <span>{running ? 'Running…' : q.track === 'sql' ? 'Run Query' : 'Run Code'}</span>
+                        <kbd className="shortcut-kbd">⌘↵</kbd>
+                      </button>
+                    )}
+                    <button
+                      className="btn btn-primary"
+                      onClick={handleSubmit}
+                      disabled={submitting || solved[q.id]}
+                    >
+                      <span>{submitting ? 'Checking…' : solved[q.id] ? '✓ Solved' : 'Submit'}</span>
+                      <kbd className="shortcut-kbd">⌘⇧↵</kbd>
+                    </button>
+                  </div>
+                </div>
               </div>
 
-              {/* Run result */}
-              {currentRunResult && !currentRunResult.error && currentRunResult.columns && (
-                <div className="mock-run-result">
-                  <div className="mock-run-result-label">Run result</div>
-                  <div className="results-scroll">
-                    <table className="results-table">
-                      <thead>
-                        <tr>{currentRunResult.columns.map(c => <th key={c}>{c}</th>)}</tr>
-                      </thead>
-                      <tbody>
-                        {currentRunResult.rows?.slice(0, 20).map((row, i) => (
-                          <tr key={i}>{row.map((cell, j) => <td key={j}>{String(cell ?? '')}</td>)}</tr>
-                        ))}
-                      </tbody>
-                    </table>
+              {/* Skeleton while running */}
+              {running && !currentRunResult && (
+                <div className="results-card">
+                  <div className="results-header">
+                    <span>{q.track === 'python' ? 'Running tests…' : 'Query Result'}</span>
+                    <Skeleton className="skeleton-line" width="2.5rem" height="11px" />
+                  </div>
+                  <div className="results-skeleton-body">
+                    {[1, 2, 3, 4, 5].map(i => (
+                      <Skeleton key={i} className="results-skeleton-row" style={{ animationDelay: `${(i - 1) * 60}ms` }} />
+                    ))}
                   </div>
                 </div>
               )}
+
+              {/* SQL run result */}
+              {q.track === 'sql' && currentRunResult && !currentRunResult.error && currentRunResult.columns && (
+                <div className="results-card">
+                  <div className="results-header">
+                    <span>Query Result</span>
+                    <span>{(currentRunResult.rows ?? []).length} row{(currentRunResult.rows ?? []).length !== 1 ? 's' : ''}</span>
+                  </div>
+                  <ResultsTable columns={currentRunResult.columns} rows={currentRunResult.rows ?? []} />
+                </div>
+              )}
+
+              {/* Python run results */}
+              {q.track === 'python' && currentRunResult && !currentRunResult.error && (
+                <>
+                  <TestCasePanel results={currentRunResult.test_results ?? []} hiddenSummary={null} />
+                  <PrintOutputPanel output={currentRunResult.stdout ?? ''} />
+                </>
+              )}
+
+              {/* Pandas run result */}
+              {q.track === 'python-data' && currentRunResult && !currentRunResult.error && (
+                <>
+                  {currentRunResult.columns && (
+                    <div className="results-card">
+                      <div className="results-header">
+                        <span>Output</span>
+                        <span>{(currentRunResult.rows ?? []).length} rows</span>
+                      </div>
+                      <ResultsTable columns={currentRunResult.columns} rows={currentRunResult.rows ?? []} />
+                    </div>
+                  )}
+                  <PrintOutputPanel output={currentRunResult.stdout ?? ''} />
+                </>
+              )}
+
               {currentRunResult?.error && (
                 <div className="mock-run-error">{currentRunResult.error}</div>
               )}
@@ -821,7 +940,10 @@ export default function MockSession() {
           )}
 
           {q && meta?.hasMCQ && (
-            <>
+            <div className="card">
+              <div className="section-heading">
+                <h3>Choose the correct answer</h3>
+              </div>
               <MCQPanel
                 options={q.options || []}
                 selectedOption={mcqSelections[q.id] !== undefined ? mcqSelections[q.id] : null}
@@ -831,16 +953,18 @@ export default function MockSession() {
                 correctIndex={null}  // not revealed mid-session
                 explanation=""
               />
-              <div className="mock-action-row">
-                <button
-                  className="btn btn-primary"
-                  onClick={handleSubmit}
-                  disabled={submitting || solved[q.id] || mcqSelections[q.id] === undefined}
-                >
-                  {submitting ? 'Checking…' : solved[q.id] ? '✓ Solved' : 'Submit'}
-                </button>
+              <div className="editor-footer editor-footer-plain question-action-dock">
+                <div className="button-row question-action-row">
+                  <button
+                    className="btn btn-primary"
+                    onClick={handleSubmit}
+                    disabled={submitting || solved[q.id] || mcqSelections[q.id] === undefined}
+                  >
+                    {submitting ? 'Checking…' : solved[q.id] ? '✓ Solved' : 'Submit'}
+                  </button>
+                </div>
               </div>
-            </>
+            </div>
           )}
 
           {/* Submit verdict */}
