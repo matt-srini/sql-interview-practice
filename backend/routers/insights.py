@@ -13,6 +13,7 @@ import pyspark_questions
 import questions as sql_questions
 from db import get_mock_history, get_submission_events
 from deps import get_current_user
+from concept_families import resolve_to_family
 from path_loader import get_all_paths
 from unlock import normalize_plan
 
@@ -66,7 +67,7 @@ def _build_concepts_lookup() -> dict[str, dict[int, list[str]]]:
         grouped = module.get_questions_by_difficulty()
         questions = [q for difficulty_questions in grouped.values() for q in difficulty_questions]
         lookup[track] = {
-            int(q["id"]): list(q.get("concepts", []))
+            int(q["id"]): [c.upper() for c in q.get("concepts", [])]
             for q in questions
         }
     return lookup
@@ -236,8 +237,13 @@ async def get_dashboard_insights(
                 correct_dates.add(submitted_at.date())
 
         concepts = _CONCEPTS_LOOKUP.get(track, {}).get(question_id, [])
+        seen_families: set[str] = set()
         for concept in concepts:
-            key = (track, concept)
+            family = resolve_to_family(concept, track)
+            if family in seen_families:
+                continue  # count each family once per submission, not once per tag
+            seen_families.add(family)
+            key = (track, family)
             concept_attempts[key] += 1
             concept_weighted_attempts[key] += weight
             if is_correct:
