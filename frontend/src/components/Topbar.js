@@ -46,9 +46,11 @@ export default function Topbar({
   const { user, logout } = useAuth();
   const { cycleTheme, themeIcon, themeLabel, isDark } = useTheme();
   const [practiceOpen, setPracticeOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [resendStatus, setResendStatus] = useState('idle'); // 'idle' | 'sending' | 'sent'
   const dropdownRef = useRef(null);
+  const mobileMenuRef = useRef(null);
   const location = useLocation();
 
   const showVerifyBanner = !bannerDismissed && user?.email && user?.email_verified === false;
@@ -67,12 +69,13 @@ export default function Topbar({
     setResendStatus('sent');
   }
 
-  // Close dropdown on route change
+  // Close dropdowns on route change
   useEffect(() => {
     setPracticeOpen(false);
+    setMobileMenuOpen(false);
   }, [location.pathname]);
 
-  // Close dropdown on outside click or Escape
+  // Close practice dropdown on outside click or Escape
   useEffect(() => {
     if (!practiceOpen) return;
     const onMouseDown = (e) => {
@@ -90,6 +93,25 @@ export default function Topbar({
       document.removeEventListener('keydown', onKey);
     };
   }, [practiceOpen]);
+
+  // Close mobile menu on outside click or Escape
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const onMouseDown = (e) => {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target)) {
+        setMobileMenuOpen(false);
+      }
+    };
+    const onKey = (e) => {
+      if (e.key === 'Escape') setMobileMenuOpen(false);
+    };
+    document.addEventListener('mousedown', onMouseDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onMouseDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [mobileMenuOpen]);
 
   // Layout classes per variant
   const headerClass = `topbar ${isApp ? 'app-topbar' : 'landing-topbar'}`;
@@ -140,7 +162,7 @@ export default function Topbar({
           {/* Center region — app variant only */}
           {isApp && <div className="app-topbar-center">{centerSlot}</div>}
 
-          {/* Actions region */}
+          {/* Actions region — desktop */}
           <nav className={actionsClass} aria-label="Main navigation">
             {showNav && (
               <>
@@ -239,6 +261,107 @@ export default function Topbar({
               )
             )}
           </nav>
+
+          {/* Hamburger — mobile only, landing variant */}
+          {!isApp && !isMinimal && (
+            <div className="topbar-mobile-actions" ref={mobileMenuRef}>
+              <button
+                className="theme-toggle topbar-mobile-theme"
+                onClick={cycleTheme}
+                aria-label={themeLabel}
+                title={themeLabel}
+              >
+                {themeIcon}
+              </button>
+              <button
+                className={`topbar-hamburger${mobileMenuOpen ? ' topbar-hamburger--open' : ''}`}
+                onClick={() => setMobileMenuOpen((v) => !v)}
+                aria-label="Toggle navigation menu"
+                aria-expanded={mobileMenuOpen}
+                type="button"
+              >
+                <span /><span /><span />
+              </button>
+
+              {mobileMenuOpen && (
+                <div className="topbar-mobile-menu">
+                  {showNav && (
+                    <>
+                      <div className="topbar-mobile-section-label">Practice</div>
+                      {TOPICS.map((t) => (
+                        <NavLink
+                          key={t}
+                          className={({ isActive }) =>
+                            `topbar-mobile-item${isActive ? ' topbar-mobile-item--active' : ''}`
+                          }
+                          to={`/practice/${t}`}
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <span
+                            className="topbar-practice-item-dot"
+                            style={{ background: TRACK_META[t].color }}
+                          />
+                          {TRACK_META[t].label}
+                        </NavLink>
+                      ))}
+                      <div className="topbar-mobile-divider" />
+                      <NavLink
+                        to="/mock"
+                        className={({ isActive }) =>
+                          `topbar-mobile-item${isActive || active === 'mock' ? ' topbar-mobile-item--active' : ''}`
+                        }
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Mock interview
+                      </NavLink>
+                      <NavLink
+                        to="/dashboard"
+                        className={({ isActive }) =>
+                          `topbar-mobile-item${isActive || active === 'dashboard' ? ' topbar-mobile-item--active' : ''}`
+                        }
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Dashboard
+                      </NavLink>
+                      {showPricingLink && !user && (
+                        <a
+                          className="topbar-mobile-item"
+                          href={pricingHref}
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          Pricing
+                        </a>
+                      )}
+                      <div className="topbar-mobile-divider" />
+                    </>
+                  )}
+                  {user && user.email ? (
+                    <>
+                      <span className="topbar-mobile-user">{user.name || user.email}</span>
+                      <button
+                        type="button"
+                        className="topbar-mobile-item topbar-mobile-signout"
+                        onClick={() => { setMobileMenuOpen(false); logout(); }}
+                      >
+                        Sign out
+                      </button>
+                    </>
+                  ) : (
+                    showNav && (
+                      <Link
+                        className="topbar-mobile-item"
+                        to="/auth"
+                        state={{ from: location.pathname }}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Sign in
+                      </Link>
+                    )
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
         {belowTopbar}
       </header>
