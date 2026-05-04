@@ -825,6 +825,11 @@ export default function LandingPage() {
               body: 'Every track has 3 sample questions per difficulty — a quick way to explore the format. Solves aren\'t recorded here; open the full track when you\'re ready to track your progress.',
             },
             {
+              targetSelector: '.track-samples-actions .btn-primary',
+              title: 'Then open the full track',
+              body: 'The full track has hundreds of questions with progress tracking and unlock progression — the more you solve, the more you unlock.',
+            },
+            {
               targetSelector: '.landing-paths',
               title: 'Follow a learning path',
               body: 'Paths are curated question sequences that build skill progressively. Completing a starter path also fast-tracks your unlock progress.',
