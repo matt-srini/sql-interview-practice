@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Combined lockup: monogram (accent D without bar) + accent wordmark — no background -->
+<svg xmlns="http://www.w3.org/2000/svg" width="456" height="120" viewBox="0 0 456 120" role="img" aria-labelledby="title desc">
+  <title id="title">datathink lockup — no bar</title>
+  <desc id="desc">Monogram with the bar accent removed and the accent wordmark on a transparent background.</desc>
+
+  <!-- Monogram (left) - same sizing as the bar lockup, without the bar accent -->
+  <g id="monogram" transform="translate(0,9) scale(0.78)">
+    <g transform="translate(12,0)">
+      <g transform="translate(18,32)">
+        <path d="M8 72 V16 H26 L40 30 L26 44 H8 Z" fill="#5B6AF0"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- Wordmark (right) - same styling as the normal lockup -->
+  <g id="wordmark" transform="translate(58,32)">
+    <text x="6" y="34" font-family="Inter, Helvetica, Arial, sans-serif" font-weight="700" font-size="28" letter-spacing="-0.5" fill="#5B6AF0">datathink</text>
+  </g>
+
+</svg>
