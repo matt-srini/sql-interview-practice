@@ -56,6 +56,292 @@ MODE_CONFIGS: dict[str, dict[str, int]] = {
     "60min": {"num_questions": 3, "time_limit_s": 3600},
 }
 
+# Concept family mappings: broad UI concept name → keyword substrings.
+# A question concept tag matches if ANY keyword appears as a case-insensitive
+# substring in the tag.  This bridges the gap between the coarse labels shown
+# in the MockHub focus-concept picker and the fine-grained `concepts` fields
+# on each question (e.g. "WINDOW FUNCTIONS" → "WINDOW RANK", "WINDOW RUNNING
+# TOTAL", "NESTED AGGREGATION IN WINDOW", etc.).
+CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
+    "sql": {
+        "AGGREGATION": [
+            "AGGREG",               # …AGGREGATION, GROUPED AGGREGATION, etc.
+            "ORDERED-SET AGGR",
+        ],
+        "WINDOW FUNCTIONS": [
+            "WINDOW",               # WINDOW RANK, WINDOW RUNNING TOTAL, etc.
+            "RUNNING TOTAL",        # RUNNING TOTAL, WINDOW RUNNING TOTAL
+            "CUMULATIVE",
+            "ROWS VS RANGE",
+            "LAG WINDOW",
+        ],
+        "JOINS": [
+            "JOIN",                 # LEFT JOIN, ANTI-JOIN, DATE-RANGE JOIN, etc.
+        ],
+        "SUBQUERY PATTERNS": [
+            "SUBQUERY",             # SUBQUERY FILTER, SCALAR SUBQUERY IN CASE
+            "CORRELATED",
+            "NESTED FILTER",        # NESTED FILTER LOGIC (subquery-equivalent patterns)
+        ],
+        "CTES": [
+            "CTE",                  # CTE PIPELINE, CTE REUSE, MULTI-CTE, etc.
+        ],
+        "DATE FUNCTIONS": [
+            "DATE",                 # DATE EXTRACTION, DATE COMPARISON, etc.
+            "TIME-",                # TIME-SERIES, TIME-WINDOW, TIME-SLICE, etc.
+            "STRFTIME",
+            "TEMPORAL",
+            "MONTHLY",
+            "QUARTER",
+            "PERIOD-OVER-PERIOD",
+        ],
+        "GROUP BY": [
+            "GROUP BY",             # GROUP BY RULES, MULTI-COLUMN GROUP BY
+            "GROUPED ",             # GROUPED AGGREGATION (trailing space avoids false matches)
+            "HAVING",               # HAVING ON COUNT, HAVING THRESHOLD, HAVING VS WHERE
+            "MULTI-AGGREGATE",
+        ],
+        "FILTERING": [
+            "FILTER",               # CONDITIONAL FILTERING, PRE-AGGREGATION FILTER, etc.
+            "WHERE CLAUSE",
+            "IN CLAUSE",
+            "RANGE FILTER",
+        ],
+        "COHORT RETENTION": [
+            "COHORT",               # COHORT ANALYSIS, MULTI-DIMENSION COHORT
+            "RETENTION",            # RETENTION BY MONTH OFFSET
+            "REACTIVATION",
+        ],
+        "FUNNEL ANALYSIS": [
+            "FUNNEL",               # CONVERSION FUNNEL, ACQUISITION FUNNEL, etc.
+        ],
+        "RANKING": [
+            "RANK",                 # WINDOW RANK, PARTITIONED RANK, MANUAL TOP-N RANKING
+            "TOP-N",                # TOP-N PER GROUP, TOP-N QUERY
+        ],
+        "SELF JOIN": [
+            "SELF-COMPAR",          # ROW-LEVEL SELF-COMPARISON, SELF-COMPARISON RANK EMULATION
+            "ROW-LEVEL SELF",
+            "ROW-TO-ROW",
+        ],
+        "SET OPERATIONS": [
+            "SET MEMBER",           # SET MEMBERSHIP FILTERING / TEST
+            "SET DIFFER",           # BEHAVIORAL SET DIFFERENCE
+            "ANTI-JOIN",            # ANTI-JOIN PATTERN
+            "CROSS-SOURCE",
+        ],
+        "CASE WHEN": [
+            "CASE WHEN",            # CASE WHEN LADDER
+            "RULE-BASED",           # RULE-BASED CLASSIFICATION
+            "CONDITIONAL FLAG",
+            "CATEGORICAL SEGM",
+            "PRIORITY-BASED",
+        ],
+        "STRING FUNCTIONS": [
+            "PATTERN-BASED",        # PATTERN-BASED FILTERING
+            "STRFTIME",
+            "STRING",
+        ],
+    },
+    "python": {
+        "SORTING": [
+            "SORT",                 # IN-PLACE SORT, ORDER-PRESERVING
+            "K-WAY MERGE",
+        ],
+        "BINARY SEARCH": [
+            "BINARY SEARCH",        # BINARY SEARCH, BINARY SEARCH TREE
+            "PEAK FINDING",
+        ],
+        "HASH MAPS": [
+            "HASH MAP",             # HASH MAP, HASH MAP COUNTING, HASH MAP GROUPING
+            "HASH SET",
+            "HASH-BASED",
+            "FREQUENCY COUNT",      # FREQUENCY COUNTING, FREQUENCY TRACKING
+            "FREQUENCY-BASED",
+            "COUNTER",
+        ],
+        "TWO POINTERS": [
+            "TWO POINTER",          # TWO POINTERS, TWO-POINTER SWEEP
+            "TWO-POINTER",
+            "BOUNDARY POINTER",
+        ],
+        "SLIDING WINDOW": [
+            "SLIDING WINDOW",       # SLIDING WINDOW MAXIMUM
+            "FIXED WINDOW",
+            "MINIMUM WINDOW",
+        ],
+        "RECURSION": [
+            "RECURSION",            # BASE CASE HANDLING
+            "RECURSIVE",
+            "BACKTRACKING",
+            "FIBONACCI",
+        ],
+        "DYNAMIC PROGRAMMING": [
+            "DYNAMIC PROGRAMMING",
+            "BOTTOM-UP DP",
+            "DP TABLE",
+            "MEMOIZATION",
+            "GRID DP",
+            "COIN CHANGE",
+            "KADANE",
+        ],
+        "GRAPHS": [
+            "GRAPH",                # DIRECTED GRAPH, GRAPH CONNECTIVITY
+            "BFS",
+            "DFS",
+            "SHORTEST PATH",
+            "TOPOLOGICAL",
+            "DISJOINT-SET",
+            "WEIGHTED GRAPH",
+        ],
+        "TREES": [
+            "TREE",                 # BINARY SEARCH TREE, TREE CENTER, LEAF TRIMMING
+            "TRIE",
+            "PREORDER",
+        ],
+        "LINKED LISTS": [
+            "LINKED LIST",          # DOUBLY LINKED LIST
+        ],
+        "HEAPS": [
+            "HEAP",                 # MIN-HEAP, TWO HEAPS
+            "PRIORITY QUEUE",
+            "K-WAY MERGE",
+            "MEDIAN TRACKING",
+        ],
+        "STACK / QUEUE": [
+            "STACK",                # MONOTONIC STACK
+            "QUEUE",                # MONOTONIC QUEUE
+            "MONOTONIC",
+        ],
+        "BIT MANIPULATION": [
+            "BIT MANIPULATION",
+            "XOR",
+            "POWER-OF-TWO",
+        ],
+    },
+    "python-data": {
+        "GROUPBY": [
+            "GROUPBY",              # GROUPBY AGG, MULTI-KEY GROUPBY, etc.
+            "GROUP BY",
+        ],
+        "MERGING": [
+            "MERGE",                # MERGE KEY, MULTI-DATAFRAME JOIN
+            "JOIN",                 # INNER JOIN, LEFT JOIN, THREE-WAY JOIN
+            "CONCAT",               # DATAFRAME CONCATENATION
+        ],
+        "PIVOTING": [
+            "PIVOT",                # DATA PIVOTING
+            "CROSSTAB",
+            "CONTINGENCY",          # CONTINGENCY TABLE CONSTRUCTION
+            "WIDE-FORM",
+        ],
+        "FILTERING": [
+            "FILTER",               # BOOLEAN FILTER, FILTERING AGGREGATED RESULTS
+            "BOOLEAN MASK",
+            "BOOLEAN INDEXING",
+            "QUERY FILTER",
+            "NULL-BASED ROW FILTER",
+        ],
+        "AGGREGATION": [
+            "AGGREGATION",          # GROUPBY AGGREGATION, CONDITIONAL AGGREGATION, etc.
+            " AGG",                 # NAMED AGG, LAMBDA IN AGG (leading space avoids partial matches)
+            "AGGREG",
+        ],
+        "WINDOW FUNCTIONS": [
+            "WINDOW",               # WINDOW FUNCTIONS, WINDOW JOIN, WINDOW-LIKE, etc.
+            "ROLLING",              # ROLLING WINDOW, MOVING AVERAGE
+            "CUMSUM",
+            "RUNNING TOTAL",
+        ],
+        "RESHAPING": [
+            "RESHAPE",
+            "UNSTACK",
+            "STACK ",               # trailing space avoids matching MULTI-STEP
+            "WIDE-FORM",
+        ],
+        "TIME SERIES": [
+            "TIME SERIES",
+            "DATETIME",             # DATETIME ARITHMETIC, DATETIME COMPONENT EXTRACTION
+            "PERIOD",               # PERIOD ARITHMETIC, PERIOD-OVER-PERIOD
+            "TIMEDELTA",
+            "DATE",                 # DATE ARITHMETIC, DATE COMPARISON, etc.
+            "MONTHLY",
+        ],
+        "STRING METHODS": [
+            "STRING",               # VECTORIZED STRING TRANSFORMATION, etc.
+            "SUBSTRING",
+            "DELIMITER",
+        ],
+        "APPLY/MAP": [
+            "APPLY",                # APPLY FOR CLASSIFICATION, etc.
+            "LAMBDA",               # LAMBDA AGGREGATION, LAMBDA IN AGG
+            " MAP",                 # leading space avoids matching HASH MAP etc.
+        ],
+        "COHORT ANALYSIS": [
+            "COHORT",               # COHORT ANALYSIS
+            "RETENTION",            # RETENTION ANALYSIS
+            "CHURN",
+        ],
+        "MULTI-INDEX": [
+            "MULTIINDEX",
+            "MULTI-INDEX",          # MULTI-INDEX CROSS-SECTION LOOKUP
+            "HIERARCHICAL",         # HIERARCHICAL INDEXING
+        ],
+    },
+    "pyspark": {
+        "DATAFRAME API": [
+            "DATAFRAME",            # DATAFRAME API, DATAFRAME IMMUTABILITY, etc.
+            "COLUMN EXPRESSION",
+            "WITHCOLUMN",
+        ],
+        "GROUPBY": [
+            "GROUPBY",              # GROUPSTATETIMEOUT, GROUPBYKEY
+            "GROUPED",
+        ],
+        "JOINS": [
+            "JOIN",                 # BROADCAST JOIN, SKEW JOIN, JOIN STRATEGY, etc.
+        ],
+        "WINDOW FUNCTIONS": [
+            "WINDOW FRAME",         # WINDOW FRAME SEMANTICS
+            "WINDOW FUNCTION",      # WINDOW FUNCTIONS
+            "ROWSBETWEEN",
+            "ROWS VS RANGE",
+            "RANK",                 # RANK, DENSE_RANK, ROW_NUMBER, TIE HANDLING
+            "DENSE_RANK",
+            "ROW_NUMBER",
+        ],
+        "UDFS": [
+            "UDF",                  # UDF, UDF NULL HANDLING, PYTHON UDF OVERHEAD, PANDAS UDF
+        ],
+        "PARTITIONING": [
+            "PARTITION",            # PARTITIONING, PARTITION PRUNING, PARTITION SIZING, etc.
+            "COALESCE",             # SHUFFLE COALESCING / PARTITION COALESCING
+        ],
+        "AGGREGATION": [
+            "AGGREGATION",          # DISTRIBUTED AGGREGATION, CUMULATIVE AGGREGATION, etc.
+            "HASHAGGREGATE",
+        ],
+        "STREAMING": [
+            "STREAMING",            # STRUCTURED STREAMING, STREAMING CHECKPOINT, etc.
+            "STREAM-",              # STREAM-STREAM JOIN
+            "MICRO-BATCH",
+            "WATERMARK",
+            "FOREACHBATCH",
+            "STATEFUL AGGREG",      # STATEFUL AGGREGATION, STATEFUL AGGREGATION SCALING
+            "MAPGROUPSWITHSTATE",
+        ],
+        "CACHING": [
+            "CACHING",
+            "CACHE",                # CHECKPOINT (avoided — too broad), CACHE specific
+            "PERSIST",              # PERSIST, PERSISTENCE LIFECYCLE
+            "STORAGE LEVEL",        # STORAGE LEVEL SELECTION
+        ],
+        "BROADCAST JOIN": [
+            "BROADCAST",            # BROADCAST JOIN, BROADCAST VARIABLE, etc.
+        ],
+    },
+}
+
 VALID_TRACKS = {"sql", "python", "python-data", "pyspark", "mixed"}
 VALID_DIFFICULTIES = {"easy", "medium", "hard", "mixed"}
 
@@ -157,6 +443,48 @@ def _pool_for_track(
     return pool
 
 
+def _concept_matches_focus(
+    question_concept: str,
+    focus_concept: str,
+    q_track: str,
+) -> bool:
+    """
+    Check whether a single question concept tag matches a user-selected focus concept.
+
+    Uses the CONCEPT_FAMILIES keyword table: a match is found when any keyword
+    from the family appears as a case-insensitive substring of the question tag.
+    Falls back to bidirectional substring matching when the concept isn't in the
+    family table (handles custom / future concepts gracefully).
+    """
+    qc_upper = question_concept.upper()
+    fc_upper = focus_concept.upper()
+    families = CONCEPT_FAMILIES.get(q_track, {})
+    keywords = families.get(fc_upper)
+    if keywords:
+        return any(kw.upper() in qc_upper for kw in keywords)
+    # Fallback: either is a substring of the other
+    return fc_upper in qc_upper or qc_upper in fc_upper
+
+
+def _match_focus_concepts(
+    pool: list[dict],
+    focus_concepts: list[str],
+    track: str,
+) -> list[dict]:
+    """
+    Return questions from pool whose concept tags match at least one focus concept.
+    For mixed-track pools each question's own ``_track`` is used for family lookup.
+    """
+    return [
+        q for q in pool
+        if any(
+            _concept_matches_focus(qc, fc, q.get("_track", track))
+            for qc in q.get("concepts", [])
+            for fc in focus_concepts
+        )
+    ]
+
+
 async def _select_questions(
     track: str,
     difficulty: str,
@@ -190,39 +518,65 @@ async def _select_questions(
         solved = await _get_solved_ids_for_track(user_id, track)
         pool = _pool_for_track(track, difficulty, user_plan, solved)
 
-    # Focus filtering (Elite only)
+    # ── Focus filtering (Elite only) ───────────────────────────────────────────
     focus_fallback = False
+    focus_pool: list[dict] = []
     if focus_concepts:
-        normalized_fc = [c.upper() for c in focus_concepts]
-        focus_pool = [
-            q for q in pool
-            if any(c.upper() in normalized_fc for c in q.get("concepts", []))
-        ]
+        focus_pool = _match_focus_concepts(pool, focus_concepts, track)
         if len(focus_pool) >= num_questions:
+            # Enough focus-matching questions — restrict pool to them only.
             pool = focus_pool
+            focus_pool = []  # no fallback needed
         else:
-            # Not enough focused questions — top up from general pool
+            # Fewer focus questions than needed — flag the fallback and keep
+            # the full pool so we can fill remaining slots from non-focus.
             focus_fallback = True
-            non_focus = [q for q in pool if q not in focus_pool]
-            pool = focus_pool + non_focus
 
-    # Freshness scoring: prefer questions this user has never seen in mock before
+    # ── Freshness scoring ──────────────────────────────────────────────────────
+    # Prefer questions this user has never seen in any past mock session.
     mocked_ids = await get_previously_mocked_ids(user_id)
-    fresh = [q for q in pool if int(q["id"]) not in mocked_ids]
-    stale = [q for q in pool if int(q["id"]) in mocked_ids]
 
-    if len(fresh) >= num_questions:
-        chosen_raw = random.sample(fresh, num_questions)
-    elif len(fresh) + len(stale) >= num_questions:
-        chosen_raw = fresh + random.sample(stale, num_questions - len(fresh))
+    _not_enough = HTTPException(
+        status_code=400,
+        detail=(
+            "Not enough unlocked questions for this configuration. "
+            "Try a lower difficulty or upgrade your plan."
+        ),
+    )
+
+    if focus_fallback and focus_pool:
+        # Guarantee ALL focus-matching questions are included in the final set,
+        # then fill remaining slots from the non-focus pool (fresh-first).
+        non_focus = [q for q in pool if q not in focus_pool]
+        nf_fresh = [q for q in non_focus if int(q["id"]) not in mocked_ids]
+        nf_stale = [q for q in non_focus if int(q["id"]) in mocked_ids]
+
+        guaranteed = list(focus_pool)
+        remaining_needed = num_questions - len(guaranteed)
+
+        if remaining_needed > 0:
+            if len(nf_fresh) + len(nf_stale) < remaining_needed:
+                raise _not_enough
+            take_fresh = min(remaining_needed, len(nf_fresh))
+            take_stale = remaining_needed - take_fresh
+            filler = random.sample(nf_fresh, take_fresh)
+            if take_stale:
+                filler += random.sample(nf_stale, take_stale)
+        else:
+            filler = []
+
+        chosen_raw = guaranteed + filler
+        random.shuffle(chosen_raw)
     else:
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                "Not enough unlocked questions for this configuration. "
-                "Try a lower difficulty or upgrade your plan."
-            ),
-        )
+        fresh = [q for q in pool if int(q["id"]) not in mocked_ids]
+        stale = [q for q in pool if int(q["id"]) in mocked_ids]
+
+        if len(fresh) >= num_questions:
+            chosen_raw = random.sample(fresh, num_questions)
+        elif len(fresh) + len(stale) >= num_questions:
+            chosen_raw = fresh + random.sample(stale, num_questions - len(fresh))
+        else:
+            raise _not_enough
 
     selected = [
         {
@@ -713,6 +1067,7 @@ async def start_session(
         difficulty=body.difficulty,
         time_limit_s=time_limit_s,
         questions=selected,
+        focus_fallback=focus_fallback,
     )
 
     return {
