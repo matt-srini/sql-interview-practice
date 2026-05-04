@@ -3,7 +3,7 @@
     "id": 2001,
     "order": 1,
     "title": "Failed payments on completed orders",
-    "description": "Return user_id, name, order_id, payment_method, and amount for orders that are marked as completed but have a payment status of either 'failed' or 'chargeback'. Order by amount descending, then order_id ascending.",
+    "description": "Return user_id, name, order_id, payment_method, and amount for orders that are marked as 'completed' but have a payment status of either 'failed' or 'chargeback'. Order by amount descending, then order_id ascending.",
     "difficulty": "medium",
     "schema": {
       "users": [
@@ -136,7 +136,7 @@
     "id": 2004,
     "order": 4,
     "title": "Paid revenue by user country",
-    "description": "Return each country and the total paid payment amount for completed orders from users in that country as total_paid_amount. Order by total_paid_amount descending, then country ascending.",
+    "description": "Return each country and the total 'paid' payment amount for 'completed' orders from users in that country as total_paid_amount. Order by total_paid_amount descending, then country ascending.",
     "difficulty": "medium",
     "schema": {
       "users": [
@@ -182,7 +182,7 @@
     "id": 2005,
     "order": 5,
     "title": "Country-plan segments with high average order value",
-    "description": "Return country, plan_tier, and the average net_amount of completed orders as avg_completed_amount for country and plan tier combinations whose average completed order value is greater than 600. Order by avg_completed_amount descending, then country ascending, then plan_tier ascending.",
+    "description": "Return country, plan_tier, and the average net_amount of 'completed' orders as avg_completed_amount for country and plan tier combinations whose average 'completed' order value is greater than 600. Order by avg_completed_amount descending, then country ascending, then plan_tier ascending.",
     "difficulty": "medium",
     "schema": {
       "users": [
@@ -228,7 +228,7 @@
     "id": 2006,
     "order": 6,
     "title": "Users with multiple paid payment methods",
-    "description": "Return user_id, name, and the number of distinct payment methods used across paid payments as payment_method_count. Include only users who have used more than one distinct payment method. Order by payment_method_count descending, then user_id ascending.",
+    "description": "Return user_id, name, and the number of distinct payment methods used across 'paid' payments as payment_method_count. Include only users who have used more than one distinct payment method. Order by payment_method_count descending, then user_id ascending.",
     "difficulty": "medium",
     "schema": {
       "users": [
@@ -276,7 +276,7 @@
     "id": 2007,
     "order": 7,
     "title": "Slow resolved ticket groups",
-    "description": "Return priority, issue_type, and the average resolution_hours for resolved tickets as avg_resolution_hours. Include only priority and issue type groups whose average resolution_hours is greater than 72. Order by avg_resolution_hours descending, then priority ascending, then issue_type ascending.",
+    "description": "Return priority, issue_type, and the average resolution_hours for 'resolved' tickets as avg_resolution_hours. Include only priority and issue type groups whose average resolution_hours is greater than 72. Order by avg_resolution_hours descending, then priority ascending, then issue_type ascending.",
     "difficulty": "medium",
     "schema": {
       "support_tickets": [
@@ -437,7 +437,7 @@
     "id": 2011,
     "order": 11,
     "title": "Paid completed orders by country",
-    "description": "Return one row per country with columns country, paid_completed_order_count, and total_paid_amount. Count only orders where the order status is 'completed' and there is at least one payment row with payment status 'paid'. If an order has multiple paid payment rows, it should still count as one order in paid_completed_order_count. Sum the paid payment amounts across qualifying payment rows. Order by total_paid_amount descending, then country ascending.",
+    "description": "Return one row per country with columns country, paid_completed_order_count, and total_paid_amount. Count only orders where the order status is 'completed' and there is at least one payment row with payment status 'paid'. If an order has multiple 'paid' payment rows, it should still count as one order in paid_completed_order_count. Sum the 'paid' payment amounts across qualifying payment rows. Order by total_paid_amount descending, then country ascending.",
     "difficulty": "medium",
     "schema": {
       "users": [
@@ -489,7 +489,7 @@
     "id": 2012,
     "order": 12,
     "title": "Brand reach in completed 2024 orders",
-    "description": "For each product brand, return brand, distinct_order_count, and total_units_sold for completed orders placed in 2024. distinct_order_count should count an order only once per brand, even if that order contains multiple line items from the same brand. total_units_sold should sum quantity across those qualifying line items. Order by total_units_sold descending, then brand ascending.",
+    "description": "For each product brand, return brand, distinct_order_count, and total_units_sold for 'completed' orders placed in 2024. distinct_order_count should count an order only once per brand, even if that order contains multiple line items from the same brand. total_units_sold should sum quantity across those qualifying line items. Order by total_units_sold descending, then brand ascending.",
     "difficulty": "medium",
     "schema": {
       "products": [
@@ -541,7 +541,7 @@
     "id": 2013,
     "order": 13,
     "title": "Users with both orders and high-priority tickets",
-    "description": "Return one row per country with columns country and affected_user_count. A user should be counted only if they have at least one completed order and at least one support ticket with priority = 'high'. Count each qualifying user once per country, even if they have many completed orders and many high-priority tickets. Order by affected_user_count descending, then country ascending.",
+    "description": "Return one row per country with columns country and affected_user_count. A user should be counted only if they have at least one 'completed' order and at least one support ticket with priority = 'high'. Count each qualifying user once per country, even if they have many 'completed' orders and many high-priority tickets. Order by affected_user_count descending, then country ascending.",
     "difficulty": "medium",
     "schema": {
       "users": [
@@ -638,7 +638,7 @@
     "id": 2015,
     "order": 15,
     "title": "Early signups with no completed orders",
-    "description": "Return user_id, name, and country for users who signed up before 2024-01-01 and have never placed a completed order. Order by user_id ascending.",
+    "description": "Return user_id, name, and country for users who signed up before 2024-01-01 and have never placed a 'completed' order. Order by user_id ascending.",
     "difficulty": "medium",
     "schema": {
       "users": [
@@ -685,7 +685,7 @@
     "id": 2016,
     "order": 16,
     "title": "Brands above average completed-order revenue",
-    "description": "Return brand and total_revenue for brands whose revenue from completed orders is greater than the average brand revenue from completed orders across all brands. Order by total_revenue descending, then brand ascending.",
+    "description": "Return brand and total_revenue for brands whose revenue from 'completed' orders is greater than the average brand revenue from 'completed' orders across all brands. Order by total_revenue descending, then brand ascending.",
     "difficulty": "medium",
     "schema": {
       "products": [
@@ -736,7 +736,7 @@
     "id": 2017,
     "order": 17,
     "title": "Country order outcome mix",
-    "description": "Return country, completed_orders, and cancelled_orders for countries with at least 50 total orders. Count orders from the orders table joined to users. Order by completed_orders descending, then country ascending.",
+    "description": "Return country, completed_orders (status = 'completed') and cancelled_orders (status = 'cancelled') for countries with at least 50 total orders. Count orders from the orders table joined to users. Order by completed_orders descending, then country ascending.",
     "difficulty": "medium",
     "schema": {
       "users": [
@@ -782,7 +782,7 @@
     "id": 2018,
     "order": 18,
     "title": "Ticket resolution mix by issue type",
-    "description": "Return issue_type, resolved_ticket_count, unresolved_ticket_count, and avg_resolved_hours. unresolved_ticket_count should include tickets whose status is 'open' or 'in_progress'. avg_resolved_hours should average resolution_hours only for resolved tickets. Include only issue types with at least 20 total tickets. Order by resolved_ticket_count descending, then issue_type ascending.",
+    "description": "Return issue_type, resolved_ticket_count, unresolved_ticket_count, and avg_resolved_hours. unresolved_ticket_count should include tickets whose status is 'open' or 'in_progress'. avg_resolved_hours should average resolution_hours only for 'resolved' tickets. Include only issue types with at least 20 total tickets. Order by resolved_ticket_count descending, then issue_type ascending.",
     "difficulty": "medium",
     "schema": {
       "support_tickets": [
@@ -820,7 +820,7 @@
     "id": 2019,
     "order": 19,
     "title": "Repeat large-order users in selected countries",
-    "description": "Return user_id, name, completed_order_count, and avg_net_amount for users from US, UK, or CA who placed at least 3 completed orders in 2024 where each counted order has net_amount >= 500. Order by avg_net_amount descending, then user_id ascending.",
+    "description": "Return user_id, name, completed_order_count, and avg_net_amount for users from 'US', 'UK', or 'CA' who placed at least 3 'completed' orders in 2024 where each counted order has net_amount >= 500. Order by avg_net_amount descending, then user_id ascending.",
     "difficulty": "medium",
     "schema": {
       "users": [
@@ -870,7 +870,7 @@
     "id": 2020,
     "order": 20,
     "title": "High-volume brands in completed 2024 orders",
-    "description": "Return category_id, brand, distinct_order_count, and total_units for product brands that meet all of the following conditions: the product launch_date is not null and earlier than 2025-01-01, the order is completed, the order was placed in 2024, the brand appears in at least 25 distinct qualifying orders, and the brand sold at least 80 total units across those qualifying rows. Order by distinct_order_count descending, then category_id ascending, then brand ascending.",
+    "description": "Return category_id, brand, distinct_order_count, and total_units for product brands that meet all of the following conditions: the product launch_date is not null and earlier than 2025-01-01, the order is 'completed', the order was placed in 2024, the brand appears in at least 25 distinct qualifying orders, and the brand sold at least 80 total units across those qualifying rows. Order by distinct_order_count descending, then category_id ascending, then brand ascending.",
     "difficulty": "medium",
     "schema": {
       "products": [
@@ -966,7 +966,7 @@
     "id": 2022,
     "order": 22,
     "title": "Selected-country users without 2024 orders",
-    "description": "Return user_id, name, and country for users from US, UK, or CA who placed no orders during 2024, regardless of order status. Order by user_id ascending.",
+    "description": "Return user_id, name, and country for users from 'US', 'UK', or 'CA' who placed no orders during 2024, regardless of order status. Order by user_id ascending.",
     "difficulty": "medium",
     "schema": {
       "users": [
@@ -1006,7 +1006,7 @@
     "id": 2023,
     "order": 23,
     "title": "Completed 2024 orders missing paid payments",
-    "description": "Return order_id, user_id, and order_status for completed orders placed in 2024 that have no payment row with status = 'paid'. Order by order_id ascending.",
+    "description": "Return order_id, user_id, and order_status for 'completed' orders placed in 2024 that have no payment row with status = 'paid'. Order by order_id ascending.",
     "difficulty": "medium",
     "schema": {
       "orders": [
@@ -1087,7 +1087,7 @@
     "id": 2025,
     "order": 25,
     "title": "Country and plan tier order mix",
-    "description": "Return country, plan_tier, completed_order_count, and cancelled_order_count for user segments with at least 25 total orders. Count order rows after joining users to orders. Order by country ascending, then plan_tier ascending.",
+    "description": "Return country, plan_tier, completed_order_count (status = 'completed') and cancelled_order_count (status = 'cancelled') for user segments with at least 25 total orders. Count order rows after joining users to orders. Order by country ascending, then plan_tier ascending.",
     "difficulty": "medium",
     "schema": {
       "users": [
@@ -1169,7 +1169,7 @@
     "id": 2027,
     "order": 27,
     "title": "Products never sold in completed orders",
-    "description": "Return product_id, product_name, and brand for products launched before 2024-01-01 that have never appeared in an order_item tied to a completed order. Order by product_id ascending.",
+    "description": "Return product_id, product_name, and brand for products launched before 2024-01-01 that have never appeared in an order_item tied to a 'completed' order. Order by product_id ascending.",
     "difficulty": "medium",
     "schema": {
       "products": [
@@ -1307,7 +1307,7 @@
     "id": 2030,
     "order": 30,
     "title": "Countries with problematic payment totals above paid totals",
-    "description": "Return country, paid_amount, and problematic_amount for countries where completed orders placed in 2024 produced more problematic payment amount than paid payment amount. Treat problematic payments as rows whose payment status is 'failed' or 'refunded'. Include only countries with at least 20 payment rows tied to completed 2024 orders. Order by problematic_amount descending, then country ascending.",
+    "description": "Return country, paid_amount, and problematic_amount for countries where 'completed' orders placed in 2024 produced more problematic payment amount than 'paid' payment amount. Treat problematic payments as rows whose payment status is 'failed' or 'refunded'. Include only countries with at least 20 payment rows tied to 'completed' 2024 orders. Order by problematic_amount descending, then country ascending.",
     "difficulty": "medium",
     "schema": {
       "users": [
@@ -1489,7 +1489,7 @@
     "id": 2034,
     "order": 34,
     "title": "Top revenue by country and plan tier",
-    "description": "For each combination of user `country` and `plan_tier`, compute the total `net_amount` of completed orders. Return only combinations where total revenue exceeds 5000. Return `country`, `plan_tier`, and `total_revenue` (rounded to 2 decimal places). Order by `total_revenue` descending.",
+    "description": "For each combination of user `country` and `plan_tier`, compute the total `net_amount` of 'completed' orders. Return only combinations where total revenue exceeds 5000. Return `country`, `plan_tier`, and `total_revenue` (rounded to 2 decimal places). Order by `total_revenue` descending.",
     "difficulty": "medium",
     "schema": {
       "orders": [
@@ -1540,7 +1540,7 @@
     "mock_only": true,
     "follow_up_id": 2050,
     "title": "Revenue and reach by acquisition channel",
-    "description": "For each user acquisition channel, compute the total net revenue from completed orders and the count of distinct users who placed at least one completed order. Return `acquisition_channel`, `total_revenue` (rounded to 2 decimal places), and `user_count`, ordered by `total_revenue` descending.",
+    "description": "For each user acquisition channel, compute the total net revenue from 'completed' orders and the count of distinct users who placed at least one 'completed' order. Return `acquisition_channel`, `total_revenue` (rounded to 2 decimal places), and `user_count`, ordered by `total_revenue` descending.",
     "difficulty": "medium",
     "schema": {
       "orders": [
@@ -1583,7 +1583,7 @@
     "order": 36,
     "mock_only": true,
     "title": "Support ticket resolution time by priority",
-    "description": "For each ticket priority level, compute the count of resolved tickets and the average resolution time. Return `priority`, `ticket_count`, and `avg_resolution_hours` (rounded to 1 decimal place), ordered by `avg_resolution_hours` descending.",
+    "description": "For each ticket priority level, compute the count of 'resolved' tickets and the average resolution time. Return `priority`, `ticket_count`, and `avg_resolution_hours` (rounded to 1 decimal place), ordered by `avg_resolution_hours` descending.",
     "difficulty": "medium",
     "schema": {
       "support_tickets": [
@@ -1665,7 +1665,7 @@
     "mock_only": true,
     "follow_up_id": 2051,
     "title": "Above-average spenders",
-    "description": "Identify users whose total net amount from completed orders exceeds the average total spend across all users who placed at least one completed order. Return `user_id`, `name`, `country`, and `total_spend` (rounded to 2 decimal places), ordered by `total_spend` descending.",
+    "description": "Identify users whose total net amount from 'completed' orders exceeds the average total spend across all users who placed at least one 'completed' order. Return `user_id`, `name`, `country`, and `total_spend` (rounded to 2 decimal places), ordered by `total_spend` descending.",
     "difficulty": "medium",
     "schema": {
       "users": [
@@ -2005,7 +2005,7 @@
     "mock_only": true,
     "type": "reverse",
     "title": "Write the query \u2014 top 5 countries by completed revenue",
-    "description": "Write a SQL query that produces the result table shown below. The result shows the top 5 countries ranked by total completed-order revenue, along with the number of distinct buyers from each country.",
+    "description": "Write a SQL query that produces the result table shown below. The result shows the top 5 countries ranked by total 'completed'-order revenue, along with the number of distinct buyers from each country.",
     "difficulty": "medium",
     "schema": {
       "users": [
@@ -2077,7 +2077,7 @@
     "mock_only": true,
     "type": "reverse",
     "title": "Write the query \u2014 resolved ticket priority analysis",
-    "description": "Write a SQL query that produces the result table shown below. The result shows the count of resolved support tickets and the average resolution time for each priority level, ordered by average resolution time descending.",
+    "description": "Write a SQL query that produces the result table shown below. The result shows the count of 'resolved' support tickets and the average resolution time for each priority level, ordered by average resolution time descending.",
     "difficulty": "medium",
     "schema": {
       "support_tickets": [
@@ -2138,7 +2138,7 @@
     "mock_only": true,
     "type": "debug",
     "title": "Fix the query \u2014 missing GROUP BY column",
-    "description": "The query below should return total completed-order revenue broken down by both `country` and `plan_tier`. It fails with an error. Find and fix the bug.",
+    "description": "The query below should return total 'completed'-order revenue broken down by both `country` and `plan_tier`. It fails with an error. Find and fix the bug.",
     "difficulty": "medium",
     "schema": {
       "users": [
@@ -2184,7 +2184,7 @@
     "mock_only": true,
     "type": "debug",
     "title": "Fix the query \u2014 wrong table alias in WHERE",
-    "description": "The query below should return each department's headcount and average salary for US-based employees only. It fails with an error. Find and fix the bug.",
+    "description": "The query below should return each department's headcount and average salary for employees where country = 'US' only. It fails with an error. Find and fix the bug.",
     "difficulty": "medium",
     "schema": {
       "employees": [
@@ -2275,7 +2275,7 @@
     "order": 50,
     "mock_only": true,
     "title": "Monthly revenue by acquisition channel",
-    "description": "Break down completed-order revenue by acquisition channel and calendar month. For each combination, return `acquisition_channel`, `month` (formatted `YYYY-MM` using `strftime`), `total_revenue` (rounded to 2 decimal places), and `order_count`. Include only rows where `total_revenue` exceeds 50 000. Order by `month` ascending, then `total_revenue` descending.",
+    "description": "Break down 'completed'-order revenue by acquisition channel and calendar month. For each combination, return `acquisition_channel`, `month` (formatted `YYYY-MM` using `strftime`), `total_revenue` (rounded to 2 decimal places), and `order_count`. Include only rows where `total_revenue` exceeds 50 000. Order by `month` ascending, then `total_revenue` descending.",
     "difficulty": "medium",
     "schema": {
       "orders": [
@@ -2320,7 +2320,7 @@
     "order": 51,
     "mock_only": true,
     "title": "Top-spender loyalty tier segmentation",
-    "description": "Compute each user's total spend, order count, and average order value from completed orders. Assign a `loyalty_tier`: `'Platinum'` if total spend > 20 000, `'Gold'` if > 10 000, otherwise `'Silver'`. Return only users whose total spend is at or above the 80th percentile. Columns: `user_id`, `name`, `country`, `total_spend`, `order_count`, `avg_order_value` (both rounded to 2 dp), and `loyalty_tier`. Order by `total_spend` descending.",
+    "description": "Compute each user's total spend, order count, and average order value from 'completed' orders. Assign a `loyalty_tier`: `'Platinum'` if total spend > 20 000, `'Gold'` if > 10 000, otherwise `'Silver'`. Return only users whose total spend is at or above the 80th percentile. Columns: `user_id`, `name`, `country`, `total_spend`, `order_count`, `avg_order_value` (both rounded to 2 dp), and `loyalty_tier`. Order by `total_spend` descending.",
     "difficulty": "medium",
     "schema": {
       "users": [

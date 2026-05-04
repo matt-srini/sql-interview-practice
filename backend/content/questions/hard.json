@@ -3,7 +3,7 @@
     "id": 3001,
     "order": 1,
     "title": "Completed revenue share by plan tier",
-    "description": "Return plan_tier, total_completed_revenue, and revenue_share_pct for each plan tier based on completed orders only. revenue_share_pct should be the percentage contribution of that tier's total_completed_revenue to the overall completed revenue across all plan tiers, rounded to 2 decimal places. Include only plan tiers that have at least one completed order. Order by total_completed_revenue descending, then plan_tier ascending.",
+    "description": "Return plan_tier, total_completed_revenue, and revenue_share_pct for each plan tier based on 'completed' orders only. revenue_share_pct should be the percentage contribution of that tier's total_completed_revenue to the overall revenue from 'completed' orders across all plan tiers, rounded to 2 decimal places. Include only plan tiers that have at least one 'completed' order. Order by total_completed_revenue descending, then plan_tier ascending.",
     "difficulty": "hard",
     "schema": {
       "users": [
@@ -45,7 +45,7 @@
     "id": 3002,
     "order": 2,
     "title": "Top completed-revenue user in each acquisition channel",
-    "description": "For orders placed in 2024, return the single user with the highest completed revenue in each acquisition_channel. Columns: acquisition_channel, user_id, name, total_completed_revenue. If multiple users in the same acquisition_channel tie on total_completed_revenue, choose the user whose first completed order in 2024 is earlier. If there is still a tie, choose the lower user_id. Order by acquisition_channel ascending.",
+    "description": "For orders placed in 2024, return the single user with the highest revenue from 'completed' orders in each acquisition_channel. Columns: acquisition_channel, user_id, name, total_completed_revenue. If multiple users in the same acquisition_channel tie on total_completed_revenue, choose the user whose first 'completed' order in 2024 is earlier. If there is still a tie, choose the lower user_id. Order by acquisition_channel ascending.",
     "difficulty": "hard",
     "schema": {
       "users": [
@@ -85,7 +85,7 @@
     "id": 3003,
     "order": 3,
     "title": "First completed order where cumulative revenue reaches 1000",
-    "description": "Return the first completed order for each user where that user's cumulative completed revenue reaches or exceeds 1000 for the first time. Columns: user_id, order_id, order_date, net_amount, running_completed_revenue. Build the cumulative revenue in order_date ascending order, breaking ties on order_id ascending. Exclude users who never reach 1000. Order by user_id ascending.",
+    "description": "Return the first 'completed' order for each user where that user's cumulative revenue from 'completed' orders reaches or exceeds 1000 for the first time. Columns: user_id, order_id, order_date, net_amount, running_completed_revenue. Build the cumulative revenue in order_date ascending order, breaking ties on order_id ascending. Exclude users who never reach 1000. Order by user_id ascending.",
     "difficulty": "hard",
     "schema": {
       "orders": [
@@ -120,7 +120,7 @@
     "id": 3004,
     "order": 4,
     "title": "User-months above each user's 2024 monthly average",
-    "description": "For 2024 only, return every user-month where the user's completed revenue for that month is strictly greater than their own average monthly completed revenue across all 2024 months that contain at least one completed order. Columns: user_id, order_month, monthly_completed_revenue, avg_monthly_completed_revenue. order_month should be the numeric month extracted from order_date. Order by user_id ascending, then order_month ascending.",
+    "description": "For 2024 only, return every user-month where the user's revenue from 'completed' orders for that month is strictly greater than their own average monthly revenue from 'completed' orders across all 2024 months that contain at least one 'completed' order. Columns: user_id, order_month, monthly_completed_revenue, avg_monthly_completed_revenue. order_month should be the numeric month extracted from order_date. Order by user_id ascending, then order_month ascending.",
     "difficulty": "hard",
     "schema": {
       "orders": [
@@ -155,7 +155,7 @@
     "id": 3005,
     "order": 5,
     "title": "Products added to cart but never purchased afterward",
-    "description": "Return each user-product pair where the user added the product to cart at least once, but never recorded a purchase event for that same product at or after their first add_to_cart event for that product. Columns: user_id, name, product_id, product_name, first_add_to_cart_time. If a user added the same product multiple times, base the comparison on the earliest add_to_cart time for that user-product pair. Order by user_id ascending, then product_id ascending.",
+    "description": "Return each user-product pair where the user added the product to cart at least once, but never recorded a 'purchase' event for that same product at or after their first 'add_to_cart' event for that product. Columns: user_id, name, product_id, product_name, first_add_to_cart_time. If a user added the same product multiple times, base the comparison on the earliest 'add_to_cart' time for that user-product pair. Order by user_id ascending, then product_id ascending.",
     "difficulty": "hard",
     "schema": {
       "events": [
@@ -198,7 +198,7 @@
     "id": 3006,
     "order": 6,
     "title": "Signup cohort retention by month offset",
-    "description": "For signup cohorts based on the calendar month of signup_date, return retention metrics for month offsets 0, 1, and 2. A user counts as retained in a month offset if they placed at least one completed order in that calendar month offset from their signup month. Count each user at most once per offset even if they placed multiple completed orders in the same month. Columns: cohort_month, months_since_signup, cohort_size, retained_users, retained_pct. retained_pct should be rounded to 2 decimal places. Include only cohort-month and offset combinations that have at least one retained user. Order by cohort_month ascending, then months_since_signup ascending.",
+    "description": "For signup cohorts based on the calendar month of signup_date, return retention metrics for month offsets 0, 1, and 2. A user counts as retained in a month offset if they placed at least one 'completed' order in that calendar month offset from their signup month. Count each user at most once per offset even if they placed multiple 'completed' orders in the same month. Columns: cohort_month, months_since_signup, cohort_size, retained_users, retained_pct. retained_pct should be rounded to 2 decimal places. Include only cohort-month and offset combinations that have at least one retained user. Order by cohort_month ascending, then months_since_signup ascending.",
     "difficulty": "hard",
     "schema": {
       "users": [
@@ -270,7 +270,7 @@
     "id": 3008,
     "order": 8,
     "title": "Acquisition-channel funnel progression by ordered product events",
-    "description": "For each acquisition_channel, compute funnel counts based on ordered product-level behavior. A user is counted in viewed_users if they had at least one product journey with a view_product event. They are counted in cart_after_view_users if they had at least one product where an add_to_cart event occurred after the first view_product event for that same product. They are counted in purchase_after_cart_users if they had at least one product where a purchase event occurred after that add_to_cart event for the same product. Return acquisition_channel, viewed_users, cart_after_view_users, purchase_after_cart_users, drop_off_after_view, and drop_off_after_cart. drop_off_after_view is viewed_users minus cart_after_view_users. drop_off_after_cart is cart_after_view_users minus purchase_after_cart_users. Order by acquisition_channel ascending. All funnel steps must occur on the same product_id within a single user-product journey.",
+    "description": "For each acquisition_channel, compute funnel counts based on ordered product-level behavior. A user is counted in viewed_users if they had at least one product journey with a 'view_product' event. They are counted in cart_after_view_users if they had at least one product where an 'add_to_cart' event occurred after the first 'view_product' event for that same product. They are counted in purchase_after_cart_users if they had at least one product where a 'purchase' event occurred after that 'add_to_cart' event for the same product. Return acquisition_channel, viewed_users, cart_after_view_users, purchase_after_cart_users, drop_off_after_view, and drop_off_after_cart. drop_off_after_view is viewed_users minus cart_after_view_users. drop_off_after_cart is cart_after_view_users minus purchase_after_cart_users. Order by acquisition_channel ascending. All funnel steps must occur on the same product_id within a single user-product journey.",
     "difficulty": "hard",
     "schema": {
       "users": [
@@ -313,7 +313,7 @@
     "id": 3009,
     "order": 9,
     "title": "Products contributing to the first 80% of completed revenue",
-    "description": "Identify the products that make up the first 80% of completed-order revenue when products are ordered by product_revenue descending. Columns: product_id, product_name, product_revenue, cumulative_revenue, cumulative_revenue_pct. product_revenue should be the sum of line_amount from completed orders only. cumulative_revenue should be the running total in product_revenue descending order, breaking ties on product_id ascending. Include the product that causes the cumulative total to reach or cross 80% even if it pushes the running percentage above 80. Order by product_revenue descending, then product_id ascending.",
+    "description": "Identify the products that make up the first 80% of 'completed'-order revenue when products are ordered by product_revenue descending. Columns: product_id, product_name, product_revenue, cumulative_revenue, cumulative_revenue_pct. product_revenue should be the sum of line_amount from 'completed' orders only. cumulative_revenue should be the running total in product_revenue descending order, breaking ties on product_id ascending. Include the product that causes the cumulative total to reach or cross 80% even if it pushes the running percentage above 80. Order by product_revenue descending, then product_id ascending.",
     "difficulty": "hard",
     "schema": {
       "orders": [
@@ -389,7 +389,7 @@
     "id": 3011,
     "order": 11,
     "title": "Users whose order size drops after crossing a spend threshold",
-    "description": "Using completed orders only, identify users whose average order net_amount becomes smaller after they first reach a cumulative completed spend of at least 500. Treat the threshold-crossing order as part of the after-threshold period. Exclude users who never reach the threshold, and exclude users who do not have at least one completed order before the threshold and at least one completed order at or after the threshold. Return user_id, name, threshold_order_date, avg_before_threshold, avg_after_threshold, and delta_after_minus_before rounded to 2 decimal places. Build order sequence by order_date ascending, then order_id ascending. Order by delta_after_minus_before ascending, then user_id ascending.",
+    "description": "Using 'completed' orders only, identify users whose average order net_amount becomes smaller after they first reach a cumulative spend on 'completed' orders of at least 500. Treat the threshold-crossing order as part of the after-threshold period. Exclude users who never reach the threshold, and exclude users who do not have at least one 'completed' order before the threshold and at least one 'completed' order at or after the threshold. Return user_id, name, threshold_order_date, avg_before_threshold, avg_after_threshold, and delta_after_minus_before rounded to 2 decimal places. Build order sequence by order_date ascending, then order_id ascending. Order by delta_after_minus_before ascending, then user_id ascending.",
     "difficulty": "hard",
     "schema": {
       "users": [
@@ -428,7 +428,7 @@
     "id": 3012,
     "order": 12,
     "title": "Acquisition-channel rank improvements across months",
-    "description": "For 2024 only, compute completed-order revenue per acquisition_channel for each calendar month, rank channels within each month by monthly revenue, and return only the month-channel rows where the channel improved relative to its previous revenue-bearing month. Improvement means the current monthly rank is numerically smaller than the previous monthly rank. If channels tie on monthly revenue within a month, break ties by acquisition_channel ascending. When comparing a channel to its previous revenue-bearing month, order months by order_month ascending and use monthly_rank ascending as the explicit tie-breaker. Columns: order_month, acquisition_channel, monthly_completed_revenue, monthly_rank, previous_month_rank, rank_change. order_month should be the first day of the month. rank_change should be previous_month_rank minus monthly_rank. Order by order_month ascending, monthly_rank ascending, acquisition_channel ascending.",
+    "description": "For 2024 only, compute 'completed'-order revenue per acquisition_channel for each calendar month, rank channels within each month by monthly revenue, and return only the month-channel rows where the channel improved relative to its previous revenue-bearing month. Improvement means the current monthly rank is numerically smaller than the previous monthly rank. If channels tie on monthly revenue within a month, break ties by acquisition_channel ascending. When comparing a channel to its previous revenue-bearing month, order months by order_month ascending and use monthly_rank ascending as the explicit tie-breaker. Columns: order_month, acquisition_channel, monthly_completed_revenue, monthly_rank, previous_month_rank, rank_change. order_month should be the first day of the month. rank_change should be previous_month_rank minus monthly_rank. Order by order_month ascending, monthly_rank ascending, acquisition_channel ascending.",
     "difficulty": "hard",
     "schema": {
       "users": [
@@ -467,7 +467,7 @@
     "id": 3013,
     "order": 13,
     "title": "Country-level order outcome mix using the latest payment attempt",
-    "description": "For each user country, classify every order into exactly one outcome bucket using this logic. If order status is 'cancelled', count it as cancelled_orders regardless of any payment rows. Otherwise, look only at the latest payment attempt for that order, where latest means payment_date descending and payment_id descending. Count completed orders with latest payment status 'paid' as completed_paid_orders, latest status in ('refunded', 'chargeback') as completed_reversed_orders, latest status 'failed' as completed_failed_orders, and orders with no payment rows as completed_no_payment_orders. Also return net_paid_revenue, defined as the sum of net_amount for completed_paid_orders only, and reversal_rate_pct, defined as completed_reversed_orders divided by all completed orders in that country, rounded to 2 decimal places. Order by reversal_rate_pct descending, then country ascending.",
+    "description": "For each user country, classify every order into exactly one outcome bucket using this logic. If order status is 'cancelled', count it as cancelled_orders regardless of any payment rows. Otherwise, look only at the latest payment attempt for that order, where latest means payment_date descending and payment_id descending. Count 'completed' orders with latest payment status 'paid' as completed_paid_orders, latest status in ('refunded', 'chargeback') as completed_reversed_orders, latest status 'failed' as completed_failed_orders, and orders with no payment rows as completed_no_payment_orders. Also return net_paid_revenue, defined as the sum of net_amount for completed_paid_orders only, and reversal_rate_pct, defined as completed_reversed_orders divided by all 'completed' orders in that country, rounded to 2 decimal places. Order by reversal_rate_pct descending, then country ascending.",
     "difficulty": "hard",
     "schema": {
       "users": [
@@ -587,7 +587,7 @@
     "id": 3016,
     "order": 16,
     "title": "High-growth stable products among top revenue leaders",
-    "description": "Consider only products that have revenue in at least 3 distinct calendar months from completed orders. For each such product, compute total_revenue, volatility, and latest_mom_growth_pct. volatility is the sample standard deviation of monthly revenue across all of that product's revenue-bearing months. latest_mom_growth_pct is the percentage growth from the previous revenue-bearing month to the latest revenue-bearing month, rounded to 2 decimal places. Identify the latest and previous revenue-bearing months by order_month descending, with product_id ascending as the explicit tie-breaker. Return only products that satisfy all three conditions: they are in the top 20% of products by total_revenue, latest_mom_growth_pct is positive, and volatility is strictly lower than the median volatility across all eligible products. If two products tie on total_revenue, break ties on product_id ascending when determining the top 20%. Columns: product_id, product_name, total_revenue, volatility, latest_mom_growth_pct. Order by total_revenue descending, then product_id ascending.",
+    "description": "Consider only products that have revenue in at least 3 distinct calendar months from 'completed' orders. For each such product, compute total_revenue, volatility, and latest_mom_growth_pct. volatility is the sample standard deviation of monthly revenue across all of that product's revenue-bearing months. latest_mom_growth_pct is the percentage growth from the previous revenue-bearing month to the latest revenue-bearing month, rounded to 2 decimal places. Identify the latest and previous revenue-bearing months by order_month descending, with product_id ascending as the explicit tie-breaker. Return only products that satisfy all three conditions: they are in the top 20% of products by total_revenue, latest_mom_growth_pct is positive, and volatility is strictly lower than the median volatility across all eligible products. If two products tie on total_revenue, break ties on product_id ascending when determining the top 20%. Columns: product_id, product_name, total_revenue, volatility, latest_mom_growth_pct. Order by total_revenue descending, then product_id ascending.",
     "difficulty": "hard",
     "schema": {
       "orders": [
@@ -631,7 +631,7 @@
     "id": 3017,
     "order": 17,
     "title": "Returned users after 30-day order inactivity",
-    "description": "Using completed orders only, identify users who returned after a churn gap of more than 30 days between consecutive completed orders. The return order is the later order in that gap. If a user has multiple qualifying churn-return gaps, keep only the earliest return. Compare behavior in the half-open interval >= return_order_date - 30 days and < return_order_date to behavior in the half-open interval >= return_order_date and < return_order_date + 30 days. Return user_id, name, return_order_date, inactivity_days, orders_before_30d, orders_after_30d, avg_before_30d, and avg_after_30d, where the averages are based on net_amount and rounded to 2 decimal places. Include only users who have at least one completed order in both windows. Order by return_order_date ascending, then user_id ascending.",
+    "description": "Using 'completed' orders only, identify users who returned after a churn gap of more than 30 days between consecutive 'completed' orders. The return order is the later order in that gap. If a user has multiple qualifying churn-return gaps, keep only the earliest return. Compare behavior in the half-open interval >= return_order_date - 30 days and < return_order_date to behavior in the half-open interval >= return_order_date and < return_order_date + 30 days. Return user_id, name, return_order_date, inactivity_days, orders_before_30d, orders_after_30d, avg_before_30d, and avg_after_30d, where the averages are based on net_amount and rounded to 2 decimal places. Include only users who have at least one 'completed' order in both windows. Order by return_order_date ascending, then user_id ascending.",
     "difficulty": "hard",
     "schema": {
       "users": [
@@ -671,7 +671,7 @@
     "id": 3018,
     "order": 18,
     "title": "Users whose top spending category changes from Q1 to Q2",
-    "description": "For 2024 only, find users whose top product category by completed-order spend changes from Q1 to Q2. Define top category separately within each quarter using total line_amount. If multiple categories tie for the top spend within a user-quarter, choose the smaller category_id. Only include users who have at least one completed-order line item in both Q1 and Q2. Return user_id, name, q1_top_category_id, q1_spend, q2_top_category_id, and q2_spend. Order by user_id ascending.",
+    "description": "For 2024 only, find users whose top product category by 'completed'-order spend changes from Q1 to Q2. Define top category separately within each quarter using total line_amount. If multiple categories tie for the top spend within a user-quarter, choose the smaller category_id. Only include users who have at least one 'completed'-order line item in both Q1 and Q2. Return user_id, name, q1_top_category_id, q1_spend, q2_top_category_id, and q2_spend. Order by user_id ascending.",
     "difficulty": "hard",
     "schema": {
       "users": [
@@ -765,7 +765,7 @@
     "id": 3020,
     "order": 20,
     "title": "Users whose monthly revenue declines after their peak month",
-    "description": "Using completed orders in 2024 only, find users whose average monthly completed revenue declines after their peak month. First aggregate to one row per user per calendar month. Define the peak month as the month with the highest monthly completed revenue; if multiple months tie, choose the earliest month. Then compare the user's average monthly completed revenue before the peak month to the average monthly completed revenue after the peak month. Exclude users who do not have at least one revenue-bearing month before the peak and one after the peak. Return user_id, name, peak_month, peak_month_revenue, avg_before_peak, avg_after_peak, and decline_amount, where decline_amount is avg_before_peak minus avg_after_peak rounded to 2 decimal places. Include only users where avg_after_peak is strictly lower than avg_before_peak. Order by decline_amount descending, then user_id ascending.",
+    "description": "Using 'completed' orders in 2024 only, find users whose average monthly revenue from 'completed' orders declines after their peak month. First aggregate to one row per user per calendar month. Define the peak month as the month with the highest monthly revenue from 'completed' orders; if multiple months tie, choose the earliest month. Then compare the user's average monthly revenue from 'completed' orders before the peak month to the average monthly revenue from 'completed' orders after the peak month. Exclude users who do not have at least one revenue-bearing month before the peak and one after the peak. Return user_id, name, peak_month, peak_month_revenue, avg_before_peak, avg_after_peak, and decline_amount, where decline_amount is avg_before_peak minus avg_after_peak rounded to 2 decimal places. Include only users where avg_after_peak is strictly lower than avg_before_peak. Order by decline_amount descending, then user_id ascending.",
     "difficulty": "hard",
     "schema": {
       "users": [
@@ -804,7 +804,7 @@
     "id": 3021,
     "order": 21,
     "title": "Users who bought one category, never bought another, but viewed it",
-    "description": "Return user_id and name for users who satisfy all three conditions: they have at least one completed-order purchase of a product in category_name = 'Category 1', they have never purchased a product in category_name = 'Category 2' in any completed order, and they have at least one view_product event for a product in category_name = 'Category 2'. Use the same user across all three behavioral checks. Order by user_id ascending.",
+    "description": "Return user_id and name for users who satisfy all three conditions: they have at least one 'completed'-order purchase of a product in category_name = 'Category 1', they have never purchased a product in category_name = 'Category 2' in any 'completed' order, and they have at least one 'view_product' event for a product in category_name = 'Category 2'. Use the same user across all three behavioral checks. Order by user_id ascending.",
     "difficulty": "hard",
     "schema": {
       "users": [
@@ -862,7 +862,7 @@
     "id": 3022,
     "order": 22,
     "title": "User segments with priority-based decision logic",
-    "description": "Classify every user into exactly one segment using this priority order and no other interpretation: High Value if total completed spend is at least 1000; else Frequent Buyer if completed order count is at least 5; else At Risk if the user has no completed order in the 60 days before the latest order_date in the orders table, meaning last_completed_order_date < reference_date - 60 days and including users with no completed orders at all; else New if signup_date is >= reference_date - 30 days using that same latest order_date as the shared reference point; else Standard. After classification, return segment, user_count, and avg_completed_revenue, where avg_completed_revenue is the average total completed spend per user in the segment rounded to 2 decimal places. Order by user_count descending, then segment ascending.",
+    "description": "Classify every user into exactly one segment using this priority order and no other interpretation: 'High Value' if total spend on 'completed' orders is at least 1000; else 'Frequent Buyer' if 'completed' order count is at least 5; else 'At Risk' if the user has no 'completed' order in the 60 days before the latest order_date in the orders table, meaning last_completed_order_date < reference_date - 60 days and including users with no 'completed' orders at all; else 'New' if signup_date is >= reference_date - 30 days using that same latest order_date as the shared reference point; else 'Standard'. After classification, return segment, user_count, and avg_completed_revenue, where avg_completed_revenue is the average total completed spend per user in the segment rounded to 2 decimal places. Order by user_count descending, then segment ascending.",
     "difficulty": "hard",
     "schema": {
       "users": [
@@ -940,7 +940,7 @@
     "id": 3024,
     "order": 24,
     "title": "Top 2 products per category without window functions",
-    "description": "Return the top 2 products per category based on total completed-order revenue. Columns: category_id, product_id, product_name, total_revenue. Revenue is the sum of line_amount from completed orders only. Rank products within each category by total_revenue descending, breaking ties on product_id ascending. Do not use window functions. Order by category_id ascending, total_revenue descending, then product_id ascending.",
+    "description": "Return the top 2 products per category based on total 'completed'-order revenue. Columns: category_id, product_id, product_name, total_revenue. Revenue is the sum of line_amount from 'completed' orders only. Rank products within each category by total_revenue descending, breaking ties on product_id ascending. Do not use window functions. Order by category_id ascending, total_revenue descending, then product_id ascending.",
     "difficulty": "hard",
     "schema": {
       "orders": [
@@ -983,7 +983,7 @@
     "id": 3025,
     "order": 25,
     "title": "Users with a timed view-to-cart-to-purchase chain",
-    "description": "Return user_id and product_id for user-product pairs that satisfy all of these conditions: a view_product event exists, an add_to_cart event for the same user and product occurs in the interval > view_time and <= view_time + 24 hours, and a purchase event for the same user and product occurs in the interval > cart_time and <= cart_time + 48 hours. All three events must belong to the same user-product pair, and the order of events must be strictly view first, then cart, then purchase. Return each qualifying user-product pair once. Order by user_id ascending, then product_id ascending.",
+    "description": "Return user_id and product_id for user-product pairs that satisfy all of these conditions: a 'view_product' event exists, an 'add_to_cart' event for the same user and product occurs in the interval > view_time and <= view_time + 24 hours, and a 'purchase' event for the same user and product occurs in the interval > cart_time and <= cart_time + 48 hours. All three events must belong to the same user-product pair, and the order of events must be strictly view first, then cart, then purchase. Return each qualifying user-product pair once. Order by user_id ascending, then product_id ascending.",
     "difficulty": "hard",
     "schema": {
       "events": [
@@ -1018,7 +1018,7 @@
     "id": 3026,
     "order": 26,
     "title": "Session-based attribution with conflicting signals",
-    "description": "For completed orders in 2024, attribute each order's net_amount to a single traffic_source based on session behavior. First-touch is defined as the earliest session traffic_source for the user. Last-touch is defined as the latest session traffic_source from a session that occurred at or before the order_date. If both exist and are different, apply this rule: if the last-touch session occurred within 7 days (inclusive) before the order_date, attribute to last-touch; otherwise attribute to first-touch. If only one exists, use that. If neither exists, exclude the order. Return traffic_source, attributed_orders, attributed_revenue, and revenue_share_pct (percentage of total attributed revenue rounded to 2 decimals). Order by attributed_revenue descending, then traffic_source ascending. Break all ties using session_start ascending with session_id ascending as a tie-breaker.",
+    "description": "For 'completed' orders in 2024, attribute each order's net_amount to a single traffic_source based on session behavior. First-touch is defined as the earliest session traffic_source for the user. Last-touch is defined as the latest session traffic_source from a session that occurred at or before the order_date. If both exist and are different, apply this rule: if the last-touch session occurred within 7 days (inclusive) before the order_date, attribute to last-touch; otherwise attribute to first-touch. If only one exists, use that. If neither exists, exclude the order. Return traffic_source, attributed_orders, attributed_revenue, and revenue_share_pct (percentage of total attributed revenue rounded to 2 decimals). Order by attributed_revenue descending, then traffic_source ascending. Break all ties using session_start ascending with session_id ascending as a tie-breaker.",
     "difficulty": "hard",
     "schema": {
       "users": [
@@ -1161,7 +1161,7 @@
     "id": 3029,
     "order": 29,
     "title": "First conversion within 7 days of signup",
-    "description": "For each user who signed up in 2024, determine whether they placed a completed order within 7 days of their `signup_date`.\n\nReturn `user_id`, `name`, `signup_date`, `country`, `acquisition_channel`, `converted` (1 if they have a qualifying order, 0 otherwise), and `days_to_first_order` (number of days between `signup_date` and their first qualifying order, NULL if no conversion).\n\nOrder by `converted` DESC, `days_to_first_order` ASC (NULLs last).",
+    "description": "For each user who signed up in 2024, determine whether they placed a 'completed' order within 7 days of their `signup_date`.\n\nReturn `user_id`, `name`, `signup_date`, `country`, `acquisition_channel`, `converted` (1 if they have a qualifying order, 0 otherwise), and `days_to_first_order` (number of days between `signup_date` and their first qualifying order, NULL if no conversion).\n\nOrder by `converted` DESC, `days_to_first_order` ASC (NULLs last).",
     "difficulty": "hard",
     "schema": {
       "users": [
@@ -1215,7 +1215,7 @@
     "framing": "scenario",
     "follow_up_id": 3034,
     "title": "Payment failure trend by method and month",
-    "description": "The payments team asks: 'How much revenue are we losing to failed payments, and does the failure rate vary by method over time?' Write a query that, for each `payment_method` and calendar month (`YYYY-MM`), returns `payment_method`, `month`, `paid_count`, `failed_count`, `total_paid_amount` (rounded to 2 dp), and `failure_rate_pct` (failed / total \u00d7 100, rounded to 1 dp). Include only rows where the total attempt count for that method+month is at least 10. Order by `month` ascending, then `failure_rate_pct` descending.",
+    "description": "The payments team asks: 'How much revenue are we losing to 'failed' payments, and does the failure rate vary by method over time?' Write a query that, for each `payment_method` and calendar month (`YYYY-MM`), returns `payment_method`, `month`, `paid_count` (status = 'paid'), `failed_count` (status = 'failed'), `total_paid_amount` (rounded to 2 dp), and `failure_rate_pct` (failed / total \u00d7 100, rounded to 1 dp). Include only rows where the total attempt count for that method+month is at least 10. Order by `month` ascending, then `failure_rate_pct` descending.",
     "difficulty": "hard",
     "schema": {
       "payments": [
@@ -1393,7 +1393,7 @@
     "order": 34,
     "mock_only": true,
     "title": "Cumulative paid revenue by payment method",
-    "description": "For each payment method, compute `monthly_paid_amount` (sum of paid amounts per month, rounded to 2 dp) and `cumulative_paid_amount` (running total of paid revenue ordered by month, rounded to 2 dp). Return `payment_method`, `month` (formatted `YYYY-MM`), `monthly_paid_amount`, and `cumulative_paid_amount`. Order by `payment_method` ascending, then `month` ascending.",
+    "description": "For each payment method, compute `monthly_paid_amount` (sum of 'paid' amounts per month, rounded to 2 dp) and `cumulative_paid_amount` (running total of 'paid' payment revenue ordered by month, rounded to 2 dp). Return `payment_method`, `month` (formatted `YYYY-MM`), `monthly_paid_amount`, and `cumulative_paid_amount`. Order by `payment_method` ascending, then `month` ascending.",
     "difficulty": "hard",
     "schema": {
       "payments": [
@@ -1434,7 +1434,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "30-day conversion rate by channel and country",
-    "description": "The growth team asks: 'Among users who signed up in 2024, what percentage converted (placed at least one completed order) within 30 days of signup? Break it down by acquisition channel and country.' Return `acquisition_channel`, `country`, `total_signups`, `converted_count`, and `conversion_rate_pct` (rounded to 1 dp). Exclude channel+country combinations with fewer than 5 signups. Order by `conversion_rate_pct` descending.",
+    "description": "The growth team asks: 'Among users who signed up in 2024, what percentage converted (placed at least one 'completed' order) within 30 days of signup? Break it down by acquisition channel and country.' Return `acquisition_channel`, `country`, `total_signups`, `converted_count`, and `conversion_rate_pct` (rounded to 1 dp). Exclude channel+country combinations with fewer than 5 signups. Order by `conversion_rate_pct` descending.",
     "difficulty": "hard",
     "schema": {
       "users": [
@@ -1529,7 +1529,7 @@
     "mock_only": true,
     "type": "reverse",
     "title": "Write the query \u2014 monthly completed-order volume (2024)",
-    "description": "Write a SQL query that produces the result table shown below. The result shows each calendar month in 2024 with the count of completed orders and total completed revenue.",
+    "description": "Write a SQL query that produces the result table shown below. The result shows each calendar month in 2024 with the count of 'completed' orders and total completed revenue.",
     "difficulty": "hard",
     "schema": {
       "orders": [
@@ -1610,7 +1610,7 @@
     "mock_only": true,
     "type": "reverse",
     "title": "Write the query \u2014 user acquisition funnel by channel",
-    "description": "Write a SQL query that produces the result table shown below. The result shows, for each acquisition channel, the total number of signed-up users, how many of them ever placed at least one completed order, and the conversion rate.",
+    "description": "Write a SQL query that produces the result table shown below. The result shows, for each acquisition channel, the total number of signed-up users, how many of them ever placed at least one 'completed' order, and the conversion rate.",
     "difficulty": "hard",
     "schema": {
       "users": [
