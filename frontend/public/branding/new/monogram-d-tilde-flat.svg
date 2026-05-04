@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" role="img" aria-labelledby="title desc">
+  <title id="title">datathink monogram sample - D with flat tilde</title>
+  <desc id="desc">Solid D monogram with a more curved tilde accent above the letter.</desc>
+
+  <g transform="translate(0,2)">
+    <path d="M34 96 V24 H52 A14 14 0 0 1 52 60 H34 Z" fill="#5B6AF0"/>
+    <path d="M37 14 C40 10 43 10 46 14 C49 18 52 18 55 14" fill="none" stroke="#2B2A28" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
