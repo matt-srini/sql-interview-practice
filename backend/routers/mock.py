@@ -28,6 +28,7 @@ import pyspark_questions
 import questions as sql_catalog
 from db import (
     create_mock_session,
+    discard_mock_session,
     finish_mock_session,
     get_daily_mock_usage,
     get_mock_history,
@@ -1224,3 +1225,35 @@ async def finish_session(
         debrief = build_session_debrief(enriched_questions, summary, events, effective_plan)
 
     return {**summary, "questions": enriched_questions, "debrief": debrief}
+
+
+@router.delete("/{session_id}", status_code=204)
+async def discard_session(
+    session_id: int,
+    current_user: dict[str, Any] = Depends(get_current_user),
+) -> None:
+    """Discard an active mock session started within the last 2 minutes.
+
+    Deletes the session and its questions entirely so it never appears in
+    history or contributes to any stats. Returns 403 if the session is
+    older than 2 minutes or already completed (server-side guard matching
+    the frontend's 60-second threshold with buffer).
+    """
+    session = await get_mock_session(session_id, current_user["id"])
+    if session is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if session.get("status") != "active":
+        raise HTTPException(status_code=400, detail="Only active sessions can be discarded")
+
+    started_at_raw = session.get("started_at")
+    try:
+        started_at = datetime.fromisoformat(started_at_raw).replace(tzinfo=UTC) if started_at_raw else None
+    except (ValueError, TypeError):
+        started_at = None
+    if started_at is None or (datetime.now(UTC) - started_at).total_seconds() > 120:
+        raise HTTPException(
+            status_code=403,
+            detail="Session is too old to discard (must be within 2 minutes of starting)",
+        )
+
+    await discard_mock_session(session_id, current_user["id"])

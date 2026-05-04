@@ -70,6 +70,7 @@ export default function MockSession() {
   const [status, setStatus] = useState('loading');  // 'loading'|'active'|'finishing'|'completed'
   const [summary, setSummary] = useState(null);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [showDiscardPrompt, setShowDiscardPrompt] = useState(false);
   const [questionView, setQuestionView] = useState('description');  // 'description'|'schema'
   const [mobileQuestionOpen, setMobileQuestionOpen] = useState(false);
   const [expandedSolutions, setExpandedSolutions] = useState({}); // {qId: bool}
@@ -297,6 +298,21 @@ export default function MockSession() {
   function handleExitConfirm() {
     setShowExitConfirm(false);
     handleFinish().then(() => navigate('/mock'));
+  }
+
+  // Early-exit discard helpers
+  const elapsedS = session ? (session.time_limit_s - (remainingS ?? session.time_limit_s)) : 0;
+  const hasNoActivity = Object.keys(results).length === 0 && Object.keys(runResults).length === 0;
+  const isEarlyExit = status === 'active' && elapsedS < 60 && hasNoActivity;
+
+  function handleExitClick() {
+    if (isEarlyExit) setShowDiscardPrompt(true);
+    else setShowExitConfirm(true);
+  }
+
+  async function handleDiscard() {
+    try { await api.delete(`/mock/${id}`); } catch (_) {}
+    navigate('/mock');
   }
 
   function toggleFlag(qId) {
@@ -608,7 +624,7 @@ export default function MockSession() {
       <header className="mock-topbar">
         <button
           className="btn btn-secondary btn-compact"
-          onClick={() => setShowExitConfirm(true)}
+          onClick={handleExitClick}
         >
           ◀ Exit
         </button>
@@ -652,7 +668,7 @@ export default function MockSession() {
 
         <button
           className="btn btn-secondary btn-compact"
-          onClick={() => setShowExitConfirm(true)}
+          onClick={handleExitClick}
         >
           End session
         </button>
@@ -1070,6 +1086,30 @@ export default function MockSession() {
           </div>
         );
       })()}
+
+      {/* Early-exit discard prompt */}
+      {showDiscardPrompt && (
+        <div className="mock-modal-overlay" onClick={() => setShowDiscardPrompt(false)}>
+          <div className="mock-modal" onClick={e => e.stopPropagation()}>
+            <h3 className="mock-modal-title">Barely started — want to keep this?</h3>
+            <p className="mock-modal-body">
+              You're less than a minute in and haven't run or submitted anything yet.
+              You can discard this session and it won't appear in your history or affect any stats.
+            </p>
+            <div className="mock-modal-actions">
+              <button className="btn btn-secondary" onClick={() => setShowDiscardPrompt(false)}>
+                Keep going
+              </button>
+              <button className="btn btn-secondary" onClick={() => { setShowDiscardPrompt(false); setShowExitConfirm(true); }}>
+                End normally
+              </button>
+              <button className="btn btn-danger" onClick={handleDiscard}>
+                Discard session
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
