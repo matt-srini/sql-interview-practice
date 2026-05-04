@@ -6652,7 +6652,7 @@ select {
 .mock-body {
   flex: 1;
   display: grid;
-  grid-template-columns: minmax(380px, 2fr) minmax(0, 3fr);
+  grid-template-columns: minmax(340px, 3fr) minmax(0, 7fr);
   overflow: hidden;
 }
 .mock-left-panel {
