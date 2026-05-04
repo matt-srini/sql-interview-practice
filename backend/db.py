@@ -1082,6 +1082,24 @@ async def create_mock_session(
         }
 
 
+async def get_mock_session_owner(session_id: int) -> str | None:
+    """Diagnostic helper: return the user_id stored for a session, ignoring auth."""
+    import logging as _logging
+    _log = _logging.getLogger(__name__)
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text("SELECT user_id, status FROM mock_sessions WHERE id = :sid"),
+            {"sid": session_id},
+        )
+        row = result.mappings().first()
+        if row:
+            _log.info("get_mock_session_owner: session_id=%s db_user_id=%s status=%s", session_id, row["user_id"], row["status"])
+            return str(row["user_id"])
+        _log.warning("get_mock_session_owner: session_id=%s — row does not exist at all", session_id)
+        return None
+
+
 async def get_mock_session(session_id: int, user_id: str) -> dict[str, Any] | None:
     session_factory = _session_factory_or_raise()
     async with session_factory() as session:
