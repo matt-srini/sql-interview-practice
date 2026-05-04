@@ -9,7 +9,7 @@
     <g transform="translate(12,0)">
       <g transform="translate(18,32)">
         <path d="M8 72 V16 H30 A14 14 0 0 1 30 44 H8 Z" fill="#FFFFFF"/>
-        <rect x="8" y="6" width="32" height="6" rx="3" fill="#5B6AF0"/>
+        <rect x="8" y="6" width="32" height="6" rx="3" fill="#242a60"/>
       </g>
     </g>
   </g>
