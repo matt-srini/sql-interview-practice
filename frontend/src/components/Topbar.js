@@ -149,14 +149,14 @@ export default function Topbar({
               <div className="brand-lockup" aria-hidden="true">
                 {isDark ? (
                   <img
-                    src="/branding/lockup-pointed-d-reverse-no-bg.svg"
+                    src="/branding/lockup-bar-reverse-no-bg.svg"
                     alt="datathink"
                     className="brand-lockup-img"
                     height="72"
                   />
                 ) : (
                   <img
-                    src="/branding/lockup-pointed-d-no-bg.svg"
+                    src="/branding/lockup-bar-no-bg.svg"
                     alt="datathink"
                     className="brand-lockup-img"
                     height="72"
