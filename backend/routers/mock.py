@@ -46,6 +46,7 @@ from db import (
 )
 from deps import get_current_user
 from evaluator import evaluate
+from exceptions import BadRequestError
 from python_evaluator import evaluate_python_code, evaluate_python_data_code
 from routers.insights import _CONCEPTS_LOOKUP, build_session_debrief
 from unlock import compute_mock_access, compute_unlock_state, normalize_plan
@@ -470,7 +471,11 @@ def _evaluate_submission(
     if track == "sql":
         if not code:
             return False, {"error": "No code provided"}
-        result = evaluate(code, question["expected_query"], question)
+        try:
+            result = evaluate(code, question["expected_query"], question)
+        except (BadRequestError, ValueError) as exc:
+            # Parse/guard errors (e.g. syntax error) still count as a failed attempt
+            return False, {"correct": False, "error": str(exc), "feedback": []}
         accepted = bool(result.get("correct")) and bool(result.get("structure_correct", True))
         return accepted, {
             "correct": accepted,

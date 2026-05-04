@@ -4,6 +4,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException
 
 from db import get_latest_submission, record_submission
+from exceptions import BadRequestError
 from deps import RunQueryRequest, SubmitRequest, _get_progress_snapshot, _question_detail_payload
 from deps import get_current_user
 from evaluator import evaluate, run_query
@@ -99,8 +100,20 @@ async def submit_answer(
         current_user["id"], "sql", int(body.question_id)
     )
 
-    result = evaluate(body.query, question["expected_query"], question)
-    accepted = bool(result.get("correct")) and bool(result.get("structure_correct", True))
+    try:
+        result = evaluate(body.query, question["expected_query"], question)
+        accepted = bool(result.get("correct")) and bool(result.get("structure_correct", True))
+    except (BadRequestError, ValueError) as exc:
+        # Parse/guard errors still count as a failed attempt for weak-area tracking
+        await record_submission(
+            user_id=current_user["id"],
+            track="sql",
+            question_id=int(body.question_id),
+            is_correct=False,
+            code=body.query,
+            duration_ms=body.duration_ms,
+        )
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     # Detect identical repeated wrong attempt
     if not accepted and prev_submission and (prev_submission.get("code") or "").strip() == body.query.strip():
