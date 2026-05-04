@@ -266,9 +266,9 @@ export default function SampleQuestionPage() {
               <Link className="sample-home-link brand-wordmark" to="/">
                 <div className="brand-lockup" aria-hidden="true">
                   {isDark ? (
-                    <img src="/branding/lockup-reverse-no-bg.svg" alt="datathink" className="brand-lockup-img" height="72" />
+                      <img src="/branding/new/lockup-bar-reverse-no-bg.svg" alt="datathink" className="brand-lockup-img" height="72" />
                   ) : (
-                    <img src="/branding/lockup-normal-no-bg.svg" alt="datathink" className="brand-lockup-img" height="72" />
+                      <img src="/branding/new/lockup-bar-no-bg.svg" alt="datathink" className="brand-lockup-img" height="72" />
                   )}
                 </div>
               </Link>
@@ -378,9 +378,9 @@ export default function SampleQuestionPage() {
             <Link className="sample-home-link brand-wordmark" to="/">
               <div className="brand-lockup" aria-hidden="true">
                 {isDark ? (
-                  <img src="/branding/lockup-reverse-no-bg.svg" alt="datathink" className="brand-lockup-img" height="72" />
+                  <img src="/branding/new/lockup-bar-reverse-no-bg.svg" alt="datathink" className="brand-lockup-img" height="72" />
                 ) : (
-                  <img src="/branding/lockup-normal-no-bg.svg" alt="datathink" className="brand-lockup-img" height="72" />
+                  <img src="/branding/new/lockup-bar-no-bg.svg" alt="datathink" className="brand-lockup-img" height="72" />
                 )}
               </div>
             </Link>
