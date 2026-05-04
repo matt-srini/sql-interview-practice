@@ -283,3 +283,7 @@ app.include_router(submissions_router.router)
 app.include_router(mock_router.router)
 app.include_router(paths_router.router)
 app.include_router(spa.router)
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
