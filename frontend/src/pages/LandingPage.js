@@ -842,7 +842,7 @@ export default function LandingPage() {
             {
               targetSelector: '#landing-pricing',
               title: 'Free to start, easy to upgrade',
-              body: 'All easy questions are free — no card required. Upgrade to Pro or Elite when you want full access to medium and hard questions.',
+              body: 'The free plan gives you more than just easy questions — medium and hard questions unlock as you progress, no card required. Check the pricing section below for the full breakdown of what\'s included across Free, Pro, and Elite.',
             },
           ]}
         />
