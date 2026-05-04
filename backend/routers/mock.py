@@ -35,6 +35,7 @@ from db import (
     get_daily_mock_usage,
     get_mock_history,
     get_mock_session,
+    get_mock_session_owner,
     get_previously_mocked_ids,
     get_submission_events,
     inject_follow_up_question,
@@ -910,8 +911,19 @@ async def submit_answer(
         raise HTTPException(status_code=400, detail=f"Invalid track: {body.track}")
 
     # Load and validate session
+    logger.info(
+        "submit_answer: session_id=%s user_id=%s question_id=%s track=%s",
+        session_id, current_user["id"], body.question_id, body.track,
+    )
     session = await get_mock_session(session_id, current_user["id"])
     if session is None:
+        # Diagnostic: look up session without user filter to distinguish
+        # "session doesn't exist" from "user_id mismatch"
+        await get_mock_session_owner(session_id)
+        logger.warning(
+            "submit_answer: session not found — session_id=%s user_id=%s",
+            session_id, current_user["id"],
+        )
         raise HTTPException(status_code=404, detail="Session not found")
     if session["status"] != "active":
         raise HTTPException(status_code=400, detail="Session is not active")
