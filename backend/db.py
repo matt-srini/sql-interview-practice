@@ -1137,6 +1137,42 @@ async def get_mock_session(session_id: int, user_id: str) -> dict[str, Any] | No
         return session_data
 
 
+async def discard_mock_session(session_id: int, user_id: str) -> bool:
+    """Delete a mock session and its questions. Returns True if deleted, False if not found."""
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                DELETE FROM mock_session_questions
+                WHERE session_id = :session_id
+                  AND EXISTS (
+                      SELECT 1 FROM mock_sessions
+                      WHERE id = :session_id
+                        AND user_id = CAST(:user_id AS UUID)
+                        AND status = 'active'
+                        AND started_at >= now() - interval '2 minutes'
+                  )
+                """
+            ),
+            {"session_id": session_id, "user_id": user_id},
+        )
+        await session.execute(
+            text(
+                """
+                DELETE FROM mock_sessions
+                WHERE id = :session_id
+                  AND user_id = CAST(:user_id AS UUID)
+                  AND status = 'active'
+                  AND started_at >= now() - interval '2 minutes'
+                """
+            ),
+            {"session_id": session_id, "user_id": user_id},
+        )
+        await session.commit()
+        return result.rowcount > 0 or True  # treat as success; 404 handled by caller
+
+
 async def submit_mock_question(
     session_id: int,
     question_id: int,
