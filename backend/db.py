@@ -1207,7 +1207,7 @@ async def submit_mock_question(
                 UPDATE mock_session_questions
                 SET is_solved = is_solved OR :is_solved,
                     final_code = :code,
-                    submitted_at = COALESCE(submitted_at, now()),
+                    submitted_at = now(),
                     time_spent_s = :time_spent_s
                 WHERE session_id = :session_id
                   AND question_id = :question_id
