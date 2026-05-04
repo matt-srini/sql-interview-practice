@@ -264,9 +264,9 @@ export default function LandingPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Scroll to hash on mount (e.g. /#landing-tracks from back arrow)
+  // Scroll to hash whenever landing is opened with or switched to a hash.
   useEffect(() => {
-    const hash = window.location.hash;
+    const hash = location.hash;
     if (!hash) return;
     const id = hash.slice(1);
     // Two attempts: one after paint, one after React Router scroll restoration
@@ -277,7 +277,7 @@ export default function LandingPage() {
     const t1 = setTimeout(scroll, 100);
     const t2 = setTimeout(scroll, 400);
     return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, []);
+  }, [location.hash]);
 
   // Auto-rotate the IDE tabs — runs only when section is in view and not paused.
   useEffect(() => {
@@ -384,7 +384,7 @@ export default function LandingPage() {
       </Helmet>
       <Topbar showPricingLink={!user} userExtras={planPillNode} />
 
-      <main className="landing-page">
+      <main className="landing-page" id="landing-top">
         {upgradeSuccess && (
           <div className="landing-upgrade-banner">
             Upgrade confirmed. Your access has been updated.
