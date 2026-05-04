@@ -619,10 +619,10 @@ export default function LandingPage() {
                   <div className="track-samples-header-text">
                     <h3 className="track-samples-title">
                       <span className="track-samples-dot" />
-                      Free samples — {tab.label}
+                      Sample questions — {tab.label}
                     </h3>
                     <p className="track-samples-desc">
-                      3 questions per difficulty tier. No account required and no progress recorded.
+                      3 questions per difficulty — solves aren't recorded here. Open the full track to track your progress and unlock harder questions.
                     </p>
                   </div>
                   <div className="track-samples-actions">
@@ -815,8 +815,8 @@ export default function LandingPage() {
             },
             {
               targetSelector: '.track-samples-strip',
-              title: 'Warm up with free samples',
-              body: 'Every track has 3 free sample questions per difficulty. No account needed — just open one and start writing.',
+              title: 'Warm up with sample questions',
+              body: 'Every track has 3 sample questions per difficulty — a quick way to explore the format. Solves aren\'t recorded here; open the full track when you\'re ready to track your progress.',
             },
             {
               targetSelector: '.landing-paths',
