@@ -32,6 +32,7 @@ from db import (
     create_mock_session,
     discard_mock_session,
     finish_mock_session,
+    get_active_mock_session,
     get_daily_mock_usage,
     get_mock_history,
     get_mock_session,
@@ -833,6 +834,21 @@ async def start_session(
         if len(body.focus_concepts) > 3:
             raise HTTPException(status_code=422, detail="focus_concepts must have at most 3 items")
         focus_concepts = [c.upper() for c in body.focus_concepts if c.strip()]
+
+    # Block if user already has an active session
+    active = await get_active_mock_session(user_id)
+    if active:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "active_session_exists",
+                "message": "You have an active mock session. End it before starting a new one.",
+                "session_id": active["session_id"],
+                "track": active["track"],
+                "difficulty": active["difficulty"],
+                "mode": active["mode"],
+            },
+        )
 
     # Select questions
     selected, focus_fallback = await _select_questions(
