@@ -123,6 +123,13 @@ export default function Topbar({
   const actionsClass = isApp ? 'app-topbar-actions' : 'landing-topbar-right';
   const practiceDropdownClass = `topbar-practice-dropdown${isApp ? ' app-practice-dropdown' : ''}`;
 
+  const handleBrandClick = (event) => {
+    if (location.pathname !== '/') return;
+    event.preventDefault();
+    window.history.replaceState(null, '', '/');
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  };
+
   // Pricing anchor — stay on page if we're already on the landing page
   const pricingHref =
     location.pathname === '/' ? '#landing-pricing' : '/#landing-pricing';
@@ -138,7 +145,7 @@ export default function Topbar({
           {/* Brand region */}
           <div className={brandRegionClass}>
             {leftSlot}
-            <Link className={brandLinkClass} to="/#landing-top">
+            <Link className={brandLinkClass} to="/" onClick={handleBrandClick}>
               <div className="brand-lockup" aria-hidden="true">
                 {isDark ? (
                   <img
