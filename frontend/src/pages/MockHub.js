@@ -177,13 +177,13 @@ export default function MockHub() {
       trackEvent('mock_started', { mode, track, difficulty, session_id: r.data.session_id });
       navigate(`/mock/${r.data.session_id}`, { state: { sessionData: r.data } });
     } catch (err) {
-      if (err?.response?.status === 409 && err?.response?.data?.detail?.error === 'active_session_exists') {
-        const detail = err.response.data.detail;
+      if (err?.response?.status === 409 && err?.response?.data?.error === 'active_session_exists') {
+        const data = err.response.data;
         setActiveSessionConflict({
-          session_id: detail.session_id,
-          track: detail.track,
-          difficulty: detail.difficulty,
-          mode: detail.mode,
+          session_id: data.session_id,
+          track: data.track,
+          difficulty: data.difficulty,
+          mode: data.mode,
         });
         setStarting(false);
         return;
