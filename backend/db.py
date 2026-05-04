@@ -1382,6 +1382,35 @@ async def inject_follow_up_question(
         await session.commit()
 
 
+async def get_active_mock_session(user_id: str) -> dict[str, Any] | None:
+    """Return the most recent active mock session for a user, or None."""
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                SELECT id AS session_id, mode, track, difficulty, started_at, time_limit_s
+                FROM mock_sessions
+                WHERE user_id = CAST(:user_id AS UUID) AND status = 'active'
+                ORDER BY started_at DESC
+                LIMIT 1
+                """
+            ),
+            {"user_id": user_id},
+        )
+        row = result.mappings().first()
+        if row is None:
+            return None
+        return {
+            "session_id": row["session_id"],
+            "mode": row["mode"],
+            "track": row["track"],
+            "difficulty": row["difficulty"],
+            "started_at": row["started_at"].isoformat() if row["started_at"] else None,
+            "time_limit_s": row["time_limit_s"],
+        }
+
+
 async def get_mock_history(user_id: str, limit: int = 20) -> list[dict[str, Any]]:
     session_factory = _session_factory_or_raise()
     async with session_factory() as session:

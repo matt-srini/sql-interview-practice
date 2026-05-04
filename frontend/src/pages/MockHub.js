@@ -109,6 +109,8 @@ export default function MockHub() {
   const [timeMinutes, setTimeMinutes] = useState(30);
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState(null);
+  const [activeSessionConflict, setActiveSessionConflict] = useState(null); // { session_id, track, difficulty, mode }
+  const [endingSession, setEndingSession] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(true);
@@ -175,10 +177,35 @@ export default function MockHub() {
       trackEvent('mock_started', { mode, track, difficulty, session_id: r.data.session_id });
       navigate(`/mock/${r.data.session_id}`, { state: { sessionData: r.data } });
     } catch (err) {
+      if (err?.response?.status === 409 && err?.response?.data?.detail?.error === 'active_session_exists') {
+        const detail = err.response.data.detail;
+        setActiveSessionConflict({
+          session_id: detail.session_id,
+          track: detail.track,
+          difficulty: detail.difficulty,
+          mode: detail.mode,
+        });
+        setStarting(false);
+        return;
+      }
       const msg = err?.response?.data?.error || err?.response?.data?.detail || 'Failed to start session. Please try again.';
       setStartError(msg);
       setStarting(false);
     }
+  }
+
+  async function handleEndAndStart() {
+    if (!activeSessionConflict) return;
+    setEndingSession(true);
+    try {
+      await api.post(`/mock/${activeSessionConflict.session_id}/finish`);
+    } catch {
+      // If finish fails (e.g. already ended), proceed anyway
+    }
+    setActiveSessionConflict(null);
+    setEndingSession(false);
+    // Now kick off the start again
+    handleStart();
   }
 
   function getDifficultyButtonState(diff) {
@@ -221,6 +248,40 @@ export default function MockHub() {
         <meta name="robots" content="noindex" />
       </Helmet>
       <Topbar active="mock" userExtras={planPillNode} />
+
+      {activeSessionConflict && (
+        <div className="mock-modal-overlay" onClick={() => setActiveSessionConflict(null)}>
+          <div className="mock-modal" onClick={e => e.stopPropagation()}>
+            <h2 className="mock-modal-title">Active session in progress</h2>
+            <p className="mock-modal-body">
+              You already have an active{' '}
+              <strong>{TRACK_LABELS[activeSessionConflict.track] || activeSessionConflict.track}</strong>{' '}
+              <strong>{activeSessionConflict.difficulty}</strong> mock session. Resume it or end it before starting a new one.
+            </p>
+            <div className="mock-modal-actions">
+              <button
+                className="btn btn-secondary"
+                onClick={() => setActiveSessionConflict(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-danger"
+                onClick={handleEndAndStart}
+                disabled={endingSession}
+              >
+                {endingSession ? 'Ending…' : 'End & start new'}
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => navigate(`/mock/${activeSessionConflict.session_id}`)}
+              >
+                Resume session →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <main className="mock-hub-main">
         {/* Hero */}
