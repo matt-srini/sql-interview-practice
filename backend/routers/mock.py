@@ -179,6 +179,97 @@ def _match_focus_concepts(
     ]
 
 
+def _pyspark_format_targets(difficulty: str, num_questions: int) -> list[str]:
+    """
+    Target format slot sequence for PySpark sessions.
+    Based on actual pool distribution:
+      easy:   mcq(20), predict_output(14), debug(4)
+      medium: mcq(28), scenario(8), debug(6), predict_output(4), optimization(2)
+      hard:   mcq(25), scenario(7), predict_output(4)
+      mixed:  all of the above combined
+    """
+    targets: dict[str, list[str]] = {
+        "easy":   ["mcq", "predict_output", "mcq", "predict_output", "debug"],
+        "medium": ["mcq", "scenario", "debug", "predict_output", "mcq"],
+        "hard":   ["mcq", "scenario", "predict_output", "mcq", "scenario"],
+        "mixed":  ["mcq", "scenario", "predict_output", "debug", "mcq"],
+    }
+    return targets.get(difficulty, ["mcq"] * num_questions)[:num_questions]
+
+
+def _sample_by_format(
+    pool: list[dict],
+    targets: list[str],
+    mocked_ids: set[int],
+) -> list[dict]:
+    """
+    Sample from pool following format slot targets (fresh-first within each slot).
+    Falls back to any remaining question if a format partition is exhausted.
+    """
+    by_type: dict[str, list[dict]] = {}
+    for q in pool:
+        by_type.setdefault(q.get("type", "mcq"), []).append(q)
+
+    chosen: list[dict] = []
+    used_ids: set[int] = set()
+
+    for fmt in targets:
+        partition = [q for q in by_type.get(fmt, []) if int(q["id"]) not in used_ids]
+        if not partition:
+            partition = [q for q in pool if int(q["id"]) not in used_ids]
+        if not partition:
+            break
+        fresh = [q for q in partition if int(q["id"]) not in mocked_ids]
+        pick = random.choice(fresh) if fresh else random.choice(partition)
+        chosen.append(pick)
+        used_ids.add(int(pick["id"]))
+
+    return chosen
+
+
+def _mixed_difficulty_targets(num_questions: int) -> list[str]:
+    """
+    Target difficulty slot sequence for mixed-difficulty sessions.
+      1q: [medium]
+      2q: [easy, medium]
+      3q: [easy, medium, hard]
+      4q: [easy, medium, medium, hard]
+      5q: [easy, medium, medium, hard, hard]
+    """
+    full = ["easy", "medium", "hard", "medium", "hard"]
+    return full[:num_questions]
+
+
+def _sample_by_difficulty(
+    pool: list[dict],
+    targets: list[str],
+    mocked_ids: set[int],
+) -> list[dict]:
+    """
+    Sample from pool following difficulty slot targets (fresh-first within each slot).
+    Falls back to any remaining question if a difficulty partition is exhausted.
+    """
+    by_diff: dict[str, list[dict]] = {}
+    for q in pool:
+        by_diff.setdefault(q.get("difficulty", "medium"), []).append(q)
+
+    chosen: list[dict] = []
+    used_ids: set[int] = set()
+
+    for diff in targets:
+        partition = [q for q in by_diff.get(diff, []) if int(q["id"]) not in used_ids]
+        if not partition:
+            partition = [q for q in pool if int(q["id"]) not in used_ids]
+        if not partition:
+            break
+        fresh = [q for q in partition if int(q["id"]) not in mocked_ids]
+        pick = random.choice(fresh) if fresh else random.choice(partition)
+        chosen.append(pick)
+        used_ids.add(int(pick["id"]))
+
+    return chosen
+
+
 async def _select_questions(
     track: str,
     difficulty: str,
@@ -261,6 +352,16 @@ async def _select_questions(
 
         chosen_raw = guaranteed + filler
         random.shuffle(chosen_raw)
+    elif track == "pyspark" and difficulty != "mixed":
+        fmt_targets = _pyspark_format_targets(difficulty, num_questions)
+        chosen_raw = _sample_by_format(pool, fmt_targets, mocked_ids)
+        if len(chosen_raw) < num_questions:
+            raise _not_enough
+    elif difficulty == "mixed":
+        diff_targets = _mixed_difficulty_targets(num_questions)
+        chosen_raw = _sample_by_difficulty(pool, diff_targets, mocked_ids)
+        if len(chosen_raw) < num_questions:
+            raise _not_enough
     else:
         fresh = [q for q in pool if int(q["id"]) not in mocked_ids]
         stale = [q for q in pool if int(q["id"]) in mocked_ids]

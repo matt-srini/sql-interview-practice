@@ -26,6 +26,40 @@ const DIFFICULTY_LABELS = {
   mixed: 'Mixed',
 };
 
+const PYSPARK_FORMAT_LABELS = {
+  mcq: 'MCQ',
+  predict_output: 'Predict Output',
+  debug: 'Debug',
+  scenario: 'Scenario',
+  optimization: 'Optimization',
+};
+
+const PYSPARK_FORMAT_TARGETS = {
+  easy:   ['mcq', 'predict_output', 'mcq', 'predict_output', 'debug'],
+  medium: ['mcq', 'scenario', 'debug', 'predict_output', 'mcq'],
+  hard:   ['mcq', 'scenario', 'predict_output', 'mcq', 'scenario'],
+  mixed:  ['mcq', 'scenario', 'predict_output', 'debug', 'mcq'],
+};
+
+const MIXED_DIFF_TARGETS = ['easy', 'medium', 'hard', 'medium', 'hard'];
+
+function getSessionExpectations(track, difficulty, n) {
+  const lines = [];
+  if (track === 'pyspark') {
+    const slots = (PYSPARK_FORMAT_TARGETS[difficulty] || []).slice(0, n);
+    const counts = {};
+    slots.forEach(t => { counts[t] = (counts[t] || 0) + 1; });
+    lines.push(Object.entries(counts).map(([t, c]) => `${c} × ${PYSPARK_FORMAT_LABELS[t]}`).join(' · '));
+  }
+  if (difficulty === 'mixed') {
+    const slots = MIXED_DIFF_TARGETS.slice(0, n);
+    const counts = {};
+    slots.forEach(d => { counts[d] = (counts[d] || 0) + 1; });
+    lines.push(Object.entries(counts).map(([d, c]) => `${c} × ${DIFFICULTY_LABELS[d]}`).join(' · '));
+  }
+  return lines;
+}
+
 function formatDate(iso) {
   if (!iso) return '—';
   const d = new Date(iso);
@@ -380,6 +414,21 @@ export default function MockHub() {
             }
           }
           return null;
+        })()}
+
+        {/* What to expect — PySpark format mix and/or mixed difficulty breakdown */}
+        {(() => {
+          const effectiveN = mode === '30min' ? 2 : mode === '60min' ? 3 : numQuestions;
+          const expectations = getSessionExpectations(track, difficulty, effectiveN);
+          if (!expectations.length) return null;
+          return (
+            <div className="mock-session-expect">
+              <span className="mock-session-expect-label">Expect</span>
+              {expectations.map((line, i) => (
+                <span key={i} className="mock-session-expect-line">{line}</span>
+              ))}
+            </div>
+          );
         })()}
 
         {/* Start error (fallback for unexpected server errors) */}
