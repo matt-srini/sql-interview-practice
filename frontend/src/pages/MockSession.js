@@ -288,7 +288,7 @@ export default function MockSession() {
         }
       }
     } catch (err) {
-      const errMsg = err?.response?.data?.detail || 'Submission failed';
+      const errMsg = err?.response?.data?.error || err?.response?.data?.detail || 'Submission failed';
       setResults(prev => ({ ...prev, [q.id]: { error: errMsg } }));
     } finally {
       setSubmitting(false);
