@@ -36,6 +36,17 @@ function formatMockTime(s) {
 
 export default function ProgressDashboard() {
   const { user } = useAuth();
+  const rawPlan = user?.plan ?? 'free';
+  const normalisedPlan = rawPlan.startsWith('lifetime_') ? rawPlan.replace('lifetime_', '') : rawPlan;
+  const isPaying = normalisedPlan === 'pro' || normalisedPlan === 'elite';
+  const planLabel =
+    rawPlan === 'lifetime_elite' ? 'Lifetime Elite' :
+    rawPlan === 'lifetime_pro'   ? 'Lifetime Pro'   :
+    normalisedPlan === 'elite'   ? 'Elite'           :
+    normalisedPlan === 'pro'     ? 'Pro'             : null;
+  const planPillNode = user && isPaying && planLabel
+    ? <span className={`shell-pill shell-pill-plan shell-pill-plan-${normalisedPlan}`}>{planLabel}</span>
+    : null;
   const [data, setData] = useState(null);
   const [insights, setInsights] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -76,7 +87,7 @@ export default function ProgressDashboard() {
         <meta name="description" content="Track your SQL, Python, Pandas, and PySpark interview practice progress, streaks, and coaching insights." />
         <meta name="robots" content="noindex" />
       </Helmet>
-      <Topbar active="dashboard" />
+      <Topbar active="dashboard" userExtras={planPillNode} />
 
       <main className="container dashboard-page">
         <div className="dashboard-heading">

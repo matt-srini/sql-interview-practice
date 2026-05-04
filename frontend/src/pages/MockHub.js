@@ -54,8 +54,18 @@ export default function MockHub() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const normalisedPlan = user?.plan?.startsWith('lifetime_') ? user.plan.replace('lifetime_', '') : (user?.plan ?? 'free');
+  const rawPlan = user?.plan ?? 'free';
+  const normalisedPlan = rawPlan.startsWith('lifetime_') ? rawPlan.replace('lifetime_', '') : rawPlan;
   const isElite = normalisedPlan === 'elite';
+  const isPaying = normalisedPlan === 'pro' || normalisedPlan === 'elite';
+  const planLabel =
+    rawPlan === 'lifetime_elite' ? 'Lifetime Elite' :
+    rawPlan === 'lifetime_pro'   ? 'Lifetime Pro'   :
+    normalisedPlan === 'elite'   ? 'Elite'           :
+    normalisedPlan === 'pro'     ? 'Pro'             : null;
+  const planPillNode = user && isPaying && planLabel
+    ? <span className={`shell-pill shell-pill-plan shell-pill-plan-${normalisedPlan}`}>{planLabel}</span>
+    : null;
 
   const [mode, setMode] = useState('30min');
   const [track, setTrack] = useState('sql');
@@ -176,7 +186,7 @@ export default function MockHub() {
         <meta name="description" content="Simulate real data interview conditions with timed SQL, Python, Pandas, and PySpark mock sessions." />
         <meta name="robots" content="noindex" />
       </Helmet>
-      <Topbar active="mock" />
+      <Topbar active="mock" userExtras={planPillNode} />
 
       <main className="mock-hub-main">
         {/* Hero */}
