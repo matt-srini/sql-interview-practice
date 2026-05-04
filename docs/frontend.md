@@ -199,7 +199,7 @@ When `solved_count === question_count`, a completion banner is shown with a "Wha
 | TrackProgressBar | `components/TrackProgressBar.js` | Reusable horizontal progress bar with configurable color and label |
 | PathProgressCard | `components/PathProgressCard.js` | Path card with track color dot, progress bar, and CTA; used on LandingPage and TrackHubPage. Accepts optional `recommendationLabel` prop that replaces the tier badge with a contextual label ("Start here", "Recommended next", "Continue"). |
 | OnboardingTooltip | `components/OnboardingTooltip.js` | First-visit, target-anchored walkthrough tooltip with Back/Next/Skip and Esc-to-close support |
-| Topbar | `components/Topbar.js` | Single unified top nav used by every page (landing, auth, 404, practice workspace, mock, dashboard, learning paths). Composition slots for `leftSlot`, `centerSlot`, `userExtras`, `belowTopbar`; three variants: `'landing'` (default, container-bounded), `'app'` (full-bleed workspace chrome), `'minimal'` (auth / verify / reset / 404 — brand + theme + user pill only). `showPricingLink` for logged-out visitors. The brand mark now uses the pointed-D lockup assets from `frontend/public/branding/` (`lockup-pointed-d-no-bg.svg` / `lockup-pointed-d-reverse-no-bg.svg`) and always resolves to the top of the landing page. |
+| Topbar | `components/Topbar.js` | Single unified top nav used by every page (landing, auth, 404, practice workspace, mock, dashboard, learning paths). Composition slots for `leftSlot`, `centerSlot`, `userExtras`, `belowTopbar`; three variants: `'landing'` (default, container-bounded), `'app'` (full-bleed workspace chrome), `'minimal'` (auth / verify / reset / 404 — brand + theme + user pill only). `showPricingLink` for logged-out visitors. The brand mark now uses the bar lockup assets from `frontend/public/branding/` (`lockup-bar-no-bg.svg` / `lockup-bar-reverse-no-bg.svg`) and always resolves to the top of the landing page. `lockup-bar-no-bg.svg` uses D `#5B6AF0` with bar `#807e7c`; `lockup-bar-reverse-no-bg.svg` uses D `#FFFFFF` with bar `#5B6AF0`. |
 | ToastViewport | `components/ToastViewport.js` | Global in-app toast stack (first-solve, unlock, and streak milestone feedback) rendered by `ToastProvider` |
 | LoggedInWelcome | `components/LoggedInWelcome.js` | Welcome-back block on `/` for authenticated users. Three cards: Resume (last-solved question via `/api/dashboard` recent_activity), Dashboard, Mock. Replaces the marketing hero for returning users. |
 | TierBanner | `components/TierBanner.js` | Inline upgrade prompt shown when a user hits a plan gate (e.g. locked hard questions); renders contextual copy and upgrade CTA |
@@ -441,7 +441,7 @@ All hover: `translateY(-1px)`, `150ms ease-out`. No transforms on disabled.
 - Mobile breakpoint: 900px — sidebar becomes fixed overlay
 - Container max-width: 1180px centered
 
-**Sample page topbar:** Three-column, full-width (`max-width: none`) — Left: home link using the bar-based branding asset · Center: back arrow + label · Right: CTA.
+**Sample page topbar:** Three-column, full-width (`max-width: none`) — Left: home link using the bar branding asset · Center: back arrow + label · Right: CTA.
 
 **Question page chrome:** No section kickers. Compact uppercase status line (difficulty / position / open count). Editor topbar single-line. Editor footer buttons-only, right-aligned on desktop, sticky dock on mobile. Post-submit: `.submit-outcome` wrapper groups verdict + feedback.
 
