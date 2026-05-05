@@ -32,7 +32,7 @@ from db import (
     set_user_plan,
     set_user_razorpay_customer_id,
 )
-from deps import get_current_user
+from deps import get_current_user, require_authenticated_user
 from models import (
     CreateOrderRequest,
     CreateOrderResponse,
@@ -225,10 +225,8 @@ async def ensure_customer(
 @router.post("/create-order", response_model=CreateOrderResponse)
 async def create_order(
     body: CreateOrderRequest,
-    current_user: dict[str, Any] = Depends(get_current_user),
+    current_user: dict[str, Any] = Depends(require_authenticated_user),
 ) -> CreateOrderResponse:
-    if current_user.get("email") is None:
-        raise HTTPException(status_code=403, detail="Create an account before upgrading.")
 
     if not current_user.get("email_verified"):
         raise HTTPException(status_code=403, detail="Please verify your email address before upgrading.")

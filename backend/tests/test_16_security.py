@@ -5,7 +5,6 @@ from starlette.testclient import TestClient
 import backend.main as main
 from python_guard import validate_code
 from sql_guard import validate_read_only_select_query
-from conftest import _make_user
 
 app = main.app
 pytestmark = pytest.mark.usefixtures("isolated_state")
@@ -89,15 +88,10 @@ def test_tc237_csrf_blocks_request_without_origin_in_prod(monkeypatch):
     monkeypatch.setattr(main, "_CSRF_ALLOWED_ORIGINS", {"https://app.example.com"})
 
     with TestClient(app) as client:
-        # Create a user session
-        user = _make_user(client, plan="free")
-        # Get the session cookie
-        session_cookie = client.cookies.get("session_token")
-        if not session_cookie:
-            pytest.skip("No session cookie found after login")
+        # Create an anonymous session via GET (no CSRF check on GETs)
+        client.get("/api/catalog")
 
-        # Make a POST request without Origin header (the session_token cookie
-        # is already in the client's cookie jar from _make_user above)
+        # Make a POST request without Origin header — session cookie is already set
         r = client.post(
             "/api/auth/logout",
             headers={},  # no Origin header
@@ -113,10 +107,8 @@ def test_tc238_csrf_allows_request_with_valid_origin_in_prod(monkeypatch):
     monkeypatch.setattr(main, "_CSRF_ALLOWED_ORIGINS", {allowed_origin})
 
     with TestClient(app) as client:
-        user = _make_user(client, plan="free")
-        session_cookie = client.cookies.get("session_token")
-        if not session_cookie:
-            pytest.skip("No session cookie found after login")
+        # Create an anonymous session via GET (no CSRF check on GETs)
+        client.get("/api/catalog")
 
         r = client.post(
             "/api/auth/logout",

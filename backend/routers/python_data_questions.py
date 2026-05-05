@@ -124,7 +124,22 @@ async def run_python_data_code_endpoint(
             detail={"error": "Code contains disallowed constructs.", "guard_errors": guard_errors},
         )
 
-    return python_evaluator.run_python_data_code(body.code, q)
+    raw = python_evaluator.run_python_data_code(body.code, q)
+    # Also run expected code to determine pass/fail for the test_results entry
+    if not raw.get("error"):
+        expected_raw = python_evaluator.run_python_data_code(q.get("expected_code", ""), q)
+        import pandas as pd
+        from evaluator import normalize_dataframe
+        try:
+            user_df = pd.DataFrame(raw["result"]["rows"]) if raw.get("result") else pd.DataFrame()
+            exp_df = pd.DataFrame(expected_raw["result"]["rows"]) if expected_raw.get("result") else pd.DataFrame()
+            passed = normalize_dataframe(user_df).equals(normalize_dataframe(exp_df))
+        except Exception:
+            passed = False
+        raw["test_results"] = [{"passed": passed, "actual": raw.get("result"), "expected": expected_raw.get("result")}]
+    else:
+        raw["test_results"] = [{"passed": False, "error": raw.get("error")}]
+    return raw
 
 
 @router.post("/submit")
@@ -158,9 +173,13 @@ async def submit_python_data_code(
 
     accepted = bool(result.get("correct"))
 
+    # Add test_results for consistency with other tracks
+    result["test_results"] = [{"passed": accepted, "actual": result.get("user_result"), "expected": result.get("expected_result")}]
+
     if accepted:
         await mark_solved(current_user["id"], int(q["id"]), topic="python_data")
         result["solution_code"] = q.get("expected_code", "")
+        result["solution"] = q.get("expected_code", "")
         result["explanation"] = q.get("explanation", "")
 
     await record_submission(

@@ -200,6 +200,9 @@ rate_limiter: BaseRateLimiter = create_rate_limiter(
 
 def _clear_rate_limit_state() -> None:
     rate_limiter.clear()
+    from routers.auth import _auth_rate_limiter, _auth_token_issue_limiter
+    _auth_rate_limiter.clear()
+    _auth_token_issue_limiter.clear()
 
 
 @app.middleware("http")

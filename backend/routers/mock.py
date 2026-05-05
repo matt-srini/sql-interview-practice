@@ -440,18 +440,24 @@ def _public_question_payload(question: dict, track: str) -> dict:
 def _solution_payload(question: dict, track: str) -> dict:
     """Return solution fields, shown only in the finish/summary response."""
     if track == "sql":
+        solution_text = question.get("solution_query", "")
         return {
-            "solution_query": question.get("solution_query", ""),
+            "solution": solution_text,
+            "solution_query": solution_text,
             "explanation": question.get("explanation", ""),
         }
     if track in ("python", "python-data"):
+        solution_text = question.get("expected_code", "")
         return {
-            "solution_code": question.get("expected_code", ""),
+            "solution": solution_text,
+            "solution_code": solution_text,
             "explanation": question.get("explanation", ""),
         }
     if track == "pyspark":
+        correct_option = question.get("correct_option")
         return {
-            "correct_option": question.get("correct_option"),
+            "solution": str(correct_option) if correct_option is not None else None,
+            "correct_option": correct_option,
             "explanation": question.get("explanation", ""),
         }
     return {}
