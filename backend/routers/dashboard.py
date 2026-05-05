@@ -8,7 +8,7 @@ import python_questions
 import pyspark_questions
 import questions as sql_questions
 from db import get_recent_activity, get_solved_ids
-from deps import get_current_user
+from deps import get_current_user, require_authenticated_user
 from middleware.request_context import get_request_id
 
 router = APIRouter(prefix="/api")
@@ -43,7 +43,7 @@ def _solved_by_difficulty(
 
 @router.get("/dashboard")
 async def get_dashboard(
-    current_user: dict[str, Any] = Depends(get_current_user),
+    current_user: dict[str, Any] = Depends(require_authenticated_user),
 ) -> dict[str, Any]:
     request_id = get_request_id()
     logger.info(

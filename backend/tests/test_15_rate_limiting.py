@@ -11,37 +11,38 @@ pytestmark = pytest.mark.usefixtures("isolated_state")
 
 
 def test_tc224_global_rate_limiter_returns_429_on_excess(monkeypatch):
-    """TC-224: Global limit=3 → 4th request gets 429."""
+    """TC-224: Global limit=3 → 4th request to a non-health API path gets 429."""
     # Lower the limit to 3 and clear existing state
     monkeypatch.setattr(main.rate_limiter, "max_requests", 3)
     main.rate_limiter.clear()
 
+    # TestClient uses "testclient" as client IP, which bypasses the localhost
+    # exemption but not the /health path skip; use /api/catalog instead.
     with TestClient(app) as client:
-        _make_user(client, plan="free")
-        responses = [client.get("/health") for _ in range(4)]
+        responses = [client.get("/api/catalog") for _ in range(4)]
 
     statuses = [r.status_code for r in responses]
     assert 429 in statuses, f"Expected a 429; got {statuses}"
 
 
 def test_tc225_auth_rate_limiter_returns_429_on_excess(monkeypatch):
-    """TC-225: Auth rate limit=3 → 4th auth request gets 429."""
+    """TC-225: Auth rate limit=3 → 4th request to a rate-limited auth endpoint gets 429."""
     monkeypatch.setattr(auth_router._auth_rate_limiter, "max_requests", 3)
     auth_router._auth_rate_limiter.clear()
 
     from conftest import _unique_email
-    email = _unique_email()
     with TestClient(app) as client:
         results = []
         for _ in range(4):
-            r = client.post("/api/auth/login", json={"email": email, "password": "wrong_pw"})
+            # magic-link calls _check_auth_limits which uses _auth_rate_limiter
+            r = client.post("/api/auth/magic-link", json={"email": _unique_email()})
             results.append(r.status_code)
 
     assert 429 in results, f"Expected a 429; got {results}"
 
 
 def test_tc226_auth_token_issue_rate_limiter_returns_429(monkeypatch):
-    """TC-226: Token issue limit=2 → 3rd registration attempt from same IP → 429."""
+    """TC-226: Token issue limit=2 → 3rd request to a token-issuing auth endpoint → 429."""
     monkeypatch.setattr(auth_router._auth_token_issue_limiter, "max_requests", 2)
     auth_router._auth_token_issue_limiter.clear()
 
@@ -49,10 +50,9 @@ def test_tc226_auth_token_issue_rate_limiter_returns_429(monkeypatch):
     with TestClient(app) as client:
         results = []
         for _ in range(3):
-            r = client.post(
-                "/api/auth/forgot-password",
-                json={"email": _unique_email()},
-            )
+            # magic-link calls _check_auth_limits(issue_token=True) which uses
+            # both _auth_rate_limiter and _auth_token_issue_limiter
+            r = client.post("/api/auth/magic-link", json={"email": _unique_email()})
             results.append(r.status_code)
 
     assert 429 in results, f"Expected a 429; got {results}"
