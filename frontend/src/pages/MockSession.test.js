@@ -84,7 +84,7 @@ function makeSessionData(numQuestions = 2) {
     mode: 'custom',
     track: 'sql',
     difficulty: 'easy',
-    started_at: new Date(Date.now() - 30000).toISOString(),
+    started_at: new Date(Date.now() - 120000).toISOString(),
     time_limit_s: 1800,
     status: 'active',
     questions: Array.from({ length: numQuestions }, (_, i) => makeQuestion(i + 1)),
@@ -117,7 +117,7 @@ afterEach(() => {
 });
 
 async function submitCurrentQuestion() {
-  const btn = await screen.findByRole('button', { name: 'Submit' });
+  const btn = await screen.findByRole('button', { name: /^Submit/ });
   fireEvent.click(btn);
 }
 

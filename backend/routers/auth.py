@@ -75,6 +75,13 @@ _UNDELIVERABLE_PREFIXES: frozenset[str] = frozenset({
     "noreply", "no-reply", "postmaster", "mailer-daemon", "bounce", "devnull",
 })
 
+# Reserved local-part prefixes that must not be used for self-registration
+_RESERVED_EMAIL_PREFIXES: frozenset[str] = frozenset({
+    "admin", "administrator", "root", "superuser", "system", "sysadmin",
+    "moderator", "mod", "staff", "support", "helpdesk", "info", "contact",
+    "security", "abuse", "webmaster",
+})
+
 _auth_rate_limiter = create_rate_limiter(
     max_requests=AUTH_RATE_LIMIT_REQUESTS,
     window_seconds=AUTH_RATE_LIMIT_WINDOW_SECONDS,
@@ -110,6 +117,8 @@ class RegisterRequest(BaseModel):
             raise ValueError("That email domain is not available for self-registration")
         if local in _UNDELIVERABLE_PREFIXES:
             raise ValueError("That email address cannot receive mail")
+        if local in _RESERVED_EMAIL_PREFIXES:
+            raise ValueError("That email address is reserved and cannot be used for registration")
         return value
 
     @field_validator("name")

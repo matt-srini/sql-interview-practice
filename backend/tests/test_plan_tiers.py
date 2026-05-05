@@ -67,6 +67,11 @@ def _start_mock(client: TestClient, difficulty: str = "hard", track: str = "sql"
     return resp.status_code, resp.json()
 
 
+def _finish_mock(client: TestClient, session_id: int) -> None:
+    """Finish a mock session so a new one can be started."""
+    client.post(f"/api/mock/{session_id}/finish")
+
+
 # ---------------------------------------------------------------------------
 # Catalog: free tier
 # ---------------------------------------------------------------------------
@@ -228,6 +233,7 @@ class TestMockDailyLimits:
             for i in range(1, 4):
                 status, body = _start_mock(client, difficulty="hard")
                 assert status == 200, f"hard mock #{i} should succeed for pro, got {status}: {body}"
+                _finish_mock(client, body["session_id"])
 
             status, body = _start_mock(client, difficulty="hard")
             assert status == 403, f"4th hard mock should be blocked for pro, got {status}: {body}"
@@ -242,15 +248,18 @@ class TestMockDailyLimits:
 
             # Exhaust hard daily limit
             for _ in range(3):
-                status, _ = _start_mock(client, difficulty="hard")
+                status, body = _start_mock(client, difficulty="hard")
                 assert status == 200
+                _finish_mock(client, body["session_id"])
 
             # Easy and medium should still work
             status, body = _start_mock(client, difficulty="easy")
             assert status == 200, f"easy mock should still work after hard limit: {body}"
+            _finish_mock(client, body["session_id"])
 
             status, body = _start_mock(client, difficulty="medium")
             assert status == 200, f"medium mock should still work after hard limit: {body}"
+            _finish_mock(client, body["session_id"])
 
     def test_elite_hard_mock_is_unlimited(self) -> None:
         """Elite users must not be blocked regardless of how many hard sessions they start."""
@@ -261,6 +270,7 @@ class TestMockDailyLimits:
             for i in range(1, 6):
                 status, body = _start_mock(client, difficulty="hard")
                 assert status == 200, f"elite hard mock #{i} was blocked unexpectedly: {body}"
+                _finish_mock(client, body["session_id"])
 
     def test_free_user_medium_mock_requires_medium_unlocked(self) -> None:
         """Free users need medium questions unlocked in practice before they can start a medium mock."""
@@ -426,6 +436,7 @@ class TestLifetimeEliteCatalog:
                     f"lifetime_elite mock #{i + 1} must be allowed (no daily cap), "
                     f"got {r.status_code}: {r.json()}"
                 )
+                _finish_mock(client, r.json()["session_id"])
 
     def test_company_filter_mock_allowed(self) -> None:
         """Company-filtered mocks must be accessible to lifetime_elite users."""
