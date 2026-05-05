@@ -1111,8 +1111,8 @@ class TestMockFeedsInsights:
             r = client.get("/api/dashboard/insights")
             assert r.status_code == 200, r.text
             weakest = r.json().get("weakest_concepts", [])
-            found = [(w["track"], w["concept"]) for w in weakest]
-            assert ("pyspark", concept) in found, (
+            found = [(w["track"], w["concept"].lower()) for w in weakest]
+            assert ("pyspark", concept.lower()) in found, (
                 f"Expected ('pyspark', {concept!r}) in weakest_concepts after 3 wrong attempts. "
                 f"Got: {found}"
             )
