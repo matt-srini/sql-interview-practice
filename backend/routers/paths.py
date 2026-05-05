@@ -172,6 +172,7 @@ async def get_path_detail(
         )
 
     solved_count = sum(1 for item in questions_payload if item["state"] == "solved")
+    completed = solved_count == len(questions_payload) and len(questions_payload) > 0
 
     return {
         "slug": path["slug"],
@@ -186,6 +187,7 @@ async def get_path_detail(
         "accessible": True,
         "question_count": len(questions_payload),
         "solved_count": solved_count,
+        "completed": completed,
         "path_state": path_state,
         "questions": questions_payload,
     }

@@ -2,9 +2,9 @@
 Data models for user, plan, unlock, and payment state.
 """
 
-from typing import Optional
+from typing import Annotated, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class UserProfile(BaseModel):
@@ -80,6 +80,6 @@ class SubmitCodeRequest(BaseModel):
 
 
 class PySparkSubmitRequest(BaseModel):
-    selected_option: int
+    selected_option: Annotated[int, Field(ge=0, le=3)]
     question_id: int
     duration_ms: int | None = None

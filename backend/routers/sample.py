@@ -211,6 +211,22 @@ def run_sample_query(body: RunQueryRequest) -> dict:
     return run_query(body.query, question)
 
 
+@router.post("/sql/run-query")
+def run_sql_sample_query(body: RunQueryRequest) -> dict:
+    """Topic-namespaced alias for the SQL sample run-query endpoint."""
+    request_id = get_request_id()
+    logger.info(
+        "[request_id=%s] Sample /sql/run-query: question_id=%s",
+        request_id,
+        body.question_id,
+    )
+    question = get_sample_question(body.question_id)
+    if question is None:
+        raise HTTPException(status_code=404, detail="Question not found")
+
+    return run_query(body.query, question)
+
+
 @router.post("/submit")
 def submit_sample_answer(body: SubmitRequest) -> dict:
     request_id = get_request_id()
@@ -260,7 +276,22 @@ def run_topic_sample_code(topic: str, body: SampleRunCodeRequest) -> dict[str, A
 
     if normalized_topic == "python":
         return python_evaluator.run_python_code(body.code, question)
-    return python_evaluator.run_python_data_code(body.code, question)
+    # python_data: run comparison and add test_results
+    raw = python_evaluator.run_python_data_code(body.code, question)
+    if not raw.get("error"):
+        expected_raw = python_evaluator.run_python_data_code(question.get("expected_code", ""), question)
+        import pandas as pd
+        from evaluator import normalize_dataframe
+        try:
+            user_df = pd.DataFrame(raw["result"]["rows"]) if raw.get("result") else pd.DataFrame()
+            exp_df = pd.DataFrame(expected_raw["result"]["rows"]) if expected_raw.get("result") else pd.DataFrame()
+            passed = normalize_dataframe(user_df).equals(normalize_dataframe(exp_df))
+        except Exception:
+            passed = False
+        raw["test_results"] = [{"passed": passed, "actual": raw.get("result"), "expected": expected_raw.get("result")}]
+    else:
+        raw["test_results"] = [{"passed": False, "error": raw.get("error")}]
+    return raw
 
 
 @router.post("/{topic}/submit")
