@@ -77,6 +77,14 @@ async def get_current_user(request: Request, response: Response) -> dict[str, An
     return user
 
 
+async def require_authenticated_user(request: Request, response: Response) -> dict[str, Any]:
+    """Like get_current_user, but returns 401 if the user is not registered (no email)."""
+    user = await get_current_user(request, response)
+    if not user.get("email"):
+        raise HTTPException(status_code=401, detail="Authentication required.")
+    return user
+
+
 def _validate_difficulty(difficulty: str) -> str:
     normalized = difficulty.lower()
     if normalized not in {"easy", "medium", "hard"}:

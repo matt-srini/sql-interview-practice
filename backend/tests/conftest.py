@@ -96,7 +96,7 @@ def _make_user(client, plan="free", email=None, name="Test User", password="Pass
     return user
 
 
-def _insert_submission(user_id: str, *, track: str, question_id: int, is_correct: bool, submitted_at=None, duration_ms=None) -> None:
+def _insert_submission(user_id: str, question_id: int, *, track: str, is_correct: bool, submitted_at=None, duration_ms=None) -> None:
     conn = _db_conn()
     try:
         with conn.cursor() as cur:
@@ -117,7 +117,7 @@ def _insert_submission(user_id: str, *, track: str, question_id: int, is_correct
         conn.close()
 
 
-def _insert_progress(user_id: str, *, track: str, question_id: int, solved_at=None) -> None:
+def _insert_progress(user_id: str, question_id: int, *, track: str, solved_at=None) -> None:
     # user_progress uses 'topic' column; map track → topic if needed
     topic = track.replace("-", "_")  # python-data → python_data
     conn = _db_conn()
