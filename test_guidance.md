@@ -139,6 +139,32 @@ def _unique_email(): return f"test-{next(_counter)}@internal.test"
 
 Use `itertools.count` (not `uuid4`) — deterministic, readable in failure output.
 
+### 0.8 Additional helpers
+
+These helpers are used across multiple sections. Implement once in `conftest.py`.
+
+```python
+def _assert_unlock_state(client, track, expected_easy_count, expected_medium_count, expected_hard_count):
+    """Assert exact unlock counts per difficulty for a given track.
+    Pass -1 for 'all unlocked'. Calls GET /api/{track}/catalog (or /api/catalog for sql)
+    and counts questions where state == 'unlocked' or state == 'solved'."""
+
+def _insert_submissions_batch(conn, user_id, track, rows):
+    """Insert multiple submission rows directly into Postgres in one call.
+    rows = [{"question_id": int, "is_correct": bool, "time_seconds": int, "concepts": list[str]}]
+    All rows default to 'sql' track unless overridden. Useful for seeding unlock thresholds."""
+
+def _make_concept_setup(conn, user_id, concept_name, num_attempts, num_correct, track="sql"):
+    """Seed submissions for a single concept tag.
+    Inserts `num_attempts` rows, `num_correct` of which are is_correct=True.
+    Used to test weakest_concepts accuracy buckets in §12C (TC-185–188)."""
+
+def _seed_mock_sessions(conn, user_id, count, track, difficulty, *, completed=True, base_date=None):
+    """Insert `count` mock_session rows directly into Postgres.
+    All sessions are set to completed=True by default. base_date sets the started_at anchor
+    (defaults to utcnow). Used for analytics/history tests in §11 (TC-141, TC-165–168)."""
+```
+
 ---
 
 ## 1. API Contract & System Endpoints
@@ -171,16 +197,6 @@ Use `itertools.count` (not `uuid4`) — deterministic, readable in failure outpu
 **TC-005 · Config endpoint returns provider availability**
 - Steps: `GET /api/config`
 - Expected: 200; body contains `"google_oauth_enabled"` and `"github_oauth_enabled"` as booleans
-- Tier: all
-
-**TC-240 · Session cookie uses SameSite=Lax attribute**
-- Steps: `GET /api/catalog` (sets the session cookie)
-- Expected: `set-cookie` response header includes `samesite=lax` (case-insensitive)
-- Tier: all
-
-**TC-241 · Rate-limit headers present on every response**
-- Steps: `GET /api/catalog`
-- Expected: response includes `X-RateLimit-Limit` and `X-RateLimit-Remaining` headers as numeric strings
 - Tier: all
 
 ---
@@ -418,6 +434,11 @@ resets DB between tests. No cross-test state.
 - Expected: account is NOT locked after the second round of failures (counter was reset by the successful login)
 - Tier: all
 
+**TC-240 · Session cookie uses SameSite=Lax attribute**
+- Steps: register a user and log in; inspect `set-cookie` header
+- Expected: `set-cookie` response header includes `samesite=lax` (case-insensitive)
+- Tier: all
+
 ---
 
 ### 2I. GET /api/auth/me fields
@@ -449,6 +470,22 @@ tests where they cover the same code path — test the pure function directly.
 ---
 
 ### 3A. Free tier — code tracks (SQL, Python, Pandas)
+
+> **⚡ PARAMETRIZE:** TC-044–052 all call `compute_unlock_state(...)` (unit-level pure function).
+> Implement as a single parametrized test that covers all threshold checkpoints:
+> ```python
+> @pytest.mark.parametrize("easy_solves,medium_solves,expected_medium_unlock_count,expected_hard_unlock_count", [
+>     (0,  0,  0,  0),  # TC-044: baseline
+>     (8,  0,  3,  0),  # TC-045
+>     (15, 0,  8,  0),  # TC-046
+>     (25, 0,  -1, 0),  # TC-047: -1 = all
+>     (25, 8,  -1, 3),  # TC-048
+>     (25, 15, -1, 8),  # TC-049
+>     (25, 22, -1, 8),  # TC-050: cap enforced
+> ])
+> ```
+> TC-051 (solved state) and TC-052 (locked prefix boundary) are kept as separate tests because
+> they test state transitions, not threshold counts.
 
 **TC-044 · Fresh free user: all easy unlocked, no medium or hard unlocked**
 - Preconditions: free user, zero solves
@@ -501,6 +538,19 @@ tests where they cover the same code path — test the pure function directly.
 ---
 
 ### 3B. Free tier — PySpark (higher thresholds)
+
+> **⚡ PARAMETRIZE:** TC-053–058 mirror TC-044–050 for PySpark. Implement as one parametrized test:
+> ```python
+> @pytest.mark.parametrize("easy_solves,medium_solves,expected_medium_count,expected_hard_count", [
+>     (11, 0,  0,  0),  # TC-053: below threshold
+>     (12, 0,  3,  0),  # TC-054
+>     (20, 0,  8,  0),  # TC-055
+>     (30, 0,  -1, 0),  # TC-056: -1 = all
+>     (30, 15, -1, 5),  # TC-057
+>     (30, 22, -1, 5),  # TC-058: cap enforced at 5
+> ])
+> def test_pyspark_free_unlock_thresholds(easy_solves, medium_solves, ...):
+> ```
 
 **TC-053 · Fresh free PySpark user: 0 medium unlocked (threshold is 12, not 8)**
 - Preconditions: free user; 11 easy PySpark solved
@@ -717,7 +767,20 @@ worrying about unlock thresholds.
 
 ### 5C. SQL guard
 
-**TC-085 · DROP TABLE statement rejected before execution**
+> **⚡ PARAMETRIZE:** TC-085–090 are all test cases for the SQL write/multi-statement guard on
+> `/api/run-query`. Implement as a single parametrized test:
+> ```python
+> @pytest.mark.parametrize("query,expect_reject", [
+>     ("DROP TABLE users",                              True),   # TC-085
+>     ("INSERT INTO users VALUES (...)",                True),   # TC-086
+>     ("UPDATE users SET name='x'",                    True),   # TC-087
+>     ("DELETE FROM users",                            True),   # TC-088
+>     ("SELECT 1; DROP TABLE users",                   True),   # TC-089
+>     ("SELECT * FROM (SELECT user_id FROM users LIMIT 5) t", False),  # TC-090
+> ])
+> ```
+
+**TC-085 · DROP TABLE statement rejected (write guard)**
 - Steps: `POST /api/run-query { query: "DROP TABLE users" }`
 - Expected: 400; error references write restriction; DuckDB never called
 - Tier: all
@@ -746,6 +809,22 @@ worrying about unlock thresholds.
 - Steps: `POST /api/run-query { query: "SELECT * FROM (SELECT user_id FROM users LIMIT 5) t" }`
 - Expected: 200 with rows
 - Tier: all
+
+> **⚡ PARAMETRIZE:** TC-246–249 + TC-281–283 all exercise the SQL structural/security guard.
+> TC-246–249 test `/api/run-query`; TC-281–283 verify the same guard on `/api/submit`.
+> Implement as one parametrized test, parametrizing over `(query, endpoint)`:
+> ```python
+> @pytest.mark.parametrize("query,endpoint", [
+>     ("SELECT * FROM users CROSS JOIN orders",       "/api/run-query"),   # TC-246
+>     ("SELECT * FROM users, orders WHERE 1=1",       "/api/run-query"),   # TC-247
+>     ("<5-join query>",                              "/api/run-query"),   # TC-248
+>     ("SELECT * FROM read_csv('/etc/passwd')",       "/api/run-query"),   # TC-249
+>     ("SELECT * FROM users CROSS JOIN orders",       "/api/submit"),      # TC-281
+>     ("<5-join query>",                              "/api/submit"),      # TC-282
+>     ("SELECT * FROM read_csv('/etc/passwd')",       "/api/submit"),      # TC-283
+>     # Repeat TC-249 with each dangerous function as additional rows
+> ])
+> ```
 
 **TC-246 · Cartesian join (CROSS JOIN) rejected**
 - Steps: `POST /api/run-query { query: "SELECT * FROM users CROSS JOIN orders" }`
@@ -826,6 +905,20 @@ worrying about unlock thresholds.
 ---
 
 ### 6C. Python guard
+
+> **⚡ PARAMETRIZE:** TC-097–100 all exercise the Python AST guard on `/api/python/run-code`.
+> TC-232–233 verify the same guard on `/api/python/submit`.
+> Implement as one parametrized test across both endpoints:
+> ```python
+> @pytest.mark.parametrize("code,endpoint,expect_reject", [
+>     ("import os; os.listdir('/')",            "/api/python/run-code", True),   # TC-097
+>     ("import subprocess",                    "/api/python/run-code", True),   # TC-098
+>     ("open('/tmp/pwned', 'w').write('x')",   "/api/python/run-code", True),   # TC-099
+>     ("import math\ndef solve(n): return math.sqrt(n)", "/api/python/run-code", False),  # TC-100
+>     ("import os\ndef solve(n): return os.getcwd()",  "/api/python/submit",   True),   # TC-232
+>     ("import subprocess\ndef solve(n): return n",    "/api/python/submit",   True),   # TC-233
+> ])
+> ```
 
 **TC-097 · import os rejected**
 - Steps: `POST /api/python/run-code { code: "import os; os.listdir('/')" }`
@@ -1072,6 +1165,23 @@ For plan-gate tests, seed via `_make_user(plan=...)`.
 
 ### 11B. Session lifecycle
 
+> **⚡ PARAMETRIZE:** TC-125–134 all call `compute_mock_access(...)` (pure unit function).
+> Implement as one parametrized test:
+> ```python
+> @pytest.mark.parametrize("plan,difficulty,medium_unlocked,daily_used,company_filter,expected_can_start,expected_block_reason", [
+>     ("free",  "easy",   False, 0, False, True,  None),            # TC-125
+>     ("free",  "medium", False, 0, False, False, "not_unlocked"),  # TC-126
+>     ("free",  "medium", True,  0, False, True,  None),            # TC-127
+>     ("free",  "medium", True,  1, False, False, "daily_cap"),     # TC-128
+>     ("free",  "hard",   True,  0, False, False, "plan_locked"),   # TC-129
+>     ("pro",   "hard",   True,  2, False, True,  None),            # TC-130
+>     ("pro",   "hard",   True,  3, False, False, "daily_cap"),     # TC-131
+>     ("elite", "hard",   True,  0, False, True,  None),            # TC-132
+>     ("pro",   "easy",   True,  0, True,  False, "plan_locked"),   # TC-133
+>     ("elite", "easy",   True,  0, True,  True,  None),            # TC-134
+> ])
+> ```
+
 > **Valid `mode` values:** `"30min"` (2 questions, 1800 s) · `"60min"` (3 questions, 3600 s) · `"custom"` (1–5 questions, 10–90 min).
 > Any other value returns 400. These are the **API wire values** — the UI labels "Quick" / "Full" map to `"30min"` / `"60min"` respectively.
 >
@@ -1082,15 +1192,21 @@ For plan-gate tests, seed via `_make_user(plan=...)`.
 > `block_reason` and `needs_upgrade` are only present in `GET /api/mock/access` responses
 > and the `compute_mock_access` pure-function return value (TC-125–TC-134).
 
-**TC-135 · POST /api/mock/start returns session_id, questions, time_limit_s**
-- Preconditions: pro user; `POST /api/mock/start { mode: "30min", track: "pyspark", difficulty: "medium" }`
-- Expected: 201; body has `session_id` (UUID), `questions` (array, length == 2 for 30min mode), `time_limit_s` (== 1800 for 30min)
-- Tier: Pro
+> **⚡ PARAMETRIZE:** TC-135 and TC-136 verify `/start` response shape for each mode.
+> Implement as a single parametrized test:
+> ```python
+> @pytest.mark.parametrize("mode,num_q_param,expected_questions,expected_time", [
+>     ("30min",  None, 2, 1800),  # TC-135
+>     ("60min",  None, 3, 3600),  # TC-135 extended
+>     ("custom", 3,    3, 1800),  # TC-136
+> ])
+> ```
 
-**TC-136 · Custom mode with explicit num_questions**
-- Steps: `POST /api/mock/start { mode: "custom", track: "pyspark", difficulty: "easy", num_questions: 3 }`
-- Expected: `questions` array length == 3
-- Tier: Elite (or Pro — whichever plan can access easy custom mode; test with Elite)
+**TC-135 · POST /api/mock/start returns correct structure for each mode**
+- Preconditions: Pro user for 30min/60min; Elite for custom; PySpark medium questions available
+- Steps: `POST /api/mock/start` with given `mode` (and `num_questions` when custom)
+- Expected: 201; body has `session_id` (UUID), `questions` array length == `expected_questions`, `time_limit_s` == `expected_time`
+- Tier: Pro (30min/60min), Elite (custom)
 
 **TC-137 · num_questions out of range (0 or 6) → 400**
 - Steps: `POST /api/mock/start { mode: "custom", track: "pyspark", difficulty: "easy", num_questions: 0, time_minutes: 30 }` and separately `num_questions: 6`
@@ -1303,6 +1419,19 @@ For plan-gate tests, seed via `_make_user(plan=...)`.
 
 ### 11H. Session debrief (Elite)
 
+> **⚡ PARAMETRIZE:** TC-158–163 all call `POST /api/mock/{id}/finish` and check `debrief`.
+> Use a single parametrized test with a custom session fixture:
+> ```python
+> @pytest.mark.parametrize("plan,correct,total,expected_debrief_null,expected_headline", [
+>     ("elite", 1, 1, False, "Perfect"),   # TC-158
+>     ("elite", 0, 1, False, "Tough"),     # TC-159
+>     ("elite", 2, 3, False, "Solid"),     # TC-160
+>     ("elite", 1, 3, False, "Partial"),   # TC-161
+>     ("pro",   1, 1, True,  None),        # TC-162
+>     ("free",  1, 1, True,  None),        # TC-163
+> ])
+> ```
+
 **TC-158 · Finish response includes debrief for Elite (1/1 correct → "Perfect" headline)**
 - Preconditions: elite user; custom session with 1 PySpark question; answer correctly
 - Steps: finish session
@@ -1427,16 +1556,17 @@ during a session, the follow-up question is injected into the session immediatel
 parent's position. This mechanic is tested via unit tests on the session-mutation logic plus
 integration tests through the submit endpoint.
 
-**TC-284 · Correct answer on question with follow_up_id injects follow-up into session**
-- Preconditions: pro user; session contains a question Q that has `follow_up_id = FU`; FU is a valid question ID
-- Steps: `POST /api/mock/{id}/submit { question_id: Q, <correct answer> }`
-- Expected: 200; `follow_up_injected: true` in response; subsequent `GET /api/mock/{id}` shows FU in the question list at position immediately after Q
-- Tier: Pro
-
-**TC-285 · Wrong answer does not inject follow-up**
-- Preconditions: same as TC-284 but answer incorrectly
-- Steps: `POST /api/mock/{id}/submit { question_id: Q, <wrong answer> }`
-- Expected: 200; `follow_up_injected: false`; FU does NOT appear in the session
+**TC-284 · Follow-up injection depends on correctness of the answer**
+> **⚡ PARAMETRIZE:** TC-284 and TC-285 test the same path with different outcomes:
+> ```python
+> @pytest.mark.parametrize("is_correct,expect_inject", [
+>     (True,  True),   # TC-284: correct → injected
+>     (False, False),  # TC-285: wrong → not injected
+> ])
+> ```
+- Preconditions: pro user; session contains question Q that has `follow_up_id = FU`; FU is a valid question ID
+- Steps: `POST /api/mock/{id}/submit { question_id: Q, <correct or wrong answer> }` per parametrize row
+- Expected: `follow_up_injected` matches `expect_inject`; subsequent `GET /api/mock/{id}` shows FU in session iff injected
 - Tier: Pro
 
 **TC-286 · Follow-up not injected when parent is the last question in the session**
@@ -1485,28 +1615,30 @@ per user in-process — clear between test functions via `isolated_state`.
 - Expected: 401
 - Tier: all
 
-**TC-175 · recent_activity present in dashboard response**
-- Preconditions: user with at least 1 submission
+**TC-175 · recent_activity is present and capped at 10 entries**
+> **⚡ PARAMETRIZE:** TC-175 and TC-268 test presence and cap of `recent_activity`:
+> ```python
+> @pytest.mark.parametrize("num_submissions,expected_len", [
+>     (1,  1),   # TC-175: present with 1 entry
+>     (11, 10),  # TC-268: capped at 10
+> ])
+> ```
+- Preconditions: user with `num_submissions` submissions (insert via `_insert_submissions_batch`)
 - Steps: `GET /api/dashboard`
-- Expected: `recent_activity` array present (not null)
+- Expected: `recent_activity` array present; `len(recent_activity) == expected_len`
 - Tier: all
 
-**TC-268 · recent_activity is capped at 10 entries**
-- Preconditions: user with 11+ submissions across questions
+**TC-269 · concepts_by_track reflects solved question concepts**
+> **⚡ PARAMETRIZE:** TC-269 and TC-270 test populated vs empty state:
+> ```python
+> @pytest.mark.parametrize("num_solves_with_concepts,expected_populated", [
+>     (1, True),   # TC-269: at least one concept entry after a solve
+>     (0, False),  # TC-270: empty for new user
+> ])
+> ```
+- Preconditions: user with `num_solves_with_concepts` correct submissions on concept-tagged questions
 - Steps: `GET /api/dashboard`
-- Expected: `recent_activity` array length ≤ 10
-- Tier: all
-
-**TC-269 · concepts_by_track present and populated after solve with concepts**
-- Preconditions: user who has solved at least one question that has concept tags
-- Steps: `GET /api/dashboard`
-- Expected: `concepts_by_track` key present; contains at least one entry for the solved question's track; each entry includes the concept name
-- Tier: all
-
-**TC-270 · concepts_by_track is empty for a new user with no solves**
-- Preconditions: fresh user with no submissions
-- Steps: `GET /api/dashboard`
-- Expected: `concepts_by_track` is present but empty (empty object or empty arrays per track)
+- Expected: `concepts_by_track` present; if `expected_populated`, contains at least one concept entry; if not, is empty
 - Tier: all
 
 ---
@@ -1904,6 +2036,11 @@ rate-limiter state is reset between tests.
 - Expected: first request after reset is not rate-limited
 - Tier: all
 
+**TC-241 · Rate-limit headers present on every response**
+- Steps: `GET /api/catalog`
+- Expected: response includes `X-RateLimit-Limit` and `X-RateLimit-Remaining` headers as numeric strings
+- Tier: all
+
 **TC-280 · Redis connection failure → rate limiter falls back to in-memory**
 - Preconditions: monkeypatch `REDIS_URL` to an invalid/unreachable address
 - Steps: create the rate limiter; make a request
@@ -1918,66 +2055,43 @@ rate-limiter state is reset between tests.
 
 ---
 
-### 16A. SQL guard
+### 16A. SQL guard — submit endpoint variants
 
-**TC-229 · run-query: write statement rejected before DuckDB is called**
-- Steps: `POST /api/run-query { query: "INSERT INTO users(user_id) VALUES('x')" }`
-- Expected: 400; error references write restriction; response time < 50ms (no execution)
+> The primary SQL guard tests (write rejection, CROSS JOIN, join count, dangerous functions) live
+> in **§5C** (TC-085–090, TC-246–249) where they test the `/api/run-query` endpoint.
+> The tests below verify that the **same guard also applies to `/api/submit`** (i.e. the guard
+> is not bypassed by submitting a write or cartesian query directly without a prior run-query call).
+
+**TC-281 · Cartesian join (CROSS JOIN) rejected by submit endpoint**
+- Steps: `POST /api/submit { question_id, query: "SELECT * FROM users CROSS JOIN orders" }`
+- Expected: 400; same guard response as TC-246
 - Tier: all
 
-**TC-230 · submit: write statement in submit body rejected**
-- Steps: `POST /api/submit { question_id, query: "DELETE FROM users" }`
-- Expected: 400; error references write restriction
+**TC-282 · Too-many-joins (≥ 5 joins) rejected by submit endpoint**
+- Steps: `POST /api/submit { question_id, query: <query with 5 JOINs> }`
+- Expected: 400; same guard response as TC-248
 - Tier: all
 
-**TC-231 · Multiple statements rejected (SELECT + DDL)**
-- Steps: `POST /api/run-query { query: "SELECT 1; CREATE TABLE pwn AS SELECT 1" }`
-- Expected: 400
-- Tier: all
-
-**TC-281 · Cartesian join rejected on both run-query and submit**
-- Steps (parametrized): `POST /api/run-query { query: "SELECT * FROM users CROSS JOIN orders" }` and `POST /api/submit` with the same query
-- Expected: 400 for both; error references join restriction
-- Tier: all
-
-**TC-282 · Too-many-joins rejected (≥ 5 joins in one query)**
-- Steps: `POST /api/run-query { query: <SELECT joining 5 tables with JOINs> }`
-- Expected: 400; error references join count limit
-- Note: mirrors TC-248 but verifies the submit endpoint as well (both paths share the same guard)
-- Tier: all
-
-**TC-283 · Dangerous DuckDB file/network functions rejected on submit**
-- Steps (parametrized): `POST /api/submit { question_id, query: "SELECT * FROM read_csv('/etc/passwd')" }` (and similarly for other dangerous functions)
+**TC-283 · Dangerous DuckDB functions rejected by submit endpoint**
+- Steps (parametrized): `POST /api/submit { question_id, query: "SELECT * FROM read_csv('/etc/passwd')" }` (and similarly for other dangerous functions per TC-249)
 - Expected: 400; guard rejects before execution
 - Tier: all
 
 ---
 
-### 16B. Python guard
+### 16B. Python guard — submit endpoint variants
 
-**TC-232 · import os rejected in run-code**
-- Steps: `POST /api/python/run-code { code: "import os\ndef solve(n): return os.getcwd()" }`
-- Expected: 400; error references disallowed import
-- Tier: all
+> The primary Python guard tests live in **§6C** (TC-097–100) where they test `/api/python/run-code`.
+> The tests below verify the guard also applies to `/api/python/submit`.
 
-**TC-233 · import subprocess rejected**
-- Steps: `POST /api/python/run-code { code: "import subprocess\ndef solve(n): return n" }`
+**TC-232 · import os rejected in Python submit**
+- Steps: `POST /api/python/submit { question_id, code: "import os\ndef solve(n): return os.getcwd()" }`
 - Expected: 400
 - Tier: all
 
-**TC-234 · __import__('os') rejected**
-- Steps: `POST /api/python/run-code { code: "def solve(n): return __import__('os').listdir('/')" }`
+**TC-233 · import subprocess rejected in Python submit**
+- Steps: `POST /api/python/submit { code: "import subprocess\ndef solve(n): return n" }`
 - Expected: 400
-- Tier: all
-
-**TC-235 · open() for write access rejected**
-- Steps: `POST /api/python/run-code { code: "def solve(n): open('/tmp/x','w'); return n" }`
-- Expected: 400
-- Tier: all
-
-**TC-236 · Safe standard library (math, collections) accepted**
-- Steps: `POST /api/python/run-code { code: "import math, collections\ndef solve(n): return math.factorial(n)" }`
-- Expected: guard passes (200 or test failure — not a 400 guard rejection)
 - Tier: all
 
 ---
