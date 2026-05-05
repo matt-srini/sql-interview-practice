@@ -113,7 +113,7 @@ def test_tc079_correct_submit_returns_verdict_solution_quality():
     assert r.status_code == 200
     body = r.json()
     assert body.get("correct") is True
-    assert body.get("solution") is not None
+    assert body.get("solution_query") is not None
     quality = body.get("quality")
     assert quality is not None
     assert "efficiency_note" in quality
@@ -134,7 +134,7 @@ def test_tc080_correct_submit_records_progress():
     try:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT track, solved_at FROM user_progress WHERE user_id = %s::uuid AND question_id = %s",
+                "SELECT topic, solved_at FROM user_progress WHERE user_id = %s::uuid AND question_id = %s",
                 (user["id"], _easy_id),
             )
             row = cur.fetchone()
@@ -164,9 +164,14 @@ def test_tc082_close_miss_returns_style_notes():
     # Use the easy question - craft a query with same column names but wrong data
     # Get the expected output shape first
     q = _easy_q
-    # The easy question has an expected query; submit a query that returns same shape
-    # For "Completed orders" question, the expected has order_id, user_id, order_date, net_amount
-    same_shape_wrong = "SELECT 0 AS order_id, 0 AS user_id, '2020-01-01'::DATE AS order_date, 0.0 AS net_amount"
+    # Use a CTE that shifts order_id by 1: same row/column shape, wrong values.
+    # The CTE triggers a style note in _analyze_query_style, so quality.style_notes is non-empty.
+    same_shape_wrong = (
+        "WITH shifted AS ("
+        "  SELECT order_id + 1 AS order_id, user_id, order_date, net_amount"
+        "  FROM orders WHERE status = 'completed'"
+        ") SELECT * FROM shifted ORDER BY order_id"
+    )
     with TestClient(app) as client:
         _make_user(client, plan="pro")
         r = client.post("/api/submit", json={

@@ -86,7 +86,8 @@ def _run_algorithm(user_code: str, test_cases: list) -> dict:
         finally:
             sys.stdout = old_stdout
 
-    return {"error": None, "results": results}
+    print_output = "\n".join(r["stdout"] for r in results if r.get("stdout"))
+    return {"error": None, "results": results, "print_output": print_output}
 
 
 def _compare(actual, expected) -> bool:

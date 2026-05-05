@@ -521,7 +521,7 @@ def test_tc037_callback_happy_path(monkeypatch):
     monkeypatch.setattr("routers.auth.GOOGLE_CLIENT_SECRET", "fake-secret")
     monkeypatch.setattr("routers.auth.GOOGLE_REDIRECT_URI", "http://localhost/callback")
 
-    fake_user = {"email": _unique_email(), "name": "OAuth User", "provider_id": "google-123"}
+    fake_user = {"email": _unique_email(), "name": "OAuth User", "id": "google-123"}
     monkeypatch.setattr(
         "routers.auth._exchange_google_code",
         AsyncMock(return_value=fake_user),
@@ -567,34 +567,36 @@ def test_tc039_login_lockout(monkeypatch):
 
 def test_tc040_csrf_rejected_without_origin(monkeypatch):
     """TC-040: Production mode + session cookie + no Origin → 403."""
-    monkeypatch.setattr("main.IS_PROD", True)
-    monkeypatch.setattr("main._CSRF_ALLOWED_ORIGINS", {"https://app.example.com"})
+    monkeypatch.setattr(main, "IS_PROD", True)
+    monkeypatch.setattr(main, "_CSRF_ALLOWED_ORIGINS", {"https://app.example.com"})
     email = _unique_email()
+    _origin = {"Origin": "https://app.example.com"}
     with TestClient(app) as client:
         client.get("/api/catalog")
-        client.post("/api/auth/register", json={"email": email, "name": "O", "password": "Password1"})
+        client.post("/api/auth/register", json={"email": email, "name": "O", "password": "Password1"}, headers=_origin)
         verify_test_user(
-            client.post("/api/auth/login", json={"email": email, "password": "Password1"}).json()["user"]["id"]
+            client.post("/api/auth/login", json={"email": email, "password": "Password1"}, headers=_origin).json()["user"]["id"]
         )
-        # Login to get session cookie
-        client.post("/api/auth/login", json={"email": email, "password": "Password1"})
-        # Send logout without Origin header
+        # Login to get session cookie (with valid Origin so setup succeeds)
+        client.post("/api/auth/login", json={"email": email, "password": "Password1"}, headers=_origin)
+        # Send logout without Origin header — should be CSRF-blocked
         r = client.post("/api/auth/logout", headers={})
     assert r.status_code == 403
 
 
 def test_tc041_csrf_passes_with_valid_origin(monkeypatch):
     """TC-041: Production mode + valid Origin → 200."""
-    monkeypatch.setattr("main.IS_PROD", True)
-    monkeypatch.setattr("main._CSRF_ALLOWED_ORIGINS", {"https://app.example.com"})
+    monkeypatch.setattr(main, "IS_PROD", True)
+    monkeypatch.setattr(main, "_CSRF_ALLOWED_ORIGINS", {"https://app.example.com"})
     email = _unique_email()
+    _origin = {"Origin": "https://app.example.com"}
     with TestClient(app) as client:
         client.get("/api/catalog")
-        client.post("/api/auth/register", json={"email": email, "name": "P", "password": "Password1"})
+        client.post("/api/auth/register", json={"email": email, "name": "P", "password": "Password1"}, headers=_origin)
         verify_test_user(
-            client.post("/api/auth/login", json={"email": email, "password": "Password1"}).json()["user"]["id"]
+            client.post("/api/auth/login", json={"email": email, "password": "Password1"}, headers=_origin).json()["user"]["id"]
         )
-        client.post("/api/auth/login", json={"email": email, "password": "Password1"})
+        client.post("/api/auth/login", json={"email": email, "password": "Password1"}, headers=_origin)
         r = client.post("/api/auth/logout", headers={"Origin": "https://app.example.com"})
     assert r.status_code == 200
 
