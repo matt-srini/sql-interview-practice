@@ -27,8 +27,8 @@ def test_tc091_correct_code_passes_all_tests_and_returns_stdout():
         })
     assert r.status_code == 200
     body = r.json()
-    assert "test_results" in body
-    assert any(tr.get("passed") for tr in body["test_results"])
+    assert "results" in body
+    assert any(tr.get("passed") for tr in body["results"])
     assert "print_output" in body  # may be empty string
 
 
@@ -66,7 +66,7 @@ def test_tc093_execution_timeout_enforced():
 
 def test_tc094_stdout_captured():
     """TC-094: print('hello') → print_output contains 'hello'."""
-    code = "def solve(n):\n    print('hello')\n    return n"
+    code = "def solve(nums, target):\n    print('hello')\n    return nums"
     with TestClient(app) as client:
         _make_user(client, plan="pro")
         r = client.post("/api/python/run-code", json={
@@ -90,7 +90,7 @@ def test_tc095_correct_submit_returns_correct_true_and_solution():
     assert r.status_code == 200
     body = r.json()
     assert body.get("correct") is True
-    assert body.get("solution")
+    assert body.get("solution_code")
 
 
 def test_tc096_wrong_answer_correct_false_with_breakdown():
@@ -106,7 +106,7 @@ def test_tc096_wrong_answer_correct_false_with_breakdown():
     body = r.json()
     assert body.get("correct") is False
     # Per-test breakdown
-    results = body.get("test_results", body.get("results", []))
+    results = body.get("public_results", [])
     assert results  # at least one test entry
 
 

@@ -6,6 +6,29 @@ For Pandas: allows a specific allowlist of safe imports.
 """
 import ast
 
+# Imports allowed for the algorithm (Python) track
+_ALGORITHM_ALLOWLIST = {
+    "math",
+    "collections",
+    "heapq",
+    "bisect",
+    "itertools",
+    "functools",
+    "typing",
+    "decimal",
+    "fractions",
+    "random",
+    "string",
+    "re",
+    "copy",
+    "operator",
+    "abc",
+    "dataclasses",
+    "enum",
+    "queue",
+    "sortedcontainers",
+}
+
 # Imports allowed for the Pandas track
 _DATA_ALLOWLIST = {
     "pandas",
@@ -152,7 +175,7 @@ def validate_code(code: str, topic: str = "python") -> list[str]:
     except SyntaxError as e:
         return [f"Syntax error: {e}"]
 
-    allowlist = _DATA_ALLOWLIST if topic == "python_data" else None
+    allowlist = _DATA_ALLOWLIST if topic == "python_data" else _ALGORITHM_ALLOWLIST if topic == "python" else None
     visitor = _GuardVisitor(allowlist=allowlist)
     visitor.visit(tree)
     return visitor.errors

@@ -3,6 +3,7 @@ import pytest
 from starlette.testclient import TestClient
 
 import backend.main as main
+from conftest import _make_user
 from python_guard import validate_code
 from sql_guard import validate_read_only_select_query
 

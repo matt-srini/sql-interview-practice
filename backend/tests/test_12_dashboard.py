@@ -154,11 +154,22 @@ def test_tc179_cross_track_insight_null_when_gap_less_than_60s():
 
 def test_tc180_cross_track_insight_non_null_when_gap_over_60s():
     """TC-180: SQL median=300s, Python median=60s → cross_track_insight is string."""
+    from datetime import datetime, timedelta, timezone
     with TestClient(app) as client:
         user = _make_user(client, plan="pro")
     from python_questions import get_questions_by_difficulty as get_py_qs
-    _insert_submission(user["id"], _sql_easy_qs[0]["id"], is_correct=True, track="sql", duration_ms=300000)
-    _insert_submission(user["id"], get_py_qs()["easy"][0]["id"], is_correct=True, track="python", duration_ms=60000)
+    now = datetime.now(timezone.utc)
+    # Insert SQL: incorrect at now-300s, correct at now
+    _insert_submission(user["id"], _sql_easy_qs[0]["id"], is_correct=False, track="sql",
+                       submitted_at=now - timedelta(seconds=300))
+    _insert_submission(user["id"], _sql_easy_qs[0]["id"], is_correct=True, track="sql",
+                       submitted_at=now)
+    # Insert Python: incorrect at now-60s, correct at now
+    py_id = get_py_qs()["easy"][0]["id"]
+    _insert_submission(user["id"], py_id, is_correct=False, track="python",
+                       submitted_at=now - timedelta(seconds=60))
+    _insert_submission(user["id"], py_id, is_correct=True, track="python",
+                       submitted_at=now)
     with TestClient(app) as client:
         _make_user(client, plan="pro", existing_user=user)
         r = client.get("/api/dashboard/insights")
@@ -356,8 +367,9 @@ def test_tc189_recommended_question_ids_excludes_solved():
 
     with TestClient(app) as client:
         user = _make_user(client, plan="pro")
-    # Mark as solved
+    # Mark as solved via both progress and a correct submission (insights reads from submissions)
     _insert_progress(user["id"], q["id"], track="sql")
+    _insert_submission(user["id"], q["id"], is_correct=True, track="sql")
     # Also have wrong submissions so concept appears in weakest
     for _ in range(3):
         _insert_submission(user["id"], q["id"], is_correct=False, track="sql")

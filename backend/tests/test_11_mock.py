@@ -272,14 +272,14 @@ def test_tc145_elite_user_hard_start_returns_201():
 
 def test_tc146_free_user_second_medium_mock_same_day_blocked():
     """TC-146: Free user; 1 medium session today already → 2nd blocked (403)."""
-    from questions import get_questions_by_difficulty
-    sql_easy_ids = [q["id"] for q in get_questions_by_difficulty()["easy"]]
+    from pyspark_questions import get_questions_by_difficulty as get_ps_qs
+    pyspark_easy_ids = [q["id"] for q in get_ps_qs()["easy"]]
 
     with TestClient(app) as client:
         user = _make_user(client, plan="free")
-    # Unlock medium by solving 25 easy questions
-    for qid in sql_easy_ids[:25]:
-        _insert_progress(user["id"], qid, track="sql")
+    # Unlock pyspark medium by solving 12 pyspark easy questions
+    for qid in pyspark_easy_ids[:12]:
+        _insert_progress(user["id"], qid, track="pyspark")
     # Insert a medium mock session for today
     conn = _db_conn()
     try:
@@ -300,7 +300,7 @@ def test_tc146_free_user_second_medium_mock_same_day_blocked():
             "num_questions": 1, "time_minutes": 30,
         })
     assert r.status_code == 403
-    assert "daily" in r.json().get("detail", "").lower() or "limit" in r.json().get("detail", "").lower()
+    assert "daily" in r.json().get("error", "").lower() or "limit" in r.json().get("error", "").lower()
 
 
 def test_tc147_pro_user_4th_hard_same_day_blocked():
@@ -411,22 +411,28 @@ def test_tc153_elite_focus_concepts_creates_session():
 
 def test_tc154_focus_fallback_when_pool_too_small():
     """TC-154: _select_questions with concept matching few questions → focus_fallback: True."""
+    from unittest.mock import AsyncMock, patch
     from routers.mock import _select_questions
     user = {"id": "00000000-0000-0000-0000-000000000001", "plan": "elite"}
-    selected, fallback = asyncio.run(
-        _select_questions("pyspark", "easy", 2, user, focus_concepts=["NONEXISTENT_CONCEPT_XYZ"])
-    )
+    with patch("routers.mock._get_solved_ids_for_track", new=AsyncMock(return_value=set())), \
+         patch("routers.mock.get_previously_mocked_ids", new=AsyncMock(return_value=set())):
+        selected, fallback = asyncio.run(
+            _select_questions("pyspark", "easy", 2, user, focus_concepts=["NONEXISTENT_CONCEPT_XYZ"])
+        )
     assert fallback is True
     assert len(selected) > 0
 
 
 def test_tc155_empty_focus_concepts_treated_as_no_filter():
     """TC-155: _select_questions with focus_concepts=[] → full pool, focus_fallback: False."""
+    from unittest.mock import AsyncMock, patch
     from routers.mock import _select_questions
     user = {"id": "00000000-0000-0000-0000-000000000001", "plan": "elite"}
-    selected, fallback = asyncio.run(
-        _select_questions("pyspark", "easy", 2, user, focus_concepts=[])
-    )
+    with patch("routers.mock._get_solved_ids_for_track", new=AsyncMock(return_value=set())), \
+         patch("routers.mock.get_previously_mocked_ids", new=AsyncMock(return_value=set())):
+        selected, fallback = asyncio.run(
+            _select_questions("pyspark", "easy", 2, user, focus_concepts=[])
+        )
     assert fallback is False
     assert len(selected) > 0
 
@@ -440,16 +446,19 @@ def test_tc156_mock_only_questions_in_pro_elite_sessions():
 
 def test_tc157_freshness_scoring_avoids_recent_questions():
     """TC-157: _select_questions avoids recently-seen questions when pool is large enough."""
+    from unittest.mock import AsyncMock, patch
     from routers.mock import _select_questions
     # Use a real user placeholder — freshness is based on DB history, so a new user sees all as fresh
     user = {"id": "00000000-0000-0000-0000-000000000001", "plan": "elite"}
-    selected1, _ = asyncio.run(
-        _select_questions("pyspark", "easy", 1, user)
-    )
-    # Second call may or may not re-select; just verify it returns valid data
-    selected2, _ = asyncio.run(
-        _select_questions("pyspark", "easy", 1, user)
-    )
+    with patch("routers.mock._get_solved_ids_for_track", new=AsyncMock(return_value=set())), \
+         patch("routers.mock.get_previously_mocked_ids", new=AsyncMock(return_value=set())):
+        selected1, _ = asyncio.run(
+            _select_questions("pyspark", "easy", 1, user)
+        )
+        # Second call may or may not re-select; just verify it returns valid data
+        selected2, _ = asyncio.run(
+            _select_questions("pyspark", "easy", 1, user)
+        )
     assert len(selected1) == 1
     assert len(selected2) == 1
 

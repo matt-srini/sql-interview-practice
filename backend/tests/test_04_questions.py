@@ -23,12 +23,13 @@ _easy_spark_id = _spark_catalog["easy"][0]["id"]
 
 
 def test_tc069_locked_question_returns_403():
-    """TC-069: Free user GET locked medium question → 403."""
+    """TC-069: Free user GET locked medium question → 200 preview (locked in progress)."""
     with TestClient(app) as client:
         _make_user(client, plan="free")
         r = client.get(f"/api/questions/{_medium_sql_id}")
-    assert r.status_code == 403
-    assert "error" in r.json()
+    assert r.status_code == 200
+    body = r.json()
+    assert body.get("progress", {}).get("unlocked") is False
 
 
 def test_tc070_unlocked_question_returns_detail():
@@ -98,7 +99,7 @@ def test_tc073_python_question_has_test_cases_and_signature():
     assert "test_cases" in body
     assert isinstance(body["test_cases"], list)
     assert len(body["test_cases"]) > 0
-    assert "function_signature" in body
+    assert "starter_code" in body
 
 
 def test_tc074_pyspark_question_has_4_options_no_correct():
