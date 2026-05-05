@@ -307,16 +307,16 @@ Files: `db.py`, `progress.py`, `unlock.py`
 
 **Free-tier thresholds — code tracks (SQL, Python, Pandas):**
 - Medium: 8 easy → 3 · 15 easy → 8 · 25 easy → all
-- Hard: 8 medium → 3 · 15 medium → 8 · 22 medium → 15 *(cap = 15)*
+- Hard: 8 medium → 3 · 15 medium → 8 · 22 medium → 15 *(cap = 8)*
 
 **Free-tier thresholds — PySpark** (higher thresholds — MCQ is lower cognitive effort):
 - Medium: 12 easy → 3 · 20 easy → 8 · 30 easy → all
-- Hard: 15 medium → 5 · 22 medium → 10 *(cap = 10)*
+- Hard: 15 medium → 5 · 22 medium → 10 *(cap = 5)*
 
 **Learning path shortcuts:** `compute_unlock_state` accepts `path_state: dict`. `starter_done=True` → all medium unlocked (bypasses threshold grinding). `intermediate_done=True` → full hard cap unlocked. The router fetches path completion state from `GET /api/paths` and passes it in.
 
 **Mock daily limits** (enforced in `compute_mock_access`):
-- Free: 1 medium mock/day, unlimited easy and hard
+- Free: 1 medium mock/day, unlimited easy; **hard mocks are plan-locked** (Pro required)
 - Pro: 3 hard mocks/day, unlimited easy and medium
 - Elite: unlimited
 
@@ -350,11 +350,14 @@ Prefix: `/api/mock`
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
+| GET | `/api/mock/access` | required | Pre-flight access check: returns per-difficulty `can_start`, `block_reason`, `needs_upgrade`, `daily_limit`, `daily_used` for the given `?track=` and current plan. UI-only preflight — does not gate actual session creation. |
 | GET | `/api/mock/history` | required | Past sessions list (last 20), sorted by `started_at DESC` |
-| POST | `/api/mock/start` | required | Start a session; selects questions, persists, returns full question payloads |
+| GET | `/api/mock/analytics` | required (Elite) | Aggregate analytics over last 50 sessions: score trends, concept accuracy, track/difficulty splits |
+| POST | `/api/mock/start` | required | Start a session; selects questions, persists, returns full question payloads. Returns **409** `{"error": "active_session_exists", "session_id": ..., "track": ..., "difficulty": ..., "mode": ...}` if the user already has an active session. |
 | GET | `/api/mock/{id}` | required | Load session state (for reload recovery) |
 | POST | `/api/mock/{id}/submit` | required | Evaluate an answer mid-session; updates `mock_session_questions`; no solutions returned |
 | POST | `/api/mock/{id}/finish` | required | Mark session completed; returns summary with per-question solutions (idempotent) |
+| DELETE | `/api/mock/{id}` | required | Discard an active session entirely (removes from history/stats). Only allowed within 120 s of `started_at`; returns 204. Returns 400 if already completed, 403 if older than 120 s. |
 
 > **Access enforcement:** `POST /api/mock/start` validates plan and daily limits server-side via `compute_mock_access()` before persisting any session. A 403 is returned if the user's plan doesn't allow the requested difficulty, or if daily limits are exhausted. The daily-limit check at `GET /api/mock/access` is a UI preflight only — it does not gate actual session creation.
 
@@ -383,8 +386,10 @@ mock_sessions (id BIGSERIAL, user_id UUID, mode, track, difficulty,
 
 mock_session_questions (id BIGSERIAL, session_id BIGINT→mock_sessions, question_id INT,
                         track TEXT, position INT, is_solved BOOL, submitted_at TIMESTAMPTZ,
-                        final_code TEXT, time_spent_s INT)
+                        final_code TEXT, time_spent_s INT, is_follow_up BOOL)
 ```
+
+`is_follow_up = true` marks questions that were injected as targeted follow-ups based on weak-spot analysis of the user's prior submission history (sourced via `_inject_follow_ups()` in `mock.py`). The debrief pattern observation uses this flag to surface follow-up performance as a coaching signal.
 
 ### Question selection
 

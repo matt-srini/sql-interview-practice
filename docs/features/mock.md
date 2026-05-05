@@ -88,6 +88,8 @@ Returns 403 for non-Elite plans. Panel appears on MockHub.js above the history t
 - **Hints and concept tags** visible on each question.
 - **Submit per question** — returns correct/incorrect + feedback immediately. **No solution revealed mid-session** (verified by API; solutions are withheld from the `/submit` response).
 - **Exit confirmation** — clicking Exit or End Session shows a confirm dialog.
+- **Discard prompt** — if a user exits within ~60 seconds of starting with no activity (no submissions), the frontend offers to discard the session entirely. `DELETE /api/mock/:id` removes it from history and stats. The server enforces a 120-second window; requests outside the window return 403.
+- **Active session guard** — starting a new session while one is already active returns 409 from `POST /api/mock/start`. The response body includes the existing `session_id`, `track`, `difficulty`, and `mode` so the UI can offer a "Resume" link.
 - **Session reload recovery** — navigating back to `/mock/:id` restores state from the server. Remaining time is recomputed from `started_at`.
 - **Mobile** — collapsible left panel for the question description.
 
@@ -141,10 +143,11 @@ Shown after `POST /api/mock/:id/finish`:
 | GET | `/api/mock/access` | Required | Pre-flight: per-difficulty access state for a given track |
 | GET | `/api/mock/history` | Required | Last 20 sessions |
 | GET | `/api/mock/analytics` | Required (Elite) | Aggregate analytics over last 50 sessions — scores, trends, concepts |
-| POST | `/api/mock/start` | Required | Start a session; accepts `focus_concepts` for Elite focus mode |
+| POST | `/api/mock/start` | Required | Start a session; accepts `focus_concepts` for Elite focus mode. Returns 409 if an active session already exists (body includes `session_id`, `track`, `difficulty`, `mode`). |
 | GET | `/api/mock/:id` | Required | Load/reload session state |
 | POST | `/api/mock/:id/submit` | Required | Submit one answer mid-session |
 | POST | `/api/mock/:id/finish` | Required | End session, get full summary with solutions |
+| DELETE | `/api/mock/:id` | Required | Discard an active session (no history entry, no stats impact). Must be called within 120 s of `started_at`. Returns 204. Returns 403 if too old, 400 if already completed. |
 
 ---
 
