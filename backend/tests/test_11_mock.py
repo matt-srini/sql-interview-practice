@@ -325,7 +325,7 @@ def test_tc147_pro_user_4th_hard_same_day_blocked():
         _make_user(client, plan="pro", existing_user=user)
         r = _start_pyspark_session(client, difficulty="hard")
     assert r.status_code == 403
-    detail = r.json().get("detail", "").lower()
+    detail = r.json().get("error", "").lower()
     assert "daily" in detail or "limit" in detail or "elite" in detail
 
 
@@ -362,7 +362,7 @@ def test_tc149_non_elite_company_filter_returns_403():
             "company_filter": "Meta",
         })
     assert r.status_code == 403
-    assert "elite" in r.json().get("detail", "").lower() or "Elite" in r.json().get("detail", "")
+    assert "elite" in r.json().get("error", "").lower() or "Elite" in r.json().get("error", "")
 
 
 def test_tc150_elite_company_filter_creates_session():
@@ -413,7 +413,7 @@ def test_tc154_focus_fallback_when_pool_too_small():
     """TC-154: _select_questions with concept matching few questions → focus_fallback: True."""
     from routers.mock import _select_questions
     user = {"id": "00000000-0000-0000-0000-000000000001", "plan": "elite"}
-    selected, fallback = asyncio.get_event_loop().run_until_complete(
+    selected, fallback = asyncio.run(
         _select_questions("pyspark", "easy", 2, user, focus_concepts=["NONEXISTENT_CONCEPT_XYZ"])
     )
     assert fallback is True
@@ -424,7 +424,7 @@ def test_tc155_empty_focus_concepts_treated_as_no_filter():
     """TC-155: _select_questions with focus_concepts=[] → full pool, focus_fallback: False."""
     from routers.mock import _select_questions
     user = {"id": "00000000-0000-0000-0000-000000000001", "plan": "elite"}
-    selected, fallback = asyncio.get_event_loop().run_until_complete(
+    selected, fallback = asyncio.run(
         _select_questions("pyspark", "easy", 2, user, focus_concepts=[])
     )
     assert fallback is False
@@ -443,11 +443,11 @@ def test_tc157_freshness_scoring_avoids_recent_questions():
     from routers.mock import _select_questions
     # Use a real user placeholder — freshness is based on DB history, so a new user sees all as fresh
     user = {"id": "00000000-0000-0000-0000-000000000001", "plan": "elite"}
-    selected1, _ = asyncio.get_event_loop().run_until_complete(
+    selected1, _ = asyncio.run(
         _select_questions("pyspark", "easy", 1, user)
     )
     # Second call may or may not re-select; just verify it returns valid data
-    selected2, _ = asyncio.get_event_loop().run_until_complete(
+    selected2, _ = asyncio.run(
         _select_questions("pyspark", "easy", 1, user)
     )
     assert len(selected1) == 1

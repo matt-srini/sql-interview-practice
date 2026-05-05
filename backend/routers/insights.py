@@ -579,9 +579,7 @@ def build_study_plan(
                 track=track,
             )
 
-    # Step 3: Hard practice gap (track with lowest solved-hard ratio, if < 30%)
-    worst_hard_track: str | None = None
-    worst_hard_ratio = 1.0
+    # Step 3: Hard practice gap — add one action per track with < 30% hard coverage
     for track in _TRACK_ORDER:
         module = _TOPIC_MODULES[track]
         grouped = module.get_questions_by_difficulty()
@@ -591,20 +589,16 @@ def build_study_plan(
         hard_ids = {int(q["id"]) for q in grouped.get("hard", [])}
         solved_hard = len(per_track_solved_question_ids.get(track, set()) & hard_ids)
         ratio = solved_hard / total_hard
-        if ratio < worst_hard_ratio:
-            worst_hard_ratio = ratio
-            worst_hard_track = track
-
-    if worst_hard_track and worst_hard_ratio < 0.3:
-        track_label = _TRACK_LABELS.get(worst_hard_track, worst_hard_track)
-        _add(
-            "practice_hard",
-            f"Push into {track_label} hard questions",
-            f"Only {round(worst_hard_ratio * 100)}% hard coverage — interviewers expect you to handle tough edge cases.",
-            "Go to hard →",
-            f"/practice/{worst_hard_track}",
-            track=worst_hard_track,
-        )
+        if ratio < 0.3:
+            track_label = _TRACK_LABELS.get(track, track)
+            _add(
+                "practice_hard",
+                f"Push into {track_label} hard questions",
+                f"Only {round(ratio * 100)}% hard coverage — interviewers expect you to handle tough edge cases.",
+                "Go to hard →",
+                f"/practice/{track}",
+                track=track,
+            )
 
     # Step 4: Mock boost — fewer than 3 completed mocks in the last 14 days
     cutoff_14d = datetime.now(UTC) - timedelta(days=14)
@@ -705,9 +699,9 @@ def build_session_debrief(
             if total_count > 1
             else "Perfect session — question solved"
         )
-    elif accuracy >= 0.67:
+    elif accuracy >= 0.5:
         score_part = f"Solid session — {solved_count} of {total_count} solved"
-    elif accuracy >= 0.34:
+    elif accuracy >= 1 / 3:
         score_part = f"Partial session — {solved_count} of {total_count} solved"
     else:
         score_part = f"Tough session — {solved_count} of {total_count} solved"
