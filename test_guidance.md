@@ -34,6 +34,7 @@
 | 14 | [Payments & Webhooks](#14-payments--webhooks) |
 | 15 | [Rate Limiting](#15-rate-limiting) |
 | 16 | [Security Guards](#16-security-guards) |
+| 17 | [Content & Static Integrity](#17-content--static-integrity) |
 
 ---
 
@@ -170,6 +171,16 @@ Use `itertools.count` (not `uuid4`) — deterministic, readable in failure outpu
 **TC-005 · Config endpoint returns provider availability**
 - Steps: `GET /api/config`
 - Expected: 200; body contains `"google_oauth_enabled"` and `"github_oauth_enabled"` as booleans
+- Tier: all
+
+**TC-240 · Session cookie uses SameSite=Lax attribute**
+- Steps: `GET /api/catalog` (sets the session cookie)
+- Expected: `set-cookie` response header includes `samesite=lax` (case-insensitive)
+- Tier: all
+
+**TC-241 · Rate-limit headers present on every response**
+- Steps: `GET /api/catalog`
+- Expected: response includes `X-RateLimit-Limit` and `X-RateLimit-Remaining` headers as numeric strings
 - Tier: all
 
 ---
@@ -401,6 +412,12 @@ resets DB between tests. No cross-test state.
 - Expected: 200
 - Tier: all
 
+**TC-242 · Login failure counter resets after a successful login**
+- Preconditions: monkeypatch `LOGIN_LOCKOUT_MAX_ATTEMPTS=3`; registered user with verified email
+- Steps: call `POST /api/auth/login` with wrong password 2 times; then call with correct password; then call with wrong password 2 more times
+- Expected: account is NOT locked after the second round of failures (counter was reset by the successful login)
+- Tier: all
+
 ---
 
 ### 2I. GET /api/auth/me fields
@@ -562,8 +579,8 @@ tests where they cover the same code path — test the pure function directly.
 - Steps (unit): `normalize_plan("lifetime_elite")` returns `"elite"`
 - Tier: all
 
-**TC-068 · Lifetime variants are not downgraded by subscription.cancelled webhook (see TC-171)**
-- Cross-reference: TC-171
+**TC-068 · Lifetime variants are not downgraded by subscription.cancelled webhook**
+- Cross-reference: TC-220 (lifetime_elite), TC-221 (lifetime_pro)
 
 ---
 
@@ -678,6 +695,24 @@ worrying about unlock thresholds.
 - Expected: 200 (no error); submission record in DB contains the provided duration
 - Tier: all
 
+**TC-243 · Submit always returns structure_correct field**
+- Preconditions: pro user; any easy SQL question
+- Steps: `POST /api/submit { question_id, query: <any query> }`
+- Expected: 200; response body always contains `structure_correct` as a boolean (never absent)
+- Tier: all
+
+**TC-244 · required_concepts with enforce=true: correct result + missing concept → structure_correct: false**
+- Preconditions: use a question that has `required_concepts` with `enforce: true` (e.g. a window-function question); craft a query that produces the correct data result without using the required technique
+- Steps: `POST /api/submit { question_id, query: <correct-data-wrong-technique> }`
+- Expected: 200; `correct: true`; `structure_correct: false`; feedback references the missing concept
+- Tier: all
+
+**TC-245 · required_concepts with enforce=false: correct result + missing concept → structure_correct: true with advisory**
+- Preconditions: use a question that has `required_concepts` with `enforce: false`; craft a query that is data-correct but skips the concept
+- Steps: `POST /api/submit { question_id, query: <correct-data-bypass-technique> }`
+- Expected: 200; `correct: true`; `structure_correct: true`; `feedback` contains advisory text about the concept
+- Tier: all
+
 ---
 
 ### 5C. SQL guard
@@ -710,6 +745,37 @@ worrying about unlock thresholds.
 **TC-090 · Valid subquery SELECT accepted**
 - Steps: `POST /api/run-query { query: "SELECT * FROM (SELECT user_id FROM users LIMIT 5) t" }`
 - Expected: 200 with rows
+- Tier: all
+
+**TC-246 · Cartesian join (CROSS JOIN) rejected**
+- Steps: `POST /api/run-query { query: "SELECT * FROM users CROSS JOIN orders" }`
+- Expected: 400; error references join restriction
+- Tier: all
+
+**TC-247 · Un-joined multi-table query (implicit cartesian) rejected**
+- Steps: `POST /api/run-query { query: "SELECT * FROM users, orders WHERE 1=1" }`
+- Expected: 400
+- Tier: all
+
+**TC-248 · Query with 5 or more joins rejected**
+- Steps: `POST /api/run-query` with a query that joins 5+ tables
+- Expected: 400; error references join count limit
+- Tier: all
+
+**TC-249 · Dangerous DuckDB functions rejected (read_csv, read_json, glob, etc.)**
+- Steps (parametrized): `POST /api/run-query { query: "SELECT * FROM read_csv('/etc/passwd')" }` and similarly for `read_json`, `glob`, `read_parquet`, `httpfs`, `http_get`, `from_json`, `iceberg_scan`, `delta_scan`, `read_text`
+- Expected: 400 for each; error references restriction
+- Tier: all
+
+**TC-250 · run-query on a locked question returns 403**
+- Preconditions: free user; no solves; pick a medium question ID
+- Steps: `POST /api/run-query { question_id: <medium_id>, query: "SELECT 1" }`
+- Expected: 403 with `{error, request_id}` shape
+- Tier: Free
+
+**TC-251 · run-query on a non-existent question_id returns 404**
+- Steps: `POST /api/run-query { question_id: 99999999, query: "SELECT 1" }`
+- Expected: 404; body has `"error"` and `"request_id"` keys
 - Tier: all
 
 ---
@@ -1060,6 +1126,48 @@ For plan-gate tests, seed via `_make_user(plan=...)`.
 - Expected: 404 or 400
 - Tier: Pro
 
+**TC-171 · DELETE /api/mock/{id} within 2 minutes discards session**
+- Preconditions: pro user; active session started within the last 2 minutes
+- Steps: `DELETE /api/mock/{id}`
+- Expected: 204; subsequent `GET /api/mock/{id}` returns 404
+- Tier: Pro
+
+**TC-252 · DELETE /api/mock/{id} more than 2 minutes after start → 403**
+- Preconditions: pro user; active session whose `started_at` is more than 2 minutes ago (manipulate via DB)
+- Steps: `DELETE /api/mock/{id}`
+- Expected: 403
+- Tier: Pro
+
+**TC-253 · DELETE /api/mock/{id} on completed session → 403**
+- Preconditions: pro user; completed session
+- Steps: `DELETE /api/mock/{id}`
+- Expected: 403
+- Tier: Pro
+
+**TC-254 · Different user submitting to another user's session → 404**
+- Preconditions: user A starts a session; user B is logged in (separate client)
+- Steps: user B calls `POST /api/mock/{session_A_id}/submit { question_id, selected_option: 0 }`
+- Expected: 404; body references "Session not found" (not "Forbidden" — ownership is opaque)
+- Tier: all
+
+**TC-255 · GET /api/mock/{id} returns 404 for a session owned by a different user**
+- Preconditions: same setup as TC-254
+- Steps: user B calls `GET /api/mock/{session_A_id}`
+- Expected: 404
+- Tier: all
+
+**TC-256 · Submitting a question not in the session → 400**
+- Preconditions: active session; pick a valid question ID that is NOT in the session's question list
+- Steps: `POST /api/mock/{id}/submit { question_id: <outside_session>, selected_option: 0 }`
+- Expected: 400; body references question not in session
+- Tier: all
+
+**TC-257 · Finish is idempotent (second call returns 200)**
+- Preconditions: active session
+- Steps: `POST /api/mock/{id}/finish`; then `POST /api/mock/{id}/finish` again
+- Expected: both calls return 200; response payloads are equivalent
+- Tier: all
+
 ---
 
 ### 11C. Plan gates — HTTP level
@@ -1153,6 +1261,28 @@ For plan-gate tests, seed via `_make_user(plan=...)`.
 - Expected: full pool used; `focus_fallback == False`
 - Tier: Elite
 
+**TC-258 · Multiple focus_concepts use OR logic (question matches any one concept)**
+- Steps (unit): `_select_questions` with `focus_concepts=["window functions", "CTEs"]`; pool has questions tagged only with "window functions" and others only with "CTEs"
+- Expected: questions tagged with either concept are included; the match is OR not AND
+- Tier: Elite
+
+**TC-259 · Focus concept matching is case-insensitive**
+- Steps (unit): `_select_questions` with `focus_concepts=["Window Functions"]`; pool has questions tagged `"window functions"` (lowercase)
+- Expected: those questions are selected (case mismatch does not exclude them)
+- Tier: Elite
+
+**TC-260 · lifetime_elite can use focus_concepts**
+- Preconditions: lifetime_elite user
+- Steps: `POST /api/mock/start { mode: "30min", track: "pyspark", difficulty: "easy", focus_concepts: ["dataframe operations"] }`
+- Expected: 201 (not 403)
+- Tier: lifetime_elite
+
+**TC-261 · focus_fallback is always present in /start response**
+- Preconditions: elite user; start a session with no focus_concepts
+- Steps: `POST /api/mock/start { mode: "30min", track: "pyspark", difficulty: "easy" }`
+- Expected: 201; response body contains `"focus_fallback"` key (value is `false` when no focus filter applied)
+- Tier: Elite
+
 ---
 
 ### 11G. Mock pool and freshness
@@ -1211,6 +1341,38 @@ For plan-gate tests, seed via `_make_user(plan=...)`.
 - Expected: `debrief.patterns` is an array (possibly empty); `debrief.priority_action` present (may be null)
 - Tier: Elite
 
+**TC-262 · debrief contains all documented keys**
+- Preconditions: elite user; completed session
+- Expected: `debrief` object contains exactly: `headline`, `patterns`, `priority_action`, `priority_path_slug`, `priority_path_title`, `priority_question_ids`; no undocumented internal keys present
+- Tier: Elite
+
+**TC-263 · Perfect session with ≤50% time used → time-to-spare headline variant**
+- Preconditions: elite user; 1-question session; answer correctly in very short time (< 50% of time_limit_s)
+- Steps: finish session
+- Expected: `debrief.headline` references having time to spare (e.g. contains "time")
+- Tier: Elite
+
+**TC-264 · Session using nearly all time → time-pressure headline variant**
+- Preconditions: elite user; session where `time_used_s` is close to `time_limit_s` (≥ 90%); manipulate via DB if needed
+- Expected: `debrief.headline` references the time limit
+- Tier: Elite
+
+**TC-265 · patterns includes time-sink entry when one question dominates time (>55%)**
+- Preconditions: elite user; 3-question session where one question consumed >55% of total time
+- Expected: `debrief.patterns` contains an entry referencing time spent on that question
+- Note: single-question sessions do NOT generate a time-sink pattern
+- Tier: Elite
+
+**TC-266 · priority_path_slug is present when weak concept maps to a learning path**
+- Preconditions: elite user; weak concept that has a corresponding path (e.g. concept "window functions" maps to a SQL path)
+- Expected: `debrief.priority_path_slug` is a non-null string; `debrief.priority_path_title` is a non-null string
+- Tier: Elite
+
+**TC-267 · priority_question_ids excludes questions already in the session**
+- Preconditions: elite user; session contains question IDs X and Y; both X and Y are tagged with the weak concept
+- Expected: `debrief.priority_question_ids` does NOT contain X or Y
+- Tier: Elite
+
 ---
 
 ### 11I. Mock analytics (Elite)
@@ -1219,6 +1381,7 @@ For plan-gate tests, seed via `_make_user(plan=...)`.
 - Preconditions: elite user with at least 2 completed mock sessions
 - Steps: `GET /api/mock/analytics`
 - Expected: 200; body contains `total_sessions`, `sessions_last_30d`, `avg_score`, `best_score`, `avg_time_used_pct`, `score_trend`, `top_concepts`, `weak_concepts`, `track_breakdown`, `difficulty_breakdown`
+- Note: `weak_concepts` in mock analytics requires **< 60% accuracy and ≥ 3 attempts** (different threshold from dashboard insights which uses < 50%); `top_concepts` is capped at 5 entries; `weak_concepts` capped at 3; `score_trend` is capped at the last 10 sessions in chronological order
 - Tier: Elite
 
 **TC-166 · GET /api/mock/analytics returns 403 for Pro**
@@ -1257,6 +1420,45 @@ For plan-gate tests, seed via `_make_user(plan=...)`.
 
 ---
 
+### 11K. Follow-up question injection
+
+Some questions have a `follow_up_id` field. When a user answers such a question correctly
+during a session, the follow-up question is injected into the session immediately after the
+parent's position. This mechanic is tested via unit tests on the session-mutation logic plus
+integration tests through the submit endpoint.
+
+**TC-284 · Correct answer on question with follow_up_id injects follow-up into session**
+- Preconditions: pro user; session contains a question Q that has `follow_up_id = FU`; FU is a valid question ID
+- Steps: `POST /api/mock/{id}/submit { question_id: Q, <correct answer> }`
+- Expected: 200; `follow_up_injected: true` in response; subsequent `GET /api/mock/{id}` shows FU in the question list at position immediately after Q
+- Tier: Pro
+
+**TC-285 · Wrong answer does not inject follow-up**
+- Preconditions: same as TC-284 but answer incorrectly
+- Steps: `POST /api/mock/{id}/submit { question_id: Q, <wrong answer> }`
+- Expected: 200; `follow_up_injected: false`; FU does NOT appear in the session
+- Tier: Pro
+
+**TC-286 · Follow-up not injected when parent is the last question in the session**
+- Preconditions: session where Q with `follow_up_id` is the last question
+- Steps: answer Q correctly
+- Expected: `follow_up_injected: false`; session question count unchanged
+- Tier: Pro
+
+**TC-287 · follow_up_injected is always present in submit response**
+- Preconditions: active session; any question (with or without follow_up_id)
+- Steps: `POST /api/mock/{id}/submit { question_id, <any answer> }`
+- Expected: response body always contains `"follow_up_injected"` key as a boolean
+- Tier: all
+
+**TC-288 · Injected follow-up does not chain further (no recursive injection)**
+- Preconditions: FU itself has a `follow_up_id`; Q is answered correctly (injecting FU); FU is answered correctly
+- Steps: answer Q correctly, then answer FU correctly
+- Expected: FU's own follow-up is NOT injected into the session (injection is one level deep only)
+- Tier: Pro
+
+---
+
 ## 12. Dashboard & Insights
 
 **Connection rules:** Use `_make_user` for plan seeding. Use `_insert_submission` and
@@ -1287,6 +1489,24 @@ per user in-process — clear between test functions via `isolated_state`.
 - Preconditions: user with at least 1 submission
 - Steps: `GET /api/dashboard`
 - Expected: `recent_activity` array present (not null)
+- Tier: all
+
+**TC-268 · recent_activity is capped at 10 entries**
+- Preconditions: user with 11+ submissions across questions
+- Steps: `GET /api/dashboard`
+- Expected: `recent_activity` array length ≤ 10
+- Tier: all
+
+**TC-269 · concepts_by_track present and populated after solve with concepts**
+- Preconditions: user who has solved at least one question that has concept tags
+- Steps: `GET /api/dashboard`
+- Expected: `concepts_by_track` key present; contains at least one entry for the solved question's track; each entry includes the concept name
+- Tier: all
+
+**TC-270 · concepts_by_track is empty for a new user with no solves**
+- Preconditions: fresh user with no submissions
+- Steps: `GET /api/dashboard`
+- Expected: `concepts_by_track` is present but empty (empty object or empty arrays per track)
 - Tier: all
 
 ---
@@ -1412,6 +1632,18 @@ per user in-process — clear between test functions via `isolated_state`.
 - Expected: no two items share the same `(type, track)` combination
 - Tier: Elite
 
+**TC-295 · study_plan items are ordered by priority ascending**
+- Preconditions: elite user; DB state that generates multiple study_plan items with different priority values
+- Steps: `GET /api/dashboard/insights`
+- Expected: `study_plan` items are sorted by `priority` in ascending order (lowest integer first)
+- Tier: Elite
+
+**TC-296 · concept_drill cta_href starts with /practice/; learning_path cta_href contains /learn/**
+- Preconditions: elite user; at least one `concept_drill` item and one `learning_path` item in study_plan
+- Steps: `GET /api/dashboard/insights`
+- Expected: items of `type: "concept_drill"` have `cta_href` starting with `/practice/`; items of `type: "learning_path"` have `cta_href` containing `/learn/`
+- Tier: Elite
+
 ---
 
 ### 12E. Readiness score components (unit tests)
@@ -1517,6 +1749,29 @@ Use `_make_user` for authenticated user preconditions.
 - Expected: 401
 - Tier: all
 
+**TC-271 · plan=free → 400**
+- Steps: `POST /api/razorpay/create-order { plan: "free" }` (authenticated user)
+- Expected: 400; error references invalid upgrade target
+- Tier: all
+
+**TC-272 · Downgrade attempt → 400**
+- Preconditions: elite user
+- Steps: `POST /api/razorpay/create-order { plan: "pro" }` (attempting to downgrade from elite)
+- Expected: 400; error references invalid upgrade path
+- Tier: Elite
+
+**TC-273 · Razorpay SDK not installed or credentials not configured → 503**
+- Preconditions: monkeypatch `RAZORPAY_KEY_ID=""` or patch `razorpay` import to raise ImportError
+- Steps: `POST /api/razorpay/create-order { plan: "pro" }`
+- Expected: 503; body has `"error"` referencing service unavailability
+- Tier: all
+
+**TC-274 · Multiple create-order calls for same user → Razorpay customer created only once**
+- Preconditions: free user; Razorpay client mocked with a spy on `customer.create`
+- Steps: call `POST /api/razorpay/create-order { plan: "lifetime_pro" }` twice
+- Expected: `customer.create` called exactly once across both calls (deduplication)
+- Tier: all
+
 ---
 
 ### 14B. Verify payment
@@ -1582,6 +1837,34 @@ Use `_make_user` for authenticated user preconditions.
 - Expected: second call returns 200; only one `payment_events` row exists for that payment_id
 - Tier: all
 
+**TC-275 · subscription.charged → plan preserved (monthly renewal)**
+- Preconditions: pro user; their subscription is being renewed
+- Steps: webhook for `subscription.charged` for that subscription
+- Expected: 200; user plan remains `"pro"` (not downgraded)
+- Tier: Pro
+
+**TC-276 · subscription.halted → plan downgraded to free**
+- Preconditions: pro user with `plan="pro"`
+- Steps: webhook for `subscription.halted` for that user's subscription
+- Expected: 200; user plan becomes `"free"`
+- Tier: Pro
+
+**TC-277 · Webhook with unknown user_id → graceful 200 no crash**
+- Steps: `POST /api/razorpay/webhook` with valid signature; payload references a `user_id` that does not exist in the DB
+- Expected: 200; no 5xx; no DB side-effects
+- Tier: all
+
+**TC-278 · payment.failed event → ignored, plan unchanged**
+- Preconditions: free user
+- Steps: webhook for `payment.failed` for that user
+- Expected: 200 with `status: "ignored"` or similar; user plan unchanged (`"free"`)
+- Tier: all
+
+**TC-279 · Invalid target_plan in webhook payload → silently ignored**
+- Steps: webhook with `payment.captured`; payload `target_plan: "diamond"` (not a valid plan)
+- Expected: 200 with `status: "ignored"`; no DB plan changes
+- Tier: all
+
 ---
 
 ## 15. Rate Limiting
@@ -1621,6 +1904,12 @@ rate-limiter state is reset between tests.
 - Expected: first request after reset is not rate-limited
 - Tier: all
 
+**TC-280 · Redis connection failure → rate limiter falls back to in-memory**
+- Preconditions: monkeypatch `REDIS_URL` to an invalid/unreachable address
+- Steps: create the rate limiter; make a request
+- Expected: no crash; requests succeed; rate limiter operates with in-memory fallback
+- Tier: all
+
 ---
 
 ## 16. Security Guards
@@ -1644,6 +1933,22 @@ rate-limiter state is reset between tests.
 **TC-231 · Multiple statements rejected (SELECT + DDL)**
 - Steps: `POST /api/run-query { query: "SELECT 1; CREATE TABLE pwn AS SELECT 1" }`
 - Expected: 400
+- Tier: all
+
+**TC-281 · Cartesian join rejected on both run-query and submit**
+- Steps (parametrized): `POST /api/run-query { query: "SELECT * FROM users CROSS JOIN orders" }` and `POST /api/submit` with the same query
+- Expected: 400 for both; error references join restriction
+- Tier: all
+
+**TC-282 · Too-many-joins rejected (≥ 5 joins in one query)**
+- Steps: `POST /api/run-query { query: <SELECT joining 5 tables with JOINs> }`
+- Expected: 400; error references join count limit
+- Note: mirrors TC-248 but verifies the submit endpoint as well (both paths share the same guard)
+- Tier: all
+
+**TC-283 · Dangerous DuckDB file/network functions rejected on submit**
+- Steps (parametrized): `POST /api/submit { question_id, query: "SELECT * FROM read_csv('/etc/passwd')" }` (and similarly for other dangerous functions)
+- Expected: 400; guard rejects before execution
 - Tier: all
 
 ---
@@ -1699,16 +2004,63 @@ rate-limiter state is reset between tests.
 
 ---
 
+## 17. Content & Static Integrity
+
+**Connection rules:** These are read-only integrity checks that run entirely through Python
+without any HTTP calls. They verify that the shipped question content is internally consistent
+and executes without error. Mark the module with `pytestmark = pytest.mark.usefixtures("isolated_state")`.
+
+---
+
+### 17A. SQL expected_query execution
+
+**TC-289 · All SQL challenge expected_query execute without error**
+- Steps (parametrized over every entry in `questions.py` catalog): execute `question["expected_query"]` against the live DuckDB engine via `database.execute_query()`
+- Expected: no exception raised; result is a non-empty list (or empty list — not an exception)
+- Tier: static
+
+**TC-290 · All SQL sample expected_query execute without error**
+- Steps (parametrized over every entry in `sample_questions.py` catalog): execute `question["expected_query"]`
+- Expected: no exception raised
+- Tier: static
+
+---
+
+### 17B. Learning path integrity
+
+**TC-291 · Exactly 22 paths with correct track distribution**
+- Steps: load all paths via `path_loader.load_all_paths()` (or equivalent)
+- Expected: 22 paths total; SQL: 7, Python: 5, Pandas (python-data): 5, PySpark: 5
+- Tier: static
+
+**TC-292 · Each track has exactly one `starter` path and one `intermediate` path**
+- Steps: group loaded paths by `(track, shortcut_type)` where `shortcut_type` in ("starter", "intermediate")
+- Expected: each of the 4 tracks has exactly one entry per shortcut type (4 × 2 = 8 total shortcut paths)
+- Tier: static
+
+**TC-293 · All question IDs referenced in any path exist in their track's catalog**
+- Steps: for each path, load its `questions` array; look up each question ID in the correct track's catalog loader
+- Expected: no missing IDs; every referenced question_id exists in the track catalog
+- Tier: static
+
+**TC-294 · Each path's slug matches its JSON filename**
+- Steps: for each path file at `content/paths/*.json`, load it; compare `path["slug"]` to the filename stem
+- Expected: `path["slug"] == filename_without_extension` for every file
+- Tier: static
+
+---
+
 ## Appendix A: Test Case Index by Plan Tier
 
 | Plan tier | TC numbers |
 |-----------|-----------|
-| All tiers | TC-001–005, TC-006–007, TC-017, TC-024, TC-027, TC-028–032, TC-033, TC-038, TC-039–043, TC-069, TC-074, TC-075–090, TC-091–100, TC-101–118, TC-119–124, TC-169–170, TC-207, TC-211–212, TC-222–228, TC-229–239 |
+| All tiers | TC-001–005, TC-006–007, TC-017, TC-024, TC-027, TC-028–032, TC-033, TC-038, TC-039–043, TC-069, TC-074, TC-075–090, TC-091–100, TC-101–118, TC-119–124, TC-169–170, TC-207, TC-211–212, TC-222–228, TC-229–239, TC-240–241, TC-268–270, TC-271, TC-273, TC-277–279, TC-280, TC-287 |
 | Free | TC-008–016, TC-018–023, TC-025–026, TC-044–058, TC-059–062, TC-125–129, TC-133, TC-143, TC-146, TC-149, TC-151, TC-163, TC-167, TC-174, TC-192 |
-| Pro | TC-063, TC-065, TC-073, TC-130–131, TC-135–138, TC-144, TC-147, TC-162, TC-166, TC-193, TC-208, TC-213–216, TC-219 |
-| Elite | TC-064, TC-132, TC-134, TC-145, TC-148, TC-150, TC-153–161, TC-164–165, TC-168, TC-194–201, TC-210 |
+| Pro | TC-063, TC-065, TC-073, TC-130–131, TC-135–138, TC-144, TC-147, TC-162, TC-166, TC-193, TC-208, TC-213–216, TC-219, TC-284–288 |
+| Elite | TC-064, TC-132, TC-134, TC-145, TC-148, TC-150, TC-153–161, TC-164–165, TC-168, TC-194–201, TC-210, TC-242, TC-243–245, TC-258–261, TC-262–267, TC-295–296 |
 | lifetime_pro | TC-066, TC-068, TC-209, TC-221 |
-| lifetime_elite | TC-067, TC-068, TC-168, TC-220 |
+| lifetime_elite | TC-067, TC-068, TC-168, TC-220, TC-260 |
+| Static (no HTTP) | TC-289–294 |
 
 ---
 
@@ -1722,36 +2074,79 @@ rate-limiter state is reset between tests.
 | Hard cap (code: 8, PySpark: 5) | `unlock.py` FREE_HARD_CAP_* | TC-050, TC-058 |
 | Lifetime plan normalization | `unlock.py` normalize_plan | TC-066–068 |
 | mock_only exclusion from catalog | CLAUDE.md content footprint | TC-072, TC-156 |
-| SQL read-only guard | `sql_guard.py` | TC-085–090, TC-229–231 |
+| SQL read-only guard | `sql_guard.py` | TC-085–090, TC-229–231, TC-246–251 |
+| SQL cartesian/implicit-product guard | `sql_guard.py` | TC-246–247, TC-281 |
+| SQL join count limit (≥5) | `sql_guard.py` | TC-248, TC-282 |
+| SQL dangerous DuckDB functions | `sql_guard.py` | TC-249, TC-283 |
+| run-query on locked question | `routers/questions.py` | TC-250 |
+| run-query on nonexistent question | `routers/questions.py` | TC-251 |
 | Python AST guard | `python_guard.py` | TC-097–100, TC-232–236 |
 | 3-second SQL timeout | CLAUDE.md, evaluator.py | TC-078 |
 | 5-second Python/Pandas timeout | CLAUDE.md | TC-093, TC-104 |
 | 200-row cap | CLAUDE.md | TC-076 |
+| structure_correct field | `evaluator.py` | TC-243–245 |
+| required_concepts enforcement | question JSON + evaluator | TC-244–245 |
 | Close-miss feedback | CLAUDE.md backend behavior | TC-082 |
 | Repeat-attempt nudge | CLAUDE.md backend behavior | TC-083 |
 | Quality object on correct submit | CLAUDE.md backend behavior | TC-079 |
 | Anonymous-first identity | CLAUDE.md identity model | TC-006–007, TC-018 |
 | Login merges anon progress | CLAUDE.md identity model | TC-018 |
-| Login lockout | CLAUDE.md auth hardening | TC-039 |
+| Login lockout | CLAUDE.md auth hardening | TC-039, TC-242 |
 | CSRF mitigation | CLAUDE.md auth hardening | TC-040–041, TC-237–239 |
 | Non-enumeration (forgot-password) | CLAUDE.md backend behavior | TC-024 |
 | OAuth state single-use | CLAUDE.md OAuth hardening | TC-036 |
 | Magic link single-use | auth.py | TC-031 |
-| Session debrief plan gates | `docs/features/mock.md` | TC-158–164 |
+| Session cookie SameSite=Lax | CLAUDE.md auth | TC-240 |
+| X-RateLimit-* headers | `rate_limiter.py` | TC-241 |
+| Session debrief plan gates | `docs/features/mock.md` | TC-158–164, TC-262–267 |
+| Debrief time-to-spare headline | `routers/mock.py` | TC-263 |
+| Debrief time-pressure headline | `routers/mock.py` | TC-264 |
+| Debrief time-sink pattern | `routers/mock.py` | TC-265 |
+| Debrief priority_path_slug | `routers/mock.py` | TC-266 |
+| Debrief priority_question_ids | `routers/mock.py` | TC-267 |
 | Mock analytics plan gates | `docs/features/mock.md` | TC-165–168 |
+| Mock analytics weak_concepts threshold | `routers/mock.py` (< 60%) | TC-165 (note) |
+| Mock analytics top_concepts cap | `routers/mock.py` (max 5) | TC-165 (note) |
 | Company filter (Elite SQL only) | `docs/features/mock.md` | TC-133–134, TC-149–150 |
-| Focus mode (Elite only) | `docs/features/mock.md` | TC-151–155 |
+| Focus mode (Elite only) | `docs/features/mock.md` | TC-151–155, TC-258–261 |
+| Focus concept OR logic | `routers/mock.py` | TC-258 |
+| Focus concept case-insensitive | `routers/mock.py` | TC-259 |
+| focus_fallback always in response | `routers/mock.py` | TC-261 |
+| Mock session ownership | `routers/mock.py` | TC-254–255 |
+| Mock session DELETE endpoint | CLAUDE.md API table | TC-171, TC-252–253 |
+| Submit to other user's session | `routers/mock.py` | TC-254 |
+| Finish idempotency | `routers/mock.py` | TC-257 |
+| Follow-up injection | `routers/mock.py` | TC-284–288 |
 | Mock daily limits | `unlock.py` MOCK_DAILY_LIMITS | TC-125–132, TC-146–148 |
+| Dashboard recent_activity cap | `routers/dashboard.py` | TC-268 |
+| Dashboard concepts_by_track | `routers/dashboard.py` | TC-269–270 |
 | Dashboard insights caching (60s) | `routers/insights.py` | TC-202–203 |
 | Readiness score formula | `routers/insights.py` | TC-198–201 |
-| Study plan (Elite only) | `routers/insights.py` | TC-195–197 |
+| Study plan (Elite only) | `routers/insights.py` | TC-195–197, TC-295–296 |
+| Study plan ordering by priority | `routers/insights.py` | TC-295 |
+| Study plan cta_href patterns | `routers/insights.py` | TC-296 |
 | Weakest concepts (≥3 attempts) | `routers/insights.py` | TC-182–183 |
 | Recency-weighted concept accuracy | `routers/insights.py` | (see TC-182–191 setup notes) |
 | Streak logic | `db.py`, `routers/insights.py` | TC-042–043, TC-181 |
+| Razorpay plan=free rejected | `routers/razorpay.py` | TC-271 |
+| Razorpay downgrade rejected | `routers/razorpay.py` | TC-272 |
+| Razorpay SDK not configured → 503 | `routers/razorpay.py` | TC-273 |
+| Razorpay customer deduplication | `routers/razorpay.py` | TC-274 |
 | Webhook idempotency | `docs/features/pricing.md` | TC-216, TC-223 |
+| Webhook subscription.charged | `routers/razorpay.py` | TC-275 |
+| Webhook subscription.halted | `routers/razorpay.py` | TC-276 |
+| Webhook unknown user | `routers/razorpay.py` | TC-277 |
+| Webhook payment.failed ignored | `routers/razorpay.py` | TC-278 |
+| Webhook invalid target_plan | `routers/razorpay.py` | TC-279 |
 | Lifetime subscription protection | `docs/features/pricing.md` | TC-220–221 |
+| Rate limiter Redis fallback | `rate_limiter.py` | TC-280 |
 | Sample mode: no challenge progress | CLAUDE.md | TC-114–115 |
 | Sample exhaustion (409) | CLAUDE.md | TC-112 |
 | Error shape { error, request_id } | CLAUDE.md | TC-004 |
 | X-Request-ID on all responses | CLAUDE.md | TC-002 |
 | X-Response-Time-Ms on all responses | CLAUDE.md | TC-003 |
+| SQL expected_query execution | `questions.py`, DuckDB | TC-289–290 |
+| Learning path count and distribution | `path_loader.py`, CLAUDE.md | TC-291 |
+| Path shortcut type uniqueness | `path_loader.py`, CLAUDE.md | TC-292 |
+| Path question ID validity | `path_loader.py` | TC-293 |
+| Path slug matches filename | `path_loader.py` | TC-294 |
