@@ -2,7 +2,7 @@ fastapi
 uvicorn[standard]
 duckdb
 pandas
-pytest
+pytest>=9.0.3
 sqlglot
 httpx
 redis
@@ -12,3 +12,6 @@ sqlalchemy[asyncio]
 alembic
 razorpay
 sentry-sdk[fastapi]
+# Pin minimum safe versions for packages with known CVEs
+pygments>=2.20.0
+requests>=2.33.0

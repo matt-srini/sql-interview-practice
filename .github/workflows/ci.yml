@@ -38,7 +38,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install --upgrade pip && pip install -r requirements.txt
 
       - name: Install audit tool
         run: pip install pip-audit
@@ -47,7 +47,9 @@ jobs:
         run: python scripts/validate_content.py
 
       - name: Dependency audit (Python)
-        run: pip-audit --strict
+        # CVE-2026-3219 affects pip itself; no fix version is available upstream.
+        # All other CVEs are addressed via pinned minimums in requirements.txt.
+        run: pip-audit --strict --ignore-vuln CVE-2026-3219
 
       - name: Run migrations
         run: alembic upgrade head
