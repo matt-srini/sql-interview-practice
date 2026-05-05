@@ -36,7 +36,6 @@ from db import (
     get_daily_mock_usage,
     get_mock_history,
     get_mock_session,
-    get_mock_session_owner,
     get_previously_mocked_ids,
     get_submission_events,
     inject_follow_up_question,
@@ -938,9 +937,6 @@ async def submit_answer(
     )
     session = await get_mock_session(session_id, current_user["id"])
     if session is None:
-        # Diagnostic: look up session without user filter to distinguish
-        # "session doesn't exist" from "user_id mismatch"
-        await get_mock_session_owner(session_id)
         logger.warning(
             "submit_answer: session not found — session_id=%s user_id=%s",
             session_id, current_user["id"],
