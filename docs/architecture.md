@@ -115,11 +115,11 @@ Pure policy function in `backend/unlock.py`. Signature: `compute_unlock_state(pl
 
 **Free-tier thresholds — code tracks (SQL, Python, Pandas):**
 - Medium: 8 easy solved → 3 medium · 15 → 8 medium · 25 → all medium
-- Hard: 8 medium solved → 3 hard · 15 → 8 hard · 22 → 15 hard *(hard cap = 15)*
+- Hard: 8 medium solved → 3 hard · 15 → 8 hard · 22 → 15 hard *(hard cap = 8)*
 
 **Free-tier thresholds — PySpark** (higher because MCQ is lower-effort than writing code):
 - Medium: 12 easy solved → 3 medium · 20 → 8 medium · 30 → all medium
-- Hard: 15 medium solved → 5 hard · 22 → 10 hard *(hard cap = 10)*
+- Hard: 15 medium solved → 5 hard · 22 → 10 hard *(hard cap = 5)*
 
 **Learning path shortcuts (`path_state`):** `starter_done=True` → all medium unlocked immediately (same ceiling as hitting the top threshold). `intermediate_done=True` → full hard cap unlocked. Either flag is an express-lane alternative to threshold grinding, giving learning-path completers a meaningful reward.
 

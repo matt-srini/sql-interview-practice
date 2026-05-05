@@ -78,7 +78,7 @@ The full solution (correct query + explanation) only appears after you've seen a
 - Medium unlocks in batches as you solve Easy questions (thresholds vary by track):
   - SQL / Python / Pandas: 8 solved → 3 medium · 15 → 8 medium · 25 → all medium
   - PySpark: 12 solved → 3 medium · 20 → 8 medium · 30 → all medium
-- Hard unlocks the same way as you solve Medium (capped at 15 for code tracks, 10 for PySpark)
+- Hard unlocks the same way as you solve Medium (capped at 8 for code tracks, 5 for PySpark)
 - **Shortcut:** Completing a learning path unlocks the full medium or hard tier for that track immediately
 
 **Pro plan**
