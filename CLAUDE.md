@@ -282,11 +282,11 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 
 **Free-tier unlock thresholds (code tracks — SQL, Python, Pandas):**
 - Medium: 8 easy → 3 medium · 15 easy → 8 medium · 25 easy → all medium
-- Hard: 8 medium → 3 hard · 15 medium → 8 hard · 22 medium → 15 hard *(cap: 15)*
+- Hard: 8 medium → 3 hard · 15 medium → 8 hard · 22 medium → 15 hard *(cap: 8)*
 
 **Free-tier unlock thresholds (PySpark — higher because MCQ is lower-effort):**
 - Medium: 12 easy → 3 medium · 20 easy → 8 medium · 30 easy → all medium
-- Hard: 15 medium → 5 hard · 22 medium → 10 hard *(cap: 10)*
+- Hard: 15 medium → 5 hard · 22 medium → 10 hard *(cap: 5)*
 
 **Learning path shortcuts:** completing the Starter path for a track → all medium unlocked immediately; completing the Intermediate path → full hard cap unlocked. Either acts as an express-lane alternative to threshold grinding.
 
@@ -333,12 +333,14 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 | GET | `/api/submissions` | Submission history for a question (`track`, `question_id`, `limit` params) |
 | GET | `/api/paths` | All learning paths with per-user `solved_count` |
 | GET | `/api/paths/{slug}` | Path detail with per-question `state` (solved/unlocked/locked) |
+| GET | `/api/mock/access` | Pre-flight access check — per-difficulty `can_start`, `block_reason`, `needs_upgrade`, `daily_limit`, `daily_used` |
 | GET | `/api/mock/history` | Past mock sessions list (last 20) |
 | GET | `/api/mock/analytics` | Elite only: aggregate analytics over last 50 sessions |
-| POST | `/api/mock/start` | Start a mock session `{ mode, track, difficulty, focus_concepts? }` → `{ session_id, questions[], time_limit_s, started_at, focus_fallback }` |
+| POST | `/api/mock/start` | Start a mock session `{ mode, track, difficulty, focus_concepts? }` → `{ session_id, questions[], time_limit_s, started_at, focus_fallback }`. Returns 409 if user has an active session (includes `session_id` in error body). |
 | GET | `/api/mock/{id}` | Session state for reload recovery |
 | POST | `/api/mock/{id}/submit` | Submit answer mid-session → `{ correct, feedback }` (no solution revealed) |
 | POST | `/api/mock/{id}/finish` | End session → full summary with per-question solutions |
+| DELETE | `/api/mock/{id}` | Discard an active session started within 2 minutes (returns 204); 403 if older than 2 min or already completed |
 | GET | `/api/sample/{topic}/{difficulty}` | Next unseen sample (409 when exhausted) |
 | POST | `/api/sample/{topic}/{difficulty}/reset` | Clear seen state |
 | POST | `/api/sample/sql/run-query` | Execute SQL sample query |
