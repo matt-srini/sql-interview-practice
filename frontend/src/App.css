@@ -1092,17 +1092,13 @@ select {
 
   .app-topbar-inner {
     min-height: 60px;
-    padding: 0.45rem 0.9rem;
-    align-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .app-topbar-brand,
-  .app-topbar-actions {
-    width: 100%;
+    padding: 0 0.9rem;
+    align-items: center;
   }
 
   .app-topbar-brand {
+    flex: 1;
+    min-width: 0;
     gap: 0.55rem;
   }
 
@@ -2570,9 +2566,20 @@ select {
   }
 }
 
-/* ── Mobile hamburger nav (landing topbar, ≤640px) ── */
+/* ── Mobile hamburger nav ── */
+/* landing variant: ≤640px · app variant: ≤900px (via .app-topbar rule below) */
 .topbar-mobile-actions {
   display: none;
+}
+
+@media (max-width: 900px) {
+  .app-topbar .topbar-mobile-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+    flex-shrink: 0;
+  }
 }
 
 @media (max-width: 640px) {

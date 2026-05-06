@@ -269,8 +269,8 @@ export default function Topbar({
             )}
           </nav>
 
-          {/* Hamburger — mobile only, landing variant */}
-          {!isApp && !isMinimal && (
+          {/* Hamburger — mobile only (landing ≤640px, app ≤900px) */}
+          {!isMinimal && (
             <div className="topbar-mobile-actions" ref={mobileMenuRef}>
               <button
                 className="theme-toggle topbar-mobile-theme"
