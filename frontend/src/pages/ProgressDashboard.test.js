@@ -20,9 +20,13 @@ vi.mock('../api', () => ({
   },
 }));
 
-vi.mock('../contexts/AuthContext', () => ({
-  useAuth: () => ({ user: { name: 'Test User', email: 'test@example.com' } }),
-}));
+vi.mock('../contexts/AuthContext', () => {
+  // Stable reference so useEffect([authLoading, user]) doesn't re-fire on every render
+  const stableUser = { name: 'Test User', email: 'test@example.com' };
+  return {
+    useAuth: () => ({ user: stableUser, loading: false }),
+  };
+});
 
 // Topbar uses useTheme — provide a minimal stub so it doesn't crash in jsdom
 vi.mock('../App', () => ({
