@@ -35,7 +35,7 @@ function formatMockTime(s) {
 }
 
 export default function ProgressDashboard() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const rawPlan = user?.plan ?? 'free';
   const normalisedPlan = rawPlan.startsWith('lifetime_') ? rawPlan.replace('lifetime_', '') : rawPlan;
   const isPaying = normalisedPlan === 'pro' || normalisedPlan === 'elite';
@@ -54,6 +54,9 @@ export default function ProgressDashboard() {
   const [mockHistory, setMockHistory] = useState([]);
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!user) { setLoading(false); return; }
+
     setLoading(true);
     setError(null);
     api
@@ -70,7 +73,7 @@ export default function ProgressDashboard() {
     api.get('/mock/history')
       .then(r => setMockHistory(r.data.slice(0, 5)))
       .catch(() => {});
-  }, []);
+  }, [authLoading, user]);
 
   const isElite = user?.plan === 'elite' || user?.plan === 'lifetime_elite';
 
@@ -105,6 +108,17 @@ export default function ProgressDashboard() {
               <Skeleton height="7rem" />
             </div>
             <Skeleton width="100%" height="15rem" />
+          </div>
+        )}
+        {!authLoading && !user && (
+          <div className="dashboard-empty-state">
+            <p className="dashboard-empty-copy">
+              Sign in to track your progress, streaks, and coaching insights across all tracks.
+            </p>
+            <div className="dashboard-empty-actions">
+              <Link to="/auth" className="btn btn-primary">Sign in</Link>
+              <Link to="/practice/sql" className="btn btn-secondary">Start practising</Link>
+            </div>
           </div>
         )}
         {error && <p className="error-box">{error}</p>}
