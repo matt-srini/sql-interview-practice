@@ -387,9 +387,9 @@ export default function LandingPage() {
         <meta property="og:title" content="datathink — SQL, Python &amp; Data Interview Practice" />
         <meta property="og:description" content="Practice SQL, Python, Pandas, and PySpark interview questions in a real execution environment. 350+ questions, instant feedback, and curated learning paths." />
         <meta property="og:url" content="https://datathink.co/" />
-        <meta property="og:image" content="https://datathink.co/og-image.svg" />
+        <meta property="og:image" content="https://datathink.co/og-image.png" />
         <link rel="canonical" href="https://datathink.co/" />
-        <meta name="twitter:image" content="https://datathink.co/og-image.svg" />
+        <meta name="twitter:image" content="https://datathink.co/og-image.png" />
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "WebSite",
