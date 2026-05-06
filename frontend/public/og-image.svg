@@ -9,17 +9,22 @@
   <line x1="1" y1="0" x2="1" y2="630" stroke="#F0EEE9" stroke-opacity="0.04"/>
   <line x1="1199" y1="0" x2="1199" y2="630" stroke="#F0EEE9" stroke-opacity="0.04"/>
 
-  <!-- Accent bar top-left -->
-  <rect x="80" y="200" width="6" height="80" rx="3" fill="#5B6AF0"/>
-
-  <!-- Monogram D -->
-  <g transform="translate(80, 190)">
-    <path d="M18 90 V20 H50 A18 18 0 0 1 50 56 H18 Z" fill="#FFFFFF"/>
-    <rect x="18" y="8" width="40" height="7" rx="3.5" fill="#5B6AF0"/>
+  <!-- Logo: lockup-bar-reverse-no-bg structure, scaled 1.65x at (80, 155) -->
+  <g transform="translate(80, 155) scale(1.65)">
+    <!-- Monogram: exact copy from lockup-bar-reverse-no-bg.svg -->
+    <g transform="translate(0,16) scale(0.66)">
+      <g transform="translate(12,0)">
+        <g transform="translate(18,32)">
+          <path d="M8 72 V16 H30 A14 14 0 0 1 30 44 H8 Z" fill="#FFFFFF"/>
+          <rect x="8" y="6" width="32" height="6" rx="3" fill="#5B6AF0"/>
+        </g>
+      </g>
+    </g>
+    <!-- Wordmark: exact copy from lockup-bar-reverse-no-bg.svg -->
+    <g transform="translate(50,32)">
+      <text x="6" y="34" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-weight="700" font-size="28" letter-spacing="-0.5" fill="#FFFFFF">datathink</text>
+    </g>
   </g>
-
-  <!-- Wordmark -->
-  <text x="148" y="269" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-weight="700" font-size="52" letter-spacing="-1" fill="#FFFFFF">datathink</text>
 
   <!-- Tagline -->
   <text x="82" y="320" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-weight="400" font-size="22" letter-spacing="0" fill="#A09C96">SQL · Python · Pandas · PySpark Interview Practice</text>
