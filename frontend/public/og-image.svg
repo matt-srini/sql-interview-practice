@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="datathink — SQL, Python &amp; Data Interview Practice">
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#141413"/>
+
+  <!-- Subtle grid accent -->
+  <line x1="0" y1="1" x2="1200" y2="1" stroke="#F0EEE9" stroke-opacity="0.04"/>
+  <line x1="0" y1="629" x2="1200" y2="629" stroke="#F0EEE9" stroke-opacity="0.04"/>
+  <line x1="1" y1="0" x2="1" y2="630" stroke="#F0EEE9" stroke-opacity="0.04"/>
+  <line x1="1199" y1="0" x2="1199" y2="630" stroke="#F0EEE9" stroke-opacity="0.04"/>
+
+  <!-- Accent bar top-left -->
+  <rect x="80" y="200" width="6" height="80" rx="3" fill="#5B6AF0"/>
+
+  <!-- Monogram D -->
+  <g transform="translate(80, 190)">
+    <path d="M18 90 V20 H50 A18 18 0 0 1 50 56 H18 Z" fill="#FFFFFF"/>
+    <rect x="18" y="8" width="40" height="7" rx="3.5" fill="#5B6AF0"/>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="148" y="269" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-weight="700" font-size="52" letter-spacing="-1" fill="#FFFFFF">datathink</text>
+
+  <!-- Tagline -->
+  <text x="82" y="320" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-weight="400" font-size="22" letter-spacing="0" fill="#A09C96">SQL · Python · Pandas · PySpark Interview Practice</text>
+
+  <!-- Divider -->
+  <rect x="82" y="355" width="320" height="1" fill="#F0EEE9" fill-opacity="0.12"/>
+
+  <!-- Stats row -->
+  <text x="82" y="390" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-weight="500" font-size="18" fill="#F0EEE9" fill-opacity="0.55">350+ questions  ·  22 learning paths  ·  instant feedback</text>
+</svg>

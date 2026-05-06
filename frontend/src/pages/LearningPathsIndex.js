@@ -47,6 +47,24 @@ export default function LearningPathsIndex() {
         <title>{pageTitle} — datathink</title>
         <meta name="description" content={topic ? `Curated ${TRACK_META[topic]?.label ?? topic} learning paths to build interview-ready skills step by step.` : 'Curated SQL, Python, Pandas, and PySpark learning paths to build interview-ready skills step by step.'} />
         <meta property="og:title" content={`${pageTitle} — datathink`} />
+        <meta property="og:description" content={topic ? `Curated ${TRACK_META[topic]?.label ?? topic} learning paths to build interview-ready skills step by step.` : 'Curated SQL, Python, Pandas, and PySpark learning paths to build interview-ready skills step by step.'} />
+        <meta property="og:url" content={topic ? `https://datathink.co/learn/${topic}` : 'https://datathink.co/learn'} />
+        <meta property="og:image" content="https://datathink.co/og-image.svg" />
+        <link rel="canonical" href={topic ? `https://datathink.co/learn/${topic}` : 'https://datathink.co/learn'} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://datathink.co/og-image.svg" />
+        {paths.length > 0 && <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          "name": topic ? `${TRACK_META[topic]?.label ?? topic} Learning Paths` : "Data Interview Practice Learning Paths",
+          "url": topic ? `https://datathink.co/learn/${topic}` : "https://datathink.co/learn",
+          "itemListElement": (topic ? paths.filter(p => p.topic === topic) : paths).map((p, i) => ({
+            "@type": "ListItem",
+            "position": i + 1,
+            "name": p.title,
+            "url": `https://datathink.co/learn/${p.topic}/${p.slug}`
+          }))
+        })}</script>}
       </Helmet>
       <Topbar />
 

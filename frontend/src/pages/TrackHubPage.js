@@ -150,9 +150,24 @@ export default function TrackHubPage() {
   return (
     <main className="container track-hub-page">
       <Helmet>
-        <title>{meta.label} Practice — datathink</title>
-        <meta name="description" content={`Practice ${meta.label} interview questions on datathink. Curated challenges with instant feedback and real execution environments.`} />
-        <meta property="og:title" content={`${meta.label} Practice — datathink`} />
+        <title>{meta.label} Interview Practice — datathink</title>
+        <meta name="description" content={meta.description} />
+        <meta property="og:title" content={`${meta.label} Interview Practice — datathink`} />
+        <meta property="og:description" content={meta.description} />
+        <meta property="og:url" content={`https://datathink.co/practice/${topic}`} />
+        <meta property="og:image" content="https://datathink.co/og-image.svg" />
+        <link rel="canonical" href={`https://datathink.co/practice/${topic}`} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://datathink.co/og-image.svg" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Course",
+          "name": `${meta.label} Interview Practice`,
+          "description": meta.description,
+          "url": `https://datathink.co/practice/${topic}`,
+          "numberOfLessons": meta.totalQuestions,
+          "provider": { "@type": "Organization", "name": "datathink", "url": "https://datathink.co" }
+        })}</script>
       </Helmet>
       <div className="track-hub-inner">
         <TierBanner

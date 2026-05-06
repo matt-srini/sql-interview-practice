@@ -383,10 +383,32 @@ export default function LandingPage() {
     <>
       <Helmet>
         <title>datathink — SQL, Python &amp; Data Interview Practice</title>
-        <meta name="description" content="Practice SQL, Python, Pandas, and PySpark interview questions in a real execution environment. 356 questions, instant feedback, and curated learning paths for data professionals." />
+        <meta name="description" content="Practice SQL, Python, Pandas, and PySpark interview questions in a real execution environment. 350+ questions, instant feedback, and curated learning paths for data professionals." />
         <meta property="og:title" content="datathink — SQL, Python &amp; Data Interview Practice" />
-        <meta property="og:description" content="Practice SQL, Python, Pandas, and PySpark interview questions in a real execution environment. 356 questions, instant feedback, and curated learning paths." />
+        <meta property="og:description" content="Practice SQL, Python, Pandas, and PySpark interview questions in a real execution environment. 350+ questions, instant feedback, and curated learning paths." />
         <meta property="og:url" content="https://datathink.co/" />
+        <meta property="og:image" content="https://datathink.co/og-image.svg" />
+        <link rel="canonical" href="https://datathink.co/" />
+        <meta name="twitter:image" content="https://datathink.co/og-image.svg" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          "name": "datathink",
+          "url": "https://datathink.co",
+          "description": "Practice SQL, Python, Pandas, and PySpark interview questions in a real execution environment. 350+ questions, instant feedback, and curated learning paths.",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://datathink.co/practice/sql",
+            "query-input": "required name=search_term_string"
+          }
+        })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "name": "datathink",
+          "url": "https://datathink.co",
+          "logo": "https://datathink.co/branding/lockup-bar-no-bg.svg"
+        })}</script>
       </Helmet>
       <Topbar showPricingLink={!user} userExtras={planPillNode} />
 

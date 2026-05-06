@@ -95,8 +95,25 @@ export default function LearningPath() {
     <div className="learn-page">
       <Helmet>
         <title>{path ? `${path.title} — datathink` : 'Learning Path — datathink'}</title>
-        {path && <meta name="description" content={`${path.title}: a curated ${meta.label} learning path on datathink. Practice interview-style questions with instant feedback.`} />}
+        <meta name="description" content={path ? path.description : 'A curated learning path on datathink. Practice interview-style questions with instant feedback.'} />
         <meta property="og:title" content={path ? `${path.title} — datathink` : 'Learning Path — datathink'} />
+        {path && <meta property="og:description" content={path.description} />}
+        {path && <meta property="og:url" content={`https://datathink.co/learn/${topic}/${slug}`} />}
+        <meta property="og:image" content="https://datathink.co/og-image.svg" />
+        {path && <link rel="canonical" href={`https://datathink.co/learn/${topic}/${slug}`} />}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://datathink.co/og-image.svg" />
+        {path && <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "LearningResource",
+          "name": path.title,
+          "description": path.description,
+          "url": `https://datathink.co/learn/${topic}/${slug}`,
+          "teaches": path.outcomes,
+          "educationalLevel": path.role,
+          "learningResourceType": "Practice problems",
+          "provider": { "@type": "Organization", "name": "datathink", "url": "https://datathink.co" }
+        })}</script>}
       </Helmet>
       <Topbar />
 

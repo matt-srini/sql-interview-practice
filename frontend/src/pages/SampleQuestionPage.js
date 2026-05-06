@@ -368,9 +368,15 @@ export default function SampleQuestionPage() {
   return (
     <>
       <Helmet>
-        <title>Free {meta.label} Sample Questions ({difficulty}) — datathink</title>
-        <meta name="description" content={`Try free ${difficulty} ${meta.label} interview questions. No account required — instant feedback in a real execution environment.`} />
-        <meta property="og:title" content={`Free ${meta.label} Sample Questions — datathink`} />
+        <title>Free {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)} {meta.label} Sample Questions — datathink</title>
+        <meta name="description" content={`Try free ${difficulty} ${meta.label} interview questions — no account required. Real execution environment with instant feedback.`} />
+        <meta property="og:title" content={`Free ${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)} ${meta.label} Sample Questions — datathink`} />
+        <meta property="og:description" content={`Try free ${difficulty} ${meta.label} interview questions — no account required. Real execution environment with instant feedback.`} />
+        <meta property="og:url" content={`https://datathink.co/sample/${topic}/${difficulty}`} />
+        <meta property="og:image" content="https://datathink.co/og-image.svg" />
+        <link rel="canonical" href={`https://datathink.co/sample/${topic}/${difficulty}`} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://datathink.co/og-image.svg" />
       </Helmet>
       <header className="topbar">
         <div className="topbar-inner sample-page-topbar">

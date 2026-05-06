@@ -99,7 +99,7 @@ async def sitemap_xml() -> Response:
     try:
         paths = get_all_paths()
         path_urls = [
-            (f"/learn/{p['topic']}/{p['slug']}", "0.7", "monthly")
+            (f"/learn/{p['topic']}/{p['slug']}", "0.8", "weekly")
             for p in paths
             if "topic" in p and "slug" in p
         ]

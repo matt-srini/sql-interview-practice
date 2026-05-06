@@ -60,14 +60,6 @@ Question validation and dependency audits already run in CI. Missing:
 
 ---
 
-### SEO
-
-**Prerender / SSG for landing page**
-- `react-helmet-async`, `robots.txt`, and `/sitemap.xml` are already live
-- Landing page is not prerendered → Google sees a blank SPA shell → zero organic traffic
-- Options: `react-snap` (zero-config, generates static HTML from running app) or move landing to a static HTML file
-- Implement before any growth/marketing push
-
 ---
 
 ### TypeScript migration

@@ -26,7 +26,7 @@ export const TRACK_META = {
   },
   'python-data': {
     label: 'Pandas',
-    description: 'pandas and numpy data manipulation',
+    description: 'Practice Pandas and NumPy interview questions: DataFrame manipulation, groupby, reshaping, and time series analysis.',
     color: '#C47F17',
     apiPrefix: '/python-data',
     language: 'python',
@@ -37,7 +37,7 @@ export const TRACK_META = {
   },
   pyspark: {
     label: 'PySpark',
-    description: 'Spark architecture and concepts',
+    description: 'Practice PySpark interview questions: Spark architecture, streaming, performance optimization, and Delta Lake patterns.',
     color: '#D94F3D',
     apiPrefix: '/pyspark',
     language: 'text',
