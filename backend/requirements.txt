@@ -8,6 +8,7 @@ httpx
 redis
 python-dotenv
 asyncpg
+psycopg2-binary
 sqlalchemy[asyncio]
 alembic
 razorpay
