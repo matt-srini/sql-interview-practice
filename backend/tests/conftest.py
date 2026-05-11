@@ -4,6 +4,7 @@ import itertools
 import os
 import sys
 from unittest.mock import AsyncMock, patch
+from urllib.parse import urlparse
 
 import psycopg2
 import pytest
@@ -16,8 +17,16 @@ for path in (REPO_ROOT, BACKEND_ROOT):
         sys.path.insert(0, path)
 
 os.environ.setdefault("TESTING", "1")
-os.environ.setdefault("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/sql_practice_test")
 os.environ["RESEND_API_KEY"] = ""
+
+# Always point at the test database.
+# If DATABASE_URL is already set in the shell but does NOT end in '_test',
+# override it — a shell-exported main-DB URL must never reach the reset fixture.
+_DEFAULT_TEST_DB = "postgresql://postgres:postgres@localhost:5432/sql_practice_test"
+_db_url_from_env = os.environ.get("DATABASE_URL", "")
+if not urlparse(_db_url_from_env).path.lstrip("/").endswith("_test"):
+    os.environ["DATABASE_URL"] = _DEFAULT_TEST_DB
+del _db_url_from_env, _DEFAULT_TEST_DB
 
 _counter = itertools.count(1)
 
@@ -36,6 +45,16 @@ def pytest_configure(config: pytest.Config) -> None:
 def isolated_state(monkeypatch):
     from db import close_pool, ensure_schema_admin, reset_database_admin
     from backend.main import _clear_rate_limit_state
+
+    # Tripwire: if DATABASE_URL somehow still points at a non-test DB, abort
+    # immediately before touching any data.
+    _active_url = os.environ.get("DATABASE_URL", "")
+    _db_name = urlparse(_active_url).path.lstrip("/")
+    assert _db_name.endswith("_test"), (
+        f"isolated_state refused: DATABASE_URL targets '{_db_name}', which does not "
+        "end in '_test'. Tests must not run against the main database. "
+        f"Full URL: {_active_url!r}"
+    )
 
     asyncio.run(close_pool())
     asyncio.run(ensure_schema_admin())

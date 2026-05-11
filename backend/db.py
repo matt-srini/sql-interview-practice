@@ -3,10 +3,12 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import os
 import secrets
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any
+from urllib.parse import urlparse
 
 from sqlalchemy import text
 from sqlalchemy.engine import RowMapping
@@ -303,10 +305,25 @@ async def ensure_schema() -> None:
             await conn.execute(text(statement))
 
 
+def _assert_test_db(url: str, fn_name: str) -> None:
+    """Refuse to run destructive operations against a non-test database."""
+    try:
+        db_name = urlparse(url).path.lstrip("/")
+    except Exception:
+        db_name = url
+    if not db_name.endswith("_test"):
+        raise RuntimeError(
+            f"{fn_name}() refused: the target database '{db_name}' does not end in "
+            "'_test'. This function must only run against test databases. "
+            "Set DATABASE_URL to a *_test database before running tests."
+        )
+
+
 async def reset_database() -> None:
     if _engine is None:
         raise RuntimeError("Database pool is not initialized")
 
+    _assert_test_db(get_async_database_url(), "reset_database")
     async with _engine.begin() as conn:
         await conn.execute(text("TRUNCATE TABLE mock_session_questions, mock_sessions, submissions, plan_changes, payment_events, user_sample_seen, user_progress, sessions, users RESTART IDENTITY CASCADE"))
 
@@ -322,7 +339,9 @@ async def ensure_schema_admin(database_url: str | None = None) -> None:
 
 
 async def reset_database_admin(database_url: str | None = None) -> None:
-    engine = _admin_engine(database_url)
+    target = database_url or get_async_database_url()
+    _assert_test_db(target, "reset_database_admin")
+    engine = _admin_engine(target)
     try:
         async with engine.begin() as conn:
             await conn.execute(
