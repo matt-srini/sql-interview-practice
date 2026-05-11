@@ -31,6 +31,8 @@ from db import (
     record_plan_change,
     set_user_plan,
     set_user_razorpay_customer_id,
+    set_user_subscription_id,
+    clear_user_subscription_id,
 )
 from deps import get_current_user, require_authenticated_user
 from models import (
@@ -373,6 +375,9 @@ async def verify_payment(
         context="razorpay-verify-payment",
         payment_event_id=synthetic_event_id,
     )
+    # Persist the subscription ID so the cancel endpoint can reference it later.
+    if body.razorpay_subscription_id:
+        await set_user_subscription_id(current_user["id"], body.razorpay_subscription_id)
     await record_payment_event(
         synthetic_event_id,
         "verify.payment",
@@ -455,6 +460,11 @@ async def razorpay_webhook(request: Request) -> dict[str, str]:
                 context=f"razorpay-{event_type}",
                 payment_event_id=event_id,
             )
+            # Store the subscription ID whenever it arrives so the cancel
+            # endpoint always has a fresh reference.
+            sub_id = subscription_entity.get("id")
+            if sub_id:
+                await set_user_subscription_id(str(resolved_user["id"]), str(sub_id))
             handled = True
 
     elif event_type in {"subscription.cancelled", "subscription.halted"}:
@@ -478,6 +488,7 @@ async def razorpay_webhook(request: Request) -> dict[str, str]:
                     context=f"razorpay-{event_type}",
                     payment_event_id=event_id,
                 )
+                await clear_user_subscription_id(str(resolved_user["id"]))
                 handled = True
 
     elif event_type == "payment.failed":

@@ -197,6 +197,7 @@ CREATE INDEX IF NOT EXISTS idx_mock_session_questions_session ON mock_session_qu
 
 ALTER TABLE mock_session_questions ADD COLUMN IF NOT EXISTS is_follow_up BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE mock_sessions ADD COLUMN IF NOT EXISTS focus_fallback BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS razorpay_subscription_id TEXT;
 """
 
 
@@ -233,6 +234,7 @@ def _user_from_mapping(row: RowMapping | None) -> dict[str, Any] | None:
         "plan": row["plan"],
         "email_verified": bool(row.get("email_verified", False)),
         "razorpay_customer_id": row.get("razorpay_customer_id"),
+        "razorpay_subscription_id": row.get("razorpay_subscription_id"),
         "created_at": row.get("created_at"),
         "upgraded_at": row.get("upgraded_at"),
     }
@@ -338,7 +340,7 @@ async def get_user_by_id(user_id: str) -> dict[str, Any] | None:
         result = await session.execute(
             text(
                 """
-                SELECT id, email, name, plan, razorpay_customer_id, created_at, upgraded_at
+                SELECT id, email, name, plan, razorpay_customer_id, razorpay_subscription_id, created_at, upgraded_at
                 FROM users
                 WHERE id = CAST(:user_id AS UUID)
                 """
@@ -354,7 +356,7 @@ async def get_user_by_email(email: str) -> dict[str, Any] | None:
         result = await session.execute(
             text(
                 """
-                SELECT id, email, name, plan, razorpay_customer_id, created_at, upgraded_at
+                SELECT id, email, name, plan, razorpay_customer_id, razorpay_subscription_id, created_at, upgraded_at
                 FROM users
                 WHERE email = :email
                 """
@@ -370,7 +372,7 @@ async def get_user_by_razorpay_customer_id(customer_id: str) -> dict[str, Any] |
         result = await session.execute(
             text(
                 """
-                SELECT id, email, name, plan, razorpay_customer_id, created_at, upgraded_at
+                SELECT id, email, name, plan, razorpay_customer_id, razorpay_subscription_id, created_at, upgraded_at
                 FROM users
                 WHERE razorpay_customer_id = :customer_id
                 """
@@ -558,7 +560,7 @@ async def get_session_user(token: str) -> dict[str, Any] | None:
         result = await session.execute(
             text(
                 """
-                SELECT u.id, u.email, u.name, u.plan, u.email_verified, u.razorpay_customer_id, u.created_at, u.upgraded_at
+                SELECT u.id, u.email, u.name, u.plan, u.email_verified, u.razorpay_customer_id, u.razorpay_subscription_id, u.created_at, u.upgraded_at
                 FROM sessions s
                 JOIN users u ON u.id = s.user_id
                 WHERE s.token = :token
@@ -731,7 +733,7 @@ async def set_user_plan(user_id: str, new_plan: str) -> dict[str, Any] | None:
                 UPDATE users
                 SET plan = :new_plan
                 WHERE id = CAST(:user_id AS UUID)
-                RETURNING id, email, name, plan, razorpay_customer_id, created_at, upgraded_at
+                RETURNING id, email, name, plan, razorpay_customer_id, razorpay_subscription_id, created_at, upgraded_at
                 """
             ),
             {
@@ -756,7 +758,7 @@ async def set_user_razorpay_customer_id(user_id: str, customer_id: str) -> dict[
                 UPDATE users
                 SET razorpay_customer_id = :customer_id
                 WHERE id = CAST(:user_id AS UUID)
-                RETURNING id, email, name, plan, razorpay_customer_id, created_at, upgraded_at
+                RETURNING id, email, name, plan, razorpay_customer_id, razorpay_subscription_id, created_at, upgraded_at
                 """
             ),
             {
@@ -770,6 +772,47 @@ async def set_user_razorpay_customer_id(user_id: str, customer_id: str) -> dict[
             return None
         await session.commit()
         return _user_from_mapping(row)
+
+
+async def set_user_subscription_id(user_id: str, subscription_id: str) -> dict[str, Any] | None:
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                UPDATE users
+                SET razorpay_subscription_id = :subscription_id
+                WHERE id = CAST(:user_id AS UUID)
+                RETURNING id, email, name, plan, razorpay_customer_id, razorpay_subscription_id, created_at, upgraded_at
+                """
+            ),
+            {
+                "user_id": user_id,
+                "subscription_id": subscription_id,
+            },
+        )
+        row = result.mappings().first()
+        if row is None:
+            await session.rollback()
+            return None
+        await session.commit()
+        return _user_from_mapping(row)
+
+
+async def clear_user_subscription_id(user_id: str) -> None:
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        await session.execute(
+            text(
+                """
+                UPDATE users
+                SET razorpay_subscription_id = NULL
+                WHERE id = CAST(:user_id AS UUID)
+                """
+            ),
+            {"user_id": user_id},
+        )
+        await session.commit()
 
 
 async def is_event_processed(event_id: str) -> bool:

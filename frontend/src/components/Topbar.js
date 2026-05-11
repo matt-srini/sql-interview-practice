@@ -252,6 +252,14 @@ export default function Topbar({
                 <span className="topbar-user-name">
                   {user.name || user.email}
                 </span>
+                <NavLink
+                  to="/account"
+                  className={({ isActive }) =>
+                    `topbar-auth-link${isActive ? ' topbar-auth-link--active' : ''}`
+                  }
+                >
+                  Account
+                </NavLink>
                 <button
                   type="button"
                   className="topbar-signout-btn"
@@ -345,6 +353,15 @@ export default function Topbar({
                   {user && user.email ? (
                     <>
                       <span className="topbar-mobile-user">{user.name || user.email}</span>
+                      <NavLink
+                        to="/account"
+                        className={({ isActive }) =>
+                          `topbar-mobile-item${isActive ? ' topbar-mobile-item--active' : ''}`
+                        }
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Account
+                      </NavLink>
                       <button
                         type="button"
                         className="topbar-mobile-item topbar-mobile-signout"

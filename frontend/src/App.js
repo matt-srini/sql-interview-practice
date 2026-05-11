@@ -22,6 +22,7 @@ import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import TermsPage from './pages/TermsPage';
 import RefundPolicyPage from './pages/RefundPolicyPage';
 import ContactPage from './pages/ContactPage';
+import AccountPage from './pages/AccountPage';
 import ToastViewport from './components/ToastViewport';
 import { trackPageView } from './analytics';
 
@@ -148,6 +149,7 @@ function AppRoutes() {
         <Route path="/dashboard" element={<ProgressDashboard />} />
         <Route path="/mock" element={<AuthRequired><MockHub /></AuthRequired>} />
         <Route path="/mock/:id" element={<AuthRequired><MockSession /></AuthRequired>} />
+        <Route path="/account" element={<AuthRequired><AccountPage /></AuthRequired>} />
         <Route path="/sample/:topic/:difficulty" element={<SampleQuestionPage />} />
         <Route path="/sample/:difficulty" element={<LegacySampleRedirect />} />
 
