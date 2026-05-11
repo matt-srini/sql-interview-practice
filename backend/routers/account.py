@@ -6,8 +6,9 @@ import logging
 import time
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.concurrency import run_in_threadpool
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from config import (
@@ -16,8 +17,8 @@ from config import (
     RAZORPAY_PLAN_PRO,
     RAZORPAY_PLAN_ELITE,
 )
-from db import clear_user_subscription_id  # noqa: F401 — kept for future use
-from deps import require_authenticated_user
+from db import clear_user_subscription_id, delete_user_account  # noqa: F401
+from deps import clear_session_cookie, require_authenticated_user
 
 try:
     import razorpay
@@ -510,3 +511,51 @@ async def reactivate_subscription(
 
     logger.info("[reactivate] user=%s sub=%s reactivated", current_user["id"], subscription_id)
     return {"reactivated": True}
+
+
+# ---------------------------------------------------------------------------
+# DELETE /api/account/delete
+# ---------------------------------------------------------------------------
+
+@router.delete("/delete", status_code=204)
+async def delete_account(
+    request: Request,
+    current_user: dict[str, Any] = Depends(require_authenticated_user),
+) -> Response:
+    """Permanently delete the authenticated user's account and all associated data.
+
+    Steps:
+    1. Cancel any active Razorpay subscription immediately (best-effort).
+    2. Run a single DB transaction: remove plan_changes, anonymise payment_events,
+       then delete the user row (CASCADE handles everything else).
+    3. Clear the session cookie.
+    """
+    user_id: str = current_user["id"]
+    plan: str = current_user.get("plan", "free")
+    subscription_id: str | None = current_user.get("razorpay_subscription_id")
+
+    # Step 1 — cancel active Razorpay subscription (best-effort; never blocks deletion)
+    if plan in SUBSCRIPTION_PLANS and subscription_id and RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET:
+        try:
+            client = _require_razorpay_client()
+
+            def _cancel_now() -> Any:
+                return client.subscription.cancel(subscription_id, {"cancel_at_cycle_end": 0})
+
+            await run_in_threadpool(_cancel_now)
+            logger.info("[delete-account] cancelled subscription sub=%s user=%s", subscription_id, user_id)
+        except Exception:
+            logger.exception(
+                "[delete-account] Razorpay cancellation failed sub=%s user=%s — proceeding with deletion",
+                subscription_id,
+                user_id,
+            )
+
+    # Step 2 — delete from DB in a single transaction
+    await delete_user_account(user_id)
+    logger.info("[delete-account] user deleted user_id=%s", user_id)
+
+    # Step 3 — clear session cookie
+    payload: Response = JSONResponse(status_code=204, content=None)
+    clear_session_cookie(payload)
+    return payload

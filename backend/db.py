@@ -611,6 +611,34 @@ async def delete_user(user_id: str) -> None:
         await session.commit()
 
 
+async def delete_user_account(user_id: str) -> None:
+    """Delete a registered user and all associated data in a single transaction.
+
+    Order matters:
+    1. plan_changes — NOT NULL FK, no cascade; must be removed before the user row.
+    2. payment_events — nullable FK; anonymised rather than deleted to preserve the
+       financial audit trail.
+    3. users — CASCADE wipes sessions, user_progress, user_sample_seen, submissions,
+       oauth_accounts, password_reset_tokens, email_verification_tokens,
+       magic_link_tokens, mock_sessions, and mock_session_questions automatically.
+    """
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        await session.execute(
+            text("DELETE FROM plan_changes WHERE user_id = CAST(:user_id AS UUID)"),
+            {"user_id": user_id},
+        )
+        await session.execute(
+            text("UPDATE payment_events SET user_id = NULL WHERE user_id = CAST(:user_id AS UUID)"),
+            {"user_id": user_id},
+        )
+        await session.execute(
+            text("DELETE FROM users WHERE id = CAST(:user_id AS UUID)"),
+            {"user_id": user_id},
+        )
+        await session.commit()
+
+
 async def get_solved_ids(user_id: str, topic: str = "sql") -> set[int]:
     session_factory = _session_factory_or_raise()
     async with session_factory() as session:

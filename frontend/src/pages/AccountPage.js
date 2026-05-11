@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import Topbar from '../components/Topbar';
@@ -401,6 +401,123 @@ function CancelModal({ billing, onClose, onSuccess }) {
   );
 }
 
+// ── Delete account modal ─────────────────────────────────────────────────────
+
+const PAID_PLANS = new Set(['pro', 'elite', 'lifetime_pro', 'lifetime_elite']);
+
+function DeleteAccountModal({ userPlan, onClose }) {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+  const [confirmText, setConfirmText] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+
+  const hasPaidPlan = PAID_PLANS.has(userPlan);
+  const confirmed = confirmText.trim().toUpperCase() === 'DELETE';
+
+  async function handleConfirm() {
+    setSubmitting(true);
+    setError(null);
+    try {
+      await api.delete('/account/delete');
+      await logout();
+      navigate('/');
+    } catch (err) {
+      setError(err?.response?.data?.error ?? 'Something went wrong. Please try again.');
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div
+      className="mock-modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="delete-account-modal-title"
+      onClick={() => !submitting && onClose()}
+    >
+      <div className="mock-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 460 }}>
+        <h2 className="mock-modal-title" id="delete-account-modal-title">
+          Delete account?
+        </h2>
+
+        <div className="mock-modal-body" style={{ marginBottom: '1.25rem' }}>
+          <p style={{ margin: '0 0 0.75rem' }}>
+            This will permanently delete:
+          </p>
+          <ul style={{ margin: '0 0 0.75rem', paddingLeft: '1.25rem', color: 'var(--text-secondary)', fontSize: '0.875rem', lineHeight: 1.6 }}>
+            <li>Your account and profile</li>
+            <li>All progress and solved question history across all tracks</li>
+            <li>All submissions and mock interview sessions</li>
+          </ul>
+          {hasPaidPlan && (
+            <p style={{ margin: '0 0 0.75rem', color: 'var(--danger)', fontSize: '0.875rem', fontWeight: 500 }}>
+              Your active subscription will be cancelled immediately with no refund.
+            </p>
+          )}
+          <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+            Payment receipts in our billing provider and error-tracking records are retained for financial compliance. All other personal data stored by datathink is permanently removed.
+          </p>
+        </div>
+
+        <div style={{ marginBottom: '1.25rem' }}>
+          <label
+            htmlFor="delete-confirm-input"
+            style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-strong)', marginBottom: '0.5rem' }}
+          >
+            Type <strong>DELETE</strong> to confirm
+          </label>
+          <input
+            id="delete-confirm-input"
+            type="text"
+            value={confirmText}
+            onChange={(e) => setConfirmText(e.target.value)}
+            placeholder="DELETE"
+            autoComplete="off"
+            disabled={submitting}
+            style={{
+              width: '100%',
+              boxSizing: 'border-box',
+              padding: '0.625rem 0.75rem',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-sm)',
+              fontSize: '0.9rem',
+              fontFamily: 'var(--font-mono)',
+              background: 'var(--bg-page)',
+              color: 'var(--text-strong)',
+            }}
+          />
+        </div>
+
+        {error && (
+          <div style={{ marginBottom: '1rem' }}>
+            <Alert tone="danger">{error}</Alert>
+          </div>
+        )}
+
+        <div className="mock-modal-actions">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            disabled={submitting}
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="btn btn-danger"
+            disabled={!confirmed || submitting}
+            onClick={handleConfirm}
+          >
+            {submitting ? 'Deleting…' : 'Delete my account'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function AccountPage() {
@@ -420,7 +537,7 @@ export default function AccountPage() {
   const [billingError, setBillingError] = useState(null);
 
   // ── Operation state ──────────────────────────────────────────────────────
-  const [modal, setModal] = useState(null); // 'cancel' | 'switch' | 'reactivate'
+  const [modal, setModal] = useState(null); // 'cancel' | 'switch' | 'reactivate' | 'delete'
   const [successState, setSuccessState] = useState(null); // { type, ... }
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentError, setPaymentError] = useState(null);
@@ -720,6 +837,28 @@ export default function AccountPage() {
             )}
           </>
         )}
+
+        {/* ── Danger Zone ───────────────────────────────────────────────── */}
+        {user?.email && (
+          <>
+            <hr style={{ border: 'none', borderTop: '1px solid var(--border-subtle)', margin: '2.5rem 0' }} />
+            <section>
+              <h2 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--danger)', margin: '0 0 0.5rem' }}>
+                Danger zone
+              </h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: '0 0 1rem', lineHeight: 1.5 }}>
+                Permanently deletes your account, all progress, and all data across every track. This cannot be undone.
+              </p>
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={() => setModal('delete')}
+              >
+                Delete account
+              </button>
+            </section>
+          </>
+        )}
       </main>
 
       {/* ── Modals ─────────────────────────────────────────────────────────── */}
@@ -749,6 +888,10 @@ export default function AccountPage() {
           onSuccess={handleReactivateSuccess}
         />
       )}
-    </>
-  );
-}
+
+      {modal === 'delete' && (
+        <DeleteAccountModal
+          userPlan={authPlan}
+          onClose={() => setModal(null)}
+        />
+      )}
