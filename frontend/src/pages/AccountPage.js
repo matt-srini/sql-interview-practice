@@ -846,16 +846,26 @@ export default function AccountPage() {
               <h2 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--danger)', margin: '0 0 0.5rem' }}>
                 Danger zone
               </h2>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: '0 0 1rem', lineHeight: 1.5 }}>
-                Permanently deletes your account, all progress, and all data across every track. This cannot be undone.
-              </p>
-              <button
-                type="button"
-                className="btn btn-danger"
-                onClick={() => setModal('delete')}
-              >
-                Delete account
-              </button>
+              {LIFETIME_PLANS.has(authPlan) ? (
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: 0, lineHeight: 1.6 }}>
+                  Lifetime plan accounts are handled manually. To request account deletion, email{' '}
+                  <a href="mailto:support@datathink.co" style={{ color: 'var(--accent)' }}>support@datathink.co</a>
+                  {' '}— requests are processed within 7 business days.
+                </p>
+              ) : (
+                <>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: '0 0 1rem', lineHeight: 1.5 }}>
+                    Permanently deletes your account, all progress, and all data across every track. This cannot be undone.
+                  </p>
+                  <button
+                    type="button"
+                    className="btn btn-danger"
+                    onClick={() => setModal('delete')}
+                  >
+                    Delete account
+                  </button>
+                </>
+              )}
             </section>
           </>
         )}
