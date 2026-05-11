@@ -3511,7 +3511,8 @@ select {
 .track-hub-milestone-actions .btn-secondary,
 .track-samples-actions .btn-secondary,
 .policy-footer-nav .btn-secondary,
-.mock-diff-notice .btn-secondary {
+.mock-diff-notice .btn-secondary,
+.account-page-actions .btn-secondary {
   background: rgba(0, 0, 0, 0.03);
   color: var(--text-primary);
   border-color: var(--border-subtle);
@@ -3538,7 +3539,8 @@ select {
 .track-hub-milestone-actions .btn-secondary:not(:disabled):hover,
 .track-samples-actions .btn-secondary:not(:disabled):hover,
 .policy-footer-nav .btn-secondary:not(:disabled):hover,
-.mock-diff-notice .btn-secondary:not(:disabled):hover {
+.mock-diff-notice .btn-secondary:not(:disabled):hover,
+.account-page-actions .btn-secondary:not(:disabled):hover {
   background: rgba(0, 0, 0, 0.06);
   border-color: var(--border-strong);
 }

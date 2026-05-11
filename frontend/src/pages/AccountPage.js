@@ -496,9 +496,14 @@ export default function AccountPage() {
       <Topbar userExtras={planPillNode} />
 
       <main className="container" style={{ maxWidth: 680, padding: '3rem 1.5rem 4rem' }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-strong)', margin: '0 0 2rem' }}>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-strong)', margin: '0 0 0.35rem' }}>
           Account
         </h1>
+        {user?.name && (
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.925rem', margin: '0 0 2rem' }}>
+            {user.name}
+          </p>
+        )}
 
         {/* ── Billing section ───────────────────────────────────────────── */}
         {billingLoading ? (
@@ -622,7 +627,7 @@ export default function AccountPage() {
 
               {/* Action buttons */}
               {isSubscription && !successState && (
-                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
+                <div className="account-page-actions" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
                   {canSwitch && (
                     <button
                       type="button"

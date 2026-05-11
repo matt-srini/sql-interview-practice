@@ -249,9 +249,6 @@ export default function Topbar({
 
             {user && user.email ? (
               <>
-                <span className="topbar-user-name">
-                  {user.name || user.email}
-                </span>
                 <NavLink
                   to="/account"
                   className={({ isActive }) =>
@@ -352,7 +349,6 @@ export default function Topbar({
                   )}
                   {user && user.email ? (
                     <>
-                      <span className="topbar-mobile-user">{user.name || user.email}</span>
                       <NavLink
                         to="/account"
                         className={({ isActive }) =>
