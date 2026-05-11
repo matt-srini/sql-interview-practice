@@ -895,3 +895,6 @@ export default function AccountPage() {
           onClose={() => setModal(null)}
         />
       )}
+    </>
+  );
+}
