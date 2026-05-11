@@ -210,3 +210,13 @@ All items below are fully implemented. Listed for historical context; no action 
 ### Payments
 - Razorpay: Orders (lifetime) + Subscriptions (pro/elite), HMAC-verified webhooks, idempotent plan updates
 - Three tiers: Free / Pro / Elite (plus `lifetime_elite`)
+
+**Lifetime Pro → Lifetime Elite upgrade (delta payment)**
+Currently `lifetime_pro` users have no self-serve upgrade path; the Account page tells them to email support.
+When volume warrants it, implement automated delta-payment upgrade:
+- Create a Razorpay Order for `(lifetime_elite_price − lifetime_pro_price)` only
+- Reuse the existing `POST /api/razorpay/create-order` + `POST /api/razorpay/verify-payment` flow
+- On successful payment verification, upgrade `plan` to `lifetime_elite` in the DB
+- Show an "Upgrade to Lifetime Elite — pay the difference" prompt on the Account page for `lifetime_pro` users
+- Add a `context="lifetime_upgrade"` field to `plan_changes` for audit clarity
+Until then: email support@datathink.co, handled manually within 7 business days.
