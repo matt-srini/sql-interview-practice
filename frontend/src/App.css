@@ -7893,11 +7893,7 @@ select {
   color: var(--accent);
   font-weight: 600;
   background: var(--accent-soft);
-  padding: 4px 14px;
-  border-radius: 6px;
-}
-
-/* ── Shared Topbar Practice dropdown ─────────────────────── */
+  padding: 6px 14px; ─────────────────────── */
 .topbar-practice-dropdown {
   position: relative;
   display: inline-flex;
@@ -7914,10 +7910,7 @@ select {
 }
 .topbar-practice-trigger.topbar-auth-link--active {
   background: var(--accent-soft);
-  padding: 4px 14px;
-  border-radius: 6px;
-}
-.topbar-practice-trigger--open,
+  padding: 6px 14px;,
 .topbar-practice-trigger:hover {
   color: var(--accent);
 }
