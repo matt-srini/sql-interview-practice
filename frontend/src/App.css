@@ -7894,7 +7894,10 @@ select {
   font-weight: 600;
   background: var(--accent-soft);
   padding: 6px 14px;
-  border-radius: 6px;
+  border-radius: 10px;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
 }
 
 /* ── Shared Topbar Practice dropdown ─────────────────────── */
@@ -7915,7 +7918,8 @@ select {
 .topbar-practice-trigger.topbar-auth-link--active {
   background: var(--accent-soft);
   padding: 6px 14px;
-  border-radius: 6px;
+  border-radius: 10px;
+  min-height: 32px;
 }
 .topbar-practice-trigger--open,
 .topbar-practice-trigger:hover {
