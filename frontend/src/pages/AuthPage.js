@@ -65,17 +65,6 @@ export default function AuthPage() {
 
   const [mode, setMode] = useState(initialMode);
   const [fields, setFields] = useState({ email: '', name: '', password: '', passwordConfirm: '' });
-
-  // Pre-fill email/name when a logged-in OAuth user visits signup to add a password
-  useEffect(() => {
-    if (mode === 'signup' && _authUser?.email) {
-      setFields((prev) => ({
-        ...prev,
-        email: prev.email || _authUser.email,
-        name: prev.name || _authUser.name || '',
-      }));
-    }
-  }, [mode, _authUser]);
   const [showPassword, setShowPassword] = useState(false);
   const [status, setStatus] = useState('idle'); // 'idle' | 'loading' | 'success'
   const [error, setError] = useState(null);
@@ -87,13 +76,24 @@ export default function AuthPage() {
   const [oauthProviders, setOauthProviders] = useState([]);
   const [devMagicLink, setDevMagicLink] = useState(null);
 
+  const { login, register, requestMagicLink, user: _authUser } = useAuth();
+
+  // Pre-fill email/name when a logged-in OAuth user visits signup to add a password
+  useEffect(() => {
+    if (mode === 'signup' && _authUser?.email) {
+      setFields((prev) => ({
+        ...prev,
+        email: prev.email || _authUser.email,
+        name: prev.name || _authUser.name || '',
+      }));
+    }
+  }, [mode, _authUser]);
+
   // Show error from OAuth redirect (e.g. ?error=...)
   useEffect(() => {
     const oauthError = searchParams.get('error');
     if (oauthError) setError(oauthError);
   }, [searchParams]);
-
-  const { login, register, requestMagicLink, user: _authUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const returnTo = location.state?.from || null;
