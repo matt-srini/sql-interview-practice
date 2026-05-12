@@ -3448,15 +3448,15 @@ select {
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.14);
-  color: #D8D5CE;
-  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.03);
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
 }
 
 .btn-secondary:not(:disabled):hover {
   transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(0, 0, 0, 0.06);
+  border-color: var(--border-strong);
 }
 
 .btn-success {
@@ -3489,84 +3489,15 @@ select {
   font-size: 0.82rem;
 }
 
-/* Buttons outside the dark editor (in light UI context) */
-.landing-actions .btn-secondary,
-.sample-page-actions .btn-secondary,
-.post-submit-stack .btn-secondary,
-.sample-challenge-actions .btn-secondary,
-.dashboard-empty-actions .btn-secondary,
-.mock-hub-empty-actions .btn-secondary,
-.learn-index-empty-actions .btn-secondary,
-.preview-locked-actions .btn-secondary,
-.learn-unlock-card .btn-secondary,
-.learn-path-complete-banner .btn-secondary,
-.error-boundary-actions .btn-secondary,
-.mock-topbar .btn-secondary,
-.mock-summary-card .btn-secondary,
-.mock-shell .btn-secondary,
-.auth-card .btn-secondary,
-.not-found-actions .btn-secondary,
-.onboarding-tooltip-actions .btn-secondary,
-.track-hub-actions .btn-secondary,
-.track-hub-milestone-actions .btn-secondary,
-.track-samples-actions .btn-secondary,
-.policy-footer-nav .btn-secondary,
-.mock-diff-notice .btn-secondary,
-.account-page-actions .btn-secondary {
-  background: rgba(0, 0, 0, 0.03);
-  color: var(--text-primary);
-  border-color: var(--border-subtle);
-}
-
-.landing-actions .btn-secondary:not(:disabled):hover,
-.sample-page-actions .btn-secondary:not(:disabled):hover,
-.post-submit-stack .btn-secondary:not(:disabled):hover,
-.sample-challenge-actions .btn-secondary:not(:disabled):hover,
-.dashboard-empty-actions .btn-secondary:not(:disabled):hover,
-.mock-hub-empty-actions .btn-secondary:not(:disabled):hover,
-.learn-index-empty-actions .btn-secondary:not(:disabled):hover,
-.preview-locked-actions .btn-secondary:not(:disabled):hover,
-.learn-unlock-card .btn-secondary:not(:disabled):hover,
-.learn-path-complete-banner .btn-secondary:not(:disabled):hover,
-.error-boundary-actions .btn-secondary:not(:disabled):hover,
-.mock-topbar .btn-secondary:not(:disabled):hover,
-.mock-summary-card .btn-secondary:not(:disabled):hover,
-.mock-shell .btn-secondary:not(:disabled):hover,
-.auth-card .btn-secondary:not(:disabled):hover,
-.not-found-actions .btn-secondary:not(:disabled):hover,
-.onboarding-tooltip-actions .btn-secondary:not(:disabled):hover,
-.track-hub-actions .btn-secondary:not(:disabled):hover,
-.track-hub-milestone-actions .btn-secondary:not(:disabled):hover,
-.track-samples-actions .btn-secondary:not(:disabled):hover,
-.policy-footer-nav .btn-secondary:not(:disabled):hover,
-.mock-diff-notice .btn-secondary:not(:disabled):hover,
-.account-page-actions .btn-secondary:not(:disabled):hover {
-  background: rgba(0, 0, 0, 0.06);
-  border-color: var(--border-strong);
-}
-
-/* Restore dark-editor button style inside mock — overrides the broad .mock-shell override above */
-.mock-shell .editor-footer .btn-secondary {
+/* Dark override — only for buttons inside the always-dark Monaco editor footer */
+.editor-footer .btn-secondary {
   background: rgba(255, 255, 255, 0.14);
   color: #D8D5CE;
   border-color: rgba(255, 255, 255, 0.2);
 }
-.mock-shell .editor-footer .btn-secondary:not(:disabled):hover {
+.editor-footer .btn-secondary:not(:disabled):hover {
   background: rgba(255, 255, 255, 0.2);
   border-color: rgba(255, 255, 255, 0.28);
-}
-
-.app-topbar .btn-secondary,
-.auth-topbar-unused .btn-secondary {
-  background: rgba(0, 0, 0, 0.03);
-  color: var(--text-primary);
-  border-color: var(--border-subtle);
-}
-
-.app-topbar .btn-secondary:not(:disabled):hover,
-.auth-topbar-unused .btn-secondary:not(:disabled):hover {
-  background: rgba(0, 0, 0, 0.06);
-  border-color: var(--border-strong);
 }
 
 @media (max-width: 980px) {
