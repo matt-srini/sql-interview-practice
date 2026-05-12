@@ -513,7 +513,7 @@ async def create_anonymous_user() -> dict[str, Any]:
         return _user_from_mapping(result.mappings().one())  # type: ignore[return-value]
 
 
-async def upgrade_anonymous_to_registered(user_id: str, email: str, name: str, password: str) -> dict[str, Any] | None:
+async def upgrade_anonymous_to_registered(user_id: str, email: str, name: str, password: str) -> dict[str, Any] | None | str:
     pwd_hash, pwd_salt = _hash_password(password)
     session_factory = _session_factory_or_raise()
     async with session_factory() as session:
@@ -542,7 +542,7 @@ async def upgrade_anonymous_to_registered(user_id: str, email: str, name: str, p
             )
         except IntegrityError:
             await session.rollback()
-            return None
+            return "duplicate_email"
         row = result.mappings().first()
         if row is None:
             await session.rollback()
@@ -1779,6 +1779,36 @@ async def consume_password_reset_token(token: str) -> str | None:
             return None
         await session.commit()
         return str(row["user_id"])
+
+
+async def add_password_to_existing_user(user_id: str, password: str) -> dict[str, Any] | None:
+    """Add email/password credentials to an existing user that currently has no password (e.g. OAuth-only).
+
+    Only updates if pwd_hash IS NULL — safe to call concurrently.
+    Returns the updated user dict, or None if the user already has a password (or is not found).
+    """
+    pwd_hash, pwd_salt = _hash_password(password)
+    session_factory = _session_factory_or_raise()
+    async with session_factory() as session:
+        result = await session.execute(
+            text(
+                """
+                UPDATE users
+                SET pwd_hash = :pwd_hash,
+                    pwd_salt = :pwd_salt
+                WHERE id = CAST(:user_id AS UUID)
+                  AND pwd_hash IS NULL
+                RETURNING id, email, name, plan, email_verified, razorpay_customer_id, created_at, upgraded_at
+                """
+            ),
+            {"user_id": user_id, "pwd_hash": pwd_hash, "pwd_salt": pwd_salt},
+        )
+        row = result.mappings().first()
+        if row is None:
+            await session.rollback()
+            return None
+        await session.commit()
+        return _user_from_mapping(row)
 
 
 async def update_password(user_id: str, new_password: str) -> None:

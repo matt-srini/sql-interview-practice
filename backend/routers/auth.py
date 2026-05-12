@@ -31,6 +31,7 @@ from config import (
     GOOGLE_REDIRECT_URI,
 )
 from db import (
+    add_password_to_existing_user,
     clear_login_lock_state,
     consume_magic_link_token,
     consume_oauth_state_token,
@@ -250,7 +251,34 @@ async def register(
     current_user: dict[str, str | None] = Depends(get_current_user),
 ) -> Response:
     if current_user.get("email"):
-        return _err("Unable to create account. Please try again.")
+        # Already signed in as a registered user.
+        # Allow them to add an email/password to their existing OAuth account.
+        if current_user["email"] != body.email:
+            return _err("That email address doesn't match your current account.")
+
+        creds = await get_user_credentials_by_email(body.email)
+        if creds and creds.get("pwd_hash"):
+            return _err(
+                "This account already has a password. Use 'Forgot password' to change it.",
+                status=409,
+            )
+
+        user = await add_password_to_existing_user(current_user["id"], body.password)
+        if user is None:
+            return _err("Unable to add password. Please try again.")
+
+        token = await create_session(user["id"])
+        logger.info("[request_id=%s] Password added to existing account: user_id=%s", get_request_id(), user["id"])
+        payload = JSONResponse(
+            status_code=201,
+            content={
+                "user": {"id": user["id"], "email": user["email"], "name": user["name"], "plan": user["plan"], "email_verified": user.get("email_verified", False)},
+                "password_added": True,
+            },
+        )
+        set_session_cookie(payload, token)
+        set_csrf_cookie(payload, secrets.token_urlsafe(24))
+        return payload
 
     user = await upgrade_anonymous_to_registered(
         current_user["id"],
@@ -258,6 +286,8 @@ async def register(
         body.name,
         body.password,
     )
+    if user == "duplicate_email":
+        return _err("An account with that email already exists. Try signing in instead.")
     if user is None:
         return _err("Unable to create account. Please try again.")
 
@@ -304,9 +334,17 @@ async def login(
             )
             return _err("Too many failed sign-in attempts. Please try again in a few minutes.", status=429)
 
-    if candidate is None or not candidate["pwd_hash"] or not candidate["pwd_salt"]:
+    if candidate is None:
         verify_password(body.password, "0" * 64, "0" * 64)
         return _err("Invalid email or password.", status=401)
+
+    if not candidate["pwd_hash"] or not candidate["pwd_salt"]:
+        # Account exists but was created via OAuth — no password set
+        verify_password(body.password, "0" * 64, "0" * 64)
+        return _err(
+            "This account uses Google or GitHub sign-in. Sign in that way, or use 'Forgot password' to set a password.",
+            status=401,
+        )
 
     if not verify_password(body.password, candidate["pwd_hash"], candidate["pwd_salt"]):
         await register_failed_login_attempt(

@@ -65,6 +65,17 @@ export default function AuthPage() {
 
   const [mode, setMode] = useState(initialMode);
   const [fields, setFields] = useState({ email: '', name: '', password: '', passwordConfirm: '' });
+
+  // Pre-fill email/name when a logged-in OAuth user visits signup to add a password
+  useEffect(() => {
+    if (mode === 'signup' && _authUser?.email) {
+      setFields((prev) => ({
+        ...prev,
+        email: prev.email || _authUser.email,
+        name: prev.name || _authUser.name || '',
+      }));
+    }
+  }, [mode, _authUser]);
   const [showPassword, setShowPassword] = useState(false);
   const [status, setStatus] = useState('idle'); // 'idle' | 'loading' | 'success'
   const [error, setError] = useState(null);
@@ -82,7 +93,7 @@ export default function AuthPage() {
     if (oauthError) setError(oauthError);
   }, [searchParams]);
 
-  const { login, register, requestMagicLink } = useAuth();
+  const { login, register, requestMagicLink, user: _authUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const returnTo = location.state?.from || null;
@@ -175,10 +186,14 @@ export default function AuthPage() {
           setPasswordConfirmError('Passwords do not match.');
           return;
         }
-        await register(fields.email, fields.name, fields.password);
+        const result = await register(fields.email, fields.name, fields.password);
         setSignupEmail(fields.email);
         setStatus('success');
-        setInfo(`We've sent a verification email to ${fields.email}. Click the link to verify your account. Check your spam folder if it doesn't arrive within a minute — links expire after 24 hours.`);
+        if (result?.password_added) {
+          setInfo('Password added to your account. You can now sign in with your email and password.');
+        } else {
+          setInfo(`We've sent a verification email to ${fields.email}. Click the link to verify your account. Check your spam folder if it doesn't arrive within a minute — links expire after 24 hours.`);
+        }
         return;
       } else if (mode === 'magic') {
         const res = await requestMagicLink(fields.email);

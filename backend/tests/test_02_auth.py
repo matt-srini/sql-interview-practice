@@ -68,12 +68,28 @@ def test_tc008_register_happy_path():
 
 
 def test_tc009_duplicate_email_rejected():
-    """TC-009: Registering with same email twice → 400."""
+    """TC-009: Registering with same email when already logged in and already has a password → 409."""
     email = _unique_email()
     with TestClient(app) as client:
         client.get("/api/catalog")
         client.post("/api/auth/register", json={"email": email, "name": "A", "password": "Password1"})
+        # Still logged in — same email, password already set → 409
         r = client.post("/api/auth/register", json={"email": email, "name": "B", "password": "Password1"})
+    assert r.status_code == 409
+    assert "error" in r.json()
+
+
+def test_tc009b_duplicate_email_anonymous_rejected():
+    """TC-009b: Anonymous user trying to register with an already-taken email → 400."""
+    email = _unique_email()
+    # Register in one client (logs them in)
+    with TestClient(app) as client_a:
+        client_a.get("/api/catalog")
+        client_a.post("/api/auth/register", json={"email": email, "name": "A", "password": "Password1"})
+    # Fresh anonymous session in a second client tries same email
+    with TestClient(app) as client_b:
+        client_b.get("/api/catalog")
+        r = client_b.post("/api/auth/register", json={"email": email, "name": "B", "password": "Password1"})
     assert r.status_code == 400
     assert "error" in r.json()
 
@@ -128,14 +144,15 @@ def test_tc014_blocked_domain_rejected():
     assert r.status_code in (400, 422)
 
 
-def test_tc015_already_registered_cannot_re_register():
-    """TC-015: Registered session cannot register again → 400."""
+def test_tc015_already_registered_cannot_re_register_different_email():
+    """TC-015: Registered user trying to register with a DIFFERENT email → 400."""
     with TestClient(app) as client:
         _make_user(client)
         r = client.post("/api/auth/register", json={
             "email": _unique_email(), "name": "B", "password": "Password1",
         })
     assert r.status_code == 400
+    assert "doesn't match" in r.json().get("error", "")
 
 
 # ---------------------------------------------------------------------------
@@ -635,3 +652,223 @@ def test_tc043_streak_at_risk_when_yesterday_only():
     u = r.json()["user"]
     assert u["streak_at_risk"] is True
     assert u["streak_days"] == 0
+
+
+# ---------------------------------------------------------------------------
+# 2J. OAuth ↔ email/password account linking
+# ---------------------------------------------------------------------------
+
+def _seed_oauth_user(email: str, name: str = "OAuth User") -> str:
+    """Insert a user row with no password (simulates OAuth-only account).
+    Returns the user_id string.
+    """
+    import uuid as _uuid
+    conn = _db_conn()
+    try:
+        with conn.cursor() as cur:
+            user_id = str(_uuid.uuid4())
+            cur.execute(
+                """INSERT INTO users (id, email, name, pwd_hash, pwd_salt, plan, email_verified)
+                   VALUES (%s::uuid, %s, %s, NULL, NULL, 'free', true)""",
+                (user_id, email, name),
+            )
+            cur.execute(
+                """INSERT INTO oauth_accounts
+                       (user_id, provider, provider_user_id, email, name)
+                   VALUES (%s::uuid, 'google', %s, %s, %s)""",
+                (user_id, f"google-{user_id}", email, name),
+            )
+        conn.commit()
+    finally:
+        conn.close()
+    return user_id
+
+
+def _login_as_oauth_user(client, user_id: str) -> None:
+    """Inject a session for an OAuth-only user into the test client."""
+    import secrets
+    from datetime import datetime, timedelta, timezone
+    token = secrets.token_urlsafe(32)
+    expires_at = datetime.now(timezone.utc) + timedelta(days=30)
+    conn = _db_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO sessions (token, user_id, expires_at) VALUES (%s, %s::uuid, %s)",
+                (token, user_id, expires_at),
+            )
+        conn.commit()
+    finally:
+        conn.close()
+    client.cookies.set("session_token", token)
+
+
+def test_tc044_oauth_user_can_add_password():
+    """TC-044: OAuth-only user registers with same email → 201, password_added=True."""
+    email = _unique_email()
+    user_id = _seed_oauth_user(email)
+    with TestClient(app) as client:
+        client.get("/api/catalog")
+        _login_as_oauth_user(client, user_id)
+        r = client.post("/api/auth/register", json={
+            "email": email, "name": "OAuth User", "password": "Password1",
+        })
+    assert r.status_code == 201
+    body = r.json()
+    assert body.get("password_added") is True
+    assert body["user"]["email"] == email
+
+
+def test_tc045_oauth_user_can_login_with_password_after_adding():
+    """TC-045: After adding password, email/password login succeeds."""
+    email = _unique_email()
+    user_id = _seed_oauth_user(email)
+    # Add password via the register endpoint
+    with TestClient(app) as client:
+        client.get("/api/catalog")
+        _login_as_oauth_user(client, user_id)
+        client.post("/api/auth/register", json={
+            "email": email, "name": "OAuth User", "password": "Password1",
+        })
+    # Fresh client — login with email+password
+    with TestClient(app) as client2:
+        r = client2.post("/api/auth/login", json={"email": email, "password": "Password1"})
+    assert r.status_code == 200
+    assert r.json()["user"]["email"] == email
+
+
+def test_tc046_oauth_user_add_password_wrong_email_rejected():
+    """TC-046: OAuth user tries to register with a different email → 400."""
+    email = _unique_email()
+    user_id = _seed_oauth_user(email)
+    with TestClient(app) as client:
+        client.get("/api/catalog")
+        _login_as_oauth_user(client, user_id)
+        r = client.post("/api/auth/register", json={
+            "email": _unique_email(), "name": "OAuth User", "password": "Password1",
+        })
+    assert r.status_code == 400
+    assert "doesn't match" in r.json().get("error", "")
+
+
+def test_tc047_add_password_idempotent_second_attempt_rejected():
+    """TC-047: OAuth user adds password successfully; re-adding (same session) → 409."""
+    email = _unique_email()
+    user_id = _seed_oauth_user(email)
+    with TestClient(app) as client:
+        client.get("/api/catalog")
+        _login_as_oauth_user(client, user_id)
+        r1 = client.post("/api/auth/register", json={
+            "email": email, "name": "OAuth User", "password": "Password1",
+        })
+        assert r1.status_code == 201
+        # Second attempt — password already set → 409
+        r2 = client.post("/api/auth/register", json={
+            "email": email, "name": "OAuth User", "password": "NewPass99",
+        })
+    assert r2.status_code == 409
+    assert "already has a password" in r2.json().get("error", "")
+
+
+def test_tc048_oauth_only_login_with_password_gives_clear_error():
+    """TC-048: Email/password login for OAuth-only account → 401 with helpful message."""
+    email = _unique_email()
+    _seed_oauth_user(email)
+    with TestClient(app) as client:
+        r = client.post("/api/auth/login", json={"email": email, "password": "AnyPass1"})
+    assert r.status_code == 401
+    error = r.json().get("error", "")
+    assert "google" in error.lower() or "github" in error.lower() or "oauth" in error.lower() or "sign-in" in error.lower()
+
+
+def test_tc049_email_password_user_can_still_login_via_oauth(monkeypatch):
+    """TC-049: Email/password user whose email matches OAuth provider → session linked, login succeeds."""
+    from unittest.mock import AsyncMock
+    email = _unique_email()
+    # Register normally with email+password
+    with TestClient(app) as client:
+        client.get("/api/catalog")
+        reg = client.post("/api/auth/register", json={
+            "email": email, "name": "EmailUser", "password": "Password1",
+        })
+    user_id = reg.json()["user"]["id"]
+
+    # Now simulate OAuth login with the same email
+    monkeypatch.setattr("routers.auth.GOOGLE_CLIENT_ID", "fake")
+    monkeypatch.setattr("routers.auth.GOOGLE_CLIENT_SECRET", "fake")
+    monkeypatch.setattr("routers.auth.GOOGLE_REDIRECT_URI", "http://localhost/callback")
+    monkeypatch.setattr(
+        "routers.auth._exchange_google_code",
+        AsyncMock(return_value={"email": email, "name": "EmailUser", "id": "google-newid-456"}),
+    )
+    state_token = _create_oauth_state_token("google")
+    with TestClient(app) as client2:
+        r = client2.get(
+            f"/api/auth/oauth/google/callback?code=testcode&state={state_token}",
+            follow_redirects=False,
+        )
+    assert r.status_code == 302
+    # Session cookie should be set — user is now linked
+    assert "set-cookie" in r.headers or "session_token" in r.cookies
+
+
+def test_tc050_add_password_preserves_oauth_login():
+    """TC-050: After adding password, OAuth login still works (oauth_accounts row intact)."""
+    email = _unique_email()
+    user_id = _seed_oauth_user(email)
+    # Add password
+    with TestClient(app) as client:
+        client.get("/api/catalog")
+        _login_as_oauth_user(client, user_id)
+        r = client.post("/api/auth/register", json={
+            "email": email, "name": "OAuth User", "password": "Password1",
+        })
+    assert r.status_code == 201
+    # Verify oauth_accounts row still present
+    conn = _db_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT COUNT(*) FROM oauth_accounts WHERE user_id = %s::uuid",
+                (user_id,),
+            )
+            count = cur.fetchone()[0]
+    finally:
+        conn.close()
+    assert count >= 1
+
+
+def test_tc051_login_with_wrong_password_after_linking():
+    """TC-051: Wrong password after adding password → 401 (not leaked as OAuth error)."""
+    email = _unique_email()
+    user_id = _seed_oauth_user(email)
+    with TestClient(app) as client:
+        client.get("/api/catalog")
+        _login_as_oauth_user(client, user_id)
+        client.post("/api/auth/register", json={
+            "email": email, "name": "OAuth User", "password": "Password1",
+        })
+    with TestClient(app) as client2:
+        r = client2.post("/api/auth/login", json={"email": email, "password": "WrongPass9"})
+    assert r.status_code == 401
+    assert "Invalid email or password" in r.json().get("error", "")
+
+
+def test_tc052_add_password_response_includes_user_fields():
+    """TC-052: password_added response includes full user dict (id, email, name, plan)."""
+    email = _unique_email()
+    user_id = _seed_oauth_user(email, name="Full Name")
+    with TestClient(app) as client:
+        client.get("/api/catalog")
+        _login_as_oauth_user(client, user_id)
+        r = client.post("/api/auth/register", json={
+            "email": email, "name": "Full Name", "password": "Password1",
+        })
+    assert r.status_code == 201
+    body = r.json()
+    user = body.get("user", {})
+    assert user.get("id") == user_id
+    assert user.get("email") == email
+    assert user.get("name") == "Full Name"
+    assert "plan" in user
+    assert body.get("password_added") is True
