@@ -328,9 +328,8 @@ def submit_topic_sample_answer(topic: str, body: dict[str, Any]) -> dict[str, An
                 detail={"error": "Code contains disallowed constructs.", "guard_errors": guard_errors},
             )
         result = python_evaluator.evaluate_python_code(parsed.code, question)
-        if result.get("correct"):
-            result["solution_code"] = question.get("expected_code", "")
-            result["explanation"] = question.get("explanation", "")
+        result["solution_code"] = question.get("expected_code", "")
+        result["explanation"] = question.get("explanation", "")
         return result
 
     if normalized_topic == "python_data":
@@ -345,9 +344,8 @@ def submit_topic_sample_answer(topic: str, body: dict[str, Any]) -> dict[str, An
                 detail={"error": "Code contains disallowed constructs.", "guard_errors": guard_errors},
             )
         result = python_evaluator.evaluate_python_data_code(parsed.code, question)
-        if result.get("correct"):
-            result["solution_code"] = question.get("expected_code", "")
-            result["explanation"] = question.get("explanation", "")
+        result["solution_code"] = question.get("expected_code", "")
+        result["explanation"] = question.get("explanation", "")
         return result
 
     parsed = _parse_body(SampleSubmitPySparkRequest, body)
