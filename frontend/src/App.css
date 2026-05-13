@@ -1950,7 +1950,6 @@ select {
 .landing-how-card {
   background: var(--surface-card);
   border: 1px solid var(--border-subtle);
-  border-top: 4px solid var(--how-card-color, var(--accent));
   border-radius: var(--radius-lg);
   padding: 1.75rem 1.5rem 1.6rem;
   box-shadow: 0 2px 12px rgba(26,26,24,0.06), 0 1px 3px rgba(26,26,24,0.04);
@@ -1960,18 +1959,13 @@ select {
   box-shadow: 0 2px 16px rgba(0,0,0,0.22), 0 1px 4px rgba(0,0,0,0.14);
 }
 
-/* Per-card accent colours */
-.landing-how-card:nth-child(1) { --how-card-color: var(--accent); }
-.landing-how-card:nth-child(2) { --how-card-color: var(--warning); }
-.landing-how-card:nth-child(3) { --how-card-color: var(--success); }
-
 .landing-how-step {
   display: inline-block;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.1em;
-  color: var(--how-card-color, var(--accent));
-  background: color-mix(in srgb, var(--how-card-color, var(--accent)) 10%, transparent);
+  color: var(--accent);
+  background: var(--accent-soft);
   padding: 3px 10px;
   border-radius: 999px;
   margin-bottom: 1rem;
