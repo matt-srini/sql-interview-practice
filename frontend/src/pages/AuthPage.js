@@ -97,6 +97,7 @@ export default function AuthPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const returnTo = location.state?.from || null;
+  const upgradeTier = location.state?.upgradeTier || null;
   const firstFieldRef = useRef(null);
 
   useEffect(() => {
@@ -173,7 +174,7 @@ export default function AuthPage() {
     try {
       if (mode === 'signin') {
         await login(fields.email, fields.password);
-        navigate(returnTo || '/');
+        navigate(returnTo || '/', { state: upgradeTier ? { upgradeTier } : undefined });
       } else if (mode === 'signup') {
         const complexityErr = validatePassword(fields.password);
         if (complexityErr) {
@@ -242,6 +243,14 @@ export default function AuthPage() {
       {/* ── Centered card ── */}
       <main className="auth-main">
         <div className="auth-card" role="main">
+
+          {/* Upgrade-intent context banner */}
+          {upgradeTier && (
+            <div className="auth-upgrade-banner">
+              <span className="auth-upgrade-banner-icon" aria-hidden="true">⬆</span>
+              <span>Sign in or create an account to complete your upgrade to <strong>Elite</strong>.</span>
+            </div>
+          )}
 
           {/* Header */}
           <div className="auth-card-header">

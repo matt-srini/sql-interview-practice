@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
@@ -106,6 +106,7 @@ function ReadinessModal({ onClose }) {
 
 export default function ProgressDashboard() {
   const { user, loading: authLoading } = useAuth();
+  const location = useLocation();
   const rawPlan = user?.plan ?? 'free';
   const normalisedPlan = rawPlan.startsWith('lifetime_') ? rawPlan.replace('lifetime_', '') : rawPlan;
   const isPaying = normalisedPlan === 'pro' || normalisedPlan === 'elite';
@@ -123,6 +124,15 @@ export default function ProgressDashboard() {
   const [error, setError] = useState(null);
   const [mockHistory, setMockHistory] = useState([]);
   const [readinessModalOpen, setReadinessModalOpen] = useState(false);
+
+  // Auto-open the readiness modal when returning from auth with upgrade intent
+  useEffect(() => {
+    if (location.state?.upgradeTier === 'elite') {
+      setReadinessModalOpen(true);
+      // Replace history state so a refresh doesn't re-trigger the modal
+      window.history.replaceState({}, '', location.pathname);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (authLoading) return;

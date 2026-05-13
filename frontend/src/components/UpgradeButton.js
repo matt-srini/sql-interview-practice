@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { track } from '../analytics';
@@ -63,6 +63,7 @@ function tierLabel(tier) {
 export default function UpgradeButton({ tier = 'pro', label, source, compact = false, className = '', currency = 'INR', successPath = '/practice?upgraded=true' }) {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(null);
 
@@ -81,7 +82,7 @@ export default function UpgradeButton({ tier = 'pro', label, source, compact = f
 
   async function handleClick() {
     if (!user) {
-      navigate('/auth', { state: { from: '/', upgradeTier: tier } });
+      navigate('/auth', { state: { from: location.pathname + location.search, upgradeTier: tier } });
       return;
     }
     setPending(true);

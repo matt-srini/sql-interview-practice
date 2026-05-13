@@ -284,6 +284,22 @@ select {
 }
 
 
+.auth-upgrade-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-soft-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 0.9rem;
+  font-size: 0.86rem;
+  color: var(--accent-strong);
+  line-height: 1.45;
+  margin-bottom: 1.25rem;
+}
+.auth-upgrade-banner strong { color: var(--accent-strong); font-weight: 700; }
+.auth-upgrade-banner-icon { flex-shrink: 0; font-style: normal; margin-top: 1px; }
+
 .auth-card-header {
   text-align: left;
   margin-bottom: 1.35rem;
