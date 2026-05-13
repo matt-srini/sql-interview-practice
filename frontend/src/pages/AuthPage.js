@@ -136,14 +136,25 @@ export default function AuthPage() {
   async function handleOAuth(provider) {
     setError(null);
     setInfo(null);
+    // OAuth does a full-page redirect — React Router state is lost.
+    // Persist any upgrade intent in sessionStorage so AppRoutes can
+    // consume it once the user lands back after the OAuth callback.
+    if (upgradeTier) {
+      sessionStorage.setItem('pendingUpgrade', JSON.stringify({
+        tier: upgradeTier,
+        returnTo: returnTo || '/dashboard',
+      }));
+    }
     try {
       const { data } = await api.get(`/auth/oauth/${provider}/authorize`);
       if (!data?.url) {
+        sessionStorage.removeItem('pendingUpgrade');
         setError('OAuth provider is unavailable right now. Please try email sign-in.');
         return;
       }
       window.location.href = data.url;
     } catch (err) {
+      sessionStorage.removeItem('pendingUpgrade');
       const msg = err?.response?.data?.error;
       setError(msg || 'Could not start OAuth sign-in. Please try again.');
     }

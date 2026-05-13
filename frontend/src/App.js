@@ -123,7 +123,22 @@ function PolicyModal({ title, children, onClose }) {
 function AppRoutes() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const backgroundLocation = location.state?.backgroundLocation;
+
+  // Consume upgrade intent that was saved to sessionStorage before an
+  // OAuth redirect (where React Router state is lost). Fires once auth
+  // resolves to a logged-in user after returning from the OAuth provider.
+  useEffect(() => {
+    if (authLoading || !user) return;
+    const raw = sessionStorage.getItem('pendingUpgrade');
+    if (!raw) return;
+    sessionStorage.removeItem('pendingUpgrade');
+    try {
+      const { tier, returnTo } = JSON.parse(raw);
+      navigate(returnTo || '/dashboard', { state: { upgradeTier: tier }, replace: true });
+    } catch { /* malformed entry — already removed */ }
+  }, [user, authLoading, navigate]);
   const routeLocation = backgroundLocation || location;
   const closePolicyModal = () => {
     if (backgroundLocation) {
