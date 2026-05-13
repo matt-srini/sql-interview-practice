@@ -312,10 +312,10 @@ async def create_order(
         return client.subscription.create({
             "plan_id": plan_id,
             "customer_notify": 1,
-            # total_count is mandatory per Razorpay API. 120 months ≈ a decade —
-            # users can cancel any time; this is just a ceiling so the subscription
-            # is not indefinite from Razorpay's POV.
-            "total_count": 120,
+            # total_count is mandatory per Razorpay API. 24 months = 2 years.
+            # Users can cancel any time; subscription.completed webhook handles
+            # natural expiry and downgrades the account to free.
+            "total_count": 24,
             "customer_id": customer_id,
             "notes": {
                 "user_id": str(current_user["id"]),
@@ -467,7 +467,7 @@ async def razorpay_webhook(request: Request) -> dict[str, str]:
                 await set_user_subscription_id(str(resolved_user["id"]), str(sub_id))
             handled = True
 
-    elif event_type in {"subscription.cancelled", "subscription.halted"}:
+    elif event_type in {"subscription.cancelled", "subscription.halted", "subscription.completed"}:
         resolved_user = await _resolve_event_user(lookup_entity)
         if resolved_user:
             if resolved_user.get("plan") in LIFETIME_PLANS:

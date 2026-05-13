@@ -60,18 +60,21 @@ def _is_cancelled_at_cycle_end(sub: dict[str, Any]) -> bool:
     but the paid period has not yet expired.
 
     Razorpay behaviour:
-    - cancel_at_cycle_end=true may keep status='active' with end_at set, OR
-      move to status='cancelled' while retaining current_end as the paid-through date.
-    Either way, if the paid-through timestamp is in the future, access continues.
+    - cancel_at_cycle_end=1 on an active subscription: user requested cancellation;
+      billing stops at cycle end but access continues until current_end.
+    - status='cancelled' with current_end in the future: subscription moved to
+      cancelled state but the paid period hasn't elapsed yet.
+
+    NOTE: end_at is NOT a cancellation signal — Razorpay sets it on every
+    subscription that has total_count, reflecting the outer lifecycle boundary.
+    Only cancel_at_cycle_end=1 indicates a user-initiated pending cancellation.
     """
     now = time.time()
     status = sub.get("status", "")
 
-    # Active subscription with a scheduled end date
-    if status == "active":
-        end_at = sub.get("end_at")
-        if end_at and end_at > now:
-            return True
+    # Active subscription with an explicit cycle-end cancellation requested
+    if status == "active" and sub.get("cancel_at_cycle_end") == 1:
+        return True
 
     # Already moved to cancelled but current period not yet expired
     if status == "cancelled":

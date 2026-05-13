@@ -68,14 +68,15 @@ def _active_sub(**overrides: Any) -> dict:
 
 
 def _pending_cancel_sub(**overrides: Any) -> dict:
-    """Active subscription with cancel_at_cycle_end=true — end_at is set to a future time."""
+    """Active subscription with cancel_at_cycle_end=1 — user requested cancellation at cycle end."""
     base: dict[str, Any] = {
         "id": _SUB_ID,
         "status": "active",
         "current_start": _PAST,
         "current_end": _FUTURE,
         "charge_at": None,
-        "end_at": _FUTURE,      # _is_cancelled_at_cycle_end → True
+        "cancel_at_cycle_end": 1,   # _is_cancelled_at_cycle_end → True
+        "end_at": _FUTURE,
         "short_url": "https://rzp.io/l/testlink",
     }
     return {**base, **overrides}
@@ -421,9 +422,9 @@ def test_tc246_reactivate_free_user_returns_400():
 def test_tc247_reactivate_active_non_pending_subscription_returns_400():
     """TC-247: Active subscription NOT pending cancellation → 400.
 
-    end_at=None means _is_cancelled_at_cycle_end → False.
+    cancel_at_cycle_end not set means _is_cancelled_at_cycle_end → False.
     """
-    mc = _mock_rzp_client(sub=_active_sub())  # end_at is None
+    mc = _mock_rzp_client(sub=_active_sub())  # cancel_at_cycle_end not set
     with _razorpay_patched(mc):
         with TestClient(app) as client:
             user = _make_user(client, plan="pro")
@@ -435,7 +436,7 @@ def test_tc247_reactivate_active_non_pending_subscription_returns_400():
 
 
 def test_tc248_reactivate_pending_cancel_subscription_returns_reactivated():
-    """TC-248: Subscription with end_at in future (pending cancel) → 200; reactivated=True.
+    """TC-248: Subscription with cancel_at_cycle_end=1 (pending cancel) → 200; reactivated=True.
 
     Verifies that Razorpay is called with cancel_at_cycle_end=0, which removes
     the scheduled cancellation.
