@@ -623,7 +623,7 @@ export default function LandingPage() {
 
           <div className="landing-quality-callout">
             <div className="landing-quality-left">
-              <span className="landing-quality-eyebrow">Why the counts look small</span>
+              <span className="landing-quality-eyebrow">Every question earns its place</span>
               <p className="landing-quality-headline">Not a question bank.<br />A thinking curriculum.</p>
             </div>
             <div className="landing-quality-right">
