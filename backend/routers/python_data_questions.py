@@ -178,9 +178,10 @@ async def submit_python_data_code(
 
     if accepted:
         await mark_solved(current_user["id"], int(q["id"]), topic="python_data")
-        result["solution_code"] = q.get("expected_code", "")
-        result["solution"] = q.get("expected_code", "")
-        result["explanation"] = q.get("explanation", "")
+
+    result["solution_code"] = q.get("expected_code", "")
+    result["solution"] = q.get("expected_code", "")
+    result["explanation"] = q.get("explanation", "")
 
     await record_submission(
         user_id=current_user["id"],
