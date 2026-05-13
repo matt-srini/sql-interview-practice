@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import api from '../api';
@@ -34,6 +34,77 @@ function formatMockTime(s) {
   return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
 }
 
+function ReadinessModal({ onClose }) {
+  const handleKey = useCallback((e) => { if (e.key === 'Escape') onClose(); }, [onClose]);
+  useEffect(() => {
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [handleKey]);
+
+  return (
+    <div className="readiness-modal-backdrop" onClick={onClose} role="presentation">
+      <div
+        className="readiness-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Interview Readiness Score"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="readiness-modal-header">
+          <div>
+            <span className="readiness-modal-kicker">Elite feature</span>
+            <h3 className="readiness-modal-title">Interview Readiness Score</h3>
+          </div>
+          <button className="readiness-modal-close" onClick={onClose} aria-label="Close">×</button>
+        </div>
+
+        <p className="readiness-modal-desc">
+          A <strong>0–100 score per track</strong> that tells you how interview-ready you are right now — updated after every practice session and mock.
+        </p>
+
+        <div className="readiness-modal-signals">
+          <div className="readiness-modal-signal">
+            <span className="readiness-signal-dot" />
+            <div>
+              <span className="readiness-signal-label">Practice coverage</span>
+              <p className="readiness-signal-desc">How broadly you&rsquo;ve solved across easy, medium, and hard difficulties in this track.</p>
+            </div>
+          </div>
+          <div className="readiness-modal-signal">
+            <span className="readiness-signal-dot" />
+            <div>
+              <span className="readiness-signal-label">Mock accuracy</span>
+              <p className="readiness-signal-desc">Your accuracy under timed mock interview conditions — weighted toward recent sessions.</p>
+            </div>
+          </div>
+          <div className="readiness-modal-signal">
+            <span className="readiness-signal-dot" />
+            <div>
+              <span className="readiness-signal-label">Concept strength</span>
+              <p className="readiness-signal-desc">Accuracy across the concept tags in this track — surfaces gaps in specific areas.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="readiness-modal-labels">
+          {['Beginner', 'Developing', 'Proficient', 'Strong', 'Expert'].map(label => (
+            <span key={label} className="readiness-label-chip">{label}</span>
+          ))}
+        </div>
+
+        <div className="readiness-modal-footer">
+          <p className="readiness-modal-upgrade-copy">
+            Upgrade to Elite to unlock readiness scores across all four tracks, plus your personalised study plan and top weak-area coaching.
+          </p>
+          <Link to="/?upgrade=elite#landing-pricing" className="btn btn-primary" onClick={onClose}>
+            Upgrade to Elite →
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ProgressDashboard() {
   const { user, loading: authLoading } = useAuth();
   const rawPlan = user?.plan ?? 'free';
@@ -52,6 +123,7 @@ export default function ProgressDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mockHistory, setMockHistory] = useState([]);
+  const [readinessModalOpen, setReadinessModalOpen] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -175,7 +247,7 @@ export default function ProgressDashboard() {
                     <div className="study-plan-header">
                       <h3 className="study-plan-title">Your study plan</h3>
                       <p className="study-plan-subtitle">
-                        <Link to="/#landing-pricing">Upgrade to Elite</Link> to unlock a personalised next-steps plan based on your weak areas, practice gaps, and mock performance.
+                        <Link to={isPaying ? '/account' : '/#landing-pricing'}>Upgrade to Elite</Link> to unlock a personalised next-steps plan based on your weak areas, practice gaps, and mock performance.
                       </p>
                     </div>
                   </section>
@@ -282,7 +354,12 @@ export default function ProgressDashboard() {
                                 <span className="readiness-badge-label">{insights.readiness_scores[topic].label}</span>
                               </div>
                             ) : !isElite ? (
-                              <span className="readiness-gate-teaser">Readiness score — <Link to="/#landing-pricing" onClick={e => e.stopPropagation()}>Elite</Link></span>
+                              <button
+                                className="readiness-gate-teaser"
+                                onClick={e => { e.preventDefault(); e.stopPropagation(); setReadinessModalOpen(true); }}
+                              >
+                                Readiness score <span className="readiness-teaser-badge">Elite</span>
+                              </button>
                             ) : null}
                           </div>
                         </Link>
@@ -385,6 +462,7 @@ export default function ProgressDashboard() {
           </>
         )}
       </main>
+      {readinessModalOpen && <ReadinessModal onClose={() => setReadinessModalOpen(false)} />}
     </>
   );
 }
