@@ -17,6 +17,7 @@ import ProgressDashboard from './ProgressDashboard';
 vi.mock('../api', () => ({
   default: {
     get: vi.fn(),
+    post: vi.fn(() => Promise.resolve({})),
   },
 }));
 
