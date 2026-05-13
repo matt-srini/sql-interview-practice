@@ -1111,7 +1111,7 @@ export default function QuestionPage() {
                 submitted={!!submitResult}
                 correct={submitResult?.correct ?? null}
                 correctIndex={submitResult?.correct_index ?? null}
-                explanation={submitResult?.explanation ?? ''}
+                explanation={(submitResult?.correct || showSolution) ? (submitResult?.explanation ?? '') : ''}
               />
               <div className="editor-footer editor-footer-plain question-action-dock">
                 <div className="button-row question-action-row">
@@ -1624,10 +1624,19 @@ export default function QuestionPage() {
                       Reveal {hintStepLabels[hintsShown] ?? `Hint ${hintsShown + 1}`}
                     </button>
                   )}
+                  {hintsShown >= question.hints.length && !showSolution && (
+                    <button
+                      className="hint-reveal-btn hint-reveal-solution-cta"
+                      onClick={() => setShowSolution(true)}
+                    >
+                      <span className="hint-reveal-arrow">→</span>
+                      Review Official Solution
+                    </button>
+                  )}
                 </div>
               )}
 
-              {showSolution && (
+              {showSolution && !meta.hasMCQ && (
                 <div className="solution-card">
                   <h3>Official Solution</h3>
                   <pre>{submitResult.solution_query ?? submitResult.solution_code ?? ''}</pre>

@@ -8951,6 +8951,10 @@ select {
 .hint-reveal-btn:hover { background: rgba(91, 106, 240, 0.06); }
 .hint-reveal-arrow { font-size: 0.8rem; transition: transform 0.15s; }
 .hint-reveal-btn:hover .hint-reveal-arrow { transform: translateX(3px); }
+.hint-reveal-solution-cta {
+  border-top: 1px solid var(--border-subtle);
+  font-weight: 600;
+}
 
 /* ============================================================
    Split pane divider
