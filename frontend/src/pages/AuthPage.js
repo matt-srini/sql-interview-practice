@@ -73,7 +73,7 @@ export default function AuthPage() {
   const [passwordConfirmError, setPasswordConfirmError] = useState(null);
   const [signupEmail, setSignupEmail] = useState('');
   const [resendStatus, setResendStatus] = useState('idle'); // 'idle' | 'sending' | 'sent'
-  const [oauthProviders, setOauthProviders] = useState([]);
+  const [oauthProviders, setOauthProviders] = useState(null); // null = loading
   const [devMagicLink, setDevMagicLink] = useState(null);
 
   const { login, register, requestMagicLink, user: _authUser } = useAuth();
@@ -222,8 +222,9 @@ export default function AuthPage() {
   const isSuccess = status === 'success';
   const meta = MODE_META[mode];
   const showOAuth = mode === 'signin' || mode === 'signup';
-  const hasGoogle = oauthProviders.includes('google');
-  const hasGithub = oauthProviders.includes('github');
+  const oauthLoading = oauthProviders === null;
+  const hasGoogle = !oauthLoading && oauthProviders.includes('google');
+  const hasGithub = !oauthLoading && oauthProviders.includes('github');
   const hasAnyOAuth = hasGoogle || hasGithub;
   const showPasswordField = mode === 'signin' || mode === 'signup';
   const showNameField = mode === 'signup';
@@ -253,30 +254,38 @@ export default function AuthPage() {
           </div>
 
           {/* OAuth buttons — sign-in / sign-up only */}
-          {/* Credentials not yet configured; buttons are intentionally inert */}
-          {showOAuth && hasAnyOAuth && (
+          {showOAuth && (oauthLoading || hasAnyOAuth) && (
             <div className="auth-oauth">
-              {hasGoogle && (
-                <button
-                  type="button"
-                  className="auth-oauth-btn"
-                  onClick={() => handleOAuth('google')}
-                  aria-label="Continue with Google"
-                >
-                  <GoogleIcon />
-                  <span>Continue with Google</span>
-                </button>
-              )}
-              {hasGithub && (
-                <button
-                  type="button"
-                  className="auth-oauth-btn"
-                  onClick={() => handleOAuth('github')}
-                  aria-label="Continue with GitHub"
-                >
-                  <GithubIcon />
-                  <span>Continue with GitHub</span>
-                </button>
+              {oauthLoading ? (
+                <>
+                  <div className="auth-oauth-btn skeleton-shimmer" style={{ height: '3rem', border: 'none' }} aria-hidden="true" />
+                  <div className="auth-oauth-btn skeleton-shimmer" style={{ height: '3rem', border: 'none' }} aria-hidden="true" />
+                </>
+              ) : (
+                <>
+                  {hasGoogle && (
+                    <button
+                      type="button"
+                      className="auth-oauth-btn"
+                      onClick={() => handleOAuth('google')}
+                      aria-label="Continue with Google"
+                    >
+                      <GoogleIcon />
+                      <span>Continue with Google</span>
+                    </button>
+                  )}
+                  {hasGithub && (
+                    <button
+                      type="button"
+                      className="auth-oauth-btn"
+                      onClick={() => handleOAuth('github')}
+                      aria-label="Continue with GitHub"
+                    >
+                      <GithubIcon />
+                      <span>Continue with GitHub</span>
+                    </button>
+                  )}
+                </>
               )}
               <div className="auth-divider" role="separator">
                 <span>or continue with email</span>
