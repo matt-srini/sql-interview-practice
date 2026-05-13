@@ -617,8 +617,19 @@ export default function LandingPage() {
           <div className="landing-practice-heading">
             <h2 className="landing-practice-title">The full data interview curriculum</h2>
             <p className="landing-practice-copy">
-              From SQL fundamentals to distributed Spark systems — every track structured around real interview patterns.
+              From SQL fundamentals to distributed Spark systems — four tracks built around reasoning patterns, not question volume.
             </p>
+          </div>
+
+          <div className="landing-quality-callout">
+            <div className="landing-quality-left">
+              <span className="landing-quality-eyebrow">Why the counts look small</span>
+              <p className="landing-quality-headline">Not a question bank.<br />A thinking curriculum.</p>
+            </div>
+            <div className="landing-quality-right">
+              <p>Every question is placed at a specific difficulty for a reason — to build the next layer of reasoning on top of the last. Questions aren&rsquo;t repeated in different costumes; each one targets a distinct pattern you&rsquo;ll actually face in an interview.</p>
+              <p>Progressive hints develop <em>how</em> you think, not just what you answer. Tracked difficulty tiers take you from beginner to confidently interview-ready, concept by concept. Ninety-five well-placed SQL questions build more than nine hundred and fifty random ones ever could.</p>
+            </div>
           </div>
 
           <div className="track-cards-grid">

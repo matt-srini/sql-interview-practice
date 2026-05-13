@@ -2084,6 +2084,67 @@ select {
   font-size: 0.9rem;
 }
 
+/* ── Quality callout ── */
+.landing-quality-callout {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 2rem;
+  align-items: start;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: 1.75rem 2rem;
+  margin-bottom: 2rem;
+}
+
+.landing-quality-eyebrow {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.6rem;
+}
+
+.landing-quality-headline {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-strong);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.landing-quality-right {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-top: 0.15rem;
+}
+
+.landing-quality-right p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  margin: 0;
+}
+
+.landing-quality-right em {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+@media (max-width: 900px) {
+  .landing-quality-callout {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1.4rem 1.25rem;
+  }
+}
+
 /* ── Track cards grid ── */
 .track-cards-grid {
   display: grid;

@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 export const TRACK_META = {
   sql: {
     label: 'SQL',
-    description: 'Write queries against realistic datasets',
+    description: 'SQL problems against real datasets — joins, aggregations, window functions, and analytical patterns drawn from actual data engineering interviews.',
     color: '#5B6AF0',
     apiPrefix: '',
     language: 'sql',
