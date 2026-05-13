@@ -8,6 +8,7 @@ import TrackProgressBar from '../components/TrackProgressBar';
 import Topbar from '../components/Topbar';
 import InsightStrip from '../components/InsightStrip';
 import Skeleton from '../components/Skeleton';
+import UpgradeButton from '../components/UpgradeButton';
 
 const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
 
@@ -96,9 +97,7 @@ function ReadinessModal({ onClose }) {
           <p className="readiness-modal-upgrade-copy">
             Upgrade to Elite to unlock readiness scores across all four tracks, plus your personalised study plan and top weak-area coaching.
           </p>
-          <Link to="/?upgrade=elite#landing-pricing" className="btn btn-primary" onClick={onClose}>
-            Upgrade to Elite →
-          </Link>
+          <UpgradeButton tier="elite" source="dashboard_readiness_modal" successPath="/?upgraded=true" />
         </div>
       </div>
     </div>
@@ -247,8 +246,9 @@ export default function ProgressDashboard() {
                     <div className="study-plan-header">
                       <h3 className="study-plan-title">Your study plan</h3>
                       <p className="study-plan-subtitle">
-                        <Link to={isPaying ? '/account' : '/#landing-pricing'}>Upgrade to Elite</Link> to unlock a personalised next-steps plan based on your weak areas, practice gaps, and mock performance.
+                        Unlock a personalised next-steps plan based on your weak areas, practice gaps, and mock performance.
                       </p>
+                      <UpgradeButton tier="elite" source="dashboard_study_plan" successPath="/?upgraded=true" compact />
                     </div>
                   </section>
                 ) : null}
