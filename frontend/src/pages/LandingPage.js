@@ -445,7 +445,7 @@ export default function LandingPage() {
               <span className="landing-proof-sep" aria-hidden="true" />
               <span className="landing-proof-stat"><strong>11</strong> real-world datasets</span>
               <span className="landing-proof-sep" aria-hidden="true" />
-              <span className="landing-proof-stat">instant feedback</span>
+              <span className="landing-proof-stat">guided hints on every question</span>
             </div>
 
             <section className="landing-showcase">
@@ -581,6 +581,32 @@ export default function LandingPage() {
                       {company}
                     </span>
                   ))}
+                </div>
+              </div>
+            </section>
+
+            <section className="landing-how-section">
+              <div className="landing-section-inner">
+                <div className="landing-how-header">
+                  <h2 className="landing-how-title">Every question is a guided lesson</h2>
+                  <p className="landing-how-sub">You don&rsquo;t just get marked right or wrong — you get a structured path to understanding.</p>
+                </div>
+                <div className="landing-how-grid">
+                  <div className="landing-how-card">
+                    <span className="landing-how-step">01</span>
+                    <h3 className="landing-how-card-title">Write real code, see real output</h3>
+                    <p className="landing-how-card-copy">SQL runs on DuckDB against committed datasets. Python and Pandas execute in a sandboxed environment. You see actual output — not a simulated pass/fail.</p>
+                  </div>
+                  <div className="landing-how-card">
+                    <span className="landing-how-step">02</span>
+                    <h3 className="landing-how-card-title">Hints that build reasoning, not dependency</h3>
+                    <p className="landing-how-card-copy">Every question has two progressive hints. The first surfaces the mental model — how to think about the problem. The second points to the specific technique. You reason your way to the answer.</p>
+                  </div>
+                  <div className="landing-how-card">
+                    <span className="landing-how-step">03</span>
+                    <h3 className="landing-how-card-title">Solutions that teach, not just reveal</h3>
+                    <p className="landing-how-card-copy">Official solutions come with a full explanation of why the approach works. SQL submissions also get query quality analysis — efficiency notes, style feedback, and alternative approaches worth knowing.</p>
+                  </div>
                 </div>
               </div>
             </section>
@@ -725,6 +751,9 @@ export default function LandingPage() {
                 <ul className="landing-tier-list">
                   <li>All easy questions ({FREE_EASY_SUMMARY})</li>
                   <li>Medium + hard unlock as you solve (hard cap: 8 per track)</li>
+                  <li>2-step progressive hints on every question — mental model first, technique second</li>
+                  <li>Official solutions with full explanation after exhausting hints</li>
+                  <li>SQL query quality analysis on correct answers — efficiency, style, and alternatives</li>
                   <li>Easy mock interviews (unlimited) · 1 medium mock/day</li>
                   <li>Streak tracking</li>
                 </ul>
@@ -751,8 +780,9 @@ export default function LandingPage() {
                   <li>Everything in Free — no hard cap</li>
                   <li>All {TOTAL_QUESTIONS} questions, every medium + hard</li>
                   <li>Unlimited medium mocks · 3 hard mocks/day</li>
-                  <li>Fresh mock question bank — questions you haven't seen in practice</li>
-                  <li>Your weakest concept + drill recommendations on the dashboard</li>
+                  <li>Fresh mock question bank — questions you haven&rsquo;t seen in practice</li>
+                  <li>Post-mock debrief — per-question solutions and concept breakdown</li>
+                  <li>Weakest concept analysis + drill recommendations on the dashboard</li>
                   <li>All 22 learning paths</li>
                 </ul>
                 <div className="landing-tier-cta">

@@ -1889,6 +1889,86 @@ select {
   color: var(--text-secondary);
 }
 
+/* ── Landing "how it works" section ──────────────── */
+.landing-how-section {
+  padding: 4rem 1.5rem;
+  background: var(--surface-card);
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.landing-how-header {
+  text-align: center;
+  margin-bottom: 2.75rem;
+}
+
+.landing-how-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-strong);
+  margin-bottom: 0.6rem;
+  letter-spacing: -0.02em;
+}
+
+.landing-how-sub {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  max-width: 520px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.landing-how-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+.landing-how-card {
+  background: var(--bg-page);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem 1.5rem;
+}
+
+.landing-how-step {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  background: rgba(91, 106, 240, 0.08);
+  padding: 3px 9px;
+  border-radius: 999px;
+  margin-bottom: 1rem;
+}
+
+.landing-how-card-title {
+  font-size: 1rem;
+  font-weight: 650;
+  color: var(--text-strong);
+  margin-bottom: 0.6rem;
+  line-height: 1.35;
+}
+
+.landing-how-card-copy {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .landing-how-grid {
+    grid-template-columns: 1fr;
+  }
+  .landing-how-title {
+    font-size: 1.35rem;
+  }
+}
+
 /* ── Landing paths section ────────────────────────── */
 .landing-paths {
   background: var(--bg-page);
