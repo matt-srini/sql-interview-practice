@@ -1891,19 +1891,39 @@ select {
 
 /* ── Landing "how it works" section ──────────────── */
 .landing-how-section {
-  padding: 4rem 1.5rem;
-  background: var(--surface-card);
+  padding: 4.5rem 1.5rem;
+  position: relative;
+  overflow: hidden;
   border-top: 1px solid var(--border-subtle);
   border-bottom: 1px solid var(--border-subtle);
+  /* Warm off-white base + two soft radial glows + dot grid */
+  background:
+    radial-gradient(ellipse 55% 70% at 4% 15%,
+      color-mix(in srgb, var(--accent) 11%, transparent) 0%, transparent 68%),
+    radial-gradient(ellipse 50% 60% at 97% 88%,
+      color-mix(in srgb, var(--success) 10%, transparent) 0%, transparent 65%),
+    radial-gradient(circle, rgba(26,26,24,0.055) 1px, transparent 1px) 0 0 / 22px 22px,
+    #F7F5F0;
+}
+
+[data-theme="dark"] .landing-how-section {
+  background:
+    radial-gradient(ellipse 55% 70% at 4% 15%,
+      color-mix(in srgb, var(--accent) 14%, transparent) 0%, transparent 68%),
+    radial-gradient(ellipse 50% 60% at 97% 88%,
+      color-mix(in srgb, var(--success) 10%, transparent) 0%, transparent 65%),
+    radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px) 0 0 / 22px 22px,
+    #0E0E0C;
 }
 
 .landing-how-header {
   text-align: center;
   margin-bottom: 2.75rem;
+  position: relative;
 }
 
 .landing-how-title {
-  font-size: 1.6rem;
+  font-size: 1.65rem;
   font-weight: 700;
   color: var(--text-strong);
   margin-bottom: 0.6rem;
@@ -1921,32 +1941,44 @@ select {
 .landing-how-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
+  gap: 1.25rem;
   max-width: 1040px;
   margin: 0 auto;
+  position: relative;
 }
 
 .landing-how-card {
-  background: var(--bg-page);
+  background: var(--surface-card);
   border: 1px solid var(--border-subtle);
+  border-top: 4px solid var(--how-card-color, var(--accent));
   border-radius: var(--radius-lg);
-  padding: 1.75rem 1.5rem;
+  padding: 1.75rem 1.5rem 1.6rem;
+  box-shadow: 0 2px 12px rgba(26,26,24,0.06), 0 1px 3px rgba(26,26,24,0.04);
 }
+
+[data-theme="dark"] .landing-how-card {
+  box-shadow: 0 2px 16px rgba(0,0,0,0.22), 0 1px 4px rgba(0,0,0,0.14);
+}
+
+/* Per-card accent colours */
+.landing-how-card:nth-child(1) { --how-card-color: var(--accent); }
+.landing-how-card:nth-child(2) { --how-card-color: var(--warning); }
+.landing-how-card:nth-child(3) { --how-card-color: var(--success); }
 
 .landing-how-step {
   display: inline-block;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--accent);
-  background: rgba(91, 106, 240, 0.08);
-  padding: 3px 9px;
+  letter-spacing: 0.1em;
+  color: var(--how-card-color, var(--accent));
+  background: color-mix(in srgb, var(--how-card-color, var(--accent)) 10%, transparent);
+  padding: 3px 10px;
   border-radius: 999px;
   margin-bottom: 1rem;
 }
 
 .landing-how-card-title {
-  font-size: 1rem;
+  font-size: 1.01rem;
   font-weight: 650;
   color: var(--text-strong);
   margin-bottom: 0.6rem;
@@ -1954,15 +1986,16 @@ select {
 }
 
 .landing-how-card-copy {
-  font-size: 0.9rem;
+  font-size: 0.895rem;
   color: var(--text-secondary);
-  line-height: 1.65;
+  line-height: 1.68;
   margin: 0;
 }
 
 @media (max-width: 900px) {
   .landing-how-grid {
     grid-template-columns: 1fr;
+    max-width: 520px;
   }
   .landing-how-title {
     font-size: 1.35rem;
