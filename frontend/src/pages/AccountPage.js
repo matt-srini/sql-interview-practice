@@ -539,8 +539,6 @@ export default function AccountPage() {
   // ── Operation state ──────────────────────────────────────────────────────
   const [modal, setModal] = useState(null); // 'cancel' | 'switch' | 'reactivate' | 'delete'
   const [successState, setSuccessState] = useState(null); // { type, ... }
-  const [paymentLoading, setPaymentLoading] = useState(false);
-  const [paymentError, setPaymentError] = useState(null);
 
   // ── Load billing on mount ────────────────────────────────────────────────
   useEffect(() => {
@@ -570,20 +568,6 @@ export default function AccountPage() {
   const normEffective = normalisePlan(effectivePlan);
   const canSwitch = isSubscription && !cancelledAtCycleEnd && !successState;
   const canCancel = isSubscription && !cancelledAtCycleEnd && !successState;
-
-  // ── Payment method handler ─────────────────────────────────────────────
-  async function handleUpdatePayment() {
-    setPaymentLoading(true);
-    setPaymentError(null);
-    try {
-      const res = await api.post('/account/update-payment-method');
-      window.open(res.data.redirect_url, '_blank', 'noopener,noreferrer');
-    } catch (err) {
-      setPaymentError(err?.response?.data?.error ?? 'Could not retrieve payment update link.');
-    } finally {
-      setPaymentLoading(false);
-    }
-  }
 
   // ── Helpers for success ───────────────────────────────────────────────
   function handleCancelSuccess({ cancelAt }) {
@@ -736,12 +720,6 @@ export default function AccountPage() {
                 </div>
               )}
 
-              {paymentError && (
-                <div style={{ marginTop: '0.75rem' }}>
-                  <Alert tone="danger">{paymentError}</Alert>
-                </div>
-              )}
-
               {/* Action buttons */}
               {isSubscription && !successState && (
                 <div className="account-page-actions" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
@@ -754,16 +732,6 @@ export default function AccountPage() {
                       Switch plan
                     </button>
                   )}
-                  {isSubscription && !cancelledAtCycleEnd && (
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      disabled={paymentLoading}
-                      onClick={handleUpdatePayment}
-                    >
-                      {paymentLoading ? 'Opening…' : 'Update payment method'}
-                    </button>
-                  )}
                   {canCancel && (
                     <button
                       type="button"
@@ -774,6 +742,13 @@ export default function AccountPage() {
                     </button>
                   )}
                 </div>
+              )}
+
+              {/* Payment method info note — shown for active monthly subscribers */}
+              {isSubscription && !cancelledAtCycleEnd && !successState && (
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', margin: '1rem 0 0', lineHeight: 1.5 }}>
+                  If a payment fails, Razorpay will email you automatically with a secure link to update your card and retry.
+                </p>
               )}
             </Card>
 
