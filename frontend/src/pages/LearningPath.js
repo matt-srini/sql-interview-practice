@@ -105,14 +105,31 @@ export default function LearningPath() {
         <meta name="twitter:image" content="https://datathink.co/og-image.png" />
         {path && <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
-          "@type": "LearningResource",
+          "@type": "Course",
           "name": path.title,
           "description": path.description,
           "url": `https://datathink.co/learn/${topic}/${slug}`,
-          "teaches": path.outcomes,
+          "inLanguage": "en",
+          "teaches": path.focus_concepts ?? [],
+          "numberOfItems": path.questions?.length ?? path.question_count,
           "educationalLevel": path.role,
-          "learningResourceType": "Practice problems",
+          "hasCourseInstance": { "@type": "CourseInstance", "courseMode": "online" },
+          "isPartOf": {
+            "@type": "Course",
+            "name": `${topicLabel} Interview Practice`,
+            "url": `https://datathink.co/learn/${topic}`
+          },
           "provider": { "@type": "Organization", "name": "datathink", "url": "https://datathink.co" }
+        })}</script>}
+        {path && <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Practice", "item": "https://datathink.co" },
+            { "@type": "ListItem", "position": 2, "name": "Learning Paths", "item": "https://datathink.co/learn" },
+            { "@type": "ListItem", "position": 3, "name": topicLabel, "item": `https://datathink.co/learn/${topic}` },
+            { "@type": "ListItem", "position": 4, "name": path.title }
+          ]
         })}</script>}
       </Helmet>
       <Topbar />

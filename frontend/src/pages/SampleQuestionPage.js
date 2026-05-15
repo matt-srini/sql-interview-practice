@@ -377,6 +377,18 @@ export default function SampleQuestionPage() {
         <link rel="canonical" href={`https://datathink.co/sample/${topic}/${difficulty}`} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:image" content="https://datathink.co/og-image.png" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Quiz",
+          "name": `Free ${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)} ${meta.label} Interview Questions`,
+          "description": `Practice free ${difficulty} ${meta.label} interview questions with instant execution and feedback. No account required.`,
+          "educationalLevel": difficulty,
+          "inLanguage": "en",
+          "isAccessibleForFree": true,
+          "about": { "@type": "Thing", "name": `${meta.label} interview preparation` },
+          "learningResourceType": "Practice problems",
+          "provider": { "@type": "Organization", "name": "datathink", "url": "https://datathink.co" }
+        })}</script>
       </Helmet>
       <header className="topbar">
         <div className="topbar-inner sample-page-topbar">
