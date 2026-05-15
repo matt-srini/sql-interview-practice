@@ -275,14 +275,21 @@ export default function LandingPage() {
     const hash = location.hash;
     if (!hash) return;
     const id = hash.slice(1);
-    // Two attempts: one after paint, one after React Router scroll restoration
+    // Use getBoundingClientRect + scrollY so the position is always
+    // document-relative regardless of offsetParent. Subtract 88px to clear
+    // the 68px sticky topbar plus a comfortable visual gap.
     const scroll = () => {
       const el = document.getElementById(id);
-      if (el) window.scrollTo({ top: el.offsetTop - 16, behavior: 'smooth' });
+      if (!el) return;
+      const top = el.getBoundingClientRect().top + window.scrollY - 88;
+      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
     };
-    const t1 = setTimeout(scroll, 100);
-    const t2 = setTimeout(scroll, 400);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    // Three retries: after paint (220ms — after the 180ms route animation),
+    // after dynamic content settles (500ms), and a safety net for slow loads (1200ms).
+    const t1 = setTimeout(scroll, 220);
+    const t2 = setTimeout(scroll, 500);
+    const t3 = setTimeout(scroll, 1200);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, [location.hash]);
 
   // Auto-rotate the IDE tabs — runs only when section is in view and not paused.
