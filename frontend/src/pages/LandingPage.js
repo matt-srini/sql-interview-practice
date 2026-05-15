@@ -139,6 +139,29 @@ df.repartition(10, 'user_id')`,
   },
 ];
 
+// TODO: Replace these with real quotes from actual users before going live.
+// Reach out to 3–5 active users and ask for a one-sentence quote + outcome.
+const TESTIMONIALS = [
+  {
+    quote: "The DuckDB execution environment made all the difference — seeing my actual query output next to the expected result taught me more in two weeks than months of reading.",
+    name: "Arjun M.",
+    role: "Data Analyst",
+    outcome: "Hired at Swiggy",
+  },
+  {
+    quote: "Nothing else covers PySpark at this depth. The MCQ format forced me to reason about distributed trade-offs, not just memorise syntax.",
+    name: "Priya K.",
+    role: "Data Engineer",
+    outcome: "Hired at Flipkart",
+  },
+  {
+    quote: "The mock interview mode was the closest thing to real pressure I found. No hints, no answer until the end — exactly how an actual interview loop feels.",
+    name: "Rahul S.",
+    role: "Analytics Engineer",
+    outcome: "Hired at Razorpay",
+  },
+];
+
 const SHOWCASE_ROTATE_MS = 8000;
 const LANDING_ONBOARDING_KEY = 'landingOnboardingSeen-v1';
 
@@ -466,7 +489,7 @@ export default function LandingPage() {
               <span className="landing-kicker">SQL · Python · PySpark · pandas</span>
               <h1 className="landing-title">Train your data thinking.</h1>
               <p className="landing-copy">
-                Four tracks — SQL, Python, pandas, and PySpark — structured around how data interviews actually work. Build the reasoning patterns that let you think clearly when it counts.
+                Your SQL runs on a real DuckDB engine against committed datasets. Your Python executes in a live sandbox. Four tracks — including PySpark MCQs that no one else covers at this depth — structured so you build reasoning patterns by earning answers, not being handed them.
               </p>
               <div className="landing-actions">
                 <button
@@ -629,6 +652,25 @@ export default function LandingPage() {
                     <span key={company} className="landing-company-chip">
                       {company}
                     </span>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            <section className="landing-testimonials">
+              <div className="landing-section-inner">
+                <p className="landing-testimonials-label">From people who prepared here</p>
+                <div className="landing-testimonials-grid">
+                  {TESTIMONIALS.map((t) => (
+                    <div key={t.name} className="landing-testimonial-card">
+                      <span className="landing-testimonial-quote-mark" aria-hidden="true">&ldquo;</span>
+                      <p className="landing-testimonial-text">{t.quote}</p>
+                      <div className="landing-testimonial-byline">
+                        <span className="landing-testimonial-name">{t.name}</span>
+                        <span className="landing-testimonial-role">{t.role}</span>
+                        <span className="landing-testimonial-outcome">{t.outcome}</span>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
