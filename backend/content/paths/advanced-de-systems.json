@@ -1,0 +1,12 @@
+{
+  "slug": "advanced-de-systems",
+  "title": "Advanced DE Systems",
+  "description": "Tackle the harder trade-offs: schema evolution, watermarking, delivery semantics, backfill design, data quality at scale, and cost-aware storage decisions.",
+  "topic": "data-engineering",
+  "questions": [52001, 52007, 52012, 52018, 52022, 52026],
+  "tier": "pro",
+  "role": "intermediate",
+  "focus_concepts": ["SCHEMA EVOLUTION", "WATERMARKING", "DELIVERY SEMANTICS", "BACKFILL DESIGN"],
+  "outcomes": "You will reason confidently about schema compatibility, streaming watermarks, exactly-once semantics, idempotent backfills, and columnar storage trade-offs.",
+  "recommended_after": ["pipeline-fundamentals"]
+}

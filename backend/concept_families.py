@@ -293,6 +293,124 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "BROADCAST",            # BROADCAST JOIN, BROADCAST VARIABLE, etc.
         ],
     },
+    "data-engineering": {
+        "ETL VS ELT": [
+            "ETL VS ELT",
+            "EXTRACT",
+            "TRANSFORM",
+            "LOAD ORDER",
+        ],
+        "IDEMPOTENCY": [
+            "IDEMPOTEN",          # IDEMPOTENCY, IDEMPOTENT WRITE, etc.
+            "DUPLICATE PREVENTION",
+            "SAFE RERUN",
+        ],
+        "BACKFILL DESIGN": [
+            "BACKFILL",
+            "HISTORICAL REPROCESS",
+            "PARTITION RERUN",
+        ],
+        "ORCHESTRATION": [
+            "ORCHESTRAT",         # ORCHESTRATION, ORCHESTRATION DESIGN, etc.
+            "DAG",                # DAG EXECUTION, DAG DEPENDENCY
+            "DEPENDENCY",
+            "RETRY",
+        ],
+        "SCHEDULING & SLAS": [
+            "SCHEDULING",
+            "SLA",
+            "SLO",
+            "CRON-BASED",
+            "EVENT-DRIVEN",
+        ],
+        "SCHEMA EVOLUTION": [
+            "SCHEMA EVOLUTION",
+            "BACKWARD COMPAT",
+            "FORWARD COMPAT",
+            "BREAKING CHANGE",
+            "DATA CONTRACT",
+        ],
+        "BATCH VS STREAMING": [
+            "BATCH VS STREAM",
+            "MICRO-BATCH",
+            "REAL-TIME",
+            "LATENCY TRADEOFF",
+            "STREAM PROCESSING",
+        ],
+        "WATERMARKING": [
+            "WATERMARK",          # WATERMARKING, WATERMARK CHOICE, etc.
+            "LATE DATA",
+            "ALLOWED LATENESS",
+            "EVENT TIME",
+        ],
+        "DELIVERY SEMANTICS": [
+            "DELIVERY SEMANTIC",
+            "EXACTLY-ONCE",
+            "AT-LEAST-ONCE",
+            "AT-MOST-ONCE",
+            "DEDUP",
+        ],
+        "PARTITIONING & PRUNING": [
+            "PARTITION",          # PARTITIONING, PARTITION PRUNING, etc.
+            "PREDICATE PUSHDOWN",
+            "DATA SKEW",
+        ],
+        "STORAGE LAYOUT & FILE FORMATS": [
+            "STORAGE LAYOUT",
+            "FILE FORMAT",
+            "COLUMNAR",
+            "PARQUET",
+            "AVRO",
+            "COMPACTION",
+            "SMALL FILE",
+        ],
+        "CDC & INGESTION": [
+            "CDC",                # CDC & INGESTION, LOG-BASED CDC
+            "CHANGE CAPTURE",
+            "INGESTION",
+            "LOG-BASED",
+        ],
+        "DATA QUALITY": [
+            "DATA QUALITY",
+            "ASSERTION",
+            "ANOMALY DETECTION",
+            "FRESHNESS CHECK",
+            "NULL CHECK",
+        ],
+        "LINEAGE & OBSERVABILITY": [
+            "LINEAGE",
+            "OBSERVABILITY",
+            "FRESHNESS",
+            "METADATA",
+            "ALERTING",
+        ],
+        "SCD OPERATIONS": [
+            "SCD",                # SCD TYPE 2, SCD OPERATIONS, etc.
+            "SLOWLY CHANGING",
+            "EFFECTIVE DATE",
+            "SURROGATE KEY",
+        ],
+        "STORAGE ARCHITECTURE": [
+            "STORAGE ARCHITECTURE",
+            "DATA LAKE",
+            "DATA WAREHOUSE",
+            "LAKEHOUSE",
+            "OLAP",
+        ],
+        "COST OPTIMIZATION": [
+            "COST OPTIM",         # COST OPTIMIZATION, COST-AWARE
+            "COMPUTE VS STORAGE",
+            "SCAN COST",
+            "STORAGE TIER",
+        ],
+        "INCIDENT RESPONSE": [
+            "INCIDENT RESPONSE",
+            "ROOT CAUSE",
+            "REPLAY",
+            "REMEDIATION",
+            "CASCADING FAILURE",
+        ],
+    },
 }
 
 
