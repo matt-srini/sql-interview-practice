@@ -3,6 +3,14 @@
 > Written: 2026-05-15. Do not execute multiple phases in parallel — each phase builds on the previous.
 > Constraint: no changes to question content, evaluation logic, unlock rules, or payment flows.
 
+## Status
+
+| Phase | Description | Status |
+|---|---|---|
+| 1 | Technical hygiene | ✅ Done |
+| 2 | Schema enrichment + FAQ page | ✅ Done |
+| 3 | Index the 122 easy question pages | ⬅ Next |
+
 ---
 
 ## Current state
@@ -416,44 +424,6 @@ This adds ~122 URLs to the sitemap. The sitemap will grow from 46 to ~168 URLs �
 
 ---
 
-### Phase 4 — Technical performance (optional, do last)
-
-These are high-effort and lower immediate-impact than Phases 1-3.
-
----
-
-#### 4a. Dynamic OG images per learning path
-
-All pages currently share `/og-image.png`. Every social share looks identical. Use `satori` (or a simple canvas script in the build) to generate per-path images:
-
-```
-/og-image/learn/sql/window-functions-mastery.png
-```
-
-With the path title, track accent color, and datathink wordmark. Update `_inject_seo()` in `spa.py:126` to use the per-path OG image URL for learning path routes.
-
----
-
-#### 4b. Make `/api/paths/:slug` metadata publicly readable
-
-Currently path detail requires authentication. The metadata (title, description, question count, focus_concepts) has no reason to be gated — it's shown publicly on the landing page. Making the read-only metadata public would:
-1. Allow prerendering learning path pages with real content
-2. Allow concept/company pages to link to related paths without auth
-
-Change: strip the `current_user` dependency from the path metadata portion of `routers/paths.py`. Solve state per question still requires auth.
-
----
-
-#### 4c. Sitemap index as URLs scale
-
-After Phase 3, the sitemap will grow from ~46 to ~168 URLs. If it ever approaches 50k, split into a sitemap index:
-
-- `/sitemap.xml` — index pointing to:
-  - `/sitemap-core.xml` — static pages, practice hubs, sample pages
-  - `/sitemap-paths.xml` — 22 learning path pages
-  - `/sitemap-questions.xml` — ~122 easy question pages
-
----
 
 ## Prioritized execution order
 
@@ -471,9 +441,6 @@ After Phase 3, the sitemap will grow from ~46 to ~168 URLs. If it ever approache
 | 10 | Server-side meta for easy questions | 3a | `spa.py` | 2 hrs | Crawlable meta for 122 pages |
 | 11 | Remove noindex from easy questions | 3b | `QuestionPage.js:849` | 30 min | Indexes 122 pages |
 | 12 | Easy questions in sitemap | 3c | `system.py` | 1 hr | Sitemap coverage |
-| 13 | Dynamic OG images | 4a | Build script + `spa.py` | 3 days | Social CTR |
-| 14 | Public path metadata API | 4b | `routers/paths.py` | 1 day | Enables prerendering |
-| 15 | Sitemap index | 4c | `system.py` | 1 day | Scalability |
 
 ---
 
