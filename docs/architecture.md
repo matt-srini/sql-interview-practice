@@ -274,11 +274,28 @@ PostgreSQL   Redis Cluster
 
 ---
 
-## Track registry (Phase A — upcoming)
+## Track registry
 
-Currently, track-specific logic (catalog module, unlock profile, eval kind, concept rules, valid topic strings) is hardcoded in multiple files: `unlock.py`, `routers/mock.py`, `routers/insights.py`, `routers/sample.py`, `sample_questions.py`, `scripts/validate_content.py`, and the frontend `TopicContext.js` / `catalogContext.js`.
+`backend/tracks.py` is the single source of truth for all track metadata. Each `TrackConfig` entry carries:
 
-**Phase A** of the new-tracks plan will introduce `backend/tracks.py` as the single source of truth for all track metadata. Each entry will carry: `slug`, `db_topic`, `catalog_module`, `label`, `eval_kind` (`"sql" | "python" | "pandas" | "mcq" | "mixed"`), `unlock_profile` (`"code" | "mcq"`), `content_dir`, `id_ranges`, `concept_blocklist`, `hint_rules`, and `in_mixed_mock`. All files that currently hardcode track lists will be refactored to derive from this registry. After Phase A, adding a track is a registry entry — no blast-radius edits to existing files.
+| Field | Type | Purpose |
+|---|---|---|
+| `slug` | `str` | URL/API slug (e.g. `"python-data"`); matches `:topic` route param |
+| `db_topic` | `str` | Topic string stored in DB tables (equals slug except `"python_data"` legacy alias) |
+| `catalog_module` | module | Exposes `get_questions_by_difficulty()`, `get_mock_questions_by_difficulty()`, `get_public_question()` |
+| `label` | `str` | Human-readable name (e.g. `"Pandas"`) |
+| `eval_kind` | `str` | `"sql" \| "python" \| "pandas" \| "mcq"` — drives submission dispatch |
+| `unlock_profile` | `str` | `"code"` (SQL/Python/Pandas thresholds) or `"mcq"` (PySpark — higher, MCQ is lower-effort) |
+| `content_dir` | `Path` | Absolute path to the questions directory |
+| `concept_blocklist` | `set[str]` | Syntax-level concepts rejected by `validate_content.py` |
+| `hint_rules` | `dict` | Per-difficulty `(min, max)` hint count bounds |
+| `first_hint_leak_patterns` | `tuple[re.Pattern]` | Regexes that flag an overly implementation-specific first hint |
+| `in_mixed_mock` | `bool` | Whether the track is included in the `"mixed"` mock pool |
+| `mixed_subtype` | `bool` | Phase D hook: `True` for tracks whose questions carry a `subtype` field to switch between MCQ and code editor per question |
+
+**Helper functions:** `get_track(slug)`, `get_track_by_db_topic(db_topic)`, `all_slugs()`, `mixed_mock_slugs()`.
+
+All files that previously hardcoded track lists — `unlock.py`, `routers/mock.py`, `routers/insights.py`, `routers/sample.py`, `sample_questions.py`, `scripts/validate_content.py` — now derive from this registry. Adding a track requires only a registry entry (plus its catalog module and content directory); no other file needs editing.
 
 ---
 

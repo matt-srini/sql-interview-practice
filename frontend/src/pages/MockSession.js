@@ -11,6 +11,7 @@ import VariablesPanel from '../components/VariablesPanel';
 import SchemaViewer from '../components/SchemaViewer';
 import Skeleton from '../components/Skeleton';
 import { TRACK_META } from '../contexts/TopicContext';
+import { TRACK_LABELS } from '../trackRegistry';
 import { track as trackEvent } from '../analytics';
 import { renderDescription } from '../utils/renderDescription';
 
@@ -34,10 +35,6 @@ function conceptSlug(concept) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 }
-
-const TRACK_LABELS = {
-  sql: 'SQL', python: 'Python', 'python-data': 'Pandas', pyspark: 'PySpark', mixed: 'Mixed',
-};
 
 const DEFAULT_CODE = {
   sql: '-- Write your SQL query here\n',

@@ -410,8 +410,22 @@ Correct submissions also call `mark_solved()` and `record_submission()` to updat
 
 ---
 
-## Track registry (Phase A — upcoming)
+## Track registry
 
-Track-specific logic is currently hardcoded across `unlock.py`, `routers/mock.py`, `routers/insights.py`, `routers/sample.py`, `sample_questions.py`, and `scripts/validate_content.py`. Each file independently enumerates the valid track list, making it error-prone to add a new track.
+`backend/tracks.py` is the single authoritative source for all track metadata. The `TRACKS` tuple holds one `TrackConfig` dataclass per track with: `slug`, `db_topic`, `catalog_module`, `label`, `eval_kind`, `unlock_profile`, `content_dir`, `concept_blocklist`, `hint_rules`, `first_hint_leak_patterns`, `in_mixed_mock`, and `mixed_subtype`.
 
-**Phase A** of the new-tracks plan will introduce `backend/tracks.py` as the single authoritative track registry. All routers and utilities will derive track lists, catalog modules, unlock profiles, and eval dispatch from this registry. The refactor is behavior-identical for the existing four tracks; its success criterion is "adding a track requires only a registry entry."
+**Lookup helpers:**
+- `get_track(slug)` — by URL slug (raises `ValueError` if unknown)
+- `get_track_by_db_topic(db_topic)` — by DB topic string (handles `python_data` legacy alias)
+- `all_slugs()` — ordered list of all track slugs
+- `mixed_mock_slugs()` — slugs with `in_mixed_mock=True` (all four currently)
+
+All routers and utilities use these helpers instead of hardcoded track lists:
+- `unlock.py` — `unlock_profile` drives which free-tier threshold table applies
+- `routers/mock.py` — `VALID_TRACKS`, `TRACK_TO_TOPIC`, catalog dispatch, and mixed-pool loop all derive from the registry
+- `routers/insights.py` — track enumeration replaced with `TRACKS`
+- `routers/sample.py` — run-code dispatch uses `eval_kind`; public-question lookup uses `catalog_module`
+- `sample_questions.py` — `get_topic_sample_pool()` uses `catalog_module` instead of per-track imports
+- `scripts/validate_content.py` — question dirs, concept blocklists, hint rules, and path validation all derive from the registry
+
+The `db_topic` ↔ `slug` mismatch for Pandas (`python_data` ↔ `python-data`) is the only legacy wart and lives exclusively in the registry entry.

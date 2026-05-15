@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
+import { TRACK_SLUGS } from '../trackRegistry';
 import TrackProgressBar from '../components/TrackProgressBar';
 import PathProgressCard from '../components/PathProgressCard';
 import Topbar from '../components/Topbar';
@@ -12,8 +13,6 @@ import UpgradeButton from '../components/UpgradeButton';
 import OnboardingTooltip from '../components/OnboardingTooltip';
 import { highlightCode } from './landingShowcaseHighlight';
 import { detectCurrency, PRICES } from '../utils/currency';
-
-const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
 
 const TRACK_DIFFICULTIES = {
   sql:           { label: 'SQL',    easy: 32, medium: 34, hard: 29 },
@@ -374,7 +373,7 @@ export default function LandingPage() {
 
   const trackTabs = useMemo(
     () =>
-      TOPICS.map((topic) => {
+      TRACK_SLUGS.map((topic) => {
         const meta = TRACK_META[topic];
         const trackData = dashData?.tracks?.[topic];
         const solved = trackData?.solved ?? 0;

@@ -9,166 +9,19 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from path_loader import get_all_paths
-from pyspark_questions import get_questions_by_difficulty as get_pyspark_by_difficulty
-from python_data_questions import get_questions_by_difficulty as get_python_data_by_difficulty
-from python_questions import get_questions_by_difficulty as get_python_by_difficulty
-from questions import get_questions_by_difficulty
+from tracks import TRACKS
 
 
 BACKEND_ROOT = Path(__file__).resolve().parent.parent
 
-QUESTION_DIRS = {
-    "sql": BACKEND_ROOT / "content" / "questions",
-    "python": BACKEND_ROOT / "content" / "python_questions",
-    "python-data": BACKEND_ROOT / "content" / "python_data_questions",
-    "pyspark": BACKEND_ROOT / "content" / "pyspark_questions",
-}
+QUESTION_DIRS: dict[str, Path] = {t.slug: t.content_dir for t in TRACKS}
 
-_RAW_CONCEPTS_BY_TRACK: dict[str, set[str]] = {
-    "sql": {
-        "select",
-        "where",
-        "order by",
-        "group by",
-        "join",
-        "inner join",
-        "left join",
-        "right join",
-        "full outer join",
-        "having",
-        "count",
-        "sum",
-        "avg",
-        "average",
-        "min",
-        "max",
-        "case when",
-        "row number",
-        "row_number",
-        "rank",
-        "dense rank",
-        "dense_rank",
-        "lag",
-        "lead",
-        "cte introduction",
-        "named temporary result set",
-        "with clause syntax",
-    },
-    "python": {
-        "dict",
-        "dictionary",
-        "set",
-        "heapq",
-        "for loop",
-        "array",
-        "string",
-        "iteration",
-        "sorting",
-    },
-    "python-data": {
-        "groupby",
-        "merge",
-        "dropna",
-        "fillna",
-        "sort values",
-        "sort_values",
-        "rename",
-        "resample",
-        "pivot table",
-        "pivot_table",
-        "str accessor",
-        "str split",
-        "str.split",
-        "copy",
-        "size",
-        "nunique",
-    },
-    "pyspark": {
-        "filter",
-        "filter()",
-        "repartition",
-        "repartition()",
-        "withcolumn",
-        "withcolumn()",
-        "collect",
-        "collect()",
-        "cache",
-        "cache()",
-        "merge",
-    },
-}
+_RAW_CONCEPTS_BY_TRACK: dict[str, set[str]] = {t.slug: t.concept_blocklist for t in TRACKS}
 
-_HINT_COUNT_RULES: dict[str, dict[str, tuple[int, int]]] = {
-    "sql": {
-        "easy": (2, 2),
-        "medium": (2, 3),
-        "hard": (2, 3),
-    },
-    "python": {
-        "easy": (2, 2),
-        "medium": (2, 3),
-        "hard": (2, 3),
-    },
-    "python-data": {
-        "easy": (2, 2),
-        "medium": (2, 3),
-        "hard": (2, 3),
-    },
-    "pyspark": {
-        "easy": (1, 2),
-        "medium": (2, 3),
-        "hard": (2, 3),
-    },
-}
+_HINT_COUNT_RULES: dict[str, dict[str, tuple[int, int]]] = {t.slug: t.hint_rules for t in TRACKS}
 
 _FIRST_HINT_LEAK_PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
-    "sql": (
-        re.compile(r"\bwhere\b", re.IGNORECASE),
-        re.compile(r"\bgroup by\b", re.IGNORECASE),
-        re.compile(r"\border by\b", re.IGNORECASE),
-        re.compile(r"\bjoin\b", re.IGNORECASE),
-        re.compile(r"\bhaving\b", re.IGNORECASE),
-        re.compile(r"\bdistinct\b", re.IGNORECASE),
-        re.compile(r"\b(count|max|min|avg|sum)\s*\(", re.IGNORECASE),
-        re.compile(r"\b(row_number|dense_rank|rank|lag|lead)\b", re.IGNORECASE),
-    ),
-    "python": (
-        re.compile(r"\bdictionary\b", re.IGNORECASE),
-        re.compile(r"\bdict\b", re.IGNORECASE),
-        re.compile(r"\bset\b", re.IGNORECASE),
-        re.compile(r"\bdeque\b", re.IGNORECASE),
-        re.compile(r"\bheap(q)?\b", re.IGNORECASE),
-        re.compile(r"\bstack\b", re.IGNORECASE),
-        re.compile(r"\bqueue\b", re.IGNORECASE),
-        re.compile(r"\[::?-?1\]"),
-    ),
-    "python-data": (
-        re.compile(r"\bgroupby\b", re.IGNORECASE),
-        re.compile(r"\bmerge\b", re.IGNORECASE),
-        re.compile(r"\bdropna\b", re.IGNORECASE),
-        re.compile(r"\bfillna\b", re.IGNORECASE),
-        re.compile(r"\bsort_values\b", re.IGNORECASE),
-        re.compile(r"\brename\b", re.IGNORECASE),
-        re.compile(r"\btransform\b", re.IGNORECASE),
-        re.compile(r"\brolling\b", re.IGNORECASE),
-        re.compile(r"\bcumsum\b", re.IGNORECASE),
-        re.compile(r"\brank\b", re.IGNORECASE),
-        re.compile(r"\bto_datetime\b", re.IGNORECASE),
-        re.compile(r"\bpivot(_table)?\b", re.IGNORECASE),
-        re.compile(r"\.dt\b", re.IGNORECASE),
-        re.compile(r"\.str\b", re.IGNORECASE),
-    ),
-    "pyspark": (
-        re.compile(r"\bcollect\s*\(", re.IGNORECASE),
-        re.compile(r"\bcount\s*\(", re.IGNORECASE),
-        re.compile(r"\bfilter\s*\(", re.IGNORECASE),
-        re.compile(r"\bwithcolumn\b", re.IGNORECASE),
-        re.compile(r"\brepartition\b", re.IGNORECASE),
-        re.compile(r"\bcoalesce\b", re.IGNORECASE),
-        re.compile(r"\bcache\s*\(", re.IGNORECASE),
-        re.compile(r"\bbroadcast\b", re.IGNORECASE),
-        re.compile(r"\bcreateorreplace(temp)?view\b", re.IGNORECASE),
-    ),
+    t.slug: t.first_hint_leak_patterns for t in TRACKS
 }
 
 
@@ -235,7 +88,7 @@ def _validate_concepts() -> None:
 def _validate_pyspark_scenario_questions() -> None:
     """Validate scenario-type PySpark questions have required observation anchors and rich options."""
     errors: list[str] = []
-    pyspark_dir = BACKEND_ROOT / "content" / "pyspark_questions"
+    pyspark_dir = QUESTION_DIRS["pyspark"]
 
     for file_path in sorted(pyspark_dir.glob("*.json")):
         if file_path.stem == "schemas":
@@ -407,7 +260,7 @@ def _validate_mock_fields() -> None:
 
 
 def _validate_paths(paths: list[dict], catalogs_by_topic: dict[str, dict[str, list[dict]]]) -> None:
-    valid_topics = {"sql", "python", "python-data", "pyspark"}
+    valid_topics = {t.slug for t in TRACKS}
     valid_tiers = {"free", "pro"}
     valid_roles = {"starter", "intermediate", "advanced"}
 
@@ -473,29 +326,17 @@ def _load_json_file(path: Path) -> None:
 
 def main() -> None:
     # Validate all raw JSON files parse cleanly.
-    content_dirs = [
-        BACKEND_ROOT / "content" / "questions",
-        BACKEND_ROOT / "content" / "python_questions",
-        BACKEND_ROOT / "content" / "python_data_questions",
-        BACKEND_ROOT / "content" / "pyspark_questions",
-        BACKEND_ROOT / "content" / "paths",
-    ]
+    content_dirs = list(QUESTION_DIRS.values()) + [BACKEND_ROOT / "content" / "paths"]
     for content_dir in content_dirs:
         for file_path in sorted(content_dir.glob("*.json")):
             _load_json_file(file_path)
 
     # Validate loader-level schemas and references.
-    sql_catalog = get_questions_by_difficulty()
-    python_catalog = get_python_by_difficulty()
-    pandas_catalog = get_python_data_by_difficulty()
-    pyspark_catalog = get_pyspark_by_difficulty()
     paths = get_all_paths()
 
     catalogs_by_topic = {
-        "sql": sql_catalog,
-        "python": python_catalog,
-        "python-data": pandas_catalog,
-        "pyspark": pyspark_catalog,
+        t.slug: t.catalog_module.get_questions_by_difficulty()
+        for t in TRACKS
     }
     _validate_paths(paths, catalogs_by_topic)
     _validate_concepts()

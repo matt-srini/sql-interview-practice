@@ -3,9 +3,8 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
+import { TRACK_SLUGS } from '../trackRegistry';
 import { useTheme } from '../App';
-
-const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
 
 /**
  * Shared top navigation bar used by every page.
@@ -183,7 +182,7 @@ export default function Topbar({
                   {practiceOpen && (
                     <div className="topbar-practice-menu">
                       <div className="topbar-practice-menu-header">Tracks</div>
-                      {TOPICS.map((t) => (
+                      {TRACK_SLUGS.map((t) => (
                         <NavLink
                           key={t}
                           className={({ isActive }) =>
@@ -289,7 +288,7 @@ export default function Topbar({
                   {showNav && (
                     <>
                       <div className="topbar-mobile-section-label">Practice</div>
-                      {TOPICS.map((t) => (
+                      {TRACK_SLUGS.map((t) => (
                         <NavLink
                           key={t}
                           className={({ isActive }) =>

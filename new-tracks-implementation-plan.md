@@ -85,7 +85,7 @@ Frontend:
 
 ### Phase A tasks
 
-- [ ] **A1.** Create `backend/tracks.py` — a single registry. Each entry:
+- [x] **A1.** Create `backend/tracks.py` — a single registry. Each entry:
   `slug`, `db_topic` (== slug per D3), `catalog_module`, `label`, `eval_kind`
   (`"sql"` | `"python"` | `"pandas"` | `"mcq"` | `"mixed"`), `unlock_profile`
   (`"code"` | `"mcq"`), `content_dir`, `id_ranges`, `concept_blocklist`,
@@ -94,27 +94,27 @@ Frontend:
   (PySpark `unlock_profile="mcq"`, others `"code"`; `python-data` keeps its
   legacy `db_topic="python_data"` alias — registry is where that one wart lives,
   nowhere else).
-- [ ] **A2.** Refactor `unlock.py` to take `unlock_profile` from the registry
+- [x] **A2.** Refactor `unlock.py` to take `unlock_profile` from the registry
   instead of `_is_pyspark`. Behavior must be byte-identical for the 4 tracks.
-- [ ] **A3.** Refactor `mock.py` to derive `VALID_TRACKS`, topic mapping, catalog
+- [x] **A3.** Refactor `mock.py` to derive `VALID_TRACKS`, topic mapping, catalog
   lookup, mixed-track list (from `in_mixed_mock`), and payload/eval dispatch
   (by `eval_kind`) from the registry.
-- [ ] **A4.** Refactor `insights.py` and `sample_questions.py`/`routers/sample.py`
+- [x] **A4.** Refactor `insights.py` and `sample_questions.py`/`routers/sample.py`
   to read the registry.
-- [ ] **A5.** Refactor `scripts/validate_content.py` to derive `QUESTION_DIRS`,
+- [x] **A5.** Refactor `scripts/validate_content.py` to derive `QUESTION_DIRS`,
   concept blocklist, hint rules, leak patterns, `valid_topics`, `catalogs_by_topic`
   from the registry. **Keep** the "exactly one starter + one intermediate path
   per topic" rule — note it becomes a hard ordering constraint (see §3).
-- [ ] **A6.** Frontend mirror: add `frontend/src/trackRegistry.js` (or extend
+- [x] **A6.** Frontend mirror: add `frontend/src/trackRegistry.js` (or extend
   `TRACK_META`) as the single FE source; refactor `catalogContext.js` and the
   enumerating pages/components to read it. `QuestionPage.js` gains a
   `mixedSubtype` branch (no-op for existing tracks).
-- [ ] **A7.** **Regression gate (mandatory).** Existing 4 tracks are the oracle:
+- [x] **A7.** **Regression gate (mandatory).** Existing 4 tracks are the oracle:
   - Backend: full `pytest tests/ -q` green; `validate_content.py` passes.
   - Frontend: full Vitest suite green; Playwright e2e green.
   - UI preview: manually exercise SQL, Python, Pandas, PySpark — catalog,
     question solve, mock, dashboard, learning path — confirm zero visible change.
-- [ ] **A8.** Docs: update `docs/architecture.md` (new registry as the track
+- [x] **A8.** Docs: update `docs/architecture.md` (new registry as the track
   source of truth) + `docs/backend.md`. Commit.
 
 **Phase A ships no new track.** Its success criterion is "nothing changed for

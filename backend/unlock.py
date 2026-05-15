@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from tracks import TRACKS, get_track
+
 
 # ── Lifetime plan normalisation ───────────────────────────────────────────────
 #
@@ -75,8 +77,12 @@ MOCK_COMPANY_FILTER_TIERS = {"elite", "lifetime_elite"}
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
-def _is_pyspark(track: str) -> bool:
-    return track == "pyspark"
+def _is_mcq_profile(track: str) -> bool:
+    """True when this track uses the MCQ unlock thresholds (higher, lower-effort)."""
+    try:
+        return get_track(track).unlock_profile == "mcq"
+    except ValueError:
+        return False
 
 
 def _sorted_catalog(catalog: dict[str, list[dict[str, Any]]]) -> dict[str, list[dict[str, Any]]]:
@@ -89,14 +95,14 @@ def _sorted_catalog(catalog: dict[str, list[dict[str, Any]]]) -> dict[str, list[
 def _free_medium_limit(
     total_medium: int,
     easy_solved: int,
-    pyspark: bool,
+    mcq_profile: bool,
     starter_done: bool,
 ) -> int:
     """Number of medium questions a Free user can access in this track."""
     if starter_done:
         return total_medium  # path completion = full medium access
 
-    thresholds = _FREE_MEDIUM_THRESHOLDS_PYSPARK if pyspark else _FREE_MEDIUM_THRESHOLDS_CODE
+    thresholds = _FREE_MEDIUM_THRESHOLDS_PYSPARK if mcq_profile else _FREE_MEDIUM_THRESHOLDS_CODE
     for solved_threshold, limit in thresholds:
         if easy_solved >= solved_threshold:
             return total_medium if limit is None else min(limit, total_medium)
@@ -106,16 +112,16 @@ def _free_medium_limit(
 def _free_hard_limit(
     total_hard: int,
     medium_solved: int,
-    pyspark: bool,
+    mcq_profile: bool,
     intermediate_done: bool,
 ) -> int:
     """Number of hard questions a Free user can access in this track."""
-    cap = FREE_HARD_CAP_PYSPARK if pyspark else FREE_HARD_CAP_CODE
+    cap = FREE_HARD_CAP_PYSPARK if mcq_profile else FREE_HARD_CAP_CODE
 
     if intermediate_done:
         return min(cap, total_hard)  # path completion = full hard cap
 
-    thresholds = _FREE_HARD_THRESHOLDS_PYSPARK if pyspark else _FREE_HARD_THRESHOLDS_CODE
+    thresholds = _FREE_HARD_THRESHOLDS_PYSPARK if mcq_profile else _FREE_HARD_THRESHOLDS_CODE
     for solved_threshold, limit in thresholds:
         if medium_solved >= solved_threshold:
             return min(limit, cap, total_hard)  # cap is always enforced regardless of threshold
@@ -148,7 +154,7 @@ def compute_unlock_state(
     plan = normalize_plan(plan)
     ordered_catalog = _sorted_catalog(catalog)
     solved_set = {int(qid) for qid in solved_ids}
-    pyspark = _is_pyspark(track)
+    mcq_profile = _is_mcq_profile(track)
 
     easy_questions = ordered_catalog["easy"]
     medium_questions = ordered_catalog["medium"]
@@ -177,8 +183,8 @@ def compute_unlock_state(
     else:
         limits = {
             "easy":   len(easy_questions),
-            "medium": _free_medium_limit(len(medium_questions), easy_solved, pyspark, starter_done),
-            "hard":   _free_hard_limit(len(hard_questions), medium_solved, pyspark, intermediate_done),
+            "medium": _free_medium_limit(len(medium_questions), easy_solved, mcq_profile, starter_done),
+            "hard":   _free_hard_limit(len(hard_questions), medium_solved, mcq_profile, intermediate_done),
         }
 
     unlock_state: dict[int, str] = {}
@@ -239,10 +245,10 @@ def compute_mock_access(
       daily_used (int | None)
     """
     plan = normalize_plan(plan)
-    _track_label = {
-        "sql": "SQL", "python": "Python",
-        "python-data": "Pandas", "pyspark": "PySpark",
-    }.get(track, track.upper())
+    try:
+        _track_label = get_track(track).label
+    except ValueError:
+        _track_label = track.upper()
 
     # Company-filtered mocks: Elite only
     if company_filter and plan not in MOCK_COMPANY_FILTER_TIERS:
@@ -268,8 +274,11 @@ def compute_mock_access(
 
     # Medium mocks: Free users must have medium unlocked in this track first
     if difficulty == "medium" and plan == "free" and not medium_unlocked:
-        _is_pyspark = track == "pyspark"
-        _easy_threshold = _FREE_MEDIUM_THRESHOLDS_PYSPARK[-1][0] if _is_pyspark else _FREE_MEDIUM_THRESHOLDS_CODE[-1][0]
+        _easy_threshold = (
+            _FREE_MEDIUM_THRESHOLDS_PYSPARK[-1][0]
+            if _is_mcq_profile(track)
+            else _FREE_MEDIUM_THRESHOLDS_CODE[-1][0]
+        )
         return {
             "can_start": False,
             "block_reason": "not_unlocked",

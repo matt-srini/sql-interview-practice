@@ -4,13 +4,12 @@ import { Helmet } from 'react-helmet-async';
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
+import { TRACK_SLUGS, TRACK_LABELS } from '../trackRegistry';
 import TrackProgressBar from '../components/TrackProgressBar';
 import Topbar from '../components/Topbar';
 import InsightStrip from '../components/InsightStrip';
 import Skeleton from '../components/Skeleton';
 import UpgradeButton from '../components/UpgradeButton';
-
-const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
 
 function formatRelativeTime(isoString) {
   if (!isoString) return '';
@@ -23,10 +22,6 @@ function formatRelativeTime(isoString) {
   const days = Math.floor(hrs / 24);
   return `${days}d ago`;
 }
-
-const TRACK_LABELS = {
-  sql: 'SQL', python: 'Python', 'python-data': 'Pandas', pyspark: 'PySpark', mixed: 'Mixed',
-};
 
 function formatMockTime(s) {
   if (s == null) return '—';
@@ -158,7 +153,7 @@ export default function ProgressDashboard() {
 
   const isElite = user?.plan === 'elite' || user?.plan === 'lifetime_elite';
 
-  const totalSolved = TOPICS.reduce((sum, topic) => {
+  const totalSolved = TRACK_SLUGS.reduce((sum, topic) => {
     const trackData = data?.tracks?.[topic];
     return sum + (trackData?.solved ?? 0);
   }, 0);
@@ -314,7 +309,7 @@ export default function ProgressDashboard() {
                 <section className="dashboard-section">
                   <h3 className="dashboard-section-title">Track Overview</h3>
                   <div className="dashboard-track-grid">
-                    {TOPICS.map((topic) => {
+                    {TRACK_SLUGS.map((topic) => {
                       const meta = TRACK_META[topic];
                       const trackData = data?.tracks?.[topic];
                       const solved = trackData?.solved ?? 0;

@@ -24,10 +24,6 @@ from pydantic import BaseModel
 
 from concept_families import CONCEPT_FAMILIES, concept_matches_focus
 
-import python_data_questions
-import python_questions
-import pyspark_questions
-import questions as sql_catalog
 from db import (
     create_mock_session,
     discard_mock_session,
@@ -48,6 +44,7 @@ from evaluator import evaluate
 from exceptions import BadRequestError
 from python_evaluator import evaluate_python_code, evaluate_python_data_code
 from routers.insights import _CONCEPTS_LOOKUP, build_session_debrief
+from tracks import TRACKS, get_track, mixed_mock_slugs
 from unlock import compute_mock_access, compute_unlock_state, normalize_plan
 
 logger = logging.getLogger(__name__)
@@ -61,16 +58,11 @@ MODE_CONFIGS: dict[str, dict[str, int]] = {
     "60min": {"num_questions": 3, "time_limit_s": 3600},
 }
 
-VALID_TRACKS = {"sql", "python", "python-data", "pyspark", "mixed"}
+VALID_TRACKS = {t.slug for t in TRACKS} | {"mixed"}
 VALID_DIFFICULTIES = {"easy", "medium", "hard", "mixed"}
 
-# Maps URL-style track name → topic string used in mark_solved / get_solved_ids
-TRACK_TO_TOPIC: dict[str, str] = {
-    "sql": "sql",
-    "python": "python",
-    "python-data": "python_data",
-    "pyspark": "pyspark",
-}
+# Maps URL-style track slug → topic string used in mark_solved / get_solved_ids
+TRACK_TO_TOPIC: dict[str, str] = {t.slug: t.db_topic for t in TRACKS}
 
 
 # ── Request models ─────────────────────────────────────────────────────────────
@@ -97,15 +89,7 @@ class MockSubmitRequest(BaseModel):
 
 def _get_catalog_for_track(track: str):
     """Return the catalog module for a single (non-mixed) track."""
-    if track == "sql":
-        return sql_catalog
-    if track == "python":
-        return python_questions
-    if track == "python-data":
-        return python_data_questions
-    if track == "pyspark":
-        return pyspark_questions
-    raise ValueError(f"Unknown track: {track}")
+    return get_track(track).catalog_module
 
 
 async def _get_solved_ids_for_track(user_id: str, track: str) -> set[int]:
@@ -296,9 +280,8 @@ async def _select_questions(
     user_id = user["id"]
 
     if track == "mixed":
-        single_tracks = ["sql", "python", "python-data", "pyspark"]
         pool: list[dict] = []
-        for t in single_tracks:
+        for t in mixed_mock_slugs():
             solved = await _get_solved_ids_for_track(user_id, t)
             pool.extend(_pool_for_track(t, difficulty, user_plan, solved))
     else:
@@ -354,7 +337,7 @@ async def _select_questions(
 
         chosen_raw = guaranteed + filler
         random.shuffle(chosen_raw)
-    elif track == "pyspark" and difficulty != "mixed":
+    elif get_track(track).eval_kind == "mcq" and difficulty != "mixed":
         fmt_targets = _pyspark_format_targets(difficulty, num_questions)
         chosen_raw = _sample_by_format(pool, fmt_targets, mocked_ids)
         if len(chosen_raw) < num_questions:
@@ -709,7 +692,7 @@ async def get_mock_access(
             pass
     else:
         # Mixed track: medium unlocked if unlocked in any single track
-        for t in ["sql", "python", "python-data", "pyspark"]:
+        for t in mixed_mock_slugs():
             try:
                 solved = await _get_solved_ids_for_track(user_id, t)
                 catalog = _get_catalog_for_track(t)
@@ -783,7 +766,7 @@ async def start_session(
     check_track = body.track if body.track != "mixed" else "sql"
     medium_unlocked = False
     if body.track == "mixed":
-        for t in ["sql", "python", "python-data", "pyspark"]:
+        for t in mixed_mock_slugs():
             try:
                 solved = await _get_solved_ids_for_track(user_id, t)
                 catalog = _get_catalog_for_track(t)

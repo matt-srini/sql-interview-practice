@@ -1,0 +1,66 @@
+/**
+ * Frontend track registry — single source of truth for all track metadata.
+ *
+ * Adding a new track:
+ *   1. Add an entry to TRACK_META below.
+ *   2. Add a matching entry in backend/tracks.py.
+ * Everything else (TRACK_SLUGS, TRACK_LABELS, catalog path) is derived automatically.
+ */
+
+export const TRACK_META = {
+  sql: {
+    label: 'SQL',
+    description: 'SQL problems against real datasets — joins, aggregations, window functions, and analytical patterns drawn from actual data engineering interviews.',
+    color: '#5B6AF0',
+    apiPrefix: '',
+    language: 'sql',
+    hasRunCode: true,
+    hasMCQ: false,
+    mixedSubtype: false,
+    totalQuestions: 95,
+    tagline: 'easy · medium · hard',
+  },
+  python: {
+    label: 'Python',
+    description: 'Python coding problems set in real data contexts — processing pipelines, cleaning routines, and analysis logic typical of data engineering and data science interviews.',
+    color: '#2D9E6B',
+    apiPrefix: '/python',
+    language: 'python',
+    hasRunCode: true,
+    hasMCQ: false,
+    mixedSubtype: false,
+    totalQuestions: 83,
+    tagline: 'data processing · algorithms · scripting',
+  },
+  'python-data': {
+    label: 'Pandas',
+    description: 'Practice Pandas and NumPy interview questions: DataFrame manipulation, groupby, reshaping, and time series analysis.',
+    color: '#C47F17',
+    apiPrefix: '/python-data',
+    language: 'python',
+    hasRunCode: true,
+    hasMCQ: false,
+    mixedSubtype: false,
+    totalQuestions: 76,
+    tagline: 'pandas · numpy · data wrangling',
+  },
+  pyspark: {
+    label: 'PySpark',
+    description: 'Practice PySpark interview questions: Spark architecture, streaming, performance optimization, and Delta Lake patterns.',
+    color: '#D94F3D',
+    apiPrefix: '/pyspark',
+    language: 'text',
+    hasRunCode: false,
+    hasMCQ: true,
+    mixedSubtype: false,
+    totalQuestions: 102,
+    tagline: 'conceptual · MCQ · predict output',
+  },
+};
+
+export const TRACK_SLUGS = Object.keys(TRACK_META);
+
+export const TRACK_LABELS = {
+  ...Object.fromEntries(TRACK_SLUGS.map(s => [s, TRACK_META[s].label])),
+  mixed: 'Mixed',
+};

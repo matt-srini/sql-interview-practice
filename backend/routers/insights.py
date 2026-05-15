@@ -7,33 +7,18 @@ from typing import Any
 
 from fastapi import APIRouter, Depends
 
-import python_data_questions
-import python_questions
-import pyspark_questions
-import questions as sql_questions
 from db import get_mock_history, get_submission_events
 from deps import get_current_user
 from concept_families import resolve_to_family
 from path_loader import get_all_paths
+from tracks import TRACKS
 from unlock import normalize_plan
 
 router = APIRouter(prefix="/api/dashboard")
 
-_TRACK_LABELS = {
-    "sql": "SQL",
-    "python": "Python",
-    "python-data": "Pandas",
-    "pyspark": "PySpark",
-}
-
-_TRACK_ORDER = ["sql", "python", "python-data", "pyspark"]
-
-_TOPIC_MODULES = {
-    "sql": sql_questions,
-    "python": python_questions,
-    "python-data": python_data_questions,
-    "pyspark": pyspark_questions,
-}
+_TRACK_LABELS = {t.slug: t.label for t in TRACKS}
+_TRACK_ORDER = [t.slug for t in TRACKS]
+_TOPIC_MODULES = {t.slug: t.catalog_module for t in TRACKS}
 
 _CACHE_TTL_SECONDS = 60
 _insights_cache: dict[str, dict[str, Any]] = {}

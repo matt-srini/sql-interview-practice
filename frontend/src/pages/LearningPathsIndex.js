@@ -3,10 +3,9 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import api from '../api';
 import { TRACK_META } from '../contexts/TopicContext';
+import { TRACK_SLUGS } from '../trackRegistry';
 import PathProgressCard from '../components/PathProgressCard';
 import Topbar from '../components/Topbar';
-
-const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
 
 export default function LearningPathsIndex() {
   const { topic } = useParams(); // present on /learn/:topic, absent on /learn
@@ -40,7 +39,7 @@ export default function LearningPathsIndex() {
     });
 
   // Group by topic when showing all
-  const grouped = TOPICS.map(t => ({
+  const grouped = TRACK_SLUGS.map(t => ({
     topic: t,
     meta: TRACK_META[t],
     paths: filtered.filter(p => p.topic === t),
@@ -104,7 +103,7 @@ export default function LearningPathsIndex() {
 
           {!topic && (
             <div className="learn-index-topic-pills">
-              {TOPICS.filter(t => paths.some(p => p.topic === t)).map(t => (
+              {TRACK_SLUGS.filter(t => paths.some(p => p.topic === t)).map(t => (
                 <Link
                   key={t}
                   className="learn-index-topic-pill"

@@ -4,9 +4,7 @@ import csv
 from pathlib import Path
 from typing import Any, Optional
 
-import pyspark_questions as pyspark_catalog
-import python_data_questions as python_data_catalog
-import python_questions as python_catalog
+from tracks import TRACKS
 
 # Inline schemas and helpers (formerly from question_bank.common)
 ORDERS_SCHEMA = {
@@ -349,18 +347,18 @@ _validate_sample_questions(SAMPLE_QUESTIONS)
 
 SAMPLE_INDEX: dict[int, dict[str, Any]] = {int(q["id"]): q for q in SAMPLE_QUESTIONS}
 
-_TOPIC_ALIASES: dict[str, str] = {
-    "sql": "sql",
-    "python": "python",
-    "python_data": "python_data",
-    "python-data": "python_data",
-    "pyspark": "pyspark",
-}
+# Build alias map from the registry: both slug and db_topic resolve to db_topic.
+# This preserves "python-data" → "python_data" without any hardcoding here.
+_TOPIC_ALIASES: dict[str, str] = {}
+for _t in TRACKS:
+    _TOPIC_ALIASES[_t.slug] = _t.db_topic
+    _TOPIC_ALIASES[_t.db_topic] = _t.db_topic
 
+# Non-SQL catalogs indexed by db_topic (SQL samples use a separate hardcoded pool)
 _TOPIC_CATALOGS = {
-    "python": python_catalog,
-    "python_data": python_data_catalog,
-    "pyspark": pyspark_catalog,
+    _t.db_topic: _t.catalog_module
+    for _t in TRACKS
+    if _t.slug != "sql"
 }
 _DIFFICULTY_ORDER = ("easy", "medium", "hard")
 _SAMPLE_POOL_SIZE = 3

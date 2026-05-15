@@ -2,17 +2,13 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import api from './api';
 import { useTopic } from './contexts/TopicContext';
 import { useAuth } from './contexts/AuthContext';
+import { TRACK_META } from './trackRegistry';
 
 const CatalogContext = createContext(null);
 
 function apiPathForTopic(topic) {
-  switch (topic) {
-    case 'python': return '/python/catalog';
-    case 'python-data': return '/python-data/catalog';
-    case 'pyspark': return '/pyspark/catalog';
-    case 'sql':
-    default: return '/catalog';
-  }
+  const meta = TRACK_META[topic];
+  return meta ? `${meta.apiPrefix}/catalog` : '/catalog';
 }
 
 export function CatalogProvider({ children }) {

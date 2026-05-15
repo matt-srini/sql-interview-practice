@@ -4,22 +4,19 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, ValidationError
 
-import pyspark_questions as pyspark_catalog
-import python_data_questions as python_data_catalog
 import python_evaluator
 import python_guard
-import python_questions as python_catalog
 from deps import RunQueryRequest, SubmitRequest, _validate_difficulty, get_current_user
 from evaluator import evaluate, run_query
 from middleware.request_context import get_request_id
 from progress import clear_seen_sample_ids, get_seen_sample_ids, mark_sample_seen
-from questions import get_public_question
 from sample_questions import (
     get_sample_question,
     get_sample_question_for_topic,
     get_topic_sample_pool,
     normalize_sample_topic,
 )
+from tracks import get_track_by_db_topic
 
 router = APIRouter(prefix="/api/sample")
 
@@ -42,9 +39,7 @@ class SampleSubmitPySparkRequest(BaseModel):
 
 
 def _topic_api_slug(topic: str) -> str:
-    if topic == "python_data":
-        return "python-data"
-    return topic
+    return get_track_by_db_topic(topic).slug
 
 
 def _validate_topic(topic: str) -> str:
@@ -55,15 +50,7 @@ def _validate_topic(topic: str) -> str:
 
 
 def _public_question_for_topic(question: dict[str, Any], topic: str) -> dict[str, Any]:
-    if topic == "sql":
-        return get_public_question(question)
-    if topic == "python":
-        return python_catalog.get_public_question(question)
-    if topic == "python_data":
-        return python_data_catalog.get_public_question(question)
-    if topic == "pyspark":
-        return pyspark_catalog.get_public_question(question)
-    raise HTTPException(status_code=404, detail="Topic not found")
+    return get_track_by_db_topic(topic).catalog_module.get_public_question(question)
 
 
 def _parse_body(model_cls: type[BaseModel], body: dict[str, Any]) -> BaseModel:
@@ -259,24 +246,24 @@ def run_topic_sample_code(topic: str, body: SampleRunCodeRequest) -> dict[str, A
         body.question_id,
     )
 
-    if normalized_topic == "sql" or normalized_topic == "pyspark":
+    eval_kind = get_track_by_db_topic(normalized_topic).eval_kind
+    if eval_kind in ("sql", "mcq"):
         raise HTTPException(status_code=400, detail="Run endpoint is not supported for this topic.")
 
     question = get_sample_question_for_topic(body.question_id, normalized_topic)
     if question is None:
         raise HTTPException(status_code=404, detail="Question not found")
 
-    guard_topic = "python_data" if normalized_topic == "python_data" else "python"
-    guard_errors = python_guard.validate_code(body.code, topic=guard_topic)
+    guard_errors = python_guard.validate_code(body.code, topic=normalized_topic)
     if guard_errors:
         raise HTTPException(
             status_code=400,
             detail={"error": "Code contains disallowed constructs.", "guard_errors": guard_errors},
         )
 
-    if normalized_topic == "python":
+    if eval_kind == "python":
         return python_evaluator.run_python_code(body.code, question)
-    # python_data: run comparison and add test_results
+    # pandas: run comparison and add test_results
     raw = python_evaluator.run_python_data_code(body.code, question)
     if not raw.get("error"):
         expected_raw = python_evaluator.run_python_data_code(question.get("expected_code", ""), question)
@@ -304,9 +291,11 @@ def submit_topic_sample_answer(topic: str, body: dict[str, Any]) -> dict[str, An
         normalized_topic,
     )
 
-    if normalized_topic == "sql":
+    eval_kind = get_track_by_db_topic(normalized_topic).eval_kind
+
+    if eval_kind == "sql":
         parsed = _parse_body(SubmitRequest, body)
-        question = get_sample_question_for_topic(parsed.question_id, "sql")
+        question = get_sample_question_for_topic(parsed.question_id, normalized_topic)
         if question is None:
             raise HTTPException(status_code=404, detail="Question not found")
         result = evaluate(parsed.query, question["expected_query"], question)
@@ -316,40 +305,28 @@ def submit_topic_sample_answer(topic: str, body: dict[str, Any]) -> dict[str, An
             "explanation": question["explanation"],
         }
 
-    if normalized_topic == "python":
+    if eval_kind in ("python", "pandas"):
         parsed = _parse_body(SampleSubmitCodeRequest, body)
-        question = get_sample_question_for_topic(parsed.question_id, "python")
+        question = get_sample_question_for_topic(parsed.question_id, normalized_topic)
         if question is None:
             raise HTTPException(status_code=404, detail="Question not found")
-        guard_errors = python_guard.validate_code(parsed.code, topic="python")
+        guard_errors = python_guard.validate_code(parsed.code, topic=normalized_topic)
         if guard_errors:
             raise HTTPException(
                 status_code=400,
                 detail={"error": "Code contains disallowed constructs.", "guard_errors": guard_errors},
             )
-        result = python_evaluator.evaluate_python_code(parsed.code, question)
+        if eval_kind == "python":
+            result = python_evaluator.evaluate_python_code(parsed.code, question)
+        else:
+            result = python_evaluator.evaluate_python_data_code(parsed.code, question)
         result["solution_code"] = question.get("expected_code", "")
         result["explanation"] = question.get("explanation", "")
         return result
 
-    if normalized_topic == "python_data":
-        parsed = _parse_body(SampleSubmitCodeRequest, body)
-        question = get_sample_question_for_topic(parsed.question_id, "python_data")
-        if question is None:
-            raise HTTPException(status_code=404, detail="Question not found")
-        guard_errors = python_guard.validate_code(parsed.code, topic="python_data")
-        if guard_errors:
-            raise HTTPException(
-                status_code=400,
-                detail={"error": "Code contains disallowed constructs.", "guard_errors": guard_errors},
-            )
-        result = python_evaluator.evaluate_python_data_code(parsed.code, question)
-        result["solution_code"] = question.get("expected_code", "")
-        result["explanation"] = question.get("explanation", "")
-        return result
-
+    # mcq (pyspark and future mcq tracks)
     parsed = _parse_body(SampleSubmitPySparkRequest, body)
-    question = get_sample_question_for_topic(parsed.question_id, "pyspark")
+    question = get_sample_question_for_topic(parsed.question_id, normalized_topic)
     if question is None:
         raise HTTPException(status_code=404, detail="Question not found")
     correct = parsed.selected_option == question["correct_option"]

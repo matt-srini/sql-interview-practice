@@ -4,20 +4,13 @@ import { Helmet } from 'react-helmet-async';
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
+import { TRACK_SLUGS, TRACK_LABELS } from '../trackRegistry';
 import Topbar from '../components/Topbar';
 import UpgradeButton from '../components/UpgradeButton';
 import { track as trackEvent } from '../analytics';
 
-const TRACKS = ['sql', 'python', 'python-data', 'pyspark', 'mixed'];
+const TRACKS = [...TRACK_SLUGS, 'mixed'];
 const DIFFICULTIES = ['easy', 'medium', 'hard', 'mixed'];
-
-const TRACK_LABELS = {
-  sql: 'SQL',
-  python: 'Python',
-  'python-data': 'Pandas',
-  pyspark: 'PySpark',
-  mixed: 'Mixed',
-};
 
 const DIFFICULTY_LABELS = {
   easy: 'Easy',
