@@ -44,7 +44,6 @@ Four stacked sections on a single scroll:
 
 1. **Hero / Welcome** — logged-out: centered headline, tagline, CTAs ("Explore tracks ↓" and "Create account"). Logged-in: `LoggedInWelcome` component with Resume, Dashboard, and Mock cards.
 2. **Proof + showcase + companies** — `.landing-proof-row`, `.landing-showcase`, and `.landing-companies` are rendered only for logged-out visitors. The showcase is the same Interview IDE module (always-dark editor) and now respects `prefers-reduced-motion` at initial render plus media-query changes.
-   - **Testimonials section** (`.landing-testimonials`) — built and styled, currently hidden behind `{false && ...}` in `LandingPage.js`. Placeholder quotes are in the `TESTIMONIALS` constant at the top of that file. **To enable:** replace the placeholder quotes with real user quotes (name, role, hiring outcome), then remove the `{false && ...}` wrapper. The CSS is already in `App.css` under `/* ── Landing testimonials ── */`.
 3. **Track selection** (`.landing-practice-section`, `id="landing-tracks"`) — pill nav selects a track; panel shows description, progress bar, CTA, and easy/medium/hard sample tiles. Mobile sample tiles use horizontal scroll.
 4. **Pricing** (`id="landing-pricing"`) — three-column tier table with hard question counts derived from `TOTAL_EASY` / `TOTAL_QUESTIONS` constants. Free: 129 easy questions. Pro: all 350 questions + 3 mocks/day. Elite: everything + company filter + unlimited mocks. Hidden for `lifetime_elite` users.
 

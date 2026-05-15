@@ -139,28 +139,6 @@ df.repartition(10, 'user_id')`,
   },
 ];
 
-// TODO: Replace these with real quotes from actual users before going live.
-// Reach out to 3–5 active users and ask for a one-sentence quote + outcome.
-const TESTIMONIALS = [
-  {
-    quote: "The DuckDB execution environment made all the difference — seeing my actual query output next to the expected result taught me more in two weeks than months of reading.",
-    name: "Arjun M.",
-    role: "Data Analyst",
-    outcome: "Hired at Swiggy",
-  },
-  {
-    quote: "Nothing else covers PySpark at this depth. The MCQ format forced me to reason about distributed trade-offs, not just memorise syntax.",
-    name: "Priya K.",
-    role: "Data Engineer",
-    outcome: "Hired at Flipkart",
-  },
-  {
-    quote: "The mock interview mode was the closest thing to real pressure I found. No hints, no answer until the end — exactly how an actual interview loop feels.",
-    name: "Rahul S.",
-    role: "Analytics Engineer",
-    outcome: "Hired at Razorpay",
-  },
-];
 
 const SHOWCASE_ROTATE_MS = 8000;
 const LANDING_ONBOARDING_KEY = 'landingOnboardingSeen-v1';
@@ -657,29 +635,6 @@ export default function LandingPage() {
               </div>
             </section>
 
-            {/* TESTIMONIALS — hidden until real user quotes are collected.
-                To re-enable: remove this comment wrapper and the closing brace/comment below.
-                See docs/frontend.md for the full re-enable checklist. */}
-            {false && (
-            <section className="landing-testimonials">
-              <div className="landing-section-inner">
-                <p className="landing-testimonials-label">From people who prepared here</p>
-                <div className="landing-testimonials-grid">
-                  {TESTIMONIALS.map((t) => (
-                    <div key={t.name} className="landing-testimonial-card">
-                      <span className="landing-testimonial-quote-mark" aria-hidden="true">&ldquo;</span>
-                      <p className="landing-testimonial-text">{t.quote}</p>
-                      <div className="landing-testimonial-byline">
-                        <span className="landing-testimonial-name">{t.name}</span>
-                        <span className="landing-testimonial-role">{t.role}</span>
-                        <span className="landing-testimonial-outcome">{t.outcome}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-            )}{/* end hidden testimonials */}
 
             <section className="landing-how-section">
               <div className="landing-section-inner">
