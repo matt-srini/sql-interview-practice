@@ -879,7 +879,6 @@ export default function LandingPage() {
                 <ul className="landing-tier-list">
                   <li>Everything in Pro</li>
                   <li>Unlimited hard mock interviews — no daily cap</li>
-                  <li>Company filter (SQL) — Meta, Google, Stripe, Airbnb…</li>
                   <li>Focus mode — target weak concepts directly in a timed mock</li>
                   <li>Mock history analytics — trends, concept breakdown, score trajectory</li>
                   <li>Interview readiness score — per-track 0–100 signal</li>
