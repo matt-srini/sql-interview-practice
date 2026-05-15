@@ -1,6 +1,6 @@
 [
   {
-    "id": 1003,
+    "id": 11001,
     "order": 1,
     "title": "Completed orders",
     "description": "Return order_id, user_id, order_date, and net_amount for all orders where status is 'completed'. Order by order_id ascending.",
@@ -22,7 +22,7 @@
     "explanation": "The WHERE clause filters rows before they are returned. Only orders where the status column equals the string 'completed' pass the filter. String comparisons are case-sensitive in most databases, so the value must match exactly. The status column is included in the schema because it is used in the WHERE clause even though it does not appear in the SELECT list. ORDER BY order_id ASC produces a deterministic result.",
     "hints": [
       "Decide which rows qualify before you project columns or worry about the final ordering.",
-      "String comparisons are case-sensitive \u2014 match the exact value in the data"
+      "String comparisons are case-sensitive — match the exact value in the data"
     ],
     "concepts": [
       "COLUMN PROJECTION",
@@ -35,7 +35,7 @@
     ]
   },
   {
-    "id": 1004,
+    "id": 11002,
     "order": 2,
     "title": "US users",
     "description": "Return user_id, name, and email for all users from the United States (country = 'US'). Order by user_id ascending.",
@@ -69,7 +69,7 @@
     ]
   },
   {
-    "id": 1005,
+    "id": 11003,
     "order": 3,
     "title": "High-salary employees",
     "description": "Return employee_id, employee_name, and salary for all employees with a salary greater than 80000. Order by salary descending.",
@@ -89,7 +89,7 @@
     "explanation": "WHERE salary > 80000 is a numeric comparison filter. Only employees whose salary value is strictly greater than 80000 are included. Numeric comparisons do not require quotes around the value. ORDER BY salary DESC places the highest earners at the top of the result.",
     "hints": [
       "Decide which rows qualify before you project columns or worry about the final ordering.",
-      "Descending order on a numeric column surfaces the largest values first \u2014 here the direction follows naturally from 'high salary'."
+      "Descending order on a numeric column surfaces the largest values first — here the direction follows naturally from 'high salary'."
     ],
     "concepts": [
       "COLUMN PROJECTION",
@@ -102,7 +102,7 @@
     ]
   },
   {
-    "id": 1007,
+    "id": 11004,
     "order": 4,
     "title": "Employees by hire date",
     "description": "Return employee_id, employee_name, and hire_date for employees with a known hire_date. Order by hire_date ascending to show the longest-tenured employees first.",
@@ -122,7 +122,7 @@
     "explanation": "WHERE hire_date IS NOT NULL filters out rows that do not have a known hire date before sorting begins. After that filter, ORDER BY hire_date ASC sorts the remaining employees from the earliest hire date to the most recent. This keeps the result focused on employees whose tenure can be evaluated and makes the final row order deterministic.",
     "hints": [
       "Decide which rows qualify before you project columns or worry about the final ordering.",
-      "Date columns sort chronologically \u2014 ASC means earliest first"
+      "Date columns sort chronologically — ASC means earliest first"
     ],
     "concepts": [
       "COLUMN PROJECTION",
@@ -135,7 +135,7 @@
     ]
   },
   {
-    "id": 1008,
+    "id": 11005,
     "order": 5,
     "title": "Total order count",
     "description": "Return the total number of orders in the orders table as a single value aliased as total_orders.",
@@ -165,7 +165,7 @@
     ]
   },
   {
-    "id": 1011,
+    "id": 11006,
     "order": 6,
     "title": "Most expensive product",
     "description": "Return the highest price among all products as a single value aliased as max_price.",
@@ -195,7 +195,7 @@
     ]
   },
   {
-    "id": 1012,
+    "id": 11007,
     "order": 7,
     "title": "Fastest ticket resolution",
     "description": "Return the minimum resolution_hours from all 'resolved' support tickets as a single value aliased as min_resolution_hours. Only include tickets where status = 'resolved'.",
@@ -211,7 +211,7 @@
     ],
     "expected_query": "SELECT MIN(resolution_hours) AS min_resolution_hours\nFROM support_tickets\nWHERE status = 'resolved'",
     "solution_query": "SELECT MIN(resolution_hours) AS min_resolution_hours\nFROM support_tickets\nWHERE status = 'resolved';",
-    "explanation": "WHERE status = 'resolved' filters the table to only closed tickets before MIN runs. MIN(resolution_hours) returns the smallest resolution time among those rows \u2014 the ticket that was resolved fastest. Filtering first ensures we do not include NULL or irrelevant resolution_hours from tickets that are not yet resolved.",
+    "explanation": "WHERE status = 'resolved' filters the table to only closed tickets before MIN runs. MIN(resolution_hours) returns the smallest resolution time among those rows — the ticket that was resolved fastest. Filtering first ensures we do not include NULL or irrelevant resolution_hours from tickets that are not yet resolved.",
     "hints": [
       "Collapse the qualifying rows into a single summary value rather than returning row-level detail.",
       "MIN() returns the smallest value in a column"
@@ -227,7 +227,7 @@
     ]
   },
   {
-    "id": 1013,
+    "id": 11008,
     "order": 8,
     "title": "Orders by status",
     "description": "Return each distinct order status and the count of orders with that status as order_count. Order by order_count descending.",
@@ -243,10 +243,10 @@
     ],
     "expected_query": "SELECT status, COUNT(order_id) AS order_count\nFROM orders\nGROUP BY status\nORDER BY order_count DESC",
     "solution_query": "SELECT status, COUNT(order_id) AS order_count\nFROM orders\nGROUP BY status\nORDER BY order_count DESC;",
-    "explanation": "GROUP BY status groups all order rows that share the same status value into a single group. COUNT(order_id) counts the rows in each group. Every non-aggregated column in the SELECT list must appear in the GROUP BY clause \u2014 here that is status. ORDER BY order_count DESC lists the most common statuses first.",
+    "explanation": "GROUP BY status groups all order rows that share the same status value into a single group. COUNT(order_id) counts the rows in each group. Every non-aggregated column in the SELECT list must appear in the GROUP BY clause — here that is status. ORDER BY order_count DESC lists the most common statuses first.",
     "hints": [
       "Collapse the data to the business grain named in the result before you calculate the summary values.",
-      "Once you have a count per group, the sort order should put the most frequent category at the top \u2014 think about which direction achieves that."
+      "Once you have a count per group, the sort order should put the most frequent category at the top — think about which direction achieves that."
     ],
     "concepts": [
       "COLUMN PROJECTION",
@@ -260,7 +260,7 @@
     ]
   },
   {
-    "id": 1014,
+    "id": 11009,
     "order": 9,
     "title": "Total spend per user",
     "description": "Return each user_id and the total net_amount they have spent across all their orders as total_spent. Order by total_spent descending.",
@@ -293,7 +293,7 @@
     ]
   },
   {
-    "id": 1015,
+    "id": 11010,
     "order": 10,
     "title": "Support tickets by issue type",
     "description": "Return each issue_type and the count of support tickets with that type as ticket_count, but only include issue types with more than one ticket. Order by ticket_count descending.",
@@ -312,7 +312,7 @@
     "explanation": "GROUP BY issue_type creates one aggregate group per issue type, and COUNT(ticket_id) measures how many tickets fall into each group. HAVING COUNT(ticket_id) > 1 then filters those aggregated groups after the counts have been calculated. This is different from WHERE, which filters individual rows before aggregation happens. ORDER BY ticket_count DESC shows the larger issue categories first.",
     "hints": [
       "Reduce the data to the requested segment first, then keep only the segments that clear the summary threshold.",
-      "The threshold here applies to each group's total, not to individual rows \u2014 think about where in the query a group-level condition belongs versus a row-level one."
+      "The threshold here applies to each group's total, not to individual rows — think about where in the query a group-level condition belongs versus a row-level one."
     ],
     "concepts": [
       "COLUMN PROJECTION",
@@ -327,7 +327,7 @@
     ]
   },
   {
-    "id": 1016,
+    "id": 11011,
     "order": 11,
     "title": "Order count per user",
     "description": "Return user_id, name, and the total number of orders each user has placed as order_count. Include users who have placed zero orders. Order by user_id ascending.",
@@ -348,7 +348,7 @@
     ],
     "expected_query": "SELECT u.user_id, u.name, COUNT(o.order_id) AS order_count\nFROM users u\nLEFT JOIN orders o ON u.user_id = o.user_id\nGROUP BY u.user_id, u.name\nORDER BY u.user_id",
     "solution_query": "SELECT u.user_id, u.name, COUNT(o.order_id) AS order_count\nFROM users u\nLEFT JOIN orders o ON u.user_id = o.user_id\nGROUP BY u.user_id, u.name\nORDER BY u.user_id;",
-    "explanation": "A LEFT JOIN keeps every row from the users table (the left side) even if there is no matching row in orders. COUNT(o.order_id) counts non-NULL order_id values per group \u2014 users with no orders will have NULL for o.order_id, so COUNT returns 0 for them, not NULL. GROUP BY u.user_id, u.name is required because u.name is a non-aggregated column in the SELECT list. ORDER BY u.user_id gives a deterministic result.",
+    "explanation": "A LEFT JOIN keeps every row from the users table (the left side) even if there is no matching row in orders. COUNT(o.order_id) counts non-NULL order_id values per group — users with no orders will have NULL for o.order_id, so COUNT returns 0 for them, not NULL. GROUP BY u.user_id, u.name is required because u.name is a non-aggregated column in the SELECT list. ORDER BY u.user_id gives a deterministic result.",
     "hints": [
       "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
       "COUNT(o.order_id) returns 0 for users with no orders because NULL values are not counted by COUNT"
@@ -366,7 +366,7 @@
     ]
   },
   {
-    "id": 1017,
+    "id": 11012,
     "order": 12,
     "title": "Employees with department names",
     "description": "Return employee_id, employee_name, salary, and department_name for every employee and their department. Order by employee_id ascending.",
@@ -392,7 +392,7 @@
     "explanation": "An INNER JOIN (written as JOIN) links each employee row to its department using the shared foreign key department_id. Only employees that have a matching department_id in the departments table are returned. Table aliases (e, d) keep column references short and unambiguous when querying multiple tables. ORDER BY e.employee_id produces a deterministic result.",
     "hints": [
       "Combine the sources that hold the needed attributes before you filter or shape the final result.",
-      "When pulling columns from two tables, the query needs a way to distinguish which table each column comes from \u2014 short labels for each table prevent ambiguity."
+      "When pulling columns from two tables, the query needs a way to distinguish which table each column comes from — short labels for each table prevent ambiguity."
     ],
     "concepts": [
       "COLUMN PROJECTION",
@@ -405,7 +405,7 @@
     ]
   },
   {
-    "id": 1019,
+    "id": 11013,
     "order": 13,
     "title": "Products in price range",
     "description": "Return product_id, product_name, and price for all products with a price between 100 and 500 inclusive. Order by price ascending.",
@@ -422,7 +422,7 @@
     ],
     "expected_query": "SELECT product_id, product_name, price\nFROM products\nWHERE price BETWEEN 100 AND 500\nORDER BY price",
     "solution_query": "SELECT product_id, product_name, price\nFROM products\nWHERE price BETWEEN 100 AND 500\nORDER BY price;",
-    "explanation": "BETWEEN 100 AND 500 is a range filter that is inclusive on both ends \u2014 it is equivalent to WHERE price >= 100 AND price <= 500. This syntax is more readable than writing two separate conditions. ORDER BY price ASC arranges results from cheapest to most expensive within the range.",
+    "explanation": "BETWEEN 100 AND 500 is a range filter that is inclusive on both ends — it is equivalent to WHERE price >= 100 AND price <= 500. This syntax is more readable than writing two separate conditions. ORDER BY price ASC arranges results from cheapest to most expensive within the range.",
     "hints": [
       "Decide which rows qualify before you project columns or worry about the final ordering.",
       "BETWEEN is equivalent to >= lower AND <= upper"
@@ -439,7 +439,7 @@
     ]
   },
   {
-    "id": 1020,
+    "id": 11014,
     "order": 14,
     "title": "Users who signed up in 2024",
     "description": "Return user_id, name, and signup_date for all users who signed up during the year 2024. Order by signup_date ascending.",
@@ -473,7 +473,7 @@
     ]
   },
   {
-    "id": 1021,
+    "id": 11015,
     "order": 15,
     "title": "Users in selected countries",
     "description": "Return user_id, name, and country for users whose country is 'UK', 'IN', or 'DE'.",
@@ -511,7 +511,7 @@
     ]
   },
   {
-    "id": 1022,
+    "id": 11016,
     "order": 16,
     "title": "Products in selected categories",
     "description": "Return product_id, product_name, and category_id for products whose category_id is 3, 8, or 14. Order by category_id ascending.",
@@ -549,7 +549,7 @@
     ]
   },
   {
-    "id": 1024,
+    "id": 11017,
     "order": 17,
     "title": "Checkout-related events",
     "description": "Return event_id, user_id, and event_name for events whose event_name contains the word 'checkout'.",
@@ -587,7 +587,7 @@
     ]
   },
   {
-    "id": 1025,
+    "id": 11018,
     "order": 18,
     "title": "Orders that need review",
     "description": "Return order_id, status, payment_status, and net_amount for orders where the order status is 'cancelled' or the payment_status is 'failed'.",
@@ -626,7 +626,7 @@
     ]
   },
   {
-    "id": 1026,
+    "id": 11019,
     "order": 19,
     "title": "US paid users on higher tiers",
     "description": "Return user_id, name, country, and plan_tier for users who are in 'US' and whose plan_tier is either 'pro' or 'enterprise'.",
@@ -666,7 +666,7 @@
     ]
   },
   {
-    "id": 1027,
+    "id": 11020,
     "order": 20,
     "title": "Users missing an email address",
     "description": "Return user_id, name, and country for users whose email is missing.",
@@ -704,7 +704,7 @@
     ]
   },
   {
-    "id": 1028,
+    "id": 11021,
     "order": 21,
     "title": "Events linked to a product",
     "description": "Return event_id, user_id, event_name, and product_id for events where product_id is present.",
@@ -743,7 +743,7 @@
     ]
   },
   {
-    "id": 1030,
+    "id": 11022,
     "order": 22,
     "title": "Total payment amount for failed or refunded payments",
     "description": "Return status and the total payment amount for that status as total_amount, but only for payments where status is 'failed' or 'refunded'. Order by total_amount descending, then status ascending.",
@@ -781,7 +781,7 @@
     ]
   },
   {
-    "id": 1031,
+    "id": 11023,
     "order": 23,
     "title": "Active users by country",
     "description": "Count active users (`is_active = true`) per country. Return `country` and `user_count`. Order by `user_count` descending, then `country` ascending.",
@@ -807,7 +807,7 @@
     "explanation": "Filtering with WHERE before GROUP BY is the correct pattern for pre-aggregation filtering. `COUNT(*)` counts all rows that pass the filter per group. The dual ORDER BY (count DESC, country ASC) produces a deterministic result when two countries share the same user count.",
     "hints": [
       "Filter the data to the relevant subset first, then collapse it to the business grain and calculate the summary values.",
-      "When multiple groups have the same count, a secondary order column makes the output deterministic \u2014 pick a column that uniquely distinguishes the remaining groups."
+      "When multiple groups have the same count, a secondary order column makes the output deterministic — pick a column that uniquely distinguishes the remaining groups."
     ],
     "concepts": [
       "PRE-AGGREGATION FILTERING",
@@ -821,7 +821,7 @@
     ]
   },
   {
-    "id": 1032,
+    "id": 11024,
     "order": 24,
     "title": "Order amount with discount fallback",
     "description": "Return `order_id`, `user_id`, `gross_amount`, `discount_amount`, and a computed column `final_amount` = `gross_amount - COALESCE(discount_amount, 0)`. Order by `order_id` ascending.",
@@ -843,7 +843,7 @@
       "coalesce"
     ],
     "enforce_concepts": true,
-    "explanation": "COALESCE(discount_amount, 0) replaces NULL values with 0 so the subtraction never produces NULL. Without COALESCE, any row where discount_amount IS NULL would yield NULL for final_amount \u2014 a silent bug that propagates through downstream aggregations. This pattern (null-safe arithmetic) is ubiquitous in financial reporting queries.",
+    "explanation": "COALESCE(discount_amount, 0) replaces NULL values with 0 so the subtraction never produces NULL. Without COALESCE, any row where discount_amount IS NULL would yield NULL for final_amount — a silent bug that propagates through downstream aggregations. This pattern (null-safe arithmetic) is ubiquitous in financial reporting queries.",
     "hints": [
       "Focus on which column defines the ranking and what direction the result should follow.",
       "COALESCE returns its first non-NULL argument, so COALESCE(discount_amount, 0) returns 0 when discount is missing"
@@ -860,7 +860,7 @@
     ]
   },
   {
-    "id": 1033,
+    "id": 11025,
     "order": 25,
     "title": "Orders per calendar month",
     "description": "Count orders grouped by calendar month. Return `order_month` (formatted as `'YYYY-MM'` using `STRFTIME('%Y-%m', order_date)`) and `order_count`. Order by `order_month` ascending.",
@@ -885,7 +885,7 @@
     "explanation": "STRFTIME('%Y-%m', order_date) truncates each date to its year-month string. Grouping on this string produces one row per calendar month. Sorting the 'YYYY-MM' string lexicographically gives correct chronological order because ISO format is zero-padded. This is the foundational pattern for time-series aggregations in analytics.",
     "hints": [
       "Collapse the data to the business grain named in the result before you calculate the summary values.",
-      "A date truncated to year-month format works as both a grouping key and a sort key \u2014 string comparison order aligns with chronological order for this format."
+      "A date truncated to year-month format works as both a grouping key and a sort key — string comparison order aligns with chronological order for this format."
     ],
     "concepts": [
       "DATE BUCKET GROUPING",
@@ -900,7 +900,7 @@
     ]
   },
   {
-    "id": 1034,
+    "id": 11026,
     "order": 26,
     "title": "Products launched in 2024",
     "description": "Return `product_id`, `product_name`, `brand`, and `launch_date` for all products launched in the calendar year 2024. Order by `launch_date` ascending.",
@@ -926,7 +926,7 @@
     "explanation": "Using `>= '2024-01-01' AND < '2025-01-01'` is the portable, precise way to filter a full calendar year. It works correctly regardless of whether dates include time components, and avoids functions like YEAR() that can prevent index use in production databases. Prefer this half-open interval pattern over BETWEEN or YEAR() extraction.",
     "hints": [
       "Filter to the qualifying rows before you project columns or worry about the final ordering.",
-      "Descending order on a date column surfaces the most recent entries first \u2014 useful when 'latest' is the natural reading direction for the result."
+      "Descending order on a date column surfaces the most recent entries first — useful when 'latest' is the natural reading direction for the result."
     ],
     "concepts": [
       "HALF-OPEN DATE INTERVAL",
@@ -940,7 +940,7 @@
     ]
   },
   {
-    "id": 1035,
+    "id": 11027,
     "order": 27,
     "title": "Employees in US or UK",
     "description": "Return `employee_id`, `employee_name`, `country`, and `salary` for all employees whose `country` is either `'US'` or `'UK'`. Order by `salary` descending.",
@@ -980,7 +980,7 @@
     ]
   },
   {
-    "id": 1036,
+    "id": 11028,
     "order": 28,
     "title": "Highest and lowest order value",
     "description": "Return a single row with two columns: `max_order` (the highest `net_amount` across all orders) and `min_order` (the lowest `net_amount`).",
@@ -998,7 +998,7 @@
     "solution_query": "SELECT MAX(net_amount) AS max_order,\n       MIN(net_amount) AS min_order\nFROM orders;",
     "required_concepts": [],
     "enforce_concepts": false,
-    "explanation": "Multiple aggregate functions can be computed in a single SELECT without a GROUP BY \u2014 the entire table acts as one group. MAX and MIN scan all rows and return the extreme values. Naming output columns with AS makes results self-documenting. This pattern is foundational for summary statistics queries.",
+    "explanation": "Multiple aggregate functions can be computed in a single SELECT without a GROUP BY — the entire table acts as one group. MAX and MIN scan all rows and return the extreme values. Naming output columns with AS makes results self-documenting. This pattern is foundational for summary statistics queries.",
     "hints": [
       "Collapse the qualifying rows into a single summary value rather than returning row-level detail.",
       "No GROUP BY is needed when aggregating over the entire table"
@@ -1015,7 +1015,7 @@
     ]
   },
   {
-    "id": 1037,
+    "id": 11029,
     "order": 29,
     "title": "Users by plan tier",
     "description": "Count users grouped by `plan_tier`. Return `plan_tier` and `user_count`. Order by `user_count` descending.",
@@ -1053,7 +1053,7 @@
     ]
   },
   {
-    "id": 1038,
+    "id": 11030,
     "order": 30,
     "title": "Orders with a non-zero discount",
     "description": "Return `order_id`, `gross_amount`, `discount_amount`, and `net_amount` for orders where `discount_amount` IS NOT NULL and `discount_amount > 0`. Order by `discount_amount` descending.",
@@ -1077,10 +1077,10 @@
       "order_by"
     ],
     "enforce_concepts": true,
-    "explanation": "Combining IS NOT NULL with a comparison operator (`> 0`) requires both conditions with AND. The IS NOT NULL check is needed because `NULL > 0` evaluates to NULL (not true), which would silently exclude those rows anyway \u2014 but being explicit is a best practice that makes intent clear. This combined pattern is common in any query that filters on an optional numeric field.",
+    "explanation": "Combining IS NOT NULL with a comparison operator (`> 0`) requires both conditions with AND. The IS NOT NULL check is needed because `NULL > 0` evaluates to NULL (not true), which would silently exclude those rows anyway — but being explicit is a best practice that makes intent clear. This combined pattern is common in any query that filters on an optional numeric field.",
     "hints": [
       "Filter to the qualifying rows before you project columns or worry about the final ordering.",
-      "When a column can be NULL, a numeric comparison silently fails for NULL rows \u2014 think about what separate condition handles NULLs explicitly."
+      "When a column can be NULL, a numeric comparison silently fails for NULL rows — think about what separate condition handles NULLs explicitly."
     ],
     "concepts": [
       "NULL CHECK COMBINED WITH COMPARISON",
@@ -1094,7 +1094,7 @@
     ]
   },
   {
-    "id": 1039,
+    "id": 11031,
     "order": 31,
     "title": "Monthly user signups with a CTE",
     "description": "Using a CTE named `monthly_signups`, compute the number of users who signed up each month (group by `STRFTIME('%Y-%m', signup_date)`). Return `signup_month` and `user_count` from the CTE, ordered by `signup_month` ascending.\n\nThis is an introduction to CTEs (`WITH` clauses), which create named temporary result sets that can be referenced like a table.",
@@ -1116,7 +1116,7 @@
       "order_by"
     ],
     "enforce_concepts": true,
-    "explanation": "A CTE (Common Table Expression) defined with `WITH name AS (...)` creates a named temporary result set that lives only for the duration of the query. The CTE is defined first, then referenced in the main SELECT just like a table. CTEs make complex queries readable by naming intermediate steps \u2014 they are fundamental to writing maintainable SQL at any level. Here the CTE computes monthly counts, and the outer query retrieves and sorts them.",
+    "explanation": "A CTE (Common Table Expression) defined with `WITH name AS (...)` creates a named temporary result set that lives only for the duration of the query. The CTE is defined first, then referenced in the main SELECT just like a table. CTEs make complex queries readable by naming intermediate steps — they are fundamental to writing maintainable SQL at any level. Here the CTE computes monthly counts, and the outer query retrieves and sorts them.",
     "hints": [
       "Break the problem into stages so the reusable intermediate result exists before the final filter or comparison.",
       "Reference the CTE name in the outer SELECT like a table; grouping by the extracted date part and ordering by it ensures chronological output."
@@ -1134,7 +1134,7 @@
     ]
   },
   {
-    "id": 1040,
+    "id": 11032,
     "order": 32,
     "title": "Tickets by priority and status",
     "description": "Count support tickets grouped by both `priority` and `status`. Return `priority`, `status`, and `ticket_count`. Order by `priority` ascending, then `status` ascending.",
@@ -1156,10 +1156,10 @@
       "order_by"
     ],
     "enforce_concepts": true,
-    "explanation": "Multi-column GROUP BY produces one row per unique combination of the grouped columns \u2014 here, one row per (priority, status) pair. This is the standard approach for cross-tabulating two categorical dimensions before pivoting. The result is effectively a raw pivot table in long format, which is the input for most BI tools and dashboards.",
+    "explanation": "Multi-column GROUP BY produces one row per unique combination of the grouped columns — here, one row per (priority, status) pair. This is the standard approach for cross-tabulating two categorical dimensions before pivoting. The result is effectively a raw pivot table in long format, which is the input for most BI tools and dashboards.",
     "hints": [
       "Collapse the data to the business grain named in the result before you calculate the summary values.",
-      "When grouping by two columns, each unique combination produces one output row \u2014 ordering by both keeps the most important dimension as the primary sort axis."
+      "When grouping by two columns, each unique combination produces one output row — ordering by both keeps the most important dimension as the primary sort axis."
     ],
     "concepts": [
       "MULTI-COLUMN GROUPING",

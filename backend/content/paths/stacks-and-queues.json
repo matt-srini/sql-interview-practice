@@ -4,16 +4,22 @@
   "description": "Build stack-first problem solving for validation, parsing, expression evaluation, and monotonic-structure style interview patterns.",
   "topic": "python",
   "questions": [
-    4011,
-    4309,
-    4314,
-    4315,
-    4604,
-    4620
+    21011,
+    22009,
+    22014,
+    22015,
+    23003,
+    23019
   ],
   "tier": "free",
   "role": "advanced",
-  "focus_concepts": ["MONOTONIC STACK REASONING", "BRACKET VALIDATION PATTERN", "GREEDY SEQUENCE PROCESSING"],
+  "focus_concepts": [
+    "MONOTONIC STACK REASONING",
+    "BRACKET VALIDATION PATTERN",
+    "GREEDY SEQUENCE PROCESSING"
+  ],
   "outcomes": "You'll solve bracket matching, histogram, and next-greater-element problems using stack and deque patterns.",
-  "recommended_after": ["sliding-window-patterns"]
+  "recommended_after": [
+    "sliding-window-patterns"
+  ]
 }

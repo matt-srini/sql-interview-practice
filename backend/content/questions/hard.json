@@ -1,6 +1,6 @@
 [
   {
-    "id": 3001,
+    "id": 13001,
     "order": 1,
     "title": "Completed revenue share by plan tier",
     "description": "Return plan_tier, total_completed_revenue, and revenue_share_pct for each plan tier based on 'completed' orders only. revenue_share_pct should be the percentage contribution of that tier's total_completed_revenue to the overall revenue from 'completed' orders across all plan tiers, rounded to 2 decimal places. Include only plan tiers that have at least one 'completed' order. Order by total_completed_revenue descending, then plan_tier ascending.",
@@ -34,7 +34,7 @@
     "complexity_hint": "Two-stage pattern: aggregate first (subquery), then apply a window function on the aggregated rows. The window SUM(...) OVER () computes the grand total without collapsing rows.",
     "alternative_solution": {
       "query": "WITH tier_revenue AS (\n  SELECT u.plan_tier, SUM(o.net_amount) AS total_completed_revenue\n  FROM users u\n  JOIN orders o ON u.user_id = o.user_id\n  WHERE o.status = 'completed'\n  GROUP BY u.plan_tier\n)\nSELECT plan_tier, total_completed_revenue,\n  ROUND(100.0 * total_completed_revenue / SUM(total_completed_revenue) OVER (), 2) AS revenue_share_pct\nFROM tier_revenue\nORDER BY total_completed_revenue DESC, plan_tier ASC",
-      "explanation": "This version uses a CTE (WITH clause) instead of an inline subquery. Both approaches produce identical results. CTEs are generally preferred when the intermediate result is referenced more than once, or when readability is the priority \u2014 the named step makes the two-stage intent explicit."
+      "explanation": "This version uses a CTE (WITH clause) instead of an inline subquery. Both approaches produce identical results. CTEs are generally preferred when the intermediate result is referenced more than once, or when readability is the priority — the named step makes the two-stage intent explicit."
     },
     "companies": [
       "Meta",
@@ -42,7 +42,7 @@
     ]
   },
   {
-    "id": 3002,
+    "id": 13002,
     "order": 2,
     "title": "Top completed-revenue user in each acquisition channel",
     "description": "For orders placed in 2024, return the single user with the highest revenue from 'completed' orders in each acquisition_channel. Columns: acquisition_channel, user_id, name, total_completed_revenue. If multiple users in the same acquisition_channel tie on total_completed_revenue, choose the user whose first 'completed' order in 2024 is earlier. If there is still a tie, choose the lower user_id. Order by acquisition_channel ascending.",
@@ -82,7 +82,7 @@
     ]
   },
   {
-    "id": 3003,
+    "id": 13003,
     "order": 3,
     "title": "First completed order where cumulative revenue reaches 1000",
     "description": "Return the first 'completed' order for each user where that user's cumulative revenue from 'completed' orders reaches or exceeds 1000 for the first time. Columns: user_id, order_id, order_date, net_amount, running_completed_revenue. Build the cumulative revenue in order_date ascending order, breaking ties on order_id ascending. Exclude users who never reach 1000. Order by user_id ascending.",
@@ -117,7 +117,7 @@
     ]
   },
   {
-    "id": 3004,
+    "id": 13004,
     "order": 4,
     "title": "User-months above each user's 2024 monthly average",
     "description": "For 2024 only, return every user-month where the user's revenue from 'completed' orders for that month is strictly greater than their own average monthly revenue from 'completed' orders across all 2024 months that contain at least one 'completed' order. Columns: user_id, order_month, monthly_completed_revenue, avg_monthly_completed_revenue. order_month should be the numeric month extracted from order_date. Order by user_id ascending, then order_month ascending.",
@@ -152,7 +152,7 @@
     ]
   },
   {
-    "id": 3005,
+    "id": 13005,
     "order": 5,
     "title": "Products added to cart but never purchased afterward",
     "description": "Return each user-product pair where the user added the product to cart at least once, but never recorded a 'purchase' event for that same product at or after their first 'add_to_cart' event for that product. Columns: user_id, name, product_id, product_name, first_add_to_cart_time. If a user added the same product multiple times, base the comparison on the earliest 'add_to_cart' time for that user-product pair. Order by user_id ascending, then product_id ascending.",
@@ -195,7 +195,7 @@
     ]
   },
   {
-    "id": 3006,
+    "id": 13006,
     "order": 6,
     "title": "Signup cohort retention by month offset",
     "description": "For signup cohorts based on the calendar month of signup_date, return retention metrics for month offsets 0, 1, and 2. A user counts as retained in a month offset if they placed at least one 'completed' order in that calendar month offset from their signup month. Count each user at most once per offset even if they placed multiple 'completed' orders in the same month. Columns: cohort_month, months_since_signup, cohort_size, retained_users, retained_pct. retained_pct should be rounded to 2 decimal places. Include only cohort-month and offset combinations that have at least one retained user. Order by cohort_month ascending, then months_since_signup ascending.",
@@ -233,7 +233,7 @@
     ]
   },
   {
-    "id": 3007,
+    "id": 13007,
     "order": 7,
     "title": "Sessionize events with a 30-minute inactivity gap",
     "description": "Create derived sessions from the events table using this rule: within each user_id, a new session starts on the first event or whenever the gap from the previous event is more than 30 minutes. A gap of exactly 30 minutes stays in the same session. Return one row per derived session with columns: user_id, derived_session_id, session_start_time, session_end_time, event_count, duration_minutes. derived_session_id should start at 1 for each user and increase in event order. Use event_time ascending and event_id ascending to break ties. Order by user_id ascending, then derived_session_id ascending.",
@@ -267,7 +267,7 @@
     ]
   },
   {
-    "id": 3008,
+    "id": 13008,
     "order": 8,
     "title": "Acquisition-channel funnel progression by ordered product events",
     "description": "For each acquisition_channel, compute funnel counts based on ordered product-level behavior. A user is counted in viewed_users if they had at least one product journey with a 'view_product' event. They are counted in cart_after_view_users if they had at least one product where an 'add_to_cart' event occurred after the first 'view_product' event for that same product. They are counted in purchase_after_cart_users if they had at least one product where a 'purchase' event occurred after that 'add_to_cart' event for the same product. Return acquisition_channel, viewed_users, cart_after_view_users, purchase_after_cart_users, drop_off_after_view, and drop_off_after_cart. drop_off_after_view is viewed_users minus cart_after_view_users. drop_off_after_cart is cart_after_view_users minus purchase_after_cart_users. Order by acquisition_channel ascending. All funnel steps must occur on the same product_id within a single user-product journey.",
@@ -310,7 +310,7 @@
     ]
   },
   {
-    "id": 3009,
+    "id": 13009,
     "order": 9,
     "title": "Products contributing to the first 80% of completed revenue",
     "description": "Identify the products that make up the first 80% of 'completed'-order revenue when products are ordered by product_revenue descending. Columns: product_id, product_name, product_revenue, cumulative_revenue, cumulative_revenue_pct. product_revenue should be the sum of line_amount from 'completed' orders only. cumulative_revenue should be the running total in product_revenue descending order, breaking ties on product_id ascending. Include the product that causes the cumulative total to reach or cross 80% even if it pushes the running percentage above 80. Order by product_revenue descending, then product_id ascending.",
@@ -352,7 +352,7 @@
     ]
   },
   {
-    "id": 3010,
+    "id": 13010,
     "order": 10,
     "title": "Detect three-attempt decreasing payment sequences",
     "description": "Return each payment row that completes a sequence of three consecutive payment attempts for the same order where the amounts are strictly decreasing from oldest to newest. Consider attempts ordered by payment_date ascending, then payment_id ascending. Columns: order_id, payment_id, payment_date, amount, previous_amount, amount_two_payments_ago. Ignore orders with fewer than three payment attempts. Order by order_id ascending, then payment_date ascending, then payment_id ascending.",
@@ -386,7 +386,7 @@
     ]
   },
   {
-    "id": 3011,
+    "id": 13011,
     "order": 11,
     "title": "Users whose order size drops after crossing a spend threshold",
     "description": "Using 'completed' orders only, identify users whose average order net_amount becomes smaller after they first reach a cumulative spend on 'completed' orders of at least 500. Treat the threshold-crossing order as part of the after-threshold period. Exclude users who never reach the threshold, and exclude users who do not have at least one 'completed' order before the threshold and at least one 'completed' order at or after the threshold. Return user_id, name, threshold_order_date, avg_before_threshold, avg_after_threshold, and delta_after_minus_before rounded to 2 decimal places. Build order sequence by order_date ascending, then order_id ascending. Order by delta_after_minus_before ascending, then user_id ascending.",
@@ -425,7 +425,7 @@
     ]
   },
   {
-    "id": 3012,
+    "id": 13012,
     "order": 12,
     "title": "Acquisition-channel rank improvements across months",
     "description": "For 2024 only, compute 'completed'-order revenue per acquisition_channel for each calendar month, rank channels within each month by monthly revenue, and return only the month-channel rows where the channel improved relative to its previous revenue-bearing month. Improvement means the current monthly rank is numerically smaller than the previous monthly rank. If channels tie on monthly revenue within a month, break ties by acquisition_channel ascending. When comparing a channel to its previous revenue-bearing month, order months by order_month ascending and use monthly_rank ascending as the explicit tie-breaker. Columns: order_month, acquisition_channel, monthly_completed_revenue, monthly_rank, previous_month_rank, rank_change. order_month should be the first day of the month. rank_change should be previous_month_rank minus monthly_rank. Order by order_month ascending, monthly_rank ascending, acquisition_channel ascending.",
@@ -464,7 +464,7 @@
     ]
   },
   {
-    "id": 3013,
+    "id": 13013,
     "order": 13,
     "title": "Country-level order outcome mix using the latest payment attempt",
     "description": "For each user country, classify every order into exactly one outcome bucket using this logic. If order status is 'cancelled', count it as cancelled_orders regardless of any payment rows. Otherwise, look only at the latest payment attempt for that order, where latest means payment_date descending and payment_id descending. Count 'completed' orders with latest payment status 'paid' as completed_paid_orders, latest status in ('refunded', 'chargeback') as completed_reversed_orders, latest status 'failed' as completed_failed_orders, and orders with no payment rows as completed_no_payment_orders. Also return net_paid_revenue, defined as the sum of net_amount for completed_paid_orders only, and reversal_rate_pct, defined as completed_reversed_orders divided by all 'completed' orders in that country, rounded to 2 decimal places. Order by reversal_rate_pct descending, then country ascending.",
@@ -510,7 +510,7 @@
     ]
   },
   {
-    "id": 3014,
+    "id": 13014,
     "order": 14,
     "title": "Payment-method recovery summary after failed attempts",
     "description": "A recovery attempt is a payment row whose status is 'paid' and whose immediately previous payment attempt for the same order had status 'failed'. For this question, only count recovery attempts where the paid attempt happens between 0 and 24 hours after the failed attempt, inclusive of both endpoints. Summarize those recovery attempts by the payment_method of the paid row. Return payment_method, recovered_attempt_count, recovered_order_count, total_recovered_amount, and avg_hours_to_recovery rounded to 2 decimal places. recovered_attempt_count counts qualifying paid rows. recovered_order_count counts distinct orders with at least one qualifying recovery attempt. Order by recovered_attempt_count descending, then payment_method ascending.",
@@ -545,7 +545,7 @@
     ]
   },
   {
-    "id": 3015,
+    "id": 13015,
     "order": 15,
     "title": "Reactivated users after a dormant period",
     "description": "A 'reactivated user' can be interpreted in many ways, so use this exact definition for the question. Consider a user's events ordered by event_time ascending, then event_id ascending. A reactivation candidate is an event that occurs after at least 14 full days with no prior events from that user. A user qualifies as reactivated if, starting from that candidate event time, they record at least 3 total events in the half-open interval >= reactivation_time and < reactivation_time + 7 days, including the candidate event itself. If a user has multiple qualifying reactivation candidates, keep only the earliest one by reactivation_time ascending, breaking ties on event_id ascending. Return user_id, name, reactivation_time, inactivity_days, and events_in_next_7_days. Order by reactivation_time ascending, then user_id ascending.",
@@ -584,7 +584,7 @@
     ]
   },
   {
-    "id": 3016,
+    "id": 13016,
     "order": 16,
     "title": "High-growth stable products among top revenue leaders",
     "description": "Consider only products that have revenue in at least 3 distinct calendar months from 'completed' orders. For each such product, compute total_revenue, volatility, and latest_mom_growth_pct. volatility is the sample standard deviation of monthly revenue across all of that product's revenue-bearing months. latest_mom_growth_pct is the percentage growth from the previous revenue-bearing month to the latest revenue-bearing month, rounded to 2 decimal places. Identify the latest and previous revenue-bearing months by order_month descending, with product_id ascending as the explicit tie-breaker. Return only products that satisfy all three conditions: they are in the top 20% of products by total_revenue, latest_mom_growth_pct is positive, and volatility is strictly lower than the median volatility across all eligible products. If two products tie on total_revenue, break ties on product_id ascending when determining the top 20%. Columns: product_id, product_name, total_revenue, volatility, latest_mom_growth_pct. Order by total_revenue descending, then product_id ascending.",
@@ -628,7 +628,7 @@
     ]
   },
   {
-    "id": 3017,
+    "id": 13017,
     "order": 17,
     "title": "Returned users after 30-day order inactivity",
     "description": "Using 'completed' orders only, identify users who returned after a churn gap of more than 30 days between consecutive 'completed' orders. The return order is the later order in that gap. If a user has multiple qualifying churn-return gaps, keep only the earliest return. Compare behavior in the half-open interval >= return_order_date - 30 days and < return_order_date to behavior in the half-open interval >= return_order_date and < return_order_date + 30 days. Return user_id, name, return_order_date, inactivity_days, orders_before_30d, orders_after_30d, avg_before_30d, and avg_after_30d, where the averages are based on net_amount and rounded to 2 decimal places. Include only users who have at least one 'completed' order in both windows. Order by return_order_date ascending, then user_id ascending.",
@@ -668,7 +668,7 @@
     ]
   },
   {
-    "id": 3018,
+    "id": 13018,
     "order": 18,
     "title": "Users whose top spending category changes from Q1 to Q2",
     "description": "For 2024 only, find users whose top product category by 'completed'-order spend changes from Q1 to Q2. Define top category separately within each quarter using total line_amount. If multiple categories tie for the top spend within a user-quarter, choose the smaller category_id. Only include users who have at least one 'completed'-order line item in both Q1 and Q2. Return user_id, name, q1_top_category_id, q1_spend, q2_top_category_id, and q2_spend. Order by user_id ascending.",
@@ -717,7 +717,7 @@
     ]
   },
   {
-    "id": 3019,
+    "id": 13019,
     "order": 19,
     "title": "Resolve final order status from conflicting payment evidence",
     "description": "Determine a resolved final_status for every order using this precedence logic: if the order has any payment with status 'chargeback', final_status is 'chargeback'; else if it has any payment with status 'refunded', final_status is 'refunded'; else if the latest payment for that order has status 'paid', final_status is 'paid'; else if the latest payment has status 'failed', final_status is 'failed'; else final_status is 'unknown'. Latest payment means payment_date descending and payment_id descending. Then summarize by user country. Return country, chargeback_orders, refunded_orders, paid_orders, failed_orders, unknown_orders, and resolved_paid_revenue, where resolved_paid_revenue is the sum of net_amount for orders whose final_status is 'paid'. Order by country ascending.",
@@ -762,7 +762,7 @@
     ]
   },
   {
-    "id": 3020,
+    "id": 13020,
     "order": 20,
     "title": "Users whose monthly revenue declines after their peak month",
     "description": "Using 'completed' orders in 2024 only, find users whose average monthly revenue from 'completed' orders declines after their peak month. First aggregate to one row per user per calendar month. Define the peak month as the month with the highest monthly revenue from 'completed' orders; if multiple months tie, choose the earliest month. Then compare the user's average monthly revenue from 'completed' orders before the peak month to the average monthly revenue from 'completed' orders after the peak month. Exclude users who do not have at least one revenue-bearing month before the peak and one after the peak. Return user_id, name, peak_month, peak_month_revenue, avg_before_peak, avg_after_peak, and decline_amount, where decline_amount is avg_before_peak minus avg_after_peak rounded to 2 decimal places. Include only users where avg_after_peak is strictly lower than avg_before_peak. Order by decline_amount descending, then user_id ascending.",
@@ -801,7 +801,7 @@
     ]
   },
   {
-    "id": 3021,
+    "id": 13021,
     "order": 21,
     "title": "Users who bought one category, never bought another, but viewed it",
     "description": "Return user_id and name for users who satisfy all three conditions: they have at least one 'completed'-order purchase of a product in category_name = 'Category 1', they have never purchased a product in category_name = 'Category 2' in any 'completed' order, and they have at least one 'view_product' event for a product in category_name = 'Category 2'. Use the same user across all three behavioral checks. Order by user_id ascending.",
@@ -859,7 +859,7 @@
     ]
   },
   {
-    "id": 3022,
+    "id": 13022,
     "order": 22,
     "title": "User segments with priority-based decision logic",
     "description": "Classify every user into exactly one segment using this priority order and no other interpretation: 'High Value' if total spend on 'completed' orders is at least 1000; else 'Frequent Buyer' if 'completed' order count is at least 5; else 'At Risk' if the user has no 'completed' order in the 60 days before the latest order_date in the orders table, meaning last_completed_order_date < reference_date - 60 days and including users with no 'completed' orders at all; else 'New' if signup_date is >= reference_date - 30 days using that same latest order_date as the shared reference point; else 'Standard'. After classification, return segment, user_count, and avg_completed_revenue, where avg_completed_revenue is the average total completed spend per user in the segment rounded to 2 decimal places. Order by user_count descending, then segment ascending.",
@@ -898,7 +898,7 @@
     ]
   },
   {
-    "id": 3023,
+    "id": 13023,
     "order": 23,
     "title": "Completed orders contradicted by payment evidence",
     "description": "Find orders where order.status is 'completed' but the latest payment status is 'failed' or the order has no payment rows at all. Latest payment means payment_date descending and payment_id descending. Return order_id, user_id, and latest_payment_status, where latest_payment_status should be NULL when no payment exists. Order by order_id ascending.",
@@ -937,7 +937,7 @@
     ]
   },
   {
-    "id": 3024,
+    "id": 13024,
     "order": 24,
     "title": "Top 2 products per category without window functions",
     "description": "Return the top 2 products per category based on total 'completed'-order revenue. Columns: category_id, product_id, product_name, total_revenue. Revenue is the sum of line_amount from 'completed' orders only. Rank products within each category by total_revenue descending, breaking ties on product_id ascending. Do not use window functions. Order by category_id ascending, total_revenue descending, then product_id ascending.",
@@ -980,7 +980,7 @@
     ]
   },
   {
-    "id": 3025,
+    "id": 13025,
     "order": 25,
     "title": "Users with a timed view-to-cart-to-purchase chain",
     "description": "Return user_id and product_id for user-product pairs that satisfy all of these conditions: a 'view_product' event exists, an 'add_to_cart' event for the same user and product occurs in the interval > view_time and <= view_time + 24 hours, and a 'purchase' event for the same user and product occurs in the interval > cart_time and <= cart_time + 48 hours. All three events must belong to the same user-product pair, and the order of events must be strictly view first, then cart, then purchase. Return each qualifying user-product pair once. Order by user_id ascending, then product_id ascending.",
@@ -1015,7 +1015,7 @@
     ]
   },
   {
-    "id": 3026,
+    "id": 13026,
     "order": 26,
     "title": "Session-based attribution with conflicting signals",
     "description": "For 'completed' orders in 2024, attribute each order's net_amount to a single traffic_source based on session behavior. First-touch is defined as the earliest session traffic_source for the user. Last-touch is defined as the latest session traffic_source from a session that occurred at or before the order_date. If both exist and are different, apply this rule: if the last-touch session occurred within 7 days (inclusive) before the order_date, attribute to last-touch; otherwise attribute to first-touch. If only one exists, use that. If neither exists, exclude the order. Return traffic_source, attributed_orders, attributed_revenue, and revenue_share_pct (percentage of total attributed revenue rounded to 2 decimals). Order by attributed_revenue descending, then traffic_source ascending. Break all ties using session_start ascending with session_id ascending as a tie-breaker.",
@@ -1062,7 +1062,7 @@
     ]
   },
   {
-    "id": 3027,
+    "id": 13027,
     "order": 27,
     "title": "Session engagement score",
     "description": "Using the `events` and `sessions` tables, compute an engagement score per session.\n\nFor each `session_id`, compute:\n- `event_count`: total number of events\n- `unique_products`: number of distinct `product_id` values interacted with\n- `has_cart`: 1 if any event has `event_name = 'add_to_cart'`, else 0\n- `has_purchase`: 1 if any event has `event_name = 'purchase'`, else 0\n- `engagement_score` = `event_count * 1 + unique_products * 2 + has_cart * 5 + has_purchase * 10`\n\nJoin with `sessions` to get `user_id`, `device_type`, and `traffic_source`. Return only sessions where `engagement_score >= 10`. Return `session_id`, `user_id`, `device_type`, `traffic_source`, `event_count`, `unique_products`, `engagement_score`. Order by `engagement_score` DESC, `session_id` ASC.",
@@ -1101,7 +1101,7 @@
     "explanation": "A CTE aggregates per-session: COUNT(*) for events, COUNT(DISTINCT product_id) for unique products, and MAX(CASE WHEN...) flags for cart and purchase presence (MAX of 0/1 across all events in the session is 1 if any event matches). The formula combines these into a weighted score. The outer query joins to sessions for device/channel context, then filters on the score. Note: the WHERE clause must repeat the formula (or use a nested query/second CTE) because aliases from SELECT cannot be referenced in WHERE in standard SQL.",
     "hints": [
       "Break the problem into stages so the reusable intermediate result exists before the final filter or comparison.",
-      "You cannot reference a SELECT alias in WHERE \u2014 either repeat the expression or wrap in a second CTE"
+      "You cannot reference a SELECT alias in WHERE — either repeat the expression or wrap in a second CTE"
     ],
     "concepts": [
       "CONDITIONAL FLAG AGGREGATION",
@@ -1117,10 +1117,10 @@
     ]
   },
   {
-    "id": 3028,
+    "id": 13028,
     "order": 28,
     "title": "ROWS vs RANGE: running total divergence",
-    "description": "For each order, compute two running total columns using different window frame semantics:\n1. `running_rows`: `SUM(net_amount) OVER (ORDER BY order_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)`\n2. `running_range`: `SUM(net_amount) OVER (ORDER BY order_date RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)`\n\nWhen `order_date` has duplicate values (multiple orders on the same date), ROWS and RANGE produce different results. Return `order_id`, `order_date`, `net_amount`, `running_rows`, `running_range` \u2014 but **only** for orders where `running_rows != running_range`. Order by `order_date` ASC, `order_id` ASC.\n\nThis reveals the dates where tied values cause the two frame semantics to diverge.",
+    "description": "For each order, compute two running total columns using different window frame semantics:\n1. `running_rows`: `SUM(net_amount) OVER (ORDER BY order_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)`\n2. `running_range`: `SUM(net_amount) OVER (ORDER BY order_date RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)`\n\nWhen `order_date` has duplicate values (multiple orders on the same date), ROWS and RANGE produce different results. Return `order_id`, `order_date`, `net_amount`, `running_rows`, `running_range` — but **only** for orders where `running_rows != running_range`. Order by `order_date` ASC, `order_id` ASC.\n\nThis reveals the dates where tied values cause the two frame semantics to diverge.",
     "difficulty": "hard",
     "schema": {
       "orders": [
@@ -1140,10 +1140,10 @@
       "where"
     ],
     "enforce_concepts": true,
-    "explanation": "ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW includes exactly the rows from the start of the partition up to the physical current row \u2014 each tied row gets a different running total. RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW treats all rows with the same ORDER BY value as peers and includes all of them together \u2014 every tied row gets the same running total (the sum including all peers). When ties exist, ROWS gives an incremental per-row total while RANGE gives all tied rows the same 'as if all were included' total. The WHERE clause filters to only divergent rows, exposing exactly the dates with ties.",
+    "explanation": "ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW includes exactly the rows from the start of the partition up to the physical current row — each tied row gets a different running total. RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW treats all rows with the same ORDER BY value as peers and includes all of them together — every tied row gets the same running total (the sum including all peers). When ties exist, ROWS gives an incremental per-row total while RANGE gives all tied rows the same 'as if all were included' total. The WHERE clause filters to only divergent rows, exposing exactly the dates with ties.",
     "hints": [
       "Compare the two cumulative interpretations only after both running totals have been computed over the same ordered events.",
-      "You cannot reference window function aliases in WHERE \u2014 use a CTE to compute both, then filter in the outer query"
+      "You cannot reference window function aliases in WHERE — use a CTE to compute both, then filter in the outer query"
     ],
     "concepts": [
       "ROWS vs RANGE FRAME SEMANTICS",
@@ -1158,7 +1158,7 @@
     ]
   },
   {
-    "id": 3029,
+    "id": 13029,
     "order": 29,
     "title": "First conversion within 7 days of signup",
     "description": "For each user who signed up in 2024, determine whether they placed a 'completed' order within 7 days of their `signup_date`.\n\nReturn `user_id`, `name`, `signup_date`, `country`, `acquisition_channel`, `converted` (1 if they have a qualifying order, 0 otherwise), and `days_to_first_order` (number of days between `signup_date` and their first qualifying order, NULL if no conversion).\n\nOrder by `converted` DESC, `days_to_first_order` ASC (NULLs last).",
@@ -1190,10 +1190,10 @@
       "case_when"
     ],
     "enforce_concepts": true,
-    "explanation": "Two CTEs decompose the problem: `signups_2024` filters the user cohort; `first_qualifying` finds each user's first completed order within 7 days of signup using a date-range join condition. The final LEFT JOIN preserves all 2024 signups \u2014 users with no qualifying order get NULL from the right side. CASE WHEN fq.user_id IS NOT NULL THEN 1 ELSE 0 END produces the conversion flag. JULIANDAY arithmetic computes the day difference as a number. NULLS LAST sorts non-converting users to the end.",
+    "explanation": "Two CTEs decompose the problem: `signups_2024` filters the user cohort; `first_qualifying` finds each user's first completed order within 7 days of signup using a date-range join condition. The final LEFT JOIN preserves all 2024 signups — users with no qualifying order get NULL from the right side. CASE WHEN fq.user_id IS NOT NULL THEN 1 ELSE 0 END produces the conversion flag. JULIANDAY arithmetic computes the day difference as a number. NULLS LAST sorts non-converting users to the end.",
     "hints": [
       "Break the problem into stages so the reusable intermediate result exists before the final filter or comparison.",
-      "LEFT JOIN the first_qualifying CTE back to all signups \u2014 users with no qualifying order will have NULL on the right side, which maps to converted=0"
+      "LEFT JOIN the first_qualifying CTE back to all signups — users with no qualifying order will have NULL on the right side, which maps to converted=0"
     ],
     "concepts": [
       "CONVERSION FUNNEL ANALYSIS",
@@ -1209,13 +1209,13 @@
     ]
   },
   {
-    "id": 3030,
+    "id": 13030,
     "order": 30,
     "mock_only": true,
     "framing": "scenario",
     "follow_up_id": 3034,
     "title": "Payment failure trend by method and month",
-    "description": "The payments team asks: 'How much revenue are we losing to 'failed' payments, and does the failure rate vary by method over time?' Write a query that, for each `payment_method` and calendar month (`YYYY-MM`), returns `payment_method`, `month`, `paid_count` (status = 'paid'), `failed_count` (status = 'failed'), `total_paid_amount` (rounded to 2 dp), and `failure_rate_pct` (failed / total \u00d7 100, rounded to 1 dp). Include only rows where the total attempt count for that method+month is at least 10. Order by `month` ascending, then `failure_rate_pct` descending.",
+    "description": "The payments team asks: 'How much revenue are we losing to 'failed' payments, and does the failure rate vary by method over time?' Write a query that, for each `payment_method` and calendar month (`YYYY-MM`), returns `payment_method`, `month`, `paid_count` (status = 'paid'), `failed_count` (status = 'failed'), `total_paid_amount` (rounded to 2 dp), and `failure_rate_pct` (failed / total × 100, rounded to 1 dp). Include only rows where the total attempt count for that method+month is at least 10. Order by `month` ascending, then `failure_rate_pct` descending.",
     "difficulty": "hard",
     "schema": {
       "payments": [
@@ -1241,7 +1241,7 @@
     "explanation": "Conditional aggregation counts paid/failed rows without subqueries. SUM(CASE WHEN status='paid' THEN amount ELSE 0 END) sums only paid amounts. HAVING COUNT(*) >= 10 excludes thin slices (method+month combos with fewer than 10 attempts) from the trend. ORDER BY month ASC, failure_rate_pct DESC makes the trend chronological within each month.",
     "hints": [
       "Use CASE WHEN inside COUNT/SUM to differentiate paid vs failed in one pass.",
-      "HAVING COUNT(*) >= 10 filters after aggregation \u2014 you can't use WHERE for a condition on the total row count."
+      "HAVING COUNT(*) >= 10 filters after aggregation — you can't use WHERE for a condition on the total row count."
     ],
     "concepts": [
       "CONDITIONAL AGGREGATION",
@@ -1251,7 +1251,7 @@
     "companies": []
   },
   {
-    "id": 3031,
+    "id": 13031,
     "order": 31,
     "mock_only": true,
     "framing": "scenario",
@@ -1282,7 +1282,7 @@
       "aggregate"
     ],
     "enforce_concepts": true,
-    "explanation": "JOIN connects users to their tickets. GROUP BY user produces per-user aggregates. HAVING COUNT(ticket_id) > 3 filters to users with more than 3 tickets \u2014 this condition can only be expressed with HAVING, not WHERE, because it filters on an aggregate. ORDER BY avg_resolution_hours DESC surfaces the most-delayed users first.",
+    "explanation": "JOIN connects users to their tickets. GROUP BY user produces per-user aggregates. HAVING COUNT(ticket_id) > 3 filters to users with more than 3 tickets — this condition can only be expressed with HAVING, not WHERE, because it filters on an aggregate. ORDER BY avg_resolution_hours DESC surfaces the most-delayed users first.",
     "hints": [
       "Think about which filter applies before aggregation and which applies after grouping.",
       "GROUP BY user_id and name together to keep the name column accessible."
@@ -1295,13 +1295,13 @@
     "companies": []
   },
   {
-    "id": 3032,
+    "id": 13032,
     "order": 32,
     "mock_only": true,
     "framing": "scenario",
     "follow_up_id": 3036,
     "title": "Top 3 products per category with top flag",
-    "description": "Your data team lead asks: 'For each category, show the top 3 products by revenue and flag the #1 product.' Using window functions, return `category_name`, `product_name`, `total_revenue` (rounded to 2 dp), `revenue_rank` (1 = highest within the category), and `is_top` (1 if rank = 1, else 0). Include only ranks 1\u20133. Order by `category_name` ascending, then `revenue_rank` ascending.",
+    "description": "Your data team lead asks: 'For each category, show the top 3 products by revenue and flag the #1 product.' Using window functions, return `category_name`, `product_name`, `total_revenue` (rounded to 2 dp), `revenue_rank` (1 = highest within the category), and `is_top` (1 if rank = 1, else 0). Include only ranks 1–3. Order by `category_name` ascending, then `revenue_rank` ascending.",
     "difficulty": "hard",
     "schema": {
       "order_items": [
@@ -1332,10 +1332,10 @@
       "group_by"
     ],
     "enforce_concepts": true,
-    "explanation": "The CTE aggregates revenue per product per category and applies RANK() OVER (PARTITION BY category_id ORDER BY SUM(line_amount) DESC) to rank within each category. The outer query filters to ranks 1\u20133 and adds the is_top flag using CASE WHEN. PARTITION BY category_id (not category_name) is more robust when names could be duplicated across parent categories.",
+    "explanation": "The CTE aggregates revenue per product per category and applies RANK() OVER (PARTITION BY category_id ORDER BY SUM(line_amount) DESC) to rank within each category. The outer query filters to ranks 1–3 and adds the is_top flag using CASE WHEN. PARTITION BY category_id (not category_name) is more robust when names could be duplicated across parent categories.",
     "hints": [
       "Start by computing each product's total revenue, then apply a per-category ranking in a second step.",
-      "Filter the CTE output (WHERE revenue_rank <= 3) in the outer query \u2014 you can't filter on a window function alias in the same SELECT."
+      "Filter the CTE output (WHERE revenue_rank <= 3) in the outer query — you can't filter on a window function alias in the same SELECT."
     ],
     "concepts": [
       "WINDOW RANK WITH PARTITION",
@@ -1345,7 +1345,7 @@
     "companies": []
   },
   {
-    "id": 3033,
+    "id": 13033,
     "order": 33,
     "mock_only": true,
     "framing": "scenario",
@@ -1376,7 +1376,7 @@
       "percentile"
     ],
     "enforce_concepts": true,
-    "explanation": "PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY salary) computes the 25th percentile using linear interpolation. It's an ordered-set aggregate \u2014 syntactically different from window functions. salary_range = MAX - MIN measures the spread. HAVING COUNT(*) >= 10 excludes departments too small for meaningful percentiles.",
+    "explanation": "PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY salary) computes the 25th percentile using linear interpolation. It's an ordered-set aggregate — syntactically different from window functions. salary_range = MAX - MIN measures the spread. HAVING COUNT(*) >= 10 excludes departments too small for meaningful percentiles.",
     "hints": [
       "Two statistical functions can compute the 25th and 75th percentile from an ordered set of values.",
       "HAVING COUNT(*) >= 10 restricts to departments large enough for percentiles to be meaningful."
@@ -1389,7 +1389,7 @@
     "companies": []
   },
   {
-    "id": 3034,
+    "id": 13034,
     "order": 34,
     "mock_only": true,
     "title": "Cumulative paid revenue by payment method",
@@ -1429,7 +1429,7 @@
     "companies": []
   },
   {
-    "id": 3035,
+    "id": 13035,
     "order": 35,
     "mock_only": true,
     "framing": "scenario",
@@ -1463,7 +1463,7 @@
       "date_functions"
     ],
     "enforce_concepts": true,
-    "explanation": "Two CTEs separate concerns: `signups` filters the 2024 cohort; `converted` finds users who placed a completed order within 30 days of signup using a date-range condition in the JOIN. The final LEFT JOIN preserves all signups \u2014 non-converters have NULL on the right side, contributing 0 to converted_count. HAVING filters small channel+country combos.",
+    "explanation": "Two CTEs separate concerns: `signups` filters the 2024 cohort; `converted` finds users who placed a completed order within 30 days of signup using a date-range condition in the JOIN. The final LEFT JOIN preserves all signups — non-converters have NULL on the right side, contributing 0 to converted_count. HAVING filters small channel+country combos.",
     "hints": [
       "Separate the problem: first isolate the 2024 signup cohort, then find which of those users placed a qualifying order within the time window.",
       "LEFT JOIN the converted CTE so non-converting users still appear in the denominator."
@@ -1476,7 +1476,7 @@
     "companies": []
   },
   {
-    "id": 3036,
+    "id": 13036,
     "order": 36,
     "mock_only": true,
     "title": "Product ranking with cumulative revenue and category share",
@@ -1513,7 +1513,7 @@
     "enforce_concepts": true,
     "explanation": "Four CTEs build up incrementally: product_revenue aggregates per-product revenue; cat_totals captures category-level totals; ranked applies window ranking; filtered joins in the category total for the share calculation. The final SELECT adds the running total (SUM OVER with ORDER BY revenue_rank) and the percentage share.",
     "hints": [
-      "Carry the cat_total through by joining cat_totals into the filtered CTE \u2014 you'll need it for the share calculation.",
+      "Carry the cat_total through by joining cat_totals into the filtered CTE — you'll need it for the share calculation.",
       "SUM(total_revenue) OVER (PARTITION BY category_id ORDER BY revenue_rank) computes the cumulative revenue as you move down each category's ranking."
     ],
     "concepts": [
@@ -1524,11 +1524,11 @@
     "companies": []
   },
   {
-    "id": 3037,
+    "id": 13037,
     "order": 37,
     "mock_only": true,
     "type": "reverse",
-    "title": "Write the query \u2014 monthly completed-order volume (2024)",
+    "title": "Write the query — monthly completed-order volume (2024)",
     "description": "Write a SQL query that produces the result table shown below. The result shows each calendar month in 2024 with the count of 'completed' orders and total completed revenue.",
     "difficulty": "hard",
     "schema": {
@@ -1592,10 +1592,10 @@
       "aggregate"
     ],
     "enforce_concepts": true,
-    "explanation": "strftime(order_date, '%Y-%m') extracts the year-month string. WHERE constrains to completed orders in 2024 only. GROUP BY month aggregates per calendar month. ORDER BY month produces the chronological trend. The result shows 8 of 12 months \u2014 the full query returns all 12.",
+    "explanation": "strftime(order_date, '%Y-%m') extracts the year-month string. WHERE constrains to completed orders in 2024 only. GROUP BY month aggregates per calendar month. ORDER BY month produces the chronological trend. The result shows 8 of 12 months — the full query returns all 12.",
     "hints": [
       "Use strftime to extract year-month from order_date.",
-      "The result shows only 8 months for display \u2014 your query should return all 12 months in 2024."
+      "The result shows only 8 months for display — your query should return all 12 months in 2024."
     ],
     "concepts": [
       "REVERSE SQL",
@@ -1605,11 +1605,11 @@
     "companies": []
   },
   {
-    "id": 3038,
+    "id": 13038,
     "order": 38,
     "mock_only": true,
     "type": "reverse",
-    "title": "Write the query \u2014 user acquisition funnel by channel",
+    "title": "Write the query — user acquisition funnel by channel",
     "description": "Write a SQL query that produces the result table shown below. The result shows, for each acquisition channel, the total number of signed-up users, how many of them ever placed at least one 'completed' order, and the conversion rate.",
     "difficulty": "hard",
     "schema": {
@@ -1674,10 +1674,10 @@
       "aggregate"
     ],
     "enforce_concepts": true,
-    "explanation": "LEFT JOIN keeps all users including those with no orders. COUNT(DISTINCT CASE WHEN o.status = 'completed' THEN u.user_id END) counts unique users who placed a completed order \u2014 DISTINCT prevents counting the same user twice if they have multiple completed orders. The ratio gives conversion rate.",
+    "explanation": "LEFT JOIN keeps all users including those with no orders. COUNT(DISTINCT CASE WHEN o.status = 'completed' THEN u.user_id END) counts unique users who placed a completed order — DISTINCT prevents counting the same user twice if they have multiple completed orders. The ratio gives conversion rate.",
     "hints": [
-      "Every user should appear in the signup count \u2014 even users who never placed an order.",
-      "COUNT(DISTINCT CASE WHEN ...) counts unique converted users \u2014 without DISTINCT a multi-order user would be over-counted."
+      "Every user should appear in the signup count — even users who never placed an order.",
+      "COUNT(DISTINCT CASE WHEN ...) counts unique converted users — without DISTINCT a multi-order user would be over-counted."
     ],
     "concepts": [
       "REVERSE SQL",
@@ -1687,11 +1687,11 @@
     "companies": []
   },
   {
-    "id": 3039,
+    "id": 13039,
     "order": 39,
     "mock_only": true,
     "type": "reverse",
-    "title": "Write the query \u2014 top products per category with rank",
+    "title": "Write the query — top products per category with rank",
     "description": "Write a SQL query that produces the result table shown below. The result shows the top-revenue product in each category, along with the second-place product where revenue is close. The `revenue_rank` column is the product's rank within its category (1 = highest).",
     "difficulty": "hard",
     "schema": {
@@ -1776,7 +1776,7 @@
     "enforce_concepts": true,
     "explanation": "RANK() OVER (PARTITION BY category_id ORDER BY SUM(line_amount) DESC) ranks products within each category by revenue. Filtering to revenue_rank <= 2 keeps only the top two per category. ORDER BY total_revenue DESC then LIMIT 8 shows the 8 highest-revenue products across those top slots.",
     "hints": [
-      "Compare each product's revenue only to other products in the same category \u2014 position matters within the group, not across all categories.",
+      "Compare each product's revenue only to other products in the same category — position matters within the group, not across all categories.",
       "Filter on revenue_rank <= 2 in the outer WHERE after defining the CTE."
     ],
     "concepts": [
@@ -1787,11 +1787,11 @@
     "companies": []
   },
   {
-    "id": 3040,
+    "id": 13040,
     "order": 40,
     "mock_only": true,
     "type": "reverse",
-    "title": "Write the query \u2014 department salary bands",
+    "title": "Write the query — department salary bands",
     "description": "Write a SQL query that produces the result table shown below. The result shows departments with at least 10 employees: their headcount, min/max/average salary, ordered by average salary descending.",
     "difficulty": "hard",
     "schema": {
@@ -1858,8 +1858,8 @@
     "enforce_concepts": true,
     "explanation": "JOIN connects departments to employees. GROUP BY department aggregates four salary metrics. HAVING COUNT(*) >= 10 excludes small departments. ORDER BY avg_salary DESC sorts by pay level. LIMIT 5 trims to the top-paying departments shown in the result.",
     "hints": [
-      "The result includes only departments above a minimum size \u2014 that threshold must be applied after aggregating.",
-      "The result has 5 rows \u2014 LIMIT 5 after ORDER BY avg_salary DESC."
+      "The result includes only departments above a minimum size — that threshold must be applied after aggregating.",
+      "The result has 5 rows — LIMIT 5 after ORDER BY avg_salary DESC."
     ],
     "concepts": [
       "REVERSE SQL",
@@ -1869,11 +1869,11 @@
     "companies": []
   },
   {
-    "id": 3041,
+    "id": 13041,
     "order": 41,
     "mock_only": true,
     "type": "debug",
-    "title": "Fix the query \u2014 wrong PARTITION BY column",
+    "title": "Fix the query — wrong PARTITION BY column",
     "description": "The query below should rank each session within a user's history by start time, and count how many sessions each user has by traffic source. It fails with an error. Find and fix the bug.",
     "difficulty": "hard",
     "schema": {
@@ -1896,9 +1896,9 @@
       "window_functions"
     ],
     "enforce_concepts": true,
-    "explanation": "The PARTITION BY clause references `traffic_type`, but the column in the sessions table is named `traffic_source`. Fix: replace `traffic_type` with `traffic_source`. This is a common mistake when table column names don't match your mental model \u2014 the error message's 'Candidate bindings' hint shows the correct name.",
+    "explanation": "The PARTITION BY clause references `traffic_type`, but the column in the sessions table is named `traffic_source`. Fix: replace `traffic_type` with `traffic_source`. This is a common mistake when table column names don't match your mental model — the error message's 'Candidate bindings' hint shows the correct name.",
     "hints": [
-      "The error message shows 'Candidate bindings: traffic_source' \u2014 that's the correct column name.",
+      "The error message shows 'Candidate bindings: traffic_source' — that's the correct column name.",
       "Window function PARTITION BY references must use exact column names from the source table."
     ],
     "concepts": [
@@ -1909,11 +1909,11 @@
     "companies": []
   },
   {
-    "id": 3042,
+    "id": 13042,
     "order": 42,
     "mock_only": true,
     "type": "debug",
-    "title": "Fix the query \u2014 CTE column alias mismatch in window function",
+    "title": "Fix the query — CTE column alias mismatch in window function",
     "description": "The query below uses a CTE to compute per-department statistics, then ranks departments by average salary. It fails with an error. Find and fix the bug.",
     "difficulty": "hard",
     "schema": {
@@ -1940,10 +1940,10 @@
       "window_functions"
     ],
     "enforce_concepts": true,
-    "explanation": "The CTE aliases the average salary column as `avg_sal`. The `ranked` CTE references it as `avg_salary` inside the window function \u2014 a name that was never defined. Fix: change `avg_salary` to `avg_sal` in the RANK() OVER clause. CTEs expose exactly the column names defined inside them; you cannot use a different alias in a downstream reference.",
+    "explanation": "The CTE aliases the average salary column as `avg_sal`. The `ranked` CTE references it as `avg_salary` inside the window function — a name that was never defined. Fix: change `avg_salary` to `avg_sal` in the RANK() OVER clause. CTEs expose exactly the column names defined inside them; you cannot use a different alias in a downstream reference.",
     "hints": [
-      "Check the column names defined inside dept_stats \u2014 whatever alias is used there must be referenced exactly downstream.",
-      "The error shows 'Candidate bindings: avg_sal' \u2014 that's the correct name to use in the RANK() OVER clause."
+      "Check the column names defined inside dept_stats — whatever alias is used there must be referenced exactly downstream.",
+      "The error shows 'Candidate bindings: avg_sal' — that's the correct name to use in the RANK() OVER clause."
     ],
     "concepts": [
       "CTE COLUMN CONSISTENCY",
@@ -1953,11 +1953,11 @@
     "companies": []
   },
   {
-    "id": 3043,
+    "id": 13043,
     "order": 43,
     "mock_only": true,
     "type": "debug",
-    "title": "Fix the query \u2014 table name typo in JOIN",
+    "title": "Fix the query — table name typo in JOIN",
     "description": "The query below should return the top 10 products by revenue, along with their category name and brand. It fails with an error. Find and fix the bug.",
     "difficulty": "hard",
     "schema": {
@@ -1994,7 +1994,7 @@
     "explanation": "The table is named `products` (plural) but the query references `product` (singular). DuckDB cannot resolve the table name and raises a Catalog Error. Fix: change `product` to `products` in the JOIN clause. The error message 'Did you mean products?' gives the answer directly.",
     "hints": [
       "The error 'Table with name product does not exist' means the table name is wrong.",
-      "Check your FROM/JOIN clauses \u2014 the database table is named products, not product."
+      "Check your FROM/JOIN clauses — the database table is named products, not product."
     ],
     "concepts": [
       "TABLE NAME ERRORS",

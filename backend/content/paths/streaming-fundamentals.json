@@ -4,17 +4,23 @@
   "description": "Develop streaming intuition around output modes, stateful joins, watermarks, and exactly-once delivery semantics.",
   "topic": "pyspark",
   "questions": [
-    11316,
-    11317,
-    11328,
-    11615,
-    11616,
-    11618,
-    11621
+    42016,
+    42017,
+    42028,
+    43015,
+    43016,
+    43018,
+    43021
   ],
   "tier": "pro",
   "role": "advanced",
-  "focus_concepts": ["STATEFUL STREAMING PATTERN", "WATERMARK MANAGEMENT", "STRUCTURED STREAMING MODEL"],
+  "focus_concepts": [
+    "STATEFUL STREAMING PATTERN",
+    "WATERMARK MANAGEMENT",
+    "STRUCTURED STREAMING MODEL"
+  ],
   "outcomes": "You'll understand Structured Streaming's unbounded-table model, event-time windowing, and watermarking for late data.",
-  "recommended_after": ["spark-performance"]
+  "recommended_after": [
+    "spark-performance"
+  ]
 }

@@ -4,16 +4,22 @@
   "description": "Go from simple aggregations to multi-table merges, left-join anti-patterns, transform for row-level stats, and rolling time windows.",
   "topic": "python-data",
   "questions": [
-    5003,
-    5008,
-    5301,
-    5302,
-    5304,
-    5306
+    31002,
+    31005,
+    32001,
+    32002,
+    32004,
+    32006
   ],
   "tier": "free",
   "role": "intermediate",
-  "focus_concepts": ["GROUPED AGGREGATION", "MULTI-DATAFRAME ENTITY LINKING", "BROADCAST AGGREGATION"],
+  "focus_concepts": [
+    "GROUPED AGGREGATION",
+    "MULTI-DATAFRAME ENTITY LINKING",
+    "BROADCAST AGGREGATION"
+  ],
   "outcomes": "You'll use groupby transforms and multi-DataFrame merges to compute per-group statistics and enrich tables.",
-  "recommended_after": ["dataframe-fundamentals"]
+  "recommended_after": [
+    "dataframe-fundamentals"
+  ]
 }

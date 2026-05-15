@@ -4,16 +4,20 @@
   "description": "Build a solid mental model of Spark: lazy evaluation, the DAG, transformations vs actions, driver/executor roles, and narrow vs wide dependencies.",
   "topic": "pyspark",
   "questions": [
-    11001,
-    11002,
-    11003,
-    11004,
-    11007,
-    11008
+    41001,
+    41002,
+    41003,
+    41004,
+    41007,
+    41008
   ],
   "tier": "free",
   "role": "starter",
-  "focus_concepts": ["LAZY EVALUATION MODEL", "DAG EXECUTION FLOW", "TRANSFORMATION VS ACTION CLASSIFICATION"],
+  "focus_concepts": [
+    "LAZY EVALUATION MODEL",
+    "DAG EXECUTION FLOW",
+    "TRANSFORMATION VS ACTION CLASSIFICATION"
+  ],
   "outcomes": "You'll internalize Spark's execution model — lazy evaluation, the DAG, wide vs narrow transformations — and reason about what triggers a job.",
   "recommended_after": []
 }

@@ -31,9 +31,9 @@ You are a senior distributed systems engineer and data platform interviewer desi
 
 | Difficulty | ID range |
 |---|---|
-| Easy | 11001–11299 |
-| Medium | 11301–11599 |
-| Hard | 11601–11899 |
+| Easy | 41001–41999 |
+| Medium | 42001–42999 |
+| Hard | 43001–43999 |
 
 `order` reflects pedagogical position within the difficulty tier — not file-append order. Assign the value that correctly slots the question into the concept arc. If inserting mid-sequence, note which existing `order` values shift up.
 
@@ -41,19 +41,19 @@ You are a senior distributed systems engineer and data platform interviewer desi
 
 ## Difficulty rules
 
-### Easy (11001–11299)
+### Easy (41001–41999)
 - Single concept, one unambiguous correct answer
 - **Preferred types: `predict_output` and `debug`** — force mental execution tracing
 - `mcq` is allowed but must be anchored in a concrete scenario with code or a system description, not abstract trivia
 - Do NOT create questions whose answer is "know the default config value" (e.g., "what is `spark.sql.shuffle.partitions` by default?")
 - The candidate should be able to reason to the answer by thinking about what Spark does, not by having memorised a fact
 
-### Medium (11301–11599)
+### Medium (42001–42999)
 - Trade-off reasoning — two approaches that are both plausible but differ in meaningful ways
 - May involve reading a code snippet, interpreting an execution plan summary, or tracing what an error means
 - Topics: partitioning, shuffle triggers, repartition vs coalesce, broadcast join, PySpark window function API, Delta Lake MERGE / time travel / schema evolution, Structured Streaming output modes (append / update / complete)
 
-### Hard (11601–11899)
+### Hard (43001–43999)
 - Multi-factor trade-off under realistic production constraints
 - All 4 options must be plausible to a candidate who partially understands the concept — no obviously wrong answers
 - Topics: AQE (adaptive query execution — coalescing partitions, converting sort-merge to broadcast, skew join handling), dynamic partition pruning, salting, pandas UDF memory model vs regular UDF, Z-ordering vs partition pruning, watermark behavior with late data, speculative execution
@@ -221,7 +221,7 @@ PySpark mock-only questions follow the same MCQ/predict_output/debug/optimizatio
 ### Follow-up pairs
 
 ```json
-"follow_up_id": 11627  // on the parent question
+"follow_up_id": 43027  // on the parent question
 ```
 
 The follow-up is injected after a correct answer in a mock session. Rules:

@@ -4,16 +4,22 @@
   "description": "Practice monthly and weekly trend analysis with rolling windows, growth rates, anomaly detection, and basic forecasting patterns.",
   "topic": "python-data",
   "questions": [
-    5303,
-    5326,
-    5603,
-    5606,
-    5613,
-    5615
+    32003,
+    32026,
+    33003,
+    33006,
+    33013,
+    33015
   ],
   "tier": "free",
   "role": "advanced",
-  "focus_concepts": ["TIME-SERIES BUCKETING", "ROLLING WINDOW AGGREGATION", "PERIOD-OVER-PERIOD COMPARISON"],
+  "focus_concepts": [
+    "TIME-SERIES BUCKETING",
+    "ROLLING WINDOW AGGREGATION",
+    "PERIOD-OVER-PERIOD COMPARISON"
+  ],
   "outcomes": "You'll handle date indexing, rolling statistics, period comparisons, and resample operations on time-indexed DataFrames.",
-  "recommended_after": ["groupby-and-joins"]
+  "recommended_after": [
+    "groupby-and-joins"
+  ]
 }

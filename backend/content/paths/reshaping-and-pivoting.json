@@ -4,15 +4,21 @@
   "description": "Master pivot-table thinking with reshaping operations including crosstabs, stack/unstack flows, and matrix-style analytical outputs.",
   "topic": "python-data",
   "questions": [
-    5317,
-    5327,
-    5609,
-    5610,
-    5619
+    32017,
+    32027,
+    33009,
+    33010,
+    33019
   ],
   "tier": "pro",
   "role": "advanced",
-  "focus_concepts": ["WIDE-FORM RESHAPING", "CROSS-TABULATION", "MULTI-INDEX FLATTENING"],
+  "focus_concepts": [
+    "WIDE-FORM RESHAPING",
+    "CROSS-TABULATION",
+    "MULTI-INDEX FLATTENING"
+  ],
   "outcomes": "You'll pivot, melt, stack, and unstack DataFrames to reshape data from long to wide form and back.",
-  "recommended_after": ["groupby-and-joins"]
+  "recommended_after": [
+    "groupby-and-joins"
+  ]
 }

@@ -4,17 +4,23 @@
   "description": "Learn production Delta patterns across upserts, time travel, schema evolution, and storage-layout optimization tradeoffs.",
   "topic": "pyspark",
   "questions": [
-    11312,
-    11326,
-    11327,
-    11330,
-    11612,
-    11619,
-    11622
+    42012,
+    42026,
+    42027,
+    42030,
+    43012,
+    43019,
+    43022
   ],
   "tier": "pro",
   "role": "advanced",
-  "focus_concepts": ["ACID TRANSACTION MANAGEMENT", "SNAPSHOT ISOLATION", "PARTITION PRUNING STRATEGY"],
+  "focus_concepts": [
+    "ACID TRANSACTION MANAGEMENT",
+    "SNAPSHOT ISOLATION",
+    "PARTITION PRUNING STRATEGY"
+  ],
   "outcomes": "You'll apply Delta Lake patterns — ACID writes, time travel, and optimized partitioning — to production data lake scenarios.",
-  "recommended_after": ["spark-performance"]
+  "recommended_after": [
+    "spark-performance"
+  ]
 }

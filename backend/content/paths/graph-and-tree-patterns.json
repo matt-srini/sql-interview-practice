@@ -4,16 +4,22 @@
   "description": "Strengthen traversal fluency across BFS, DFS, topological order, shortest path, and union-find connected-component reasoning.",
   "topic": "python",
   "questions": [
-    4329,
-    4607,
-    4614,
-    4615,
-    4622,
-    4623
+    22029,
+    23006,
+    23013,
+    23014,
+    23021,
+    23022
   ],
   "tier": "pro",
   "role": "advanced",
-  "focus_concepts": ["GRAPH TRAVERSAL STRATEGY", "CYCLE DETECTION", "TOPOLOGICAL DEPENDENCY ORDERING"],
+  "focus_concepts": [
+    "GRAPH TRAVERSAL STRATEGY",
+    "CYCLE DETECTION",
+    "TOPOLOGICAL DEPENDENCY ORDERING"
+  ],
   "outcomes": "You'll handle BFS, DFS, topological sort, and connected-components problems that appear in data engineering and system design interviews.",
-  "recommended_after": ["sliding-window-patterns"]
+  "recommended_after": [
+    "sliding-window-patterns"
+  ]
 }

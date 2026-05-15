@@ -59,11 +59,11 @@ def _read_dataset_headers(dataset_file: str) -> set[str]:
 
 def _enforce_sample_id_range(*, qid: int, difficulty: str) -> None:
     if difficulty == "easy":
-        lo, hi = 101, 103
+        lo, hi = 111, 113
     elif difficulty == "medium":
-        lo, hi = 201, 203
+        lo, hi = 121, 123
     elif difficulty == "hard":
-        lo, hi = 301, 303
+        lo, hi = 131, 133
     else:
         _fail(qid, f"Invalid difficulty: {difficulty}")
 
@@ -145,7 +145,7 @@ def _validate_sample_questions(questions: list[dict[str, Any]]) -> None:
 
 SAMPLE_QUESTIONS: list[dict[str, Any]] = [
     q(
-        id=101,
+        id=111,
         order=1,
         title="Sample Easy: Count Users",
         difficulty="easy",
@@ -157,7 +157,7 @@ SAMPLE_QUESTIONS: list[dict[str, Any]] = [
         explanation="COUNT(*) counts all rows in users.",
     ),
     q(
-        id=102,
+        id=112,
         order=2,
         title="Sample Easy: Distinct Countries",
         difficulty="easy",
@@ -177,7 +177,7 @@ SAMPLE_QUESTIONS: list[dict[str, Any]] = [
         explanation="DISTINCT removes duplicates; ORDER BY sorts the results.",
     ),
     q(
-        id=103,
+        id=113,
         order=3,
         title="Sample Easy: Total Completed Order Amount",
         difficulty="easy",
@@ -197,7 +197,7 @@ SAMPLE_QUESTIONS: list[dict[str, Any]] = [
         explanation="Filter to completed orders, then sum net_amount.",
     ),
     q(
-        id=201,
+        id=121,
         order=1,
         title="Sample Medium: Users With No Orders",
         difficulty="medium",
@@ -221,7 +221,7 @@ SAMPLE_QUESTIONS: list[dict[str, Any]] = [
         explanation="LEFT JOIN keeps all users; users without matching orders have NULL order_id values.",
     ),
     q(
-        id=202,
+        id=122,
         order=2,
         title="Sample Medium: Revenue By Status",
         difficulty="medium",
@@ -243,7 +243,7 @@ SAMPLE_QUESTIONS: list[dict[str, Any]] = [
         explanation="Group by status, then sum net_amount within each status.",
     ),
     q(
-        id=203,
+        id=123,
         order=3,
         title="Sample Medium: Monthly Revenue",
         difficulty="medium",
@@ -265,7 +265,7 @@ SAMPLE_QUESTIONS: list[dict[str, Any]] = [
         explanation="Bucket by month using DATE_TRUNC, then aggregate net_amount per bucket.",
     ),
     q(
-        id=301,
+        id=131,
         order=1,
         title="Sample Hard: Top 2 Orders Per User",
         difficulty="hard",
@@ -294,7 +294,7 @@ SAMPLE_QUESTIONS: list[dict[str, Any]] = [
         explanation="Rank orders per user by net_amount, then keep the top two ranks.",
     ),
     q(
-        id=302,
+        id=132,
         order=2,
         title="Sample Hard: First Order Date Per User",
         difficulty="hard",
@@ -316,7 +316,7 @@ SAMPLE_QUESTIONS: list[dict[str, Any]] = [
         explanation="Use MIN(order_date) per user_id to find the first order date.",
     ),
     q(
-        id=303,
+        id=133,
         order=3,
         title="Sample Hard: Completed Revenue By Country",
         difficulty="hard",

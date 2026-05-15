@@ -285,10 +285,14 @@ PostgreSQL   Redis Cluster
 **ID ranges** (authoritative source: each track's `schemas.json`):
 | Track | Easy | Medium | Hard |
 |---|---|---|---|
-| SQL | 1001–1999 | 2001–2999 | 3001–3999 |
-| Python | 4001–4299 | 4301–4599 | 4601–4999 |
-| Pandas | 5001–5299 | 5301–5599 | 5601–5899 |
-| PySpark | 11001–11299 | 11301–11599 | 11601–11899 |
+| SQL | 11001–11999 | 12001–12999 | 13001–13999 |
+| Python | 21001–21999 | 22001–22999 | 23001–23999 |
+| Pandas | 31001–31999 | 32001–32999 | 33001–33999 |
+| PySpark | 41001–41999 | 42001–42999 | 43001–43999 |
+| Data Engineering | 51001–51999 | 52001–52999 | 53001–53999 |
+| Data Modeling | 61001–61999 | 62001–62999 | 63001–63999 |
+
+ID scheme: **TXNNN** (T=track 1–9, X=difficulty 1–3, NNN=sequence 001–999). Sample IDs: **TXS** (3 digits, S=1–3). SQL samples `111–133` only; other tracks serve samples from their practice pool by `order`.
 
 ---
 

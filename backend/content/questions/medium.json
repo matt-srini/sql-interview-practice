@@ -1,6 +1,6 @@
 [
   {
-    "id": 2001,
+    "id": 12001,
     "order": 1,
     "title": "Failed payments on completed orders",
     "description": "Return user_id, name, order_id, payment_method, and amount for orders that are marked as 'completed' but have a payment status of either 'failed' or 'chargeback'. Order by amount descending, then order_id ascending.",
@@ -46,7 +46,7 @@
     ]
   },
   {
-    "id": 2002,
+    "id": 12002,
     "order": 2,
     "title": "Products in refunded orders",
     "description": "Return each distinct product_name and brand for products that appear in orders whose payment_status is 'refunded'. Order by product_name ascending.",
@@ -90,7 +90,7 @@
     ]
   },
   {
-    "id": 2003,
+    "id": 12003,
     "order": 3,
     "title": "Departments without employees",
     "description": "Return department_id, department_name, and region for departments that do not have any employees assigned to them. Order by department_id ascending.",
@@ -122,10 +122,10 @@
       "CONDITIONAL ROW FILTERING",
       "DETERMINISTIC RESULT ORDERING"
     ],
-    "complexity_hint": "LEFT JOIN anti-pattern: keep rows from the left table that have no match on the right. Can also be written with NOT IN or NOT EXISTS \u2014 LEFT JOIN + IS NULL is typically most performant.",
+    "complexity_hint": "LEFT JOIN anti-pattern: keep rows from the left table that have no match on the right. Can also be written with NOT IN or NOT EXISTS — LEFT JOIN + IS NULL is typically most performant.",
     "alternative_solution": {
       "query": "SELECT d.department_id, d.department_name, d.region\nFROM departments d\nWHERE d.department_id NOT IN (\n  SELECT department_id FROM employees\n)\nORDER BY d.department_id ASC",
-      "explanation": "This alternative uses a NOT IN subquery instead of LEFT JOIN + IS NULL. Both produce identical results here, but NOT IN can silently return no rows if the subquery produces any NULLs \u2014 use LEFT JOIN + IS NULL in production for safety."
+      "explanation": "This alternative uses a NOT IN subquery instead of LEFT JOIN + IS NULL. Both produce identical results here, but NOT IN can silently return no rows if the subquery produces any NULLs — use LEFT JOIN + IS NULL in production for safety."
     },
     "companies": [
       "Google",
@@ -133,7 +133,7 @@
     ]
   },
   {
-    "id": 2004,
+    "id": 12004,
     "order": 4,
     "title": "Paid revenue by user country",
     "description": "Return each country and the total 'paid' payment amount for 'completed' orders from users in that country as total_paid_amount. Order by total_paid_amount descending, then country ascending.",
@@ -179,7 +179,7 @@
     ]
   },
   {
-    "id": 2005,
+    "id": 12005,
     "order": 5,
     "title": "Country-plan segments with high average order value",
     "description": "Return country, plan_tier, and the average net_amount of 'completed' orders as avg_completed_amount for country and plan tier combinations whose average 'completed' order value is greater than 600. Order by avg_completed_amount descending, then country ascending, then plan_tier ascending.",
@@ -225,7 +225,7 @@
     ]
   },
   {
-    "id": 2006,
+    "id": 12006,
     "order": 6,
     "title": "Users with multiple paid payment methods",
     "description": "Return user_id, name, and the number of distinct payment methods used across 'paid' payments as payment_method_count. Include only users who have used more than one distinct payment method. Order by payment_method_count descending, then user_id ascending.",
@@ -273,7 +273,7 @@
     ]
   },
   {
-    "id": 2007,
+    "id": 12007,
     "order": 7,
     "title": "Slow resolved ticket groups",
     "description": "Return priority, issue_type, and the average resolution_hours for 'resolved' tickets as avg_resolution_hours. Include only priority and issue type groups whose average resolution_hours is greater than 72. Order by avg_resolution_hours descending, then priority ascending, then issue_type ascending.",
@@ -314,7 +314,7 @@
     ]
   },
   {
-    "id": 2008,
+    "id": 12008,
     "order": 8,
     "title": "Order value bands",
     "description": "Bucket orders into three bands based on net_amount: 'low value' for amounts under 100, 'mid value' for amounts from 100 up to but not including 500, and 'high value' for amounts of 500 or more. Return order_value_band and order_count. Order by order_count descending, then order_value_band ascending.",
@@ -347,7 +347,7 @@
     ]
   },
   {
-    "id": 2009,
+    "id": 12009,
     "order": 9,
     "title": "Salary bands by department region",
     "description": "Return region, salary_band, and employee_count, where salary_band is 'high salary' for salaries of 100000 or more and 'standard salary' otherwise. Count employees per region and salary_band. Order by region ascending, then salary_band ascending.",
@@ -387,7 +387,7 @@
     ]
   },
   {
-    "id": 2010,
+    "id": 12010,
     "order": 10,
     "title": "Users with chargeback orders",
     "description": "Return user_id and name for users who have at least one order that appears in the payments table with status = 'chargeback'. Order by user_id ascending.",
@@ -434,7 +434,7 @@
     ]
   },
   {
-    "id": 2011,
+    "id": 12011,
     "order": 11,
     "title": "Paid completed orders by country",
     "description": "Return one row per country with columns country, paid_completed_order_count, and total_paid_amount. Count only orders where the order status is 'completed' and there is at least one payment row with payment status 'paid'. If an order has multiple 'paid' payment rows, it should still count as one order in paid_completed_order_count. Sum the 'paid' payment amounts across qualifying payment rows. Order by total_paid_amount descending, then country ascending.",
@@ -486,7 +486,7 @@
     ]
   },
   {
-    "id": 2012,
+    "id": 12012,
     "order": 12,
     "title": "Brand reach in completed 2024 orders",
     "description": "For each product brand, return brand, distinct_order_count, and total_units_sold for 'completed' orders placed in 2024. distinct_order_count should count an order only once per brand, even if that order contains multiple line items from the same brand. total_units_sold should sum quantity across those qualifying line items. Order by total_units_sold descending, then brand ascending.",
@@ -538,7 +538,7 @@
     ]
   },
   {
-    "id": 2013,
+    "id": 12013,
     "order": 13,
     "title": "Users with both orders and high-priority tickets",
     "description": "Return one row per country with columns country and affected_user_count. A user should be counted only if they have at least one 'completed' order and at least one support ticket with priority = 'high'. Count each qualifying user once per country, even if they have many 'completed' orders and many high-priority tickets. Order by affected_user_count descending, then country ascending.",
@@ -589,7 +589,7 @@
     ]
   },
   {
-    "id": 2014,
+    "id": 12014,
     "order": 14,
     "title": "Employees above their department average",
     "description": "Return employee_id, employee_name, department_name, and salary for employees whose salary is strictly greater than the average salary of their own department. Order by department_name ascending, then salary descending, then employee_id ascending.",
@@ -635,7 +635,7 @@
     ]
   },
   {
-    "id": 2015,
+    "id": 12015,
     "order": 15,
     "title": "Early signups with no completed orders",
     "description": "Return user_id, name, and country for users who signed up before 2024-01-01 and have never placed a 'completed' order. Order by user_id ascending.",
@@ -682,7 +682,7 @@
     ]
   },
   {
-    "id": 2016,
+    "id": 12016,
     "order": 16,
     "title": "Brands above average completed-order revenue",
     "description": "Return brand and total_revenue for brands whose revenue from 'completed' orders is greater than the average brand revenue from 'completed' orders across all brands. Order by total_revenue descending, then brand ascending.",
@@ -733,7 +733,7 @@
     ]
   },
   {
-    "id": 2017,
+    "id": 12017,
     "order": 17,
     "title": "Country order outcome mix",
     "description": "Return country, completed_orders (status = 'completed') and cancelled_orders (status = 'cancelled') for countries with at least 50 total orders. Count orders from the orders table joined to users. Order by completed_orders descending, then country ascending.",
@@ -779,7 +779,7 @@
     ]
   },
   {
-    "id": 2018,
+    "id": 12018,
     "order": 18,
     "title": "Ticket resolution mix by issue type",
     "description": "Return issue_type, resolved_ticket_count, unresolved_ticket_count, and avg_resolved_hours. unresolved_ticket_count should include tickets whose status is 'open' or 'in_progress'. avg_resolved_hours should average resolution_hours only for 'resolved' tickets. Include only issue types with at least 20 total tickets. Order by resolved_ticket_count descending, then issue_type ascending.",
@@ -817,7 +817,7 @@
     ]
   },
   {
-    "id": 2019,
+    "id": 12019,
     "order": 19,
     "title": "Repeat large-order users in selected countries",
     "description": "Return user_id, name, completed_order_count, and avg_net_amount for users from 'US', 'UK', or 'CA' who placed at least 3 'completed' orders in 2024 where each counted order has net_amount >= 500. Order by avg_net_amount descending, then user_id ascending.",
@@ -867,7 +867,7 @@
     ]
   },
   {
-    "id": 2020,
+    "id": 12020,
     "order": 20,
     "title": "High-volume brands in completed 2024 orders",
     "description": "Return category_id, brand, distinct_order_count, and total_units for product brands that meet all of the following conditions: the product launch_date is not null and earlier than 2025-01-01, the order is 'completed', the order was placed in 2024, the brand appears in at least 25 distinct qualifying orders, and the brand sold at least 80 total units across those qualifying rows. Order by distinct_order_count descending, then category_id ascending, then brand ascending.",
@@ -924,7 +924,7 @@
     ]
   },
   {
-    "id": 2021,
+    "id": 12021,
     "order": 21,
     "title": "Departments with no 2024 hires",
     "description": "Return department_id, department_name, and hires_2024 for departments that had zero employees hired during 2024. hires_2024 should appear as 0 for every returned row. Order by department_id ascending.",
@@ -963,7 +963,7 @@
     ]
   },
   {
-    "id": 2022,
+    "id": 12022,
     "order": 22,
     "title": "Selected-country users without 2024 orders",
     "description": "Return user_id, name, and country for users from 'US', 'UK', or 'CA' who placed no orders during 2024, regardless of order status. Order by user_id ascending.",
@@ -1003,7 +1003,7 @@
     ]
   },
   {
-    "id": 2023,
+    "id": 12023,
     "order": 23,
     "title": "Completed 2024 orders missing paid payments",
     "description": "Return order_id, user_id, and order_status for 'completed' orders placed in 2024 that have no payment row with status = 'paid'. Order by order_id ascending.",
@@ -1044,7 +1044,7 @@
     ]
   },
   {
-    "id": 2024,
+    "id": 12024,
     "order": 24,
     "title": "Category launch-date completeness snapshot",
     "description": "For each category, return category_id, category_name, launched_product_count, missing_launch_date_count, and avg_launched_price. launched_product_count should count products whose launch_date is not null. avg_launched_price should average price only for products whose launch_date is not null. Include only categories with at least 8 total products. Order by category_id ascending.",
@@ -1084,7 +1084,7 @@
     ]
   },
   {
-    "id": 2025,
+    "id": 12025,
     "order": 25,
     "title": "Country and plan tier order mix",
     "description": "Return country, plan_tier, completed_order_count (status = 'completed') and cancelled_order_count (status = 'cancelled') for user segments with at least 25 total orders. Count order rows after joining users to orders. Order by country ascending, then plan_tier ascending.",
@@ -1125,7 +1125,7 @@
     ]
   },
   {
-    "id": 2026,
+    "id": 12026,
     "order": 26,
     "title": "Department hiring cohort summary",
     "description": "Return department_name, recent_hire_count, older_hire_count, and avg_recent_hire_salary for departments with at least 10 employees total. A recent hire is an employee with hire_date on or after 2023-01-01. avg_recent_hire_salary should average salary only for recent hires. Order by recent_hire_count descending, then department_name ascending.",
@@ -1166,7 +1166,7 @@
     ]
   },
   {
-    "id": 2027,
+    "id": 12027,
     "order": 27,
     "title": "Products never sold in completed orders",
     "description": "Return product_id, product_name, and brand for products launched before 2024-01-01 that have never appeared in an order_item tied to a 'completed' order. Order by product_id ascending.",
@@ -1211,7 +1211,7 @@
     ]
   },
   {
-    "id": 2028,
+    "id": 12028,
     "order": 28,
     "title": "Departments above their region average headcount",
     "description": "Return department_id, department_name, region, and employee_count for departments whose employee_count is strictly greater than the average department employee_count within the same region. Include departments with zero employees when calculating each region average. Order by region ascending, then employee_count descending, then department_id ascending.",
@@ -1251,7 +1251,7 @@
     ]
   },
   {
-    "id": 2029,
+    "id": 12029,
     "order": 29,
     "title": "Users with repeated refunds and no open tickets",
     "description": "Return user_id, name, refunded_payment_count, and refunded_amount for users who have at least 2 payment rows with status = 'refunded' and have no support ticket whose status is 'open' or 'in_progress'. Order by refunded_amount descending, then user_id ascending.",
@@ -1304,7 +1304,7 @@
     ]
   },
   {
-    "id": 2030,
+    "id": 12030,
     "order": 30,
     "title": "Countries with problematic payment totals above paid totals",
     "description": "Return country, paid_amount, and problematic_amount for countries where 'completed' orders placed in 2024 produced more problematic payment amount than 'paid' payment amount. Treat problematic payments as rows whose payment status is 'failed' or 'refunded'. Include only countries with at least 20 payment rows tied to 'completed' 2024 orders. Order by problematic_amount descending, then country ascending.",
@@ -1351,7 +1351,7 @@
     ]
   },
   {
-    "id": 2031,
+    "id": 12031,
     "order": 31,
     "title": "Quarter-over-quarter revenue change",
     "description": "Compute total `net_amount` per calendar quarter from the `orders` table. Label each quarter as `'YYYY-QN'` (e.g. `'2024-Q1'`). Use LAG() to compute `qoq_change` = current quarter revenue minus the previous quarter. Return `quarter`, `total_revenue` (rounded to 2 decimal places), and `qoq_change` (rounded to 2 decimal places; NULL for the first quarter). Order by `quarter` ascending.\n\nTo derive the quarter number: `((CAST(STRFTIME('%m', order_date) AS INT) - 1) / 3 + 1)`.",
@@ -1375,10 +1375,10 @@
       "order_by"
     ],
     "enforce_concepts": true,
-    "explanation": "A CTE first aggregates revenue per quarter. The quarter label is built by concatenating the year (STRFTIME('%Y')), '-Q', and the quarter number derived from the month. In the outer query, LAG(total_revenue) OVER (ORDER BY quarter) fetches the previous row's revenue \u2014 because quarters sort lexicographically in 'YYYY-QN' format, this gives the correct prior quarter. Subtracting gives qoq_change; the first row has no prior, so LAG returns NULL.",
+    "explanation": "A CTE first aggregates revenue per quarter. The quarter label is built by concatenating the year (STRFTIME('%Y')), '-Q', and the quarter number derived from the month. In the outer query, LAG(total_revenue) OVER (ORDER BY quarter) fetches the previous row's revenue — because quarters sort lexicographically in 'YYYY-QN' format, this gives the correct prior quarter. Subtracting gives qoq_change; the first row has no prior, so LAG returns NULL.",
     "hints": [
       "Create row-to-row context within each entity first; the final filter or comparison happens after that derived state exists.",
-      "LAG(col) OVER (ORDER BY quarter) gives you the previous row's value \u2014 subtract it from the current row to get the change"
+      "LAG(col) OVER (ORDER BY quarter) gives you the previous row's value — subtract it from the current row to get the change"
     ],
     "concepts": [
       "PERIOD-OVER-PERIOD COMPARISON",
@@ -1394,7 +1394,7 @@
     ]
   },
   {
-    "id": 2032,
+    "id": 12032,
     "order": 32,
     "title": "Full outer join: order-payment reconciliation",
     "description": "Identify mismatches between orders and payments. Perform a FULL OUTER JOIN between `orders` (alias `o`) and `payments` (alias `p`) on `order_id`. Return:\n- `order_id`: `COALESCE(o.order_id, p.order_id)`\n- `order_amount`: `o.net_amount` (NULL if no order record)\n- `payment_amount`: `p.amount` (NULL if no payment record)\n- `reconciliation_status`: `'order_only'` if payment is NULL, `'payment_only'` if order is NULL, `'matched'` if both exist\n\nOrder by `order_id` ascending.",
@@ -1440,7 +1440,7 @@
     ]
   },
   {
-    "id": 2033,
+    "id": 12033,
     "order": 33,
     "title": "Departments with employee count and region",
     "description": "For each department, count the number of employees. Include departments even if they have zero employees. Return `department_name`, `region`, and `employee_count`. Order by `employee_count` descending, then `department_name` ascending.",
@@ -1468,10 +1468,10 @@
       "order_by"
     ],
     "enforce_concepts": true,
-    "explanation": "The JOIN direction matters: LEFT JOIN from departments to employees preserves all department rows even when no employees exist. COUNT(e.employee_id) counts only non-NULL employee IDs \u2014 for departments with no employees, this returns 0 (not 1 or NULL). Using COUNT(*) instead would incorrectly count 1 for empty departments because the LEFT JOIN produces a row with NULLs. Grouping by department_id ensures uniqueness even if two departments share the same name.",
+    "explanation": "The JOIN direction matters: LEFT JOIN from departments to employees preserves all department rows even when no employees exist. COUNT(e.employee_id) counts only non-NULL employee IDs — for departments with no employees, this returns 0 (not 1 or NULL). Using COUNT(*) instead would incorrectly count 1 for empty departments because the LEFT JOIN produces a row with NULLs. Grouping by department_id ensures uniqueness even if two departments share the same name.",
     "hints": [
       "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
-      "COUNT(e.employee_id) counts non-null values \u2014 returns 0 for departments with no employees, unlike COUNT(*)"
+      "COUNT(e.employee_id) counts non-null values — returns 0 for departments with no employees, unlike COUNT(*)"
     ],
     "concepts": [
       "LEFT JOIN DIRECTION",
@@ -1486,7 +1486,7 @@
     ]
   },
   {
-    "id": 2034,
+    "id": 12034,
     "order": 34,
     "title": "Top revenue by country and plan tier",
     "description": "For each combination of user `country` and `plan_tier`, compute the total `net_amount` of 'completed' orders. Return only combinations where total revenue exceeds 5000. Return `country`, `plan_tier`, and `total_revenue` (rounded to 2 decimal places). Order by `total_revenue` descending.",
@@ -1517,10 +1517,10 @@
       "order_by"
     ],
     "enforce_concepts": true,
-    "explanation": "WHERE filters rows before aggregation (only completed orders contribute). GROUP BY produces one row per (country, plan_tier) combination. HAVING filters groups after aggregation \u2014 it's the only way to filter on aggregate values like SUM. Using WHERE SUM(...) > 5000 would be a syntax error. The distinction between WHERE (row-level filter) and HAVING (group-level filter) is one of the most commonly tested SQL concepts.",
+    "explanation": "WHERE filters rows before aggregation (only completed orders contribute). GROUP BY produces one row per (country, plan_tier) combination. HAVING filters groups after aggregation — it's the only way to filter on aggregate values like SUM. Using WHERE SUM(...) > 5000 would be a syntax error. The distinction between WHERE (row-level filter) and HAVING (group-level filter) is one of the most commonly tested SQL concepts.",
     "hints": [
       "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
-      "HAVING filters on the result of the aggregation \u2014 WHERE SUM(...) > 5000 is a syntax error"
+      "HAVING filters on the result of the aggregation — WHERE SUM(...) > 5000 is a syntax error"
     ],
     "concepts": [
       "PRE VS POST AGGREGATION FILTERING",
@@ -1535,7 +1535,7 @@
     ]
   },
   {
-    "id": 2035,
+    "id": 12035,
     "order": 35,
     "mock_only": true,
     "follow_up_id": 2050,
@@ -1568,8 +1568,8 @@
     "enforce_concepts": true,
     "explanation": "JOIN links users to their orders. WHERE filters to completed orders only. GROUP BY acquisition_channel produces one row per channel. COUNT(DISTINCT user_id) prevents double-counting buyers who placed multiple orders. ROUND(SUM(...), 2) normalises currency output.",
     "hints": [
-      "Think about which table holds the channel attribute and which holds the revenue \u2014 combine them, then aggregate.",
-      "COUNT(DISTINCT user_id) \u2014 not COUNT(order_id) \u2014 gives the number of unique buyers per channel."
+      "Think about which table holds the channel attribute and which holds the revenue — combine them, then aggregate.",
+      "COUNT(DISTINCT user_id) — not COUNT(order_id) — gives the number of unique buyers per channel."
     ],
     "concepts": [
       "ACQUISITION CHANNEL ANALYSIS",
@@ -1579,7 +1579,7 @@
     "companies": []
   },
   {
-    "id": 2036,
+    "id": 12036,
     "order": 36,
     "mock_only": true,
     "title": "Support ticket resolution time by priority",
@@ -1606,7 +1606,7 @@
     "enforce_concepts": true,
     "explanation": "WHERE status = 'resolved' ensures we only average over completed tickets. GROUP BY priority produces four rows. AVG(resolution_hours) computes the mean resolution time. ORDER BY avg_resolution_hours DESC surfaces the most-delayed priority first.",
     "hints": [
-      "Filter to resolved tickets before aggregating \u2014 unresolved tickets have no meaningful resolution_hours.",
+      "Filter to resolved tickets before aggregating — unresolved tickets have no meaningful resolution_hours.",
       "ORDER BY the computed alias to rank priorities by average delay."
     ],
     "concepts": [
@@ -1617,7 +1617,7 @@
     "companies": []
   },
   {
-    "id": 2037,
+    "id": 12037,
     "order": 37,
     "mock_only": true,
     "title": "Top 10 products by order frequency",
@@ -1647,9 +1647,9 @@
       "limit"
     ],
     "enforce_concepts": true,
-    "explanation": "JOIN links order_items to products. COUNT(DISTINCT order_id) counts unique orders containing each product \u2014 a product appearing twice in one order counts once. SUM(line_amount) totals revenue. LIMIT 10 trims to the top products after ORDER BY.",
+    "explanation": "JOIN links order_items to products. COUNT(DISTINCT order_id) counts unique orders containing each product — a product appearing twice in one order counts once. SUM(line_amount) totals revenue. LIMIT 10 trims to the top products after ORDER BY.",
     "hints": [
-      "One product can appear in the same order multiple times \u2014 think carefully about what 'order frequency' really means here.",
+      "One product can appear in the same order multiple times — think carefully about what 'order frequency' really means here.",
       "Use LIMIT after ORDER BY to get only the top 10."
     ],
     "concepts": [
@@ -1660,7 +1660,7 @@
     "companies": []
   },
   {
-    "id": 2038,
+    "id": 12038,
     "order": 38,
     "mock_only": true,
     "follow_up_id": 2051,
@@ -1695,7 +1695,7 @@
     "explanation": "A CTE computes total_spend per user. The outer WHERE filters against a scalar subquery that reads AVG(total_spend) from the same CTE. This two-pass approach is necessary because you cannot reference an aggregate result in a WHERE clause on the same query level.",
     "hints": [
       "Compute total spend per user in a CTE, then filter in the outer query.",
-      "The subquery AVG(total_spend) references the CTE \u2014 define the CTE first, then use it in the subquery."
+      "The subquery AVG(total_spend) references the CTE — define the CTE first, then use it in the subquery."
     ],
     "concepts": [
       "SUBQUERY FILTER",
@@ -1705,7 +1705,7 @@
     "companies": []
   },
   {
-    "id": 2039,
+    "id": 12039,
     "order": 39,
     "mock_only": true,
     "title": "Department salary overview",
@@ -1747,11 +1747,11 @@
     "companies": []
   },
   {
-    "id": 2040,
+    "id": 12040,
     "order": 40,
     "mock_only": true,
     "title": "Payment failure rate by method",
-    "description": "For each payment method, compute the number of successful (`paid`) payments, the number of `failed` payments, and the failure rate as a percentage. Return `payment_method`, `paid_count`, `failed_count`, and `failure_rate_pct` (rounded to 1 decimal place, calculated as failed count / total count \u00d7 100), ordered by `failure_rate_pct` descending.",
+    "description": "For each payment method, compute the number of successful (`paid`) payments, the number of `failed` payments, and the failure rate as a percentage. Return `payment_method`, `paid_count`, `failed_count`, and `failure_rate_pct` (rounded to 1 decimal place, calculated as failed count / total count × 100), ordered by `failure_rate_pct` descending.",
     "difficulty": "medium",
     "schema": {
       "payments": [
@@ -1784,7 +1784,7 @@
     "companies": []
   },
   {
-    "id": 2041,
+    "id": 12041,
     "order": 41,
     "mock_only": true,
     "title": "Session breakdown by device type",
@@ -1820,7 +1820,7 @@
     "companies": []
   },
   {
-    "id": 2042,
+    "id": 12042,
     "order": 42,
     "mock_only": true,
     "follow_up_id": 2052,
@@ -1867,12 +1867,12 @@
     "companies": []
   },
   {
-    "id": 2043,
+    "id": 12043,
     "order": 43,
     "mock_only": true,
     "type": "reverse",
     "follow_up_id": 2053,
-    "title": "Write the query \u2014 payment method revenue summary",
+    "title": "Write the query — payment method revenue summary",
     "description": "Write a SQL query that produces the result table shown below. The result summarises completed (`paid`) payments: for each payment method, return the count of paid transactions and the total amount collected, ordered by total amount descending.",
     "difficulty": "medium",
     "schema": {
@@ -1919,7 +1919,7 @@
     "explanation": "Filter to status = 'paid' before aggregating. GROUP BY payment_method produces one row per method. COUNT(*) counts transactions; SUM(amount) totals collected revenue. The column names in the result table tell you exactly what aliases to use.",
     "hints": [
       "Filter to only paid transactions before grouping.",
-      "Read the result column names carefully \u2014 they tell you what to compute and what alias to give each output column."
+      "Read the result column names carefully — they tell you what to compute and what alias to give each output column."
     ],
     "concepts": [
       "REVERSE SQL",
@@ -1929,11 +1929,11 @@
     "companies": []
   },
   {
-    "id": 2044,
+    "id": 12044,
     "order": 44,
     "mock_only": true,
     "type": "reverse",
-    "title": "Write the query \u2014 department headcount and average pay",
+    "title": "Write the query — department headcount and average pay",
     "description": "Write a SQL query that produces the result table shown below. The result shows the top 5 departments by headcount, with each department's average salary.",
     "difficulty": "medium",
     "schema": {
@@ -1987,10 +1987,10 @@
       "limit"
     ],
     "enforce_concepts": true,
-    "explanation": "JOIN connects departments to employees. GROUP BY department aggregates headcount and average salary. The result has 5 rows \u2014 LIMIT 5 after ORDER BY headcount DESC returns the largest departments only.",
+    "explanation": "JOIN connects departments to employees. GROUP BY department aggregates headcount and average salary. The result has 5 rows — LIMIT 5 after ORDER BY headcount DESC returns the largest departments only.",
     "hints": [
-      "The headcount and salary live in one table; the department name lives in another \u2014 combine them before aggregating.",
-      "The result has only 5 rows \u2014 LIMIT 5 after ORDER BY."
+      "The headcount and salary live in one table; the department name lives in another — combine them before aggregating.",
+      "The result has only 5 rows — LIMIT 5 after ORDER BY."
     ],
     "concepts": [
       "REVERSE SQL",
@@ -2000,11 +2000,11 @@
     "companies": []
   },
   {
-    "id": 2045,
+    "id": 12045,
     "order": 45,
     "mock_only": true,
     "type": "reverse",
-    "title": "Write the query \u2014 top 5 countries by completed revenue",
+    "title": "Write the query — top 5 countries by completed revenue",
     "description": "Write a SQL query that produces the result table shown below. The result shows the top 5 countries ranked by total 'completed'-order revenue, along with the number of distinct buyers from each country.",
     "difficulty": "medium",
     "schema": {
@@ -2062,7 +2062,7 @@
     "explanation": "JOIN links users to orders. WHERE filters to completed orders. GROUP BY country aggregates revenue and distinct buyers. COUNT(DISTINCT user_id) avoids inflating buyer count for multi-order users. LIMIT 5 after ORDER BY revenue DESC returns the top 5 countries.",
     "hints": [
       "Filter to completed orders before grouping.",
-      "The result has 5 rows \u2014 LIMIT 5 after ORDER BY revenue DESC."
+      "The result has 5 rows — LIMIT 5 after ORDER BY revenue DESC."
     ],
     "concepts": [
       "REVERSE SQL",
@@ -2072,11 +2072,11 @@
     "companies": []
   },
   {
-    "id": 2046,
+    "id": 12046,
     "order": 46,
     "mock_only": true,
     "type": "reverse",
-    "title": "Write the query \u2014 resolved ticket priority analysis",
+    "title": "Write the query — resolved ticket priority analysis",
     "description": "Write a SQL query that produces the result table shown below. The result shows the count of 'resolved' support tickets and the average resolution time for each priority level, ordered by average resolution time descending.",
     "difficulty": "medium",
     "schema": {
@@ -2123,7 +2123,7 @@
     "explanation": "WHERE status = 'resolved' filters to completed tickets. GROUP BY priority creates four groups. AVG(resolution_hours) averaged over each group gives mean resolution time. ROUND to 1dp matches the result format. ORDER BY avg_hours DESC surfaces the slowest priority first.",
     "hints": [
       "Filter to resolved tickets first.",
-      "Read the column names in the result table \u2014 they tell you both what to compute and the alias to use."
+      "Read the column names in the result table — they tell you both what to compute and the alias to use."
     ],
     "concepts": [
       "REVERSE SQL",
@@ -2133,11 +2133,11 @@
     "companies": []
   },
   {
-    "id": 2047,
+    "id": 12047,
     "order": 47,
     "mock_only": true,
     "type": "debug",
-    "title": "Fix the query \u2014 missing GROUP BY column",
+    "title": "Fix the query — missing GROUP BY column",
     "description": "The query below should return total 'completed'-order revenue broken down by both `country` and `plan_tier`. It fails with an error. Find and fix the bug.",
     "difficulty": "medium",
     "schema": {
@@ -2166,7 +2166,7 @@
       "join"
     ],
     "enforce_concepts": true,
-    "explanation": "Every non-aggregated column in SELECT must appear in GROUP BY. Here `plan_tier` is selected but missing from GROUP BY \u2014 fix by adding `u.plan_tier` to the GROUP BY clause. This is one of the most commonly tested SQL concepts.",
+    "explanation": "Every non-aggregated column in SELECT must appear in GROUP BY. Here `plan_tier` is selected but missing from GROUP BY — fix by adding `u.plan_tier` to the GROUP BY clause. This is one of the most commonly tested SQL concepts.",
     "hints": [
       "Every non-aggregated column in the SELECT list must also appear in the aggregation clause.",
       "The error message tells you exactly which column is missing."
@@ -2179,11 +2179,11 @@
     "companies": []
   },
   {
-    "id": 2048,
+    "id": 12048,
     "order": 48,
     "mock_only": true,
     "type": "debug",
-    "title": "Fix the query \u2014 wrong table alias in WHERE",
+    "title": "Fix the query — wrong table alias in WHERE",
     "description": "The query below should return each department's headcount and average salary for employees where country = 'US' only. It fails with an error. Find and fix the bug.",
     "difficulty": "medium",
     "schema": {
@@ -2212,9 +2212,9 @@
       "where"
     ],
     "enforce_concepts": true,
-    "explanation": "The FROM clause aliases `employees` as `e`. All column references to that table must use `e.column`. The WHERE clause incorrectly references `emp.country` \u2014 an alias that was never defined. Fix: change `emp.country` to `e.country`.",
+    "explanation": "The FROM clause aliases `employees` as `e`. All column references to that table must use `e.column`. The WHERE clause incorrectly references `emp.country` — an alias that was never defined. Fix: change `emp.country` to `e.country`.",
     "hints": [
-      "The error says 'Referenced table emp not found' \u2014 check your FROM aliases.",
+      "The error says 'Referenced table emp not found' — check your FROM aliases.",
       "If you aliased the table as `e`, every reference must use `e.`, not `emp.` or the full table name."
     ],
     "concepts": [
@@ -2225,11 +2225,11 @@
     "companies": []
   },
   {
-    "id": 2049,
+    "id": 12049,
     "order": 49,
     "mock_only": true,
     "type": "debug",
-    "title": "Fix the query \u2014 wrong CTE column reference",
+    "title": "Fix the query — wrong CTE column reference",
     "description": "The query below uses a CTE to compute revenue per acquisition channel and then selects from it. It fails with an error. Find and fix the bug.",
     "difficulty": "medium",
     "schema": {
@@ -2258,10 +2258,10 @@
       "group_by"
     ],
     "enforce_concepts": true,
-    "explanation": "A CTE exposes the exact column names defined inside it. The CTE defines `acquisition_channel`, but the outer SELECT references `channel` \u2014 a name that doesn't exist. Fix: use `acquisition_channel` in the outer SELECT. The error's 'Candidate bindings' hint tells you the correct column name.",
+    "explanation": "A CTE exposes the exact column names defined inside it. The CTE defines `acquisition_channel`, but the outer SELECT references `channel` — a name that doesn't exist. Fix: use `acquisition_channel` in the outer SELECT. The error's 'Candidate bindings' hint tells you the correct column name.",
     "hints": [
-      "CTEs expose exactly the column names defined in their inner SELECT \u2014 you can't abbreviate them.",
-      "The error message shows 'Candidate bindings: acquisition_channel' \u2014 use that exact name."
+      "CTEs expose exactly the column names defined in their inner SELECT — you can't abbreviate them.",
+      "The error message shows 'Candidate bindings: acquisition_channel' — use that exact name."
     ],
     "concepts": [
       "CTE COLUMN REFERENCES",
@@ -2271,7 +2271,7 @@
     "companies": []
   },
   {
-    "id": 2050,
+    "id": 12050,
     "order": 50,
     "mock_only": true,
     "title": "Monthly revenue by acquisition channel",
@@ -2303,10 +2303,10 @@
       "date_functions"
     ],
     "enforce_concepts": true,
-    "explanation": "strftime(order_date, '%Y-%m') extracts the year-month string for grouping. GROUP BY includes both acquisition_channel and the computed month alias. HAVING filters after aggregation \u2014 only channel+month combos with > 50 000 revenue appear. ORDER BY month ASC sorts chronologically; secondary total_revenue DESC ranks channels within each month.",
+    "explanation": "strftime(order_date, '%Y-%m') extracts the year-month string for grouping. GROUP BY includes both acquisition_channel and the computed month alias. HAVING filters after aggregation — only channel+month combos with > 50 000 revenue appear. ORDER BY month ASC sorts chronologically; secondary total_revenue DESC ranks channels within each month.",
     "hints": [
       "Use strftime to extract the year-month string from order_date.",
-      "HAVING filters on aggregate results \u2014 WHERE can't reference SUM(net_amount)."
+      "HAVING filters on aggregate results — WHERE can't reference SUM(net_amount)."
     ],
     "concepts": [
       "DATE TRUNCATION",
@@ -2316,7 +2316,7 @@
     "companies": []
   },
   {
-    "id": 2051,
+    "id": 12051,
     "order": 51,
     "mock_only": true,
     "title": "Top-spender loyalty tier segmentation",
@@ -2349,7 +2349,7 @@
     "enforce_concepts": true,
     "explanation": "user_spend CTE aggregates per-user metrics. percentile CTE uses PERCENTILE_CONT(0.80) WITHIN GROUP to compute the 80th-percentile threshold. CROSS JOIN with the single-row percentile CTE makes p80 available in WHERE. CASE WHEN evaluates loyalty thresholds in descending order (most exclusive first).",
     "hints": [
-      "Computing a percentile threshold requires a special ordered-set aggregate function \u2014 think about which SQL function handles percentiles.",
+      "Computing a percentile threshold requires a special ordered-set aggregate function — think about which SQL function handles percentiles.",
       "CROSS JOIN the single-row percentile CTE to make p80 available in the WHERE filter."
     ],
     "concepts": [
@@ -2360,11 +2360,11 @@
     "companies": []
   },
   {
-    "id": 2052,
+    "id": 12052,
     "order": 52,
     "mock_only": true,
     "title": "Category revenue ranking with parent and gap",
-    "description": "For each product category compute `total_revenue` (rounded to 2 dp), `revenue_rank` (1 = highest, using `RANK()`), `parent_category`, and `revenue_vs_top` \u2014 how far each category's revenue is below the top category (positive number, rounded to 2 dp). Order by `revenue_rank` ascending.",
+    "description": "For each product category compute `total_revenue` (rounded to 2 dp), `revenue_rank` (1 = highest, using `RANK()`), `parent_category`, and `revenue_vs_top` — how far each category's revenue is below the top category (positive number, rounded to 2 dp). Order by `revenue_rank` ascending.",
     "difficulty": "medium",
     "schema": {
       "order_items": [
@@ -2394,10 +2394,10 @@
       "join"
     ],
     "enforce_concepts": true,
-    "explanation": "The CTE computes per-category revenue. RANK() OVER (ORDER BY total_revenue DESC) assigns global rank. MAX(total_revenue) OVER () \u2014 with no PARTITION BY \u2014 returns the single highest revenue across all rows, enabling the gap calculation. A second JOIN to categories fetches parent_category, which wasn't needed during aggregation.",
+    "explanation": "The CTE computes per-category revenue. RANK() OVER (ORDER BY total_revenue DESC) assigns global rank. MAX(total_revenue) OVER () — with no PARTITION BY — returns the single highest revenue across all rows, enabling the gap calculation. A second JOIN to categories fetches parent_category, which wasn't needed during aggregation.",
     "hints": [
       "Assign each category a position in the global revenue ranking before computing the gap to the top.",
-      "MAX(...) OVER () with no PARTITION BY returns the maximum across all result rows \u2014 use it to compute the gap to the top."
+      "MAX(...) OVER () with no PARTITION BY returns the maximum across all result rows — use it to compute the gap to the top."
     ],
     "concepts": [
       "WINDOW RANK",
@@ -2407,7 +2407,7 @@
     "companies": []
   },
   {
-    "id": 2053,
+    "id": 12053,
     "order": 53,
     "mock_only": true,
     "title": "Department salary rank and above-average count",
@@ -2437,7 +2437,7 @@
       "case_when"
     ],
     "enforce_concepts": true,
-    "explanation": "RANK() OVER (ORDER BY AVG(e.salary) DESC) applies a window function to the aggregated value \u2014 valid after GROUP BY. The scalar subquery (SELECT AVG(salary) FROM employees) computes the company-wide average and is used inside CASE WHEN for the above_avg_count. GROUP BY must include department_id to ensure unique grouping.",
+    "explanation": "RANK() OVER (ORDER BY AVG(e.salary) DESC) applies a window function to the aggregated value — valid after GROUP BY. The scalar subquery (SELECT AVG(salary) FROM employees) computes the company-wide average and is used inside CASE WHEN for the above_avg_count. GROUP BY must include department_id to ensure unique grouping.",
     "hints": [
       "A position/ordering function can be applied to the per-department averages that aggregation produces.",
       "Use a scalar subquery to compute the company-wide average salary inside CASE WHEN."

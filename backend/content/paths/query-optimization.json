@@ -4,18 +4,24 @@
   "description": "Read plans like an engineer: understand Catalyst phases, AQE behavior, partition pruning, and runtime join strategy improvements.",
   "topic": "pyspark",
   "questions": [
-    11314,
-    11315,
-    11313,
-    11324,
-    11603,
-    11605,
-    11614,
-    11620
+    42014,
+    42015,
+    42013,
+    42024,
+    43003,
+    43005,
+    43014,
+    43020
   ],
   "tier": "free",
   "role": "advanced",
-  "focus_concepts": ["CATALYST OPTIMIZER REASONING", "ADAPTIVE QUERY EXECUTION", "PHYSICAL PLAN INTERPRETATION"],
+  "focus_concepts": [
+    "CATALYST OPTIMIZER REASONING",
+    "ADAPTIVE QUERY EXECUTION",
+    "PHYSICAL PLAN INTERPRETATION"
+  ],
   "outcomes": "You'll read Spark query plans, understand Catalyst optimizer decisions, and know when to push hints or disable AQE.",
-  "recommended_after": ["spark-performance"]
+  "recommended_after": [
+    "spark-performance"
+  ]
 }

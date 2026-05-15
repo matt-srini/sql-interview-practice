@@ -4,17 +4,23 @@
   "description": "Progress from recurrence intuition to classic DP tables and optimization, covering 1D and 2D patterns used in coding interviews.",
   "topic": "python",
   "questions": [
-    4005,
-    4322,
-    4323,
-    4325,
-    4605,
-    4606,
-    4609
+    21005,
+    22022,
+    22023,
+    22025,
+    23004,
+    23005,
+    23008
   ],
   "tier": "pro",
   "role": "advanced",
-  "focus_concepts": ["OPTIMAL SUBSTRUCTURE DECOMPOSITION", "MEMOIZATION STRATEGY", "LINEAR STATE UPDATE"],
+  "focus_concepts": [
+    "OPTIMAL SUBSTRUCTURE DECOMPOSITION",
+    "MEMOIZATION STRATEGY",
+    "LINEAR STATE UPDATE"
+  ],
   "outcomes": "You'll recognize DP patterns — prefix, interval, knapsack — and write both top-down memoized and bottom-up tabulated solutions.",
-  "recommended_after": ["sliding-window-patterns"]
+  "recommended_after": [
+    "sliding-window-patterns"
+  ]
 }

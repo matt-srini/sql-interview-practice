@@ -4,17 +4,23 @@
   "description": "Build from GROUP BY foundations to advanced window functions — ranking, running totals, lag/lead, and cumulative analysis.",
   "topic": "sql",
   "questions": [
-    1014,
-    2016,
-    2014,
-    3001,
-    3003,
-    3004,
-    3002
+    11009,
+    12016,
+    12014,
+    13001,
+    13003,
+    13004,
+    13002
   ],
   "tier": "free",
   "role": "intermediate",
-  "focus_concepts": ["POST-AGGREGATION WINDOWING", "PARTITIONED RANK FILTERING", "RUNNING TOTAL COMPUTATION"],
+  "focus_concepts": [
+    "POST-AGGREGATION WINDOWING",
+    "PARTITIONED RANK FILTERING",
+    "RUNNING TOTAL COMPUTATION"
+  ],
   "outcomes": "You'll move from GROUP BY to window functions — ranking, running totals, and lag/lead — and understand when each is appropriate.",
-  "recommended_after": ["aggregation-patterns"]
+  "recommended_after": [
+    "aggregation-patterns"
+  ]
 }

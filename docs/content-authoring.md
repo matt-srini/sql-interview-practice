@@ -132,12 +132,14 @@ Authoring constraints for path files in `backend/content/paths/`:
 
 | Track | Easy | Medium | Hard |
 |---|---|---|---|
-| SQL | 1001–1999 | 2001–2999 | 3001–3999 |
-| Python | 4001–4299 | 4301–4599 | 4601–4999 |
-| Pandas | 5001–5299 | 5301–5599 | 5601–5899 |
-| PySpark | 11001–11299 | 11301–11599 | 11601–11899 |
+| SQL | 11001–11999 | 12001–12999 | 13001–13999 |
+| Python | 21001–21999 | 22001–22999 | 23001–23999 |
+| Pandas | 31001–31999 | 32001–32999 | 33001–33999 |
+| PySpark | 41001–41999 | 42001–42999 | 43001–43999 |
+| Data Engineering | 51001–51999 | 52001–52999 | 53001–53999 |
+| Data Modeling | 61001–61999 | 62001–62999 | 63001–63999 |
 
-SQL sample questions: `101–103` (easy) · `201–203` (medium) · `301–303` (hard) — defined in `backend/sample_questions.py`.
+SQL sample questions: `111–113` (easy) · `121–123` (medium) · `131–133` (hard) — defined in `backend/sample_questions.py`.
 
 **IDs must be globally unique across all question files.** Before adding a question:
 ```bash
@@ -250,21 +252,21 @@ If the answer is no, rewrite it.
 
 ## Difficulty standards
 
-### Easy (1001–1999)
+### Easy (11001–11999)
 Single-step logic. One core concept, at most two if tightly related (e.g., WHERE + IS NULL).
 
 **Allowed:** SELECT, WHERE (AND/OR/IN/BETWEEN/LIKE), ORDER BY, DISTINCT, basic aggregation, single GROUP BY, simple INNER JOIN (max 1), IS NULL / IS NOT NULL, COALESCE, STRFTIME / date formatting, CTE (intro-level — one CTE wrapping a simple query).
 
 **Not allowed:** Window functions, correlated subqueries, HAVING, multi-table joins.
 
-### Medium (2001–2999)
+### Medium (12001–12999)
 2–3 related concepts. Complexity comes from multi-step reasoning, not from bolting together unrelated SQL features.
 
 **Allowed:** Multi-table INNER + LEFT JOINs (2–4 tables), FULL OUTER JOIN, GROUP BY + HAVING, CASE WHEN, scalar/IN/EXISTS subqueries, LAG (one-step delta), date arithmetic, multi-column GROUP BY.
 
 **Not allowed:** Full window function suites, recursive CTEs, complex multi-CTE pipelines.
 
-### Hard (3001–3999)
+### Hard (13001–13999)
 Must require at least 2 dependent steps. At least one of: window functions (ROW_NUMBER, RANK, LAG, LEAD, SUM OVER, ROWS/RANGE), multi-CTE pipelines, correlated subqueries, advanced aggregation patterns.
 
 Hard questions should feel like a real FAANG analytics problem: sessionization, cohort retention, funnel analysis, Pareto, state machine detection, running totals with conditions.
@@ -275,7 +277,7 @@ Hard questions should feel like a real FAANG analytics problem: sessionization, 
 
 ```json
 {
-  "id": 1031,
+  "id": 11023,
   "order": 23,
   "title": "Active users by country",
   "difficulty": "easy",
@@ -337,19 +339,19 @@ Hard questions should feel like a real FAANG analytics problem: sessionization, 
 
 ## Difficulty standards
 
-### Easy (4001–4299)
+### Easy (21001–21999)
 Single algorithmic concept, unambiguous I/O. Basic Python only: loops, conditionals, list/dict/set/str. No recursion beyond trivial cases.
 
 - Test cases: 3–4 total, 2 public
 - Time complexity: O(n) or O(n log n)
 
-### Medium (4301–4599)
+### Medium (22001–22999)
 1–2 related concepts. Requires recognizing a known algorithmic pattern: sliding window, two pointers, binary search, stack, heap, prefix sum, BFS/DFS, 1D DP, backtracking.
 
 - Test cases: 5–6 total, 2 public
 - Time complexity: O(n log n) or non-obvious O(n)
 
-### Hard (4601–4999)
+### Hard (23001–23999)
 Multi-stage reasoning: 2+ dependent algorithmic steps. Advanced patterns: DP (2D, memoization), graph algorithms (Dijkstra, Union-Find, topological sort), Trie, system-design data structures (LRU, median heap).
 
 - O(n²) naive solution is NOT acceptable
@@ -361,7 +363,7 @@ Multi-stage reasoning: 2+ dependent algorithmic steps. Advanced patterns: DP (2D
 
 ```json
 {
-  "id": 4001,
+  "id": 21001,
   "order": 1,
   "topic": "python",
   "difficulty": "easy",
@@ -520,17 +522,17 @@ Spark architecture, the PySpark DataFrame API, and production optimization. **No
 
 ## Difficulty standards
 
-### Easy (11001–11299)
+### Easy (41001–41999)
 Single concept, one unambiguous answer. Preferred types: `predict_output` and `debug`.
 
 Do not create questions where the answer is "know the default config value." Every easy question should require the candidate to trace what Spark actually does.
 
-### Medium (11301–11599)
+### Medium (42001–42999)
 Trade-off reasoning: comparing two approaches with meaningful differences. May involve reading a code snippet, interpreting an execution plan, or explaining what an error means.
 
 Topics: partitioning, broadcast join, shuffle, repartition vs coalesce, Delta Lake MERGE / time travel / schema evolution, Structured Streaming output modes.
 
-### Hard (11601–11899)
+### Hard (43001–43999)
 Multi-factor trade-off under realistic production constraints. All 4 options must be plausible to someone who partially understands the concept.
 
 Topics: AQE internals, DPP, skew join / salting, pandas UDF memory, Z-ordering, watermark and late data, speculative execution.
@@ -541,7 +543,7 @@ Topics: AQE internals, DPP, skew join / salting, pandas UDF memory, Z-ordering, 
 
 ```json
 {
-  "id": 11032,
+  "id": 41032,
   "order": 10,
   "topic": "pyspark",
   "type": "debug",
@@ -669,12 +671,12 @@ print(result.head(10), result.dtypes, result.shape)
 ## Sample questions vs challenge questions
 
 Sample questions are a completely separate system:
-- SQL samples: hardcoded in `backend/sample_questions.py`; IDs `101–303`
+- SQL samples: hardcoded in `backend/sample_questions.py`; IDs `111–133` (format: TXS — track 1, difficulty 1/2/3, sequence 1–3)
 - Non-SQL samples: first 3 questions by `order` from each difficulty tier of the main catalog
 - Sample questions never affect `user_progress` (no solve credit, no unlock progress)
 - Keep sample questions simpler than challenge questions — they're the platform demo for new visitors
 
-**Never assign a challenge question ID (4-digit) to a sample question, and never reuse IDs across tracks.**
+**Never assign a challenge question ID (5-digit, TXNNN) to a sample question, and never reuse IDs across tracks.**
 
 ---
 
@@ -696,7 +698,7 @@ Mock-only questions are exclusive to mock interview sessions — they never appe
 
 ```json
 // On the parent question:
-"follow_up_id": 4330
+"follow_up_id": 22030
 
 // The follow-up question is a separate question entry (also mock_only: true)
 ```

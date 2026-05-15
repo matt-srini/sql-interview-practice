@@ -4,16 +4,20 @@
   "description": "Get fluent with the everyday pandas toolkit: boolean indexing, column selection, null handling, derived columns, and basic sorting.",
   "topic": "python-data",
   "questions": [
-    5003,
-    5002,
-    5009,
-    5010,
-    5006,
-    5007
+    31002,
+    31001,
+    31006,
+    31007,
+    31003,
+    31004
   ],
   "tier": "free",
   "role": "starter",
-  "focus_concepts": ["BOOLEAN INDEXING", "NULL-BASED ROW FILTERING", "OUTPUT SCHEMA SHAPING"],
+  "focus_concepts": [
+    "BOOLEAN INDEXING",
+    "NULL-BASED ROW FILTERING",
+    "OUTPUT SCHEMA SHAPING"
+  ],
   "outcomes": "You'll get fluent with the everyday pandas toolkit — selection, filtering, null handling, derived columns, and sorting.",
   "recommended_after": []
 }

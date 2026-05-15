@@ -4,16 +4,22 @@
   "description": "Diagnose and fix real Spark bottlenecks: shuffle triggers, repartition vs coalesce tradeoffs, broadcast joins, OOM analysis, and skew handling.",
   "topic": "pyspark",
   "questions": [
-    11302,
-    11303,
-    11304,
-    11306,
-    11601,
-    11604
+    42002,
+    42003,
+    42004,
+    42006,
+    43001,
+    43004
   ],
   "tier": "free",
   "role": "intermediate",
-  "focus_concepts": ["PARTITION SHAPE CONTROL", "BROADCAST JOIN SELECTION", "SHUFFLE BOUNDARY DETECTION"],
+  "focus_concepts": [
+    "PARTITION SHAPE CONTROL",
+    "BROADCAST JOIN SELECTION",
+    "SHUFFLE BOUNDARY DETECTION"
+  ],
   "outcomes": "You'll diagnose and fix performance bottlenecks — over-partitioning, skew, and unnecessary shuffles — using the right join strategy.",
-  "recommended_after": ["spark-core-concepts"]
+  "recommended_after": [
+    "spark-core-concepts"
+  ]
 }
