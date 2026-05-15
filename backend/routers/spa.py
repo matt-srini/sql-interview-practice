@@ -83,6 +83,11 @@ def _build_seo_meta() -> dict:
                 ),
             }
 
+    meta["/faq"] = {
+        "title": "Frequently Asked Questions — datathink",
+        "description": "Common questions about datathink — free access, no-account practice, SQL and Python topics, company coverage, question unlocks, mock interviews, and plan differences.",
+    }
+
     # Pages crawlers should not index
     for path in ["/auth", "/dashboard", "/mock"]:
         meta[path] = {"noindex": True}

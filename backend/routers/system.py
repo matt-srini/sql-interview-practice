@@ -73,6 +73,7 @@ async def sitemap_xml() -> Response:
     static_urls = [
         ("", "1.0", "daily"),       # landing
         ("/learn", "0.9", "weekly"),
+        ("/faq", "0.5", "monthly"),
         ("/contact", "0.4", "monthly"),
         ("/privacy", "0.3", "monthly"),
         ("/terms", "0.3", "monthly"),

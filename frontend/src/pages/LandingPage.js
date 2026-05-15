@@ -449,52 +449,6 @@ export default function LandingPage() {
           },
           "provider": { "@type": "Organization", "name": "datathink", "url": "https://datathink.co" }
         })}</script>
-        <script type="application/ld+json">{JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "FAQPage",
-          "mainEntity": [
-            {
-              "@type": "Question",
-              "name": "Is datathink free to use?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Yes. All easy questions across all four tracks — SQL, Python, Pandas, and PySpark — are free, including for visitors without an account. Medium and hard questions unlock progressively as you solve more easy questions. No credit card required."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "What SQL topics are covered?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "datathink covers 95 SQL questions across aggregation, window functions, CTEs, joins, subqueries, cohort analysis, period-over-period analysis, and more — all executed against real datasets using DuckDB with instant feedback."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "Can I practice without creating an account?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Yes. All easy questions and sample questions are accessible without registering. Your progress is tracked in a browser cookie that lasts 30 days — closing the browser tab or window won't erase it. You'll lose progress if you clear browser cookies, switch to a different browser or device, or haven't visited in over 30 days. Create a free account to save progress permanently across all your devices."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "Which companies' interview questions are covered?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Questions are tagged with companies including Amazon, Meta, Google, Stripe, Netflix, Shopify, LinkedIn, and more across all four tracks."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "What is the difference between the Free, Pro, and Elite plans?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Free gives access to all easy questions and progressive medium/hard unlocks as you practice. Pro unlocks all questions across all tracks immediately and adds mock interviews. Elite includes everything in Pro plus unlimited mocks, focus-mode sessions targeting specific concepts, and personalised readiness scoring. See https://datathink.co/#landing-pricing for the full comparison."
-              }
-            }
-          ]
-        })}</script>
       </Helmet>
       <Topbar userExtras={planPillNode} />
 
@@ -956,54 +910,11 @@ export default function LandingPage() {
         </section>
         )}
 
-        <section className="landing-faq-section" aria-labelledby="faq-heading">
-          <div className="landing-tier-inner">
-            <h2 className="landing-tier-title" id="faq-heading">Common questions</h2>
-            <dl className="landing-faq-list">
-              <div className="landing-faq-item">
-                <dt className="landing-faq-q">Is datathink free to use?</dt>
-                <dd className="landing-faq-a">Yes. All easy questions across all four tracks are free, including for visitors without an account. Medium and hard questions unlock progressively as you solve more. No credit card required.</dd>
-              </div>
-              <div className="landing-faq-item">
-                <dt className="landing-faq-q">What SQL topics are covered?</dt>
-                <dd className="landing-faq-a">95 SQL questions across aggregation, window functions, CTEs, joins, subqueries, cohort analysis, period-over-period analysis, and more — all executed against real datasets using DuckDB with instant feedback.</dd>
-              </div>
-              <div className="landing-faq-item">
-                <dt className="landing-faq-q">Can I practice without creating an account?</dt>
-                <dd className="landing-faq-a">Yes. All easy questions and sample questions are accessible without registering. Your progress is tracked in a browser cookie that lasts 30 days — closing the browser tab won't reset it. You'll lose progress only if you clear cookies, switch to a different browser or device, or haven't visited in over 30 days. Create a free account to save progress permanently across all your devices.</dd>
-              </div>
-              <div className="landing-faq-item">
-                <dt className="landing-faq-q">Which companies' interview questions are covered?</dt>
-                <dd className="landing-faq-a">Questions are tagged with companies including Amazon, Meta, Google, Stripe, Netflix, Shopify, LinkedIn, and more across all four tracks.</dd>
-              </div>
-              <div className="landing-faq-item">
-                <dt className="landing-faq-q">What is the difference between Free, Pro, and Elite?</dt>
-                <dd className="landing-faq-a">
-                  Free gives access to all easy questions and progressive medium/hard unlocks. Pro unlocks every question immediately and adds mock interviews. Elite includes everything in Pro plus unlimited mocks, focus-mode sessions targeting specific concepts, and personalised readiness scoring.{' '}
-                  {['pro', 'elite', 'lifetime_pro', 'lifetime_elite'].includes(userPlan)
-                    ? <Link to="/account" className="landing-faq-link">Manage your plan →</Link>
-                    : <button
-                        type="button"
-                        className="landing-faq-link"
-                        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit' }}
-                        onClick={() => {
-                          const el = document.getElementById('landing-pricing');
-                          if (!el) return;
-                          const top = el.getBoundingClientRect().top + window.scrollY - 88;
-                          window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
-                        }}
-                      >Compare pricing →</button>
-                  }
-                </dd>
-              </div>
-            </dl>
-          </div>
-        </section>
-
         <footer className="landing-footer">
           <div className="landing-footer-inner">
             <span className="landing-footer-copy">&copy; 2026 datathink</span>
             <nav className="landing-footer-links" aria-label="Legal">
+              <Link to="/faq">FAQ</Link>
               <Link to="/privacy" state={{ backgroundLocation: location }}>Privacy Policy</Link>
               <Link to="/terms" state={{ backgroundLocation: location }}>Terms &amp; Conditions</Link>
               <Link to="/refund-policy" state={{ backgroundLocation: location }}>Refund Policy</Link>
