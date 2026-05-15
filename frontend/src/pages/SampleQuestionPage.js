@@ -410,7 +410,12 @@ export default function SampleQuestionPage() {
             </Link>
           </div>
           <div className="sample-topbar-center">
-            <a className="sample-back-link" href="/#landing-tracks" aria-label="Back to track selection">←</a>
+            <button
+              type="button"
+              className="sample-back-link"
+              aria-label="Back to track selection"
+              onClick={() => navigate('/', { state: { scrollTo: 'landing-tracks' } })}
+            >←</button>
             <span
               className="shell-pill shell-pill-mode shell-pill-mode-sample"
               style={{ '--mode-dot-color': meta.color }}

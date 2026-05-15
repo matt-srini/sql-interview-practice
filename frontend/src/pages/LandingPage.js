@@ -515,7 +515,16 @@ export default function LandingPage() {
                 Four tracks — SQL, Python, pandas, and PySpark — structured around how data interviews actually work. Build the reasoning patterns that let you think clearly when it counts.
               </p>
               <div className="landing-actions">
-                <a className="btn btn-primary" href="#landing-tracks">Explore tracks ↓</a>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => {
+                    const el = document.getElementById('landing-tracks');
+                    if (!el) return;
+                    const top = el.getBoundingClientRect().top + window.scrollY - 88;
+                    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+                  }}
+                >Explore tracks ↓</button>
                 <Link className="btn btn-secondary" to="/auth">Start thinking →</Link>
               </div>
             </div>
@@ -973,7 +982,17 @@ export default function LandingPage() {
                   Free gives access to all easy questions and progressive medium/hard unlocks. Pro unlocks every question immediately and adds mock interviews. Elite includes everything in Pro plus unlimited mocks, focus-mode sessions targeting specific concepts, and personalised readiness scoring.{' '}
                   {['pro', 'elite', 'lifetime_pro', 'lifetime_elite'].includes(userPlan)
                     ? <Link to="/account" className="landing-faq-link">Manage your plan →</Link>
-                    : <a href="#landing-pricing" className="landing-faq-link">Compare pricing →</a>
+                    : <button
+                        type="button"
+                        className="landing-faq-link"
+                        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit' }}
+                        onClick={() => {
+                          const el = document.getElementById('landing-pricing');
+                          if (!el) return;
+                          const top = el.getBoundingClientRect().top + window.scrollY - 88;
+                          window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+                        }}
+                      >Compare pricing →</button>
                   }
                 </dd>
               </div>
