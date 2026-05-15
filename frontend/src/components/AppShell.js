@@ -119,8 +119,8 @@ export default function AppShell() {
     sql: 'Medium unlocks at 8, 15, and 25 easy solves. Hard unlocks at 8, 15, and 22 medium solves (capped at 15 hard).',
     python: 'Medium unlocks at 8, 15, and 25 easy solves. Hard unlocks at 8, 15, and 22 medium solves (capped at 15 hard).',
     'python-data': 'Medium unlocks at 8, 15, and 25 easy solves. Hard unlocks at 8, 15, and 22 medium solves (capped at 15 hard).',
-    pyspark: 'Medium unlocks at 12, 20, and 30 easy solves. Hard unlocks at 15 and 22 medium solves (capped at 10 hard).',
-    'data-engineering': 'Medium unlocks at 12, 20, and 30 easy solves. Hard unlocks at 15 and 22 medium solves (capped at 10 hard).',
+    pyspark: 'Medium unlocks at 10, 17, and 25 easy solves. Hard unlocks at 12 medium solves (capped at 5 hard).',
+    'data-engineering': 'Medium unlocks at 10, 17, and 25 easy solves. Hard unlocks at 12 medium solves (capped at 5 hard).',
   };
   const unlockNudgeCopy = unlockNudgeByTrack[topic] ?? unlockNudgeByTrack.sql;
 

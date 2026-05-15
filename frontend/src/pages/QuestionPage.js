@@ -955,12 +955,11 @@ export default function QuestionPage() {
 
               // Unlock thresholds mirror unlock.py exactly.
               // Each entry: [solvedNeeded, maxQuestionsUnlocked]
-              const isPySpark = topic === 'pyspark';
-              const MEDIUM_THRESHOLDS = isPySpark
-                ? [[12, 3], [20, 8], [30, Infinity]]
+              const MEDIUM_THRESHOLDS = meta.hasMCQ
+                ? [[10, 3], [17, 8], [25, Infinity]]
                 : [[8, 3], [15, 8], [25, Infinity]];
-              const HARD_THRESHOLDS = isPySpark
-                ? [[15, 5], [22, Infinity]]
+              const HARD_THRESHOLDS = meta.hasMCQ
+                ? [[12, 5]]
                 : [[8, 3], [15, 8], [22, Infinity]];
 
               // 1-indexed position of this question in the sorted difficulty list
@@ -1118,6 +1117,7 @@ export default function QuestionPage() {
                 correct={submitResult?.correct ?? null}
                 correctIndex={submitResult?.correct_index ?? null}
                 explanation={(submitResult?.correct || showSolution) ? (submitResult?.explanation ?? '') : ''}
+                locked={isLocked}
               />
               <div className="editor-footer editor-footer-plain question-action-dock">
                 <div className="button-row question-action-row">

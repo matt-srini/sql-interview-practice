@@ -171,8 +171,16 @@ Signature formulas:
 | Method | Path | Description |
 |---|---|---|
 | GET | `/api/pyspark/catalog` | PySpark catalog |
-| GET | `/api/pyspark/questions/{id}` | Question detail (options visible, `correct_option` hidden) |
-| POST | `/api/pyspark/submit` | `{ selected_option, question_id, duration_ms? }` → `{ correct, explanation }`. No code execution. |
+| GET | `/api/pyspark/questions/{id}` | Question detail. Unlocked: full payload with `options` (no `correct_option`). Locked: 200 with `locked: true`, no `options` or `correct_option`. |
+| POST | `/api/pyspark/submit` | `{ selected_option, question_id, duration_ms? }` → `{ correct, explanation }`. No code execution. 403 if locked. |
+
+### Data Engineering — `/api/data-engineering`
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/data-engineering/catalog` | Data Engineering catalog |
+| GET | `/api/data-engineering/questions/{id}` | Question detail. Unlocked: full payload with `options` (no `correct_option`). Locked: 200 with `locked: true`, no `options` or `correct_option`. |
+| POST | `/api/data-engineering/submit` | `{ selected_option, question_id, duration_ms? }` → `{ correct, explanation }`. No code execution. 403 if locked. |
 
 ### Dashboard — `/api/dashboard`
 
@@ -310,9 +318,9 @@ Files: `db.py`, `progress.py`, `unlock.py`
 - Medium: 8 easy → 3 · 15 easy → 8 · 25 easy → all
 - Hard: 8 medium → 3 · 15 medium → 8 · 22 medium → 15 *(cap = 8)*
 
-**Free-tier thresholds — PySpark** (higher thresholds — MCQ is lower cognitive effort):
-- Medium: 12 easy → 3 · 20 easy → 8 · 30 easy → all
-- Hard: 15 medium → 5 · 22 medium → 10 *(cap = 5)*
+**Free-tier thresholds — MCQ tracks (PySpark, Data Engineering)** (option-hiding balances the lower cognitive effort):
+- Medium: 10 easy → 3 · 17 easy → 8 · 25 easy → all
+- Hard: 12 medium → 5 *(cap = 5)*
 
 **Learning path shortcuts:** `compute_unlock_state` accepts `path_state: dict`. `starter_done=True` → all medium unlocked (bypasses threshold grinding). `intermediate_done=True` → full hard cap unlocked. The router fetches path completion state from `GET /api/paths` and passes it in.
 

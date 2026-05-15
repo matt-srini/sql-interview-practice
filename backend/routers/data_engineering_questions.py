@@ -80,6 +80,24 @@ async def get_de_question_detail(
     unlocked = state != "locked"
     is_next = state == "unlocked" and next_questions.get(q["difficulty"]) == int(q["id"])
 
+    if not unlocked:
+        # Locked: return stem only — no options, so users can't enumerate answers without solving.
+        public = catalog.get_public_question(q)
+        return {
+            "id": public["id"],
+            "order": public["order"],
+            "title": public["title"],
+            "description": public["description"],
+            "difficulty": public["difficulty"],
+            "type": public["type"],
+            "code_snippet": public.get("code_snippet"),
+            "scenario_context": public.get("scenario_context"),
+            "hints": public.get("hints", []),
+            "concepts": public.get("concepts", []),
+            "locked": True,
+            "progress": {"state": state, "is_next": is_next, "unlocked": False},
+        }
+
     payload = {
         **catalog.get_public_question(q),
         "progress": {

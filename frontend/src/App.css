@@ -5059,6 +5059,30 @@ select {
   line-height: 1.7;
 }
 
+.mcq-locked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2rem 1.5rem;
+  border: 1px dashed var(--border-subtle, #E0DDD8);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.mcq-locked-icon {
+  font-size: 1.4rem;
+  color: var(--text-secondary);
+  line-height: 1;
+}
+
+.mcq-locked-copy {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
 /* ============================================================
    Test case panel
    ============================================================ */

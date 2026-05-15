@@ -6,6 +6,7 @@
 //   correct: boolean | null
 //   correctIndex: number | null   (revealed after submit)
 //   explanation: string
+//   locked: boolean               (when true, renders locked placeholder instead of options)
 export default function MCQPanel({
   options = [],
   selectedOption,
@@ -14,7 +15,19 @@ export default function MCQPanel({
   correct,
   correctIndex,
   explanation,
+  locked = false,
 }) {
+  if (locked) {
+    return (
+      <div className="mcq-panel">
+        <div className="mcq-locked">
+          <span className="mcq-locked-icon" aria-hidden="true">&#8855;</span>
+          <p className="mcq-locked-copy">Unlock to see answer options and explanation</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mcq-panel">
       <div className="mcq-options">

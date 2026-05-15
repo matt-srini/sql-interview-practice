@@ -69,3 +69,45 @@ def test_tc109_pyspark_submit_is_fast():
         elapsed = time.time() - start
     assert r.status_code == 200
     assert elapsed < 1.0, f"PySpark submit too slow: {elapsed:.3f}s"
+
+
+def test_tc110_unlocked_pyspark_question_returns_options():
+    """TC-110: Easy (unlocked) question detail returns options array."""
+    with TestClient(app) as client:
+        _make_user(client, plan="free")
+        r = client.get(f"/api/pyspark/questions/{_easy_id}")
+    assert r.status_code == 200
+    body = r.json()
+    assert "options" in body
+    assert isinstance(body["options"], list)
+    assert len(body["options"]) >= 2
+    assert body.get("locked") is not True
+
+
+def test_tc111_locked_pyspark_question_returns_partial_payload():
+    """TC-111: Locked medium question returns 200 with locked:true and no options."""
+    catalog = get_questions_by_difficulty()
+    last_medium_id = catalog["medium"][-1]["id"]
+    with TestClient(app) as client:
+        _make_user(client, plan="free")
+        r = client.get(f"/api/pyspark/questions/{last_medium_id}")
+    assert r.status_code == 200
+    body = r.json()
+    assert body.get("locked") is True
+    assert "options" not in body
+    assert "correct_option" not in body
+    assert "title" in body
+    assert "description" in body
+
+
+def test_tc112_locked_pyspark_submit_returns_403():
+    """TC-112: Submitting to a locked question returns 403."""
+    catalog = get_questions_by_difficulty()
+    last_medium_id = catalog["medium"][-1]["id"]
+    with TestClient(app) as client:
+        _make_user(client, plan="free")
+        r = client.post("/api/pyspark/submit", json={
+            "question_id": last_medium_id,
+            "selected_option": 0,
+        })
+    assert r.status_code == 403

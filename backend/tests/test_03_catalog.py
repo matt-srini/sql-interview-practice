@@ -6,7 +6,7 @@ import backend.main as main
 from conftest import _insert_progress, _make_user
 from unlock import (
     FREE_HARD_CAP_CODE,
-    FREE_HARD_CAP_PYSPARK,
+    FREE_HARD_CAP_MCQ,
     compute_unlock_state,
     normalize_plan,
 )
@@ -145,10 +145,10 @@ def test_tc052_questions_beyond_unlocked_prefix_locked():
 # 3B. Free tier — PySpark higher thresholds
 # ---------------------------------------------------------------------------
 
-def test_tc053_11_easy_pyspark_medium_still_locked():
-    """TC-053: 11 easy PySpark → medium still locked (threshold is 12)."""
+def test_tc053_9_easy_pyspark_medium_still_locked():
+    """TC-053: 9 easy PySpark → medium still locked (threshold is 10)."""
     catalog = _make_mock_catalog(easy=40, medium=20, hard=15)
-    solved = _easy_ids(11, catalog)
+    solved = _easy_ids(9, catalog)
     state = compute_unlock_state("free", solved, catalog, track="pyspark")
 
     medium_ids = [q["id"] for q in catalog["medium"]]
@@ -156,10 +156,10 @@ def test_tc053_11_easy_pyspark_medium_still_locked():
     assert len(unlocked) == 0
 
 
-def test_tc054_12_easy_pyspark_unlocks_3_medium():
-    """TC-054: 12 easy PySpark → 3 medium unlocked."""
+def test_tc054_10_easy_pyspark_unlocks_3_medium():
+    """TC-054: 10 easy PySpark → 3 medium unlocked."""
     catalog = _make_mock_catalog(easy=40, medium=20, hard=15)
-    solved = _easy_ids(12, catalog)
+    solved = _easy_ids(10, catalog)
     state = compute_unlock_state("free", solved, catalog, track="pyspark")
 
     medium_ids = [q["id"] for q in catalog["medium"]]
@@ -167,10 +167,10 @@ def test_tc054_12_easy_pyspark_unlocks_3_medium():
     assert len(unlocked) == 3
 
 
-def test_tc055_20_easy_pyspark_unlocks_8_medium():
-    """TC-055: 20 easy PySpark → 8 medium unlocked."""
+def test_tc055_17_easy_pyspark_unlocks_8_medium():
+    """TC-055: 17 easy PySpark → 8 medium unlocked."""
     catalog = _make_mock_catalog(easy=40, medium=20, hard=15)
-    solved = _easy_ids(20, catalog)
+    solved = _easy_ids(17, catalog)
     state = compute_unlock_state("free", solved, catalog, track="pyspark")
 
     medium_ids = [q["id"] for q in catalog["medium"]]
@@ -178,10 +178,10 @@ def test_tc055_20_easy_pyspark_unlocks_8_medium():
     assert len(unlocked) == 8
 
 
-def test_tc056_30_easy_pyspark_unlocks_all_medium():
-    """TC-056: 30 easy PySpark → all medium unlocked."""
+def test_tc056_25_easy_pyspark_unlocks_all_medium():
+    """TC-056: 25 easy PySpark → all medium unlocked."""
     catalog = _make_mock_catalog(easy=40, medium=20, hard=15)
-    solved = _easy_ids(30, catalog)
+    solved = _easy_ids(25, catalog)
     state = compute_unlock_state("free", solved, catalog, track="pyspark")
 
     medium_ids = [q["id"] for q in catalog["medium"]]
@@ -189,10 +189,10 @@ def test_tc056_30_easy_pyspark_unlocks_all_medium():
     assert len(unlocked) == len(medium_ids)
 
 
-def test_tc057_15_medium_pyspark_unlocks_5_hard():
-    """TC-057: 30 easy + 15 medium PySpark → 5 hard unlocked."""
+def test_tc057_12_medium_pyspark_unlocks_5_hard():
+    """TC-057: 25 easy + 12 medium PySpark → 5 hard unlocked (= full MCQ cap)."""
     catalog = _make_mock_catalog(easy=40, medium=20, hard=15)
-    solved = _easy_ids(30, catalog) | _medium_ids(15, catalog)
+    solved = _easy_ids(25, catalog) | _medium_ids(12, catalog)
     state = compute_unlock_state("free", solved, catalog, track="pyspark")
 
     hard_ids = [q["id"] for q in catalog["hard"]]
@@ -201,14 +201,14 @@ def test_tc057_15_medium_pyspark_unlocks_5_hard():
 
 
 def test_tc058_pyspark_hard_cap_is_5():
-    """TC-058: PySpark hard cap = FREE_HARD_CAP_PYSPARK (5)."""
+    """TC-058: PySpark hard cap = FREE_HARD_CAP_MCQ (5)."""
     catalog = _make_mock_catalog(easy=40, medium=20, hard=15)
-    solved = _easy_ids(30, catalog) | _medium_ids(22, catalog)
+    solved = _easy_ids(25, catalog) | _medium_ids(15, catalog)
     state = compute_unlock_state("free", solved, catalog, track="pyspark")
 
     hard_ids = [q["id"] for q in catalog["hard"]]
     unlocked = [qid for qid in hard_ids if state[qid] == "unlocked"]
-    assert len(unlocked) == FREE_HARD_CAP_PYSPARK
+    assert len(unlocked) == FREE_HARD_CAP_MCQ
 
 
 # ---------------------------------------------------------------------------

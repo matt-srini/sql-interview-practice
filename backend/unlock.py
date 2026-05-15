@@ -48,19 +48,20 @@ _FREE_HARD_THRESHOLDS_CODE: list[tuple[int, int]] = [
 
 FREE_HARD_CAP_CODE = 8
 
-# PySpark (MCQ-only) — higher thresholds because MCQ recognition is lower-effort
-_FREE_MEDIUM_THRESHOLDS_PYSPARK: list[tuple[int, int | None]] = [
-    (30, None),   # 30 easy solved → all medium
-    (20, 8),      # 20 easy solved → 8 medium
-    (12, 3),      # 12 easy solved → 3 medium
+# MCQ tracks (PySpark, Data Engineering) — thresholds balanced with option-hiding:
+# locked questions show the stem only, so the gap between locked-read and answered
+# is smaller than for code tracks (no running, no debugging).
+_FREE_MEDIUM_THRESHOLDS_MCQ: list[tuple[int, int | None]] = [
+    (25, None),   # 25 easy solved → all medium
+    (17, 8),      # 17 easy solved → 8 medium
+    (10, 3),      # 10 easy solved → 3 medium
 ]
 
-_FREE_HARD_THRESHOLDS_PYSPARK: list[tuple[int, int]] = [
-    (22, 10),     # 22 medium solved → 10 hard (= full cap)
-    (15, 5),      # 15 medium solved → 5 hard
+_FREE_HARD_THRESHOLDS_MCQ: list[tuple[int, int]] = [
+    (12, 5),      # 12 medium solved → 5 hard (= full cap)
 ]
 
-FREE_HARD_CAP_PYSPARK = 5
+FREE_HARD_CAP_MCQ = 5
 
 # Daily mock session limits per plan × difficulty (None = unlimited)
 MOCK_DAILY_LIMITS: dict[str, dict[str, int | None]] = {
@@ -78,7 +79,7 @@ MOCK_COMPANY_FILTER_TIERS = {"elite", "lifetime_elite"}
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def _is_mcq_profile(track: str) -> bool:
-    """True when this track uses the MCQ unlock thresholds (higher, lower-effort)."""
+    """True when this track uses the MCQ unlock thresholds."""
     try:
         return get_track(track).unlock_profile == "mcq"
     except ValueError:
@@ -102,7 +103,7 @@ def _free_medium_limit(
     if starter_done:
         return total_medium  # path completion = full medium access
 
-    thresholds = _FREE_MEDIUM_THRESHOLDS_PYSPARK if mcq_profile else _FREE_MEDIUM_THRESHOLDS_CODE
+    thresholds = _FREE_MEDIUM_THRESHOLDS_MCQ if mcq_profile else _FREE_MEDIUM_THRESHOLDS_CODE
     for solved_threshold, limit in thresholds:
         if easy_solved >= solved_threshold:
             return total_medium if limit is None else min(limit, total_medium)
@@ -116,12 +117,12 @@ def _free_hard_limit(
     intermediate_done: bool,
 ) -> int:
     """Number of hard questions a Free user can access in this track."""
-    cap = FREE_HARD_CAP_PYSPARK if mcq_profile else FREE_HARD_CAP_CODE
+    cap = FREE_HARD_CAP_MCQ if mcq_profile else FREE_HARD_CAP_CODE
 
     if intermediate_done:
         return min(cap, total_hard)  # path completion = full hard cap
 
-    thresholds = _FREE_HARD_THRESHOLDS_PYSPARK if mcq_profile else _FREE_HARD_THRESHOLDS_CODE
+    thresholds = _FREE_HARD_THRESHOLDS_MCQ if mcq_profile else _FREE_HARD_THRESHOLDS_CODE
     for solved_threshold, limit in thresholds:
         if medium_solved >= solved_threshold:
             return min(limit, cap, total_hard)  # cap is always enforced regardless of threshold
@@ -275,7 +276,7 @@ def compute_mock_access(
     # Medium mocks: Free users must have medium unlocked in this track first
     if difficulty == "medium" and plan == "free" and not medium_unlocked:
         _easy_threshold = (
-            _FREE_MEDIUM_THRESHOLDS_PYSPARK[-1][0]
+            _FREE_MEDIUM_THRESHOLDS_MCQ[-1][0]
             if _is_mcq_profile(track)
             else _FREE_MEDIUM_THRESHOLDS_CODE[-1][0]
         )

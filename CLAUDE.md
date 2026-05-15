@@ -292,9 +292,11 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 - Medium: 8 easy → 3 medium · 15 easy → 8 medium · 25 easy → all medium
 - Hard: 8 medium → 3 hard · 15 medium → 8 hard · 22 medium → 15 hard *(cap: 8)*
 
-**Free-tier unlock thresholds (PySpark / Data Engineering — higher because MCQ is lower-effort):**
-- Medium: 12 easy → 3 medium · 20 easy → 8 medium · 30 easy → all medium
-- Hard: 15 medium → 5 hard · 22 medium → 10 hard *(cap: 5)*
+**Free-tier unlock thresholds (MCQ tracks — PySpark / Data Engineering):** option-hiding balances the lower effort per question:
+- Medium: 10 easy → 3 medium · 17 easy → 8 medium · 25 easy → all medium
+- Hard: 12 medium → 5 hard *(cap: 5)*
+
+Locked MCQ questions return 200 with `locked: true` and no `options` or `correct_option` (stem visible; options and explanation hidden). Submitting a locked MCQ returns 403.
 
 **Learning path shortcuts:** completing the Starter path for a track → all medium unlocked immediately; completing the Intermediate path → full hard cap unlocked. Either acts as an express-lane alternative to threshold grinding.
 

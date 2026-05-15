@@ -117,9 +117,11 @@ Pure policy function in `backend/unlock.py`. Signature: `compute_unlock_state(pl
 - Medium: 8 easy solved → 3 medium · 15 → 8 medium · 25 → all medium
 - Hard: 8 medium solved → 3 hard · 15 → 8 hard · 22 → 15 hard *(hard cap = 8)*
 
-**Free-tier thresholds — PySpark** (higher because MCQ is lower-effort than writing code):
-- Medium: 12 easy solved → 3 medium · 20 → 8 medium · 30 → all medium
-- Hard: 15 medium solved → 5 hard · 22 → 10 hard *(hard cap = 5)*
+**Free-tier thresholds — MCQ tracks (PySpark, Data Engineering):** option-hiding balances the lower effort per question:
+- Medium: 10 easy solved → 3 medium · 17 → 8 medium · 25 → all medium
+- Hard: 12 medium solved → 5 hard *(hard cap = 5)*
+
+Locked MCQ questions return 200 with `locked: true` and no `options` / `correct_option` (stem always visible). Submitting a locked MCQ returns 403.
 
 **Learning path shortcuts (`path_state`):** `starter_done=True` → all medium unlocked immediately (same ceiling as hitting the top threshold). `intermediate_done=True` → full hard cap unlocked. Either flag is an express-lane alternative to threshold grinding, giving learning-path completers a meaningful reward.
 
@@ -285,7 +287,7 @@ PostgreSQL   Redis Cluster
 | `catalog_module` | module | Exposes `get_questions_by_difficulty()`, `get_mock_questions_by_difficulty()`, `get_public_question()` |
 | `label` | `str` | Human-readable name (e.g. `"Pandas"`) |
 | `eval_kind` | `str` | `"sql" \| "python" \| "pandas" \| "mcq"` — drives submission dispatch |
-| `unlock_profile` | `str` | `"code"` (SQL/Python/Pandas thresholds) or `"mcq"` (PySpark — higher, MCQ is lower-effort) |
+| `unlock_profile` | `str` | `"code"` (SQL/Python/Pandas thresholds) or `"mcq"` (PySpark/DE — option-hiding balances lower effort) |
 | `content_dir` | `Path` | Absolute path to the questions directory |
 | `concept_blocklist` | `set[str]` | Syntax-level concepts rejected by `validate_content.py` |
 | `hint_rules` | `dict` | Per-difficulty `(min, max)` hint count bounds |

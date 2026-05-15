@@ -177,19 +177,35 @@ def test_tc_de12_correct_solve_marks_progress():
     assert solved_q["state"] == "solved"
 
 
-def test_tc_de13_locked_question_returns_403():
+def test_tc_de13_locked_question_submit_returns_403():
     """TC-DE-13: Submitting to a locked question returns 403."""
     if not _medium_qs:
         pytest.skip("No medium questions available")
-    medium_id = _medium_qs[-1]["id"]  # last medium likely locked for free user with 0 solves
+    medium_id = _medium_qs[-1]["id"]  # last medium locked for free user with 0 solves
     with TestClient(app) as client:
         _make_user(client, plan="free")
         r = client.post("/api/data-engineering/submit", json={
             "question_id": medium_id,
             "selected_option": 0,
         })
-    # Either 403 (locked) or 200 (if this one happens to be unlocked)
-    assert r.status_code in (200, 403)
+    assert r.status_code == 403
+
+
+def test_tc_de13b_locked_question_detail_returns_partial_payload():
+    """TC-DE-13b: GET detail for a locked question returns 200 with locked:true and no options."""
+    if not _medium_qs:
+        pytest.skip("No medium questions available")
+    medium_id = _medium_qs[-1]["id"]
+    with TestClient(app) as client:
+        _make_user(client, plan="free")
+        r = client.get(f"/api/data-engineering/questions/{medium_id}")
+    assert r.status_code == 200
+    body = r.json()
+    assert body.get("locked") is True
+    assert "options" not in body
+    assert "correct_option" not in body
+    assert "title" in body
+    assert "description" in body
 
 
 # ── Catalog loader integrity ───────────────────────────────────────────────────
