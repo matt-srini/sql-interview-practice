@@ -415,76 +415,13 @@ This adds ~122 URLs to the sitemap. The sitemap will grow from 46 to ~168 URLs �
 
 ---
 
-### Phase 4 — Sample page content depth (2–3 days)
+### Phase 4 — Technical performance (optional, do last)
 
-The 36 sample pages (`/sample/:topic/:difficulty`) are already in the sitemap and fully public. Currently they render a single rotating question per visit, making the page content thin and non-deterministic for crawlers.
-
----
-
-#### 5a. Add a new public endpoint listing sample question titles
-**File:** `backend/routers/sample.py` (or `system.py`)
-
-```
-GET /api/sample/:topic/:difficulty/list
-```
-
-Returns the titles, concept tags, and company tags of all 3 sample questions for this slot — without the full question body or expected answer. Unauthenticated. This is a trivial read from the already-loaded sample question catalog.
+These are high-effort and lower immediate-impact than Phases 1-3.
 
 ---
 
-#### 5b. Render a static question list section on SampleQuestionPage
-**File:** `frontend/src/pages/SampleQuestionPage.js`
-
-Below the interactive editor, add a collapsed section: "What's in this set" listing the 3 question titles with their concept tags. Load from the new `/api/sample/:topic/:difficulty/list` endpoint on mount. This gives crawlers deterministic, keyword-rich content regardless of which question happens to be rotating.
-
----
-
-#### 5c. Update Helmet to include actual question titles
-**File:** `frontend/src/pages/SampleQuestionPage.js:370-380`
-
-Once the question list is loaded, update the page description to reference the actual titles:
-
-```
-Title:  "Free Easy SQL Interview Practice — datathink"
-Desc:   "Practice 3 free easy SQL interview questions: 'Completed Orders', 
-         'Monthly Revenue by Region', 'Top Products by Sales'. No account needed. 
-         Instant DuckDB execution with feedback."
-```
-
-This surfaces real searchable content in the meta description.
-
----
-
-#### 5d. Add ItemList JSON-LD to SampleQuestionPage
-**File:** `frontend/src/pages/SampleQuestionPage.js`
-
-Replace the generic Quiz schema with a specific ItemList once question titles load:
-
-```json
-{
-  "@context": "https://schema.org",
-  "@type": "ItemList",
-  "name": "Free Easy SQL Interview Questions",
-  "numberOfItems": 3,
-  "isAccessibleForFree": true,
-  "itemListElement": [
-    { "@type": "ListItem", "position": 1, "item": { "@type": "LearningResource", "name": "Completed Orders", "url": "https://datathink.co/practice/sql/questions/1003" } },
-    ...
-  ]
-}
-```
-
-Note the `url` links to the full easy question page — this creates an internal link between sample pages and individual question pages.
-
----
-
-### Phase 5 — Technical performance (optional, do last)
-
-These are high-effort and lower immediate-impact than Phases 1-5.
-
----
-
-#### 6a. Dynamic OG images per learning path
+#### 4a. Dynamic OG images per learning path
 
 All pages currently share `/og-image.png`. Every social share looks identical. Use `satori` (or a simple canvas script in the build) to generate per-path images:
 
@@ -496,7 +433,7 @@ With the path title, track accent color, and datathink wordmark. Update `_inject
 
 ---
 
-#### 6b. Make `/api/paths/:slug` metadata publicly readable
+#### 4b. Make `/api/paths/:slug` metadata publicly readable
 
 Currently path detail requires authentication. The metadata (title, description, question count, focus_concepts) has no reason to be gated — it's shown publicly on the landing page. Making the read-only metadata public would:
 1. Allow prerendering learning path pages with real content
@@ -506,16 +443,14 @@ Change: strip the `current_user` dependency from the path metadata portion of `r
 
 ---
 
-#### 6c. Sitemap index as URLs scale
+#### 4c. Sitemap index as URLs scale
 
-After Phases 3 and 4, the sitemap will grow from ~46 to ~250+ URLs. At that point, split into a sitemap index:
+After Phase 3, the sitemap will grow from ~46 to ~168 URLs. If it ever approaches 50k, split into a sitemap index:
 
 - `/sitemap.xml` — index pointing to:
   - `/sitemap-core.xml` — static pages, practice hubs, sample pages
   - `/sitemap-paths.xml` — 22 learning path pages
   - `/sitemap-questions.xml` — ~122 easy question pages
-  - `/sitemap-concepts.xml` — concept discovery pages
-  - `/sitemap-companies.xml` — company discovery pages
 
 ---
 
@@ -535,14 +470,9 @@ After Phases 3 and 4, the sitemap will grow from ~46 to ~250+ URLs. At that poin
 | 10 | Server-side meta for easy questions | 3a | `spa.py` | 2 hrs | Crawlable meta for 122 pages |
 | 11 | Remove noindex from easy questions | 3b | `QuestionPage.js:849` | 30 min | Indexes 122 pages |
 | 12 | Easy questions in sitemap | 3c | `system.py` | 1 hr | Sitemap coverage |
-| 13 | Concept discovery pages | 4a | New page + `GET /api/concepts/:topic` | 4–6 days | Highest traffic |
-| 14 | Company discovery pages | 4b | New page + `GET /api/companies/:topic` | 3–4 days | Highest intent |
-| 15 | Internal link wiring | 4c | `SampleQuestionPage.js`, `LearningPath.js`, `TrackHubPage.js` | 2 days | Link graph |
-| 16 | Sample question list endpoint | 5a | `routers/sample.py` | 1 day | Deterministic sample content |
-| 17 | Sample page content depth | 5b–5d | `SampleQuestionPage.js` | 2 days | Richer indexable content |
-| 18 | Dynamic OG images | 6a | Build script + `spa.py` | 3 days | Social CTR |
-| 19 | Public path metadata API | 6b | `routers/paths.py` | 1 day | Enables prerendering |
-| 20 | Sitemap index | 6c | `system.py` | 1 day | Scalability |
+| 13 | Dynamic OG images | 4a | Build script + `spa.py` | 3 days | Social CTR |
+| 14 | Public path metadata API | 4b | `routers/paths.py` | 1 day | Enables prerendering |
+| 15 | Sitemap index | 4c | `system.py` | 1 day | Scalability |
 
 ---
 
@@ -553,7 +483,6 @@ After Phases 3 and 4, the sitemap will grow from ~46 to ~250+ URLs. At that poin
 | Today | ~46 | Brand, generic track-level |
 | After Phase 1+2 | ~50 | + Better CTR on existing pages via rich results |
 | After Phase 3 | ~172 | + 122 easy question long-tail keywords |
-| After Phase 4 | ~172 (richer) | + Deterministic sample page content |
 
 ---
 
