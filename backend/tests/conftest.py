@@ -41,9 +41,44 @@ def pytest_configure(config: pytest.Config) -> None:
     patch("email_service.send_password_reset_email", new=AsyncMock(return_value=True)).start()
 
 
+@pytest.fixture(scope="session", autouse=True)
+def _test_db_schema():
+    """Run schema DDL once per test session — tables and indexes don't change between tests."""
+    from db import ensure_schema_admin
+    asyncio.run(ensure_schema_admin())
+
+
+def _reset_db_sync() -> None:
+    """Truncate user-facing tables using synchronous psycopg2.
+
+    Using asyncio.run() for TRUNCATE created a race condition: asyncpg connections
+    from the previous TestClient's event loop could still be open (in OS cleanup)
+    when the next asyncio.run() created new connections, causing intermittent deadlocks
+    between TRUNCATE and CREATE INDEX.  A synchronous psycopg2 call eliminates
+    that race entirely.
+    """
+    _active_url = os.environ.get("DATABASE_URL", "")
+    _db_name = urlparse(_active_url).path.lstrip("/")
+    assert _db_name.endswith("_test"), (
+        f"_reset_db_sync refused: DATABASE_URL targets '{_db_name}', "
+        "which is not a test database."
+    )
+    conn = _db_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "TRUNCATE TABLE mock_session_questions, mock_sessions, submissions, "
+                "plan_changes, payment_events, user_sample_seen, user_progress, "
+                "sessions, users RESTART IDENTITY CASCADE"
+            )
+        conn.commit()
+    finally:
+        conn.close()
+
+
 @pytest.fixture
 def isolated_state(monkeypatch):
-    from db import close_pool, ensure_schema_admin, reset_database_admin
+    from db import close_pool
     from backend.main import _clear_rate_limit_state
 
     # Tripwire: if DATABASE_URL somehow still points at a non-test DB, abort
@@ -57,12 +92,11 @@ def isolated_state(monkeypatch):
     )
 
     asyncio.run(close_pool())
-    asyncio.run(ensure_schema_admin())
-    asyncio.run(reset_database_admin())
+    _reset_db_sync()
     _clear_rate_limit_state()
     yield
     asyncio.run(close_pool())
-    asyncio.run(reset_database_admin())
+    _reset_db_sync()
     _clear_rate_limit_state()
 
 

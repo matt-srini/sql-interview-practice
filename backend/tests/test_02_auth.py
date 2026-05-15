@@ -202,7 +202,7 @@ def test_tc018_login_merges_anonymous_progress():
         user_a_id = reg.json()["user"]["id"]
     verify_test_user(user_a_id)
     # Insert progress for user A
-    _insert_progress(user_a_id, track="sql", question_id=1003)
+    _insert_progress(user_a_id, track="sql", question_id=11003)
 
     # In a fresh client, create an anonymous user, solve a different question
     with TestClient(app) as client_b:
@@ -220,7 +220,7 @@ def test_tc018_login_merges_anonymous_progress():
             conn.close()
 
         if anon_id:
-            _insert_progress(anon_id, track="sql", question_id=1004)
+            _insert_progress(anon_id, track="sql", question_id=11004)
 
         # Login as user A
         r = client_b.post("/api/auth/login", json={"email": email, "password": "Password1"})
@@ -234,7 +234,7 @@ def test_tc018_login_merges_anonymous_progress():
             all_questions.extend(group.get("questions", []))
         solved_ids = {q["id"] for q in all_questions if q.get("state") == "solved"}
         # At least one of them is solved
-        assert 1003 in solved_ids or len(solved_ids) >= 1
+        assert 11003 in solved_ids or 11004 in solved_ids or len(solved_ids) >= 1
 
 
 def test_tc019_logout_clears_session():

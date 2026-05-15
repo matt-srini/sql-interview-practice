@@ -34,7 +34,7 @@
     "complexity_hint": "Two-stage pattern: aggregate first (subquery), then apply a window function on the aggregated rows. The window SUM(...) OVER () computes the grand total without collapsing rows.",
     "alternative_solution": {
       "query": "WITH tier_revenue AS (\n  SELECT u.plan_tier, SUM(o.net_amount) AS total_completed_revenue\n  FROM users u\n  JOIN orders o ON u.user_id = o.user_id\n  WHERE o.status = 'completed'\n  GROUP BY u.plan_tier\n)\nSELECT plan_tier, total_completed_revenue,\n  ROUND(100.0 * total_completed_revenue / SUM(total_completed_revenue) OVER (), 2) AS revenue_share_pct\nFROM tier_revenue\nORDER BY total_completed_revenue DESC, plan_tier ASC",
-      "explanation": "This version uses a CTE (WITH clause) instead of an inline subquery. Both approaches produce identical results. CTEs are generally preferred when the intermediate result is referenced more than once, or when readability is the priority — the named step makes the two-stage intent explicit."
+      "explanation": "This version uses a CTE (WITH clause) instead of an inline subquery. Both approaches produce identical results. CTEs are generally preferred when the intermediate result is referenced more than once, or when readability is the priority \u2014 the named step makes the two-stage intent explicit."
     },
     "companies": [
       "Meta",
@@ -1101,7 +1101,7 @@
     "explanation": "A CTE aggregates per-session: COUNT(*) for events, COUNT(DISTINCT product_id) for unique products, and MAX(CASE WHEN...) flags for cart and purchase presence (MAX of 0/1 across all events in the session is 1 if any event matches). The formula combines these into a weighted score. The outer query joins to sessions for device/channel context, then filters on the score. Note: the WHERE clause must repeat the formula (or use a nested query/second CTE) because aliases from SELECT cannot be referenced in WHERE in standard SQL.",
     "hints": [
       "Break the problem into stages so the reusable intermediate result exists before the final filter or comparison.",
-      "You cannot reference a SELECT alias in WHERE — either repeat the expression or wrap in a second CTE"
+      "You cannot reference a SELECT alias in WHERE \u2014 either repeat the expression or wrap in a second CTE"
     ],
     "concepts": [
       "CONDITIONAL FLAG AGGREGATION",
@@ -1120,7 +1120,7 @@
     "id": 13028,
     "order": 28,
     "title": "ROWS vs RANGE: running total divergence",
-    "description": "For each order, compute two running total columns using different window frame semantics:\n1. `running_rows`: `SUM(net_amount) OVER (ORDER BY order_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)`\n2. `running_range`: `SUM(net_amount) OVER (ORDER BY order_date RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)`\n\nWhen `order_date` has duplicate values (multiple orders on the same date), ROWS and RANGE produce different results. Return `order_id`, `order_date`, `net_amount`, `running_rows`, `running_range` — but **only** for orders where `running_rows != running_range`. Order by `order_date` ASC, `order_id` ASC.\n\nThis reveals the dates where tied values cause the two frame semantics to diverge.",
+    "description": "For each order, compute two running total columns using different window frame semantics:\n1. `running_rows`: `SUM(net_amount) OVER (ORDER BY order_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)`\n2. `running_range`: `SUM(net_amount) OVER (ORDER BY order_date RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)`\n\nWhen `order_date` has duplicate values (multiple orders on the same date), ROWS and RANGE produce different results. Return `order_id`, `order_date`, `net_amount`, `running_rows`, `running_range` \u2014 but **only** for orders where `running_rows != running_range`. Order by `order_date` ASC, `order_id` ASC.\n\nThis reveals the dates where tied values cause the two frame semantics to diverge.",
     "difficulty": "hard",
     "schema": {
       "orders": [
@@ -1140,10 +1140,10 @@
       "where"
     ],
     "enforce_concepts": true,
-    "explanation": "ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW includes exactly the rows from the start of the partition up to the physical current row — each tied row gets a different running total. RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW treats all rows with the same ORDER BY value as peers and includes all of them together — every tied row gets the same running total (the sum including all peers). When ties exist, ROWS gives an incremental per-row total while RANGE gives all tied rows the same 'as if all were included' total. The WHERE clause filters to only divergent rows, exposing exactly the dates with ties.",
+    "explanation": "ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW includes exactly the rows from the start of the partition up to the physical current row \u2014 each tied row gets a different running total. RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW treats all rows with the same ORDER BY value as peers and includes all of them together \u2014 every tied row gets the same running total (the sum including all peers). When ties exist, ROWS gives an incremental per-row total while RANGE gives all tied rows the same 'as if all were included' total. The WHERE clause filters to only divergent rows, exposing exactly the dates with ties.",
     "hints": [
       "Compare the two cumulative interpretations only after both running totals have been computed over the same ordered events.",
-      "You cannot reference window function aliases in WHERE — use a CTE to compute both, then filter in the outer query"
+      "You cannot reference window function aliases in WHERE \u2014 use a CTE to compute both, then filter in the outer query"
     ],
     "concepts": [
       "ROWS vs RANGE FRAME SEMANTICS",
@@ -1190,10 +1190,10 @@
       "case_when"
     ],
     "enforce_concepts": true,
-    "explanation": "Two CTEs decompose the problem: `signups_2024` filters the user cohort; `first_qualifying` finds each user's first completed order within 7 days of signup using a date-range join condition. The final LEFT JOIN preserves all 2024 signups — users with no qualifying order get NULL from the right side. CASE WHEN fq.user_id IS NOT NULL THEN 1 ELSE 0 END produces the conversion flag. JULIANDAY arithmetic computes the day difference as a number. NULLS LAST sorts non-converting users to the end.",
+    "explanation": "Two CTEs decompose the problem: `signups_2024` filters the user cohort; `first_qualifying` finds each user's first completed order within 7 days of signup using a date-range join condition. The final LEFT JOIN preserves all 2024 signups \u2014 users with no qualifying order get NULL from the right side. CASE WHEN fq.user_id IS NOT NULL THEN 1 ELSE 0 END produces the conversion flag. JULIANDAY arithmetic computes the day difference as a number. NULLS LAST sorts non-converting users to the end.",
     "hints": [
       "Break the problem into stages so the reusable intermediate result exists before the final filter or comparison.",
-      "LEFT JOIN the first_qualifying CTE back to all signups — users with no qualifying order will have NULL on the right side, which maps to converted=0"
+      "LEFT JOIN the first_qualifying CTE back to all signups \u2014 users with no qualifying order will have NULL on the right side, which maps to converted=0"
     ],
     "concepts": [
       "CONVERSION FUNNEL ANALYSIS",
@@ -1213,9 +1213,9 @@
     "order": 30,
     "mock_only": true,
     "framing": "scenario",
-    "follow_up_id": 3034,
+    "follow_up_id": 13034,
     "title": "Payment failure trend by method and month",
-    "description": "The payments team asks: 'How much revenue are we losing to 'failed' payments, and does the failure rate vary by method over time?' Write a query that, for each `payment_method` and calendar month (`YYYY-MM`), returns `payment_method`, `month`, `paid_count` (status = 'paid'), `failed_count` (status = 'failed'), `total_paid_amount` (rounded to 2 dp), and `failure_rate_pct` (failed / total × 100, rounded to 1 dp). Include only rows where the total attempt count for that method+month is at least 10. Order by `month` ascending, then `failure_rate_pct` descending.",
+    "description": "The payments team asks: 'How much revenue are we losing to 'failed' payments, and does the failure rate vary by method over time?' Write a query that, for each `payment_method` and calendar month (`YYYY-MM`), returns `payment_method`, `month`, `paid_count` (status = 'paid'), `failed_count` (status = 'failed'), `total_paid_amount` (rounded to 2 dp), and `failure_rate_pct` (failed / total \u00d7 100, rounded to 1 dp). Include only rows where the total attempt count for that method+month is at least 10. Order by `month` ascending, then `failure_rate_pct` descending.",
     "difficulty": "hard",
     "schema": {
       "payments": [
@@ -1241,7 +1241,7 @@
     "explanation": "Conditional aggregation counts paid/failed rows without subqueries. SUM(CASE WHEN status='paid' THEN amount ELSE 0 END) sums only paid amounts. HAVING COUNT(*) >= 10 excludes thin slices (method+month combos with fewer than 10 attempts) from the trend. ORDER BY month ASC, failure_rate_pct DESC makes the trend chronological within each month.",
     "hints": [
       "Use CASE WHEN inside COUNT/SUM to differentiate paid vs failed in one pass.",
-      "HAVING COUNT(*) >= 10 filters after aggregation — you can't use WHERE for a condition on the total row count."
+      "HAVING COUNT(*) >= 10 filters after aggregation \u2014 you can't use WHERE for a condition on the total row count."
     ],
     "concepts": [
       "CONDITIONAL AGGREGATION",
@@ -1282,7 +1282,7 @@
       "aggregate"
     ],
     "enforce_concepts": true,
-    "explanation": "JOIN connects users to their tickets. GROUP BY user produces per-user aggregates. HAVING COUNT(ticket_id) > 3 filters to users with more than 3 tickets — this condition can only be expressed with HAVING, not WHERE, because it filters on an aggregate. ORDER BY avg_resolution_hours DESC surfaces the most-delayed users first.",
+    "explanation": "JOIN connects users to their tickets. GROUP BY user produces per-user aggregates. HAVING COUNT(ticket_id) > 3 filters to users with more than 3 tickets \u2014 this condition can only be expressed with HAVING, not WHERE, because it filters on an aggregate. ORDER BY avg_resolution_hours DESC surfaces the most-delayed users first.",
     "hints": [
       "Think about which filter applies before aggregation and which applies after grouping.",
       "GROUP BY user_id and name together to keep the name column accessible."
@@ -1299,9 +1299,9 @@
     "order": 32,
     "mock_only": true,
     "framing": "scenario",
-    "follow_up_id": 3036,
+    "follow_up_id": 13036,
     "title": "Top 3 products per category with top flag",
-    "description": "Your data team lead asks: 'For each category, show the top 3 products by revenue and flag the #1 product.' Using window functions, return `category_name`, `product_name`, `total_revenue` (rounded to 2 dp), `revenue_rank` (1 = highest within the category), and `is_top` (1 if rank = 1, else 0). Include only ranks 1–3. Order by `category_name` ascending, then `revenue_rank` ascending.",
+    "description": "Your data team lead asks: 'For each category, show the top 3 products by revenue and flag the #1 product.' Using window functions, return `category_name`, `product_name`, `total_revenue` (rounded to 2 dp), `revenue_rank` (1 = highest within the category), and `is_top` (1 if rank = 1, else 0). Include only ranks 1\u20133. Order by `category_name` ascending, then `revenue_rank` ascending.",
     "difficulty": "hard",
     "schema": {
       "order_items": [
@@ -1332,10 +1332,10 @@
       "group_by"
     ],
     "enforce_concepts": true,
-    "explanation": "The CTE aggregates revenue per product per category and applies RANK() OVER (PARTITION BY category_id ORDER BY SUM(line_amount) DESC) to rank within each category. The outer query filters to ranks 1–3 and adds the is_top flag using CASE WHEN. PARTITION BY category_id (not category_name) is more robust when names could be duplicated across parent categories.",
+    "explanation": "The CTE aggregates revenue per product per category and applies RANK() OVER (PARTITION BY category_id ORDER BY SUM(line_amount) DESC) to rank within each category. The outer query filters to ranks 1\u20133 and adds the is_top flag using CASE WHEN. PARTITION BY category_id (not category_name) is more robust when names could be duplicated across parent categories.",
     "hints": [
       "Start by computing each product's total revenue, then apply a per-category ranking in a second step.",
-      "Filter the CTE output (WHERE revenue_rank <= 3) in the outer query — you can't filter on a window function alias in the same SELECT."
+      "Filter the CTE output (WHERE revenue_rank <= 3) in the outer query \u2014 you can't filter on a window function alias in the same SELECT."
     ],
     "concepts": [
       "WINDOW RANK WITH PARTITION",
@@ -1376,7 +1376,7 @@
       "percentile"
     ],
     "enforce_concepts": true,
-    "explanation": "PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY salary) computes the 25th percentile using linear interpolation. It's an ordered-set aggregate — syntactically different from window functions. salary_range = MAX - MIN measures the spread. HAVING COUNT(*) >= 10 excludes departments too small for meaningful percentiles.",
+    "explanation": "PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY salary) computes the 25th percentile using linear interpolation. It's an ordered-set aggregate \u2014 syntactically different from window functions. salary_range = MAX - MIN measures the spread. HAVING COUNT(*) >= 10 excludes departments too small for meaningful percentiles.",
     "hints": [
       "Two statistical functions can compute the 25th and 75th percentile from an ordered set of values.",
       "HAVING COUNT(*) >= 10 restricts to departments large enough for percentiles to be meaningful."
@@ -1463,7 +1463,7 @@
       "date_functions"
     ],
     "enforce_concepts": true,
-    "explanation": "Two CTEs separate concerns: `signups` filters the 2024 cohort; `converted` finds users who placed a completed order within 30 days of signup using a date-range condition in the JOIN. The final LEFT JOIN preserves all signups — non-converters have NULL on the right side, contributing 0 to converted_count. HAVING filters small channel+country combos.",
+    "explanation": "Two CTEs separate concerns: `signups` filters the 2024 cohort; `converted` finds users who placed a completed order within 30 days of signup using a date-range condition in the JOIN. The final LEFT JOIN preserves all signups \u2014 non-converters have NULL on the right side, contributing 0 to converted_count. HAVING filters small channel+country combos.",
     "hints": [
       "Separate the problem: first isolate the 2024 signup cohort, then find which of those users placed a qualifying order within the time window.",
       "LEFT JOIN the converted CTE so non-converting users still appear in the denominator."
@@ -1513,7 +1513,7 @@
     "enforce_concepts": true,
     "explanation": "Four CTEs build up incrementally: product_revenue aggregates per-product revenue; cat_totals captures category-level totals; ranked applies window ranking; filtered joins in the category total for the share calculation. The final SELECT adds the running total (SUM OVER with ORDER BY revenue_rank) and the percentage share.",
     "hints": [
-      "Carry the cat_total through by joining cat_totals into the filtered CTE — you'll need it for the share calculation.",
+      "Carry the cat_total through by joining cat_totals into the filtered CTE \u2014 you'll need it for the share calculation.",
       "SUM(total_revenue) OVER (PARTITION BY category_id ORDER BY revenue_rank) computes the cumulative revenue as you move down each category's ranking."
     ],
     "concepts": [
@@ -1528,7 +1528,7 @@
     "order": 37,
     "mock_only": true,
     "type": "reverse",
-    "title": "Write the query — monthly completed-order volume (2024)",
+    "title": "Write the query \u2014 monthly completed-order volume (2024)",
     "description": "Write a SQL query that produces the result table shown below. The result shows each calendar month in 2024 with the count of 'completed' orders and total completed revenue.",
     "difficulty": "hard",
     "schema": {
@@ -1592,10 +1592,10 @@
       "aggregate"
     ],
     "enforce_concepts": true,
-    "explanation": "strftime(order_date, '%Y-%m') extracts the year-month string. WHERE constrains to completed orders in 2024 only. GROUP BY month aggregates per calendar month. ORDER BY month produces the chronological trend. The result shows 8 of 12 months — the full query returns all 12.",
+    "explanation": "strftime(order_date, '%Y-%m') extracts the year-month string. WHERE constrains to completed orders in 2024 only. GROUP BY month aggregates per calendar month. ORDER BY month produces the chronological trend. The result shows 8 of 12 months \u2014 the full query returns all 12.",
     "hints": [
       "Use strftime to extract year-month from order_date.",
-      "The result shows only 8 months for display — your query should return all 12 months in 2024."
+      "The result shows only 8 months for display \u2014 your query should return all 12 months in 2024."
     ],
     "concepts": [
       "REVERSE SQL",
@@ -1609,7 +1609,7 @@
     "order": 38,
     "mock_only": true,
     "type": "reverse",
-    "title": "Write the query — user acquisition funnel by channel",
+    "title": "Write the query \u2014 user acquisition funnel by channel",
     "description": "Write a SQL query that produces the result table shown below. The result shows, for each acquisition channel, the total number of signed-up users, how many of them ever placed at least one 'completed' order, and the conversion rate.",
     "difficulty": "hard",
     "schema": {
@@ -1674,10 +1674,10 @@
       "aggregate"
     ],
     "enforce_concepts": true,
-    "explanation": "LEFT JOIN keeps all users including those with no orders. COUNT(DISTINCT CASE WHEN o.status = 'completed' THEN u.user_id END) counts unique users who placed a completed order — DISTINCT prevents counting the same user twice if they have multiple completed orders. The ratio gives conversion rate.",
+    "explanation": "LEFT JOIN keeps all users including those with no orders. COUNT(DISTINCT CASE WHEN o.status = 'completed' THEN u.user_id END) counts unique users who placed a completed order \u2014 DISTINCT prevents counting the same user twice if they have multiple completed orders. The ratio gives conversion rate.",
     "hints": [
-      "Every user should appear in the signup count — even users who never placed an order.",
-      "COUNT(DISTINCT CASE WHEN ...) counts unique converted users — without DISTINCT a multi-order user would be over-counted."
+      "Every user should appear in the signup count \u2014 even users who never placed an order.",
+      "COUNT(DISTINCT CASE WHEN ...) counts unique converted users \u2014 without DISTINCT a multi-order user would be over-counted."
     ],
     "concepts": [
       "REVERSE SQL",
@@ -1691,7 +1691,7 @@
     "order": 39,
     "mock_only": true,
     "type": "reverse",
-    "title": "Write the query — top products per category with rank",
+    "title": "Write the query \u2014 top products per category with rank",
     "description": "Write a SQL query that produces the result table shown below. The result shows the top-revenue product in each category, along with the second-place product where revenue is close. The `revenue_rank` column is the product's rank within its category (1 = highest).",
     "difficulty": "hard",
     "schema": {
@@ -1776,7 +1776,7 @@
     "enforce_concepts": true,
     "explanation": "RANK() OVER (PARTITION BY category_id ORDER BY SUM(line_amount) DESC) ranks products within each category by revenue. Filtering to revenue_rank <= 2 keeps only the top two per category. ORDER BY total_revenue DESC then LIMIT 8 shows the 8 highest-revenue products across those top slots.",
     "hints": [
-      "Compare each product's revenue only to other products in the same category — position matters within the group, not across all categories.",
+      "Compare each product's revenue only to other products in the same category \u2014 position matters within the group, not across all categories.",
       "Filter on revenue_rank <= 2 in the outer WHERE after defining the CTE."
     ],
     "concepts": [
@@ -1791,7 +1791,7 @@
     "order": 40,
     "mock_only": true,
     "type": "reverse",
-    "title": "Write the query — department salary bands",
+    "title": "Write the query \u2014 department salary bands",
     "description": "Write a SQL query that produces the result table shown below. The result shows departments with at least 10 employees: their headcount, min/max/average salary, ordered by average salary descending.",
     "difficulty": "hard",
     "schema": {
@@ -1858,8 +1858,8 @@
     "enforce_concepts": true,
     "explanation": "JOIN connects departments to employees. GROUP BY department aggregates four salary metrics. HAVING COUNT(*) >= 10 excludes small departments. ORDER BY avg_salary DESC sorts by pay level. LIMIT 5 trims to the top-paying departments shown in the result.",
     "hints": [
-      "The result includes only departments above a minimum size — that threshold must be applied after aggregating.",
-      "The result has 5 rows — LIMIT 5 after ORDER BY avg_salary DESC."
+      "The result includes only departments above a minimum size \u2014 that threshold must be applied after aggregating.",
+      "The result has 5 rows \u2014 LIMIT 5 after ORDER BY avg_salary DESC."
     ],
     "concepts": [
       "REVERSE SQL",
@@ -1873,7 +1873,7 @@
     "order": 41,
     "mock_only": true,
     "type": "debug",
-    "title": "Fix the query — wrong PARTITION BY column",
+    "title": "Fix the query \u2014 wrong PARTITION BY column",
     "description": "The query below should rank each session within a user's history by start time, and count how many sessions each user has by traffic source. It fails with an error. Find and fix the bug.",
     "difficulty": "hard",
     "schema": {
@@ -1896,9 +1896,9 @@
       "window_functions"
     ],
     "enforce_concepts": true,
-    "explanation": "The PARTITION BY clause references `traffic_type`, but the column in the sessions table is named `traffic_source`. Fix: replace `traffic_type` with `traffic_source`. This is a common mistake when table column names don't match your mental model — the error message's 'Candidate bindings' hint shows the correct name.",
+    "explanation": "The PARTITION BY clause references `traffic_type`, but the column in the sessions table is named `traffic_source`. Fix: replace `traffic_type` with `traffic_source`. This is a common mistake when table column names don't match your mental model \u2014 the error message's 'Candidate bindings' hint shows the correct name.",
     "hints": [
-      "The error message shows 'Candidate bindings: traffic_source' — that's the correct column name.",
+      "The error message shows 'Candidate bindings: traffic_source' \u2014 that's the correct column name.",
       "Window function PARTITION BY references must use exact column names from the source table."
     ],
     "concepts": [
@@ -1913,7 +1913,7 @@
     "order": 42,
     "mock_only": true,
     "type": "debug",
-    "title": "Fix the query — CTE column alias mismatch in window function",
+    "title": "Fix the query \u2014 CTE column alias mismatch in window function",
     "description": "The query below uses a CTE to compute per-department statistics, then ranks departments by average salary. It fails with an error. Find and fix the bug.",
     "difficulty": "hard",
     "schema": {
@@ -1940,10 +1940,10 @@
       "window_functions"
     ],
     "enforce_concepts": true,
-    "explanation": "The CTE aliases the average salary column as `avg_sal`. The `ranked` CTE references it as `avg_salary` inside the window function — a name that was never defined. Fix: change `avg_salary` to `avg_sal` in the RANK() OVER clause. CTEs expose exactly the column names defined inside them; you cannot use a different alias in a downstream reference.",
+    "explanation": "The CTE aliases the average salary column as `avg_sal`. The `ranked` CTE references it as `avg_salary` inside the window function \u2014 a name that was never defined. Fix: change `avg_salary` to `avg_sal` in the RANK() OVER clause. CTEs expose exactly the column names defined inside them; you cannot use a different alias in a downstream reference.",
     "hints": [
-      "Check the column names defined inside dept_stats — whatever alias is used there must be referenced exactly downstream.",
-      "The error shows 'Candidate bindings: avg_sal' — that's the correct name to use in the RANK() OVER clause."
+      "Check the column names defined inside dept_stats \u2014 whatever alias is used there must be referenced exactly downstream.",
+      "The error shows 'Candidate bindings: avg_sal' \u2014 that's the correct name to use in the RANK() OVER clause."
     ],
     "concepts": [
       "CTE COLUMN CONSISTENCY",
@@ -1957,7 +1957,7 @@
     "order": 43,
     "mock_only": true,
     "type": "debug",
-    "title": "Fix the query — table name typo in JOIN",
+    "title": "Fix the query \u2014 table name typo in JOIN",
     "description": "The query below should return the top 10 products by revenue, along with their category name and brand. It fails with an error. Find and fix the bug.",
     "difficulty": "hard",
     "schema": {
@@ -1994,7 +1994,7 @@
     "explanation": "The table is named `products` (plural) but the query references `product` (singular). DuckDB cannot resolve the table name and raises a Catalog Error. Fix: change `product` to `products` in the JOIN clause. The error message 'Did you mean products?' gives the answer directly.",
     "hints": [
       "The error 'Table with name product does not exist' means the table name is wrong.",
-      "Check your FROM/JOIN clauses — the database table is named products, not product."
+      "Check your FROM/JOIN clauses \u2014 the database table is named products, not product."
     ],
     "concepts": [
       "TABLE NAME ERRORS",
