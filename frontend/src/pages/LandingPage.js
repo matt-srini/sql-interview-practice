@@ -657,6 +657,10 @@ export default function LandingPage() {
               </div>
             </section>
 
+            {/* TESTIMONIALS — hidden until real user quotes are collected.
+                To re-enable: remove this comment wrapper and the closing brace/comment below.
+                See docs/frontend.md for the full re-enable checklist. */}
+            {false && (
             <section className="landing-testimonials">
               <div className="landing-section-inner">
                 <p className="landing-testimonials-label">From people who prepared here</p>
@@ -675,6 +679,7 @@ export default function LandingPage() {
                 </div>
               </div>
             </section>
+            )}{/* end hidden testimonials */}
 
             <section className="landing-how-section">
               <div className="landing-section-inner">
