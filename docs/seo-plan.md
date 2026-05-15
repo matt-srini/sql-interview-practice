@@ -352,11 +352,12 @@ At startup, the question JSON files are already loaded in memory by the catalog 
 try:
     from questions import get_questions  # or however easy.json is accessed
     for q in easy_sql_questions:
-        concepts_preview = ", ".join(q.get("concepts", [])[:3])
-        companies_preview = ", ".join(q.get("companies", [])[:2])
+        concepts = q.get("concepts", [])
+        primary_concept = concepts[0].title() if concepts else "SQL"
+        concepts_preview = ", ".join(concepts[:3])
         desc = q.get("description", "")[:120].rstrip() + "..."
         meta[f"/practice/sql/questions/{q['id']}"] = {
-            "title": f"{q['title']} — SQL Practice — datathink",
+            "title": f"{q['title']} — {primary_concept} — datathink",
             "description": f"Practice: {desc} Covers {concepts_preview}.",
         }
     # Repeat for python, python-data, pyspark easy questions
@@ -364,7 +365,7 @@ except Exception:
     pass
 ```
 
-The title format `"{Question Title} — SQL Practice — datathink"` surfaces the question name (which contains the actual keyword), the track, and the brand.
+The title format `"{Question Title} — {Primary Concept} — datathink"` puts the most specific keyword signal in the middle segment instead of the generic "SQL Practice". The primary concept is the first entry in `concepts[]`, title-cased (e.g. `"window functions"` → `"Window Functions"`). Falls back to `"SQL"` / `"Python"` / etc. if the question has no concepts.
 
 Do the same for Python, Pandas, and PySpark easy questions at their respective URL paths:
 - `/practice/python/questions/{id}`
@@ -380,8 +381,8 @@ Currently every question gets `noindex`. Change this to conditional logic based 
 
 ```jsx
 <Helmet>
-  <title>{question.title} — {trackLabel} Practice — datathink</title>
-  <meta name="description" content={`Practice: ${question.description.slice(0, 120)}...`} />
+  <title>{question.title} — {question.concepts?.[0] ?? trackLabel} — datathink</title>
+  <meta name="description" content={`Practice: ${question.description.slice(0, 120)}... Covers ${question.concepts?.slice(0, 3).join(', ')}.`} />
   {question.difficulty !== 'easy' && (
     <meta name="robots" content="noindex, nofollow" />
   )}
