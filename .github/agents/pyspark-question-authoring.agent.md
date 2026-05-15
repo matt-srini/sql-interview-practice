@@ -32,8 +32,8 @@ You are a senior distributed systems engineer and data platform interviewer desi
 | Difficulty | ID range |
 |---|---|
 | Easy | 11001–11299 |
-| Medium | 11300–11599 |
-| Hard | 11600–11999 |
+| Medium | 11301–11599 |
+| Hard | 11601–11899 |
 
 `order` reflects pedagogical position within the difficulty tier — not file-append order. Assign the value that correctly slots the question into the concept arc. If inserting mid-sequence, note which existing `order` values shift up.
 
@@ -48,12 +48,12 @@ You are a senior distributed systems engineer and data platform interviewer desi
 - Do NOT create questions whose answer is "know the default config value" (e.g., "what is `spark.sql.shuffle.partitions` by default?")
 - The candidate should be able to reason to the answer by thinking about what Spark does, not by having memorised a fact
 
-### Medium (11300–11599)
+### Medium (11301–11599)
 - Trade-off reasoning — two approaches that are both plausible but differ in meaningful ways
 - May involve reading a code snippet, interpreting an execution plan summary, or tracing what an error means
 - Topics: partitioning, shuffle triggers, repartition vs coalesce, broadcast join, PySpark window function API, Delta Lake MERGE / time travel / schema evolution, Structured Streaming output modes (append / update / complete)
 
-### Hard (11600–11999)
+### Hard (11601–11899)
 - Multi-factor trade-off under realistic production constraints
 - All 4 options must be plausible to a candidate who partially understands the concept — no obviously wrong answers
 - Topics: AQE (adaptive query execution — coalescing partitions, converting sort-merge to broadcast, skew join handling), dynamic partition pruning, salting, pandas UDF memory model vs regular UDF, Z-ordering vs partition pruning, watermark behavior with late data, speculative execution

@@ -280,17 +280,15 @@ PostgreSQL   Redis Cluster
 
 **Python / Pandas / PySpark questions:** Same pattern in `backend/content/python_questions/`, `python_data_questions/`, `pyspark_questions/`. Each directory has a `schemas.json` that defines ID ranges and required fields.
 
-**Sample questions:** Defined in `backend/sample_questions.py` (SQL) and equivalent Python files. Fixed IDs (3 digits). Completely separate from challenge banks — never overlap.
+**Sample questions:** SQL samples are hardcoded in `backend/sample_questions.py` with fixed 3-digit IDs (101–103 easy, 201–203 medium, 301–303 hard). Non-SQL tracks (Python, Pandas, PySpark) have no separate sample files — `get_topic_sample_pool()` serves the first 3 practice questions per difficulty by `order`. Sample IDs never overlap with challenge IDs.
 
-**ID ranges:**
+**ID ranges** (authoritative source: each track's `schemas.json`):
 | Track | Easy | Medium | Hard |
 |---|---|---|---|
 | SQL | 1001–1999 | 2001–2999 | 3001–3999 |
 | Python | 4001–4299 | 4301–4599 | 4601–4999 |
-| Pandas | 5001–5999 | 6001–6999 | 7001–7999 |
-| PySpark | 11001–11999 | 12001–12999 | 13001–13999 |
-
-Sample IDs are always 3 digits and never overlap with challenge IDs.
+| Pandas | 5001–5299 | 5301–5599 | 5601–5899 |
+| PySpark | 11001–11299 | 11301–11599 | 11601–11899 |
 
 ---
 

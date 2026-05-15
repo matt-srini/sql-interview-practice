@@ -134,8 +134,8 @@ Authoring constraints for path files in `backend/content/paths/`:
 |---|---|---|---|
 | SQL | 1001–1999 | 2001–2999 | 3001–3999 |
 | Python | 4001–4299 | 4301–4599 | 4601–4999 |
-| Pandas | 5001–5299 | 5300–5599 | 5600–5999 |
-| PySpark | 11001–11299 | 11300–11599 | 11600–11999 |
+| Pandas | 5001–5299 | 5301–5599 | 5601–5899 |
+| PySpark | 11001–11299 | 11301–11599 | 11601–11899 |
 
 SQL sample questions: `101–103` (easy) · `201–203` (medium) · `301–303` (hard) — defined in `backend/sample_questions.py`.
 
@@ -525,12 +525,12 @@ Single concept, one unambiguous answer. Preferred types: `predict_output` and `d
 
 Do not create questions where the answer is "know the default config value." Every easy question should require the candidate to trace what Spark actually does.
 
-### Medium (11300–11599)
+### Medium (11301–11599)
 Trade-off reasoning: comparing two approaches with meaningful differences. May involve reading a code snippet, interpreting an execution plan, or explaining what an error means.
 
 Topics: partitioning, broadcast join, shuffle, repartition vs coalesce, Delta Lake MERGE / time travel / schema evolution, Structured Streaming output modes.
 
-### Hard (11600–11999)
+### Hard (11601–11899)
 Multi-factor trade-off under realistic production constraints. All 4 options must be plausible to someone who partially understands the concept.
 
 Topics: AQE internals, DPP, skew join / salting, pandas UDF memory, Z-ordering, watermark and late data, speculative execution.
