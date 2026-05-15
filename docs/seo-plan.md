@@ -33,7 +33,6 @@ Currently `QuestionPage.js` sets `noindex` on every question page regardless of 
 | # | Gap | Severity |
 |---|---|---|
 | 1 | 122 easy question pages are `noindex` + no server-side meta — unique titles, problem descriptions, concepts, companies never indexed | Critical |
-| 2 | No company discovery pages — `companies[]` exists on every question; "Amazon SQL interview questions" is high-volume, zero competition from us | Critical |
 | 4 | `SearchAction` target is broken — points to `/practice/sql` which doesn't accept a query param; disqualifies the sitelinks search box in SERPs | High |
 | 5 | Policy pages (Privacy, Terms, Contact, Refund) have no `<Helmet>` — fall back to landing page title/description when crawled or shared | High |
 | 6 | `LearningPath` uses `LearningResource` schema instead of `Course` — misses rich result eligibility (enrollment CTA, hasCourseInstance SERP chip) | High |
@@ -416,80 +415,7 @@ This adds ~122 URLs to the sitemap. The sitemap will grow from 46 to ~168 URLs �
 
 ---
 
-#### 3d. Add question-level internal links from company pages
-Once company pages exist (Phase 4), each should link directly to the easy question pages that match. This distributes PageRank from the new high-intent pages to the individual question pages, strengthening both.
-
----
-
-### Phase 4 — Company discovery pages (1–2 weeks)
-
-New routes and simple backend aggregation endpoints. No changes to existing practice logic, evaluation, or unlock rules.
-
----
-
-#### 4a. Company discovery pages — `/learn/:topic/companies/:company`
-
-**Target URLs (examples):**
-- `/learn/sql/companies/amazon` → "Amazon SQL Interview Questions"
-- `/learn/sql/companies/meta` → "Meta SQL Interview Questions"
-- `/learn/python/companies/google` → "Google Python Interview Questions"
-- `/learn/python-data/companies/stripe` → "Stripe Pandas Interview Questions"
-
-**What each page shows:**
-- H1: "{Company} {Track} Interview Questions"
-- 2-3 sentence framing (e.g., "Amazon data engineering interviews commonly focus on…") — generic, static per company
-- The easy questions for this track tagged with this company (title + problem excerpt + concepts covered)
-- Count: "{N} {track} questions tagged with {company} on datathink"
-- Most common concepts in those questions (computed from question data)
-- CTA: "Practice all {company} {track} questions →"
-
-**Backend:**
-New endpoint `GET /api/companies/:topic` — returns companies with question counts, computable from question files. Unauthenticated.
-
-```python
-@router.get("/api/companies/{topic}")
-async def get_companies(topic: str):
-    questions = load_questions_for_topic(topic)
-    company_counts = Counter(c for q in questions for c in q.get("companies", []))
-    return [{"company": c, "count": n} for c, n in company_counts.most_common()]
-```
-
-**Meta per page:**
-```
-Title: "Amazon SQL Interview Questions — datathink"
-Desc:  "Practice SQL questions modeled on Amazon data interviews. Covers window 
-        functions, CTEs, aggregation, and behavioral data analysis patterns."
-```
-
-**JSON-LD:**
-```json
-{
-  "@type": "ItemList",
-  "name": "Amazon SQL Interview Questions",
-  "numberOfItems": 8,
-  "itemListElement": [ ... easy questions tagged with Amazon ... ]
-}
-```
-
-**Sitemap:** Inject all company pages dynamically in `system.py`.
-
-**Slug convention:** URL-safe lowercase (`Amazon` → `amazon`, `Meta` → `meta`).
-
----
-
-#### 4b. Internal link wiring
-
-Once company pages exist, wire them into existing UI:
-
-- **SampleQuestionPage** — company badges become `<Link>` to `/learn/:topic/companies/:company`
-- **Easy question pages** — company badges link to their respective discovery pages
-- **TrackHubPage** — add a "Browse by company" section with top 5-6 entries
-
-This creates a proper internal link graph: track hub → company pages → easy question pages. PageRank flows from the high-traffic landing pages through to the long-tail pages.
-
----
-
-### Phase 5 — Sample page content depth (2–3 days)
+### Phase 4 — Sample page content depth (2–3 days)
 
 The 36 sample pages (`/sample/:topic/:difficulty`) are already in the sitemap and fully public. Currently they render a single rotating question per visit, making the page content thin and non-deterministic for crawlers.
 
@@ -552,7 +478,7 @@ Note the `url` links to the full easy question page — this creates an internal
 
 ---
 
-### Phase 6 — Technical performance (optional, do last)
+### Phase 5 — Technical performance (optional, do last)
 
 These are high-effort and lower immediate-impact than Phases 1-5.
 
@@ -627,8 +553,7 @@ After Phases 3 and 4, the sitemap will grow from ~46 to ~250+ URLs. At that poin
 | Today | ~46 | Brand, generic track-level |
 | After Phase 1+2 | ~50 | + Better CTR on existing pages via rich results |
 | After Phase 3 | ~172 | + 122 easy question long-tail keywords |
-| After Phase 4 | ~350+ | + Concept and company high-intent queries |
-| After Phase 5 | ~350 (richer) | + Deterministic sample page content |
+| After Phase 4 | ~172 (richer) | + Deterministic sample page content |
 
 ---
 
