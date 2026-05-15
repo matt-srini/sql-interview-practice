@@ -619,10 +619,11 @@ numerical inference end-to-end.
 
 ---
 
-## 8. Appendix — Question ID & Numbering Strategy (AUTHORITATIVE — no deviation)
+## 8. Appendix — Question ID & Numbering Strategy
 
-This is the single self-contained ID strategy. Every phase obeys it. Where any
-other section, the roadmap, or older notes conflict, **this section wins.**
+> **Canonical source:** `docs/content-authoring.md` § "Question ID & Numbering Strategy". That doc is permanent and will not be deleted. This appendix is a convenience copy; if they ever diverge, the permanent doc wins.
+
+The summary below matches the canonical doc exactly. Every phase obeys it.
 
 ### 8.1 Scheme: `TXNNN` (5 digits)
 

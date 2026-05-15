@@ -128,20 +128,71 @@ Authoring constraints for path files in `backend/content/paths/`:
 
 ---
 
-## ID ranges
+## Question ID & Numbering Strategy (authoritative — no deviation)
 
-| Track | Easy | Medium | Hard |
+This is the single authoritative source for the `TXNNN` ID scheme. Every track, every question, every phase of content authoring obeys it. Where any other document, plan file, or older note conflicts, **this section wins.**
+
+### Scheme: `TXNNN` (5 digits)
+
+```
+T   = track digit (1–9)
+X   = difficulty digit (1=easy, 2=medium, 3=hard)
+NNN = sequence within that difficulty (001–999)
+```
+
+Examples: `11005` = SQL easy #5 · `42017` = PySpark medium #17 · `53004` = Data Engineering hard #4.
+
+### Track assignments
+
+| Track | T | Easy range | Medium range | Hard range |
+|---|---|---|---|---|
+| SQL | 1 | 11001–11999 | 12001–12999 | 13001–13999 |
+| Python | 2 | 21001–21999 | 22001–22999 | 23001–23999 |
+| Pandas | 3 | 31001–31999 | 32001–32999 | 33001–33999 |
+| PySpark | 4 | 41001–41999 | 42001–42999 | 43001–43999 |
+| Data Engineering | 5 | 51001–51999 | 52001–52999 | 53001–53999 |
+| Data Modeling | 6 | 61001–61999 | 62001–62999 | 63001–63999 |
+| Statistics | 7 | 71001–71999 | 72001–72999 | 73001–73999 |
+| (reserved) | 8–9 | — | — | — |
+
+T digits 8–9 are reserved for future tracks. New tracks pick the next unused T.
+
+### Practice vs mock-only allocation
+
+Practice and `mock_only: true` questions **share the same `TXNNN` space within each difficulty file**. Mock-only questions are allocated at the **top of each difficulty range**, immediately after the last practice question — never separately numbered. No mock-only questions exist at easy for any track (by design: easy is practice-only).
+
+Verified current allocation for existing tracks:
+
+| Track | Easy | Medium (practice · mock) | Hard (practice · mock) |
 |---|---|---|---|
-| SQL | 11001–11999 | 12001–12999 | 13001–13999 |
-| Python | 21001–21999 | 22001–22999 | 23001–23999 |
-| Pandas | 31001–31999 | 32001–32999 | 33001–33999 |
-| PySpark | 41001–41999 | 42001–42999 | 43001–43999 |
-| Data Engineering | 51001–51999 | 52001–52999 | 53001–53999 |
-| Data Modeling | 61001–61999 | 62001–62999 | 63001–63999 |
+| SQL | 11001–11032 (32p) | 12001–12034 (34p) · 12035–12053 (19m) | 13001–13029 (29p) · 13030–13043 (14m) |
+| Python | 21001–21030 (30p) | 22001–22029 (29p) · 22030–22037 (8m) | 23001–23024 (24p) · 23025–23036 (12m) |
+| Pandas | 31001–31022 (22p) | 32001–32031 (31p) · 32032–32041 (10m) | 33001–33023 (23p) · 33024–33037 (14m) |
+| PySpark | 41001–41038 (38p) | 42001–42038 (38p) · 42039–42048 (10m) | 43001–43026 (26p) · 43027–43036 (10m) |
 
-SQL sample questions: `111–113` (easy) · `121–123` (medium) · `131–133` (hard) — defined in `backend/sample_questions.py`.
+### SQL sample IDs (3-digit, SQL only)
 
-**IDs must be globally unique across all question files.** Before adding a question:
+SQL sample questions use a compact `TXS` format (S=1–3): `111–113` easy · `121–123` medium · `131–133` hard. Defined in `backend/sample_questions.py`. Designed never to collide with 5-digit practice IDs.
+
+**Non-SQL tracks have no separate sample files or sample IDs.** `get_topic_sample_pool()` in `backend/sample_questions.py` serves samples by slicing the **first 3 practice questions by `order`** from the live catalog. For Data Engineering, Data Modeling, and Statistics: do not author dedicated sample questions and do not allocate sample IDs. The sample endpoint is satisfied automatically once the catalog has at least 3 questions per difficulty.
+
+### `schemas.json`-first rule
+
+Each track's `schemas.json` defines valid `id_ranges`; the catalog loader validates every ID at startup and **crashes on violation**. `schemas.json` must be created before any question file is added to a new track. The JSON files are the runtime truth; this doc reflects them. Locations: `backend/content/questions/schemas.json`, `…/python_questions/schemas.json`, `…/python_data_questions/schemas.json`, `…/pyspark_questions/schemas.json`.
+
+### Ordering vs ID
+
+The `order` field controls pedagogical sequence (sidebar order; slice samples are drawn from it) and is **independent of the ID**. IDs were originally assigned by sorting on `order` then numbering sequentially, so today they align — but this is not guaranteed as questions are inserted mid-sequence.
+
+**Rule: assign IDs by appending to the end of the difficulty range. Never re-align ID gaps to `order` gaps.** Renumbering is forbidden — it breaks `submissions`, `user_progress`, `follow_up_id`, and learning-path arrays.
+
+### No-overlap guarantee
+
+`TXNNN` guarantees zero overlap across tracks and difficulties by construction. Adding a track is purely "take the next free T digit." 3-digit SQL samples (111–133) never collide with 5-digit IDs.
+
+### Duplicate ID check
+
+**IDs must be globally unique across all question files.** Before committing any question:
 ```bash
 python3 -c "
 import json, glob
@@ -414,15 +465,15 @@ Pandas questions must test **pandas-specific thinking**, not SQL-in-Python. The 
 
 ## Difficulty standards
 
-### Easy (5001–5299)
+### Easy (31001–31999)
 Single pandas operation. Must teach a pandas-specific concept — not just boolean filtering.
 
 Key concepts: `str` accessor, `pd.cut`, `dt` accessor, `dropna`, `groupby.size`, `value_counts`, `str.contains`, `str.split`, named aggregation basics.
 
-### Medium (5300–5599)
+### Medium (32001–32999)
 2–3 related concepts. May involve: `merge`, `pivot_table`, `groupby.transform`, `rolling`, `resample`, `rank(pct=True)`, named aggregation.
 
-### Hard (5600–5999)
+### Hard (33001–33999)
 Multi-step pipeline with 2+ dependent transformations. Non-obvious patterns: `MultiIndex`, `.xs()`, memory optimization, `groupby.apply`, cohort analysis, funnel analysis.
 
 ---
@@ -431,7 +482,7 @@ Multi-step pipeline with 2+ dependent transformations. Non-obvious patterns: `Mu
 
 ```json
 {
-  "id": 5031,
+  "id": 31004,
   "order": 4,
   "topic": "python_data",
   "difficulty": "easy",
