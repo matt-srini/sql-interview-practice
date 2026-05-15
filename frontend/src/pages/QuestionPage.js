@@ -260,7 +260,7 @@ export default function QuestionPage() {
     api.get('/submissions', { params: { track: topic, question_id: id, limit: 20 } })
       .then((res) => setPastAttempts(res.data))
       .catch(() => {});
-  }, [id, topic, questionApiPath, meta.language, meta.hasMCQ, defaultCode, draftKey]);
+  }, [id, topic, questionApiPath, meta.language, meta.hasMCQ, defaultCode, draftKey, user?.id]);
 
   useEffect(() => () => {
     try {
@@ -305,7 +305,7 @@ export default function QuestionPage() {
       const saved = sessionStorage.getItem(`run-history:${topic}:${id}`);
       setRunHistory(saved ? JSON.parse(saved) : []);
     } catch { setRunHistory([]); }
-  }, [id, meta.language, meta.hasMCQ]);
+  }, [id, meta.language, meta.hasMCQ, user?.id]);
 
   useEffect(() => {
     const qid = Number(id);

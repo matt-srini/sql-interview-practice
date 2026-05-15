@@ -69,7 +69,7 @@ export default function TierBanner({
         {celebrate && <strong className="tier-banner-celebrate-lead">{celebrate} </strong>}
         {message}
       </span>
-      <Link to="/auth?upgrade=1" className="tier-banner-cta">See plans →</Link>
+      <Link to="/#landing-pricing" className="tier-banner-cta">See plans →</Link>
     </div>
   );
 }
