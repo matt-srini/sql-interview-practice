@@ -407,3 +407,11 @@ The mock submit endpoint reuses the same evaluators as the practice tracks:
 - PySpark: direct `selected_option == correct_option` comparison
 
 Correct submissions also call `mark_solved()` and `record_submission()` to update challenge progress.
+
+---
+
+## Track registry (Phase A — upcoming)
+
+Track-specific logic is currently hardcoded across `unlock.py`, `routers/mock.py`, `routers/insights.py`, `routers/sample.py`, `sample_questions.py`, and `scripts/validate_content.py`. Each file independently enumerates the valid track list, making it error-prone to add a new track.
+
+**Phase A** of the new-tracks plan will introduce `backend/tracks.py` as the single authoritative track registry. All routers and utilities will derive track lists, catalog modules, unlock profiles, and eval dispatch from this registry. The refactor is behavior-identical for the existing four tracks; its success criterion is "adding a track requires only a registry entry."

@@ -32,21 +32,21 @@ rather than a re-touch of eight files three times over.
 Per the standing instruction "make sure all docs are up to date before we
 start." Implementation must begin from a doc baseline that matches reality.
 
-- [ ] **A0.1.** Reconcile `docs/content-authoring.md` with actual loaders.
+- [x] **A0.1.** Reconcile `docs/content-authoring.md` with actual loaders.
   Known drift to fix: the Pandas section lists IDs as `5001–5999` (Easy
   `5001–5299`, Medium `5300–5599`, Hard `5600–5999`) but `python_data_questions/
   schemas.json` actually uses `31001/32001/33001`. Correct the doc to the real
   ranges. Sweep the whole "ID ranges" + per-track difficulty sections for any
   other loader/doc mismatch.
-- [ ] **A0.2.** Verify `CLAUDE.md` content footprint counts match the live
+- [x] **A0.2.** Verify `CLAUDE.md` content footprint counts match the live
   catalog loaders (question counts per track/difficulty) and fix any skew.
-- [ ] **A0.3.** Confirm every doc cross-reference resolves (`docs/README.md`
+- [x] **A0.3.** Confirm every doc cross-reference resolves (`docs/README.md`
   index, links between docs, `.github/agents/*` references).
-- [ ] **A0.4.** Add a short "Track registry" placeholder note to
+- [x] **A0.4.** Add a short "Track registry" placeholder note to
   `docs/architecture.md` and `docs/backend.md` describing that Phase A will
   introduce `backend/tracks.py` as the single source of truth (so the doc and
   the refactor land coherently).
-- [ ] **A0.5.** Commit the baseline-audit fixes on their own ("docs: reconcile
+- [x] **A0.5.** Commit the baseline-audit fixes on their own ("docs: reconcile
   content-authoring ID ranges and footprint counts with loaders") before
   Phase A code begins.
 

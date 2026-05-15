@@ -48,8 +48,8 @@ datathink is **FAANG-level interview preparation**, not a syntax tutorial. The s
 | SQL | 32 | 34 | 29 | **95** | SQL query, evaluated via DuckDB |
 | Python | 30 | 29 | 24 | **83** | Function implementation, evaluated via test cases |
 | Pandas | 22 | 31 | 23 | **76** | DataFrame function, evaluated via output comparison |
-| PySpark | 38 | 30 | 22 | **90** | MCQ / predict-output / debug, evaluated by option selection |
-| **Total** | **122** | **124** | **98** | **344** | |
+| PySpark | 38 | 38 | 26 | **102** | MCQ / predict-output / debug, evaluated by option selection |
+| **Total** | **122** | **132** | **102** | **356** | |
 
 Sample questions (no login, no progress): 3 per track × 3 difficulties = 9 per track = **36 total**.
 

@@ -274,13 +274,21 @@ PostgreSQL   Redis Cluster
 
 ---
 
+## Track registry (Phase A — upcoming)
+
+Currently, track-specific logic (catalog module, unlock profile, eval kind, concept rules, valid topic strings) is hardcoded in multiple files: `unlock.py`, `routers/mock.py`, `routers/insights.py`, `routers/sample.py`, `sample_questions.py`, `scripts/validate_content.py`, and the frontend `TopicContext.js` / `catalogContext.js`.
+
+**Phase A** of the new-tracks plan will introduce `backend/tracks.py` as the single source of truth for all track metadata. Each entry will carry: `slug`, `db_topic`, `catalog_module`, `label`, `eval_kind` (`"sql" | "python" | "pandas" | "mcq" | "mixed"`), `unlock_profile` (`"code" | "mcq"`), `content_dir`, `id_ranges`, `concept_blocklist`, `hint_rules`, and `in_mixed_mock`. All files that currently hardcode track lists will be refactored to derive from this registry. After Phase A, adding a track is a registry entry — no blast-radius edits to existing files.
+
+---
+
 ## Content architecture
 
 **SQL questions:** JSON files in `backend/content/questions/` — `easy.json`, `medium.json`, `hard.json`. Loaded and validated at startup by `questions.py`. Schema validated against committed CSV column headers.
 
 **Python / Pandas / PySpark questions:** Same pattern in `backend/content/python_questions/`, `python_data_questions/`, `pyspark_questions/`. Each directory has a `schemas.json` that defines ID ranges and required fields.
 
-**Sample questions:** SQL samples are hardcoded in `backend/sample_questions.py` with fixed 3-digit IDs (101–103 easy, 201–203 medium, 301–303 hard). Non-SQL tracks (Python, Pandas, PySpark) have no separate sample files — `get_topic_sample_pool()` serves the first 3 practice questions per difficulty by `order`. Sample IDs never overlap with challenge IDs.
+**Sample questions:** SQL samples are hardcoded in `backend/sample_questions.py` with fixed 3-digit IDs (111–113 easy, 121–123 medium, 131–133 hard). Non-SQL tracks (Python, Pandas, PySpark) have no separate sample files — `get_topic_sample_pool()` serves the first 3 practice questions per difficulty by `order`. Sample IDs never overlap with challenge IDs.
 
 **ID ranges** (authoritative source: each track's `schemas.json`):
 | Track | Easy | Medium | Hard |
@@ -291,6 +299,7 @@ PostgreSQL   Redis Cluster
 | PySpark | 41001–41999 | 42001–42999 | 43001–43999 |
 | Data Engineering | 51001–51999 | 52001–52999 | 53001–53999 |
 | Data Modeling | 61001–61999 | 62001–62999 | 63001–63999 |
+| Statistics | 71001–71999 | 72001–72999 | 73001–73999 |
 
 ID scheme: **TXNNN** (T=track 1–9, X=difficulty 1–3, NNN=sequence 001–999). Sample IDs: **TXS** (3 digits, S=1–3). SQL samples `111–133` only; other tracks serve samples from their practice pool by `order`.
 
