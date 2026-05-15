@@ -32,7 +32,6 @@ const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
  *                     when variant='app')
  *   userExtras      — ReactNode rendered before the user name (e.g. plan pill)
  *   belowTopbar     — ReactNode rendered under the topbar (e.g. upgrade banner)
- *   showPricingLink — show a Pricing anchor (logged-out visitors only)
  */
 export default function Topbar({
   active = null,
@@ -41,7 +40,6 @@ export default function Topbar({
   centerSlot = null,
   userExtras = null,
   belowTopbar = null,
-  showPricingLink = false,
 }) {
   const { user, logout } = useAuth();
   const { cycleTheme, themeIcon, themeLabel, isDark } = useTheme();
@@ -129,10 +127,6 @@ export default function Topbar({
     window.history.replaceState(null, '', '/');
     window.scrollTo({ top: 0, behavior: 'auto' });
   };
-
-  // Pricing anchor — stay on page if we're already on the landing page
-  const pricingHref =
-    location.pathname === '/' ? '#landing-pricing' : '/#landing-pricing';
 
   // Show separator only when we have something on both sides of it
   const hasRightOfSep = !!userExtras || !!user || (!user && showNav && !isMinimal);
@@ -226,11 +220,6 @@ export default function Topbar({
                   Dashboard
                 </NavLink>
 
-                {showPricingLink && !user && (
-                  <a className="topbar-auth-link" href={pricingHref}>
-                    Pricing
-                  </a>
-                )}
               </>
             )}
 
@@ -335,15 +324,6 @@ export default function Topbar({
                       >
                         Dashboard
                       </NavLink>
-                      {showPricingLink && !user && (
-                        <a
-                          className="topbar-mobile-item"
-                          href={pricingHref}
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          Pricing
-                        </a>
-                      )}
                       <div className="topbar-mobile-divider" />
                     </>
                   )}

@@ -411,7 +411,7 @@ export default function LandingPage() {
           "logo": "https://datathink.co/branding/lockup-bar-no-bg.svg"
         })}</script>
       </Helmet>
-      <Topbar showPricingLink={!user} userExtras={planPillNode} />
+      <Topbar userExtras={planPillNode} />
 
       <main className="landing-page" id="landing-top">
         {upgradeSuccess && (
