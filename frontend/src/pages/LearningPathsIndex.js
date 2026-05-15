@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import api from '../api';
 import { TRACK_META } from '../contexts/TopicContext';
@@ -10,6 +10,8 @@ const TOPICS = ['sql', 'python', 'python-data', 'pyspark'];
 
 export default function LearningPathsIndex() {
   const { topic } = useParams(); // present on /learn/:topic, absent on /learn
+  const [searchParams] = useSearchParams();
+  const q = searchParams.get('q')?.trim().toLowerCase() ?? '';
   const [paths, setPaths] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -20,7 +22,14 @@ export default function LearningPathsIndex() {
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = topic ? paths.filter(p => p.topic === topic) : paths;
+  const topicFiltered = topic ? paths.filter(p => p.topic === topic) : paths;
+  const filtered = q
+    ? topicFiltered.filter(p =>
+        p.title.toLowerCase().includes(q) ||
+        p.description?.toLowerCase().includes(q) ||
+        p.focus_concepts?.some(c => c.toLowerCase().includes(q))
+      )
+    : topicFiltered;
   const inProgressPaths = filtered
     .filter((p) => p.solved_count >= 1 && p.solved_count < p.question_count)
     .slice()
@@ -37,9 +46,11 @@ export default function LearningPathsIndex() {
     paths: filtered.filter(p => p.topic === t),
   })).filter(g => g.paths.length > 0);
 
-  const pageTitle = topic
-    ? `${TRACK_META[topic]?.label ?? topic} Learning Paths`
-    : 'Learning Paths';
+  const pageTitle = q
+    ? `Search: "${searchParams.get('q')}" — Learning Paths`
+    : topic
+      ? `${TRACK_META[topic]?.label ?? topic} Learning Paths`
+      : 'Learning Paths';
 
   return (
     <div className="learn-index-page">
@@ -148,10 +159,16 @@ export default function LearningPathsIndex() {
 
           {!loading && filtered.length === 0 && (
             <div className="learn-index-empty">
-              <p>No paths found for this track yet.</p>
+              <p>{q ? `No paths matched "${searchParams.get('q')}".` : 'No paths found for this track yet.'}</p>
               <div className="learn-index-empty-actions">
-                <Link to="/practice/sql" className="btn btn-primary">Start SQL practice</Link>
-                <Link to="/dashboard" className="btn btn-secondary">View dashboard</Link>
+                {q ? (
+                  <Link to="/learn" className="btn btn-primary">Browse all paths</Link>
+                ) : (
+                  <>
+                    <Link to="/practice/sql" className="btn btn-primary">Start SQL practice</Link>
+                    <Link to="/dashboard" className="btn btn-secondary">View dashboard</Link>
+                  </>
+                )}
               </div>
             </div>
           )}

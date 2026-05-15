@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import Topbar from '../components/Topbar';
 
 export default function RefundPolicyPage({ isModal = false }) {
@@ -62,6 +63,14 @@ export default function RefundPolicyPage({ isModal = false }) {
 
   return (
     <div className="auth-page">
+      <Helmet>
+        <title>Refund Policy — datathink</title>
+        <meta name="description" content="datathink's refund and cancellation policy for Pro and Elite plans." />
+        <meta property="og:title" content="Refund Policy — datathink" />
+        <meta property="og:description" content="datathink's refund and cancellation policy for Pro and Elite plans." />
+        <meta property="og:url" content="https://datathink.co/refund-policy" />
+        <link rel="canonical" href="https://datathink.co/refund-policy" />
+      </Helmet>
       <Topbar variant="minimal" />
       <main className="auth-main">
         {content}

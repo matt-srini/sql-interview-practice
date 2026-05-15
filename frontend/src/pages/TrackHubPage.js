@@ -32,8 +32,16 @@ function pickFirstQuestionId(catalog) {
   return null;
 }
 
+const HUB_DESCRIPTIONS = {
+  sql: 'Your SQL practice workspace. Pick up where you left off, track progress across 95 questions by difficulty, and solve real interview problems with instant DuckDB execution and solution analysis.',
+  python: 'Your Python practice workspace. Track progress across 83 algorithm and data processing questions with automated test case feedback and step-by-step hints.',
+  'python-data': 'Your Pandas practice workspace. Track progress across 76 DataFrame manipulation questions with live execution and side-by-side output comparison.',
+  pyspark: 'Your PySpark practice workspace. Track progress across 102 MCQ, predict-output, debug, and scenario questions covering core Spark concepts and performance.',
+};
+
 export default function TrackHubPage() {
   const { topic, meta } = useTopic();
+  const hubDescription = HUB_DESCRIPTIONS[topic] ?? meta.description;
   const { catalog, loading, error } = useCatalog();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -151,9 +159,9 @@ export default function TrackHubPage() {
     <main className="container track-hub-page">
       <Helmet>
         <title>{meta.label} Interview Practice — datathink</title>
-        <meta name="description" content={meta.description} />
+        <meta name="description" content={hubDescription} />
         <meta property="og:title" content={`${meta.label} Interview Practice — datathink`} />
-        <meta property="og:description" content={meta.description} />
+        <meta property="og:description" content={hubDescription} />
         <meta property="og:url" content={`https://datathink.co/practice/${topic}`} />
         <meta property="og:image" content="https://datathink.co/og-image.png" />
         <link rel="canonical" href={`https://datathink.co/practice/${topic}`} />
@@ -163,7 +171,7 @@ export default function TrackHubPage() {
           "@context": "https://schema.org",
           "@type": "Course",
           "name": `${meta.label} Interview Practice`,
-          "description": meta.description,
+          "description": hubDescription,
           "url": `https://datathink.co/practice/${topic}`,
           "numberOfLessons": meta.totalQuestions,
           "provider": { "@type": "Organization", "name": "datathink", "url": "https://datathink.co" }

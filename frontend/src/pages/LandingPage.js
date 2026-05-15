@@ -399,7 +399,10 @@ export default function LandingPage() {
           "description": "Practice SQL, Python, Pandas, and PySpark interview questions in a real execution environment. 350+ questions, instant feedback, and curated learning paths.",
           "potentialAction": {
             "@type": "SearchAction",
-            "target": "https://datathink.co/practice/sql",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://datathink.co/learn?q={search_term_string}"
+            },
             "query-input": "required name=search_term_string"
           }
         })}</script>

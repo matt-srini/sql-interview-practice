@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import Topbar from '../components/Topbar';
 
 export default function ContactPage({ isModal = false }) {
@@ -51,6 +52,14 @@ export default function ContactPage({ isModal = false }) {
 
   return (
     <div className="auth-page">
+      <Helmet>
+        <title>Contact — datathink</title>
+        <meta name="description" content="Get in touch with the datathink team for support or questions about the platform." />
+        <meta property="og:title" content="Contact — datathink" />
+        <meta property="og:description" content="Get in touch with the datathink team for support or questions about the platform." />
+        <meta property="og:url" content="https://datathink.co/contact" />
+        <link rel="canonical" href="https://datathink.co/contact" />
+      </Helmet>
       <Topbar variant="minimal" />
       <main className="auth-main">
         {content}

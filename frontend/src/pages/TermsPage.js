@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import Topbar from '../components/Topbar';
 
 export default function TermsPage({ isModal = false }) {
@@ -91,6 +92,14 @@ export default function TermsPage({ isModal = false }) {
 
   return (
     <div className="auth-page">
+      <Helmet>
+        <title>Terms of Service — datathink</title>
+        <meta name="description" content="Terms governing your use of the datathink interview practice platform." />
+        <meta property="og:title" content="Terms of Service — datathink" />
+        <meta property="og:description" content="Terms governing your use of the datathink interview practice platform." />
+        <meta property="og:url" content="https://datathink.co/terms" />
+        <link rel="canonical" href="https://datathink.co/terms" />
+      </Helmet>
       <Topbar variant="minimal" />
       <main className="auth-main">
         {content}

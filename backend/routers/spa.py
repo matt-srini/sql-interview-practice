@@ -56,19 +56,19 @@ def _build_seo_meta() -> dict:
         },
         "/practice/sql": {
             "title": "SQL Interview Practice — datathink",
-            "description": "Practice 95 SQL interview questions against real datasets. Instant DuckDB execution with solution analysis.",
+            "description": "Your SQL practice workspace. Pick up where you left off, track progress across 95 questions by difficulty, and solve real interview problems with instant DuckDB execution and solution analysis.",
         },
         "/practice/python": {
             "title": "Python Interview Practice — datathink",
-            "description": "Practice 83 Python algorithm and data processing interview questions with test case feedback.",
+            "description": "Your Python practice workspace. Track progress across 83 algorithm and data processing questions with automated test case feedback and step-by-step hints.",
         },
         "/practice/python-data": {
             "title": "Pandas Interview Practice — datathink",
-            "description": "Practice 76 Pandas interview questions with live DataFrame execution and output comparison.",
+            "description": "Your Pandas practice workspace. Track progress across 76 DataFrame manipulation questions with live execution and side-by-side output comparison.",
         },
         "/practice/pyspark": {
             "title": "PySpark Interview Practice — datathink",
-            "description": "Practice 102 PySpark interview questions covering MCQ, predict-output, debug, and scenario formats.",
+            "description": "Your PySpark practice workspace. Track progress across 102 MCQ, predict-output, debug, and scenario questions covering core Spark concepts and performance.",
         },
     }
 

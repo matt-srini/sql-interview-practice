@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import Topbar from '../components/Topbar';
 
 export default function PrivacyPolicyPage({ isModal = false }) {
@@ -70,6 +71,14 @@ export default function PrivacyPolicyPage({ isModal = false }) {
 
   return (
     <div className="auth-page">
+      <Helmet>
+        <title>Privacy Policy — datathink</title>
+        <meta name="description" content="How datathink collects, uses, and protects your personal data." />
+        <meta property="og:title" content="Privacy Policy — datathink" />
+        <meta property="og:description" content="How datathink collects, uses, and protects your personal data." />
+        <meta property="og:url" content="https://datathink.co/privacy" />
+        <link rel="canonical" href="https://datathink.co/privacy" />
+      </Helmet>
       <Topbar variant="minimal" />
       <main className="auth-main">
         {content}
