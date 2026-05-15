@@ -53,13 +53,14 @@ A data interview practice platform covering four tracks. Users write SQL or Pyth
 **Modes per track:**
 - **Challenge mode** — plan-aware unlock rules, persistent progress, 356 practice questions across 4 tracks
 - **Mock mode** — 97 additional mock-only questions (Pro/Elite), never shown in practice catalog
-- **Sample mode** — 36 sandbox questions across all four tracks (3 per track+difficulty), no progress recorded, no login required
+- **Sample mode** — 36 sandbox questions across all four original tracks (3 per track+difficulty), no progress recorded, no login required. Data Engineering samples are auto-sliced from the first 3 practice questions per difficulty (no dedicated sample IDs).
 
 **Tracks:**
 - **SQL** — 95 practice (32 easy / 34 medium / 29 hard) + 33 mock-only, DuckDB execution, realistic relational datasets
 - **Python** — 83 practice (30 easy / 29 medium / 24 hard) + 20 mock-only, algorithms and data structures, test-case evaluation
 - **Pandas** — 76 practice (22 easy / 31 medium / 23 hard) + 24 mock-only, pandas-specific data manipulation, DataFrame comparison
 - **PySpark** — 102 practice (38 easy / 38 medium / 26 hard) + 20 mock-only, MCQ / predict-output / debug / scenario formats
+- **Data Engineering** — 80 practice (30 easy / 30 medium / 20 hard), MCQ / scenario / debug, no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
 
 ---
 
@@ -88,14 +89,15 @@ Mock-only questions (`mock_only: true`) live in the same JSON files as practice 
 | Python | 30 + 0 | 29 + 8 | 24 + 12 | Algorithm function, test cases | `backend/content/python_questions/` |
 | Pandas | 22 + 0 | 31 + 10 | 23 + 14 | DataFrame function, output comparison | `backend/content/python_data_questions/` |
 | PySpark | 38 + 0 | 38 + 10 | 26 + 10 | MCQ / predict-output / debug / scenario | `backend/content/pyspark_questions/` |
+| Data Engineering | 30 + 0 | 30 + 0 | 20 + 0 | MCQ / scenario / debug | `backend/content/data_engineering_questions/` |
 
-**Practice totals:** SQL 95 · Python 83 · Pandas 76 · PySpark 102 = **356 practice questions**  
-**Mock-only totals:** SQL 33 · Python 20 · Pandas 24 · PySpark 20 = **97 mock-only questions** (Pro/Elite only)
+**Practice totals:** SQL 95 · Python 83 · Pandas 76 · PySpark 102 · Data Engineering 80 = **436 practice questions**  
+**Mock-only totals:** SQL 33 · Python 20 · Pandas 24 · PySpark 20 = **97 mock-only questions** (Pro/Elite only; DE has no mock-only questions at launch)
 
 See [docs/content-authoring.md](docs/content-authoring.md) for the full mock-only authoring spec.
 
-- **Sample questions:** 3 per track × 3 difficulties = 36 total (no login, no progress impact)
-- **Learning paths:** 22 total — SQL: 7, Python: 5, Pandas: 5, PySpark: 5 (each track keeps exactly one `starter` and one `intermediate` free shortcut path; additional paths are advanced, mixed free/pro)
+- **Sample questions:** SQL/Python/Pandas/PySpark: 3 per track × 3 difficulties = 36 total. Data Engineering samples are auto-sliced from the first 3 practice questions per difficulty (no dedicated IDs).
+- **Learning paths:** 24 total — SQL: 7, Python: 5, Pandas: 5, PySpark: 5, Data Engineering: 2 (each track has exactly one `starter` and one `intermediate` free shortcut path; additional paths are advanced, mixed free/pro)
 - Every question has `hints` (currently 1–3 entries across the bank; new content should target the active hint ladder) and `concepts` (semantic pattern tags surfaced as pills)
 - SQL questions have a `companies` field (`["Meta", "Stripe", ...]`) used for the company filter in SidebarNav
 - SQL schemas validated against committed CSV headers at catalog load time
@@ -290,7 +292,7 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 - Medium: 8 easy → 3 medium · 15 easy → 8 medium · 25 easy → all medium
 - Hard: 8 medium → 3 hard · 15 medium → 8 hard · 22 medium → 15 hard *(cap: 8)*
 
-**Free-tier unlock thresholds (PySpark — higher because MCQ is lower-effort):**
+**Free-tier unlock thresholds (PySpark / Data Engineering — higher because MCQ is lower-effort):**
 - Medium: 12 easy → 3 medium · 20 easy → 8 medium · 30 easy → all medium
 - Hard: 15 medium → 5 hard · 22 medium → 10 hard *(cap: 5)*
 

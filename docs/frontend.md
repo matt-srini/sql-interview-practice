@@ -30,7 +30,7 @@ Defined in `frontend/src/App.js`:
 /questions/:id                   → redirect → /practice/sql/questions/:id  (legacy)
 ```
 
-`:topic` values: `sql` | `python` | `python-data` | `pyspark`
+`:topic` values: `sql` | `python` | `python-data` | `pyspark` | `data-engineering`
 
 App-level route changes now animate with a short fade-in wrapper (`.route-transition`) around the route tree.
 
@@ -261,13 +261,18 @@ Provides current topic and track metadata to the entire component tree.
 
 `TopicProvider` reads `:topic` from URL params via `useParams()`. `useTopic()` returns `{ topic, meta }`.
 
+**Track registry (`frontend/src/trackRegistry.js`):** Single source of truth for all track metadata (`TRACK_META`). Adding a track here is the only frontend change needed — catalog paths, sidebar, TrackHub, and SidebarNav all read from it. Current tracks: `sql`, `python`, `python-data`, `pyspark`, `data-engineering`.
+
+`data-engineering` entry: `color: '#B9762B'`, `hasMCQ: true`, `hasRunCode: false`, `apiPrefix: '/data-engineering'`, `totalQuestions: 80`.
+
 ### `catalogContext.js`
 
-Fetches catalog for the current topic on mount. URL determined by `useTopic()`:
+Fetches catalog for the current topic on mount. URL determined by `useTopic()` using each track's `apiPrefix` from the registry:
 - `sql` → `/catalog`
 - `python` → `/python/catalog`
 - `python-data` → `/python-data/catalog`
 - `pyspark` → `/pyspark/catalog`
+- `data-engineering` → `/data-engineering/catalog`
 
 Exposes `{ catalog, loading, error, refresh }`. Resets when topic changes.
 

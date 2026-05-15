@@ -26,6 +26,7 @@ from routers import account as account_router
 from routers import python_questions as python_questions_router
 from routers import python_data_questions as python_data_questions_router
 from routers import pyspark_questions as pyspark_questions_router
+from routers import data_engineering_questions as data_engineering_questions_router
 from routers import dashboard as dashboard_router
 from routers import insights as insights_router
 from routers import submissions as submissions_router
@@ -283,6 +284,7 @@ app.include_router(account_router.router)
 app.include_router(python_questions_router.router)
 app.include_router(python_data_questions_router.router)
 app.include_router(pyspark_questions_router.router)
+app.include_router(data_engineering_questions_router.router)
 app.include_router(dashboard_router.router)
 app.include_router(insights_router.router)
 app.include_router(submissions_router.router)

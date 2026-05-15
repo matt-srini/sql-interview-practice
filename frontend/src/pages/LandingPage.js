@@ -15,10 +15,11 @@ import { highlightCode } from './landingShowcaseHighlight';
 import { detectCurrency, PRICES } from '../utils/currency';
 
 const TRACK_DIFFICULTIES = {
-  sql:           { label: 'SQL',    easy: 32, medium: 34, hard: 29 },
-  python:        { label: 'Python', easy: 30, medium: 29, hard: 24 },
-  'python-data': { label: 'Pandas', easy: 22, medium: 31, hard: 23 },
-  pyspark:       { label: 'PySpark',easy: 38, medium: 38, hard: 26 },
+  sql:                { label: 'SQL',              easy: 32, medium: 34, hard: 29 },
+  python:             { label: 'Python',           easy: 30, medium: 29, hard: 24 },
+  'python-data':      { label: 'Pandas',           easy: 22, medium: 31, hard: 23 },
+  pyspark:            { label: 'PySpark',          easy: 38, medium: 38, hard: 26 },
+  'data-engineering': { label: 'Data Engineering', easy: 30, medium: 30, hard: 20 },
 };
 
 // Total easy questions across all tracks (used in pricing copy)
@@ -48,6 +49,11 @@ const SAMPLE_TIERS = {
     { difficulty: 'easy', title: 'Spark basics', copy: 'Three PySpark samples covering execution basics, APIs, and conceptual foundations.' },
     { difficulty: 'medium', title: 'Distributed thinking', copy: 'A mid-tier set on shuffles, partitioning, and practical transformation choices.' },
     { difficulty: 'hard', title: 'Systems stretch', copy: 'Harder PySpark samples for optimization instincts and architecture judgment.' },
+  ],
+  'data-engineering': [
+    { difficulty: 'easy', title: 'Pipeline foundations', copy: 'Three samples on batch vs. streaming, storage formats, and basic orchestration patterns.' },
+    { difficulty: 'medium', title: 'System design MCQ', copy: 'Mid-tier questions on data warehouse modeling, delivery semantics, and CDC patterns.' },
+    { difficulty: 'hard', title: 'Architecture stretch', copy: 'Harder DE samples testing performance tuning, SCD handling, and distributed system trade-offs.' },
   ],
 };
 
@@ -490,7 +496,7 @@ export default function LandingPage() {
             <div className="landing-proof-row" aria-label="Platform stats">
               <span className="landing-proof-stat"><strong>{TOTAL_QUESTIONS}</strong> questions</span>
               <span className="landing-proof-sep" aria-hidden="true" />
-              <span className="landing-proof-stat"><strong>4</strong> tracks</span>
+              <span className="landing-proof-stat"><strong>{TRACK_SLUGS.length}</strong> tracks</span>
               <span className="landing-proof-sep" aria-hidden="true" />
               <span className="landing-proof-stat"><strong>11</strong> real-world datasets</span>
               <span className="landing-proof-sep" aria-hidden="true" />

@@ -49,7 +49,8 @@ datathink is **FAANG-level interview preparation**, not a syntax tutorial. The s
 | Python | 30 | 29 | 24 | **83** | Function implementation, evaluated via test cases |
 | Pandas | 22 | 31 | 23 | **76** | DataFrame function, evaluated via output comparison |
 | PySpark | 38 | 38 | 26 | **102** | MCQ / predict-output / debug, evaluated by option selection |
-| **Total** | **122** | **132** | **102** | **356** | |
+| Data Engineering | 30 | 30 | 20 | **80** | MCQ / scenario / debug, evaluated by option selection |
+| **Total** | **152** | **162** | **122** | **436** | |
 
 Sample questions (no login, no progress): 3 per track × 3 difficulties = 9 per track = **36 total**.
 
@@ -61,11 +62,12 @@ Sample questions (no login, no progress): 3 per track × 3 difficulties = 9 per 
 | Python | 5 | 2 free shortcut paths (`starter`, `intermediate`) + 3 advanced (mixed free/pro) |
 | Pandas | 5 | 2 free shortcut paths (`starter`, `intermediate`) + 3 advanced (mixed free/pro) |
 | PySpark | 5 | 2 free shortcut paths (`starter`, `intermediate`) + 3 advanced (mixed free/pro) |
-| **Total** | **22** | |
+| Data Engineering | 2 | `starter` "Pipeline Fundamentals" (free) · `intermediate` "Advanced DE Systems" (pro) |
+| **Total** | **24** | |
 
 Authoring constraints for path files in `backend/content/paths/`:
 - Required fields: `slug`, `title`, `description`, `topic`, `questions`, `tier`, `role`
-- `topic` must be one of: `sql`, `python`, `python-data`, `pyspark`
+- `topic` must be one of: `sql`, `python`, `python-data`, `pyspark`, `data-engineering`
 - `tier` must be `free` or `pro`
 - `role` must be `starter`, `intermediate`, or `advanced`
 - Exactly one `starter` and one `intermediate` path per track (used by unlock shortcuts)
@@ -125,6 +127,24 @@ Authoring constraints for path files in `backend/content/paths/`:
 | Easy | Transformations vs actions, lazy evaluation, DAG, RDD vs DataFrame, driver role, `withColumn`, `filter` / `count` order, `cache()` laziness, `len(df)` TypeError, `collect()` OOM risk, UDF return type mismatch, Catalyst predicate pushdown, narrow vs wide transforms |
 | Medium | Partitioning, `repartition` vs `coalesce`, shuffle triggers, broadcast join thresholds, PySpark window function API, Delta Lake MERGE (upsert), Delta time travel, schema evolution / enforcement, Structured Streaming output modes (append / update / complete), streaming trigger intervals |
 | Hard | AQE (all 3 optimizations), dynamic partition pruning, skew join / salting, pandas UDF memory model, Z-ordering vs partition pruning, watermark and late data drop behavior, speculative execution |
+
+### Data Engineering — concepts covered
+
+| Tier | Concepts |
+|---|---|
+| Easy | ETL vs ELT (transformation placement), idempotency (safe reruns), basic DAG orchestration (task dependencies, triggers), batch vs streaming fundamentals, partitioning & predicate pushdown, SCD types 1/2/3 basics, data lake vs warehouse vs lakehouse, CDC introduction, data quality assertions, forward/backward schema compatibility, at-least-once vs at-most-once delivery, SLA definition |
+| Medium | Forward/backward schema compatibility tradeoffs, Avro schema evolution, batch vs streaming latency tradeoffs, micro-batching, watermarks and late-data handling, state store sizing, data quality monitoring (anomaly detection, row count checks), exactly-once vs at-least-once, idempotent writes, backfill idempotency, partitioned backfill, data skew, columnar vs row-based formats, small-file problem, log-based vs query-based CDC, data freshness observability, cost of scans vs storage |
+| Hard | Exactly-once semantics (idempotent writes + transactional sources), incident response (cascading failures, replay, root cause), data lineage for debugging, SCD Type 4, schema breaking changes (required-field addition, type changes), columnar scan cost reduction, partition granularity vs cost tradeoffs, allowed lateness vs watermarks, session windows with late data, lakehouse vs warehouse for mixed workloads, hot vs cold storage tiers, anomaly-detection false-alert risk |
+
+**Concept families for `data-engineering` (used in `concept_families.py`):**
+
+`ETL VS ELT` · `IDEMPOTENCY` · `BACKFILL DESIGN` · `ORCHESTRATION` · `SCHEDULING & SLAS` · `SCHEMA EVOLUTION` · `BATCH VS STREAMING` · `WATERMARKING` · `DELIVERY SEMANTICS` · `PARTITIONING & PRUNING` · `STORAGE LAYOUT & FILE FORMATS` · `CDC & INGESTION` · `DATA QUALITY` · `LINEAGE & OBSERVABILITY` · `SCD OPERATIONS` · `STORAGE ARCHITECTURE` · `COST OPTIMIZATION` · `INCIDENT RESPONSE`
+
+**Concept blocklist for `data-engineering`** (too implementation-specific — validator rejects these as concept tags):
+`airflow`, `spark`, `kafka`, `flink`, `dbt`, `s3`, `glue`, `task`, `operator`, `sensor`, `trigger`, `pipeline`, `etl`, `elt`, `cron`
+
+**First-hint leak patterns for `data-engineering`** (forbidden in first hint):
+`idempoten*`, `watermark*`, `exactly-once`, `SCD`, `change data capture`, `backfill`, `at-least-once`, `at-most-once`
 
 ---
 
@@ -225,8 +245,9 @@ Hints guide thinking toward the correct approach without revealing it. The curre
 | Python | 2 | 2-3 | 2-3 |
 | Pandas | 2 | 2-3 | 2-3 |
 | PySpark | 1-2 | 2-3 | 2-3 |
+| Data Engineering | 1-2 | 2-3 | 2-3 |
 
-PySpark easy is the only allowed single-hint exception. Those questions are fast concept checks, so one strong execution-oriented hint is acceptable as long as the UI does not pretend there is a multi-step ladder.
+PySpark and Data Engineering easy are the only allowed single-hint exceptions. Those questions are fast concept checks, so one strong execution-oriented hint is acceptable as long as the UI does not pretend there is a multi-step ladder.
 
 **Good hint:** "Use a hash map to look up previously seen values in O(1) as you iterate"  
 **Bad hint:** "Use a dictionary where the key is the number and value is its index"

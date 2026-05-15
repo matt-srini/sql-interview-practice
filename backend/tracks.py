@@ -18,6 +18,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+import data_engineering_questions
 import python_data_questions
 import python_questions
 import pyspark_questions
@@ -236,6 +237,44 @@ TRACKS: tuple[TrackConfig, ...] = (
             re.compile(r"\bcreateorreplace(temp)?view\b", re.IGNORECASE),
         ),
         in_mixed_mock=True,
+    ),
+    TrackConfig(
+        slug="data-engineering",
+        db_topic="data-engineering",
+        catalog_module=data_engineering_questions,
+        label="Data Engineering",
+        eval_kind="mcq",
+        unlock_profile="mcq",
+        content_dir=BACKEND_ROOT / "content" / "data_engineering_questions",
+        concept_blocklist={
+            "airflow",
+            "spark",
+            "kafka",
+            "flink",
+            "dbt",
+            "s3",
+            "glue",
+            "task",
+            "operator",
+            "sensor",
+            "trigger",
+            "pipeline",
+            "etl",
+            "elt",
+            "cron",
+        },
+        hint_rules={"easy": (1, 2), "medium": (2, 3), "hard": (2, 3)},
+        first_hint_leak_patterns=(
+            re.compile(r"\bidempoten\w*\b", re.IGNORECASE),
+            re.compile(r"\bwatermark\w*\b", re.IGNORECASE),
+            re.compile(r"\bexactly[_\s-]once\b", re.IGNORECASE),
+            re.compile(r"\bSCD\b"),
+            re.compile(r"\bchange\s+data\s+capture\b", re.IGNORECASE),
+            re.compile(r"\bbackfill\b", re.IGNORECASE),
+            re.compile(r"\bat[_\s-]least[_\s-]once\b", re.IGNORECASE),
+            re.compile(r"\bat[_\s-]most[_\s-]once\b", re.IGNORECASE),
+        ),
+        in_mixed_mock=False,
     ),
 )
 

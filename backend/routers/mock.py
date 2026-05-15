@@ -411,8 +411,8 @@ def _public_question_payload(question: dict, track: str) -> dict:
             name: {"description": info.get("description", "") if isinstance(info, dict) else str(info)}
             for name, info in question.get("dataframes", {}).items()
         }
-    # PySpark: include options
-    if track == "pyspark":
+    # MCQ tracks (PySpark, Data Engineering, …): include options and display fields
+    if get_track(track).eval_kind == "mcq":
         payload["options"] = question.get("options", [])
         payload["question_type"] = question.get("type", "mcq")
         payload["code_snippet"] = question.get("code_snippet")
@@ -436,7 +436,7 @@ def _solution_payload(question: dict, track: str) -> dict:
             "solution_code": solution_text,
             "explanation": question.get("explanation", ""),
         }
-    if track == "pyspark":
+    if get_track(track).eval_kind == "mcq":
         correct_option = question.get("correct_option")
         return {
             "solution": str(correct_option) if correct_option is not None else None,
@@ -494,7 +494,7 @@ def _evaluate_submission(
             "error": result.get("error"),
         }
 
-    if track == "pyspark":
+    if get_track(track).eval_kind == "mcq":
         if selected_option is None:
             return False, {"error": "No option selected"}
         accepted = selected_option == question.get("correct_option")

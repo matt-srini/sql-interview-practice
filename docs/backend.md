@@ -37,6 +37,7 @@ Registered in `backend/main.py`:
 | `routers/python_questions.py` | `/api/python` | Python algorithm catalog, detail, run-code, submit |
 | `routers/python_data_questions.py` | `/api/python-data` | Pandas catalog, detail, run-code, submit |
 | `routers/pyspark_questions.py` | `/api/pyspark` | PySpark catalog, detail, submit (MCQ only) |
+| `routers/data_engineering_questions.py` | `/api/data-engineering` | Data Engineering catalog, detail, submit (MCQ only) |
 | `routers/dashboard.py` | `/api` | Cross-track progress dashboard, submission history |
 | `routers/insights.py` | `/api/dashboard` | Coaching insights: per-track speed/accuracy, weakest concepts, streak |
 | `routers/paths.py` | `/api/paths` | Learning path catalog and path detail with per-question state |

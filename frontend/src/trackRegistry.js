@@ -56,6 +56,18 @@ export const TRACK_META = {
     totalQuestions: 102,
     tagline: 'conceptual · MCQ · predict output',
   },
+  'data-engineering': {
+    label: 'Data Engineering',
+    description: 'Master data engineering concepts: ETL vs ELT, idempotency, orchestration, streaming vs batch, schema evolution, CDC, and system design trade-offs drawn from real DE interviews.',
+    color: '#B9762B',
+    apiPrefix: '/data-engineering',
+    language: 'text',
+    hasRunCode: false,
+    hasMCQ: true,
+    mixedSubtype: false,
+    totalQuestions: 80,
+    tagline: 'conceptual · MCQ · scenario',
+  },
 };
 
 export const TRACK_SLUGS = Object.keys(TRACK_META);

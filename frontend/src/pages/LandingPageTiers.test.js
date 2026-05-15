@@ -58,6 +58,12 @@ vi.mock('../contexts/TopicContext', () => ({
       color: '#D94F3D',
       totalQuestions: 90,
     },
+    'data-engineering': {
+      label: 'Data Engineering',
+      description: 'Data engineering concepts and patterns',
+      color: '#B9762B',
+      totalQuestions: 80,
+    },
   },
   TopicProvider: ({ children }) => children,
   useTopic: () => ({ topic: 'sql', meta: { label: 'SQL' } }),
