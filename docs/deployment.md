@@ -1,6 +1,6 @@
 # Deployment
 
-> **Navigation:** [Docs index](./README.md) · [Architecture](./architecture.md) · [Backend](./backend.md)
+> **Navigation:** [Docs index](../README.md) · [Architecture](./architecture.md) · [Backend](./backend.md)
 
 ---
 

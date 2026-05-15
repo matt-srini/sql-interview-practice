@@ -392,14 +392,12 @@ cd backend && DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:543
 
 | File | What it covers |
 |---|---|
-| `docs/README.md` | Documentation hub — start here; question bank summary, quick orientation |
 | `docs/architecture.md` | System design, request lifecycles, data model, execution pipelines, scaling |
 | `docs/backend.md` | All API routes, routers, execution pipeline, identity model |
 | `docs/frontend.md` | Routes, pages, components, design system, data flows |
 | `docs/datasets.md` | All 11 dataset tables — columns, row counts, intentional edge cases |
 | `docs/deployment.md` | Local dev, Docker, production image, env vars, Railway |
 | `docs/content-authoring.md` | Platform philosophy, question counts, concept coverage maps, per-track schemas, authoring rules |
-| `docs/content-quality-remediation-plan.md` | Phased execution plan for question-quality, hinting, progression, and pricing-claim improvements |
 | `docs/USERGUIDE.md` | End-user guide to the platform |
 | `docs/features/pricing.md` | Pricing feature reference — plan entitlements, Razorpay flows, CTA states, webhook rules |
 | `docs/features/mock.md` | Mock interview feature reference — plan gates, endpoints, coaching insights, test coverage |

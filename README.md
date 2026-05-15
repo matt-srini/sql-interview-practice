@@ -4,7 +4,7 @@ A data interview practice platform for SQL, Python, Pandas, and PySpark. The pro
 
 ## Current State
 
-- Challenge bank: 350 questions across 4 tracks
+- Challenge bank: 356 questions across 4 tracks
 - Sample bank: 36 questions total, with 3 sample questions per track and difficulty
 - Challenge mode with persistent progress, plan gating, bookmarks, drafts, and unlock logic
 - Sample mode with no login requirement and no challenge-progress impact
@@ -12,17 +12,17 @@ A data interview practice platform for SQL, Python, Pandas, and PySpark. The pro
 - Learning paths with free and Pro-gated track-specific curricula
 - Semantic concept tags and progressive hints surfaced in the practice UI
 
-The documentation hub lives in [docs/README.md](./docs/README.md).
-
 ## Question Bank
 
 | Track | Easy | Medium | Hard | Total |
 |---|---|---|---|---|
 | SQL | 32 | 34 | 29 | 95 |
 | Python | 30 | 29 | 24 | 83 |
-| Pandas | 29 | 30 | 23 | 82 |
-| PySpark | 38 | 30 | 22 | 90 |
-| **Total** | **129** | **123** | **98** | **350** |
+| Pandas | 22 | 31 | 23 | 76 |
+| PySpark | 38 | 38 | 26 | 102 |
+| **Total** | **122** | **132** | **102** | **356** |
+
+Sample questions (no login, no progress tracking): 3 per track × 3 difficulties = **36 total**.
 
 ## Tech Stack
 
@@ -74,7 +74,7 @@ sql-interview-practice/
 
 - Free: all easy questions, batch-gated medium and hard access, 3 free learning paths per track
 - Pro: full challenge catalog, all learning paths, medium and hard mock access with daily caps
-- Elite: full catalog, full mock access, company-filtered mocks, and weak-spot insights after mocks
+- Elite: full catalog, full mock access, and weak-spot insights after mocks
 - `lifetime_pro` and `lifetime_elite` normalize to their base plans for access checks
 
 ### Unlock rules
@@ -108,15 +108,39 @@ Useful endpoints:
 - Health: http://127.0.0.1:8000/health
 - API docs: http://127.0.0.1:8000/docs
 
-## Documentation Map
+## Documentation
 
-- [docs/README.md](./docs/README.md): documentation hub
-- [docs/architecture.md](./docs/architecture.md): system design and request lifecycles
-- [docs/backend.md](./docs/backend.md): API routes and backend behavior
-- [docs/frontend.md](./docs/frontend.md): routes, pages, and UI structure
-- [docs/content-authoring.md](./docs/content-authoring.md): question and path authoring rules
-- [docs/content-quality-remediation-plan.md](./docs/content-quality-remediation-plan.md): phased content-quality improvement plan
-- [docs/deployment.md](./docs/deployment.md): local setup, Docker, and Railway deployment
-- [docs/features/pricing.md](./docs/features/pricing.md): pricing surface, plan entitlements, Razorpay flow
-- [docs/features/mock.md](./docs/features/mock.md): mock interview modes and summary behavior
-- [docs/features/dashboard.md](./docs/features/dashboard.md): dashboard metrics, weak-spot insights, and streak logic
+| Doc | What it covers |
+|---|---|
+| [docs/architecture.md](./docs/architecture.md) | System design, request lifecycles, data model, execution pipelines, scaling |
+| [docs/backend.md](./docs/backend.md) | All API routes, routers, query execution pipeline, Python sandbox, identity model |
+| [docs/frontend.md](./docs/frontend.md) | Route tree, pages, components, design system, data flows |
+| [docs/datasets.md](./docs/datasets.md) | All 11 CSV tables — columns, row counts, intentional edge cases |
+| [docs/deployment.md](./docs/deployment.md) | Local dev setup, Docker, production build, environment variables, Railway |
+| [docs/content-authoring.md](./docs/content-authoring.md) | Curriculum philosophy, question counts, concept coverage maps, per-track authoring rules, JSON schemas |
+| [docs/features/pricing.md](./docs/features/pricing.md) | Pricing, plan entitlements, Razorpay checkout flow, and webhook handling |
+| [docs/features/mock.md](./docs/features/mock.md) | Mock interview modes, limits, summary behavior, and coaching surfaces |
+| [docs/features/dashboard.md](./docs/features/dashboard.md) | Dashboard metrics, streak logic, weakest-concept insights, and caching behavior |
+| [docs/USERGUIDE.md](./docs/USERGUIDE.md) | End-user guide to the platform |
+
+### Where to start
+
+| Goal | Start here |
+|---|---|
+| Understand how the system works end-to-end | [docs/architecture.md](./docs/architecture.md) |
+| Add or change a question | [docs/content-authoring.md](./docs/content-authoring.md) |
+| Work on the API or execution pipeline | [docs/backend.md](./docs/backend.md) |
+| Work on the UI | [docs/frontend.md](./docs/frontend.md) |
+| Understand the datasets | [docs/datasets.md](./docs/datasets.md) |
+| Set up the dev environment | [docs/deployment.md](./docs/deployment.md) |
+
+### AI-assisted question authoring
+
+Use the track-specific agent prompt files in `.github/agents/` with Claude Code:
+
+| Track | Agent file |
+|---|---|
+| SQL | [`.github/agents/sql-question-authoring.agent.md`](./.github/agents/sql-question-authoring.agent.md) |
+| Python | [`.github/agents/python-question-authoring.agent.md`](./.github/agents/python-question-authoring.agent.md) |
+| Pandas | [`.github/agents/pandas-question-authoring.agent.md`](./.github/agents/pandas-question-authoring.agent.md) |
+| PySpark | [`.github/agents/pyspark-question-authoring.agent.md`](./.github/agents/pyspark-question-authoring.agent.md) |

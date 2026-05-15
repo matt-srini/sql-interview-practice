@@ -1,6 +1,6 @@
 # Content Authoring
 
-> **Navigation:** [Docs index](./README.md) · [Architecture](./architecture.md) · [Datasets](./datasets.md)
+> **Navigation:** [Docs index](../README.md) · [Architecture](./architecture.md) · [Datasets](./datasets.md)
 
 This is the authoritative guide for creating, editing, and reviewing questions on datathink. It covers the philosophy behind the question bank, the quality bar every question must clear, per-track authoring rules, and the exact JSON schemas the catalog loaders expect.
 
