@@ -98,6 +98,7 @@ Main practice screen. Layout and behavior vary by topic:
 | Pandas | Monaco (python) | VariablesPanel + description | ResultsTable + PrintOutputPanel |
 | PySpark | Read-only code snippet (if present) | Description only | MCQPanel → reveal explanation |
 
+- **SEO**: easy questions are indexable — `noindex` is omitted and a `canonical` link is injected via Helmet. Medium and hard questions retain `noindex, nofollow` because they 403 for unauthenticated crawlers. Title format: `"{Question Title} — {Track} {Primary Concept} — datathink"`.
 - Compact status line in question header (difficulty / question position / open count)
 - On mobile, question actions use a low-profile sticky dock for Run / Submit controls
 - On correct: `refresh()` updates catalog context so sidebar reflects new unlock state

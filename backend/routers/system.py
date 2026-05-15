@@ -111,7 +111,28 @@ async def sitemap_xml() -> Response:
     except Exception:
         path_urls = []
 
-    all_urls = static_urls + path_urls
+    # Easy question URLs — all 4 tracks
+    _EASY_Q_CFG = [
+        ("sql",         "/practice/sql/questions/",         "questions",             "get_questions_by_difficulty"),
+        ("python",      "/practice/python/questions/",      "python_questions",      "get_all_questions"),
+        ("python-data", "/practice/python-data/questions/", "python_data_questions", "get_all_questions"),
+        ("pyspark",     "/practice/pyspark/questions/",     "pyspark_questions",     "get_all_questions"),
+    ]
+    easy_question_urls = []
+    try:
+        import importlib
+        for _topic, _prefix, _module, _fn in _EASY_Q_CFG:
+            mod = importlib.import_module(_module)
+            fn = getattr(mod, _fn)
+            if _fn == "get_questions_by_difficulty":
+                qs = fn().get("easy", [])
+            else:
+                qs = [q for q in fn() if q.get("difficulty") == "easy" and not q.get("mock_only")]
+            easy_question_urls += [(f"{_prefix}{q['id']}", "0.6", "monthly") for q in qs]
+    except Exception:
+        pass
+
+    all_urls = static_urls + path_urls + easy_question_urls
 
     def url_entry(loc: str, priority: str, changefreq: str) -> str:
         return (

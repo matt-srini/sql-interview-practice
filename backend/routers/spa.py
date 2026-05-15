@@ -107,6 +107,39 @@ def _build_seo_meta() -> dict:
     except Exception:
         pass  # graceful degradation if paths can't be loaded
 
+    # Easy question pages — all 4 tracks
+    _EASY_TRACK_CFG = [
+        ("sql",         "SQL",     "questions",             "get_questions_by_difficulty"),
+        ("python",      "Python",  "python_questions",      "get_all_questions"),
+        ("python-data", "Pandas",  "python_data_questions", "get_all_questions"),
+        ("pyspark",     "PySpark", "pyspark_questions",     "get_all_questions"),
+    ]
+    try:
+        import importlib
+        for url_topic, label, module_name, fn_name in _EASY_TRACK_CFG:
+            mod = importlib.import_module(module_name)
+            fn = getattr(mod, fn_name)
+            if fn_name == "get_questions_by_difficulty":
+                questions = fn().get("easy", [])
+            else:
+                questions = [q for q in fn() if q.get("difficulty") == "easy" and not q.get("mock_only")]
+            for q in questions:
+                concepts = q.get("concepts", [])
+                primary = concepts[0].title() if concepts else ""
+                concept_segment = f" {primary}" if primary else ""
+                concepts_preview = ", ".join(concepts[:3])
+                raw_desc = q.get("description", "")
+                desc = (raw_desc[:120].rstrip() + "...") if len(raw_desc) > 120 else raw_desc
+                full_desc = f"Practice: {desc}"
+                if concepts_preview:
+                    full_desc += f" Covers {concepts_preview}."
+                meta[f"/practice/{url_topic}/questions/{q['id']}"] = {
+                    "title": f"{q['title']} — {label}{concept_segment} — datathink",
+                    "description": full_desc,
+                }
+    except Exception:
+        pass
+
     return meta
 
 

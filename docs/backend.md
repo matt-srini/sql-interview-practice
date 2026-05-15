@@ -41,7 +41,7 @@ Registered in `backend/main.py`:
 | `routers/insights.py` | `/api/dashboard` | Coaching insights: per-track speed/accuracy, weakest concepts, streak |
 | `routers/paths.py` | `/api/paths` | Learning path catalog and path detail with per-question state |
 | `routers/mock.py` | `/api/mock` | Mock interview sessions (start, submit, finish, history) |
-| `routers/spa.py` | — | Static assets + SPA fallback |
+| `routers/spa.py` | — | Static assets + SPA fallback; `_build_seo_meta()` injects per-route title/description/canonical for all known routes including ~122 easy question pages |
 
 ---
 

@@ -846,9 +846,15 @@ export default function QuestionPage() {
   return (
     <main className="container question-page question-page-challenge">
       <Helmet>
-        <title>{question ? `${question.title} — ${meta.label} — datathink` : `${meta.label} Practice — datathink`}</title>
-        {question && <meta name="description" content={`${question.title}: a ${question.difficulty} ${meta.label} interview question on datathink.`} />}
-        <meta name="robots" content="noindex" />
+        <title>{question
+          ? `${question.title} — ${meta.label}${question.concepts?.[0] ? ` ${question.concepts[0]}` : ''} — datathink`
+          : `${meta.label} Practice — datathink`
+        }</title>
+        {question && <meta name="description" content={
+          `Practice: ${(question.description ?? '').slice(0, 120)}${question.description?.length > 120 ? '...' : ''}${question.concepts?.length ? ` Covers ${question.concepts.slice(0, 3).join(', ')}.` : ''}`
+        } />}
+        {question?.difficulty !== 'easy' && <meta name="robots" content="noindex, nofollow" />}
+        {question?.difficulty === 'easy' && <link rel="canonical" href={`https://datathink.co/practice/${topic}/questions/${question.id}`} />}
       </Helmet>
       {pathNavBar && (
         <div className="path-nav-bar">
