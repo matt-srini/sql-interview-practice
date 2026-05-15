@@ -1,5 +1,11 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
+
+// Prevent the browser from restoring a cached scroll position after client-side
+// navigation — we manage scroll ourselves (e.g. hash anchors, page transitions).
+if (typeof window !== 'undefined' && 'scrollRestoration' in history) {
+  history.scrollRestoration = 'manual';
+}
 import { HelmetProvider } from 'react-helmet-async';
 import { CatalogProvider } from './catalogContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -102,7 +108,15 @@ function ToastProvider({ children }) {
 
 function RouteTransition({ children, transitionKey }) {
   const location = useLocation();
-  useEffect(() => { trackPageView(); }, [location.pathname]);
+  useEffect(() => {
+    trackPageView();
+    // history.scrollRestoration is 'manual' so we own scroll-to-top on every
+    // route change. Skip when a hash is present — the destination page owns
+    // scrolling to its anchor.
+    if (!location.hash) {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }, [location.pathname]);
   return (
     <div key={transitionKey ?? `${location.pathname}${location.search}`} className="route-transition">
       {children}
