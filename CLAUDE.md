@@ -51,14 +51,15 @@ Keep all five lenses active at once. The best decisions here satisfy all of them
 A data interview practice platform covering four tracks. Users write SQL or Python, answer MCQ questions, get instant feedback, and work through gated challenge banks.
 
 **Modes per track:**
-- **Challenge mode** — plan-aware unlock rules, persistent progress, 350 questions across 4 tracks
+- **Challenge mode** — plan-aware unlock rules, persistent progress, 356 practice questions across 4 tracks
+- **Mock mode** — 97 additional mock-only questions (Pro/Elite), never shown in practice catalog
 - **Sample mode** — 36 sandbox questions across all four tracks (3 per track+difficulty), no progress recorded, no login required
 
 **Tracks:**
-- **SQL** — 95 questions (32 easy / 34 medium / 29 hard), DuckDB execution, realistic relational datasets
-- **Python** — 83 questions (30 easy / 29 medium / 24 hard), algorithms and data structures, test-case evaluation
-- **Pandas** — 76 questions (22 easy / 31 medium / 23 hard), pandas-specific data manipulation, DataFrame comparison
-- **PySpark** — 102 questions (38 easy / 38 medium / 26 hard), MCQ / predict-output / debug / scenario formats
+- **SQL** — 95 practice (32 easy / 34 medium / 29 hard) + 33 mock-only, DuckDB execution, realistic relational datasets
+- **Python** — 83 practice (30 easy / 29 medium / 24 hard) + 20 mock-only, algorithms and data structures, test-case evaluation
+- **Pandas** — 76 practice (22 easy / 31 medium / 23 hard) + 24 mock-only, pandas-specific data manipulation, DataFrame comparison
+- **PySpark** — 102 practice (38 easy / 38 medium / 26 hard) + 20 mock-only, MCQ / predict-output / debug / scenario formats
 
 ---
 
@@ -79,14 +80,19 @@ A data interview practice platform covering four tracks. Users write SQL or Pyth
 
 ## Content footprint
 
-| Track | Questions | Format | Location |
-|---|---|---|---|
-| SQL | 95 practice (32 easy, 34 medium, 29 hard) + **33 mock-only** | SQL query evaluated via DuckDB | `backend/content/questions/` |
-| Python | 83 practice (30 easy, 29 medium, 24 hard) + **20 mock-only** | Algorithm function, evaluated via test cases | `backend/content/python_questions/` |
-| Pandas | 76 practice (22 easy, 31 medium, 23 hard) + **24 mock-only** | DataFrame function, evaluated via output comparison | `backend/content/python_data_questions/` |
-| PySpark | 102 practice (38 easy, 38 medium, 26 hard) + **20 mock-only** | MCQ / predict-output / debug / scenario, evaluated by option selection | `backend/content/pyspark_questions/` |
+Mock-only questions (`mock_only: true`) live in the same JSON files as practice questions but are excluded from the practice catalog. They appear only in mock sessions for Pro/Elite users. IDs share the same TXNNN scheme, allocated at the top of each difficulty range.
 
-Mock-only questions (`mock_only: true`) are excluded from the practice catalog and only appear in mock sessions for Pro/Elite users. See [docs/content-authoring.md](docs/content-authoring.md) for the full mock-only authoring spec.
+| Track | Easy (practice + mock) | Medium (practice + mock) | Hard (practice + mock) | Format | Location |
+|---|---|---|---|---|---|
+| SQL | 32 + 0 | 34 + 19 | 29 + 14 | SQL query via DuckDB | `backend/content/questions/` |
+| Python | 30 + 0 | 29 + 8 | 24 + 12 | Algorithm function, test cases | `backend/content/python_questions/` |
+| Pandas | 22 + 0 | 31 + 10 | 23 + 14 | DataFrame function, output comparison | `backend/content/python_data_questions/` |
+| PySpark | 38 + 0 | 38 + 10 | 26 + 10 | MCQ / predict-output / debug / scenario | `backend/content/pyspark_questions/` |
+
+**Practice totals:** SQL 95 · Python 83 · Pandas 76 · PySpark 102 = **356 practice questions**  
+**Mock-only totals:** SQL 33 · Python 20 · Pandas 24 · PySpark 20 = **97 mock-only questions** (Pro/Elite only)
+
+See [docs/content-authoring.md](docs/content-authoring.md) for the full mock-only authoring spec.
 
 - **Sample questions:** 3 per track × 3 difficulties = 36 total (no login, no progress impact)
 - **Learning paths:** 22 total — SQL: 7, Python: 5, Pandas: 5, PySpark: 5 (each track keeps exactly one `starter` and one `intermediate` free shortcut path; additional paths are advanced, mixed free/pro)

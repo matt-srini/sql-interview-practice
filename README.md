@@ -14,13 +14,15 @@ A data interview practice platform for SQL, Python, Pandas, and PySpark. The pro
 
 ## Question Bank
 
-| Track | Easy | Medium | Hard | Total |
-|---|---|---|---|---|
-| SQL | 32 | 34 | 29 | 95 |
-| Python | 30 | 29 | 24 | 83 |
-| Pandas | 22 | 31 | 23 | 76 |
-| PySpark | 38 | 38 | 26 | 102 |
-| **Total** | **122** | **132** | **102** | **356** |
+| Track | Easy | Medium | Hard | Practice total | Mock-only (Pro/Elite) |
+|---|---|---|---|---|---|
+| SQL | 32 | 34 | 29 | 95 | 33 (19 med, 14 hard) |
+| Python | 30 | 29 | 24 | 83 | 20 (8 med, 12 hard) |
+| Pandas | 22 | 31 | 23 | 76 | 24 (10 med, 14 hard) |
+| PySpark | 38 | 38 | 26 | 102 | 20 (10 med, 10 hard) |
+| **Total** | **122** | **132** | **102** | **356** | **97** |
+
+Mock-only questions share the same TXNNN ID scheme, allocated at the top of each difficulty range. They never appear in the practice catalog.
 
 Sample questions (no login, no progress tracking): 3 per track × 3 difficulties = **36 total**.
 
