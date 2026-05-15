@@ -345,18 +345,6 @@ The question JSON schema needs a `subtype` field: `"conceptual"` | `"numerical"`
 
 ---
 
-## Landing page expansion
-
-Once any new track ships, the landing page 4-tile grid needs to expand. Decision needed:
-
-**Option A:** Expand to 5-tile grid (or 6-tile for all three)  
-**Option B:** Replace one existing track tile (PySpark is the weakest anchor for DE/DA audiences)  
-**Option C:** Add a horizontal track strip at the top of the track selection section — show all tracks as pills, with the 4 original tiles remaining as featured
-
-Recommendation: **Option C** — pills for all tracks, featured tiles for the 4 original, "also available" secondary section for new tracks until they have enough content depth to stand next to SQL/Python.
-
----
-
 ## Cross-track considerations
 
 ### Unlock model
