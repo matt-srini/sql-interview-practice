@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { TRACK_META } from '../contexts/TopicContext';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -11,6 +11,7 @@ export default function InsightStrip({ insights }) {
   const { user } = useAuth();
   if (!insights) return null;
 
+  const navigate = useNavigate();
   const isPaid = user?.plan && user.plan !== 'free';
   const weakest = isPaid ? (insights.weakest_concepts?.[0] || null) : null;
   const weakestTrack = weakest ? TRACK_META[weakest.track] : null;
@@ -44,7 +45,11 @@ export default function InsightStrip({ insights }) {
         <p className="dashboard-insight-kicker">Weakest concept</p>
         {!isPaid ? (
           <p className="dashboard-insight-muted">
-            <Link to="/#landing-pricing" className="dashboard-insight-link">Upgrade to Pro</Link>
+            <button
+              type="button"
+              className="dashboard-insight-link"
+              onClick={() => navigate('/', { state: { scrollTo: 'landing-pricing' } })}
+            >Upgrade to Pro</button>
             {' '}to see your weakest concept and get drill recommendations.
           </p>
         ) : weakest ? (

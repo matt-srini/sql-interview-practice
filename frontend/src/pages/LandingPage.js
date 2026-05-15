@@ -264,6 +264,26 @@ export default function LandingPage() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Scroll to a section passed via router state (no hash in URL).
+  // Fires once on mount — used by TierBanner, InsightStrip, etc. so they
+  // can navigate to / and land at a section without leaving a hash in the URL.
+  useEffect(() => {
+    const target = location.state?.scrollTo;
+    if (!target) return;
+    // Clear from browser history state so the back-button doesn't re-trigger.
+    try { window.history.replaceState({ ...window.history.state, usr: null }, ''); } catch {}
+    const scroll = () => {
+      const el = document.getElementById(target);
+      if (!el) return;
+      const top = el.getBoundingClientRect().top + window.scrollY - 88;
+      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    };
+    const t1 = setTimeout(scroll, 220);
+    const t2 = setTimeout(scroll, 500);
+    const t3 = setTimeout(scroll, 1200);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Scroll to hash whenever landing is opened with or switched to a hash.
   useEffect(() => {
     const hash = location.hash;

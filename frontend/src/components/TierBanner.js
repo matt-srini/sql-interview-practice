@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * One-line banner shown at the top of TrackHubPage for Free users,
@@ -22,6 +22,7 @@ export default function TierBanner({
   mediumUnlocked = false,
   hardUnlocked = false,
 }) {
+  const navigate = useNavigate();
   const normalisedPlan = plan?.startsWith('lifetime_') ? plan.replace('lifetime_', '') : plan;
   if (normalisedPlan === 'elite' || normalisedPlan === 'pro') {
     const label = normalisedPlan === 'elite' ? 'Elite' : 'Pro';
@@ -69,7 +70,13 @@ export default function TierBanner({
         {celebrate && <strong className="tier-banner-celebrate-lead">{celebrate} </strong>}
         {message}
       </span>
-      <Link to="/#landing-pricing" className="tier-banner-cta">See plans →</Link>
+      <button
+        type="button"
+        className="tier-banner-cta"
+        onClick={() => navigate('/', { state: { scrollTo: 'landing-pricing' } })}
+      >
+        See plans →
+      </button>
     </div>
   );
 }

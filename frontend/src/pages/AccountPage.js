@@ -652,9 +652,13 @@ export default function AccountPage() {
 
               {!isPaying && !isLifetime && (
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: '0 0 0.5rem' }}>
-                  <Link to="/#landing-pricing" style={{ color: 'var(--accent)' }}>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/', { state: { scrollTo: 'landing-pricing' } })}
+                    style={{ color: 'var(--accent)', background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit', textDecoration: 'underline' }}
+                  >
                     Upgrade to Pro or Elite
-                  </Link>{' '}
+                  </button>{' '}
                   to unlock all questions and mock interviews.
                 </p>
               )}
