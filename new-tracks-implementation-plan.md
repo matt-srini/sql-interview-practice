@@ -20,7 +20,7 @@ rather than a re-touch of eight files three times over.
 | D2 | **One combined plan, separate workstreams.** Phases A–D (platform + 3 tracks) and Phase E (landing redesign) are independent; E can land any time after Phase A without blocking track work. | Keeps the philosophy-first redesign from gating content delivery. |
 | D3 | **Slug == DB topic == `:topic` param == API segment, hyphenated, no underscore alias.** New tracks use `data-engineering`, `data-modeling`, `statistics` *everywhere*. We do **not** repeat the `python-data`↔`python_data` split (that is legacy debt — do not propagate it). | Every hyphen/underscore alias is a hardcoded mapping site and a bug surface. One string everywhere = fewest edits. |
 | D4 | **No DB migration required.** `user_progress.topic` and `submissions.track` are `TEXT NOT NULL` with no enum/CHECK (verified in `db.py`). New topic strings work immediately. | Removes a feared migration risk; do not add one. |
-| D5 | **ID ranges (verified non-colliding):** SQL `11001–13043`, Python `21xxx`, Pandas `31xxx`, PySpark `41xxx`. Allocate **Data Engineering `51001/52001/53001`**, **Data Modeling `61001/62001/63001`**, **Statistics `71001/72001/73001`** (`5x/6x/7x001`–`…999` per easy/medium/hard). | Distinct blocks even though `topic` already namespaces IDs — avoids cross-track confusion in submissions/follow-ups/paths. |
+| D5 | **Question IDs follow the authoritative TXNNN strategy in §8 — no deviation.** New tracks: Data Engineering `T=5`, Data Modeling `T=6`, Statistics `T=7` (`51001/52001/53001`, `61001/…`, `71001/…`). Mock-only IDs sit at the *top* of each difficulty range (no separate numbering). IDs are append-only. Non-SQL tracks get **no dedicated sample IDs** (samples are auto-sliced from the first 3 practice questions by `order`). | Single self-contained scheme; guarantees no cross-track overlap by construction; matches the verified live JSON. §8 is binding. |
 | D6 | **Sequential track rollout stays.** DE Concepts → Data Modeling → Statistics, each end-to-end before the next (roadmap rule). Phase A (platform prep) and Phase E (landing) are *not* track work and do not violate this. | Roadmap constraint; preserves content QA focus. |
 | D7 | **New tracks are NOT added to the mock `mixed` pool initially.** They are selectable as their own mock track. Revisit `mixed` composition + role-based presets only after all three launch. | Silently changing `mixed` mock composition would surprise existing users. |
 | D8 | **Statistics renders per-question, not per-track.** `subtype: "conceptual"` → MCQ render/eval; `subtype: "numerical"` → Python editor + test cases (reuses `python_evaluator.py`). Driven by the question payload, gated by a `mixedSubtype` meta flag. | TRACK_META's single `hasMCQ`/`hasRunCode` cannot express a per-question split — see Phase D. |
@@ -134,8 +134,10 @@ Format: MCQ/scenario/predict-output/debug — identical eval to PySpark.
 `unlock_profile="mcq"`, `eval_kind="mcq"`, `in_mixed_mock=false`.
 
 - [ ] **B1. Content scaffold.** `backend/content/data_engineering_questions/`
-  with `schemas.json` (`id_ranges` per D5: `51001/52001/53001`) +
-  `easy.json/medium.json/hard.json` (start empty arrays).
+  with `schemas.json` **created first** (`id_ranges` per §8:
+  `51001–51999 / 52001–52999 / 53001–53999`) + `easy.json/medium.json/
+  hard.json` (start empty arrays). Loader crashes at startup on any ID outside
+  range — schemas.json before questions, always.
 - [ ] **B2. Loader.** `backend/data_engineering_questions.py` — copy
   `pyspark_questions.py` verbatim, change paths only. Same `VALID_TYPES`,
   `get_questions_by_difficulty`, `get_mock_questions_by_difficulty`,
@@ -153,10 +155,14 @@ Format: MCQ/scenario/predict-output/debug — identical eval to PySpark.
 - [ ] **B5. Validator extension.** Add `data-engineering` concept blocklist,
   hint rules, leak patterns to the registry. **Validator must accept the track
   before any content lands** (it's one script for all tracks).
-- [ ] **B6. Sample + mock.** Confirm sample (`/api/sample/data-engineering/...`)
-  and mock selectable. MCQ path reuses PySpark format-target logic — generalize
-  `_pyspark_format_targets` to any `eval_kind="mcq"` track or add a generic
-  variant. Add 3 sample questions (`51001`,`52001`,`53001`-ish, 1/difficulty).
+- [ ] **B6. Sample + mock.** **Do NOT author dedicated sample questions or
+  sample IDs** (per §8 — non-SQL tracks have none). `get_topic_sample_pool()`
+  auto-serves the first 3 practice questions by `order` per difficulty; just
+  confirm `/api/sample/data-engineering/{difficulty}` returns them once the
+  catalog has ≥3 questions per difficulty. Mock: generalize
+  `_pyspark_format_targets` to any `eval_kind="mcq"` track (or add a generic
+  variant) and confirm the track is mock-selectable. Any mock-only questions
+  use the top of each difficulty range (no separate numbering — §8).
 - [ ] **B7. Content authoring.** Create
   `.github/agents/data-engineering-question-authoring.agent.md`. Author 30
   easy / 30 medium / 20 hard per the roadmap coverage table + format mix.
@@ -270,8 +276,9 @@ phase — design it explicitly.
    together.** `validate_content.py` throws for *all* tracks if a registered
    topic lacks exactly one starter + one intermediate path, or if concept/hint
    rules are missing for the track. Sequence inside a track commit:
-   loader+router+registry+validator-rules+3 sample Qs+both paths must be a
-   coherent set before `validate_content.py` is run in CI.
+   loader+`schemas.json`+router+registry+validator-rules+both paths must be a
+   coherent set before `validate_content.py` is run in CI. (No sample-question
+   authoring step — §8: non-SQL samples are auto-sliced from practice.)
 3. **Content authoring after validator accepts the track**, never before.
 4. **Sequential tracks (D6 decision):** do not start Phase C until Phase B's
    launch gate is fully checked; likewise C before D.
@@ -609,3 +616,98 @@ numerical inference end-to-end.
 > statistics — deterministic inputs, exact expected outputs (fixed seeds /
 > closed-form), no plotting, stdlib + numpy only (confirm against
 > `python_guard.py` allow-list during Phase D).
+
+---
+
+## 8. Appendix — Question ID & Numbering Strategy (AUTHORITATIVE — no deviation)
+
+This is the single self-contained ID strategy. Every phase obeys it. Where any
+other section, the roadmap, or older notes conflict, **this section wins.**
+
+### 8.1 Scheme: `TXNNN` (5 digits)
+
+```
+T   = track digit (1–9)
+X   = difficulty digit (1=easy, 2=medium, 3=hard)
+NNN = sequence within that difficulty (001–999)
+```
+
+Examples: `11005` = SQL easy #5 · `42017` = PySpark medium #17 ·
+`53004` = Data Engineering hard #4.
+
+### 8.2 Track assignments
+
+| Track | T | Easy base | Medium base | Hard base |
+|---|---|---|---|---|
+| SQL | 1 | 11001 | 12001 | 13001 |
+| Python | 2 | 21001 | 22001 | 23001 |
+| Pandas | 3 | 31001 | 32001 | 33001 |
+| PySpark | 4 | 41001 | 42001 | 43001 |
+| Data Engineering | 5 | 51001 | 52001 | 53001 |
+| Data Modeling | 6 | 61001 | 62001 | 63001 |
+| Statistics | 7 | 71001 | 72001 | 73001 |
+| (reserved) | 8–9 | — | — | — |
+
+T digits 8–9 are reserved for future tracks. New tracks pick the next unused T.
+
+### 8.3 Practice vs mock-only
+
+Practice and `mock_only: true` questions **share the same `TXNNN` space within
+each difficulty file**. Mock-only questions are allocated at the **top of each
+difficulty range**, immediately after the last practice question — never
+separately numbered. No mock-only questions exist at *easy* for any track (by
+design: easy is practice-only). Verified current allocation:
+
+| Track | Easy | Medium (practice · mock) | Hard (practice · mock) |
+|---|---|---|---|
+| SQL | 11001–11032 (32p) | 12001–12034 (34p) · 12035–12053 (19m) | 13001–13029 (29p) · 13030–13043 (14m) |
+| Python | 21001–21030 (30p) | 22001–22029 (29p) · 22030–22037 (8m) | 23001–23024 (24p) · 23025–23036 (12m) |
+| Pandas | 31001–31022 (22p) | 32001–32031 (31p) · 32032–32041 (10m) | 33001–33023 (23p) · 33024–33037 (14m) |
+| PySpark | 41001–41038 (38p) | 42001–42038 (38p) · 42039–42048 (10m) | 43001–43026 (26p) · 43027–43036 (10m) |
+
+### 8.4 SQL sample IDs (3-digit, SQL only)
+
+SQL samples use compact `TXS` (S=1–3): `111–113` easy, `121–123` medium,
+`131–133` hard. Designed never to collide with 5-digit practice IDs.
+
+**Non-SQL tracks have NO separate sample files or sample IDs.**
+`get_topic_sample_pool()` in `backend/sample_questions.py` serves samples by
+slicing the **first 3 practice questions by `order`** from the live catalog.
+→ DE, Data Modeling, Statistics: do not author sample questions; samples are
+just the lowest-`order` practice questions, automatically. The roadmap's launch
+-gate item "3 sample questions live (1 per difficulty)" is satisfied **by this
+auto-slicing** for non-SQL tracks — there is nothing to author and no IDs to
+allocate; only verify the endpoint returns 3/difficulty once the catalog fills.
+
+### 8.5 Authoritative runtime source
+
+Each track's `schemas.json` defines valid `id_ranges`; the catalog loader
+validates every ID at startup and **crashes on violation**. The JSON files are
+the truth; docs reflect them. Locations:
+`backend/content/questions/schemas.json`,
+`…/python_questions/schemas.json`, `…/python_data_questions/schemas.json`,
+`…/pyspark_questions/schemas.json`. **New tracks (DE, DM, Stats) must have
+`schemas.json` created before any question is added** (Phase B1/C1/D1).
+
+### 8.6 Ordering vs ID
+
+The `order` field controls **pedagogical sequence** (sidebar order; the slice
+samples are drawn from) and is **independent of the ID**. IDs were assigned by
+sorting on `order` then numbering sequentially, so today they align — but this
+is not guaranteed as questions are inserted mid-sequence.
+**Rule: assign IDs by appending to the end of the difficulty range. Never
+re-align ID gaps to `order` gaps.** Renumbering is forbidden (it would break
+`submissions`, `user_progress`, `follow_up_id`, and path arrays).
+
+### 8.7 Learning path arrays
+
+All 22 path JSON files in `backend/content/paths/` hardcode question IDs (kept
+in sync at the TXNNN renumbering). When adding questions, update any path that
+references adjacent questions. New tracks' two paths are authored fresh against
+the new IDs (Phase B8/C/D10).
+
+### 8.8 No-overlap guarantee
+
+`TXNNN` guarantees zero overlap across tracks/difficulties by construction;
+3-digit SQL samples (111–133) never collide with 5-digit IDs. Adding a track is
+purely "take the next free T digit."
