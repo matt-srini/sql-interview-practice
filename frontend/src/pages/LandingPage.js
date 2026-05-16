@@ -39,22 +39,25 @@ const ROLES = [
 ];
 
 // ── Hero IDE content ────────────────────────────────────────────────────────
-const IDE_QUERY = `SELECT
-  dept,
-  COUNT(*) AS headcount,
-  ROUND(AVG(salary), 0) AS avg_salary
-FROM staff
-WHERE hire_date >= '2022-01-01'
-GROUP BY dept
-ORDER BY avg_salary DESC;`;
+const IDE_QUERY = `WITH ranked AS (
+  SELECT
+    name, dept, salary,
+    RANK() OVER (
+      PARTITION BY dept
+      ORDER BY salary DESC
+    ) AS rnk
+  FROM employees
+)
+SELECT name, dept, salary
+FROM ranked
+WHERE rnk = 1;`;
 
-const IDE_COLS = ['dept', 'headcount', 'avg_salary'];
+const IDE_COLS = ['name', 'dept', 'salary'];
 const IDE_ROWS = [
-  ['Engineering', '12', '128 500'],
-  ['Product',     ' 8', '118 200'],
-  ['Design',      ' 6', '104 800'],
-  ['Analytics',   ' 7', ' 98 600'],
-  ['Operations',  ' 5', ' 87 300'],
+  ['Sarah K.',  'Engineering', '$145,200'],
+  ['Jordan T.', 'Product',     '$131,800'],
+  ['Priya N.',  'Analytics',   '$119,500'],
+  ['Alex M.',   'Design',      '$108,300'],
 ];
 
 // ── Shared hooks ────────────────────────────────────────────────────────────
@@ -131,7 +134,7 @@ function HeroIDE({ reduced }) {
     <div className="lp-ide" aria-label="Live query execution preview" aria-hidden="true">
       <div className="lp-ide-chrome">
         <span className="lp-ide-dots"><i /><i /><i /></span>
-        <span className="lp-ide-fname">salary_analysis.sql</span>
+        <span className="lp-ide-fname">dept_ranking.sql</span>
         <span className="lp-ide-badge">SQL · DuckDB</span>
       </div>
       <div className="lp-ide-body">
@@ -236,11 +239,10 @@ function HeroSection({ user, dashData, reduced }) {
         <div className="lp-hero-left">
           <p className="lp-eyebrow">Interview preparation, reasoned</p>
           <h1 className="lp-hero-h1">
-            Data interviews test how you reason&mdash;not what you memorized.
+            Build the reasoning skills data interviews actually test.
           </h1>
           <p className="lp-hero-sub">
-            Your SQL runs on a real engine. Your Python executes in a live sandbox.
-            Seven tracks that make you earn the answer.
+            Real datasets. Real execution. The kind of thinking that earns the offer.
           </p>
           <div className="lp-hero-actions">
             <Link className="btn btn-primary" to="/auth">Start thinking →</Link>

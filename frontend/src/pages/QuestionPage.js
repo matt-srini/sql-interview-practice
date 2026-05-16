@@ -256,7 +256,13 @@ export default function QuestionPage() {
         }
         draftHydratedRef.current = true;
       })
-      .catch((err) => setLoadError(err.response?.data?.detail ?? 'Failed to load question.'));
+      .catch((err) => {
+        const detail = err.response?.data?.detail;
+        const msg = Array.isArray(detail)
+          ? (detail[0]?.msg ?? 'Failed to load question.')
+          : (detail ?? err.response?.data?.error ?? 'Failed to load question.');
+        setLoadError(msg);
+      });
     api.get('/submissions', { params: { track: topic, question_id: id, limit: 20 } })
       .then((res) => setPastAttempts(res.data))
       .catch(() => {});
