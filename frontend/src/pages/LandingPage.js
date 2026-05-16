@@ -39,25 +39,100 @@ const ROLES = [
 ];
 
 // ── Hero IDE content ────────────────────────────────────────────────────────
-const IDE_QUERY = `WITH ranked AS (
-  SELECT
-    name, dept, salary,
-    RANK() OVER (
-      PARTITION BY dept
-      ORDER BY salary DESC
-    ) AS rnk
-  FROM employees
-)
-SELECT name, dept, salary
-FROM ranked
-WHERE rnk = 1;`;
-
-const IDE_COLS = ['name', 'dept', 'salary'];
-const IDE_ROWS = [
-  ['Sarah K.',  'Engineering', '$145,200'],
-  ['Jordan T.', 'Product',     '$131,800'],
-  ['Priya N.',  'Analytics',   '$119,500'],
-  ['Alex M.',   'Design',      '$108,300'],
+const IDE_TRACKS = [
+  {
+    slug: 'sql',
+    label: 'SQL',
+    color: '#5B6AF0',
+    fname: 'dept_ranking.sql',
+    badge: 'SQL · DuckDB',
+    code: `WITH ranked AS (\n  SELECT\n    name, dept, salary,\n    RANK() OVER (\n      PARTITION BY dept\n      ORDER BY salary DESC\n    ) AS rnk\n  FROM employees\n)\nSELECT name, dept, salary\nFROM ranked\nWHERE rnk = 1;`,
+    type: 'table',
+    cols: ['name', 'dept', 'salary'],
+    rows: [
+      ['Sarah K.',  'Engineering', '$145,200'],
+      ['Jordan T.', 'Product',     '$131,800'],
+      ['Priya N.',  'Analytics',   '$119,500'],
+      ['Alex M.',   'Design',      '$108,300'],
+    ],
+  },
+  {
+    slug: 'python',
+    label: 'Python',
+    color: '#2D9E6B',
+    fname: 'two_sum.py',
+    badge: 'Python · Sandbox',
+    code: `def two_sum(nums, target):\n    seen = {}\n    for i, n in enumerate(nums):\n        comp = target - n\n        if comp in seen:\n            return [seen[comp], i]\n        seen[n] = i`,
+    type: 'tests',
+    tests: [
+      { label: 'test_basic',       passed: true, ms: '0.2' },
+      { label: 'test_no_match',    passed: true, ms: '0.1' },
+      { label: 'test_large_array', passed: true, ms: '1.4' },
+    ],
+  },
+  {
+    slug: 'python-data',
+    label: 'Pandas',
+    color: '#C47F17',
+    fname: 'top_revenue.py',
+    badge: 'Pandas · Sandbox',
+    code: `def solve(orders):\n    return (\n        orders\n        .groupby('customer_id')['revenue']\n        .sum()\n        .nlargest(3)\n        .reset_index()\n    )`,
+    type: 'table',
+    cols: ['customer_id', 'revenue'],
+    rows: [
+      ['C_042', '$48,200'],
+      ['C_017', '$39,750'],
+      ['C_088', '$31,100'],
+    ],
+  },
+  {
+    slug: 'pyspark',
+    label: 'PySpark',
+    color: '#D94F3D',
+    fname: 'transformations.md',
+    badge: 'PySpark · MCQ',
+    code: null,
+    type: 'mcq',
+    question: 'Which PySpark operation triggers immediate execution?',
+    options: ['filter()', 'map()', 'collect()', 'groupBy()'],
+    correct: 2,
+  },
+  {
+    slug: 'data-engineering',
+    label: 'Data Eng',
+    color: '#B9762B',
+    fname: 'isolation.md',
+    badge: 'Data Eng · MCQ',
+    code: null,
+    type: 'mcq',
+    question: 'Which isolation level prevents phantom reads?',
+    options: ['Read Committed', 'Repeatable Read', 'Serializable', 'Read Uncommitted'],
+    correct: 2,
+  },
+  {
+    slug: 'data-modeling',
+    label: 'Modeling',
+    color: '#3F8E8C',
+    fname: 'star_schema.md',
+    badge: 'Modeling · MCQ',
+    code: null,
+    type: 'mcq',
+    question: 'In a star schema, fact tables primarily store...',
+    options: ['Dimension attributes', 'Business metrics', 'Entity relationships', 'Lookup values'],
+    correct: 1,
+  },
+  {
+    slug: 'statistics',
+    label: 'Statistics',
+    color: '#7A5AF0',
+    fname: 'ab_test.md',
+    badge: 'Statistics · MCQ',
+    code: null,
+    type: 'mcq',
+    question: 'p = 0.023 at α = 0.05. What is the correct conclusion?',
+    options: ['Fail to reject H₀', 'Reject H₀', 'Inconclusive result', 'Accept the null'],
+    correct: 1,
+  },
 ];
 
 // ── Shared hooks ────────────────────────────────────────────────────────────
@@ -96,28 +171,40 @@ function useCountUp(target, duration, trigger) {
 
 // ── Hero IDE typing animation ────────────────────────────────────────────────
 function HeroIDE({ reduced }) {
-  const TOTAL = IDE_QUERY.length;
-  const [typedLen, setTypedLen] = useState(reduced ? TOTAL : 0);
-  const [phase, setPhase] = useState(reduced ? 'done' : 'typing');
-  const [visibleRows, setVisibleRows] = useState(reduced ? IDE_ROWS.length : 0);
-  const [flashIdx, setFlashIdx] = useState(null);
+  const [activeSlug, setActiveSlug] = useState('sql');
+  const sqlAnimDoneRef = useRef(reduced);
+
+  const sqlTrack = IDE_TRACKS[0];
+  const SQL_TOTAL = sqlTrack.code.length;
+
+  // SQL animation state (only used when activeSlug === 'sql' and not yet done)
+  const [typedLen, setTypedLen]     = useState(reduced ? SQL_TOTAL : 0);
+  const [phase, setPhase]           = useState(reduced ? 'done' : 'typing');
+  const [visibleRows, setVisibleRows] = useState(reduced ? sqlTrack.rows.length : 0);
+  const [flashIdx, setFlashIdx]     = useState(null);
+
+  const animActive = activeSlug === 'sql' && !sqlAnimDoneRef.current;
 
   useEffect(() => {
-    if (phase !== 'typing') return;
-    if (typedLen >= TOTAL) { setTimeout(() => setPhase('running'), 350); return; }
+    if (!animActive || phase !== 'typing') return;
+    if (typedLen >= SQL_TOTAL) { setTimeout(() => setPhase('running'), 350); return; }
     const t = setTimeout(() => setTypedLen(n => n + 1), 26);
     return () => clearTimeout(t);
-  }, [phase, typedLen, TOTAL]);
+  }, [animActive, phase, typedLen, SQL_TOTAL]);
 
   useEffect(() => {
-    if (phase !== 'running') return;
+    if (!animActive || phase !== 'running') return;
     const t = setTimeout(() => setPhase('streaming'), 550);
     return () => clearTimeout(t);
-  }, [phase]);
+  }, [animActive, phase]);
 
   useEffect(() => {
-    if (phase !== 'streaming') return;
-    if (visibleRows >= IDE_ROWS.length) { setPhase('done'); return; }
+    if (!animActive || phase !== 'streaming') return;
+    if (visibleRows >= sqlTrack.rows.length) {
+      setPhase('done');
+      sqlAnimDoneRef.current = true;
+      return;
+    }
     const t = setTimeout(() => {
       const idx = visibleRows;
       setVisibleRows(n => n + 1);
@@ -125,48 +212,123 @@ function HeroIDE({ reduced }) {
       setTimeout(() => setFlashIdx(null), 180);
     }, 55);
     return () => clearTimeout(t);
-  }, [phase, visibleRows]);
+  }, [animActive, phase, visibleRows, sqlTrack.rows.length]);
 
-  const showResult = phase === 'streaming' || phase === 'done';
-  const showRunning = phase === 'running';
+  const activeTrack = IDE_TRACKS.find(t => t.slug === activeSlug);
+  const isSQL = activeSlug === 'sql';
+  const showRunning = isSQL && phase === 'running';
 
   return (
     <div className="lp-ide" aria-label="Live query execution preview" aria-hidden="true">
+      {/* Track tab pills */}
+      <div className="lp-ide-tabs">
+        {IDE_TRACKS.map(t => (
+          <button
+            key={t.slug}
+            className={`lp-ide-tab${activeSlug === t.slug ? ' lp-ide-tab--active' : ''}`}
+            style={{ '--tab-color': t.color }}
+            onClick={() => setActiveSlug(t.slug)}
+          >
+            <span className="lp-ide-tab-dot" />
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Chrome bar */}
       <div className="lp-ide-chrome">
         <span className="lp-ide-dots"><i /><i /><i /></span>
-        <span className="lp-ide-fname">dept_ranking.sql</span>
-        <span className="lp-ide-badge">SQL · DuckDB</span>
+        <span className="lp-ide-fname">{activeTrack.fname}</span>
+        <span className="lp-ide-badge">{activeTrack.badge}</span>
       </div>
+
+      {/* Body */}
       <div className="lp-ide-body">
-        {/* Full query always in DOM — untyped chars are transparent so height is stable */}
-        <pre className="lp-ide-query"><code>
-          {Array.from(IDE_QUERY).map((ch, i) => (
-            <span key={i} style={i >= typedLen ? { color: 'transparent' } : undefined}>{ch}</span>
-          ))}
-          {phase !== 'done' && <span className="lp-ide-cursor" />}
-        </code></pre>
-        {/* Result always in DOM — unshown rows use visibility:hidden to preserve height */}
-        <div className="lp-ide-result">
-          {showRunning && <p className="lp-ide-running" style={{ position: 'absolute', marginTop: '-4px' }}>Running…</p>}
-          <table>
-            <thead>
-              <tr>{IDE_COLS.map(c => <th key={c}>{c}</th>)}</tr>
-            </thead>
-            <tbody>
-              {IDE_ROWS.map((row, i) => (
-                <tr
-                  key={i}
-                  className={flashIdx === i ? 'lp-ide-row--flash' : ''}
-                  style={{ visibility: i < visibleRows ? 'visible' : 'hidden' }}
-                >
-                  {row.map((cell, j) => <td key={j}>{cell}</td>)}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <p className="lp-ide-rowcount" style={{ visibility: phase === 'done' ? 'visible' : 'hidden' }}>
-            {IDE_ROWS.length} rows · 0 errors
-          </p>
+        {/* Code area — SQL gets char-by-char animation, others render statically */}
+        {activeTrack.code && (
+          <pre className="lp-ide-query"><code>
+            {isSQL ? (
+              Array.from(activeTrack.code).map((ch, i) => (
+                <span key={i} style={i >= typedLen ? { color: 'transparent' } : undefined}>{ch}</span>
+              ))
+            ) : (
+              activeTrack.code
+            )}
+            {isSQL && phase !== 'done' && <span className="lp-ide-cursor" />}
+          </code></pre>
+        )}
+
+        {/* Results area */}
+        <div className="lp-ide-result" style={{ position: 'relative' }}>
+          {showRunning && (
+            <p className="lp-ide-running" style={{ position: 'absolute', marginTop: '-4px' }}>Running…</p>
+          )}
+
+          {activeTrack.type === 'table' && (
+            <>
+              <table>
+                <thead>
+                  <tr>{activeTrack.cols.map(c => <th key={c}>{c}</th>)}</tr>
+                </thead>
+                <tbody>
+                  {activeTrack.rows.map((row, i) => (
+                    <tr
+                      key={i}
+                      className={flashIdx === i ? 'lp-ide-row--flash' : ''}
+                      style={{
+                        visibility: isSQL
+                          ? (i < visibleRows ? 'visible' : 'hidden')
+                          : 'visible',
+                      }}
+                    >
+                      {row.map((cell, j) => <td key={j}>{cell}</td>)}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p
+                className="lp-ide-rowcount"
+                style={{ visibility: isSQL ? (phase === 'done' ? 'visible' : 'hidden') : 'visible' }}
+              >
+                {activeTrack.rows.length} rows · 0 errors
+              </p>
+            </>
+          )}
+
+          {activeTrack.type === 'tests' && (
+            <>
+              <div className="lp-ide-tests">
+                {activeTrack.tests.map((tc, i) => (
+                  <div key={i} className={`lp-ide-test lp-ide-test--${tc.passed ? 'pass' : 'fail'}`}>
+                    <span className="lp-ide-test-icon">{tc.passed ? '✓' : '✗'}</span>
+                    <span className="lp-ide-test-label">{tc.label}</span>
+                    <span className="lp-ide-test-ms">{tc.ms} ms</span>
+                  </div>
+                ))}
+              </div>
+              <p className="lp-ide-rowcount">
+                {activeTrack.tests.filter(t => t.passed).length} / {activeTrack.tests.length} tests passed
+              </p>
+            </>
+          )}
+
+          {activeTrack.type === 'mcq' && (
+            <div className="lp-ide-mcq">
+              <p className="lp-ide-mcq-q">{activeTrack.question}</p>
+              <div className="lp-ide-mcq-opts">
+                {activeTrack.options.map((opt, i) => (
+                  <div
+                    key={i}
+                    className={`lp-ide-mcq-opt${i === activeTrack.correct ? ' lp-ide-mcq-opt--correct' : ''}`}
+                  >
+                    <span className="lp-ide-mcq-letter">{String.fromCharCode(65 + i)}</span>
+                    {opt}
+                    {i === activeTrack.correct && <span className="lp-ide-mcq-check">✓</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
