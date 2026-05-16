@@ -17,12 +17,11 @@ export default function PathProgressCard({ path, compact = false, recommendation
       <div className="path-card-header">
         <span className="path-card-dot" style={{ background: meta.color }} />
         <span className="path-card-topic">{meta.label}</span>
-        {recommendationLabel && <span className="path-card-recommendation-badge">{recommendationLabel}</span>}
-        {!recommendationLabel && isPro && <span className="path-card-tier-badge">Pro</span>}
-        {!recommendationLabel && isFreeStarter && <span className="path-card-tier-badge path-card-tier-badge--free">Included with Free</span>}
-        {!recommendationLabel && isFreeIntermediate && <span className="path-card-tier-badge path-card-tier-badge--free">Included with Free</span>}
       </div>
       <div className="path-card-title">{path.title}</div>
+      {recommendationLabel && <span className="path-card-recommendation-badge">{recommendationLabel}</span>}
+      {!recommendationLabel && isPro && <span className="path-card-tier-badge">Pro</span>}
+      {!recommendationLabel && (isFreeStarter || isFreeIntermediate) && <span className="path-card-tier-badge path-card-tier-badge--free">Included with Free</span>}
       {!compact && <div className="path-card-desc">{path.description}</div>}
       <div className="path-card-meta">{path.question_count} questions</div>
       <div className="path-card-progress">
