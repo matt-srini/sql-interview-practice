@@ -135,30 +135,36 @@ function HeroIDE({ reduced }) {
         <span className="lp-ide-badge">SQL · DuckDB</span>
       </div>
       <div className="lp-ide-body">
+        {/* Full query always in DOM — untyped chars are transparent so height is stable */}
         <pre className="lp-ide-query"><code>
-          {IDE_QUERY.slice(0, typedLen)}
+          {Array.from(IDE_QUERY).map((ch, i) => (
+            <span key={i} style={i >= typedLen ? { color: 'transparent' } : undefined}>{ch}</span>
+          ))}
           {phase !== 'done' && <span className="lp-ide-cursor" />}
         </code></pre>
-        {showRunning && <p className="lp-ide-running">Running…</p>}
-        {showResult && (
-          <div className="lp-ide-result">
-            <table>
-              <thead>
-                <tr>{IDE_COLS.map(c => <th key={c}>{c}</th>)}</tr>
-              </thead>
-              <tbody>
-                {IDE_ROWS.slice(0, visibleRows).map((row, i) => (
-                  <tr key={i} className={flashIdx === i ? 'lp-ide-row--flash' : ''}>
-                    {row.map((cell, j) => <td key={j}>{cell}</td>)}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {phase === 'done' && (
-              <p className="lp-ide-rowcount">{IDE_ROWS.length} rows · 0 errors</p>
-            )}
-          </div>
-        )}
+        {/* Result always in DOM — unshown rows use visibility:hidden to preserve height */}
+        <div className="lp-ide-result">
+          {showRunning && <p className="lp-ide-running" style={{ position: 'absolute', marginTop: '-4px' }}>Running…</p>}
+          <table>
+            <thead>
+              <tr>{IDE_COLS.map(c => <th key={c}>{c}</th>)}</tr>
+            </thead>
+            <tbody>
+              {IDE_ROWS.map((row, i) => (
+                <tr
+                  key={i}
+                  className={flashIdx === i ? 'lp-ide-row--flash' : ''}
+                  style={{ visibility: i < visibleRows ? 'visible' : 'hidden' }}
+                >
+                  {row.map((cell, j) => <td key={j}>{cell}</td>)}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="lp-ide-rowcount" style={{ visibility: phase === 'done' ? 'visible' : 'hidden' }}>
+            {IDE_ROWS.length} rows · 0 errors
+          </p>
+        </div>
       </div>
     </div>
   );

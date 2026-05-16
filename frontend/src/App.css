@@ -10156,14 +10156,15 @@ select {
 
 /* ── Hero IDE ────────────────────────────────────────────────────── */
 .lp-ide {
-  background: #1A1A18;
+  background: #0F2218;
   border-radius: var(--radius-lg);
   overflow: hidden;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.82rem;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.22);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.28);
+  position: relative;
 }
-[data-theme="dark"] .lp-ide { background: #0F0F0D; }
+[data-theme="dark"] .lp-ide { background: #080F0A; }
 .lp-ide-chrome {
   display: flex;
   align-items: center;
@@ -10363,24 +10364,34 @@ select {
 }
 .lp-role-track-reveal { display: contents; }
 .lp-role-track {
-  border: 1px solid var(--border-subtle, rgba(26,26,24,0.1));
+  border: 1px solid color-mix(in srgb, var(--track-color) 22%, rgba(26,26,24,0.08));
   border-radius: var(--radius-md);
   padding: 18px 20px;
-  background: var(--surface-card);
-  border-left: 3px solid var(--track-color);
+  background: color-mix(in srgb, var(--track-color) 5%, var(--surface-card));
   display: flex;
   flex-direction: column;
   gap: 8px;
+  transition: border-color 180ms, background 180ms, box-shadow 180ms;
+}
+.lp-role-track:hover {
+  border-color: color-mix(in srgb, var(--track-color) 45%, rgba(26,26,24,0.08));
+  background: color-mix(in srgb, var(--track-color) 9%, var(--surface-card));
+  box-shadow: 0 4px 18px color-mix(in srgb, var(--track-color) 14%, transparent);
 }
 [data-theme="dark"] .lp-role-track {
-  border-color: rgba(240,238,233,0.08);
-  border-left-color: var(--track-color);
+  border-color: color-mix(in srgb, var(--track-color) 28%, rgba(240,238,233,0.05));
+  background: color-mix(in srgb, var(--track-color) 9%, var(--surface-card));
+}
+[data-theme="dark"] .lp-role-track:hover {
+  border-color: color-mix(in srgb, var(--track-color) 55%, rgba(240,238,233,0.05));
+  background: color-mix(in srgb, var(--track-color) 14%, var(--surface-card));
+  box-shadow: 0 4px 18px color-mix(in srgb, var(--track-color) 18%, transparent);
 }
 .lp-role-track-header { display: flex; align-items: center; gap: 8px; }
 .lp-role-track-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+  width: 7px;
+  height: 7px;
+  border-radius: 3px;
   background: var(--track-color);
   flex-shrink: 0;
 }
@@ -10400,9 +10411,14 @@ select {
 .lp-role-track-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
 .lp-role-track-tagline {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.65rem;
-  color: var(--text-secondary);
-  opacity: 0.7;
+  font-size: 0.6rem;
+  color: var(--track-color);
+  background: color-mix(in srgb, var(--track-color) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--track-color) 28%, transparent);
+  border-radius: 100px;
+  padding: 2px 8px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 .lp-role-track-cta {
   font-size: 0.82rem;
