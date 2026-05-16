@@ -3422,8 +3422,8 @@ select {
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 20px;
   overflow: hidden;
-  background: #1e1e1e;
-  box-shadow: 0 8px 40px rgba(26, 26, 24, 0.18);
+  background: #0F2218;
+  box-shadow: 0 8px 40px rgba(10, 22, 14, 0.22);
 }
 
 .editor-workspace {
@@ -3998,7 +3998,7 @@ select {
 
 /* Code block stays dark intentionally — always */
 .solution-card pre {
-  background: #1a1e24;
+  background: #0F1C13;
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 14px;
   padding: 1rem;
@@ -4578,7 +4578,7 @@ select {
 }
 
 .quality-alt-code {
-  background: #1a1e24;
+  background: #0F1C13;
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: var(--radius-sm);
   padding: 0.85rem 1rem;
@@ -5186,7 +5186,7 @@ select {
 .test-case-error-content {
   font-family: var(--font-mono);
   font-size: 0.8rem;
-  background: #1a1e24;
+  background: #0F1C13;
   color: #D8D5CE;
   border-radius: 8px;
   padding: 0.5rem 0.75rem;
@@ -5220,7 +5220,7 @@ select {
 .print-output-content {
   font-family: var(--font-mono);
   font-size: 0.82rem;
-  background: #1a1e24;
+  background: #0F1C13;
   color: #D8D5CE;
   padding: 0.9rem 1rem;
   white-space: pre-wrap;
@@ -5293,7 +5293,7 @@ select {
    Question code snippet (PySpark)
    ============================================================ */
 .question-code-snippet {
-  background: #1a1e24;
+  background: #0F1C13;
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 14px;
   padding: 1rem;
@@ -5326,7 +5326,7 @@ select {
 }
 
 .scenario-context-pre {
-  background: #161a1f;
+  background: #0B1710;
   padding: 1rem;
   font-size: 0.82rem;
   color: #b8d4a8;

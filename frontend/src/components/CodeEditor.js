@@ -1,5 +1,21 @@
 import Editor from '@monaco-editor/react';
 
+function defineForestTheme(monaco) {
+  monaco.editor.defineTheme('forest-dark', {
+    base: 'vs-dark',
+    inherit: true,
+    rules: [],
+    colors: {
+      'editor.background': '#0F2218',
+      'editor.lineHighlightBackground': '#152D1E',
+      'editorLineNumber.foreground': '#4A7060',
+      'editorLineNumber.activeForeground': '#7AAE90',
+      'editorIndentGuide.background': '#1E3828',
+      'editorIndentGuide.activeBackground': '#2A4A38',
+    },
+  });
+}
+
 /**
  * Language-agnostic Monaco editor wrapper.
  *
@@ -27,9 +43,10 @@ export default function CodeEditor({
     <Editor
       height={height}
       language={language}
-      theme="vs-dark"
+      theme="forest-dark"
       value={value}
       onChange={(val) => onChange(val ?? '')}
+      beforeMount={defineForestTheme}
       onMount={onMount}
       options={{
         minimap: { enabled: false },
