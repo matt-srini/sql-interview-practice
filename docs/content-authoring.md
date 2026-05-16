@@ -9,6 +9,7 @@ This is the authoritative guide for creating, editing, and reviewing questions o
 - [`.github/agents/python-question-authoring.agent.md`](../.github/agents/python-question-authoring.agent.md)
 - [`.github/agents/pandas-question-authoring.agent.md`](../.github/agents/pandas-question-authoring.agent.md)
 - [`.github/agents/pyspark-question-authoring.agent.md`](../.github/agents/pyspark-question-authoring.agent.md)
+- [`.github/agents/data-modeling-question-authoring.agent.md`](../.github/agents/data-modeling-question-authoring.agent.md)
 
 ---
 
@@ -50,7 +51,8 @@ datathink is **FAANG-level interview preparation**, not a syntax tutorial. The s
 | Pandas | 22 | 31 | 23 | **76** | DataFrame function, evaluated via output comparison |
 | PySpark | 38 | 38 | 26 | **102** | MCQ / predict-output / debug, evaluated by option selection |
 | Data Engineering | 30 | 30 | 20 | **80** | MCQ / scenario / debug, evaluated by option selection |
-| **Total** | **152** | **162** | **122** | **436** | |
+| Data Modeling | 25 | 25 | 20 | **70** | MCQ / scenario, evaluated by option selection |
+| **Total** | **177** | **187** | **142** | **506** | |
 
 Sample questions (no login, no progress): 3 per track × 3 difficulties = 9 per track = **36 total**.
 
@@ -63,11 +65,12 @@ Sample questions (no login, no progress): 3 per track × 3 difficulties = 9 per 
 | Pandas | 5 | 2 free shortcut paths (`starter`, `intermediate`) + 3 advanced (mixed free/pro) |
 | PySpark | 5 | 2 free shortcut paths (`starter`, `intermediate`) + 3 advanced (mixed free/pro) |
 | Data Engineering | 2 | `starter` "Pipeline Fundamentals" (free) · `intermediate` "Advanced DE Systems" (pro) |
-| **Total** | **24** | |
+| Data Modeling | 2 | `starter` "Schema Design Basics" (free) · `intermediate` "Dimensional Modeling Deep Dive" (pro) |
+| **Total** | **26** | |
 
 Authoring constraints for path files in `backend/content/paths/`:
 - Required fields: `slug`, `title`, `description`, `topic`, `questions`, `tier`, `role`
-- `topic` must be one of: `sql`, `python`, `python-data`, `pyspark`, `data-engineering`
+- `topic` must be one of: `sql`, `python`, `python-data`, `pyspark`, `data-engineering`, `data-modeling`
 - `tier` must be `free` or `pro`
 - `role` must be `starter`, `intermediate`, or `advanced`
 - Exactly one `starter` and one `intermediate` path per track (used by unlock shortcuts)
@@ -145,6 +148,24 @@ Authoring constraints for path files in `backend/content/paths/`:
 
 **First-hint leak patterns for `data-engineering`** (forbidden in first hint):
 `idempoten*`, `watermark*`, `exactly-once`, `SCD`, `change data capture`, `backfill`, `at-least-once`, `at-most-once`
+
+### Data Modeling — concepts covered
+
+| Tier | Concepts |
+|---|---|
+| Easy | Star vs snowflake schemas, 1NF/2NF/3NF normalization, fact table types (transaction/periodic snapshot/accumulating snapshot), surrogate vs natural keys, SCD Type 1 vs 2 basics, OLTP vs OLAP distinction, grain definition, bridge tables intro, degenerate dimensions, role-playing dimensions intro, junk dimensions, additive vs semi-additive vs non-additive measures |
+| Medium | Grain choice under ambiguity, SCD Type 2 vs 3 tradeoffs, SCD Type 4, bridge table design for many-to-many, conformed vs role-playing dimensions, wide vs normalized models, Data Vault (hub/link/satellite), outrigger tables, late-arriving facts/dimensions, schema design from business requirements, additive facts with multi-currency, factless fact tables |
+| Hard | Multi-hop grain alignment, SCD choice under conflicting business requirements, Data Vault vs Kimball tradeoffs, conformed dimension governance across business units, slowly-changing hierarchies, heterogeneous products (one fact table multiple grains), real-time DWH design, schema evolution strategy, hybrid normalized/denormalized design, partitioning strategy for DWH |
+
+**Concept families for `data-modeling`** (used in concept pills and insights engine):
+
+`DIMENSIONAL MODELING` · `NORMALIZATION` · `DENORMALIZATION TRADEOFF` · `FACT TABLE DESIGN` · `DIMENSION DESIGN` · `SURROGATE VS NATURAL KEYS` · `SCD STRUCTURE` · `GRAIN DEFINITION` · `BRIDGE & MANY-TO-MANY` · `SCHEMA FROM REQUIREMENTS` · `STORAGE ARCHITECTURE TRADEOFFS` · `DATA VAULT` · `WIDE VS NARROW` · `OLTP VS OLAP` · `MEASURE ADDITIVITY` · `ROLE-PLAYING DIMENSIONS` · `CONFORMED DIMENSIONS` · `SCHEMA EVOLUTION`
+
+**Concept blocklist for `data-modeling`** (too implementation-specific — validator rejects these as concept tags):
+`star schema`, `snowflake schema`, `fact table`, `dimension table`, `foreign key`, `primary key`, `scd`, `surrogate key`, `natural key`, `dbt`, `hub`, `link`, `satellite`
+
+**First-hint leak patterns for `data-modeling`** (forbidden in first hint):
+`star schema`, `snowflake schema`, `slowly changing`, `SCD type`, `surrogate key`, `data vault`, `grain`, `conformed dimension`
 
 ---
 
@@ -246,8 +267,9 @@ Hints guide thinking toward the correct approach without revealing it. The curre
 | Pandas | 2 | 2-3 | 2-3 |
 | PySpark | 1-2 | 2-3 | 2-3 |
 | Data Engineering | 1-2 | 2-3 | 2-3 |
+| Data Modeling | 1-2 | 2-3 | 2-3 |
 
-PySpark and Data Engineering easy are the only allowed single-hint exceptions. Those questions are fast concept checks, so one strong execution-oriented hint is acceptable as long as the UI does not pretend there is a multi-step ladder.
+PySpark, Data Engineering, and Data Modeling easy are the only allowed single-hint exceptions. Those questions are fast concept checks, so one strong execution-oriented hint is acceptable as long as the UI does not pretend there is a multi-step ladder.
 
 **Good hint:** "Use a hash map to look up previously seen values in O(1) as you iterate"  
 **Bad hint:** "Use a dictionary where the key is the number and value is its index"

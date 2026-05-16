@@ -9,8 +9,8 @@ Ordered by implementation priority. Do not implement concurrently — complete o
 
 | Track | Status | Backend | Frontend | Content | Docs | Launched |
 |---|---|---|---|---|---|---|
-| Data Engineering Concepts | Not started | — | — | — | — | — |
-| Data Modeling | Not started | — | — | — | — | — |
+| Data Engineering Concepts | Done | ✓ | ✓ | 80 questions | ✓ | — |
+| Data Modeling | Done | ✓ | ✓ | 70 questions | ✓ | — |
 | Statistics & Probability | Not started | — | — | — | — | — |
 
 **Status values:** `Not started` · `In progress` · `Content authoring` · `QA` · `Done`

@@ -192,18 +192,18 @@ Format: MCQ/scenario/predict-output/debug — identical eval to PySpark.
 
 Same skeleton as Phase B (it's the same `eval_kind="mcq"` shape). Differences:
 
-- [ ] IDs `61001/62001/63001`; dir `data_modeling_questions/`; loader
+- [x] IDs `61001/62001/63001`; dir `data_modeling_questions/`; loader
   `data_modeling_questions.py`; router prefix `/api/data-modeling`.
-- [ ] Registry entry: label "Data Modeling", distinct color, `eval_kind="mcq"`,
+- [x] Registry entry: label "Data Modeling", distinct color, `eval_kind="mcq"`,
   `unlock_profile="mcq"`, `in_mixed_mock=false`.
-- [ ] Target 25 easy / 25 medium / 20 hard per roadmap coverage table
+- [x] Target 25 easy / 25 medium / 20 hard per roadmap coverage table
   (~40% pure MCQ / ~60% scenario).
-- [ ] Paths: `starter` "Schema Design Basics" (free), `intermediate`
+- [x] Paths: `starter` "Schema Design Basics" (free), `intermediate`
   "Dimensional Modeling Deep Dive" (pro) — same hard ordering constraint as B8.
-- [ ] Authoring agent `.github/agents/data-modeling-question-authoring.agent.md`.
-- [ ] **Note the future SQL-DDL/DuckDB upgrade path is explicitly OUT of scope**
+- [x] Authoring agent `.github/agents/data-modeling-question-authoring.agent.md`.
+- [x] **Note the future SQL-DDL/DuckDB upgrade path is explicitly OUT of scope**
   (roadmap §Track2). Do not build it. Record as a one-line "future" note only.
-- [ ] B9–B12 equivalents (tests, UI preview, docs-in-commit, launch gate).
+- [x] B9–B12 equivalents (tests, UI preview, docs-in-commit, launch gate).
 
 ### Phase D — Track 3: Statistics & Probability (`statistics`)
 

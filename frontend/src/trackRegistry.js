@@ -79,7 +79,6 @@ export const TRACK_META = {
     mixedSubtype: false,
     totalQuestions: 70,
     tagline: 'MCQ · scenario · schema design',
-    comingSoon: true,
   },
   statistics: {
     label: 'Statistics',

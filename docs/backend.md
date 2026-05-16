@@ -38,6 +38,7 @@ Registered in `backend/main.py`:
 | `routers/python_data_questions.py` | `/api/python-data` | Pandas catalog, detail, run-code, submit |
 | `routers/pyspark_questions.py` | `/api/pyspark` | PySpark catalog, detail, submit (MCQ only) |
 | `routers/data_engineering_questions.py` | `/api/data-engineering` | Data Engineering catalog, detail, submit (MCQ only) |
+| `routers/data_modeling_questions.py` | `/api/data-modeling` | Data Modeling catalog, detail, submit (MCQ only) |
 | `routers/dashboard.py` | `/api` | Cross-track progress dashboard, submission history |
 | `routers/insights.py` | `/api/dashboard` | Coaching insights: per-track speed/accuracy, weakest concepts, streak |
 | `routers/paths.py` | `/api/paths` | Learning path catalog and path detail with per-question state |
@@ -181,6 +182,14 @@ Signature formulas:
 | GET | `/api/data-engineering/catalog` | Data Engineering catalog |
 | GET | `/api/data-engineering/questions/{id}` | Question detail. Unlocked: full payload with `options` (no `correct_option`). Locked: 200 with `locked: true`, no `options` or `correct_option`. |
 | POST | `/api/data-engineering/submit` | `{ selected_option, question_id, duration_ms? }` → `{ correct, explanation }`. No code execution. 403 if locked. |
+
+### Data Modeling — `/api/data-modeling`
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/data-modeling/catalog` | Data Modeling catalog |
+| GET | `/api/data-modeling/questions/{id}` | Question detail. Unlocked: full payload with `options` (no `correct_option`). Locked: 200 with `locked: true`, no `options` or `correct_option`. |
+| POST | `/api/data-modeling/submit` | `{ selected_option, question_id, duration_ms? }` → `{ correct, explanation }`. No code execution. 403 if locked. |
 
 ### Dashboard — `/api/dashboard`
 

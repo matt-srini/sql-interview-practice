@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any
 
 import data_engineering_questions
+import data_modeling_questions
 import python_data_questions
 import python_questions
 import pyspark_questions
@@ -273,6 +274,42 @@ TRACKS: tuple[TrackConfig, ...] = (
             re.compile(r"\bbackfill\b", re.IGNORECASE),
             re.compile(r"\bat[_\s-]least[_\s-]once\b", re.IGNORECASE),
             re.compile(r"\bat[_\s-]most[_\s-]once\b", re.IGNORECASE),
+        ),
+        in_mixed_mock=False,
+    ),
+    TrackConfig(
+        slug="data-modeling",
+        db_topic="data-modeling",
+        catalog_module=data_modeling_questions,
+        label="Data Modeling",
+        eval_kind="mcq",
+        unlock_profile="mcq",
+        content_dir=BACKEND_ROOT / "content" / "data_modeling_questions",
+        concept_blocklist={
+            "star schema",
+            "snowflake schema",
+            "fact table",
+            "dimension table",
+            "foreign key",
+            "primary key",
+            "scd",
+            "surrogate key",
+            "natural key",
+            "dbt",
+            "hub",
+            "link",
+            "satellite",
+        },
+        hint_rules={"easy": (1, 2), "medium": (2, 3), "hard": (2, 3)},
+        first_hint_leak_patterns=(
+            re.compile(r"\bstar\s+schema\b", re.IGNORECASE),
+            re.compile(r"\bsnowflake\s+schema\b", re.IGNORECASE),
+            re.compile(r"\bslowly\s+changing\b", re.IGNORECASE),
+            re.compile(r"\bSCD\s+type\b", re.IGNORECASE),
+            re.compile(r"\bsurrogate\s+key\b", re.IGNORECASE),
+            re.compile(r"\bdata\s+vault\b", re.IGNORECASE),
+            re.compile(r"\bgrain\b", re.IGNORECASE),
+            re.compile(r"\bconformed\s+dimension\b", re.IGNORECASE),
         ),
         in_mixed_mock=False,
     ),

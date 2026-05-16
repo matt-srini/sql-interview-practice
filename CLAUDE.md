@@ -61,6 +61,7 @@ A data interview practice platform covering four tracks. Users write SQL or Pyth
 - **Pandas** — 76 practice (22 easy / 31 medium / 23 hard) + 24 mock-only, pandas-specific data manipulation, DataFrame comparison
 - **PySpark** — 102 practice (38 easy / 38 medium / 26 hard) + 20 mock-only, MCQ / predict-output / debug / scenario formats
 - **Data Engineering** — 80 practice (30 easy / 30 medium / 20 hard), MCQ / scenario / debug, no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
+- **Data Modeling** — 70 practice (25 easy / 25 medium / 20 hard), MCQ / scenario, no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
 
 ---
 
@@ -90,14 +91,15 @@ Mock-only questions (`mock_only: true`) live in the same JSON files as practice 
 | Pandas | 22 + 0 | 31 + 10 | 23 + 14 | DataFrame function, output comparison | `backend/content/python_data_questions/` |
 | PySpark | 38 + 0 | 38 + 10 | 26 + 10 | MCQ / predict-output / debug / scenario | `backend/content/pyspark_questions/` |
 | Data Engineering | 30 + 0 | 30 + 0 | 20 + 0 | MCQ / scenario / debug | `backend/content/data_engineering_questions/` |
+| Data Modeling | 25 + 0 | 25 + 0 | 20 + 0 | MCQ / scenario | `backend/content/data_modeling_questions/` |
 
-**Practice totals:** SQL 95 · Python 83 · Pandas 76 · PySpark 102 · Data Engineering 80 = **436 practice questions**  
+**Practice totals:** SQL 95 · Python 83 · Pandas 76 · PySpark 102 · Data Engineering 80 · Data Modeling 70 = **506 practice questions**  
 **Mock-only totals:** SQL 33 · Python 20 · Pandas 24 · PySpark 20 = **97 mock-only questions** (Pro/Elite only; DE has no mock-only questions at launch)
 
 See [docs/content-authoring.md](docs/content-authoring.md) for the full mock-only authoring spec.
 
-- **Sample questions:** SQL/Python/Pandas/PySpark: 3 per track × 3 difficulties = 36 total. Data Engineering samples are auto-sliced from the first 3 practice questions per difficulty (no dedicated IDs).
-- **Learning paths:** 24 total — SQL: 7, Python: 5, Pandas: 5, PySpark: 5, Data Engineering: 2 (each track has exactly one `starter` and one `intermediate` free shortcut path; additional paths are advanced, mixed free/pro)
+- **Sample questions:** SQL/Python/Pandas/PySpark: 3 per track × 3 difficulties = 36 total. Data Engineering and Data Modeling samples are auto-sliced from the first 3 practice questions per difficulty (no dedicated IDs).
+- **Learning paths:** 26 total — SQL: 7, Python: 5, Pandas: 5, PySpark: 5, Data Engineering: 2, Data Modeling: 2 (each track has exactly one `starter` and one `intermediate` free shortcut path; additional paths are advanced, mixed free/pro)
 - Every question has `hints` (currently 1–3 entries across the bank; new content should target the active hint ladder) and `concepts` (semantic pattern tags surfaced as pills)
 - SQL questions have a `companies` field (`["Meta", "Stripe", ...]`) used for the company filter in SidebarNav
 - SQL schemas validated against committed CSV headers at catalog load time
