@@ -10596,6 +10596,15 @@ select {
 }
 
 /* ── 06 Tracks index ─────────────────────────────────────────────── */
+.lp-tracks-editorial {
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--text-secondary);
+  max-width: 620px;
+  margin: 0.5rem 0 0;
+  line-height: 1.6;
+  opacity: 0.85;
+}
 .lp-tracks-list {
   display: flex;
   flex-direction: column;

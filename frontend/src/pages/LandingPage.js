@@ -613,7 +613,8 @@ function RoleSelectorSection({ dashData }) {
 }
 
 // ── Section 05: Proof strip ─────────────────────────────────────────────────
-const TOTAL_QUESTIONS = ALL_TRACK_SLUGS.reduce(
+// Active tracks only — excludes any coming-soon entries that have no real content yet.
+const PRACTICE_QUESTIONS = TRACK_SLUGS.reduce(
   (s, slug) => s + (TRACK_META[slug]?.totalQuestions ?? 0), 0
 );
 
@@ -621,7 +622,7 @@ function ProofStripSection() {
   const ref = useRef(null);
   const inView = useInView(ref, '-5%');
   const reduced = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const qCount = useCountUp(TOTAL_QUESTIONS, 700, reduced || inView);
+  const qCount = useCountUp(PRACTICE_QUESTIONS, 700, reduced || inView);
   const trackCount = useCountUp(ALL_TRACK_SLUGS.length, 500, reduced || inView);
 
   const STATS = [
@@ -671,6 +672,11 @@ function TracksIndexSection() {
         <Reveal>
           <p className="lp-section-index">06&ensp;/&ensp;ALL TRACKS</p>
           <h2 className="lp-section-h2">The full curriculum.</h2>
+          <p className="lp-tracks-editorial">
+            {PRACTICE_QUESTIONS} questions, each chosen for a reason. No fillers,
+            no pattern repeated in a different costume — just the interview concepts
+            that actually come up, sequenced to build one reasoning layer at a time.
+          </p>
         </Reveal>
         <div className="lp-tracks-list" role="list">
           {ALL_TRACK_SLUGS.map((slug, i) => {
@@ -732,12 +738,7 @@ function PricingSection({ userPlan, currency }) {
 
   const ACTIVE_Q = TRACK_SLUGS.reduce((s, slug) => s + (TRACK_META[slug]?.totalQuestions ?? 0), 0);
   const FREE_EASY = TRACK_SLUGS
-    .filter(s => !TRACK_META[s]?.comingSoon)
-    .map(s => {
-      const m = TRACK_META[s];
-      const easy = { sql: 32, python: 30, 'python-data': 22, pyspark: 38, 'data-engineering': 30 }[s] ?? 0;
-      return `${easy} ${m.label}`;
-    })
+    .map(s => `${TRACK_META[s].easyQuestions} ${TRACK_META[s].label}`)
     .join(' · ');
 
   return (
