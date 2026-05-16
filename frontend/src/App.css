@@ -10180,8 +10180,8 @@ select {
   font-size: 0.65rem;
   padding: 2px 8px;
   border-radius: 20px;
-  background: rgba(91,106,240,0.3);
-  color: #9BA7F7;
+  background: rgba(22,101,52,0.35);
+  color: #4ADE80;
 }
 .lp-ide-body { padding: 16px 18px; min-height: 220px; }
 .lp-ide-query {
@@ -10230,7 +10230,7 @@ select {
   border-bottom: 1px solid rgba(255,255,255,0.04);
   white-space: nowrap;
 }
-.lp-ide-row--flash td { color: #fff; background: rgba(91,106,240,0.12); }
+.lp-ide-row--flash td { color: #fff; background: rgba(22,101,52,0.18); }
 .lp-ide-rowcount {
   margin: 8px 0 0;
   font-size: 0.65rem;
