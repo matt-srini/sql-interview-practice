@@ -1,0 +1,751 @@
+[
+  {
+    "id": 72001,
+    "title": "Central Limit Theorem — When It Applies",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A quality engineer samples 40 components per batch to monitor weight. Component weights are right-skewed in the population. Which statement about the distribution of sample means is most accurate?",
+    "options": [
+      "The sample means will also be right-skewed because they inherit the shape of the population distribution",
+      "The sample means will be approximately normally distributed because n=40 satisfies the Central Limit Theorem",
+      "The sample means will follow a t-distribution because the population standard deviation is unknown",
+      "The distribution of sample means cannot be characterized without knowing the exact form of the population distribution"
+    ],
+    "correct_option": 2,
+    "explanation": "The Central Limit Theorem states that for sufficiently large n (typically n ≥ 30), the sampling distribution of the mean is approximately normal regardless of the population's shape. With n=40, CLT applies even though the population is skewed. The t-distribution is used for inference, not for describing CLT convergence.",
+    "hints": [
+      "The CLT is about the behavior of sample means, not individual observations.",
+      "Consider what sample size is generally considered sufficient for the CLT to kick in."
+    ],
+    "concepts": [
+      "central limit theorem",
+      "sampling distributions",
+      "distributions"
+    ],
+    "order": 1,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72002,
+    "title": "Standard Error of the Mean",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "A population has standard deviation σ = 24. Write a Python function `solve()` that returns the standard error of the mean for a sample of size n = 36, rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # SE = sigma / sqrt(n)\n    pass",
+    "expected_code": "def solve():\n    import math\n    sigma = 24\n    n = 36\n    return round(sigma / math.sqrt(n), 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 4.0
+      }
+    ],
+    "explanation": "Standard error = σ/√n = 24/√36 = 24/6 = 4.0. The standard error quantifies how much sample means vary around the true population mean.",
+    "hints": [
+      "Standard error measures the spread of the sampling distribution of the mean.",
+      "SE = σ / √n; larger samples produce smaller standard errors."
+    ],
+    "concepts": [
+      "central limit theorem",
+      "sampling distributions",
+      "standard error"
+    ],
+    "order": 2,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72003,
+    "title": "95% Confidence Interval for a Mean",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "A sample of 100 observations has mean x̄ = 50 and population standard deviation σ = 10. Write a Python function `solve()` that returns a tuple (lower, upper) for the 95% confidence interval, each rounded to 4 decimal places. Use z* = 1.96.",
+    "starter_code": "def solve():\n    # 95% CI: (x_bar - 1.96*SE, x_bar + 1.96*SE)\n    pass",
+    "expected_code": "def solve():\n    import math\n    x_bar, sigma, n, z = 50, 10, 100, 1.96\n    se = sigma / math.sqrt(n)\n    margin = z * se\n    return (round(x_bar - margin, 4), round(x_bar + margin, 4))",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": [
+          48.04,
+          51.96
+        ]
+      }
+    ],
+    "explanation": "SE = 10/√100 = 1.0. Margin = 1.96 × 1.0 = 1.96. CI = (50−1.96, 50+1.96) = (48.04, 51.96).",
+    "hints": [
+      "An interval estimate captures where the true parameter likely falls, based on the sample mean and a spread measure — the width depends on variability and sample size.",
+      "SE = σ/√n; for 95% CI use z* = 1.96."
+    ],
+    "concepts": [
+      "confidence intervals",
+      "standard error",
+      "distributions"
+    ],
+    "order": 3,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72004,
+    "title": "Interpreting a Confidence Interval",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A 95% confidence interval for mean customer spend is ($42, $58). Which interpretation is correct?",
+    "options": [
+      "There is a 95% probability that the true mean lies between $42 and $58, given the data we observed",
+      "If we repeated this sampling procedure many times, approximately 95% of the resulting intervals would contain the true mean",
+      "95% of individual customers spend between $42 and $58 based on the observed sample distribution",
+      "The sample mean is guaranteed to fall between $42 and $58 in 95 out of 100 future samples"
+    ],
+    "correct_option": 2,
+    "explanation": "The frequentist confidence interval is a statement about the procedure, not a probability about a fixed unknown parameter. If we repeated sampling many times and built a CI each time, 95% of those intervals would capture the true mean. The true mean is fixed; only the interval is random.",
+    "hints": [
+      "Once an interval is computed, the true mean either is or isn't in it — the probability is 0 or 1.",
+      "Think about what varies across repeated experiments: the data and hence the interval, not the true mean."
+    ],
+    "concepts": [
+      "confidence intervals",
+      "frequentist inference",
+      "sampling distributions"
+    ],
+    "order": 4,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72005,
+    "title": "Null and Alternative Hypothesis Setup",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A company claims its new algorithm reduces mean processing time to below 200 ms. A data scientist wants to test this claim. What are the correct null and alternative hypotheses?",
+    "options": [
+      "H₀: μ < 200 ms (the algorithm works); H₁: μ ≥ 200 ms (the algorithm does not work)",
+      "H₀: μ = 200 ms (no improvement, or worse); H₁: μ < 200 ms (mean is lower than claimed)",
+      "H₀: μ = 200 ms; H₁: μ ≠ 200 ms (two-tailed test because we are unsure of direction)",
+      "H₀: the algorithm works; H₁: the algorithm does not reduce processing time, stated in plain English"
+    ],
+    "correct_option": 2,
+    "explanation": "The null hypothesis is the skeptical, default position — that the algorithm offers no improvement (μ ≥ 200 ms, often stated as μ = 200 ms for testing). The alternative captures what we want to detect (μ < 200 ms), making this a one-tailed test. Hypotheses must be expressed in terms of population parameters.",
+    "hints": [
+      "Consider what you'd assume if the new treatment or condition had no effect at all — that 'no-effect' position is what the test starts from.",
+      "The alternative hypothesis is the direction of the effect we are trying to detect."
+    ],
+    "concepts": [
+      "hypothesis testing",
+      "null hypothesis",
+      "alternative hypothesis"
+    ],
+    "order": 5,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72006,
+    "title": "p-Value Interpretation",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A hypothesis test yields p = 0.03 at significance level α = 0.05. Which statement correctly interprets this result?",
+    "options": [
+      "There is a 3% probability that the null hypothesis is true, so it should be rejected",
+      "We reject the null hypothesis; if H₀ were true, data this extreme would occur only 3% of the time by chance",
+      "The effect is practically significant because the p-value is below the threshold of 0.05",
+      "We accept the alternative hypothesis as definitively true because p < α confirms it"
+    ],
+    "correct_option": 2,
+    "explanation": "The p-value is P(data as extreme as observed | H₀ is true). A p-value of 0.03 < α means we reject H₀ at the 5% level. It does not give the probability that H₀ is true, nor does it imply practical significance. We fail to reject or reject H₀; we never 'accept' H₁ as certain truth.",
+    "hints": [
+      "Ask yourself: what is being computed here — is it the probability that H₀ is true, or the probability of seeing data at least this extreme if H₀ were true?",
+      "Rejecting H₀ when p < α means the observed data is sufficiently unlikely under the null assumption."
+    ],
+    "concepts": [
+      "hypothesis testing",
+      "significance level"
+    ],
+    "order": 6,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72007,
+    "title": "Type I and Type II Errors",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "In a medical screening test, H₀ is 'patient does not have the disease'. The test concludes the patient is positive (disease present), but the patient is actually healthy. What type of error is this, and what is its probability called?",
+    "options": [
+      "Type II error (false negative), with probability called β; the test missed a real disease case",
+      "Type I error (false positive), with probability called α; we rejected a true null hypothesis",
+      "Type I error (false positive), with probability called β; the significance level controls this rate",
+      "Type II error (false negative), with probability called 1−α; it decreases as power increases"
+    ],
+    "correct_option": 2,
+    "explanation": "A Type I error is rejecting a true H₀. Here H₀ is 'healthy' and the test incorrectly rejects it — a false positive. The probability of a Type I error is α (the significance level). A Type II error (β) would be failing to detect a disease that is actually present.",
+    "hints": [
+      "Consider the two ways a decision can be wrong: you can act on a false signal, or you can miss a real signal. What does each correspond to in a test?",
+      "Think about which hypothesis is true and what the test decision was."
+    ],
+    "concepts": [
+      "hypothesis testing",
+      "Type I error",
+      "Type II error",
+      "statistical power"
+    ],
+    "order": 7,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72008,
+    "title": "Statistical Power",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A clinical trial has 80% statistical power at α = 0.05. Which of the following is a correct statement about this test?",
+    "options": [
+      "If the treatment has a real effect, the test has an 80% chance of detecting it and rejecting H₀",
+      "If H₀ is true, the test will incorrectly reject it 80% of the time, indicating poor calibration",
+      "The test will produce a Type II error 80% of the time, meaning it usually misses real effects",
+      "Power of 80% means the effect size must be exactly 0.80 standard deviations for the test to work"
+    ],
+    "correct_option": 1,
+    "explanation": "Statistical power = 1 − β = P(reject H₀ | H₁ is true). With 80% power, when a real effect exists the test detects it 80% of the time. The Type II error rate (β) is therefore 20%. Power is controlled by sample size, effect size, and α — not by the effect size value directly.",
+    "hints": [
+      "Power is the probability of correctly detecting an effect when one truly exists.",
+      "Power = 1 − β, where β is the probability of a Type II error."
+    ],
+    "concepts": [
+      "statistical power",
+      "Type II error",
+      "hypothesis testing"
+    ],
+    "order": 8,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72009,
+    "title": "One-Sample Z-Test Statistic",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "A sample of n=64 has mean x̄=52, population σ=8, and H₀: μ=50. Write a Python function `solve()` that returns the z-test statistic rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # z = (x_bar - mu0) / (sigma / sqrt(n))\n    pass",
+    "expected_code": "def solve():\n    import math\n    x_bar, mu0, sigma, n = 52, 50, 8, 64\n    se = sigma / math.sqrt(n)\n    return round((x_bar - mu0) / se, 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 2.0
+      }
+    ],
+    "explanation": "SE = 8/√64 = 1.0. z = (52−50)/1.0 = 2.0. This z-score tells us the sample mean is 2 standard errors above the hypothesized mean.",
+    "hints": [
+      "The z-test statistic measures how many standard errors the sample mean is from the hypothesized population mean.",
+      "z = (x̄ − μ₀) / (σ/√n)."
+    ],
+    "concepts": [
+      "hypothesis testing",
+      "z-scores",
+      "standard error"
+    ],
+    "order": 9,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72010,
+    "title": "When to Use t vs z Distribution",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A researcher has a sample of n=15 observations and does not know the population standard deviation. The data appear roughly normally distributed. Which distribution should be used for inference?",
+    "options": [
+      "The z-distribution (standard normal), because the sample mean is approximately normally distributed by CLT",
+      "The t-distribution with 14 degrees of freedom, because σ is unknown and n is small",
+      "The z-distribution, because n=15 is sufficient for the Central Limit Theorem to make the z-test valid",
+      "The chi-squared distribution, because we are estimating a variance-related quantity from sample data"
+    ],
+    "correct_option": 2,
+    "explanation": "When the population standard deviation σ is unknown and must be estimated from the sample, the t-distribution is appropriate. With n=15, degrees of freedom = n−1 = 14. The t-distribution has heavier tails than the normal to account for additional uncertainty from estimating σ. The z-test requires known σ.",
+    "hints": [
+      "The key question is: do you know the true population standard deviation, or must you estimate it?",
+      "When σ is unknown, replace it with the sample standard deviation s and use the t-distribution."
+    ],
+    "concepts": [
+      "t-distribution",
+      "hypothesis testing",
+      "sampling distributions"
+    ],
+    "order": 10,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72011,
+    "title": "Pearson Correlation Coefficient",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "Given X = [1,2,3,4,5] and Y = [2,4,5,4,5], write a Python function `solve()` that returns the Pearson correlation coefficient rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # Compute Pearson r between X and Y\n    pass",
+    "expected_code": "def solve():\n    import math\n    X = [1, 2, 3, 4, 5]\n    Y = [2, 4, 5, 4, 5]\n    n = len(X)\n    mx = sum(X) / n\n    my = sum(Y) / n\n    num = sum((X[i]-mx)*(Y[i]-my) for i in range(n))\n    den = math.sqrt(sum((x-mx)**2 for x in X) * sum((y-my)**2 for y in Y))\n    return round(num / den, 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 0.7746
+      }
+    ],
+    "explanation": "Pearson r = Σ(xi−x̄)(yi−ȳ) / √[Σ(xi−x̄)² × Σ(yi−ȳ)²]. x̄=3, ȳ=4. Numerator=6, denominator=√(10×6)≈7.746, r≈0.7746.",
+    "hints": [
+      "Pearson r measures the strength and direction of a linear relationship between two variables.",
+      "r = Cov(X,Y) / (SD(X) × SD(Y)); compute deviations from each variable's mean."
+    ],
+    "concepts": [
+      "correlation",
+      "descriptive statistics",
+      "linear relationships"
+    ],
+    "order": 11,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72012,
+    "title": "Correlation vs Causation",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A study finds a strong positive correlation (r = 0.85) between ice cream sales and drowning incidents. A newspaper headline reads: 'Ice cream causes drowning.' What is the most fundamental problem with this conclusion?",
+    "options": [
+      "The correlation coefficient of 0.85 is not high enough to establish causation; r must exceed 0.95 for a causal claim",
+      "Correlation does not imply causation; both variables are likely driven by a confounding variable (summer heat / season)",
+      "The study is invalid because ice cream sales and drowning incidents cannot be measured on the same scale",
+      "The headline is technically correct since the p-value of the correlation was below 0.05, proving causation statistically"
+    ],
+    "correct_option": 2,
+    "explanation": "Correlation measures co-movement but cannot establish a causal mechanism. Here a confounding variable — summer weather — drives both ice cream sales and swimming (hence drowning) simultaneously. No correlation coefficient threshold proves causation; establishing causation requires experimental control or strong causal reasoning.",
+    "hints": [
+      "Ask: is there a third variable that could explain why both X and Y change together?",
+      "Correlation quantifies association; proving causation requires ruling out confounders or conducting randomized experiments."
+    ],
+    "concepts": [
+      "correlation",
+      "causation",
+      "confounding variables"
+    ],
+    "order": 12,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72013,
+    "title": "A/B Test — Identifying the Correct Setup",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A product team wants to test whether a new checkout button color increases conversions. They plan to show the new button to all users on Mondays and the old button on other days. What is the primary flaw in this design?",
+    "options": [
+      "The sample size is too small because only one day per week is used for the treatment condition",
+      "Confounding by day-of-week: Monday users may behave differently than other-day users, not due to button color",
+      "The test violates randomization because both conditions must be run simultaneously on the same day",
+      "Conversion rate is the wrong metric; click-through rate should be used for button color experiments"
+    ],
+    "correct_option": 2,
+    "explanation": "By assigning treatment by day, the two groups differ systematically in day-of-week behavior (e.g., Monday shoppers may have different intent than weekend shoppers). This confounds the button color effect. Proper A/B testing requires simultaneous random assignment of users to control and treatment groups to isolate the variable of interest.",
+    "hints": [
+      "Think about what other variables differ between the control and treatment groups besides the button color.",
+      "A/B tests require that the only systematic difference between groups is the variable being tested."
+    ],
+    "concepts": [
+      "A/B testing",
+      "confounding variables",
+      "experimental design"
+    ],
+    "order": 13,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72014,
+    "title": "Minimum Sample Size for A/B Test",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "For a two-proportion z-test with α=0.05 (two-tailed, z_α/2=1.96), power=0.80 (z_β=0.842), baseline conversion p₁=0.10, and minimum detectable effect Δ=0.02 (so p₂=0.12), compute the required sample size per group using the formula: n = (z_α/2 + z_β)² × (p₁(1−p₁) + p₂(1−p₂)) / Δ². Write a Python function `solve()` that returns this n as an integer (ceiling).",
+    "starter_code": "def solve():\n    # Use the two-proportion sample size formula\n    pass",
+    "expected_code": "def solve():\n    import math\n    z_alpha2, z_beta = 1.96, 0.842\n    p1, p2 = 0.10, 0.12\n    delta = p2 - p1\n    numerator = (z_alpha2 + z_beta)**2 * (p1*(1-p1) + p2*(1-p2))\n    n = numerator / delta**2\n    return math.ceil(n)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 3840
+      }
+    ],
+    "explanation": "n = (1.96+0.842)² × (0.10×0.90 + 0.12×0.88) / 0.02² = 7.8516 × 0.1956 / 0.0004 ≈ 3839.24. Ceiling = 3840.",
+    "hints": [
+      "The formula balances Type I error (α), power (1−β), and the variance under each proportion.",
+      "n = (z_α/2 + z_β)² × [p₁(1−p₁) + p₂(1−p₂)] / (p₂−p₁)²; take the ceiling."
+    ],
+    "concepts": [
+      "A/B testing",
+      "sample size estimation",
+      "statistical power"
+    ],
+    "order": 14,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72015,
+    "title": "Law of Large Numbers",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A fair coin has been flipped 100 times and landed heads 65 times. A gambler argues the next flip is more likely to be tails because 'the law of averages demands balance.' Is the gambler correct?",
+    "options": [
+      "Yes, because the Law of Large Numbers guarantees that tails will occur more frequently to compensate for the excess heads",
+      "No, each flip is independent; the Law of Large Numbers describes long-run frequencies, not short-run corrections",
+      "Yes, but only if the coin is fair — a fair coin must produce exactly equal head and tail counts over any 100 flips",
+      "No, because the Law of Large Numbers only applies to normally distributed variables, not coin flips"
+    ],
+    "correct_option": 2,
+    "explanation": "Each coin flip is independent — past outcomes do not affect future ones. The LLN states that as n→∞, the sample proportion converges to the true probability, but this happens because future large samples dilute the early deviation, not because the coin 'corrects' itself. The gambler's fallacy is confusing independence with long-run convergence.",
+    "hints": [
+      "Independence of trials is the key concept here — does the coin have memory?",
+      "The LLN predicts convergence of long-run averages, not short-run corrections to deviations."
+    ],
+    "concepts": [
+      "law of large numbers",
+      "independence",
+      "probability"
+    ],
+    "order": 15,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72016,
+    "title": "Poisson Probability",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "Customers arrive at a help desk at an average rate of 3 per hour (Poisson process). Write a Python function `solve()` that returns the probability of exactly 5 customers arriving in one hour, rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # P(X=5) for Poisson(lambda=3)\n    pass",
+    "expected_code": "def solve():\n    import math\n    lam, k = 3, 5\n    prob = (lam**k * math.exp(-lam)) / math.factorial(k)\n    return round(prob, 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 0.1008
+      }
+    ],
+    "explanation": "P(X=k) = λ^k × e^{−λ} / k! = 3^5 × e^{−3} / 5! = 243 × 0.049787 / 120 ≈ 0.1008.",
+    "hints": [
+      "The Poisson distribution models counts of rare events in a fixed interval with a constant average rate.",
+      "P(X=k) = λ^k × e^(−λ) / k!; use math.exp and math.factorial."
+    ],
+    "concepts": [
+      "Poisson distribution",
+      "probability",
+      "distributions"
+    ],
+    "order": 16,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72017,
+    "title": "Bayesian vs Frequentist Reasoning",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A Bayesian statistician says: 'Given the data, the probability that the conversion rate exceeds 10% is 0.87.' A frequentist statistician objects. What is the source of the frequentist's objection?",
+    "options": [
+      "The frequentist objects because the posterior probability should be 0.95 when using standard α=0.05 threshold",
+      "The frequentist objects because in the frequentist view, parameters are fixed unknowns, not random variables with probability distributions",
+      "The frequentist agrees with the statement because both frameworks always produce the same numerical probability",
+      "The frequentist objects because Bayesian methods require more data than frequentist methods to produce valid results"
+    ],
+    "correct_option": 2,
+    "explanation": "Frequentists treat population parameters as fixed but unknown constants. Assigning a probability to 'the conversion rate exceeds 10%' is meaningless in the frequentist framework — parameters don't have probability distributions. Bayesians treat parameters as random variables and use prior beliefs + data to form posterior distributions.",
+    "hints": [
+      "In frequentism, probability is the long-run frequency of events, not a degree of belief about a fixed parameter.",
+      "Ask: can a fixed (non-random) parameter have a probability of being above a threshold?"
+    ],
+    "concepts": [
+      "Bayesian inference",
+      "frequentist inference",
+      "probability"
+    ],
+    "order": 17,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72018,
+    "title": "Bayes' Theorem Application",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "A disease affects 1% of a population. A test is 95% sensitive (P(+|disease)=0.95) and 90% specific (P(−|no disease)=0.90). Write a Python function `solve()` that returns P(disease | test positive) rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # Use Bayes' theorem: P(D|+) = P(+|D)*P(D) / P(+)\n    pass",
+    "expected_code": "def solve():\n    p_d = 0.01\n    p_pos_given_d = 0.95\n    p_neg_given_no_d = 0.90\n    p_no_d = 1 - p_d\n    p_pos_given_no_d = 1 - p_neg_given_no_d\n    p_pos = p_pos_given_d * p_d + p_pos_given_no_d * p_no_d\n    p_d_given_pos = (p_pos_given_d * p_d) / p_pos\n    return round(p_d_given_pos, 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 0.0876
+      }
+    ],
+    "explanation": "P(+) = 0.95×0.01 + 0.10×0.99 = 0.0095 + 0.099 = 0.1085. P(D|+) = 0.0095/0.1085 ≈ 0.0876. Due to the low prevalence, even a mostly-accurate test has a low positive predictive value.",
+    "hints": [
+      "Use the law of total probability to compute P(+) across both disease-present and disease-absent cases.",
+      "P(D|+) = P(+|D) × P(D) / [P(+|D)×P(D) + P(+|no D)×P(no D)]."
+    ],
+    "concepts": [
+      "Bayes' theorem",
+      "conditional probability",
+      "Bayesian inference"
+    ],
+    "order": 18,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72019,
+    "title": "Confidence Interval Width and Sample Size",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A 95% confidence interval for a population mean is currently 10 units wide. Approximately how wide will the interval be if the sample size is quadrupled?",
+    "options": [
+      "40 units wide, because quadrupling the sample increases precision linearly and hence widens the interval",
+      "5 units wide, because the width scales with 1/√n, and √4 = 2, so the width is halved",
+      "2.5 units wide, because quadrupling the sample quadruples precision, reducing width by a factor of 4",
+      "10 units wide, because confidence interval width depends on the confidence level, not sample size"
+    ],
+    "correct_option": 2,
+    "explanation": "CI width = 2 × z* × σ/√n. Quadrupling n replaces √n with √(4n) = 2√n, so the standard error halves and the width halves. Original width 10 → new width 5. Width scales with 1/√n, not 1/n.",
+    "hints": [
+      "The margin of error includes a 1/√n term — think about how quadrupling n changes that term.",
+      "Width ∝ 1/√n; if n is multiplied by 4, √n is multiplied by 2."
+    ],
+    "concepts": [
+      "confidence intervals",
+      "standard error",
+      "sample size"
+    ],
+    "order": 19,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72020,
+    "title": "Poisson Expected Value and Variance",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "For a Poisson random variable with parameter λ=7, what are the mean and variance?",
+    "options": [
+      "Mean = 7, Variance = 49, because variance is always the square of the mean for Poisson",
+      "Mean = 7, Variance = 7, because both the mean and variance of a Poisson equal λ",
+      "Mean = √7, Variance = 7, because the mean of a Poisson is the square root of λ",
+      "Mean = 7, Variance = √7, because the standard deviation of a Poisson equals the square root of λ"
+    ],
+    "correct_option": 2,
+    "explanation": "A defining property of the Poisson distribution is that its mean and variance are both equal to λ. With λ=7: E[X]=7 and Var(X)=7. The standard deviation is √7 ≈ 2.65, but that is not the variance.",
+    "hints": [
+      "The Poisson distribution has a special property relating its two parameters.",
+      "For a Poisson distribution, E[X] = Var(X) = λ."
+    ],
+    "concepts": [
+      "Poisson distribution",
+      "expected value",
+      "descriptive statistics"
+    ],
+    "order": 20,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72021,
+    "title": "Binomial Mean and Standard Deviation",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "A Binomial distribution has n=50 trials and p=0.4. Write a Python function `solve()` that returns a tuple (mean, std_dev) where std_dev is rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # E[X] = n*p, Std = sqrt(n*p*(1-p))\n    pass",
+    "expected_code": "def solve():\n    import math\n    n, p = 50, 0.4\n    mean = n * p\n    std = math.sqrt(n * p * (1 - p))\n    return (mean, round(std, 4))",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": [
+          20.0,
+          3.4641
+        ]
+      }
+    ],
+    "explanation": "E[X] = np = 50×0.4 = 20. Var(X) = np(1−p) = 50×0.4×0.6 = 12. SD = √12 ≈ 3.4641.",
+    "hints": [
+      "The mean and variance of a Binomial have closed-form expressions in terms of n and p.",
+      "E[X] = np; Var(X) = np(1−p); SD = √(np(1−p))."
+    ],
+    "concepts": [
+      "distributions",
+      "expected value",
+      "descriptive statistics"
+    ],
+    "order": 21,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72022,
+    "title": "Sampling Distribution of Proportion",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "A population proportion is p=0.30. A sample of n=200 is drawn. Write a Python function `solve()` that returns the standard error of the sample proportion rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # SE of proportion = sqrt(p*(1-p)/n)\n    pass",
+    "expected_code": "def solve():\n    import math\n    p, n = 0.30, 200\n    return round(math.sqrt(p * (1 - p) / n), 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 0.0324
+      }
+    ],
+    "explanation": "SE = √(p(1−p)/n) = √(0.30×0.70/200) = √(0.00105) ≈ 0.0324.",
+    "hints": [
+      "The sampling distribution of a proportion has a standard error analogous to that of a mean.",
+      "SE(p̂) = √(p(1−p)/n)."
+    ],
+    "concepts": [
+      "sampling distributions",
+      "standard error",
+      "proportions"
+    ],
+    "order": 22,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72023,
+    "title": "Effect of Outlier on Correlation",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A dataset of 50 points has Pearson r = 0.10 (essentially no linear correlation). One influential outlier is added, and r jumps to 0.72. What does this illustrate about Pearson correlation?",
+    "options": [
+      "Pearson r is highly robust to outliers because it is based on ranks rather than raw values",
+      "Pearson r is sensitive to outliers because it uses actual values and one extreme point can dominate the covariance",
+      "An r of 0.72 proves a strong causal relationship introduced by the new data point",
+      "This result is impossible; adding a single point cannot change Pearson r by more than 0.10 units"
+    ],
+    "correct_option": 2,
+    "explanation": "Pearson r is computed from the actual values of X and Y. A single extreme point with large deviations from both means can disproportionately inflate the covariance and thus r. This is a known weakness of Pearson r; Spearman's rank correlation is more robust to outliers.",
+    "hints": [
+      "Pearson r relies on means and actual values, not ranks — how do extreme values affect means?",
+      "Consider how one point with very large deviations from both x̄ and ȳ affects the covariance numerator."
+    ],
+    "concepts": [
+      "correlation",
+      "outliers",
+      "descriptive statistics"
+    ],
+    "order": 23,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72024,
+    "title": "Multiple Testing Problem",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A researcher runs 20 independent hypothesis tests at α = 0.05 each, with all null hypotheses actually being true. What is the probability of obtaining at least one false positive (Type I error) across all 20 tests?",
+    "options": [
+      "0.05, because the significance level controls the error rate per test, not across tests",
+      "Approximately 0.64, because P(at least one false positive) = 1 − (1−0.05)^20 ≈ 0.64",
+      "1.00, because running 20 tests guarantees at least one false positive by the law of large numbers",
+      "0.25, computed as 5 tests × 0.05, the expected number of false positives across 20 tests"
+    ],
+    "correct_option": 2,
+    "explanation": "P(at least one false positive) = 1 − P(no false positives) = 1 − (0.95)^20 ≈ 1 − 0.358 = 0.642. This family-wise error rate inflation is the multiple comparisons problem. Corrections like Bonferroni (α/m per test) address this by lowering the per-test threshold.",
+    "hints": [
+      "Use the complement: P(at least one) = 1 − P(none).",
+      "Each test independently has a 0.95 chance of not producing a false positive."
+    ],
+    "concepts": [
+      "multiple comparisons",
+      "hypothesis testing",
+      "Type I error"
+    ],
+    "order": 24,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72025,
+    "title": "Bonferroni Correction",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "A study runs 8 simultaneous hypothesis tests and wants to control the family-wise error rate at α = 0.05. Write a Python function `solve()` that returns the Bonferroni-corrected per-test significance threshold rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # Bonferroni: alpha_corrected = alpha / m\n    pass",
+    "expected_code": "def solve():\n    alpha = 0.05\n    m = 8\n    return round(alpha / m, 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 0.0063
+      }
+    ],
+    "explanation": "The Bonferroni correction divides the target α by the number of tests: 0.05/8 = 0.00625 ≈ 0.0063. Each individual test must meet this stricter threshold to maintain FWER ≤ 0.05.",
+    "hints": [
+      "The Bonferroni correction distributes the allowable error rate equally across all tests.",
+      "Per-test threshold = overall α / number of tests."
+    ],
+    "concepts": [
+      "multiple comparisons",
+      "Bonferroni correction",
+      "hypothesis testing"
+    ],
+    "order": 25,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72026,
+    "title": "Expected Number of Events (Poisson)",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "Emails arrive at a rate of 10 per hour. Write a Python function `solve()` that returns the probability of receiving 0 emails in a 12-minute window (λ_window = 10 × 12/60 = 2), rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # P(X=0) for Poisson(lambda=2)\n    pass",
+    "expected_code": "def solve():\n    import math\n    lam = 10 * (12 / 60)\n    return round(math.exp(-lam), 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 0.1353
+      }
+    ],
+    "explanation": "In 12 minutes, expected arrivals = 10×(12/60) = 2. P(X=0) = e^{−2} ≈ 0.1353.",
+    "hints": [
+      "Scale the Poisson rate to the window of interest first.",
+      "P(X=0) = e^{−λ}; no factorial needed since 0! = 1."
+    ],
+    "concepts": [
+      "Poisson distribution",
+      "probability",
+      "rate scaling"
+    ],
+    "order": 26,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72027,
+    "title": "Selecting the Right Hypothesis Test",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A data scientist wants to determine whether the mean session duration differs significantly between two independent groups of users (Group A: n=45, Group B: n=52). The population standard deviations are unknown. Which test is most appropriate?",
+    "options": [
+      "A one-sample z-test comparing each group's mean against a known population value separately",
+      "A two-sample independent t-test (Welch's t-test) comparing the means of two independent groups with unknown σ",
+      "A paired t-test because the same users appear in both groups on different days of the week",
+      "A chi-squared test of independence because session duration is a count-based categorical variable"
+    ],
+    "correct_option": 2,
+    "explanation": "Comparing means between two independent groups with unknown population standard deviations calls for a two-sample t-test. Welch's variant is preferred when equal variances are not assumed. A paired t-test requires matched pairs from the same subjects. Chi-squared tests are for categorical data, not continuous means.",
+    "hints": [
+      "Identify: how many groups? Are observations paired or independent? Is σ known?",
+      "Two independent groups + unknown σ → two-sample t-test."
+    ],
+    "concepts": [
+      "hypothesis testing",
+      "t-distribution",
+      "experimental design"
+    ],
+    "order": 27,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72028,
+    "title": "CLT Sampling Distribution Mean",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "A population has mean μ=80 and standard deviation σ=15. Samples of size n=25 are drawn repeatedly. Write a Python function `solve()` that returns a tuple (mean_of_sampling_dist, std_error) for the sampling distribution of the mean, where std_error is rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # By CLT: sampling dist mean = mu, SE = sigma/sqrt(n)\n    pass",
+    "expected_code": "def solve():\n    import math\n    mu, sigma, n = 80, 15, 25\n    se = sigma / math.sqrt(n)\n    return (mu, round(se, 4))",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": [
+          80,
+          3.0
+        ]
+      }
+    ],
+    "explanation": "By the CLT, the sampling distribution of x̄ has mean μ = 80 and standard error σ/√n = 15/5 = 3.0.",
+    "hints": [
+      "The sampling distribution of the mean is centered at the population mean.",
+      "Its spread is measured by the standard error = σ/√n."
+    ],
+    "concepts": [
+      "central limit theorem",
+      "sampling distributions",
+      "standard error"
+    ],
+    "order": 28,
+    "difficulty": "medium"
+  }
+]

@@ -89,9 +89,8 @@ export const TRACK_META = {
     hasRunCode: true,
     hasMCQ: true,
     mixedSubtype: true,
-    totalQuestions: 75,
+    totalQuestions: 80,
     tagline: 'conceptual · numerical · MCQ',
-    comingSoon: true,
   },
 };
 

@@ -1,0 +1,645 @@
+[
+  {
+    "id": 73001,
+    "title": "Bayesian Posterior Calculation",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "You have a biased coin with prior P(fair) = 0.70 (P(heads|fair) = 0.5) and P(biased) = 0.30 (P(heads|biased) = 0.8). After observing 3 heads in a row, write a Python function `solve()` that returns the posterior probability P(fair | HHH) rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # Use Bayes' theorem with the likelihood of observing HHH under each hypothesis\n    pass",
+    "expected_code": "def solve():\n    p_fair = 0.70\n    p_biased = 0.30\n    p_hhh_given_fair = 0.5 ** 3\n    p_hhh_given_biased = 0.8 ** 3\n    p_hhh = p_hhh_given_fair * p_fair + p_hhh_given_biased * p_biased\n    posterior = (p_hhh_given_fair * p_fair) / p_hhh\n    return round(posterior, 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 0.3629
+      }
+    ],
+    "explanation": "P(HHH|fair)=0.125, P(HHH|biased)=0.512. P(HHH)=0.125×0.70 + 0.512×0.30 = 0.0875+0.1536=0.2411. Posterior = 0.0875/0.2411 ≈ 0.3629.",
+    "hints": [
+      "Think about updating your prior belief with evidence from an experiment — two competing hypotheses need to be compared based on how likely each makes the data.",
+      "P(fair|data) = P(data|fair)×P(fair) / [P(data|fair)×P(fair) + P(data|biased)×P(biased)]."
+    ],
+    "concepts": [
+      "Bayesian inference",
+      "Bayes' theorem",
+      "posterior probability"
+    ],
+    "order": 1,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73002,
+    "title": "Simpson's Paradox",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "Hospital A treats 100 severe patients (80 survive) and 200 mild patients (190 survive). Hospital B treats 200 severe patients (140 survive) and 100 mild patients (95 survive). Hospital A has a higher overall survival rate, but Hospital B has a higher survival rate within each severity group. What phenomenon explains this?",
+    "options": [
+      "Regression to the mean: extreme outcomes in small samples tend to move toward the population average over time",
+      "Simpson's paradox: aggregating groups can reverse a trend that holds within each subgroup due to an imbalanced confound",
+      "Selection bias: patients are not randomly assigned to hospitals so the comparison is invalid by design",
+      "The base rate fallacy: one cannot compare percentages derived from groups of different sizes mathematically"
+    ],
+    "correct_option": 2,
+    "explanation": "Hospital A: overall (270/300 = 90%). Hospital B: (235/300 = 78.3%). But within severe patients, B has 140/200=70% vs A's 80/100=80% — A wins; within mild, B has 95/100=95% vs A's 190/200=95% — tie. The reversal occurs because Hospital B treats proportionally more severe (harder) cases, making its aggregate rate appear worse despite equal or better within-group performance. This is Simpson's paradox.",
+    "hints": [
+      "Check whether one hospital systematically treats more of the harder cases — that imbalance can flip aggregate conclusions.",
+      "Simpson's paradox arises when a lurking variable (severity) creates different group compositions that reverse a trend."
+    ],
+    "concepts": [
+      "Simpson's paradox",
+      "confounding variables",
+      "descriptive statistics"
+    ],
+    "order": 2,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73003,
+    "title": "Maximum Likelihood Estimation — Bernoulli",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "You observe 7 successes in 10 Bernoulli trials. Write a Python function `solve()` that returns the maximum likelihood estimate of p (the success probability), rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # MLE for Bernoulli p = k / n\n    pass",
+    "expected_code": "def solve():\n    k, n = 7, 10\n    return round(k / n, 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 0.7
+      }
+    ],
+    "explanation": "The log-likelihood for Bernoulli is L(p) = k·log(p) + (n−k)·log(1−p). Taking dL/dp = 0 gives p̂ = k/n = 7/10 = 0.70. The MLE is simply the observed proportion.",
+    "hints": [
+      "MLE finds the parameter value that maximizes the probability of the observed data.",
+      "For Bernoulli trials, maximize the log-likelihood by setting its derivative to zero."
+    ],
+    "concepts": [
+      "MLE",
+      "Bernoulli distribution",
+      "parameter estimation"
+    ],
+    "order": 3,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73004,
+    "title": "Bootstrap Confidence Interval Logic",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A researcher uses bootstrapping to construct a 95% confidence interval for the median of a small dataset. Which statement best describes what bootstrapping does?",
+    "options": [
+      "Bootstrapping fits a parametric model to the data, then draws samples from that fitted distribution to build a CI",
+      "Bootstrapping repeatedly resamples from the observed data with replacement, computes the statistic each time, and uses the resulting distribution to build a CI",
+      "Bootstrapping uses the t-distribution with n−1 degrees of freedom when the population distribution is unknown",
+      "Bootstrapping is only valid when the original sample size exceeds 200, otherwise the t-distribution must be used"
+    ],
+    "correct_option": 2,
+    "explanation": "The bootstrap treats the observed sample as a proxy for the population. By resampling with replacement and computing the statistic (e.g., median) on each resample, it empirically approximates the sampling distribution — without assuming any parametric family. This is especially valuable when no closed-form formula exists for the statistic's distribution.",
+    "hints": [
+      "Bootstrap is a non-parametric resampling technique — it makes minimal distributional assumptions.",
+      "Think about how repeated resampling from your own data mimics the process of repeatedly sampling from the population."
+    ],
+    "concepts": [
+      "bootstrap",
+      "resampling",
+      "confidence intervals"
+    ],
+    "order": 4,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73005,
+    "title": "Bootstrap Percentile CI",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "Given bootstrap medians from 1000 resamples (stored as a list), write a Python function `solve()` that returns the 95% percentile confidence interval (2.5th and 97.5th percentiles) of the list [1,2,3,...,100] (representing 100 bootstrap medians for simplicity). Return a tuple (lower, upper) as floats.",
+    "starter_code": "def solve():\n    # Use percentiles 2.5 and 97.5 of the bootstrap distribution\n    pass",
+    "expected_code": "def solve():\n    data = list(range(1, 101))\n    n = len(data)\n    sorted_data = sorted(data)\n    def percentile(p):\n        idx = (p / 100) * (n - 1)\n        lo = int(idx)\n        hi = lo + 1\n        if hi >= n:\n            return float(sorted_data[-1])\n        frac = idx - lo\n        return round(sorted_data[lo] + frac * (sorted_data[hi] - sorted_data[lo]), 4)\n    return (percentile(2.5), percentile(97.5))",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": [
+          3.475,
+          97.525
+        ]
+      }
+    ],
+    "explanation": "For data [1..100], the 2.5th percentile index = 0.025×99 = 2.475 → 3 + 0.475×(4−3) = 3.475. The 97.5th percentile index = 0.975×99 = 96.525 → 97 + 0.525×(98−97) = 97.525.",
+    "hints": [
+      "The percentile bootstrap CI uses empirical quantiles of the bootstrap statistic distribution.",
+      "Use linear interpolation between adjacent sorted values to compute fractional percentiles."
+    ],
+    "concepts": [
+      "bootstrap",
+      "confidence intervals",
+      "resampling"
+    ],
+    "order": 5,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73006,
+    "title": "R-Squared Interpretation",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A simple linear regression model predicting house prices from square footage has R² = 0.82. Which interpretation is correct?",
+    "options": [
+      "The regression model has an 82% chance of predicting the correct price for any given house",
+      "Square footage explains 82% of the variance in house prices in this sample; 18% remains unexplained",
+      "The correlation between square footage and price is 0.82, indicating a strong positive relationship",
+      "Adding more predictors cannot raise R² above 0.82 because it is a theoretical upper bound for this dataset"
+    ],
+    "correct_option": 2,
+    "explanation": "R² is the proportion of variance in Y explained by the model. R²=0.82 means the regression line accounts for 82% of the total variance in prices; the remaining 18% is residual (unexplained) variance. The correlation r = √R² ≈ 0.906, not 0.82 itself. R² can only increase as more predictors are added (adjusted R² corrects for this).",
+    "hints": [
+      "R² measures goodness of fit — what fraction of the total variability is captured by the model.",
+      "Think of R² as 1 minus the fraction of variance that the model leaves unexplained."
+    ],
+    "concepts": [
+      "regression",
+      "variance decomposition"
+    ],
+    "order": 6,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73007,
+    "title": "Computing R-Squared",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "Given actual values Y = [3, 5, 4, 7, 6] and predicted values Ŷ = [2.8, 5.2, 3.9, 6.8, 6.3], write a Python function `solve()` that returns R² rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # R^2 = 1 - SS_res / SS_tot\n    pass",
+    "expected_code": "def solve():\n    Y = [3, 5, 4, 7, 6]\n    Y_pred = [2.8, 5.2, 3.9, 6.8, 6.3]\n    y_mean = sum(Y) / len(Y)\n    ss_tot = sum((y - y_mean)**2 for y in Y)\n    ss_res = sum((y - yp)**2 for y, yp in zip(Y, Y_pred))\n    return round(1 - ss_res / ss_tot, 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 0.978
+      }
+    ],
+    "explanation": "ȳ=5. SS_tot=(3-5)²+(5-5)²+(4-5)²+(7-5)²+(6-5)²=4+0+1+4+1=10. SS_res=0.04+0.04+0.01+0.04+0.09=0.22. R²=1−0.22/10=0.978.",
+    "hints": [
+      "R² = 1 − SS_residual / SS_total, where SS_total uses deviations from the mean of Y.",
+      "SS_residual = Σ(y_i − ŷ_i)²; SS_total = Σ(y_i − ȳ)²."
+    ],
+    "concepts": [
+      "regression",
+      "variance decomposition"
+    ],
+    "order": 7,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73008,
+    "title": "Bias-Variance Tradeoff",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A machine learning model trained on the training set has very low training error but very high test error. In terms of the bias-variance tradeoff, what is the most likely diagnosis?",
+    "options": [
+      "High bias and low variance: the model is too simple to capture patterns in either the training or test data",
+      "Low bias and high variance: the model has overfit the training data and does not generalize to new data",
+      "High bias and high variance: the model is simultaneously too complex and too simple, a theoretically rare condition",
+      "Low bias and low variance: the model has ideal fit and the high test error is caused by a mismatch in data distributions"
+    ],
+    "correct_option": 2,
+    "explanation": "Low training error means the model fits the training data well (low bias). High test error means the model fails to generalize, capturing noise rather than signal — this is overfitting, characterized by high variance. The bias-variance tradeoff says reducing one typically increases the other; overfitting is the high-variance regime.",
+    "hints": [
+      "Ask: does the model fail on training data (high bias) or only on new data (high variance)?",
+      "Overfitting = excellent training performance + poor test performance = low bias + high variance."
+    ],
+    "concepts": [
+      "bias-variance tradeoff",
+      "regression",
+      "overfitting"
+    ],
+    "order": 8,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73009,
+    "title": "Chi-Squared Test Statistic",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "Observed frequencies for a 2-category variable: [30, 70]. Expected frequencies: [50, 50]. Write a Python function `solve()` that returns the chi-squared test statistic rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # chi2 = sum((O - E)^2 / E)\n    pass",
+    "expected_code": "def solve():\n    observed = [30, 70]\n    expected = [50, 50]\n    chi2 = sum((o - e)**2 / e for o, e in zip(observed, expected))\n    return round(chi2, 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 16.0
+      }
+    ],
+    "explanation": "χ² = (30−50)²/50 + (70−50)²/50 = 400/50 + 400/50 = 8 + 8 = 16.0.",
+    "hints": [
+      "The chi-squared statistic measures discrepancy between observed and expected counts.",
+      "χ² = Σ (O_i − E_i)² / E_i over all categories."
+    ],
+    "concepts": [
+      "chi-squared tests",
+      "hypothesis testing",
+      "goodness of fit"
+    ],
+    "order": 9,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73010,
+    "title": "Multiple Comparisons — FWER",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A researcher conducts pairwise t-tests on all pairs from 5 groups without any correction. How many pairwise tests are performed, and what is the approximate family-wise error rate at α=0.05?",
+    "options": [
+      "5 tests, FWER ≈ 0.226, because 5 choose 1 tests are run and each has a 5% error rate",
+      "10 tests, FWER ≈ 0.401, because C(5,2)=10 and FWER = 1 − (0.95)^10 ≈ 0.40",
+      "20 tests, FWER ≈ 0.642, because all ordered pairs (5×4) are tested and FWER = 1−0.95^20",
+      "10 tests, FWER = 0.50, because with 10 tests we expect exactly half to produce false positives"
+    ],
+    "correct_option": 2,
+    "explanation": "C(5,2) = 10 pairwise tests. Under all-true-null, FWER = 1 − (1−0.05)^10 = 1 − 0.95^10 ≈ 1 − 0.5987 ≈ 0.40. This motivates corrections like Bonferroni or Tukey's HSD when comparing multiple group means.",
+    "hints": [
+      "Count pairwise comparisons using combinations: C(k,2) for k groups.",
+      "FWER = 1 − (1−α)^m where m is the number of tests, assuming independence."
+    ],
+    "concepts": [
+      "multiple comparisons",
+      "ANOVA",
+      "hypothesis testing",
+      "Type I error"
+    ],
+    "order": 10,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73011,
+    "title": "Power Analysis — Effect Size",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "Cohen's d is computed as d = (μ₁ − μ₂) / σ_pooled. Group 1: mean=52, Group 2: mean=48, pooled SD=10. Write a Python function `solve()` that returns Cohen's d rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # Cohen's d = (mu1 - mu2) / pooled_sd\n    pass",
+    "expected_code": "def solve():\n    mu1, mu2, sd_pooled = 52, 48, 10\n    return round(abs(mu1 - mu2) / sd_pooled, 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 0.4
+      }
+    ],
+    "explanation": "d = |52 − 48| / 10 = 4/10 = 0.40. By convention, d=0.2 is small, d=0.5 medium, d=0.8 large. This effect would be considered between small and medium.",
+    "hints": [
+      "Cohen's d standardizes the mean difference using a pooled spread measure.",
+      "d = |μ₁ − μ₂| / σ_pooled."
+    ],
+    "concepts": [
+      "statistical power",
+      "effect size",
+      "hypothesis testing"
+    ],
+    "order": 11,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73012,
+    "title": "Variance Decomposition — ANOVA Logic",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "In a one-way ANOVA with k=3 groups and N=30 total observations, the total sum of squares (SS_Total) is split into SS_Between and SS_Within. What does SS_Between measure and why is it the quantity of interest?",
+    "options": [
+      "SS_Between measures variability of individual observations within each group around that group's mean; it captures noise",
+      "SS_Between measures variability of group means around the grand mean; a large SS_Between relative to SS_Within suggests group differences",
+      "SS_Between measures the sum of squared residuals after fitting all possible regression lines to each group separately",
+      "SS_Between measures pairwise mean differences and equals the sum of all C(k,2) t-statistics squared"
+    ],
+    "correct_option": 2,
+    "explanation": "ANOVA partitions total variance: SS_Total = SS_Between + SS_Within. SS_Between (or SS_Treatment) captures how much group means deviate from the overall grand mean — the signal. SS_Within captures random variation within groups — the noise. The F-statistic = (SS_Between/(k−1)) / (SS_Within/(N−k)) tests whether group means are all equal.",
+    "hints": [
+      "Think about what varies between groups versus within groups in an experiment.",
+      "ANOVA's F-test is a ratio of variance explained by group membership to unexplained within-group variance."
+    ],
+    "concepts": [
+      "ANOVA",
+      "variance decomposition",
+      "hypothesis testing"
+    ],
+    "order": 12,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73013,
+    "title": "MLE for Exponential Distribution",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "You observe inter-arrival times [2.1, 3.5, 1.8, 4.2, 2.9] from an exponential distribution with rate λ. The MLE of λ is 1/x̄. Write a Python function `solve()` that returns the MLE of λ rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # MLE for exponential rate: lambda_hat = 1 / mean(data)\n    pass",
+    "expected_code": "def solve():\n    data = [2.1, 3.5, 1.8, 4.2, 2.9]\n    mean = sum(data) / len(data)\n    return round(1 / mean, 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 0.3448
+      }
+    ],
+    "explanation": "x̄ = (2.1+3.5+1.8+4.2+2.9)/5 = 14.5/5 = 2.9. λ̂ = 1/2.9 ≈ 0.3448.",
+    "hints": [
+      "For an exponential distribution, the log-likelihood is maximized at λ = 1/x̄.",
+      "Compute the sample mean first, then take its reciprocal."
+    ],
+    "concepts": [
+      "MLE",
+      "exponential distribution",
+      "parameter estimation"
+    ],
+    "order": 13,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73014,
+    "title": "Survival Analysis — Hazard Rate",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "In survival analysis, the hazard rate h(t) is defined as the instantaneous rate of failure at time t given survival to time t. For an exponential survival model with constant hazard h(t) = λ, what does this 'memoryless' property mean in practice?",
+    "options": [
+      "The probability of failing in the next instant depends on how long the subject has already survived — older subjects are more likely to fail",
+      "The conditional probability of failing in the next small interval given survival to time t is the same regardless of t — past survival provides no information about future risk",
+      "The hazard rate decreases over time for exponential models, meaning the longer a subject survives, the safer they become",
+      "The memoryless property only applies to discrete-time survival models; the exponential applies to continuous lifetimes without the property"
+    ],
+    "correct_option": 2,
+    "explanation": "The exponential distribution is memoryless: P(T > t+s | T > t) = P(T > s) for all t,s ≥ 0. A component that has survived t hours is statistically 'as good as new.' The hazard is constant (not increasing or decreasing), so past survival time conveys no information about residual life — unlike the Weibull distribution, which can model increasing or decreasing hazard.",
+    "hints": [
+      "The memoryless property means past history is irrelevant to the conditional future risk.",
+      "Think about whether knowing a component has lasted 100 hours changes your expectation of how much longer it will last."
+    ],
+    "concepts": [
+      "survival analysis",
+      "exponential distribution",
+      "hazard rate"
+    ],
+    "order": 14,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73015,
+    "title": "Kaplan-Meier Survival Probability",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "In a small survival study, events occur at times t=1, 2, 4 with risk sets of sizes 10, 8, 5 and event counts 2, 1, 2 respectively. Write a Python function `solve()` that returns the Kaplan-Meier survival estimate S(4) rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # S(t) = product of (1 - d_i/n_i) for each event time up to and including t\n    pass",
+    "expected_code": "def solve():\n    events = [(10, 2), (8, 1), (5, 2)]\n    s = 1.0\n    for n, d in events:\n        s *= (1 - d / n)\n    return round(s, 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 0.42
+      }
+    ],
+    "explanation": "S(4) = (1−2/10) × (1−1/8) × (1−2/5) = 0.8 × 0.875 × 0.6 = 0.42.",
+    "hints": [
+      "The Kaplan-Meier estimator multiplies survival probabilities across all event times up to t.",
+      "At each event time: multiply current S by (1 − d/n) where d is deaths and n is the risk set size."
+    ],
+    "concepts": [
+      "survival analysis",
+      "Kaplan-Meier",
+      "probability"
+    ],
+    "order": 15,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73016,
+    "title": "Method of Moments for Normal Distribution",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "Using the method of moments, estimates for a normal distribution are μ̂ = x̄ and σ̂² = (1/n) Σ(xi − x̄)². For data = [4, 8, 6, 5, 7], write a Python function `solve()` that returns a tuple (mu_hat, sigma2_hat) rounded to 4 decimal places each.",
+    "starter_code": "def solve():\n    # Method of moments: mu_hat = mean, sigma2_hat = population variance\n    pass",
+    "expected_code": "def solve():\n    data = [4, 8, 6, 5, 7]\n    n = len(data)\n    mu = sum(data) / n\n    sigma2 = sum((x - mu)**2 for x in data) / n\n    return (round(mu, 4), round(sigma2, 4))",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": [
+          6.0,
+          2.0
+        ]
+      }
+    ],
+    "explanation": "x̄ = 30/5 = 6.0. Deviations²: 4, 4, 0, 1, 1 → sum=10. σ̂² = 10/5 = 2.0.",
+    "hints": [
+      "Method of moments sets sample moments equal to theoretical moments to estimate parameters.",
+      "For the normal, the first moment gives the mean estimate; the second central moment gives the variance estimate."
+    ],
+    "concepts": [
+      "method of moments",
+      "parameter estimation",
+      "distributions"
+    ],
+    "order": 16,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73017,
+    "title": "ANOVA F-Statistic",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "In a one-way ANOVA: SS_Between=80 with df_between=2, SS_Within=120 with df_within=27. Write a Python function `solve()` that returns the F-statistic rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # F = MS_Between / MS_Within = (SS_B/df_B) / (SS_W/df_W)\n    pass",
+    "expected_code": "def solve():\n    ss_b, df_b = 80, 2\n    ss_w, df_w = 120, 27\n    ms_b = ss_b / df_b\n    ms_w = ss_w / df_w\n    return round(ms_b / ms_w, 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 9.0
+      }
+    ],
+    "explanation": "MS_Between = 80/2 = 40. MS_Within = 120/27 ≈ 4.444. F = 40/4.444 ≈ 9.0.",
+    "hints": [
+      "Mean squares are sums of squares divided by their degrees of freedom.",
+      "F = MS_Between / MS_Within; a large F suggests group means differ more than expected by chance."
+    ],
+    "concepts": [
+      "ANOVA",
+      "hypothesis testing",
+      "variance decomposition"
+    ],
+    "order": 17,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73018,
+    "title": "Regression — Bias-Variance Decomposition",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "For a prediction model, the expected mean squared error can be decomposed as MSE = Bias² + Variance + Irreducible Error. A model has Bias²=4, Variance=9, and Irreducible Error=2. A more complex model reduces Bias² to 1 but increases Variance to 16. Should you use the more complex model?",
+    "options": [
+      "Yes, because reducing bias is always the most important objective in predictive modeling regardless of variance",
+      "No, because the more complex model has total MSE = 1+16+2 = 19, higher than the simpler model's MSE = 4+9+2 = 15",
+      "Yes, because lower bias guarantees better generalization to new datasets according to statistical theory",
+      "Cannot be determined without knowing the sample size; bias-variance tradeoffs only apply to large-n settings"
+    ],
+    "correct_option": 2,
+    "explanation": "Simple model MSE = 4+9+2 = 15. Complex model MSE = 1+16+2 = 19. Despite lower bias, the complexity increase inflates variance enough to raise total expected prediction error. The irreducible error (noise in the data) is the same for both. A good model minimizes total MSE, not just one component.",
+    "hints": [
+      "Compute the total MSE for each model: Bias² + Variance + Irreducible Error.",
+      "Lower bias does not automatically mean lower total error if variance increases enough to compensate."
+    ],
+    "concepts": [
+      "bias-variance tradeoff",
+      "regression",
+      "model selection"
+    ],
+    "order": 18,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73019,
+    "title": "Chi-Squared Test of Independence",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A 2×2 contingency table shows survey responses for two groups. The chi-squared test of independence yields χ²=12.4 with df=1. At α=0.05, the critical value is 3.84. What is the correct conclusion?",
+    "options": [
+      "Fail to reject H₀; the variables appear independent because χ²=12.4 is too large to be explained by chance",
+      "Reject H₀ (independence); χ²=12.4 > 3.84 provides evidence that the two variables are associated",
+      "Reject H₀ and conclude causation; a significant chi-squared test proves one variable causes the other",
+      "Accept H₀; the chi-squared test can only confirm independence, never reject it with a 2×2 table"
+    ],
+    "correct_option": 2,
+    "explanation": "When χ² > critical value, we reject the null hypothesis of independence. Here 12.4 > 3.84, so we reject H₀ and conclude there is statistically significant evidence of an association between the two variables. This does not establish causation — chi-squared tests only evaluate association in categorical data.",
+    "hints": [
+      "Compare the computed test statistic to the critical value at the given significance level.",
+      "Rejecting H₀ of independence means the data provide evidence of an association, not causation."
+    ],
+    "concepts": [
+      "chi-squared tests",
+      "hypothesis testing",
+      "independence"
+    ],
+    "order": 19,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73020,
+    "title": "Posterior Update with Conjugate Prior",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A Beta(2,2) prior is placed on a proportion p. After observing 8 successes and 3 failures, what is the posterior distribution, and what is the posterior mean?",
+    "options": [
+      "Beta(8,3) posterior with mean 8/11 ≈ 0.727, because prior parameters are replaced by the observed counts",
+      "Beta(10,5) posterior with mean 10/15 = 0.667, because the Beta prior is conjugate to the Binomial likelihood",
+      "Normal(0.667, σ²) posterior, because the CLT applies to the posterior with n=11 observations",
+      "Beta(16,6) posterior with mean 16/22 ≈ 0.727, because all parameters are doubled for a two-sided Beta"
+    ],
+    "correct_option": 2,
+    "explanation": "The Beta distribution is the conjugate prior for the Binomial likelihood. Starting from Beta(α=2, β=2) and observing s=8 successes and f=3 failures, the posterior is Beta(α+s, β+f) = Beta(10, 5). The posterior mean is α'/(α'+β') = 10/15 = 0.667, which is a weighted blend of the prior mean (0.5) and the data proportion (8/11≈0.727).",
+    "hints": [
+      "The Beta-Binomial conjugate pair means the posterior is also Beta — just with updated parameters.",
+      "Posterior parameters: α' = α + successes, β' = β + failures. Posterior mean = α'/(α'+β')."
+    ],
+    "concepts": [
+      "Bayesian inference",
+      "conjugate priors",
+      "Beta distribution"
+    ],
+    "order": 20,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73021,
+    "title": "Posterior Mean Computation",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "A Beta(3,3) prior is updated with 12 successes and 5 failures. Write a Python function `solve()` that returns the posterior mean rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # Posterior: Beta(alpha + successes, beta + failures); mean = alpha'/(alpha'+beta')\n    pass",
+    "expected_code": "def solve():\n    alpha, beta = 3, 3\n    successes, failures = 12, 5\n    alpha_post = alpha + successes\n    beta_post = beta + failures\n    return round(alpha_post / (alpha_post + beta_post), 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 0.6522
+      }
+    ],
+    "explanation": "Posterior: Beta(15, 8). Mean = 15/(15+8) = 15/23 ≈ 0.6522.",
+    "hints": [
+      "Update the Beta parameters by adding observed counts, then compute the mean as α'/(α'+β').",
+      "Beta conjugate update: α' = α + successes, β' = β + failures."
+    ],
+    "concepts": [
+      "Bayesian inference",
+      "conjugate priors",
+      "Beta distribution"
+    ],
+    "order": 21,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73022,
+    "title": "Bonferroni Correction Power Loss",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "Applying the Bonferroni correction to control FWER at α=0.05 across 20 tests makes each per-test threshold α/20 = 0.0025. What is the primary statistical cost of this correction?",
+    "options": [
+      "It increases the Type I error rate because lowering the threshold makes each test more likely to produce false positives",
+      "It decreases power (increases Type II error rate) because a stricter threshold makes it harder to detect true effects",
+      "It has no statistical cost; Bonferroni always improves both Type I and Type II error rates simultaneously",
+      "It inflates the variance of the test statistic, making the test statistic distribution non-normal under H₀"
+    ],
+    "correct_option": 2,
+    "explanation": "By lowering the rejection threshold from 0.05 to 0.0025, the Bonferroni correction controls false positives at the cost of requiring stronger evidence to reject any single H₀. This reduces the probability of detecting true effects (lower power, higher β). Bonferroni is conservative — it trades power for FWER control, which can be undesirably strict when tests are positively correlated.",
+    "hints": [
+      "Power is the probability of detecting a true effect. What happens to power when you raise the bar for rejection?",
+      "Stricter thresholds reduce false positives but also reduce true positives."
+    ],
+    "concepts": [
+      "multiple comparisons",
+      "Bonferroni correction",
+      "statistical power",
+      "Type II error"
+    ],
+    "order": 22,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73023,
+    "title": "Variance of a Linear Combination",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "Independent random variables X and Y have Var(X)=4 and Var(Y)=9. Write a Python function `solve()` that returns Var(2X − 3Y) as a float.",
+    "starter_code": "def solve():\n    # Var(aX + bY) = a^2*Var(X) + b^2*Var(Y) when X,Y independent\n    pass",
+    "expected_code": "def solve():\n    var_x, var_y = 4, 9\n    a, b = 2, -3\n    return float(a**2 * var_x + b**2 * var_y)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 97.0
+      }
+    ],
+    "explanation": "Var(2X − 3Y) = 2²×Var(X) + (−3)²×Var(Y) = 4×4 + 9×9 = 16 + 81 = 97.",
+    "hints": [
+      "For independent variables, variances of linear combinations add — but constants get squared.",
+      "Var(aX + bY) = a²Var(X) + b²Var(Y) when X and Y are independent."
+    ],
+    "concepts": [
+      "variance decomposition",
+      "linear combinations",
+      "probability"
+    ],
+    "order": 23,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73024,
+    "title": "Bootstrap vs Parametric CI Tradeoffs",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A researcher needs to build a confidence interval for the ratio of two medians from heavily skewed data with n=25 per group. Which approach is most defensible and why?",
+    "options": [
+      "Parametric z-interval, because the CLT guarantees normality of the ratio of medians for any n ≥ 30",
+      "Bootstrap percentile interval, because no closed-form sampling distribution exists for a ratio of medians, and resampling is distribution-free",
+      "Parametric t-interval with 24 degrees of freedom, because the t-distribution is always appropriate for small samples",
+      "No valid CI can be constructed for a ratio of medians; only means have known sampling distributions"
+    ],
+    "correct_option": 2,
+    "explanation": "The ratio of two medians has no standard closed-form sampling distribution, especially under skewness. The bootstrap makes no normality assumptions and works for any statistic — making it the natural choice here. With n=25, the CLT does not guarantee normality for the ratio of medians (a non-linear transformation). The t-distribution assumes normality of the underlying variable.",
+    "hints": [
+      "Ask: is there a known parametric formula for the standard error of this specific statistic?",
+      "When the statistic is complex or the distribution is non-normal, resampling methods like bootstrap are the flexible alternative."
+    ],
+    "concepts": [
+      "bootstrap",
+      "confidence intervals",
+      "resampling",
+      "non-parametric methods"
+    ],
+    "order": 24,
+    "difficulty": "hard"
+  }
+]

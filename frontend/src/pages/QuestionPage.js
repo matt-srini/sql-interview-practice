@@ -242,7 +242,8 @@ export default function QuestionPage() {
       .then((res) => {
         const q = res.data;
         setQuestion(q);
-        if (!meta.hasMCQ) {
+        const effectiveMCQ = meta.mixedSubtype ? q.subtype !== 'numerical' : meta.hasMCQ;
+        if (!effectiveMCQ) {
           const baseCode = meta.language === 'python' && q.starter_code ? q.starter_code : defaultCode;
           let nextCode = baseCode;
           try {
@@ -266,7 +267,7 @@ export default function QuestionPage() {
     api.get('/submissions', { params: { track: topic, question_id: id, limit: 20 } })
       .then((res) => setPastAttempts(res.data))
       .catch(() => {});
-  }, [id, topic, questionApiPath, meta.language, meta.hasMCQ, defaultCode, draftKey, user?.id]);
+  }, [id, topic, questionApiPath, meta.language, meta.hasMCQ, meta.mixedSubtype, defaultCode, draftKey, user?.id]);
 
   useEffect(() => () => {
     try {
@@ -277,7 +278,7 @@ export default function QuestionPage() {
   useEffect(() => {
     if (meta.language === 'python') {
       setCode(PYTHON_PLACEHOLDER);
-    } else if (!meta.hasMCQ) {
+    } else if (!meta.hasMCQ && !meta.mixedSubtype) {
       setCode(SQL_PLACEHOLDER);
     }
     setRunResult(null);
@@ -311,7 +312,7 @@ export default function QuestionPage() {
       const saved = sessionStorage.getItem(`run-history:${topic}:${id}`);
       setRunHistory(saved ? JSON.parse(saved) : []);
     } catch { setRunHistory([]); }
-  }, [id, meta.language, meta.hasMCQ, user?.id]);
+  }, [id, meta.language, meta.hasMCQ, meta.mixedSubtype, user?.id]);
 
   useEffect(() => {
     const qid = Number(id);
@@ -344,7 +345,7 @@ export default function QuestionPage() {
   }, [question]);
 
   useEffect(() => {
-    if (meta.hasMCQ || !question || !draftHydratedRef.current) return undefined;
+    if (renderMode === 'mcq' || !question || !draftHydratedRef.current) return undefined;
     if (draftSaveTimerRef.current) clearTimeout(draftSaveTimerRef.current);
     setDraftSaveState('saving');
     draftSaveTimerRef.current = setTimeout(() => {
@@ -359,7 +360,7 @@ export default function QuestionPage() {
     return () => {
       if (draftSaveTimerRef.current) clearTimeout(draftSaveTimerRef.current);
     };
-  }, [code, question, meta.hasMCQ, draftKey]);
+  }, [code, question, renderMode, draftKey]);
 
   useEffect(() => () => {
     if (draftSaveTimerRef.current) clearTimeout(draftSaveTimerRef.current);
@@ -549,7 +550,7 @@ export default function QuestionPage() {
     setSubmissionInsight(null);
     try {
       let payload;
-      if (meta.hasMCQ) {
+      if (renderMode === 'mcq') {
         payload = { selected_option: selectedOption, question_id: Number(id), duration_ms: getElapsedDurationMs() };
       } else if (meta.language === 'python') {
         payload = { code, question_id: Number(id), duration_ms: getElapsedDurationMs() };
@@ -709,7 +710,7 @@ export default function QuestionPage() {
   }
 
   function clearDraft() {
-    if (meta.hasMCQ) return;
+    if (renderMode === 'mcq') return;
     const resetCode = meta.language === 'python' && question?.starter_code ? question.starter_code : defaultCode;
     try {
       localStorage.removeItem(draftKey);
@@ -817,6 +818,15 @@ export default function QuestionPage() {
   const schemaTableCount = Object.keys(question.schema ?? {}).length;
 
   // Determine what to show in left panel
+  // For mixed-subtype tracks (Statistics), derive render mode from the loaded question's subtype.
+  // For all other tracks, use the static track-level hasMCQ flag.
+  const renderMode = useMemo(() => {
+    if (meta.mixedSubtype) {
+      return question?.subtype === 'numerical' ? 'code' : 'mcq';
+    }
+    return meta.hasMCQ ? 'mcq' : 'code';
+  }, [meta.mixedSubtype, meta.hasMCQ, question?.subtype]);
+
   const showSchema = topic === 'sql';
   const showVariables = topic === 'python-data';
 
@@ -825,29 +835,24 @@ export default function QuestionPage() {
   const isSQLRunResult = topic === 'sql' && runResult;
 
   // Editor title based on topic
-  const editorTitle = meta.hasMCQ
+  const editorTitle = renderMode === 'mcq'
     ? 'Code preview'
     : meta.language === 'python'
     ? 'Python editor'
     : 'SQL editor';
-  const editorNote = meta.hasMCQ
+  const editorNote = renderMode === 'mcq'
     ? 'Read-only'
     : meta.language === 'python'
     ? 'Python sandbox'
     : 'DuckDB sandbox';
   const timerLabel = formatDuration(elapsedMs) ?? '0:00';
 
-  // Submit button label
-  const submitBtnLabel = submitting
-    ? 'Checking…'
-    : meta.hasMCQ
-    ? 'Submit Answer'
-    : 'Submit Answer';
+  const submitBtnLabel = submitting ? 'Checking…' : 'Submit Answer';
   const canRevealSolution = !!submitResult
     && (submitResult.correct || hintsShown >= (question.hints?.length ?? 0));
 
   const isSubmitDisabled = submitting || running || isLocked
-    || (meta.hasMCQ && selectedOption === null);
+    || (renderMode === 'mcq' && selectedOption === null);
 
   return (
     <main className="container question-page question-page-challenge">
@@ -940,13 +945,13 @@ export default function QuestionPage() {
 
             <p className="description-text">{renderDescription(question.description)}</p>
 
-            {/* PySpark: show code snippet (question stem) if present */}
-            {meta.hasMCQ && question.code_snippet && (
+            {/* MCQ tracks: show code snippet (question stem) if present */}
+            {renderMode === 'mcq' && question.code_snippet && (
               <pre className="question-code-snippet">{question.code_snippet}</pre>
             )}
 
-            {/* PySpark scenario type: show observed output / logs panel */}
-            {meta.hasMCQ && question.scenario_context && (
+            {/* MCQ scenario type: show observed output / logs panel */}
+            {renderMode === 'mcq' && question.scenario_context && (
               <div className="scenario-context-block">
                 <span className="scenario-context-label">Observed output / logs</span>
                 <pre className="scenario-context-pre">{question.scenario_context}</pre>
@@ -961,10 +966,10 @@ export default function QuestionPage() {
 
               // Unlock thresholds mirror unlock.py exactly.
               // Each entry: [solvedNeeded, maxQuestionsUnlocked]
-              const MEDIUM_THRESHOLDS = meta.hasMCQ
+              const MEDIUM_THRESHOLDS = renderMode === 'mcq'
                 ? [[10, 3], [17, 8], [25, Infinity]]
                 : [[8, 3], [15, 8], [25, Infinity]];
-              const HARD_THRESHOLDS = meta.hasMCQ
+              const HARD_THRESHOLDS = renderMode === 'mcq'
                 ? [[12, 5]]
                 : [[8, 3], [15, 8], [22, Infinity]];
 
@@ -1109,8 +1114,8 @@ export default function QuestionPage() {
         />
 
         <section className="right-panel">
-          {/* PySpark: MCQ panel instead of editor */}
-          {meta.hasMCQ ? (
+          {/* MCQ tracks: MCQ panel instead of editor */}
+          {renderMode === 'mcq' ? (
             <div className="card">
               <div className="section-heading">
                 <h3>Choose the correct answer</h3>
@@ -1648,7 +1653,7 @@ export default function QuestionPage() {
                 </div>
               )}
 
-              {showSolution && !meta.hasMCQ && (
+              {showSolution && renderMode !== 'mcq' && (
                 <div className="solution-card">
                   <h3>Official Solution</h3>
                   <pre>{submitResult.solution_query ?? submitResult.solution_code ?? ''}</pre>

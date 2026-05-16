@@ -29,6 +29,21 @@ _ALGORITHM_ALLOWLIST = {
     "sortedcontainers",
 }
 
+# Imports allowed for the Statistics track (stdlib + numpy; no pandas/plotting)
+_STATISTICS_ALLOWLIST = {
+    "math",
+    "statistics",
+    "numpy",
+    "random",
+    "collections",
+    "itertools",
+    "functools",
+    "decimal",
+    "fractions",
+    "operator",
+    "typing",
+}
+
 # Imports allowed for the Pandas track
 _DATA_ALLOWLIST = {
     "pandas",
@@ -175,7 +190,14 @@ def validate_code(code: str, topic: str = "python") -> list[str]:
     except SyntaxError as e:
         return [f"Syntax error: {e}"]
 
-    allowlist = _DATA_ALLOWLIST if topic == "python_data" else _ALGORITHM_ALLOWLIST if topic == "python" else None
+    if topic == "python_data":
+        allowlist = _DATA_ALLOWLIST
+    elif topic == "python":
+        allowlist = _ALGORITHM_ALLOWLIST
+    elif topic == "statistics":
+        allowlist = _STATISTICS_ALLOWLIST
+    else:
+        allowlist = None
     visitor = _GuardVisitor(allowlist=allowlist)
     visitor.visit(tree)
     return visitor.errors

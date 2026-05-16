@@ -1,0 +1,12 @@
+{
+  "slug": "stats-for-analysts",
+  "title": "Stats for Analysts",
+  "description": "Build the statistical intuition every data analyst needs: probability rules, descriptive statistics, the normal distribution, z-scores, confidence intervals, and when to trust a metric. Conceptual and hands-on numerical questions combined.",
+  "topic": "statistics",
+  "questions": [71001, 71002, 71003, 71004, 71005, 71008, 71012, 71016],
+  "tier": "free",
+  "role": "starter",
+  "focus_concepts": ["DESCRIPTIVE STATISTICS", "PROBABILITY BASICS", "NORMAL DISTRIBUTION", "CONFIDENCE INTERVALS", "EXPECTED VALUE"],
+  "outcomes": "You will be able to compute and interpret mean, median, and standard deviation, apply basic probability rules, reason about the normal distribution and z-scores, and explain what a confidence interval actually means.",
+  "recommended_after": []
+}

@@ -53,7 +53,7 @@ A data interview practice platform covering four tracks. Users write SQL or Pyth
 **Modes per track:**
 - **Challenge mode** — plan-aware unlock rules, persistent progress, 356 practice questions across 4 tracks
 - **Mock mode** — 97 additional mock-only questions (Pro/Elite), never shown in practice catalog
-- **Sample mode** — 36 sandbox questions across all four original tracks (3 per track+difficulty), no progress recorded, no login required. Data Engineering samples are auto-sliced from the first 3 practice questions per difficulty (no dedicated sample IDs).
+- **Sample mode** — 36 sandbox questions across all four original tracks (3 per track+difficulty), no progress recorded, no login required. Data Engineering, Data Modeling, and Statistics samples are auto-sliced from the first 3 practice questions per difficulty (no dedicated sample IDs).
 
 **Tracks:**
 - **SQL** — 95 practice (32 easy / 34 medium / 29 hard) + 33 mock-only, DuckDB execution, realistic relational datasets
@@ -62,6 +62,7 @@ A data interview practice platform covering four tracks. Users write SQL or Pyth
 - **PySpark** — 102 practice (38 easy / 38 medium / 26 hard) + 20 mock-only, MCQ / predict-output / debug / scenario formats
 - **Data Engineering** — 80 practice (30 easy / 30 medium / 20 hard), MCQ / scenario / debug, no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
 - **Data Modeling** — 70 practice (25 easy / 25 medium / 20 hard), MCQ / scenario, no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
+- **Statistics** — 80 practice (28 easy / 28 medium / 24 hard), **dual-subtype**: each question is either `conceptual` (MCQ) or `numerical` (Python code execution); `eval_kind="mixed"`, `unlock_profile="code"`, `mixed_subtype=true`, `in_mixed_mock=false`
 
 ---
 
@@ -92,14 +93,15 @@ Mock-only questions (`mock_only: true`) live in the same JSON files as practice 
 | PySpark | 38 + 0 | 38 + 10 | 26 + 10 | MCQ / predict-output / debug / scenario | `backend/content/pyspark_questions/` |
 | Data Engineering | 30 + 0 | 30 + 0 | 20 + 0 | MCQ / scenario / debug | `backend/content/data_engineering_questions/` |
 | Data Modeling | 25 + 0 | 25 + 0 | 20 + 0 | MCQ / scenario | `backend/content/data_modeling_questions/` |
+| Statistics | 28 + 0 | 28 + 0 | 24 + 0 | conceptual MCQ + numerical Python | `backend/content/statistics_questions/` |
 
-**Practice totals:** SQL 95 · Python 83 · Pandas 76 · PySpark 102 · Data Engineering 80 · Data Modeling 70 = **506 practice questions**  
-**Mock-only totals:** SQL 33 · Python 20 · Pandas 24 · PySpark 20 = **97 mock-only questions** (Pro/Elite only; DE has no mock-only questions at launch)
+**Practice totals:** SQL 95 · Python 83 · Pandas 76 · PySpark 102 · Data Engineering 80 · Data Modeling 70 · Statistics 80 = **586 practice questions**  
+**Mock-only totals:** SQL 33 · Python 20 · Pandas 24 · PySpark 20 = **97 mock-only questions** (Pro/Elite only; Statistics has no mock-only questions at launch)
 
 See [docs/content-authoring.md](docs/content-authoring.md) for the full mock-only authoring spec.
 
-- **Sample questions:** SQL/Python/Pandas/PySpark: 3 per track × 3 difficulties = 36 total. Data Engineering and Data Modeling samples are auto-sliced from the first 3 practice questions per difficulty (no dedicated IDs).
-- **Learning paths:** 26 total — SQL: 7, Python: 5, Pandas: 5, PySpark: 5, Data Engineering: 2, Data Modeling: 2 (each track has exactly one `starter` and one `intermediate` free shortcut path; additional paths are advanced, mixed free/pro)
+- **Sample questions:** SQL/Python/Pandas/PySpark: 3 per track × 3 difficulties = 36 total. Data Engineering, Data Modeling, and Statistics samples are auto-sliced from the first 3 practice questions per difficulty (no dedicated IDs).
+- **Learning paths:** 28 total — SQL: 7, Python: 5, Pandas: 5, PySpark: 5, Data Engineering: 2, Data Modeling: 2, Statistics: 2 (each track has exactly one `starter` and one `intermediate` free shortcut path; additional paths are advanced, mixed free/pro)
 - Every question has `hints` (currently 1–3 entries across the bank; new content should target the active hint ladder) and `concepts` (semantic pattern tags surfaced as pills)
 - SQL questions have a `companies` field (`["Meta", "Stripe", ...]`) used for the company filter in SidebarNav
 - SQL schemas validated against committed CSV headers at catalog load time
@@ -134,6 +136,9 @@ sql-interview-practice/
 │   ├── python_questions.py         # Python algorithm catalog loader
 │   ├── python_data_questions.py    # Pandas catalog loader
 │   ├── pyspark_questions.py        # PySpark catalog loader
+│   ├── data_engineering_questions.py # Data Engineering catalog loader
+│   ├── data_modeling_questions.py  # Data Modeling catalog loader
+│   ├── statistics_questions.py     # Statistics dual-subtype catalog loader (conceptual + numerical)
 │   ├── path_loader.py              # Learning path catalog loader (reads content/paths/*.json)
 │   ├── sql_guard.py                # Read-only SQL validation
 │   ├── python_guard.py             # AST-based Python code validator
@@ -217,7 +222,7 @@ sql-interview-practice/
 /questions/:id                 → redirect → /practice/sql/questions/:id (legacy)
 ```
 
-`:topic` values: `sql` | `python` | `python-data` | `pyspark` | `data-engineering`
+`:topic` values: `sql` | `python` | `python-data` | `pyspark` | `data-engineering` | `data-modeling` | `statistics`
 
 ---
 
@@ -357,6 +362,10 @@ Locked MCQ questions return 200 with `locked: true` and no `options` or `correct
 | POST | `/api/python-data/submit` | Submit pandas code |
 | GET | `/api/pyspark/catalog` | PySpark catalog |
 | POST | `/api/pyspark/submit` | Submit MCQ answer |
+| GET | `/api/statistics/catalog` | Statistics catalog (subtype field per question) |
+| GET | `/api/statistics/questions/{id}` | Statistics question detail (conceptual: options; numerical: starter_code + test_cases) |
+| POST | `/api/statistics/run-code` | Run Python code for numerical statistics questions (400 for conceptual) |
+| POST | `/api/statistics/submit` | Submit answer: `selected_option` for conceptual, `code` for numerical |
 | GET | `/api/dashboard` | Cross-track progress summary |
 | GET | `/api/dashboard/insights` | Coaching insights (speed, accuracy, weak concepts, streak) |
 | GET | `/api/submissions` | Submission history for a question (`track`, `question_id`, `limit` params) |

@@ -39,6 +39,7 @@ Registered in `backend/main.py`:
 | `routers/pyspark_questions.py` | `/api/pyspark` | PySpark catalog, detail, submit (MCQ only) |
 | `routers/data_engineering_questions.py` | `/api/data-engineering` | Data Engineering catalog, detail, submit (MCQ only) |
 | `routers/data_modeling_questions.py` | `/api/data-modeling` | Data Modeling catalog, detail, submit (MCQ only) |
+| `routers/statistics_questions.py` | `/api/statistics` | Statistics catalog, detail, run-code (numerical only), submit (conceptual MCQ or numerical code) |
 | `routers/dashboard.py` | `/api` | Cross-track progress dashboard, submission history |
 | `routers/insights.py` | `/api/dashboard` | Coaching insights: per-track speed/accuracy, weakest concepts, streak |
 | `routers/paths.py` | `/api/paths` | Learning path catalog and path detail with per-question state |
@@ -191,6 +192,17 @@ Signature formulas:
 | GET | `/api/data-modeling/questions/{id}` | Question detail. Unlocked: full payload with `options` (no `correct_option`). Locked: 200 with `locked: true`, no `options` or `correct_option`. |
 | POST | `/api/data-modeling/submit` | `{ selected_option, question_id, duration_ms? }` → `{ correct, explanation }`. No code execution. 403 if locked. |
 
+### Statistics — `/api/statistics`
+
+This track uses `eval_kind="mixed"` with `mixed_subtype=True`. Each question has a `subtype` field: `"conceptual"` (MCQ) or `"numerical"` (Python code).
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/statistics/catalog` | Statistics catalog. Each catalog entry includes `subtype` field. |
+| GET | `/api/statistics/questions/{id}` | Question detail. Conceptual: includes `options` (no `correct_option`). Numerical: includes `starter_code` + `test_cases` (no expected outputs). Both: `subtype` field. Locked: 200 with `locked: true`. |
+| POST | `/api/statistics/run-code` | `{ question_id, code }` — only works for numerical questions (400 for conceptual). Applies statistics import allowlist guard. |
+| POST | `/api/statistics/submit` | `{ question_id, selected_option }` for conceptual → `{ correct, subtype, explanation }`. `{ question_id, code }` for numerical → `{ correct, subtype, solution_code, explanation }`. 403 if locked. |
+
 ### Dashboard — `/api/dashboard`
 
 | Method | Path | Description |
@@ -280,6 +292,7 @@ Files: `python_guard.py` → `python_evaluator.py` → `python_sandbox_harness.p
 - AST-based validation runs before any execution
 - Algorithm track: blocks all `import` statements plus dangerous builtins (`eval`, `exec`, `open`, `__import__`)
 - Pandas track: allows `pandas`, `numpy`, `math`, `statistics`, `collections`, `itertools`, `functools`, `datetime`, `re`, `json`, `decimal`, `fractions`, `operator`, `string`; blocks all others
+- Statistics track: allows `math`, `statistics`, `numpy`, `random`, `collections`, `itertools`, `functools`, `decimal`, `fractions`, `operator`, `typing`; blocks pandas and all others
 - Also blocks dangerous attribute access (`__class__`, `__subclasses__`, `system`, etc.)
 
 **Evaluator (`python_evaluator.py`):**

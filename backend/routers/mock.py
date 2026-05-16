@@ -417,6 +417,24 @@ def _public_question_payload(question: dict, track: str) -> dict:
         payload["question_type"] = question.get("type", "mcq")
         payload["code_snippet"] = question.get("code_snippet")
         payload["scenario_context"] = question.get("scenario_context")
+    # Mixed subtype (Statistics): branch on per-question subtype
+    if get_track(track).mixed_subtype:
+        subtype = question.get("subtype", "conceptual")
+        payload["subtype"] = subtype
+        if subtype == "conceptual":
+            payload["options"] = question.get("options", [])
+            payload["question_type"] = question.get("type", "mcq")
+            payload["code_snippet"] = question.get("code_snippet")
+            payload["scenario_context"] = question.get("scenario_context")
+        else:  # numerical
+            all_cases = question.get("test_cases", [])
+            public_count = question.get("public_test_cases", len(all_cases))
+            payload["test_cases"] = [
+                {"input": tc.get("input"), "description": tc.get("description", "")}
+                for tc in all_cases[:public_count]
+            ]
+            payload["starter_code"] = question.get("starter_code", "")
+            payload["function_signature"] = question.get("function_signature")
     return payload
 
 
@@ -441,6 +459,21 @@ def _solution_payload(question: dict, track: str) -> dict:
         return {
             "solution": str(correct_option) if correct_option is not None else None,
             "correct_option": correct_option,
+            "explanation": question.get("explanation", ""),
+        }
+    if get_track(track).mixed_subtype:
+        subtype = question.get("subtype", "conceptual")
+        if subtype == "conceptual":
+            correct_option = question.get("correct_option")
+            return {
+                "solution": str(correct_option) if correct_option is not None else None,
+                "correct_option": correct_option,
+                "explanation": question.get("explanation", ""),
+            }
+        solution_text = question.get("expected_code", "")
+        return {
+            "solution": solution_text,
+            "solution_code": solution_text,
             "explanation": question.get("explanation", ""),
         }
     return {}
@@ -499,6 +532,25 @@ def _evaluate_submission(
             return False, {"error": "No option selected"}
         accepted = selected_option == question.get("correct_option")
         return accepted, {"correct": accepted}
+
+    if get_track(track).mixed_subtype:
+        subtype = question.get("subtype", "conceptual")
+        if subtype == "conceptual":
+            if selected_option is None:
+                return False, {"error": "No option selected"}
+            accepted = selected_option == question.get("correct_option")
+            return accepted, {"correct": accepted}
+        # numerical
+        if not code:
+            return False, {"error": "No code provided"}
+        result = evaluate_python_code(code, question)
+        accepted = bool(result.get("correct"))
+        return accepted, {
+            "correct": accepted,
+            "error": result.get("error"),
+            "public_results": result.get("public_results", []),
+            "hidden_summary": result.get("hidden_summary"),
+        }
 
     return False, {"error": f"Unknown track: {track}"}
 

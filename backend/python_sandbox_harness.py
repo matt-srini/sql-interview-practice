@@ -56,7 +56,7 @@ def _run_algorithm(user_code: str, test_cases: list) -> dict:
     results = []
     for case in test_cases:
         args = case.get("input", [])
-        expected = case.get("expected")
+        expected = case.get("expected") if "expected" in case else case.get("expected_output")
         stdout_capture = _BoundedStringIO()
         old_stdout = sys.stdout
         sys.stdout = stdout_capture

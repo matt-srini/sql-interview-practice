@@ -24,6 +24,7 @@ import python_data_questions
 import python_questions
 import pyspark_questions
 import questions as sql_questions
+import statistics_questions
 
 BACKEND_ROOT = Path(__file__).resolve().parent
 
@@ -312,6 +313,46 @@ TRACKS: tuple[TrackConfig, ...] = (
             re.compile(r"\bconformed\s+dimension\b", re.IGNORECASE),
         ),
         in_mixed_mock=False,
+    ),
+    TrackConfig(
+        slug="statistics",
+        db_topic="statistics",
+        catalog_module=statistics_questions,
+        label="Statistics",
+        eval_kind="mixed",
+        unlock_profile="code",
+        content_dir=BACKEND_ROOT / "content" / "statistics_questions",
+        concept_blocklist={
+            "mean",
+            "median",
+            "variance",
+            "standard deviation",
+            "p-value",
+            "t-test",
+            "chi-squared",
+            "z-score",
+            "normal distribution",
+            "binomial distribution",
+            "scipy",
+            "numpy",
+            "statsmodels",
+            "r-squared",
+            "pearson",
+            "spearman",
+        },
+        hint_rules={"easy": (2, 2), "medium": (2, 3), "hard": (2, 3)},
+        first_hint_leak_patterns=(
+            re.compile(r"\bp[\-\s]?value\b", re.IGNORECASE),
+            re.compile(r"\bnull\s+hypothesis\b", re.IGNORECASE),
+            re.compile(r"\bcentral\s+limit\s+theorem\b", re.IGNORECASE),
+            re.compile(r"\bconfidence\s+interval\b", re.IGNORECASE),
+            re.compile(r"\bbayes\w*\b", re.IGNORECASE),
+            re.compile(r"\btype\s+[12]\s+error\b", re.IGNORECASE),
+            re.compile(r"\bstatistical\s+power\b", re.IGNORECASE),
+            re.compile(r"\bsimpson'?s\s+paradox\b", re.IGNORECASE),
+        ),
+        in_mixed_mock=False,
+        mixed_subtype=True,
     ),
 )
 

@@ -246,13 +246,18 @@ def run_topic_sample_code(topic: str, body: SampleRunCodeRequest) -> dict[str, A
         body.question_id,
     )
 
-    eval_kind = get_track_by_db_topic(normalized_topic).eval_kind
+    track = get_track_by_db_topic(normalized_topic)
+    eval_kind = track.eval_kind
     if eval_kind in ("sql", "mcq"):
         raise HTTPException(status_code=400, detail="Run endpoint is not supported for this topic.")
 
     question = get_sample_question_for_topic(body.question_id, normalized_topic)
     if question is None:
         raise HTTPException(status_code=404, detail="Question not found")
+
+    # mixed (statistics): conceptual questions cannot run code
+    if eval_kind == "mixed" and question.get("subtype") == "conceptual":
+        raise HTTPException(status_code=400, detail="Run code is not supported for conceptual (MCQ) questions.")
 
     guard_errors = python_guard.validate_code(body.code, topic=normalized_topic)
     if guard_errors:
@@ -261,7 +266,7 @@ def run_topic_sample_code(topic: str, body: SampleRunCodeRequest) -> dict[str, A
             detail={"error": "Code contains disallowed constructs.", "guard_errors": guard_errors},
         )
 
-    if eval_kind == "python":
+    if eval_kind in ("python", "mixed"):
         return python_evaluator.run_python_code(body.code, question)
     # pandas: run comparison and add test_results
     raw = python_evaluator.run_python_data_code(body.code, question)
@@ -323,6 +328,42 @@ def submit_topic_sample_answer(topic: str, body: dict[str, Any]) -> dict[str, An
         result["solution_code"] = question.get("expected_code", "")
         result["explanation"] = question.get("explanation", "")
         return result
+
+    # mixed (statistics): dispatch on per-question subtype
+    if eval_kind == "mixed":
+        subtype = None
+        # Peek at question subtype to decide which parser to use
+        question_id = body.get("question_id") if isinstance(body, dict) else None
+        if question_id:
+            _q_peek = get_sample_question_for_topic(question_id, normalized_topic)
+            subtype = _q_peek.get("subtype") if _q_peek else None
+        if subtype == "numerical":
+            parsed = _parse_body(SampleSubmitCodeRequest, body)
+            question = get_sample_question_for_topic(parsed.question_id, normalized_topic)
+            if question is None:
+                raise HTTPException(status_code=404, detail="Question not found")
+            guard_errors = python_guard.validate_code(parsed.code, topic=normalized_topic)
+            if guard_errors:
+                raise HTTPException(
+                    status_code=400,
+                    detail={"error": "Code contains disallowed constructs.", "guard_errors": guard_errors},
+                )
+            result = python_evaluator.evaluate_python_code(parsed.code, question)
+            result["solution_code"] = question.get("expected_code", "")
+            result["explanation"] = question.get("explanation", "")
+            result["subtype"] = "numerical"
+            return result
+        else:  # conceptual
+            parsed = _parse_body(SampleSubmitPySparkRequest, body)
+            question = get_sample_question_for_topic(parsed.question_id, normalized_topic)
+            if question is None:
+                raise HTTPException(status_code=404, detail="Question not found")
+            correct = parsed.selected_option == question["correct_option"]
+            return {
+                "correct": correct,
+                "subtype": "conceptual",
+                "explanation": question.get("explanation", ""),
+            }
 
     # mcq (pyspark and future mcq tracks)
     parsed = _parse_body(SampleSubmitPySparkRequest, body)

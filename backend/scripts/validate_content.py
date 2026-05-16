@@ -85,13 +85,55 @@ def _validate_concepts() -> None:
         raise ValueError(f"Concept validation failed:\n{joined}")
 
 
+def _validate_statistics_subtypes() -> None:
+    """Validate that every statistics question has a valid subtype and per-subtype required fields."""
+    from tracks import TRACKS as _TRACKS
+    stats_track = next((t for t in _TRACKS if t.slug == "statistics"), None)
+    if stats_track is None:
+        return
+    errors: list[str] = []
+    track_dir = stats_track.content_dir
+    for file_path in sorted(track_dir.glob("*.json")):
+        if file_path.stem == "schemas":
+            continue
+        with file_path.open("r", encoding="utf-8") as handle:
+            questions = json.load(handle)
+        for q in questions:
+            qid = q.get("id", "<unknown>")
+            title = q.get("title", "<untitled>")
+            subtype = q.get("subtype")
+            if subtype not in ("conceptual", "numerical"):
+                errors.append(f"statistics {qid} {title}: subtype must be 'conceptual' or 'numerical', got {subtype!r}")
+                continue
+            if subtype == "conceptual":
+                for field in ("options", "correct_option", "explanation"):
+                    if field not in q:
+                        errors.append(f"statistics {qid} {title}: conceptual question missing field '{field}'")
+                options = q.get("options", [])
+                correct = q.get("correct_option")
+                if isinstance(options, list) and isinstance(correct, int):
+                    if correct < 0 or correct >= len(options):
+                        errors.append(f"statistics {qid} {title}: correct_option={correct} out of range for {len(options)} options")
+            else:  # numerical
+                for field in ("expected_code", "test_cases", "explanation"):
+                    if field not in q:
+                        errors.append(f"statistics {qid} {title}: numerical question missing field '{field}'")
+                if not isinstance(q.get("test_cases"), list) or len(q.get("test_cases", [])) == 0:
+                    errors.append(f"statistics {qid} {title}: test_cases must be a non-empty list")
+    if errors:
+        joined = "\n".join(f"- {item}" for item in errors[:200])
+        raise ValueError(f"Statistics subtype validation failed:\n{joined}")
+
+
 def _validate_mcq_scenario_questions() -> None:
     """Validate scenario-type MCQ questions (any track) have required observation anchors and rich options."""
     from tracks import TRACKS as _TRACKS
+    # Pure MCQ tracks + statistics (for its conceptual questions only)
     mcq_track_slugs = {t.slug for t in _TRACKS if t.eval_kind == "mcq"}
+    mixed_track_slugs = {t.slug for t in _TRACKS if t.mixed_subtype}
     errors: list[str] = []
 
-    for track_slug in mcq_track_slugs:
+    for track_slug in mcq_track_slugs | mixed_track_slugs:
         track_dir = QUESTION_DIRS.get(track_slug)
         if track_dir is None:
             continue
@@ -103,6 +145,9 @@ def _validate_mcq_scenario_questions() -> None:
                 questions = json.load(handle)
 
             for question in questions:
+                # For mixed-subtype tracks (statistics), only validate conceptual scenario questions
+                if track_slug in mixed_track_slugs and question.get("subtype") != "conceptual":
+                    continue
                 if question.get("type") != "scenario":
                     continue
                 qid = question.get("id", "<unknown>")
@@ -347,6 +392,7 @@ def main() -> None:
     _validate_paths(paths, catalogs_by_topic)
     _validate_concepts()
     _validate_hints()
+    _validate_statistics_subtypes()
     _validate_mcq_scenario_questions()
     _validate_mock_fields()
 

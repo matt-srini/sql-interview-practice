@@ -30,9 +30,9 @@ Defined in `frontend/src/App.js`:
 /questions/:id                   → redirect → /practice/sql/questions/:id  (legacy)
 ```
 
-`:topic` values: `sql` | `python` | `python-data` | `pyspark` | `data-engineering` | `data-modeling`
+`:topic` values: `sql` | `python` | `python-data` | `pyspark` | `data-engineering` | `data-modeling` | `statistics`
 
-Active tracks (`TRACK_SLUGS`): the 6 live tracks above. `ALL_TRACK_SLUGS` adds `statistics` (`comingSoon: true`) for the landing page index and role selector.
+Active tracks (`TRACK_SLUGS`): all 7 tracks above. `ALL_TRACK_SLUGS` is the same set (no more `comingSoon` tracks).
 
 App-level route changes now animate with a short fade-in wrapper (`.route-transition`) around the route tree.
 
@@ -51,7 +51,7 @@ Editorial 8-section layout (Phase E redesign). All sections use the `lp-*` CSS n
 3. **Wrong / Right** — 2-col diff table; right column rows stagger in on intersection.
 4. **Role Selector** — `role="tablist"` with 4 tabs (Data Analyst · Data Engineer · Analytics Engineer · Data Scientist). Each panel shows an ordered list of relevant tracks as cards (left 3px border in track color via inline style). Coming-soon tracks display a `lp-badge-soon` badge and no CTA link. Arrow-key keyboard navigation.
 5. **Proof Strip** — Stat row: N tracks · N+ questions. Question count uses `useCountUp(target, 900, inView)` rAF animation on scroll.
-6. **Tracks Index** — Dense list of all 7 tracks from `ALL_TRACK_SLUGS` (6 live + `statistics`). Per-row: color dot, name, description, question count, format tagline, "Enter →" link or "Soon" chip. `.lp-track-enter` link colored with track's CSS color.
+6. **Tracks Index** — Dense list of all 7 tracks from `ALL_TRACK_SLUGS` (all live). Per-row: color dot, name, description, question count, format tagline, "Enter →" link. `.lp-track-enter` link colored with track's CSS color.
 7. **Guided Progressions** — Fetches `/api/paths`; renders `PathProgressCard` per path (same component used in TrackHub).
 8. **Pricing** — Free / Pro / Elite columns with monthly + lifetime CTAs. Hidden only for `lifetime_elite` users (pro users see it to discover Elite). Reuses existing `landing-tier-*` CSS classes.
 
@@ -269,9 +269,11 @@ Provides current topic and track metadata to the entire component tree.
 
 `TopicProvider` reads `:topic` from URL params via `useParams()`. `useTopic()` returns `{ topic, meta }`.
 
-**Track registry (`frontend/src/trackRegistry.js`):** Single source of truth for all track metadata (`TRACK_META`). Adding a track here is the only frontend change needed — catalog paths, sidebar, TrackHub, and SidebarNav all read from it. Current tracks: `sql`, `python`, `python-data`, `pyspark`, `data-engineering`.
+**Track registry (`frontend/src/trackRegistry.js`):** Single source of truth for all track metadata (`TRACK_META`). Adding a track here is the only frontend change needed — catalog paths, sidebar, TrackHub, and SidebarNav all read from it. Current tracks: `sql`, `python`, `python-data`, `pyspark`, `data-engineering`, `data-modeling`, `statistics`.
 
 `data-engineering` entry: `color: '#B9762B'`, `hasMCQ: true`, `hasRunCode: false`, `apiPrefix: '/data-engineering'`, `totalQuestions: 80`.
+
+`statistics` entry: `color: '#7A5AF0'`, `hasMCQ: true`, `hasRunCode: true`, `mixedSubtype: true`, `apiPrefix: '/statistics'`, `language: 'python'`, `totalQuestions: 80`. The `mixedSubtype: true` flag tells `QuestionPage.js` to derive `renderMode` from `question.subtype` at runtime rather than using the static `hasMCQ` flag — enabling a single page to render both MCQ (for conceptual questions) and code editor (for numerical questions).
 
 ### `catalogContext.js`
 

@@ -17,14 +17,14 @@ _path_question_ids = _agg_path["questions"]
 
 
 def test_tc119_get_paths_returns_24_paths():
-    """TC-119: GET /api/paths → 200; paths array length == 26 (24 original + 2 data-modeling)."""
+    """TC-119: GET /api/paths → 200; paths array length == 28 (26 original + 2 statistics)."""
     with TestClient(app) as client:
         _make_user(client, plan="free")
         r = client.get("/api/paths")
     assert r.status_code == 200
     body = r.json()
     paths = body.get("paths", body) if isinstance(body, dict) else body
-    assert len(paths) == 26
+    assert len(paths) == 28
     # Each path has slug, title, topic, solved_count
     for p in paths:
         assert "slug" in p

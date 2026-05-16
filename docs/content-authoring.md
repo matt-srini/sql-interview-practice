@@ -52,9 +52,10 @@ datathink is **FAANG-level interview preparation**, not a syntax tutorial. The s
 | PySpark | 38 | 38 | 26 | **102** | MCQ / predict-output / debug, evaluated by option selection |
 | Data Engineering | 30 | 30 | 20 | **80** | MCQ / scenario / debug, evaluated by option selection |
 | Data Modeling | 25 | 25 | 20 | **70** | MCQ / scenario, evaluated by option selection |
-| **Total** | **177** | **187** | **142** | **506** | |
+| Statistics | 28 | 28 | 24 | **80** | Dual-subtype: conceptual MCQ or numerical Python code |
+| **Total** | **205** | **215** | **166** | **586** | |
 
-Sample questions (no login, no progress): 3 per track × 3 difficulties = 9 per track = **36 total**.
+Sample questions (no login, no progress): 3 per track × 3 difficulties = 9 per track = **36 total** (SQL/Python/Pandas/PySpark only; DE, DM, Statistics samples auto-sliced from catalog).
 
 ### Learning paths (curated sequences)
 
@@ -66,11 +67,12 @@ Sample questions (no login, no progress): 3 per track × 3 difficulties = 9 per 
 | PySpark | 5 | 2 free shortcut paths (`starter`, `intermediate`) + 3 advanced (mixed free/pro) |
 | Data Engineering | 2 | `starter` "Pipeline Fundamentals" (free) · `intermediate` "Advanced DE Systems" (pro) |
 | Data Modeling | 2 | `starter` "Schema Design Basics" (free) · `intermediate` "Dimensional Modeling Deep Dive" (pro) |
-| **Total** | **26** | |
+| Statistics | 2 | `starter` "Stats for Analysts" (free) · `intermediate` "Experimental Design & Inference" (pro) |
+| **Total** | **28** | |
 
 Authoring constraints for path files in `backend/content/paths/`:
 - Required fields: `slug`, `title`, `description`, `topic`, `questions`, `tier`, `role`
-- `topic` must be one of: `sql`, `python`, `python-data`, `pyspark`, `data-engineering`, `data-modeling`
+- `topic` must be one of: `sql`, `python`, `python-data`, `pyspark`, `data-engineering`, `data-modeling`, `statistics`
 - `tier` must be `free` or `pro`
 - `role` must be `starter`, `intermediate`, or `advanced`
 - Exactly one `starter` and one `intermediate` path per track (used by unlock shortcuts)
@@ -166,6 +168,34 @@ Authoring constraints for path files in `backend/content/paths/`:
 
 **First-hint leak patterns for `data-modeling`** (forbidden in first hint):
 `star schema`, `snowflake schema`, `slowly changing`, `SCD type`, `surrogate key`, `data vault`, `grain`, `conformed dimension`
+
+### Statistics — concepts covered
+
+This is a **dual-subtype** track. Each question has `"subtype": "conceptual"` (MCQ) or `"subtype": "numerical"` (Python code). The same concept families apply to both subtypes.
+
+| Tier | Mix | Concepts |
+|---|---|---|
+| Easy (~70% conceptual / ~30% numerical) | Descriptive statistics (mean, median, mode, IQR, std dev), probability basics (sample space, union/intersection/complement), conditional probability, independence, expected value, Bernoulli/binomial basics, normal distribution, z-scores, 68-95-99.7 rule, basic combinatorics (permutations, combinations) |
+| Medium (~60% conceptual / ~40% numerical) | Central Limit Theorem, sampling distributions, confidence intervals for means, hypothesis testing basics (null hypothesis, p-value, significance level), Type I and Type II errors, statistical power, t vs z distributions, correlation vs causation, A/B testing setup, sample size estimation, Bayesian vs frequentist reasoning, Law of Large Numbers, Poisson distribution |
+| Hard (~50% conceptual / ~50% numerical) | Bayesian posterior calculation, multiple comparisons and Bonferroni correction, Simpson's paradox, power analysis and effect size (Cohen's d), regression (R-squared, bias-variance tradeoff), bootstrap and resampling, maximum likelihood estimation, chi-squared tests, ANOVA, survival analysis basics, variance decomposition |
+
+**Concept families for `statistics`** (used in concept pills and insights engine):
+
+`DESCRIPTIVE STATISTICS` · `PROBABILITY BASICS` · `CONDITIONAL PROBABILITY` · `EXPECTED VALUE` · `DISTRIBUTIONS` · `NORMAL DISTRIBUTION` · `HYPOTHESIS TESTING` · `CONFIDENCE INTERVALS` · `TYPE I AND TYPE II ERRORS` · `STATISTICAL POWER` · `A/B TESTING` · `CENTRAL LIMIT THEOREM` · `BAYESIAN REASONING` · `CORRELATION VS CAUSATION` · `REGRESSION` · `RESAMPLING METHODS` · `MULTIPLE COMPARISONS` · `ANOVA` · `VARIANCE DECOMPOSITION`
+
+**Concept blocklist for `statistics`** (too implementation-specific — validator rejects these):
+`mean`, `median`, `variance`, `standard deviation`, `p-value`, `t-test`, `chi-squared`, `z-score`, `normal distribution`, `binomial distribution`, `scipy`, `numpy`, `statsmodels`, `r-squared`, `pearson`, `spearman`
+
+**First-hint leak patterns for `statistics`** (forbidden in first hint):
+`p-value`, `null hypothesis`, `central limit theorem`, `confidence interval`, `bayesian`, `type I error`, `type II error`, `statistical power`, `simpson's paradox`
+
+**Schema rules for statistics question JSON:**
+- All questions: `id`, `order`, `title`, `difficulty`, `type`, `subtype`, `description`, `hints`, `concepts`
+- Conceptual only: `options` (4 strings, each ≥ 20 chars), `correct_option` (int 0–3), `explanation`
+- Numerical only: `starter_code` (function stub), `expected_code` (full working implementation), `test_cases` (list of `{"input": [], "expected_output": value}`), `explanation`
+- Allowed imports for numerical code: `math`, `statistics`, `numpy`, `random`, `collections`, `itertools`, `functools`, `decimal`, `fractions`, `operator`, `typing`
+- `type` field: use `"mcq"` for conceptual, `"numerical"` for numerical
+- ID ranges: easy 71001–71028, medium 72001–72028, hard 73001–73024
 
 ---
 

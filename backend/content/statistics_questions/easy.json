@@ -1,0 +1,735 @@
+[
+  {
+    "id": 71001,
+    "title": "Mean vs Median Under Skew",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A dataset of household incomes in a city is heavily right-skewed due to a small number of billionaires. Which measure of central tendency best represents the 'typical' household income, and why?",
+    "options": [
+      "The mean, because it uses all data points and is mathematically unbiased for any distribution",
+      "The median, because it is resistant to extreme values and reflects the income of the middle household",
+      "The mode, because it identifies the single most common income level in the dataset",
+      "The range, because it captures the full spread of incomes from lowest to highest"
+    ],
+    "correct_option": 2,
+    "explanation": "The median splits the sorted dataset in half, so extreme values (billionaires) do not distort it. The mean is pulled toward the high tail in right-skewed data, making it unrepresentative of the typical household. The mode and range are not measures of central tendency suited for this purpose.",
+    "hints": [
+      "Think about how a few very large values affect the arithmetic average compared to the middle value.",
+      "Consider what 'resistant to outliers' means for a summary statistic."
+    ],
+    "concepts": [
+      "descriptive statistics",
+      "measures of central tendency",
+      "skewness",
+      "outliers"
+    ],
+    "order": 1,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71002,
+    "title": "Computing the Sample Mean",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "Given the dataset [4, 7, 13, 2, 1, 8, 5], write a Python function `solve()` that returns the arithmetic mean rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # Compute the mean of the dataset [4, 7, 13, 2, 1, 8, 5]\n    pass",
+    "expected_code": "def solve():\n    data = [4, 7, 13, 2, 1, 8, 5]\n    return round(sum(data) / len(data), 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 5.7143
+      }
+    ],
+    "explanation": "Sum all values: 4+7+13+2+1+8+5 = 40. Divide by count (7): 40/7 ≈ 5.7143.",
+    "hints": [
+      "The arithmetic mean is the sum of all values divided by the number of values.",
+      "Use Python's built-in sum() and len() functions, then round to 4 decimal places."
+    ],
+    "concepts": [
+      "descriptive statistics",
+      "measures of central tendency"
+    ],
+    "order": 2,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71003,
+    "title": "Median of an Even-Length Dataset",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "Given the dataset [3, 7, 1, 9, 4, 6], write a Python function `solve()` that returns the median as a float.",
+    "starter_code": "def solve():\n    # Compute the median of [3, 7, 1, 9, 4, 6]\n    pass",
+    "expected_code": "def solve():\n    data = sorted([3, 7, 1, 9, 4, 6])\n    n = len(data)\n    mid = n // 2\n    return (data[mid - 1] + data[mid]) / 2",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 5.0
+      }
+    ],
+    "explanation": "Sorted: [1, 3, 4, 6, 7, 9]. With 6 elements, median is average of 3rd and 4th values: (4+6)/2 = 5.0.",
+    "hints": [
+      "Sort the list first, then find the middle position(s).",
+      "For an even number of elements, average the two middle values."
+    ],
+    "concepts": [
+      "descriptive statistics",
+      "measures of central tendency"
+    ],
+    "order": 3,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71004,
+    "title": "Interquartile Range Interpretation",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A boxplot shows Q1 = 20, Q3 = 50. A data point has a value of 110. Using the standard 1.5 × IQR rule, should this point be classified as an outlier?",
+    "options": [
+      "No, because 110 is less than Q3 plus twice the IQR, which is the correct threshold for outliers",
+      "Yes, because 110 exceeds the upper fence of Q3 + 1.5 × IQR = 50 + 45 = 95",
+      "No, because the IQR rule only applies when the sample size is greater than 100 observations",
+      "Yes, because any value above Q3 is automatically flagged as a potential outlier by definition"
+    ],
+    "correct_option": 2,
+    "explanation": "IQR = Q3 − Q1 = 50 − 20 = 30. Upper fence = Q3 + 1.5 × IQR = 50 + 45 = 95. Since 110 > 95, the point is classified as an outlier. The 1.5×IQR rule has no minimum sample size requirement.",
+    "hints": [
+      "Calculate IQR first, then compute the upper fence using the 1.5 multiplier.",
+      "Upper fence = Q3 + 1.5 × (Q3 − Q1)."
+    ],
+    "concepts": [
+      "descriptive statistics",
+      "outliers",
+      "interquartile range"
+    ],
+    "order": 4,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71005,
+    "title": "Standard Deviation of Small Dataset",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "Write a Python function `solve()` that returns the **population** standard deviation of the dataset [2, 4, 4, 4, 5, 5, 7, 9], rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # Compute the population standard deviation of [2, 4, 4, 4, 5, 5, 7, 9]\n    pass",
+    "expected_code": "def solve():\n    import math\n    data = [2, 4, 4, 4, 5, 5, 7, 9]\n    mean = sum(data) / len(data)\n    variance = sum((x - mean) ** 2 for x in data) / len(data)\n    return round(math.sqrt(variance), 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 2.0
+      }
+    ],
+    "explanation": "Mean = 40/8 = 5. Squared deviations: 9,1,1,1,0,0,4,16 → sum=32. Population variance = 32/8 = 4. Standard deviation = √4 = 2.0.",
+    "hints": [
+      "Population standard deviation divides by N, not N−1.",
+      "Compute the mean first, then average the squared deviations, then take the square root."
+    ],
+    "concepts": [
+      "descriptive statistics",
+      "distributions"
+    ],
+    "order": 5,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71006,
+    "title": "Complementary Event Probability",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "The probability that a randomly chosen flight arrives on time is 0.78. What is the probability that the flight does NOT arrive on time?",
+    "options": [
+      "0.78, because the complement shares the same probability as the original event",
+      "0.22, because P(not A) = 1 − P(A) and 1 − 0.78 = 0.22",
+      "0.39, because the complement probability is always half the original probability",
+      "Cannot be determined without knowing the total number of flights in the sample"
+    ],
+    "correct_option": 2,
+    "explanation": "For any event A, P(not A) = 1 − P(A). Here P(late) = 1 − 0.78 = 0.22. This requires only that the total probability of all outcomes equals 1, which is an axiom of probability.",
+    "hints": [
+      "All probabilities for mutually exclusive exhaustive outcomes must sum to 1.",
+      "P(complement) = 1 − P(original event)."
+    ],
+    "concepts": [
+      "probability",
+      "complementary events"
+    ],
+    "order": 6,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71007,
+    "title": "Union Probability (Non-Mutually Exclusive)",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "In a class, P(student plays chess) = 0.40, P(student plays tennis) = 0.35, and P(student plays both) = 0.15. What is P(student plays chess OR tennis)?",
+    "options": [
+      "0.75, found by simply adding P(chess) + P(tennis) without any adjustment for overlap",
+      "0.60, found by P(chess) + P(tennis) − P(both) = 0.40 + 0.35 − 0.15",
+      "0.25, found by multiplying P(chess) × P(tennis) since they are independent events",
+      "0.14, found by multiplying P(chess) × P(tennis) to find the joint probability"
+    ],
+    "correct_option": 2,
+    "explanation": "The inclusion-exclusion principle states P(A∪B) = P(A) + P(B) − P(A∩B). Without subtracting the overlap, students who play both are counted twice. Here: 0.40 + 0.35 − 0.15 = 0.60.",
+    "hints": [
+      "When events can occur simultaneously, adding their probabilities double-counts the overlap.",
+      "Use the inclusion-exclusion formula: P(A or B) = P(A) + P(B) − P(A and B)."
+    ],
+    "concepts": [
+      "probability",
+      "set theory",
+      "inclusion-exclusion"
+    ],
+    "order": 7,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71008,
+    "title": "Probability of Union Calculation",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "P(A) = 0.5, P(B) = 0.4, P(A∩B) = 0.2. Write a Python function `solve()` that returns P(A∪B) as a float rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # Compute P(A union B) using the inclusion-exclusion principle\n    pass",
+    "expected_code": "def solve():\n    p_a = 0.5\n    p_b = 0.4\n    p_ab = 0.2\n    return round(p_a + p_b - p_ab, 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 0.7
+      }
+    ],
+    "explanation": "P(A∪B) = P(A) + P(B) − P(A∩B) = 0.5 + 0.4 − 0.2 = 0.7.",
+    "hints": [
+      "Use the inclusion-exclusion principle to avoid double-counting.",
+      "P(A∪B) = P(A) + P(B) − P(A∩B)."
+    ],
+    "concepts": [
+      "probability",
+      "set theory",
+      "inclusion-exclusion"
+    ],
+    "order": 8,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71009,
+    "title": "Independent vs Dependent Events",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A bag contains 3 red and 2 blue balls. Two balls are drawn **with replacement**. Are the two draws independent, and what is P(both red)?",
+    "options": [
+      "Not independent; P(both red) = (3/5) × (2/4) = 0.30 because removing the first ball changes the composition",
+      "Independent; P(both red) = (3/5) × (3/5) = 0.36 because replacement restores the original composition",
+      "Independent; P(both red) = (3/5) + (3/5) = 1.20, found by adding individual probabilities",
+      "Not independent; P(both red) = (3/5) × (3/5) = 0.36 regardless of replacement status"
+    ],
+    "correct_option": 2,
+    "explanation": "With replacement, the composition is reset after each draw, so the outcome of the first draw does not affect the second. The events are independent. P(both red) = P(red) × P(red) = 3/5 × 3/5 = 9/25 = 0.36.",
+    "hints": [
+      "Ask: does the first draw change the pool from which the second draw is made?",
+      "For independent events, P(A and B) = P(A) × P(B)."
+    ],
+    "concepts": [
+      "probability",
+      "independence",
+      "sampling with replacement"
+    ],
+    "order": 9,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71010,
+    "title": "Conditional Probability Definition",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "P(A) = 0.6, P(B) = 0.5, P(A∩B) = 0.3. What is P(A | B), the probability of A given that B has occurred?",
+    "options": [
+      "0.60, because knowing B occurred does not change the probability of A since they are independent",
+      "0.50, because P(A|B) always equals P(B) by the symmetry of conditional probability",
+      "0.60, computed as P(A∩B) divided by P(A) rather than by P(B)",
+      "0.60, computed as P(A∩B) / P(B) = 0.3 / 0.5 = 0.60"
+    ],
+    "correct_option": 3,
+    "explanation": "P(A|B) = P(A∩B) / P(B) = 0.3 / 0.5 = 0.60. In this case the result equals P(A), which confirms A and B are independent (P(A|B) = P(A)). Option C uses the wrong denominator.",
+    "hints": [
+      "Conditional probability restricts the sample space to the event that is known to have occurred.",
+      "P(A|B) = P(A and B) / P(B)."
+    ],
+    "concepts": [
+      "conditional probability",
+      "probability"
+    ],
+    "order": 10,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71011,
+    "title": "Conditional Probability Calculation",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "P(A∩B) = 0.12, P(B) = 0.40. Write a Python function `solve()` that returns P(A | B) rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # Compute P(A given B) = P(A and B) / P(B)\n    pass",
+    "expected_code": "def solve():\n    p_ab = 0.12\n    p_b = 0.40\n    return round(p_ab / p_b, 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 0.3
+      }
+    ],
+    "explanation": "P(A|B) = P(A∩B) / P(B) = 0.12 / 0.40 = 0.30.",
+    "hints": [
+      "Conditional probability restricts the universe to events where B has happened.",
+      "P(A|B) = P(A∩B) / P(B)."
+    ],
+    "concepts": [
+      "conditional probability",
+      "probability"
+    ],
+    "order": 11,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71012,
+    "title": "Bernoulli Trial Definition",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "Which of the following is the best example of a Bernoulli trial?",
+    "options": [
+      "Rolling a standard six-sided die and recording which number (1–6) comes up on each roll",
+      "Flipping a fair coin once and recording whether the outcome is heads or tails",
+      "Drawing cards from a deck without replacement until an ace appears, recording the draw number",
+      "Measuring the exact height of 50 randomly selected adults in centimetres"
+    ],
+    "correct_option": 2,
+    "explanation": "A Bernoulli trial has exactly two outcomes (success/failure), a fixed probability of success, and each trial is independent. Flipping a coin once perfectly satisfies all three conditions. The die has 6 outcomes; drawing without replacement violates independence; height is continuous.",
+    "hints": [
+      "A Bernoulli trial has exactly two possible outcomes, often labelled success and failure.",
+      "Check: does each trial have exactly two outcomes with a constant probability of success?"
+    ],
+    "concepts": [
+      "Bernoulli distribution",
+      "probability",
+      "distributions"
+    ],
+    "order": 12,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71013,
+    "title": "Binomial Probability Single Term",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "A fair coin is flipped 6 times. Write a Python function `solve()` that returns the probability of getting exactly 4 heads, rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # P(X=4) for Binomial(n=6, p=0.5)\n    pass",
+    "expected_code": "def solve():\n    import math\n    n, k, p = 6, 4, 0.5\n    binom_coeff = math.comb(n, k)\n    prob = binom_coeff * (p ** k) * ((1 - p) ** (n - k))\n    return round(prob, 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 0.2344
+      }
+    ],
+    "explanation": "P(X=4) = C(6,4) × 0.5^4 × 0.5^2 = 15 × 0.0625 × 0.25 = 15/64 ≈ 0.2344.",
+    "hints": [
+      "Use the binomial probability mass function with the appropriate combination formula.",
+      "P(X=k) = C(n,k) × p^k × (1−p)^(n−k); use math.comb for combinations."
+    ],
+    "concepts": [
+      "distributions",
+      "probability",
+      "combinations"
+    ],
+    "order": 13,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71014,
+    "title": "Uniform Distribution Probability",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A continuous uniform distribution spans from a=2 to b=10. What is the probability that a randomly drawn value falls between 4 and 7?",
+    "options": [
+      "0.375, computed as the length of the interval (4 to 7) divided by the total range (2 to 10)",
+      "0.50, because the interval 4 to 7 covers exactly half of all possible values by symmetry",
+      "0.30, computed by dividing 3 (the sub-interval length) by 10 (the upper bound only)",
+      "Cannot be determined without knowing the specific probability density at each point"
+    ],
+    "correct_option": 1,
+    "explanation": "For a continuous uniform distribution on [a, b], P(c ≤ X ≤ d) = (d−c)/(b−a). Here (7−4)/(10−2) = 3/8 = 0.375. Option B is incorrect because symmetry is about the midpoint (6), not about coverage. Option C ignores the lower bound.",
+    "hints": [
+      "In a uniform distribution, probability is proportional to the length of the interval.",
+      "Divide the length of the target interval by the total length of the distribution's support."
+    ],
+    "concepts": [
+      "uniform distribution",
+      "probability",
+      "distributions"
+    ],
+    "order": 14,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71015,
+    "title": "Z-Score Calculation",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "A population has mean μ = 70 and standard deviation σ = 8. Write a Python function `solve()` that returns the z-score for a value of 86, rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # Compute the z-score for x=86, mu=70, sigma=8\n    pass",
+    "expected_code": "def solve():\n    x, mu, sigma = 86, 70, 8\n    return round((x - mu) / sigma, 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 2.0
+      }
+    ],
+    "explanation": "z = (x − μ) / σ = (86 − 70) / 8 = 16 / 8 = 2.0. A z-score of 2 means the value is 2 standard deviations above the mean.",
+    "hints": [
+      "A z-score measures how many standard deviations a value is from the mean.",
+      "z = (x − μ) / σ."
+    ],
+    "concepts": [
+      "distributions",
+      "z-scores",
+      "standardization"
+    ],
+    "order": 15,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71016,
+    "title": "68-95-99.7 Rule Application",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "IQ scores follow a normal distribution with mean 100 and standard deviation 15. Approximately what percentage of people have an IQ between 70 and 130?",
+    "options": [
+      "Approximately 68%, because 70 and 130 are each one standard deviation from the mean of 100",
+      "Approximately 95%, because 70 and 130 are each two standard deviations from the mean of 100",
+      "Approximately 99.7%, because 70 and 130 span the full range of the normal distribution",
+      "Approximately 50%, because the normal distribution is symmetric and we are taking one side only"
+    ],
+    "correct_option": 2,
+    "explanation": "70 = 100 − 2×15 and 130 = 100 + 2×15, so the interval spans ±2 standard deviations. By the empirical (68-95-99.7) rule, approximately 95% of observations fall within ±2σ. The ±1σ range captures ~68% and ±3σ captures ~99.7%.",
+    "hints": [
+      "First determine how many standard deviations 70 and 130 are from the mean.",
+      "Apply the empirical rule: ±1σ ≈ 68%, ±2σ ≈ 95%, ±3σ ≈ 99.7%."
+    ],
+    "concepts": [
+      "distributions",
+      "empirical rule",
+      "z-scores"
+    ],
+    "order": 16,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71017,
+    "title": "Expected Value of Discrete Distribution",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "A game pays $10 with probability 0.20, $2 with probability 0.50, and −$5 with probability 0.30. Write a Python function `solve()` that returns the expected payout rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # Compute E[X] = sum of x_i * p_i\n    pass",
+    "expected_code": "def solve():\n    outcomes = [(10, 0.20), (2, 0.50), (-5, 0.30)]\n    ev = sum(x * p for x, p in outcomes)\n    return round(ev, 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 1.5
+      }
+    ],
+    "explanation": "E[X] = 10×0.20 + 2×0.50 + (−5)×0.30 = 2.0 + 1.0 − 1.5 = 1.5.",
+    "hints": [
+      "Expected value is the probability-weighted sum of all possible outcomes.",
+      "E[X] = Σ x_i × P(X = x_i)."
+    ],
+    "concepts": [
+      "expected value",
+      "discrete distributions",
+      "probability"
+    ],
+    "order": 17,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71018,
+    "title": "Expected Value Interpretation",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A lottery ticket costs $5. The prize distribution gives E[prize] = $3.50. What does this expected value tell you about playing the lottery?",
+    "options": [
+      "Playing is profitable because the expected prize ($3.50) is close to the cost ($5.00) and variance makes individual wins possible",
+      "Playing loses $1.50 on average per ticket because the expected net gain is $3.50 − $5.00 = −$1.50",
+      "The expected value guarantees you will receive exactly $3.50 if you play the lottery once",
+      "The expected value is irrelevant since lottery outcomes are random and cannot be predicted in advance"
+    ],
+    "correct_option": 2,
+    "explanation": "The expected net gain per ticket is $3.50 − $5.00 = −$1.50. This means if you play many times, you lose $1.50 on average per ticket. Expected value is not a guarantee for a single trial; it reflects the long-run average outcome.",
+    "hints": [
+      "Net gain equals prize minus cost. Compute the expected net gain.",
+      "A negative expected value means the player loses money on average in the long run."
+    ],
+    "concepts": [
+      "expected value",
+      "probability",
+      "decision making"
+    ],
+    "order": 18,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71019,
+    "title": "Combinations vs Permutations",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A team of 3 must be selected from 8 candidates. How many different teams are possible, and which formula applies?",
+    "options": [
+      "8 × 7 × 6 = 336 teams, using permutations because we care about who is team captain",
+      "C(8,3) = 56 teams, using combinations because order within the team does not matter",
+      "8^3 = 512 teams, because each of the 3 spots can be filled by any of the 8 candidates independently",
+      "8! = 40320 teams, because all possible orderings of all candidates must be enumerated"
+    ],
+    "correct_option": 2,
+    "explanation": "Since the team members are interchangeable (no roles), order does not matter, so we use combinations: C(8,3) = 8!/(3!×5!) = 56. Permutations (P(8,3)=336) would apply if roles were assigned. 8^3 incorrectly allows repetition.",
+    "hints": [
+      "Ask: does the order in which people are selected matter for the final outcome?",
+      "Combinations are used when order does not matter; C(n,r) = n! / (r! × (n−r)!)."
+    ],
+    "concepts": [
+      "combinatorics",
+      "combinations",
+      "permutations"
+    ],
+    "order": 19,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71020,
+    "title": "Number of Combinations",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "Write a Python function `solve()` that returns C(10, 3) — the number of ways to choose 3 items from 10 without regard to order.",
+    "starter_code": "def solve():\n    # Compute C(10, 3)\n    pass",
+    "expected_code": "def solve():\n    import math\n    return math.comb(10, 3)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 120
+      }
+    ],
+    "explanation": "C(10,3) = 10! / (3! × 7!) = (10×9×8) / (3×2×1) = 720/6 = 120.",
+    "hints": [
+      "The combination formula counts selections where order does not matter.",
+      "C(n,r) = n! / (r! × (n−r)!); Python's math.comb computes this directly."
+    ],
+    "concepts": [
+      "combinatorics",
+      "combinations"
+    ],
+    "order": 20,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71021,
+    "title": "Mode Identification",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "Given the dataset [3, 7, 3, 2, 9, 7, 3, 5], write a Python function `solve()` that returns the mode (most frequent value) as an integer.",
+    "starter_code": "def solve():\n    # Return the mode of [3, 7, 3, 2, 9, 7, 3, 5]\n    pass",
+    "expected_code": "def solve():\n    from collections import Counter\n    data = [3, 7, 3, 2, 9, 7, 3, 5]\n    return Counter(data).most_common(1)[0][0]",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 3
+      }
+    ],
+    "explanation": "Value 3 appears 3 times; 7 appears 2 times; all others appear once. The mode is 3.",
+    "hints": [
+      "The mode is the value that appears most frequently in the dataset.",
+      "Use collections.Counter to count occurrences, then find the maximum."
+    ],
+    "concepts": [
+      "descriptive statistics",
+      "measures of central tendency"
+    ],
+    "order": 21,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71022,
+    "title": "Range and IQR",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "Given the sorted dataset [5, 10, 15, 20, 25, 30, 35, 40], write a Python function `solve()` that returns the Interquartile Range (IQR). Use the inclusive quartile method: Q1 is the median of the lower half and Q3 is the median of the upper half (do not include the overall median in either half for even-length datasets).",
+    "starter_code": "def solve():\n    # Compute IQR of [5, 10, 15, 20, 25, 30, 35, 40]\n    pass",
+    "expected_code": "def solve():\n    data = [5, 10, 15, 20, 25, 30, 35, 40]\n    n = len(data)\n    lower = data[:n//2]\n    upper = data[n//2:]\n    q1 = (lower[len(lower)//2 - 1] + lower[len(lower)//2]) / 2\n    q3 = (upper[len(upper)//2 - 1] + upper[len(upper)//2]) / 2\n    return q3 - q1",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 20.0
+      }
+    ],
+    "explanation": "Lower half: [5,10,15,20] → Q1=(10+15)/2=12.5. Upper half: [25,30,35,40] → Q3=(30+35)/2=32.5. IQR = 32.5−12.5 = 20.0.",
+    "hints": [
+      "Split the sorted data into two equal halves and find the median of each half.",
+      "IQR = Q3 − Q1; Q1 and Q3 are medians of the lower and upper halves respectively."
+    ],
+    "concepts": [
+      "descriptive statistics",
+      "interquartile range",
+      "quartiles"
+    ],
+    "order": 22,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71023,
+    "title": "Sample Space Counting",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A restaurant menu offers 3 starters, 4 mains, and 2 desserts. If a customer chooses exactly one from each course, how many distinct full meals are possible?",
+    "options": [
+      "9 distinct meals, computed by adding 3 + 4 + 2 since each choice is made independently",
+      "24 distinct meals, computed as 3 × 4 × 2 using the multiplication rule for independent choices",
+      "12 distinct meals, computed as 3 × 4 because dessert choice is considered optional by default",
+      "48 distinct meals, computed by doubling the product to account for order of eating the courses"
+    ],
+    "correct_option": 2,
+    "explanation": "When making sequential independent choices, the total number of outcomes is the product of the options at each step — the multiplication rule (fundamental counting principle). 3 × 4 × 2 = 24. Addition would apply only if choosing exactly one course total.",
+    "hints": [
+      "When choices are made from independent categories, use multiplication, not addition.",
+      "The fundamental counting principle: if there are m ways for one event and n for another, there are m×n combined ways."
+    ],
+    "concepts": [
+      "combinatorics",
+      "sample space",
+      "probability"
+    ],
+    "order": 23,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71024,
+    "title": "Permutation Count",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "How many ways can 4 runners finish in 1st, 2nd, and 3rd place (from a field of 8 runners)? Write a Python function `solve()` that returns this count as an integer.",
+    "starter_code": "def solve():\n    # Compute P(8, 3) = number of ordered selections of 3 from 8\n    pass",
+    "expected_code": "def solve():\n    import math\n    return math.perm(8, 3)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 336
+      }
+    ],
+    "explanation": "P(8,3) = 8!/(8−3)! = 8×7×6 = 336. Order matters because 1st, 2nd, and 3rd are distinct outcomes.",
+    "hints": [
+      "Order matters when assigning ranked positions, so use permutations.",
+      "P(n,r) = n! / (n−r)!; math.perm(n, r) computes this."
+    ],
+    "concepts": [
+      "combinatorics",
+      "permutations"
+    ],
+    "order": 24,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71025,
+    "title": "Probability of Intersection (Independent Events)",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "P(A) = 0.6 and P(B) = 0.7, and A and B are independent. Write a Python function `solve()` that returns P(A∩B) rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # For independent events, P(A and B) = P(A) * P(B)\n    pass",
+    "expected_code": "def solve():\n    return round(0.6 * 0.7, 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 0.42
+      }
+    ],
+    "explanation": "For independent events, P(A∩B) = P(A) × P(B) = 0.6 × 0.7 = 0.42.",
+    "hints": [
+      "Independence means knowing A gives no information about B.",
+      "For independent events: P(A and B) = P(A) × P(B)."
+    ],
+    "concepts": [
+      "probability",
+      "independence"
+    ],
+    "order": 25,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71026,
+    "title": "Normal Distribution Symmetry",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "Heights are normally distributed with mean 170 cm and standard deviation 6 cm. What percentage of people are taller than 170 cm?",
+    "options": [
+      "Approximately 68%, because most data falls within one standard deviation of the mean",
+      "Approximately 50%, because the normal distribution is symmetric around its mean",
+      "Approximately 84%, because a z-score of 0 corresponds to the 16th percentile by convention",
+      "Cannot be determined without computing the full cumulative distribution function numerically"
+    ],
+    "correct_option": 2,
+    "explanation": "The normal distribution is perfectly symmetric about its mean. Therefore exactly 50% of the distribution lies above the mean and 50% below. No CDF lookup is needed for a value exactly at the mean.",
+    "hints": [
+      "Think about the symmetry property of the normal distribution around its center.",
+      "The mean, median, and mode all coincide in a symmetric unimodal distribution."
+    ],
+    "concepts": [
+      "distributions",
+      "symmetry",
+      "descriptive statistics"
+    ],
+    "order": 26,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71027,
+    "title": "Simple Probability from Sample Space",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "A standard deck has 52 cards. Write a Python function `solve()` that returns the probability of drawing a King on a single draw, rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # P(King) = number of Kings / total cards\n    pass",
+    "expected_code": "def solve():\n    return round(4 / 52, 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 0.0769
+      }
+    ],
+    "explanation": "There are 4 Kings in a 52-card deck. P(King) = 4/52 ≈ 0.0769.",
+    "hints": [
+      "Basic probability = number of favorable outcomes / total outcomes in sample space.",
+      "Count the Kings and divide by the deck size."
+    ],
+    "concepts": [
+      "probability",
+      "sample space"
+    ],
+    "order": 27,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71028,
+    "title": "Variance of Discrete Distribution",
+    "subtype": "numerical",
+    "type": "numerical",
+    "description": "A random variable X takes values 1, 2, 3 with equal probability 1/3 each. Write a Python function `solve()` that returns Var(X) rounded to 4 decimal places.",
+    "starter_code": "def solve():\n    # Compute Var(X) = E[X^2] - (E[X])^2\n    pass",
+    "expected_code": "def solve():\n    outcomes = [1, 2, 3]\n    p = 1/3\n    mean = sum(x * p for x in outcomes)\n    ex2 = sum(x**2 * p for x in outcomes)\n    return round(ex2 - mean**2, 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 0.6667
+      }
+    ],
+    "explanation": "E[X] = (1+2+3)/3 = 2. E[X²] = (1+4+9)/3 = 14/3. Var(X) = 14/3 − 4 = 2/3 ≈ 0.6667.",
+    "hints": [
+      "Variance measures spread: Var(X) = E[X²] − (E[X])².",
+      "Compute E[X] and E[X²] separately using probability-weighted sums."
+    ],
+    "concepts": [
+      "descriptive statistics",
+      "expected value",
+      "discrete distributions"
+    ],
+    "order": 28,
+    "difficulty": "easy"
+  }
+]
