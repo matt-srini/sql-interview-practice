@@ -10367,40 +10367,22 @@ select {
   border: 1px solid color-mix(in srgb, var(--track-color) 22%, rgba(26,26,24,0.08));
   border-radius: var(--radius-md);
   padding: 18px 20px;
-  background: linear-gradient(
-    140deg,
-    color-mix(in srgb, var(--track-color) 3%, var(--surface-card)) 0%,
-    var(--surface-card) 35%
-  );
+  background: var(--surface-card);
   display: flex;
   flex-direction: column;
   gap: 8px;
   transition: border-color 180ms, box-shadow 180ms;
 }
 .lp-role-track:hover {
-  border-color: color-mix(in srgb, var(--track-color) 45%, rgba(26,26,24,0.08));
-  background: linear-gradient(
-    140deg,
-    color-mix(in srgb, var(--track-color) 7%, var(--surface-card)) 0%,
-    var(--surface-card) 40%
-  );
-  box-shadow: 0 4px 18px color-mix(in srgb, var(--track-color) 14%, transparent);
+  border-color: color-mix(in srgb, var(--track-color) 55%, rgba(26,26,24,0.08));
+  box-shadow: 0 4px 18px color-mix(in srgb, var(--track-color) 12%, transparent);
 }
 [data-theme="dark"] .lp-role-track {
   border-color: color-mix(in srgb, var(--track-color) 28%, rgba(240,238,233,0.05));
-  background: linear-gradient(
-    140deg,
-    color-mix(in srgb, var(--track-color) 6%, var(--surface-card)) 0%,
-    var(--surface-card) 35%
-  );
+  background: var(--surface-card);
 }
 [data-theme="dark"] .lp-role-track:hover {
   border-color: color-mix(in srgb, var(--track-color) 55%, rgba(240,238,233,0.05));
-  background: linear-gradient(
-    140deg,
-    color-mix(in srgb, var(--track-color) 12%, var(--surface-card)) 0%,
-    var(--surface-card) 40%
-  );
   box-shadow: 0 4px 18px color-mix(in srgb, var(--track-color) 18%, transparent);
 }
 .lp-role-track-header { display: flex; align-items: center; gap: 8px; }
