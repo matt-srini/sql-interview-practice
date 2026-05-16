@@ -155,6 +155,16 @@ export default function QuestionPage() {
 
   // Run history (sessionStorage, per question)
   const runHistoryKey = useMemo(() => `run-history:${topic}:${id}`, [topic, id]);
+
+  // Render mode: for mixed-subtype tracks (Statistics) derive from loaded question's subtype;
+  // for all other tracks use the static track-level hasMCQ flag.
+  // Declared early so dep arrays in useEffect hooks below can reference it without TDZ errors.
+  const renderMode = useMemo(() => {
+    if (meta.mixedSubtype) {
+      return question?.subtype === 'numerical' ? 'code' : 'mcq';
+    }
+    return meta.hasMCQ ? 'mcq' : 'code';
+  }, [meta.mixedSubtype, meta.hasMCQ, question?.subtype]);
   const [runHistory, setRunHistory] = useState(() => {
     try { return JSON.parse(sessionStorage.getItem(`run-history:${topic}:${id}`) ?? '[]'); } catch { return []; }
   });
@@ -816,16 +826,6 @@ export default function QuestionPage() {
   const shouldShowFeedback = submitResult?.feedback?.length > 0
     && !(submitResult.correct && (submitResult.structure_correct ?? true));
   const schemaTableCount = Object.keys(question.schema ?? {}).length;
-
-  // Determine what to show in left panel
-  // For mixed-subtype tracks (Statistics), derive render mode from the loaded question's subtype.
-  // For all other tracks, use the static track-level hasMCQ flag.
-  const renderMode = useMemo(() => {
-    if (meta.mixedSubtype) {
-      return question?.subtype === 'numerical' ? 'code' : 'mcq';
-    }
-    return meta.hasMCQ ? 'mcq' : 'code';
-  }, [meta.mixedSubtype, meta.hasMCQ, question?.subtype]);
 
   const showSchema = topic === 'sql';
   const showVariables = topic === 'python-data';
