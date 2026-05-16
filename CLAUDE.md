@@ -266,20 +266,26 @@ TOPBAR
 
 Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modules.
 
+**Active theme: Forest & Ink.** Full token reference: [`docs/design/color-palette.md`](docs/design/color-palette.md).
+
 **Key tokens:**
 ```
---bg-page:         #F7F7F5   (dark: #141413)
---surface-card:    #FFFFFF   (dark: #1C1C1A)
---accent:          #5B6AF0   (dark: #7B8AF5)
---text-strong:     #1A1A18   (dark: #F0EEE9)
---text-secondary:  #6B6862
---success:         #2D9E6B
+--bg-page:         #F5F7F4   (dark: #0D1A10)
+--surface-card:    #FFFFFF   (dark: #132218)
+--accent:          #166534   (dark: #4ADE80)
+--text-strong:     #14291B   (dark: #E8F5E9)
+--text-secondary:  #4B6858
+--success:         #15803D
 --warning:         #C47F17
 --danger:          #D94F3D
 --radius-lg: 20px  --radius-md: 14px  --radius-sm: 10px
 ```
 
+**Logo mark:** two diagonal rounded squares (big bottom-left, small top-right) — thought-bubble motif. SVGs at `frontend/public/branding/`.
+
 **Fonts:** Inter (UI), JetBrains Mono (editor/code), Geist Mono (showcase animation only).
+
+**Track colors are fixed** (not overridden by theme changes) — SQL `#5B6AF0`, Python `#2D9E6B`, Pandas `#C47F17`, PySpark `#D94F3D`, DE `#B9762B`, Data Modeling `#3F8E8C`, Statistics `#7A5AF0`.
 
 ---
 

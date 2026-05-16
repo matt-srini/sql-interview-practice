@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>datathink — Color Theme Picker</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: #111;
+    color: #eee;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── Picker chrome ── */
+  .picker-header {
+    padding: 14px 24px;
+    border-bottom: 1px solid #222;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+  .picker-header h1 { font-size: 13px; font-weight: 600; color: #bbb; letter-spacing: 0.04em; text-transform: uppercase; }
+  .picker-header span { font-size: 12px; color: #555; }
+
+  .picker-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── Palette rail ── */
+  .palette-rail {
+    width: 220px;
+    flex-shrink: 0;
+    overflow-y: auto;
+    border-right: 1px solid #222;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .palette-rail::-webkit-scrollbar { width: 4px; }
+  .palette-rail::-webkit-scrollbar-track { background: transparent; }
+  .palette-rail::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+
+  .palette-btn {
+    border: 1.5px solid transparent;
+    border-radius: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    background: #1a1a1a;
+    text-align: left;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .palette-btn:hover { background: #222; }
+  .palette-btn.active { border-color: #555; background: #222; }
+
+  .palette-btn-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #ccc;
+    margin-bottom: 6px;
+    letter-spacing: 0.01em;
+  }
+  .palette-btn-sub {
+    font-size: 10px;
+    color: #555;
+    margin-bottom: 8px;
+  }
+  .swatch-row {
+    display: flex;
+    gap: 4px;
+  }
+  .swatch {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  /* ── Preview pane ── */
+  .preview-pane {
+    flex: 1;
+    overflow: auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 32px 24px;
+    background: #0d0d0d;
+  }
+
+  .preview-frame {
+    width: 100%;
+    max-width: 900px;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid #2a2a2a;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  }
+
+  /* ── Simulated site UI ── */
+  .sim-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    height: 52px;
+    border-bottom: 1px solid var(--sim-border);
+    background: var(--sim-bg);
+  }
+  .sim-logo {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--sim-text-strong);
+    letter-spacing: -0.01em;
+  }
+  .sim-logo-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    background: var(--sim-accent);
+    border-radius: 2px;
+    margin-right: 5px;
+    vertical-align: middle;
+    margin-bottom: 1px;
+  }
+  .sim-nav { display: flex; gap: 20px; align-items: center; }
+  .sim-nav-link { font-size: 13px; color: var(--sim-text-secondary); text-decoration: none; }
+  .sim-nav-btn {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: none;
+    background: var(--sim-accent);
+    color: #fff;
+    cursor: pointer;
+  }
+
+  .sim-body { background: var(--sim-bg); }
+
+  /* Hero */
+  .sim-hero {
+    padding: 52px 28px 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: center;
+  }
+  .sim-eyebrow {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--sim-accent);
+    margin-bottom: 12px;
+    font-family: 'Courier New', monospace;
+  }
+  .sim-h1 {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    color: var(--sim-text-strong);
+    margin-bottom: 14px;
+  }
+  .sim-copy { font-size: 13px; line-height: 1.6; color: var(--sim-text-secondary); margin-bottom: 20px; }
+  .sim-ctas { display: flex; gap: 10px; }
+  .sim-cta-primary {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 8px;
+    background: var(--sim-accent);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+  }
+  .sim-cta-secondary {
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 20px;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--sim-text-secondary);
+    border: 1.5px solid var(--sim-border);
+    cursor: pointer;
+  }
+
+  /* IDE mock */
+  .sim-ide {
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.07);
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+  }
+  .sim-ide-chrome {
+    background: var(--sim-editor-chrome);
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .sim-ide-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .sim-ide-file { font-size: 10px; color: rgba(255,255,255,0.35); margin-left: 6px; }
+  .sim-ide-badge {
+    margin-left: auto;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--sim-accent);
+    color: #fff;
+    font-weight: 600;
+  }
+  .sim-ide-code {
+    background: var(--sim-editor-bg);
+    padding: 14px 16px;
+    line-height: 1.7;
+  }
+  .sim-kw { color: #c792ea; }
+  .sim-fn { color: #82aaff; }
+  .sim-str { color: #c3e88d; }
+  .sim-cm { color: rgba(255,255,255,0.25); }
+
+  /* Tracks strip */
+  .sim-tracks {
+    padding: 20px 28px 28px;
+    border-top: 1px solid var(--sim-border);
+  }
+  .sim-tracks-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sim-text-secondary);
+    margin-bottom: 12px;
+  }
+  .sim-track-list { display: flex; flex-direction: column; gap: 8px; }
+  .sim-track-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--sim-surface);
+    border-radius: 8px;
+    border: 1px solid var(--sim-border);
+  }
+  .sim-track-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .sim-track-name { font-size: 13px; font-weight: 600; color: var(--sim-text-strong); flex: 1; }
+  .sim-track-tag {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--sim-bg);
+    color: var(--sim-text-secondary);
+    border: 1px solid var(--sim-border);
+    font-family: 'Courier New', monospace;
+  }
+  .sim-track-enter { font-size: 12px; color: var(--sim-accent); font-weight: 600; }
+
+  /* Status chips */
+  .sim-chips { display: flex; gap: 6px; padding: 0 28px 20px; }
+  .sim-chip {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 5px;
+  }
+  .sim-chip-success { background: var(--sim-success-bg); color: var(--sim-success); }
+  .sim-chip-warn { background: var(--sim-warn-bg); color: var(--sim-warn); }
+  .sim-chip-danger { background: var(--sim-danger-bg); color: var(--sim-danger); }
+
+  /* Palette label banner */
+  .preview-label {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 12px;
+    color: #444;
+    letter-spacing: 0.04em;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="picker-header">
+  <h1>datathink — Theme Picker</h1>
+  <span>Click a palette to preview · Tell Claude which one you want</span>
+</div>
+
+<div class="picker-body">
+
+  <!-- ── Palette Rail ── -->
+  <div class="palette-rail" id="rail"></div>
+
+  <!-- ── Preview Pane ── -->
+  <div class="preview-pane">
+    <div style="width:100%;max-width:900px;">
+      <div class="preview-frame" id="preview">
+        <!-- injected by JS -->
+      </div>
+      <div class="preview-label" id="preview-label"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const PALETTES = [
+  {
+    id: 'warm-ivory',
+    name: 'Warm Ivory',
+    sub: 'Current theme',
+    vars: {
+      '--sim-bg':          '#F7F7F5',
+      '--sim-surface':     '#FFFFFF',
+      '--sim-accent':      '#5B6AF0',
+      '--sim-text-strong': '#1A1A18',
+      '--sim-text-secondary': '#6B6862',
+      '--sim-border':      '#E8E6E1',
+      '--sim-editor-bg':   '#1C1C1A',
+      '--sim-editor-chrome': '#2A2A28',
+      '--sim-success':     '#2D9E6B',
+      '--sim-success-bg':  '#EDFAF3',
+      '--sim-warn':        '#C47F17',
+      '--sim-warn-bg':     '#FEF8EC',
+      '--sim-danger':      '#D94F3D',
+      '--sim-danger-bg':   '#FEF0EE',
+    },
+    swatches: ['#F7F7F5','#FFFFFF','#5B6AF0','#1A1A18','#6B6862','#1C1C1A'],
+  },
+  {
+    id: 'arctic-slate',
+    name: 'Arctic Slate',
+    sub: 'Clean & enterprise',
+    vars: {
+      '--sim-bg':          '#F1F5F9',
+      '--sim-surface':     '#FFFFFF',
+      '--sim-accent':      '#2563EB',
+      '--sim-text-strong': '#0F172A',
+      '--sim-text-secondary': '#64748B',
+      '--sim-border':      '#CBD5E1',
+      '--sim-editor-bg':   '#0F172A',
+      '--sim-editor-chrome': '#1E293B',
+      '--sim-success':     '#16A34A',
+      '--sim-success-bg':  '#DCFCE7',
+      '--sim-warn':        '#D97706',
+      '--sim-warn-bg':     '#FEF3C7',
+      '--sim-danger':      '#DC2626',
+      '--sim-danger-bg':   '#FEE2E2',
+    },
+    swatches: ['#F1F5F9','#FFFFFF','#2563EB','#0F172A','#64748B','#0F172A'],
+  },
+  {
+    id: 'ash',
+    name: 'Ash',
+    sub: 'Stark & minimal',
+    vars: {
+      '--sim-bg':          '#F4F4F5',
+      '--sim-surface':     '#FFFFFF',
+      '--sim-accent':      '#18181B',
+      '--sim-text-strong': '#09090B',
+      '--sim-text-secondary': '#71717A',
+      '--sim-border':      '#E4E4E7',
+      '--sim-editor-bg':   '#18181B',
+      '--sim-editor-chrome': '#27272A',
+      '--sim-success':     '#16A34A',
+      '--sim-success-bg':  '#DCFCE7',
+      '--sim-warn':        '#D97706',
+      '--sim-warn-bg':     '#FEF3C7',
+      '--sim-danger':      '#DC2626',
+      '--sim-danger-bg':   '#FEE2E2',
+    },
+    swatches: ['#F4F4F5','#FFFFFF','#18181B','#09090B','#71717A','#18181B'],
+  },
+  {
+    id: 'teal-stone',
+    name: 'Teal & Stone',
+    sub: 'Calm & data-forward',
+    vars: {
+      '--sim-bg':          '#FAFAF9',
+      '--sim-surface':     '#FFFFFF',
+      '--sim-accent':      '#0D9488',
+      '--sim-text-strong': '#1C1917',
+      '--sim-text-secondary': '#78716C',
+      '--sim-border':      '#E7E5E4',
+      '--sim-editor-bg':   '#134E4A',
+      '--sim-editor-chrome': '#0F3D3A',
+      '--sim-success':     '#16A34A',
+      '--sim-success-bg':  '#CCFBF1',
+      '--sim-warn':        '#D97706',
+      '--sim-warn-bg':     '#FEF3C7',
+      '--sim-danger':      '#E11D48',
+      '--sim-danger-bg':   '#FFE4E6',
+    },
+    swatches: ['#FAFAF9','#FFFFFF','#0D9488','#1C1917','#78716C','#134E4A'],
+  },
+  {
+    id: 'navy-deep',
+    name: 'Navy Credence',
+    sub: 'Authoritative & serious',
+    vars: {
+      '--sim-bg':          '#EFF4FB',
+      '--sim-surface':     '#FFFFFF',
+      '--sim-accent':      '#1E40AF',
+      '--sim-text-strong': '#0D1B2A',
+      '--sim-text-secondary': '#4A6281',
+      '--sim-border':      '#C4D4E8',
+      '--sim-editor-bg':   '#0D1B2A',
+      '--sim-editor-chrome': '#162032',
+      '--sim-success':     '#15803D',
+      '--sim-success-bg':  '#DCFCE7',
+      '--sim-warn':        '#B45309',
+      '--sim-warn-bg':     '#FEF3C7',
+      '--sim-danger':      '#B91C1C',
+      '--sim-danger-bg':   '#FEE2E2',
+    },
+    swatches: ['#EFF4FB','#FFFFFF','#1E40AF','#0D1B2A','#4A6281','#0D1B2A'],
+  },
+  {
+    id: 'graphite-violet',
+    name: 'Graphite & Violet',
+    sub: 'Bold & distinctive',
+    vars: {
+      '--sim-bg':          '#FAFAFF',
+      '--sim-surface':     '#FFFFFF',
+      '--sim-accent':      '#6D28D9',
+      '--sim-text-strong': '#1E1B4B',
+      '--sim-text-secondary': '#6366F1',
+      '--sim-border':      '#DDD6FE',
+      '--sim-editor-bg':   '#1E1B4B',
+      '--sim-editor-chrome': '#2D2A5E',
+      '--sim-success':     '#16A34A',
+      '--sim-success-bg':  '#DCFCE7',
+      '--sim-warn':        '#D97706',
+      '--sim-warn-bg':     '#FEF3C7',
+      '--sim-danger':      '#DC2626',
+      '--sim-danger-bg':   '#FEE2E2',
+    },
+    swatches: ['#FAFAFF','#FFFFFF','#6D28D9','#1E1B4B','#6366F1','#1E1B4B'],
+  },
+  {
+    id: 'sand-rust',
+    name: 'Sand & Rust',
+    sub: 'Warm & editorial',
+    vars: {
+      '--sim-bg':          '#FAF8F5',
+      '--sim-surface':     '#FFFFFF',
+      '--sim-accent':      '#C2410C',
+      '--sim-text-strong': '#1C130A',
+      '--sim-text-secondary': '#7C6E62',
+      '--sim-border':      '#EAE3D8',
+      '--sim-editor-bg':   '#1C130A',
+      '--sim-editor-chrome': '#2A1E12',
+      '--sim-success':     '#15803D',
+      '--sim-success-bg':  '#DCFCE7',
+      '--sim-warn':        '#B45309',
+      '--sim-warn-bg':     '#FEF3C7',
+      '--sim-danger':      '#B91C1C',
+      '--sim-danger-bg':   '#FEE2E2',
+    },
+    swatches: ['#FAF8F5','#FFFFFF','#C2410C','#1C130A','#7C6E62','#1C130A'],
+  },
+  {
+    id: 'forest-ink',
+    name: 'Forest & Ink',
+    sub: 'Natural & grounded',
+    vars: {
+      '--sim-bg':          '#F5F7F4',
+      '--sim-surface':     '#FFFFFF',
+      '--sim-accent':      '#166534',
+      '--sim-text-strong': '#14291B',
+      '--sim-text-secondary': '#4B6858',
+      '--sim-border':      '#D9E8DA',
+      '--sim-editor-bg':   '#14291B',
+      '--sim-editor-chrome': '#1D3826',
+      '--sim-success':     '#15803D',
+      '--sim-success-bg':  '#DCFCE7',
+      '--sim-warn':        '#D97706',
+      '--sim-warn-bg':     '#FEF3C7',
+      '--sim-danger':      '#DC2626',
+      '--sim-danger-bg':   '#FEE2E2',
+    },
+    swatches: ['#F5F7F4','#FFFFFF','#166534','#14291B','#4B6858','#14291B'],
+  },
+];
+
+function renderPreview(p) {
+  const v = p.vars;
+  const styleStr = Object.entries(v).map(([k, val]) => `${k}: ${val}`).join('; ');
+
+  return `
+<div style="${styleStr}">
+  <!-- Topbar -->
+  <div class="sim-topbar">
+    <div class="sim-logo"><span class="sim-logo-dot"></span>datathink</div>
+    <div class="sim-nav">
+      <span class="sim-nav-link">Practice ▾</span>
+      <span class="sim-nav-link">Mock</span>
+      <span class="sim-nav-link">Dashboard</span>
+      <button class="sim-nav-btn">Sign in</button>
+    </div>
+  </div>
+
+  <div class="sim-body">
+    <!-- Hero -->
+    <div class="sim-hero">
+      <div>
+        <div class="sim-eyebrow">Interview Preparation, Reasoned</div>
+        <div class="sim-h1">Data interviews test<br>how you reason.</div>
+        <div class="sim-copy">Your SQL runs on a real engine. Your Python executes in a live sandbox. Seven tracks that make you earn the answer.</div>
+        <div class="sim-ctas">
+          <button class="sim-cta-primary">Start thinking →</button>
+          <button class="sim-cta-secondary">Find your track ↓</button>
+        </div>
+      </div>
+      <div class="sim-ide">
+        <div class="sim-ide-chrome">
+          <div class="sim-ide-dot" style="background:#FF5F57"></div>
+          <div class="sim-ide-dot" style="background:#FEBC2E"></div>
+          <div class="sim-ide-dot" style="background:#28C840"></div>
+          <span class="sim-ide-file">salary_analysis.sql</span>
+          <span class="sim-ide-badge">SQL · DuckDB</span>
+        </div>
+        <div class="sim-ide-code" style="color: rgba(255,255,255,0.82)">
+<span class="sim-kw">SELECT</span><br>
+&nbsp;&nbsp;dept,<br>
+&nbsp;&nbsp;<span class="sim-fn">COUNT</span>(*) <span class="sim-kw">AS</span> headcount,<br>
+&nbsp;&nbsp;<span class="sim-fn">ROUND</span>(<span class="sim-fn">AVG</span>(salary), 0) <span class="sim-kw">AS</span> avg_salary<br>
+<span class="sim-kw">FROM</span> staff<br>
+<span class="sim-kw">WHERE</span> hire_date &gt;= <span class="sim-str">'2022-01-01'</span><br>
+<span class="sim-kw">GROUP BY</span> dept<br>
+<span class="sim-kw">ORDER BY</span> avg_salary <span class="sim-kw">DESC</span>;
+        </div>
+      </div>
+    </div>
+
+    <!-- Track rows -->
+    <div class="sim-tracks">
+      <div class="sim-tracks-label">Seven tracks</div>
+      <div class="sim-track-list">
+        <div class="sim-track-row">
+          <div class="sim-track-dot" style="background: #5B6AF0"></div>
+          <span class="sim-track-name">SQL</span>
+          <span class="sim-track-tag">DuckDB · live engine</span>
+          <span class="sim-track-enter">Enter →</span>
+        </div>
+        <div class="sim-track-row">
+          <div class="sim-track-dot" style="background: #2D9E6B"></div>
+          <span class="sim-track-name">Python</span>
+          <span class="sim-track-tag">sandbox · algorithms</span>
+          <span class="sim-track-enter">Enter →</span>
+        </div>
+        <div class="sim-track-row">
+          <div class="sim-track-dot" style="background: #B9762B"></div>
+          <span class="sim-track-name">Data Engineering</span>
+          <span class="sim-track-tag">MCQ · scenario</span>
+          <span class="sim-track-enter">Enter →</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status chips -->
+    <div class="sim-chips">
+      <span class="sim-chip sim-chip-success">✓ Correct</span>
+      <span class="sim-chip sim-chip-warn">Hint available</span>
+      <span class="sim-chip sim-chip-danger">Wrong answer</span>
+    </div>
+  </div>
+</div>
+  `;
+}
+
+function renderRail() {
+  const rail = document.getElementById('rail');
+  PALETTES.forEach((p, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'palette-btn' + (i === 0 ? ' active' : '');
+    btn.dataset.id = p.id;
+    btn.innerHTML = `
+      <div class="palette-btn-name">${p.name}</div>
+      <div class="palette-btn-sub">${p.sub}</div>
+      <div class="swatch-row">
+        ${p.swatches.map(c => `<div class="swatch" style="background:${c}"></div>`).join('')}
+      </div>
+    `;
+    btn.addEventListener('click', () => selectPalette(p.id));
+    rail.appendChild(btn);
+  });
+}
+
+function selectPalette(id) {
+  const p = PALETTES.find(x => x.id === id);
+  if (!p) return;
+
+  document.querySelectorAll('.palette-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-id="${id}"]`).classList.add('active');
+
+  document.getElementById('preview').innerHTML = renderPreview(p);
+  document.getElementById('preview-label').textContent = `"${p.name}" — ${p.sub}`;
+}
+
+renderRail();
+selectPalette('warm-ivory');
+</script>
+</body>
+</html>

@@ -110,7 +110,7 @@ export default function UpgradeButton({ tier = 'pro', label, source, compact = f
         description,
         currency: checkoutCurrency,
         prefill: { email: prefill_email || '', name: prefill_name || '' },
-        theme: { color: '#5B6AF0' },
+        theme: { color: '#166534' },
         handler: async (resp) => {
           try {
             await api.post('/razorpay/verify-payment', {

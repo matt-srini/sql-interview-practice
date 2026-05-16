@@ -383,22 +383,26 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 
 ### Color tokens
 
-Defined in `:root` in `App.css`. Dark-mode overrides live under `[data-theme="dark"]` selectors (single source of truth). `theme` is managed by `ThemeProvider` in `App.js` (`{ theme, setTheme, isDark, cycleTheme, themeIcon, themeLabel }`) and persisted to `localStorage.theme`.
+**Active theme: Forest & Ink.** Full token table with all values: [`docs/design/color-palette.md`](../design/color-palette.md).
+
+Defined in `:root` in `App.css`. Dark-mode overrides under `[data-theme="dark"]`; light-mode force under `[data-theme="light"]`. Theme managed by `ThemeProvider` in `App.js` (`{ theme, setTheme, isDark, cycleTheme, themeIcon, themeLabel }`), persisted to `localStorage.theme`.
 
 | Token | Light | Dark | Use |
 |---|---|---|---|
-| `--bg-page` | `#F7F7F5` | `#141413` | Page background |
-| `--surface-card` | `#FFFFFF` | `#1C1C1A` | Cards, panels |
-| `--surface-card-alt` | `#F0EFED` | `#242422` | Sidebar, secondary surfaces |
-| `--border-subtle` | `rgba(26,26,24,0.08)` | — | Default borders |
-| `--text-strong` | `#1A1A18` | `#F0EEE9` | Headings |
-| `--text-primary` | `#2D2D2B` | `#D8D5CE` | Body text |
-| `--text-secondary` | `#6B6862` | — | Labels, metadata |
-| `--text-muted` | `#A8A49F` | — | Placeholders, disabled |
-| `--accent` | `#5B6AF0` | `#7B8AF5` | Interactive elements, links |
-| `--success` | `#2D9E6B` | — | Correct answer |
-| `--warning` | `#C47F17` | — | Hints, locked |
-| `--danger` | `#D94F3D` | — | Errors, wrong answer |
+| `--bg-page` | `#F5F7F4` | `#0D1A10` | Page background |
+| `--surface-card` | `#FFFFFF` | `#132218` | Cards, panels |
+| `--surface-card-alt` | `#EDF3EF` | `#1B2E22` | Sidebar, secondary surfaces |
+| `--border-subtle` | `rgba(20,41,27,0.08)` | `rgba(200,230,210,0.08)` | Default borders |
+| `--text-strong` | `#14291B` | `#E8F5E9` | Headings |
+| `--text-primary` | `#1D3526` | `#C8DFD0` | Body text |
+| `--text-secondary` | `#4B6858` | `#87B09A` | Labels, metadata |
+| `--text-muted` | `#7A9485` | `#5A7F6A` | Placeholders, disabled |
+| `--accent` | `#166534` | `#4ADE80` | Interactive elements, links |
+| `--success` | `#15803D` | `#4CAF82` | Correct answer |
+| `--warning` | `#C47F17` | `#D4973A` | Hints, locked |
+| `--danger` | `#D94F3D` | `#E06B5A` | Errors, wrong answer |
+
+Track colors (`--track-sql`, `--track-python`, etc.) are **fixed** and do not change with the site theme — see palette doc for values.
 
 ### Typography
 
