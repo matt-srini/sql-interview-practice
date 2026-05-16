@@ -10367,24 +10367,40 @@ select {
   border: 1px solid color-mix(in srgb, var(--track-color) 22%, rgba(26,26,24,0.08));
   border-radius: var(--radius-md);
   padding: 18px 20px;
-  background: color-mix(in srgb, var(--track-color) 5%, var(--surface-card));
+  background: linear-gradient(
+    140deg,
+    color-mix(in srgb, var(--track-color) 10%, var(--surface-card)) 0%,
+    var(--surface-card) 60%
+  );
   display: flex;
   flex-direction: column;
   gap: 8px;
-  transition: border-color 180ms, background 180ms, box-shadow 180ms;
+  transition: border-color 180ms, box-shadow 180ms;
 }
 .lp-role-track:hover {
   border-color: color-mix(in srgb, var(--track-color) 45%, rgba(26,26,24,0.08));
-  background: color-mix(in srgb, var(--track-color) 9%, var(--surface-card));
+  background: linear-gradient(
+    140deg,
+    color-mix(in srgb, var(--track-color) 16%, var(--surface-card)) 0%,
+    var(--surface-card) 65%
+  );
   box-shadow: 0 4px 18px color-mix(in srgb, var(--track-color) 14%, transparent);
 }
 [data-theme="dark"] .lp-role-track {
   border-color: color-mix(in srgb, var(--track-color) 28%, rgba(240,238,233,0.05));
-  background: color-mix(in srgb, var(--track-color) 9%, var(--surface-card));
+  background: linear-gradient(
+    140deg,
+    color-mix(in srgb, var(--track-color) 16%, var(--surface-card)) 0%,
+    var(--surface-card) 60%
+  );
 }
 [data-theme="dark"] .lp-role-track:hover {
   border-color: color-mix(in srgb, var(--track-color) 55%, rgba(240,238,233,0.05));
-  background: color-mix(in srgb, var(--track-color) 14%, var(--surface-card));
+  background: linear-gradient(
+    140deg,
+    color-mix(in srgb, var(--track-color) 24%, var(--surface-card)) 0%,
+    var(--surface-card) 65%
+  );
   box-shadow: 0 4px 18px color-mix(in srgb, var(--track-color) 18%, transparent);
 }
 .lp-role-track-header { display: flex; align-items: center; gap: 8px; }
