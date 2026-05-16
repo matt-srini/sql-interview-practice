@@ -313,7 +313,7 @@ function ThesisSection() {
 // ── Section 03: Wrong way / Right way ──────────────────────────────────────
 function WrongRightSection() {
   const ROWS = [
-    { wrong: 'Flash cards → recognition',    right: 'Write' },
+    { wrong: 'Flash cards → recognition',    right: 'Reason → Write' },
     { wrong: 'AI answers → you read',         right: 'Run' },
     { wrong: 'Syntax drills → no reasoning',  right: 'Compare' },
     { wrong: 'One-shot practice → no pattern', right: 'Understand' },
