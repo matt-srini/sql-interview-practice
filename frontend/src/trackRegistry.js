@@ -68,11 +68,40 @@ export const TRACK_META = {
     totalQuestions: 80,
     tagline: 'conceptual · MCQ · scenario',
   },
+  'data-modeling': {
+    label: 'Data Modeling',
+    description: 'Dimensional modeling, normalization, star vs snowflake schemas, slowly changing dimensions, data vault patterns, and dbt design for analytics engineering interviews.',
+    color: '#3F8E8C',
+    apiPrefix: '/data-modeling',
+    language: 'text',
+    hasRunCode: false,
+    hasMCQ: true,
+    mixedSubtype: false,
+    totalQuestions: 70,
+    tagline: 'MCQ · scenario · schema design',
+    comingSoon: true,
+  },
+  statistics: {
+    label: 'Statistics',
+    description: 'Probability, inference, hypothesis testing, A/B test design, and Bayesian reasoning — the quantitative foundation for data science and analytics engineering interviews.',
+    color: '#7A5AF0',
+    apiPrefix: '/statistics',
+    language: 'python',
+    hasRunCode: true,
+    hasMCQ: true,
+    mixedSubtype: true,
+    totalQuestions: 75,
+    tagline: 'conceptual · numerical · MCQ',
+    comingSoon: true,
+  },
 };
 
-export const TRACK_SLUGS = Object.keys(TRACK_META);
+// Active tracks only — safe for routing, catalog, mock, dashboard, etc.
+export const TRACK_SLUGS = Object.keys(TRACK_META).filter(k => !TRACK_META[k].comingSoon);
+// All tracks including upcoming — used by the landing page index and role selector.
+export const ALL_TRACK_SLUGS = Object.keys(TRACK_META);
 
 export const TRACK_LABELS = {
-  ...Object.fromEntries(TRACK_SLUGS.map(s => [s, TRACK_META[s].label])),
+  ...Object.fromEntries(ALL_TRACK_SLUGS.map(s => [s, TRACK_META[s].label])),
   mixed: 'Mixed',
 };

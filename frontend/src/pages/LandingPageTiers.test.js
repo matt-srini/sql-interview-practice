@@ -1,84 +1,68 @@
 /**
- * LandingPage tier section tests.
+ * LandingPage — Phase E tests.
  *
- * Verifies that anonymous/free users see the Free / Pro / Elite pricing
- * columns, and that paid users no longer see landing-tier upgrade CTAs.
- *
- * The tier section is now intentionally hidden for all paying users.
+ * Covers: hero variants (logged-out / logged-in), role selector,
+ * tracks index (live + coming-soon), and pricing section visibility.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 // ---------------------------------------------------------------------------
-// Module-level mocks — must be declared before any component imports
+// Module-level mocks
 // ---------------------------------------------------------------------------
 
 vi.mock('../api', () => ({
-  default: {
-    get: vi.fn(),
-    post: vi.fn(),
-  },
+  default: { get: vi.fn(), post: vi.fn() },
 }));
 
-// AuthContext — controlled per test via renderWithPlan()
 vi.mock('../contexts/AuthContext', () => ({
   useAuth: vi.fn(),
 }));
 
-// useTheme — minimal stub; LandingPage and Topbar both call it
 vi.mock('../App', () => ({
-  useTheme: () => ({ theme: 'light', setTheme: () => {}, resolvedTheme: 'light' }),
+  useTheme: () => ({ theme: 'light', setTheme: () => {} }),
 }));
 
-// TopicContext — LandingPage imports TRACK_META from here; provide a minimal stub
+// TRACK_META mock — includes all 7 tracks (5 live + 2 coming-soon)
 vi.mock('../contexts/TopicContext', () => ({
   TRACK_META: {
-    sql: {
-      label: 'SQL',
-      description: 'Write queries against realistic datasets',
-      color: '#5B6AF0',
-      totalQuestions: 95,
-    },
-    python: {
-      label: 'Python',
-      description: 'Algorithms and data structures',
-      color: '#2D9E6B',
-      totalQuestions: 83,
-    },
-    'python-data': {
-      label: 'Pandas',
-      description: 'pandas and numpy data manipulation',
-      color: '#C47F17',
-      totalQuestions: 76,
-    },
-    pyspark: {
-      label: 'PySpark',
-      description: 'Spark architecture and concepts',
-      color: '#D94F3D',
-      totalQuestions: 90,
-    },
-    'data-engineering': {
-      label: 'Data Engineering',
-      description: 'Data engineering concepts and patterns',
-      color: '#B9762B',
-      totalQuestions: 80,
-    },
+    sql:                { label: 'SQL',              description: 'SQL queries',                color: '#5B6AF0', totalQuestions: 95,  tagline: 'SQL · DuckDB' },
+    python:             { label: 'Python',           description: 'Python algorithms',           color: '#2D9E6B', totalQuestions: 83,  tagline: 'Python · sandbox' },
+    'python-data':      { label: 'Pandas',           description: 'Pandas wrangling',            color: '#C47F17', totalQuestions: 76,  tagline: 'Pandas · sandbox' },
+    pyspark:            { label: 'PySpark',          description: 'Spark concepts',              color: '#D94F3D', totalQuestions: 102, tagline: 'MCQ · predict output' },
+    'data-engineering': { label: 'Data Engineering', description: 'DE concepts',                 color: '#B9762B', totalQuestions: 80,  tagline: 'MCQ · scenario' },
+    'data-modeling':    { label: 'Data Modeling',    description: 'Dimensional modeling',        color: '#3F8E8C', totalQuestions: 70,  tagline: 'MCQ · schema design', comingSoon: true },
+    statistics:         { label: 'Statistics',       description: 'Probability and inference',   color: '#7A5AF0', totalQuestions: 75,  tagline: 'MCQ + numerical',     comingSoon: true },
   },
   TopicProvider: ({ children }) => children,
   useTopic: () => ({ topic: 'sql', meta: { label: 'SQL' } }),
 }));
 
+// trackRegistry mock — must match TRACK_META above
+vi.mock('../trackRegistry', () => ({
+  TRACK_SLUGS:     ['sql', 'python', 'python-data', 'pyspark', 'data-engineering'],
+  ALL_TRACK_SLUGS: ['sql', 'python', 'python-data', 'pyspark', 'data-engineering', 'data-modeling', 'statistics'],
+  TRACK_META: {
+    sql:                { label: 'SQL',              description: 'SQL queries',              color: '#5B6AF0', totalQuestions: 95,  tagline: 'SQL · DuckDB' },
+    python:             { label: 'Python',           description: 'Python algorithms',         color: '#2D9E6B', totalQuestions: 83,  tagline: 'Python · sandbox' },
+    'python-data':      { label: 'Pandas',           description: 'Pandas wrangling',          color: '#C47F17', totalQuestions: 76,  tagline: 'Pandas · sandbox' },
+    pyspark:            { label: 'PySpark',          description: 'Spark concepts',            color: '#D94F3D', totalQuestions: 102, tagline: 'MCQ · predict output' },
+    'data-engineering': { label: 'Data Engineering', description: 'DE concepts',               color: '#B9762B', totalQuestions: 80,  tagline: 'MCQ · scenario' },
+    'data-modeling':    { label: 'Data Modeling',    description: 'Dimensional modeling',      color: '#3F8E8C', totalQuestions: 70,  tagline: 'MCQ · schema design', comingSoon: true },
+    statistics:         { label: 'Statistics',       description: 'Probability and inference', color: '#7A5AF0', totalQuestions: 75,  tagline: 'MCQ + numerical',     comingSoon: true },
+  },
+  TRACK_LABELS: {
+    sql: 'SQL', python: 'Python', 'python-data': 'Pandas', pyspark: 'PySpark',
+    'data-engineering': 'Data Engineering', 'data-modeling': 'Data Modeling',
+    statistics: 'Statistics', mixed: 'Mixed',
+  },
+}));
+
 vi.mock('../utils/currency', () => ({
   detectCurrency: () => 'INR',
   PRICES: {
-    INR: {
-      pro: '₹999',
-      elite: '₹1,999',
-      period: '/mo',
-      lifetimePro: '₹11,999',
-      lifetimeElite: '₹19,999',
-    },
+    INR: { pro: '₹999', elite: '₹1,999', period: '/mo', lifetimePro: '₹11,999', lifetimeElite: '₹19,999' },
   },
 }));
 
@@ -87,17 +71,29 @@ import { useAuth } from '../contexts/AuthContext';
 import LandingPage from './LandingPage';
 
 // ---------------------------------------------------------------------------
-// Browser API stubs required by LandingPage in jsdom
+// Browser stubs
 // ---------------------------------------------------------------------------
 
-// IntersectionObserver is used by the showcase section visibility effect
 global.IntersectionObserver = vi.fn(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
 }));
 
-// window.location.assign is called by UpgradeButton on checkout success
+// jsdom does not implement matchMedia
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn((query) => ({
+    matches: false,
+    media: query,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+});
+
 const mockAssign = vi.fn();
 Object.defineProperty(window, 'location', {
   value: { ...window.location, assign: mockAssign },
@@ -108,154 +104,213 @@ Object.defineProperty(window, 'location', {
 // Helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Render LandingPage with a mocked user whose plan is `plan`.
- * Pass plan=null to simulate a logged-out / anonymous visitor.
- * userPlan = user?.plan ?? 'free', so null → 'free' from the tier section's view.
- */
 function renderWithPlan(plan) {
-  const user = plan === null ? null : { id: 1, email: 'user@example.com', plan };
-  useAuth.mockReturnValue({ user, logout: vi.fn() });
-
-  return render(
-    <MemoryRouter>
-      <LandingPage />
-    </MemoryRouter>
-  );
+  const user = plan === null ? null : { id: 1, email: 'user@example.com', plan, streak_days: 0 };
+  useAuth.mockReturnValue({ user, logout: vi.fn(), refreshUser: vi.fn() });
+  return render(<MemoryRouter><LandingPage /></MemoryRouter>);
 }
 
 beforeEach(() => {
   vi.clearAllMocks();
-
-  // Default API stubs — return minimal shapes so the page doesn't crash
   api.get.mockImplementation((url) => {
     if (url === '/dashboard') return Promise.resolve({ data: {} });
-    if (url === '/paths')    return Promise.resolve({ data: [] });
+    if (url === '/paths')     return Promise.resolve({ data: [] });
     return Promise.resolve({ data: {} });
   });
   api.post.mockResolvedValue({ data: {} });
 });
 
-afterEach(() => {
-  cleanup();
-});
+afterEach(() => cleanup());
 
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
 
-describe('LandingPage tier section', () => {
+describe('LandingPage', () => {
 
-  // ── Pricing display ────────────────────────────────────────────────────────
+  // ── Hero section ──────────────────────────────────────────────────────────
 
-  describe('Pricing display', () => {
-    it('shows section heading "Straightforward pricing"', async () => {
+  describe('Hero — logged-out', () => {
+    it('shows the hero headline', async () => {
       renderWithPlan(null);
       await waitFor(() => {
-        expect(screen.getByText('Straightforward pricing')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+      });
+      expect(screen.getByRole('heading', { level: 1 }).textContent).toMatch(/reason/i);
+    });
+
+    it('shows "Start thinking" CTA link', async () => {
+      renderWithPlan(null);
+      await waitFor(() => {
+        const links = screen.getAllByRole('link', { name: /start thinking/i });
+        expect(links.length).toBeGreaterThanOrEqual(1);
+      });
+    });
+  });
+
+  describe('Hero — logged-in', () => {
+    it('shows resume, dashboard, and mock cards', async () => {
+      renderWithPlan('free');
+      await waitFor(() => {
+        expect(screen.getByText('Resume')).toBeInTheDocument();
+        // "Dashboard" also appears in Topbar nav — verify the card title specifically
+        expect(screen.getByText('Dashboard', { selector: '.lp-li-card-title' })).toBeInTheDocument();
+        expect(screen.getByText('Mock session')).toBeInTheDocument();
       });
     });
 
-    it('shows "Free" in the Free column', async () => {
+    it('does not show the hero headline for logged-in users', async () => {
+      renderWithPlan('free');
+      await waitFor(() => {
+        expect(screen.queryByText(/test how you reason/i)).not.toBeInTheDocument();
+      });
+    });
+  });
+
+  // ── Role selector ─────────────────────────────────────────────────────────
+
+  describe('Role selector', () => {
+    it('renders all 4 role tabs', async () => {
       renderWithPlan(null);
       await waitFor(() => {
-        expect(screen.getByText('Free', { selector: '.landing-tier-price-amount' })).toBeInTheDocument();
+        expect(screen.getByRole('tab', { name: 'Data Analyst' })).toBeInTheDocument();
+        expect(screen.getByRole('tab', { name: 'Data Engineer' })).toBeInTheDocument();
+        expect(screen.getByRole('tab', { name: 'Analytics Engineer' })).toBeInTheDocument();
+        expect(screen.getByRole('tab', { name: 'Data Scientist' })).toBeInTheDocument();
+      });
+    });
+
+    it('Data Analyst tab is selected by default', async () => {
+      renderWithPlan(null);
+      await waitFor(() => {
+        expect(screen.getByRole('tab', { name: 'Data Analyst' })).toHaveAttribute('aria-selected', 'true');
+      });
+    });
+
+    it('Data Analyst panel shows SQL track', async () => {
+      renderWithPlan(null);
+      await waitFor(() => {
+        const panel = screen.getByRole('tabpanel');
+        expect(panel).toBeInTheDocument();
+        expect(panel.textContent).toMatch(/SQL/);
+      });
+    });
+
+    it('switching to Data Engineer shows Python and PySpark tracks', async () => {
+      renderWithPlan(null);
+      await waitFor(() => screen.getByRole('tab', { name: 'Data Engineer' }));
+      fireEvent.click(screen.getByRole('tab', { name: 'Data Engineer' }));
+      await waitFor(() => {
+        const panel = screen.getByRole('tabpanel');
+        expect(panel.textContent).toMatch(/Python/);
+        expect(panel.textContent).toMatch(/PySpark/);
+      });
+    });
+
+    it('Data Engineer panel shows Data Modeling as coming-soon', async () => {
+      renderWithPlan(null);
+      await waitFor(() => screen.getByRole('tab', { name: 'Data Engineer' }));
+      fireEvent.click(screen.getByRole('tab', { name: 'Data Engineer' }));
+      await waitFor(() => {
+        const panel = screen.getByRole('tabpanel');
+        expect(panel.textContent).toMatch(/Data Modeling/);
+        expect(panel.textContent).toMatch(/Coming soon/);
+      });
+    });
+
+    it('Data Analyst panel shows Statistics as coming-soon', async () => {
+      renderWithPlan(null);
+      await waitFor(() => {
+        const panel = screen.getByRole('tabpanel');
+        expect(panel.textContent).toMatch(/Statistics/);
+        expect(panel.textContent).toMatch(/Coming soon/);
+      });
+    });
+  });
+
+  // ── Tracks index ──────────────────────────────────────────────────────────
+
+  describe('Tracks index', () => {
+    it('shows all 7 tracks', async () => {
+      renderWithPlan(null);
+      const trackNames = ['SQL', 'Python', 'Pandas', 'PySpark', 'Data Engineering', 'Data Modeling', 'Statistics'];
+      // Use the tracks section specifically
+      for (const name of trackNames) {
+        await waitFor(() => {
+          const els = screen.getAllByText(name);
+          expect(els.length).toBeGreaterThanOrEqual(1);
+        });
+      }
+    });
+
+    it('shows "Coming soon" badges for Data Modeling and Statistics', async () => {
+      renderWithPlan(null);
+      await waitFor(() => {
+        const badges = screen.getAllByText('Coming soon');
+        expect(badges.length).toBeGreaterThanOrEqual(2);
+      });
+    });
+
+    it('shows "Enter →" links for active tracks', async () => {
+      renderWithPlan(null);
+      await waitFor(() => {
+        const enterLinks = screen.getAllByRole('link', { name: /open .* track/i });
+        expect(enterLinks.length).toBeGreaterThanOrEqual(5);
+      });
+    });
+  });
+
+  // ── Pricing section ───────────────────────────────────────────────────────
+
+  describe('Pricing display', () => {
+    it('shows "Straightforward pricing." heading for anonymous users', async () => {
+      renderWithPlan(null);
+      await waitFor(() => {
+        expect(screen.getByText('Straightforward pricing.')).toBeInTheDocument();
       });
     });
 
     it('shows ₹999 in the Pro column', async () => {
       renderWithPlan(null);
-      await waitFor(() => {
-        expect(screen.getByText('₹999')).toBeInTheDocument();
-      });
-    });
-
-    it('shows /mo price period in the Pro column', async () => {
-      renderWithPlan(null);
-      await waitFor(() => {
-        // Both Pro and Elite have /mo — assert at least one exists
-        const periods = screen.getAllByText('/mo');
-        expect(periods.length).toBeGreaterThanOrEqual(1);
-      });
+      await waitFor(() => expect(screen.getByText('₹999')).toBeInTheDocument());
     });
 
     it('shows ₹1,999 in the Elite column', async () => {
       renderWithPlan(null);
-      await waitFor(() => {
-        expect(screen.getByText('₹1,999')).toBeInTheDocument();
-      });
+      await waitFor(() => expect(screen.getByText('₹1,999')).toBeInTheDocument());
     });
 
-    it('shows "Most popular" badge in the Pro column', async () => {
+    it('shows "Most popular" badge', async () => {
       renderWithPlan(null);
-      await waitFor(() => {
-        expect(screen.getByText('Most popular')).toBeInTheDocument();
-      });
+      await waitFor(() => expect(screen.getByText('Most popular')).toBeInTheDocument());
     });
-  });
 
-  // ── free user (plan='free') ────────────────────────────────────────────────
-
-  describe("free user (plan='free')", () => {
-    it('shows "Current plan" in the Free column', async () => {
+    it('free user sees "Current plan" in the Free column', async () => {
       renderWithPlan('free');
-      await waitFor(() => {
-        expect(screen.getByText('Current plan')).toBeInTheDocument();
-      });
+      await waitFor(() => expect(screen.getByText('Current plan')).toBeInTheDocument());
     });
 
-    it('shows "Upgrade to Pro" button in the Pro column', async () => {
+    it('free user sees Upgrade to Pro and Upgrade to Elite buttons', async () => {
       renderWithPlan('free');
       await waitFor(() => {
         expect(screen.getByRole('button', { name: 'Upgrade to Pro' })).toBeInTheDocument();
-      });
-    });
-
-    it('shows "Lifetime access — ₹11,999" button in the Pro column', async () => {
-      renderWithPlan('free');
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'Lifetime access — ₹11,999' })).toBeInTheDocument();
-      });
-    });
-
-    it('shows "Upgrade to Elite" button in the Elite column', async () => {
-      renderWithPlan('free');
-      await waitFor(() => {
         expect(screen.getByRole('button', { name: 'Upgrade to Elite' })).toBeInTheDocument();
       });
     });
 
-    it('shows "Lifetime access — ₹19,999" button in the Elite column', async () => {
-      renderWithPlan('free');
+    it('hides the pricing section for lifetime_elite users', async () => {
+      renderWithPlan('lifetime_elite');
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'Lifetime access — ₹19,999' })).toBeInTheDocument();
+        expect(screen.queryByText('Straightforward pricing.')).not.toBeInTheDocument();
       });
     });
 
-    it('does not show "Current plan" badge in Pro or Elite columns', async () => {
-      renderWithPlan('free');
+    it('shows pricing for pro users (so they can see Elite upgrade)', async () => {
+      renderWithPlan('pro');
       await waitFor(() => {
-        // Only one "Current plan" span should exist — in the Free column
-        expect(screen.getAllByText('Current plan')).toHaveLength(1);
+        expect(screen.getByText('Straightforward pricing.')).toBeInTheDocument();
       });
     });
   });
 
-  // ── paying users ─────────────────────────────────────────────────────────
-
-  describe('paying users', () => {
-    it.each(['pro', 'lifetime_pro', 'elite', 'lifetime_elite'])(
-      "hides the pricing section for plan='%s'",
-      async (plan) => {
-        renderWithPlan(plan);
-        await waitFor(() => {
-          expect(screen.queryByText('Straightforward pricing')).not.toBeInTheDocument();
-          expect(screen.queryByRole('button', { name: 'Upgrade to Pro' })).not.toBeInTheDocument();
-          expect(screen.queryByRole('button', { name: 'Upgrade to Elite' })).not.toBeInTheDocument();
-          expect(screen.queryByRole('button', { name: /Switch to lifetime/ })).not.toBeInTheDocument();
-          expect(screen.queryByRole('button', { name: /Lifetime access/ })).not.toBeInTheDocument();
-        });
-      }
-    );
-  });
 });

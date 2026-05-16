@@ -195,7 +195,7 @@ sql-interview-practice/
 ## Frontend routes
 
 ```
-/                              → LandingPage (4-tile track grid)
+/                              → LandingPage (editorial landing — hero, role selector, 7-track index, pricing)
 /auth                          → AuthPage (register / sign in / forgot password / OAuth)
 /auth/reset-password           → ResetPasswordPage (consume reset token, set new password)
 /auth/verify-email             → VerifyEmailPage (consume email verification token)
@@ -215,38 +215,49 @@ sql-interview-practice/
 /questions/:id                 → redirect → /practice/sql/questions/:id (legacy)
 ```
 
-`:topic` values: `sql` | `python` | `python-data` | `pyspark`
+`:topic` values: `sql` | `python` | `python-data` | `pyspark` | `data-engineering`
 
 ---
 
 ## Landing page structure
 
-Fixed topbar → hero/welcome → proof/showcase/companies (logged-out only) → light practice section → pricing (hidden for `lifetime_elite`).
+Editorial 8-section layout. All sections use max-width 1040px inner wrapper (`lp-inner`). Sections animate in on scroll via `IntersectionObserver` (skipped for `prefers-reduced-motion`).
 
 ```
 TOPBAR
-  "datathink"                             [Mock] [Dashboard] [name · Sign out] or [Login]
+  "datathink"                    [Practice ▾] [Mock] [Dashboard] [name · Sign out] or [Sign in]
 
-HERO  (logged-out only)
-  Centered, max-width 720px inner wrapper
-  kicker · headline · copy · CTAs: [Explore tracks ↓] [Create account]
+01 · HERO  (all users)
+  Logged-out: 2-col grid — left: eyebrow + h1 + copy + CTAs ("Start thinking →" / "Find your track ↓")
+              right: HeroIDE — character-by-character SQL typing animation, then streaming result rows
+  Logged-in:  3-card strip (Resume · Dashboard · Mock) with accent-border hover
 
-WELCOME  (logged-in only)
-  Returning-user panel with Resume / Dashboard / Mock cards
-  max-width 1040px wrapper
+02 · THESIS  (all users)
+  3-column editorial — "Recognition ≠ reasoning" · "Depth, not breadth" · "Real engines"
+  Each column: mono index number, h3 title, copy
 
-PROOF + SHOWCASE + COMPANIES  (logged-out only)
-  Trust-signal metrics row + Interview IDE showcase + company strip
-  showcase auto-rotation runs on interval and honors prefers-reduced-motion at initial render
+03 · WRONG / RIGHT  (all users)
+  2-col diff table — left = "what candidates do", right = "what earns the job"
+  Right column rows animate in staggered on intersection
 
-TRACK SELECTION  (all users, id="landing-tracks")
-  Light section, pill nav (SQL/Python/Pandas/PySpark)
-  Per-track panel: description · progress bar · CTA · 3 sample tiles
-  First-visit 2-step tooltip walkthrough highlights track selection and free sample tiles (dismissed with localStorage)
-  Landing wrappers standardized to 1040px for card sections
+04 · ROLE SELECTOR  (all users)
+  tablist with 4 roles: Data Analyst · Data Engineer · Analytics Engineer · Data Scientist
+  Each tab panel: ordered list of relevant tracks as cards (left accent border in track color)
+  Coming-soon tracks shown with "Coming soon" badge; no CTA link
 
-PRICING  (all users except `lifetime_elite`)
-  Free / Pro / Elite columns with monthly + lifetime CTAs
+05 · PROOF STRIP  (all users)
+  Stat row — N tracks · N+ questions (count-up animation on scroll)
+
+06 · TRACKS INDEX  (all users)
+  Dense list of all 7 tracks (5 live + 2 coming-soon) from ALL_TRACK_SLUGS
+  Each row: color dot · track name · description · question count · format tag · "Enter →" or "Soon"
+
+07 · GUIDED PROGRESSIONS  (all users)
+  Paths section — calls /api/paths; renders PathProgressCard per path (same component as TrackHub)
+
+08 · PRICING  (all users except `lifetime_elite`)
+  Free / Pro / Elite columns · monthly + lifetime CTAs
+  Pro users see pricing (so they can discover Elite upgrade)
 ```
 
 ---

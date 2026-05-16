@@ -1,240 +1,729 @@
-import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
-import { TRACK_SLUGS } from '../trackRegistry';
-import TrackProgressBar from '../components/TrackProgressBar';
+import { ALL_TRACK_SLUGS, TRACK_SLUGS } from '../trackRegistry';
 import PathProgressCard from '../components/PathProgressCard';
 import Topbar from '../components/Topbar';
-import LoggedInWelcome from '../components/LoggedInWelcome';
 import UpgradeButton from '../components/UpgradeButton';
-import OnboardingTooltip from '../components/OnboardingTooltip';
-import { highlightCode } from './landingShowcaseHighlight';
 import { detectCurrency, PRICES } from '../utils/currency';
 
-const TRACK_DIFFICULTIES = {
-  sql:                { label: 'SQL',              easy: 32, medium: 34, hard: 29 },
-  python:             { label: 'Python',           easy: 30, medium: 29, hard: 24 },
-  'python-data':      { label: 'Pandas',           easy: 22, medium: 31, hard: 23 },
-  pyspark:            { label: 'PySpark',          easy: 38, medium: 38, hard: 26 },
-  'data-engineering': { label: 'Data Engineering', easy: 30, medium: 30, hard: 20 },
-};
-
-// Total easy questions across all tracks (used in pricing copy)
-const TOTAL_EASY = Object.values(TRACK_DIFFICULTIES).reduce((s, d) => s + d.easy, 0);
-// Total questions across all tracks
-const TOTAL_QUESTIONS = Object.values(TRACK_DIFFICULTIES).reduce((s, d) => s + d.easy + d.medium + d.hard, 0);
-// "32 SQL · 30 Python · 22 Pandas · 38 PySpark" — built from TRACK_DIFFICULTIES so it stays in sync
-const FREE_EASY_SUMMARY = Object.values(TRACK_DIFFICULTIES).map(d => `${d.easy} ${d.label}`).join(' · ');
-
-const SAMPLE_TIERS = {
-  sql: [
-    { difficulty: 'easy', title: 'Warm-up joins', copy: 'Three approachable query prompts on filters, joins, and aggregates.' },
-    { difficulty: 'medium', title: 'Interview core', copy: 'A mid-tier SQL set focused on grouping, window logic, and cleaner result shaping.' },
-    { difficulty: 'hard', title: 'Stretch round', copy: 'Three harder SQL prompts to pressure-test precision and sequencing.' },
-  ],
-  python: [
-    { difficulty: 'easy', title: 'Data-context warm-ups', copy: 'Three Python samples with data-role framing — processing lists, cleaning inputs, and simple aggregation logic.' },
-    { difficulty: 'medium', title: 'Pipeline patterns', copy: 'Interview-style problems modelled on real data engineering tasks: deduplication, transformation, and frequency analysis.' },
-    { difficulty: 'hard', title: 'Stretch problems', copy: 'Tighter Python prompts involving multi-step data logic, edge cases, and production-adjacent reasoning.' },
-  ],
-  'python-data': [
-    { difficulty: 'easy', title: 'DataFrame warm-up', copy: 'Three pandas samples for selection, filtering, and tidy output shaping.' },
-    { difficulty: 'medium', title: 'Analysis patterns', copy: 'Practice merge, grouping, and transformation patterns used in real interviews.' },
-    { difficulty: 'hard', title: 'Wrangling stretch', copy: 'A tougher pandas set focused on sequencing, normalization, and precision.' },
-  ],
-  pyspark: [
-    { difficulty: 'easy', title: 'Spark basics', copy: 'Three PySpark samples covering execution basics, APIs, and conceptual foundations.' },
-    { difficulty: 'medium', title: 'Distributed thinking', copy: 'A mid-tier set on shuffles, partitioning, and practical transformation choices.' },
-    { difficulty: 'hard', title: 'Systems stretch', copy: 'Harder PySpark samples for optimization instincts and architecture judgment.' },
-  ],
-  'data-engineering': [
-    { difficulty: 'easy', title: 'Pipeline foundations', copy: 'Three samples on batch vs. streaming, storage formats, and basic orchestration patterns.' },
-    { difficulty: 'medium', title: 'System design MCQ', copy: 'Mid-tier questions on data warehouse modeling, delivery semantics, and CDC patterns.' },
-    { difficulty: 'hard', title: 'Architecture stretch', copy: 'Harder DE samples testing performance tuning, SCD handling, and distributed system trade-offs.' },
-  ],
-};
-
-const SHOWCASE_CARDS = [
+// ── Role → track weighting ──────────────────────────────────────────────────
+const ROLES = [
   {
-    topic: 'sql',
-    fileName: 'rolling_revenue.sql',
-    language: 'sql',
-    difficulty: 'medium',
-    title: '7-Day Rolling Revenue',
-    briefParagraph:
-      "For each day, compute the sum of order revenue over the past 7 days (including today). The output should align one row per order_date in ascending order.",
-    returnsNote: 'Return: order_date, daily_revenue, rolling_7d_revenue',
-    concepts: ['window functions', 'rolling aggregates'],
-    solutionCode: `SELECT
-  order_date,
-  SUM(total_amount) AS daily_revenue,
-  SUM(SUM(total_amount)) OVER (
-    ORDER BY order_date
-    ROWS BETWEEN 6 PRECEDING
-             AND CURRENT ROW
-  ) AS rolling_7d_revenue
-FROM orders
-GROUP BY order_date
-ORDER BY order_date;`,
+    id: 'analyst',
+    label: 'Data Analyst',
+    tagline: 'SQL depth · statistical reasoning · Python for data',
+    tracks: ['sql', 'statistics', 'python-data', 'python'],
   },
   {
-    topic: 'python',
-    fileName: 'trapping_rain_water.py',
-    language: 'python',
-    difficulty: 'hard',
-    title: 'Trapping Rain Water',
-    briefParagraph:
-      "Given an elevation map of unit-width bars, compute the total rainwater that can be trapped between them. Solve it in O(n) time and O(1) space.",
-    returnsNote: 'Two pointers · O(n) time · O(1) space',
-    concepts: ['two pointers', 'amortized analysis'],
-    solutionCode: `def solve(heights):
-    if not heights:
-        return 0
-    left, right = 0, len(heights) - 1
-    left_max = right_max = 0
-    water = 0
-    while left < right:
-        if heights[left] < heights[right]:
-            left_max = max(left_max, heights[left])
-            water += left_max - heights[left]
-            left += 1
-        else:
-            right_max = max(right_max, heights[right])
-            water += right_max - heights[right]
-            right -= 1
-    return water`,
+    id: 'engineer',
+    label: 'Data Engineer',
+    tagline: 'Python pipelines · distributed systems · DE concepts',
+    tracks: ['python', 'sql', 'pyspark', 'data-engineering', 'data-modeling'],
   },
   {
-    topic: 'python-data',
-    fileName: 'email_domain.py',
-    language: 'python',
-    difficulty: 'easy',
-    title: 'Extract Email Domain',
-    briefParagraph:
-      "Drop rows with a null email, then add an email_domain column holding everything after the @. Return the DataFrame with the new column appended.",
-    returnsNote: 'Return: original columns + email_domain',
-    concepts: ['string accessors', 'null handling'],
-    solutionCode: `def solve(df_users):
-    result = df_users.dropna(subset=['email']).copy()
-    result['email_domain'] = (
-        result['email'].str.split('@').str[1]
-    )
-    return result.reset_index(drop=True)`,
+    id: 'analytics_engineer',
+    label: 'Analytics Engineer',
+    tagline: 'SQL precision · data modeling · dbt patterns',
+    tracks: ['sql', 'data-modeling', 'python-data', 'python'],
   },
   {
-    topic: 'pyspark',
-    fileName: 'coalesce_vs_repartition.py',
-    language: 'python',
-    difficulty: 'medium',
-    title: 'coalesce vs repartition',
-    briefParagraph:
-      "You need to reduce a DataFrame from 200 partitions to 10 before writing. Which operation avoids a full shuffle, and when does each one matter?",
-    returnsNote: 'coalesce = narrow · repartition = wide (shuffle)',
-    concepts: ['partitions', 'shuffle tradeoffs'],
-    solutionCode: `# coalesce(n) — merges partitions locally, no full
-# shuffle. Best when REDUCING partition count.
-df.coalesce(10).write.parquet(path)
-
-# repartition(n) — full shuffle, even distribution.
-# Use when INCREASING count or when data is skewed.
-df.repartition(10, 'user_id')`,
+    id: 'scientist',
+    label: 'Data Scientist',
+    tagline: 'Python · statistical inference · SQL for analysis',
+    tracks: ['python', 'statistics', 'sql', 'python-data'],
   },
 ];
 
+// ── Hero IDE content ────────────────────────────────────────────────────────
+const IDE_QUERY = `SELECT
+  dept,
+  COUNT(*) AS headcount,
+  ROUND(AVG(salary), 0) AS avg_salary
+FROM staff
+WHERE hire_date >= '2022-01-01'
+GROUP BY dept
+ORDER BY avg_salary DESC;`;
 
-const SHOWCASE_ROTATE_MS = 8000;
-const LANDING_ONBOARDING_KEY = 'landingOnboardingSeen-v1';
+const IDE_COLS = ['dept', 'headcount', 'avg_salary'];
+const IDE_ROWS = [
+  ['Engineering', '12', '128 500'],
+  ['Product',     ' 8', '118 200'],
+  ['Design',      ' 6', '104 800'],
+  ['Analytics',   ' 7', ' 98 600'],
+  ['Operations',  ' 5', ' 87 300'],
+];
 
-export default function LandingPage() {
-  const { user, logout, refreshUser } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const userPlan = user?.plan ?? 'free';
-  const currency = detectCurrency();
+// ── Shared hooks ────────────────────────────────────────────────────────────
+function useInView(ref, margin = '-8%') {
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) setInView(true); },
+      { rootMargin: margin, threshold: 0.05 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  return inView;
+}
+
+function useCountUp(target, duration, trigger) {
+  const [val, setVal] = useState(0);
+  const ran = useRef(false);
+  useEffect(() => {
+    if (!trigger || ran.current) return;
+    ran.current = true;
+    const start = performance.now();
+    function tick(now) {
+      const p = Math.min((now - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - p, 3);
+      setVal(Math.round(ease * target));
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }, [trigger, target, duration]);
+  return val;
+}
+
+// ── Hero IDE typing animation ────────────────────────────────────────────────
+function HeroIDE({ reduced }) {
+  const TOTAL = IDE_QUERY.length;
+  const [typedLen, setTypedLen] = useState(reduced ? TOTAL : 0);
+  const [phase, setPhase] = useState(reduced ? 'done' : 'typing');
+  const [visibleRows, setVisibleRows] = useState(reduced ? IDE_ROWS.length : 0);
+  const [flashIdx, setFlashIdx] = useState(null);
+
+  useEffect(() => {
+    if (phase !== 'typing') return;
+    if (typedLen >= TOTAL) { setTimeout(() => setPhase('running'), 350); return; }
+    const t = setTimeout(() => setTypedLen(n => n + 1), 26);
+    return () => clearTimeout(t);
+  }, [phase, typedLen, TOTAL]);
+
+  useEffect(() => {
+    if (phase !== 'running') return;
+    const t = setTimeout(() => setPhase('streaming'), 550);
+    return () => clearTimeout(t);
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase !== 'streaming') return;
+    if (visibleRows >= IDE_ROWS.length) { setPhase('done'); return; }
+    const t = setTimeout(() => {
+      const idx = visibleRows;
+      setVisibleRows(n => n + 1);
+      setFlashIdx(idx);
+      setTimeout(() => setFlashIdx(null), 180);
+    }, 55);
+    return () => clearTimeout(t);
+  }, [phase, visibleRows]);
+
+  const showResult = phase === 'streaming' || phase === 'done';
+  const showRunning = phase === 'running';
+
+  return (
+    <div className="lp-ide" aria-label="Live query execution preview" aria-hidden="true">
+      <div className="lp-ide-chrome">
+        <span className="lp-ide-dots"><i /><i /><i /></span>
+        <span className="lp-ide-fname">salary_analysis.sql</span>
+        <span className="lp-ide-badge">SQL · DuckDB</span>
+      </div>
+      <div className="lp-ide-body">
+        <pre className="lp-ide-query"><code>
+          {IDE_QUERY.slice(0, typedLen)}
+          {phase !== 'done' && <span className="lp-ide-cursor" />}
+        </code></pre>
+        {showRunning && <p className="lp-ide-running">Running…</p>}
+        {showResult && (
+          <div className="lp-ide-result">
+            <table>
+              <thead>
+                <tr>{IDE_COLS.map(c => <th key={c}>{c}</th>)}</tr>
+              </thead>
+              <tbody>
+                {IDE_ROWS.slice(0, visibleRows).map((row, i) => (
+                  <tr key={i} className={flashIdx === i ? 'lp-ide-row--flash' : ''}>
+                    {row.map((cell, j) => <td key={j}>{cell}</td>)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {phase === 'done' && (
+              <p className="lp-ide-rowcount">{IDE_ROWS.length} rows · 0 errors</p>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Section entrance animation wrapper ─────────────────────────────────────
+function Reveal({ children, delay = 0, className = '' }) {
+  const ref = useRef(null);
+  const inView = useInView(ref);
+  return (
+    <div
+      ref={ref}
+      className={`lp-reveal${inView ? ' is-visible' : ''} ${className}`}
+      style={delay ? { transitionDelay: `${delay}ms` } : undefined}
+    >
+      {children}
+    </div>
+  );
+}
+
+// ── Section 01: Hero ────────────────────────────────────────────────────────
+function HeroSection({ user, dashData, reduced }) {
+  if (user) {
+    const recent = dashData?.recent_activity?.[0];
+    const topic = recent?.topic || 'sql';
+    const meta = TRACK_META[topic] || TRACK_META.sql;
+    const href = recent
+      ? `/practice/${topic}/questions/${recent.question_id}`
+      : `/practice/${topic}`;
+    const firstName = (user?.name || user?.email || '').split(/[\s@]/)[0] || 'there';
+    const totalSolved = dashData
+      ? Object.values(dashData.tracks || {}).reduce((s, t) => s + (t?.solved ?? 0), 0)
+      : 0;
+
+    return (
+      <section className="lp-section lp-hero-loggedin">
+        <div className="lp-inner">
+          <p className="lp-eyebrow">Welcome back, {firstName}</p>
+          <p className="lp-hero-li-copy">
+            {totalSolved > 0
+              ? `${totalSolved} solved so far — keep the streak going.`
+              : 'Ready when you are.'}
+          </p>
+          <div className="lp-hero-li-cards">
+            <Link to={href} className="lp-li-card lp-li-card--primary" style={{ '--card-color': meta.color }}>
+              <span className="lp-li-card-eye">Resume</span>
+              <span className="lp-li-card-title">{meta.label} track</span>
+              <span className="lp-li-card-cta">Open →</span>
+            </Link>
+            <Link to="/dashboard" className="lp-li-card">
+              <span className="lp-li-card-eye">Progress</span>
+              <span className="lp-li-card-title">Dashboard</span>
+              <span className="lp-li-card-cta">View →</span>
+            </Link>
+            <Link to="/mock" className="lp-li-card">
+              <span className="lp-li-card-eye">Interview</span>
+              <span className="lp-li-card-title">Mock session</span>
+              <span className="lp-li-card-cta">Start →</span>
+            </Link>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="lp-section lp-hero">
+      <div className="lp-inner lp-hero-inner">
+        <div className="lp-hero-left">
+          <p className="lp-eyebrow">Interview preparation, reasoned</p>
+          <h1 className="lp-hero-h1">
+            Data interviews test how you reason&mdash;not what you memorized.
+          </h1>
+          <p className="lp-hero-sub">
+            Your SQL runs on a real engine. Your Python executes in a live sandbox.
+            Seven tracks that make you earn the answer.
+          </p>
+          <div className="lp-hero-actions">
+            <Link className="btn btn-primary" to="/auth">Start thinking →</Link>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => {
+                const el = document.getElementById('lp-roles');
+                if (!el) return;
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+            >
+              Find your track ↓
+            </button>
+          </div>
+        </div>
+        <div className="lp-hero-right">
+          <HeroIDE reduced={reduced} />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Section 02: The Thesis ──────────────────────────────────────────────────
+function ThesisSection() {
+  const COLS = [
+    {
+      index: '01',
+      title: 'Recognition ≠ reasoning',
+      copy: 'Knowing that window functions exist is not the same as knowing when to use them. This platform trains the second skill — the one that shows up under pressure.',
+    },
+    {
+      index: '02',
+      title: 'Execution, not explanation',
+      copy: 'Your SQL hits a real DuckDB engine. Your Python runs in an isolated sandbox. You see actual output — rows, errors, mismatch details — not a simulated pass/fail.',
+    },
+    {
+      index: '03',
+      title: 'Answers are earned',
+      copy: 'Progressive hints surface the mental model first, the technique second. Solutions only appear after you\'ve exhausted hints. You reason your way to understanding.',
+    },
+  ];
+
+  return (
+    <section className="lp-section lp-thesis lp-section-rule">
+      <div className="lp-inner">
+        <Reveal>
+          <p className="lp-section-index">02&ensp;/&ensp;THE THESIS</p>
+          <h2 className="lp-section-h2">What data thinking is.</h2>
+        </Reveal>
+        <div className="lp-thesis-cols">
+          {COLS.map((col, i) => (
+            <Reveal key={col.index} delay={i * 80}>
+              <div className="lp-thesis-col">
+                <span className="lp-thesis-col-index">{col.index}</span>
+                <h3 className="lp-thesis-col-title">{col.title}</h3>
+                <p className="lp-thesis-col-copy">{col.copy}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Section 03: Wrong way / Right way ──────────────────────────────────────
+function WrongRightSection() {
+  const ROWS = [
+    { wrong: 'Flash cards → recognition',    right: 'Write' },
+    { wrong: 'AI answers → you read',         right: 'Run' },
+    { wrong: 'Syntax drills → no reasoning',  right: 'Compare' },
+    { wrong: 'One-shot practice → no pattern', right: 'Understand' },
+  ];
+
+  const ref = useRef(null);
+  const inView = useInView(ref, '-10%');
+
+  return (
+    <section className="lp-section lp-wrongright lp-section-rule">
+      <div className="lp-inner">
+        <Reveal>
+          <p className="lp-section-index">03&ensp;/&ensp;THE APPROACH</p>
+          <h2 className="lp-section-h2">The wrong way. The right way.</h2>
+        </Reveal>
+        <div className="lp-wr-table" ref={ref}>
+          <div className="lp-wr-col lp-wr-col--wrong">
+            <p className="lp-wr-col-head">Others</p>
+            {ROWS.map((r, i) => (
+              <p key={i} className="lp-wr-row lp-wr-row--wrong">{r.wrong}</p>
+            ))}
+          </div>
+          <div className="lp-wr-divider" aria-hidden="true" />
+          <div className="lp-wr-col lp-wr-col--right">
+            <p className="lp-wr-col-head">datathink</p>
+            {ROWS.map((r, i) => (
+              <p
+                key={i}
+                className={`lp-wr-row lp-wr-row--right${inView ? ' is-visible' : ''}`}
+                style={{ transitionDelay: inView ? `${i * 90}ms` : '0ms' }}
+              >
+                {r.right}
+              </p>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Section 04: Role selector ───────────────────────────────────────────────
+function RoleSelectorSection({ dashData }) {
+  const [activeRole, setActiveRole] = useState(0);
+  const role = ROLES[activeRole];
+
+  return (
+    <section className="lp-section lp-roles lp-section-rule" id="lp-roles">
+      <div className="lp-inner">
+        <Reveal>
+          <p className="lp-section-index">04&ensp;/&ensp;YOUR ROLE</p>
+          <h2 className="lp-section-h2">Your role shapes which thinking matters.</h2>
+          <p className="lp-section-sub">
+            Seven tracks — here by relevance, not as a grid.
+          </p>
+        </Reveal>
+
+        <div
+          className="lp-role-tabs"
+          role="tablist"
+          aria-label="Select your data role"
+        >
+          {ROLES.map((r, i) => (
+            <button
+              key={r.id}
+              role="tab"
+              aria-selected={activeRole === i}
+              aria-controls={`lp-role-panel-${r.id}`}
+              id={`lp-role-tab-${r.id}`}
+              className={`lp-role-tab${activeRole === i ? ' is-active' : ''}`}
+              onClick={() => setActiveRole(i)}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowRight') setActiveRole((activeRole + 1) % ROLES.length);
+                if (e.key === 'ArrowLeft') setActiveRole((activeRole + ROLES.length - 1) % ROLES.length);
+              }}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
+
+        <div
+          id={`lp-role-panel-${role.id}`}
+          role="tabpanel"
+          aria-labelledby={`lp-role-tab-${role.id}`}
+          className="lp-role-panel"
+        >
+          <p className="lp-role-tagline">{role.tagline}</p>
+          <div className="lp-role-tracks">
+            {role.tracks.map((slug, i) => {
+              const meta = TRACK_META[slug];
+              if (!meta) return null;
+              const isActive = TRACK_SLUGS.includes(slug);
+              const trackData = dashData?.tracks?.[slug];
+              const solved = trackData?.solved ?? 0;
+              return (
+                <Reveal key={slug} delay={i * 60} className="lp-role-track-reveal">
+                  <div className="lp-role-track" style={{ '--track-color': meta.color }}>
+                    <div className="lp-role-track-header">
+                      <span className="lp-role-track-dot" aria-hidden="true" />
+                      <span className="lp-role-track-name">{meta.label}</span>
+                      {meta.comingSoon && (
+                        <span className="lp-badge-soon">Coming soon</span>
+                      )}
+                      {!meta.comingSoon && solved > 0 && (
+                        <span className="lp-role-track-progress">{solved} solved</span>
+                      )}
+                    </div>
+                    <p className="lp-role-track-desc">{meta.description}</p>
+                    <div className="lp-role-track-footer">
+                      <span className="lp-role-track-tagline">{meta.tagline}</span>
+                      {isActive ? (
+                        <Link
+                          to={`/practice/${slug}`}
+                          className="lp-role-track-cta"
+                          style={{ color: meta.color }}
+                        >
+                          {solved > 0 ? 'Continue →' : 'Open track →'}
+                        </Link>
+                      ) : (
+                        <span className="lp-role-track-cta lp-role-track-cta--soon">
+                          In development
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </Reveal>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Section 05: Proof strip ─────────────────────────────────────────────────
+const TOTAL_QUESTIONS = ALL_TRACK_SLUGS.reduce(
+  (s, slug) => s + (TRACK_META[slug]?.totalQuestions ?? 0), 0
+);
+
+function ProofStripSection() {
+  const ref = useRef(null);
+  const inView = useInView(ref, '-5%');
+  const reduced = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const qCount = useCountUp(TOTAL_QUESTIONS, 700, reduced || inView);
+  const trackCount = useCountUp(ALL_TRACK_SLUGS.length, 500, reduced || inView);
+
+  const STATS = [
+    { num: trackCount, label: 'tracks' },
+    { num: `${qCount}+`, label: 'engineered questions' },
+    { text: 'real DuckDB execution' },
+    { text: 'live Python sandbox' },
+    { text: 'mocks withhold solutions' },
+  ];
+
+  return (
+    <section className="lp-section lp-proof lp-section-rule" ref={ref}>
+      <div className="lp-inner">
+        <div className="lp-proof-strip">
+          {STATS.map((s, i) => (
+            <span key={i} className="lp-proof-stat">
+              {s.num !== undefined
+                ? <><strong>{s.num}</strong> {s.label}</>
+                : s.text
+              }
+            </span>
+          ))}
+        </div>
+        <p className="lp-proof-sub">
+          Questions modeled on interviews at Meta, Stripe, Airbnb, Google, Amazon, and Uber.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+// ── Section 06: Tracks index ────────────────────────────────────────────────
+function TracksIndexSection() {
+  const FORMAT_LABELS = {
+    sql:                'SQL · DuckDB',
+    python:             'Python · sandbox',
+    'python-data':      'Pandas · sandbox',
+    pyspark:            'MCQ · predict output',
+    'data-engineering': 'MCQ · scenario',
+    'data-modeling':    'MCQ · schema design',
+    statistics:         'MCQ + numerical',
+  };
+
+  return (
+    <section className="lp-section lp-tracks lp-section-rule" id="lp-tracks">
+      <div className="lp-inner">
+        <Reveal>
+          <p className="lp-section-index">06&ensp;/&ensp;ALL TRACKS</p>
+          <h2 className="lp-section-h2">The full curriculum.</h2>
+        </Reveal>
+        <div className="lp-tracks-list" role="list">
+          {ALL_TRACK_SLUGS.map((slug, i) => {
+            const meta = TRACK_META[slug];
+            const isActive = TRACK_SLUGS.includes(slug);
+            const totalQ = meta.totalQuestions;
+            return (
+              <Reveal key={slug} delay={i * 40}>
+                <div role="listitem" className={`lp-track-row${meta.comingSoon ? ' lp-track-row--soon' : ''}`}>
+                  <span className="lp-track-dot" style={{ background: meta.color }} aria-hidden="true" />
+                  <div className="lp-track-info">
+                    <div className="lp-track-name-row">
+                      <span className="lp-track-name">{meta.label}</span>
+                      {meta.comingSoon && <span className="lp-badge-soon">Coming soon</span>}
+                    </div>
+                    <p className="lp-track-desc">{meta.description}</p>
+                  </div>
+                  <div className="lp-track-meta">
+                    <span className="lp-track-count">{totalQ} q</span>
+                    <span className="lp-track-format">{FORMAT_LABELS[slug] ?? meta.tagline}</span>
+                  </div>
+                  {isActive ? (
+                    <Link
+                      to={`/practice/${slug}`}
+                      className="lp-track-enter"
+                      style={{ '--row-color': meta.color }}
+                      aria-label={`Open ${meta.label} track`}
+                    >
+                      Enter →
+                    </Link>
+                  ) : (
+                    <span className="lp-track-enter lp-track-enter--soon">Soon</span>
+                  )}
+                </div>
+              </Reveal>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Section 07: Pricing ─────────────────────────────────────────────────────
+function PricingSection({ userPlan, currency }) {
   const p = PRICES[currency];
 
-  // What CTA state to show in the Pro column:
-  //   'current'      → user is on lifetime_pro (highest Pro billing, no action needed)
-  //   'lifetime_only'→ user is on monthly pro (can still switch to lifetime)
-  //   'both'         → user is on free (show monthly + lifetime buttons)
-  //   'none'         → user is on elite/lifetime_elite (Pro is below their tier)
   function proColCta() {
     if (userPlan === 'lifetime_pro')  return 'current';
     if (userPlan === 'pro')           return 'lifetime_only';
     if (userPlan === 'free')          return 'both';
-    return 'none'; // elite / lifetime_elite
+    return 'none';
   }
-
-  // What CTA state to show in the Elite column:
-  //   'current'      → user is on lifetime_elite (can't go higher)
-  //   'lifetime_only'→ user is on monthly elite (can switch to lifetime)
-  //   'both'         → user is on free / pro / lifetime_pro (show both buttons)
   function eliteColCta() {
     if (userPlan === 'lifetime_elite') return 'current';
     if (userPlan === 'elite')          return 'lifetime_only';
     return 'both';
   }
 
-  // Plan pill for paying users
+  const ACTIVE_Q = TRACK_SLUGS.reduce((s, slug) => s + (TRACK_META[slug]?.totalQuestions ?? 0), 0);
+  const FREE_EASY = TRACK_SLUGS
+    .filter(s => !TRACK_META[s]?.comingSoon)
+    .map(s => {
+      const m = TRACK_META[s];
+      const easy = { sql: 32, python: 30, 'python-data': 22, pyspark: 38, 'data-engineering': 30 }[s] ?? 0;
+      return `${easy} ${m.label}`;
+    })
+    .join(' · ');
+
+  return (
+    <section className="lp-section lp-section-rule" id="landing-pricing">
+      <div className="lp-inner">
+        <Reveal>
+          <p className="lp-section-index">07&ensp;/&ensp;PRICING</p>
+          <h2 className="lp-section-h2">Straightforward pricing.</h2>
+        </Reveal>
+        <div className="landing-tier-grid">
+
+          <div className="landing-tier-col">
+            <div className="landing-tier-col-header">
+              <span className="landing-tier-name">Free</span>
+              <div className="landing-tier-price">
+                <span className="landing-tier-price-amount">Free</span>
+              </div>
+            </div>
+            <ul className="landing-tier-list">
+              <li>All easy questions ({FREE_EASY})</li>
+              <li>Medium + hard unlock as you solve (hard cap: 8 per code track, 5 per MCQ track)</li>
+              <li>2-step progressive hints — mental model first, technique second</li>
+              <li>Official solutions with explanation after hints</li>
+              <li>SQL query quality analysis on correct answers</li>
+              <li>Easy mock interviews (unlimited) · 1 medium mock/day</li>
+              <li>Streak tracking</li>
+            </ul>
+            <div className="landing-tier-cta">
+              {userPlan === 'free' && <span className="landing-tier-current">Current plan</span>}
+            </div>
+          </div>
+
+          <div className="landing-tier-col landing-tier-col--featured">
+            <div className="landing-tier-col-header">
+              <div className="landing-tier-name-row">
+                <span className="landing-tier-name">Pro</span>
+                <span className="landing-tier-badge">Most popular</span>
+              </div>
+              <div className="landing-tier-price">
+                <span className="landing-tier-price-amount">{p.pro}</span>
+                <span className="landing-tier-price-period">{p.period}</span>
+              </div>
+            </div>
+            <ul className="landing-tier-list">
+              <li>Everything in Free — no hard cap</li>
+              <li>All {ACTIVE_Q} questions, every medium + hard</li>
+              <li>Unlimited medium mocks · 3 hard mocks/day</li>
+              <li>Fresh mock question bank (questions you haven&rsquo;t seen in practice)</li>
+              <li>Post-mock debrief — per-question solutions and concept breakdown</li>
+              <li>Weakest concept analysis + drill recommendations</li>
+              <li>All learning paths</li>
+            </ul>
+            <div className="landing-tier-cta">
+              {proColCta() === 'current' && <span className="landing-tier-current">Current plan</span>}
+              {proColCta() === 'both' && (
+                <UpgradeButton tier="pro" source="landing_tier" currency={currency} successPath="/?upgraded=true" />
+              )}
+              {(proColCta() === 'both' || proColCta() === 'lifetime_only') && (
+                <UpgradeButton
+                  tier="lifetime_pro"
+                  label={proColCta() === 'lifetime_only' ? `Switch to lifetime — ${p.lifetimePro}` : `Lifetime access — ${p.lifetimePro}`}
+                  compact
+                  className="landing-tier-lifetime-btn"
+                  source="landing_tier_lifetime"
+                  successPath="/?upgraded=true"
+                />
+              )}
+            </div>
+          </div>
+
+          <div className="landing-tier-col">
+            <div className="landing-tier-col-header">
+              <span className="landing-tier-name">Elite</span>
+              <div className="landing-tier-price">
+                <span className="landing-tier-price-amount">{p.elite}</span>
+                <span className="landing-tier-price-period">{p.period}</span>
+              </div>
+            </div>
+            <ul className="landing-tier-list">
+              <li>Everything in Pro</li>
+              <li>Unlimited hard mock interviews</li>
+              <li>Focus mode — target weak concepts in timed mocks</li>
+              <li>Mock history analytics — trends and concept breakdown</li>
+              <li>Interview readiness score (per-track 0–100)</li>
+              <li>Personalised study plan</li>
+              <li>SQL company filter — Meta, Google, Stripe, Airbnb</li>
+            </ul>
+            <div className="landing-tier-cta">
+              {eliteColCta() === 'current' && <span className="landing-tier-current">Current plan</span>}
+              {eliteColCta() === 'both' && (
+                <UpgradeButton tier="elite" source="landing_tier" currency={currency} successPath="/?upgraded=true" />
+              )}
+              {(eliteColCta() === 'both' || eliteColCta() === 'lifetime_only') && (
+                <UpgradeButton
+                  tier="lifetime_elite"
+                  label={eliteColCta() === 'lifetime_only' ? `Switch to lifetime — ${p.lifetimeElite}` : `Lifetime access — ${p.lifetimeElite}`}
+                  compact
+                  className="landing-tier-lifetime-btn"
+                  source="landing_tier_lifetime"
+                  successPath="/?upgraded=true"
+                />
+              )}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Section 08: Closer + Footer ─────────────────────────────────────────────
+function CloserSection() {
+  return (
+    <section className="lp-section lp-closer lp-section-rule">
+      <div className="lp-inner lp-closer-inner">
+        <p className="lp-closer-line">
+          Stop recognizing. Start reasoning.
+        </p>
+        <Link className="btn btn-primary" to="/auth">Start thinking →</Link>
+      </div>
+    </section>
+  );
+}
+
+// ── Root export ─────────────────────────────────────────────────────────────
+export default function LandingPage() {
+  const { user, refreshUser } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const userPlan = user?.plan ?? 'free';
+  const normPlan = userPlan.startsWith('lifetime_') ? userPlan.replace('lifetime_', '') : userPlan;
+  const currency = detectCurrency();
+
+  const [dashData, setDashData] = useState(null);
+  const [paths, setPaths] = useState([]);
+  const [displayedPaths, setDisplayedPaths] = useState([]);
+  const [upgradeSuccess, setUpgradeSuccess] = useState(false);
+
+  const [reduced] = useState(() =>
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
+
+  const planPillClass = `shell-pill shell-pill-plan shell-pill-plan-${normPlan}`;
+  const isPaying = normPlan === 'pro' || normPlan === 'elite';
   const rawPlan = user?.plan ?? 'free';
-  const normalisedPlan = rawPlan.startsWith('lifetime_') ? rawPlan.replace('lifetime_', '') : rawPlan;
-  const isPaying = normalisedPlan === 'pro' || normalisedPlan === 'elite';
-  const planPillClass = `shell-pill shell-pill-plan shell-pill-plan-${normalisedPlan}`;
   const planLabel =
     rawPlan === 'lifetime_elite' ? 'Lifetime Elite' :
     rawPlan === 'lifetime_pro'   ? 'Lifetime Pro'   :
-    normalisedPlan === 'elite'   ? 'Elite'           :
-    normalisedPlan === 'pro'     ? 'Pro'             : null;
-  const planPillNode = user && isPaying && planLabel ? (
-    <span className={planPillClass}>{planLabel}</span>
-  ) : null;
-
-  // Post-upgrade banner
-  const [upgradeSuccess, setUpgradeSuccess] = useState(false);
-
-  const [dashData, setDashData] = useState(null);
-  const [activeTab, setActiveTab] = useState(
-    () => localStorage.getItem('landingActiveTab') || 'sql'
-  );
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => (
-    typeof window !== 'undefined'
-    && window.matchMedia
-    && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  ));
-
-  const showcaseRef = useRef(null);
-  const [showcaseActiveIndex, setShowcaseActiveIndex] = useState(0);
-  const [showcaseInView, setShowcaseInView] = useState(false);
-  const [showcasePaused, setShowcasePaused] = useState(false);
-  const [onboardingOpen, setOnboardingOpen] = useState(false);
-
-  const showcaseTabRefs = useRef([]);
-  const showcaseDotRefs = useRef([]);
-
-  const [paths, setPaths] = useState([]);
-  const [displayedPaths, setDisplayedPaths] = useState([]);
-
-  function pickRandom(arr, n) {
-    const shuffled = [...arr].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, n);
-  }
-
-  const shufflePaths = () => setDisplayedPaths(pickRandom(paths, 4));
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return;
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const onChange = (event) => setPrefersReducedMotion(event.matches);
-    if (media.addEventListener) media.addEventListener('change', onChange);
-    else media.addListener(onChange);
-    return () => {
-      if (media.removeEventListener) media.removeEventListener('change', onChange);
-      else media.removeListener(onChange);
-    };
-  }, []);
+    normPlan === 'elite'         ? 'Elite'           :
+    normPlan === 'pro'           ? 'Pro'             : null;
+  const planPillNode = user && isPaying && planLabel
+    ? <span className={planPillClass}>{planLabel}</span>
+    : null;
 
   useEffect(() => {
     if (!location.search.includes('upgraded=true')) return;
@@ -245,676 +734,97 @@ export default function LandingPage() {
 
   useEffect(() => {
     if (user) {
-      api.get('/dashboard').then((res) => setDashData(res.data)).catch(() => {});
-      return;
+      api.get('/dashboard').then(r => setDashData(r.data)).catch(() => {});
+    } else {
+      setDashData(null);
     }
-    setDashData(null);
   }, [user]);
 
   useEffect(() => {
     api.get('/paths').then(r => {
       setPaths(r.data);
-      setDisplayedPaths(pickRandom(r.data, 4));
+      const shuffled = [...r.data].sort(() => Math.random() - 0.5);
+      setDisplayedPaths(shuffled.slice(0, 4));
     }).catch(() => {});
   }, []);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    let timer;
-    try {
-      const seen = localStorage.getItem(LANDING_ONBOARDING_KEY);
-      if (!seen) timer = setTimeout(() => setOnboardingOpen(true), 10000);
-    } catch {
-      timer = setTimeout(() => setOnboardingOpen(true), 10000);
-    }
-    return () => clearTimeout(timer);
-  }, []);
+  const shufflePaths = useCallback(() => {
+    setDisplayedPaths([...paths].sort(() => Math.random() - 0.5).slice(0, 4));
+  }, [paths]);
 
-  // Scroll to a section passed via router state (no hash in URL).
-  // Fires once on mount — used by TierBanner, InsightStrip, etc. so they
-  // can navigate to / and land at a section without leaving a hash in the URL.
-  useEffect(() => {
-    const target = location.state?.scrollTo;
-    if (!target) return;
-    // Clear from browser history state so the back-button doesn't re-trigger.
-    try { window.history.replaceState({ ...window.history.state, usr: null }, ''); } catch {}
-    const scroll = () => {
-      const el = document.getElementById(target);
-      if (!el) return;
-      const top = el.getBoundingClientRect().top + window.scrollY - 88;
-      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
-    };
-    const t1 = setTimeout(scroll, 220);
-    const t2 = setTimeout(scroll, 500);
-    const t3 = setTimeout(scroll, 1200);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Scroll to hash whenever landing is opened with or switched to a hash.
-  useEffect(() => {
-    const hash = location.hash;
-    if (!hash) return;
-    const id = hash.slice(1);
-    // Use getBoundingClientRect + scrollY so the position is always
-    // document-relative regardless of offsetParent. Subtract 88px to clear
-    // the 68px sticky topbar plus a comfortable visual gap.
-    const scroll = () => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      const top = el.getBoundingClientRect().top + window.scrollY - 88;
-      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
-    };
-    // Three retries: after paint (220ms — after the 180ms route animation),
-    // after dynamic content settles (500ms), and a safety net for slow loads (1200ms).
-    const t1 = setTimeout(scroll, 220);
-    const t2 = setTimeout(scroll, 500);
-    const t3 = setTimeout(scroll, 1200);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
-  }, [location.hash]);
-
-  // Auto-rotate the IDE tabs — runs only when section is in view and not paused.
-  useEffect(() => {
-    if (!showcaseInView || showcasePaused || prefersReducedMotion) return;
-    const id = setInterval(() => {
-      setShowcaseActiveIndex((prev) => (prev + 1) % SHOWCASE_CARDS.length);
-    }, SHOWCASE_ROTATE_MS);
-    return () => clearInterval(id);
-  }, [showcaseInView, showcasePaused, prefersReducedMotion]);
-
-  useEffect(() => {
-    const el = showcaseRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) el.classList.add('is-visible');
-        setShowcaseInView(entry.isIntersecting);
-      },
-      { threshold: 0.2 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  const handleShowcaseJump = useCallback((i) => {
-    setShowcaseActiveIndex(i);
-  }, []);
-
-  const handleShowcaseKeyNav = useCallback((event, index, refs) => {
-    const max = SHOWCASE_CARDS.length - 1;
-    let nextIndex = null;
-    if (event.key === 'ArrowRight') nextIndex = index === max ? 0 : index + 1;
-    if (event.key === 'ArrowLeft') nextIndex = index === 0 ? max : index - 1;
-    if (event.key === 'Home') nextIndex = 0;
-    if (event.key === 'End') nextIndex = max;
-    if (nextIndex === null) return;
-    event.preventDefault();
-    setShowcaseActiveIndex(nextIndex);
-    refs.current[nextIndex]?.focus();
-  }, []);
-
-  const closeOnboarding = useCallback(() => {
-    setOnboardingOpen(false);
-    try {
-      localStorage.setItem(LANDING_ONBOARDING_KEY, '1');
-    } catch {}
-  }, []);
-
-  const handleIdeFocusCapture = useCallback(() => setShowcasePaused(true), []);
-  const handleIdeBlurCapture = useCallback((e) => {
-    if (!e.currentTarget.contains(e.relatedTarget)) setShowcasePaused(false);
-  }, []);
-  const handleIdePointerEnter = useCallback(() => setShowcasePaused(true), []);
-  const handleIdePointerLeave = useCallback(() => setShowcasePaused(false), []);
-
-  const activeCard = SHOWCASE_CARDS[showcaseActiveIndex];
-  const activeColor = TRACK_META[activeCard.topic]?.color ?? 'var(--accent)';
-  const activeCodeLineCount = useMemo(
-    () => activeCard.solutionCode.split('\n').length,
-    [activeCard]
-  );
-  const highlightedLines = useMemo(
-    () => highlightCode(activeCard.solutionCode, activeCard.language),
-    [activeCard]
-  );
-
-  const trackTabs = useMemo(
-    () =>
-      TRACK_SLUGS.map((topic) => {
-        const meta = TRACK_META[topic];
-        const trackData = dashData?.tracks?.[topic];
-        const solved = trackData?.solved ?? 0;
-        const total = trackData?.total ?? meta.totalQuestions;
-        const completion = total > 0 ? Math.round((solved / total) * 100) : 0;
-
-        return {
-          id: topic,
-          label: meta.label,
-          description: meta.description,
-          color: meta.color,
-          solved,
-          total,
-          completion,
-          difficulties: TRACK_DIFFICULTIES[topic],
-          samples: SAMPLE_TIERS[topic],
-        };
-      }),
-    [dashData]
-  );
-
-  function handleTabChange(tabId) {
-    localStorage.setItem('landingActiveTab', tabId);
-    startTransition(() => setActiveTab(tabId));
-  }
+  const showPricing = !['lifetime_elite'].includes(userPlan);
 
   return (
     <>
       <Helmet>
         <title>datathink — SQL, Python &amp; Data Interview Practice</title>
-        <meta name="description" content="Practice SQL, Python, Pandas, and PySpark interview questions in a real execution environment. 350+ questions, instant feedback, and curated learning paths for data professionals." />
+        <meta name="description" content="Practice SQL, Python, Pandas, PySpark, and Data Engineering interview questions. 7 tracks, real execution, instant feedback, and curated learning paths for data professionals." />
         <meta property="og:title" content="datathink — SQL, Python &amp; Data Interview Practice" />
-        <meta property="og:description" content="Practice SQL, Python, Pandas, and PySpark interview questions in a real execution environment. 350+ questions, instant feedback, and curated learning paths." />
+        <meta property="og:description" content="7 tracks covering the full data interview curriculum — SQL, Python, Pandas, PySpark, Data Engineering, and more. Real execution, instant feedback." />
         <meta property="og:url" content="https://datathink.co/" />
         <meta property="og:image" content="https://datathink.co/og-image.png" />
         <link rel="canonical" href="https://datathink.co/" />
-        <meta name="twitter:image" content="https://datathink.co/og-image.png" />
-        <script type="application/ld+json">{JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "WebSite",
-          "name": "datathink",
-          "url": "https://datathink.co",
-          "description": "Practice SQL, Python, Pandas, and PySpark interview questions in a real execution environment. 350+ questions, instant feedback, and curated learning paths.",
-          "potentialAction": {
-            "@type": "SearchAction",
-            "target": {
-              "@type": "EntryPoint",
-              "urlTemplate": "https://datathink.co/learn?q={search_term_string}"
-            },
-            "query-input": "required name=search_term_string"
-          }
-        })}</script>
-        <script type="application/ld+json">{JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Organization",
-          "name": "datathink",
-          "url": "https://datathink.co",
-          "logo": "https://datathink.co/branding/lockup-bar-no-bg.svg"
-        })}</script>
-        <script type="application/ld+json">{JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "SoftwareApplication",
-          "name": "datathink",
-          "applicationCategory": "EducationalApplication",
-          "operatingSystem": "Web",
-          "inLanguage": "en",
-          "url": "https://datathink.co",
-          "offers": {
-            "@type": "Offer",
-            "price": "0",
-            "priceCurrency": "USD",
-            "description": "Free tier with all easy questions across all four tracks — no credit card required"
-          },
-          "provider": { "@type": "Organization", "name": "datathink", "url": "https://datathink.co" }
-        })}</script>
       </Helmet>
+
       <Topbar userExtras={planPillNode} />
 
-      <main className="landing-page" id="landing-top">
+      <main className="lp-page" id="landing-top">
         {upgradeSuccess && (
           <div className="landing-upgrade-banner">
             Upgrade confirmed. Your access has been updated.
           </div>
         )}
-        {user ? (
-          <LoggedInWelcome user={user} dashData={dashData} />
-        ) : (
-          <section className="landing-hero">
-            <div className="landing-hero-inner">
-              <span className="landing-kicker">SQL · Python · PySpark · pandas</span>
-              <h1 className="landing-title">Train your data thinking.</h1>
-              <p className="landing-copy">
-                Your SQL runs on a real DuckDB engine against committed datasets. Your Python executes in a live sandbox. Four tracks — including PySpark MCQs that no one else covers at this depth — structured so you build reasoning patterns by earning answers, not being handed them.
-              </p>
-              <div className="landing-actions">
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={() => {
-                    const el = document.getElementById('landing-tracks');
-                    if (!el) return;
-                    const top = el.getBoundingClientRect().top + window.scrollY - 88;
-                    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
-                  }}
-                >Explore tracks ↓</button>
-                <Link className="btn btn-secondary" to="/auth">Start thinking →</Link>
-              </div>
-            </div>
-          </section>
-        )}
 
+        {/* 01 HERO */}
+        <HeroSection user={user} dashData={dashData} reduced={reduced} />
+
+        {/* 02 + 03: THESIS + WRONG/RIGHT — logged-out only */}
         {!user && (
           <>
-            <div className="landing-proof-row" aria-label="Platform stats">
-              <span className="landing-proof-stat"><strong>{TOTAL_QUESTIONS}</strong> questions</span>
-              <span className="landing-proof-sep" aria-hidden="true" />
-              <span className="landing-proof-stat"><strong>{TRACK_SLUGS.length}</strong> tracks</span>
-              <span className="landing-proof-sep" aria-hidden="true" />
-              <span className="landing-proof-stat"><strong>11</strong> real-world datasets</span>
-              <span className="landing-proof-sep" aria-hidden="true" />
-              <span className="landing-proof-stat">guided hints on every question</span>
-            </div>
-
-            <section className="landing-showcase">
-              <div className="landing-showcase-inner" ref={showcaseRef}>
-                <div className="landing-showcase-header">
-                  <h2 className="landing-showcase-title">Know what you&rsquo;re walking into.</h2>
-                  <p className="landing-showcase-subtitle">
-                    Real questions across all four tracks, from warm-up to stretch difficulty &mdash; so you know exactly what you&rsquo;re walking into.
-                  </p>
-                </div>
-
-            <div
-              className="landing-ide"
-              style={{ '--active-color': activeColor }}
-              onMouseEnter={handleIdePointerEnter}
-              onMouseLeave={handleIdePointerLeave}
-              onFocusCapture={handleIdeFocusCapture}
-              onBlurCapture={handleIdeBlurCapture}
-            >
-              <div className="landing-ide-chrome">
-                <span className="ide-traffic" aria-hidden="true">
-                  <i /><i /><i />
-                </span>
-                <div className="ide-tabs" role="tablist" aria-label="Track preview">
-                  {SHOWCASE_CARDS.map((card, i) => {
-                    const isActive = i === showcaseActiveIndex;
-                    const tabColor = TRACK_META[card.topic]?.color ?? 'var(--accent)';
-                    return (
-                      <button
-                        key={card.topic}
-                        type="button"
-                        role="tab"
-                        aria-selected={isActive}
-                        aria-controls="ide-body"
-                        tabIndex={0}
-                        className={`ide-tab${isActive ? ' is-active' : ''}`}
-                        style={{ '--tab-color': tabColor }}
-                        onClick={() => handleShowcaseJump(i)}
-                        onKeyDown={(event) => handleShowcaseKeyNav(event, i, showcaseTabRefs)}
-                        ref={(el) => { showcaseTabRefs.current[i] = el; }}
-                      >
-                        <span className="ide-tab-dot" aria-hidden="true" />
-                        <span className="ide-tab-filename">{card.fileName}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-                <span className={`ide-difficulty-pill ide-difficulty-${activeCard.difficulty}`}>
-                  {activeCard.difficulty}
-                </span>
-              </div>
-
-              <div className="landing-ide-body" id="ide-body" role="tabpanel">
-                <div key={activeCard.topic} className="ide-body-inner">
-                  <div className="ide-brief">
-                    <span className="ide-brief-kicker">Problem</span>
-                    <h3 className="ide-brief-title">{activeCard.title}</h3>
-                    <div className="ide-brief-meta">
-                      <span className="ide-brief-meta-dot" style={{ background: activeColor }} />
-                      <span>{TRACK_META[activeCard.topic]?.label}</span>
-                      <span aria-hidden="true">·</span>
-                      <span>{activeCard.difficulty}</span>
-                    </div>
-                    <p className="ide-brief-para">{activeCard.briefParagraph}</p>
-                    {activeCard.returnsNote && (
-                      <p className="ide-brief-returns">{activeCard.returnsNote}</p>
-                    )}
-                    <div className="ide-brief-concepts">
-                      <span className="ide-brief-concepts-label">Concepts</span>
-                      <span className="ide-brief-concepts-value">
-                        {activeCard.concepts.join(' · ')}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="ide-code-pane" aria-label={`${activeCard.fileName} solution`}>
-                    <div className="ide-code-filename" aria-hidden="true">
-                      <span className="ide-code-filename-dot" style={{ background: activeColor }} />
-                      {activeCard.fileName}
-                    </div>
-                    <pre className="ide-code-block">
-                      <span className="ide-code-gutter" aria-hidden="true">
-                        {Array.from({ length: activeCodeLineCount }, (_, n) => (
-                          <span key={n}>{n + 1}</span>
-                        ))}
-                      </span>
-                      <code className={`ide-code ide-code--${activeCard.language}`}>
-                        {highlightedLines}
-                      </code>
-                    </pre>
-                  </div>
-                </div>
-              </div>
-
-              <div className="landing-ide-statusbar">
-                <div className="ide-statusbar-meta">
-                  <span className="ide-statusbar-lang">{activeCard.language.toUpperCase()}</span>
-                  <span aria-hidden="true" className="ide-statusbar-sep">·</span>
-                  <span className="ide-statusbar-lines">{activeCodeLineCount} lines</span>
-                </div>
-                <div className="ide-statusbar-dots" role="tablist" aria-label="Jump to track">
-                  {SHOWCASE_CARDS.map((card, i) => {
-                    const isActive = i === showcaseActiveIndex;
-                    const dotColor = TRACK_META[card.topic]?.color ?? 'var(--accent)';
-                    return (
-                      <button
-                        key={card.topic}
-                        type="button"
-                        role="tab"
-                        aria-selected={isActive}
-                        aria-label={`Show ${TRACK_META[card.topic]?.label}`}
-                        tabIndex={0}
-                        className={`ide-rotation-dot${isActive ? ' is-active' : ''}`}
-                        style={{ '--dot-color': dotColor }}
-                        onClick={() => handleShowcaseJump(i)}
-                        onKeyDown={(event) => handleShowcaseKeyNav(event, i, showcaseDotRefs)}
-                        ref={(el) => { showcaseDotRefs.current[i] = el; }}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-              </div>
-            </section>
-
-            <section className="landing-companies">
-              <div className="landing-section-inner">
-                <p className="landing-companies-label">Practice questions from top companies:</p>
-                <div className="landing-companies-row">
-                  {['Meta', 'Google', 'Amazon', 'Stripe', 'Airbnb', 'Netflix', 'Uber', 'Microsoft', 'LinkedIn', 'Shopify'].map((company) => (
-                    <span key={company} className="landing-company-chip">
-                      {company}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </section>
-
-
-            <section className="landing-how-section">
-              <div className="landing-section-inner">
-                <div className="landing-how-header">
-                  <h2 className="landing-how-title">Every question is a guided lesson</h2>
-                  <p className="landing-how-sub">You don&rsquo;t just get marked right or wrong — you get a structured path to understanding.</p>
-                </div>
-                <div className="landing-how-grid">
-                  <div className="landing-how-card">
-                    <span className="landing-how-step">01</span>
-                    <h3 className="landing-how-card-title">Write real code, see real output</h3>
-                    <p className="landing-how-card-copy">SQL runs on DuckDB against committed datasets. Python and Pandas execute in a sandboxed environment. You see actual output — not a simulated pass/fail.</p>
-                  </div>
-                  <div className="landing-how-card">
-                    <span className="landing-how-step">02</span>
-                    <h3 className="landing-how-card-title">Hints that build reasoning, not dependency</h3>
-                    <p className="landing-how-card-copy">Every question has two progressive hints. The first surfaces the mental model — how to think about the problem. The second points to the specific technique. You reason your way to the answer.</p>
-                  </div>
-                  <div className="landing-how-card">
-                    <span className="landing-how-step">03</span>
-                    <h3 className="landing-how-card-title">Solutions that teach, not just reveal</h3>
-                    <p className="landing-how-card-copy">Official solutions come with a full explanation of why the approach works. SQL submissions also get query quality analysis — efficiency notes, style feedback, and alternative approaches worth knowing.</p>
-                  </div>
-                </div>
-              </div>
-            </section>
+            <ThesisSection />
+            <WrongRightSection />
           </>
         )}
 
-        <section className="landing-practice-section" id="landing-tracks">
-          <div className="landing-practice-heading">
-            <h2 className="landing-practice-title">The full data interview curriculum</h2>
-            <p className="landing-practice-copy">
-              From SQL fundamentals to distributed Spark systems — four tracks built around reasoning patterns, not question volume.
-            </p>
-          </div>
+        {/* 04 ROLE SELECTOR */}
+        <RoleSelectorSection dashData={dashData} />
 
-          <div className="landing-quality-callout">
-            <div className="landing-quality-left">
-              <span className="landing-quality-eyebrow">Every question earns its place</span>
-              <p className="landing-quality-headline">Not a question bank.<br />A thinking curriculum.</p>
-            </div>
-            <div className="landing-quality-right">
-              <p>Every question is placed at a specific difficulty for a reason — to build the next layer of reasoning on top of the last. Questions aren&rsquo;t repeated in different costumes; each one targets a distinct pattern you&rsquo;ll actually face in an interview.</p>
-              <p>Progressive hints develop <em>how</em> you think, not just what you answer. Tracked difficulty tiers take you from beginner to confidently interview-ready, concept by concept. Ninety-five well-placed SQL questions build more than nine hundred and fifty random ones ever could.</p>
-            </div>
-          </div>
+        {/* 05 PROOF STRIP */}
+        <ProofStripSection />
 
-          <div className="track-cards-grid">
-            {trackTabs.map((tab) => {
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  className={`track-card${isActive ? ' is-active' : ''}`}
-                  style={{ '--track-color': tab.color }}
-                  onClick={() => handleTabChange(tab.id)}
-                  aria-pressed={isActive}
-                  aria-label={`Select ${tab.label} track`}
-                >
-                  <div className="track-card-header">
-                    <span className="track-card-dot" />
-                    <span className="track-card-name">{tab.label}</span>
-                    <span className="track-card-count">{tab.total} Q</span>
-                  </div>
-                  <p className="track-card-desc">{tab.description}</p>
-                  <div className="track-card-difficulties">
-                    <span className="track-diff-chip track-diff-chip--easy">{tab.difficulties.easy} easy</span>
-                    <span className="track-diff-chip track-diff-chip--medium">{tab.difficulties.medium} medium</span>
-                    <span className="track-diff-chip track-diff-chip--hard">{tab.difficulties.hard} hard</span>
-                  </div>
-                  {user && (
-                    <div className="track-card-progress">
-                      <TrackProgressBar solved={tab.solved} total={tab.total} color={tab.color} showLabel={false} />
-                      <span className="track-card-progress-label">
-                        {tab.solved > 0 ? `${tab.solved} of ${tab.total} solved` : `Not started`}
-                      </span>
-                    </div>
-                  )}
-                  <div className="track-card-footer">
-                    <span className="track-card-cta">
-                      {tab.solved > 0 ? 'Continue' : 'Start track'} →
-                    </span>
-                    {isActive && <span className="track-card-active-label">▼ samples below</span>}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+        {/* 06 TRACKS INDEX */}
+        <TracksIndexSection />
 
-          {trackTabs.map((tab) => {
-            if (activeTab !== tab.id) return null;
-            const hasStarted = tab.solved > 0;
-            return (
-              <div key={tab.id} className="track-samples-strip" style={{ '--track-color': tab.color }}>
-                <div className="track-samples-header">
-                  <div className="track-samples-header-text">
-                    <h3 className="track-samples-title">
-                      <span className="track-samples-dot" />
-                      Sample questions — {tab.label}
-                    </h3>
-                    <p className="track-samples-desc">
-                      3 questions per difficulty — solves aren't recorded here. Open the full track to track your progress and unlock harder questions.
-                    </p>
-                  </div>
-                  <div className="track-samples-actions">
-                    <Link
-                      className="btn btn-primary"
-                      to={`/practice/${tab.id}`}
-                      style={{ background: tab.color, borderColor: tab.color }}
-                    >
-                      {hasStarted ? 'Continue track' : 'Open full track'} →
-                    </Link>
-                    {!user && (
-                      <Link className="btn btn-secondary" to="/auth">Create account</Link>
-                    )}
-                  </div>
-                </div>
-                <div className="landing-samples-grid">
-                  {tab.samples.map(({ difficulty, title, copy }) => (
-                    <Link
-                      key={difficulty}
-                      className="sample-tile"
-                      to={`/sample/${tab.id}/${difficulty}`}
-                      style={{ '--tile-color': tab.color }}
-                    >
-                      <span className={`badge badge-${difficulty}`}>{difficulty}</span>
-                      <strong className="sample-tile-title">{title}</strong>
-                      <p>{copy}</p>
-                      <span className="sample-tile-footer">Start sample →</span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </section>
-
+        {/* Paths — shown for everyone */}
         {displayedPaths.length > 0 && (
-          <section className="landing-paths">
-            <div className="landing-section-inner">
-              <div className="landing-paths-header">
-                <div>
-                  <h2 className="landing-paths-title">Guided learning paths</h2>
-                  <p className="landing-paths-sub">Not random drilling — curated progressions that build real interview reasoning, track by track.</p>
+          <section className="lp-section lp-section-rule lp-paths">
+            <div className="lp-inner">
+              <Reveal>
+                <div className="lp-paths-header">
+                  <div>
+                    <p className="lp-section-index">+&ensp;LEARNING PATHS</p>
+                    <h2 className="lp-section-h2">Guided progressions.</h2>
+                    <p className="lp-section-sub">Curated question sequences that build real interview reasoning, track by track.</p>
+                  </div>
+                  <button className="landing-paths-shuffle" onClick={shufflePaths} aria-label="Shuffle learning paths">
+                    ⇄ Shuffle
+                  </button>
                 </div>
-                <button className="landing-paths-shuffle" onClick={shufflePaths} title="Shuffle paths" aria-label="Shuffle learning paths">
-                  ⇄ Shuffle
-                </button>
-              </div>
+              </Reveal>
               <div className="landing-paths-grid">
-                {displayedPaths.map(p => (
-                  <PathProgressCard key={p.slug} path={p} />
-                ))}
+                {displayedPaths.map(p => <PathProgressCard key={p.slug} path={p} />)}
               </div>
             </div>
           </section>
         )}
 
-        {/* Tier comparison — hidden for all paying users */}
-        {['free', null, undefined].includes(userPlan) && (
-        <section id="landing-pricing" className="landing-tier-section">
-          <div className="landing-tier-inner">
-            <h2 className="landing-tier-title">Straightforward pricing</h2>
-            <div className="landing-tier-grid">
-
-              {/* ── Free ── */}
-              <div className="landing-tier-col">
-                <div className="landing-tier-col-header">
-                  <span className="landing-tier-name">Free</span>
-                  <div className="landing-tier-price">
-                    <span className="landing-tier-price-amount">Free</span>
-                  </div>
-                </div>
-                <ul className="landing-tier-list">
-                  <li>All easy questions ({FREE_EASY_SUMMARY})</li>
-                  <li>Medium + hard unlock as you solve (hard cap: 8 per track)</li>
-                  <li>2-step progressive hints on every question — mental model first, technique second</li>
-                  <li>Official solutions with full explanation after exhausting hints</li>
-                  <li>SQL query quality analysis on correct answers — efficiency, style, and alternatives</li>
-                  <li>Easy mock interviews (unlimited) · 1 medium mock/day</li>
-                  <li>Streak tracking</li>
-                </ul>
-                <div className="landing-tier-cta">
-                  {userPlan === 'free' && (
-                    <span className="landing-tier-current">Current plan</span>
-                  )}
-                </div>
-              </div>
-
-              {/* ── Pro ── */}
-              <div className="landing-tier-col landing-tier-col--featured">
-                <div className="landing-tier-col-header">
-                  <div className="landing-tier-name-row">
-                    <span className="landing-tier-name">Pro</span>
-                    <span className="landing-tier-badge">Most popular</span>
-                  </div>
-                  <div className="landing-tier-price">
-                    <span className="landing-tier-price-amount">{p.pro}</span>
-                    <span className="landing-tier-price-period">{p.period}</span>
-                  </div>
-                </div>
-                <ul className="landing-tier-list">
-                  <li>Everything in Free — no hard cap</li>
-                  <li>All {TOTAL_QUESTIONS} questions, every medium + hard</li>
-                  <li>Unlimited medium mocks · 3 hard mocks/day</li>
-                  <li>Fresh mock question bank — questions you haven&rsquo;t seen in practice</li>
-                  <li>Post-mock debrief — per-question solutions and concept breakdown</li>
-                  <li>Weakest concept analysis + drill recommendations on the dashboard</li>
-                  <li>All 22 learning paths</li>
-                </ul>
-                <div className="landing-tier-cta">
-                  {proColCta() === 'current' && (
-                    <span className="landing-tier-current">Current plan</span>
-                  )}
-                  {proColCta() === 'both' && (
-                    <UpgradeButton tier="pro" source="landing_tier" currency={currency} successPath="/?upgraded=true" />
-                  )}
-                  {(proColCta() === 'both' || proColCta() === 'lifetime_only') && (
-                    <UpgradeButton
-                      tier="lifetime_pro"
-                      label={proColCta() === 'lifetime_only' ? `Switch to lifetime — ${p.lifetimePro}` : `Lifetime access — ${p.lifetimePro}`}
-                      compact
-                      className="landing-tier-lifetime-btn"
-                      source="landing_tier_lifetime"
-                      successPath="/?upgraded=true"
-                    />
-                  )}
-                </div>
-              </div>
-
-              {/* ── Elite ── */}
-              <div className="landing-tier-col">
-                <div className="landing-tier-col-header">
-                  <span className="landing-tier-name">Elite</span>
-                  <div className="landing-tier-price">
-                    <span className="landing-tier-price-amount">{p.elite}</span>
-                    <span className="landing-tier-price-period">{p.period}</span>
-                  </div>
-                </div>
-                <ul className="landing-tier-list">
-                  <li>Everything in Pro</li>
-                  <li>Unlimited hard mock interviews — no daily cap</li>
-                  <li>Focus mode — target weak concepts directly in a timed mock</li>
-                  <li>Mock history analytics — trends, concept breakdown, score trajectory</li>
-                  <li>Interview readiness score — per-track 0–100 signal</li>
-                  <li>Personalised study plan — prioritised next steps based on your gaps</li>
-                  <li>Post-mock coaching debrief with priority action</li>
-                  <li>Top-3 weak areas panel with path recommendations</li>
-                </ul>
-                <div className="landing-tier-cta">
-                  {eliteColCta() === 'current' && (
-                    <span className="landing-tier-current">Current plan</span>
-                  )}
-                  {eliteColCta() === 'both' && (
-                    <UpgradeButton tier="elite" source="landing_tier" currency={currency} successPath="/?upgraded=true" />
-                  )}
-                  {(eliteColCta() === 'both' || eliteColCta() === 'lifetime_only') && (
-                    <UpgradeButton
-                      tier="lifetime_elite"
-                      label={eliteColCta() === 'lifetime_only' ? `Switch to lifetime — ${p.lifetimeElite}` : `Lifetime access — ${p.lifetimeElite}`}
-                      compact
-                      className="landing-tier-lifetime-btn"
-                      source="landing_tier_lifetime"
-                      successPath="/?upgraded=true"
-                    />
-                  )}
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </section>
+        {/* 07 PRICING */}
+        {showPricing && (
+          <PricingSection userPlan={normPlan} currency={currency} />
         )}
+
+        {/* 08 CLOSER (logged-out only) */}
+        {!user && <CloserSection />}
 
         <footer className="landing-footer">
           <div className="landing-footer-inner">
@@ -928,43 +838,6 @@ export default function LandingPage() {
             </nav>
           </div>
         </footer>
-
-        <OnboardingTooltip
-          isOpen={onboardingOpen}
-          onClose={closeOnboarding}
-          steps={[
-            {
-              targetSelector: '.track-cards-grid',
-              title: 'Pick your track',
-              body: 'SQL, Python, Pandas, or PySpark — each has its own question bank with easy, medium, and hard tiers. Start with whichever matches your next interview.',
-            },
-            {
-              targetSelector: '.track-samples-strip',
-              title: 'Warm up with sample questions',
-              body: 'Every track has 3 sample questions per difficulty — a quick way to explore the format. Solves aren\'t recorded here; open the full track when you\'re ready to track your progress.',
-            },
-            {
-              targetSelector: '.track-samples-actions .btn-primary',
-              title: 'Then open the full track',
-              body: 'The full track has hundreds of questions with progress tracking and unlock progression — the more you solve, the more you unlock.',
-            },
-            {
-              targetSelector: '.landing-paths',
-              title: 'Follow a learning path',
-              body: 'Paths are curated question sequences that build skill progressively. Completing a starter path also fast-tracks your unlock progress.',
-            },
-            {
-              targetSelector: 'a[href="/mock"]',
-              title: 'Simulate a real interview',
-              body: 'When you\'re ready to test yourself under pressure, try a mock interview — a timed set of questions with a full debrief at the end. Find it in the top nav.',
-            },
-            {
-              targetSelector: '#landing-pricing',
-              title: 'Free to start, easy to upgrade',
-              body: 'The free plan gives you more than just easy questions — medium and hard questions unlock as you progress, no card required. Check the pricing section below for the full breakdown of what\'s included across Free, Pro, and Elite.',
-            },
-          ]}
-        />
       </main>
     </>
   );

@@ -11,7 +11,7 @@ React 18 + React Router + Vite. Monaco editor. Axios API client. Single global s
 Defined in `frontend/src/App.js`:
 
 ```
-/                                → LandingPage (hero + showcase + track tabs)
+/                                → LandingPage (editorial landing — hero IDE, role selector, 7-track index)
 /auth                            → AuthPage (register / sign in / forgot password / OAuth)
 /auth/reset-password             → ResetPasswordPage (consume reset token, set new password)
 /dashboard                       → ProgressDashboard (cross-track progress)
@@ -32,6 +32,8 @@ Defined in `frontend/src/App.js`:
 
 `:topic` values: `sql` | `python` | `python-data` | `pyspark` | `data-engineering`
 
+Active tracks (`TRACK_SLUGS`): the 5 live tracks above. `ALL_TRACK_SLUGS` adds `data-modeling` and `statistics` (both `comingSoon: true`) for the landing page index and role selector.
+
 App-level route changes now animate with a short fade-in wrapper (`.route-transition`) around the route tree.
 
 ---
@@ -40,20 +42,26 @@ App-level route changes now animate with a short fade-in wrapper (`.route-transi
 
 ### LandingPage (`/`)
 
-Four stacked sections on a single scroll:
+Editorial 8-section layout (Phase E redesign). All sections use the `lp-*` CSS namespace; sections animate in on scroll via `IntersectionObserver` / `.lp-reveal` (no-op for `prefers-reduced-motion`). Max-width 1040px inner wrapper (`lp-inner`) on all sections.
 
-1. **Hero / Welcome** — logged-out: centered headline, tagline, CTAs ("Explore tracks ↓" and "Create account"). Logged-in: `LoggedInWelcome` component with Resume, Dashboard, and Mock cards.
-2. **Proof + showcase + companies** — `.landing-proof-row`, `.landing-showcase`, and `.landing-companies` are rendered only for logged-out visitors. The showcase is the same Interview IDE module (always-dark editor) and now respects `prefers-reduced-motion` at initial render plus media-query changes.
-3. **Track selection** (`.landing-practice-section`, `id="landing-tracks"`) — pill nav selects a track; panel shows description, progress bar, CTA, and easy/medium/hard sample tiles. Mobile sample tiles use horizontal scroll.
-4. **Pricing** (`id="landing-pricing"`) — three-column tier table with hard question counts derived from `TOTAL_EASY` / `TOTAL_QUESTIONS` constants. Free: 129 easy questions. Pro: all 350 questions + 3 mocks/day. Elite: everything + company filter + unlimited mocks. Hidden for `lifetime_elite` users.
+**Sections:**
 
-First-visit onboarding walkthrough now appears as a two-step tooltip flow (with a visible Skip control): step 1 highlights track selection, step 2 highlights free sample tiles. Completion/skip is persisted in `localStorage` (`landingOnboardingSeen-v1`).
+1. **Hero** — Logged-out: 2-col grid with eyebrow, large headline, copy, CTAs ("Start thinking →" / "Find your track ↓"), and `HeroIDE` component (character-by-character SQL typing animation, result rows stream in ~55ms/row). Logged-in: 3-card strip (Resume / Dashboard / Mock) using `.lp-li-card`.
+2. **Thesis** — 3-column editorial with mono index numbers: "Recognition ≠ reasoning" · "Depth, not breadth" · "Real engines".
+3. **Wrong / Right** — 2-col diff table; right column rows stagger in on intersection.
+4. **Role Selector** — `role="tablist"` with 4 tabs (Data Analyst · Data Engineer · Analytics Engineer · Data Scientist). Each panel shows an ordered list of relevant tracks as cards (left 3px border in track color via inline style). Coming-soon tracks display a `lp-badge-soon` badge and no CTA link. Arrow-key keyboard navigation.
+5. **Proof Strip** — Stat row: N tracks · N+ questions. Question count uses `useCountUp(target, 900, inView)` rAF animation on scroll.
+6. **Tracks Index** — Dense list of all 7 tracks from `ALL_TRACK_SLUGS` (5 live + `data-modeling` + `statistics`). Per-row: color dot, name, description, question count, format tagline, "Enter →" link or "Soon" chip. `.lp-track-enter` link colored with track's CSS color.
+7. **Guided Progressions** — Fetches `/api/paths`; renders `PathProgressCard` per path (same component used in TrackHub).
+8. **Pricing** — Free / Pro / Elite columns with monthly + lifetime CTAs. Hidden only for `lifetime_elite` users (pro users see it to discover Elite). Reuses existing `landing-tier-*` CSS classes.
 
-`TRACK_DIFFICULTIES` mirrors the real per-track/difficulty question counts (32/34/29 SQL, 30/29/24 Python, 29/30/23 Pandas, 38/30/22 PySpark). `TOTAL_EASY` and `TOTAL_QUESTIONS` are derived totals used in pricing copy.
-
-Landing consistency updates: unified landing widths (720 / 1040), `.landing-tier-inner` deduplicated, all landing border tokens normalized to `var(--border-subtle)`, company chips rendered as non-interactive spans, and active landing tab persistence stored in `localStorage` (`landingActiveTab`). The practice-track section now uses neutral card surfaces with per-track gradient hover/active highlights on the four track tiles (no left accent rail), plus fully opaque accent rails on sample strips and sample tiles, and opaque surface-mixed difficulty chips instead of tinted card fills.
-
-On mount, checks `window.location.hash` and scrolls to the matching element (used by the sample page back arrow → `/#landing-tracks`).
+**Key internals:**
+- `useInView(ref, margin)` — thin IntersectionObserver hook returning boolean
+- `useCountUp(target, duration, trigger)` — rAF count-up with ease-out-cubic curve
+- `HeroIDE({ reduced })` — state machine: `typing → running → streaming → done`; respects `prefers-reduced-motion`
+- `Reveal({ children, delay, className })` — wrapper adding `lp-reveal` + `is-visible` on intersection
+- `ROLES` config defines the 4 role tab entries with ordered `tracks[]` slugs and role tagline
+- `trackRegistry.js`: `TRACK_SLUGS` (5 active, for routing/catalog/mock) and `ALL_TRACK_SLUGS` (7, for landing only)
 
 ### AuthPage (`/auth`)
 
