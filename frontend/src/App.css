@@ -1578,12 +1578,17 @@ select {
   height: 32px;
   width: auto;
 }
-/* Combined lockup image sizing when served from public/branding */
-.brand-lockup-img,
-.brand-lockup img {
+/* Mark-only icon (two diagonal squares) */
+.brand-mark-img {
   display: block;
-  height: 22px;
+  height: 16px;
   width: auto;
+  flex-shrink: 0;
+}
+/* Wordmark text alongside the mark */
+.brand-wordmark-text {
+  font-size: 0.92rem;
+  line-height: 1;
 }
 
 .landing-brand {
