@@ -356,8 +356,31 @@ export default function AppShell() {
   );
 }
 
+// MCQ tracks use different thresholds than code tracks
+const _MCQ_TOPICS = new Set(['pyspark', 'data-engineering']);
+
+function _unlockRules(topic) {
+  if (_MCQ_TOPICS.has(topic)) {
+    return [
+      { easy: 10, unlocks: '3 medium' },
+      { easy: 17, unlocks: '8 medium' },
+      { easy: 25, unlocks: 'all medium' },
+      { medium: 12, unlocks: '5 hard (cap)' },
+    ];
+  }
+  return [
+    { easy: 8,  unlocks: '3 medium' },
+    { easy: 15, unlocks: '8 medium' },
+    { easy: 25, unlocks: 'all medium' },
+    { medium: 8,  unlocks: '3 hard' },
+    { medium: 15, unlocks: '8 hard' },
+    { medium: 22, unlocks: 'all hard (cap: 8)' },
+  ];
+}
+
 // ── Path sidebar panel ────────────────────────────────────────────────────────
 function PathSidebar({ pathData, pathSlug, topic, meta, currentId, onNavigate, plan }) {
+  const [hintOpen, setHintOpen] = useState(false);
   if (!pathData) {
     return (
       <div className="path-sidebar-loading">
@@ -415,10 +438,39 @@ function PathSidebar({ pathData, pathSlug, topic, meta, currentId, onNavigate, p
         })}
       </nav>
 
-      {/* Unlock hint — free users only */}
-      {pathData.unlock_hint && plan === 'free' && (
+      {/* Unlock hint — free users only, shown when any question is locked */}
+      {plan === 'free' && questions.some(q => q.state === 'locked') && (
         <div className="path-sidebar-hint">
-          <p className="path-sidebar-hint-text">{pathData.unlock_hint}</p>
+          <div className="path-sidebar-hint-row">
+            <p className="path-sidebar-hint-text">Some questions are locked — free tier.</p>
+            <div className="path-sidebar-hint-help-wrap">
+              <button
+                className="path-sidebar-hint-help"
+                aria-label="How unlocking works"
+                aria-expanded={hintOpen}
+                onClick={() => setHintOpen(o => !o)}
+              >?</button>
+              {hintOpen && (
+                <div className="path-sidebar-hint-popover" role="tooltip">
+                  <p className="path-sidebar-hint-popover-title">How questions unlock</p>
+                  <p className="path-sidebar-hint-popover-sub">Solves in this track count globally — not just within this path.</p>
+                  <table className="path-sidebar-hint-table">
+                    <tbody>
+                      {_unlockRules(topic).map((r, i) => (
+                        <tr key={i}>
+                          <td>{r.easy != null ? `${r.easy} easy solved` : `${r.medium} medium solved`}</td>
+                          <td>→ {r.unlocks}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {pathData.unlock_hint && (
+                    <p className="path-sidebar-hint-popover-next">Your next step: {pathData.unlock_hint.replace(/\.$/, '')}</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
           <div className="path-sidebar-hint-actions">
             <Link to="/?scroll=pricing" className="path-sidebar-hint-link path-sidebar-hint-link--pro">Unlock Pro ↗</Link>
             <Link to="/?scroll=pricing" className="path-sidebar-hint-link path-sidebar-hint-link--elite">Unlock Elite ↗</Link>

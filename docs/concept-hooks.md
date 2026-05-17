@@ -140,6 +140,13 @@ Goal: full concept coverage, not tricky framing.
 87. JSON column extraction (`->`, `->>`, `JSON_VALUE`, `JSON_QUERY`) — querying semi-structured data
 88. `UNNEST` / `FLATTEN` — going from array column to rows and back
 
+### Missing Topics To Add
+
+- Ordered-set percentile / median functions — when to use `PERCENTILE_CONT`, `PERCENTILE_DISC`, or warehouse-specific median helpers instead of hand-rolled ranking.
+- As-of joins — point-in-time matching between facts and the most recent prior dimension or event row.
+- Approximate distinct counting — when `APPROX_COUNT_DISTINCT` / HyperLogLog-style estimates are the right tradeoff.
+- Reconciliation and data-quality query patterns — row-count checks, anti-joins, mismatch audits, and source-vs-target validation queries.
+
 ---
 
 ## PySpark
@@ -240,6 +247,15 @@ Goal: full concept coverage, not tricky framing.
 59. `explain()` — what does the physical plan tell you that the logical plan doesn't?
 60. Speculative execution — what is it, when does Spark use it, and when does it backfire?
 
+### Missing Topics To Add
+
+- `checkpoint()` vs `cache()` — lineage truncation, fault recovery, and when cache is insufficient.
+- Storage levels in `persist()` — `MEMORY_ONLY`, `MEMORY_AND_DISK`, serialized variants, and the tradeoffs of each.
+- Spark UI diagnosis — reading stages, tasks, shuffle read/write, skew, spill, and GC symptoms.
+- Task failure vs executor failure vs driver failure — how Spark retries, recovers, or aborts.
+- Stateful streaming operations — state stores, `mapGroupsWithState`, watermark interaction, and memory growth risks.
+- Nested schema evolution — adding/removing nested fields in structs and arrays without breaking downstream jobs.
+
 ---
 
 ## Pandas
@@ -339,6 +355,14 @@ Goal: full concept coverage, not tricky framing.
 61. `duplicated(keep='first')` vs `keep='last'` vs `keep=False` — what rows are flagged?
 62. `df.eval()` — when is it faster than direct column arithmetic?
 
+### Missing Topics To Add
+
+- Merge cardinality validation — `validate='one_to_one'`, `one_to_many`, and catching accidental fan-out early.
+- `merge_asof()` in more depth — nearest-key joins for event streams and slowly changing reference data.
+- `explode()` workflows — unnesting list-like columns and rebuilding aggregates safely afterward.
+- Chained assignment and `SettingWithCopyWarning` — diagnosing when writes silently hit a copy instead of the source frame.
+- MultiIndex construction and alignment semantics — building hierarchical indexes intentionally and understanding index alignment in arithmetic and joins.
+
 ---
 
 ## Python (Data Interview)
@@ -435,6 +459,16 @@ Goal: full concept coverage, not tricky framing.
 58. `datetime.strptime()` vs `datetime.fromisoformat()` — format flexibility tradeoffs
 59. Aggregating without pandas: group-by with `defaultdict`, sum, mean, count
 60. Detecting and handling duplicates in a list of dicts — which key uniquely identifies a record?
+
+### Missing Topics To Add
+
+- Heaps and priority queues — when `heapq` is the right structure for top-k, streaming median, and scheduler-style problems.
+- BFS / DFS on graphs and grids — traversal patterns, visited-state handling, and shortest-path-vs-reachability distinctions.
+- Union-Find / Disjoint Set Union — connectivity, component counting, and cycle detection with path compression.
+- Trie / prefix tree — prefix lookup, autocomplete-style search, and word-search pruning.
+- Topological sort — dependency ordering in DAGs and cycle detection.
+- Shortest path algorithms — especially Dijkstra for weighted graphs.
+- Monotonic stack and monotonic queue — next-greater, histogram, and sliding-window-maximum patterns.
 
 ---
 
@@ -535,6 +569,14 @@ Goal: full concept coverage, not tricky framing.
 61. Query cost in BigQuery / Snowflake — what drives bytes scanned, and how do partitions and clustering help?
 62. Incremental model vs full refresh — when does incrementality introduce correctness risk?
 
+### Missing Topics To Add
+
+- Backpressure and flow control — what happens when downstream consumers cannot keep up with incoming volume.
+- Privacy and compliance architecture — PII handling, deletion workflows, access boundaries, and auditability.
+- Data contract operationalization — ownership, enforcement, versioning, and rollout mechanics beyond the contract definition itself.
+- Warehouse cost modeling — how storage, compute, scan volume, and query shape drive spend.
+- Incident containment patterns — limiting blast radius, isolating bad data, and staged recovery during active failures.
+
 ---
 
 ## Data Modeling
@@ -618,6 +660,13 @@ Goal: full concept coverage, not tricky framing.
 51. Pre-aggregated summary table vs live rollup — freshness vs cost tradeoff?
 52. Wide table scalability — at what point does a 500-column OBT become a problem?
 53. Materialized view vs dbt incremental model — which the warehouse controls vs which you control?
+
+### Missing Topics To Add
+
+- Bi-temporal modeling — valid time vs system time and when both timelines matter.
+- Semantic-layer governance — centrally defined metrics, dimensions, and access rules above the mart layer.
+- Semi-additive metric design in more depth — balances, inventory, and snapshot measures across time.
+- More hierarchy design variants — ragged, recursive, alternate-rollup, and cross-hierarchy reporting patterns.
 
 ---
 
@@ -730,3 +779,12 @@ Goal: full concept coverage, not tricky framing.
 76. Selection bias in funnel analysis — why the users who reach step 3 are not representative of users at step 1
 77. Survivorship bias in cohort analysis — why "users retained at day 30" look better-behaved than they were
 78. Goodhart's Law — when a measure becomes a target, why does it cease to be a good measure?
+
+### Missing Topics To Add
+
+- Mann-Whitney and permutation tests — non-parametric alternatives when parametric assumptions fail.
+- Kruskal-Wallis and two-way ANOVA — multi-group and multi-factor inference beyond one-way ANOVA.
+- Logistic regression — binary outcomes, log-odds interpretation, and odds ratios.
+- Diagnostic plots and assumption checks — QQ plots, residual plots, normality tests, and heteroscedasticity checks.
+- Missing-data mechanisms — MCAR, MAR, MNAR, and how each changes analysis strategy.
+- Causal DAGs — confounding, colliders, and adjustment logic for causal reasoning.

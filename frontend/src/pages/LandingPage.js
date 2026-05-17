@@ -46,7 +46,7 @@ const IDE_TRACKS = [
     color: '#5B6AF0',
     fname: 'dept_ranking.sql',
     badge: 'SQL · DuckDB',
-    code: `WITH ranked AS (\n  SELECT\n    name, dept, salary,\n    RANK() OVER (\n      PARTITION BY dept\n      ORDER BY salary DESC\n    ) AS rnk\n  FROM employees\n)\nSELECT name, dept, salary\nFROM ranked\nWHERE rnk = 1;`,
+    code: `WITH ranked AS (\n  SELECT name, dept, salary,\n    RANK() OVER (\n      PARTITION BY dept ORDER BY salary DESC\n    ) AS rnk\n  FROM employees\n)\nSELECT name, dept, salary\nFROM ranked WHERE rnk = 1;`,
     type: 'table',
     cols: ['name', 'dept', 'salary'],
     rows: [
@@ -171,19 +171,23 @@ function useCountUp(target, duration, trigger) {
 
 // ── Hero IDE typing animation ────────────────────────────────────────────────
 function HeroIDE({ reduced }) {
-  const [activeSlug, setActiveSlug] = useState('sql');
-  const sqlAnimDoneRef = useRef(reduced);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [visible, setVisible]     = useState(true);
+  const sqlAnimDoneRef  = useRef(reduced);
+  const pauseUntilRef   = useRef(0);
+  const timerRef        = useRef(null);
 
   const sqlTrack = IDE_TRACKS[0];
   const SQL_TOTAL = sqlTrack.code.length;
+  const isSQL = activeIdx === 0;
 
-  // SQL animation state (only used when activeSlug === 'sql' and not yet done)
-  const [typedLen, setTypedLen]     = useState(reduced ? SQL_TOTAL : 0);
-  const [phase, setPhase]           = useState(reduced ? 'done' : 'typing');
+  // SQL animation state
+  const [typedLen, setTypedLen]       = useState(reduced ? SQL_TOTAL : 0);
+  const [phase, setPhase]             = useState(reduced ? 'done' : 'typing');
   const [visibleRows, setVisibleRows] = useState(reduced ? sqlTrack.rows.length : 0);
-  const [flashIdx, setFlashIdx]     = useState(null);
+  const [flashIdx, setFlashIdx]       = useState(null);
 
-  const animActive = activeSlug === 'sql' && !sqlAnimDoneRef.current;
+  const animActive = isSQL && !sqlAnimDoneRef.current;
 
   useEffect(() => {
     if (!animActive || phase !== 'typing') return;
@@ -214,37 +218,57 @@ function HeroIDE({ reduced }) {
     return () => clearTimeout(t);
   }, [animActive, phase, visibleRows, sqlTrack.rows.length]);
 
-  const activeTrack = IDE_TRACKS.find(t => t.slug === activeSlug);
-  const isSQL = activeSlug === 'sql';
+  // Auto-advance after SQL animation finishes (or immediately when reduced)
+  useEffect(() => {
+    const isReady = phase === 'done' || reduced;
+    if (!isReady) return;
+    const initialDelay = setTimeout(() => {
+      timerRef.current = setInterval(() => {
+        if (Date.now() < pauseUntilRef.current) return;
+        setVisible(false);
+        setTimeout(() => {
+          setActiveIdx(i => (i + 1) % IDE_TRACKS.length);
+          setVisible(true);
+        }, 280);
+      }, 3500);
+    }, 2200);
+    return () => {
+      clearTimeout(initialDelay);
+      clearInterval(timerRef.current);
+    };
+  }, [phase, reduced]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const activeTrack = IDE_TRACKS[activeIdx];
   const showRunning = isSQL && phase === 'running';
 
-  return (
-    <div className="lp-ide" aria-label="Live query execution preview" aria-hidden="true">
-      {/* Track tab pills */}
-      <div className="lp-ide-tabs">
-        {IDE_TRACKS.map(t => (
-          <button
-            key={t.slug}
-            className={`lp-ide-tab${activeSlug === t.slug ? ' lp-ide-tab--active' : ''}`}
-            style={{ '--tab-color': t.color }}
-            onClick={() => setActiveSlug(t.slug)}
-          >
-            <span className="lp-ide-tab-dot" />
-            {t.label}
-          </button>
-        ))}
-      </div>
+  const handleDotClick = (idx) => {
+    pauseUntilRef.current = Date.now() + 6000;
+    setVisible(false);
+    setTimeout(() => { setActiveIdx(idx); setVisible(true); }, 280);
+  };
 
+  return (
+    <div
+      className="lp-ide"
+      aria-label="Live query execution preview"
+      aria-hidden="true"
+      onMouseEnter={() => { pauseUntilRef.current = Infinity; }}
+      onMouseLeave={() => { pauseUntilRef.current = 0; }}
+    >
       {/* Chrome bar */}
       <div className="lp-ide-chrome">
         <span className="lp-ide-dots"><i /><i /><i /></span>
         <span className="lp-ide-fname">{activeTrack.fname}</span>
-        <span className="lp-ide-badge">{activeTrack.badge}</span>
+        <span
+          className="lp-ide-badge"
+          style={{ background: `${activeTrack.color}33`, color: activeTrack.color }}
+        >
+          {activeTrack.badge}
+        </span>
       </div>
 
-      {/* Body */}
-      <div className="lp-ide-body">
-        {/* Code area — SQL gets char-by-char animation, others render statically */}
+      {/* Body — fixed height, crossfades on track change */}
+      <div className="lp-ide-body" style={{ opacity: visible ? 1 : 0 }}>
         {activeTrack.code && (
           <pre className="lp-ide-query"><code>
             {isSQL ? (
@@ -258,7 +282,6 @@ function HeroIDE({ reduced }) {
           </code></pre>
         )}
 
-        {/* Results area */}
         <div className="lp-ide-result" style={{ position: 'relative' }}>
           {showRunning && (
             <p className="lp-ide-running" style={{ position: 'absolute', marginTop: '-4px' }}>Running…</p>
@@ -330,6 +353,18 @@ function HeroIDE({ reduced }) {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Dot navigation */}
+      <div className="lp-ide-nav">
+        {IDE_TRACKS.map((t, i) => (
+          <button
+            key={t.slug}
+            className={`lp-ide-nav-dot${i === activeIdx ? ' lp-ide-nav-dot--active' : ''}`}
+            style={i === activeIdx ? { background: activeTrack.color } : undefined}
+            onClick={() => handleDotClick(i)}
+          />
+        ))}
       </div>
     </div>
   );

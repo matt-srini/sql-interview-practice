@@ -8589,17 +8589,101 @@ select {
 /* Unlock hint block */
 .path-sidebar-hint {
   margin: 0 0.75rem 0.65rem;
-  padding: 0.65rem 0.7rem;
+  padding: 0.6rem 0.7rem;
   background: color-mix(in srgb, var(--warning) 8%, transparent);
   border: 1px solid color-mix(in srgb, var(--warning) 28%, transparent);
   border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
+.path-sidebar-hint-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.45rem;
+}
 .path-sidebar-hint-text {
+  flex: 1;
   font-size: 0.75rem;
   color: var(--text-primary);
-  line-height: 1.45;
+  line-height: 1.4;
+  margin: 0;
+}
+/* ? help button + popover */
+.path-sidebar-hint-help-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.path-sidebar-hint-help {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--border-default, var(--border-subtle));
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background 0.1s, color 0.1s;
+}
+.path-sidebar-hint-help:hover,
+.path-sidebar-hint-help[aria-expanded="true"] {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.path-sidebar-hint-popover {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  right: 0;
+  width: 220px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-default, var(--border-subtle));
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.7rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  z-index: 50;
+}
+.path-sidebar-hint-popover-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-strong);
+  margin: 0 0 0.2rem;
+}
+.path-sidebar-hint-popover-sub {
+  font-size: 0.67rem;
+  color: var(--text-secondary);
   margin: 0 0 0.5rem;
+  line-height: 1.4;
+}
+.path-sidebar-hint-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0.45rem;
+}
+.path-sidebar-hint-table td {
+  font-size: 0.67rem;
+  color: var(--text-primary);
+  padding: 0.15rem 0;
+  line-height: 1.4;
+}
+.path-sidebar-hint-table td:first-child {
+  color: var(--text-secondary);
+  white-space: nowrap;
+  padding-right: 0.4rem;
+}
+.path-sidebar-hint-popover-next {
+  font-size: 0.67rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 0;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 0.4rem;
+  line-height: 1.4;
 }
 .path-sidebar-hint-actions {
   display: flex;
@@ -8628,6 +8712,9 @@ select {
 
 [data-theme="dark"] .path-sidebar-hint {
   background: color-mix(in srgb, var(--warning) 10%, transparent);
+}
+[data-theme="dark"] .path-sidebar-hint-popover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.35);
 }
 
 [data-theme="dark"] .path-sidebar-item--active {
@@ -10366,10 +10453,13 @@ select {
   font-size: 0.65rem;
   padding: 2px 8px;
   border-radius: 20px;
-  background: rgba(22,101,52,0.35);
-  color: #4ADE80;
 }
-.lp-ide-body { padding: 16px 18px; min-height: 220px; }
+.lp-ide-body {
+  padding: 14px 18px;
+  height: 340px;
+  overflow: hidden;
+  transition: opacity 0.28s ease;
+}
 .lp-ide-query {
   margin: 0 0 12px;
   white-space: pre;
@@ -10423,48 +10513,28 @@ select {
   color: rgba(255,255,255,0.28);
 }
 
-/* Tab pills */
-.lp-ide-tabs {
+/* Track dot navigation */
+.lp-ide-nav {
   display: flex;
-  gap: 4px;
-  padding: 8px 12px 6px;
-  flex-wrap: wrap;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-.lp-ide-tab {
-  display: inline-flex;
+  justify-content: center;
   align-items: center;
-  gap: 5px;
-  padding: 3px 9px 3px 6px;
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: transparent;
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 0.68rem;
-  font-weight: 500;
-  cursor: pointer;
-  font-family: inherit;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  gap: 7px;
+  padding: 9px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
-.lp-ide-tab-dot {
+.lp-ide-nav-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--tab-color);
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s, transform 0.2s;
   flex-shrink: 0;
-  opacity: 0.45;
-  transition: opacity 0.15s;
 }
-.lp-ide-tab--active {
-  color: rgba(255, 255, 255, 0.82);
-  border-color: rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.05);
-}
-.lp-ide-tab--active .lp-ide-tab-dot { opacity: 1; }
-.lp-ide-tab:hover:not(.lp-ide-tab--active) {
-  color: rgba(255, 255, 255, 0.6);
-  border-color: rgba(255, 255, 255, 0.12);
-}
+.lp-ide-nav-dot--active { transform: scale(1.35); }
+.lp-ide-nav-dot:hover:not(.lp-ide-nav-dot--active) { background: rgba(255, 255, 255, 0.38); }
 
 /* Python test results */
 .lp-ide-tests {
