@@ -1581,13 +1581,13 @@ select {
 /* Mark-only icon (two diagonal squares) */
 .brand-mark-img {
   display: block;
-  height: 16px;
+  height: 19px;
   width: auto;
   flex-shrink: 0;
 }
 /* Wordmark text alongside the mark */
 .brand-wordmark-text {
-  font-size: 0.92rem;
+  font-size: 1.1rem;
   line-height: 1;
 }
 
