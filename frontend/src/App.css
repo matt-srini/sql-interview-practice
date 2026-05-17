@@ -10456,7 +10456,7 @@ select {
 }
 .lp-ide-body {
   padding: 14px 18px;
-  height: 340px;
+  height: 400px;
   overflow: hidden;
   transition: opacity 0.28s ease;
 }
