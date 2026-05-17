@@ -10429,15 +10429,35 @@ select {
 
 /* ── Hero IDE ────────────────────────────────────────────────────── */
 .lp-ide {
-  background: #0F2218;
+  background:
+    linear-gradient(#0F2218, #0F2218) padding-box,
+    linear-gradient(145deg,
+      rgba(255,255,255,0.22) 0%,
+      rgba(255,255,255,0.07) 28%,
+      rgba(255,255,255,0.02) 55%,
+      rgba(255,255,255,0.10) 100%
+    ) border-box;
+  border: 1.5px solid transparent;
   border-radius: var(--radius-lg);
   overflow: hidden;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.82rem;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.28);
+  box-shadow:
+    0 16px 56px rgba(0,0,0,0.30),
+    0 4px 16px rgba(0,0,0,0.14),
+    inset 0 1px 0 rgba(255,255,255,0.09);
   position: relative;
 }
-[data-theme="dark"] .lp-ide { background: #080F0A; }
+[data-theme="dark"] .lp-ide {
+  background:
+    linear-gradient(#080F0A, #080F0A) padding-box,
+    linear-gradient(145deg,
+      rgba(255,255,255,0.16) 0%,
+      rgba(255,255,255,0.05) 28%,
+      rgba(255,255,255,0.01) 55%,
+      rgba(255,255,255,0.08) 100%
+    ) border-box;
+}
 .lp-ide-chrome {
   display: flex;
   align-items: center;
