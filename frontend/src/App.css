@@ -8688,8 +8688,8 @@ select {
   border-color: var(--accent);
 }
 .path-nav-btn--next:hover {
-  background: var(--accent-dark, #4a58d4);
-  border-color: var(--accent-dark, #4a58d4);
+  background: var(--accent-dark, #14532d);
+  border-color: var(--accent-dark, #14532d);
 }
 .path-nav-btn--disabled {
   color: var(--text-secondary);
