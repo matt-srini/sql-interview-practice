@@ -135,7 +135,7 @@ export default function LearningPath() {
               <h1 className="learn-title">{path.title}</h1>
               <p className="learn-description">{path.description}</p>
 
-              {/* Path not accessible — show tier badge */
+              {/* Path not accessible — show tier badge */}
               {!accessible && (
                 <span className="learn-tier-badge learn-tier-badge--pro">Pro</span>
               )}

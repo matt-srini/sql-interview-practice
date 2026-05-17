@@ -212,65 +212,49 @@ def test_tc058_pyspark_hard_cap_is_5():
 
 
 # ---------------------------------------------------------------------------
-# 3C. Path shortcuts (Free)
+# 3C. Threshold-only unlocks (path shortcuts removed)
 # ---------------------------------------------------------------------------
 
-def test_tc059_starter_done_unlocks_all_medium():
-    """TC-059: starter_done=True → all medium unlocked even with 0 easy solved."""
+def test_tc059_threshold_unlocks_first_medium_batch():
+    """TC-059: 8 easy solved → exactly 3 medium unlocked (first threshold batch)."""
     catalog = _make_mock_catalog(easy=30, medium=20, hard=15)
-    state = compute_unlock_state(
-        "free", set(), catalog, track="sql",
-        path_state={"starter_done": True},
-    )
-    medium_ids = [q["id"] for q in catalog["medium"]]
-    unlocked = [qid for qid in medium_ids if state[qid] == "unlocked"]
-    assert len(unlocked) == len(medium_ids)
-
-    # Hard still locked (no intermediate)
-    hard_ids = [q["id"] for q in catalog["hard"]]
-    unlocked_hard = [qid for qid in hard_ids if state[qid] == "unlocked"]
-    assert len(unlocked_hard) == 0
-
-
-def test_tc060_intermediate_done_unlocks_hard_cap():
-    """TC-060: intermediate_done=True → up to FREE_HARD_CAP_CODE hard questions unlocked."""
-    catalog = _make_mock_catalog(easy=30, medium=20, hard=15)
-    state = compute_unlock_state(
-        "free", set(), catalog, track="sql",
-        path_state={"intermediate_done": True},
-    )
-    hard_ids = [q["id"] for q in catalog["hard"]]
-    unlocked = [qid for qid in hard_ids if state[qid] == "unlocked"]
-    assert len(unlocked) == FREE_HARD_CAP_CODE
-
-
-def test_tc061_both_shortcuts_active():
-    """TC-061: starter+intermediate done → all medium + full hard cap."""
-    catalog = _make_mock_catalog(easy=30, medium=20, hard=15)
-    state = compute_unlock_state(
-        "free", set(), catalog, track="sql",
-        path_state={"starter_done": True, "intermediate_done": True},
-    )
-    medium_ids = [q["id"] for q in catalog["medium"]]
-    unlocked_medium = [qid for qid in medium_ids if state[qid] == "unlocked"]
-    assert len(unlocked_medium) == len(medium_ids)
-
-    hard_ids = [q["id"] for q in catalog["hard"]]
-    unlocked_hard = [qid for qid in hard_ids if state[qid] == "unlocked"]
-    assert len(unlocked_hard) == FREE_HARD_CAP_CODE
-
-
-def test_tc062_path_shortcut_beats_threshold():
-    """TC-062: starter_done wins over threshold (8 easy → 3 medium by threshold, but all unlocked)."""
-    catalog = _make_mock_catalog()
     solved = _easy_ids(8, catalog)
-    state = compute_unlock_state(
-        "free", solved, catalog, track="sql",
-        path_state={"starter_done": True},
-    )
+    state = compute_unlock_state("free", solved, catalog, track="sql")
+    medium_ids = [q["id"] for q in catalog["medium"]]
+    unlocked = [qid for qid in medium_ids if state[qid] == "unlocked"]
+    assert len(unlocked) == 3
+
+
+def test_tc060_threshold_unlocks_second_medium_batch():
+    """TC-060: 15 easy solved → exactly 8 medium unlocked (second threshold batch)."""
+    catalog = _make_mock_catalog(easy=30, medium=20, hard=15)
+    solved = _easy_ids(15, catalog)
+    state = compute_unlock_state("free", solved, catalog, track="sql")
+    medium_ids = [q["id"] for q in catalog["medium"]]
+    unlocked = [qid for qid in medium_ids if state[qid] == "unlocked"]
+    assert len(unlocked) == 8
+
+
+def test_tc061_threshold_unlocks_all_medium():
+    """TC-061: 25 easy solved → all medium unlocked."""
+    catalog = _make_mock_catalog(easy=30, medium=20, hard=15)
+    solved = _easy_ids(25, catalog)
+    state = compute_unlock_state("free", solved, catalog, track="sql")
     medium_ids = [q["id"] for q in catalog["medium"]]
     unlocked = [qid for qid in medium_ids if state[qid] == "unlocked"]
     assert len(unlocked) == len(medium_ids)
+
+
+def test_tc062_no_path_shortcut_zero_easy_zero_medium():
+    """TC-062: 0 easy, 0 medium solved → no medium or hard unlocked (no path shortcut)."""
+    catalog = _make_mock_catalog()
+    state = compute_unlock_state("free", set(), catalog, track="sql")
+    medium_ids = [q["id"] for q in catalog["medium"]]
+    hard_ids = [q["id"] for q in catalog["hard"]]
+    unlocked_medium = [qid for qid in medium_ids if state[qid] == "unlocked"]
+    unlocked_hard = [qid for qid in hard_ids if state[qid] == "unlocked"]
+    assert len(unlocked_medium) == 0
+    assert len(unlocked_hard) == 0
 
 
 # ---------------------------------------------------------------------------
