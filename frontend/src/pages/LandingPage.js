@@ -673,10 +673,7 @@ function TracksIndexSection() {
           <p className="lp-section-index">06&ensp;/&ensp;ALL TRACKS</p>
           <h2 className="lp-section-h2">The full curriculum.</h2>
           <p className="lp-tracks-editorial">
-            <span className="lp-tracks-editorial-n">{PRACTICE_QUESTIONS}</span>{' '}
-            questions, each chosen for a reason. No fillers, no pattern repeated
-            in a different costume — just the interview concepts that actually come
-            up, sequenced to build one reasoning layer at a time.
+            Not 2,000. Just the <span className="lp-tracks-editorial-n">{PRACTICE_QUESTIONS}</span> that actually matter.
           </p>
         </Reveal>
         <div className="lp-tracks-list" role="list">
