@@ -8586,6 +8586,50 @@ select {
 }
 .path-sidebar-exit:hover { color: var(--accent); }
 
+/* Unlock hint block */
+.path-sidebar-hint {
+  margin: 0 0.75rem 0.65rem;
+  padding: 0.65rem 0.7rem;
+  background: color-mix(in srgb, var(--warning) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warning) 28%, transparent);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+.path-sidebar-hint-text {
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  line-height: 1.45;
+  margin: 0 0 0.5rem;
+}
+.path-sidebar-hint-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+.path-sidebar-hint-link {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.path-sidebar-hint-link--pro {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent-strong, var(--accent));
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.path-sidebar-hint-link--pro:hover { background: color-mix(in srgb, var(--accent) 20%, transparent); }
+.path-sidebar-hint-link--elite {
+  background: color-mix(in srgb, #7A5AF0 10%, transparent);
+  color: #7A5AF0;
+  border: 1px solid color-mix(in srgb, #7A5AF0 28%, transparent);
+}
+.path-sidebar-hint-link--elite:hover { background: color-mix(in srgb, #7A5AF0 18%, transparent); }
+
+[data-theme="dark"] .path-sidebar-hint {
+  background: color-mix(in srgb, var(--warning) 10%, transparent);
+}
+
 [data-theme="dark"] .path-sidebar-item--active {
   background: color-mix(in srgb, var(--accent) 12%, transparent);
 }

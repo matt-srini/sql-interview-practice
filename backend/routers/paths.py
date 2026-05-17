@@ -11,7 +11,7 @@ import questions as sql_mod
 from db import get_solved_ids
 from deps import get_current_user
 from path_loader import get_all_paths, get_path
-from unlock import compute_unlock_state, normalize_plan
+from unlock import compute_unlock_state, get_unlock_hint, normalize_plan
 
 router = APIRouter()
 
@@ -130,6 +130,7 @@ async def get_path_detail(
             "question_count": len(questions_payload),
             "solved_count": 0,
             "questions": questions_payload,
+            "unlock_hint": None,
         }
 
     # Full access — compute unlock state
@@ -156,6 +157,7 @@ async def get_path_detail(
 
     solved_count = sum(1 for item in questions_payload if item["state"] == "solved")
     completed = solved_count == len(questions_payload) and len(questions_payload) > 0
+    unlock_hint = get_unlock_hint(user_plan, solved_ids, grouped, track=topic)
 
     return {
         "slug": path["slug"],
@@ -171,5 +173,6 @@ async def get_path_detail(
         "question_count": len(questions_payload),
         "solved_count": solved_count,
         "completed": completed,
+        "unlock_hint": unlock_hint,
         "questions": questions_payload,
     }

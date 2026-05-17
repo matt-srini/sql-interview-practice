@@ -185,6 +185,82 @@ def compute_unlock_state(
     return unlock_state
 
 
+def get_unlock_hint(
+    plan: str,
+    solved_ids: set[int],
+    catalog: dict[str, list[dict[str, Any]]],
+    track: str = "sql",
+) -> str | None:
+    """
+    Return a short, personalised next-step unlock message for Free users.
+    Returns None for Pro/Elite (no gates to explain).
+    """
+    plan = normalize_plan(plan)
+    if plan in ("pro", "elite"):
+        return None
+
+    ordered = _sorted_catalog(catalog)
+    solved_set = {int(qid) for qid in solved_ids}
+    mcq = _is_mcq_profile(track)
+
+    easy_qs = ordered["easy"]
+    medium_qs = ordered["medium"]
+    hard_qs = ordered["hard"]
+
+    easy_solved = sum(1 for q in easy_qs if int(q["id"]) in solved_set)
+    medium_solved = sum(1 for q in medium_qs if int(q["id"]) in solved_set)
+
+    medium_thresholds = _FREE_MEDIUM_THRESHOLDS_MCQ if mcq else _FREE_MEDIUM_THRESHOLDS_CODE
+    hard_thresholds = _FREE_HARD_THRESHOLDS_MCQ if mcq else _FREE_HARD_THRESHOLDS_CODE
+    total_medium = len(medium_qs)
+    total_hard = len(hard_qs)
+
+    current_medium_limit = _free_medium_limit(total_medium, easy_solved, mcq)
+    current_hard_limit = _free_hard_limit(total_hard, medium_solved, mcq)
+
+    # Find the next medium threshold not yet reached
+    medium_hint: str | None = None
+    if current_medium_limit < total_medium:
+        for threshold, unlocks in reversed(medium_thresholds):
+            if easy_solved < threshold:
+                needed = threshold - easy_solved
+                if unlocks is None:
+                    medium_hint = f"Solve {needed} more easy question{'s' if needed != 1 else ''} to unlock all medium."
+                else:
+                    next_limit = min(unlocks, total_medium)
+                    medium_hint = f"Solve {needed} more easy question{'s' if needed != 1 else ''} to unlock {next_limit} medium."
+                break
+
+    # Find the next hard threshold not yet reached
+    hard_hint: str | None = None
+    if current_medium_limit == total_medium and current_hard_limit == 0 and len(hard_qs) > 0:
+        # All medium unlocked, no hard yet
+        first_threshold = hard_thresholds[-1][0]  # lowest threshold
+        if medium_solved < first_threshold:
+            needed = first_threshold - medium_solved
+            hard_hint = f"Solve {needed} more medium question{'s' if needed != 1 else ''} to unlock your first hard questions."
+    elif current_hard_limit > 0:
+        cap = FREE_HARD_CAP_MCQ if mcq else FREE_HARD_CAP_CODE
+        if current_hard_limit < cap:
+            for threshold, _ in reversed(hard_thresholds):
+                if medium_solved < threshold:
+                    needed = threshold - medium_solved
+                    hard_hint = f"Solve {needed} more medium question{'s' if needed != 1 else ''} to unlock more hard questions."
+                    break
+
+    # Prefer medium hint if medium is still gated; fall back to hard hint
+    if medium_hint:
+        return medium_hint
+    if hard_hint:
+        return hard_hint
+
+    # Everything is as unlocked as Free allows
+    cap = FREE_HARD_CAP_MCQ if mcq else FREE_HARD_CAP_CODE
+    if current_hard_limit > 0 and total_hard > cap:
+        return f"Free plan includes up to {cap} hard questions. Upgrade for the full set."
+    return None
+
+
 def get_next_questions(
     unlock_state: dict[int, str],
     catalog: dict[str, list[dict[str, Any]]],

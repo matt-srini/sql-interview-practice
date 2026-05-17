@@ -228,6 +228,7 @@ export default function AppShell() {
               meta={meta}
               currentId={location.pathname.match(/\/questions\/([^/?]+)/)?.[1]}
               onNavigate={handleNavigateFromSidebar}
+              plan={user?.plan ?? 'free'}
             />
           ) : (
             <>
@@ -356,7 +357,7 @@ export default function AppShell() {
 }
 
 // ── Path sidebar panel ────────────────────────────────────────────────────────
-function PathSidebar({ pathData, pathSlug, topic, meta, currentId, onNavigate }) {
+function PathSidebar({ pathData, pathSlug, topic, meta, currentId, onNavigate, plan }) {
   if (!pathData) {
     return (
       <div className="path-sidebar-loading">
@@ -413,6 +414,17 @@ function PathSidebar({ pathData, pathSlug, topic, meta, currentId, onNavigate })
           );
         })}
       </nav>
+
+      {/* Unlock hint — free users only */}
+      {pathData.unlock_hint && plan === 'free' && (
+        <div className="path-sidebar-hint">
+          <p className="path-sidebar-hint-text">{pathData.unlock_hint}</p>
+          <div className="path-sidebar-hint-actions">
+            <Link to="/?scroll=pricing" className="path-sidebar-hint-link path-sidebar-hint-link--pro">Unlock Pro ↗</Link>
+            <Link to="/?scroll=pricing" className="path-sidebar-hint-link path-sidebar-hint-link--elite">Unlock Elite ↗</Link>
+          </div>
+        </div>
+      )}
 
       <div className="path-sidebar-footer">
         <Link to={`/practice/${topic}`} className="path-sidebar-exit">
