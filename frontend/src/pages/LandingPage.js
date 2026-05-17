@@ -973,7 +973,7 @@ export default function LandingPage() {
                   <div>
                     <p className="lp-section-index">+&ensp;LEARNING PATHS</p>
                     <h2 className="lp-section-h2">Guided progressions.</h2>
-                    <p className="lp-section-sub">Curated question sequences that build real interview reasoning, track by track.</p>
+                    <p className="lp-section-sub">Curated question sequences that drill a concept deeply. Same practice questions, focused into a sequence — so you build the pattern, not just tick boxes.</p>
                   </div>
                   <button className="landing-paths-shuffle" onClick={shufflePaths} aria-label="Shuffle learning paths">
                     ⇄ Shuffle

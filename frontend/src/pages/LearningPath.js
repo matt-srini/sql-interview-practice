@@ -38,7 +38,7 @@ export default function LearningPath() {
   const role = path?.role;
   const accessible = path?.accessible !== false;
 
-  // Determine unlock hint messaging
+  // Determine unlock hint messaging (threshold-based only — no path shortcuts)
   function getUnlockCards() {
     if (!firstLockedDiff || plan === 'elite') return null;
     const trackLabel = meta.label;
@@ -73,23 +73,6 @@ export default function LearningPath() {
   }
 
   const unlockCards = path ? getUnlockCards() : null;
-
-  // Path role chip copy
-  function getRoleChip() {
-    if (!role || !path) return null;
-    const pathState = path.path_state;
-    if (role === 'starter') {
-      if (pathState?.starter_done) return { text: 'Completed · medium unlocked', done: true };
-      return { text: 'Complete to unlock all medium in this track', done: false };
-    }
-    if (role === 'intermediate') {
-      if (pathState?.intermediate_done) return { text: 'Completed · hard unlocked', done: true };
-      return { text: 'Complete to unlock hard questions in this track', done: false };
-    }
-    return null;
-  }
-
-  const roleChip = getRoleChip();
 
   return (
     <div className="learn-page">
@@ -152,14 +135,7 @@ export default function LearningPath() {
               <h1 className="learn-title">{path.title}</h1>
               <p className="learn-description">{path.description}</p>
 
-              {/* Role chip — shown on free starter/intermediate paths */}
-              {roleChip && plan === 'free' && (
-                <div className={`learn-role-chip${roleChip.done ? ' learn-role-chip--done' : ''}`}>
-                  {roleChip.done ? '✓' : '→'} {roleChip.text}
-                </div>
-              )}
-
-              {/* Path not accessible — show tier badge */}
+              {/* Path not accessible — show tier badge */
               {!accessible && (
                 <span className="learn-tier-badge learn-tier-badge--pro">Pro</span>
               )}

@@ -6,8 +6,6 @@ export default function PathProgressCard({ path, compact = false, recommendation
   const pct = path.question_count > 0 ? (path.solved_count / path.question_count) * 100 : 0;
   const started = path.solved_count > 0;
   const isPro = path.tier === 'pro';
-  const isFreeStarter = path.tier === 'free' && path.role === 'starter';
-  const isFreeIntermediate = path.tier === 'free' && path.role === 'intermediate';
 
   return (
     <Link
@@ -21,7 +19,7 @@ export default function PathProgressCard({ path, compact = false, recommendation
       <div className="path-card-title">{path.title}</div>
       {recommendationLabel && <span className="path-card-recommendation-badge">{recommendationLabel}</span>}
       {!recommendationLabel && isPro && <span className="path-card-tier-badge">Pro</span>}
-      {!recommendationLabel && (isFreeStarter || isFreeIntermediate) && <span className="path-card-tier-badge path-card-tier-badge--free">Included with Free</span>}
+      {!recommendationLabel && !isPro && <span className="path-card-tier-badge path-card-tier-badge--free">Free</span>}
       {!compact && <div className="path-card-desc">{path.description}</div>}
       <div className="path-card-meta">{path.question_count} questions</div>
       <div className="path-card-progress">

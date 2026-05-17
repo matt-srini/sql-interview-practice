@@ -8,7 +8,7 @@ import python_data_questions as pandas_mod
 import python_questions as python_mod
 import pyspark_questions as pyspark_mod
 import questions as sql_mod
-from db import get_path_completion_state, get_solved_ids
+from db import get_solved_ids
 from deps import get_current_user
 from path_loader import get_all_paths, get_path
 from unlock import compute_unlock_state, normalize_plan
@@ -132,28 +132,11 @@ async def get_path_detail(
             "questions": questions_payload,
         }
 
-    # Full access — compute unlock state including path completion
-    db_topic = _TOPIC_DB.get(topic, topic)
+    # Full access — compute unlock state
     solved_ids = await _solved_for_topic(current_user["id"], topic)
     grouped = mod.get_questions_by_difficulty()
 
-    # Gather starter/intermediate question IDs for this track from path catalog
-    all_paths = get_all_paths()
-    starter_ids: list[int] = []
-    intermediate_ids: list[int] = []
-    for p in all_paths:
-        if p["topic"] != topic:
-            continue
-        if p.get("role") == "starter":
-            starter_ids = [int(qid) for qid in p["questions"]]
-        elif p.get("role") == "intermediate":
-            intermediate_ids = [int(qid) for qid in p["questions"]]
-
-    path_state = await get_path_completion_state(
-        current_user["id"], db_topic, starter_ids, intermediate_ids
-    )
-
-    unlock_state = compute_unlock_state(user_plan, solved_ids, grouped, track=topic, path_state=path_state)
+    unlock_state = compute_unlock_state(user_plan, solved_ids, grouped, track=topic)
 
     questions_payload = []
     for qid in path["questions"]:
@@ -188,6 +171,5 @@ async def get_path_detail(
         "question_count": len(questions_payload),
         "solved_count": solved_count,
         "completed": completed,
-        "path_state": path_state,
         "questions": questions_payload,
     }

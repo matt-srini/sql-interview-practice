@@ -49,17 +49,17 @@ export default function TierBanner({
     celebrate = `🎉 You've mastered all ${easyTotal} easy questions!`;
     message = mediumUnlocked
       ? 'Medium is fully open — keep the momentum going.'
-      : 'Solve 8 easy to unlock medium, or complete a learning path.';
+        : 'Solve 8 easy questions to unlock medium.';
   } else if (!mediumUnlocked) {
     const needed = Math.max(0, 8 - easySolved);
     message = needed > 0
-      ? `Free plan · All easy unlocked. Solve ${needed} more easy to unlock medium, or complete a learning path.`
-      : 'Free plan · All easy unlocked. Complete a learning path or solve 8 easy to unlock medium.';
+      ? `Free plan · All easy unlocked. Solve ${needed} more easy to unlock medium.`
+      : 'Free plan · All easy unlocked. Solve 8 easy to unlock medium.';
   } else if (!hardUnlocked) {
     const needed = Math.max(0, 8 - mediumSolved);
     message = needed > 0
-      ? `Medium unlocked · Solve ${needed} more medium to unlock hard, or complete the intermediate path.`
-      : 'Medium unlocked · Complete the intermediate path or solve 8 medium to unlock hard.';
+      ? `Medium unlocked · Solve ${needed} more medium to unlock hard.`
+      : 'Medium unlocked · Solve 8 medium to unlock hard.';
   } else {
     message = 'Hard unlocked · Upgrade to Pro for instant access to all questions.';
   }

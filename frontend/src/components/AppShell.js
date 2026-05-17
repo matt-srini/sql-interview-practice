@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import SidebarNav from './SidebarNav';
 import Topbar from './Topbar';
 import UpgradeButton from './UpgradeButton';
@@ -7,7 +7,7 @@ import { useCatalog } from '../catalogContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useTopic } from '../contexts/TopicContext';
 import TrackHubPage from '../pages/TrackHubPage';
-
+import api from '../api';
 export default function AppShell() {
   const { catalog, loading, error, refresh } = useCatalog();
   const { user, refreshUser } = useAuth();
@@ -79,7 +79,17 @@ export default function AppShell() {
   const { topic, meta } = useTopic();
   const pathSlug = new URLSearchParams(location.search).get('path');
   const focusMode = new URLSearchParams(location.search).get('focus') === '1';
-  const modeLabel = pathSlug ? `${meta.label} · Path` : `${meta.label} · Challenge`;
+
+  // Path data — fetched when ?path= is present
+  const [pathData, setPathData] = useState(null);
+  useEffect(() => {
+    if (!pathSlug) { setPathData(null); return; }
+    api.get(`/paths/${pathSlug}`)
+      .then(r => setPathData(r.data))
+      .catch(() => setPathData(null));
+  }, [pathSlug]);
+
+  const modeLabel = pathData ? pathData.title : pathSlug ? `${meta.label} · Path` : `${meta.label} · Challenge`;
 
   // Session goal tracking
   const [sessionGoal, setSessionGoal] = useState(() => {
@@ -210,85 +220,98 @@ export default function AppShell() {
               ‹
             </button>
           )}
-          {loading && <SidebarNav isLoading />}
-          {error && <div className="sidebar-error">{error}</div>}
-          {!loading && !error && catalog && (
-            <SidebarNav
-              catalog={catalog}
-              collapsedByDiff={collapsedByDiff}
-              toggleDiff={toggleDiff}
+          {pathSlug ? (
+            <PathSidebar
+              pathData={pathData}
+              pathSlug={pathSlug}
+              topic={topic}
+              meta={meta}
+              currentId={location.pathname.match(/\/questions\/([^/?]+)/)?.[1]}
               onNavigate={handleNavigateFromSidebar}
-              plan={user?.plan ?? 'free'}
             />
-          )}
-          {showUnlockNudge && (
-            <div className="sidebar-unlock-nudge">
-              Questions unlock as you solve them. {unlockNudgeCopy} The sequence builds real competence.
-            </div>
-          )}
-          {/* Session goal widget */}
-          {user && (
-            <div className={`session-goal-widget${goalMet ? ' session-goal-widget--met' : ''}`}>
-              <div className="session-goal-row">
-                <span className="session-goal-label">Session goal</span>
-                <div className="session-goal-controls">
-                  <button
-                    className="session-goal-adj"
-                    aria-label="Decrease goal"
-                    onClick={() => setSessionGoal((g) => {
-                      const next = Math.max(1, g - 1);
-                      try { localStorage.setItem('session-goal', String(next)); } catch {}
-                      return next;
-                    })}
-                  >−</button>
-                  <span className="session-goal-count">{sessionSolvedNow}/{sessionGoal}</span>
-                  <button
-                    className="session-goal-adj"
-                    aria-label="Increase goal"
-                    onClick={() => setSessionGoal((g) => {
-                      const next = Math.min(20, g + 1);
-                      try { localStorage.setItem('session-goal', String(next)); } catch {}
-                      return next;
-                    })}
-                  >+</button>
-                </div>
-              </div>
-              <div className="session-goal-bar" role="progressbar" aria-valuenow={sessionSolvedNow} aria-valuemax={sessionGoal}>
-                <div className="session-goal-fill" style={{ width: `${goalProgress * 100}%` }} />
-              </div>
-              {goalMet && <p className="session-goal-met">Goal reached — great session!</p>}
-            </div>
-          )}
-          {showUpgradeControls && (
-            <div className="sidebar-upgrade-panel">
-              <p className="sidebar-upgrade-panel-copy">
-                {normalisedPlan === 'free' && totalSolvedSidebar >= 10
-                  ? `${totalSolvedSidebar} solved — upgrade for instant access to every question.`
-                  : normalisedPlan === 'free' && totalSolvedSidebar > 0
-                  ? `${totalSolvedSidebar} question${totalSolvedSidebar !== 1 ? 's' : ''} down — or get full access instantly.`
-                  : normalisedPlan === 'free'
-                  ? 'Questions unlock as you solve — or get full access instantly.'
-                  : 'Add company filters and unlimited mocks.'}
-              </p>
-              <div className="upgrade-actions">
-                {normalisedPlan === 'free' && (
-                  <UpgradeButton
-                    tier="pro"
-                    label="Unlock Pro"
-                    source="sidebar_pro"
-                    compact
-                    successPath={location.pathname + '?upgraded=true'}
-                  />
-                )}
-                <UpgradeButton
-                  tier="elite"
-                  label={normalisedPlan === 'free' ? 'Unlock Elite' : 'Upgrade to Elite'}
-                  source="sidebar_elite"
-                  compact
-                  successPath={location.pathname + '?upgraded=true'}
+          ) : (
+            <>
+              {loading && <SidebarNav isLoading />}
+              {error && <div className="sidebar-error">{error}</div>}
+              {!loading && !error && catalog && (
+                <SidebarNav
+                  catalog={catalog}
+                  collapsedByDiff={collapsedByDiff}
+                  toggleDiff={toggleDiff}
+                  onNavigate={handleNavigateFromSidebar}
+                  plan={user?.plan ?? 'free'}
                 />
-              </div>
-            </div>
+              )}
+              {showUnlockNudge && (
+                <div className="sidebar-unlock-nudge">
+                  Questions unlock as you solve them. {unlockNudgeCopy} The sequence builds real competence.
+                </div>
+              )}
+              {/* Session goal widget */}
+              {user && (
+                <div className={`session-goal-widget${goalMet ? ' session-goal-widget--met' : ''}`}>
+                  <div className="session-goal-row">
+                    <span className="session-goal-label">Session goal</span>
+                    <div className="session-goal-controls">
+                      <button
+                        className="session-goal-adj"
+                        aria-label="Decrease goal"
+                        onClick={() => setSessionGoal((g) => {
+                          const next = Math.max(1, g - 1);
+                          try { localStorage.setItem('session-goal', String(next)); } catch {}
+                          return next;
+                        })}
+                      >−</button>
+                      <span className="session-goal-count">{sessionSolvedNow}/{sessionGoal}</span>
+                      <button
+                        className="session-goal-adj"
+                        aria-label="Increase goal"
+                        onClick={() => setSessionGoal((g) => {
+                          const next = Math.min(20, g + 1);
+                          try { localStorage.setItem('session-goal', String(next)); } catch {}
+                          return next;
+                        })}
+                      >+</button>
+                    </div>
+                  </div>
+                  <div className="session-goal-bar" role="progressbar" aria-valuenow={sessionSolvedNow} aria-valuemax={sessionGoal}>
+                    <div className="session-goal-fill" style={{ width: `${goalProgress * 100}%` }} />
+                  </div>
+                  {goalMet && <p className="session-goal-met">Goal reached — great session!</p>}
+                </div>
+              )}
+              {showUpgradeControls && (
+                <div className="sidebar-upgrade-panel">
+                  <p className="sidebar-upgrade-panel-copy">
+                    {normalisedPlan === 'free' && totalSolvedSidebar >= 10
+                      ? `${totalSolvedSidebar} solved — upgrade for instant access to every question.`
+                      : normalisedPlan === 'free' && totalSolvedSidebar > 0
+                      ? `${totalSolvedSidebar} question${totalSolvedSidebar !== 1 ? 's' : ''} down — or get full access instantly.`
+                      : normalisedPlan === 'free'
+                      ? 'Questions unlock as you solve — or get full access instantly.'
+                      : 'Add company filters and unlimited mocks.'}
+                  </p>
+                  <div className="upgrade-actions">
+                    {normalisedPlan === 'free' && (
+                      <UpgradeButton
+                        tier="pro"
+                        label="Unlock Pro"
+                        source="sidebar_pro"
+                        compact
+                        successPath={location.pathname + '?upgraded=true'}
+                      />
+                    )}
+                    <UpgradeButton
+                      tier="elite"
+                      label={normalisedPlan === 'free' ? 'Unlock Elite' : 'Upgrade to Elite'}
+                      source="sidebar_elite"
+                      compact
+                      successPath={location.pathname + '?upgraded=true'}
+                    />
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </aside>
 
@@ -327,6 +350,74 @@ export default function AppShell() {
             </div>
           )}
         </main>
+      </div>
+    </div>
+  );
+}
+
+// ── Path sidebar panel ────────────────────────────────────────────────────────
+function PathSidebar({ pathData, pathSlug, topic, meta, currentId, onNavigate }) {
+  if (!pathData) {
+    return (
+      <div className="path-sidebar-loading">
+        <div className="path-sidebar-shimmer" />
+        <div className="path-sidebar-shimmer path-sidebar-shimmer--short" />
+      </div>
+    );
+  }
+
+  const questions = pathData.questions ?? [];
+  const solvedCount = questions.filter(q => q.state === 'solved').length;
+
+  return (
+    <div className="path-sidebar">
+      <div className="path-sidebar-header">
+        <Link to={`/learn/${topic}`} className="path-sidebar-back">
+          ← All paths
+        </Link>
+        <div className="path-sidebar-title">{pathData.title}</div>
+        <div className="path-sidebar-meta">
+          <span className="path-sidebar-dot" style={{ background: meta.color }} />
+          {meta.label} · {questions.length} questions
+        </div>
+        <div className="path-sidebar-progress-bar">
+          <div
+            className="path-sidebar-progress-fill"
+            style={{ width: `${questions.length > 0 ? (solvedCount / questions.length) * 100 : 0}%`, background: meta.color }}
+          />
+        </div>
+        <span className="path-sidebar-progress-label">{solvedCount}/{questions.length} complete</span>
+      </div>
+
+      <nav className="path-sidebar-list" aria-label="Path questions">
+        {questions.map((q, i) => {
+          const isCurrent = String(q.id) === String(currentId);
+          const isSolved = q.state === 'solved';
+          const isLocked = q.state === 'locked';
+          const url = `/practice/${topic}/questions/${q.id}?path=${pathSlug}`;
+
+          return (
+            <Link
+              key={q.id}
+              to={isLocked ? '#' : url}
+              className={`path-sidebar-item${isCurrent ? ' path-sidebar-item--active' : ''}${isSolved ? ' path-sidebar-item--solved' : ''}${isLocked ? ' path-sidebar-item--locked' : ''}`}
+              aria-current={isCurrent ? 'page' : undefined}
+              onClick={isLocked ? e => e.preventDefault() : onNavigate}
+            >
+              <span className="path-sidebar-item-num">{i + 1}</span>
+              <span className="path-sidebar-item-title">{q.title}</span>
+              <span className="path-sidebar-item-state" aria-hidden="true">
+                {isSolved ? '✓' : isLocked ? '🔒' : null}
+              </span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="path-sidebar-footer">
+        <Link to={`/practice/${topic}`} className="path-sidebar-exit">
+          Exit path → Practice
+        </Link>
       </div>
     </div>
   );

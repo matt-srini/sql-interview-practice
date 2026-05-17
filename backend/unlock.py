@@ -97,12 +97,8 @@ def _free_medium_limit(
     total_medium: int,
     easy_solved: int,
     mcq_profile: bool,
-    starter_done: bool,
 ) -> int:
     """Number of medium questions a Free user can access in this track."""
-    if starter_done:
-        return total_medium  # path completion = full medium access
-
     thresholds = _FREE_MEDIUM_THRESHOLDS_MCQ if mcq_profile else _FREE_MEDIUM_THRESHOLDS_CODE
     for solved_threshold, limit in thresholds:
         if easy_solved >= solved_threshold:
@@ -114,13 +110,9 @@ def _free_hard_limit(
     total_hard: int,
     medium_solved: int,
     mcq_profile: bool,
-    intermediate_done: bool,
 ) -> int:
     """Number of hard questions a Free user can access in this track."""
     cap = FREE_HARD_CAP_MCQ if mcq_profile else FREE_HARD_CAP_CODE
-
-    if intermediate_done:
-        return min(cap, total_hard)  # path completion = full hard cap
 
     thresholds = _FREE_HARD_THRESHOLDS_MCQ if mcq_profile else _FREE_HARD_THRESHOLDS_CODE
     for solved_threshold, limit in thresholds:
@@ -136,7 +128,6 @@ def compute_unlock_state(
     solved_ids: set[int],
     catalog: dict[str, list[dict[str, Any]]],
     track: str = "sql",
-    path_state: dict[str, bool] | None = None,
 ) -> dict[int, str]:
     """
     Return a mapping of question_id → "unlocked" | "locked" | "solved".
@@ -147,10 +138,6 @@ def compute_unlock_state(
         catalog: {'easy': [...], 'medium': [...], 'hard': [...]}
         track: track slug — 'sql' | 'python' | 'python-data' | 'pyspark'.
                Affects Free-tier thresholds (PySpark uses higher thresholds).
-        path_state: optional dict {'starter_done': bool, 'intermediate_done': bool}.
-               starter_done=True → all medium unlocked (same ceiling as max threshold).
-               intermediate_done=True → full hard cap unlocked.
-               Either acts as an express-lane alternative to threshold grinding.
     """
     plan = normalize_plan(plan)
     ordered_catalog = _sorted_catalog(catalog)
@@ -163,10 +150,6 @@ def compute_unlock_state(
 
     easy_solved = sum(1 for q in easy_questions if int(q["id"]) in solved_set)
     medium_solved = sum(1 for q in medium_questions if int(q["id"]) in solved_set)
-
-    ps = path_state or {}
-    starter_done = bool(ps.get("starter_done", False))
-    intermediate_done = bool(ps.get("intermediate_done", False))
 
     if plan == "elite":
         limits = {
@@ -184,8 +167,8 @@ def compute_unlock_state(
     else:
         limits = {
             "easy":   len(easy_questions),
-            "medium": _free_medium_limit(len(medium_questions), easy_solved, mcq_profile, starter_done),
-            "hard":   _free_hard_limit(len(hard_questions), medium_solved, mcq_profile, intermediate_done),
+            "medium": _free_medium_limit(len(medium_questions), easy_solved, mcq_profile),
+            "hard":   _free_hard_limit(len(hard_questions), medium_solved, mcq_profile),
         }
 
     unlock_state: dict[int, str] = {}
