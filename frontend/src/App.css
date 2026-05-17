@@ -10597,13 +10597,22 @@ select {
 
 /* ── 06 Tracks index ─────────────────────────────────────────────── */
 .lp-tracks-editorial {
-  font-size: 0.9rem;
-  font-style: italic;
+  font-size: 0.875rem;
   color: var(--text-secondary);
-  max-width: 620px;
-  margin: 0.5rem 0 0;
-  line-height: 1.6;
-  opacity: 0.85;
+  max-width: 600px;
+  margin: 0.9rem 0 0;
+  line-height: 1.65;
+  padding: 11px 15px;
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.lp-tracks-editorial-n {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: -0.02em;
 }
 .lp-tracks-list {
   display: flex;
