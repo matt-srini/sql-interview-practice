@@ -9,6 +9,14 @@ import Topbar from '../components/Topbar';
 import Skeleton from '../components/Skeleton';
 import UpgradeButton from '../components/UpgradeButton';
 
+// Role → tracks filter for Track overview section
+const ROLE_TRACK_FILTERS = [
+  { id: 'analyst',   label: 'Data Analyst',       tracks: ['sql', 'statistics', 'python-data', 'python'] },
+  { id: 'engineer',  label: 'Data Engineer',      tracks: ['python', 'sql', 'pyspark', 'data-engineering', 'data-modeling'] },
+  { id: 'ae',        label: 'Analytics Eng',      tracks: ['sql', 'data-modeling', 'python-data', 'python'] },
+  { id: 'scientist', label: 'Data Scientist',     tracks: ['ml-fundamentals', 'statistics', 'experimentation', 'python', 'sql'] },
+];
+
 function formatRelativeTime(isoString) {
   if (!isoString) return '';
   const diff = Date.now() - new Date(isoString).getTime();
@@ -134,6 +142,7 @@ export default function ProgressDashboard() {
   const [error, setError] = useState(null);
   const [mockHistory, setMockHistory] = useState([]);
   const [readinessModalOpen, setReadinessModalOpen] = useState(false);
+  const [activeRoleId, setActiveRoleId] = useState(null);
 
   useEffect(() => {
     if (location.state?.upgradeTier === 'elite') {
@@ -166,6 +175,11 @@ export default function ProgressDashboard() {
     return values.reduce((a, b) => a + b, 0) / values.length;
   })();
   const streakDays = insights?.streak_days ?? 0;
+
+  const activeRoleFilter = ROLE_TRACK_FILTERS.find(r => r.id === activeRoleId) ?? null;
+  const visibleTracks = activeRoleFilter
+    ? activeRoleFilter.tracks.filter(t => TRACK_SLUGS.includes(t))
+    : TRACK_SLUGS;
 
   const showDashboardEmpty = !loading && !error && totalSolved === 0;
 
@@ -303,9 +317,31 @@ export default function ProgressDashboard() {
 
                 {/* TRACK OVERVIEW */}
                 <section className="db-section">
-                  <h2 className="db-section-title">Track overview</h2>
-                  <div className="db-track-table">
-                    {TRACK_SLUGS.map(topic => {
+                  <div className="db-track-overview-head">
+                    <h2 className="db-section-title">Track overview</h2>
+                    <div className="db-role-filter" role="group" aria-label="Filter tracks by role">
+                      <button
+                        className={`db-role-btn${!activeRoleId ? ' db-role-btn--active' : ''}`}
+                        onClick={() => setActiveRoleId(null)}
+                        aria-pressed={!activeRoleId}
+                      >
+                        All tracks
+                      </button>
+                      {ROLE_TRACK_FILTERS.map(role => (
+                        <button
+                          key={role.id}
+                          className={`db-role-btn${activeRoleId === role.id ? ' db-role-btn--active' : ''}`}
+                          onClick={() => setActiveRoleId(activeRoleId === role.id ? null : role.id)}
+                          aria-pressed={activeRoleId === role.id}
+                          title={`${role.label}: ${role.tracks.length} tracks`}
+                        >
+                          {role.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="db-track-table" key={activeRoleId ?? 'all'}>
+                    {visibleTracks.map(topic => {
                       const meta = TRACK_META[topic];
                       const trackData = data?.tracks?.[topic];
                       const solved = trackData?.solved ?? 0;

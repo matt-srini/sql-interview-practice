@@ -5810,6 +5810,55 @@ select {
 }
 .db-readiness-gate:hover { color: var(--text-strong); }
 
+/* Track overview — role filter */
+.db-track-overview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.1rem;
+  flex-wrap: wrap;
+}
+.db-role-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+.db-role-btn {
+  font-size: 0.71rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 0.28rem 0.72rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.14s, color 0.14s, border-color 0.14s, box-shadow 0.14s;
+  white-space: nowrap;
+  line-height: 1.5;
+  font-family: inherit;
+}
+.db-role-btn:hover:not(.db-role-btn--active) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.db-role-btn--active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  box-shadow: 0 1px 5px rgba(22, 101, 52, 0.22);
+}
+@keyframes db-tracks-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.db-track-table {
+  animation: db-tracks-in 0.18s ease both;
+}
+
 /* Lower layout */
 .db-lower-grid {
   display: grid;
