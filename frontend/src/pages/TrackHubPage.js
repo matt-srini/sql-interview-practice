@@ -198,58 +198,44 @@ export default function TrackHubPage() {
         </div>
 
         <div className="thub-stat-card" style={{ '--track-color': meta.color }}>
-          {/* Hero: big solved count + arc ring */}
-          <div className="thub-stat-hero">
-            <div className="thub-stat-hero-left">
-              <div className="thub-stat-count-row">
-                <span className="thub-stat-count-num">{totalSolved}</span>
-                <span className="thub-stat-count-denom">/{totalQuestions}<span className="thub-stat-count-label">solved</span></span>
-              </div>
-              {continueId ? (
-                <button className="thub-cta-btn" onClick={handleContinue}>
-                  {totalSolved > 0 ? 'Continue where I left off' : 'Start practicing'} →
-                </button>
-              ) : allAccessibleSolved && hasLockedQuestions ? (
-                <UpgradeButton tier="pro" label="Upgrade to unlock the rest" source="hub_allsolved" />
-              ) : allAccessibleSolved ? (
-                <Link to="/" className="btn btn-secondary btn-compact">Explore another track →</Link>
-              ) : null}
+          <div className="thub-top-row">
+            <div className="thub-count-line">
+              <span className="thub-count-solved">{totalSolved}</span>
+              <span className="thub-count-sep">/</span>
+              <span className="thub-count-total">{totalQuestions}</span>
+              <span className="thub-count-label">solved</span>
+              <span className="thub-count-divider" aria-hidden="true" />
+              <span className="thub-count-pct">{Math.round(overallPct * 100)}%</span>
             </div>
-
-            {/* Arc ring */}
-            <svg className="thub-ring" viewBox="0 0 36 36" aria-label={`${Math.round(overallPct * 100)}% complete`}>
-              <circle className="thub-ring-bg" cx="18" cy="18" r="15.9" />
-              <circle
-                className="thub-ring-fill"
-                cx="18" cy="18" r="15.9"
-                pathLength="100"
-                transform="rotate(-90 18 18)"
-                style={{ strokeDasharray: `${(overallPct * 100).toFixed(1)} 100` }}
-              />
-              <text x="18" y="20" className="thub-ring-text">{Math.round(overallPct * 100)}</text>
-              <text x="18" y="26" className="thub-ring-pct-label">%</text>
-            </svg>
+            {continueId ? (
+              <button className="thub-cta-btn" onClick={handleContinue}>
+                {totalSolved > 0 ? 'Continue →' : 'Start →'}
+              </button>
+            ) : allAccessibleSolved && hasLockedQuestions ? (
+              <UpgradeButton tier="pro" label="Unlock more" compact source="hub_allsolved" />
+            ) : allAccessibleSolved ? (
+              <Link to="/" className="btn btn-secondary btn-compact">Explore tracks →</Link>
+            ) : null}
           </div>
 
-          {/* Difficulty tiles */}
+          <div className="thub-bar-track">
+            <div className="thub-bar-fill" style={{ width: `${overallPct * 100}%` }} />
+          </div>
+
           {catalog?.groups?.length > 0 && (
-            <div className="thub-diff-tiles">
+            <div className="thub-diff-strip">
               {catalog.groups.map((g) => {
                 const solved = g.questions.filter((q) => q.state === 'solved').length;
                 const total = g.questions.length;
                 const pct = total > 0 ? (solved / total) * 100 : 0;
                 return (
-                  <div key={g.difficulty} className="thub-diff-tile">
-                    <div className="thub-diff-tile-header">
-                      <span className={`badge badge-${g.difficulty}`}>{g.difficulty}</span>
-                      <span className="thub-diff-tile-frac">
-                        <span className="thub-diff-tile-n">{solved}</span>
-                        <span className="thub-diff-tile-d">/{total}</span>
-                      </span>
+                  <div key={g.difficulty} className="thub-diff-item">
+                    <span className={`thub-diff-dot thub-diff-dot--${g.difficulty}`} />
+                    <span className="thub-diff-label">{g.difficulty}</span>
+                    <div className="thub-diff-mini-bar">
+                      <div className="thub-diff-mini-fill" style={{ width: `${pct}%` }} />
                     </div>
-                    <div className="thub-diff-bar-track">
-                      <div className="thub-diff-bar-fill" style={{ width: `${pct}%` }} />
-                    </div>
+                    <span className="thub-diff-frac">{solved}/{total}</span>
                   </div>
                 );
               })}

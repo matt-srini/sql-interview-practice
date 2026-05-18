@@ -4958,201 +4958,173 @@ select {
    Track Hub — premium stat card (thub-stat-card)
    ============================================================ */
 .thub-stat-card {
-  padding: 1.5rem;
+  padding: 1rem 1.25rem;
   border-radius: var(--radius-md);
   background: var(--surface-card);
   border: 1px solid var(--border-subtle);
-  border-left: 3px solid var(--track-color, var(--accent));
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-  position: relative;
-  overflow: hidden;
+  gap: 0.75rem;
   margin-bottom: 0.5rem;
 }
 
-/* Top-right glow wash in track color */
-.thub-stat-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    ellipse 80% 140% at 100% 0%,
-    color-mix(in srgb, var(--track-color, var(--accent)) 8%, transparent),
-    transparent 65%
-  );
-  pointer-events: none;
-}
-
-/* ── Hero row ── */
-.thub-stat-hero {
+/* ── Top row: count + CTA ── */
+.thub-top-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
 }
 
-.thub-stat-hero-left {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  min-width: 0;
-  flex: 1;
-}
-
-.thub-stat-count-row {
+.thub-count-line {
   display: flex;
   align-items: baseline;
   gap: 0.2rem;
-  line-height: 1;
+  flex-wrap: wrap;
 }
 
-.thub-stat-count-num {
-  font-size: 3rem;
-  font-weight: 800;
+.thub-count-solved {
+  font-size: 1.5rem;
+  font-weight: 700;
   color: var(--text-strong);
   font-family: var(--font-mono);
-  letter-spacing: -0.05em;
+  letter-spacing: -0.03em;
   line-height: 1;
 }
 
-.thub-stat-count-denom {
+.thub-count-sep {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  margin: 0 0.05rem;
+}
+
+.thub-count-total {
   font-size: 1rem;
   color: var(--text-secondary);
   font-family: var(--font-mono);
 }
 
-.thub-stat-count-label {
-  font-family: var(--font-sans);
-  font-size: 0.8rem;
+.thub-count-label {
+  font-size: 0.75rem;
   color: var(--text-muted);
-  margin-left: 0.2rem;
+  margin-left: 0.25rem;
+  align-self: center;
 }
 
-/* CTA button — uses track color */
+.thub-count-divider {
+  display: inline-block;
+  width: 1px;
+  height: 13px;
+  background: var(--border-strong);
+  margin: 0 0.5rem;
+  align-self: center;
+}
+
+.thub-count-pct {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--track-color, var(--accent));
+  font-family: var(--font-mono);
+  align-self: center;
+}
+
+/* CTA button */
 .thub-cta-btn {
   display: inline-flex;
   align-items: center;
-  padding: 0.525rem 1rem;
+  padding: 0.4rem 0.875rem;
   background: var(--track-color, var(--accent));
   color: #fff;
   border: none;
   border-radius: var(--radius-sm);
-  font-size: 0.875rem;
+  font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.15s, transform 0.12s;
-  align-self: flex-start;
+  transition: opacity 0.15s;
   white-space: nowrap;
-}
-.thub-cta-btn:hover {
-  opacity: 0.86;
-  transform: translateX(2px);
-}
-
-/* ── Arc ring ── */
-.thub-ring {
-  width: 72px;
-  height: 72px;
   flex-shrink: 0;
 }
+.thub-cta-btn:hover { opacity: 0.82; }
 
-.thub-ring-bg {
-  fill: none;
-  stroke: var(--border-strong);
-  stroke-width: 2.5;
-}
-
-.thub-ring-fill {
-  fill: none;
-  stroke: var(--track-color, var(--accent));
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  transition: stroke-dasharray 0.65s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.thub-ring-text {
-  font-size: 9px;
-  font-weight: 800;
-  fill: var(--text-strong);
-  text-anchor: middle;
-  font-family: var(--font-mono);
-}
-
-.thub-ring-pct-label {
-  font-size: 5.5px;
-  font-weight: 600;
-  fill: var(--text-muted);
-  text-anchor: middle;
-  font-family: var(--font-sans);
-}
-
-/* ── Difficulty tiles ── */
-.thub-diff-tiles {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.625rem;
-}
-
-.thub-diff-tile {
-  display: flex;
-  flex-direction: column;
-  gap: 0.55rem;
-  padding: 0.75rem 0.875rem;
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--track-color, var(--accent)) 5%, var(--bg-page));
-  border: 1px solid color-mix(in srgb, var(--track-color, var(--accent)) 12%, transparent);
-}
-
-.thub-diff-tile-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.25rem;
-}
-
-.thub-diff-tile-frac {
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.thub-diff-tile-n {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--text-strong);
-  font-family: var(--font-mono);
-}
-
-.thub-diff-tile-d {
-  font-size: 0.78rem;
-  color: var(--text-secondary);
-  font-family: var(--font-mono);
-}
-
-.thub-diff-bar-track {
+/* ── Overall progress bar ── */
+.thub-bar-track {
   height: 3px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--track-color, var(--accent)) 15%, transparent);
+  background: var(--border-subtle);
   overflow: hidden;
 }
 
-.thub-diff-bar-fill {
+.thub-bar-fill {
   height: 100%;
   background: var(--track-color, var(--accent));
   border-radius: 999px;
   transition: width 0.55s cubic-bezier(0.22, 1, 0.36, 1);
-  min-width: 0;
 }
 
-[data-theme="dark"] .thub-diff-tile {
-  background: color-mix(in srgb, var(--track-color, var(--accent)) 8%, var(--surface-card));
-  border-color: color-mix(in srgb, var(--track-color, var(--accent)) 20%, transparent);
+/* ── Difficulty strip ── */
+.thub-diff-strip {
+  display: flex;
+  align-items: center;
+  padding-top: 0.1rem;
+}
+
+.thub-diff-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1;
+  padding: 0 0.875rem;
+  border-right: 1px solid var(--border-subtle);
+}
+.thub-diff-item:first-child { padding-left: 0; }
+.thub-diff-item:last-child  { border-right: none; padding-right: 0; }
+
+.thub-diff-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.thub-diff-dot--easy   { background: var(--success); }
+.thub-diff-dot--medium { background: var(--warning); }
+.thub-diff-dot--hard   { background: var(--danger); }
+
+.thub-diff-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.thub-diff-mini-bar {
+  flex: 1;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--border-subtle);
+  overflow: hidden;
+  min-width: 20px;
+}
+
+.thub-diff-mini-fill {
+  height: 100%;
+  background: var(--track-color, var(--accent));
+  border-radius: 999px;
+  transition: width 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.thub-diff-frac {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 @media (max-width: 540px) {
-  .thub-stat-count-num { font-size: 2.25rem; }
-  .thub-ring { width: 56px; height: 56px; }
-  .thub-diff-tile { padding: 0.6rem 0.625rem; }
+  .thub-count-solved { font-size: 1.25rem; }
+  .thub-diff-item { padding: 0 0.5rem; }
 }
 
 
