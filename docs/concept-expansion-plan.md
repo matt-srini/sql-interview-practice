@@ -3,7 +3,7 @@
 Tracks concept-hooks.md coverage against the question bank, identifies gaps, and drives new question authoring across all 8 tracks.
 
 **Initiated:** 2026-05-18  
-**Status:** Phase 0 in progress
+**Status:** Phase 1 in progress (Phase 0 complete 2026-05-18)
 
 ---
 
@@ -63,6 +63,140 @@ Tracks concept-hooks.md coverage against the question bank, identifies gaps, and
 ### Data Modeling (Missing Topics section uncovered)
 - Bi-temporal modeling, semantic layer governance
 - Semi-additive metric design, advanced hierarchy variants
+
+---
+
+## Authoring reference (read before writing any question)
+
+### ID allocation
+
+**Rule (from `docs/content-authoring.md`):** Append IDs to the end of the current difficulty range. Never renumber. No mock-only questions at easy (by design).
+
+Current maxes and next-available IDs:
+
+| Track | Difficulty | Current max | Next practice ID | Next mock ID |
+|---|---|---|---|---|
+| SQL | easy | 11032 | **11033** | n/a (no easy mock) |
+| SQL | medium | 12053 (mock ends) | **12054** | after new practice |
+| SQL | hard | 13043 (mock ends) | **13044** | after new practice |
+| Statistics | easy | 71028 | **71029** | n/a |
+| Statistics | medium | 72028 | **72029** | n/a |
+| Statistics | hard | 73024 | **73025** | n/a |
+| Pandas | easy | 31022 | **31023** | n/a |
+| Pandas | medium | 32041 (mock ends) | **32042** | after new practice |
+| Pandas | hard | 33037 (mock ends) | **33038** | after new practice |
+| Python | easy | 21030 | **21031** | n/a |
+| Python | medium | 22037 (mock ends) | **22038** | n/a (practical Python = all practice) |
+| Python | hard | 23036 (mock ends) | **23037** | n/a |
+| PySpark | easy | 41038 | **41039** | n/a |
+| PySpark | medium | 42048 (mock ends) | **42049** | after new practice |
+| PySpark | hard | 43036 (mock ends) | **43037** | after new practice |
+
+> **schemas.json:** No update needed — all new IDs fall within existing declared ranges (e.g. SQL 11001–11999). The catalog loader validates at startup; it will crash if an ID is outside range.
+
+### Question JSON schema — SQL
+
+All fields required unless marked optional:
+
+```json
+{
+  "id": 11033,
+  "order": 33,
+  "title": "...",
+  "difficulty": "easy",
+  "description": "...",
+  "dataset_files": ["tablename.csv"],
+  "schema": { "tablename": ["col1", "col2"] },
+  "expected_query": "SELECT ...",
+  "solution_query": "SELECT ...;",
+  "explanation": "...",
+  "hints": ["...", "..."],
+  "concepts": ["ALL-CAPS TAG", "ANOTHER TAG"],
+  "complexity_hint": "O(n) full scan",
+  "companies": ["Meta", "Stripe"],
+  "required_concepts": ["string_function"],
+  "enforce_concepts": true
+}
+```
+
+Mock-only additions (hard questions only): add `"mock_only": true` and optionally `"follow_up_id": <id>`.
+
+### Concept tag naming — SQL
+
+- **Style:** ALL-CAPS, descriptive phrases (matches existing bank)
+- **New technique tags for Phase 1 questions:** Each new question gets both a technique tag and a business-pattern tag where appropriate:
+
+| Topic | Primary technique tag | Notes |
+|---|---|---|
+| TRIM / LTRIM / RTRIM | `STRING TRIMMING` | |
+| SUBSTRING / LEFT / RIGHT | `SUBSTRING EXTRACTION` | |
+| CONCAT / \|\| | `STRING CONCATENATION` | |
+| REPLACE / REGEXP_REPLACE | `REGEX REPLACEMENT` | |
+| SPLIT_PART / STRING_SPLIT | `DELIMITED STRING PARSING` | |
+| STRING_AGG / LISTAGG | `STRING AGGREGATION` | |
+| ARRAY_AGG | `ARRAY AGGREGATION` | |
+| UNION vs UNION ALL | `UNION SET OPERATION` | |
+| INTERSECT | `INTERSECT SET OPERATION` | |
+| EXCEPT / MINUS | `EXCEPT SET OPERATION` | |
+| ROLLUP | `ROLLUP SUBTOTALS` | |
+| GROUPING SETS | `GROUPING SETS` | |
+| FILTER(WHERE) on aggregate | `AGGREGATE FILTER` | |
+| Recursive CTE | `RECURSIVE CTE` | |
+| LATERAL join | `LATERAL JOIN` | |
+| JSON extraction | `JSON EXTRACTION` | |
+| UNNEST / FLATTEN | `ARRAY UNNESTING` | |
+| Calendar spine | `CALENDAR SPINE` | |
+| Date math nuances | `DATE ARITHMETIC` | |
+| Timezone handling | `TIMEZONE HANDLING` | |
+
+### Mock-only rules
+
+| Track | Mock allowed? | Policy |
+|---|---|---|
+| SQL | ✅ | Hard specialist patterns only. New mocks: IDs after new practice in 13xxx |
+| Python | ✅ | Algorithmic hard patterns. Practical Python = all practice |
+| Pandas | ✅ | Hard advanced patterns only |
+| PySpark | ✅ | Hard edge cases only |
+| Statistics | ❌ | No mock-only at launch (policy) |
+| Data Engineering | ❌ | `in_mixed_mock=false`; no mock pool |
+| Data Modeling | ❌ | `in_mixed_mock=false`; no mock pool |
+| ML Fundamentals | ✅ | Existing 25 mock questions; new questions are practice unless exceptional |
+
+### Learning path rules
+
+- Each track already has its one `starter` and one `intermediate` free path. New paths = **Pro / Advanced tier only**
+- Path JSON lives in `backend/content/paths/<slug>.json`
+- `questions[]` = array of integer IDs (must all exist in same track catalog)
+- `recommended_after` = array of path slugs (prerequisites)
+- Paths are added in **Phase 5** after all question IDs are known
+- Path IDs referenced by `recommended_after` must already exist at commit time
+
+### `order` field
+
+The `order` field controls sidebar position. For new questions appended to a file:
+- Set `order` = next integer after the current max `order` in that file (regardless of mock_only status)
+- For easy: current max order = 32 → new questions start at order 33
+- For medium: current max order = 53 → new questions start at order 54
+- For hard: current max order = 43 → new questions start at order 44
+
+### Datasets available in DuckDB (SQL questions only)
+
+All SQL questions must use existing CSVs. Available tables:
+
+| Table | Key columns |
+|---|---|
+| `users` | user_id, name, email, signup_date, country, acquisition_channel, plan_tier, is_active |
+| `orders` | order_id, user_id, order_date, status, total_amount |
+| `order_items` | item_id, order_id, product_id, quantity, unit_price |
+| `products` | product_id, product_name, category_id, price |
+| `categories` | category_id, category_name |
+| `employees` | employee_id, name, department_id, salary, hire_date, manager_id |
+| `departments` | department_id, department_name, region |
+| `events` | event_id, user_id, product_id, event_name, event_time |
+| `payments` | payment_id, order_id, amount, payment_date, payment_method, status |
+| `support_tickets` | ticket_id, user_id, created_at, resolved_at, issue_type, status |
+
+String/date function questions use `employees`, `users`, or `orders` — they have rich text and date columns. JSON extraction would need a new dataset (noted in Phase 1 hard section).
 
 ---
 
