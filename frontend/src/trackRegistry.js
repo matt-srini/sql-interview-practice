@@ -5,6 +5,10 @@
  *   1. Add an entry to TRACK_META below.
  *   2. Add a matching entry in backend/tracks.py.
  * Everything else (TRACK_SLUGS, TRACK_LABELS, catalog path) is derived automatically.
+ *
+ * Question counts are NOT stored here. They are fetched live from /api/catalog/counts
+ * via CatalogCountsContext so they never go stale when questions are added.
+ * Use useCatalogCounts() to access per-track totals in components.
  */
 
 export const TRACK_META = {
@@ -17,8 +21,6 @@ export const TRACK_META = {
     hasRunCode: true,
     hasMCQ: false,
     mixedSubtype: false,
-    totalQuestions: 95,
-    easyQuestions: 32,
     tagline: 'easy · medium · hard',
   },
   python: {
@@ -30,8 +32,6 @@ export const TRACK_META = {
     hasRunCode: true,
     hasMCQ: false,
     mixedSubtype: false,
-    totalQuestions: 83,
-    easyQuestions: 30,
     tagline: 'data processing · algorithms · scripting',
   },
   'python-data': {
@@ -43,8 +43,6 @@ export const TRACK_META = {
     hasRunCode: true,
     hasMCQ: false,
     mixedSubtype: false,
-    totalQuestions: 76,
-    easyQuestions: 22,
     tagline: 'pandas · numpy · data wrangling',
   },
   pyspark: {
@@ -56,8 +54,6 @@ export const TRACK_META = {
     hasRunCode: false,
     hasMCQ: true,
     mixedSubtype: false,
-    totalQuestions: 102,
-    easyQuestions: 38,
     tagline: 'conceptual · MCQ · predict output',
   },
   'data-engineering': {
@@ -69,8 +65,6 @@ export const TRACK_META = {
     hasRunCode: false,
     hasMCQ: true,
     mixedSubtype: false,
-    totalQuestions: 80,
-    easyQuestions: 30,
     tagline: 'conceptual · MCQ · scenario',
   },
   'data-modeling': {
@@ -82,8 +76,6 @@ export const TRACK_META = {
     hasRunCode: false,
     hasMCQ: true,
     mixedSubtype: false,
-    totalQuestions: 70,
-    easyQuestions: 25,
     tagline: 'MCQ · scenario · schema design',
   },
   statistics: {
@@ -95,8 +87,6 @@ export const TRACK_META = {
     hasRunCode: true,
     hasMCQ: true,
     mixedSubtype: true,
-    totalQuestions: 80,
-    easyQuestions: 28,
     tagline: 'conceptual · numerical · MCQ',
   },
   'ml-fundamentals': {
@@ -108,8 +98,6 @@ export const TRACK_META = {
     hasRunCode: false,
     hasMCQ: true,
     mixedSubtype: false,
-    totalQuestions: 90,
-    easyQuestions: 30,
     tagline: 'conceptual · MCQ · scenario',
   },
   experimentation: {
@@ -121,8 +109,6 @@ export const TRACK_META = {
     hasRunCode: false,
     hasMCQ: true,
     mixedSubtype: false,
-    totalQuestions: 80,
-    easyQuestions: 30,
     tagline: 'MCQ · scenario · experiment design',
   },
 };

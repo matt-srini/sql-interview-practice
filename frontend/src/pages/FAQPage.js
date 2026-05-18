@@ -20,12 +20,12 @@ const FAQ_JSON_LD = [
   {
     "@type": "Question",
     "name": "What SQL topics are covered?",
-    "acceptedAnswer": { "@type": "Answer", "text": "95 SQL questions spanning aggregation, window functions, CTEs, joins, subqueries, cohort analysis, period-over-period analysis, query optimization, and more — all executed against real datasets using DuckDB with instant feedback and solution analysis." }
+    "acceptedAnswer": { "@type": "Answer", "text": "SQL questions spanning aggregation, window functions, CTEs, joins, subqueries, cohort analysis, period-over-period analysis, query optimization, string and date functions, set operations, recursive CTEs, and more — all executed against real datasets using DuckDB with instant feedback and solution analysis." }
   },
   {
     "@type": "Question",
     "name": "What tracks are available?",
-    "acceptedAnswer": { "@type": "Answer", "text": "Four tracks: SQL (95 questions), Python algorithms (83 questions), Pandas (76 questions), and PySpark (102 questions). Each has easy, medium, and hard tiers. PySpark uses an MCQ and predict-output format rather than a live execution environment." }
+    "acceptedAnswer": { "@type": "Answer", "text": "Nine tracks: SQL, Python algorithms, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, and Experimentation. Each has easy, medium, and hard tiers. Code tracks (SQL, Python, Pandas) use a live execution environment; the remaining tracks use MCQ, scenario, and predict-output formats." }
   },
   {
     "@type": "Question",
@@ -91,11 +91,11 @@ export default function FAQPage() {
               </div>
               <div className="faq-item">
                 <dt className="faq-q">What SQL topics are covered?</dt>
-                <dd className="faq-a">95 SQL questions spanning aggregation, window functions, CTEs, joins, subqueries, cohort analysis, period-over-period analysis, query optimization, and more — all executed against real datasets using DuckDB with instant feedback and solution analysis.</dd>
+                <dd className="faq-a">SQL questions spanning aggregation, window functions, CTEs, joins, subqueries, cohort analysis, period-over-period analysis, query optimization, string and date functions, set operations, recursive CTEs, and more — all executed against real datasets using DuckDB with instant feedback and solution analysis.</dd>
               </div>
               <div className="faq-item">
                 <dt className="faq-q">What tracks are available?</dt>
-                <dd className="faq-a">Four tracks: SQL (95 questions), Python algorithms (83 questions), Pandas (76 questions), and PySpark (102 questions). Each has easy, medium, and hard tiers. PySpark uses an MCQ and predict-output format rather than a live execution environment.</dd>
+                <dd className="faq-a">Nine tracks: SQL, Python algorithms, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, and Experimentation. Each has easy, medium, and hard tiers. Code tracks (SQL, Python, Pandas) use a live execution environment; the remaining tracks use MCQ, scenario, and predict-output formats.</dd>
               </div>
               <div className="faq-item">
                 <dt className="faq-q">Which companies' interview questions are covered?</dt>

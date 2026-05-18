@@ -5,6 +5,7 @@ import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
 import { ALL_TRACK_SLUGS, TRACK_SLUGS } from '../trackRegistry';
+import { useCatalogCounts } from '../contexts/CatalogCountsContext';
 import PathProgressCard from '../components/PathProgressCard';
 import Topbar from '../components/Topbar';
 import UpgradeButton from '../components/UpgradeButton';
@@ -672,16 +673,13 @@ function RoleSelectorSection({ dashData }) {
 }
 
 // ── Section 05: Proof strip ─────────────────────────────────────────────────
-// Active tracks only — excludes any coming-soon entries that have no real content yet.
-const PRACTICE_QUESTIONS = TRACK_SLUGS.reduce(
-  (s, slug) => s + (TRACK_META[slug]?.totalQuestions ?? 0), 0
-);
-
 function ProofStripSection() {
+  const counts = useCatalogCounts();
+  const practiceTotal = TRACK_SLUGS.reduce((s, slug) => s + (counts[slug]?.total ?? 0), 0);
   const ref = useRef(null);
   const inView = useInView(ref, '-5%');
   const reduced = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const qCount = useCountUp(PRACTICE_QUESTIONS, 700, reduced || inView);
+  const qCount = useCountUp(practiceTotal, 700, reduced || inView);
   const trackCount = useCountUp(ALL_TRACK_SLUGS.length, 500, reduced || inView);
 
   const STATS = [
@@ -715,6 +713,8 @@ function ProofStripSection() {
 
 // ── Section 06: Tracks index ────────────────────────────────────────────────
 function TracksIndexSection() {
+  const counts = useCatalogCounts();
+  const practiceTotal = TRACK_SLUGS.reduce((s, slug) => s + (counts[slug]?.total ?? 0), 0);
   const FORMAT_LABELS = {
     sql:                'SQL · DuckDB',
     python:             'Python · sandbox',
@@ -733,14 +733,14 @@ function TracksIndexSection() {
           <p className="lp-section-index">06&ensp;/&ensp;ALL TRACKS</p>
           <h2 className="lp-section-h2">The full curriculum.</h2>
           <p className="lp-tracks-editorial">
-            Not 2,000. Just the <span className="lp-tracks-editorial-n">{PRACTICE_QUESTIONS}</span> that actually matter.
+            Not 2,000. Just the <span className="lp-tracks-editorial-n">{practiceTotal || '…'}</span> that actually matter.
           </p>
         </Reveal>
         <div className="lp-tracks-list" role="list">
           {ALL_TRACK_SLUGS.map((slug, i) => {
             const meta = TRACK_META[slug];
             const isActive = TRACK_SLUGS.includes(slug);
-            const totalQ = meta.totalQuestions;
+            const totalQ = counts[slug]?.total;
             return (
               <Reveal key={slug} delay={i * 40}>
                 <div role="listitem" className={`lp-track-row${meta.comingSoon ? ' lp-track-row--soon' : ''}`}>
@@ -753,7 +753,7 @@ function TracksIndexSection() {
                     <p className="lp-track-desc">{meta.description}</p>
                   </div>
                   <div className="lp-track-meta">
-                    <span className="lp-track-count">{totalQ} q</span>
+                    {totalQ ? <span className="lp-track-count">{totalQ} q</span> : null}
                     <span className="lp-track-format">{FORMAT_LABELS[slug] ?? meta.tagline}</span>
                   </div>
                   {isActive ? (
@@ -794,9 +794,11 @@ function PricingSection({ userPlan, currency }) {
     return 'both';
   }
 
-  const ACTIVE_Q = TRACK_SLUGS.reduce((s, slug) => s + (TRACK_META[slug]?.totalQuestions ?? 0), 0);
+  const counts = useCatalogCounts();
+  const ACTIVE_Q = TRACK_SLUGS.reduce((s, slug) => s + (counts[slug]?.total ?? 0), 0);
   const FREE_EASY = TRACK_SLUGS
-    .map(s => `${TRACK_META[s].easyQuestions} ${TRACK_META[s].label}`)
+    .filter(s => counts[s]?.easy)
+    .map(s => `${counts[s].easy} ${TRACK_META[s].label}`)
     .join(' · ');
 
   return (
@@ -816,7 +818,7 @@ function PricingSection({ userPlan, currency }) {
               </div>
             </div>
             <ul className="landing-tier-list">
-              <li>All easy questions ({FREE_EASY})</li>
+              <li>All easy questions{FREE_EASY ? ` (${FREE_EASY})` : ''}</li>
               <li>Medium + hard unlock as you solve (hard cap: 8 per code track, 5 per MCQ track)</li>
               <li>2-step progressive hints — mental model first, technique second</li>
               <li>Official solutions with explanation after hints</li>
@@ -842,7 +844,7 @@ function PricingSection({ userPlan, currency }) {
             </div>
             <ul className="landing-tier-list">
               <li>Everything in Free — no hard cap</li>
-              <li>All {ACTIVE_Q} questions, every medium + hard</li>
+              <li>All {ACTIVE_Q || '…'} questions, every medium + hard</li>
               <li>Unlimited medium mocks · 3 hard mocks/day</li>
               <li>Exclusive mock question bank — questions reserved for mock sessions, never shown in practice</li>
               <li>Post-mock debrief — per-question solutions and concept breakdown</li>

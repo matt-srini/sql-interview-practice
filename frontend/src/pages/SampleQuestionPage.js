@@ -10,6 +10,7 @@ import SchemaViewer from '../components/SchemaViewer';
 import TestCasePanel from '../components/TestCasePanel';
 import VariablesPanel from '../components/VariablesPanel';
 import { TRACK_META } from '../contexts/TopicContext';
+import { useCatalogCounts } from '../contexts/CatalogCountsContext';
 import { useTheme } from '../App';
 import { renderDescription } from '../utils/renderDescription';
 import { track } from '../analytics';
@@ -21,6 +22,8 @@ export default function SampleQuestionPage() {
   const { topic: rawTopic, difficulty } = useParams();
   const topic = TRACK_META[rawTopic] ? rawTopic : 'sql';
   const meta = TRACK_META[topic];
+  const allCounts = useCatalogCounts();
+  const trackTotal = allCounts[topic]?.total ?? 0;
   const { isDark } = useTheme();
   const navigate = useNavigate();
 
@@ -306,7 +309,7 @@ export default function SampleQuestionPage() {
               <span className="section-meta">{totalSamples} shown</span>
             </div>
             <p className="sample-challenge-copy">
-              Ready for the full {meta.totalQuestions}-question {topicLabel} track? Pro unlocks every medium + hard question.
+              Ready for the full {trackTotal ? `${trackTotal}-question ` : ''}{topicLabel} track? Pro unlocks every medium + hard question.
             </p>
             <div className="sample-challenge-actions">
               <button className="btn btn-secondary sample-challenge-button" onClick={handleResetSamples} disabled={resetting}>
@@ -495,7 +498,7 @@ export default function SampleQuestionPage() {
               <p className="sample-challenge-copy">
                 {remainingSamples > 0
                   ? `${remainingSamples} sample ${remainingSamples === 1 ? 'question remains' : 'questions remain'} in this ${difficulty} set.`
-                  : `You've seen all ${totalSamples} ${difficulty} samples. The full ${topicLabel} track has ${meta.totalQuestions} questions — Pro unlocks medium + hard.`}
+                  : `You've seen all ${totalSamples} ${difficulty} samples. The full ${topicLabel} track has ${trackTotal || 'many'} questions — Pro unlocks medium + hard.`}
               </p>
               <div className="sample-challenge-actions">
                 {remainingSamples > 0 && (

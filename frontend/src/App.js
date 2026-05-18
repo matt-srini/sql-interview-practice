@@ -10,6 +10,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { CatalogProvider } from './catalogContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { TopicProvider } from './contexts/TopicContext';
+import { CatalogCountsProvider } from './contexts/CatalogCountsContext';
 import AppShell from './components/AppShell';
 import ErrorBoundary from './components/ErrorBoundary';
 import AuthPage from './pages/AuthPage';
@@ -259,11 +260,13 @@ export default function App() {
     <ThemeProvider>
     <BrowserRouter>
       <AuthProvider>
+        <CatalogCountsProvider>
         <ToastProvider>
           <ErrorBoundary>
             <AppRoutes />
           </ErrorBoundary>
         </ToastProvider>
+        </CatalogCountsProvider>
       </AuthProvider>
     </BrowserRouter>
     </ThemeProvider>

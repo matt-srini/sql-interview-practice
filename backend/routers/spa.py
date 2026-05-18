@@ -11,7 +11,11 @@ router = APIRouter()
 
 BASE_URL = "https://datathink.co"
 
-_TRACK_LABELS = {"sql": "SQL", "python": "Python", "python-data": "Pandas", "pyspark": "PySpark"}
+_TRACK_LABELS = {
+    "sql": "SQL", "python": "Python", "python-data": "Pandas", "pyspark": "PySpark",
+    "data-engineering": "Data Engineering", "data-modeling": "Data Modeling",
+    "statistics": "Statistics", "ml-fundamentals": "ML Fundamentals", "experimentation": "Experimentation",
+}
 
 # Cached at first use — filesystem reads only, no DB
 _INDEX_HTML_CACHE: str | None = None
@@ -28,15 +32,62 @@ def _get_index_html() -> str:
     return _INDEX_HTML_CACHE
 
 
+def _get_track_counts() -> dict:
+    """Returns {slug: total_practice_count} computed from loaded catalogs."""
+    import importlib
+    _CFG = [
+        ("sql",              "questions",                  "get_questions_by_difficulty"),
+        ("python",           "python_questions",           "get_all_questions"),
+        ("python-data",      "python_data_questions",      "get_all_questions"),
+        ("pyspark",          "pyspark_questions",          "get_all_questions"),
+        ("data-engineering", "data_engineering_questions", "get_all_questions"),
+        ("data-modeling",    "data_modeling_questions",    "get_all_questions"),
+        ("statistics",       "statistics_questions",       "get_all_questions"),
+        ("ml-fundamentals",  "ml_fundamentals_questions",  "get_all_questions"),
+        ("experimentation",  "experimentation_questions",  "get_all_questions"),
+    ]
+    counts: dict = {}
+    for slug, mod_name, fn_name in _CFG:
+        try:
+            mod = importlib.import_module(mod_name)
+            fn = getattr(mod, fn_name)
+            if fn_name == "get_questions_by_difficulty":
+                grouped = fn()
+                counts[slug] = sum(
+                    len([q for q in qs if not q.get("mock_only")])
+                    for qs in grouped.values()
+                )
+            else:
+                counts[slug] = len([q for q in fn() if not q.get("mock_only")])
+        except Exception:
+            counts[slug] = 0
+    return counts
+
+
 def _build_seo_meta() -> dict:
+    tc = _get_track_counts()
+    total = sum(tc.values())
+
+    _PRACTICE_DESC = {
+        "sql":              f"Your SQL practice workspace. {tc.get('sql', 0)} questions by difficulty — joins, aggregations, window functions, and CTEs with instant DuckDB execution and solution analysis.",
+        "python":           f"Your Python practice workspace. {tc.get('python', 0)} algorithm and data processing questions with automated test case feedback and step-by-step hints.",
+        "python-data":      f"Your Pandas practice workspace. {tc.get('python-data', 0)} DataFrame manipulation questions with live execution and side-by-side output comparison.",
+        "pyspark":          f"Your PySpark practice workspace. {tc.get('pyspark', 0)} MCQ, predict-output, debug, and scenario questions covering core Spark concepts and performance.",
+        "data-engineering": f"Your Data Engineering practice workspace. {tc.get('data-engineering', 0)} MCQ, scenario, and debug questions covering ETL, orchestration, and system design.",
+        "data-modeling":    f"Your Data Modeling practice workspace. {tc.get('data-modeling', 0)} MCQ and scenario questions covering dimensional modeling, normalization, and dbt design.",
+        "statistics":       f"Your Statistics practice workspace. {tc.get('statistics', 0)} conceptual and numerical questions covering probability, inference, and A/B testing.",
+        "ml-fundamentals":  f"Your ML Fundamentals practice workspace. {tc.get('ml-fundamentals', 0)} MCQ and scenario questions covering bias-variance, evaluation, and production ML.",
+        "experimentation":  f"Your Experimentation practice workspace. {tc.get('experimentation', 0)} MCQ and scenario questions covering A/B testing, power analysis, and causal inference.",
+    }
+
     meta: dict = {
         "/": {
             "title": "datathink — SQL, Python & Data Interview Practice",
-            "description": "Practice SQL, Python, Pandas, and PySpark interview questions in a real execution environment. 350+ questions, instant feedback, and curated learning paths for data professionals.",
+            "description": f"Practice SQL, Python, Pandas, PySpark, and more in a real execution environment. {total}+ questions, instant feedback, and curated learning paths for data professionals.",
         },
         "/learn": {
             "title": "Learning Paths — datathink",
-            "description": "Curated SQL, Python, Pandas, and PySpark learning paths to build interview-ready skills step by step.",
+            "description": "Curated learning paths across SQL, Python, Pandas, PySpark, Statistics, ML, and Experimentation to build interview-ready skills step by step.",
         },
         "/learn/sql": {
             "title": "SQL Learning Paths — datathink",
@@ -54,23 +105,13 @@ def _build_seo_meta() -> dict:
             "title": "PySpark Learning Paths — datathink",
             "description": "Curated PySpark learning paths covering Spark core concepts, performance, streaming, and Delta Lake.",
         },
-        "/practice/sql": {
-            "title": "SQL Interview Practice — datathink",
-            "description": "Your SQL practice workspace. Pick up where you left off, track progress across 95 questions by difficulty, and solve real interview problems with instant DuckDB execution and solution analysis.",
-        },
-        "/practice/python": {
-            "title": "Python Interview Practice — datathink",
-            "description": "Your Python practice workspace. Track progress across 83 algorithm and data processing questions with automated test case feedback and step-by-step hints.",
-        },
-        "/practice/python-data": {
-            "title": "Pandas Interview Practice — datathink",
-            "description": "Your Pandas practice workspace. Track progress across 76 DataFrame manipulation questions with live execution and side-by-side output comparison.",
-        },
-        "/practice/pyspark": {
-            "title": "PySpark Interview Practice — datathink",
-            "description": "Your PySpark practice workspace. Track progress across 102 MCQ, predict-output, debug, and scenario questions covering core Spark concepts and performance.",
-        },
     }
+    for slug, desc in _PRACTICE_DESC.items():
+        track_label = _TRACK_LABELS.get(slug, slug.replace("-", " ").title())
+        meta[f"/practice/{slug}"] = {
+            "title": f"{track_label} Interview Practice — datathink",
+            "description": desc,
+        }
 
     # Sample pages: 4 tracks × 3 difficulties
     for topic, label in _TRACK_LABELS.items():

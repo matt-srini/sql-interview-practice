@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import api from '../api';
 import { useCatalog } from '../catalogContext';
 import { useTopic } from '../contexts/TopicContext';
+import { useCatalogCounts } from '../contexts/CatalogCountsContext';
 import { useAuth } from '../contexts/AuthContext';
 
 import PathProgressCard from '../components/PathProgressCard';
@@ -32,16 +33,23 @@ function pickFirstQuestionId(catalog) {
   return null;
 }
 
-const HUB_DESCRIPTIONS = {
-  sql: 'Your SQL practice workspace. Pick up where you left off, track progress across 95 questions by difficulty, and solve real interview problems with instant DuckDB execution and solution analysis.',
-  python: 'Your Python practice workspace. Track progress across 83 algorithm and data processing questions with automated test case feedback and step-by-step hints.',
-  'python-data': 'Your Pandas practice workspace. Track progress across 76 DataFrame manipulation questions with live execution and side-by-side output comparison.',
-  pyspark: 'Your PySpark practice workspace. Track progress across 102 MCQ, predict-output, debug, and scenario questions covering core Spark concepts and performance.',
+const HUB_DESC_TEMPLATES = {
+  sql:              n => `Your SQL practice workspace. ${n} questions by difficulty — joins, aggregations, window functions, and CTEs with instant DuckDB execution and solution analysis.`,
+  python:           n => `Your Python practice workspace. ${n} algorithm and data processing questions with automated test case feedback and step-by-step hints.`,
+  'python-data':    n => `Your Pandas practice workspace. ${n} DataFrame manipulation questions with live execution and side-by-side output comparison.`,
+  pyspark:          n => `Your PySpark practice workspace. ${n} MCQ, predict-output, debug, and scenario questions covering core Spark concepts and performance.`,
+  'data-engineering': n => `Your Data Engineering practice workspace. ${n} questions covering ETL, orchestration, streaming, and system design.`,
+  'data-modeling':  n => `Your Data Modeling practice workspace. ${n} questions covering dimensional modeling, normalization, and dbt design.`,
+  statistics:       n => `Your Statistics practice workspace. ${n} conceptual and numerical questions covering probability, inference, and A/B testing.`,
+  'ml-fundamentals': n => `Your ML Fundamentals practice workspace. ${n} questions covering bias-variance, evaluation metrics, and production ML.`,
+  experimentation:  n => `Your Experimentation practice workspace. ${n} questions covering A/B testing, power analysis, and causal inference.`,
 };
 
 export default function TrackHubPage() {
   const { topic, meta } = useTopic();
-  const hubDescription = HUB_DESCRIPTIONS[topic] ?? meta.description;
+  const trackCounts = useCatalogCounts();
+  const trackTotal = trackCounts[topic]?.total ?? 0;
+  const hubDescription = (HUB_DESC_TEMPLATES[topic]?.(trackTotal) ?? meta.description);
   const { catalog, loading, error } = useCatalog();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -56,7 +64,7 @@ export default function TrackHubPage() {
   }, [catalog]);
 
   const totalQuestions = useMemo(() => {
-    if (!catalog) return meta.totalQuestions;
+    if (!catalog) return trackTotal;
     return (catalog.groups ?? []).reduce((acc, g) => acc + g.questions.length, 0);
   }, [catalog, meta]);
 
@@ -175,7 +183,7 @@ export default function TrackHubPage() {
           "name": `${meta.label} Interview Practice`,
           "description": hubDescription,
           "url": `https://datathink.co/practice/${topic}`,
-          "numberOfLessons": meta.totalQuestions,
+          "numberOfLessons": trackTotal || undefined,
           "provider": { "@type": "Organization", "name": "datathink", "url": "https://datathink.co" }
         })}</script>
       </Helmet>

@@ -5,6 +5,7 @@ import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
 import { TRACK_SLUGS, TRACK_LABELS } from '../trackRegistry';
+import { useCatalogCounts } from '../contexts/CatalogCountsContext';
 import Topbar from '../components/Topbar';
 import Skeleton from '../components/Skeleton';
 import UpgradeButton from '../components/UpgradeButton';
@@ -136,6 +137,7 @@ export default function ProgressDashboard() {
     ? <span className={`shell-pill shell-pill-plan shell-pill-plan-${normalisedPlan}`}>{planLabel}</span>
     : null;
 
+  const catalogCounts = useCatalogCounts();
   const [data, setData] = useState(null);
   const [insights, setInsights] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -348,7 +350,7 @@ export default function ProgressDashboard() {
                       const meta = TRACK_META[topic];
                       const trackData = data?.tracks?.[topic];
                       const solved = trackData?.solved ?? 0;
-                      const total = trackData?.total ?? meta.totalQuestions;
+                      const total = trackData?.total ?? catalogCounts[topic]?.total ?? 0;
                       const pct = total > 0 ? solved / total : 0;
                       const accuracy = insights?.per_track?.[topic]?.accuracy_pct;
                       const medianSecs = insights?.per_track?.[topic]?.median_solve_seconds;

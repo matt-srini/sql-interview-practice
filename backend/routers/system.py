@@ -50,6 +50,46 @@ async def runtime_config() -> dict[str, list[str]]:
     return {"oauth_providers": oauth_providers}
 
 
+@router.get("/api/catalog/counts")
+async def catalog_counts() -> dict:
+    """Per-track practice question counts — computed from loaded catalogs, no auth required."""
+    import importlib
+
+    _TRACK_CONFIG = [
+        ("sql",              "questions",                  "get_questions_by_difficulty"),
+        ("python",           "python_questions",           "get_all_questions"),
+        ("python-data",      "python_data_questions",      "get_all_questions"),
+        ("pyspark",          "pyspark_questions",          "get_all_questions"),
+        ("data-engineering", "data_engineering_questions", "get_all_questions"),
+        ("data-modeling",    "data_modeling_questions",    "get_all_questions"),
+        ("statistics",       "statistics_questions",       "get_all_questions"),
+        ("ml-fundamentals",  "ml_fundamentals_questions",  "get_all_questions"),
+        ("experimentation",  "experimentation_questions",  "get_all_questions"),
+    ]
+
+    result = {}
+    for slug, module_name, fn_name in _TRACK_CONFIG:
+        mod = importlib.import_module(module_name)
+        fn = getattr(mod, fn_name)
+        if fn_name == "get_questions_by_difficulty":
+            grouped = fn()
+            per_diff = {
+                diff: len([q for q in qs if not q.get("mock_only")])
+                for diff, qs in grouped.items()
+            }
+        else:
+            practice = [q for q in fn() if not q.get("mock_only")]
+            per_diff = {
+                "easy":   len([q for q in practice if q.get("difficulty") == "easy"]),
+                "medium": len([q for q in practice if q.get("difficulty") == "medium"]),
+                "hard":   len([q for q in practice if q.get("difficulty") == "hard"]),
+            }
+        per_diff["total"] = per_diff["easy"] + per_diff["medium"] + per_diff["hard"]
+        result[slug] = per_diff
+
+    return result
+
+
 @router.get("/robots.txt", response_class=PlainTextResponse, include_in_schema=False)
 async def robots_txt() -> str:
     base = FRONTEND_BASE_URL.rstrip("/")
