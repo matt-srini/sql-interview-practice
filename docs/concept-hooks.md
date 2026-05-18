@@ -841,3 +841,57 @@ Goal: full concept coverage, not tricky framing.
 38. Model monitoring — what signals suggest a deployed model needs retraining?
 39. Deployment constraints — how do latency, memory, and throughput requirements constrain model selection?
 40. Interpretability tradeoff — SHAP / LIME vs feature importance vs inherently interpretable models: what does each give you?
+
+---
+
+## Experimentation
+
+> **Audit status:** Hooks written 2026-05-18. Gap analysis against question bank is deferred (Phase 7). The question bank (80 practice + 25 mock) has 22 concept tags; audit will verify coverage once these hooks are reviewed.
+
+### Foundations & Hypothesis Formulation
+
+1. Null vs alternative hypothesis — how do you state each for an A/B test on conversion rate, and what does failing to reject the null actually mean?
+2. Randomization unit — what determines whether you randomize at user, session, or page level, and what bias does each choice introduce?
+3. SUTVA (Stable Unit Treatment Value Assumption) — what does it require, and which experimental setups violate it most commonly?
+4. Control group design — what makes a valid control group, and when should the control be "no treatment" vs "current experience"?
+5. Holdout groups — how does a holdout group differ from a control group, and when do you need both in the same experiment?
+6. A/A test — what should a valid A/A test result show, and what does a statistically significant A/A result indicate about your platform?
+
+### Statistical Foundations
+
+7. Type I vs Type II error — what does α control vs what does β control, and why is the cost asymmetry between them asymmetric in product experiments?
+8. Statistical power — what four parameters determine power, and which is hardest to change in a live experiment?
+9. Sample size calculation — what inputs are required, and in which direction does each input move the required n?
+10. p-value interpretation — what does p < 0.05 mean precisely, and what are the three most common misinterpretations?
+11. Confidence interval interpretation — what does a 95% CI say about the true parameter, and what does it mean for 5% of future experiment intervals?
+12. Statistical significance vs practical significance — why can a statistically significant result be practically meaningless, and what metric property makes this likely?
+13. Minimum detectable effect (MDE) — what is the MDE, how do you choose it before launching, and how does it relate to required sample size?
+
+### Experiment Design
+
+14. Experiment duration — why should a test run for complete week cycles, what is peeking bias, and how does early stopping inflate Type I error?
+15. Multiple testing problem — what does the familywise error rate compound to across k tests at α = 0.05, and what corrections (Bonferroni, Benjamini-Hochberg) exist?
+16. Sample ratio mismatch (SRM) — what causes SRM, how do you detect it from assignment logs, and what action do you take when you see it?
+17. Novelty effects — how do novelty and learning effects manifest differently over time, and which resolves naturally vs which requires intervention?
+18. Segmentation analysis — what are the risks of post-hoc segment drilling (multiple testing, cherry-picking), and when is pre-specified segmentation valid?
+19. Interaction effects — when do simultaneous experiments interfere with each other, and what isolation strategies exist?
+
+### Metric Selection & Sensitivity
+
+20. Primary vs guardrail metrics — what is the difference between them, and what should you do when an experiment improves the primary metric but regresses a guardrail?
+21. Metric sensitivity — what makes a metric high-variance, and how does variance inflate the required sample size?
+22. Ratio metrics and the delta method — why do ratio metrics (e.g., revenue per user) have higher variance than count metrics, and what does the delta method approximate?
+23. CUPED variance reduction — what does CUPED remove from metric variance, what pre-experiment data does it require, and what is a typical variance reduction?
+24. Surrogate vs long-term metrics — when is a short-term proxy acceptable, and how do you validate that a surrogate predicts the long-term outcome it represents?
+25. Metric selection tradeoff — why is the metric most sensitive to short-term change not always the correct primary metric for a decision?
+
+### Advanced Methods
+
+26. Multi-armed bandit — what is the explore-exploit tradeoff, when is a bandit preferable to a fixed-allocation A/B test, and what does Thompson sampling do?
+27. Bayesian A/B testing — what does the posterior probability of a variant being better represent, and how does it differ from a frequentist p-value in terms of stopping rules?
+28. Network effects and interference — how do users influencing each other violate SUTVA, and what cluster-randomized, geo-split, or time-based designs mitigate spillover?
+29. Switchback experiments — what type of interference do they address, what is the randomization unit, and what is the tradeoff vs user-level randomization?
+30. Quasi-experimental methods — when is a randomized experiment not feasible, and when would you use difference-in-differences vs regression discontinuity vs synthetic control?
+31. Causal inference from experiments — what assumptions make an A/B test causal, and what common violations weaken the causal claim?
+32. Long-term experiment effects — how do you measure effects that materialize after the experiment ends, and what role does a persistent holdout play?
+33. Variance reduction: stratification — how does pre-stratification reduce residual variance, and what practical constraint limits its application to large n?

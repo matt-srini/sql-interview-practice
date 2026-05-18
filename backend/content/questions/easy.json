@@ -1171,5 +1171,204 @@
       "Salesforce",
       "Meta"
     ]
+  },
+  {
+    "id": 11033,
+    "order": 33,
+    "title": "Normalize acquisition channel names",
+    "difficulty": "easy",
+    "description": "The `acquisition_channel` column in `users` can have inconsistent casing and leading/trailing whitespace — the same channel may appear as `'organic'`, `' Organic'`, or `'ORGANIC'`. Write a query that normalizes each value by trimming whitespace and uppercasing, then counts users per normalized channel. Return `channel` and `user_count`, ordered by `user_count` descending.",
+    "dataset_files": [
+      "users.csv"
+    ],
+    "schema": {
+      "users": [
+        "acquisition_channel"
+      ]
+    },
+    "companies": [
+      "Airbnb",
+      "LinkedIn",
+      "Shopify"
+    ],
+    "concepts": [
+      "STRING TRIMMING",
+      "CASE-INSENSITIVE NORMALIZATION",
+      "CHANNEL STANDARDIZATION"
+    ],
+    "required_concepts": [
+      "string_functions",
+      "group_by",
+      "order_by"
+    ],
+    "enforce_concepts": true,
+    "expected_query": "SELECT UPPER(TRIM(acquisition_channel)) AS channel, COUNT(*) AS user_count\nFROM users\nGROUP BY UPPER(TRIM(acquisition_channel))\nORDER BY user_count DESC",
+    "solution_query": "SELECT UPPER(TRIM(acquisition_channel)) AS channel,\n       COUNT(*) AS user_count\nFROM users\nGROUP BY UPPER(TRIM(acquisition_channel))\nORDER BY user_count DESC;",
+    "hints": [
+      "Two functions applied in sequence can collapse variant spellings of the same label into one group.",
+      "UPPER() and TRIM() must appear consistently in both SELECT and GROUP BY — or alias the expression in a CTE and group by the alias."
+    ],
+    "explanation": "TRIM() removes leading and trailing whitespace; UPPER() folds case. Together they normalize free-text categorical values before grouping. The pair must appear in both the SELECT and GROUP BY because SQL evaluates GROUP BY before SELECT aliases are visible. This is the standard ETL pattern for deduplicate-before-aggregate when source data comes from user input or multiple systems with inconsistent formatting."
+  },
+  {
+    "id": 11034,
+    "order": 34,
+    "title": "Extract email domains",
+    "difficulty": "easy",
+    "description": "Write a query that returns `user_id`, `email`, and `domain` — the portion of each email address after the `@` character. Order by `user_id` ascending.",
+    "dataset_files": [
+      "users.csv"
+    ],
+    "schema": {
+      "users": [
+        "user_id",
+        "email"
+      ]
+    },
+    "companies": [
+      "Google",
+      "Stripe",
+      "LinkedIn"
+    ],
+    "concepts": [
+      "SUBSTRING EXTRACTION",
+      "SPLIT_PART",
+      "EMAIL PARSING"
+    ],
+    "required_concepts": [
+      "string_functions",
+      "order_by"
+    ],
+    "enforce_concepts": true,
+    "expected_query": "SELECT user_id, email, SPLIT_PART(email, '@', 2) AS domain\nFROM users\nORDER BY user_id",
+    "solution_query": "SELECT user_id, email,\n       SPLIT_PART(email, '@', 2) AS domain\nFROM users\nORDER BY user_id;",
+    "hints": [
+      "A function that splits a string on a delimiter and returns a numbered part can isolate one side of the '@' in a single call.",
+      "The domain is the second segment when you split on '@'."
+    ],
+    "explanation": "SPLIT_PART(string, delimiter, n) splits a string on the given delimiter and returns the nth part (1-indexed). For emails, '@' separates the local part (1) from the domain (2). This is cleaner than SUBSTRING + STRPOS when the result is always at a fixed position relative to a known delimiter. SPLIT_PART is available in PostgreSQL, DuckDB, Redshift, and Snowflake; use SUBSTR + INSTR in MySQL."
+  },
+  {
+    "id": 11035,
+    "order": 35,
+    "title": "Build employee display labels",
+    "difficulty": "easy",
+    "description": "Write a query that returns each employee's `employee_id`, `employee_name`, and a `label` formatted as `'Name (Department)'`. If an employee has no matching department, substitute `'Unknown'` for the department name. Order by `employee_id` ascending.",
+    "dataset_files": [
+      "employees.csv",
+      "departments.csv"
+    ],
+    "schema": {
+      "employees": [
+        "employee_id",
+        "employee_name",
+        "department_id"
+      ],
+      "departments": [
+        "department_id",
+        "department_name"
+      ]
+    },
+    "companies": [
+      "Meta",
+      "Google",
+      "Salesforce"
+    ],
+    "concepts": [
+      "STRING CONCATENATION",
+      "NULL HANDLING IN CONCAT",
+      "EMPLOYEE LABELING"
+    ],
+    "required_concepts": [
+      "string_functions",
+      "join",
+      "order_by"
+    ],
+    "enforce_concepts": true,
+    "expected_query": "SELECT e.employee_id, e.employee_name,\n       CONCAT(e.employee_name, ' (', COALESCE(d.department_name, 'Unknown'), ')') AS label\nFROM employees e\nLEFT JOIN departments d ON e.department_id = d.department_id\nORDER BY e.employee_id",
+    "solution_query": "SELECT e.employee_id, e.employee_name,\n       CONCAT(e.employee_name, ' (', COALESCE(d.department_name, 'Unknown'), ')') AS label\nFROM employees e\nLEFT JOIN departments d ON e.department_id = d.department_id\nORDER BY e.employee_id;",
+    "hints": [
+      "A LEFT JOIN keeps all employees including those with no matching department row.",
+      "COALESCE returns the first non-NULL argument — use it to substitute a fallback string before it reaches CONCAT."
+    ],
+    "explanation": "CONCAT() joins strings left to right; each literal like ' (' must be a separate argument. COALESCE(d.department_name, 'Unknown') substitutes 'Unknown' when the LEFT JOIN finds no department, preventing the label from being corrupted by NULL. Using the `||` operator instead of CONCAT in many databases would propagate NULL silently, so COALESCE is the portable, defensive pattern. This construct is common in display-layer queries and reporting pipelines."
+  },
+  {
+    "id": 11036,
+    "order": 36,
+    "title": "Days since user signup",
+    "difficulty": "easy",
+    "description": "Write a query that returns `user_id`, `name`, `signup_date`, and `days_since_signup` — the number of full days between each user's `signup_date` and today. Only include active users (`is_active = true`). Order by `days_since_signup` descending.",
+    "dataset_files": [
+      "users.csv"
+    ],
+    "schema": {
+      "users": [
+        "user_id",
+        "name",
+        "signup_date",
+        "is_active"
+      ]
+    },
+    "companies": [
+      "Stripe",
+      "Airbnb",
+      "LinkedIn"
+    ],
+    "concepts": [
+      "CURRENT DATE",
+      "DATE ARITHMETIC",
+      "TENURE CALCULATION"
+    ],
+    "required_concepts": [
+      "date_functions",
+      "order_by"
+    ],
+    "enforce_concepts": true,
+    "expected_query": "SELECT user_id, name, signup_date,\n       (CURRENT_DATE - signup_date)::INT AS days_since_signup\nFROM users\nWHERE is_active = true\nORDER BY days_since_signup DESC",
+    "solution_query": "SELECT user_id, name, signup_date,\n       (CURRENT_DATE - signup_date)::INT AS days_since_signup\nFROM users\nWHERE is_active = true\nORDER BY days_since_signup DESC;",
+    "hints": [
+      "Subtracting a date from CURRENT_DATE gives an interval or integer depending on the database — cast to INT to get a plain day count.",
+      "Filter to active users before computing the metric."
+    ],
+    "explanation": "CURRENT_DATE returns today's date as a DATE value. Subtracting two DATE values in DuckDB yields an interval; casting with ::INT gives a plain day count. This pattern — age = CURRENT_DATE − date_column — appears everywhere: churn models, SLA monitors, cohort analyses, and subscription expiry checks. Results will differ each day you run the query, which is expected behavior for a live tenure column."
+  },
+  {
+    "id": 11037,
+    "order": 37,
+    "title": "Monthly signup trend",
+    "difficulty": "easy",
+    "description": "Write a query that counts how many users signed up in each calendar month. Return `signup_month` (the `signup_date` truncated to the first day of the month using `DATE_TRUNC`) and `signup_count`. Order by `signup_month` ascending.",
+    "dataset_files": [
+      "users.csv"
+    ],
+    "schema": {
+      "users": [
+        "signup_date"
+      ]
+    },
+    "companies": [
+      "Stripe",
+      "Airbnb",
+      "Meta"
+    ],
+    "concepts": [
+      "DATE TRUNCATION",
+      "MONTHLY TREND",
+      "GROUPED DATE AGGREGATION"
+    ],
+    "required_concepts": [
+      "date_functions",
+      "group_by",
+      "order_by"
+    ],
+    "enforce_concepts": true,
+    "expected_query": "SELECT DATE_TRUNC('month', signup_date) AS signup_month,\n       COUNT(*) AS signup_count\nFROM users\nGROUP BY DATE_TRUNC('month', signup_date)\nORDER BY signup_month",
+    "solution_query": "SELECT DATE_TRUNC('month', signup_date) AS signup_month,\n       COUNT(*) AS signup_count\nFROM users\nGROUP BY DATE_TRUNC('month', signup_date)\nORDER BY signup_month;",
+    "hints": [
+      "DATE_TRUNC('month', col) snaps any date to the first day of its month — all dates in the same month become equal, so GROUP BY collapses them into one row.",
+      "Group by the same truncated expression used in SELECT."
+    ],
+    "explanation": "DATE_TRUNC('month', date) truncates to the first of the month (e.g., 2023-03-15 → 2023-03-01). Unlike STRFTIME('%Y-%m', date), DATE_TRUNC preserves a proper DATE type that sorts correctly and can be fed into downstream date arithmetic. This is the canonical pattern for time-series bucketing in analytics SQL — use DATE_TRUNC when you need a proper date; use STRFTIME when you need a formatted string for display."
   }
 ]

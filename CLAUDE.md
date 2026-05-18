@@ -51,12 +51,12 @@ Keep all five lenses active at once. The best decisions here satisfy all of them
 A data interview practice platform covering nine tracks. Users write SQL or Python, answer MCQ questions, get instant feedback, and work through gated challenge banks.
 
 **Modes per track:**
-- **Challenge mode** — plan-aware unlock rules, persistent progress, 756 practice questions across 9 tracks
+- **Challenge mode** — plan-aware unlock rules, persistent progress, 773 practice questions across 9 tracks
 - **Mock mode** — 147 additional mock-only questions (Pro/Elite), never shown in practice catalog
 - **Sample mode** — 36 sandbox questions across SQL/Python/Pandas/PySpark (3 per track+difficulty), no progress recorded, no login required. Data Engineering, Data Modeling, Statistics, ML Fundamentals, and Experimentation samples are auto-sliced from the first 3 practice questions per difficulty (no dedicated sample IDs).
 
 **Tracks:**
-- **SQL** — 95 practice (32 easy / 34 medium / 29 hard) + 33 mock-only, DuckDB execution, realistic relational datasets
+- **SQL** — 112 practice (37 easy / 45 medium / 30 hard) + 38 mock-only, DuckDB execution, realistic relational datasets
 - **Python** — 83 practice (30 easy / 29 medium / 24 hard) + 20 mock-only, algorithms and data structures, test-case evaluation
 - **Pandas** — 76 practice (22 easy / 31 medium / 23 hard) + 24 mock-only, pandas-specific data manipulation, DataFrame comparison
 - **PySpark** — 102 practice (38 easy / 38 medium / 26 hard) + 20 mock-only, MCQ / predict-output / debug / scenario formats
@@ -89,7 +89,7 @@ Mock-only questions (`mock_only: true`) live in the same JSON files as practice 
 
 | Track | Easy (practice + mock) | Medium (practice + mock) | Hard (practice + mock) | Format | Location |
 |---|---|---|---|---|---|
-| SQL | 32 + 0 | 34 + 19 | 29 + 14 | SQL query via DuckDB | `backend/content/questions/` |
+| SQL | 37 + 0 | 45 + 19 | 30 + 19 | SQL query via DuckDB | `backend/content/questions/` |
 | Python | 30 + 0 | 29 + 8 | 24 + 12 | Algorithm function, test cases | `backend/content/python_questions/` |
 | Pandas | 22 + 0 | 31 + 10 | 23 + 14 | DataFrame function, output comparison | `backend/content/python_data_questions/` |
 | PySpark | 38 + 0 | 38 + 10 | 26 + 10 | MCQ / predict-output / debug / scenario | `backend/content/pyspark_questions/` |
@@ -99,8 +99,8 @@ Mock-only questions (`mock_only: true`) live in the same JSON files as practice 
 | ML Fundamentals | 30 + 0 | 35 + 12 | 25 + 13 | MCQ / scenario / predict-output / debug | `backend/content/ml_fundamentals_questions/` |
 | Experimentation | 30 + 0 | 30 + 12 | 20 + 13 | MCQ / scenario / predict-output / debug | `backend/content/experimentation_questions/` |
 
-**Practice totals:** SQL 95 · Python 83 · Pandas 76 · PySpark 102 · Data Engineering 80 · Data Modeling 70 · Statistics 80 · ML Fundamentals 90 · Experimentation 80 = **756 practice questions**  
-**Mock-only totals:** SQL 33 · Python 20 · Pandas 24 · PySpark 20 · ML Fundamentals 25 · Experimentation 25 = **147 mock-only questions** (Pro/Elite only; Statistics and Data Engineering and Data Modeling have no mock-only questions at launch)
+**Practice totals:** SQL 112 · Python 83 · Pandas 76 · PySpark 102 · Data Engineering 80 · Data Modeling 70 · Statistics 80 · ML Fundamentals 90 · Experimentation 80 = **773 practice questions**  
+**Mock-only totals:** SQL 38 · Python 20 · Pandas 24 · PySpark 20 · ML Fundamentals 25 · Experimentation 25 = **152 mock-only questions** (Pro/Elite only; Statistics and Data Engineering and Data Modeling have no mock-only questions at launch)
 
 See [docs/content-authoring.md](docs/content-authoring.md) for the full mock-only authoring spec.
 

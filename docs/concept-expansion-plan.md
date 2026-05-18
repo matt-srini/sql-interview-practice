@@ -3,7 +3,7 @@
 Tracks concept-hooks.md coverage against the question bank, identifies gaps, and drives new question authoring across all 8 tracks.
 
 **Initiated:** 2026-05-18  
-**Status:** Phase 1 in progress (Phase 0 complete 2026-05-18)
+**Status:** Phase 2 pending (Phase 0 complete 2026-05-18, Phase 1 complete 2026-05-18)
 
 ---
 
@@ -11,16 +11,17 @@ Tracks concept-hooks.md coverage against the question bank, identifies gaps, and
 
 | Track | Hooks in concept-hooks.md | Gap analysis done? | Questions added? |
 |---|---|---|---|
-| SQL | ✅ hooks 1–88 + Missing Topics | ✅ done | ⬜ Phase 1 |
-| PySpark | ✅ hooks 1–60 + Missing Topics | ✅ done | ⬜ Phase 4 |
-| Pandas | ✅ hooks 1–62 + Missing Topics | ✅ done | ⬜ Phase 3 |
-| Python | ✅ hooks 1–60 + Missing Topics | ✅ done | ⬜ Phase 3 |
-| Data Engineering | ✅ hooks 1–62 + Missing Topics | ✅ done | ⬜ Phase 4 |
-| Data Modeling | ✅ hooks 1–53 + Missing Topics | ✅ done | ⬜ Phase 4 |
-| Statistics | ✅ hooks 1–78 + Missing Topics | ✅ done | ⬜ Phase 2 |
-| ML Fundamentals | ❌ **no hooks written yet** | ❌ blocked on hooks | ⬜ future |
+| SQL | ✅ hooks 1–92 (Phase 0 expanded) | ✅ done | ✅ Phase 1 (+22) |
+| PySpark | ✅ hooks 1–66 (Phase 0 expanded) | ✅ done | ⬜ Phase 4 |
+| Pandas | ✅ hooks 1–67 (Phase 0 expanded) | ✅ done | ⬜ Phase 3 |
+| Python | ✅ hooks 1–67 (Phase 0 expanded) | ✅ done | ⬜ Phase 3 |
+| Data Engineering | ✅ hooks 1–67 (Phase 0 expanded) | ✅ done | ⬜ Phase 4 |
+| Data Modeling | ✅ hooks 1–57 (Phase 0 expanded) | ✅ done | ⬜ Phase 4 |
+| Statistics | ✅ hooks 1–84 (Phase 0 expanded) | ✅ done | ⬜ Phase 2 |
+| ML Fundamentals | ✅ hooks 1–40 (Phase 0 written) | ❌ deferred to Phase 7 | ⬜ Phase 7 |
+| Experimentation | ✅ hooks 1–33 (written 2026-05-18) | ❌ deferred to Phase 7 | ⬜ Phase 7 |
 
-> **ML Fundamentals note:** Phase 0 adds the ML hooks to `concept-hooks.md`. The gap analysis and question authoring for ML is deferred — it will be a separate phase after the hooks are reviewed and approved.
+> **ML Fundamentals & Experimentation note:** Hooks are written; gap analysis and question authoring are deferred — they will be separate phases after the hooks are reviewed.
 
 ---
 
@@ -197,15 +198,16 @@ All SQL questions must use existing CSVs. Available tables:
 | Table | Key columns |
 |---|---|
 | `users` | user_id, name, email, signup_date, country, acquisition_channel, plan_tier, is_active |
-| `orders` | order_id, user_id, order_date, status, total_amount |
-| `order_items` | item_id, order_id, product_id, quantity, unit_price |
-| `products` | product_id, product_name, category_id, price |
-| `categories` | category_id, category_name |
-| `employees` | employee_id, name, department_id, salary, hire_date, manager_id |
+| `orders` | order_id, user_id, order_date, status, gross_amount, discount_amount, **net_amount**, payment_status |
+| `order_items` | **order_item_id**, order_id, product_id, quantity, unit_price, line_amount |
+| `products` | product_id, product_name, category_id, brand, price, launch_date, is_active |
+| `categories` | category_id, category_name, parent_category |
+| `employees` | employee_id, **employee_name**, email, salary, department_id, hire_date, country (**no manager_id**) |
 | `departments` | department_id, department_name, region |
-| `events` | event_id, user_id, product_id, event_name, event_time |
-| `payments` | payment_id, order_id, amount, payment_date, payment_method, status |
-| `support_tickets` | ticket_id, user_id, created_at, resolved_at, issue_type, status |
+| `events` | event_id, session_id, user_id, event_time, event_name, product_id |
+| `payments` | payment_id, order_id, payment_date, payment_method, amount, status |
+| `support_tickets` | ticket_id, user_id, created_at, issue_type, priority, status, resolution_hours |
+| `sessions` | session_id, user_id, session_start, device_type, traffic_source, country |
 
 String/date function questions use `employees`, `users`, or `orders` — they have rich text and date columns. JSON extraction would need a new dataset (noted in Phase 1 hard section).
 
@@ -226,43 +228,45 @@ String/date function questions use `employees`, `users`, or `orders` — they ha
 ---
 
 ### Phase 1 — SQL new questions (+22 questions)
-**Target files:** `backend/content/questions/easy.json`, `medium.json`, `hard.json`
+**Target files:** `backend/content/questions/easy.json`, `medium.json`, `hard.json`  
+**Status: ✅ Complete 2026-05-18** — 37 easy / 45 medium / 30 hard practice; 38 mock-only total
 
 **String Functions (6 questions — easy/medium, all practice):**
-- [ ] TRIM / LTRIM / RTRIM — what each removes, real cleaning use case
-- [ ] SUBSTRING / LEFT / RIGHT — extracting fixed-length segments
-- [ ] CONCAT vs `||` — NULL behavior differences
-- [ ] REPLACE vs REGEXP_REPLACE — when regex power is worth it
-- [ ] SPLIT_PART / STRING_SPLIT — extracting the nth delimited segment
-- [ ] STRING_AGG / LISTAGG / GROUP_CONCAT — aggregating rows into a list
+- [x] 11033 — TRIM + UPPER channel normalization (TRIM / UPPER / STRING TRIMMING)
+- [x] 11034 — SPLIT_PART email domain extraction (SUBSTRING EXTRACTION)
+- [x] 11035 — CONCAT + COALESCE employee label (STRING CONCATENATION / NULL HANDLING)
+- [x] 12054 — REGEXP_REPLACE event name normalization + INITCAP (REGEX REPLACEMENT)
+- [x] 12055 — STRING_AGG products per category with ORDER BY inside aggregate
+- [x] 12064 — SPLIT_PART composite key parse + CONCAT build (DELIMITED STRING PARSING)
 
 **Date & Time Nuances (4 questions — easy/medium, all practice):**
-- [ ] CURRENT_DATE vs NOW() vs CURRENT_TIMESTAMP — type and precision differences
-- [ ] DATE_TRUNC vs EXTRACT — return type difference (timestamp vs number) in a real query
-- [ ] Adding 1 month vs 30 days — why they diverge at month boundaries
-- [ ] Timezone-aware vs naive timestamps — what breaks when you mix them
+- [x] 11036 — CURRENT_DATE minus signup_date → days tenure (CURRENT DATE / DATE ARITHMETIC)
+- [x] 11037 — DATE_TRUNC('month') for monthly trend (DATE TRUNCATION)
+- [x] 12056 — INTERVAL '365 days' + BETWEEN window → renewal flag (DATE ARITHMETIC / INTERVAL ADDITION)
+- [x] 12057 — AT TIME ZONE 'UTC' AT TIME ZONE 'America/Los_Angeles' (TIMEZONE HANDLING)
 
-**Set Operations (3 questions — easy/medium, all practice):**
-- [ ] UNION vs UNION ALL — performance cost and when deduplication matters
-- [ ] INTERSECT vs INNER JOIN — equivalence and when they diverge
-- [ ] EXCEPT / MINUS vs NOT IN — NULL trap that returns zero rows
+**Set Operations (3 questions — medium, all practice):**
+- [x] 12058 — UNION deduplication across orders + support_tickets (UNION SET OPERATION)
+- [x] 12059 — INTERSECT shared users (INTERSECT SET OPERATION)
+- [x] 12060 — EXCEPT anti-join (EXCEPT SET OPERATION)
 
-**Advanced Aggregation (3 questions — medium/hard, all practice):**
-- [ ] ROLLUP — hierarchical subtotals from a single GROUP BY
-- [ ] GROUPING SETS — custom aggregation combinations
-- [ ] FILTER(WHERE) on aggregate vs CASE WHEN — cleaner conditional aggregation
+**Advanced Aggregation (3 questions — medium + hard practice):**
+- [x] 12061 — GROUP BY ROLLUP revenue with COALESCE (ROLLUP SUBTOTALS)
+- [x] 12062 — FILTER(WHERE payment_status = ...) conditional counts (AGGREGATE FILTER)
+- [x] 13044 — GROUPING SETS three independent revenue slices (GROUPING SETS) [hard practice]
 
 **Specialist / Hard Patterns (6 questions — hard; 5 mock-only, 1 practice):**
-- [ ] ARRAY_AGG vs STRING_AGG — when you want an array vs a string (mock-only)
-- [ ] Recursive CTE — hierarchy traversal base + recursive case (practice)
-- [ ] Recursive CTE hard variant — date spine generation (mock-only)
-- [ ] LATERAL join — correlated subquery in FROM when unavoidable (mock-only)
-- [ ] JSON column extraction — `->`, `->>`, JSON_VALUE on a semi-structured column (mock-only)
-- [ ] Calendar spine join — filling missing dates in a time series (mock-only)
+- [x] 12063 — Recursive CTE monthly spine LEFT JOIN to orders [moved to medium practice]
+- [x] 13045 — ARRAY_AGG(DISTINCT ... ORDER BY) product arrays per user [mock]
+- [x] 13046 — Recursive CTE date spine + LEFT JOIN revenue gap-fill [mock]
+- [x] 13047 — CROSS JOIN LATERAL top-2 products per category [mock]
+- [x] 13048 — QUALIFY + ROW_NUMBER latest order per user [mock] *(replaced JSON extraction — no JSON column in dataset)*
+- [x] 13049 — GENERATE_SERIES daily spine + is_weekend flag [mock]
 
 **Notes:**
-- All new SQL questions use existing DuckDB datasets (orders, users, employees, etc.)
-- IDs: allocate at top of each difficulty range following the mock-only ID convention
+- JSON extraction deferred: no existing dataset has a JSON column; would require a new CSV
+- QUALIFY replaces JSON in the mock set — it's a high-value DuckDB/Snowflake pattern
+- employees has no manager_id column — hierarchy CTE uses date spine approach instead
 
 ---
 

@@ -59,7 +59,7 @@ def test_tc071_solution_absent_before_submission():
 
 
 def test_tc072_mock_only_questions_absent_from_practice_catalog():
-    """TC-072: Elite catalog count = 356 practice questions (no mock_only)."""
+    """TC-072: Elite catalog count = 373 practice questions (no mock_only)."""
     from questions import get_all_questions
     from python_questions import get_all_questions as py_all
     from python_data_questions import get_all_questions as pd_all
@@ -72,7 +72,7 @@ def test_tc072_mock_only_questions_absent_from_practice_catalog():
     spark_count = len([q for q in spark_all() if not q.get("mock_only")])
 
     total = sql_count + py_count + pd_count + spark_count
-    assert total == 356, f"Expected 356 practice questions, got {total} ({sql_count}+{py_count}+{pd_count}+{spark_count})"
+    assert total == 373, f"Expected 373 practice questions, got {total} ({sql_count}+{py_count}+{pd_count}+{spark_count})"
 
     # Verify via HTTP catalog endpoint for elite user
     with TestClient(app) as client:
