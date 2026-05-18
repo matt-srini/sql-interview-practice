@@ -9441,19 +9441,6 @@ select {
 }
 
 /* ── Tier badge on path detail page ─────────────────── */
-.learn-tier-badge {
-  display: inline-block;
-  margin-top: 8px;
-  padding: 3px 9px;
-  border-radius: 12px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  background: var(--accent-soft);
-  color: var(--accent-strong);
-  border: 1px solid var(--accent-soft-strong);
-}
 
 .learn-path-complete-banner {
   margin-top: 0.9rem;
@@ -9546,34 +9533,6 @@ select {
 }
 
 /* ── PathProgressCard tier badges ───────────────────── */
-.path-card-tier-badge {
-  display: inline-block;
-  align-self: flex-start;
-  padding: 2px 7px;
-  border-radius: 10px;
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-  background: var(--accent-soft);
-  color: var(--accent-strong);
-  border: 1px solid var(--accent-soft-strong);
-}
-.path-card-tier-badge--free {
-  background: rgba(45, 158, 107, 0.10);
-  color: var(--success);
-  border-color: rgba(45, 158, 107, 0.25);
-}
-.path-card--pro {
-  opacity: 0.65;
-}
-.path-card--pro:hover {
-  opacity: 0.65;
-  transform: none;
-  box-shadow: none;
-  border-color: var(--border-subtle);
-}
 
 /* ── Mock difficulty notice (below config card) ───────── */
 .mock-diff-notice {

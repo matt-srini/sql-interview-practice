@@ -135,24 +135,17 @@ export default function LearningPath() {
               <h1 className="learn-title">{path.title}</h1>
               <p className="learn-description">{path.description}</p>
 
-              {/* Path not accessible — show tier badge */}
-              {!accessible && (
-                <span className="learn-tier-badge learn-tier-badge--pro">Pro</span>
-              )}
-
-              {accessible && (
-                <div className="learn-progress">
-                  <div className="learn-progress-bar">
-                    <div
-                      className="learn-progress-fill"
-                      style={{ width: `${pct}%`, background: meta.color }}
-                    />
-                  </div>
-                  <span className="learn-progress-label">
-                    {path.solved_count} / {path.question_count} complete
-                  </span>
+              <div className="learn-progress">
+                <div className="learn-progress-bar">
+                  <div
+                    className="learn-progress-fill"
+                    style={{ width: `${pct}%`, background: meta.color }}
+                  />
                 </div>
-              )}
+                <span className="learn-progress-label">
+                  {path.solved_count} / {path.question_count} complete
+                </span>
+              </div>
 
               {accessible && isCompleted && (
                 <div className="learn-path-complete-banner" role="status" aria-live="polite">
