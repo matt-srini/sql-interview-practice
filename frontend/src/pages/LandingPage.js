@@ -993,12 +993,12 @@ export default function LandingPage() {
     api.get('/paths').then(r => {
       setPaths(r.data);
       const shuffled = [...r.data].sort(() => Math.random() - 0.5);
-      setDisplayedPaths(shuffled.slice(0, 3));
+      setDisplayedPaths(shuffled.slice(0, 4));
     }).catch(() => {});
   }, []);
 
   const shufflePaths = useCallback(() => {
-    setDisplayedPaths([...paths].sort(() => Math.random() - 0.5).slice(0, 3));
+    setDisplayedPaths([...paths].sort(() => Math.random() - 0.5).slice(0, 4));
   }, [paths]);
 
   const showPricing = !['lifetime_elite'].includes(userPlan);
