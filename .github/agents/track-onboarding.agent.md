@@ -52,10 +52,15 @@ Generate in this exact order:
 1. **`backend/content/<track>_questions/schemas.json`**
    ```json
    {
+     "difficulty_files": {
+       "easy": "easy.json",
+       "medium": "medium.json",
+       "hard": "hard.json"
+     },
      "id_ranges": {
-       "easy":   {"min": T1001, "max": T1999},
-       "medium": {"min": T2001, "max": T2999},
-       "hard":   {"min": T3001, "max": T3999}
+       "easy":   [T1001, T1999],
+       "medium": [T2001, T2999],
+       "hard":   [T3001, T3999]
      }
    }
    ```
@@ -152,8 +157,8 @@ For each path in the spec, generate a JSON file in `backend/content/paths/<slug>
 
 After content is complete and verified, update in a single commit:
 - `docs/content-authoring.md` — question bank table, learning paths table, concept coverage section for the new track, ID allocation table
-- `CLAUDE.md` — content footprint table, practice/mock totals, track list
-- `frontend/src/trackRegistry.js` — set `totalQuestions` and `mockQuestions` to final counts, remove `comingSoon: true`
+- `CLAUDE.md` — content footprint table, practice/mock totals, track list, `:topic` values list, track color in Design system, track entry in repo layout
+- `frontend/src/trackRegistry.js` — set `totalQuestions` and `easyQuestions` to final counts, remove `comingSoon: true`
 
 ---
 

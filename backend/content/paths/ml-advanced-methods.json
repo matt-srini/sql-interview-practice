@@ -7,6 +7,6 @@
   "tier": "pro",
   "role": "advanced",
   "focus_concepts": ["ENSEMBLE STRATEGY", "GRADIENT PATHOLOGY", "DIMENSIONALITY REDUCTION", "REGULARIZATION EFFECT", "TRANSFER LEARNING STRATEGY", "BOOSTING MECHANICS", "HYPERPARAMETER SENSITIVITY"],
-  "outcomes": "You will be able to explain why sigmoid activations cause vanishing gradients and how batch normalization + ReLU solves it, describe how stacking meta-learners can overfit and how out-of-fold predictions prevent this, explain why AdaBoost fails under label noise while random forests are robust, apply partial fine-tuning strategy for small domain datasets using pretrained networks, select between L1 and L2 regularization based on the correlation structure of features, and interpret PCA explained variance to choose the right number of components.",
+  "outcomes": "You'll explain why sigmoid activations cause vanishing gradients and how batch normalization + ReLU solves it, describe how stacking meta-learners can overfit and how out-of-fold predictions prevent it, explain why AdaBoost fails under label noise while random forests are robust, apply partial fine-tuning for small domain datasets using pretrained networks, and select between L1 and L2 regularization based on the correlation structure of features.",
   "recommended_after": ["ml-model-evaluation"]
 }

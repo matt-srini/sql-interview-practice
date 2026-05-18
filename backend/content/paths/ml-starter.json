@@ -7,6 +7,6 @@
   "tier": "free",
   "role": "starter",
   "focus_concepts": ["SUPERVISED VS UNSUPERVISED", "BIAS-VARIANCE TRADEOFF", "DATA SPLITTING STRATEGY", "OVERFITTING DIAGNOSIS", "FEATURE SCALING NECESSITY", "CLASSIFICATION METRICS", "GRADIENT DESCENT BEHAVIOR", "LOSS FUNCTION SELECTION"],
-  "outcomes": "You will be able to distinguish supervised, unsupervised, and semi-supervised learning, explain the bias-variance tradeoff and where models fail, correctly structure a train/validation/test split, recognize overfitting and underfitting from training curves, identify which algorithms require feature scaling, and describe how gradient descent minimizes a loss function.",
+  "outcomes": "You'll distinguish supervised, unsupervised, and semi-supervised learning, explain the bias-variance tradeoff and where models fail, correctly structure a train/validation/test split, recognize overfitting and underfitting from training curves, identify which algorithms require feature scaling, and describe how gradient descent minimizes a loss function.",
   "recommended_after": []
 }

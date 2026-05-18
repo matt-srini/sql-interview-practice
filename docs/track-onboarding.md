@@ -128,7 +128,7 @@ Also define **first-hint leak patterns** — regex patterns for answer-revealing
 
 ### 1.7 Learning paths
 
-Every track requires exactly **2 free shortcut paths** and at least **1 pro path**. The 2 free paths are a platform contract — they define the unlock shortcut system:
+Every track requires exactly **2 free shortcut paths** and at least **1 pro path**. For tracks with 80+ practice questions and 25+ concept tags, 2 pro paths is recommended. The 2 free paths are a platform contract — they define the unlock shortcut system:
 
 - `starter` path (free): completing it unlocks **all medium questions** immediately, bypassing the solve-count threshold
 - `intermediate` path (free): completing it unlocks the **full hard cap** immediately
@@ -162,10 +162,15 @@ Pick the next free T from `backend/tracks.py` (currently 8–9 are reserved). Up
 
 ```json
 {
+  "difficulty_files": {
+    "easy": "easy.json",
+    "medium": "medium.json",
+    "hard": "hard.json"
+  },
   "id_ranges": {
-    "easy":   {"min": T1001, "max": T1999},
-    "medium": {"min": T2001, "max": T2999},
-    "hard":   {"min": T3001, "max": T3999}
+    "easy":   [T1001, T1999],
+    "medium": [T2001, T2999],
+    "hard":   [T3001, T3999]
   }
 }
 ```
@@ -237,11 +242,15 @@ Add an entry to `TRACK_META`:
   label: '<Display Name>',
   description: '<1–2 sentence description for the landing page tracks index>',
   color: '<#hex>',
-  icon: null,
-  totalQuestions: 0,    // update to final count when content is complete
-  mockQuestions: 0,     // update when mock-only questions are added
+  apiPrefix: '/<slug>',   // empty string '' for SQL only
+  language: 'text',       // 'sql' | 'python' | 'text'
+  hasRunCode: false,       // true for SQL/Python/Pandas
+  hasMCQ: true,            // true for MCQ tracks
+  mixedSubtype: false,     // true only for Statistics
+  totalQuestions: 0,       // update to final count when content is complete
+  easyQuestions: 0,        // update when easy content is authored
   tagline: '<short format hint, e.g. "MCQ · scenario · debug">',
-  // comingSoon: true,  // add during development; remove on launch
+  comingSoon: true,        // remove on launch
 },
 ```
 
@@ -314,7 +323,21 @@ Each wrong option must represent a **genuine misconception** — a conclusion a 
 
 Practice questions come first. Once the practice bank is complete, author mock-only questions using concept angles NOT already covered in the practice bank. Mock-only questions are identified by `"mock_only": true` and must be multi-concept (integrate 2+ related concepts). Allocate their IDs at the top of the medium/hard range, immediately after the last practice question.
 
-### 4.6 Validate in batches
+### 4.6 Commit cadence
+
+Commit in exactly this sequence — one commit per phase, not one giant commit at the end:
+
+| Commit | Contents |
+|---|---|
+| Phase 2+3 scaffolding | `schemas.json`, empty JSON files, loader, `tracks.py` entry, `trackRegistry.js`, `ROLES`, `IDE_TRACKS`, `main.py` router wiring |
+| Easy questions | `easy.json` complete, validated |
+| Medium + hard practice | `medium.json` (practice only) + `hard.json` (practice only), validated |
+| Mock-only | Medium + hard mock questions appended to their respective files |
+| Phase 5+6 | Path JSON files + full docs update (`CLAUDE.md`, `content-authoring.md`) + `trackRegistry.js` `totalQuestions` + remove `comingSoon` |
+
+This cadence makes git history readable, keeps each commit reviewable, and ensures the docs update is never an afterthought.
+
+### 4.7 Validate in batches
 
 After every 10–15 questions:
 
@@ -395,7 +418,7 @@ Every track launch must update all of the following files in the same commit. Do
 | `CLAUDE.md` | Content footprint table (add row), practice totals line, mock-only totals line, Tracks list in "What this is", docs index if a new doc was created |
 | `docs/backend.md` | Track table if any new `eval_kind`, `unlock_profile`, or API endpoint was introduced |
 | `docs/frontend.md` | `TRACK_SLUGS` / `TRACK_META` count, role selector section if roles changed |
-| `frontend/src/trackRegistry.js` | `totalQuestions` and `mockQuestions` updated to final counts; `comingSoon` removed |
+| `frontend/src/trackRegistry.js` | `totalQuestions` and `easyQuestions` updated to final counts; `comingSoon` removed |
 
 ---
 
@@ -433,7 +456,7 @@ Run every item before pushing the launch commit.
 - [ ] Track appears in the Tracks Index (section 06) with correct question count
 - [ ] Track appears in the correct role selector tabs (section 04)
 - [ ] `comingSoon` flag is removed from `trackRegistry.js`
-- [ ] `totalQuestions` and `mockQuestions` in `trackRegistry.js` match actual counts
+- [ ] `totalQuestions` and `easyQuestions` in `trackRegistry.js` match actual counts
 - [ ] Sample mode works end-to-end in browser (`/sample/<slug>/easy`)
 - [ ] Practice mode works end-to-end in browser (`/practice/<slug>/questions/<id>`)
 - [ ] Mock session works for the new track (Pro/Elite account required)
@@ -459,7 +482,7 @@ Run every item before pushing the launch commit.
 | 5 | Data Engineering | `data-engineering` | Live |
 | 6 | Data Modeling | `data-modeling` | Live |
 | 7 | Statistics | `statistics` | Live |
-| 8 | ML Fundamentals | `ml-fundamentals` | Planned |
+| 8 | ML Fundamentals | `ml-fundamentals` | Live |
 | 9 | Experimentation | `experimentation` | Planned |
 
 ---
@@ -470,7 +493,7 @@ Run every item before pushing the launch commit.
 
 **Authoring mock questions before practice is complete.** Mock questions must use fresh concept angles. You can't know what angles are "fresh" until the practice bank is fully authored.
 
-**Setting `totalQuestions` in `trackRegistry.js` before content is complete.** The landing page shows this number. Set it to 0 (or keep `comingSoon: true`) until the final question count is locked.
+**Setting `totalQuestions` in `trackRegistry.js` before content is complete.** The landing page shows this number. Keep `comingSoon: true` until content is fully authored, validated, and committed — then set `totalQuestions` to the final practice count and remove `comingSoon`.
 
 **Updating `CLAUDE.md` and `docs/` as a follow-up commit.** The rule is: docs update in the same commit as the code change they describe. Docs that lag behind accumulate rot.
 
