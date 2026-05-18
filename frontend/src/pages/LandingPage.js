@@ -690,6 +690,7 @@ function ProofStripSection() {
     { text: 'real DuckDB execution' },
     { text: 'live Python sandbox' },
     { text: 'mocks withhold solutions' },
+    { text: 'exclusive mock question bank' },
   ];
 
   return (
@@ -844,7 +845,7 @@ function PricingSection({ userPlan, currency }) {
               <li>Everything in Free — no hard cap</li>
               <li>All {ACTIVE_Q} questions, every medium + hard</li>
               <li>Unlimited medium mocks · 3 hard mocks/day</li>
-              <li>Fresh mock question bank (questions you haven&rsquo;t seen in practice)</li>
+              <li>Exclusive mock question bank — questions reserved for mock sessions, never shown in practice</li>
               <li>Post-mock debrief — per-question solutions and concept breakdown</li>
               <li>Weakest concept analysis + drill recommendations</li>
               <li>All learning paths</li>
