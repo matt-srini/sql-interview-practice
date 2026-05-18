@@ -28,6 +28,7 @@ from routers import python_data_questions as python_data_questions_router
 from routers import pyspark_questions as pyspark_questions_router
 from routers import data_engineering_questions as data_engineering_questions_router
 from routers import data_modeling_questions as data_modeling_questions_router
+from routers import ml_fundamentals_questions as ml_fundamentals_questions_router
 from routers import statistics_questions as statistics_questions_router
 from routers import dashboard as dashboard_router
 from routers import insights as insights_router
@@ -288,6 +289,7 @@ app.include_router(python_data_questions_router.router)
 app.include_router(pyspark_questions_router.router)
 app.include_router(data_engineering_questions_router.router)
 app.include_router(data_modeling_questions_router.router)
+app.include_router(ml_fundamentals_questions_router.router)
 app.include_router(statistics_questions_router.router)
 app.include_router(dashboard_router.router)
 app.include_router(insights_router.router)

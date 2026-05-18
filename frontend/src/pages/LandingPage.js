@@ -33,8 +33,8 @@ const ROLES = [
   {
     id: 'scientist',
     label: 'Data Scientist',
-    tagline: 'Python · statistical inference · SQL for analysis',
-    tracks: ['python', 'statistics', 'sql', 'python-data'],
+    tagline: 'ML · statistical inference · Python for modelling',
+    tracks: ['ml-fundamentals', 'statistics', 'python', 'sql'],
   },
 ];
 
@@ -131,6 +131,18 @@ const IDE_TRACKS = [
     type: 'mcq',
     question: 'p = 0.023 at α = 0.05. What is the correct conclusion?',
     options: ['Fail to reject H₀', 'Reject H₀', 'Inconclusive result', 'Accept the null'],
+    correct: 1,
+  },
+  {
+    slug: 'ml-fundamentals',
+    label: 'ML',
+    color: '#E0456A',
+    fname: 'model_selection.md',
+    badge: 'ML · MCQ',
+    code: null,
+    type: 'mcq',
+    question: 'Your model hits 97% accuracy but completely misses the fraud class. What is the most likely root cause?',
+    options: ['Learning rate too high', 'Class imbalance', 'Model underfitting', 'Feature collinearity'],
     correct: 1,
   },
 ];

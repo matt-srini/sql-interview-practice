@@ -99,6 +99,20 @@ export const TRACK_META = {
     easyQuestions: 28,
     tagline: 'conceptual · numerical · MCQ',
   },
+  'ml-fundamentals': {
+    label: 'ML Fundamentals',
+    description: 'Machine learning concepts for data science interviews: model selection, bias-variance tradeoff, evaluation metrics, ensemble methods, regularization, and production ML trade-offs.',
+    color: '#E0456A',
+    apiPrefix: '/ml-fundamentals',
+    language: 'text',
+    hasRunCode: false,
+    hasMCQ: true,
+    mixedSubtype: false,
+    totalQuestions: 0,
+    easyQuestions: 30,
+    tagline: 'conceptual · MCQ · scenario',
+    comingSoon: true,
+  },
 };
 
 // Active tracks only — safe for routing, catalog, mock, dashboard, etc.
