@@ -4,10 +4,14 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 
+import data_engineering_questions as de_mod
+import data_modeling_questions as dm_mod
+import ml_fundamentals_questions as ml_mod
 import python_data_questions as pandas_mod
 import python_questions as python_mod
 import pyspark_questions as pyspark_mod
 import questions as sql_mod
+import statistics_questions as stats_mod
 from db import get_solved_ids
 from deps import get_current_user
 from path_loader import get_all_paths, get_path
@@ -21,6 +25,10 @@ _TOPIC_MOD = {
     "python": python_mod,
     "python-data": pandas_mod,
     "pyspark": pyspark_mod,
+    "data-engineering": de_mod,
+    "data-modeling": dm_mod,
+    "statistics": stats_mod,
+    "ml-fundamentals": ml_mod,
 }
 
 # Map topic slug → db topic string used in user_progress
@@ -29,6 +37,10 @@ _TOPIC_DB = {
     "python": "python",
     "python-data": "python-data",
     "pyspark": "pyspark",
+    "data-engineering": "data-engineering",
+    "data-modeling": "data-modeling",
+    "statistics": "statistics",
+    "ml-fundamentals": "ml-fundamentals",
 }
 
 
