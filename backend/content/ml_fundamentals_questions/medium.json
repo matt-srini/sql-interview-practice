@@ -768,5 +768,281 @@
       "Rank-based selection (top-500) and threshold-based selection (probability > x) are equivalent when the threshold is chosen to produce exactly 500 customers. Which is more directly actionable given the constraint?"
     ],
     "concepts": ["CLASS IMBALANCE HANDLING", "CLASSIFICATION METRICS"]
+  },
+  {
+    "id": 82036,
+    "order": 36,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Diagnosing Validation Curve Shapes",
+    "description": "You plot validation curves for a decision tree varying max_depth from 1 to 20. At depth=1, train accuracy=0.65 and val accuracy=0.64. At depth=8, train accuracy=0.92 and val accuracy=0.87. At depth=15, train accuracy=0.99 and val accuracy=0.71. What do these three regions of the curve reveal, and what is the optimal depth?",
+    "options": [
+      "Depth 1 is optimal — the gap is smallest, indicating the best generalization",
+      "Depth 15 is optimal — highest training accuracy means the model learned the most from the data",
+      "Depth 8 is optimal — it sits in the sweet spot where both train and val accuracy are high and the gap is reasonable; depth 1 is underfit and depth 15 is overfit",
+      "The validation curve is inconclusive; try a random forest instead"
+    ],
+    "correct_option": 2,
+    "explanation": "The three regions illustrate the full bias-variance spectrum. At depth=1, both train and val accuracy are low (≈0.64–0.65) — classic underfitting (high bias). The model is too simple to capture the data's signal. At depth=8, train accuracy is high (0.92) and val accuracy is still strong (0.87) — the model has learned meaningful patterns that generalize. At depth=15, training accuracy is near-perfect (0.99) but val accuracy has dropped to 0.71 — the model has memorized training noise (high variance, overfitting). The sweet spot is depth=8, where the validation curve peaks before diverging from the training curve.",
+    "hints": [
+      "Look at both the absolute level and the train/val gap at each depth.",
+      "High train accuracy + low val accuracy = overfitting. Low train accuracy = underfitting."
+    ],
+    "concepts": ["BIAS-VARIANCE TRADEOFF", "OVERFITTING DIAGNOSIS"]
+  },
+  {
+    "id": 82037,
+    "order": 37,
+    "topic": "ml-fundamentals",
+    "type": "mcq",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "When to Use One-vs-Rest vs Softmax for Multiclass",
+    "description": "You are building a 5-class classifier using logistic regression. Your dataset is linearly separable between some class pairs but not others. Should you use One-vs-Rest (OvR) or multinomial (softmax) logistic regression?",
+    "options": [
+      "Always use OvR — it is simpler and always outperforms softmax on real data",
+      "Always use softmax — it optimizes a single joint loss and is always more accurate",
+      "Use softmax when the classes are mutually exclusive and the dataset is large enough; OvR when you want independent calibration per class or when one class is much harder to separate than others",
+      "OvR and softmax are mathematically equivalent for 5 classes; the choice doesn't matter"
+    ],
+    "correct_option": 2,
+    "explanation": "OvR trains one binary classifier per class (class k vs all others), fitting 5 independent models. Each can independently optimize its decision boundary without interference from other classes. This is useful when class separability varies or when you want per-class probability calibration. Multinomial (softmax) logistic regression fits a single model with shared parameters across all classes, jointly optimizing a cross-entropy loss. It produces coherent probability distributions (sum to 1) and typically performs better when classes are mutually exclusive and the joint structure is well-captured by a linear model. For most standard multiclass problems, softmax is preferred; OvR is preferred when you need independent models or have heavily asymmetric class difficulties.",
+    "hints": [
+      "OvR trains 5 separate binary classifiers. Softmax trains one multi-output model.",
+      "What happens to probability calibration when you average 5 independent classifiers vs optimize a joint loss?"
+    ],
+    "concepts": ["CLASSIFICATION METRICS", "LOSS FUNCTION SELECTION"]
+  },
+  {
+    "id": 82038,
+    "order": 38,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Feature Scaling: When It Matters and When It Doesn't",
+    "description": "A data scientist scales all features before training. Their colleague argues this was unnecessary. They are testing: (A) logistic regression, (B) random forest, (C) k-nearest neighbors, (D) gradient boosting. For which models is feature scaling necessary for correctness or performance, and for which is it irrelevant?",
+    "options": [
+      "Scaling is necessary for all four — unscaled features always degrade model performance",
+      "Scaling is necessary for A and C; irrelevant for B and D — tree-based models use rank-based splits that are invariant to monotonic transformations of feature values",
+      "Scaling is necessary for B and D; irrelevant for A and C — gradient methods are stable without scaling",
+      "Scaling is only necessary when features have units (e.g., meters vs kilometers)"
+    ],
+    "correct_option": 1,
+    "explanation": "Logistic regression (A) uses gradient descent on a weighted sum of features — if one feature has range [0, 1000] and another [0, 1], the gradient updates are dominated by the large-scale feature, slowing convergence and potentially finding a worse solution. K-nearest neighbors (C) computes distances in feature space — features with larger ranges dominate the distance metric, making them implicitly more important. Both require scaling. Random forest (B) and gradient boosting (D) use decision trees with rank-based splits: the split point for a feature depends only on the ordering of values, not their absolute scale. A monotonic transformation (including standardization) doesn't change which split is optimal, so scaling is irrelevant to tree performance.",
+    "hints": [
+      "What operations does each algorithm perform on feature values — weighted sums, distances, or rank-based comparisons?",
+      "If you multiply a feature by 1000, does a decision tree split differently? Does a distance metric?"
+    ],
+    "concepts": ["FEATURE SCALING NECESSITY", "GRADIENT DESCENT BEHAVIOR"]
+  },
+  {
+    "id": 82039,
+    "order": 39,
+    "topic": "ml-fundamentals",
+    "type": "predict_output",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Predicting Behavior of Nested Cross-Validation",
+    "description": "You implement nested cross-validation: outer 5-fold CV to estimate generalization error, inner 3-fold CV to select hyperparameters. For each outer fold, the inner CV selects a different optimal max_depth (values: 4, 4, 6, 4, 8 across 5 outer folds). The outer fold test scores are [0.82, 0.84, 0.79, 0.83, 0.76]. What does the variance in selected hyperparameters reveal, and what is the reported generalization estimate?",
+    "options": [
+      "The generalization estimate is 0.84 (best outer fold score); hyperparameter variance indicates the model is unstable",
+      "The generalization estimate is 0.808 (mean of outer fold scores); hyperparameter variance indicates the optimal depth is data-dependent and the model's performance is sensitive to the training subset",
+      "The generalization estimate is 0.79 (median outer fold score); hyperparameter variance should be minimized by using a fixed depth",
+      "Nested CV is invalid when hyperparameters vary across folds; use standard CV instead"
+    ],
+    "correct_option": 1,
+    "explanation": "The generalization estimate from nested CV is the mean of outer fold test scores: (0.82 + 0.84 + 0.79 + 0.83 + 0.76) / 5 = 0.808. This is an unbiased estimate because hyperparameter selection (inner CV) is performed entirely within each outer fold's training set — the outer test set is never used for model selection. The variance in selected hyperparameters (4, 4, 6, 4, 8) reveals that the optimal depth is sensitive to which subset of data is used for training — a sign of instability or that the performance landscape is relatively flat across depths 4–8. This is informative: in deployment you'd use the most commonly selected depth (4) or retrain on all data with inner CV to select the final hyperparameter.",
+    "hints": [
+      "Nested CV separates model selection (inner) from model evaluation (outer). Which scores form the generalization estimate?",
+      "If different train subsets select different depths, what does that say about how critical the depth hyperparameter is?"
+    ],
+    "concepts": ["CROSS-VALIDATION DESIGN", "HYPERPARAMETER SENSITIVITY"]
+  },
+  {
+    "id": 82040,
+    "order": 40,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Interpreting Confusion Matrix for Business Decisions",
+    "description": "A binary classifier for loan default prediction produces this confusion matrix on 10,000 test cases:\n\n- True Negative (predicted no default, actual no default): 7,200\n- False Positive (predicted default, actual no default): 800\n- False Negative (predicted no default, actual default): 400\n- True Positive (predicted default, actual default): 600\n\nThe bank loses $5,000 per false negative and spends $200 per false positive in review costs. What is the total cost of errors and which error type should the bank prioritize reducing?",
+    "options": [
+      "Total cost: $2,160,000; prioritize reducing false negatives because each costs 25x more than a false positive",
+      "Total cost: $2,160,000; prioritize reducing false positives because there are twice as many of them",
+      "Total cost: $320,000; both error types are equally important",
+      "Total cost: $160,000; false negatives are already low enough relative to true positives"
+    ],
+    "correct_option": 0,
+    "explanation": "Total cost = (400 FN × $5,000) + (800 FP × $200) = $2,000,000 + $160,000 = $2,160,000. False negatives (approved loans that default) dominate the cost: 400 × $5,000 = $2,000,000, representing 93% of total errors cost. False positives (rejected good borrowers) cost only $160,000 total. The 25x cost ratio ($5,000 vs $200) means the bank should lower the classification threshold to catch more defaults — even at the cost of more false positives. A lower threshold increases recall (reduces FN) while increasing FP, but the economics strongly favor this tradeoff. This is a classic asymmetric cost problem that pure accuracy metrics obscure.",
+    "hints": [
+      "Cost of errors = (FN count × FN cost) + (FP count × FP cost). Calculate each separately.",
+      "If one error type costs 25x more, should you be willing to accept more of the cheaper error to reduce the expensive one?"
+    ],
+    "concepts": ["CLASSIFICATION METRICS", "CLASS IMBALANCE HANDLING"]
+  },
+  {
+    "id": 82041,
+    "order": 41,
+    "topic": "ml-fundamentals",
+    "type": "mcq",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Why Accuracy Fails for Imbalanced Datasets",
+    "description": "A dataset has 950 negative samples and 50 positive samples (5% positive rate). A naive classifier that predicts 'negative' for every sample achieves 95% accuracy. What metric and threshold would reveal this classifier is useless?",
+    "options": [
+      "Use F1 score — a naive all-negative classifier gets F1 = 0.0 because precision and recall on the positive class are both zero",
+      "Use AUC-ROC — a naive classifier achieves AUC = 0.5, which correctly signals random performance",
+      "Use balanced accuracy — it averages recall across both classes, giving (1.0 + 0.0) / 2 = 0.5 for the naive classifier",
+      "All three metrics above correctly expose the naive classifier; the choice depends on what is more communicable to stakeholders"
+    ],
+    "correct_option": 3,
+    "explanation": "All three metrics expose the naive classifier, each in a different way. F1 score on the positive class = 0.0 because recall (TP / (TP + FN)) = 0/50 = 0. AUC-ROC for a classifier that never predicts positive has a random-chance ROC curve, giving AUC = 0.5. Balanced accuracy averages per-class recall: (recall_negative + recall_positive) / 2 = (950/950 + 0/50) / 2 = 0.5. The best choice depends on context: F1 is most intuitive for practitioners; AUC-ROC is threshold-agnostic and useful for comparing models; balanced accuracy is easy to explain to non-technical stakeholders. All three are vastly better than raw accuracy for imbalanced problems.",
+    "hints": [
+      "What is precision, recall, and F1 for a classifier that predicts the majority class every time?",
+      "AUC-ROC represents the probability that a random positive outranks a random negative — what is that for a constant predictor?"
+    ],
+    "concepts": ["CLASSIFICATION METRICS", "CLASS IMBALANCE HANDLING"]
+  },
+  {
+    "id": 82042,
+    "order": 42,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Selecting the Right Imputation Strategy by Mechanism",
+    "description": "You are analyzing missingness in three features of a healthcare dataset:\n- `blood_pressure`: missing for 8% of patients, no correlation with demographics or other features\n- `income`: missing for 31% of patients, strongly correlated with education level\n- `mental_health_score`: missing for 19% of patients, and inspection reveals patients with worse scores are less likely to complete the survey\n\nMatch each feature to the correct missingness mechanism (MCAR, MAR, MNAR) and the appropriate imputation strategy.",
+    "options": [
+      "blood_pressure=MCAR (mean imputation), income=MAR (multiple imputation), mental_health_score=MNAR (no imputation possible)",
+      "blood_pressure=MCAR (simple imputation or complete case analysis is unbiased), income=MAR (multiple imputation using education as auxiliary), mental_health_score=MNAR (missingness indicator + pattern mixture model or sensitivity analysis)",
+      "All three are MAR because the missingness can be explained by observed data",
+      "blood_pressure=MNAR, income=MCAR, mental_health_score=MAR — the labels don't affect the imputation choice"
+    ],
+    "correct_option": 1,
+    "explanation": "MCAR (Missing Completely At Random): blood_pressure missingness is unrelated to any observed or unobserved variable — complete case analysis or simple imputation is unbiased. MAR (Missing At Random): income missingness is explained by education (an observed variable) — multiple imputation that conditions on education correctly recovers the distribution. MNAR (Missing Not At Random): mental_health_score missingness depends on the score itself (sicker patients skip) — this is the hardest case. Standard imputation is biased because the observed scores are systematically better than the true distribution. Approaches: include a missingness indicator as a feature, use pattern mixture models, or conduct sensitivity analysis to bound the inference.",
+    "hints": [
+      "MCAR: missingness is independent of everything. MAR: missingness depends on observed data. MNAR: missingness depends on the missing value itself.",
+      "For which mechanism is complete case analysis (dropping missing rows) unbiased?"
+    ],
+    "concepts": ["MISSING DATA STRATEGY", "DATA LEAKAGE DETECTION"]
+  },
+  {
+    "id": 82043,
+    "order": 43,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Gradient Descent Convergence: Batch vs Mini-Batch vs SGD",
+    "description": "You are training a neural network on 1 million samples. You compare three optimizers: (A) full batch gradient descent, (B) mini-batch SGD with batch size 256, (C) stochastic gradient descent with batch size 1. Rank them by: convergence stability, memory usage, and final model quality.",
+    "options": [
+      "A > B > C on all three dimensions — more data per gradient update is always better",
+      "A: stable but memory-prohibitive; B: moderate stability + practical memory usage + best final quality in practice; C: noisy convergence, minimal memory, often escapes local minima better than A",
+      "C > B > A on final quality because noisy gradients always regularize better",
+      "A and C are equivalent on memory since both use the same model parameters"
+    ],
+    "correct_option": 1,
+    "explanation": "Full batch (A): exact gradient with no noise → stable but slow convergence per epoch, requires fitting all 1M samples in memory (often infeasible), and can converge to sharp minima that generalize poorly. Mini-batch (B): noisy but consistent gradient → practical memory usage (only 256 samples per step), GPU-parallelizable, noisy enough to escape local minima but stable enough to converge reliably. Empirically achieves the best generalization. SGD with batch=1 (C): maximum noise → nearly always escapes local minima but convergence is slow and erratic, memory is minimal. Mini-batch is the dominant choice in practice because it balances all three dimensions. The noise from mini-batches acts as implicit regularization, often yielding flatter minima that generalize better than full-batch sharp minima.",
+    "hints": [
+      "Memory usage scales with batch size. Gradient noise scales inversely with batch size.",
+      "Why might noisy gradient estimates produce models that generalize better than exact gradients?"
+    ],
+    "concepts": ["GRADIENT DESCENT BEHAVIOR", "HYPERPARAMETER SENSITIVITY"]
+  },
+  {
+    "id": 82044,
+    "order": 44,
+    "topic": "ml-fundamentals",
+    "type": "mcq",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Random Forest: When Adding More Trees Stops Helping",
+    "description": "You train random forests with 10, 50, 100, 500, and 1000 trees. Validation accuracy stabilizes around 500 trees: 10→0.74, 50→0.81, 100→0.84, 500→0.86, 1000→0.86. Training time grows linearly with tree count. What does this plateauing behavior reveal about random forest variance reduction, and what is the optimal tree count?",
+    "options": [
+      "Add more trees indefinitely — accuracy will keep improving given enough computation",
+      "The plateau reveals that variance reduction from averaging saturates; once the ensemble is diverse enough, adding more trees doesn't reduce error further — 500 trees is optimal given the compute/accuracy tradeoff",
+      "The plateau means the model is overfitting; reduce tree count to 100",
+      "The plateau means the data is too easy; use a more complex algorithm"
+    ],
+    "correct_option": 1,
+    "explanation": "Random forest reduces variance by averaging many independent trees. Early trees contribute the most: going from 10 to 50 trees adds 7 points of accuracy, 50 to 100 adds 3 more. The marginal gain diminishes because variance reduction is bounded — it can't fall below the irreducible error. Beyond 500 trees, the ensemble has enough diversity that additional trees add negligible information. Importantly, random forests do not overfit with more trees (unlike boosting) — accuracy on held-out data plateaus rather than declining. The practical optimum is 500 trees here: maximum accuracy at half the compute cost of 1000 trees. Selecting the elbow in the accuracy-vs-trees curve is standard practice.",
+    "hints": [
+      "Each additional tree contributes less variance reduction than the last. What does this imply about when to stop?",
+      "Unlike boosting, does adding more trees to a random forest ever hurt generalization?"
+    ],
+    "concepts": ["ENSEMBLE STRATEGY", "BIAS-VARIANCE TRADEOFF"]
+  },
+  {
+    "id": 82045,
+    "order": 45,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "PCA Variance Explained and Dimensionality Selection",
+    "description": "You apply PCA to a 200-feature dataset. The explained variance ratios for the first 10 components are: [0.31, 0.18, 0.12, 0.08, 0.06, 0.04, 0.03, 0.02, 0.02, 0.01]. Cumulative: [0.31, 0.49, 0.61, 0.69, 0.75, 0.79, 0.82, 0.84, 0.86, 0.87]. You need to select the number of components for a downstream classifier. Which approach is most principled?",
+    "options": [
+      "Use 3 components — the cumulative explained variance reaches 61%, which is sufficient",
+      "Use all 200 components — discarding any variance loses information",
+      "Select the number of components that explains 90–95% of variance, or use cross-validation on the downstream task to find the optimal number that maximizes classifier performance",
+      "Select exactly 10 components — this is the standard for PCA"
+    ],
+    "correct_option": 2,
+    "explanation": "The 90–95% explained variance heuristic is a practical starting point: it ensures you retain most of the signal while achieving meaningful dimensionality reduction. Based on the cumulative EVR above, reaching 90% would require around 12–15 components (from the pattern of the first 10). However, explained variance doesn't directly optimize the downstream task — components with low explained variance might carry class-discriminative signal that matters for classification. The most principled approach is cross-validation: treat n_components as a hyperparameter and evaluate classifier performance for each candidate value. This directly optimizes what you care about (classification accuracy) rather than a proxy (explained variance).",
+    "hints": [
+      "Explained variance measures information retained. Does more explained variance always mean better classification?",
+      "The first few components capture the most variance. After a certain point, additional components add diminishing information."
+    ],
+    "concepts": ["DIMENSIONALITY REDUCTION", "CROSS-VALIDATION DESIGN"]
+  },
+  {
+    "id": 82046,
+    "order": 46,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Model Selection: When Simpler Beats Complex",
+    "description": "For a tabular customer satisfaction prediction task (5,000 samples, 25 features), you compare: logistic regression (AUC=0.78), gradient boosting (AUC=0.82), and a 3-layer neural network (AUC=0.80). The product team needs to explain individual predictions to customers. Gradient boosting is the highest performer but requires SHAP post-hoc explanations. What factors should determine the final model choice?",
+    "options": [
+      "Always choose the highest AUC model — gradient boosting at 0.82",
+      "Always choose logistic regression — it is inherently interpretable and regulators prefer it",
+      "Choose based on the gap significance, explanation requirements, and operational constraints: a 0.04 AUC gap may not justify the interpretability cost for a 5,000-sample dataset with explanation requirements — logistic regression or a shallow tree may be preferable",
+      "Choose the neural network — it balances accuracy and can be explained with LIME"
+    ],
+    "correct_option": 2,
+    "explanation": "Model selection requires balancing multiple dimensions. The AUC gap (0.78 vs 0.82) is 4 points — meaningful but context-dependent. With only 5,000 samples, gradient boosting's advantage may not be statistically robust. The explanation requirement is critical: if customers need to understand why their satisfaction score is what it is, SHAP post-hoc explanations add operational complexity and may not satisfy regulators or customers who expect a simple reason. Logistic regression with interaction features might close most of the gap while providing inherent, auditable explanations per customer. The decision framework: (1) Is the accuracy gap clinically/business significant? (2) Does the explanation method satisfy the use case? (3) What are the maintenance/operational costs? Simpler is often better when explanations are first-class requirements.",
+    "hints": [
+      "A 0.04 AUC difference at 5,000 samples — is that statistically robust or within confidence interval noise?",
+      "Post-hoc explanations (SHAP) are approximations. Inherent explanations (logistic regression) are exact. When does that distinction matter?"
+    ],
+    "concepts": ["INTERPRETABILITY TRADEOFF", "MODEL CALIBRATION"]
+  },
+  {
+    "id": 82047,
+    "order": 47,
+    "topic": "ml-fundamentals",
+    "type": "debug",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Debugging a Leaking Validation Pipeline",
+    "description": "A pipeline preprocesses features using StandardScaler fit on the full dataset, then splits into train/val. The validation AUC is 0.91. After refactoring to fit StandardScaler only on training data: validation AUC drops to 0.84. The engineer claims the original pipeline was correct because 'StandardScaler doesn't use labels'. What is the bug and why is the engineer's reasoning wrong?",
+    "options": [
+      "The engineer is correct — StandardScaler is unsupervised and doesn't leak label information, so both pipelines are valid",
+      "The bug is that StandardScaler fitted on all data uses validation set statistics (mean, std) to transform training features, giving the model implicit access to validation set distribution — the 0.07 AUC gap measures this leakage",
+      "The bug is that StandardScaler should not be used for this problem; use MinMaxScaler instead",
+      "The drop from 0.91 to 0.84 is within normal variance; no bug exists"
+    ],
+    "correct_option": 1,
+    "explanation": "The engineer's reasoning is subtly wrong. StandardScaler doesn't use labels — but it does use the *data distribution* of the validation set when fitted on all data. The scaler computes mean and standard deviation from both train and validation samples. When training features are scaled using statistics that include validation data, the training set has implicitly 'seen' the validation distribution. At evaluation time, features appear consistent with validation distribution in a way they wouldn't if the scaler had only seen training data. This is preprocessing leakage — the same category as fitting PCA on all data. The fix is always: fit any preprocessing transform on training data only, then apply (transform) to both train and validation.",
+    "hints": [
+      "Unsupervised doesn't mean 'uses no information from validation'. What information does StandardScaler use from the data?",
+      "If validation mean and std influence the scaler, does the training set see any validation distribution information?"
+    ],
+    "concepts": ["DATA LEAKAGE DETECTION", "TRAINING-SERVING SKEW"]
   }
 ]

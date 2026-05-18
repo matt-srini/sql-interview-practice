@@ -548,5 +548,304 @@
       "What if you want a model that's *deliberately* pessimistic — predicting the 90th percentile delivery time rather than the median?"
     ],
     "concepts": ["LOSS FUNCTION SELECTION", "REGRESSION METRICS"]
+  },
+  {
+    "id": 83026,
+    "order": 26,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Diagnosing Catastrophic Forgetting in Continual Learning",
+    "description": "A text classification model is deployed and periodically retrained on new data batches to adapt to changing language patterns. After retraining on batch 5 (new slang and terminology), the model's accuracy on batch 1 topics drops from 89% to 61%. Accuracy on batch 5 topics is 91%. This phenomenon is called catastrophic forgetting. Which mitigation strategy is most appropriate without full retraining from scratch?",
+    "options": [
+      "Increase the learning rate for batch 5 training — faster adaptation prevents forgetting by converging faster",
+      "Use elastic weight consolidation (EWC) or replay memory — EWC constrains parameter updates for weights critical to previous tasks; replay mixes old samples into new training batches to maintain performance across all batches",
+      "Use a separate model for each batch and ensemble at inference time — catastrophic forgetting only affects single models",
+      "Reduce model capacity (fewer parameters) — smaller models are more robust to forgetting because they have less to forget"
+    ],
+    "correct_option": 1,
+    "explanation": "Catastrophic forgetting occurs when gradient updates for new data overwrite the parameter configurations learned for old data. EWC (Elastic Weight Consolidation) mitigates this by computing a Fisher information matrix after each task to identify which weights were most important, then adding a regularization penalty that constrains updates to those weights during subsequent training. Replay memory (experience replay) maintains a buffer of representative samples from previous batches and mixes them into new training mini-batches — the model sees both old and new patterns simultaneously. These are complementary: EWC is parameter-space regularization; replay is data-space regularization. A higher learning rate worsens forgetting. Separate models per batch are impractical at scale and miss cross-batch transfer.",
+    "hints": [
+      "Catastrophic forgetting = new gradient updates overwrite old knowledge. What constrains gradient updates to preserve old task performance?",
+      "Experience replay is used in RL for a similar reason — what does it achieve in that context?"
+    ],
+    "concepts": ["MODEL MONITORING", "GRADIENT PATHOLOGY"]
+  },
+  {
+    "id": 83027,
+    "order": 27,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Choosing Between Random Search and Hyperband for Hyperparameter Optimization",
+    "description": "You need to tune a neural network with 10 hyperparameters. Each full training run takes 6 hours. You have a compute budget of 120 GPU-hours (~20 full runs). A colleague suggests Hyperband (successive halving). Another prefers Bayesian optimization. You note that early performance at epoch 5 is a reasonable predictor of final performance at epoch 100. Which strategy is most sample-efficient and why?",
+    "options": [
+      "Bayesian optimization — it is always more sample-efficient than Hyperband for any number of hyperparameters",
+      "Hyperband — it exploits the early performance correlation: run many configurations for a few epochs, stop poor performers early, and allocate remaining budget to promising ones; this explores far more configurations than Bayesian optimization in the same wall-clock budget",
+      "Random search — 20 runs is enough to find a good hyperparameter set by chance",
+      "Grid search — it is the most thorough and with 20 runs you can cover 2 values per parameter (2^10 = 1024, so this is insufficient)"
+    ],
+    "correct_option": 1,
+    "explanation": "Hyperband exploits the insight that early performance correlates with final performance — a configuration that performs poorly at epoch 5 is unlikely to become excellent at epoch 100. By running many configurations for a few epochs (cheap), eliminating the bottom half, and progressively allocating budget to survivors, Hyperband evaluates far more configurations than Bayesian optimization within the same total GPU-hours. With 6-hour runs and 120 GPU-hours, Bayesian optimization can evaluate ~20 configurations. Hyperband might evaluate 100+ configurations at 1/5 the epochs, then 50 at 2/5, and so on — exploring the space far more broadly. The condition 'early performance predicts final performance' is the key assumption enabling this. If that correlation is weak, Hyperband degrades toward random search.",
+    "hints": [
+      "Hyperband's key assumption: short runs predict long runs. Does that hold here?",
+      "With 120 GPU-hours and 6-hour full runs, how many configurations can Bayesian optimization evaluate? How many can Hyperband evaluate?"
+    ],
+    "concepts": ["HYPERPARAMETER SENSITIVITY", "NEURAL NETWORK DESIGN"]
+  },
+  {
+    "id": 83028,
+    "order": 28,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Double Descent: Understanding the Modern Bias-Variance Regime",
+    "description": "You train neural networks of increasing parameter count on a fixed dataset. You observe: for models with fewer parameters than data points, test error decreases as model size grows (classical regime). At the interpolation threshold (parameters ≈ data points), test error peaks sharply. Beyond the interpolation threshold, test error decreases again as models grow larger (modern regime). This contradicts classical bias-variance theory. What explains the second descent?",
+    "options": [
+      "The second descent is a measurement artifact — neural networks with more parameters are always overfitting, but the overfitting is too small to detect",
+      "In the over-parameterized regime, gradient descent finds minimum-norm interpolating solutions that generalize well because they impose implicit regularization through the optimization dynamics — the model memorizes training data but with the 'smoothest' possible function that fits it",
+      "Larger models have better representational capacity and simply learn the data distribution better — this confirms that more parameters always helps",
+      "The second descent only occurs when explicit regularization (dropout, weight decay) is applied; without it, test error continues to rise"
+    ],
+    "correct_option": 1,
+    "explanation": "Classical bias-variance theory predicts a U-shaped test error curve: too few parameters → high bias; too many → high variance (overfitting). The double descent phenomenon shows a second regime. In the over-parameterized region (parameters >> data), there are infinitely many functions that perfectly fit the training data. Gradient descent with small learning rate converges to the minimum-norm solution — the simplest function (in L2 weight norm sense) that achieves zero training error. This minimum-norm solution tends to generalize because it avoids fitting high-frequency patterns that would require large weights. This implicit bias of gradient descent toward smooth solutions acts as regularization, even without explicit regularization terms. This was formalized in work by Belkin et al. (2019) and challenges the classical overfitting story.",
+    "hints": [
+      "When a model has more parameters than data points, many functions can fit the training set perfectly. Which one does gradient descent find?",
+      "The minimum-norm interpolating solution — why would a 'small-norm' function generalize better than an arbitrary interpolating function?"
+    ],
+    "concepts": ["BIAS-VARIANCE TRADEOFF", "NEURAL NETWORK DESIGN"]
+  },
+  {
+    "id": 83029,
+    "order": 29,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Causal vs Predictive Modeling: When the Distinction Matters",
+    "description": "A marketing team wants to identify customers to target with a discount to prevent churn. They train a churn prediction model (AUC=0.88) and plan to target the top 10% of customers by predicted churn probability. A data scientist argues this is the wrong approach. What is the flaw and what should be done instead?",
+    "options": [
+      "The model's AUC is too low — retrain to achieve 0.95+ before targeting",
+      "Targeting high-predicted-churn customers with discounts conflates prediction with causation: customers who were going to churn anyway (and would have left regardless of treatment) dilute ROI; customers who would have stayed anyway waste discount budget. The correct approach is uplift modeling to estimate the causal effect of the discount on each customer's churn probability",
+      "The approach is correct — high churn probability customers are exactly the right targets for retention offers",
+      "The flaw is targeting only 10%; expand to 25% to maximize coverage of true churners"
+    ],
+    "correct_option": 1,
+    "explanation": "This is the prediction vs causation distinction in a business context. A churn prediction model identifies *who will churn*, not *who will respond to treatment*. Four customer segments exist: (1) Sure things — churn regardless of discount (wasted spend); (2) Lost causes — won't churn regardless (don't need the discount); (3) Persuadables — churn without discount, stay with it (ideal targets); (4) Do not disturbs — would stay without discount but might churn due to the intervention itself. A prediction model mixes all four groups; a high churn score is dominated by sure-things (who are churning regardless). Uplift modeling estimates the *incremental* effect of treatment — the difference in churn probability with vs without the discount — identifying the Persuadables. This requires experimental data (past A/B tests) and models the causal impact, not just the prediction.",
+    "hints": [
+      "High predicted churn ≠ high likelihood of being saved by a discount. What if they're going to leave no matter what?",
+      "What experiment would let you distinguish customers who respond to discounts from those who churn regardless?"
+    ],
+    "concepts": ["DATA LEAKAGE DETECTION", "MODEL MONITORING"]
+  },
+  {
+    "id": 83030,
+    "order": 30,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Embedding Space Drift in Production NLP Models",
+    "description": "A sentiment analysis model using a fixed pretrained BERT embedding (frozen, not fine-tuned) achieves 0.91 F1 at launch. Over 18 months, F1 degrades to 0.74. Monitoring shows input text distributions have shifted significantly — new product categories, industry jargon, and abbreviations dominate recent reviews. The embedding layer has not changed. What type of failure is this and what are the remediation options?",
+    "options": [
+      "This is label drift — the definition of positive/negative sentiment has changed over 18 months",
+      "This is embedding space mismatch: the frozen BERT embeddings were pretrained on general text corpora that don't represent the new domain vocabulary. Out-of-vocabulary tokens default to [UNK], degrading the classifier input. Remediation: fine-tune BERT on recent domain data or replace with a domain-adapted embedding model",
+      "This is model decay caused by the frozen weights — retrain the classifier head only to restore performance",
+      "This is data quality degradation — the review platform has attracted lower-quality text that no model can handle well"
+    ],
+    "correct_option": 1,
+    "explanation": "Frozen pretrained embeddings represent a vocabulary and semantic space from the pretraining corpus. When domain vocabulary shifts significantly (new jargon, abbreviations, product categories), tokens appear that the embedding model either handles poorly or maps to [UNK]. The classifier head then receives degraded, noisy feature vectors — the embedding bottleneck. Retraining only the classifier head (on frozen embeddings) won't help because the degraded embeddings are the input. The fix requires updating the embedding layer: either fine-tuning BERT on recent domain-specific text (domain adaptation) or replacing it with a model pretrained on similar domain data. This is a form of training-serving skew — the text distribution at training time differs from the text at serving time, and the fixed embedding layer doesn't adapt.",
+    "hints": [
+      "The embedding layer is frozen. What happens when it encounters words it was never trained on?",
+      "Fine-tuning just the classifier head can't fix problems in its inputs. Where does the failure originate?"
+    ],
+    "concepts": ["TRANSFER LEARNING STRATEGY", "TRAINING-SERVING SKEW"]
+  },
+  {
+    "id": 83031,
+    "order": 31,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Fairness vs Accuracy Tradeoff in Algorithmic Decision Making",
+    "description": "A hiring model achieves 0.87 AUC overall. Disaggregated analysis reveals: group A (majority, 70% of data) has AUC=0.91; group B (minority, 30% of data) has AUC=0.79. The team proposes separate models per group to equalize AUC. A legal reviewer flags concerns about demographic-based decision boundaries. What is the correct framing of this tradeoff and what approach balances fairness with legal constraints?",
+    "options": [
+      "Deploy the single model — overall AUC=0.87 is excellent and disaggregated AUC is not a legally recognized metric",
+      "Deploy separate models per group — equalized AUC is the fairest outcome regardless of legal constraints",
+      "Conduct a fairness audit measuring multiple metrics (equalized odds, demographic parity, calibration by group); investigate root causes of the 12-point AUC gap (feature distribution? label quality? sample size?); if the gap stems from biased training data or features, address those root causes rather than applying separate models which may introduce their own disparate impact",
+      "Accept the gap as inherent — group B has 30% of samples so lower AUC is statistically expected"
+    ],
+    "correct_option": 2,
+    "explanation": "The 12-point AUC gap signals potential disparate impact — the model is systematically less accurate for group B. The correct response is not to simply deploy separate models (which may violate equal treatment laws) or ignore the gap. A proper fairness audit should: (1) measure multiple fairness metrics — equalized odds (equal TPR/FPR), demographic parity (equal positive rate), calibration by group; (2) diagnose root causes — is group B underrepresented in training? Are the features measured less accurately for group B? Are labels biased? (3) Address root causes: collect more group B data, audit feature quality, recalibrate. Separate models can be legally problematic if they constitute explicit demographic segmentation in high-stakes contexts. The goal is a single model with equalized error rates, achieved through data and feature improvements.",
+    "hints": [
+      "AUC gap of 12 points between groups signals the model performs worse for a protected group. What could cause this?",
+      "Separate models per demographic group — does equal accuracy guarantee fair treatment, or does it introduce other legal risks?"
+    ],
+    "concepts": ["INTERPRETABILITY TRADEOFF", "CLASSIFICATION METRICS"]
+  },
+  {
+    "id": 83032,
+    "order": 32,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Gradient Clipping and Loss Explosion in RNNs",
+    "description": "You are training a multi-layer LSTM on sequence data. After 3 epochs, training loss suddenly jumps from 0.8 to 147.3 and stays elevated. Gradient norms before the explosion: [2.1, 1.8, 2.3, 1.9, 891.4]. The next mini-batch norms are all > 500. You add gradient clipping (max_norm=5.0) and the loss becomes stable. Why does gradient explosion occur in RNNs specifically, and why does clipping fix it without harming convergence?",
+    "options": [
+      "Gradient explosion occurs because RNNs have too many parameters; clipping reduces the effective parameter count",
+      "Gradient explosion in RNNs arises from repeated multiplication of the same weight matrix through time during backpropagation through time (BPTT) — if the spectral radius of the weight matrix > 1, gradients grow exponentially. Clipping rescales the gradient vector's magnitude without changing its direction, preventing parameter updates from overshooting while preserving the update direction",
+      "Gradient explosion is caused by the activation function saturation; clipping prevents saturation by bounding activations",
+      "Gradient explosion occurs only with poor weight initialization; clipping masks this bug rather than fixing it"
+    ],
+    "correct_option": 1,
+    "explanation": "In an LSTM/RNN, backpropagation through time (BPTT) computes gradients by repeatedly multiplying through the recurrent weight matrix W for each time step. If the largest singular value (spectral radius) of W is > 1, repeated matrix multiplication causes gradient magnitudes to grow exponentially with sequence length. A single bad mini-batch can produce an enormous gradient that catastrophically disrupts learned weights. Gradient clipping scales the entire gradient vector by max_norm/‖g‖ when ‖g‖ > max_norm, preserving the direction of the gradient update while bounding its magnitude. This means the optimizer still steps toward the loss minimum — just with a bounded step size. Unlike restricting learning rate, clipping is adaptive to the gradient scale and only activates when necessary.",
+    "hints": [
+      "In RNNs, gradients flow back through the same weight matrix at each time step. What happens when you multiply a matrix by itself 100 times if its eigenvalues > 1?",
+      "Gradient clipping changes the magnitude but not the direction of the gradient. What does that preserve?"
+    ],
+    "concepts": ["GRADIENT PATHOLOGY", "NEURAL NETWORK DESIGN"]
+  },
+  {
+    "id": 83033,
+    "order": 33,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Feature Store Architecture for Training-Serving Parity",
+    "description": "A financial services ML platform has 15 models in production sharing many features (account age, transaction velocity, device fingerprint). Features are currently computed independently in: (A) offline batch pipelines for training, (B) real-time APIs for serving. A post-mortem reveals 3 incidents over 6 months caused by feature computation divergence between A and B. What architecture change eliminates this class of bug?",
+    "options": [
+      "Rewrite all serving pipelines in Python to match the training pipeline's language — language differences cause most divergence bugs",
+      "Add more monitoring to detect divergence faster — architecture changes are expensive and the bugs are rare enough to handle reactively",
+      "Implement a feature store with a single feature computation definition per feature, shared by both the offline (training) and online (serving) retrieval paths — this enforces training-serving parity by construction",
+      "Separate features into training-only and serving-only groups — reducing shared features eliminates divergence risk"
+    ],
+    "correct_option": 2,
+    "explanation": "The root cause of training-serving skew incidents is that the same feature is defined twice — once for offline training and once for online serving — and the two implementations drift apart over time due to independent bug fixes, refactoring, or requirement changes. A feature store centralizes feature computation: each feature has a single, canonical definition (transformation logic, window size, imputation strategy) registered in the store. The offline training pipeline retrieves features from the same store (via historical point-in-time lookups), and the online serving API retrieves features from the same store (via real-time lookups). The computation is identical by construction, eliminating the class of divergence bugs entirely. Examples: Feast, Tecton, Hopsworks. Monitoring detects problems after they occur; a feature store prevents them.",
+    "hints": [
+      "Two independent implementations of the same feature will eventually diverge. What's the architectural solution to having one implementation?",
+      "Point-in-time correctness in a feature store means training sees exactly what serving would have seen at that moment."
+    ],
+    "concepts": ["TRAINING-SERVING SKEW", "DEPLOYMENT CONSTRAINTS"]
+  },
+  {
+    "id": 83034,
+    "order": 34,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Handling Class Imbalance with Ensemble Methods",
+    "description": "A fraud detection problem has 0.3% positive rate (3 fraud per 1000 transactions). You have 2 million training samples. You compare: (A) XGBoost with scale_pos_weight=333 (ratio of negatives to positives), (B) undersampling negatives to 10:1 ratio then training XGBoost without class weights, (C) BalancedBaggingClassifier (undersamples each tree's bootstrap sample to balance), (D) cost-sensitive learning where misclassification costs are set based on fraud vs legitimate transaction dollar values. Which approach(es) are most appropriate and what is the key distinction between them?",
+    "options": [
+      "Approach A only — scale_pos_weight is the canonical solution for XGBoost class imbalance",
+      "Approach B only — undersampling is always preferable to overweighting because it reduces training time",
+      "Approaches A and D are most appropriate: A adjusts gradient weights within the existing framework; D incorporates domain knowledge about the actual cost of errors. B discards 99% of legitimate transaction data. C is a reasonable alternative that combines undersampling with ensemble diversity",
+      "All four are equivalent; choose based on implementation ease"
+    ],
+    "correct_option": 2,
+    "explanation": "Scale_pos_weight (A) tells XGBoost to weight positive samples 333x more in gradient computations — equivalent to upsampling but without actually duplicating data. This is efficient and works well. Cost-sensitive learning (D) is the most principled approach for fraud: the actual business cost of a missed fraud ($5,000 loss) vs a false alert ($50 review cost) should directly inform the misclassification penalties, not an arbitrary weight derived from class ratios. Undersampling (B) discards 99.97% of legitimate transactions — valuable negative signal is thrown away; with 2 million samples you can afford to use all the data. BalancedBaggingClassifier (C) is a reasonable middle ground: undersamples within each bootstrap to balance while maintaining diversity across trees. The key insight: at 2 million samples, you don't need sampling tricks for capacity — you need the right objective that reflects business costs.",
+    "hints": [
+      "With 2 million samples, is discarding 99% of the majority class really necessary for computational reasons?",
+      "The class imbalance ratio (333:1) reflects frequency, not cost. Should cost and frequency be conflated?"
+    ],
+    "concepts": ["CLASS IMBALANCE HANDLING", "ENSEMBLE STRATEGY"]
+  },
+  {
+    "id": 83035,
+    "order": 35,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Diagnosing Multimodal Distribution Effects on Clustering",
+    "description": "K-means is applied to a customer segmentation problem. The dataset has two clear natural clusters visible in 2D projection: one large, spherical cluster (5,000 points) and one elongated elliptical cluster (2,000 points). K-means with k=2 produces silhouette=0.42 and Davies-Bouldin=1.8 (mediocre). Gaussian Mixture Models (GMM) with k=2 produces silhouette=0.61 and Davies-Bouldin=0.9. Why does GMM outperform k-means here?",
+    "options": [
+      "GMM is always superior to k-means because it is a probabilistic model",
+      "K-means assumes spherical, equal-variance clusters and uses Euclidean distance to assign points to the nearest centroid. The elongated cluster violates the spherical assumption — k-means splits it incorrectly. GMM models each cluster as a multivariate Gaussian with its own covariance matrix, capturing elliptical cluster shapes",
+      "GMM outperforms because it uses more parameters and therefore fits the data better",
+      "K-means failed because the clusters are imbalanced (5,000 vs 2,000 points); GMM handles imbalance natively"
+    ],
+    "correct_option": 1,
+    "explanation": "K-means minimizes within-cluster sum of squared Euclidean distances. This implicitly assumes clusters are spherical (equal variance in all directions) and similar in size. The elongated elliptical cluster has high variance along one axis — k-means interprets points at the elongated cluster's far ends as closer to the spherical cluster's centroid, incorrectly splitting the elliptical cluster. Gaussian Mixture Models fit a separate full covariance matrix per component, allowing each Gaussian to be oriented, scaled, and shaped arbitrarily. The elliptical cluster is naturally captured by a Gaussian with a diagonal/rotated covariance. This structural advantage explains the silhouette improvement (0.42 → 0.61). When data has non-spherical clusters, GMM is preferred. When clusters are spherical and k-means' assumptions hold, k-means is often sufficient and faster.",
+    "hints": [
+      "K-means assigns each point to the nearest centroid using Euclidean distance. What cluster shape does this implicitly assume?",
+      "An elongated cluster means variance is high in one direction. Which algorithm can model directional variance?"
+    ],
+    "concepts": ["CLUSTERING EVALUATION", "DIMENSIONALITY REDUCTION"]
+  },
+  {
+    "id": 83036,
+    "order": 36,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Model Monitoring: Choosing Between Data Drift and Concept Drift Alerts",
+    "description": "Your production churn model has two monitoring alerts: (1) feature drift alert fires when PSI > 0.2 on any feature; (2) outcome drift alert fires when the predicted positive rate deviates > 15% from baseline. Over 3 months, alert 1 fires repeatedly (PSI on `tenure` and `monthly_charges` both > 0.25) but the model's business KPI (churn rate caught) holds steady. Alert 2 has never fired. What is the correct interpretation and action?",
+    "options": [
+      "Alert 1 indicates model failure — feature drift always causes model degradation and the model must be retrained immediately",
+      "The combination suggests covariate shift (feature distributions changed) but the model's learned relationship between features and churn is stable — the model is adapting adequately. Investigate *why* tenure and monthly_charges shifted; retrain only if business KPI starts degrading or if the shift represents a structural change in the customer base",
+      "Alert 2 not firing means there is no problem; disable alert 1 as a false positive",
+      "Both alerts firing together is the only meaningful signal; a single alert is always noise"
+    ],
+    "correct_option": 1,
+    "explanation": "Feature drift (alert 1) signals that the input distribution has changed — the model receives feature values outside its training distribution. Concept drift (alert 2) signals that the feature-to-label relationship has changed. The combination here is interesting: features drifted but business outcomes held steady. This means the model is still learning the correct relationship from the shifted features — perhaps because the relationship between tenure/charges and churn is nonlinear but stable, or because the shift is within the model's learned manifold. The right response is not immediate retraining (the model is working) but investigation: Why did tenure and charges shift? Is it a data pipeline change, a pricing strategy change, or customer mix change? If structural, proactive retraining is warranted. If transient, monitor and wait. Only retrain when KPIs actually degrade.",
+    "hints": [
+      "Feature drift tells you the inputs changed. Concept drift tells you the input-output relationship changed. Which one actually breaks the model?",
+      "If the business KPI is stable despite feature drift, what does that imply about the model's robustness to this particular shift?"
+    ],
+    "concepts": ["MODEL MONITORING", "TRAINING-SERVING SKEW"]
+  },
+  {
+    "id": 83037,
+    "order": 37,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Optimizing the Precision-Recall Tradeoff for High-Volume Decisions",
+    "description": "A content moderation model flags potentially violating posts for human review. At the default threshold (0.5), precision=0.72 and recall=0.61. The review team can handle 5,000 posts/day. Current volume: 8,000 flagged/day. By lowering the threshold to 0.3, recall increases to 0.84 but flagged volume rises to 14,000/day — well above capacity. A senior PM asks: what is the correct framework for selecting the threshold given the capacity constraint?",
+    "options": [
+      "Always optimize for maximum recall regardless of capacity — missing content violations is worse than overwhelming reviewers",
+      "Always optimize for maximum precision — reviewers should only see items the model is very confident about",
+      "Set the threshold to the value that maximizes precision subject to the constraint that flagged volume ≤ 5,000/day — this frames threshold selection as a constrained optimization problem where operational capacity is the binding constraint, not an arbitrary precision/recall target",
+      "Use the default threshold (0.5) — vendor-default thresholds are calibrated for general use cases"
+    ],
+    "correct_option": 2,
+    "explanation": "This is a constrained optimization problem. The business constraint is hard: review team capacity = 5,000/day. Given this constraint, the objective should be to maximize recall (catch as many violations as possible) subject to the capacity constraint (flagged volume ≤ 5,000). This means finding the highest threshold value that produces exactly 5,000 flagged items/day — maximizing the fraction of true violations in the 5,000 reviewable items. The framework: (1) Plot flagged volume vs threshold across the PR curve; (2) find the threshold range where flagged volume ≈ 5,000; (3) at that threshold, read off precision and recall. This is often called operating at a fixed review budget. The PM framing of 'best precision at fixed recall' or 'best recall at fixed capacity' is the correct formulation.",
+    "hints": [
+      "You can't review 14,000 posts with a 5,000-person-day capacity. What optimization problem does this constraint create?",
+      "At a fixed flagged volume of 5,000/day, which threshold maximizes the number of true violations caught?"
+    ],
+    "concepts": ["CLASSIFICATION METRICS", "DEPLOYMENT CONSTRAINTS"]
+  },
+  {
+    "id": 83038,
+    "order": 38,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Dimensionality Reduction for Anomaly Detection",
+    "description": "You are building an anomaly detection system for manufacturing defects using 500 sensor readings per unit. Normal units' readings follow consistent patterns; defective units show subtle deviations across correlated sensor groups. You apply PCA to reduce to 20 components (capturing 95% variance) before training an Isolation Forest. Performance is poor (AUC=0.61). Without PCA, using raw 500-d features, Isolation Forest achieves AUC=0.72. What explains the degradation and what is the better approach?",
+    "options": [
+      "PCA degradation means the sensor data is non-linear; switch to a non-linear model instead of using PCA",
+      "PCA discarded the 5% variance that contains the anomaly signal — defect patterns are often low-variance, subtle deviations that PCA's variance-maximization objective eliminates first; for anomaly detection, retain more components or use anomaly-preserving reduction",
+      "Isolation Forest is the wrong algorithm; use DBSCAN after PCA instead",
+      "PCA degrades performance because it changes the scale of features; apply standardization after PCA to fix this"
+    ],
+    "correct_option": 1,
+    "explanation": "This is a fundamental mismatch between PCA's objective and anomaly detection's needs. PCA retains the directions of maximum variance — the 95% that describes normal operating patterns. Anomalies (manufacturing defects) are precisely the data points that *deviate from normal patterns in low-variance directions*. The remaining 5% variance PCA discarded contains exactly the signal that distinguishes defects from normal units. By projecting to 20 components, you've eliminated the subtle sensor deviations that indicate defects. For anomaly detection, several alternatives work better: (1) keep more PCA components (or all of them); (2) use kernel PCA to capture non-linear normal manifolds; (3) use an autoencoder where reconstruction error serves as the anomaly score; (4) apply UMAP in unsupervised mode which better preserves local structure. The reconstruction error approach is particularly elegant — normal units reconstruct well; anomalous units don't.",
+    "hints": [
+      "PCA maximizes retained variance. Anomalies are deviations from normal patterns — where in the variance spectrum do those deviations live?",
+      "If a defect causes a subtle but consistent sensor deviation, is that deviation high-variance or low-variance relative to the normal operating distribution?"
+    ],
+    "concepts": ["DIMENSIONALITY REDUCTION", "OVERFITTING DIAGNOSIS"]
   }
 ]
