@@ -10433,14 +10433,26 @@ select {
 }
 
 /* ── Hero IDE ────────────────────────────────────────────────────── */
+@property --lp-ide-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes lp-ide-sweep {
+  to { --lp-ide-angle: 360deg; }
+}
 .lp-ide {
   background:
     linear-gradient(#0F2218, #0F2218) padding-box,
-    linear-gradient(145deg,
-      rgba(255,255,255,0.22) 0%,
-      rgba(255,255,255,0.07) 28%,
-      rgba(255,255,255,0.02) 55%,
-      rgba(255,255,255,0.10) 100%
+    conic-gradient(
+      from var(--lp-ide-angle),
+      transparent 0%,
+      transparent 20%,
+      rgba(91,106,240,0.85) 31%,
+      rgba(195,215,255,1.0) 37%,
+      rgba(74,222,128,0.75) 44%,
+      transparent 55%,
+      transparent 100%
     ) border-box;
   border: 1.5px solid transparent;
   border-radius: var(--radius-lg);
@@ -10448,20 +10460,29 @@ select {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.82rem;
   box-shadow:
+    0 0 55px rgba(91,106,240,0.10),
+    0 0 35px rgba(74,222,128,0.08),
     0 16px 56px rgba(0,0,0,0.30),
-    0 4px 16px rgba(0,0,0,0.14),
-    inset 0 1px 0 rgba(255,255,255,0.09);
+    0 4px 16px rgba(0,0,0,0.14);
   position: relative;
+  animation: lp-ide-sweep 8s linear infinite;
 }
 [data-theme="dark"] .lp-ide {
   background:
     linear-gradient(#080F0A, #080F0A) padding-box,
-    linear-gradient(145deg,
-      rgba(255,255,255,0.16) 0%,
-      rgba(255,255,255,0.05) 28%,
-      rgba(255,255,255,0.01) 55%,
-      rgba(255,255,255,0.08) 100%
+    conic-gradient(
+      from var(--lp-ide-angle),
+      transparent 0%,
+      transparent 20%,
+      rgba(91,106,240,0.70) 31%,
+      rgba(195,215,255,0.85) 37%,
+      rgba(74,222,128,0.60) 44%,
+      transparent 55%,
+      transparent 100%
     ) border-box;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-ide { animation: none; }
 }
 .lp-ide-chrome {
   display: flex;
