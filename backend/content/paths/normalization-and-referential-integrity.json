@@ -1,0 +1,12 @@
+{
+  "slug": "normalization-and-referential-integrity",
+  "title": "Normalization & Referential Integrity",
+  "description": "Understand the rules that keep relational data consistent: first, second, and third normal form, where update anomalies come from, and why analytics warehouses deliberately break those rules for read performance. Then see how referential integrity works — and fails — in cloud warehouses that don't enforce foreign keys.",
+  "topic": "data-modeling",
+  "questions": [61004, 61005, 61006, 61018, 61019, 61021, 61024, 62013, 62014, 62015],
+  "tier": "free",
+  "role": "intermediate",
+  "focus_concepts": ["NORMALIZATION", "DENORMALIZATION TRADEOFF", "REFERENTIAL INTEGRITY"],
+  "outcomes": "You'll identify 1NF, 2NF, and 3NF violations and explain what each normal form eliminates, describe how denormalization trades update anomalies for read performance in OLAP systems, explain why cloud analytical warehouses don't enforce foreign key constraints and what that means for data quality, and handle late-arriving dimension members without breaking fact table integrity.",
+  "recommended_after": ["schema-design-basics"]
+}

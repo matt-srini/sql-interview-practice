@@ -103,7 +103,7 @@ Mock-only questions (`mock_only: true`) live in the same JSON files as practice 
 See [docs/content-authoring.md](docs/content-authoring.md) for the full mock-only authoring spec.
 
 - **Sample questions:** SQL/Python/Pandas/PySpark: 3 per track × 3 difficulties = 36 total. Data Engineering, Data Modeling, Statistics, and ML Fundamentals samples are auto-sliced from the first 3 practice questions per difficulty (no dedicated IDs).
-- **Learning paths:** 32 total — SQL: 7, Python: 5, Pandas: 5, PySpark: 5, Data Engineering: 2, Data Modeling: 2, Statistics: 2, ML Fundamentals: 4 (each track has exactly one `starter` and one `intermediate` free shortcut path; additional paths are advanced, mixed free/pro)
+- **Learning paths:** 34 total — SQL: 7, Python: 5, Pandas: 5, PySpark: 5, Data Engineering: 2, Data Modeling: 4, Statistics: 2, ML Fundamentals: 4 (each track has exactly one `starter` and one `intermediate` free shortcut path; additional paths are advanced, mixed free/pro)
 - Every question has `hints` (currently 1–3 entries across the bank; new content should target the active hint ladder) and `concepts` (semantic pattern tags surfaced as pills)
 - SQL questions have a `companies` field (`["Meta", "Stripe", ...]`) used for the company filter in SidebarNav
 - SQL schemas validated against committed CSV headers at catalog load time

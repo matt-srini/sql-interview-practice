@@ -7,6 +7,6 @@
   "tier": "pro",
   "role": "intermediate",
   "focus_concepts": ["GRAIN DEFINITION", "SCD STRUCTURE", "BRIDGE & MANY-TO-MANY", "DIMENSION DESIGN", "WIDE VS NARROW", "SCHEMA FROM REQUIREMENTS"],
-  "outcomes": "You will reason confidently about grain declaration under competing reporting needs, choose between SCD types for real scenarios, model many-to-many relationships with bridge tables, distinguish conformed from role-playing dimensions, and decide when a wide table beats a star schema.",
+  "outcomes": "You'll reason confidently about grain declaration under competing reporting needs, choose between SCD types for real scenarios, model many-to-many relationships with bridge tables, distinguish conformed from role-playing dimensions, and decide when a wide table beats a star schema.",
   "recommended_after": ["schema-design-basics"]
 }

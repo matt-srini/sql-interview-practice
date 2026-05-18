@@ -70,10 +70,10 @@ Sample questions (no login, no progress): 3 per track × 3 difficulties = 9 per 
 | Pandas | 5 | 2 free shortcut paths (`starter`, `intermediate`) + 3 advanced (mixed free/pro) |
 | PySpark | 5 | 2 free shortcut paths (`starter`, `intermediate`) + 3 advanced (mixed free/pro) |
 | Data Engineering | 2 | `starter` "Pipeline Fundamentals" (free) · `intermediate` "Advanced DE Systems" (pro) |
-| Data Modeling | 2 | `starter` "Schema Design Basics" (free) · `intermediate` "Dimensional Modeling Deep Dive" (pro) |
+| Data Modeling | 4 | `starter` "Schema Design Basics" (free) · `intermediate` "Dimensional Modeling Deep Dive" (pro) · "Normalization & Referential Integrity" (free) · "dbt & Modern Analytics Modeling" (pro) |
 | Statistics | 2 | `starter` "Stats for Analysts" (free) · `intermediate` "Experimental Design & Inference" (pro) |
 | ML Fundamentals | 4 | `starter` "ML Fundamentals Starter" (free) · `intermediate` "Model Evaluation & Validation" (free) · "Production ML & Model Monitoring" (pro) · "Advanced ML Methods" (pro) |
-| **Total** | **32** | |
+| **Total** | **34** | |
 
 Authoring constraints for path files in `backend/content/paths/`:
 - Required fields: `slug`, `title`, `description`, `topic`, `questions`, `tier`, `role`

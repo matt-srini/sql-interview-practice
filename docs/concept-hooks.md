@@ -140,12 +140,10 @@ Goal: full concept coverage, not tricky framing.
 87. JSON column extraction (`->`, `->>`, `JSON_VALUE`, `JSON_QUERY`) — querying semi-structured data
 88. `UNNEST` / `FLATTEN` — going from array column to rows and back
 
-### Missing Topics To Add
-
-- Ordered-set percentile / median functions — when to use `PERCENTILE_CONT`, `PERCENTILE_DISC`, or warehouse-specific median helpers instead of hand-rolled ranking.
-- As-of joins — point-in-time matching between facts and the most recent prior dimension or event row.
-- Approximate distinct counting — when `APPROX_COUNT_DISTINCT` / HyperLogLog-style estimates are the right tradeoff.
-- Reconciliation and data-quality query patterns — row-count checks, anti-joins, mismatch audits, and source-vs-target validation queries.
+89. Ordered-set percentile / median — `PERCENTILE_CONT`, `PERCENTILE_DISC`, and warehouse median helpers vs hand-rolled ranking
+90. As-of joins — point-in-time matching between facts and the most recent prior dimension or event row
+91. Approximate distinct counting — when `APPROX_COUNT_DISTINCT` / HyperLogLog-style estimates are the right tradeoff
+92. Reconciliation patterns — row-count checks, anti-joins, mismatch audits, and source-vs-target validation queries
 
 ---
 
@@ -247,14 +245,12 @@ Goal: full concept coverage, not tricky framing.
 59. `explain()` — what does the physical plan tell you that the logical plan doesn't?
 60. Speculative execution — what is it, when does Spark use it, and when does it backfire?
 
-### Missing Topics To Add
-
-- `checkpoint()` vs `cache()` — lineage truncation, fault recovery, and when cache is insufficient.
-- Storage levels in `persist()` — `MEMORY_ONLY`, `MEMORY_AND_DISK`, serialized variants, and the tradeoffs of each.
-- Spark UI diagnosis — reading stages, tasks, shuffle read/write, skew, spill, and GC symptoms.
-- Task failure vs executor failure vs driver failure — how Spark retries, recovers, or aborts.
-- Stateful streaming operations — state stores, `mapGroupsWithState`, watermark interaction, and memory growth risks.
-- Nested schema evolution — adding/removing nested fields in structs and arrays without breaking downstream jobs.
+61. `checkpoint()` vs `cache()` — lineage truncation, fault recovery, and when cache is insufficient
+62. Storage levels in `persist()` — `MEMORY_ONLY`, `MEMORY_AND_DISK`, serialized variants, and the tradeoffs of each
+63. Spark UI diagnosis — reading stages, tasks, shuffle read/write, skew, spill, and GC symptoms
+64. Task failure vs executor failure vs driver failure — how Spark retries, recovers, or aborts
+65. Stateful streaming operations — state stores, `mapGroupsWithState`, watermark interaction, and memory growth risks
+66. Nested schema evolution — adding/removing nested fields in structs and arrays without breaking downstream jobs
 
 ---
 
@@ -355,13 +351,11 @@ Goal: full concept coverage, not tricky framing.
 61. `duplicated(keep='first')` vs `keep='last'` vs `keep=False` — what rows are flagged?
 62. `df.eval()` — when is it faster than direct column arithmetic?
 
-### Missing Topics To Add
-
-- Merge cardinality validation — `validate='one_to_one'`, `one_to_many`, and catching accidental fan-out early.
-- `merge_asof()` in more depth — nearest-key joins for event streams and slowly changing reference data.
-- `explode()` workflows — unnesting list-like columns and rebuilding aggregates safely afterward.
-- Chained assignment and `SettingWithCopyWarning` — diagnosing when writes silently hit a copy instead of the source frame.
-- MultiIndex construction and alignment semantics — building hierarchical indexes intentionally and understanding index alignment in arithmetic and joins.
+63. Merge cardinality validation — `validate='one_to_one'`, `one_to_many`, and catching accidental fan-out early
+64. `merge_asof()` in depth — nearest-key joins for event streams and slowly changing reference data
+65. `explode()` workflows — unnesting list-like columns and rebuilding aggregates safely afterward
+66. Chained assignment and `SettingWithCopyWarning` — diagnosing when writes silently hit a copy instead of the source frame
+67. MultiIndex construction and alignment — building hierarchical indexes intentionally and understanding index alignment in arithmetic and joins
 
 ---
 
@@ -460,15 +454,13 @@ Goal: full concept coverage, not tricky framing.
 59. Aggregating without pandas: group-by with `defaultdict`, sum, mean, count
 60. Detecting and handling duplicates in a list of dicts — which key uniquely identifies a record?
 
-### Missing Topics To Add
-
-- Heaps and priority queues — when `heapq` is the right structure for top-k, streaming median, and scheduler-style problems.
-- BFS / DFS on graphs and grids — traversal patterns, visited-state handling, and shortest-path-vs-reachability distinctions.
-- Union-Find / Disjoint Set Union — connectivity, component counting, and cycle detection with path compression.
-- Trie / prefix tree — prefix lookup, autocomplete-style search, and word-search pruning.
-- Topological sort — dependency ordering in DAGs and cycle detection.
-- Shortest path algorithms — especially Dijkstra for weighted graphs.
-- Monotonic stack and monotonic queue — next-greater, histogram, and sliding-window-maximum patterns.
+61. Heaps and priority queues — `heapq` for top-k, streaming median, and scheduler-style problems
+62. BFS / DFS on graphs and grids — traversal patterns, visited-state handling, and shortest-path vs reachability
+63. Union-Find / Disjoint Set Union — connectivity, component counting, and cycle detection with path compression
+64. Trie / prefix tree — prefix lookup, autocomplete-style search, and word-search pruning
+65. Topological sort — dependency ordering in DAGs and cycle detection
+66. Shortest path algorithms — Dijkstra for weighted graphs and when BFS suffices
+67. Monotonic stack and monotonic queue — next-greater, histogram, and sliding-window-maximum patterns
 
 ---
 
@@ -569,13 +561,11 @@ Goal: full concept coverage, not tricky framing.
 61. Query cost in BigQuery / Snowflake — what drives bytes scanned, and how do partitions and clustering help?
 62. Incremental model vs full refresh — when does incrementality introduce correctness risk?
 
-### Missing Topics To Add
-
-- Backpressure and flow control — what happens when downstream consumers cannot keep up with incoming volume.
-- Privacy and compliance architecture — PII handling, deletion workflows, access boundaries, and auditability.
-- Data contract operationalization — ownership, enforcement, versioning, and rollout mechanics beyond the contract definition itself.
-- Warehouse cost modeling — how storage, compute, scan volume, and query shape drive spend.
-- Incident containment patterns — limiting blast radius, isolating bad data, and staged recovery during active failures.
+63. Backpressure and flow control — what happens when downstream consumers cannot keep up with incoming volume
+64. Privacy and compliance architecture — PII handling, deletion workflows, access boundaries, and auditability
+65. Data contract operationalization — ownership, enforcement, versioning, and rollout mechanics
+66. Warehouse cost modeling — how storage, compute, scan volume, and query shape drive spend
+67. Incident containment patterns — limiting blast radius, isolating bad data, and staged recovery during active failures
 
 ---
 
@@ -661,12 +651,10 @@ Goal: full concept coverage, not tricky framing.
 52. Wide table scalability — at what point does a 500-column OBT become a problem?
 53. Materialized view vs dbt incremental model — which the warehouse controls vs which you control?
 
-### Missing Topics To Add
-
-- Bi-temporal modeling — valid time vs system time and when both timelines matter.
-- Semantic-layer governance — centrally defined metrics, dimensions, and access rules above the mart layer.
-- Semi-additive metric design in more depth — balances, inventory, and snapshot measures across time.
-- More hierarchy design variants — ragged, recursive, alternate-rollup, and cross-hierarchy reporting patterns.
+54. Bi-temporal modeling — valid time vs system time and when both timelines matter
+55. Semantic-layer governance — centrally defined metrics, dimensions, and access rules above the mart layer
+56. Semi-additive metric design — balances, inventory, and snapshot measures across time
+57. More hierarchy design variants — ragged, recursive, alternate-rollup, and cross-hierarchy reporting patterns
 
 ---
 
@@ -780,11 +768,76 @@ Goal: full concept coverage, not tricky framing.
 77. Survivorship bias in cohort analysis — why "users retained at day 30" look better-behaved than they were
 78. Goodhart's Law — when a measure becomes a target, why does it cease to be a good measure?
 
-### Missing Topics To Add
+79. Mann-Whitney and permutation tests — non-parametric alternatives when parametric assumptions fail
+80. Kruskal-Wallis and two-way ANOVA — multi-group and multi-factor inference beyond one-way ANOVA
+81. Logistic regression — binary outcomes, log-odds interpretation, and odds ratios
+82. Diagnostic plots and assumption checks — QQ plots, residual plots, normality tests, and heteroscedasticity checks
+83. Missing-data mechanisms — MCAR, MAR, MNAR, and how each changes analysis strategy
+84. Causal DAGs — confounding, colliders, and adjustment logic for causal reasoning
 
-- Mann-Whitney and permutation tests — non-parametric alternatives when parametric assumptions fail.
-- Kruskal-Wallis and two-way ANOVA — multi-group and multi-factor inference beyond one-way ANOVA.
-- Logistic regression — binary outcomes, log-odds interpretation, and odds ratios.
-- Diagnostic plots and assumption checks — QQ plots, residual plots, normality tests, and heteroscedasticity checks.
-- Missing-data mechanisms — MCAR, MAR, MNAR, and how each changes analysis strategy.
-- Causal DAGs — confounding, colliders, and adjustment logic for causal reasoning.
+---
+
+## ML Fundamentals
+
+> **Audit status:** Hooks written 2026-05-18. Gap analysis against question bank is deferred (Phase 7). The question bank (90 practice + 25 mock) already has 24 concept tags; audit will verify coverage once these hooks are reviewed.
+
+### Foundations
+
+1. Supervised vs unsupervised learning — when does the presence or absence of labels determine the approach?
+2. Regression vs classification — what distinguishes them and what determines which framing to use?
+3. Parametric vs non-parametric models — what does "parametric" mean for capacity and generalization?
+4. Inductive bias — what assumptions does a model bake in, and why does that matter for model selection?
+5. Training set vs validation set vs test set — what can go wrong when you blur these boundaries?
+6. Data splitting strategy for time series — why random splits are incorrect for time-ordered data?
+
+### Bias, Variance & Overfitting
+
+7. Bias-variance tradeoff — what does each term represent in terms of model error, and what is the total decomposition?
+8. Overfitting symptoms — how does the gap between training and test accuracy reveal overfitting?
+9. Underfitting — what conditions produce it and how do you diagnose it from learning curves?
+10. Regularization (L1 / L2 / Elastic Net) — what does each penalize, and how do they handle correlated features differently?
+11. Dropout — what distribution does it simulate at training time and why does it reduce co-adaptation?
+
+### Evaluation & Metrics
+
+12. Classification metrics: precision vs recall vs F1 vs AUC-ROC — when does each matter over the others?
+13. Precision-recall tradeoff — why does raising the decision threshold hurt recall and help precision?
+14. AUC-ROC vs AUC-PR — when is the precision-recall curve a more informative diagnostic?
+15. Regression metrics: MAE vs MSE vs RMSE vs R² — sensitivity to outliers and interpretability differences
+16. Cross-validation design: k-fold vs stratified vs time-series split — which prevents which form of leakage?
+17. Class imbalance handling — oversampling, undersampling, class weights, and threshold tuning: when to reach for each?
+18. Model calibration — why a well-ranked model can give poorly calibrated probabilities, and how to fix it?
+
+### Feature Engineering
+
+19. Feature scaling — when is it strictly required vs when is it irrelevant (trees vs linear vs neural)?
+20. Feature selection strategies — filter, wrapper, and embedded methods: tradeoffs in cost and quality?
+21. Data leakage — feature leakage vs target leakage vs temporal leakage: what breaks each type?
+22. Dimensionality reduction: PCA vs t-SNE vs UMAP — when to use each and what each preserves?
+23. Encoding strategy — one-hot vs ordinal vs target encoding: when does the wrong choice mislead the model?
+
+### Models & Algorithms
+
+24. Decision tree splitting criteria — how does Gini vs entropy vs information gain affect tree structure?
+25. Random forest vs gradient boosting — what does each ensemble method fix about the base learner?
+26. Ensemble strategy: bagging vs boosting vs stacking — what specific problem does each address?
+27. Gradient descent variants: batch vs mini-batch vs SGD — convergence behaviour and when each is preferred?
+28. Gradient pathologies — vanishing and exploding gradients: causes, detection, and standard remedies?
+29. Loss function selection — MSE vs cross-entropy vs hinge loss: what does the choice encode about the problem?
+30. Clustering evaluation — silhouette, inertia, elbow method: how do you pick k without ground-truth labels?
+
+### Neural Networks & Deep Learning
+
+31. Activation functions: ReLU vs sigmoid vs tanh — why does ReLU dominate for hidden layers in deep networks?
+32. Batch normalization — what does it normalize and what training instability does it address?
+33. Neural network architecture: depth vs width — what does adding layers vs neurons per layer each contribute?
+34. Transfer learning — fine-tune vs feature-extract vs train from scratch: what determines the right choice?
+35. Attention mechanism intuition — what does a self-attention head compute and why does it scale better than RNNs?
+
+### Production & Monitoring
+
+36. Training-serving skew — what causes feature distributions to diverge between the training pipeline and the serving pipeline?
+37. Data drift vs concept drift — how does each manifest, and how do you detect them?
+38. Model monitoring — what signals suggest a deployed model needs retraining?
+39. Deployment constraints — how do latency, memory, and throughput requirements constrain model selection?
+40. Interpretability tradeoff — SHAP / LIME vs feature importance vs inherently interpretable models: what does each give you?

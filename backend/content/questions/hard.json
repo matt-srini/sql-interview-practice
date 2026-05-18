@@ -187,7 +187,9 @@
     ],
     "concepts": [
       "BEHAVIORAL EXCLUSION",
-      "FIRST-TO-LATER EVENT COMPARISON"
+      "FIRST-TO-LATER EVENT COMPARISON",
+      "CORRELATED SUBQUERY",
+      "EXISTS PATTERN"
     ],
     "companies": [
       "Amazon",
@@ -851,7 +853,9 @@
     ],
     "concepts": [
       "BEHAVIORAL SET DIFFERENCE",
-      "CROSS-SOURCE MEMBERSHIP TESTS"
+      "CROSS-SOURCE MEMBERSHIP TESTS",
+      "CORRELATED SUBQUERY",
+      "EXISTS PATTERN"
     ],
     "companies": [
       "Amazon",
@@ -1007,7 +1011,9 @@
     "concepts": [
       "SEQUENTIAL EVENT PATTERN",
       "TIME-BOUNDED CHAIN VALIDATION",
-      "USER-PRODUCT JOURNEY MODELING"
+      "USER-PRODUCT JOURNEY MODELING",
+      "CORRELATED SUBQUERY",
+      "EXISTS PATTERN"
     ],
     "companies": [
       "Meta",

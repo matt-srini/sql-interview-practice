@@ -7,6 +7,6 @@
   "tier": "free",
   "role": "starter",
   "focus_concepts": ["DIMENSIONAL MODELING", "FACT TABLE DESIGN", "SURROGATE VS NATURAL KEYS", "SCD STRUCTURE", "GRAIN DEFINITION"],
-  "outcomes": "You will be able to distinguish star from snowflake schemas, identify the right fact table type for a scenario, explain surrogate vs natural keys, choose between SCD Type 1 and 2, and declare a correct grain.",
+  "outcomes": "You'll distinguish star from snowflake schemas, identify the right fact table type for a scenario, explain surrogate vs natural keys, choose between SCD Type 1 and 2, and declare a correct grain.",
   "recommended_after": []
 }

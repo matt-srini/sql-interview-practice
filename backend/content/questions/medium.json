@@ -627,7 +627,8 @@
     "concepts": [
       "ROW-LEVEL SELF-COMPARISON",
       "MULTI-TABLE ENTITY LINKING",
-      "DETERMINISTIC RESULT ORDERING"
+      "DETERMINISTIC RESULT ORDERING",
+      "CORRELATED SUBQUERY"
     ],
     "companies": [
       "Google",
@@ -674,7 +675,9 @@
       "ANTI-JOIN PATTERN",
       "NESTED FILTER LOGIC",
       "CONDITIONAL ROW FILTERING",
-      "DETERMINISTIC RESULT ORDERING"
+      "DETERMINISTIC RESULT ORDERING",
+      "CORRELATED SUBQUERY",
+      "EXISTS PATTERN"
     ],
     "companies": [
       "Meta",
@@ -1203,7 +1206,8 @@
     "concepts": [
       "ANTI-JOIN PATTERN",
       "NESTED FILTER LOGIC",
-      "MULTI-TABLE ENTITY LINKING"
+      "MULTI-TABLE ENTITY LINKING",
+      "EXISTS PATTERN"
     ],
     "companies": [
       "Amazon",
@@ -1243,7 +1247,8 @@
       "ROW-LEVEL SELF-COMPARISON",
       "OPTIONAL ENTITY PRESERVATION",
       "GROUPED AGGREGATION",
-      "POST-AGGREGATION FILTERING"
+      "POST-AGGREGATION FILTERING",
+      "CORRELATED SUBQUERY"
     ],
     "companies": [
       "Google",
@@ -1296,7 +1301,9 @@
       "NESTED FILTER LOGIC",
       "MULTI-TABLE ENTITY LINKING",
       "GROUPED AGGREGATION",
-      "POST-AGGREGATION FILTERING"
+      "POST-AGGREGATION FILTERING",
+      "CORRELATED SUBQUERY",
+      "EXISTS PATTERN"
     ],
     "companies": [
       "Amazon",
@@ -2355,7 +2362,8 @@
     "concepts": [
       "PERCENTILE FUNCTION",
       "LOYALTY TIERING",
-      "CASE WHEN LADDER"
+      "CASE WHEN LADDER",
+      "ORDERED-SET AGGREGATE"
     ],
     "companies": []
   },
