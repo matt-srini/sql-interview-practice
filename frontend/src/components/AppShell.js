@@ -209,7 +209,7 @@ export default function AppShell() {
       />
 
       <div className="app-body">
-        <aside id="sidebar" className={`sidebar ${mobileOpen ? 'sidebar-open' : ''}`}>
+        <aside id="sidebar" className={`sidebar ${mobileOpen ? 'sidebar-open' : ''} ${pathSlug ? 'sidebar--path-mode' : ''}`}>
           {!isMobile && (
             <button
               className="sidebar-collapse-btn"
@@ -472,8 +472,8 @@ function PathSidebar({ pathData, pathSlug, topic, meta, currentId, onNavigate, p
             </div>
           </div>
           <div className="path-sidebar-hint-actions">
-            <Link to="/?scroll=pricing" className="path-sidebar-hint-link path-sidebar-hint-link--pro">Unlock Pro ↗</Link>
-            <Link to="/?scroll=pricing" className="path-sidebar-hint-link path-sidebar-hint-link--elite">Unlock Elite ↗</Link>
+            <Link to="/?scroll=pricing" className="path-sidebar-hint-link path-sidebar-hint-link--pro">Pro — unlock all ↗</Link>
+            <Link to="/?scroll=pricing" className="path-sidebar-hint-link path-sidebar-hint-link--elite">Elite — unlock all ↗</Link>
           </div>
         </div>
       )}
