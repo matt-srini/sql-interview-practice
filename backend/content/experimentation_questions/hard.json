@@ -1,1 +1,741 @@
-[]
+[
+  {
+    "id": 93001,
+    "order": 1,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Cluster Randomization and Network Interference",
+    "description": "A ride-sharing marketplace runs an experiment to test a surge pricing algorithm. The platform randomizes individual riders into treatment (new algorithm) and control (old algorithm) groups. After two weeks, the treatment group shows a 6% increase in completed rides. However, a senior scientist argues the estimate is biased. Surge pricing affects driver supply in real time: when treated riders pay higher prices, more drivers flock to high-demand areas, which also benefits nearby control riders who happen to request rides in the same zones. Which of the following best describes the problem and the most appropriate remedy?",
+    "options": [
+      "The experiment suffers from selection bias; the remedy is to rerun with stratified randomization by rider tenure",
+      "The experiment violates the stable unit treatment value assumption due to inter-unit interference; the remedy is to randomize at the geographic market level rather than the individual level",
+      "The experiment has insufficient statistical power because surge zones are small; the remedy is to extend the experiment duration to 6 weeks",
+      "The experiment confounds driver supply with rider demand; the remedy is to control for driver density as a covariate in the analysis"
+    ],
+    "correct_option": 1,
+    "explanation": "The core problem is interference between units: when treated riders generate higher prices, driver supply shifts in ways that spill over to control riders in the same geographic area. This violates the assumption that one unit's treatment does not affect another unit's outcome — a foundational requirement for valid causal inference in standard A/B tests. The correct remedy is cluster randomization at the geographic market (city or zone) level, so that treated and control populations do not share the same supply pool. Selection bias (option A) is not the issue here since randomization was done correctly at the individual level. Extending duration (option C) doesn't resolve interference and may worsen it. Adding driver density as a covariate (option D) treats a mediator as a confounder, which would block the causal pathway of interest rather than fix the interference problem.",
+    "hints": [
+      "Think about whether one rider's experience in the experiment can affect another rider's outcome — and what assumption that violates.",
+      "When spillover effects are present across units, the unit of randomization needs to match the unit of independent treatment delivery."
+    ],
+    "concepts": ["NETWORK EFFECTS", "EXPERIMENT DESIGN"]
+  },
+  {
+    "id": 93002,
+    "order": 2,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Difference-in-Differences with Parallel Trends Failure",
+    "description": "A fintech startup cannot run an A/B test on its loan approval model because regulatory constraints require all applicants in a given state to receive identical treatment. Instead, analysts use a difference-in-differences design: the new model is rolled out to California while other states serve as controls. Pre-treatment data shows that California's approval rate was growing 1.2 percentage points per month, while control states grew 0.4 pp/month. After rollout, California grows 2.8 pp/month and control states grow 0.5 pp/month. The team estimates a treatment effect of 2.8 − 0.5 = 2.3 pp/month. Which concern most fundamentally undermines this estimate?",
+    "options": [
+      "The control states are too geographically diverse to serve as a valid comparison group for California",
+      "The pre-treatment trends differ substantially between California and the control states, invalidating the parallel trends assumption required for a valid difference-in-differences estimate",
+      "The sample sizes in some control states are too small, inflating the standard error and making the estimate unreliable",
+      "Two-period difference-in-differences requires at least 12 months of pre-treatment data; the available pre-treatment window is insufficient"
+    ],
+    "correct_option": 1,
+    "explanation": "Difference-in-differences is only valid when the treatment and control groups would have followed parallel trends absent the intervention — meaning their pre-treatment trajectories must be similar. Here, California was already growing at 1.2 pp/month versus 0.4 pp/month for controls before the rollout. This divergence suggests California was on a structurally different trajectory, likely due to state-specific economic conditions or loan demand trends. The estimated 2.3 pp effect almost certainly includes this pre-existing momentum, making it an overestimate of the true causal effect. Geographic diversity in control states (option A) is a concern for generalizability but not a fundamental validity threat if the states track California pre-treatment. Small sample sizes (option C) affect precision, not the validity of the parallel trends assumption. A 12-month pre-treatment data requirement (option D) is a rule of thumb, not a formal requirement — the actual requirement is parallel trends, not a specific data length.",
+    "hints": [
+      "Difference-in-differences rests on a specific assumption about what would have happened to the treated group if treatment had never occurred — does the pre-period data support that assumption?",
+      "If treatment and control groups were already moving at different speeds before the intervention, what does that imply about the validity of the counterfactual?"
+    ],
+    "concepts": ["CAUSAL INFERENCE", "QUASI-EXPERIMENTAL METHODS"]
+  },
+  {
+    "id": 93003,
+    "order": 3,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Geo Switchback: Carryover Period Design",
+    "description": "A food delivery platform tests a new dispatch algorithm using a geo-based switchback experiment across 40 city zones. The experiment alternates between treatment (new algorithm) and control (old algorithm) every 2 hours. After analyzing results, the data scientist finds the first 20 minutes of each period show markedly different behavior than the remaining 100 minutes — orders that started under the previous algorithm are completing during the first window of the new period, and driver repositioning is still settling. The scientist proposes two remedies: (A) extend each period to 4 hours, or (B) discard the first 20 minutes of each period from analysis. A technical reviewer argues both approaches have distinct tradeoffs. Which assessment is most accurate?",
+    "options": [
+      "Option A is strictly better because longer periods reduce carryover contamination without losing data, while option B introduces bias by discarding non-random observations",
+      "Option B is strictly better because discarding carryover windows is the standard approach and option A confounds time-of-day effects with treatment effects",
+      "Both options partially address carryover contamination but have different costs: option A reduces the number of switchback periods (reducing statistical power) while option B loses data within each period but preserves more independent observations overall",
+      "Neither option is valid; the correct remedy is to abandon the switchback design and run a standard holdout experiment instead"
+    ],
+    "correct_option": 2,
+    "explanation": "Both options are legitimate strategies for handling carryover effects in switchback experiments, and the tradeoff is genuinely non-trivial. Longer periods (option A) reduce the fraction of time contaminated by carryover — the 20-minute washout represents 10% of a 4-hour period versus 17% of a 2-hour period — but with a fixed experiment window, doubling period length halves the number of treatment-control alternations, reducing statistical power. Discarding the first 20 minutes (option B) wastes data within each period but preserves the independent alternation structure and may actually maintain more usable observations depending on the absolute numbers. Neither is strictly dominant; the right choice depends on the ratio of carryover window to period length and the total experiment budget. Option A is not 'strictly better' because it trades one problem (contamination fraction) for another (fewer independent observations). Option B is not 'strictly better' because it does discard real observations and introduces a risk of selective data exclusion. Abandoning the design (option D) is overly conservative.",
+    "hints": [
+      "Consider what each period contributes to the final estimate — how does the length of a carryover window interact with the length of the full period?",
+      "Think about the two currencies being spent: the number of independent treatment-control switches and the number of clean observations per switch."
+    ],
+    "concepts": ["SWITCHBACK EXPERIMENTS", "EXPERIMENT DESIGN"]
+  },
+  {
+    "id": 93004,
+    "order": 4,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Bayesian Sequential Testing and Early Stopping",
+    "description": "A SaaS company runs a Bayesian A/B test on a new onboarding flow. The prior on conversion rate lift is set to a normal distribution centered at 0% with standard deviation 5%. After 3 days and 800 users, the posterior shows a 95% credible interval for lift of [1.2%, 8.4%] with 97% posterior probability that lift > 0. The product team wants to stop early and ship. The Bayesian statistician cautions against stopping, citing two concerns: (1) the prior was chosen without reference to the historical distribution of onboarding lift experiments, and (2) the experiment has not yet reached the planned 14-day duration. The team argues that Bayesian inference is always valid to stop early. Who is right, and why?",
+    "options": [
+      "The team is right: Bayesian inference does not require fixed sample sizes, so stopping when the posterior is sufficiently concentrated is always statistically valid",
+      "The statistician is right on concern (1) only: a poorly calibrated prior can bias the posterior, but the planned duration concern (2) is irrelevant in a Bayesian framework",
+      "The statistician is right on both concerns: a weakly informative prior inflates posterior certainty when data is sparse, and early stopping before novelty effects stabilize can yield an inflated effect estimate regardless of the inference framework",
+      "The statistician is right on concern (2) only: the duration matters for practical business reasons, but prior selection does not affect Bayesian validity"
+    ],
+    "correct_option": 2,
+    "explanation": "The team's argument — that Bayesian methods permit early stopping — is technically true in the narrow sense that Bayesian posteriors are coherent at any sample size. However, this ignores two real problems. First, a poorly calibrated prior (centered at 0% with standard deviation 5%, chosen without reference to the historical distribution of onboarding experiments) can dominate the posterior when data is sparse; if historical onboarding lifts are typically smaller or more variable than this prior implies, the posterior credible interval may be misleadingly tight. Second, novelty effects are a real experimental threat that operate independently of the inference framework: users may respond to any change in onboarding simply because it is different, and this effect typically decays over days to weeks. Stopping at day 3 captures peak novelty bias regardless of whether you use Bayesian or frequentist analysis. The statistician's concern about both issues is therefore legitimate. Option A ignores novelty effects and prior calibration. Option B correctly addresses the prior but wrongly dismisses the duration concern. Option D reverses the correct and incorrect concerns.",
+    "hints": [
+      "Bayesian inference is coherent at any sample size — but 'statistically valid' and 'free from experimental confounds' are different claims.",
+      "The prior you put in shapes the posterior you get out — what happens when the prior is set without looking at the historical base rate of effects in similar experiments?"
+    ],
+    "concepts": ["BAYESIAN EXPERIMENTATION", "NOVELTY EFFECTS"]
+  },
+  {
+    "id": 93005,
+    "order": 5,
+    "topic": "experimentation",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "title": "Thompson Sampling Regret Under Non-Stationarity",
+    "description": "A content recommendation system uses Thompson sampling across 4 variants to maximize click-through rate (CTR). Variant A has true CTR 4%, B has 5%, C has 5.5%, D has 3%. After 10,000 rounds, Thompson sampling has allocated traffic as: A = 800, B = 2,200, C = 6,500, D = 500. At this point, the engineering team deploys a backend change that silently increases Variant A's true CTR to 7% — the highest of all variants. Thompson sampling continues running, unaware of the change. After an additional 5,000 rounds, what is the most likely traffic allocation pattern for those 5,000 rounds?",
+    "options": [
+      "Traffic remains roughly 80/22/65/5 split as the posterior is already well-concentrated and will not meaningfully update",
+      "Variant A receives most of the next 5,000 rounds as the algorithm rapidly detects the CTR improvement and reallocates traffic",
+      "Variant A receives a small initial share, then gradually gains traffic over thousands of rounds as its posterior updates, but Variant C retains dominance for most of the 5,000-round window",
+      "Variant D receives increased traffic because Thompson sampling compensates for under-explored arms after a long exploitation phase"
+    ],
+    "correct_option": 2,
+    "explanation": "After 10,000 rounds, Variant C has accumulated approximately 6,500 observations with an observed CTR near 5.5%, giving it a highly concentrated posterior — its Beta distribution is very narrow around 5.5%. Variant A, with only 800 observations, has a wider posterior. When A's true CTR shifts to 7%, initial draws from A's posterior will sometimes exceed C's posterior draws (because A's posterior, while centered near 4%, has higher variance). However, C's posterior is so concentrated that it takes many rounds of A winning draws before A's posterior updates enough to routinely beat C. The net result is that A gradually accumulates traffic, but C retains dominance for most of the 5,000-round window — exactly option C. Option A is wrong because Thompson sampling does respond to incoming data, not just the historical posterior. Option B overestimates the speed of reallocation: with 6,500 observations, C's posterior is narrow and takes time to be overcome. Option D is incorrect — Thompson sampling does not implement an explicit exploration bonus for under-sampled arms; UCB-style algorithms do that.",
+    "hints": [
+      "Think about what happens to a Beta posterior after thousands of observations — how concentrated does it become, and how many contradicting observations does it take to shift meaningfully?",
+      "When a variant's true rate changes after it has already been well-explored, the algorithm must overcome the weight of historical evidence before reallocating traffic."
+    ],
+    "concepts": ["MULTI-ARMED BANDIT", "BAYESIAN EXPERIMENTATION"]
+  },
+  {
+    "id": 93006,
+    "order": 6,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Long-Term Holdout Group Design",
+    "description": "A social network launches a new content ranking algorithm globally. To measure long-term effects, the platform maintains a 5% holdout group that continues to receive the old algorithm for 6 months post-launch. After 6 months, the holdout users have 8% lower engagement than the treatment population. However, a researcher points out that holdout users have begun to notice they receive a different experience — some have complained in community forums about 'seeing older content,' and their session durations have been declining linearly for 3 months while treatment users have been stable. What is the most serious threat to the validity of the holdout estimate, and what does it imply about the measured 8% gap?",
+    "options": [
+      "The 5% holdout size is too small, causing high variance in the engagement estimate and making the 8% gap unreliable",
+      "The holdout group's behavior is being modified by awareness of their different experience, introducing a Hawthorne-like effect that may be inflating or distorting the measured gap beyond the true algorithmic effect",
+      "Six months is too long for a holdout; after 3 months, user preferences change enough that the holdout group is no longer a valid counterfactual for the treatment group",
+      "The linear decline in holdout session duration means the old algorithm is actively degrading over time, and the 8% gap reflects model decay rather than true long-term lift from the new algorithm"
+    ],
+    "correct_option": 1,
+    "explanation": "The most serious threat here is that holdout users are aware they are receiving a different experience — they are actively complaining about it in community forums. This violates the assumption that holdout group behavior represents what would have happened to treatment users absent the change. When users know or suspect they are in a worse experience, their behavior changes beyond what the algorithm alone would cause: they may engage less due to frustration, seek content elsewhere, or develop negative associations with the product. This inflates the observed gap between holdout and treatment users, making the algorithm appear more beneficial than it actually is. Option A (holdout size) affects precision but not validity — 5% of a large social network could be millions of users. Option C confuses general user behavior drift with a specific validity threat; the holdout validity question is about counterfactual stability, not time horizons per se. Option D misidentifies the direction of the threat: linear decline in holdout engagement suggests user dissatisfaction or awareness effects, not model decay, because the algorithm itself hasn't changed for holdout users.",
+    "hints": [
+      "For a holdout group to serve as a valid counterfactual, the holdout users must behave as they would have absent any treatment — what happens when they become aware of the difference?",
+      "Think about whether the observed metric gap is measuring only the algorithmic effect or whether other behavioral changes are being bundled into the estimate."
+    ],
+    "concepts": ["HOLDOUT GROUPS", "CAUSAL INFERENCE"]
+  },
+  {
+    "id": 93007,
+    "order": 7,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Instrumental Variable Validity in Platform Context",
+    "description": "A marketplace wants to estimate the causal effect of seller response time on buyer repeat purchase rate. Running a direct experiment is infeasible because the platform cannot force sellers to respond faster. An analyst proposes using a seller's mobile app notification setting (push notifications on vs. off) as an instrumental variable — the argument is that sellers with push notifications respond faster, and push notification settings are quasi-randomly distributed. Before accepting this IV strategy, a reviewer raises two concerns: (A) push notification settings might directly affect buyers if sellers who enable notifications also change other seller behaviors, and (B) some sellers have notifications on but still respond slowly because they are high-volume sellers managing many inquiries simultaneously. Which concern is more damaging to the IV design?",
+    "options": [
+      "Concern (A) is more damaging because it threatens the exclusion restriction — the instrument may affect buyer outcomes through channels other than seller response time",
+      "Concern (B) is more damaging because it threatens instrument relevance — a weak instrument produces biased IV estimates that can be worse than OLS",
+      "Both concerns are equally damaging; a valid IV requires both the exclusion restriction and instrument relevance, and violations of either are fatal",
+      "Neither concern is damaging if the analysis controls for seller volume as a covariate; this resolves both the exclusion restriction and the weak instrument problem"
+    ],
+    "correct_option": 0,
+    "explanation": "Concern (A) is the more fundamentally damaging threat. The exclusion restriction requires that the instrument (push notification setting) affects the outcome (buyer repeat purchase) only through the specified channel (seller response time). If sellers who enable push notifications also change other behaviors — such as more proactively updating listings, offering discounts, or writing more personalized messages — then notifications affect buyer outcomes through multiple pathways simultaneously. An IV estimate in this case is unidentified: you cannot separate the response-time effect from these other channels, and the estimate will be biased in an unknown direction. Concern (B) is about instrument relevance: high-volume sellers may not comply with the instrument. A weak instrument causes finite-sample bias in the IV estimator, but this is diagnosable (via the first-stage F-statistic) and can be addressed through stronger instruments or adjustments. Exclusion restriction violations are not statistically testable from the data alone and cannot be fixed post-hoc. Option C overstates the equivalence — exclusion restriction violations are generally more pernicious because they cannot be diagnosed from the data. Option D is wrong: controlling for seller volume as a covariate may condition on a mediator and further distort the estimate rather than fix the exclusion restriction.",
+    "hints": [
+      "A valid instrumental variable must affect the outcome only through the treatment — think carefully about whether the proposed instrument has any direct pathways to the outcome.",
+      "One type of IV violation can be detected and measured statistically; the other cannot be tested from data alone — which one is which?"
+    ],
+    "concepts": ["CAUSAL INFERENCE", "QUASI-EXPERIMENTAL METHODS"]
+  },
+  {
+    "id": 93008,
+    "order": 8,
+    "topic": "experimentation",
+    "type": "debug",
+    "difficulty": "hard",
+    "title": "Regression Discontinuity: Density Manipulation",
+    "description": "A fintech company uses a credit score threshold of 650 to determine loan eligibility. A researcher proposes using a regression discontinuity design to estimate the causal effect of loan access on long-term financial health. The RDD compares borrowers just above 650 (who received loans) with applicants just below 650 (who were denied). The researcher plots the distribution of credit scores and notices a sharp spike in density just above 650 and an unusual dip just below 650 — far more applicants score 651–655 than would be expected from a smooth distribution. The RDD still shows a statistically significant improvement in financial health for those just above the cutoff. What is the most likely flaw in this analysis?",
+    "options": [
+      "The RDD bandwidth is too narrow; restricting to applicants within 5 points of the cutoff reduces sample size and inflates the standard error",
+      "The density spike above the cutoff suggests that applicants or loan officers are manipulating scores to cross the threshold, violating the RDD assumption that units cannot precisely control their assignment; the treatment group near the cutoff is therefore not comparable to the control group",
+      "Regression discontinuity requires a continuous running variable; credit scores are discrete, making this design invalid regardless of other factors",
+      "The comparison group (denied applicants near 650) may have applied for loans elsewhere after denial, creating an attrition bias that reduces the measured financial health gap"
+    ],
+    "correct_option": 1,
+    "explanation": "The sharp density spike just above the cutoff and corresponding dip just below it is the canonical indicator of manipulation of the running variable (credit score). RDD validity requires that units cannot precisely control which side of the cutoff they fall on — this is what makes units near the threshold locally comparable. When applicants (or loan officers coaching them) can push scores above 650, the composition of the treatment group changes: near-threshold treated units are no longer randomly similar to near-threshold control units. Instead, the treated group near 651–655 contains disproportionately motivated, financially literate, or strategically advised applicants — a systematically different population. The observed financial health improvement may reflect these selection differences rather than the causal effect of loan access. McCrary's density test is the standard diagnostic for precisely this scenario. Option A (bandwidth) is about statistical precision, not validity. Option C is incorrect — RDD with discrete running variables is valid when density is smooth; discreteness alone is not disqualifying. Option D (attrition) is a real concern in RDD studies but is secondary to the fundamental manipulation threat revealed by the density spike.",
+    "hints": [
+      "The density of observations near a threshold can tell you something important about whether units are sorting themselves to one side — what does an unexpected spike imply?",
+      "If people can engineer which side of the threshold they land on, what happens to the assumption that units near the cutoff are otherwise similar?"
+    ],
+    "concepts": ["QUASI-EXPERIMENTAL METHODS", "CAUSAL INFERENCE"]
+  },
+  {
+    "id": 93009,
+    "order": 9,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Experiment Platform Mutual Exclusivity",
+    "description": "A large e-commerce platform runs hundreds of simultaneous experiments. Two experiments are accidentally assigned to overlapping user populations: Experiment X tests a new search ranking algorithm (20% of users), and Experiment Y tests a new checkout flow (30% of users). The overlap means approximately 6% of users are in both experiments simultaneously. The search team analyzes Experiment X and finds a 3% lift in conversion. The checkout team analyzes Experiment Y and also finds a 3% lift in conversion. A platform engineer flags that the experiments were not properly isolated. Which scenario best describes the potential bias introduced by the overlap?",
+    "options": [
+      "The overlap introduces no bias if both experiments independently randomized their users; the 6% overlap is simply a shared sample that contributes to both estimates",
+      "If the two treatments have a positive interaction effect (users exposed to both improvements convert at a higher rate than either treatment alone would predict), both experiments will overestimate their individual causal effects",
+      "The overlap only biases Experiment X because the checkout flow is a downstream conversion step that intercepts the search experiment's causal pathway",
+      "The 6% overlap creates sample ratio mismatch in both experiments, which inflates the measured lift and requires reweighting the analysis"
+    ],
+    "correct_option": 1,
+    "explanation": "When users are simultaneously exposed to two experiments that interact, the measured treatment effect for each experiment captures not just the effect of that treatment alone but also the interaction with the other experiment. If the new search algorithm and new checkout flow together produce a conversion rate higher than either alone (a positive interaction), the 6% of users in both experiments will appear to convert at a higher rate than users in only one experiment. Since both treatment groups contain some of this double-exposed segment, both experiments will attribute higher conversion partly to their own treatment when it actually reflects the joint exposure. This inflates the individual effect estimates. Option A is incorrect: independent randomization ensures unbiasedness only when treatment effects are additive (no interaction); with interaction effects, overlap creates bias even with proper randomization. Option C incorrectly assumes the bias flows only in one direction based on the causal pathway order — both experiments are affected. Option D conflates experiment overlap with sample ratio mismatch, which is a different problem caused by implementation bugs in the randomization or logging layer, not by planned exposure overlap.",
+    "hints": [
+      "When two independent experiments have overlapping populations, the users in both groups receive a combined treatment — how does that affect each experiment's treatment effect estimate?",
+      "The answer depends on whether the two treatments interact: think about what happens when their combined effect is not simply the sum of their individual effects."
+    ],
+    "concepts": ["EXPERIMENT DESIGN", "A/B TEST MECHANICS"]
+  },
+  {
+    "id": 93010,
+    "order": 10,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "CUPED with Correlated Pre-Experiment Covariates",
+    "description": "A SaaS company tests a new in-product tutorial on user activation (defined as completing 5 core actions in the first 30 days). A data scientist applies variance reduction using two pre-experiment covariates: (1) the user's activation score from a previous 30-day period and (2) the user's account age at experiment start. Both covariates are included in the CUPED adjustment simultaneously. After adjustment, the estimated lift is 6.2% with a standard error of 0.8%, compared to the unadjusted estimate of 6.0% with SE of 2.1%. A reviewer notes that account age and prior activation score are correlated (r = 0.71) and argues the analysis has a problem. Which assessment of the reviewer's concern is most accurate?",
+    "options": [
+      "The reviewer is wrong; CUPED does not require covariates to be independent, and using correlated covariates still produces unbiased estimates with valid standard errors",
+      "The reviewer is partially right: multicollinearity among covariates reduces the marginal variance explained by each, potentially reducing the variance reduction benefit below what a single well-chosen covariate would achieve, but does not introduce bias",
+      "The reviewer is right: correlated covariates in CUPED violate the method's assumptions, producing a biased point estimate and invalid confidence intervals",
+      "The reviewer is right: using correlated covariates inflates the standard error of the CUPED estimate relative to using a single covariate, explaining why SE increased from 2.1% to 0.8%"
+    ],
+    "correct_option": 1,
+    "explanation": "CUPED does not assume covariate independence — it is a linear regression-based adjustment, and linear regression handles correlated predictors without introducing bias. The point estimate remains unbiased regardless of multicollinearity. However, the reviewer's concern has a grain of truth: when two covariates are highly correlated (r = 0.71), each explains overlapping variance in the outcome. The second covariate (account age) adds less incremental variance reduction beyond what the first (prior activation score) already captured. In principle, using just the better of the two covariates might achieve nearly the same variance reduction with simpler implementation. Option A understates the reviewer's point by dismissing the concern entirely. Option C overstates it: correlated covariates do not bias CUPED estimates or invalidate confidence intervals. Option D makes a directional error — the SE went from 2.1% (unadjusted) to 0.8% (CUPED), which is a large reduction, not an inflation; this is the correct direction for successful variance reduction.",
+    "hints": [
+      "CUPED is a linear regression adjustment under the hood — recall what multicollinearity actually does and does not do to OLS estimates.",
+      "Consider what happens to the marginal explanatory power of a covariate when another, highly correlated covariate is already in the model."
+    ],
+    "concepts": ["VARIANCE REDUCTION", "EXPERIMENT DESIGN"]
+  },
+  {
+    "id": 93011,
+    "order": 11,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Multi-Armed Bandit vs A/B Test: Regret Under Uncertainty",
+    "description": "A consumer app team is deciding between a standard A/B test and a Thompson sampling bandit to evaluate three new notification copy variants (A, B, C) against a control. The primary metric is 7-day notification click-through rate. The team knows from historical experiments that notification CTR experiments typically show small true effects (mean lift ~1–2%, SD ~2%). The experiment will run for 3 weeks across 200,000 users. A product manager argues the bandit is better because it reduces regret by shifting traffic away from underperforming variants faster. A data scientist counters that the A/B test is preferable in this case. Who is right, and what is the strongest justification?",
+    "options": [
+      "The product manager is right: bandits always dominate A/B tests in regret minimization for any reasonable experiment setup",
+      "The data scientist is right: when true effects are small relative to noise, bandits converge slowly and may never concentrate traffic on the true winner within the experiment window, resulting in higher regret than a well-powered A/B test",
+      "The data scientist is right: A/B tests are preferable because they produce a p-value, which is required for business decision making and cannot be obtained from a bandit",
+      "The product manager is right: 200,000 users over 3 weeks gives the bandit enough data to reliably identify the best variant within the first week, making the A/B test's fixed allocation wasteful"
+    ],
+    "correct_option": 1,
+    "explanation": "The data scientist's concern is well-grounded. Thompson sampling concentrates traffic on the variant with the highest posterior probability of being best. When the true signal-to-noise ratio is low — small true effects (~1–2%) relative to high variance — the posterior distributions across variants remain substantially overlapping for a long time. The algorithm continues to explore all variants roughly proportionally because it cannot confidently distinguish them. In this regime, the bandit's regret-reduction advantage shrinks: it fails to identify and exploit the winner quickly, so the traffic allocation does not meaningfully shift from the fixed A/A/A/A pattern. A well-powered A/B test, by contrast, is designed to detect the expected effect size with known probability and provides a clean decision at the end. Option A is false — bandits outperform A/B tests only when effects are detectable quickly and when the opportunity cost of exploration is high. Option C focuses on p-values, which is a secondary consideration; Bayesian bandits do provide posterior probability of being best, which can support decisions. Option D overestimates the bandit's convergence speed in the low-SNR regime.",
+    "hints": [
+      "Consider how quickly a bandit algorithm can distinguish between variants when the true effect sizes are small relative to the noise in the metric — what does slow convergence imply for regret?",
+      "Think about when the exploration-exploitation tradeoff favors a bandit versus a fixed allocation — the answer depends on the signal-to-noise ratio of the effect you are trying to detect."
+    ],
+    "concepts": ["MULTI-ARMED BANDIT", "STATISTICAL POWER"]
+  },
+  {
+    "id": 93012,
+    "order": 12,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Synthetic Control vs DiD for Platform Policy Change",
+    "description": "A marketplace platform changes its seller fee structure for all US sellers simultaneously. Because the change applies to all domestic sellers at once, there is no internal control group. An analyst proposes two approaches: (A) use sellers on the platform's Canadian marketplace as a difference-in-differences control, and (B) use a synthetic control constructed from a weighted combination of non-US sellers (Canada, UK, Australia, Germany) whose pre-treatment trajectory most closely matches the US seller trajectory. The US seller GMV had been growing at 8% per month for 12 months pre-treatment. The Canadian sellers grew at 8.3% pre-treatment. The UK, Australian, and German sellers had more variable growth (6–11% depending on month). Which design choice is preferable, and why?",
+    "options": [
+      "Approach (A) is preferable because it is simpler and Canada's similar pre-treatment trend (8.3%) makes the parallel trends assumption credible with a single country comparison",
+      "Approach (B) is preferable because the synthetic control explicitly optimizes the pre-treatment fit across all available donors, producing a counterfactual that tracks the US more accurately than any single-country control, and the fit quality can be assessed by comparing pre-treatment MSPE",
+      "Approach (A) is preferable because synthetic controls require at least 10 donor units to be valid, and using only 4 countries is insufficient",
+      "Both approaches are equivalent when the parallel trends assumption holds; the choice should be made based on whichever has larger sample size"
+    ],
+    "correct_option": 1,
+    "explanation": "The synthetic control method is preferable here for several reasons. First, it explicitly minimizes the pre-treatment prediction error by finding optimal weights across all available donor units — this is done transparently and the fit quality (measured by mean squared prediction error on pre-treatment data) can be reported and scrutinized. Second, using a single country (Canada) as a DiD control relies on the parallel trends assumption holding perfectly for that one country, which cannot be tested within the DiD framework itself. Third, Canada's pre-treatment growth of 8.3% versus US's 8.0% is close but not identical — over 12 months, these divergences compound. The synthetic control can combine donor units to better match the US trajectory month-by-month. Option A's simplicity argument is valid but does not outweigh the improved counterfactual quality. Option C's '10 donor unit' threshold is a common rule of thumb but is not a formal requirement — synthetic controls have been applied validly with fewer donors when fit quality is high. Option D is wrong: the two approaches are not equivalent even when parallel trends holds, because the synthetic control optimizes fit while DiD assumes it holds exactly.",
+    "hints": [
+      "When you have a single treated unit and multiple potential control units with different pre-treatment trajectories, think about how each method constructs the counterfactual and how you verify its quality.",
+      "One of these approaches explicitly tests how well the counterfactual matches pre-treatment data — which one, and why does that matter?"
+    ],
+    "concepts": ["QUASI-EXPERIMENTAL METHODS", "CAUSAL INFERENCE"]
+  },
+  {
+    "id": 93013,
+    "order": 13,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Bayesian Prior Calibration with Historical Experiments",
+    "description": "A fintech company's experimentation platform offers analysts a choice between three prior distributions for their Bayesian A/B tests on loan conversion rate lift: (1) a weakly informative prior, Normal(0, 10%), which places substantial probability on very large lifts; (2) a historically calibrated prior, Normal(0, 2.5%), based on the average effect size of the last 80 loan conversion experiments; and (3) a skeptical prior, Normal(0, 0.5%), which strongly regularizes toward zero effect. A senior analyst runs an experiment on a fundamentally new loan product category (BNPL, the company's first) and finds a raw lift estimate of 6.4% after 2 weeks. She argues she should use prior (1) because BNPL is a new category and the historical prior from traditional loan products doesn't apply. A reviewer disagrees. Who has the stronger argument?",
+    "options": [
+      "The analyst is right: when entering a genuinely new product category with no relevant historical data, a weakly informative prior is scientifically appropriate and avoids injecting misleading information from an irrelevant historical distribution",
+      "The reviewer is right: the historically calibrated prior should always be used in a business setting to maintain consistency across experiments and avoid analysts choosing priors to obtain desired results",
+      "The analyst is right, but only if the weakly informative prior is symmetric; a one-sided prior favoring positive lifts would be inappropriate",
+      "The reviewer is right: even for a new product category, the historically calibrated prior provides useful regularization because the underlying statistical behavior of user conversion experiments (variance, noise structure) is similar across product types, even if the mean effect might differ"
+    ],
+    "correct_option": 3,
+    "explanation": "The reviewer has the stronger argument, though the analyst's reasoning is not without merit. The key insight is that prior distributions serve two roles: encoding domain knowledge about the plausible magnitude of effects, and providing regularization against noise. The historically calibrated prior (Normal(0, 2.5%)) is informative about the scale of effects that are achievable in conversion rate experiments on this platform, regardless of product category. Even if BNPL might have a different true mean lift than traditional loans, the variance of achievable effects — the fundamental signal-to-noise structure of user conversion experiments — is likely similar. A 6.4% raw lift after 2 weeks is well above any historically observed effect, which should trigger skepticism about measurement noise rather than immediate acceptance. The weakly informative prior (Normal(0, 10%)) allows implausibly large effects and provides minimal regularization, making the posterior sensitive to early-stage noise. The analyst's 'new category' argument conflates the mean of the prior (which could be shifted) with the variance of the prior (which relates to the scale of detectable effects). The ideal approach would be to use the historical prior's scale while possibly relaxing its mean — but between options 1 and 2, option 2 provides better regularization. Option A is partially correct in framing but wrong in concluding that a weakly informative prior is therefore appropriate.",
+    "hints": [
+      "A prior distribution encodes more than just the expected effect — it also captures the plausible range of effects. Which source of information is more likely to transfer across product categories: the expected magnitude, or the scale of achievable effects?",
+      "When a raw estimate is far above anything historically observed, should a good Bayesian update heavily toward that estimate or should the prior pull it back? Which prior does that?"
+    ],
+    "concepts": ["BAYESIAN EXPERIMENTATION", "EXPERIMENT DESIGN"]
+  },
+  {
+    "id": 93014,
+    "order": 14,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Two-Sided Marketplace Network Effects in A/B Tests",
+    "description": "A freelance marketplace runs an A/B test of a new job matching algorithm. 50% of clients are assigned to treatment (new matching algorithm) and 50% to control. Freelancers are not separately randomized — any freelancer can be matched to either treatment or control clients depending on which client sends them a job offer. After 3 weeks, the treatment shows a 12% improvement in hire rate for clients. The data science team is excited. A senior researcher argues the 12% estimate is almost certainly an overestimate. What mechanism explains the overestimate?",
+    "options": [
+      "The treatment group clients have different job categories than control group clients, creating confounding that inflates the apparent hire rate improvement",
+      "Because freelancers are shared between treatment and control clients, the better matching in the treatment group draws the best-fit freelancers toward treatment clients, leaving control clients with a depleted pool of well-matched candidates, which artificially suppresses the control hire rate and inflates the treatment-control gap",
+      "The 3-week experiment duration is too short to measure hire rate accurately, since many jobs take longer than 3 weeks to fill; the 12% reflects early-stage speed rather than true matching quality",
+      "The treatment algorithm produces more initial matches, but freelancers receive too many offers and accept fewer per offer, causing the hire rate gain to be transient and not reflective of steady-state behavior"
+    ],
+    "correct_option": 1,
+    "explanation": "This is a classic two-sided marketplace interference problem. In a properly isolated experiment, treatment clients should receive better matches without affecting the pool available to control clients. But because freelancers are a shared resource — they can receive offers from both treatment and control clients — the new matching algorithm preferentially routes the best-fit freelancers toward treatment clients (that is its purpose). The same high-quality freelancers that would have been matched to control clients are now being directed toward treatment clients instead. This depletes the control group's access to the most relevant candidates, artificially suppressing the control hire rate. The measured 12% gap thus includes both the genuine improvement from better matching and the artificial suppression of control performance caused by resource competition. In equilibrium (i.e., after a global rollout with no control group), the true effect would be smaller because the control group's suppression disappears. Option A (category confounding) would require a failure of randomization that isn't described. Option C (duration) is a concern but doesn't explain systematic overestimation in the direction described. Option D (freelancer offer fatigue) is a plausible secondary effect but isn't the core structural bias.",
+    "hints": [
+      "In a two-sided marketplace, both buyers and sellers are resources — what happens to one side's quality when the algorithm actively diverts the best matches toward the treatment side?",
+      "If freelancers are shared across treatment and control clients, and the new algorithm identifies 'best-fit' freelancers for treatment clients, what does that imply about who is left for the control clients?"
+    ],
+    "concepts": ["NETWORK EFFECTS", "A/B TEST MECHANICS"]
+  },
+  {
+    "id": 93015,
+    "order": 15,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Holdout Group: Cannibalization Detection",
+    "description": "A streaming platform launches a new 'Continue Watching' feature to all users except a 3% holdout that is kept on the old UI. The primary metric is weekly streaming hours. After 30 days, the treated population streams 4.2 hours/week on average versus 4.0 hours/week for the holdout — a 5% lift. The analytics team is preparing to declare success. A product researcher raises a concern: the 'Continue Watching' feature may be cannibalizing engagement from the platform's existing 'Curated Picks' feature, which was the previous primary re-engagement surface. She pulls data showing Curated Picks clicks are down 18% in the treatment group. How should this finding affect the decision?",
+    "options": [
+      "The finding is irrelevant to the launch decision; total streaming hours is the right top-line metric, and a 5% lift in hours indicates net positive impact regardless of how users reach content",
+      "The finding suggests that 'Continue Watching' is substituting for 'Curated Picks' rather than growing total engagement; the team should measure whether total session-starts (from any feature) and total hours are both higher, or only hours are higher due to longer sessions from an easier re-entry point",
+      "The 18% decline in Curated Picks is a leading indicator that the feature will underperform after novelty wears off; the launch should be delayed 60 days to observe long-term trends",
+      "The finding proves that the 5% hours lift is entirely explained by cannibalization and the feature should not be launched"
+    ],
+    "correct_option": 1,
+    "explanation": "The researcher's concern highlights an important distinction between substitution and genuine growth. A 5% lift in total weekly hours is a positive signal, but the simultaneous 18% decline in Curated Picks clicks raises the question of whether 'Continue Watching' is growing the pie or simply changing how users reach the same content. If users who previously discovered new content via Curated Picks are now only re-watching already-started content via Continue Watching, the hours lift might reflect easier re-entry into existing sessions (reducing friction) without expanding the content discovery surface. The right analytical step is to decompose the hours gain: are more distinct sessions starting, or are individual sessions longer? Is content diversity (titles watched per user) maintained or declining? If total unique content consumption is flat or declining, the feature may be solving a re-entry problem rather than growing true engagement. Option A dismisses the concern too quickly — cannibalizing a discovery surface could have long-term content diversity costs even if hours are flat or slightly positive. Option C introduces a novelty effect hypothesis without direct evidence. Option D overclaims: the 18% Curated Picks decline does not prove the hours lift is entirely cannibalization, only that it is a risk worth investigating.",
+    "hints": [
+      "When a new feature improves a top-line metric but reduces engagement with an existing feature, consider whether the two features serve the same user need or complementary needs.",
+      "A higher-level metric like total hours can hide substitution effects — think about what additional metrics would help you distinguish 'new engagement' from 'same engagement through a different path.'"
+    ],
+    "concepts": ["HOLDOUT GROUPS", "METRIC SELECTION"]
+  },
+  {
+    "id": 93016,
+    "order": 16,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Geo Experiment: Treatment Effect Estimation with Spillover",
+    "description": "A retail chain runs a geo experiment to test a new in-store digital signage campaign. 30 markets receive the campaign (treatment) and 20 markets are holdouts (control). After 8 weeks, the treatment markets show 9% higher sales. However, the analyst observes that several control markets border treatment markets — specifically, 8 of the 20 control markets share a metro area with a treatment market. Shoppers in those border markets may see the digital ads when visiting treatment stores or may cross-shop. The analyst removes the 8 border control markets from the analysis. A reviewer questions this decision. Which concern about removing the border markets is most valid?",
+    "options": [
+      "Removing the border markets reduces the control sample size and inflates the standard error, making the result less reliable",
+      "The 8 removed markets may be systematically different from the remaining 12 control markets (e.g., larger, higher-income, denser), introducing selection bias into the comparison if the remaining 12 are not representative of counterfactual treatment markets",
+      "Removing contaminated control markets is always correct and the reviewer's concern has no validity; a contaminated control market should never be in the analysis",
+      "The reviewer is concerned that the analyst cherry-picked which markets to remove based on their sales performance rather than their geographic proximity"
+    ],
+    "correct_option": 1,
+    "explanation": "Removing border control markets is often the right instinct — contaminated controls will attenuate the estimated treatment effect — but the decision introduces its own risk. If the border markets are systematically different from the remaining 12 control markets (for example, they may be denser urban markets that were more likely to be selected as treatment markets in the first place, or they may be higher-income markets with different baseline sales), then the remaining control group is a biased sample. The treatment-control comparison may then confound the campaign effect with systematic geographic differences. The right approach is to examine whether the 12 remaining control markets are balanced with the 30 treatment markets on key pre-experiment characteristics. Option A is true but is a precision concern, not a validity concern — the question asks for the most valid concern. Option C is too categorical: removing contaminated markets is often correct, but 'always' overstates it and ignores the selection bias risk created by the removal. Option D is a legitimate audit concern but is secondary to the structural confounding risk described in option B.",
+    "hints": [
+      "When you selectively remove units from an experiment, the remaining group may no longer be representative of the same population — think about what characteristics might differ between border and non-border control markets.",
+      "Removing contaminated units solves one problem (interference) but can create another — which problem does it potentially introduce?"
+    ],
+    "concepts": ["SWITCHBACK EXPERIMENTS", "SEGMENTATION ANALYSIS"]
+  },
+  {
+    "id": 93017,
+    "order": 17,
+    "topic": "experimentation",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "title": "Variance Reduction: Stratified Randomization and CUPED Interaction",
+    "description": "A data scientist runs an experiment on a consumer app with 10,000 users. She stratifies the randomization by user activity quintile (5 strata, 2,000 users each, 1:1 split). After the experiment, she applies CUPED using each user's pre-experiment metric as the covariate. The unadjusted SE is 3.2%. The stratified design alone would reduce SE to 2.4%. The CUPED adjustment alone would reduce SE to 1.9%. She asks: if stratification and CUPED are applied together, what SE should she expect?",
+    "options": [
+      "Approximately 1.9% — CUPED subsumes the variance reduction from stratification, so there is no additional benefit to applying both",
+      "Approximately 1.4% — the variance reductions multiply (3.2% × 0.75 × 0.59 ≈ 1.4%)",
+      "Approximately 1.9% to 2.4% — the combined SE will be between the two individual SEs since stratification and CUPED partially address overlapping variance sources",
+      "Approximately 1.9% or slightly below — stratification captures variance related to user activity, and if the CUPED covariate is highly correlated with user activity, the two methods share nearly the same variance source; the combined SE is similar to CUPED alone with marginal additional reduction"
+    ],
+    "correct_option": 3,
+    "explanation": "The key is understanding what variance each method reduces and how much those sources overlap. Stratified randomization by user activity quintile reduces variance caused by activity-level heterogeneity across treatment and control groups. CUPED with a pre-experiment activity metric as covariate also reduces variance related to baseline activity differences. Because both methods target variation in the same underlying dimension — user activity — their variance reductions are largely overlapping, not multiplicative. The combined SE is therefore close to whichever method is stronger (CUPED at 1.9%), with only a marginal additional reduction from stratification. Option A is close but too strong — there is some marginal benefit since stratification eliminates between-strata confounding while CUPED only adjusts for it post-hoc. Option B (multiplicative reduction) would apply if the two methods addressed entirely independent variance sources, which they do not when both target the same dimension. Option C is too pessimistic — the combined approach should beat either method alone, even slightly. The correct characterization is that combined application is approximately as good as the stronger individual method (CUPED), with a modest additional gain.",
+    "hints": [
+      "Both stratified randomization and CUPED reduce variance — but they may be targeting the same source of variance. What happens when two variance reduction methods address the same underlying dimension?",
+      "Think about what dimension the stratification variable and the CUPED covariate each capture — if they are measuring the same thing, their variance reductions will not be additive."
+    ],
+    "concepts": ["VARIANCE REDUCTION", "EXPERIMENT DESIGN"]
+  },
+  {
+    "id": 93018,
+    "order": 18,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Bayesian A/B Test: Posterior Probability vs Business Threshold",
+    "description": "An e-commerce company's experimentation platform reports 'probability to be best' (PBE) for Bayesian A/B tests. A test of a new product page layout shows PBE = 89% for the treatment (meaning there is an 89% posterior probability that the treatment is better than control). The company's decision rule is: ship if PBE ≥ 90%. The experiment has 50,000 users per arm. The posterior mean lift is 2.1% and the 95% credible interval is [0.3%, 3.9%]. The product team argues the 89% vs 90% distinction is arbitrary and requests shipping. The analyst argues that the 1% gap matters and the experiment should continue. Who has the stronger argument, and what is the right analytical framing?",
+    "options": [
+      "The product team is right: PBE thresholds are arbitrary, and a 1-percentage-point shortfall from a rule-of-thumb threshold should not block a decision when the credible interval excludes zero and the posterior mean lift is meaningful",
+      "The analyst is right: the 90% threshold was set deliberately to control the expected false discovery rate, and lowering it case-by-case undermines the integrity of the experimentation program by creating opportunities for selective threshold relaxation",
+      "The analyst is right: a PBE of 89% means there is a 11% chance the treatment is worse, which is unacceptably high for an e-commerce product change",
+      "The product team is right: the correct decision criterion is the expected loss, not PBE; if the expected loss from shipping a treatment that is actually worse is below the business's loss tolerance, the feature should be shipped regardless of PBE"
+    ],
+    "correct_option": 3,
+    "explanation": "The Bayesian decision-theoretic framework is most intellectually coherent for this situation. PBE (probability to be best) is a summary of the posterior but is not the natural decision criterion in Bayesian decision theory — expected loss is. Expected loss integrates over the posterior: if the treatment is actually worse, how much do you lose, weighted by the posterior probability and magnitude of being worse? In this case, the 95% credible interval is [0.3%, 3.9%], meaning the worst plausible outcome is a 0.3% lift (not actually negative) at the 2.5th percentile. The expected loss from shipping is therefore very small: even in downside scenarios, the treatment is unlikely to hurt users. A company should set a loss threshold, not an arbitrary PBE threshold, and evaluate each decision against it. Option A has the right intuition but frames it as 'arbitrary thresholds' rather than the more principled 'expected loss' framing. Option B is right that consistent thresholds protect experimentation integrity, but this argument is institutional, not analytical — the principled counter is that PBE thresholds are the wrong criterion anyway. Option C misreads the 11% residual probability: the treatment being worse is not the same as the treatment being meaningfully worse — the posterior over negative outcomes must also be examined.",
+    "hints": [
+      "When making a binary ship/no-ship decision with a Bayesian posterior, think about what the natural decision-theoretic criterion is — is it the probability of being best, or something that accounts for the magnitude of downside outcomes?",
+      "A 90% threshold on probability-to-be-best treats all amounts of being worse as equally bad — is that the right way to frame the business risk?"
+    ],
+    "concepts": ["BAYESIAN EXPERIMENTATION", "METRIC SELECTION"]
+  },
+  {
+    "id": 93019,
+    "order": 19,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Segmentation Analysis and Multiple Comparisons",
+    "description": "A search team ships a new ranking algorithm and observes a statistically significant 2.8% overall click-through rate improvement (p = 0.03). Post-hoc, an analyst runs segmentation analysis across 12 segments: device type (3 groups), query category (4 groups), and user tenure (5 groups). The analyst reports that the improvement is 'driven by mobile users' (p = 0.01 in mobile segment, p = 0.18 in desktop, p = 0.22 in tablet). The product team plans to ship the feature only for mobile users and build a different fix for desktop/tablet. A statistician objects. What is the most fundamental problem with the analyst's conclusion?",
+    "options": [
+      "The analyst ran 12 segmentation tests without correcting for multiple comparisons; the probability of finding at least one nominally significant result by chance across 12 tests at α = 0.05 is approximately 46%, making the mobile finding likely a false positive",
+      "The analyst should have run a pre-registered interaction test (device type × treatment) rather than separate segment-level tests; without a significant interaction, mobile-specific shipping is not warranted",
+      "The mobile segment's p-value of 0.01 is significant, but the analyst failed to verify that the mobile and desktop/tablet confidence intervals are non-overlapping, which is required to conclude the effect is genuinely segment-specific",
+      "Segmentation analysis is only valid when the overall test is significant; since the overall test is significant (p = 0.03), the mobile-specific conclusion is statistically sound"
+    ],
+    "correct_option": 1,
+    "explanation": "The most fundamental problem is that the analyst is reporting a segment-specific effect without testing the interaction between device type and treatment assignment. For a treatment to be genuinely better for mobile users than for other users, the treatment effect must differ across segments — which requires a statistically significant interaction term. What the analyst found is that the treatment effect is significant within the mobile segment but not within desktop/tablet segments. However, non-significance within a segment does not prove the effect is absent there; it may simply reflect lower statistical power (smaller sample size) within those segments. The correct test is: does the treatment effect for mobile significantly differ from the treatment effect for desktop and tablet? Option A is true and important — multiple comparisons are a real problem across 12 segments — but it is a secondary concern compared to the interaction test issue. Running 12 tests does inflate false positive risk, but even a single properly specified segment test would require an interaction term, not a marginal significance test within the segment. Option C describes a common but incorrect heuristic (non-overlapping confidence intervals) — the formal test for interaction is needed. Option D is wrong: overall significance does not validate segment-level conclusions.",
+    "hints": [
+      "To conclude that a treatment works differently for one group versus another, you need to test for a difference in effects — not just whether the effect is significant within one group but not another.",
+      "Non-significance in a subgroup doesn't mean there is no effect in that subgroup — think about what else might explain significance in one subgroup and non-significance in another."
+    ],
+    "concepts": ["SEGMENTATION ANALYSIS", "MULTIPLE TESTING"]
+  },
+  {
+    "id": 93020,
+    "order": 20,
+    "topic": "experimentation",
+    "type": "debug",
+    "difficulty": "hard",
+    "title": "Propensity Score Matching: Hidden Covariate Imbalance",
+    "description": "A B2B SaaS company cannot randomize customers to a new onboarding program due to sales team logistics. Instead, analysts use propensity score matching to compare 200 customers who completed the new onboarding with 200 matched controls who received standard onboarding. The propensity model includes: company size, industry, and contract value. After matching, standardized mean differences (SMD) for these three covariates are all below 0.1, indicating good balance. The analysis shows a statistically significant 15% higher 12-month retention for the new onboarding group. A critic argues the estimate is flawed. What is the most likely source of bias the critic has identified?",
+    "options": [
+      "The matched sample of 200 pairs is too small; the true treatment effect can only be estimated reliably with at least 500 matched pairs in B2B SaaS contexts",
+      "Propensity score matching balances only the covariates included in the propensity model; unmeasured confounders — such as customer success manager quality, customer technical maturity, or executive champion engagement — may differ between groups and bias the estimate",
+      "The propensity model should have included more granular covariates such as sub-industry and geographic region; the current model is underspecified and the matching is therefore invalid",
+      "The analysis uses standardized mean differences below 0.1 as a balance criterion, but the correct threshold is 0.05; with higher imbalance, the propensity score analysis overestimates the treatment effect"
+    ],
+    "correct_option": 1,
+    "explanation": "Propensity score matching can only control for confounding from variables that are measured and included in the propensity model. The key assumption — called 'no unmeasured confounders' or 'conditional ignorability' — requires that treatment assignment is independent of potential outcomes conditional on the observed covariates. In a B2B SaaS context, several highly influential unobserved variables could drive both enrollment in the new onboarding program and 12-month retention: customer success manager quality (some CSMs may push better accounts toward new programs), customer technical sophistication (which affects both onboarding success and retention), or executive champion engagement at the account. These factors are rarely fully captured by company size, industry, and contract value alone. Good balance on observed covariates (SMDs < 0.1) provides no evidence of balance on unobserved ones. Option A (sample size) is a precision concern, not a validity concern. Option C (model specification) is a valid secondary concern but assumes the omitted covariates are measurable; the deeper issue is whether the important confounders are measured at all. Option D misrepresents the SMD threshold — 0.1 is widely accepted in applied causal inference (though 0.05 is more conservative); the threshold choice is not the primary source of bias here.",
+    "hints": [
+      "Propensity score matching is only as good as the variables you put into the propensity model — think about what might simultaneously predict which customers get the new onboarding and which customers stay.",
+      "Good balance on measured covariates is necessary but not sufficient for a valid causal estimate — what else must hold, and can you verify it from the data?"
+    ],
+    "concepts": ["QUASI-EXPERIMENTAL METHODS", "CAUSAL INFERENCE"]
+  },
+  {
+    "id": 93021,
+    "order": 21,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "IV vs RDD vs DiD: Choosing the Right Design",
+    "description": "A government health department wants to estimate the causal effect of a telemedicine subsidy on health outcomes. Three natural experiments have been identified: (1) The subsidy was rolled out by county based on a funding formula, and counties just above and just below the funding eligibility threshold received very different subsidies — the threshold was fixed before the study period. (2) A neighboring state simultaneously launched an identical subsidy program, providing a comparison population with pre-period data. (3) Insurance network changes have randomized whether specific physicians participate in the telemedicine platform independent of patient health status, creating an instrument. Each design has different strengths. Which design should be prioritized for estimating the causal effect of subsidy receipt on patient outcomes, and why?",
+    "options": [
+      "Design (2) — difference-in-differences with the neighboring state as control — because it uses the largest sample size and does not require continuity assumptions at a threshold or instrument validity assumptions",
+      "Design (1) — regression discontinuity at the funding threshold — because it provides the cleanest local causal estimate near the cutoff without requiring parallel trends or an exclusion restriction, as long as counties cannot manipulate their funding formula score",
+      "Design (3) — instrumental variable with physician network participation — because it provides the strongest identification for patient-level heterogeneous treatment effects and does not rely on a geographic boundary that may not hold in practice",
+      "All three designs are equivalent if the parallel trends assumption, continuity assumption, and exclusion restriction each hold in their respective designs; the choice should be made on statistical power alone"
+    ],
+    "correct_option": 1,
+    "explanation": "Design (1) — regression discontinuity at the funding threshold — provides the most credible local causal estimate here, assuming counties cannot manipulate their position relative to the threshold. The key advantage is that the assignment mechanism (a funding formula with a fixed cutoff set before the study period) is clear, exogenous, and exploits genuine discontinuities in subsidy receipt. Counties just above and below the threshold are likely very similar on all dimensions except subsidy receipt, providing a clean counterfactual. The RDD assumption (no sorting around the threshold) is testable via density tests. Design (2) has appeal with a large sample, but the parallel trends assumption (that the study state and neighboring state would have followed the same health outcome trend absent the subsidy) is unlikely to hold perfectly across state boundaries with different healthcare systems, demographics, and concurrent policies. Design (3) is valid if the exclusion restriction holds, but physician network changes may have direct effects on patient outcomes beyond telemedicine access (e.g., by changing in-person availability), threatening the exclusion restriction. Option D incorrectly treats all three designs as equivalent given their assumptions — in practice, assumption plausibility varies dramatically, and the RDD has the most defensible identification here.",
+    "hints": [
+      "Each causal inference design has a key identifying assumption — think about which assumption is most plausible to verify in this specific context.",
+      "When assignment is determined by a known formula with a fixed cutoff set before the study, what does that imply about sorting and confounding near the threshold?"
+    ],
+    "concepts": ["CAUSAL INFERENCE", "QUASI-EXPERIMENTAL METHODS"]
+  },
+  {
+    "id": 93022,
+    "order": 22,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Synthetic Control: Donor Pool Selection Bias",
+    "description": "A streaming platform launches an original content category (documentary series) exclusively in Brazil. To estimate the causal effect on subscriber growth, the team builds a synthetic control using other Latin American markets as donors: Mexico, Argentina, Colombia, and Chile. The synthetic control is fit on 18 months of pre-treatment subscriber growth data. After fitting, the pre-treatment MSPE (mean squared prediction error) is very low — the synthetic Brazil tracks actual Brazil almost exactly. Post-treatment, actual Brazil grows 14% faster than synthetic Brazil. Before declaring success, a reviewer raises two concerns: (A) all donor countries are simultaneously running their own content experiments that the team does not control, and (B) Brazil is the largest market and has substantially different demographics than all donors combined. Which concern more seriously threatens validity?",
+    "options": [
+      "Concern (A) is more serious: simultaneous experiments in donor countries change their subscriber growth trajectories, corrupting the synthetic counterfactual and making the 14% gap an unreliable estimate of Brazil's treatment effect",
+      "Concern (B) is more serious: if Brazil is structurally different from all donors in size and demographics, the synthetic control is constructed from an inappropriate donor pool, and the apparent pre-treatment fit may be spurious (overfit to 18 months of shared global trends)",
+      "Both concerns are equally serious: synthetic controls require both clean donor trajectories and demographically similar donors; violations of either assumption are fatal",
+      "Concern (A) is more serious only if the donor-country experiments had measurable effects on subscriber growth; if their growth rates are similar to pre-experiment trends, concern (A) is negligible"
+    ],
+    "correct_option": 0,
+    "explanation": "Concern (A) is the more immediate and serious threat to validity. The synthetic control assumption requires that donor units are not themselves treated during the post-period — they should represent what would have happened to Brazil absent the documentary launch, under no concurrent intervention. If Mexico, Argentina, Colombia, and Chile are running their own content experiments, their growth trajectories in the post-period reflect their own treatments, not a clean counterfactual for Brazil. The synthetic counterfactual is thus contaminated: it shows what happened to treated donors, not untreated ones. Concern (B) is important but more nuanced: demographic and size differences between Brazil and donors affect the generalizability of the synthetic control and may signal that no convex combination of donors can accurately represent Brazil's counterfactual. However, the pre-treatment MSPE being very low suggests the combination was at least historically predictive. Poor MSPE would strongly validate concern (B), but low MSPE partially mitigates it. Concern (A) cannot be mitigated by good pre-treatment fit — contaminated donors are a structural problem regardless of fit quality. Option C overstates the equivalence. Option D correctly notes that concern (A)'s severity depends on magnitude, but the question is which concern is more serious, and contaminated donors are more directly disqualifying.",
+    "hints": [
+      "Synthetic controls use donor units as a counterfactual — what must be true about those donors during the post-treatment period for the counterfactual to be valid?",
+      "Good pre-treatment fit can be misleading — think about whether low pre-treatment prediction error guarantees validity in the post-treatment period when something has changed."
+    ],
+    "concepts": ["QUASI-EXPERIMENTAL METHODS", "CAUSAL INFERENCE"]
+  },
+  {
+    "id": 93023,
+    "order": 23,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Switchback Experiment: Carryover Period Estimation",
+    "description": "A logistics company runs a switchback experiment to test a new routing algorithm across 50 delivery zones. Each zone alternates between treatment and control every 6 hours. The carryover effect is suspected to last up to 90 minutes — trucks assigned routes under the old algorithm may take 60–90 minutes to complete those routes after the period switches. To handle this, the analyst excludes the first 90 minutes of each period from analysis. After running the experiment for 10 days (40 periods per zone), the estimated treatment effect is a 7% reduction in average delivery time. A reviewer questions whether the carryover window estimate of 90 minutes is itself uncertain and whether this uncertainty affects the final estimate. Which assessment is most accurate?",
+    "options": [
+      "The reviewer's concern is immaterial: as long as any positive carryover window is excluded, the analysis is valid regardless of whether 90 minutes is the true carryover duration",
+      "The reviewer's concern is valid but practically small: if the true carryover is shorter than 90 minutes, the exclusion discards clean data unnecessarily; if longer, the treatment effect is still biased, but uncertainty in the window estimate introduces known-direction bias toward underestimation",
+      "The reviewer's concern is valid and serious: if the true carryover is longer than 90 minutes, clean periods are contaminated and the treatment effect estimate is biased in an unknown direction; estimating the carryover window from the data itself (rather than assuming 90 minutes) and propagating that uncertainty would improve the analysis",
+      "The reviewer's concern is only valid for asymmetric carryover effects; if the old and new algorithms both generate 90-minute carryovers, the effects cancel out and the estimate is unbiased"
+    ],
+    "correct_option": 2,
+    "explanation": "The reviewer's concern is valid and meaningful. The carryover window duration (90 minutes) is an estimate, not a known quantity. If the true carryover is longer than 90 minutes — say, 2 hours for complex multi-stop routes — then the first 90 minutes of each new period are excluded but the next 30 minutes (which are still contaminated) are included in the analysis. This would bias the treatment effect estimate in a direction that depends on the nature of the contamination: it could overestimate or underestimate the treatment effect depending on which period's contamination is more pronounced. The right approach is to examine the data for carryover signatures (e.g., running the analysis with different window lengths and checking sensitivity) and propagate the uncertainty in the window estimate. Option A is wrong: excluding too short a window still leaves contaminated data in the analysis. Option B partially captures the concern but is too confident in the direction of bias — if the carryover is longer than assumed, the direction of bias is not necessarily 'toward underestimation'. Option D introduces a symmetry argument that is irrelevant: even symmetric carryover from both algorithms would contaminate the start of each period and bias estimates if the exclusion window is too short.",
+    "hints": [
+      "The carryover exclusion window is based on an estimate of how long carryover lasts — what happens to your analysis if that estimate is wrong in either direction?",
+      "Think about what the data would look like at different points within a period if carryover is still present — is there a way to use the data itself to test your assumption about the window length?"
+    ],
+    "concepts": ["SWITCHBACK EXPERIMENTS", "EXPERIMENT DESIGN"]
+  },
+  {
+    "id": 93024,
+    "order": 24,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Geo Experiment: Market-Level Confounders",
+    "description": "A CPG brand tests a new digital advertising strategy by activating it in 15 markets (treatment) while keeping 15 similar markets as holdouts (control). Markets were matched at the start using historical sales data from 6 months prior. After 12 weeks, the treatment markets show 11% higher sales. However, during the experiment period, two treatment markets (Chicago and Dallas) experienced a major competitor withdrawal from those cities, which is unrelated to the CPG brand's experiment. A clean-room data provider confirms that the competitor's sales shifted to the CPG brand in those cities during the experiment. The analyst proposes two approaches: (A) remove Chicago and Dallas from the analysis, and (B) treat the competitor withdrawal as a 'bad control' problem and model it as a covariate. Which approach is more appropriate?",
+    "options": [
+      "Approach (A) is more appropriate: Chicago and Dallas experienced an external shock unrelated to the advertising intervention; removing them produces a cleaner estimate of the advertising effect in unaffected markets",
+      "Approach (B) is more appropriate: removing markets that happen to be in the treatment group introduces selection bias into the experiment; controlling for competitor withdrawal as a covariate is statistically cleaner",
+      "Both approaches are problematic: the correct approach is to run a separate analysis for the 13 unaffected treatment markets and compare to all 15 control markets, then report both the overall and the restricted estimate as a sensitivity analysis",
+      "Approach (A) is more appropriate only if the competitor withdrawal was completely unrelated to the advertising campaign; if the campaign caused competitor withdrawal (e.g., by winning shelf space), removing those markets would remove part of the true treatment effect"
+    ],
+    "correct_option": 3,
+    "explanation": "Approach (A) — removing Chicago and Dallas — is appropriate under the assumption that the competitor withdrawal was entirely exogenous (i.e., unrelated to the CPG brand's advertising campaign). However, this assumption must be verified carefully. If the new digital advertising campaign contributed to the competitor's exit from those markets — for example, by improving the brand's shelf presence, winning promotional agreements, or shifting retailer preferences — then the competitor withdrawal is a consequence of the treatment, not a confounder. Removing those markets would remove cases where the treatment effect is especially large, biasing the estimate downward and mischaracterizing the campaign's true impact. This is the critical conditional logic in option D. Option A is true in the exogenous case but fails to surface this crucial conditionality. Option B (covariate control) has a 'bad control' problem risk: if competitor withdrawal is a downstream consequence of the advertising, it is a mediator rather than a confounder, and controlling for it blocks the causal pathway. Option C (sensitivity analysis) is a good practice but avoids recommending the primary approach.",
+    "hints": [
+      "When an external event happens to affect treated units during an experiment, the first question is not 'should we remove those units?' but 'is this event truly exogenous to the treatment?'",
+      "If the treatment caused the external event (even partially), what does removing units where that event occurred do to your estimate of the treatment effect?"
+    ],
+    "concepts": ["SWITCHBACK EXPERIMENTS", "CAUSAL INFERENCE"]
+  },
+  {
+    "id": 93025,
+    "order": 25,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Bayesian Adaptive Experiment: Prior Sensitivity",
+    "description": "A pharmaceutical digital health startup runs a Bayesian adaptive trial of a medication adherence app feature. The prior on the 90-day adherence lift is Normal(5%, 3%) based on two earlier pilots. After 4 weeks and 300 users per arm, the posterior mean lift is 3.8% with a 90% credible interval of [1.9%, 5.7%]. The interim review committee votes to stop early for success. A biostatistician on the committee argues the prior is optimistic and that if a neutral prior — Normal(0%, 5%) — had been used, the posterior might not have cleared the stopping threshold. The committee chair responds that the pilots justify the informative prior. A second biostatistician proposes running a prior sensitivity analysis before deciding. Which position is most methodologically sound?",
+    "options": [
+      "The committee chair is right: the pilots were conducted on the same product feature, and using that evidence as a prior is the correct Bayesian approach; dismissing it in favor of a neutral prior discards valid historical information",
+      "The first biostatistician is right: in confirmatory trials, regulatory-grade decisions should use minimally informative priors to avoid circular reasoning from pilot data that may have suffered from small-sample optimism or publication bias",
+      "The second biostatistician is right: prior sensitivity analysis is the methodologically sound step — report the posterior and stopping decision under multiple priors to demonstrate that the conclusion is robust to reasonable prior specifications, and stop early only if sensitivity analysis confirms robustness",
+      "The stopping decision is irrelevant to prior selection because Bayesian posteriors are coherent; the committee should proceed with the informative prior and stop based on the posterior it produces"
+    ],
+    "correct_option": 2,
+    "explanation": "The second biostatistician's position is the most methodologically sound. Prior sensitivity analysis directly addresses the disagreement at the committee table: if the stopping decision is robust across multiple reasonable priors (informative from pilots and neutral), the conclusion is credible and defensible. If the stopping decision reverses under a neutral prior, the committee must weigh how much to trust the pilot-derived prior — including whether the pilots were subject to small-sample optimism, publication bias, or population differences. This is especially important in a health context where decisions have clinical consequences. The committee chair's argument is reasonable in isolation — using pilot data as a prior is legitimate Bayesian practice — but the fact that the result depends on which prior is used creates a robustness question that sensitivity analysis resolves empirically. The first biostatistician's argument has merit for confirmatory regulatory settings but is stated as an absolute principle, which is too strong: informative priors are valid in many Bayesian adaptive designs. Option D incorrectly equates 'coherent' with 'robust to prior choice' — Bayesian posteriors are coherent given any fixed prior, but choosing among priors is a separate methodological question.",
+    "hints": [
+      "When two reasonable analysts disagree about the prior, and the stopping decision may change depending on which prior is used, what is the most rigorous way to resolve the disagreement?",
+      "Bayesian analysis is coherent given a fixed prior — but that coherence does not answer the question of whether the prior itself is the right one to use."
+    ],
+    "concepts": ["BAYESIAN EXPERIMENTATION", "EXPERIMENT DESIGN"]
+  },
+  {
+    "id": 93026,
+    "order": 26,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Bayesian Bandit: Contextual Arms and Prior Misspecification",
+    "description": "A news platform deploys a contextual bandit to personalize article recommendations. The bandit uses a Thompson sampling policy with a ridge regression model for expected click-through rate, conditioned on user features (age bucket, device, reading history length). The bandit is initialized with a prior that assumes all user segments have equal expected CTR across arms. After 2 weeks, engagement analysts notice the bandit performs well for mobile users but poorly for desktop users — desktop CTR has declined 8% since deployment versus baseline. They suspect the prior is misspecified for desktop users. A data scientist proposes three interventions: (1) re-initialize the desktop user segment with a new prior fit from pre-bandit desktop data, (2) add desktop-specific features to the ridge regression, and (3) run a separate bandit for desktop users. Rank the interventions from most to least effective at addressing the core problem.",
+    "options": [
+      "3, 2, 1 — A separate desktop bandit is best because it eliminates the shared parameter problem; adding features is second because it gives the model more signal; prior re-initialization is least effective because the model will simply re-learn the same incorrect patterns",
+      "2, 1, 3 — Adding contextual features is best because it allows the single model to learn desktop-specific patterns; prior re-initialization is second because it gives the desktop segment a better starting point; a separate bandit is least effective because it discards cross-segment information",
+      "1, 3, 2 — Prior re-initialization is best because it directly addresses the misspecification; a separate bandit is second because it allows clean learning; adding features is least effective because more features increase variance without fixing the prior",
+      "2, 3, 1 — Adding contextual features is best because it most directly addresses the root cause (the model lacks desktop-specific signal); a separate bandit is second because it avoids cross-segment contamination; prior re-initialization is least effective because it is a temporary fix that does not change the model's ability to learn desktop patterns"
+    ],
+    "correct_option": 3,
+    "explanation": "The core problem is that the bandit model lacks sufficient desktop-specific signal to learn appropriate arm preferences for that segment. A uniform prior and a model that does not adequately distinguish desktop behavior from mobile behavior will systematically underperform for any segment that behaves differently from the population average. Adding contextual features (intervention 2) most directly addresses this: if the ridge regression model can learn that desktop users respond differently to content types or presentation formats, it will adapt its arm preferences for desktop users as data accumulates. This is the most scalable and enduring fix. A separate bandit (intervention 3) is second: it completely eliminates cross-segment contamination and allows the desktop bandit to develop its own arm distribution independently, at the cost of lost cross-segment information that may have been useful. Prior re-initialization (intervention 1) is the least durable: while it gives the desktop segment a better starting point, the same ridge regression model structure that failed to learn desktop patterns will continue to do so unless the model itself (not just the prior) is improved. Option A undervalues feature addition and overvalues model separation. Option B correctly prioritizes feature addition but places prior re-initialization second over a separate bandit — this is debatable but defensible.",
+    "hints": [
+      "When a model performs poorly on a specific subgroup, consider whether the issue is in how the model is initialized (prior) or in whether the model architecture can represent the subgroup's behavior at all.",
+      "Rank interventions by whether they fix the root cause (model expressiveness), address a symptom temporarily (prior), or avoid the problem by isolation (separate model)."
+    ],
+    "concepts": ["MULTI-ARMED BANDIT", "BAYESIAN EXPERIMENTATION"]
+  },
+  {
+    "id": 93027,
+    "order": 27,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Multi-Armed Bandit vs Fixed A/B: Long Horizon Decision",
+    "description": "A subscription SaaS company is testing three pricing page variants (A, B, C) against a control. The experiment will run for 8 weeks across 40,000 new visitors per week. Historical data shows pricing experiments at this company have a high variance in outcomes — some variants have large positive effects (>10%), others are neutral or slightly negative. The head of growth wants to use a Thompson sampling bandit to minimize revenue lost during the experiment. The head of analytics argues that for this particular scenario, a fixed 4-arm A/B test with equal allocation is preferable. What is the strongest argument supporting the analytics head's position?",
+    "options": [
+      "A bandit cannot handle 4 arms; Thompson sampling is only valid for binary (2-arm) experiments, making the fixed A/B test the only valid design",
+      "The fixed A/B test produces a cleaner causal estimate with well-calibrated confidence intervals, which are required for the post-experiment business review",
+      "With high variance in historical outcomes, the bandit may concentrate traffic on a variant that happens to perform well early due to noise rather than true superiority, especially with 40,000 visitors per week and 8 weeks of data — the fixed design ensures the exploration phase is long enough to overcome early noise and identify the true winner more reliably",
+      "Fixed A/B tests always provide higher statistical power than bandits for the same total sample size, making the analytics head's position universally correct"
+    ],
+    "correct_option": 2,
+    "explanation": "The analytics head's strongest argument is about noise-driven early allocation in a high-variance environment. Thompson sampling concentrates traffic toward the arm with the highest posterior probability of being best. In a high-variance outcome environment, early observations can be noisy — a variant that happens to perform well in the first week due to random fluctuation will accumulate more traffic, reinforcing its dominance in the posterior even if the true effect is no better than control. With 40,000 visitors per week, there is substantial weekly traffic, but 8 weeks is a relatively short window to overcome high-variance outcomes through posterior updating alone. A fixed equal-allocation A/B test forces continued exploration of all arms throughout the experiment, ensuring each arm accumulates enough observations to average out noise before a final decision. The analytics head is also correct that the bandit's regret-reduction advantage is greatest when the true winner has a substantially larger effect and can be identified quickly — which the high-variance historical pattern suggests may not be reliably the case here. Option A is false — Thompson sampling handles multiple arms natively. Option B is a secondary consideration about decision process, not a statistical argument. Option D is false — bandits can have higher or lower power depending on the scenario; 'always higher' is incorrect.",
+    "hints": [
+      "Thompson sampling allocates more traffic to the arm that looks best early — in a high-variance environment, what does 'looking best early' tell you about true superiority?",
+      "Think about the conditions under which a bandit's regret advantage over fixed allocation is largest — and whether those conditions are present when historical effect sizes are highly variable."
+    ],
+    "concepts": ["MULTI-ARMED BANDIT", "STATISTICAL POWER"]
+  },
+  {
+    "id": 93028,
+    "order": 28,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "SUTVA Violation: Social Network Cascade",
+    "description": "A social network runs an experiment on a new 'group post reaction' feature — users in the treatment group can react to group posts with an expanded set of emoji. The experiment randomizes 20% of users into treatment. After 4 weeks, the treatment group shows 15% higher group post engagement. However, a network analyst points out that group posts are viewed by all members of a group regardless of their experimental assignment. A treatment user's reaction (using an expanded emoji) is visible to control users in the same group, potentially stimulating their engagement as well. After adjusting for this interference via a network-aware model, the estimated effect drops to 9%. An engineer proposes a simple fix: randomize groups rather than individual users. A scientist pushes back on this proposal. What is the scientist's strongest objection?",
+    "options": [
+      "Group-level randomization is technically infeasible on large social networks because groups have millions of members and cannot be cleanly partitioned",
+      "Group-level randomization would eliminate the interference problem but dramatically increases the variance of the treatment effect estimate: groups are highly heterogeneous in size, activity, and user composition, so group-level random assignment introduces much higher variance in the measured treatment and control outcomes compared to individual randomization",
+      "Group-level randomization introduces a new problem: users belong to multiple groups, so a user could be in a treatment group for one community and a control group for another, making the individual-level treatment condition ambiguous and reintroducing interference",
+      "Group-level randomization is only valid when groups are of equal size; unequal group sizes require a different clustering approach"
+    ],
+    "correct_option": 2,
+    "explanation": "The scientist's strongest objection is that group-level randomization does not solve the interference problem if users belong to multiple groups — which is the typical structure on social platforms. A user who is in a treatment group (where expanded emoji reactions are available) will also be a member of control groups (where the feature is unavailable). When that user reacts to a post in their treatment group with an expanded emoji, other control-group users who are also in that same treatment group see it. Conversely, the treatment user sees only standard reactions in their control groups. The user-level treatment condition becomes undefined, and interference across group boundaries persists. Additionally, the treatment user's behavior in control groups is contaminated by their experience in treatment groups. Option A is empirically untrue — many platforms randomize at the group or community level. Option B is a real concern (higher variance with group randomization due to heterogeneous group sizes), but it is a statistical efficiency tradeoff, not a fundamental validity objection. Option D is incorrect — unequal cluster sizes in cluster-randomized experiments are handled via appropriate analysis weights; they do not invalidate the design.",
+    "hints": [
+      "When users belong to multiple groups, and randomization assigns groups (not users) to treatment conditions, what happens to an individual user who is simultaneously in a treatment group and a control group?",
+      "Think about whether the proposed solution actually eliminates the interference channel or whether it moves the problem to a different boundary."
+    ],
+    "concepts": ["NETWORK EFFECTS", "EXPERIMENT DESIGN"]
+  },
+  {
+    "id": 93029,
+    "order": 29,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Network Interference: Bipartite Graph Randomization",
+    "description": "An online tutoring marketplace runs an experiment to test an AI-powered question hint system for tutors. Tutors use the system to generate hints for students. The platform has 5,000 tutors and 50,000 students; each student works with 1–3 tutors. The team randomizes tutors into treatment (hint system available) and control (no hint system). After 6 weeks, treatment tutors' students show 8% higher assessment scores. A researcher argues that the estimate is still biased by interference. Some students work with both a treatment tutor and a control tutor: insights a student gains from a treatment tutor's hints may improve their performance with their control tutor as well. The interference flows through students, not directly between tutors. This is described as 'bipartite graph interference.' What is the correct direction of bias in the tutor-level treatment effect estimate?",
+    "options": [
+      "The estimate is biased upward: treatment tutors get credit for score improvements that are partly caused by their students' learning gains from other treatment tutors, inflating the apparent effectiveness of the hint system",
+      "The estimate is biased downward: students shared between treatment and control tutors carry learning spillovers from treatment tutors into their sessions with control tutors, raising control tutor student scores and compressing the treatment-control gap",
+      "The estimate is unbiased: bipartite graph interference only affects student-level randomization, not tutor-level randomization, because the interference flows through students who are not the unit of randomization",
+      "The estimate could be biased in either direction depending on whether treatment tutor spillovers dominate or control group contamination dominates; the direction cannot be determined without knowing the fraction of students who are shared"
+    ],
+    "correct_option": 1,
+    "explanation": "The bias is downward, and the direction can be reasoned precisely. Students who work with both a treatment tutor and a control tutor benefit from the hint system (via their treatment tutor) and carry that learning into sessions with their control tutor. The control tutor's student scores are therefore elevated — not by the hint system applied by the control tutor, but by the treatment spillover through the shared student. This elevates the control group's outcome metric, compressing the gap between treatment and control. The treatment effect estimate (treatment tutor student scores minus control tutor student scores) is therefore smaller than the true effect. Option A describes the opposite direction: credit flowing to treatment tutors from other treatment tutors is not the described mechanism; the mechanism is student-mediated spillover into the control arm. Option C is incorrect: bipartite interference affects any randomization where the interference pathway runs through shared units (students in this case) — tutor-level randomization does not eliminate this. Option D correctly notes that the fraction of shared students matters for the magnitude, but the direction of bias (downward) is deterministic given the described mechanism.",
+    "hints": [
+      "Think about what happens to the control group's outcome when some control-group subjects have also been exposed to the treatment through a different connection — does that raise or lower the control group average?",
+      "When spillovers from the treatment arm contaminate the control arm's outcomes, does that make the treatment-control gap look bigger or smaller than the true effect?"
+    ],
+    "concepts": ["NETWORK EFFECTS", "CAUSAL INFERENCE"]
+  },
+  {
+    "id": 93030,
+    "order": 30,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Long-Term Holdout: Novelty Decay vs True Effect",
+    "description": "A consumer app launches a major redesign affecting the home screen. A 4% holdout group (600,000 users) is kept on the old design for 12 months to measure long-term effects. At 30 days, treated users show 18% higher daily active use. At 90 days, the gap is 11%. At 180 days, the gap is 7%. At 360 days, the gap is 4%. The product team interprets this as novelty decay: early excitement with the new design fades over time. A researcher challenges this interpretation, offering an alternative explanation. What is the most credible alternative explanation for the declining gap, and what data would distinguish between the two interpretations?",
+    "options": [
+      "The alternative explanation is that control (holdout) users have been learning about the new design from treatment users via social communication, and are partially adapting their habits to the new design despite not having access to it; the distinguishing data would be social graph adjacency between holdout and treatment users",
+      "The alternative explanation is that the old design's performance is degrading over 12 months as the product team focuses engineering resources on improving the new design, raising the control group's defect rate and suppressing their engagement; the distinguishing data would be server-side error rates and load times for the control (old design) code path",
+      "The alternative explanation is that the holdout group is self-selecting into lower engagement over time because more engaged users are more likely to request access to the new design (or be granted access through CS tickets), leaving behind a holdout population skewed toward lower-engagement users; the distinguishing data would be composition analysis of holdout users over time (activity levels, tenure) compared to an enrolled holdout at each time point",
+      "The alternative explanation is that the metrics being measured (daily active use) are lagging indicators of long-term habit formation, and a 12-month gap of 4% represents the true sustained benefit while early higher gaps are noise; distinguishing data would be session-level behavioral depth metrics rather than top-line DAU"
+    ],
+    "correct_option": 2,
+    "explanation": "The most credible alternative explanation is holdout attrition bias through composition drift. Over 12 months, the most engaged and motivated users in the holdout group are most likely to notice they have a different experience, complain, seek the new design via customer support tickets, or use workarounds (e.g., switching devices). If these high-engagement users are preferentially leaving the holdout group — either by being moved to treatment or by churning from the platform entirely — the holdout population becomes increasingly composed of lower-engagement users over time. A holdout group shrinking in average engagement looks like the treatment-control gap is narrowing, when in reality the holdout baseline is deteriorating due to composition change. This is distinct from novelty decay (which would show treated user engagement declining back toward baseline rather than the control group declining toward treatment). The distinguishing data is composition analysis: if the holdout group's baseline engagement distribution is shifting toward lower values over 12 months while a freshly enrolled cohort shows stable distributions, composition drift is the likely explanation. Option A (social spillover) is possible but weak — the mechanism for significant behavioral adaptation without access to the new design is unclear. Option B (old design degradation) would show up in system metrics and is testable but less likely as a smooth, monotonic trend over 12 months. Option D mischaracterizes the pattern as noise and doesn't provide a mechanism for the decline.",
+    "hints": [
+      "When a holdout group is maintained for 12 months, consider whether the composition of that holdout group might be changing over time — which users are most likely to leave the holdout, and what does that do to the group average?",
+      "Novelty decay means treatment users' behavior is returning toward a baseline — holdout composition drift means the control baseline itself is changing. What data would reveal each mechanism?"
+    ],
+    "concepts": ["HOLDOUT GROUPS", "NOVELTY EFFECTS"]
+  },
+  {
+    "id": 93031,
+    "order": 31,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Holdout Group Cannibalization: Multi-Feature Attribution",
+    "description": "A fintech app has maintained a 2% global holdout group for 18 months while the product team shipped 23 separate features. The holdout group now has 14% lower monthly active use than the treatment population. The team wants to attribute this 14% gap to individual features to prioritize which ones to invest in further. A data scientist proposes using the holdout group's single 14% gap to decompose feature contributions by correlating the timing of each feature launch with step changes in the holdout-vs-treatment gap over the 18 months. An experimentation researcher argues this approach has a fundamental flaw. What is it?",
+    "options": [
+      "The 2% holdout size is too small for reliable attribution analysis; individual feature contributions would have confidence intervals too wide to be actionable",
+      "The holdout group has been accumulating treatment-control divergence for 18 months — the features interact with each other over time, and users in the treatment group have been adapting their habits to the combined set of features for 18 months; attributing step changes in the gap to individual features ignores these interaction effects and the compounding of behavioral changes",
+      "Correlating step changes in the gap with launch timing conflates causation and correlation: a feature may launch during a period when the gap would have widened anyway due to seasonal effects or other confounders",
+      "The holdout group should have been replenished with new users every 6 months to remain representative; after 18 months, the holdout population is too different from the treatment population for any attribution analysis to be valid"
+    ],
+    "correct_option": 1,
+    "explanation": "The fundamental flaw is that the 14% gap reflects the combined, compounding effect of 23 features over 18 months — not the sum of 23 independent additive contributions. Users in the treatment group have been building habits, discovering features, and adapting their workflows in a holistic experience of all 23 features simultaneously. Features interact: a new search feature may become more valuable after a filtering feature is added; a notification feature's effect may depend on whether users have the mobile widget feature. Over 18 months, these interactions compound in ways that cannot be recovered by looking at step changes in the aggregate gap at each launch date. The step-change approach assumes that each feature's contribution is the discrete jump in the gap at its launch date and does not persist or interact with subsequent features — this is an unrealistic model of user behavior. Additionally, users in both groups are changing over time independently (tenure effects, seasonality), making causal attribution of step changes to specific features unreliable. Option A is a precision concern, not the fundamental flaw. Option C is a valid secondary concern about confounding but is not the core structural problem. Option D introduces a 'holdout replenishment' norm that is not standard and does not address the core attribution problem.",
+    "hints": [
+      "When 23 features have been shipped to a single treatment group over 18 months, and users have been adapting to all of them simultaneously, can the cumulative gap be decomposed by feature using a step-change approach? Think about what assumption that requires.",
+      "Features shipped sequentially to a single population do not have independent effects — consider how user behavior adapts to a combined product experience over a long time horizon."
+    ],
+    "concepts": ["HOLDOUT GROUPS", "CAUSAL INFERENCE"]
+  },
+  {
+    "id": 93032,
+    "order": 32,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Combined Variance Reduction: CUPED and Stratification Interaction",
+    "description": "A data scientist at a marketplace is designing an experiment on seller fee negotiation outcomes. She plans to use both stratified randomization (by seller GMV quintile) and a CUPED adjustment (using each seller's pre-experiment GMV as the covariate). She notes that the CUPED covariate (pre-experiment GMV) is strongly correlated with the stratification variable (GMV quintile, r ≈ 0.88). Her manager proposes dropping the CUPED adjustment since stratification already handles the GMV variation, and adding a second covariate — seller account age — to CUPED instead. The data scientist disagrees. What is the most rigorous argument for her position?",
+    "options": [
+      "The data scientist is right: CUPED should never be dropped even if the stratification variable is highly correlated, because CUPED additionally removes within-stratum variance that stratification does not address; dropping CUPED and replacing it with account age as the sole covariate would capture less variance unless account age has a higher within-stratum correlation with the outcome than pre-experiment GMV",
+      "The manager is right: when the stratification variable and CUPED covariate are highly correlated (r = 0.88), CUPED adds negligible variance reduction beyond stratification, and using a second independent covariate (account age) would provide more incremental variance reduction",
+      "The data scientist is right: it is always better to include more covariates in CUPED regardless of their correlation with the stratification variable, since additional covariates can only reduce or maintain variance and never increase it",
+      "The manager is right: double-adjusting for the same variance source (GMV) via both stratification and CUPED leads to over-controlling, which increases the standard error relative to using stratification alone"
+    ],
+    "correct_option": 0,
+    "explanation": "The data scientist's argument is correct and precise. Stratified randomization reduces between-stratum variance by ensuring each stratum has equal treatment/control proportions. However, within each stratum, there is still substantial variation in pre-experiment GMV — the stratification by quintile creates homogeneous groups in terms of rank but not in terms of continuous GMV values. CUPED uses the continuous pre-experiment GMV as a covariate, which removes variance at a finer granularity than the quintile strata. The two methods therefore address related but not identical variance: stratification removes between-stratum variance, CUPED additionally removes within-stratum variance that is correlated with the covariate. Even with r = 0.88 between the continuous covariate and the quintile variable, there is meaningful within-stratum variance remaining for CUPED to explain. The manager's proposal to replace pre-experiment GMV with account age in CUPED would only be better if account age has a higher within-stratum correlation with the outcome than pre-experiment GMV — which is unlikely since GMV is typically the strongest predictor of its own future values. Option B is approximately correct about the marginal gain from CUPED being reduced by stratification, but wrong to conclude it should be dropped. Option C is too absolute — covariates with negligible correlation with the outcome add variance through estimation rather than removing it. Option D incorrectly diagnoses 'over-controlling' as a risk in this context.",
+    "hints": [
+      "Stratified randomization removes variance between groups defined by the stratum — but within each stratum, there is still variation. What can CUPED address that stratification cannot?",
+      "When the stratification variable and CUPED covariate are correlated but not identical (r = 0.88, not 1.0), think about whether CUPED is entirely redundant or still captures additional variance."
+    ],
+    "concepts": ["VARIANCE REDUCTION", "EXPERIMENT DESIGN"]
+  },
+  {
+    "id": 93033,
+    "order": 33,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Interference Modeling: Equilibrium vs Local Treatment Effects",
+    "description": "A food delivery platform tests a new driver incentive structure. Individual drivers are randomized: 40% receive new bonuses (treatment), 60% receive standard compensation (control). After 6 weeks, treatment drivers complete 12% more deliveries per day than control drivers. The platform wants to use this estimate to project the steady-state impact of rolling out the new incentive to all drivers. A senior economist argues that the 12% estimate cannot be directly used for this projection. The platform has a fixed pool of orders — there is no evidence the new incentive generates additional consumer demand. What is the economist's argument, and is she correct?",
+    "options": [
+      "The economist is wrong: the 12% lift is a valid direct estimate of the productivity gain from the new incentive structure, and rolling out to all drivers will yield a 12% platform-wide delivery increase",
+      "The economist is right: in the experiment, treatment drivers' additional completions come partly by capturing orders that would have been completed by control drivers; at full rollout with no control group, the total order pool is fixed, so the same 12% individual lift cannot materialize at the platform level — the equilibrium effect will be smaller and depends on the supply-demand response",
+      "The economist is right but only because the incentive increases driver costs; if the cost increase reduces driver supply at full rollout, the net platform-wide completions would fall below the current level",
+      "The economist is wrong: because individual driver productivity is measured at the individual level, equilibrium effects only matter for consumer-facing metrics like delivery time, not for driver-level completion rates"
+    ],
+    "correct_option": 1,
+    "explanation": "The economist is correct, and her argument is about the distinction between a partial equilibrium (experiment) estimate and a general equilibrium (full rollout) effect. In the experiment, 40% of drivers receive the new incentive and 60% do not. The treated drivers are more motivated to complete deliveries — they may accept orders faster, decline fewer requests, and work longer hours. In a marketplace with a fixed order pool, these additional completions by treated drivers come partly at the expense of control drivers, who receive fewer order opportunities because treated drivers are absorbing them first. The control group's completion rate is therefore artificially suppressed by competition from treated drivers, and the 12% gap is partly a within-experiment redistribution rather than a true productivity gain. At full rollout — when all drivers receive the new incentive — there are no control drivers to displace. The incremental completions cannot come from the same redistribution mechanism. The true platform-level effect depends on whether the incentive actually reduces driver idle time and churn (genuine productivity) versus simply redirecting orders among drivers. Option A ignores the supply-demand equilibrium structure of the marketplace. Option C raises a valid but different concern about cost and supply; this could be relevant but is not the economist's stated argument about the fixed order pool. Option D incorrectly claims equilibrium effects are only relevant for consumer-facing metrics — they are relevant for any metric measured in a shared resource environment.",
+    "hints": [
+      "When treatment and control units compete for the same finite resource, what happens to the control group's access to that resource during the experiment — and what does that imply about the size of the measured effect?",
+      "Think about what changes when the experiment ends and the treatment is applied to everyone: which part of the treatment-control gap was driven by redistribution rather than genuine productivity, and does that part persist at full rollout?"
+    ],
+    "concepts": ["NETWORK EFFECTS", "CAUSAL INFERENCE"]
+  }
+]
