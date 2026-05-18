@@ -689,7 +689,6 @@ function ProofStripSection() {
     { num: `${qCount}+`, label: 'engineered questions' },
     { text: 'real DuckDB execution' },
     { text: 'live Python sandbox' },
-    { text: 'mocks withhold solutions' },
     { text: 'exclusive mock question bank' },
   ];
 
