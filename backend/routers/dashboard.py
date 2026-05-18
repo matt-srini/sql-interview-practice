@@ -3,10 +3,15 @@ from typing import Any
 
 from fastapi import APIRouter, Depends
 
+import data_engineering_questions
+import data_modeling_questions
+import experimentation_questions
+import ml_fundamentals_questions
 import python_data_questions
 import python_questions
 import pyspark_questions
 import questions as sql_questions
+import statistics_questions
 from db import get_recent_activity, get_solved_ids
 from deps import get_current_user, require_authenticated_user
 from middleware.request_context import get_request_id
@@ -20,6 +25,11 @@ _TOPIC_MODULES = {
     "python": python_questions,
     "python_data": python_data_questions,
     "pyspark": pyspark_questions,
+    "data-engineering": data_engineering_questions,
+    "data-modeling": data_modeling_questions,
+    "statistics": statistics_questions,
+    "ml-fundamentals": ml_fundamentals_questions,
+    "experimentation": experimentation_questions,
 }
 
 
