@@ -236,7 +236,7 @@ TOPBAR
 
 01 · HERO  (all users)
   Logged-out: 2-col grid — left: eyebrow + h1 + copy + CTAs ("Start thinking →" / "Find your track ↓")
-              right: HeroIDE — character-by-character SQL typing animation, then streaming result rows
+              right: HeroIDE — character-by-character SQL typing animation, then cycles through all tracks via hardcoded IDE_TRACKS array (one demo MCQ/code frame per track; NOT derived from trackRegistry.js)
   Logged-in:  3-card strip (Resume · Dashboard · Mock) with accent-border hover
 
 02 · THESIS  (all users)

@@ -72,9 +72,26 @@ Generate in this exact order:
 
 1. **`frontend/src/trackRegistry.js`** — add the `TRACK_META` entry. Set `totalQuestions: 0` and add `comingSoon: true` during development.
 
-2. **`frontend/src/pages/LandingPage.js`** — add the slug to the appropriate `tracks: []` arrays in the `ROLES` constant. Consult the track spec for which roles this track belongs to.
+2. **`frontend/src/pages/LandingPage.js` — `ROLES`** — add the slug to the appropriate `tracks: []` arrays in the `ROLES` constant. Consult the track spec for which roles this track belongs to.
 
-3. **Verify**: confirm the landing page renders the track in the Tracks Index and the correct role tabs.
+3. **`frontend/src/pages/LandingPage.js` — `IDE_TRACKS`** — add a new entry to the hardcoded `IDE_TRACKS` array. This is the HeroIDE animation that cycles through all tracks; it is NOT derived from `trackRegistry.js` and must be added manually. For MCQ tracks:
+   ```js
+   {
+     slug: 'new-track-slug',
+     label: 'Short Label',       // ≤10 chars — shown on nav dot tooltip
+     color: '#HEXHEX',           // must match trackRegistry.js
+     fname: 'demo_filename.md',  // realistic filename for chrome bar
+     badge: 'Track Name · MCQ',
+     code: null,
+     type: 'mcq',
+     question: 'A representative question that reveals the track\'s value at a glance',
+     options: ['Option A', 'Option B', 'Option C', 'Option D'],
+     correct: 0,                 // 0-indexed
+   },
+   ```
+   Choose a question that makes a first-time visitor immediately understand what the track covers and why it's worth practicing.
+
+4. **Verify**: confirm the landing page renders the track in the HeroIDE cycle, the Tracks Index (section 06), and the correct role tabs (section 04).
 
 ### Phase 4 — Content authoring
 

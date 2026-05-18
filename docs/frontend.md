@@ -58,10 +58,10 @@ Editorial 8-section layout (Phase E redesign). All sections use the `lp-*` CSS n
 **Key internals:**
 - `useInView(ref, margin)` — thin IntersectionObserver hook returning boolean
 - `useCountUp(target, duration, trigger)` — rAF count-up with ease-out-cubic curve
-- `HeroIDE({ reduced })` — state machine: `typing → running → streaming → done`; respects `prefers-reduced-motion`
+- `HeroIDE({ reduced })` — state machine: `typing → running → streaming → done`; respects `prefers-reduced-motion`. Cycles through all tracks using the hardcoded `IDE_TRACKS` array (one entry per track with a demo question/code snippet). **`IDE_TRACKS` is NOT derived from `trackRegistry.js`** — adding a new track requires a new entry here manually.
 - `Reveal({ children, delay, className })` — wrapper adding `lp-reveal` + `is-visible` on intersection
-- `ROLES` config defines the 4 role tab entries with ordered `tracks[]` slugs and role tagline
-- `trackRegistry.js`: `TRACK_SLUGS` (5 active, for routing/catalog/mock) and `ALL_TRACK_SLUGS` (7, for landing only)
+- `ROLES` config defines the 4 role tab entries with ordered `tracks[]` slugs and role tagline — also hardcoded, must be updated when a new track is added
+- `trackRegistry.js`: `TRACK_SLUGS` (active non-comingSoon tracks, for routing/catalog/mock) and `ALL_TRACK_SLUGS` (all tracks including coming-soon, for landing tracks index and proof strip count)
 
 ### AuthPage (`/auth`)
 

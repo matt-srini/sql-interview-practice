@@ -255,8 +255,34 @@ Add the track slug to the relevant `tracks: []` arrays in the `ROLES` constant. 
 - Does it replace or supplement an existing track in that role's list?
 - If `comingSoon: true`, it will render with a "Coming soon" badge and no CTA — this is intentional; include coming-soon tracks so users know what's being built.
 
-### 3.3 Smoke-test the landing page
+### 3.3 Add a demo frame to `IDE_TRACKS` in `frontend/src/pages/LandingPage.js`
 
+The HeroIDE animation (section 01) cycles through a **hardcoded** `IDE_TRACKS` array — one entry per track. You must add a new entry for the new track; it is not derived from `trackRegistry.js`.
+
+For MCQ tracks (no code execution), the entry shape is:
+
+```js
+{
+  slug: 'new-track-slug',
+  label: 'Short Label',          // shown on the nav dot tooltip — keep ≤10 chars
+  color: '#HEXHEX',              // track color, must match trackRegistry.js
+  fname: 'demo_filename.md',     // realistic filename shown in the IDE chrome
+  badge: 'Track Name · MCQ',    // shown in the chrome badge next to filename
+  code: null,
+  type: 'mcq',
+  question: 'A representative question stem (keep it to one sentence)',
+  options: ['Option A', 'Option B', 'Option C', 'Option D'],
+  correct: 0,                    // 0-indexed correct answer
+},
+```
+
+For tracks with code execution (`type: 'table'` or `type: 'tests'`), copy the shape from an existing entry (e.g. `sql` → `table`, `python` → `tests`).
+
+**Pick a question that makes the track's value obvious at a glance.** A first-time visitor should be able to read the question and immediately understand what the track covers and why it's hard. Avoid trivial definitions; prefer questions that reveal a surprising trade-off or behavior.
+
+### 3.4 Smoke-test the landing page
+
+- HeroIDE cycles to the new track frame (section 01) — correct question, color, badge
 - Track appears in the Tracks Index (section 06) with correct question count (0 during development, updated on launch)
 - Track appears in the correct role tabs (section 04)
 - If `comingSoon: true`: "Coming soon" badge shows, no "Enter →" link
