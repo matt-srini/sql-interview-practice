@@ -747,5 +747,365 @@
     ],
     "order": 28,
     "difficulty": "medium"
+  },
+  {
+    "id": 72029,
+    "title": "Log-Normal Distribution and Log Transformation",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A data scientist observes that the distribution of website session durations is approximately log-normal. What does this tell her about the underlying variable, and which transformation makes it suitable for standard parametric tests?",
+    "options": [
+      "Session durations can take negative values; a square-root transformation normalises them",
+      "The natural logarithm of session durations is approximately normally distributed; log-transforming before analysis is appropriate",
+      "Session durations follow a Poisson distribution; log-normal is an approximation used only when exact counts are unavailable",
+      "The distribution is symmetric with a long left tail; a log-transform is not appropriate because it amplifies the left tail"
+    ],
+    "correct_option": 2,
+    "explanation": "A log-normal random variable X has the property that ln(X) is normally distributed. Log-normal distributions arise naturally when a positive quantity results from the multiplicative product of many independent factors — session durations, income, and particle sizes are classic examples. Log-transforming the data converts the skewed distribution to an approximately normal one, validating parametric test assumptions. Session durations are always non-negative, not Poisson (Poisson is for counts), and log-normal is right-skewed, not left-skewed.",
+    "hints": [
+      "If ln(X) is normal, what distribution does X follow? Reverse the naming convention.",
+      "Think about what happens when you multiply random quantities: if each multiplicative factor contributes a log-additive term, the CLT applies to the log-scale."
+    ],
+    "concepts": [
+      "log-normal distribution",
+      "probability distributions",
+      "data transformation",
+      "skewness"
+    ],
+    "order": 29,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72030,
+    "title": "F-Statistic and ANOVA",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "An analyst runs a one-way ANOVA across five product categories and obtains an F-statistic of 4.8 with p = 0.002. What does the F-statistic represent, and where does the F-distribution come from?",
+    "options": [
+      "It is the ratio of the largest group mean to the smallest; it follows an F-distribution because means are normally distributed",
+      "It is the ratio of between-group variance to within-group variance; it follows an F-distribution because it is the ratio of two independent chi-squared variables each scaled by their degrees of freedom",
+      "It is the pooled standard deviation across all five groups, standardised by total sample size",
+      "It is the sum of squared z-scores for all observations, divided by the number of groups minus one"
+    ],
+    "correct_option": 2,
+    "explanation": "The F-statistic = MSB / MSW, where MSB (mean square between groups) measures variance explained by group membership and MSW (mean square within groups) measures unexplained variance. Under the null hypothesis that all group means are equal, both MSB and MSW estimate the same σ², so their ratio is close to 1. Large F values indicate the group means differ more than random noise predicts. The F-distribution arises because the ratio of two independent chi-squared random variables, each divided by their degrees of freedom, follows an F-distribution.",
+    "hints": [
+      "ANOVA partitions total variance into 'between groups' and 'within groups' — the F-statistic is the ratio of these two components.",
+      "Under the null (all means equal), what would you expect the ratio of between-group to within-group variance to be?"
+    ],
+    "concepts": [
+      "F-distribution",
+      "ANOVA",
+      "hypothesis testing",
+      "variance decomposition"
+    ],
+    "order": 30,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72031,
+    "title": "Sequential Testing and the Peeking Problem",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "An engineer runs an A/B test on a checkout flow. After three days, the p-value drops below 0.05 and they call the result significant. A statistician objects that the test suffers from the 'peeking problem'. What specifically goes wrong when a test is stopped as soon as p < 0.05?",
+    "options": [
+      "The test loses statistical power because fewer observations are collected than planned",
+      "The Type I error rate inflates above α; under repeated peeks, you will eventually observe p < 0.05 by chance even when the null hypothesis is true",
+      "The p-value is biased upward when computed on a running sample, so only results below 0.01 are trustworthy with early stopping",
+      "The sample mean is not normally distributed at small sample sizes, so t-test assumptions are violated before the planned sample size is reached"
+    ],
+    "correct_option": 2,
+    "explanation": "Each time you peek at the data and test for significance, you take an additional chance of observing p < 0.05 purely by chance. The probability of ever seeing a false positive grows with the number of peeks — simulations show that peeking at every new observation and stopping when p < 0.05 inflates the true Type I error rate to over 20% even with α = 0.05. Sequential testing methods (e.g., alpha spending, SPRT) are designed to control the Type I error rate across multiple looks at the data.",
+    "hints": [
+      "Imagine tossing a fair coin and computing p-value for 'is this coin fair?' after every flip. If you keep flipping long enough, will you eventually see a run that looks significant?",
+      "The 5% threshold applies to a single test on a pre-specified sample. What happens to family-wise error rate when you run multiple tests?"
+    ],
+    "concepts": [
+      "sequential testing",
+      "peeking problem",
+      "Type I error",
+      "A/B testing",
+      "multiple testing"
+    ],
+    "order": 31,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72032,
+    "title": "Metric Sensitivity — Mean vs Median Under Treatment",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "An A/B test for a new recommendation algorithm shows mean revenue per user increased 8% in the treatment group, but median revenue per user increased only 1%. There is no data error. What is the most likely explanation?",
+    "options": [
+      "The mean is computed incorrectly when group sizes differ between treatment and control",
+      "The treatment disproportionately increased revenue for high-spending users, pulling the mean up while barely shifting the middle of the distribution",
+      "The median always lags the mean in A/B tests because it takes longer to accumulate enough rank-order data for a stable estimate",
+      "The standard error of the mean is larger than the standard error of the median, causing the mean to overestimate the true effect"
+    ],
+    "correct_option": 2,
+    "explanation": "The mean is sensitive to extreme values; the median is not. An 8% mean increase with only a 1% median increase is a strong signal that the treatment effect is concentrated among high spenders — a few users with large revenue increases dominate the mean. This pattern matters for decision-making: if the goal is broad improvement across users, the median is the more relevant metric. If the goal is total revenue (which is the sum, not the median), the mean increase is what matters. Choosing the right metric requires understanding who is driving the effect.",
+    "hints": [
+      "A revenue distribution is typically right-skewed — a small fraction of users generate a large fraction of revenue. Which summary statistic is more sensitive to these top spenders?",
+      "Imagine 100 users: 95 see no change and 5 top spenders each triple their spend. How does this affect the mean vs median?"
+    ],
+    "concepts": [
+      "metric sensitivity",
+      "mean vs median",
+      "A/B testing",
+      "heterogeneous treatment effects",
+      "descriptive statistics"
+    ],
+    "order": 32,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72033,
+    "title": "Guardrail Metric Violation",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "An A/B test improves the primary metric (click-through rate, +5%, p < 0.01) but a guardrail metric (average session duration) drops by 12% with p < 0.001. How should the team interpret this result?",
+    "options": [
+      "The result is a clear win: primary metrics determine launch decisions, and guardrail metrics are informational only",
+      "The improvement in click-through rate likely comes at the cost of a degraded user experience captured by the session duration drop; the team should investigate before shipping",
+      "The guardrail drop is expected because click-through rate and session duration are always negatively correlated by experimental design",
+      "The test should be re-run with a different randomisation unit to separate the two metric effects"
+    ],
+    "correct_option": 2,
+    "explanation": "Guardrail metrics exist precisely to catch cases where a feature improves a primary metric through harmful means — e.g., more clicks because users are confused and clicking everything, not because the feature is genuinely useful. A 12% drop in session duration is a large, statistically significant signal that something is degrading the experience. The correct response is to investigate the mechanism: are users clicking and then immediately leaving? The team should not ship until they understand whether the session drop is a causal consequence of the feature and whether it represents real user harm.",
+    "hints": [
+      "Why would a product team track multiple metrics rather than optimising a single KPI? What could go wrong if you only optimise one number?",
+      "A guardrail metric 'firing' (moving significantly in the wrong direction) should prompt investigation, not be dismissed as secondary."
+    ],
+    "concepts": [
+      "guardrail metrics",
+      "A/B testing",
+      "metric conflict",
+      "experiment interpretation",
+      "product metrics"
+    ],
+    "order": 33,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72034,
+    "title": "Survivorship Bias in Investment Analysis",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A fintech company studies the investment strategies of its most profitable users to build a recommendation model. The dataset includes only users who are still active today. What bias is most likely introduced, and how does it distort the analysis?",
+    "options": [
+      "Confirmation bias: analysts find patterns consistent with their prior beliefs about successful strategies",
+      "Survivorship bias: strategies that led users to lose money and quit are excluded, making surviving strategies appear more effective than they actually are",
+      "Selection bias from voluntary opt-in: only privacy-consenting users are included, skewing the sample toward the tech-savvy",
+      "Hawthorne bias: users who know they are being studied change their investment behaviour during the observation period"
+    ],
+    "correct_option": 2,
+    "explanation": "Survivorship bias occurs when analysis is restricted to entities that passed a selection filter — here, users who are still active. Users who adopted poor strategies lost money and churned, so their strategies are absent from the dataset. The surviving strategies look uniformly successful not because they are inherently better, but because the failures have been removed. This inflates perceived strategy performance. The canonical example is Abraham Wald's WWII aircraft analysis: studying only planes that returned (survivors) showed which areas were not critical, because planes hit there still survived.",
+    "hints": [
+      "Who is missing from this dataset? What happened to users who tried certain strategies and then stopped using the platform?",
+      "A mutual fund that closes after three years of poor returns is removed from historical benchmarks — this is the same bias in a different domain."
+    ],
+    "concepts": [
+      "survivorship bias",
+      "sampling bias",
+      "observational study",
+      "selection bias"
+    ],
+    "order": 34,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72035,
+    "title": "Berkson's Bias",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A hospital researcher studying admitted patients finds a surprising negative correlation between smoking and obesity. In the general population, no such correlation exists. Which phenomenon best explains this finding?",
+    "options": [
+      "Confounding: there is an unmeasured third variable (age) that independently causes both smoking and obesity",
+      "Reverse causation: obesity causes patients to smoke more to manage weight",
+      "Berkson's bias: both conditions increase the probability of hospitalisation, so the hospital sample over-represents patients with at least one condition, creating a spurious negative association between them within the sample",
+      "Measurement error: hospital self-reported smoking rates are systematically lower than true rates, attenuating a positive correlation toward negative"
+    ],
+    "correct_option": 3,
+    "explanation": "Berkson's bias (a form of collider bias) arises when a study sample is drawn from a population that is itself selected based on having at least one of the conditions under study. Both smoking and obesity independently increase the chance of hospitalisation. Conditional on being hospitalised, someone with one condition is less likely to also have the other — because either condition alone was sufficient for admission. This creates a negative correlation within the hospital that does not exist in the general population. Avoiding Berkson's bias requires sampling from the general population, not from a selected sub-population like hospital admissions.",
+    "hints": [
+      "Think about who ends up in the hospital: a non-smoker, non-obese person may not be hospitalised as often. How does this selection affect the correlation you observe among patients?",
+      "This is a real-world version of collider bias: hospitalisation is a collider caused by both smoking and obesity."
+    ],
+    "concepts": [
+      "Berkson's bias",
+      "collider bias",
+      "selection bias",
+      "observational study",
+      "causal inference"
+    ],
+    "order": 35,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72036,
+    "title": "Regression to the Mean",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A sports magazine features a baseball player who batted .400 in his first season — far above the league average of .260. The following season he bats .280. The magazine concludes their cover story 'jinxed' him. What is the statistical explanation?",
+    "options": [
+      "The additional fame reduced his motivation and practice frequency, causing a genuine performance decline",
+      "Regression to the mean: extreme first-season performance partly reflects luck; a second observation tends to be closer to the player's true underlying ability",
+      "His opponents studied his batting technique after the cover story and improved their pitching strategy against him specifically",
+      "A single season is too small a sample to estimate a batting average, so both seasons are equally unreliable measures"
+    ],
+    "correct_option": 2,
+    "explanation": "Regression to the mean occurs whenever a variable is measured with noise. An extreme observation (like batting .400) is likely a combination of high true ability and unusually good luck. On a second measurement, the luck component averages out, pulling the result back toward the player's true mean. The magazine cover story is not causal — the player was likely always a ~.270 hitter who had an exceptional first season. Regression to the mean is a common misattribution trap: observing a recovery after an intervention applied at the worst point (e.g., coaching after a bad game) can look like the intervention worked, when the recovery would have happened anyway.",
+    "hints": [
+      "If true ability is constant but performance includes random noise each season, what would you expect an outlier season (very high or very low) to be followed by?",
+      "Galton observed this in heights: very tall parents tend to have children shorter than them, and very short parents tend to have children taller — all converging toward the population mean."
+    ],
+    "concepts": [
+      "regression to the mean",
+      "noise and signal",
+      "observational bias",
+      "statistical artefacts"
+    ],
+    "order": 36,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72037,
+    "title": "Goodhart's Law",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A customer service centre adopts a KPI of 'average call handling time under 4 minutes'. Call centre agents quickly bring average handling time down to 3.5 minutes, but customer satisfaction scores fall sharply. Which principle explains this outcome?",
+    "options": [
+      "Simpson's paradox: the overall average hides a reversal when data is segmented by agent experience level",
+      "Goodhart's Law: once a measure becomes a target, it ceases to be a good measure — agents optimised the metric by cutting calls short rather than resolving customer issues",
+      "The central limit theorem: with many agents averaging independently, the mean converges to the population mean regardless of individual call quality",
+      "Overfitting: the KPI was calibrated on a training period that did not represent the full distribution of customer issues"
+    ],
+    "correct_option": 2,
+    "explanation": "Goodhart's Law ('When a measure becomes a target, it ceases to be a good measure') describes the distortion that occurs when agents optimise a proxy metric rather than the underlying goal. Call handling time was a reasonable proxy for efficiency — until it became a target. Agents then found ways to reduce call time (hanging up early, rushing through scripts) that satisfied the metric but undermined the actual goal: resolving customer problems. The fix is to track the underlying goal directly (satisfaction, first-call resolution rate) alongside the proxy, or to regularly rotate proxies so they cannot be gamed.",
+    "hints": [
+      "What was the original reason for tracking average handling time? Was it the goal itself, or a proxy for something else?",
+      "Consider how school exam scores change when exam performance becomes the target of teacher evaluation — same principle."
+    ],
+    "concepts": [
+      "Goodhart's Law",
+      "proxy metrics",
+      "metric gaming",
+      "product metrics",
+      "observational bias"
+    ],
+    "order": 37,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72038,
+    "title": "Sampling Bias in Funnel Analysis",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "An analyst wants to understand why users who reach step 3 of a 5-step sign-up funnel convert at only 40%. She surveys 1,000 users who reached step 3 about their motivations and friction points. Why is this sample not representative of all users who started the funnel at step 1?",
+    "options": [
+      "The sample is too small: at least 10,000 step-3 users are needed for the survey to be statistically valid",
+      "Users who reached step 3 are a self-selected, higher-intent subset; their experiences cannot explain why users who dropped off at step 1 or step 2 did not continue",
+      "A/B testing at step 3 requires simultaneously randomising steps 1 and 2, otherwise the test is confounded",
+      "The conversion rate formula is undefined when users can re-enter the funnel multiple times"
+    ],
+    "correct_option": 2,
+    "explanation": "Funnel analysis is subject to systematic selection bias: each step selects for increasingly engaged or motivated users. Users who reached step 3 have already successfully navigated two prior steps, so they represent a higher-intent population than the original step-1 cohort. Surveying them tells you about friction at step 3 only, not why the much larger group dropped at steps 1 or 2. To understand early-funnel drop-off, you need data from users at those earlier stages — not from survivors. This is structurally similar to survivorship bias: you are studying only the survivors of the earlier steps.",
+    "hints": [
+      "Who is missing from your survey sample? What happened to users who started at step 1 but never reached step 3?",
+      "Consider how engagement level differs between someone who made it through two sign-up steps versus someone who left immediately."
+    ],
+    "concepts": [
+      "sampling bias",
+      "funnel analysis",
+      "selection bias",
+      "survivorship bias",
+      "observational study"
+    ],
+    "order": 38,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72039,
+    "title": "Logistic Regression — Log-Odds Interpretation",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A data scientist models the probability of customer churn using logistic regression. The coefficient on account age (in days) is −0.05. What does this coefficient mean, and why is logistic regression preferred over linear regression for a binary outcome?",
+    "options": [
+      "Each additional day reduces the predicted churn probability by exactly 5 percentage points; linear regression is avoided because it cannot handle binary labels",
+      "Each additional day multiplies the odds of churn by e^(−0.05) ≈ 0.951; logistic regression is preferred because its output is bounded between 0 and 1, making it a valid probability model",
+      "Each additional day reduces the log-likelihood of the model by 0.05; this means the model becomes less certain about its predictions as account age increases",
+      "The coefficient is the log-probability of churn at zero account age; logistic regression is used because it linearises the log-probability"
+    ],
+    "correct_option": 2,
+    "explanation": "In logistic regression, coefficients represent the change in the log-odds of the outcome per unit change in the predictor. A coefficient of −0.05 means each additional day multiplies the odds of churn by e^(−0.05) ≈ 0.951 — roughly a 5% reduction in the odds per day, not the probability. Linear regression applied to a binary outcome can predict probabilities below 0 or above 1, violating the probability axioms. Logistic regression uses the sigmoid function to map any real-valued linear predictor to (0, 1), making it naturally suited for binary classification.",
+    "hints": [
+      "Log-odds = ln(p / (1-p)). A coefficient β means: for each unit increase in x, the log-odds changes by β. Exponentiate β to get the odds ratio.",
+      "What happens if you predict probability = 1.2 with linear regression? Why is that a problem?"
+    ],
+    "concepts": [
+      "logistic regression",
+      "log-odds",
+      "odds ratio",
+      "binary classification",
+      "regression"
+    ],
+    "order": 39,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72040,
+    "title": "Odds Ratio vs Relative Risk",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A clinical trial reports that a new drug reduces the odds of an adverse event by 50% (odds ratio = 0.5). The baseline rate of adverse events in the control group is 40%. A journalist reports this as 'the drug halves your risk'. Is this accurate?",
+    "options": [
+      "Yes: an odds ratio of 0.5 always equals a relative risk of 0.5, so the risk is exactly halved in all cases",
+      "No: odds ratio and relative risk diverge when baseline rates are high; with a 40% baseline the actual relative risk reduction is less than 50%, so the journalist's statement overstates the benefit",
+      "No: the relative risk is always larger than the odds ratio when the baseline rate exceeds 50%, not 40%",
+      "Yes: the odds ratio is a conservative estimate of relative risk, so the journalist is understating the drug's benefit"
+    ],
+    "correct_option": 2,
+    "explanation": "Odds ratio (OR) and relative risk (RR) are only approximately equal when the baseline event rate is low (rare disease assumption, typically < 10%). With a 40% baseline rate, OR = 0.5 does not mean RR = 0.5. Working it out: control odds = 0.4/0.6 = 0.667; treatment odds = 0.667 × 0.5 = 0.333; treatment probability = 0.333/1.333 ≈ 0.25. So RR = 0.25/0.40 = 0.625 — the treatment reduces risk by 37.5%, not 50%. The OR overstates the relative risk reduction at high baseline rates, a common source of misinterpretation in medical journalism.",
+    "hints": [
+      "Recall: Odds = p / (1-p). Try computing the treatment group probability from OR = 0.5 and baseline p = 0.4, then compare to the control probability.",
+      "The rare disease assumption: when p is small, p/(1-p) ≈ p, so OR ≈ RR. At p = 0.40, this approximation breaks down."
+    ],
+    "concepts": [
+      "odds ratio",
+      "relative risk",
+      "clinical statistics",
+      "rare disease assumption",
+      "effect sizes"
+    ],
+    "order": 40,
+    "difficulty": "medium"
+  },
+  {
+    "id": 72041,
+    "title": "Paired vs Unpaired t-Test",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A researcher measures blood pressure in 50 patients before and after a new drug. She plans to use an independent-samples (unpaired) t-test comparing the before and after groups as if they were separate samples. A colleague recommends a paired t-test instead. What advantage does the paired test provide?",
+    "options": [
+      "The paired test increases the effective sample size by treating each patient as two independent observations",
+      "The paired test removes between-subject variability by analysing each patient's own change score, increasing statistical power",
+      "The paired test does not require the normality assumption, making it more robust to outliers in a sample of 50",
+      "The independent-samples test is invalid when the two groups are different sizes, and before/after groups technically have the same size"
+    ],
+    "correct_option": 2,
+    "explanation": "In a paired design, each subject serves as their own control. The analysis uses the difference score (after − before) for each patient, eliminating between-subject variability (e.g., patient A naturally has higher blood pressure than patient B). This reduces the residual variance in the test, increasing statistical power to detect a true treatment effect. The independent-samples t-test ignores the pairing and treats the 50 before and 50 after measurements as 100 independent observations, inflating the variance estimate with irrelevant between-subject noise. The paired t-test is valid here because the data are naturally paired — each 'after' observation is linked to a specific 'before' observation from the same person.",
+    "hints": [
+      "What is the source of variability in an unpaired t-test? Does the variation in baseline blood pressure between patients help you detect the drug's effect?",
+      "If patient A has baseline 160 mmHg and patient B has baseline 120 mmHg, which test uses this information more efficiently?"
+    ],
+    "concepts": [
+      "paired t-test",
+      "unpaired t-test",
+      "within-subject design",
+      "statistical power",
+      "hypothesis testing"
+    ],
+    "order": 41,
+    "difficulty": "medium"
   }
 ]

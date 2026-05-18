@@ -731,5 +731,86 @@
     ],
     "order": 28,
     "difficulty": "easy"
+  },
+  {
+    "id": 71029,
+    "title": "Kurtosis and Tail Behaviour",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A distribution is described as having high positive excess kurtosis (leptokurtic). Which statement best describes this distribution compared to a normal distribution with the same mean and variance?",
+    "options": [
+      "It has a flatter peak and lighter tails, so extreme values are rarer than under normality",
+      "It has a sharper peak and heavier tails, so extreme values occur more often than under normality",
+      "It has the same peak height as a normal distribution but wider tails to accommodate the extra variance",
+      "It is bimodal, with two distinct peaks symmetrically placed around the mean"
+    ],
+    "correct_option": 2,
+    "explanation": "Excess kurtosis measures how much probability mass sits in the tails relative to a normal distribution. Positive excess kurtosis (leptokurtic) means a sharper central peak and heavier tails — extreme values are more likely than normality predicts. Financial return distributions are a classic example: large moves (crashes or spikes) happen more often than a normal model expects. Negative excess kurtosis (platykurtic) describes flatter distributions with lighter tails.",
+    "hints": [
+      "Kurtosis describes the shape of the tails, not the spread — a high-kurtosis distribution can have the same variance as a normal one yet produce far more outliers.",
+      "Think about which real-world phenomena (financial returns, natural disasters) have 'fat tails' — that is leptokurtic behaviour."
+    ],
+    "concepts": [
+      "kurtosis",
+      "descriptive statistics",
+      "distribution shape",
+      "heavy tails"
+    ],
+    "order": 29,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71030,
+    "title": "Binomial vs Bernoulli Relationship",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "Which statement correctly describes the relationship between the Bernoulli and Binomial distributions?",
+    "options": [
+      "The Binomial distribution is a special case of the Bernoulli where the success probability p = 0.5",
+      "The Bernoulli distribution is a special case of the Binomial where the number of trials n = 1",
+      "They are identical distributions described using different parameterisations for computational convenience",
+      "The Bernoulli distribution models continuous outcomes, while the Binomial models discrete counts"
+    ],
+    "correct_option": 2,
+    "explanation": "A Bernoulli(p) random variable models a single trial with two outcomes (success or failure). A Binomial(n, p) random variable counts the total number of successes in n independent Bernoulli(p) trials. Setting n = 1 in the Binomial reduces it exactly to a Bernoulli — so Bernoulli is the n = 1 special case. Both are discrete distributions.",
+    "hints": [
+      "Think about what a Binomial variable counts: the sum of n independent coin flips, each of which is a single Bernoulli trial.",
+      "What does the Binomial formula produce when n = 1?"
+    ],
+    "concepts": [
+      "Bernoulli distribution",
+      "Binomial distribution",
+      "discrete distributions",
+      "probability distributions"
+    ],
+    "order": 30,
+    "difficulty": "easy"
+  },
+  {
+    "id": 71031,
+    "title": "Geometric Distribution and Memorylessness",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "You flip a fair coin repeatedly until you get the first heads. The number of flips follows a Geometric distribution. Which property of the Geometric distribution is unique among discrete distributions?",
+    "options": [
+      "Its mean always equals its variance for any value of the success probability p",
+      "It is memoryless: given that no success has occurred in the first k trials, the distribution of the remaining wait time is identical to starting fresh",
+      "It is the only discrete distribution defined on the positive integers with a finite expected value for all p > 0",
+      "Its probability mass function is symmetric around the mean for all values of p"
+    ],
+    "correct_option": 2,
+    "explanation": "The Geometric distribution is the unique discrete distribution with the memoryless property: P(X > k + m | X > k) = P(X > m). Intuitively, past failures carry no information about future success — each trial is independent. This mirrors the exponential distribution's memorylessness in continuous time. The mean of Geometric(p) is 1/p and the variance is (1−p)/p², so they are not equal in general. The distribution is also right-skewed, not symmetric.",
+    "hints": [
+      "The memoryless property says that 'forgetting' how long you have already waited leaves the distribution unchanged. Which other common distribution (continuous) shares this property?",
+      "Think about independence: if each flip is independent, does knowing you flipped tails 10 times in a row change the probability the next flip is heads?"
+    ],
+    "concepts": [
+      "Geometric distribution",
+      "memoryless property",
+      "discrete distributions",
+      "probability distributions"
+    ],
+    "order": 31,
+    "difficulty": "easy"
   }
 ]

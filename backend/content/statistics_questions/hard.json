@@ -641,5 +641,123 @@
     ],
     "order": 24,
     "difficulty": "hard"
+  },
+  {
+    "id": 73025,
+    "title": "Minimum Detectable Effect Calculation",
+    "subtype": "numerical",
+    "type": "numerical",
+    "mock_only": true,
+    "description": "You plan an A/B test for a checkout flow with a baseline conversion rate of 10%. Each group will receive 5,000 users. Using α = 0.05 (two-tailed, z = 1.96) and power = 0.80 (z = 0.842), write a Python function `solve()` that returns the minimum detectable effect (MDE) as an absolute difference, rounded to 4 decimal places.\n\nUse the formula: MDE = (z_α/2 + z_β) × √(2p(1−p) / n)",
+    "starter_code": "import math\n\ndef solve():\n    # alpha=0.05 two-tailed z=1.96, power=0.80 z=0.842\n    # baseline p=0.10, n=5000 per group\n    pass",
+    "expected_code": "import math\n\ndef solve():\n    z_alpha = 1.96\n    z_beta = 0.842\n    p = 0.10\n    n = 5000\n    mde = (z_alpha + z_beta) * math.sqrt(2 * p * (1 - p) / n)\n    return round(mde, 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 0.0168
+      }
+    ],
+    "explanation": "MDE = (1.96 + 0.842) × √(2 × 0.10 × 0.90 / 5000) = 2.802 × √(0.000036) = 2.802 × 0.006 = 0.016812 ≈ 0.0168. This means the experiment can reliably detect a lift as small as 1.68 percentage points (e.g., 10% → 11.68%) with 80% power. Increasing n or baseline variance (p closer to 0.5) would shrink the MDE; requiring higher power or a smaller α would widen it.",
+    "hints": [
+      "The MDE formula combines the critical value for your significance level (z_α/2) and for your desired power (z_β), then scales by the standard deviation of the proportion difference under the null.",
+      "√(2p(1−p)/n) is the standard error of the difference between two proportions when both groups have the same n and the same null-hypothesis rate p."
+    ],
+    "concepts": [
+      "minimum detectable effect",
+      "statistical power",
+      "sample size",
+      "A/B testing",
+      "effect sizes"
+    ],
+    "order": 25,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73026,
+    "title": "CUPED-Adjusted Treatment Effect",
+    "subtype": "numerical",
+    "type": "numerical",
+    "mock_only": true,
+    "description": "In a two-week A/B test, you have the following group-level statistics:\n\n- Treatment: post-experiment mean revenue = 12.5, pre-experiment mean revenue = 11.2\n- Control: post-experiment mean revenue = 12.0, pre-experiment mean revenue = 10.8\n- Grand pre-experiment mean across all users: 11.0\n- θ (CUPED coefficient estimated from pooled data): 0.8\n\nWrite a Python function `solve()` that returns the CUPED-adjusted treatment effect (adjusted treatment mean minus adjusted control mean), rounded to 4 decimal places.\n\nFormula: Y_cuped = Y_post − θ × (X_pre − X_pre_grand)",
+    "starter_code": "def solve():\n    # Compute CUPED-adjusted mean for each group, then return the difference\n    pass",
+    "expected_code": "def solve():\n    theta = 0.8\n    x_grand = 11.0\n\n    y_post_t, x_pre_t = 12.5, 11.2\n    y_post_c, x_pre_c = 12.0, 10.8\n\n    y_cuped_t = y_post_t - theta * (x_pre_t - x_grand)\n    y_cuped_c = y_post_c - theta * (x_pre_c - x_grand)\n\n    return round(y_cuped_t - y_cuped_c, 4)",
+    "test_cases": [
+      {
+        "input": [],
+        "expected_output": 0.18
+      }
+    ],
+    "explanation": "CUPED (Controlled-experiment Using Pre-Experiment Data) adjusts each group's post-experiment mean using a pre-experiment covariate to reduce variance. Treatment adjusted: 12.5 − 0.8×(11.2−11.0) = 12.5 − 0.16 = 12.34. Control adjusted: 12.0 − 0.8×(10.8−11.0) = 12.0 + 0.16 = 12.16. Adjusted effect = 12.34 − 12.16 = 0.18. The raw effect was 12.5 − 12.0 = 0.5, but pre-experiment imbalance (treatment group had higher pre-experiment revenue) explained 0.32 of it. CUPED recovers the true effect by removing this covariate-driven component.",
+    "hints": [
+      "The CUPED formula removes the linear component of the correlation between the pre-experiment metric and the post-experiment outcome. A higher θ means stronger correlation and more adjustment.",
+      "The grand pre-experiment mean X_pre_grand is the same for both groups — it centres the covariate. Each group's pre-experiment deviation from this mean drives its adjustment."
+    ],
+    "concepts": [
+      "CUPED",
+      "variance reduction",
+      "A/B testing",
+      "pre-experiment covariate",
+      "experiment design"
+    ],
+    "order": 26,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73027,
+    "title": "MCAR, MAR, and MNAR Missingness Mechanisms",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "description": "A survey on weekly exercise hours has 30% missing responses. Data scientists consider three possible missingness mechanisms. Which of the following scenarios correctly describes MNAR (Missing Not At Random) — the most analytically dangerous mechanism?",
+    "options": [
+      "Responses are missing because a software glitch randomly dropped every third submission regardless of its content",
+      "Responses are missing because the glitch dropped submissions from users who logged in on mobile; mobile usage is recorded and is unrelated to exercise habits",
+      "Responses are missing because people who exercise very little are ashamed to report their true level and leave the question blank",
+      "Responses are missing because older users (who exercise less on average) are less comfortable with the survey technology; age is recorded in the dataset"
+    ],
+    "correct_option": 3,
+    "explanation": "MNAR means the probability of missingness depends on the missing value itself — people who exercise little are more likely to skip precisely because of their low exercise level. The observed data will systematically overestimate exercise frequency, and this bias cannot be corrected using observed variables alone. Option A is MCAR (missingness is fully random, independent of all variables — safe to ignore with a complete-case analysis). Option B is also approximately MCAR since mobile usage is unrelated to exercise. Option D is MAR: missingness depends on age (an observed variable), so it can be addressed using multiple imputation or model-based methods that condition on age.",
+    "hints": [
+      "For each scenario, ask: 'Does the probability of missingness depend on the unobserved value itself, or only on observed variables?' If the answer is the former, it is MNAR.",
+      "MCAR and MAR can both be handled with standard imputation. MNAR requires sensitivity analysis or external data because the missingness pattern is baked into the missing values."
+    ],
+    "concepts": [
+      "MCAR",
+      "MAR",
+      "MNAR",
+      "missing data",
+      "data quality",
+      "observational study"
+    ],
+    "order": 27,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73028,
+    "title": "Causal DAG — Collider Bias",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "mock_only": true,
+    "description": "A recruiter analyses employees who passed a technical screening (S) and observes a negative correlation between years of coding experience (X) and performance on a system design question (Y). In the full candidate pool, no such correlation exists.\n\nThe causal DAG is: X (Coding Experience) → S (Passed Screening) ← Y (System Design Ability)\n\nWhat is the correct statistical explanation for the negative correlation observed within the screened group?",
+    "options": [
+      "Coding experience causes candidates to over-prepare for system design practice, reducing their novel thinking ability",
+      "Collider bias: Passed Screening (S) is a collider — caused by both X and Y; conditioning on passing the screening opens a spurious path between X and Y, creating a negative correlation within the filtered group",
+      "Confounding: Passed Screening is a confounder that causally affects both coding experience and system design ability, and should be adjusted for to remove bias",
+      "Survivorship bias: candidates who failed screening are excluded, but this only reduces sample size and does not distort the correlation structure"
+    ],
+    "correct_option": 2,
+    "explanation": "A collider is a variable with two incoming arrows (A → C ← B). Conditioning on a collider (here, selecting only screened candidates) opens a non-causal association between its parents (X and Y) even if X and Y are independent in the population. Intuitively: among those who passed screening, a candidate with weak system design skills must have strong coding experience to have been admitted (and vice versa), creating a negative correlation purely as an artefact of the selection filter. This is sometimes called Berkson's bias and is a special case of selection bias. The fix is to analyse the full candidate pool, not the filtered subgroup — never condition on a collider.",
+    "hints": [
+      "A confounder has arrows pointing TO both the treatment and outcome. A collider has arrows pointing FROM both the treatment and outcome. Which pattern does Passed Screening fit?",
+      "Think about who makes it through screening: to pass without strong system design, you need exceptional coding skills. Does this create a within-group negative correlation even if the two skills are independent in the population?"
+    ],
+    "concepts": [
+      "collider bias",
+      "causal DAG",
+      "selection bias",
+      "causal inference",
+      "Berkson's bias"
+    ],
+    "order": 28,
+    "difficulty": "hard"
   }
 ]

@@ -51,8 +51,8 @@ Keep all five lenses active at once. The best decisions here satisfy all of them
 A data interview practice platform covering nine tracks. Users write SQL or Python, answer MCQ questions, get instant feedback, and work through gated challenge banks.
 
 **Modes per track:**
-- **Challenge mode** — plan-aware unlock rules, persistent progress, 773 practice questions across 9 tracks
-- **Mock mode** — 147 additional mock-only questions (Pro/Elite), never shown in practice catalog
+- **Challenge mode** — plan-aware unlock rules, persistent progress, 790 practice questions across 9 tracks
+- **Mock mode** — 155 additional mock-only questions (Pro/Elite), never shown in practice catalog
 - **Sample mode** — 36 sandbox questions across SQL/Python/Pandas/PySpark (3 per track+difficulty), no progress recorded, no login required. Data Engineering, Data Modeling, Statistics, ML Fundamentals, and Experimentation samples are auto-sliced from the first 3 practice questions per difficulty (no dedicated sample IDs).
 
 **Tracks:**
@@ -62,7 +62,7 @@ A data interview practice platform covering nine tracks. Users write SQL or Pyth
 - **PySpark** — 102 practice (38 easy / 38 medium / 26 hard) + 20 mock-only, MCQ / predict-output / debug / scenario formats
 - **Data Engineering** — 80 practice (30 easy / 30 medium / 20 hard), MCQ / scenario / debug, no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
 - **Data Modeling** — 70 practice (25 easy / 25 medium / 20 hard), MCQ / scenario, no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
-- **Statistics** — 80 practice (28 easy / 28 medium / 24 hard), **dual-subtype**: each question is either `conceptual` (MCQ) or `numerical` (Python code execution); `eval_kind="mixed"`, `unlock_profile="code"`, `mixed_subtype=true`, `in_mixed_mock=false`
+- **Statistics** — 97 practice (31 easy / 41 medium / 25 hard) + 3 mock-only, **dual-subtype**: each question is either `conceptual` (MCQ) or `numerical` (Python code execution); `eval_kind="mixed"`, `unlock_profile="code"`, `mixed_subtype=true`, `in_mixed_mock=false`
 - **ML Fundamentals** — 90 practice (30 easy / 35 medium / 25 hard) + 25 mock-only, MCQ / scenario / predict-output / debug, no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
 - **Experimentation** — 80 practice (30 easy / 30 medium / 20 hard) + 25 mock-only, MCQ / scenario / predict-output / debug, no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
 
@@ -95,12 +95,12 @@ Mock-only questions (`mock_only: true`) live in the same JSON files as practice 
 | PySpark | 38 + 0 | 38 + 10 | 26 + 10 | MCQ / predict-output / debug / scenario | `backend/content/pyspark_questions/` |
 | Data Engineering | 30 + 0 | 30 + 0 | 20 + 0 | MCQ / scenario / debug | `backend/content/data_engineering_questions/` |
 | Data Modeling | 25 + 0 | 25 + 0 | 20 + 0 | MCQ / scenario | `backend/content/data_modeling_questions/` |
-| Statistics | 28 + 0 | 28 + 0 | 24 + 0 | conceptual MCQ + numerical Python | `backend/content/statistics_questions/` |
+| Statistics | 31 + 0 | 41 + 0 | 25 + 3 | conceptual MCQ + numerical Python | `backend/content/statistics_questions/` |
 | ML Fundamentals | 30 + 0 | 35 + 12 | 25 + 13 | MCQ / scenario / predict-output / debug | `backend/content/ml_fundamentals_questions/` |
 | Experimentation | 30 + 0 | 30 + 12 | 20 + 13 | MCQ / scenario / predict-output / debug | `backend/content/experimentation_questions/` |
 
-**Practice totals:** SQL 112 · Python 83 · Pandas 76 · PySpark 102 · Data Engineering 80 · Data Modeling 70 · Statistics 80 · ML Fundamentals 90 · Experimentation 80 = **773 practice questions**  
-**Mock-only totals:** SQL 38 · Python 20 · Pandas 24 · PySpark 20 · ML Fundamentals 25 · Experimentation 25 = **152 mock-only questions** (Pro/Elite only; Statistics and Data Engineering and Data Modeling have no mock-only questions at launch)
+**Practice totals:** SQL 112 · Python 83 · Pandas 76 · PySpark 102 · Data Engineering 80 · Data Modeling 70 · Statistics 97 · ML Fundamentals 90 · Experimentation 80 = **790 practice questions**  
+**Mock-only totals:** SQL 38 · Python 20 · Pandas 24 · PySpark 20 · Statistics 3 · ML Fundamentals 25 · Experimentation 25 = **155 mock-only questions** (Pro/Elite only; Data Engineering and Data Modeling have no mock-only questions)
 
 See [docs/content-authoring.md](docs/content-authoring.md) for the full mock-only authoring spec.
 

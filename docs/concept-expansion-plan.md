@@ -3,7 +3,7 @@
 Tracks concept-hooks.md coverage against the question bank, identifies gaps, and drives new question authoring across all 8 tracks.
 
 **Initiated:** 2026-05-18  
-**Status:** Phase 2 pending (Phase 0 complete 2026-05-18, Phase 1 complete 2026-05-18)
+**Status:** Phase 3 pending (Phase 0 complete 2026-05-18, Phase 1 complete 2026-05-18, Phase 2 complete 2026-05-18)
 
 ---
 
@@ -17,7 +17,7 @@ Tracks concept-hooks.md coverage against the question bank, identifies gaps, and
 | Python | ✅ hooks 1–67 (Phase 0 expanded) | ✅ done | ⬜ Phase 3 |
 | Data Engineering | ✅ hooks 1–67 (Phase 0 expanded) | ✅ done | ⬜ Phase 4 |
 | Data Modeling | ✅ hooks 1–57 (Phase 0 expanded) | ✅ done | ⬜ Phase 4 |
-| Statistics | ✅ hooks 1–84 (Phase 0 expanded) | ✅ done | ⬜ Phase 2 |
+| Statistics | ✅ hooks 1–84 (Phase 0 expanded) | ✅ done | ✅ Phase 2 (+20) |
 | ML Fundamentals | ✅ hooks 1–40 (Phase 0 written) | ❌ deferred to Phase 7 | ⬜ Phase 7 |
 | Experimentation | ✅ hooks 1–33 (written 2026-05-18) | ❌ deferred to Phase 7 | ⬜ Phase 7 |
 
@@ -275,32 +275,32 @@ String/date function questions use `employees`, `users`, or `orders` — they ha
 **Mostly practice; 3–4 hard questions designated mock-only** (CUPED numerical, MDE numerical, causal DAG — these are appropriate for Pro/Elite timed assessment)
 
 **Distribution gaps (5 questions — easy/medium, conceptual MCQ):**
-- [ ] Kurtosis — excess kurtosis and tail behavior interpretation
-- [ ] Binomial vs Bernoulli — relationship and parameter meaning
-- [ ] Geometric distribution — first-success framing and memoryless property
-- [ ] Log-normal distribution — real-world quantities and why log-transform works
-- [ ] F-distribution — what it is and where it appears (ANOVA connection)
+- [x] Kurtosis — excess kurtosis and tail behavior interpretation (71029 easy)
+- [x] Binomial vs Bernoulli — relationship and parameter meaning (71030 easy)
+- [x] Geometric distribution — first-success framing and memoryless property (71031 easy)
+- [x] Log-normal distribution — real-world quantities and why log-transform works (72029 medium)
+- [x] F-distribution — what it is and where it appears (ANOVA connection) (72030 medium)
 
 **A/B Testing depth (5 questions — medium/hard, mixed subtypes):**
-- [ ] Sequential testing / peeking — why stopping early on significance is wrong (conceptual)
-- [ ] Minimum detectable effect — calculation given α, power, baseline rate (numerical)
-- [ ] Metric sensitivity — mean vs median behavior under treatment, which to use (conceptual)
-- [ ] CUPED / pre-experiment variance reduction — covariate, formula, what it buys (numerical)
-- [ ] Guardrail vs primary metric — role of each and what happens when they conflict (conceptual)
+- [x] Sequential testing / peeking — why stopping early on significance is wrong (72031 medium conceptual)
+- [x] Minimum detectable effect — calculation given α, power, baseline rate (73025 hard numerical mock-only)
+- [x] Metric sensitivity — mean vs median behavior under treatment, which to use (72032 medium conceptual)
+- [x] CUPED / pre-experiment variance reduction — covariate, formula, what it buys (73026 hard numerical mock-only)
+- [x] Guardrail vs primary metric — role of each and what happens when they conflict (72033 medium conceptual)
 
 **Applied / Bias patterns (5 questions — medium, conceptual MCQ):**
-- [ ] Survivorship bias — scenario diagnosis and corrected analysis approach
-- [ ] Berkson's bias — hospital-based study negative correlation explanation
-- [ ] Regression to the mean — Sports Illustrated jinx, when it appears
-- [ ] Goodhart's Law — when a metric becomes a target it stops being a good measure
-- [ ] Sampling bias in funnel analysis — why step-3 users aren't representative of step-1
+- [x] Survivorship bias — scenario diagnosis and corrected analysis approach (72034 medium)
+- [x] Berkson's bias — hospital-based study negative correlation explanation (72035 medium)
+- [x] Regression to the mean — Sports Illustrated jinx, when it appears (72036 medium)
+- [x] Goodhart's Law — when a metric becomes a target it stops being a good measure (72037 medium)
+- [x] Sampling bias in funnel analysis — why step-3 users aren't representative of step-1 (72038 medium)
 
 **Logistic & Causal (5 questions — medium/hard, conceptual):**
-- [ ] Logistic regression — log-odds interpretation, why not linear for binary outcome
-- [ ] Odds ratio vs relative risk — when they diverge significantly
-- [ ] Paired vs unpaired t-test — what makes a design paired and why it reduces variance
-- [ ] MCAR vs MAR vs MNAR — how each mechanism changes analysis strategy
-- [ ] Causal DAG basics — confounding, colliders, and adjustment sets
+- [x] Logistic regression — log-odds interpretation, why not linear for binary outcome (72039 medium)
+- [x] Odds ratio vs relative risk — when they diverge significantly (72040 medium)
+- [x] Paired vs unpaired t-test — what makes a design paired and why it reduces variance (72041 medium)
+- [x] MCAR vs MAR vs MNAR — how each mechanism changes analysis strategy (73027 hard)
+- [x] Causal DAG basics — confounding, colliders, and adjustment sets (73028 hard conceptual mock-only)
 
 ---
 
