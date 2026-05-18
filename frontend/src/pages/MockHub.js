@@ -3,28 +3,33 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
-import { TRACK_META } from '../contexts/TopicContext';
 import { TRACK_SLUGS, TRACK_LABELS } from '../trackRegistry';
 import Topbar from '../components/Topbar';
 import UpgradeButton from '../components/UpgradeButton';
 import { track as trackEvent } from '../analytics';
 
-const TRACKS = [...TRACK_SLUGS, 'mixed'];
+// Tracks that pool into a single mixed-track session (in_mixed_mock=True in backend).
+const MIXED_MOCK_TRACKS = ['sql', 'python', 'python-data', 'pyspark'];
+
+// TODO: data-engineering, data-modeling, and statistics have no dedicated mock-only
+// question banks yet. Sessions for these tracks draw from practice questions only.
+// Content authoring task: add mock_only questions for all three tracks.
+const NO_MOCK_BANK_TRACKS = new Set(['data-engineering', 'data-modeling', 'statistics']);
+
+const MOCK_ROLES = [
+  { id: 'analyst',            label: 'Data Analyst',       tracks: ['sql', 'statistics', 'python-data', 'python'] },
+  { id: 'engineer',           label: 'Data Engineer',      tracks: ['python', 'sql', 'pyspark', 'data-engineering'] },
+  { id: 'analytics_engineer', label: 'Analytics Engineer', tracks: ['sql', 'data-modeling', 'python-data', 'python'] },
+  { id: 'scientist',          label: 'Data Scientist',     tracks: ['ml-fundamentals', 'statistics', 'experimentation', 'python', 'sql'] },
+];
+
 const DIFFICULTIES = ['easy', 'medium', 'hard', 'mixed'];
 
-const DIFFICULTY_LABELS = {
-  easy: 'Easy',
-  medium: 'Medium',
-  hard: 'Hard',
-  mixed: 'Mixed',
-};
+const DIFFICULTY_LABELS = { easy: 'Easy', medium: 'Medium', hard: 'Hard', mixed: 'Mixed' };
 
 const PYSPARK_FORMAT_LABELS = {
-  mcq: 'MCQ',
-  predict_output: 'Predict Output',
-  debug: 'Debug',
-  scenario: 'Scenario',
-  optimization: 'Optimization',
+  mcq: 'MCQ', predict_output: 'Predict Output', debug: 'Debug',
+  scenario: 'Scenario', optimization: 'Optimization',
 };
 
 const PYSPARK_FORMAT_TARGETS = {
@@ -35,6 +40,13 @@ const PYSPARK_FORMAT_TARGETS = {
 };
 
 const MIXED_DIFF_TARGETS = ['easy', 'medium', 'hard', 'medium', 'hard'];
+
+const TRACK_CONCEPT_MAP = {
+  sql: ['AGGREGATION','WINDOW FUNCTIONS','JOINS','SUBQUERY PATTERNS','CTEs','DATE FUNCTIONS','GROUP BY','FILTERING','COHORT RETENTION','FUNNEL ANALYSIS','RANKING','SELF JOIN','SET OPERATIONS','CASE WHEN','STRING FUNCTIONS'],
+  python: ['SORTING','BINARY SEARCH','HASH MAPS','TWO POINTERS','SLIDING WINDOW','RECURSION','DYNAMIC PROGRAMMING','GRAPHS','TREES','LINKED LISTS','HEAPS','STACK / QUEUE','BIT MANIPULATION'],
+  'python-data': ['GROUPBY','MERGING','PIVOTING','FILTERING','AGGREGATION','WINDOW FUNCTIONS','RESHAPING','TIME SERIES','STRING METHODS','APPLY/MAP','COHORT ANALYSIS','MULTI-INDEX'],
+  pyspark: ['DATAFRAME API','GROUPBY','JOINS','WINDOW FUNCTIONS','UDFs','PARTITIONING','AGGREGATION','STREAMING','CACHING','BROADCAST JOIN'],
+};
 
 function getSessionExpectations(track, difficulty, n) {
   const lines = [];
@@ -70,13 +82,6 @@ function formatDuration(timeLimitS, timeUsedS) {
   return limit ? `${limit} min` : '—';
 }
 
-const TRACK_CONCEPT_MAP = {
-  sql: ['AGGREGATION','WINDOW FUNCTIONS','JOINS','SUBQUERY PATTERNS','CTEs','DATE FUNCTIONS','GROUP BY','FILTERING','COHORT RETENTION','FUNNEL ANALYSIS','RANKING','SELF JOIN','SET OPERATIONS','CASE WHEN','STRING FUNCTIONS'],
-  python: ['SORTING','BINARY SEARCH','HASH MAPS','TWO POINTERS','SLIDING WINDOW','RECURSION','DYNAMIC PROGRAMMING','GRAPHS','TREES','LINKED LISTS','HEAPS','STACK / QUEUE','BIT MANIPULATION'],
-  'python-data': ['GROUPBY','MERGING','PIVOTING','FILTERING','AGGREGATION','WINDOW FUNCTIONS','RESHAPING','TIME SERIES','STRING METHODS','APPLY/MAP','COHORT ANALYSIS','MULTI-INDEX'],
-  pyspark: ['DATAFRAME API','GROUPBY','JOINS','WINDOW FUNCTIONS','UDFs','PARTITIONING','AGGREGATION','STREAMING','CACHING','BROADCAST JOIN'],
-};
-
 export default function MockHub() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -84,7 +89,8 @@ export default function MockHub() {
   const rawPlan = user?.plan ?? 'free';
   const normalisedPlan = rawPlan.startsWith('lifetime_') ? rawPlan.replace('lifetime_', '') : rawPlan;
   const isElite = normalisedPlan === 'elite';
-  const isPaying = normalisedPlan === 'pro' || normalisedPlan === 'elite';
+  const isPro = normalisedPlan === 'pro';
+  const isPaying = isPro || isElite;
   const planLabel =
     rawPlan === 'lifetime_elite' ? 'Lifetime Elite' :
     rawPlan === 'lifetime_pro'   ? 'Lifetime Pro'   :
@@ -94,31 +100,56 @@ export default function MockHub() {
     ? <span className={`shell-pill shell-pill-plan shell-pill-plan-${normalisedPlan}`}>{planLabel}</span>
     : null;
 
+  // Role filter — persisted in localStorage
+  const [selectedRole, setSelectedRole] = useState(() => localStorage.getItem('mock_role') || null);
+
+  // Derive filtered track list from selected role (always append 'mixed')
+  const filteredSlugs = selectedRole
+    ? (MOCK_ROLES.find(r => r.id === selectedRole)?.tracks ?? TRACK_SLUGS).filter(t => TRACK_SLUGS.includes(t))
+    : TRACK_SLUGS;
+  const filteredTracks = [...filteredSlugs, 'mixed'];
+
   const [mode, setMode] = useState('30min');
   const [track, setTrack] = useState('sql');
   const [difficulty, setDifficulty] = useState('easy');
-  const [companyFilter, setCompanyFilter] = useState('');
   const [numQuestions, setNumQuestions] = useState(2);
   const [timeMinutes, setTimeMinutes] = useState(30);
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState(null);
-  const [activeSessionConflict, setActiveSessionConflict] = useState(null); // { session_id, track, difficulty, mode }
+  const [activeSessionConflict, setActiveSessionConflict] = useState(null);
   const [endingSession, setEndingSession] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(true);
 
-  // Focus mode (Elite only)
+  // Focus mode — Elite feature, but UI is shown to all (locked for non-Elite)
   const [focusMode, setFocusMode] = useState(false);
   const [focusConcepts, setFocusConcepts] = useState([]);
 
-  // Analytics (Elite only)
+  // Analytics — Elite only
   const [analytics, setAnalytics] = useState(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
-  // Pre-flight access state from /api/mock/access
+  // Pre-flight access state
   const [accessState, setAccessState] = useState(null);
   const [accessLoading, setAccessLoading] = useState(false);
+
+  function handleRoleSelect(roleId) {
+    // Passing null = "All"; clicking the active role also returns to "All"
+    const newRole = (roleId === null || roleId === selectedRole) ? null : roleId;
+    setSelectedRole(newRole);
+    if (newRole) {
+      localStorage.setItem('mock_role', newRole);
+      const roleTracks = MOCK_ROLES.find(r => r.id === newRole)?.tracks.filter(t => TRACK_SLUGS.includes(t)) ?? [];
+      if (!roleTracks.includes(track) && track !== 'mixed') {
+        setTrack(roleTracks[0] || 'sql');
+        setFocusMode(false);
+        setFocusConcepts([]);
+      }
+    } else {
+      localStorage.removeItem('mock_role');
+    }
+  }
 
   useEffect(() => {
     api.get('/mock/history')
@@ -127,7 +158,6 @@ export default function MockHub() {
       .finally(() => setHistoryLoading(false));
   }, []);
 
-  // Fetch analytics for Elite users
   useEffect(() => {
     if (!isElite) return;
     setAnalyticsLoading(true);
@@ -137,7 +167,6 @@ export default function MockHub() {
       .finally(() => setAnalyticsLoading(false));
   }, [isElite]);
 
-  // Fetch access state whenever track changes
   useEffect(() => {
     setAccessState(null);
     setAccessLoading(true);
@@ -148,13 +177,11 @@ export default function MockHub() {
   }, [track]);
 
   async function handleStart() {
-    // Pre-flight check before submitting
     const diffAccess = accessState?.access?.[difficulty];
     if (diffAccess && !diffAccess.can_start) {
       setStartError(diffAccess.block_copy || 'Cannot start session with this configuration.');
       return;
     }
-
     setStarting(true);
     setStartError(null);
     try {
@@ -163,7 +190,6 @@ export default function MockHub() {
         track,
         difficulty,
         ...(mode === 'custom' ? { num_questions: numQuestions, time_minutes: timeMinutes } : {}),
-        ...(companyFilter ? { company_filter: companyFilter } : {}),
         ...(isElite && focusMode && focusConcepts.length > 0 ? { focus_concepts: focusConcepts } : {}),
       };
       const r = await api.post('/mock/start', payload);
@@ -193,11 +219,10 @@ export default function MockHub() {
     try {
       await api.post(`/mock/${activeSessionConflict.session_id}/finish`);
     } catch {
-      // If finish fails (e.g. already ended), proceed anyway
+      // proceed even if finish fails
     }
     setActiveSessionConflict(null);
     setEndingSession(false);
-    // Now kick off the start again
     handleStart();
   }
 
@@ -206,15 +231,19 @@ export default function MockHub() {
     const a = accessState.access?.[diff];
     if (!a) return { blocked: false, chip: null };
     if (a.can_start) {
-      // Show usage chip for capped difficulties
       if (a.daily_limit != null && a.daily_used != null) {
         const remaining = a.daily_limit - a.daily_used;
-        if (remaining <= 0) return { blocked: true, chip: `Used today · resets tomorrow`, chipAction: a.needs_upgrade ? <UpgradeButton tier={a.needs_upgrade} label={`Unlimited with ${a.needs_upgrade === 'elite' ? 'Elite' : 'Pro'}`} compact source={`mock_${diff}_daily`} /> : null };
+        if (remaining <= 0) return {
+          blocked: true,
+          chip: `Used today · resets tomorrow`,
+          chipAction: a.needs_upgrade
+            ? <UpgradeButton tier={a.needs_upgrade} label={`Unlimited with ${a.needs_upgrade === 'elite' ? 'Elite' : 'Pro'}`} compact source={`mock_${diff}_daily`} />
+            : null,
+        };
         return { blocked: false, chip: `${remaining} remaining today` };
       }
       return { blocked: false, chip: diff === 'easy' ? 'Unlimited' : null };
     }
-    // Blocked
     const upgradeLabel = a.needs_upgrade ? `${a.needs_upgrade === 'elite' ? 'Elite' : 'Pro'} unlocks this` : null;
     return {
       blocked: true,
@@ -229,9 +258,12 @@ export default function MockHub() {
 
   const modeCards = [
     { key: '30min', label: 'Quick', sublabel: '30 min · 2 questions', desc: 'Fast-paced warm-up session' },
-    { key: '60min', label: 'Full', sublabel: '60 min · 3 questions', desc: 'Realistic interview length' },
-    { key: 'custom', label: 'Custom', sublabel: 'You choose', desc: 'Set your own pace and depth' },
+    { key: '60min', label: 'Full',  sublabel: '60 min · 3 questions', desc: 'Realistic interview length' },
+    { key: 'custom', label: 'Custom', sublabel: 'You choose',         desc: 'Set your own pace and depth' },
   ];
+
+  const isMixedTrack = track === 'mixed';
+  const hasMockBank  = !NO_MOCK_BANK_TRACKS.has(track);
 
   return (
     <div className="mock-hub-page">
@@ -252,23 +284,11 @@ export default function MockHub() {
               <strong>{activeSessionConflict.difficulty}</strong> mock session. Resume it or end it before starting a new one.
             </p>
             <div className="mock-modal-actions">
-              <button
-                className="btn btn-secondary"
-                onClick={() => setActiveSessionConflict(null)}
-              >
-                Cancel
-              </button>
-              <button
-                className="btn btn-danger"
-                onClick={handleEndAndStart}
-                disabled={endingSession}
-              >
+              <button className="btn btn-secondary" onClick={() => setActiveSessionConflict(null)}>Cancel</button>
+              <button className="btn btn-danger" onClick={handleEndAndStart} disabled={endingSession}>
                 {endingSession ? 'Ending…' : 'End & start new'}
               </button>
-              <button
-                className="btn btn-primary"
-                onClick={() => navigate(`/mock/${activeSessionConflict.session_id}`)}
-              >
+              <button className="btn btn-primary" onClick={() => navigate(`/mock/${activeSessionConflict.session_id}`)}>
                 Resume session →
               </button>
             </div>
@@ -280,7 +300,10 @@ export default function MockHub() {
         {/* Hero */}
         <section className="mock-hub-hero">
           <h1 className="mock-hub-title">Mock Interview</h1>
-          <p className="mock-hub-subtitle">Simulate real interview conditions with a countdown timer.<button className="mock-help-btn" onClick={() => setShowHelp(true)} aria-label="How it works">?</button></p>
+          <p className="mock-hub-subtitle">
+            Simulate real interview conditions with a countdown timer.
+            <button className="mock-help-btn" onClick={() => setShowHelp(true)} aria-label="How it works">?</button>
+          </p>
         </section>
 
         {/* Mode selector */}
@@ -308,10 +331,7 @@ export default function MockHub() {
               <label className="mock-custom-label">Questions</label>
               <input
                 className="mock-custom-input"
-                type="number"
-                min="1"
-                max="5"
-                value={numQuestions}
+                type="number" min="1" max="5" value={numQuestions}
                 onChange={e => setNumQuestions(Math.max(1, Math.min(5, Number(e.target.value))))}
               />
               <span className="mock-custom-hint">(1–5)</span>
@@ -320,10 +340,7 @@ export default function MockHub() {
               <label className="mock-custom-label">Time (minutes)</label>
               <input
                 className="mock-custom-input"
-                type="number"
-                min="10"
-                max="90"
-                value={timeMinutes}
+                type="number" min="10" max="90" value={timeMinutes}
                 onChange={e => setTimeMinutes(Math.max(10, Math.min(90, Number(e.target.value))))}
               />
               <span className="mock-custom-hint">(10–90)</span>
@@ -334,15 +351,41 @@ export default function MockHub() {
         {/* Configuration */}
         <section className="mock-hub-section">
           <div className="mock-hub-config">
+
+            {/* Role filter */}
+            <div className="mock-hub-config-row">
+              <span className="mock-hub-config-label">Role</span>
+              <div className="mock-role-pills">
+                <button
+                  type="button"
+                  className={`mock-role-pill ${!selectedRole ? 'active' : ''}`}
+                  onClick={() => handleRoleSelect(null)}
+                >
+                  All
+                </button>
+                {MOCK_ROLES.map(r => (
+                  <button
+                    key={r.id}
+                    type="button"
+                    className={`mock-role-pill ${selectedRole === r.id ? 'active' : ''}`}
+                    onClick={() => handleRoleSelect(r.id)}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Track */}
             <div className="mock-hub-config-row">
               <span className="mock-hub-config-label">Track</span>
               <div className="mock-config-pills">
-                {TRACKS.map(t => (
+                {filteredTracks.map(t => (
                   <button
                     key={t}
                     type="button"
                     className={`mock-config-pill ${track === t ? 'active' : ''}`}
-                    onClick={() => { setTrack(t); setCompanyFilter(''); setStartError(null); }}
+                    onClick={() => { setTrack(t); setFocusMode(false); setFocusConcepts([]); setStartError(null); }}
                   >
                     {TRACK_LABELS[t]}
                   </button>
@@ -350,26 +393,7 @@ export default function MockHub() {
               </div>
             </div>
 
-            {/* Company filter — Elite only, SQL track only */}
-            {track === 'sql' && (() => {
-              return isElite ? (
-                <div className="mock-hub-config-row">
-                  <span className="mock-hub-config-label">Company</span>
-                  <select
-                    className="mock-config-select"
-                    value={companyFilter}
-                    onChange={e => setCompanyFilter(e.target.value)}
-                  >
-                    <option value="">All companies</option>
-                    {['Airbnb','Amazon','Amplitude','Databricks','Google','LinkedIn','Meta','Microsoft','Netflix','PayPal','Salesforce','Shopify','Snowflake','Stripe','Zendesk','eBay'].map(c => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
-                </div>
-              ) : null;
-            })()}
-
-            {/* Difficulty with per-button pre-flight state */}
+            {/* Difficulty */}
             <div className="mock-hub-config-row">
               <span className="mock-hub-config-label">Difficulty</span>
               <div className="mock-config-pills">
@@ -393,45 +417,74 @@ export default function MockHub() {
           </div>
         </section>
 
-        {/* Focus mode — Elite only */}
-        {isElite && track !== 'mixed' && (
+        {/* Mixed track note */}
+        {isMixedTrack && (
+          <div className="mock-track-note">
+            Draws questions from {MIXED_MOCK_TRACKS.map(s => TRACK_LABELS[s]).join(' · ')} — the four code-execution tracks.
+          </div>
+        )}
+
+        {/* No dedicated mock bank note */}
+        {!isMixedTrack && !hasMockBank && (
+          <div className="mock-track-note mock-track-note--info">
+            No dedicated mock question bank yet for this track — this session draws from practice questions.
+          </div>
+        )}
+
+        {/* Focus mode — shown to all, locked for non-Elite */}
+        {!isMixedTrack && (
           <section className="mock-hub-section mock-focus-section">
-            <label className="mock-focus-label">
-              <input
-                type="checkbox"
-                checked={focusMode}
-                onChange={e => { setFocusMode(e.target.checked); setFocusConcepts([]); }}
-              />
-              <span>Focus mode</span>
-              <span className="mock-focus-label-sub">— target specific concepts in this session</span>
-            </label>
-            {focusMode && (
-              <div className="mock-focus-concepts">
-                {(TRACK_CONCEPT_MAP[track] || []).map(c => {
-                  const selected = focusConcepts.includes(c);
-                  const disabled = !selected && focusConcepts.length >= 3;
-                  return (
-                    <button
-                      key={c}
-                      type="button"
-                      className={`mock-focus-concept-pill${selected ? ' selected' : ''}`}
-                      onClick={() => {
-                        if (selected) setFocusConcepts(prev => prev.filter(x => x !== c));
-                        else if (!disabled) setFocusConcepts(prev => [...prev, c]);
-                      }}
-                      disabled={disabled}
-                    >
-                      {c}
-                    </button>
-                  );
-                })}
-                <p className="mock-focus-hint">Select 1–3 concepts. Session draws from questions tagged with them.</p>
+            {isElite ? (
+              <>
+                <label className="mock-focus-label">
+                  <input
+                    type="checkbox"
+                    checked={focusMode}
+                    onChange={e => { setFocusMode(e.target.checked); setFocusConcepts([]); }}
+                  />
+                  <span>Focus mode</span>
+                  <span className="mock-focus-label-sub">— target specific concepts in this session</span>
+                </label>
+                {focusMode && (
+                  <div className="mock-focus-concepts">
+                    {(TRACK_CONCEPT_MAP[track] || []).map(c => {
+                      const selected = focusConcepts.includes(c);
+                      const disabled = !selected && focusConcepts.length >= 3;
+                      return (
+                        <button
+                          key={c}
+                          type="button"
+                          className={`mock-focus-concept-pill${selected ? ' selected' : ''}`}
+                          onClick={() => {
+                            if (selected) setFocusConcepts(prev => prev.filter(x => x !== c));
+                            else if (!disabled) setFocusConcepts(prev => [...prev, c]);
+                          }}
+                          disabled={disabled}
+                        >
+                          {c}
+                        </button>
+                      );
+                    })}
+                    <p className="mock-focus-hint">Select 1–3 concepts. Session draws from questions tagged with them.</p>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="mock-focus-locked">
+                <div className="mock-focus-locked-header">
+                  <input type="checkbox" disabled className="mock-focus-locked-check" />
+                  <span className="mock-focus-locked-label">Focus mode</span>
+                  <span className="mock-elite-badge-inline">Elite</span>
+                </div>
+                <p className="mock-focus-locked-desc">
+                  Target specific concepts — your session draws only from questions tagged with them.
+                </p>
               </div>
             )}
           </section>
         )}
 
-        {/* Difficulty notice — shown below config card for medium/hard/mixed */}
+        {/* Difficulty notice */}
         {(() => {
           if (difficulty === 'medium' || difficulty === 'hard') {
             const notice = getDifficultyButtonState(difficulty);
@@ -470,7 +523,7 @@ export default function MockHub() {
           return null;
         })()}
 
-        {/* What to expect — PySpark format mix and/or mixed difficulty breakdown */}
+        {/* What to expect */}
         {(() => {
           const effectiveN = mode === '30min' ? 2 : mode === '60min' ? 3 : numQuestions;
           const expectations = getSessionExpectations(track, difficulty, effectiveN);
@@ -485,10 +538,7 @@ export default function MockHub() {
           );
         })()}
 
-        {/* Start error (fallback for unexpected server errors) */}
-        {startError && (
-          <p className="mock-hub-error">{startError}</p>
-        )}
+        {startError && <p className="mock-hub-error">{startError}</p>}
 
         <section className="mock-hub-section mock-hub-start-row">
           <button
@@ -500,16 +550,14 @@ export default function MockHub() {
           </button>
         </section>
 
-        {/* Elite analytics panel */}
+        {/* Elite analytics panel — visible to Elite users */}
         {isElite && (
           <section className="mock-hub-section mock-analytics-panel">
             <div className="mock-analytics-header">
               <span className="mock-analytics-elite-badge">Elite</span>
               <h2 className="mock-analytics-title">Mock Analytics</h2>
             </div>
-            {analyticsLoading && (
-              <p className="mock-analytics-loading">Loading analytics…</p>
-            )}
+            {analyticsLoading && <p className="mock-analytics-loading">Loading analytics…</p>}
             {!analyticsLoading && analytics && analytics.total_sessions > 0 && (
               <>
                 <p className="mock-analytics-summary">
@@ -573,6 +621,50 @@ export default function MockHub() {
           </section>
         )}
 
+        {/* Elite intelligence panel — teaser for Free and Pro users */}
+        {!isElite && (
+          <section className="mock-hub-section mock-elite-panel">
+            <div className="mock-elite-panel-header">
+              <span className="mock-analytics-elite-badge">Elite</span>
+              <h2 className="mock-elite-panel-title">
+                {isPro ? 'One step from Elite' : 'Sharper prep, session by session'}
+              </h2>
+            </div>
+            <p className="mock-elite-panel-desc">
+              {isPro
+                ? "You're on Pro. Upgrade to Elite for focus mode, session analytics, and a coaching debrief after every mock."
+                : 'Know exactly where you stand — before the interview room.'}
+            </p>
+            <ul className="mock-elite-features">
+              <li className="mock-elite-feature">
+                <span className="mock-elite-feature-name">Focus mode</span>
+                <span className="mock-elite-feature-desc">Target specific concepts — your session draws only from questions tagged with them.</span>
+              </li>
+              <li className="mock-elite-feature">
+                <span className="mock-elite-feature-name">Score trends</span>
+                <span className="mock-elite-feature-desc">See if you're improving session over session, across every track.</span>
+              </li>
+              <li className="mock-elite-feature">
+                <span className="mock-elite-feature-name">Concept breakdown</span>
+                <span className="mock-elite-feature-desc">Know exactly which topics are costing you before the real interview.</span>
+              </li>
+              <li className="mock-elite-feature">
+                <span className="mock-elite-feature-name">Coaching debrief</span>
+                <span className="mock-elite-feature-desc">One priority fix identified after every session — so you always know what to work on next.</span>
+              </li>
+              {!isPro && (
+                <li className="mock-elite-feature">
+                  <span className="mock-elite-feature-name">Unlimited sessions</span>
+                  <span className="mock-elite-feature-desc">No daily caps on any difficulty level.</span>
+                </li>
+              )}
+            </ul>
+            <div className="mock-elite-panel-cta">
+              <UpgradeButton tier="elite" label="Upgrade to Elite →" source="mock_elite_panel" />
+            </div>
+          </section>
+        )}
+
         {/* Recent sessions */}
         {!historyLoading && history.length > 0 && (
           <section className="mock-hub-section mock-hub-history">
@@ -580,13 +672,7 @@ export default function MockHub() {
             <table className="mock-history-table">
               <thead>
                 <tr>
-                  <th>Date</th>
-                  <th>Mode</th>
-                  <th>Track</th>
-                  <th>Difficulty</th>
-                  <th>Score</th>
-                  <th>Time</th>
-                  <th></th>
+                  <th>Date</th><th>Mode</th><th>Track</th><th>Difficulty</th><th>Score</th><th>Time</th><th></th>
                 </tr>
               </thead>
               <tbody>
@@ -595,11 +681,7 @@ export default function MockHub() {
                     <td>{formatDate(s.started_at)}</td>
                     <td>{s.mode}</td>
                     <td>{TRACK_LABELS[s.track] || s.track}</td>
-                    <td>
-                      {s.difficulty && (
-                        <span className={`badge badge-${s.difficulty}`}>{s.difficulty}</span>
-                      )}
-                    </td>
+                    <td>{s.difficulty && <span className={`badge badge-${s.difficulty}`}>{s.difficulty}</span>}</td>
                     <td>{s.solved_count}/{s.total_count}</td>
                     <td>{formatDuration(s.time_limit_s, null)}</td>
                     <td>
@@ -623,25 +705,27 @@ export default function MockHub() {
             </div>
           </section>
         )}
-      {showHelp && (
-        <div className="mock-help-overlay" role="dialog" aria-modal="true" aria-labelledby="mock-help-title">
-          <div className="mock-help-modal">
-            <div className="mock-help-modal-header">
-              <h2 id="mock-help-title">How mock interviews work</h2>
-              <button className="mock-help-close" onClick={() => setShowHelp(false)} aria-label="Close">✕</button>
+
+        {/* How it works modal */}
+        {showHelp && (
+          <div className="mock-help-overlay" role="dialog" aria-modal="true" aria-labelledby="mock-help-title">
+            <div className="mock-help-modal">
+              <div className="mock-help-modal-header">
+                <h2 id="mock-help-title">How mock interviews work</h2>
+                <button className="mock-help-close" onClick={() => setShowHelp(false)} aria-label="Close">✕</button>
+              </div>
+              <ol className="mock-help-steps">
+                <li>Choose mode — Quick (30 min, 2 questions), Full (60 min, 3 questions), or Custom.</li>
+                <li>Filter by role to see the tracks most relevant to your interview target, then pick a track and difficulty. Mixed draws from {MIXED_MOCK_TRACKS.map(s => TRACK_LABELS[s]).join(', ')} only.</li>
+                <li><strong>(Elite)</strong> Enable <strong>Focus mode</strong> to target specific concepts — your session draws from questions tagged with them.</li>
+                <li>During the session — a countdown timer runs. Write your answer and submit each question independently.</li>
+                <li>No solutions are revealed mid-session.</li>
+                <li>After finishing — you'll see your score, time used, and <strong>(Elite)</strong> a coaching debrief with concept weak-spots and a priority action.</li>
+                <li><strong>(Elite)</strong> Check your <strong>Mock analytics</strong> panel to track score trends and concept performance across all sessions.</li>
+              </ol>
             </div>
-            <ol className="mock-help-steps">
-              <li>Choose mode — Quick (30 min, 2 questions), Full (60 min, 3 questions), or Custom.</li>
-              <li>Pick your track (SQL, Python, Pandas, PySpark, or Mixed) and difficulty.</li>
-              <li><strong>(Elite)</strong> Optionally enable <strong>Focus mode</strong> to target specific concepts — your session draws from questions tagged with those concepts.</li>
-              <li>During the session — a countdown timer runs. Write your answer and submit each question independently.</li>
-              <li>No solutions are revealed mid-session.</li>
-              <li>After finishing — you'll see your score, time used, and (Elite) a coaching debrief with concept weak-spots and a priority action.</li>
-              <li><strong>(Elite)</strong> Check your <strong>Mock analytics</strong> panel to track score trends and concept performance across all sessions.</li>
-            </ol>
           </div>
-        </div>
-      )}
+        )}
       </main>
     </div>
   );

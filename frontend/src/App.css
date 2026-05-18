@@ -10390,6 +10390,135 @@ select {
   margin-left: auto;
 }
 
+/* ─── Mock role filter ───────────────────────────────────────────────────────── */
+.mock-role-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.mock-role-pill {
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border-radius: 99px;
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+.mock-role-pill:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.mock-role-pill.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* ─── Mock track / no-bank notes ─────────────────────────────────────────────── */
+.mock-track-note {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  padding: 0.5rem 0.75rem;
+  border-left: 2px solid var(--border);
+  margin-bottom: 0.25rem;
+}
+.mock-track-note--info {
+  color: var(--warning);
+  border-left-color: var(--warning);
+}
+
+/* ─── Focus mode locked state (non-Elite) ────────────────────────────────────── */
+.mock-focus-locked {
+  opacity: 0.7;
+}
+.mock-focus-locked-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.mock-focus-locked-check {
+  width: 1rem;
+  height: 1rem;
+  cursor: not-allowed;
+}
+.mock-focus-locked-label {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text-strong);
+}
+.mock-elite-badge-inline {
+  display: inline-block;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--accent);
+  color: #fff;
+  padding: 0.12rem 0.45rem;
+  border-radius: 4px;
+  vertical-align: middle;
+}
+.mock-focus-locked-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin: 0.35rem 0 0 1.5rem;
+}
+
+/* ─── Elite intelligence panel (teaser for non-Elite) ────────────────────────── */
+.mock-elite-panel {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+}
+.mock-elite-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+.mock-elite-panel-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-strong);
+}
+.mock-elite-panel-desc {
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  margin: 0 0 1.1rem;
+}
+.mock-elite-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+.mock-elite-feature {
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+  gap: 0.5rem;
+  font-size: 0.83rem;
+  align-items: baseline;
+}
+.mock-elite-feature-name {
+  font-weight: 600;
+  color: var(--text-strong);
+}
+.mock-elite-feature-desc {
+  color: var(--text-secondary);
+}
+.mock-elite-panel-cta {
+  margin-top: 0.25rem;
+}
+
 /* ─── Interview readiness score (Elite) ─────────────────────────────────────── */
 .readiness-badge {
   display: inline-flex;
