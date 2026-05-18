@@ -1,0 +1,12 @@
+{
+  "slug": "experimentation-starter",
+  "title": "Experimentation Starter",
+  "description": "Build the mental model for running valid A/B tests: how to state a hypothesis, choose the right randomization unit, define primary and guardrail metrics, interpret significance correctly, and understand the difference between Type I and Type II errors before you ever run an experiment.",
+  "topic": "experimentation",
+  "questions": [91001, 91002, 91004, 91007, 91010, 91012, 91015, 91018],
+  "tier": "free",
+  "role": "starter",
+  "focus_concepts": ["EXPERIMENT DESIGN", "HYPOTHESIS FORMULATION", "METRIC SELECTION", "STATISTICAL SIGNIFICANCE", "TYPE I AND TYPE II ERRORS", "A/B TEST MECHANICS"],
+  "outcomes": "You'll state a testable null and alternative hypothesis, choose between user-level and session-level randomization, distinguish primary metrics from guardrail metrics, interpret a p-value and confidence interval correctly, and explain why reducing Type II error costs statistical power.",
+  "recommended_after": []
+}

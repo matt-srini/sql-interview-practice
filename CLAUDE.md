@@ -48,12 +48,12 @@ Keep all five lenses active at once. The best decisions here satisfy all of them
 
 ## What this is
 
-A data interview practice platform covering eight tracks. Users write SQL or Python, answer MCQ questions, get instant feedback, and work through gated challenge banks.
+A data interview practice platform covering nine tracks. Users write SQL or Python, answer MCQ questions, get instant feedback, and work through gated challenge banks.
 
 **Modes per track:**
-- **Challenge mode** — plan-aware unlock rules, persistent progress, 676 practice questions across 8 tracks
-- **Mock mode** — 122 additional mock-only questions (Pro/Elite), never shown in practice catalog
-- **Sample mode** — 36 sandbox questions across SQL/Python/Pandas/PySpark (3 per track+difficulty), no progress recorded, no login required. Data Engineering, Data Modeling, Statistics, and ML Fundamentals samples are auto-sliced from the first 3 practice questions per difficulty (no dedicated sample IDs).
+- **Challenge mode** — plan-aware unlock rules, persistent progress, 756 practice questions across 9 tracks
+- **Mock mode** — 147 additional mock-only questions (Pro/Elite), never shown in practice catalog
+- **Sample mode** — 36 sandbox questions across SQL/Python/Pandas/PySpark (3 per track+difficulty), no progress recorded, no login required. Data Engineering, Data Modeling, Statistics, ML Fundamentals, and Experimentation samples are auto-sliced from the first 3 practice questions per difficulty (no dedicated sample IDs).
 
 **Tracks:**
 - **SQL** — 95 practice (32 easy / 34 medium / 29 hard) + 33 mock-only, DuckDB execution, realistic relational datasets
@@ -64,6 +64,7 @@ A data interview practice platform covering eight tracks. Users write SQL or Pyt
 - **Data Modeling** — 70 practice (25 easy / 25 medium / 20 hard), MCQ / scenario, no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
 - **Statistics** — 80 practice (28 easy / 28 medium / 24 hard), **dual-subtype**: each question is either `conceptual` (MCQ) or `numerical` (Python code execution); `eval_kind="mixed"`, `unlock_profile="code"`, `mixed_subtype=true`, `in_mixed_mock=false`
 - **ML Fundamentals** — 90 practice (30 easy / 35 medium / 25 hard) + 25 mock-only, MCQ / scenario / predict-output / debug, no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
+- **Experimentation** — 80 practice (30 easy / 30 medium / 20 hard) + 25 mock-only, MCQ / scenario / predict-output / debug, no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
 
 ---
 
@@ -96,14 +97,15 @@ Mock-only questions (`mock_only: true`) live in the same JSON files as practice 
 | Data Modeling | 25 + 0 | 25 + 0 | 20 + 0 | MCQ / scenario | `backend/content/data_modeling_questions/` |
 | Statistics | 28 + 0 | 28 + 0 | 24 + 0 | conceptual MCQ + numerical Python | `backend/content/statistics_questions/` |
 | ML Fundamentals | 30 + 0 | 35 + 12 | 25 + 13 | MCQ / scenario / predict-output / debug | `backend/content/ml_fundamentals_questions/` |
+| Experimentation | 30 + 0 | 30 + 12 | 20 + 13 | MCQ / scenario / predict-output / debug | `backend/content/experimentation_questions/` |
 
-**Practice totals:** SQL 95 · Python 83 · Pandas 76 · PySpark 102 · Data Engineering 80 · Data Modeling 70 · Statistics 80 · ML Fundamentals 90 = **676 practice questions**  
-**Mock-only totals:** SQL 33 · Python 20 · Pandas 24 · PySpark 20 · ML Fundamentals 25 = **122 mock-only questions** (Pro/Elite only; Statistics has no mock-only questions at launch)
+**Practice totals:** SQL 95 · Python 83 · Pandas 76 · PySpark 102 · Data Engineering 80 · Data Modeling 70 · Statistics 80 · ML Fundamentals 90 · Experimentation 80 = **756 practice questions**  
+**Mock-only totals:** SQL 33 · Python 20 · Pandas 24 · PySpark 20 · ML Fundamentals 25 · Experimentation 25 = **147 mock-only questions** (Pro/Elite only; Statistics and Data Engineering and Data Modeling have no mock-only questions at launch)
 
 See [docs/content-authoring.md](docs/content-authoring.md) for the full mock-only authoring spec.
 
-- **Sample questions:** SQL/Python/Pandas/PySpark: 3 per track × 3 difficulties = 36 total. Data Engineering, Data Modeling, Statistics, and ML Fundamentals samples are auto-sliced from the first 3 practice questions per difficulty (no dedicated IDs).
-- **Learning paths:** 34 total — SQL: 7, Python: 5, Pandas: 5, PySpark: 5, Data Engineering: 2, Data Modeling: 4, Statistics: 2, ML Fundamentals: 4 (each track has exactly one `starter` and one `intermediate` free shortcut path; additional paths are advanced, mixed free/pro)
+- **Sample questions:** SQL/Python/Pandas/PySpark: 3 per track × 3 difficulties = 36 total. Data Engineering, Data Modeling, Statistics, ML Fundamentals, and Experimentation samples are auto-sliced from the first 3 practice questions per difficulty (no dedicated IDs).
+- **Learning paths:** 38 total — SQL: 7, Python: 5, Pandas: 5, PySpark: 5, Data Engineering: 2, Data Modeling: 4, Statistics: 2, ML Fundamentals: 4, Experimentation: 4 (each track has exactly one `starter` and one `intermediate` free shortcut path; additional paths are advanced, mixed free/pro)
 - Every question has `hints` (currently 1–3 entries across the bank; new content should target the active hint ladder) and `concepts` (semantic pattern tags surfaced as pills)
 - SQL questions have a `companies` field (`["Meta", "Stripe", ...]`) used for the company filter in SidebarNav
 - SQL schemas validated against committed CSV headers at catalog load time
@@ -142,6 +144,7 @@ sql-interview-practice/
 │   ├── data_modeling_questions.py  # Data Modeling catalog loader
 │   ├── statistics_questions.py     # Statistics dual-subtype catalog loader (conceptual + numerical)
 │   ├── ml_fundamentals_questions.py # ML Fundamentals catalog loader (MCQ / scenario / predict-output / debug)
+│   ├── experimentation_questions.py # Experimentation catalog loader (MCQ / scenario / predict-output / debug)
 │   ├── path_loader.py              # Learning path catalog loader (reads content/paths/*.json)
 │   ├── sql_guard.py                # Read-only SQL validation
 │   ├── python_guard.py             # AST-based Python code validator
@@ -225,7 +228,7 @@ sql-interview-practice/
 /questions/:id                 → redirect → /practice/sql/questions/:id (legacy)
 ```
 
-`:topic` values: `sql` | `python` | `python-data` | `pyspark` | `data-engineering` | `data-modeling` | `statistics` | `ml-fundamentals`
+`:topic` values: `sql` | `python` | `python-data` | `pyspark` | `data-engineering` | `data-modeling` | `statistics` | `ml-fundamentals` | `experimentation`
 
 ---
 
@@ -295,7 +298,7 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 
 **Fonts:** Inter (UI), JetBrains Mono (editor/code), Geist Mono (showcase animation only).
 
-**Track colors are fixed** (not overridden by theme changes) — SQL `#5B6AF0`, Python `#2D9E6B`, Pandas `#C47F17`, PySpark `#D94F3D`, DE `#B9762B`, Data Modeling `#3F8E8C`, Statistics `#7A5AF0`, ML Fundamentals `#E0456A`.
+**Track colors are fixed** (not overridden by theme changes) — SQL `#5B6AF0`, Python `#2D9E6B`, Pandas `#C47F17`, PySpark `#D94F3D`, DE `#B9762B`, Data Modeling `#3F8E8C`, Statistics `#7A5AF0`, ML Fundamentals `#E0456A`, Experimentation `#0EA5E9`.
 
 ---
 

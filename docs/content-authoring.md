@@ -57,9 +57,10 @@ datathink is **FAANG-level interview preparation**, not a syntax tutorial. The s
 | Data Modeling | 25 | 25 | 20 | **70** | MCQ / scenario, evaluated by option selection |
 | Statistics | 28 | 28 | 24 | **80** | Dual-subtype: conceptual MCQ or numerical Python code |
 | ML Fundamentals | 30 | 35 | 25 | **90** | MCQ / scenario / predict-output / debug, evaluated by option selection |
-| **Total** | **235** | **250** | **191** | **676** | |
+| Experimentation | 30 | 30 | 20 | **80** | MCQ / scenario / predict-output / debug, evaluated by option selection |
+| **Total** | **265** | **280** | **211** | **756** | |
 
-Sample questions (no login, no progress): 3 per track × 3 difficulties = 9 per track = **36 total** (SQL/Python/Pandas/PySpark only; DE, DM, Statistics, and ML Fundamentals samples auto-sliced from catalog).
+Sample questions (no login, no progress): 3 per track × 3 difficulties = 9 per track = **36 total** (SQL/Python/Pandas/PySpark only; DE, DM, Statistics, ML Fundamentals, and Experimentation samples auto-sliced from catalog).
 
 ### Learning paths (curated sequences)
 
@@ -73,11 +74,12 @@ Sample questions (no login, no progress): 3 per track × 3 difficulties = 9 per 
 | Data Modeling | 4 | `starter` "Schema Design Basics" (free) · `intermediate` "Dimensional Modeling Deep Dive" (pro) · "Normalization & Referential Integrity" (free) · "dbt & Modern Analytics Modeling" (pro) |
 | Statistics | 2 | `starter` "Stats for Analysts" (free) · `intermediate` "Experimental Design & Inference" (pro) |
 | ML Fundamentals | 4 | `starter` "ML Fundamentals Starter" (free) · `intermediate` "Model Evaluation & Validation" (free) · "Production ML & Model Monitoring" (pro) · "Advanced ML Methods" (pro) |
-| **Total** | **34** | |
+| Experimentation | 4 | `starter` "Experimentation Starter" (free) · `intermediate` "Experiment Design & Power" (free) · "Variance Reduction & Behavioral Effects" (pro) · "Causal Inference & Advanced Experimentation" (pro) |
+| **Total** | **38** | |
 
 Authoring constraints for path files in `backend/content/paths/`:
 - Required fields: `slug`, `title`, `description`, `topic`, `questions`, `tier`, `role`
-- `topic` must be one of: `sql`, `python`, `python-data`, `pyspark`, `data-engineering`, `data-modeling`, `statistics`, `ml-fundamentals`
+- `topic` must be one of: `sql`, `python`, `python-data`, `pyspark`, `data-engineering`, `data-modeling`, `statistics`, `ml-fundamentals`, `experimentation`
 - `tier` must be `free` or `pro`
 - `role` must be `starter`, `intermediate`, or `advanced`
 - Exactly one `starter` and one `intermediate` path per track (used by unlock shortcuts)
@@ -226,6 +228,31 @@ This is a **dual-subtype** track. Each question has `"subtype": "conceptual"` (M
 - Allowed `type` values: `"mcq"`, `"scenario"`, `"predict_output"`, `"debug"`
 - ID ranges: easy 81001–81030 (practice), medium 82001–82035 (practice) + 82036–82047 (mock), hard 83001–83025 (practice) + 83026–83038 (mock)
 
+### Experimentation — concepts covered
+
+| Tier | Concepts |
+|---|---|
+| Easy | EXPERIMENT DESIGN, HYPOTHESIS FORMULATION, STATISTICAL SIGNIFICANCE, TYPE I AND TYPE II ERRORS, METRIC SELECTION, A/B TEST MECHANICS, STATISTICAL POWER, CONFIDENCE INTERVALS, SAMPLE SIZE BASICS |
+| Medium | MULTIPLE TESTING, SAMPLE RATIO MISMATCH, NOVELTY EFFECTS, STATISTICAL POWER, VARIANCE REDUCTION, NETWORK EFFECTS, SEGMENTATION ANALYSIS, EXPERIMENT DURATION, METRIC SELECTION |
+| Hard | CAUSAL INFERENCE, SWITCHBACK EXPERIMENTS, BAYESIAN EXPERIMENTATION, MULTI-ARMED BANDIT, HOLDOUT GROUPS, NETWORK EFFECTS, QUASI-EXPERIMENTAL METHODS, VARIANCE REDUCTION |
+
+**Concept families for `experimentation`** (used in concept pills and insights engine):
+
+`EXPERIMENT DESIGN` · `HYPOTHESIS FORMULATION` · `STATISTICAL SIGNIFICANCE` · `TYPE I AND TYPE II ERRORS` · `METRIC SELECTION` · `A/B TEST MECHANICS` · `STATISTICAL POWER` · `CONFIDENCE INTERVALS` · `SAMPLE SIZE BASICS` · `MULTIPLE TESTING` · `SAMPLE RATIO MISMATCH` · `NOVELTY EFFECTS` · `NETWORK EFFECTS` · `VARIANCE REDUCTION` · `SEGMENTATION ANALYSIS` · `EXPERIMENT DURATION` · `CAUSAL INFERENCE` · `BAYESIAN EXPERIMENTATION` · `SWITCHBACK EXPERIMENTS` · `MULTI-ARMED BANDIT` · `HOLDOUT GROUPS` · `QUASI-EXPERIMENTAL METHODS`
+
+**Concept blocklist for `experimentation`** (too vague or belongs in Statistics track — validator rejects these as concept tags):
+`a/b test`, `control group`, `treatment group`, `randomization`, `p-value`, `null hypothesis`, `alpha`, `beta`, `bootstrap`, `permutation test`, `z-test`, `t-test`, `chi-square`, `sample size`, `significance`
+
+**First-hint leak patterns for `experimentation`** (forbidden in first hint):
+`cuped`, `sample ratio mismatch`, `bonferroni`, `benjamini-hochberg`, `holm`, `switchback`, `difference-in-differences`, `regression discontinuity`, `thompson sampling`, `novelty effect`, `sutva`
+
+**Schema rules for Experimentation question JSON:**
+- All questions: `id`, `order`, `topic`, `type`, `difficulty`, `title`, `description`, `options` (4 strings), `correct_option` (int 0–3), `explanation`, `hints`, `concepts`
+- Optional: `code_snippet` (string), `scenario_context` (string), `mock_only` (bool, default false)
+- Allowed `type` values: `"mcq"`, `"scenario"`, `"predict_output"`, `"debug"`
+- Hint counts: easy = 1, medium = 2, hard = 2
+- ID ranges: easy 91001–91030 (practice), medium 92001–92030 (practice) + 92031–92042 (mock), hard 93001–93020 (practice) + 93021–93033 (mock)
+
 ---
 
 ## Question ID & Numbering Strategy (authoritative — no deviation)
@@ -254,9 +281,9 @@ Examples: `11005` = SQL easy #5 · `42017` = PySpark medium #17 · `53004` = Dat
 | Data Modeling | 6 | 61001–61999 | 62001–62999 | 63001–63999 |
 | Statistics | 7 | 71001–71999 | 72001–72999 | 73001–73999 |
 | ML Fundamentals | 8 | 81001–81999 | 82001–82999 | 83001–83999 |
-| Experimentation (planned) | 9 | 91001–91999 | 92001–92999 | 93001–93999 |
+| Experimentation | 9 | 91001–91999 | 92001–92999 | 93001–93999 |
 
-T digits 8–9 are reserved for the next two planned tracks. New tracks beyond T9 are not yet spec'd — revisit the T assignment table when that time comes.
+All T digits 1–9 are now allocated. New tracks beyond T9 are not yet spec'd — revisit the T assignment table when that time comes.
 
 ### Practice vs mock-only allocation
 
@@ -271,6 +298,7 @@ Verified current allocation for existing tracks:
 | Pandas | 31001–31022 (22p) | 32001–32031 (31p) · 32032–32041 (10m) | 33001–33023 (23p) · 33024–33037 (14m) |
 | PySpark | 41001–41038 (38p) | 42001–42038 (38p) · 42039–42048 (10m) | 43001–43026 (26p) · 43027–43036 (10m) |
 | ML Fundamentals | 81001–81030 (30p) | 82001–82035 (35p) · 82036–82047 (12m) | 83001–83025 (25p) · 83026–83038 (13m) |
+| Experimentation | 91001–91030 (30p) | 92001–92030 (30p) · 92031–92042 (12m) | 93001–93020 (20p) · 93021–93033 (13m) |
 
 ### SQL sample IDs (3-digit, SQL only)
 

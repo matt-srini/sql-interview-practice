@@ -121,10 +121,9 @@ export const TRACK_META = {
     hasRunCode: false,
     hasMCQ: true,
     mixedSubtype: false,
-    totalQuestions: 0,
+    totalQuestions: 80,
     easyQuestions: 30,
     tagline: 'MCQ · scenario · experiment design',
-    comingSoon: true,
   },
 };
 

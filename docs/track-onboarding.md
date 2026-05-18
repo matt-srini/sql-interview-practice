@@ -483,7 +483,7 @@ Run every item before pushing the launch commit.
 | 6 | Data Modeling | `data-modeling` | Live |
 | 7 | Statistics | `statistics` | Live |
 | 8 | ML Fundamentals | `ml-fundamentals` | Live |
-| 9 | Experimentation | `experimentation` | Planned |
+| 9 | Experimentation | `experimentation` | Live |
 
 ---
 
