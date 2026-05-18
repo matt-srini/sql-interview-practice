@@ -5,9 +5,7 @@ import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { TRACK_META } from '../contexts/TopicContext';
 import { TRACK_SLUGS, TRACK_LABELS } from '../trackRegistry';
-import TrackProgressBar from '../components/TrackProgressBar';
 import Topbar from '../components/Topbar';
-import InsightStrip from '../components/InsightStrip';
 import Skeleton from '../components/Skeleton';
 import UpgradeButton from '../components/UpgradeButton';
 
@@ -23,11 +21,44 @@ function formatRelativeTime(isoString) {
   return `${days}d ago`;
 }
 
-function formatMockTime(s) {
-  if (s == null) return '—';
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+function formatDateLabel(isoString) {
+  if (!isoString) return '';
+  const d = new Date(isoString);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const itemDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diffDays = Math.round((today - itemDate) / 86400000);
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function groupActivityByDate(items) {
+  const groups = [];
+  let currentLabel = null;
+  for (const item of items) {
+    const label = formatDateLabel(item.solved_at);
+    if (label !== currentLabel) {
+      groups.push({ label, items: [item] });
+      currentLabel = label;
+    } else {
+      groups[groups.length - 1].items.push(item);
+    }
+  }
+  return groups;
+}
+
+function AccuracyBar({ pct, color }) {
+  const clampedPct = Math.max(0, Math.min(100, Math.round(pct * 100)));
+  const barColor = clampedPct < 40 ? 'var(--danger)' : clampedPct < 65 ? 'var(--warning)' : 'var(--success)';
+  return (
+    <div className="db-accuracy-bar-wrap">
+      <div className="db-accuracy-bar-track">
+        <div className="db-accuracy-bar-fill" style={{ width: `${clampedPct}%`, background: barColor }} />
+      </div>
+      <span className="db-accuracy-bar-label" style={{ color: barColor }}>{clampedPct}%</span>
+    </div>
+  );
 }
 
 function ReadinessModal({ onClose }) {
@@ -39,13 +70,7 @@ function ReadinessModal({ onClose }) {
 
   return (
     <div className="readiness-modal-backdrop" onClick={onClose} role="presentation">
-      <div
-        className="readiness-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Interview Readiness Score"
-        onClick={e => e.stopPropagation()}
-      >
+      <div className="readiness-modal" role="dialog" aria-modal="true" aria-label="Interview Readiness Score" onClick={e => e.stopPropagation()}>
         <div className="readiness-modal-header">
           <div>
             <span className="readiness-modal-kicker">Elite feature</span>
@@ -53,44 +78,32 @@ function ReadinessModal({ onClose }) {
           </div>
           <button className="readiness-modal-close" onClick={onClose} aria-label="Close">×</button>
         </div>
-
         <p className="readiness-modal-desc">
           A <strong>0–100 score per track</strong> that tells you how interview-ready you are right now — updated after every practice session and mock.
         </p>
-
         <div className="readiness-modal-signals">
-          <div className="readiness-modal-signal">
-            <span className="readiness-signal-dot" />
-            <div>
-              <span className="readiness-signal-label">Practice coverage</span>
-              <p className="readiness-signal-desc">How broadly you&rsquo;ve solved across easy, medium, and hard difficulties in this track.</p>
+          {[
+            { label: 'Practice coverage', desc: "How broadly you've solved across easy, medium, and hard difficulties in this track." },
+            { label: 'Mock accuracy', desc: 'Your accuracy under timed mock interview conditions — weighted toward recent sessions.' },
+            { label: 'Concept strength', desc: 'Accuracy across the concept tags in this track — surfaces gaps in specific areas.' },
+          ].map(s => (
+            <div key={s.label} className="readiness-modal-signal">
+              <span className="readiness-signal-dot" />
+              <div>
+                <span className="readiness-signal-label">{s.label}</span>
+                <p className="readiness-signal-desc">{s.desc}</p>
+              </div>
             </div>
-          </div>
-          <div className="readiness-modal-signal">
-            <span className="readiness-signal-dot" />
-            <div>
-              <span className="readiness-signal-label">Mock accuracy</span>
-              <p className="readiness-signal-desc">Your accuracy under timed mock interview conditions — weighted toward recent sessions.</p>
-            </div>
-          </div>
-          <div className="readiness-modal-signal">
-            <span className="readiness-signal-dot" />
-            <div>
-              <span className="readiness-signal-label">Concept strength</span>
-              <p className="readiness-signal-desc">Accuracy across the concept tags in this track — surfaces gaps in specific areas.</p>
-            </div>
-          </div>
+          ))}
         </div>
-
         <div className="readiness-modal-labels">
           {['Beginner', 'Developing', 'Proficient', 'Strong', 'Expert'].map(label => (
             <span key={label} className="readiness-label-chip">{label}</span>
           ))}
         </div>
-
         <div className="readiness-modal-footer">
           <p className="readiness-modal-upgrade-copy">
-            Upgrade to Elite to unlock readiness scores across all four tracks, plus your personalised study plan and top weak-area coaching.
+            Upgrade to Elite to unlock readiness scores across all tracks, plus your personalised study plan and top weak-area coaching.
           </p>
           <UpgradeButton tier="elite" source="dashboard_readiness_modal" successPath="/?upgraded=true" />
         </div>
@@ -105,6 +118,7 @@ export default function ProgressDashboard() {
   const rawPlan = user?.plan ?? 'free';
   const normalisedPlan = rawPlan.startsWith('lifetime_') ? rawPlan.replace('lifetime_', '') : rawPlan;
   const isPaying = normalisedPlan === 'pro' || normalisedPlan === 'elite';
+  const isElite = normalisedPlan === 'elite';
   const planLabel =
     rawPlan === 'lifetime_elite' ? 'Lifetime Elite' :
     rawPlan === 'lifetime_pro'   ? 'Lifetime Pro'   :
@@ -113,6 +127,7 @@ export default function ProgressDashboard() {
   const planPillNode = user && isPaying && planLabel
     ? <span className={`shell-pill shell-pill-plan shell-pill-plan-${normalisedPlan}`}>{planLabel}</span>
     : null;
+
   const [data, setData] = useState(null);
   const [insights, setInsights] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -120,11 +135,9 @@ export default function ProgressDashboard() {
   const [mockHistory, setMockHistory] = useState([]);
   const [readinessModalOpen, setReadinessModalOpen] = useState(false);
 
-  // Auto-open the readiness modal when returning from auth with upgrade intent
   useEffect(() => {
     if (location.state?.upgradeTier === 'elite') {
       setReadinessModalOpen(true);
-      // Replace history state so a refresh doesn't re-trigger the modal
       window.history.replaceState({}, '', location.pathname);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -135,334 +148,421 @@ export default function ProgressDashboard() {
 
     setLoading(true);
     setError(null);
-    api
-      .get('/dashboard')
-      .then((res) => setData(res.data))
+    api.get('/dashboard')
+      .then(res => setData(res.data))
       .catch(() => setError('Failed to load dashboard data.'))
       .finally(() => setLoading(false));
 
-    api
-      .get('/dashboard/insights')
-      .then((res) => setInsights(res.data))
-      .catch(() => setInsights(null));
-
-    api.get('/mock/history')
-      .then(r => setMockHistory(r.data.slice(0, 5)))
-      .catch(() => {});
+    api.get('/dashboard/insights').then(res => setInsights(res.data)).catch(() => {});
+    api.get('/mock/history').then(r => setMockHistory(r.data.slice(0, 5))).catch(() => {});
   }, [authLoading, user]);
 
-  const isElite = user?.plan === 'elite' || user?.plan === 'lifetime_elite';
+  const totalSolved = TRACK_SLUGS.reduce((sum, topic) => sum + (data?.tracks?.[topic]?.solved ?? 0), 0);
+  const totalAccuracy = (() => {
+    const values = TRACK_SLUGS
+      .map(t => insights?.per_track?.[t]?.accuracy_pct)
+      .filter(v => typeof v === 'number');
+    if (!values.length) return null;
+    return values.reduce((a, b) => a + b, 0) / values.length;
+  })();
+  const streakDays = insights?.streak_days ?? 0;
 
-  const totalSolved = TRACK_SLUGS.reduce((sum, topic) => {
-    const trackData = data?.tracks?.[topic];
-    return sum + (trackData?.solved ?? 0);
-  }, 0);
   const showDashboardEmpty = !loading && !error && totalSolved === 0;
+
+  const greeting = (() => {
+    const name = user?.name?.split(' ')?.[0] || null;
+    const hr = new Date().getHours();
+    const tod = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+    return name ? `${tod}, ${name}` : tod;
+  })();
 
   return (
     <>
       <Helmet>
         <title>My Progress — datathink</title>
-        <meta name="description" content="Track your SQL, Python, Pandas, and PySpark interview practice progress, streaks, and coaching insights." />
+        <meta name="description" content="Track your interview practice progress, streaks, and coaching insights." />
         <meta name="robots" content="noindex" />
       </Helmet>
       <Topbar active="dashboard" userExtras={planPillNode} />
 
-      <main className="container dashboard-page">
-        <div className="dashboard-heading">
-          <h2 className="page-title">My Progress</h2>
-          {user && <p className="page-subtitle">{user.name || user.email}</p>}
-        </div>
+      <main className="container db-page">
 
         {loading && (
-          <div className="dashboard-loading" aria-label="Loading dashboard">
-            <p className="loading">Loading dashboard…</p>
-            <Skeleton width="10rem" height="0.95rem" />
-            <div className="dashboard-loading-strip">
-              <Skeleton height="7rem" />
-              <Skeleton height="7rem" />
-              <Skeleton height="7rem" />
+          <div className="db-loading" aria-label="Loading dashboard">
+            <Skeleton width="14rem" height="1.8rem" style={{ marginBottom: '0.5rem' }} />
+            <Skeleton width="22rem" height="1rem" />
+            <div className="db-hero-stats-skeleton">
+              <Skeleton height="5.5rem" />
+              <Skeleton height="5.5rem" />
+              <Skeleton height="5.5rem" />
             </div>
-            <Skeleton width="100%" height="15rem" />
+            <Skeleton height="12rem" />
+            <Skeleton height="28rem" />
           </div>
         )}
+
         {!authLoading && !user && (
-          <div className="dashboard-empty-state">
-            <p className="dashboard-empty-copy">
-              Sign in to track your progress, streaks, and coaching insights across all tracks.
-            </p>
-            <div className="dashboard-empty-actions">
+          <div className="db-empty-state">
+            <p className="db-empty-copy">Sign in to track your progress, streaks, and coaching insights across all tracks.</p>
+            <div className="db-empty-actions">
               <Link to="/auth" className="btn btn-primary">Sign in</Link>
               <Link to="/practice/sql" className="btn btn-secondary">Start practising</Link>
             </div>
           </div>
         )}
+
         {error && <p className="error-box">{error}</p>}
 
-        {!loading && !error && (
+        {!loading && !error && user && (
           <>
+            {/* PAGE HEADER */}
+            <header className="db-header">
+              <div className="db-header-text">
+                <h1 className="db-greeting">{greeting}</h1>
+                {totalSolved > 0 && (
+                  <p className="db-subline">
+                    {totalSolved} question{totalSolved !== 1 ? 's' : ''} solved across {TRACK_SLUGS.filter(t => (data?.tracks?.[t]?.solved ?? 0) > 0).length} tracks
+                  </p>
+                )}
+              </div>
+            </header>
+
             {showDashboardEmpty ? (
-              <section className="dashboard-section dashboard-empty-state">
-                <h3 className="dashboard-section-title">No progress yet</h3>
-                <p className="dashboard-empty-copy">
-                  Start solving questions across any track — once you have some history, your personalised study plan, readiness scores, and concept coaching will appear here.
-                </p>
-                <div className="dashboard-empty-actions">
+              <section className="db-empty-state">
+                <div className="db-empty-icon">📊</div>
+                <h3 className="db-empty-title">No progress yet</h3>
+                <p className="db-empty-copy">Start solving questions — your personalised study plan, readiness scores, and coaching will appear here.</p>
+                <div className="db-empty-actions">
                   <Link to="/practice/sql" className="btn btn-primary">Start SQL practice</Link>
                   <Link to="/learn" className="btn btn-secondary">Browse learning paths</Link>
                 </div>
               </section>
             ) : (
               <>
-                {/* Personalised study plan — Elite */}
-                {isElite && insights?.study_plan?.length > 0 ? (
-                  <section className="dashboard-section study-plan-section">
-                    <div className="study-plan-header">
-                      <span className="study-plan-badge">Elite</span>
-                      <h3 className="study-plan-title">Your study plan</h3>
-                      <p className="study-plan-subtitle">Personalised for where you are right now.</p>
-                    </div>
-                    <ol className="study-plan-list">
-                      {insights.study_plan.map((step, i) => {
-                        const typeLabel = {
-                          concept_drill: 'Drill concept',
-                          learning_path: 'Learning path',
-                          mock_session: 'Run a mock',
-                          practice_hard: 'Practice hard',
-                        }[step.type] ?? step.type;
-                        return (
-                          <li key={i} className={`study-plan-step study-plan-step--${step.type}`}>
-                            <div className="study-plan-step-meta">
-                              <span className="study-plan-step-number">{i + 1}</span>
-                              <span className="study-plan-step-type">{typeLabel}</span>
-                            </div>
-                            <div className="study-plan-step-body">
-                              <p className="study-plan-step-title">{step.title}</p>
-                              <p className="study-plan-step-desc">{step.description}</p>
-                            </div>
-                            <Link to={step.cta_href} className="study-plan-step-cta">{step.cta_label}</Link>
-                          </li>
-                        );
-                      })}
-                    </ol>
-                  </section>
-                ) : !isElite ? (
-                  <section className="dashboard-section study-plan-section study-plan-section--locked">
-                    <div className="study-plan-header">
-                      <h3 className="study-plan-title">Your study plan</h3>
-                      <p className="study-plan-subtitle">
-                        Unlock a personalised next-steps plan based on your weak areas, practice gaps, and mock performance.
-                      </p>
-                      <UpgradeButton tier="elite" source="dashboard_study_plan" successPath="/?upgraded=true" compact />
-                    </div>
-                  </section>
-                ) : null}
+                {/* HERO STATS */}
+                <div className="db-hero-stats">
+                  <div className="db-hero-stat">
+                    <span className="db-hero-stat-value">{totalSolved}</span>
+                    <span className="db-hero-stat-label">Questions solved</span>
+                  </div>
+                  <div className="db-hero-stat">
+                    <span className="db-hero-stat-value">{streakDays}<span className="db-hero-stat-unit">d</span></span>
+                    <span className="db-hero-stat-label">
+                      {user?.streak_at_risk ? <span className="db-streak-at-risk">Streak at risk ⚡</span> : 'Current streak'}
+                    </span>
+                  </div>
+                  <div className="db-hero-stat">
+                    <span className="db-hero-stat-value">
+                      {totalAccuracy !== null ? `${Math.round(totalAccuracy * 100)}%` : '—'}
+                    </span>
+                    <span className="db-hero-stat-label">Avg. accuracy</span>
+                  </div>
+                </div>
 
-                <InsightStrip insights={insights} />
-                {isElite && insights?.weakest_concepts?.length > 0 && (
-                  <section className="dashboard-section dashboard-elite-panel">
-                    <div className="dashboard-elite-panel-header">
-                      <h3 className="dashboard-section-title">Top Weak Areas</h3>
-                      <span className="dashboard-elite-badge">Elite</span>
-                    </div>
-                    <div className="dashboard-elite-concepts">
-                      {insights.weakest_concepts.slice(0, 3).map((item, i) => (
-                        <div key={i} className="dashboard-elite-concept-row">
-                          <div className="dashboard-elite-concept-top">
-                            <span className="dashboard-elite-concept-name">{item.concept}</span>
-                            <span className="dashboard-elite-concept-track">{TRACK_LABELS[item.track] ?? item.track}</span>
-                            <span className="dashboard-elite-concept-accuracy">
-                              {Math.round(item.accuracy_pct * 100)}% accuracy · {item.attempts} attempt{item.attempts !== 1 ? 's' : ''}
-                            </span>
-                          </div>
-                          {item.summary && (
-                            <p className="dashboard-elite-concept-summary">{item.summary}</p>
-                          )}
-                          <div className="dashboard-elite-concept-links">
-                            {item.recommended_path_slug && (
-                              <Link
-                                to={`/learn/${item.track}/${item.recommended_path_slug}`}
-                                className="dashboard-insight-link"
-                              >
-                                {item.recommended_path_title ?? 'Practice path'} →
-                              </Link>
-                            )}
-                            {item.recommended_question_ids?.length > 0 && (
-                              <Link
-                                to={`/practice/${item.track}/questions/${item.recommended_question_ids[0]}`}
-                                className="dashboard-insight-link--secondary"
-                              >
-                                Drill question →
-                              </Link>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-                )}
-              </>
-            )}
+                {/* FOCUS CARD */}
+                {(() => {
+                  let focusTitle = null;
+                  let focusHref = null;
+                  let focusCtaLabel = 'Go →';
+                  let focusSubline = null;
 
-            <div className="dashboard-split">
-              <div className="dashboard-split-main">
-                <section className="dashboard-section">
-                  <h3 className="dashboard-section-title">Track Overview</h3>
-                  <div className="dashboard-track-grid">
-                    {TRACK_SLUGS.map((topic) => {
+                  if (isElite && insights?.study_plan?.length > 0) {
+                    const step = insights.study_plan[0];
+                    focusTitle = step.title;
+                    focusHref = step.cta_href;
+                    focusCtaLabel = step.cta_label ?? 'Go →';
+                    focusSubline = step.description;
+                  } else if (isPaying && insights?.weakest_concepts?.length > 0) {
+                    const w = insights.weakest_concepts[0];
+                    const trackLabel = TRACK_LABELS[w.track] || w.track;
+                    focusTitle = `Drill ${w.concept}`;
+                    focusHref = `/practice/${w.track}?concepts=${encodeURIComponent(w.concept)}`;
+                    focusSubline = `Your weakest concept in ${trackLabel} — ${Math.round(w.accuracy_pct * 100)}% accuracy across ${w.attempts} attempts`;
+                  } else if (insights?.cross_track_insight) {
+                    focusTitle = 'Coaching insight';
+                    focusSubline = insights.cross_track_insight;
+                    const trackWithActivity = TRACK_SLUGS.find(t => (data?.tracks?.[t]?.solved ?? 0) > 0);
+                    focusHref = trackWithActivity ? `/practice/${trackWithActivity}` : '/practice/sql';
+                    focusCtaLabel = 'Continue practice →';
+                  }
+
+                  if (!focusTitle && !focusSubline) return null;
+
+                  return (
+                    <div className="db-focus-card">
+                      <div className="db-focus-content">
+                        {focusTitle && <p className="db-focus-title">{focusTitle}</p>}
+                        {focusSubline && <p className="db-focus-subline">{focusSubline}</p>}
+                      </div>
+                      {focusHref && (
+                        <Link to={focusHref} className="db-focus-cta">{focusCtaLabel}</Link>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {/* TRACK OVERVIEW */}
+                <section className="db-section">
+                  <h2 className="db-section-title">Track overview</h2>
+                  <div className="db-track-table">
+                    {TRACK_SLUGS.map(topic => {
                       const meta = TRACK_META[topic];
                       const trackData = data?.tracks?.[topic];
                       const solved = trackData?.solved ?? 0;
                       const total = trackData?.total ?? meta.totalQuestions;
-                      const byDiff = trackData?.by_difficulty ?? {};
+                      const pct = total > 0 ? solved / total : 0;
+                      const accuracy = insights?.per_track?.[topic]?.accuracy_pct;
+                      const medianSecs = insights?.per_track?.[topic]?.median_solve_seconds;
+                      const readiness = isElite ? insights?.readiness_scores?.[topic] : null;
 
                       return (
-                        <Link key={topic} className="dashboard-track-card" to={`/practice/${topic}`}>
-                          <div className="dashboard-track-card-header" style={{ borderTopColor: meta.color }}>
-                            <span className="dashboard-track-label">{meta.label}</span>
-                            <span className="dashboard-track-tagline">{meta.tagline}</span>
+                        <Link key={topic} to={`/practice/${topic}`} className="db-track-row">
+                          <span className="db-track-dot" style={{ background: meta.color }} />
+                          <div className="db-track-name-col">
+                            <span className="db-track-name">{meta.label}</span>
+                            <span className="db-track-tagline">{meta.tagline}</span>
                           </div>
-                          <div className="dashboard-track-card-body">
-                            <TrackProgressBar solved={solved} total={total} color={meta.color} />
-                            <div className="dashboard-track-metrics">
-                              <div className="dashboard-track-metric-row">
-                                <span>Median solve time</span>
-                                <strong>
-                                  {typeof insights?.per_track?.[topic]?.median_solve_seconds === 'number'
-                                    ? `${Math.round(insights.per_track[topic].median_solve_seconds / 60)} min`
-                                    : '—'}
-                                </strong>
-                              </div>
-                              <div className="dashboard-track-metric-row">
-                                <span>Accuracy</span>
-                                <strong>
-                                  {typeof insights?.per_track?.[topic]?.accuracy_pct === 'number'
-                                    ? `${Math.round(insights.per_track[topic].accuracy_pct * 100)}%`
-                                    : '—'}
-                                </strong>
-                              </div>
+                          <div className="db-track-bar-col">
+                            <div className="db-track-progress-bar">
+                              <div className="db-track-progress-fill" style={{ width: `${pct * 100}%`, background: meta.color }} />
                             </div>
-                            {Object.entries(byDiff).length > 0 && (
-                              <div className="dashboard-diff-breakdown">
-                                {Object.entries(byDiff).map(([diff, counts]) => (
-                                  <div key={diff} className="dashboard-diff-row">
-                                    <span className={`badge badge-${diff}`}>{diff}</span>
-                                    <span className="dashboard-diff-count">{counts.solved}/{counts.total}</span>
-                                  </div>
-                                ))}
-                              </div>
+                            <span className="db-track-count">{solved}/{total}</span>
+                          </div>
+                          <div className="db-track-stats-col">
+                            {typeof accuracy === 'number' ? (
+                              <span className="db-track-accuracy" style={{ color: accuracy < 0.4 ? 'var(--danger)' : accuracy < 0.65 ? 'var(--warning)' : 'var(--success)' }}>
+                                {Math.round(accuracy * 100)}% acc
+                              </span>
+                            ) : <span className="db-track-accuracy db-track-accuracy--muted">—</span>}
+                            {typeof medianSecs === 'number' && medianSecs > 0 && (
+                              <span className="db-track-time">{Math.round(medianSecs / 60)} min</span>
                             )}
-                            {/* Readiness badge — Elite */}
-                            {isElite && insights?.readiness_scores?.[topic] ? (
-                              <div className={`readiness-badge readiness-badge--${insights.readiness_scores[topic].label.toLowerCase().replace(/\s+/g, '-')}`}>
-                                <span className="readiness-badge-score">{insights.readiness_scores[topic].score}</span>
-                                <span className="readiness-badge-label">{insights.readiness_scores[topic].label}</span>
+                          </div>
+                          <div className="db-track-right-col">
+                            {readiness ? (
+                              <div className={`db-readiness-chip db-readiness-chip--${readiness.label.toLowerCase().replace(/\s+/g, '-')}`}>
+                                <span className="db-readiness-score">{readiness.score}</span>
+                                <span className="db-readiness-label">{readiness.label}</span>
                               </div>
                             ) : !isElite ? (
                               <button
-                                className="readiness-gate-teaser"
+                                className="db-readiness-gate"
                                 onClick={e => { e.preventDefault(); e.stopPropagation(); setReadinessModalOpen(true); }}
                               >
-                                Readiness score <span className="readiness-teaser-badge">Elite</span>
+                                Readiness <span className="db-elite-badge">Elite</span>
                               </button>
                             ) : null}
+                            <span className="db-track-arrow">→</span>
                           </div>
                         </Link>
                       );
                     })}
                   </div>
                 </section>
-              </div>
 
-              <div className="dashboard-split-aside">
-                <section className="dashboard-section">
-                  <h3 className="dashboard-section-title">Recent Activity</h3>
-                  {data?.recent_activity?.length > 0 ? (
-                    <div className="dashboard-activity-list">
-                      {data.recent_activity.slice(0, 10).map((item, i) => {
-                        const meta = TRACK_META[item.topic];
+                <div className="db-lower-grid">
+                  <div className="db-lower-main">
+
+                    {/* WHERE TO FOCUS */}
+                    {(() => {
+                      const weakConcepts = insights?.weakest_concepts ?? [];
+                      const hasWeakConcepts = weakConcepts.length > 0;
+                      const canSeeWeakConcepts = isPaying;
+
+                      if (!canSeeWeakConcepts) {
                         return (
-                          <div key={i} className="dashboard-activity-row">
-                            <span className="dashboard-activity-icon" style={{ color: meta?.color }}>✓</span>
-                            <span className="dashboard-activity-track">{meta?.label ?? item.topic}</span>
-                            <span className={`badge badge-${item.difficulty}`}>{item.difficulty}</span>
-                            <span className="dashboard-activity-title">#{item.question_id} {item.title}</span>
-                            <span className="dashboard-activity-time">{formatRelativeTime(item.solved_at)}</span>
-                          </div>
+                          <section className="db-section">
+                            <h2 className="db-section-title">Where to focus</h2>
+                            <div className="db-focus-gate">
+                              <p className="db-focus-gate-copy">Upgrade to Pro to see your weakest concepts and get targeted drill recommendations.</p>
+                              <UpgradeButton tier="pro" source="dashboard_weak_concepts" successPath="/dashboard" compact />
+                            </div>
+                          </section>
                         );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="dashboard-activity-empty">
-                      <span>You haven't solved any questions yet.</span>
-                      <Link to="/learn/sql" className="dashboard-activity-empty-cta">Start the SQL learning paths →</Link>
-                    </div>
-                  )}
-                </section>
+                      }
 
-                {data?.concepts_by_track && Object.keys(data.concepts_by_track).length > 0 && (
-                  <section className="dashboard-section">
-                    <h3 className="dashboard-section-title">Concepts by Track</h3>
-                    {Object.entries(data.concepts_by_track).map(([topic, concepts]) => {
-                      const meta = TRACK_META[topic];
-                      if (!meta || !concepts?.length) return null;
+                      if (!hasWeakConcepts) {
+                        return (
+                          <section className="db-section">
+                            <h2 className="db-section-title">Where to focus</h2>
+                            <p className="db-empty-copy db-empty-copy--muted">Attempt at least 3 questions on a concept to see gap analysis here.</p>
+                          </section>
+                        );
+                      }
+
+                      const visibleConcepts = isElite ? weakConcepts.slice(0, 4) : weakConcepts.slice(0, 1);
+                      const lockedConcepts = isElite ? [] : weakConcepts.slice(1, 4);
+
                       return (
-                        <div key={topic} className="dashboard-concepts-group">
-                          <div className="dashboard-concepts-track-label" style={{ color: meta.color }}>
-                            {meta.label}
+                        <section className="db-section">
+                          <h2 className="db-section-title">Where to focus</h2>
+                          <div className="db-weak-list">
+                            {visibleConcepts.map((item, i) => {
+                              const trackLabel = TRACK_LABELS[item.track] || item.track;
+                              const drillHref = item.recommended_path_slug
+                                ? `/learn/${item.track}/${item.recommended_path_slug}`
+                                : `/practice/${item.track}?concepts=${encodeURIComponent(item.concept)}`;
+                              return (
+                                <div key={i} className="db-weak-row">
+                                  <div className="db-weak-header">
+                                    <span className="db-weak-concept">{item.concept}</span>
+                                    <span className="db-weak-track">{trackLabel}</span>
+                                    <span className="db-weak-attempts">{item.attempts} attempt{item.attempts !== 1 ? 's' : ''}</span>
+                                  </div>
+                                  <AccuracyBar pct={item.accuracy_pct} />
+                                  <Link to={drillHref} className="db-weak-drill">
+                                    {item.recommended_path_slug ? `Study: ${item.recommended_path_title ?? 'path'} →` : 'Drill this concept →'}
+                                  </Link>
+                                </div>
+                              );
+                            })}
+                            {lockedConcepts.length > 0 && (
+                              <div className="db-weak-locked">
+                                <div className="db-weak-locked-blur">
+                                  {lockedConcepts.map((item, i) => (
+                                    <div key={i} className="db-weak-row db-weak-row--ghost">
+                                      <div className="db-weak-header">
+                                        <span className="db-weak-concept">{item.concept}</span>
+                                        <span className="db-weak-track">{TRACK_LABELS[item.track] || item.track}</span>
+                                      </div>
+                                      <div className="db-accuracy-bar-wrap"><div className="db-accuracy-bar-track" /></div>
+                                    </div>
+                                  ))}
+                                </div>
+                                <div className="db-weak-locked-overlay">
+                                  <p className="db-weak-locked-copy">
+                                    {lockedConcepts.length} more weak area{lockedConcepts.length !== 1 ? 's' : ''} — Elite members see all gaps
+                                  </p>
+                                  <UpgradeButton tier="elite" source="dashboard_weak_concepts_lock" successPath="/dashboard" compact />
+                                </div>
+                              </div>
+                            )}
                           </div>
-                          <div className="concept-tags concept-tags-inline">
-                            {concepts.map((c) => (
-                              <span key={c} className="tag-concept">{c}</span>
-                            ))}
-                          </div>
-                        </div>
+                        </section>
                       );
-                    })}
-                  </section>
-                )}
-              </div>
-            </div>
+                    })()}
 
-            {mockHistory.length > 0 && (
-              <section className="dashboard-section dashboard-mock-section">
-                <div className="dashboard-section-header">
-                  <h3 className="dashboard-section-title">Mock Interviews</h3>
-                  <Link to="/mock" className="dashboard-link">Start new →</Link>
+                    {/* STUDY PLAN — Elite */}
+                    {isElite && insights?.study_plan?.length > 0 && (
+                      <section className="db-section">
+                        <div className="db-section-header">
+                          <h2 className="db-section-title">Study plan</h2>
+                          <span className="db-elite-badge">Elite</span>
+                        </div>
+                        <ol className="db-study-plan">
+                          {insights.study_plan.map((step, i) => {
+                            const typeLabel = {
+                              concept_drill: 'Concept drill',
+                              learning_path: 'Learning path',
+                              mock_session: 'Mock interview',
+                              practice_hard: 'Hard practice',
+                            }[step.type] ?? step.type;
+                            return (
+                              <li key={i} className="db-plan-step">
+                                <span className="db-plan-num">{i + 1}</span>
+                                <div className="db-plan-body">
+                                  <div className="db-plan-meta">
+                                    <span className="db-plan-type">{typeLabel}</span>
+                                  </div>
+                                  <p className="db-plan-title">{step.title}</p>
+                                  {step.description && <p className="db-plan-desc">{step.description}</p>}
+                                </div>
+                                <Link to={step.cta_href} className="db-plan-cta">{step.cta_label ?? 'Go →'}</Link>
+                              </li>
+                            );
+                          })}
+                        </ol>
+                      </section>
+                    )}
+
+                    {!isElite && (
+                      <section className="db-section db-study-plan-gate">
+                        <h2 className="db-section-title">Study plan</h2>
+                        <p className="db-focus-gate-copy">Upgrade to Elite for a personalised daily plan based on your weak areas, practice gaps, and mock performance.</p>
+                        <UpgradeButton tier="elite" source="dashboard_study_plan" successPath="/dashboard" compact />
+                      </section>
+                    )}
+
+                  </div>
+
+                  <div className="db-lower-aside">
+
+                    {/* RECENT ACTIVITY */}
+                    <section className="db-section">
+                      <h2 className="db-section-title">Recent activity</h2>
+                      {data?.recent_activity?.length > 0 ? (
+                        <div className="db-activity-feed">
+                          {groupActivityByDate(data.recent_activity.slice(0, 10)).map(group => (
+                            <div key={group.label} className="db-activity-group">
+                              <p className="db-activity-date-label">{group.label}</p>
+                              {group.items.map((item, i) => {
+                                const meta = TRACK_META[item.topic];
+                                return (
+                                  <Link
+                                    key={i}
+                                    to={`/practice/${item.topic}/questions/${item.question_id}`}
+                                    className="db-activity-row"
+                                  >
+                                    <span className="db-activity-dot" style={{ background: meta?.color }} />
+                                    <div className="db-activity-body">
+                                      <span className="db-activity-title">{item.title || `#${item.question_id}`}</span>
+                                      <div className="db-activity-meta">
+                                        <span className="db-activity-track">{meta?.label ?? item.topic}</span>
+                                        <span className={`badge badge-${item.difficulty}`}>{item.difficulty}</span>
+                                      </div>
+                                    </div>
+                                    <span className="db-activity-time">{formatRelativeTime(item.solved_at)}</span>
+                                  </Link>
+                                );
+                              })}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="db-activity-empty">
+                          <p className="db-empty-copy db-empty-copy--muted">No solved questions yet.</p>
+                          <Link to="/learn/sql" className="db-weak-drill">Start the SQL paths →</Link>
+                        </div>
+                      )}
+                    </section>
+
+                    {/* MOCK HISTORY */}
+                    {mockHistory.length > 0 && (
+                      <section className="db-section">
+                        <div className="db-section-header">
+                          <h2 className="db-section-title">Mock interviews</h2>
+                          <Link to="/mock" className="db-section-link">New mock →</Link>
+                        </div>
+                        <div className="db-mock-list">
+                          {mockHistory.map(s => {
+                            const pct = s.total_count > 0 ? s.solved_count / s.total_count : 0;
+                            const trackLabel = TRACK_LABELS[s.track] || s.track;
+                            return (
+                              <Link key={s.session_id} to={`/mock/${s.session_id}`} className="db-mock-card">
+                                <div className="db-mock-card-left">
+                                  <span className="db-mock-track">{trackLabel}</span>
+                                  <div className="db-mock-meta">
+                                    {s.difficulty && <span className={`badge badge-${s.difficulty}`}>{s.difficulty}</span>}
+                                    <span className="db-mock-date">{formatRelativeTime(s.started_at)}</span>
+                                  </div>
+                                </div>
+                                <div className="db-mock-card-right">
+                                  <span className="db-mock-score">{s.solved_count}/{s.total_count}</span>
+                                  <div className="db-mock-score-bar">
+                                    <div className="db-mock-score-fill" style={{ width: `${pct * 100}%`, background: pct >= 0.7 ? 'var(--success)' : pct >= 0.5 ? 'var(--warning)' : 'var(--danger)' }} />
+                                  </div>
+                                  <span className="db-mock-action">{s.status === 'completed' ? 'Review →' : 'Resume →'}</span>
+                                </div>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </section>
+                    )}
+
+                  </div>
                 </div>
-                <table className="mock-history-table">
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Mode</th>
-                      <th>Track</th>
-                      <th>Difficulty</th>
-                      <th>Score</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {mockHistory.map(s => (
-                      <tr key={s.session_id}>
-                        <td>{formatRelativeTime(s.started_at)}</td>
-                        <td>{s.mode}</td>
-                        <td>{TRACK_LABELS[s.track] || s.track}</td>
-                        <td>
-                          {s.difficulty && (
-                            <span className={`badge badge-${s.difficulty}`}>{s.difficulty}</span>
-                          )}
-                        </td>
-                        <td>{s.solved_count}/{s.total_count}</td>
-                        <td>
-                          <Link to={`/mock/${s.session_id}`} className="mock-review-link">
-                            {s.status === 'completed' ? 'Review →' : 'Resume →'}
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </section>
+              </>
             )}
           </>
         )}
