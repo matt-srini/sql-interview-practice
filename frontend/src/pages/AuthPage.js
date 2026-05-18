@@ -259,7 +259,7 @@ export default function AuthPage() {
           {upgradeTier && (
             <div className="auth-upgrade-banner">
               <span className="auth-upgrade-banner-icon" aria-hidden="true">⬆</span>
-              <span>Sign in or create an account to complete your upgrade to <strong>Elite</strong>.</span>
+              <span>Sign in or create an account to complete your upgrade to <strong>{{ pro: 'Pro', elite: 'Elite', lifetime_pro: 'Pro (lifetime)', lifetime_elite: 'Elite (lifetime)' }[upgradeTier] ?? upgradeTier}</strong>.</span>
             </div>
           )}
 
@@ -483,7 +483,7 @@ export default function AuthPage() {
               <button
                 type="button"
                 className="btn btn-primary auth-submit"
-                onClick={() => navigate('/')}
+                onClick={() => navigate(returnTo || '/')}
               >
                 Continue to practice
               </button>

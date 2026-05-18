@@ -55,7 +55,9 @@ export default function AppShell() {
     setUpgradeSuccess(true);
     refreshUser().catch(() => {});
     refresh().catch(() => {});
-    navigate({ pathname: location.pathname }, { replace: true });
+    const params = new URLSearchParams(location.search);
+    params.delete('upgraded');
+    navigate({ pathname: location.pathname, search: params.toString() ? `?${params.toString()}` : '' }, { replace: true });
   }, [location.pathname, location.search, navigate, refresh, refreshUser]);
 
   function toggleDiff(diff) {
@@ -299,7 +301,7 @@ export default function AppShell() {
                         label="Unlock Pro"
                         source="sidebar_pro"
                         compact
-                        successPath={location.pathname + '?upgraded=true'}
+                        successPath={location.pathname + (pathSlug ? `?path=${encodeURIComponent(pathSlug)}&upgraded=true` : '?upgraded=true')}
                       />
                     )}
                     <UpgradeButton
@@ -307,7 +309,7 @@ export default function AppShell() {
                       label={normalisedPlan === 'free' ? 'Unlock Elite' : 'Upgrade to Elite'}
                       source="sidebar_elite"
                       compact
-                      successPath={location.pathname + '?upgraded=true'}
+                      successPath={location.pathname + (pathSlug ? `?path=${encodeURIComponent(pathSlug)}&upgraded=true` : '?upgraded=true')}
                     />
                   </div>
                 </div>
@@ -381,6 +383,7 @@ function _unlockRules(topic) {
 // ── Path sidebar panel ────────────────────────────────────────────────────────
 function PathSidebar({ pathData, pathSlug, topic, meta, currentId, onNavigate, plan }) {
   const [hintOpen, setHintOpen] = useState(false);
+  const navigate = useNavigate();
   if (!pathData) {
     return (
       <div className="path-sidebar-loading">
@@ -472,8 +475,8 @@ function PathSidebar({ pathData, pathSlug, topic, meta, currentId, onNavigate, p
             </div>
           </div>
           <div className="path-sidebar-hint-actions">
-            <Link to="/?scroll=pricing" className="path-sidebar-hint-link path-sidebar-hint-link--pro">Pro — unlock all ↗</Link>
-            <Link to="/?scroll=pricing" className="path-sidebar-hint-link path-sidebar-hint-link--elite">Elite — unlock all ↗</Link>
+            <button type="button" className="path-sidebar-hint-link path-sidebar-hint-link--pro" onClick={() => navigate('/', { state: { scrollTo: 'landing-pricing' } })}>Pro — unlock all ↗</button>
+            <button type="button" className="path-sidebar-hint-link path-sidebar-hint-link--elite" onClick={() => navigate('/', { state: { scrollTo: 'landing-pricing' } })}>Elite — unlock all ↗</button>
           </div>
         </div>
       )}

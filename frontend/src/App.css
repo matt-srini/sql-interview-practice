@@ -5756,7 +5756,22 @@ select {
   margin: 0;
 }
 .db-study-plan-gate {
-  /* gate box same .db-section styles, no extra */
+  padding: 1.1rem 1.4rem;
+}
+.db-gate-row {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+.db-gate-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.db-gate-text .db-section-title {
+  margin: 0;
 }
 
 /* Study plan */

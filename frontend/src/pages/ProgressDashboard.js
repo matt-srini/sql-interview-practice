@@ -477,9 +477,13 @@ export default function ProgressDashboard() {
 
                     {!isElite && (
                       <section className="db-section db-study-plan-gate">
-                        <h2 className="db-section-title">Study plan</h2>
-                        <p className="db-focus-gate-copy">Upgrade to Elite for a personalised daily plan based on your weak areas, practice gaps, and mock performance.</p>
-                        <UpgradeButton tier="elite" source="dashboard_study_plan" successPath="/dashboard" compact />
+                        <div className="db-gate-row">
+                          <div className="db-gate-text">
+                            <p className="db-section-title">Study plan</p>
+                            <p className="db-focus-gate-copy">Personalised daily plan based on your weak areas and mock performance.</p>
+                          </div>
+                          <UpgradeButton tier="elite" source="dashboard_study_plan" successPath="/dashboard" compact />
+                        </div>
                       </section>
                     )}
 

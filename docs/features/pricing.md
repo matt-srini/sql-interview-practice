@@ -348,3 +348,86 @@ The `request_id` is also present in the `X-Request-ID` response header.
 | Unknown user returns 404 with error shape | `TestAdminPlanEndpoint` |
 
 Additional Razorpay webhook lifecycle tests (subscription events, halted, payment.failed, crafted plans) are covered in `backend/tests/test_isolated_razorpay.py`.
+
+---
+
+## Upgrade CTA reference
+
+Every in-app surface that prompts an upgrade, what it shows, when it appears, and how it navigates.
+
+### Navigation convention
+
+All "see plans" links that land on the pricing section use router-state navigation — no hash or query param in the URL:
+
+```js
+navigate('/', { state: { scrollTo: 'landing-pricing' } })
+```
+
+`LandingPage` reads `location.state?.scrollTo` on mount, scrolls to the element with that id (`landing-pricing`), then clears the state from browser history so back-navigation doesn't re-trigger the scroll. The scroll fires at 220 ms, 500 ms, and 1200 ms to survive async render delays.
+
+Direct upgrade buttons (all `UpgradeButton` instances) skip the landing page entirely and open the Razorpay Checkout modal immediately.
+
+### CTA map
+
+| Surface | Component | Copy | Shown when | Action |
+|---|---|---|---|---|
+| **Landing — pricing section** | `UpgradeButton` | "Upgrade to Pro / Elite" + "Lifetime access — ₹X" | Plan allows the upgrade (see table below) | Opens Razorpay directly |
+| **Practice sidebar — bottom panel** | `UpgradeButton` | "Unlock Pro" / "Unlock Elite" | `free` or `pro` plan | Opens Razorpay; `successPath` preserves `?path=` if in path mode |
+| **Practice sidebar — path hint** | `<button>` | "Pro — unlock all ↗" / "Elite — unlock all ↗" | `free` plan + path mode + locked questions exist | Navigates to `/ + state.scrollTo` |
+| **Question page — locked callout** | `UpgradeButton` | "Unlock now with Pro" | `free` plan, question is threshold-locked | Opens Razorpay |
+| **Question page — hard gate** | `UpgradeButton` | "Upgrade to Pro" | `free` plan, hard question beyond free cap | Opens Razorpay |
+| **Track hub — TierBanner** | `<button>` | "See plans →" | `free` plan | Navigates to `/ + state.scrollTo` |
+| **Dashboard — InsightStrip** | `<button>` | "Upgrade to Pro" | `free` plan, weakest-concept section | Navigates to `/ + state.scrollTo` |
+| **Mock hub — difficulty button** | `UpgradeButton` | "Pro unlocks this" / "Elite unlocks this" | Plan blocked for that difficulty | Opens Razorpay |
+| **Mock hub — notice strip** | `UpgradeButton` | "Unlock more with Pro" | `free` hard or mixed blocked | Opens Razorpay |
+| **Account page** | `<button>` | "Upgrade to Pro or Elite" | `free` plan | Navigates to `/ + state.scrollTo` |
+
+### Pricing section CTA state by plan
+
+`PricingSection` receives the **raw** plan string (including `lifetime_` prefix) so the `lifetime_pro` / `lifetime_elite` checks in `proColCta()` / `eliteColCta()` fire correctly.
+
+| Current plan | Pro column | Elite column |
+|---|---|---|
+| `free` | Monthly + Lifetime buttons | Monthly + Lifetime buttons |
+| `pro` | "Switch to lifetime" only | Monthly + Lifetime buttons |
+| `lifetime_pro` | "Current plan" (no button) | Monthly + Lifetime buttons |
+| `elite` | — (no CTA) | "Switch to lifetime" only |
+| `lifetime_elite` | — (entire pricing section hidden) | — |
+
+### Backend upgrade path matrix
+
+`_target_plan_is_allowed(current, target)` in `backend/routers/razorpay.py`:
+
+| From ↓ \ To → | `pro` | `elite` | `lifetime_pro` | `lifetime_elite` |
+|---|---|---|---|---|
+| `free` | ✓ | ✓ | ✓ | ✓ |
+| `pro` | — | ✓ | ✓ | ✓ |
+| `lifetime_pro` | — | ✓ | — | ✓ |
+| `elite` | — | — | — | ✓ |
+| `lifetime_elite` | — | — | — | — |
+
+Any path not marked ✓ returns 400 `"This upgrade path is not available."`.
+
+### Unauthenticated upgrade flow
+
+1. `UpgradeButton.handleClick()` detects `user === null`.
+2. Navigates to `/auth` with `{ state: { from: location.pathname + location.search, upgradeTier: tier } }`.
+   - `from` includes `?path=` if in path mode, so the user returns to the right page after sign-in.
+3. `AuthPage` shows an upgrade-intent banner: *"Sign in or create an account to complete your upgrade to **{tier}**."* (tier label is dynamic, not hardcoded).
+4. After **sign-in**: `navigate(returnTo, { state: { upgradeTier } })`. User lands back at the original page; they must click the upgrade button again (Razorpay is not auto-opened — deliberate choice, no unsolicited payment modal).
+5. After **OAuth**: upgrade intent is saved to `sessionStorage` as `pendingUpgrade` before the provider redirect. `AppRoutes` reads and clears it once auth resolves, then navigates to `returnTo` with `{ upgradeTier }` in state.
+6. After **sign-up** (email/password): user lands on the email-verification screen. `create-order` requires `email_verified = true` (returns 403 otherwise), so the upgrade cannot be completed until the user verifies. "Continue to practice" returns the user to `returnTo` (the original page) rather than `/`.
+
+### `successPath` and `?upgraded=true` cleanup
+
+After Razorpay completes, `window.location.assign(successPath)` fires. `successPath` is built by the caller:
+
+- **Landing page**: `/?upgraded=true`
+- **AppShell sidebar**: `{pathname}?path={slug}&upgraded=true` (when in path mode) or `{pathname}?upgraded=true`
+
+`AppShell` detects `?upgraded=true` on mount, calls `refreshUser()` and `refresh()` (catalog reload), then strips `upgraded` from the search string while preserving all other params (including `?path=`). `LandingPage` does the same for its own `/?upgraded=true` landing.
+
+### Known limitations
+
+- **No auto-open after sign-in**: returning to the practice page with `upgradeTier` state in the router does not automatically open Razorpay. The exception is `ProgressDashboard`, which opens the Elite readiness modal when `location.state?.upgradeTier === 'elite'`.
+- **Email verification blocks upgrade**: a newly registered user cannot complete an upgrade until their email is verified. The upgrade intent is not persisted across the verification step.

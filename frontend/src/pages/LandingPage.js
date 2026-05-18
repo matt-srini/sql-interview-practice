@@ -948,6 +948,25 @@ export default function LandingPage() {
     navigate({ pathname: '/' }, { replace: true });
   }, [location.search, navigate, refreshUser]);
 
+  // Scroll to a named section delivered via router state — used by TierBanner,
+  // InsightStrip, AccountPage, and the path sidebar so they can land at a section
+  // without leaving a hash or query param in the URL.
+  useEffect(() => {
+    const target = location.state?.scrollTo;
+    if (!target) return;
+    try { window.history.replaceState({ ...window.history.state, usr: null }, ''); } catch {}
+    const scroll = () => {
+      const el = document.getElementById(target);
+      if (!el) return;
+      const top = el.getBoundingClientRect().top + window.scrollY - 88;
+      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    };
+    const t1 = setTimeout(scroll, 220);
+    const t2 = setTimeout(scroll, 500);
+    const t3 = setTimeout(scroll, 1200);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (user) {
       api.get('/dashboard').then(r => setDashData(r.data)).catch(() => {});
@@ -1036,7 +1055,7 @@ export default function LandingPage() {
 
         {/* 07 PRICING */}
         {showPricing && (
-          <PricingSection userPlan={normPlan} currency={currency} />
+          <PricingSection userPlan={userPlan} currency={currency} />
         )}
 
         {/* 08 CLOSER (logged-out only) */}
