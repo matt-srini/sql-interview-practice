@@ -8453,6 +8453,12 @@ select {
 }
 .learn-question-btn:hover { text-decoration: underline; }
 
+/* Path mode: let path-sidebar own all layout — no outer padding or scroll */
+.sidebar--path-mode {
+  padding: 0;
+  overflow: hidden;
+}
+
 /* ── Path sidebar panel (AppShell when ?path= is set) ─────────── */
 .path-sidebar {
   display: flex;
@@ -10446,13 +10452,13 @@ select {
     linear-gradient(#0F2218, #0F2218) padding-box,
     conic-gradient(
       from var(--lp-ide-angle),
-      transparent 0%,
-      transparent 20%,
+      #0F2218 0%,
+      #0F2218 20%,
       rgba(91,106,240,0.85) 31%,
       rgba(195,215,255,1.0) 37%,
       rgba(74,222,128,0.75) 44%,
-      transparent 55%,
-      transparent 100%
+      #0F2218 55%,
+      #0F2218 100%
     ) border-box;
   border: 1.5px solid transparent;
   border-radius: var(--radius-lg);
@@ -10472,13 +10478,13 @@ select {
     linear-gradient(#080F0A, #080F0A) padding-box,
     conic-gradient(
       from var(--lp-ide-angle),
-      transparent 0%,
-      transparent 20%,
+      #080F0A 0%,
+      #080F0A 20%,
       rgba(91,106,240,0.70) 31%,
       rgba(195,215,255,0.85) 37%,
       rgba(74,222,128,0.60) 44%,
-      transparent 55%,
-      transparent 100%
+      #080F0A 55%,
+      #080F0A 100%
     ) border-box;
 }
 @media (prefers-reduced-motion: reduce) {
