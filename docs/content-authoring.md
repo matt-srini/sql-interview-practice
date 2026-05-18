@@ -4,12 +4,15 @@
 
 This is the authoritative guide for creating, editing, and reviewing questions on datathink. It covers the philosophy behind the question bank, the quality bar every question must clear, per-track authoring rules, and the exact JSON schemas the catalog loaders expect.
 
+**New track onboarding:** See [`docs/track-onboarding.md`](./track-onboarding.md) for the complete phase-by-phase process (spec → backend → frontend → content → paths → docs). The AI agent prompt is at [`.github/agents/track-onboarding.agent.md`](../.github/agents/track-onboarding.agent.md).
+
 **AI authoring agents** (use these when generating questions with Claude):
 - [`.github/agents/sql-question-authoring.agent.md`](../.github/agents/sql-question-authoring.agent.md)
 - [`.github/agents/python-question-authoring.agent.md`](../.github/agents/python-question-authoring.agent.md)
 - [`.github/agents/pandas-question-authoring.agent.md`](../.github/agents/pandas-question-authoring.agent.md)
 - [`.github/agents/pyspark-question-authoring.agent.md`](../.github/agents/pyspark-question-authoring.agent.md)
 - [`.github/agents/data-modeling-question-authoring.agent.md`](../.github/agents/data-modeling-question-authoring.agent.md)
+- [`.github/agents/track-onboarding.agent.md`](../.github/agents/track-onboarding.agent.md) — drives any new track end-to-end
 
 ---
 
@@ -224,9 +227,10 @@ Examples: `11005` = SQL easy #5 · `42017` = PySpark medium #17 · `53004` = Dat
 | Data Engineering | 5 | 51001–51999 | 52001–52999 | 53001–53999 |
 | Data Modeling | 6 | 61001–61999 | 62001–62999 | 63001–63999 |
 | Statistics | 7 | 71001–71999 | 72001–72999 | 73001–73999 |
-| (reserved) | 8–9 | — | — | — |
+| ML Fundamentals (planned) | 8 | 81001–81999 | 82001–82999 | 83001–83999 |
+| Experimentation (planned) | 9 | 91001–91999 | 92001–92999 | 93001–93999 |
 
-T digits 8–9 are reserved for future tracks. New tracks pick the next unused T.
+T digits 8–9 are reserved for the next two planned tracks. New tracks beyond T9 are not yet spec'd — revisit the T assignment table when that time comes.
 
 ### Practice vs mock-only allocation
 

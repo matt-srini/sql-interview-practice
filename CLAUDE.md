@@ -48,12 +48,12 @@ Keep all five lenses active at once. The best decisions here satisfy all of them
 
 ## What this is
 
-A data interview practice platform covering four tracks. Users write SQL or Python, answer MCQ questions, get instant feedback, and work through gated challenge banks.
+A data interview practice platform covering seven tracks. Users write SQL or Python, answer MCQ questions, get instant feedback, and work through gated challenge banks.
 
 **Modes per track:**
-- **Challenge mode** — plan-aware unlock rules, persistent progress, 356 practice questions across 4 tracks
+- **Challenge mode** — plan-aware unlock rules, persistent progress, 586 practice questions across 7 tracks
 - **Mock mode** — 97 additional mock-only questions (Pro/Elite), never shown in practice catalog
-- **Sample mode** — 36 sandbox questions across all four original tracks (3 per track+difficulty), no progress recorded, no login required. Data Engineering, Data Modeling, and Statistics samples are auto-sliced from the first 3 practice questions per difficulty (no dedicated sample IDs).
+- **Sample mode** — 36 sandbox questions across SQL/Python/Pandas/PySpark (3 per track+difficulty), no progress recorded, no login required. Data Engineering, Data Modeling, and Statistics samples are auto-sliced from the first 3 practice questions per difficulty (no dedicated sample IDs).
 
 **Tracks:**
 - **SQL** — 95 practice (32 easy / 34 medium / 29 hard) + 33 mock-only, DuckDB execution, realistic relational datasets
@@ -436,6 +436,7 @@ cd backend && DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:543
 | `docs/datasets.md` | All 11 dataset tables — columns, row counts, intentional edge cases |
 | `docs/deployment.md` | Local dev, Docker, production image, env vars, Railway |
 | `docs/content-authoring.md` | Platform philosophy, question counts, concept coverage maps, per-track schemas, authoring rules |
+| `docs/track-onboarding.md` | End-to-end process for adding a new track — spec, backend, frontend, content, paths, docs |
 | `docs/USERGUIDE.md` | End-user guide to the platform |
 | `docs/features/pricing.md` | Pricing feature reference — plan entitlements, Razorpay flows, CTA states, webhook rules |
 | `docs/features/mock.md` | Mock interview feature reference — plan gates, endpoints, coaching insights, test coverage |
@@ -449,3 +450,5 @@ cd backend && DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:543
 | Python | `.github/agents/python-question-authoring.agent.md` |
 | Pandas | `.github/agents/pandas-question-authoring.agent.md` |
 | PySpark | `.github/agents/pyspark-question-authoring.agent.md` |
+| Data Modeling | `.github/agents/data-modeling-question-authoring.agent.md` |
+| Any new track | `.github/agents/track-onboarding.agent.md` — drives full track onboarding end-to-end |
