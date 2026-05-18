@@ -4954,6 +4954,207 @@ select {
   background: rgba(91, 106, 240, 0.12);
 }
 
+/* ============================================================
+   Track Hub — premium stat card (thub-stat-card)
+   ============================================================ */
+.thub-stat-card {
+  padding: 1.5rem;
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--track-color, var(--accent));
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+/* Top-right glow wash in track color */
+.thub-stat-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 80% 140% at 100% 0%,
+    color-mix(in srgb, var(--track-color, var(--accent)) 8%, transparent),
+    transparent 65%
+  );
+  pointer-events: none;
+}
+
+/* ── Hero row ── */
+.thub-stat-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.thub-stat-hero-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.thub-stat-count-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.2rem;
+  line-height: 1;
+}
+
+.thub-stat-count-num {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--text-strong);
+  font-family: var(--font-mono);
+  letter-spacing: -0.05em;
+  line-height: 1;
+}
+
+.thub-stat-count-denom {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.thub-stat-count-label {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-left: 0.2rem;
+}
+
+/* CTA button — uses track color */
+.thub-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.525rem 1rem;
+  background: var(--track-color, var(--accent));
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.12s;
+  align-self: flex-start;
+  white-space: nowrap;
+}
+.thub-cta-btn:hover {
+  opacity: 0.86;
+  transform: translateX(2px);
+}
+
+/* ── Arc ring ── */
+.thub-ring {
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+}
+
+.thub-ring-bg {
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-width: 2.5;
+}
+
+.thub-ring-fill {
+  fill: none;
+  stroke: var(--track-color, var(--accent));
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.thub-ring-text {
+  font-size: 9px;
+  font-weight: 800;
+  fill: var(--text-strong);
+  text-anchor: middle;
+  font-family: var(--font-mono);
+}
+
+.thub-ring-pct-label {
+  font-size: 5.5px;
+  font-weight: 600;
+  fill: var(--text-muted);
+  text-anchor: middle;
+  font-family: var(--font-sans);
+}
+
+/* ── Difficulty tiles ── */
+.thub-diff-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.625rem;
+}
+
+.thub-diff-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.75rem 0.875rem;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--track-color, var(--accent)) 5%, var(--bg-page));
+  border: 1px solid color-mix(in srgb, var(--track-color, var(--accent)) 12%, transparent);
+}
+
+.thub-diff-tile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+}
+
+.thub-diff-tile-frac {
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.thub-diff-tile-n {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-strong);
+  font-family: var(--font-mono);
+}
+
+.thub-diff-tile-d {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.thub-diff-bar-track {
+  height: 3px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--track-color, var(--accent)) 15%, transparent);
+  overflow: hidden;
+}
+
+.thub-diff-bar-fill {
+  height: 100%;
+  background: var(--track-color, var(--accent));
+  border-radius: 999px;
+  transition: width 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  min-width: 0;
+}
+
+[data-theme="dark"] .thub-diff-tile {
+  background: color-mix(in srgb, var(--track-color, var(--accent)) 8%, var(--surface-card));
+  border-color: color-mix(in srgb, var(--track-color, var(--accent)) 20%, transparent);
+}
+
+@media (max-width: 540px) {
+  .thub-stat-count-num { font-size: 2.25rem; }
+  .thub-ring { width: 56px; height: 56px; }
+  .thub-diff-tile { padding: 0.6rem 0.625rem; }
+}
+
 
 /* ============================================================
    MCQ panel

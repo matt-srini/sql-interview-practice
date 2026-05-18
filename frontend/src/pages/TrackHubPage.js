@@ -5,7 +5,7 @@ import api from '../api';
 import { useCatalog } from '../catalogContext';
 import { useTopic } from '../contexts/TopicContext';
 import { useAuth } from '../contexts/AuthContext';
-import TrackProgressBar from '../components/TrackProgressBar';
+
 import PathProgressCard from '../components/PathProgressCard';
 import TierBanner from '../components/TierBanner';
 import UpgradeButton from '../components/UpgradeButton';
@@ -98,6 +98,8 @@ export default function TrackHubPage() {
   );
   // User has exhausted all accessible questions (nothing left to solve right now)
   const allAccessibleSolved = continueId === null && totalSolved > 0;
+
+  const overallPct = totalQuestions > 0 ? totalSolved / totalQuestions : 0;
 
   const [topicPaths, setTopicPaths] = useState([]);
   useEffect(() => {
@@ -195,38 +197,59 @@ export default function TrackHubPage() {
           <p className="track-hub-desc">{meta.description}</p>
         </div>
 
-        <div className="card track-hub-progress-card">
-          {continueId ? (
-            <div className="track-hub-actions">
-              <button className="btn btn-primary" onClick={handleContinue}>
-                {totalSolved > 0 ? 'Continue where I left off' : 'Start practicing'} →
-              </button>
-            </div>
-          ) : allAccessibleSolved && (
-            <div className="track-hub-actions">
-              {hasLockedQuestions ? (
+        <div className="thub-stat-card" style={{ '--track-color': meta.color }}>
+          {/* Hero: big solved count + arc ring */}
+          <div className="thub-stat-hero">
+            <div className="thub-stat-hero-left">
+              <div className="thub-stat-count-row">
+                <span className="thub-stat-count-num">{totalSolved}</span>
+                <span className="thub-stat-count-denom">/{totalQuestions}<span className="thub-stat-count-label">solved</span></span>
+              </div>
+              {continueId ? (
+                <button className="thub-cta-btn" onClick={handleContinue}>
+                  {totalSolved > 0 ? 'Continue where I left off' : 'Start practicing'} →
+                </button>
+              ) : allAccessibleSolved && hasLockedQuestions ? (
                 <UpgradeButton tier="pro" label="Upgrade to unlock the rest" source="hub_allsolved" />
-              ) : (
-                <Link to="/" className="btn btn-secondary">Explore another track →</Link>
-              )}
+              ) : allAccessibleSolved ? (
+                <Link to="/" className="btn btn-secondary btn-compact">Explore another track →</Link>
+              ) : null}
             </div>
-          )}
 
-          <div className="track-hub-progress-header">
-            <span className="track-hub-progress-title">Overall Progress</span>
-            <span className="track-hub-progress-count">{totalSolved} / {totalQuestions}</span>
+            {/* Arc ring */}
+            <svg className="thub-ring" viewBox="0 0 36 36" aria-label={`${Math.round(overallPct * 100)}% complete`}>
+              <circle className="thub-ring-bg" cx="18" cy="18" r="15.9" />
+              <circle
+                className="thub-ring-fill"
+                cx="18" cy="18" r="15.9"
+                pathLength="100"
+                transform="rotate(-90 18 18)"
+                style={{ strokeDasharray: `${(overallPct * 100).toFixed(1)} 100` }}
+              />
+              <text x="18" y="20" className="thub-ring-text">{Math.round(overallPct * 100)}</text>
+              <text x="18" y="26" className="thub-ring-pct-label">%</text>
+            </svg>
           </div>
-          <TrackProgressBar solved={totalSolved} total={totalQuestions} color={meta.color} showLabel={false} />
 
+          {/* Difficulty tiles */}
           {catalog?.groups?.length > 0 && (
-            <div className="track-hub-diff-breakdown">
+            <div className="thub-diff-tiles">
               {catalog.groups.map((g) => {
                 const solved = g.questions.filter((q) => q.state === 'solved').length;
                 const total = g.questions.length;
+                const pct = total > 0 ? (solved / total) * 100 : 0;
                 return (
-                  <div key={g.difficulty} className="track-hub-diff-row">
-                    <span className={`badge badge-${g.difficulty}`}>{g.difficulty}</span>
-                    <TrackProgressBar solved={solved} total={total} color={meta.color} showLabel={true} />
+                  <div key={g.difficulty} className="thub-diff-tile">
+                    <div className="thub-diff-tile-header">
+                      <span className={`badge badge-${g.difficulty}`}>{g.difficulty}</span>
+                      <span className="thub-diff-tile-frac">
+                        <span className="thub-diff-tile-n">{solved}</span>
+                        <span className="thub-diff-tile-d">/{total}</span>
+                      </span>
+                    </div>
+                    <div className="thub-diff-bar-track">
+                      <div className="thub-diff-bar-fill" style={{ width: `${pct}%` }} />
+                    </div>
                   </div>
                 );
               })}
