@@ -56,9 +56,10 @@ datathink is **FAANG-level interview preparation**, not a syntax tutorial. The s
 | Data Engineering | 30 | 30 | 20 | **80** | MCQ / scenario / debug, evaluated by option selection |
 | Data Modeling | 25 | 25 | 20 | **70** | MCQ / scenario, evaluated by option selection |
 | Statistics | 28 | 28 | 24 | **80** | Dual-subtype: conceptual MCQ or numerical Python code |
-| **Total** | **205** | **215** | **166** | **586** | |
+| ML Fundamentals | 30 | 35 | 25 | **90** | MCQ / scenario / predict-output / debug, evaluated by option selection |
+| **Total** | **235** | **250** | **191** | **676** | |
 
-Sample questions (no login, no progress): 3 per track × 3 difficulties = 9 per track = **36 total** (SQL/Python/Pandas/PySpark only; DE, DM, Statistics samples auto-sliced from catalog).
+Sample questions (no login, no progress): 3 per track × 3 difficulties = 9 per track = **36 total** (SQL/Python/Pandas/PySpark only; DE, DM, Statistics, and ML Fundamentals samples auto-sliced from catalog).
 
 ### Learning paths (curated sequences)
 
@@ -71,11 +72,12 @@ Sample questions (no login, no progress): 3 per track × 3 difficulties = 9 per 
 | Data Engineering | 2 | `starter` "Pipeline Fundamentals" (free) · `intermediate` "Advanced DE Systems" (pro) |
 | Data Modeling | 2 | `starter` "Schema Design Basics" (free) · `intermediate` "Dimensional Modeling Deep Dive" (pro) |
 | Statistics | 2 | `starter` "Stats for Analysts" (free) · `intermediate` "Experimental Design & Inference" (pro) |
-| **Total** | **28** | |
+| ML Fundamentals | 4 | `starter` "ML Fundamentals Starter" (free) · `intermediate` "Model Evaluation & Validation" (free) · "Production ML & Model Monitoring" (pro) · "Advanced ML Methods" (pro) |
+| **Total** | **32** | |
 
 Authoring constraints for path files in `backend/content/paths/`:
 - Required fields: `slug`, `title`, `description`, `topic`, `questions`, `tier`, `role`
-- `topic` must be one of: `sql`, `python`, `python-data`, `pyspark`, `data-engineering`, `data-modeling`, `statistics`
+- `topic` must be one of: `sql`, `python`, `python-data`, `pyspark`, `data-engineering`, `data-modeling`, `statistics`, `ml-fundamentals`
 - `tier` must be `free` or `pro`
 - `role` must be `starter`, `intermediate`, or `advanced`
 - Exactly one `starter` and one `intermediate` path per track (used by unlock shortcuts)
@@ -200,6 +202,30 @@ This is a **dual-subtype** track. Each question has `"subtype": "conceptual"` (M
 - `type` field: use `"mcq"` for conceptual, `"numerical"` for numerical
 - ID ranges: easy 71001–71028, medium 72001–72028, hard 73001–73024
 
+### ML Fundamentals — concepts covered
+
+| Tier | Concepts |
+|---|---|
+| Easy | SUPERVISED VS UNSUPERVISED, OVERFITTING DIAGNOSIS, BIAS-VARIANCE TRADEOFF, DATA SPLITTING STRATEGY, FEATURE SCALING NECESSITY, CROSS-VALIDATION DESIGN, CLASSIFICATION METRICS, REGRESSION METRICS, LOSS FUNCTION SELECTION, GRADIENT DESCENT BEHAVIOR, REGULARIZATION EFFECT |
+| Medium | ENSEMBLE STRATEGY, CLASS IMBALANCE HANDLING, DIMENSIONALITY REDUCTION, FEATURE IMPORTANCE INTERPRETATION, MODEL CALIBRATION, FEATURE SELECTION STRATEGY, MISSING DATA STRATEGY, HYPERPARAMETER SENSITIVITY, BOOSTING MECHANICS, CLUSTERING EVALUATION, DATA LEAKAGE DETECTION |
+| Hard | NEURAL NETWORK DESIGN, GRADIENT PATHOLOGY, TRANSFER LEARNING STRATEGY, MODEL MONITORING, DEPLOYMENT CONSTRAINTS, INTERPRETABILITY TRADEOFF, TRAINING-SERVING SKEW |
+
+**Concept families for `ml-fundamentals`** (used in concept pills and insights engine):
+
+`SUPERVISED VS UNSUPERVISED` · `OVERFITTING DIAGNOSIS` · `BIAS-VARIANCE TRADEOFF` · `DATA SPLITTING STRATEGY` · `FEATURE SCALING NECESSITY` · `CROSS-VALIDATION DESIGN` · `CLASSIFICATION METRICS` · `REGRESSION METRICS` · `LOSS FUNCTION SELECTION` · `GRADIENT DESCENT BEHAVIOR` · `REGULARIZATION EFFECT` · `ENSEMBLE STRATEGY` · `CLASS IMBALANCE HANDLING` · `DIMENSIONALITY REDUCTION` · `FEATURE IMPORTANCE INTERPRETATION` · `MODEL CALIBRATION` · `FEATURE SELECTION STRATEGY` · `MISSING DATA STRATEGY` · `HYPERPARAMETER SENSITIVITY` · `BOOSTING MECHANICS` · `CLUSTERING EVALUATION` · `DATA LEAKAGE DETECTION` · `NEURAL NETWORK DESIGN` · `GRADIENT PATHOLOGY` · `TRANSFER LEARNING STRATEGY` · `MODEL MONITORING` · `DEPLOYMENT CONSTRAINTS` · `INTERPRETABILITY TRADEOFF` · `TRAINING-SERVING SKEW`
+
+**Concept blocklist for `ml-fundamentals`** (too implementation-specific — validator rejects these as concept tags):
+`sklearn`, `scikit-learn`, `tensorflow`, `pytorch`, `keras`, `xgboost`, `lightgbm`, `catboost`, `random_forest`, `decision_tree`, `logistic_regression`, `linear_regression`, `knn`, `svm`, `pca`, `kmeans`, `dbscan`, `adam`, `sgd`, `relu`, `sigmoid`, `softmax`, `dropout`, `batch_norm`, `learning_rate`, `epoch`, `batch_size`, `train_test_split`, `cross_val_score`, `grid_search`, `random_search`, `pipeline`, `scaler`, `imputer`, `encoder`, `numpy`, `pandas`, `matplotlib`, `seaborn`, `accuracy_score`, `roc_auc_score`, `f1_score`, `confusion_matrix`, `shap`, `lime`
+
+**First-hint leak patterns for `ml-fundamentals`** (forbidden in first hint):
+`bias-variance`, `overfitting`, `underfitting`, `regularization`, `cross-validation`, `gradient descent`, `ensemble`, `boosting`, `bagging`, `data leakage`, `concept drift`, `training-serving skew`, `calibration`, `SMOTE`, `SHAP`
+
+**Schema rules for ML Fundamentals question JSON:**
+- All questions: `id`, `order`, `topic`, `type`, `difficulty`, `title`, `description`, `options` (4 strings), `correct_option` (int 0–3), `explanation`, `hints`, `concepts`
+- Optional: `code_snippet` (string, shown in monospace above options), `scenario_context` (string, shown as lead-in paragraph), `mock_only` (bool, default false)
+- Allowed `type` values: `"mcq"`, `"scenario"`, `"predict_output"`, `"debug"`
+- ID ranges: easy 81001–81030 (practice), medium 82001–82035 (practice) + 82036–82047 (mock), hard 83001–83025 (practice) + 83026–83038 (mock)
+
 ---
 
 ## Question ID & Numbering Strategy (authoritative — no deviation)
@@ -227,7 +253,7 @@ Examples: `11005` = SQL easy #5 · `42017` = PySpark medium #17 · `53004` = Dat
 | Data Engineering | 5 | 51001–51999 | 52001–52999 | 53001–53999 |
 | Data Modeling | 6 | 61001–61999 | 62001–62999 | 63001–63999 |
 | Statistics | 7 | 71001–71999 | 72001–72999 | 73001–73999 |
-| ML Fundamentals (planned) | 8 | 81001–81999 | 82001–82999 | 83001–83999 |
+| ML Fundamentals | 8 | 81001–81999 | 82001–82999 | 83001–83999 |
 | Experimentation (planned) | 9 | 91001–91999 | 92001–92999 | 93001–93999 |
 
 T digits 8–9 are reserved for the next two planned tracks. New tracks beyond T9 are not yet spec'd — revisit the T assignment table when that time comes.
@@ -244,6 +270,7 @@ Verified current allocation for existing tracks:
 | Python | 21001–21030 (30p) | 22001–22029 (29p) · 22030–22037 (8m) | 23001–23024 (24p) · 23025–23036 (12m) |
 | Pandas | 31001–31022 (22p) | 32001–32031 (31p) · 32032–32041 (10m) | 33001–33023 (23p) · 33024–33037 (14m) |
 | PySpark | 41001–41038 (38p) | 42001–42038 (38p) · 42039–42048 (10m) | 43001–43026 (26p) · 43027–43036 (10m) |
+| ML Fundamentals | 81001–81030 (30p) | 82001–82035 (35p) · 82036–82047 (12m) | 83001–83025 (25p) · 83026–83038 (13m) |
 
 ### SQL sample IDs (3-digit, SQL only)
 

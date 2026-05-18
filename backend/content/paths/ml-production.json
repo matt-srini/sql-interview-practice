@@ -1,0 +1,12 @@
+{
+  "slug": "ml-production",
+  "title": "Production ML & Model Monitoring",
+  "description": "Navigate the real-world challenges of deploying and maintaining models: detecting and eliminating data leakage in complex pipelines, diagnosing training-serving skew from feature definition divergence, monitoring for concept drift and covariate shift in production, applying model calibration to downstream decision systems, and selecting deployment strategies under hard latency constraints.",
+  "topic": "ml-fundamentals",
+  "questions": [82012, 82034, 83004, 83006, 83009, 83013, 83018, 83020, 83022, 83024],
+  "tier": "pro",
+  "role": "advanced",
+  "focus_concepts": ["DATA LEAKAGE DETECTION", "TRAINING-SERVING SKEW", "MODEL MONITORING", "MODEL CALIBRATION", "DEPLOYMENT CONSTRAINTS"],
+  "outcomes": "You will be able to identify temporal, preprocessing, and feature-level leakage in ML pipelines, diagnose training-serving skew caused by divergent feature computation logic, interpret PSI-based distribution drift alerts and distinguish covariate shift from concept drift, apply Platt scaling or isotonic regression to fix probability miscalibration in production, and select between ANN retrieval, model distillation, and GPU batching given a hard latency SLA.",
+  "recommended_after": ["ml-model-evaluation"]
+}
