@@ -68,31 +68,42 @@ Tracks concept-hooks.md coverage against the question bank, identifies gaps, and
 
 ## Authoring reference (read before writing any question)
 
-### ID allocation
+### ID allocation and `order` field — how they differ
 
-**Rule (from `docs/content-authoring.md`):** Append IDs to the end of the current difficulty range. Never renumber. No mock-only questions at easy (by design).
+Two fields control question sequencing and they serve different purposes:
 
-Current maxes and next-available IDs:
+| Field | Purpose | Rule |
+|---|---|---|
+| `id` | Permanent identity key (submissions, progress, paths) | Append to end of range. **Never renumber.** |
+| `order` | Sidebar display order / sample pool slice | Controls practice catalog sort; mock-only Qs are filtered out of sidebar entirely |
 
-| Track | Difficulty | Current max | Next practice ID | Next mock ID |
-|---|---|---|---|---|
-| SQL | easy | 11032 | **11033** | n/a (no easy mock) |
-| SQL | medium | 12053 (mock ends) | **12054** | after new practice |
-| SQL | hard | 13043 (mock ends) | **13044** | after new practice |
-| Statistics | easy | 71028 | **71029** | n/a |
-| Statistics | medium | 72028 | **72029** | n/a |
-| Statistics | hard | 73024 | **73025** | n/a |
-| Pandas | easy | 31022 | **31023** | n/a |
-| Pandas | medium | 32041 (mock ends) | **32042** | after new practice |
-| Pandas | hard | 33037 (mock ends) | **33038** | after new practice |
-| Python | easy | 21030 | **21031** | n/a |
-| Python | medium | 22037 (mock ends) | **22038** | n/a (practical Python = all practice) |
-| Python | hard | 23036 (mock ends) | **23037** | n/a |
-| PySpark | easy | 41038 | **41039** | n/a |
-| PySpark | medium | 42048 (mock ends) | **42049** | after new practice |
-| PySpark | hard | 43036 (mock ends) | **43037** | after new practice |
+**Why IDs don't control display:** Mock-only questions are filtered out of the practice catalog by the catalog loader. So a practice question with `id: 12054` (numerically after mock `id: 12035`) still appears correctly in the sidebar based solely on its `order` value.
 
-> **schemas.json:** No update needed — all new IDs fall within existing declared ranges (e.g. SQL 11001–11999). The catalog loader validates at startup; it will crash if an ID is outside range.
+**The ordering convention:** Within each difficulty file, practice questions have lower `order` values than mock-only questions. New practice questions must get `order` values that place them in the practice sequence — meaning AFTER the current practice max order but the exact position relative to existing mock orders doesn't matter (mock is invisible in the sidebar).
+
+**ID rule:** IDs are appended to the end of the range. Since existing mock IDs sit at the current end, new practice IDs will numerically follow existing mock IDs. This is acceptable — the no-renumber rule is a hard constraint.
+
+Current state and next-available values:
+
+| Track | Difficulty | Last practice (id · order) | Last mock (id · order) | Next practice id | Next practice order | Next mock id |
+|---|---|---|---|---|---|---|
+| SQL | easy | 11032 · 32 | none | **11033** | **33** | n/a |
+| SQL | medium | 12034 · 34 | 12053 · 53 | **12054** | **54** | after new practice |
+| SQL | hard | 13029 · 29 | 13043 · 43 | **13044** | **44** | after new practice |
+| Statistics | easy | 71028 · 28 | none | **71029** | **29** | n/a (see mock policy) |
+| Statistics | medium | 72028 · 28 | none | **72029** | **29** | after new practice |
+| Statistics | hard | 73024 · 24 | none | **73025** | **25** | after new practice |
+| Pandas | easy | 31022 · 22 | none | **31023** | **23** | n/a |
+| Pandas | medium | 32031 · 31 | 32041 · 41 | **32042** | **42** | after new practice |
+| Pandas | hard | 33023 · 23 | 33037 · 37 | **33038** | **38** | after new practice |
+| Python | easy | 21030 · 30 | none | **21031** | **31** | n/a |
+| Python | medium | 22029 · 29 | 22037 · 37 | **22038** | **38** | n/a (all practice) |
+| Python | hard | 23024 · 24 | 23036 · 36 | **23037** | **37** | n/a |
+| PySpark | easy | 41038 · 38 | none | **41039** | **39** | n/a |
+| PySpark | medium | 42038 · 38 | 42048 · 48 | **42049** | **49** | after new practice |
+| PySpark | hard | 43026 · 26 | 43036 · 36 | **43037** | **37** | after new practice |
+
+> **schemas.json:** No update needed — all new IDs fall within existing declared ranges (e.g. SQL 11001–11999). Catalog loader validates at startup and crashes on range violation.
 
 ### Question JSON schema — SQL
 
@@ -151,16 +162,20 @@ Mock-only additions (hard questions only): add `"mock_only": true` and optionall
 
 ### Mock-only rules
 
-| Track | Mock allowed? | Policy |
+**Important:** `in_mixed_mock=False` in `tracks.py` means the track is excluded from cross-track mixed sessions. It does NOT prevent track-specific mock questions. ML Fundamentals is `in_mixed_mock=False` and has 25 mock-only questions — those appear in ML-specific mock sessions.
+
+Mock-only questions are drawn into the mock pool only for Pro/Elite users at medium and hard difficulty. Easy mock is never used (by design).
+
+| Track | Mock-only questions | Policy for this expansion |
 |---|---|---|
-| SQL | ✅ | Hard specialist patterns only. New mocks: IDs after new practice in 13xxx |
-| Python | ✅ | Algorithmic hard patterns. Practical Python = all practice |
-| Pandas | ✅ | Hard advanced patterns only |
-| PySpark | ✅ | Hard edge cases only |
-| Statistics | ❌ | No mock-only at launch (policy) |
-| Data Engineering | ❌ | `in_mixed_mock=false`; no mock pool |
-| Data Modeling | ❌ | `in_mixed_mock=false`; no mock pool |
-| ML Fundamentals | ✅ | Existing 25 mock questions; new questions are practice unless exceptional |
+| SQL | ✅ existing 33 | Add 5 new hard mock-only specialist patterns |
+| Python | ✅ existing 20 | Practical Python Qs = all practice; algorithmic hard = practice |
+| Pandas | ✅ existing 24 | Add 3 new hard mock-only |
+| PySpark | ✅ existing 20 | Add 1 new hard mock-only (pivot with dynamic schema) |
+| Statistics | 0 today, **CAN add** | Add 3–4 hard mock-only (CUPED numerical, MDE numerical, causal DAG) — track-specific mock sessions are supported |
+| Data Engineering | 0, deferred | MCQ format is already assessment-like; hard practice Qs serve the same purpose; keep at 0 for now |
+| Data Modeling | 0, deferred | Same as DE; keep at 0 for now |
+| ML Fundamentals | ✅ existing 25 | New ML questions are practice unless audit reveals clear mock-only candidates |
 
 ### Learning path rules
 
@@ -173,11 +188,7 @@ Mock-only additions (hard questions only): add `"mock_only": true` and optionall
 
 ### `order` field
 
-The `order` field controls sidebar position. For new questions appended to a file:
-- Set `order` = next integer after the current max `order` in that file (regardless of mock_only status)
-- For easy: current max order = 32 → new questions start at order 33
-- For medium: current max order = 53 → new questions start at order 54
-- For hard: current max order = 43 → new questions start at order 44
+The `order` field controls sidebar position for practice questions (mock-only questions are filtered out of the sidebar entirely). Set it to the next integer after the current max order in each file — see the "Next practice order" column in the ID table above. New mock-only questions also need an `order` value; set it after the new practice orders in the same file.
 
 ### Datasets available in DuckDB (SQL questions only)
 
@@ -257,7 +268,7 @@ String/date function questions use `employees`, `users`, or `orders` — they ha
 
 ### Phase 2 — Statistics new questions (+20 questions)
 **Target files:** `backend/content/statistics_questions/easy.json`, `medium.json`, `hard.json`  
-**All practice-only (policy: Statistics has no mock-only questions at launch)**
+**Mostly practice; 3–4 hard questions designated mock-only** (CUPED numerical, MDE numerical, causal DAG — these are appropriate for Pro/Elite timed assessment)
 
 **Distribution gaps (5 questions — easy/medium, conceptual MCQ):**
 - [ ] Kurtosis — excess kurtosis and tail behavior interpretation
