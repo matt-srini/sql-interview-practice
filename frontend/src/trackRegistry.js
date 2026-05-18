@@ -112,6 +112,20 @@ export const TRACK_META = {
     easyQuestions: 30,
     tagline: 'conceptual · MCQ · scenario',
   },
+  experimentation: {
+    label: 'Experimentation',
+    description: 'A/B testing design, statistical power, metric selection, variance reduction (CUPED), novelty and network effects, multiple testing corrections, and causal inference methods — the applied experimentation skills tested in product data science and growth interviews.',
+    color: '#0EA5E9',
+    apiPrefix: '/experimentation',
+    language: 'text',
+    hasRunCode: false,
+    hasMCQ: true,
+    mixedSubtype: false,
+    totalQuestions: 0,
+    easyQuestions: 30,
+    tagline: 'MCQ · scenario · experiment design',
+    comingSoon: true,
+  },
 };
 
 // Active tracks only — safe for routing, catalog, mock, dashboard, etc.

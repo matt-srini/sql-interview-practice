@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 import data_engineering_questions as de_mod
 import data_modeling_questions as dm_mod
+import experimentation_questions as exp_mod
 import ml_fundamentals_questions as ml_mod
 import python_data_questions as pandas_mod
 import python_questions as python_mod
@@ -29,6 +30,7 @@ _TOPIC_MOD = {
     "data-modeling": dm_mod,
     "statistics": stats_mod,
     "ml-fundamentals": ml_mod,
+    "experimentation": exp_mod,
 }
 
 # Map topic slug → db topic string used in user_progress
@@ -41,6 +43,7 @@ _TOPIC_DB = {
     "data-modeling": "data-modeling",
     "statistics": "statistics",
     "ml-fundamentals": "ml-fundamentals",
+    "experimentation": "experimentation",
 }
 
 

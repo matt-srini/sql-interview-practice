@@ -20,6 +20,7 @@ from typing import Any
 
 import data_engineering_questions
 import data_modeling_questions
+import experimentation_questions
 import ml_fundamentals_questions
 import python_data_questions
 import python_questions
@@ -354,6 +355,45 @@ TRACKS: tuple[TrackConfig, ...] = (
         ),
         in_mixed_mock=False,
         mixed_subtype=True,
+    ),
+    TrackConfig(
+        slug="experimentation",
+        db_topic="experimentation",
+        catalog_module=experimentation_questions,
+        label="Experimentation",
+        eval_kind="mcq",
+        unlock_profile="mcq",
+        content_dir=BACKEND_ROOT / "content" / "experimentation_questions",
+        concept_blocklist={
+            "a/b test",
+            "control group",
+            "treatment group",
+            "randomization",
+            "p-value",
+            "null hypothesis",
+            "alpha",
+            "beta",
+            "bootstrap",
+            "permutation test",
+            "z-test",
+            "t-test",
+            "chi-square",
+            "sample size",
+            "significance",
+        },
+        hint_rules={"easy": (1, 2), "medium": (2, 3), "hard": (2, 3)},
+        first_hint_leak_patterns=(
+            re.compile(r"\bcuped\b", re.IGNORECASE),
+            re.compile(r"\bsample\s+ratio\s+mismatch\b", re.IGNORECASE),
+            re.compile(r"\b(bonferroni|benjamini.hochberg|holm)\b", re.IGNORECASE),
+            re.compile(r"\bswitchback\b", re.IGNORECASE),
+            re.compile(r"\bdifference[_\s-]in[_\s-]differences\b", re.IGNORECASE),
+            re.compile(r"\bregression\s+discontinuity\b", re.IGNORECASE),
+            re.compile(r"\bthompson\s+sampling\b", re.IGNORECASE),
+            re.compile(r"\bnovelt\w+\s+effect\b", re.IGNORECASE),
+            re.compile(r"\bsutva\b", re.IGNORECASE),
+        ),
+        in_mixed_mock=False,
     ),
     TrackConfig(
         slug="ml-fundamentals",

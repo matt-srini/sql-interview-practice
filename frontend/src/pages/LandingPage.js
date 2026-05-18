@@ -34,7 +34,7 @@ const ROLES = [
     id: 'scientist',
     label: 'Data Scientist',
     tagline: 'ML · statistical inference · Python for modelling',
-    tracks: ['ml-fundamentals', 'statistics', 'python', 'sql'],
+    tracks: ['ml-fundamentals', 'statistics', 'experimentation', 'python', 'sql'],
   },
 ];
 
@@ -143,6 +143,18 @@ const IDE_TRACKS = [
     type: 'mcq',
     question: 'Your model hits 97% accuracy but completely misses the fraud class. What is the most likely root cause?',
     options: ['Learning rate too high', 'Class imbalance', 'Model underfitting', 'Feature collinearity'],
+    correct: 1,
+  },
+  {
+    slug: 'experimentation',
+    label: 'Experiment',
+    color: '#0EA5E9',
+    fname: 'ab_design.md',
+    badge: 'Experiment · MCQ',
+    code: null,
+    type: 'mcq',
+    question: 'You peek at day 3 of a 7-day A/B test and p = 0.04. You stop early. What is the actual risk?',
+    options: ['None — p < 0.05 is always safe', 'Type I error rate is inflated above 5%', 'Statistical power decreases', 'The effect size is overstated by the sample split'],
     correct: 1,
   },
 ];
@@ -711,6 +723,7 @@ function TracksIndexSection() {
     'data-engineering': 'MCQ · scenario',
     'data-modeling':    'MCQ · schema design',
     statistics:         'MCQ + numerical',
+    experimentation:    'MCQ · scenario',
   };
 
   return (
