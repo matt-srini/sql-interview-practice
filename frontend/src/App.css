@@ -11205,7 +11205,9 @@ select {
   margin-top: 2.5rem;
   border-bottom: 1px solid var(--border-subtle, rgba(26,26,24,0.1));
   overflow-x: auto;
+  scrollbar-width: none;
 }
+.lp-role-tabs::-webkit-scrollbar { display: none; }
 [data-theme="dark"] .lp-role-tabs { border-bottom-color: rgba(240,238,233,0.08); }
 .lp-role-tab {
   padding: 10px 20px;
