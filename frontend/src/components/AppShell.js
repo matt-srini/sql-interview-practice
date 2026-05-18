@@ -44,11 +44,37 @@ export default function AppShell() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [mobileOpen]);
 
-  // Only auto-navigate to first question when the user lands on the old /practice path
-  // For the new /:topic paths we show TrackHubPage instead
+  // When landing on the hub with ?concepts=..., auto-navigate to the first
+  // matching accessible question so the user goes straight to the question page.
   useEffect(() => {
-    // No auto-redirect needed for the new topic-aware routing
-  }, [loading, error, catalog, location.pathname, navigate]);
+    if (!isAtHub || loading || error || !catalog) return;
+    const params = new URLSearchParams(location.search);
+    const rawConcepts = params.get('concepts');
+    if (!rawConcepts) return;
+
+    // Normalise incoming values: underscores → spaces, trim, lowercase
+    const requested = rawConcepts
+      .split(',')
+      .map((s) => s.trim().toLowerCase().replace(/_/g, ' ').replace(/-/g, ' '))
+      .filter(Boolean);
+    if (requested.length === 0) return;
+
+    const groups = catalog?.groups ?? [];
+    let firstMatch = null;
+    outer: for (const group of groups) {
+      for (const q of group.questions) {
+        if (q.state === 'locked') continue;
+        const qConcepts = (q.concepts ?? []).map((c) => String(c).toLowerCase());
+        const hit = requested.some((req) => qConcepts.some((qc) => qc.includes(req) || req.includes(qc)));
+        if (hit) { firstMatch = q; break outer; }
+      }
+    }
+
+    if (firstMatch) {
+      navigate(`${location.pathname}/questions/${firstMatch.id}`, { replace: true });
+    }
+  }, [isAtHub, loading, error, catalog, location.pathname, location.search, navigate]);
+
 
   useEffect(() => {
     if (!location.search.includes('upgraded=true')) return;
