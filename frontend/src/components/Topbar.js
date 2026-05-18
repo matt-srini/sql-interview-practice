@@ -141,7 +141,7 @@ export default function Topbar({
             <Link className={brandLinkClass} to="/" onClick={handleBrandClick}>
               <div className="brand-lockup">
                 <img
-                  src={isDark ? '/branding/mark-reverse-no-bg.svg' : '/branding/mark-no-bg.svg'}
+                  src="/branding/mark-brand.svg"
                   alt=""
                   aria-hidden="true"
                   className="brand-mark-img"
