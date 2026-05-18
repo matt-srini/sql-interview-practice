@@ -337,7 +337,7 @@ async def _select_questions(
 
         chosen_raw = guaranteed + filler
         random.shuffle(chosen_raw)
-    elif get_track(track).eval_kind == "mcq" and difficulty != "mixed":
+    elif track != "mixed" and get_track(track).eval_kind == "mcq" and difficulty != "mixed":
         fmt_targets = _pyspark_format_targets(difficulty, num_questions)
         chosen_raw = _sample_by_format(pool, fmt_targets, mocked_ids)
         if len(chosen_raw) < num_questions:
