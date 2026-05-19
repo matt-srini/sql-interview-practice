@@ -15,7 +15,7 @@ When working in this codebase, think simultaneously from multiple vantage points
 
 - **User-behaviour expert** — Users are under pressure (job search, timed practice). Friction costs them confidence. Low-friction flows (anonymous-first identity, in-place registration, persistent progress) are intentional product choices, not oversights. When suggesting changes, consider: how does a first-time visitor experience this? How does a returning user with 40 solves experience it? What happens when a user hits a locked question or an empty state?
 
-- **Curriculum designer** — The 676 practice questions have intentional difficulty progressions, real-world datasets with deliberate edge cases, and semantic concept tags. Changes to unlock rules, question ordering, or content must preserve the learning arc. Don't make hard questions trivially accessible or easy questions feel insulting.
+- **Curriculum designer** — The 812 practice questions have intentional difficulty progressions, real-world datasets with deliberate edge cases, and semantic concept tags. Changes to unlock rules, question ordering, or content must preserve the learning arc. Don't make hard questions trivially accessible or easy questions feel insulting.
 
 - **Product-minded operator** — Three subscription tiers (Free / Pro / Elite) are the revenue model. The unlock gates are not arbitrary; they create upgrade motivation without being punitive. Rate limiting, error shapes (`{ error, request_id }`), and idempotent webhooks exist for real operational reasons. Changes to these areas need business-level reasoning, not just technical correctness.
 
@@ -51,14 +51,14 @@ Keep all five lenses active at once. The best decisions here satisfy all of them
 A data interview practice platform covering nine tracks. Users write SQL or Python, answer MCQ questions, get instant feedback, and work through gated challenge banks.
 
 **Modes per track:**
-- **Challenge mode** — plan-aware unlock rules, persistent progress, 790 practice questions across 9 tracks
-- **Mock mode** — 155 additional mock-only questions (Pro/Elite), never shown in practice catalog
+- **Challenge mode** — plan-aware unlock rules, persistent progress, 812 practice questions across 9 tracks
+- **Mock mode** — 158 additional mock-only questions (Pro/Elite), never shown in practice catalog
 - **Sample mode** — 36 sandbox questions across SQL/Python/Pandas/PySpark (3 per track+difficulty), no progress recorded, no login required. Data Engineering, Data Modeling, Statistics, ML Fundamentals, and Experimentation samples are auto-sliced from the first 3 practice questions per difficulty (no dedicated sample IDs).
 
 **Tracks:**
 - **SQL** — 112 practice (37 easy / 45 medium / 30 hard) + 38 mock-only, DuckDB execution, realistic relational datasets
-- **Python** — 83 practice (30 easy / 29 medium / 24 hard) + 20 mock-only, algorithms and data structures, test-case evaluation
-- **Pandas** — 76 practice (22 easy / 31 medium / 23 hard) + 24 mock-only, pandas-specific data manipulation, DataFrame comparison
+- **Python** — 95 practice (39 easy / 32 medium / 24 hard) + 20 mock-only, algorithms and data structures, test-case evaluation
+- **Pandas** — 86 practice (27 easy / 36 medium / 23 hard) + 26 mock-only, pandas-specific data manipulation, DataFrame comparison
 - **PySpark** — 102 practice (38 easy / 38 medium / 26 hard) + 20 mock-only, MCQ / predict-output / debug / scenario formats
 - **Data Engineering** — 80 practice (30 easy / 30 medium / 20 hard), MCQ / scenario / debug, no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
 - **Data Modeling** — 70 practice (25 easy / 25 medium / 20 hard) + 1 mock-only, MCQ / scenario, no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
@@ -90,8 +90,8 @@ Mock-only questions (`mock_only: true`) live in the same JSON files as practice 
 | Track | Easy (practice + mock) | Medium (practice + mock) | Hard (practice + mock) | Format | Location |
 |---|---|---|---|---|---|
 | SQL | 37 + 0 | 45 + 19 | 30 + 19 | SQL query via DuckDB | `backend/content/questions/` |
-| Python | 30 + 0 | 29 + 8 | 24 + 12 | Algorithm function, test cases | `backend/content/python_questions/` |
-| Pandas | 22 + 0 | 31 + 10 | 23 + 14 | DataFrame function, output comparison | `backend/content/python_data_questions/` |
+| Python | 39 + 0 | 32 + 8 | 24 + 12 | Algorithm function, test cases | `backend/content/python_questions/` |
+| Pandas | 27 + 0 | 36 + 12 | 23 + 14 | DataFrame function, output comparison | `backend/content/python_data_questions/` |
 | PySpark | 38 + 0 | 38 + 10 | 26 + 10 | MCQ / predict-output / debug / scenario | `backend/content/pyspark_questions/` |
 | Data Engineering | 30 + 0 | 30 + 0 | 20 + 0 | MCQ / scenario / debug | `backend/content/data_engineering_questions/` |
 | Data Modeling | 25 + 0 | 25 + 0 | 20 + 1 | MCQ / scenario | `backend/content/data_modeling_questions/` |
@@ -99,8 +99,8 @@ Mock-only questions (`mock_only: true`) live in the same JSON files as practice 
 | ML Fundamentals | 30 + 0 | 35 + 12 | 25 + 13 | MCQ / scenario / predict-output / debug | `backend/content/ml_fundamentals_questions/` |
 | Experimentation | 30 + 0 | 30 + 12 | 20 + 13 | MCQ / scenario / predict-output / debug | `backend/content/experimentation_questions/` |
 
-**Practice totals:** SQL 112 · Python 83 · Pandas 76 · PySpark 102 · Data Engineering 80 · Data Modeling 70 · Statistics 97 · ML Fundamentals 90 · Experimentation 80 = **790 practice questions**  
-**Mock-only totals:** SQL 38 · Python 20 · Pandas 24 · PySpark 20 · Statistics 3 · ML Fundamentals 25 · Experimentation 25 · Data Modeling 1 = **156 mock-only questions** (Pro/Elite only; Data Engineering has no mock-only questions)
+**Practice totals:** SQL 112 · Python 95 · Pandas 86 · PySpark 102 · Data Engineering 80 · Data Modeling 70 · Statistics 97 · ML Fundamentals 90 · Experimentation 80 = **812 practice questions**  
+**Mock-only totals:** SQL 38 · Python 20 · Pandas 26 · PySpark 20 · Statistics 3 · ML Fundamentals 25 · Experimentation 25 · Data Modeling 1 = **158 mock-only questions** (Pro/Elite only; Data Engineering has no mock-only questions)
 
 See [docs/content-authoring.md](docs/content-authoring.md) for the full mock-only authoring spec.
 

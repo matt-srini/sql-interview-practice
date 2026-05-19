@@ -795,5 +795,186 @@
       "NAMED AGGREGATION",
       "datetime"
     ]
+  },
+  {
+    "id": 31023,
+    "order": 23,
+    "topic": "python_data",
+    "difficulty": "easy",
+    "title": "Flag Failed Payments with .loc",
+    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nAdd a boolean column `needs_review` that is `True` for rows where `payment_status == 'failed'`, and `False` otherwise. Use `.loc` for the assignment to avoid `SettingWithCopyWarning`. Return all columns sorted by `order_id`.",
+    "dataframes": {
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Add needs_review column using .loc — True where payment_status == 'failed'\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['needs_review'] = False\n    df.loc[df['payment_status'] == 'failed', 'needs_review'] = True\n    return df.sort_values('order_id').reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['needs_review'] = False\n    df.loc[df['payment_status'] == 'failed', 'needs_review'] = True\n    return df.sort_values('order_id').reset_index(drop=True)",
+    "explanation": "Always call `.copy()` before mutating a slice to avoid `SettingWithCopyWarning`. Initialise `needs_review` to `False` for all rows, then use `.loc[mask, col] = value` to flip it to `True` for matching rows. Chained indexing like `df[mask]['col'] = val` silently modifies a copy — `.loc` is the correct, safe way to set values on a filtered subset.",
+    "hints": [
+      "Call `.copy()` first so you own the DataFrame, then initialise `needs_review` to `False` before using `.loc` to set `True` for the matching rows.",
+      "`.loc[boolean_mask, 'column_name'] = value` is the safe pattern for conditional assignment."
+    ],
+    "concepts": [
+      "SettingWithCopyWarning",
+      ".loc CONDITIONAL ASSIGNMENT",
+      "boolean mask",
+      "SAFE IN-PLACE UPDATE"
+    ]
+  },
+  {
+    "id": 31024,
+    "order": 24,
+    "topic": "python_data",
+    "difficulty": "easy",
+    "title": "Drop Events Without a Product",
+    "description": "You have a DataFrame `df_events` loaded from the events dataset.\n\n**Columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n\nThe `product_id` column has some null values (events not linked to a product). Remove only rows where `product_id` is null by passing `subset=['product_id']` to `dropna`. Return columns `event_id`, `user_id`, `event_name`, `product_id`, sorted by `event_id`.",
+    "dataframes": {
+      "df_events": "events.csv"
+    },
+    "schema": {
+      "df_events": [
+        "event_id",
+        "session_id",
+        "user_id",
+        "event_time",
+        "event_name",
+        "product_id"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_events):\n    # Drop rows where product_id is null — use subset to avoid dropping rows with other nulls\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_events):\n    result = df_events.dropna(subset=['product_id'])\n    return result[['event_id', 'user_id', 'event_name', 'product_id']].sort_values('event_id').reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_events):\n    result = df_events.dropna(subset=['product_id'])\n    return result[['event_id', 'user_id', 'event_name', 'product_id']].sort_values('event_id').reset_index(drop=True)",
+    "explanation": "`.dropna()` with no arguments removes any row with at least one null across all columns — too broad. `.dropna(subset=['product_id'])` removes only rows where `product_id` is null, leaving all other null values in place. This is the precise tool for column-specific null filtering.",
+    "hints": [
+      "Plain `.dropna()` removes rows with *any* null — pass `subset=['column']` to target a specific column.",
+      "After filtering, select only the required columns and sort by `event_id`."
+    ],
+    "concepts": [
+      "NULL-BASED ROW FILTERING",
+      "dropna subset",
+      "missing values",
+      "column selection"
+    ]
+  },
+  {
+    "id": 31025,
+    "order": 25,
+    "topic": "python_data",
+    "difficulty": "easy",
+    "title": "Forward-Fill Missing Emails",
+    "description": "You have a DataFrame `df_users` loaded from the users dataset.\n\n**Columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `acquisition_channel`, `plan_tier`, `is_active`\n\nSome users have a null `email`. Sort the DataFrame by `user_id`, then forward-fill the `email` column so that each null is replaced by the nearest preceding non-null email. Return columns `user_id`, `name`, `email`, sorted by `user_id`.",
+    "dataframes": {
+      "df_users": "users.csv"
+    },
+    "schema": {
+      "df_users": [
+        "user_id",
+        "name",
+        "email",
+        "signup_date",
+        "country",
+        "acquisition_channel",
+        "plan_tier",
+        "is_active"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_users):\n    # Sort by user_id, forward-fill the email column\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_users):\n    df = df_users.copy().sort_values('user_id')\n    df['email'] = df['email'].ffill()\n    return df[['user_id', 'name', 'email']].reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_users):\n    df = df_users.copy().sort_values('user_id')\n    df['email'] = df['email'].ffill()\n    return df[['user_id', 'name', 'email']].reset_index(drop=True)",
+    "explanation": "`.ffill()` (forward fill) propagates the last observed non-null value downward through the column in row order. Sorting by `user_id` first ensures the fill direction follows user ID order rather than the arbitrary original DataFrame order. `.bfill()` does the reverse.",
+    "hints": [
+      "Sort before filling so the propagation travels in `user_id` order.",
+      "`.ffill()` replaces each null with the last non-null value seen above it in the column."
+    ],
+    "concepts": [
+      "FORWARD FILL",
+      "ffill bfill",
+      "missing value imputation",
+      "sorting before fill"
+    ]
+  },
+  {
+    "id": 31026,
+    "order": 26,
+    "topic": "python_data",
+    "difficulty": "easy",
+    "title": "Event Count per Product Including Null Group",
+    "description": "You have a DataFrame `df_events` loaded from the events dataset.\n\n**Columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n\nCount the number of events per `product_id`. Include events where `product_id` is null as their own group (a `NaN` row in the output). Return columns `product_id` and `event_count`, sorted by `event_count` descending.",
+    "dataframes": {
+      "df_events": "events.csv"
+    },
+    "schema": {
+      "df_events": [
+        "event_id",
+        "session_id",
+        "user_id",
+        "event_time",
+        "event_name",
+        "product_id"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_events):\n    # Count events per product_id — include the null group\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_events):\n    result = (\n        df_events\n        .groupby('product_id', dropna=False, as_index=False)\n        .size()\n        .rename(columns={'size': 'event_count'})\n    )\n    return result.sort_values('event_count', ascending=False).reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_events):\n    result = (\n        df_events\n        .groupby('product_id', dropna=False, as_index=False)\n        .size()\n        .rename(columns={'size': 'event_count'})\n    )\n    return result.sort_values('event_count', ascending=False).reset_index(drop=True)",
+    "explanation": "By default `groupby` silently drops NaN keys. Passing `dropna=False` keeps null keys as a separate group — the same behaviour as SQL `GROUP BY` which includes NULL rows. `as_index=False` returns `product_id` as a regular column instead of the index, keeping the output as a flat DataFrame.",
+    "hints": [
+      "By default groupby silently excludes null keys — pass `dropna=False` to retain them.",
+      "`as_index=False` keeps the group key as a regular column rather than promoting it to the index."
+    ],
+    "concepts": [
+      "groupby dropna=False",
+      "NULL GROUP PRESERVATION",
+      "as_index=False",
+      "GROUPED AGGREGATION"
+    ]
+  },
+  {
+    "id": 31027,
+    "order": 27,
+    "topic": "python_data",
+    "difficulty": "easy",
+    "title": "Average Order Value by Status",
+    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nCompute the average `net_amount` per `status` using named aggregation and `as_index=False`. Round the result to 2 decimal places. Return columns `status` and `avg_net_amount`, sorted by `status` alphabetically.",
+    "dataframes": {
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Average net_amount per status — use as_index=False and named aggregation\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    result = df_orders.groupby('status', as_index=False).agg(\n        avg_net_amount=('net_amount', 'mean')\n    )\n    result['avg_net_amount'] = result['avg_net_amount'].round(2)\n    return result.sort_values('status').reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    result = df_orders.groupby('status', as_index=False).agg(\n        avg_net_amount=('net_amount', 'mean')\n    )\n    result['avg_net_amount'] = result['avg_net_amount'].round(2)\n    return result.sort_values('status').reset_index(drop=True)",
+    "explanation": "`groupby('status', as_index=False)` keeps `status` as a regular column in the output. Named aggregation syntax `agg(output_col=('source_col', 'func'))` names the result column directly, avoiding a separate `.rename()` call. This is the modern pandas pattern for clean, readable groupby aggregations since pandas 0.25.",
+    "hints": [
+      "`as_index=False` keeps the group key as a column, not the index.",
+      "Named aggregation: `agg(output_col=('source_col', 'func'))` sets the output column name in one step."
+    ],
+    "concepts": [
+      "as_index=False",
+      "NAMED AGGREGATION",
+      "GROUPED AGGREGATION",
+      "groupby"
+    ]
   }
 ]

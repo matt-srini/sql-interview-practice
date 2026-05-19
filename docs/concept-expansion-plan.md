@@ -3,7 +3,7 @@
 Tracks concept-hooks.md coverage against the question bank, identifies gaps, and drives new question authoring across all 8 tracks.
 
 **Initiated:** 2026-05-18  
-**Status:** Phase 3 pending (Phase 0 complete 2026-05-18, Phase 1 complete 2026-05-18, Phase 2 complete 2026-05-18)
+**Status:** Phase 4 pending (Phase 0 complete 2026-05-18, Phase 1 complete 2026-05-18, Phase 2 complete 2026-05-18, Phase 3 complete 2026-05-19)
 
 ---
 
@@ -13,8 +13,8 @@ Tracks concept-hooks.md coverage against the question bank, identifies gaps, and
 |---|---|---|---|
 | SQL | ✅ hooks 1–92 (Phase 0 expanded) | ✅ done | ✅ Phase 1 (+22) |
 | PySpark | ✅ hooks 1–66 (Phase 0 expanded) | ✅ done | ⬜ Phase 4 |
-| Pandas | ✅ hooks 1–67 (Phase 0 expanded) | ✅ done | ⬜ Phase 3 |
-| Python | ✅ hooks 1–67 (Phase 0 expanded) | ✅ done | ⬜ Phase 3 |
+| Pandas | ✅ hooks 1–67 (Phase 0 expanded) | ✅ done | ✅ Phase 3 (+12) |
+| Python | ✅ hooks 1–67 (Phase 0 expanded) | ✅ done | ✅ Phase 3 (+12) |
 | Data Engineering | ✅ hooks 1–67 (Phase 0 expanded) | ✅ done | ⬜ Phase 4 |
 | Data Modeling | ✅ hooks 1–57 (Phase 0 expanded) | ✅ done | ⬜ Phase 4 |
 | Statistics | ✅ hooks 1–84 (Phase 0 expanded) | ✅ done | ✅ Phase 2 (+20) |
@@ -305,41 +305,40 @@ String/date function questions use `employees`, `users`, or `orders` — they ha
 ---
 
 ### Phase 3 — Pandas (+12) + Python (+12) new questions
-**Target files:** `backend/content/python_data_questions/` and `backend/content/python_questions/`
+**Target files:** `backend/content/python_data_questions/` and `backend/content/python_questions/`  
+**Status: ✅ Complete 2026-05-19** — Pandas 86 practice (27/36/23) + 26 mock-only; Python 95 practice (39/32/24) + 20 mock-only
 
 **Pandas (12 questions):**
-- [ ] SettingWithCopyWarning / chained indexing (easy, practice)
-- [ ] dropna(how='all') vs how='any' (easy, practice)
-- [ ] fillna(method='ffill') vs fillna(value) (easy, practice)
-- [ ] groupby(dropna=False) — NaN key grouping behavior (easy, practice)
-- [ ] as_index=False in groupby — result shape change (easy, practice)
-- [ ] merge_asof() — nearest-key join for event streams (medium, practice)
-- [ ] combine_first() — patching missing values from a second DataFrame (medium, practice)
-- [ ] explode() — unnesting list-like columns and reaggregating (medium, practice)
-- [ ] assign() for method chaining — enabling fluid pipelines (medium, practice)
-- [ ] pipe() — integrating custom functions into a chain (medium, practice)
-- [ ] tz_localize() vs tz_convert() — when to use each (medium, mock-only)
-- [ ] Chunked reading with chunksize — when and why (medium, mock-only)
+- [x] 31023 — SettingWithCopyWarning / .loc conditional assignment (easy, practice)
+- [x] 31024 — dropna(subset=...) — column-specific null filtering (easy, practice)
+- [x] 31025 — ffill after sort — forward fill missing emails (easy, practice)
+- [x] 31026 — groupby(dropna=False, as_index=False) — NaN key grouping (easy, practice)
+- [x] 31027 — as_index=False + named aggregation — avg order value by status (easy, practice)
+- [x] 32042 — merge_asof() — nearest-key join for event streams (medium, practice)
+- [x] 32043 — combine_first() — patching missing values from a second Series (medium, practice)
+- [x] 32044 — assign() chained — discount_pct and is_discounted flag (medium, practice)
+- [x] 32045 — pipe() — integrating custom functions into a chain (medium, practice)
+- [x] 32046 — tz_localize() vs tz_convert() — UTC to New York time (medium, practice)
+- [x] 32047 — explode() — unnest product lists and filter multi-product orders (medium, mock-only)
+- [x] 32048 — pd.qcut + assign + groupby — revenue quartile distribution (medium, mock-only)
 
 **Python (12 questions — all practice):**
 
-Practical Data Python (5):
-- [ ] csv.DictReader — reading structured files without pandas (easy)
-- [ ] json.loads() — handling nested keys and missing fields safely (easy)
-- [ ] datetime.strptime() vs datetime.fromisoformat() — format flexibility (easy)
-- [ ] Aggregating without pandas — group-by with defaultdict, sum, mean (medium)
-- [ ] Duplicate detection in a list of dicts — key-based uniqueness (easy)
+Practical Data Python (9 easy):
+- [x] 21031 — csv.DictReader — parse CSV lines into list of dicts (easy)
+- [x] 21032 — json.loads() — parse JSON log entry, return [level, message] (easy)
+- [x] 21033 — datetime.strptime() — find most recent date from MM/DD/YYYY list (easy)
+- [x] 21034 — Find duplicates — values appearing more than once, no Counter (easy)
+- [x] 21035 — defaultdict grouping — group (category, item) pairs by key (easy)
+- [x] 21036 — deque sliding window maximum — O(n) with monotonic deque (easy)
+- [x] 21037 — Generator expression — sum of squares of odd numbers (easy)
+- [x] 21038 — zip_longest — pair two lists with fill value (easy)
+- [x] 21039 — namedtuple — create Player instances, sort by score desc (easy)
 
-Data Structure Choice (3):
-- [ ] list vs tuple — when immutability matters beyond convention (easy)
-- [ ] defaultdict vs dict.get() vs setdefault() — when to use each (easy)
-- [ ] deque vs list for a queue — O(1) popleft vs O(n) (easy)
-
-Pythonic Patterns (4):
-- [ ] Generator expression vs list comprehension — lazy evaluation memory savings (easy)
-- [ ] zip() on unequal iterables / zip_longest — what gets dropped, what doesn't (easy)
-- [ ] Context manager — what __enter__ and __exit__ give you (medium)
-- [ ] namedtuple vs dataclass — simple value objects (medium)
+Pythonic Patterns (3 medium):
+- [x] 22038 — contextlib.suppress — safe division, suppress ZeroDivisionError (medium)
+- [x] 22039 — Chunked list processing — sum each chunk with range(0, len, n) (medium)
+- [x] 22040 — json.loads + filter/sort — extract ERROR/CRITICAL messages from JSON log (medium)
 
 ---
 

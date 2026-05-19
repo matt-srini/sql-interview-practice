@@ -1728,5 +1728,274 @@
       "sorting",
       "pandas API"
     ]
+  },
+  {
+    "id": 32042,
+    "order": 42,
+    "topic": "python_data",
+    "difficulty": "medium",
+    "title": "Match Events to Most Recent Prior Order",
+    "description": "You have two DataFrames: `df_events` (event log) and `df_orders` (orders).\n\n**df_events columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nFor each event, find the most recent order placed by the **same user** at or before the event time. Use `pd.merge_asof` with `direction='backward'` and `by='user_id'`.\n\nReturn columns `event_id`, `user_id`, `event_time`, and `order_id` (NaN if the user has no prior order). Sort by `event_id`.",
+    "dataframes": {
+      "df_events": "events.csv",
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_events": [
+        "event_id",
+        "session_id",
+        "user_id",
+        "event_time",
+        "event_name",
+        "product_id"
+      ],
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_events, df_orders):\n    # Use merge_asof to match each event to the user's most recent prior order\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_events, df_orders):\n    events = df_events[['event_id', 'user_id', 'event_time']].copy()\n    orders = df_orders[['order_id', 'user_id', 'order_date']].copy()\n    events['event_time'] = pd.to_datetime(events['event_time'])\n    orders['order_date'] = pd.to_datetime(orders['order_date'])\n    events = events.sort_values('event_time')\n    orders = orders.sort_values('order_date')\n    result = pd.merge_asof(\n        events,\n        orders.rename(columns={'order_date': 'event_time'}),\n        on='event_time',\n        by='user_id',\n        direction='backward'\n    )\n    return result[['event_id', 'user_id', 'event_time', 'order_id']].sort_values('event_id').reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_events, df_orders):\n    events = df_events[['event_id', 'user_id', 'event_time']].copy()\n    orders = df_orders[['order_id', 'user_id', 'order_date']].copy()\n    events['event_time'] = pd.to_datetime(events['event_time'])\n    orders['order_date'] = pd.to_datetime(orders['order_date'])\n    events = events.sort_values('event_time')\n    orders = orders.sort_values('order_date')\n    result = pd.merge_asof(\n        events,\n        orders.rename(columns={'order_date': 'event_time'}),\n        on='event_time',\n        by='user_id',\n        direction='backward'\n    )\n    return result[['event_id', 'user_id', 'event_time', 'order_id']].sort_values('event_id').reset_index(drop=True)",
+    "explanation": "`pd.merge_asof` is an ordered merge that matches each left row to the nearest right row by the key column. With `direction='backward'`, it picks the largest right-side key that is <= the left-side key — finding the most recent prior order. The `by='user_id'` parameter restricts matching to rows with the same user. Both DataFrames must be pre-sorted by the merge key. When no match exists for a row, right-side columns like `order_id` are filled with NaN.",
+    "hints": [
+      "Both DataFrames must be sorted by the datetime key before calling `merge_asof`.",
+      "Rename `order_date` to match the left key name (`event_time`), then use `by='user_id'` to restrict matches within the same user."
+    ],
+    "concepts": [
+      "merge_asof",
+      "ORDERED MERGE",
+      "NEAREST-PRIOR JOIN",
+      "MULTI-DATAFRAME ENTITY LINKING",
+      "datetime"
+    ]
+  },
+  {
+    "id": 32043,
+    "order": 43,
+    "topic": "python_data",
+    "difficulty": "medium",
+    "title": "Fill Missing Emails with combine_first",
+    "description": "You have a DataFrame `df_users`.\n\n**Columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `acquisition_channel`, `plan_tier`, `is_active`\n\nSome users have a null `email`. Build a fallback `pd.Series` indexed by `user_id` that assigns `'user{user_id}@placeholder.com'` to every null-email user. Then use `Series.combine_first` to fill the nulls in the original email column from the fallback.\n\nReturn columns `user_id`, `name`, `email`, sorted by `user_id`.",
+    "dataframes": {
+      "df_users": "users.csv"
+    },
+    "schema": {
+      "df_users": [
+        "user_id",
+        "name",
+        "email",
+        "signup_date",
+        "country",
+        "acquisition_channel",
+        "plan_tier",
+        "is_active"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_users):\n    # Build a fallback Series for null-email users, then combine_first to fill gaps\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_users):\n    df = df_users.copy().set_index('user_id')\n    null_mask = df['email'].isna()\n    fallback = pd.Series(\n        [f'user{uid}@placeholder.com' for uid in df.index[null_mask]],\n        index=df.index[null_mask],\n        name='email'\n    )\n    df['email'] = df['email'].combine_first(fallback)\n    return df[['name', 'email']].reset_index().sort_values('user_id').reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_users):\n    df = df_users.copy().set_index('user_id')\n    null_mask = df['email'].isna()\n    fallback = pd.Series(\n        [f'user{uid}@placeholder.com' for uid in df.index[null_mask]],\n        index=df.index[null_mask],\n        name='email'\n    )\n    df['email'] = df['email'].combine_first(fallback)\n    return df[['name', 'email']].reset_index().sort_values('user_id').reset_index(drop=True)",
+    "explanation": "`Series.combine_first(other)` fills NaN positions in the calling Series with the corresponding values from `other`, aligned by index. Setting the index to `user_id` means alignment is by user — each null email is replaced by the fallback value at the same `user_id`. This is an index-aware alternative to `.fillna()` when the fill values vary per row and come from another indexed structure.",
+    "hints": [
+      "Set `user_id` as the index before combining so `combine_first` aligns the fallback Series by user ID.",
+      "`s.combine_first(other)` fills NaN positions in `s` with corresponding values from `other` at the same index label."
+    ],
+    "concepts": [
+      "combine_first",
+      "INDEX-ALIGNED FILL",
+      "missing value imputation",
+      "Series operations"
+    ]
+  },
+  {
+    "id": 32044,
+    "order": 44,
+    "topic": "python_data",
+    "difficulty": "medium",
+    "title": "Compute Discount Rate and Flag with assign",
+    "description": "You have a DataFrame `df_orders`.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nUsing two chained `.assign()` calls:\n1. Add `discount_pct` = `discount_amount / gross_amount` rounded to 4 decimal places.\n2. Add `is_discounted` = `True` where `discount_pct > 0`.\n\nReturn columns `order_id`, `gross_amount`, `discount_amount`, `discount_pct`, `is_discounted`, sorted by `order_id`.",
+    "dataframes": {
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Chain two .assign() calls: discount_pct then is_discounted\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    return (\n        df_orders\n        .assign(discount_pct=lambda x: (x['discount_amount'] / x['gross_amount']).round(4))\n        .assign(is_discounted=lambda x: x['discount_pct'] > 0)\n        [['order_id', 'gross_amount', 'discount_amount', 'discount_pct', 'is_discounted']]\n        .sort_values('order_id')\n        .reset_index(drop=True)\n    )",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    return (\n        df_orders\n        .assign(discount_pct=lambda x: (x['discount_amount'] / x['gross_amount']).round(4))\n        .assign(is_discounted=lambda x: x['discount_pct'] > 0)\n        [['order_id', 'gross_amount', 'discount_amount', 'discount_pct', 'is_discounted']]\n        .sort_values('order_id')\n        .reset_index(drop=True)\n    )",
+    "explanation": "`.assign()` returns a new DataFrame with the added column — the original is never mutated. Chaining two `.assign()` calls works because the second lambda receives the DataFrame produced by the first, so `discount_pct` is already available when computing `is_discounted`. This is the pandas way to build a multi-step derived column pipeline without intermediate variables.",
+    "hints": [
+      "Each `.assign()` returns a new DataFrame, so you can chain them — the second lambda sees columns added by the first.",
+      "Use `lambda x: ...` so the computation runs against the current DataFrame in the chain, not the original."
+    ],
+    "concepts": [
+      "assign",
+      "METHOD CHAINING",
+      "DERIVED COLUMN PIPELINE",
+      "lambda in assign"
+    ]
+  },
+  {
+    "id": 32045,
+    "order": 45,
+    "topic": "python_data",
+    "difficulty": "medium",
+    "title": "Build a Transformation Pipeline with pipe",
+    "description": "You have a DataFrame `df_orders`.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nDefine two helper functions inside `solve`:\n- `add_discount_pct(df)`: returns a copy of `df` with `discount_pct = round(discount_amount / gross_amount, 4)`.\n- `flag_high_value(df, threshold)`: returns a copy of `df` with `high_value = net_amount > threshold`.\n\nChain them using `.pipe()`:\n```python\ndf_orders.pipe(add_discount_pct).pipe(flag_high_value, threshold=200)\n```\n\nReturn columns `order_id`, `net_amount`, `discount_pct`, `high_value`, sorted by `order_id`.",
+    "dataframes": {
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    def add_discount_pct(df):\n        # Add discount_pct = round(discount_amount / gross_amount, 4)\n        pass\n\n    def flag_high_value(df, threshold):\n        # Add high_value = net_amount > threshold\n        pass\n\n    # Chain both functions via .pipe()\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    def add_discount_pct(df):\n        df = df.copy()\n        df['discount_pct'] = (df['discount_amount'] / df['gross_amount']).round(4)\n        return df\n\n    def flag_high_value(df, threshold):\n        df = df.copy()\n        df['high_value'] = df['net_amount'] > threshold\n        return df\n\n    return (\n        df_orders\n        .pipe(add_discount_pct)\n        .pipe(flag_high_value, threshold=200)\n        [['order_id', 'net_amount', 'discount_pct', 'high_value']]\n        .sort_values('order_id')\n        .reset_index(drop=True)\n    )",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    def add_discount_pct(df):\n        df = df.copy()\n        df['discount_pct'] = (df['discount_amount'] / df['gross_amount']).round(4)\n        return df\n\n    def flag_high_value(df, threshold):\n        df = df.copy()\n        df['high_value'] = df['net_amount'] > threshold\n        return df\n\n    return (\n        df_orders\n        .pipe(add_discount_pct)\n        .pipe(flag_high_value, threshold=200)\n        [['order_id', 'net_amount', 'discount_pct', 'high_value']]\n        .sort_values('order_id')\n        .reset_index(drop=True)\n    )",
+    "explanation": "`.pipe(func)` calls `func(df)` and returns the result, keeping the method chain unbroken. `.pipe(func, threshold=200)` passes extra arguments after the DataFrame: `func(df, threshold=200)`. This lets you refactor complex transformations into named, testable helper functions while keeping the call site readable. The data flow reads left-to-right, unlike nested `func2(func1(df))` calls which read inside-out.",
+    "hints": [
+      "`.pipe(func)` is equivalent to `func(df)` but stays in the method chain.",
+      "To pass extra arguments: `.pipe(func, threshold=200)` — pandas calls `func(df, threshold=200)` for you."
+    ],
+    "concepts": [
+      "pipe",
+      "METHOD CHAINING",
+      "FUNCTIONAL PIPELINE",
+      "custom transformation functions"
+    ]
+  },
+  {
+    "id": 32046,
+    "order": 46,
+    "topic": "python_data",
+    "difficulty": "medium",
+    "title": "Convert Event Timestamps to New York Time",
+    "description": "You have a DataFrame `df_events`.\n\n**Columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n\nThe `event_time` column contains timestamps stored as UTC (no timezone info). Convert them to New York time:\n1. Parse `event_time` with `pd.to_datetime`.\n2. Localize to UTC with `.dt.tz_localize('UTC')`.\n3. Convert to `'America/New_York'` with `.dt.tz_convert('America/New_York')`.\n\nReturn columns `event_id`, `hour_utc` (integer hour in UTC) and `hour_ny` (integer hour in New York time), sorted by `event_id`.",
+    "dataframes": {
+      "df_events": "events.csv"
+    },
+    "schema": {
+      "df_events": [
+        "event_id",
+        "session_id",
+        "user_id",
+        "event_time",
+        "event_name",
+        "product_id"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_events):\n    # Parse event_time, localize to UTC, convert to America/New_York\n    # Return event_id, hour_utc, hour_ny\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_events):\n    df = df_events.copy()\n    df['event_time'] = pd.to_datetime(df['event_time']).dt.tz_localize('UTC')\n    df['event_time_ny'] = df['event_time'].dt.tz_convert('America/New_York')\n    df['hour_utc'] = df['event_time'].dt.hour\n    df['hour_ny'] = df['event_time_ny'].dt.hour\n    return df[['event_id', 'hour_utc', 'hour_ny']].sort_values('event_id').reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_events):\n    df = df_events.copy()\n    df['event_time'] = pd.to_datetime(df['event_time']).dt.tz_localize('UTC')\n    df['event_time_ny'] = df['event_time'].dt.tz_convert('America/New_York')\n    df['hour_utc'] = df['event_time'].dt.hour\n    df['hour_ny'] = df['event_time_ny'].dt.hour\n    return df[['event_id', 'hour_utc', 'hour_ny']].sort_values('event_id').reset_index(drop=True)",
+    "explanation": "Timestamps without timezone info are called 'naive'. `.dt.tz_localize('UTC')` stamps a timezone onto them, making the Series timezone-aware. `.dt.tz_convert('America/New_York')` then shifts the values to New York time, accounting for DST automatically. Confusing the two is a common mistake: `tz_localize` declares what timezone naive data is in; `tz_convert` moves already-aware data to a different timezone.",
+    "hints": [
+      "`tz_localize` declares the timezone of naive timestamps; `tz_convert` shifts timezone-aware timestamps to another zone.",
+      "After conversion, `.dt.hour` extracts the integer hour in that timezone's local time."
+    ],
+    "concepts": [
+      "tz_localize",
+      "tz_convert",
+      "TIMEZONE CONVERSION",
+      "datetime",
+      "DST-AWARE CONVERSION"
+    ]
+  },
+  {
+    "id": 32047,
+    "order": 47,
+    "topic": "python_data",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Unnest Product Lists with explode",
+    "description": "You have a DataFrame `df_order_items`.\n\n**Columns:** `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`\n\n**Step 1 — Group:** for each `order_id`, collect `product_id` values into a sorted list. Reset the index and name the column `product_ids`.\n\n**Step 2 — Filter:** keep only orders with 2 or more products.\n\n**Step 3 — Explode:** call `.explode('product_ids')` to get one row per (order, product). Rename `product_ids` back to `product_id` and cast to `int`.\n\nReturn columns `order_id` and `product_id`, sorted by `order_id` then `product_id`.",
+    "dataframes": {
+      "df_order_items": "order_items.csv"
+    },
+    "schema": {
+      "df_order_items": [
+        "order_item_id",
+        "order_id",
+        "product_id",
+        "quantity",
+        "unit_price",
+        "line_amount"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_order_items):\n    # Group product_ids into lists, filter for 2+ products, explode back to rows\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_order_items):\n    grouped = (\n        df_order_items\n        .groupby('order_id')['product_id']\n        .apply(sorted)\n        .reset_index(name='product_ids')\n    )\n    multi = grouped[grouped['product_ids'].apply(len) >= 2].copy()\n    exploded = multi.explode('product_ids').rename(columns={'product_ids': 'product_id'})\n    exploded['product_id'] = exploded['product_id'].astype(int)\n    return exploded.sort_values(['order_id', 'product_id']).reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_order_items):\n    grouped = (\n        df_order_items\n        .groupby('order_id')['product_id']\n        .apply(sorted)\n        .reset_index(name='product_ids')\n    )\n    multi = grouped[grouped['product_ids'].apply(len) >= 2].copy()\n    exploded = multi.explode('product_ids').rename(columns={'product_ids': 'product_id'})\n    exploded['product_id'] = exploded['product_id'].astype(int)\n    return exploded.sort_values(['order_id', 'product_id']).reset_index(drop=True)",
+    "explanation": "`.explode(col)` normalises a column of lists into one row per element, duplicating all other columns. This is the inverse of `groupby + apply(list)`. The pattern appears whenever data arrives nested (JSON arrays, comma-separated strings after `.str.split()`) and needs to be flattened into a relational form for downstream joins or analysis. The `apply(sorted)` before exploding guarantees deterministic row ordering.",
+    "hints": [
+      "After `groupby + apply(sorted)`, each row holds a sorted list. Filter for `len >= 2` before exploding.",
+      "`.explode('col')` turns each list element into its own row, repeating the other columns."
+    ],
+    "concepts": [
+      "explode",
+      "UNNESTING LIST COLUMNS",
+      "groupby apply list",
+      "GROUPED AGGREGATION"
+    ]
+  },
+  {
+    "id": 32048,
+    "order": 48,
+    "topic": "python_data",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Revenue Distribution by Quartile",
+    "description": "You have a DataFrame `df_orders`.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Filter to `status == 'completed'` orders.\n2. Use `.assign()` with `pd.qcut` to add a `quartile` column dividing `net_amount` into four equal-frequency bins labelled `'Q1'`, `'Q2'`, `'Q3'`, `'Q4'`.\n3. Group by `quartile` (pass `observed=True`) and compute `order_count` and `avg_revenue` (mean `net_amount`, rounded to 2 dp).\n\nReturn columns `quartile` (cast to `str`), `order_count`, `avg_revenue`, sorted by `quartile`.",
+    "dataframes": {
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Filter completed, assign quartile with pd.qcut, group and aggregate\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    result = (\n        completed\n        .assign(quartile=lambda x: pd.qcut(x['net_amount'], 4, labels=['Q1', 'Q2', 'Q3', 'Q4']))\n        .groupby('quartile', observed=True)\n        .agg(\n            order_count=('order_id', 'count'),\n            avg_revenue=('net_amount', 'mean')\n        )\n        .reset_index()\n    )\n    result['avg_revenue'] = result['avg_revenue'].round(2)\n    result['quartile'] = result['quartile'].astype(str)\n    return result.sort_values('quartile').reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    result = (\n        completed\n        .assign(quartile=lambda x: pd.qcut(x['net_amount'], 4, labels=['Q1', 'Q2', 'Q3', 'Q4']))\n        .groupby('quartile', observed=True)\n        .agg(\n            order_count=('order_id', 'count'),\n            avg_revenue=('net_amount', 'mean')\n        )\n        .reset_index()\n    )\n    result['avg_revenue'] = result['avg_revenue'].round(2)\n    result['quartile'] = result['quartile'].astype(str)\n    return result.sort_values('quartile').reset_index(drop=True)",
+    "explanation": "`pd.qcut` divides data into equal-frequency bins (each bin has roughly the same number of rows), unlike `pd.cut` which creates equal-width bins. Passing string `labels` names the bins Q1–Q4. The result is a `Categorical` dtype; `groupby(..., observed=True)` ensures only populated categories appear in the output. Converting to `str` at the end avoids dtype comparison issues.",
+    "hints": [
+      "`pd.qcut(series, 4, labels=[...])` divides into equal-frequency quartiles — different from `pd.cut` which uses equal-width bins.",
+      "Pass `observed=True` to `groupby` when the key is Categorical, to suppress empty-category rows."
+    ],
+    "concepts": [
+      "pd.qcut",
+      "EQUAL-FREQUENCY BINNING",
+      "assign",
+      "Categorical groupby",
+      "METHOD CHAINING"
+    ]
   }
 ]
