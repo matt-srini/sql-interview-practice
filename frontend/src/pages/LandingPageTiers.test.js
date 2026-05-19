@@ -5,7 +5,7 @@
  * tracks index (live + coming-soon), and pricing section visibility.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, cleanup, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 // ---------------------------------------------------------------------------
@@ -24,16 +24,18 @@ vi.mock('../App', () => ({
   useTheme: () => ({ theme: 'light', setTheme: () => {} }),
 }));
 
-// TRACK_META mock — includes all 7 tracks (5 live + 2 coming-soon)
+// TRACK_META mock — includes the full 9-track catalog
 vi.mock('../contexts/TopicContext', () => ({
   TRACK_META: {
-    sql:                { label: 'SQL',              description: 'SQL queries',                color: '#5B6AF0', totalQuestions: 95,  tagline: 'SQL · DuckDB' },
-    python:             { label: 'Python',           description: 'Python algorithms',           color: '#2D9E6B', totalQuestions: 83,  tagline: 'Python · sandbox' },
-    'python-data':      { label: 'Pandas',           description: 'Pandas wrangling',            color: '#C47F17', totalQuestions: 76,  tagline: 'Pandas · sandbox' },
-    pyspark:            { label: 'PySpark',          description: 'Spark concepts',              color: '#D94F3D', totalQuestions: 102, tagline: 'MCQ · predict output' },
-    'data-engineering': { label: 'Data Engineering', description: 'DE concepts',                 color: '#B9762B', totalQuestions: 80,  tagline: 'MCQ · scenario' },
-    'data-modeling':    { label: 'Data Modeling',    description: 'Dimensional modeling',        color: '#3F8E8C', totalQuestions: 70,  tagline: 'MCQ · schema design', comingSoon: true },
-    statistics:         { label: 'Statistics',       description: 'Probability and inference',   color: '#7A5AF0', totalQuestions: 75,  tagline: 'MCQ + numerical',     comingSoon: true },
+    sql:                { label: 'SQL',              description: 'SQL queries',                color: '#5B6AF0', totalQuestions: 112, tagline: 'SQL · DuckDB' },
+    python:             { label: 'Python',           description: 'Python algorithms',           color: '#2D9E6B', totalQuestions: 95,  tagline: 'Python · sandbox' },
+    'python-data':      { label: 'Pandas',           description: 'Pandas wrangling',            color: '#C47F17', totalQuestions: 86,  tagline: 'Pandas · sandbox' },
+    pyspark:            { label: 'PySpark',          description: 'Spark concepts',              color: '#D94F3D', totalQuestions: 106, tagline: 'reasoning · predict output' },
+    'data-engineering': { label: 'Data Engineering', description: 'DE concepts',                 color: '#B9762B', totalQuestions: 86,  tagline: 'reasoning · scenario' },
+    'data-modeling':    { label: 'Data Modeling',    description: 'Dimensional modeling',        color: '#3F8E8C', totalQuestions: 76,  tagline: 'reasoning · schema design' },
+    statistics:         { label: 'Statistics',       description: 'Probability and inference',   color: '#7A5AF0', totalQuestions: 97,  tagline: 'conceptual + numerical' },
+    'ml-fundamentals':  { label: 'ML Fundamentals',  description: 'ML interview reasoning',      color: '#E0456A', totalQuestions: 90,  tagline: 'model reasoning · scenario · debug' },
+    experimentation:    { label: 'Experimentation',  description: 'A/B testing and inference',   color: '#0EA5E9', totalQuestions: 80,  tagline: 'experiment reasoning · scenario · predict output' },
   },
   TopicProvider: ({ children }) => children,
   useTopic: () => ({ topic: 'sql', meta: { label: 'SQL' } }),
@@ -41,21 +43,23 @@ vi.mock('../contexts/TopicContext', () => ({
 
 // trackRegistry mock — must match TRACK_META above
 vi.mock('../trackRegistry', () => ({
-  TRACK_SLUGS:     ['sql', 'python', 'python-data', 'pyspark', 'data-engineering'],
-  ALL_TRACK_SLUGS: ['sql', 'python', 'python-data', 'pyspark', 'data-engineering', 'data-modeling', 'statistics'],
+  TRACK_SLUGS:     ['sql', 'python', 'python-data', 'pyspark', 'data-engineering', 'data-modeling', 'statistics', 'ml-fundamentals', 'experimentation'],
+  ALL_TRACK_SLUGS: ['sql', 'python', 'python-data', 'pyspark', 'data-engineering', 'data-modeling', 'statistics', 'ml-fundamentals', 'experimentation'],
   TRACK_META: {
-    sql:                { label: 'SQL',              description: 'SQL queries',              color: '#5B6AF0', totalQuestions: 95,  tagline: 'SQL · DuckDB' },
-    python:             { label: 'Python',           description: 'Python algorithms',         color: '#2D9E6B', totalQuestions: 83,  tagline: 'Python · sandbox' },
-    'python-data':      { label: 'Pandas',           description: 'Pandas wrangling',          color: '#C47F17', totalQuestions: 76,  tagline: 'Pandas · sandbox' },
-    pyspark:            { label: 'PySpark',          description: 'Spark concepts',            color: '#D94F3D', totalQuestions: 102, tagline: 'MCQ · predict output' },
-    'data-engineering': { label: 'Data Engineering', description: 'DE concepts',               color: '#B9762B', totalQuestions: 80,  tagline: 'MCQ · scenario' },
-    'data-modeling':    { label: 'Data Modeling',    description: 'Dimensional modeling',      color: '#3F8E8C', totalQuestions: 70,  tagline: 'MCQ · schema design', comingSoon: true },
-    statistics:         { label: 'Statistics',       description: 'Probability and inference', color: '#7A5AF0', totalQuestions: 75,  tagline: 'MCQ + numerical',     comingSoon: true },
+    sql:                { label: 'SQL',              description: 'SQL queries',              color: '#5B6AF0', totalQuestions: 112, tagline: 'SQL · DuckDB' },
+    python:             { label: 'Python',           description: 'Python algorithms',         color: '#2D9E6B', totalQuestions: 95,  tagline: 'Python · sandbox' },
+    'python-data':      { label: 'Pandas',           description: 'Pandas wrangling',          color: '#C47F17', totalQuestions: 86,  tagline: 'Pandas · sandbox' },
+    pyspark:            { label: 'PySpark',          description: 'Spark concepts',            color: '#D94F3D', totalQuestions: 106, tagline: 'reasoning · predict output' },
+    'data-engineering': { label: 'Data Engineering', description: 'DE concepts',               color: '#B9762B', totalQuestions: 86,  tagline: 'reasoning · scenario' },
+    'data-modeling':    { label: 'Data Modeling',    description: 'Dimensional modeling',      color: '#3F8E8C', totalQuestions: 76,  tagline: 'reasoning · schema design' },
+    statistics:         { label: 'Statistics',       description: 'Probability and inference', color: '#7A5AF0', totalQuestions: 97,  tagline: 'conceptual + numerical' },
+    'ml-fundamentals':  { label: 'ML Fundamentals',  description: 'ML interview reasoning',    color: '#E0456A', totalQuestions: 90,  tagline: 'model reasoning · scenario · debug' },
+    experimentation:    { label: 'Experimentation',  description: 'A/B testing and inference', color: '#0EA5E9', totalQuestions: 80,  tagline: 'experiment reasoning · scenario · predict output' },
   },
   TRACK_LABELS: {
     sql: 'SQL', python: 'Python', 'python-data': 'Pandas', pyspark: 'PySpark',
     'data-engineering': 'Data Engineering', 'data-modeling': 'Data Modeling',
-    statistics: 'Statistics', mixed: 'Mixed',
+    statistics: 'Statistics', 'ml-fundamentals': 'ML Fundamentals', experimentation: 'Experimentation', mixed: 'Mixed',
   },
 }));
 
@@ -207,23 +211,35 @@ describe('LandingPage', () => {
       });
     });
 
-    it('Data Engineer panel shows Data Modeling as coming-soon', async () => {
+    it('Data Engineer panel shows Data Modeling as an active track', async () => {
       renderWithPlan(null);
       await waitFor(() => screen.getByRole('tab', { name: 'Data Engineer' }));
       fireEvent.click(screen.getByRole('tab', { name: 'Data Engineer' }));
       await waitFor(() => {
         const panel = screen.getByRole('tabpanel');
         expect(panel.textContent).toMatch(/Data Modeling/);
-        expect(panel.textContent).toMatch(/Coming soon/);
+        const panelLinks = within(panel).getAllByRole('link', { name: /open track/i });
+        expect(panelLinks.some((link) => link.getAttribute('href') === '/practice/data-modeling')).toBe(true);
       });
     });
 
-    it('Data Analyst panel shows Statistics as coming-soon', async () => {
+    it('Data Analyst panel shows Statistics as an active track', async () => {
       renderWithPlan(null);
       await waitFor(() => {
         const panel = screen.getByRole('tabpanel');
         expect(panel.textContent).toMatch(/Statistics/);
-        expect(panel.textContent).toMatch(/Coming soon/);
+        expect(panel.textContent).not.toMatch(/Coming soon/);
+      });
+    });
+
+    it('Data Scientist panel shows ML Fundamentals and Experimentation', async () => {
+      renderWithPlan(null);
+      await waitFor(() => screen.getByRole('tab', { name: 'Data Scientist' }));
+      fireEvent.click(screen.getByRole('tab', { name: 'Data Scientist' }));
+      await waitFor(() => {
+        const panel = screen.getByRole('tabpanel');
+        expect(panel.textContent).toMatch(/ML Fundamentals/);
+        expect(panel.textContent).toMatch(/Experimentation/);
       });
     });
   });
@@ -231,9 +247,9 @@ describe('LandingPage', () => {
   // ── Tracks index ──────────────────────────────────────────────────────────
 
   describe('Tracks index', () => {
-    it('shows all 7 tracks', async () => {
+    it('shows all 9 tracks', async () => {
       renderWithPlan(null);
-      const trackNames = ['SQL', 'Python', 'Pandas', 'PySpark', 'Data Engineering', 'Data Modeling', 'Statistics'];
+      const trackNames = ['SQL', 'Python', 'Pandas', 'PySpark', 'Data Engineering', 'Data Modeling', 'Statistics', 'ML Fundamentals', 'Experimentation'];
       // Use the tracks section specifically
       for (const name of trackNames) {
         await waitFor(() => {
@@ -243,11 +259,10 @@ describe('LandingPage', () => {
       }
     });
 
-    it('shows "Coming soon" badges for Data Modeling and Statistics', async () => {
+    it('shows no "Coming soon" badges for the canonical 9-track catalog', async () => {
       renderWithPlan(null);
       await waitFor(() => {
-        const badges = screen.getAllByText('Coming soon');
-        expect(badges.length).toBeGreaterThanOrEqual(2);
+        expect(screen.queryByText('Coming soon')).not.toBeInTheDocument();
       });
     });
 
@@ -255,7 +270,7 @@ describe('LandingPage', () => {
       renderWithPlan(null);
       await waitFor(() => {
         const enterLinks = screen.getAllByRole('link', { name: /open .* track/i });
-        expect(enterLinks.length).toBeGreaterThanOrEqual(5);
+        expect(enterLinks.length).toBeGreaterThanOrEqual(9);
       });
     });
   });

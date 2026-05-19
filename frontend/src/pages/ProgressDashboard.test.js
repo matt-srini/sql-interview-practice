@@ -1,9 +1,8 @@
 /**
  * ProgressDashboard component tests.
  *
- * Focuses on the API→render pipeline so shape mismatches in the /dashboard
- * response (like by_difficulty returning a plain int instead of {solved,total})
- * are caught immediately rather than silently rendering as "/".
+ * Focuses on the API→render pipeline so dashboard response-shape drift is caught
+ * against the current 9-track track-overview and mock-history UI.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
@@ -50,38 +49,83 @@ function makeDashboardPayload(overrides = {}) {
     tracks: {
       sql: {
         solved: 47,
-        total: 95,
+        total: 112,
         by_difficulty: {
-          easy:   { solved: 25, total: 32 },
-          medium: { solved: 22, total: 34 },
-          hard:   { solved: 0,  total: 29 },
+          easy:   { solved: 25, total: 37 },
+          medium: { solved: 22, total: 45 },
+          hard:   { solved: 0,  total: 30 },
         },
       },
       python: {
         solved: 0,
-        total: 83,
+        total: 95,
         by_difficulty: {
-          easy:   { solved: 0, total: 30 },
-          medium: { solved: 0, total: 29 },
+          easy:   { solved: 0, total: 39 },
+          medium: { solved: 0, total: 32 },
           hard:   { solved: 0, total: 24 },
         },
       },
       'python-data': {
         solved: 0,
-        total: 82,
+        total: 86,
         by_difficulty: {
-          easy:   { solved: 0, total: 29 },
-          medium: { solved: 0, total: 30 },
+          easy:   { solved: 0, total: 27 },
+          medium: { solved: 0, total: 36 },
           hard:   { solved: 0, total: 23 },
         },
       },
       pyspark: {
         solved: 0,
+        total: 106,
+        by_difficulty: {
+          easy:   { solved: 0, total: 41 },
+          medium: { solved: 0, total: 39 },
+          hard:   { solved: 0, total: 26 },
+        },
+      },
+      'data-engineering': {
+        solved: 0,
+        total: 86,
+        by_difficulty: {
+          easy:   { solved: 0, total: 30 },
+          medium: { solved: 0, total: 33 },
+          hard:   { solved: 0, total: 23 },
+        },
+      },
+      'data-modeling': {
+        solved: 0,
+        total: 76,
+        by_difficulty: {
+          easy:   { solved: 0, total: 25 },
+          medium: { solved: 0, total: 28 },
+          hard:   { solved: 0, total: 23 },
+        },
+      },
+      statistics: {
+        solved: 0,
+        total: 97,
+        by_difficulty: {
+          easy:   { solved: 0, total: 31 },
+          medium: { solved: 0, total: 41 },
+          hard:   { solved: 0, total: 25 },
+        },
+      },
+      'ml-fundamentals': {
+        solved: 0,
         total: 90,
         by_difficulty: {
-          easy:   { solved: 0, total: 38 },
+          easy:   { solved: 0, total: 30 },
+          medium: { solved: 0, total: 35 },
+          hard:   { solved: 0, total: 25 },
+        },
+      },
+      experimentation: {
+        solved: 0,
+        total: 80,
+        by_difficulty: {
+          easy:   { solved: 0, total: 30 },
           medium: { solved: 0, total: 30 },
-          hard:   { solved: 0, total: 22 },
+          hard:   { solved: 0, total: 20 },
         },
       },
     },
@@ -98,6 +142,11 @@ function makeInsightsPayload(overrides = {}) {
       python: { solve_count: 0, median_solve_seconds: null, accuracy_pct: 0 },
       'python-data': { solve_count: 0, median_solve_seconds: null, accuracy_pct: 0 },
       pyspark: { solve_count: 0, median_solve_seconds: null, accuracy_pct: 0 },
+      'data-engineering': { solve_count: 0, median_solve_seconds: null, accuracy_pct: 0 },
+      'data-modeling': { solve_count: 0, median_solve_seconds: null, accuracy_pct: 0 },
+      statistics: { solve_count: 0, median_solve_seconds: null, accuracy_pct: 0 },
+      'ml-fundamentals': { solve_count: 0, median_solve_seconds: null, accuracy_pct: 0 },
+      experimentation: { solve_count: 0, median_solve_seconds: null, accuracy_pct: 0 },
     },
     weakest_concepts: [],
     cross_track_insight: null,
@@ -121,16 +170,13 @@ beforeEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('ProgressDashboard', () => {
-  it('renders per-difficulty counts in X/Y format', async () => {
+  it('renders track overview counts in X/Y format', async () => {
     renderDashboard();
 
-    // SQL breakdown: 25/32, 22/34, 0/29 — use getAllByText since the same count
-    // string can appear across multiple track cards
     await waitFor(() => {
-      expect(screen.getByText('25/32')).toBeInTheDocument();  // SQL easy (unique)
-      expect(screen.getByText('22/34')).toBeInTheDocument();  // SQL medium (unique)
-      // 0/29 appears in multiple tracks — just assert at least one exists
-      expect(screen.getAllByText('0/29').length).toBeGreaterThan(0);
+      expect(screen.getByText('47/112')).toBeInTheDocument();
+      expect(screen.getAllByText('0/95').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('0/90').length).toBeGreaterThan(0);
     });
   });
 
@@ -138,20 +184,23 @@ describe('ProgressDashboard', () => {
     renderDashboard();
 
     await waitFor(() => {
-      // 47/95 overall for SQL
-      expect(screen.getByText('47 / 95')).toBeInTheDocument();
+      expect(screen.getByText('47/112')).toBeInTheDocument();
     });
   });
 
-  it('renders all four track cards', async () => {
+  it('renders all nine track rows', async () => {
     renderDashboard();
 
     await waitFor(() => {
-      // Track names appear in both the card label and potentially navigation — use getAllByText
       expect(screen.getAllByText('SQL').length).toBeGreaterThan(0);
       expect(screen.getAllByText('Python').length).toBeGreaterThan(0);
       expect(screen.getAllByText('Pandas').length).toBeGreaterThan(0);
       expect(screen.getAllByText('PySpark').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Data Engineering').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Data Modeling').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Statistics').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('ML Fundamentals').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Experimentation').length).toBeGreaterThan(0);
     });
   });
 
@@ -176,14 +225,13 @@ describe('ProgressDashboard', () => {
     });
   });
 
-  it('renders zero counts correctly as 0/total', async () => {
+  it('renders zero counts correctly as 0/total in track overview rows', async () => {
     renderDashboard();
 
     await waitFor(() => {
-      // Python has 0 solved — spot-check some unique counts
-      expect(screen.getAllByText('0/24').length).toBeGreaterThan(0);  // Python hard
-      expect(screen.getAllByText('0/30').length).toBeGreaterThan(0); // Python easy or PySpark med
-      expect(screen.getAllByText('0/29').length).toBeGreaterThan(0); // Python med or python-data easy
+      expect(screen.getAllByText('0/95').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('0/86').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('0/80').length).toBeGreaterThan(0);
     });
   });
 
@@ -196,14 +244,11 @@ describe('ProgressDashboard', () => {
     });
 
     renderDashboard();
-    // Use getAllByText: the immediately-resolved /mock/history promise can cause
-    // a React re-render during RTL's act() flush in CI, briefly producing two
-    // elements. The intent is just to assert at least one loading indicator is shown.
-    expect(screen.getAllByText(/loading/i).length).toBeGreaterThan(0);
+    expect(screen.getByLabelText(/loading dashboard/i)).toBeInTheDocument();
 
     resolve({ data: makeDashboardPayload() });
     await waitFor(() => {
-      expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
+      expect(screen.queryByLabelText(/loading dashboard/i)).not.toBeInTheDocument();
     });
   });
 
@@ -246,7 +291,7 @@ describe('ProgressDashboard', () => {
     renderDashboard();
 
     await waitFor(() => {
-      expect(screen.getByText('30min')).toBeInTheDocument();
+      expect(screen.getByText('Mock interviews')).toBeInTheDocument();
       expect(screen.getByText('1/2')).toBeInTheDocument();
       expect(screen.getByText('Review →')).toBeInTheDocument();
     });

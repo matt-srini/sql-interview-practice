@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import PathProgressCard from './PathProgressCard';
 
@@ -12,7 +12,7 @@ function renderCard(path, compact = false) {
 }
 
 describe('PathProgressCard', () => {
-  it('renders pro-gated CTA when path is inaccessible', () => {
+  it('renders the standard path CTA even when accessibility metadata is false', () => {
     renderCard({
       slug: 'delta-lake-patterns',
       title: 'Delta Lake Patterns',
@@ -25,10 +25,11 @@ describe('PathProgressCard', () => {
       accessible: false,
     });
 
-    expect(screen.getByText('Pro')).toBeInTheDocument();
-    expect(screen.getByText('Unlock with Pro →')).toBeInTheDocument();
+    expect(screen.getByText('PySpark')).toBeInTheDocument();
+    expect(screen.getByText('Start path →')).toBeInTheDocument();
     expect(screen.getByText('7 questions')).toBeInTheDocument();
     expect(screen.getByText('0/7')).toBeInTheDocument();
+    expect(screen.queryByText('Unlock with Pro →')).not.toBeInTheDocument();
   });
 
   it('renders continue CTA for started free path', () => {
@@ -50,7 +51,7 @@ describe('PathProgressCard', () => {
   });
 
   it('hides description in compact mode', () => {
-    renderCard(
+    const view = renderCard(
       {
         slug: 'time-series-analysis',
         title: 'Time Series Analysis',
@@ -66,6 +67,7 @@ describe('PathProgressCard', () => {
     );
 
     expect(screen.queryByText('Practice rolling windows and resample workflows.')).not.toBeInTheDocument();
-    expect(screen.getByText('Start path →')).toBeInTheDocument();
+    expect(within(view.container).getByText('Pandas')).toBeInTheDocument();
+    expect(within(view.container).getByText('Start path →')).toBeInTheDocument();
   });
 });
