@@ -8,7 +8,7 @@ The dashboard is the cross-track progress hub at `/dashboard` (`ProgressDashboar
 
 | Section | Description |
 |---|---|
-| **Track Overview** | Four track cards (SQL, Python, Pandas, PySpark). Each shows solved/total, an animated progress bar, median solve time, accuracy %, easy/medium/hard breakdown, and (Elite) a per-track readiness score badge. Data from `/api/dashboard` + `/api/dashboard/insights`. |
+| **Track Overview** | One card per active track (all 9 tracks). Each shows solved/total, an animated progress bar, median solve time, accuracy %, easy/medium/hard breakdown, and (Elite) a per-track readiness score badge. Data from `/api/dashboard` + `/api/dashboard/insights`. |
 | **Personalised study plan** | **(Elite)** An ordered list of 3–5 next steps based on weak concepts, practice gaps, and mock frequency. Non-Elite users see a gated upgrade prompt. |
 | **Coaching Insights strip** | Three tiles: Cross-track pace coaching, Current streak, Weakest concept. Hidden when `totalSolved === 0` and replaced by an empty-state CTA. |
 | **Top-3 Weak Areas** | **(Elite)** Concept rows with accuracy %, coaching summary, and drill/path links. |
@@ -43,7 +43,12 @@ Returns the track overview, recent activity, and concept tags for the current us
     "sql":         { "solved": 12, "total": 95, "by_difficulty": { "easy": {"solved": 10, "total": 32}, ... } },
     "python":      { ... },
     "python-data": { ... },
-    "pyspark":     { ... }
+    "pyspark":     { ... },
+    "data-engineering": { ... },
+    "data-modeling": { ... },
+    "statistics": { ... },
+    "ml-fundamentals": { ... },
+    "experimentation": { ... }
   },
   "recent_activity": [
     { "topic": "sql", "question_id": 1, "title": "...", "difficulty": "easy", "solved_at": "2026-04-24T..." }
@@ -75,7 +80,12 @@ Returns per-track coaching metrics, weakest concepts, the cross-track pace insig
     "sql":         { "solve_count": 12, "median_solve_seconds": 420, "accuracy_pct": 0.72 },
     "python":      { "solve_count": 5,  "median_solve_seconds": 180, "accuracy_pct": 0.60 },
     "python-data": { "solve_count": 0,  "median_solve_seconds": null, "accuracy_pct": 0.0 },
-    "pyspark":     { "solve_count": 3,  "median_solve_seconds": 30,  "accuracy_pct": 0.90 }
+    "pyspark":     { "solve_count": 3,  "median_solve_seconds": 30,  "accuracy_pct": 0.90 },
+    "data-engineering": { "solve_count": 0, "median_solve_seconds": null, "accuracy_pct": 0.0 },
+    "data-modeling": { "solve_count": 0, "median_solve_seconds": null, "accuracy_pct": 0.0 },
+    "statistics": { "solve_count": 0, "median_solve_seconds": null, "accuracy_pct": 0.0 },
+    "ml-fundamentals": { "solve_count": 0, "median_solve_seconds": null, "accuracy_pct": 0.0 },
+    "experimentation": { "solve_count": 0, "median_solve_seconds": null, "accuracy_pct": 0.0 }
   },
   "weakest_concepts": [
     {
@@ -195,45 +205,10 @@ In a multi-process/multi-replica deployment, each process maintains its own cach
 
 ## Test coverage
 
-`backend/tests/test_dashboard.py` — 31 tests, all passing.
+`backend/tests/test_12_dashboard.py` is the focused backend suite for dashboard and insights behavior.
 
-### `/api/dashboard` tests (12)
+Current coverage emphasis:
 
-| Test | What it verifies |
-|---|---|
-| `test_returns_expected_top_level_keys` | Response contains `tracks`, `recent_activity`, `concepts_by_track` |
-| `test_all_four_tracks_present` | All four track keys present in `tracks` |
-| `test_track_totals_match_catalog` | Per-track `total` matches CLAUDE.md counts (95/83/82/90) |
-| `test_by_difficulty_shape` | Each `by_difficulty` entry is `{solved: int, total: int}` |
-| `test_solved_count_reflects_submissions` | Inserting a `user_progress` row increments `solved` |
-| `test_python_data_slug_is_remapped` | `python_data` → `python-data`, raw key absent |
-| `test_recent_activity_empty_for_new_user` | Empty list before any solves |
-| `test_recent_activity_populated_after_solve` | Activity row present with correct shape after solve |
-| `test_recent_activity_topic_remapped` | `python-data` slug used in activity rows |
-| `test_recent_activity_capped_at_10` | At most 10 rows returned |
-| `test_concepts_by_track_empty_for_new_user` | Empty dict before any solves |
-| `test_concepts_by_track_populated_after_solve` | Concepts appear after solving a question with concepts |
-
-### `/api/dashboard/insights` tests (19)
-
-| Test | What it verifies |
-|---|---|
-| `test_returns_expected_shape` | All four top-level keys present |
-| `test_per_track_has_all_four_tracks` | All four track keys in `per_track` |
-| `test_per_track_fields_shape` | Each track has `solve_count`, `median_solve_seconds`, `accuracy_pct` |
-| `test_empty_user_gets_zero_stats` | All zeros/nulls for a new user |
-| `test_metrics_computed_correctly` | `solve_count`, `median_solve_seconds`, `accuracy_pct` match expected values |
-| `test_streak_days_zero_for_new_user` | 0 streak with no submissions |
-| `test_streak_days_increments_on_solve_today` | 1-day streak after solving today |
-| `test_streak_days_consecutive_days` | 3-day streak for solves on today, yesterday, 2 days ago |
-| `test_streak_breaks_on_gap` | Streak = 1 when there's a gap in consecutive days |
-| `test_streak_zero_when_no_solve_today` | Streak = 0 if last solve was yesterday |
-| `test_weakest_concepts_empty_below_3_attempts` | No concepts with < 3 attempts |
-| `test_weakest_concepts_appear_at_3_attempts` | Concept appears at exactly 3 attempts |
-| `test_weakest_concepts_capped_at_3` | At most 3 concepts returned |
-| `test_cross_track_insight_none_with_single_track` | `null` with only one track having data |
-| `test_cross_track_insight_none_when_gap_below_60s` | `null` when fastest–slowest gap < 60 s |
-| `test_cross_track_insight_fires_when_gap_exceeds_60s` | String containing both track names returned |
-| `test_cache_returns_stale_data_within_60s` | Second request within TTL returns identical payload |
-| `test_cache_is_per_user` | User A's cache does not affect User B |
-| `test_lifetime_plans_can_access_insights` | `lifetime_pro` and `lifetime_elite` both get 200 |
+- `/api/dashboard` response shape, difficulty counters, recent activity, concept tags, and slug normalization
+- `/api/dashboard/insights` metric computation, streak logic, weakest concept selection, cache behavior, and lifetime-plan access
+- Legacy regression coverage for the original executable-track slice is still deepest in tests; the product and API now operate across all 9 active tracks

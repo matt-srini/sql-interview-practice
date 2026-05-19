@@ -1,0 +1,10 @@
+{
+  "python.terminal.useEnvFile": true,
+  "python.envFile": "${workspaceFolder}/backend/.env",
+  "search.exclude": {
+    "**/.claude/worktrees/**": true
+  },
+  "files.watcherExclude": {
+    "**/.claude/worktrees/**": true
+  }
+}

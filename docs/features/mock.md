@@ -28,8 +28,8 @@ Custom mode validates server-side: `num_questions` must be 1–5, `time_minutes`
 |---|---|---|
 | SQL | ✅ | 38 mock-only questions |
 | Python | ✅ | 20 mock-only questions |
-| Pandas | ✅ | 24 mock-only questions |
-| PySpark | ✅ | 20 mock-only questions |
+| Pandas | ✅ | 26 mock-only questions |
+| PySpark | ✅ | 21 mock-only questions |
 | ML Fundamentals | ✅ | 25 mock-only questions |
 | Experimentation | ✅ | 25 mock-only questions |
 | Statistics | ✅ | 8 mock-only questions |
@@ -169,19 +169,14 @@ Shown after `POST /api/mock/:id/finish`:
 
 ## Test Coverage
 
-See `backend/tests/test_mock.py` for the full test suite covering:
+See `backend/tests/test_11_mock.py` for the focused mock backend suite covering:
 - Access endpoint (all plans, all difficulties)
 - Daily limit enforcement (free medium 1/day, pro hard 3/day, elite unlimited)
-- Full session lifecycle for all 4 tracks (SQL, Python, Pandas, PySpark)
+- Session lifecycle, summary visibility, and mixed-session behavior for the current mock system
 - Custom mode validation
 - Mixed track sessions
 - Company filter gating (free/pro blocked, elite/lifetime_elite allowed)
 - History endpoint shape
 - Solution visibility (absent during session, present after finish)
 
-`backend/tests/test_session_debrief.py` covers the debrief builder in isolation (27 unit tests):
-- Plan gating (Elite-only; None for Pro/Free/empty)
-- Headline generation across all score/time combinations
-- Pattern observations (strong concepts, weak concepts, follow-up, time-sink, known-weakness language)
-- Priority action and path recommendation logic
-- Response shape (all required keys, no internal keys leaked)
+There is no standalone `test_session_debrief.py` file in the current repository. Debrief behavior is validated indirectly through the mock and insights suites plus manual product review.

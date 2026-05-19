@@ -52,35 +52,37 @@ datathink is **FAANG-level interview preparation**, not a syntax tutorial. The s
 
 ## Question bank — current state
 
-| Track | Easy | Medium | Hard | Total | Format |
-|---|---|---|---|---|---|
-| SQL | 32 | 34 | 29 | **95** | SQL query, evaluated via DuckDB |
-| Python | 30 | 29 | 24 | **83** | Function implementation, evaluated via test cases |
-| Pandas | 22 | 31 | 23 | **76** | DataFrame function, evaluated via output comparison |
-| PySpark | 38 | 38 | 26 | **102** | MCQ / predict-output / debug, evaluated by option selection |
-| Data Engineering | 30 | 30 | 20 | **80** | MCQ / scenario / debug, evaluated by option selection |
-| Data Modeling | 25 | 25 | 20 | **70** | MCQ / scenario, evaluated by option selection |
-| Statistics | 28 | 28 | 24 | **80** | Dual-subtype: conceptual MCQ or numerical Python code |
-| ML Fundamentals | 30 | 35 | 25 | **90** | MCQ / scenario / predict-output / debug, evaluated by option selection |
-| Experimentation | 30 | 30 | 20 | **80** | MCQ / scenario / predict-output / debug, evaluated by option selection |
-| **Total** | **265** | **280** | **211** | **756** | |
+Practice questions are the full curriculum. Mock-only questions live in the same per-track JSON banks but are excluded from the practice catalog and used only in mock sessions.
 
-Sample questions (no login, no progress): 3 per track × 3 difficulties = 9 per track = **36 total** (SQL/Python/Pandas/PySpark only; DE, DM, Statistics, ML Fundamentals, and Experimentation samples auto-sliced from catalog).
+| Track | Easy | Medium | Hard | Practice total | Format |
+|---|---|---|---|---|---|
+| SQL | 37 | 45 | 30 | **112** | SQL query, evaluated via DuckDB |
+| Python | 39 | 32 | 24 | **95** | Function implementation, evaluated via test cases |
+| Pandas | 27 | 36 | 23 | **86** | DataFrame function, evaluated via output comparison |
+| PySpark | 41 | 39 | 26 | **106** | Predict-output / debug / scenario / option-based reasoning |
+| Data Engineering | 30 | 33 | 23 | **86** | Scenario / debug / systems reasoning |
+| Data Modeling | 25 | 28 | 23 | **76** | Modeling / design / scenario reasoning |
+| Statistics | 31 | 41 | 25 | **97** | Dual-subtype: conceptual reasoning or numerical Python code |
+| ML Fundamentals | 30 | 35 | 25 | **90** | Predict-output / debug / scenario / model reasoning |
+| Experimentation | 30 | 30 | 20 | **80** | Experiment design / interpretation / causal reasoning |
+| **Total** | **290** | **319** | **219** | **828** | |
+
+Mock-only add-on bank: **165 questions total**. Samples remain **36 total** across SQL, Python, Pandas, and PySpark, while Data Engineering, Data Modeling, Statistics, ML Fundamentals, and Experimentation sample rounds are auto-sliced from practice questions.
 
 ### Learning paths (curated sequences)
 
 | Track | Paths | Distribution |
 |---|---:|---|
-| SQL | 7 | 2 free shortcut paths (`starter`, `intermediate`) + 5 advanced (mixed free/pro) |
-| Python | 5 | 2 free shortcut paths (`starter`, `intermediate`) + 3 advanced (mixed free/pro) |
+| SQL | 9 | 2 free shortcut paths (`starter`, `intermediate`) + 7 advanced (mixed free/pro) |
+| Python | 6 | 2 free shortcut paths (`starter`, `intermediate`) + 4 advanced (mixed free/pro) |
 | Pandas | 5 | 2 free shortcut paths (`starter`, `intermediate`) + 3 advanced (mixed free/pro) |
 | PySpark | 5 | 2 free shortcut paths (`starter`, `intermediate`) + 3 advanced (mixed free/pro) |
 | Data Engineering | 2 | `starter` "Pipeline Fundamentals" (free) · `intermediate` "Advanced DE Systems" (pro) |
 | Data Modeling | 4 | `starter` "Schema Design Basics" (free) · `intermediate` "Dimensional Modeling Deep Dive" (pro) · "Normalization & Referential Integrity" (free) · "dbt & Modern Analytics Modeling" (pro) |
-| Statistics | 2 | `starter` "Stats for Analysts" (free) · `intermediate` "Experimental Design & Inference" (pro) |
+| Statistics | 3 | `starter` "Stats for Analysts" (free) · `intermediate` "Experimental Design & Inference" (pro) + 1 advanced path |
 | ML Fundamentals | 4 | `starter` "ML Fundamentals Starter" (free) · `intermediate` "Model Evaluation & Validation" (free) · "Production ML & Model Monitoring" (pro) · "Advanced ML Methods" (pro) |
 | Experimentation | 4 | `starter` "Experimentation Starter" (free) · `intermediate` "Experiment Design & Power" (free) · "Variance Reduction & Behavioral Effects" (pro) · "Causal Inference & Advanced Experimentation" (pro) |
-| **Total** | **38** | |
+| **Total** | **42** | |
 
 Authoring constraints for path files in `backend/content/paths/`:
 - Required fields: `slug`, `title`, `description`, `topic`, `questions`, `tier`, `role`

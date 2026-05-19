@@ -1,132 +1,88 @@
 # User Guide
 
-`datathink` is a data interview practice platform. Write SQL or Python, answer PySpark MCQs, get instant feedback, and work through progressively harder tracks.
+`datathink` is a data interview practice platform built around 9 tracks, 4 hiring-role lenses, a full practice curriculum, and a separate mock benchmark layer.
 
----
+## Modes
 
-## Two practice modes
-
-### Challenge mode (`/practice/:topic`)
-The main track. Each topic has its own guided question bank and saved progress. Questions unlock as you solve them.
+### Practice mode (`/practice/:topic`)
+The main curriculum. Practice is the full bank: 828 questions across SQL, Python, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, and Experimentation. Progress and unlocks are tracked independently per topic.
 
 ### Sample mode (`/sample/:topic/:difficulty`)
-A no-stakes sandbox. Every track has easy, medium, and hard sample rounds with 3 questions per round. No login required, no effect on your challenge progress. Good for getting a feel for the platform before committing.
+Low-stakes trial mode. No login required and no effect on practice progress. SQL, Python, Pandas, and PySpark have dedicated sample rounds; the other tracks use auto-sliced practice samples.
 
----
+### Mock mode (`/mock`)
+Timed benchmark sessions for authenticated users. Mock sessions hide solutions until the end, track time usage, and generate post-session review. Mock-only questions are used where available.
+
+### Dashboard (`/dashboard`)
+Cross-track coaching hub. It shows solved totals, per-track pace and accuracy, streak state, recent activity, weak concepts, and for Elite users, readiness scores and a study plan.
 
 ## Getting started
 
-You don't need an account. Land on the homepage and you can jump straight into sample questions or start the challenge track. An anonymous session is created automatically and your progress is saved to it.
+You can begin without an account. The platform creates an anonymous session automatically so your progress is still tracked. Registering upgrades that session in place, and logging into an existing account merges anonymous progress.
 
-When you register, your anonymous progress carries over. Nothing is lost.
+## Track styles
 
----
+- SQL, Python, Pandas, and numerical Statistics are executable tracks: you can run code before submitting.
+- PySpark is code-adjacent reasoning: questions often show snippets, execution context, or debugging scenarios, but do not run Spark.
+- Data Engineering, Data Modeling, ML Fundamentals, Experimentation, and conceptual Statistics are reasoning-first tracks focused on diagnosis, interpretation, and decision-making.
 
-## The question screen
+## Workspace basics
 
-Each question uses a two-column workspace:
+Each question lives in the same core workspace:
 
-**Left panel**
-- The question prompt — what you need to return
-- The schema or available dataframe variables, depending on track
-- Hints and solution (revealed progressively after you submit)
+- Left side: prompt, supporting context, schema or variables when relevant, hints, and solution controls
+- Right side: editor for executable questions, or answer panel for reasoning questions
+- Result area: result table, test cases, stdout, or explanation panel depending on track
 
-**Right panel**
-- The code editor or answer area
-- Run and Submit buttons when the track supports execution
-- Results, test cases, or MCQ feedback depending on track
+## Run vs submit
 
----
-
-## Running vs. submitting
-
-**Run** — executes your query and shows the results. No judgement, no progress impact. Use it as often as you like to check your output.
-
-**Submit** — evaluates your query against the expected answer. This is what marks a question solved and unlocks the next one.
-
-You can run as many times as you want before submitting.
-
----
-
-## How answer matching works
-
-Your result is compared against the expected result set — not against a specific query. If your query produces the same data, it's accepted.
-
-A few specifics:
-- **Column order doesn't matter** — you can return columns in any order
-- **Row order doesn't matter** — unless the question explicitly asks you to order results. If the expected answer uses `ORDER BY`, your result needs to match that order too
-- **Duplicate rows are preserved** — if your query returns extra duplicates, it won't match
-- **Float precision** — small rounding differences are tolerated
-- **NULL values** — handled correctly; a NULL in the expected output must be NULL in yours
-
-If your result doesn't match, you'll see both your output and the expected output side by side so you can spot the difference.
-
----
+- `Run` is only available on executable questions. It lets you inspect output without affecting progress.
+- `Submit` is the scoring action. A correct submit marks the question solved and can unlock more questions.
+- On reasoning-first tracks there is no fake `Run` step. You read, reason, and submit.
 
 ## Hints and solutions
 
-Each question has 1–2 hints. They're hidden by default and revealed one at a time after you submit. If your answer is wrong, you'll see a "Show hint" option.
-
-The full solution (correct query + explanation) only appears after you've seen all hints for that question. This is intentional — hints first, solution as a last resort.
-
----
+Hints are progressive. The platform reveals them one at a time after you submit. Full solutions stay gated behind the hint ladder so you do not short-circuit the learning loop.
 
 ## Unlock system
 
-**Free plan**
-- All Easy questions are available immediately
-- Medium unlocks in batches as you solve Easy questions (thresholds vary by track):
-  - SQL / Python / Pandas: 8 solved → 3 medium · 15 → 8 medium · 25 → all medium
-  - PySpark: 12 solved → 3 medium · 20 → 8 medium · 30 → all medium
-- Hard unlocks the same way as you solve Medium (capped at 8 for code tracks, 5 for PySpark)
-- **Shortcut:** Completing a learning path unlocks the full medium or hard tier for that track immediately
+Free users get all easy questions and unlock medium and hard in batches as they solve more of the curriculum. Thresholds differ by modality, and learning-path completion can shortcut medium or hard unlocks for a track.
 
-**Pro plan**
-- All Easy + all Medium + all Hard unlocked immediately (no cap)
+Pro unlocks all practice difficulties across all tracks. Elite keeps full catalog access and adds the premium mock and dashboard layers.
 
-**Elite plan**
-- Full catalog across all four tracks — 350 questions total
+## Learning paths
 
-Solved questions stay solved permanently, regardless of plan changes.
+Learning paths are curated sequences layered on top of the main practice bank. They are not a separate curriculum. They help users move through the bank in role-relevant orders and also act as unlock shortcuts.
 
-The sidebar shows your progress and the state of each question: solved, unlocked (available to attempt), or locked.
+## Mock sessions
 
----
+Mocks are for benchmarking, not answer-peeking.
 
-## The sidebar
+- You choose track, difficulty, and session mode
+- The timer starts immediately
+- Solutions are hidden during the session
+- Review happens after finish, with concept breakdowns and plan-gated coaching depth
 
-Questions are grouped by difficulty. Easy is open by default; Medium and Hard are collapsed until you have something to work on there.
+## Dashboard coaching
 
-Each question shows one of these states:
-- **Solved** — you've submitted a correct answer
-- **Next** — the recommended next question to tackle
-- **Unlocked** — available but not yet attempted
-- **Locked** — not yet accessible at your current plan or progress level
+The dashboard combines practice and mock signals:
 
----
+- per-track solved totals and difficulty breakdowns
+- median solve time and submission accuracy
+- streak state and recent activity
+- weak concepts and recommended next work
+- Elite-only readiness scores and study plan
 
 ## Accounts and sessions
 
-- No account needed to start
-- Register to persist progress across devices and browsers
-- Login merges any anonymous progress into your account
-- Sessions are cookie-based; you stay logged in until you log out
+- No account is required to explore samples or start practicing
+- Registered accounts preserve progress across devices
+- Sessions use server-side cookies
+- Progress is permanent unless content itself changes
 
----
+## Limits and guardrails
 
-## Sample mode details
-
-- 3 questions per track+difficulty
-- Each question is shown once per session — you won't see the same sample twice until you reset that track+difficulty
-- When all 3 are exhausted, a reset button appears
-- Run and submit mirror the main track behavior for that topic, and samples reveal the official solution/explanation after submit where applicable
-- Nothing here affects your challenge progress or unlock state
-
----
-
-## Limits
-
-- Queries are read-only. `INSERT`, `UPDATE`, `DELETE`, `DROP`, etc. are blocked
-- Results are capped at 200 rows in the display
-- Queries time out after 3 seconds
-- Rate limiting applies per IP (60 requests per minute)
+- SQL execution is read-only
+- SQL results are capped at 200 rows and time out after 3 seconds
+- Python-family execution runs in a sandbox with strict time and memory limits
+- Non-executable tracks intentionally do not pretend to execute code when that would not reflect the real interview skill

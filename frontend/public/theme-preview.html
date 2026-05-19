@@ -141,7 +141,7 @@
     border-radius: 8px;
     border: none;
     background: var(--sim-accent);
-    color: #fff;
+    color: var(--sim-btn-fg, #fff);
     cursor: pointer;
   }
 
@@ -180,7 +180,7 @@
     padding: 10px 20px;
     border-radius: 8px;
     background: var(--sim-accent);
-    color: #fff;
+    color: var(--sim-btn-fg, #fff);
     border: none;
     cursor: pointer;
   }
@@ -294,6 +294,67 @@
     letter-spacing: 0.04em;
   }
 
+  /* ── Mode toggle ── */
+  .mode-toggle { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .mode-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 14px;
+    border-radius: 7px;
+    border: 1px solid #333;
+    background: #1a1a1a;
+    color: #bbb;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: background 0.15s, border-color 0.15s;
+    letter-spacing: 0.01em;
+    font-family: inherit;
+  }
+  .mode-toggle-btn:hover { background: #252525; border-color: #444; }
+  .mode-toggle-btn.dark-active { background: #222; border-color: #555; color: #ddd; }
+  .mode-icon { font-size: 13px; line-height: 1; }
+
+  /* ── Color token grid ── */
+  .sim-color-grid {
+    padding: 16px 28px 22px;
+    border-top: 1px solid var(--sim-border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .sim-color-grid-label {
+    width: 100%;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sim-text-secondary);
+    margin-bottom: 2px;
+    font-family: 'Courier New', monospace;
+  }
+  .sim-color-swatch { display: flex; flex-direction: column; gap: 3px; }
+  .sim-color-block {
+    width: 56px;
+    height: 28px;
+    border-radius: 6px;
+    border: 1px solid rgba(128,128,128,0.2);
+  }
+  .sim-color-token-name {
+    font-size: 8px;
+    font-weight: 700;
+    color: var(--sim-text-strong);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-family: 'Courier New', monospace;
+  }
+  .sim-color-hex {
+    font-size: 8px;
+    color: var(--sim-text-secondary);
+    font-family: 'Courier New', monospace;
+  }
+
 </style>
 </head>
 <body>
@@ -301,6 +362,11 @@
 <div class="picker-header">
   <h1>datathink — Theme Picker</h1>
   <span>Click a palette to preview · Tell Claude which one you want</span>
+  <div class="mode-toggle">
+    <button class="mode-toggle-btn" id="mode-toggle-btn" onclick="toggleMode()">
+      <span class="mode-icon">☀️</span> Light
+    </button>
+  </div>
 </div>
 
 <div class="picker-body">
@@ -325,8 +391,8 @@ const PALETTES = [
   {
     id: 'warm-ivory',
     name: 'Warm Ivory',
-    sub: 'Current theme',
-    vars: {
+    sub: 'Neutral baseline',
+    lightVars: {
       '--sim-bg':          '#F7F7F5',
       '--sim-surface':     '#FFFFFF',
       '--sim-accent':      '#5B6AF0',
@@ -341,6 +407,24 @@ const PALETTES = [
       '--sim-warn-bg':     '#FEF8EC',
       '--sim-danger':      '#D94F3D',
       '--sim-danger-bg':   '#FEF0EE',
+      '--sim-btn-fg':      '#ffffff',
+    },
+    darkVars: {
+      '--sim-bg':          '#0E0F1A',
+      '--sim-surface':     '#181929',
+      '--sim-accent':      '#818CF8',
+      '--sim-text-strong': '#E8E9F8',
+      '--sim-text-secondary': '#9496B8',
+      '--sim-border':      '#252640',
+      '--sim-editor-bg':   '#0A0B14',
+      '--sim-editor-chrome': '#12131F',
+      '--sim-success':     '#4ADE80',
+      '--sim-success-bg':  '#0A2118',
+      '--sim-warn':        '#FBBF24',
+      '--sim-warn-bg':     '#271E08',
+      '--sim-danger':      '#F87171',
+      '--sim-danger-bg':   '#2A0D0A',
+      '--sim-btn-fg':      '#0E0F1A',
     },
     swatches: ['#F7F7F5','#FFFFFF','#5B6AF0','#1A1A18','#6B6862','#1C1C1A'],
   },
@@ -348,7 +432,7 @@ const PALETTES = [
     id: 'arctic-slate',
     name: 'Arctic Slate',
     sub: 'Clean & enterprise',
-    vars: {
+    lightVars: {
       '--sim-bg':          '#F1F5F9',
       '--sim-surface':     '#FFFFFF',
       '--sim-accent':      '#2563EB',
@@ -363,6 +447,24 @@ const PALETTES = [
       '--sim-warn-bg':     '#FEF3C7',
       '--sim-danger':      '#DC2626',
       '--sim-danger-bg':   '#FEE2E2',
+      '--sim-btn-fg':      '#ffffff',
+    },
+    darkVars: {
+      '--sim-bg':          '#070D18',
+      '--sim-surface':     '#0F1E33',
+      '--sim-accent':      '#60A5FA',
+      '--sim-text-strong': '#F0F6FF',
+      '--sim-text-secondary': '#8BA4BF',
+      '--sim-border':      '#1A2E44',
+      '--sim-editor-bg':   '#040912',
+      '--sim-editor-chrome': '#09111E',
+      '--sim-success':     '#4ADE80',
+      '--sim-success-bg':  '#07200F',
+      '--sim-warn':        '#FBBF24',
+      '--sim-warn-bg':     '#261A06',
+      '--sim-danger':      '#F87171',
+      '--sim-danger-bg':   '#260808',
+      '--sim-btn-fg':      '#070D18',
     },
     swatches: ['#F1F5F9','#FFFFFF','#2563EB','#0F172A','#64748B','#0F172A'],
   },
@@ -370,7 +472,7 @@ const PALETTES = [
     id: 'ash',
     name: 'Ash',
     sub: 'Stark & minimal',
-    vars: {
+    lightVars: {
       '--sim-bg':          '#F4F4F5',
       '--sim-surface':     '#FFFFFF',
       '--sim-accent':      '#18181B',
@@ -385,6 +487,24 @@ const PALETTES = [
       '--sim-warn-bg':     '#FEF3C7',
       '--sim-danger':      '#DC2626',
       '--sim-danger-bg':   '#FEE2E2',
+      '--sim-btn-fg':      '#ffffff',
+    },
+    darkVars: {
+      '--sim-bg':          '#09090B',
+      '--sim-surface':     '#18181B',
+      '--sim-accent':      '#D4D4D8',
+      '--sim-text-strong': '#FAFAFA',
+      '--sim-text-secondary': '#A1A1AA',
+      '--sim-border':      '#27272A',
+      '--sim-editor-bg':   '#030303',
+      '--sim-editor-chrome': '#0D0D0D',
+      '--sim-success':     '#4ADE80',
+      '--sim-success-bg':  '#0A1F0E',
+      '--sim-warn':        '#FBBF24',
+      '--sim-warn-bg':     '#1E1608',
+      '--sim-danger':      '#F87171',
+      '--sim-danger-bg':   '#200808',
+      '--sim-btn-fg':      '#09090B',
     },
     swatches: ['#F4F4F5','#FFFFFF','#18181B','#09090B','#71717A','#18181B'],
   },
@@ -392,7 +512,7 @@ const PALETTES = [
     id: 'teal-stone',
     name: 'Teal & Stone',
     sub: 'Calm & data-forward',
-    vars: {
+    lightVars: {
       '--sim-bg':          '#FAFAF9',
       '--sim-surface':     '#FFFFFF',
       '--sim-accent':      '#0D9488',
@@ -407,6 +527,24 @@ const PALETTES = [
       '--sim-warn-bg':     '#FEF3C7',
       '--sim-danger':      '#E11D48',
       '--sim-danger-bg':   '#FFE4E6',
+      '--sim-btn-fg':      '#ffffff',
+    },
+    darkVars: {
+      '--sim-bg':          '#051615',
+      '--sim-surface':     '#0A2320',
+      '--sim-accent':      '#2DD4BF',
+      '--sim-text-strong': '#E0F7F4',
+      '--sim-text-secondary': '#60A89F',
+      '--sim-border':      '#103D39',
+      '--sim-editor-bg':   '#030D0C',
+      '--sim-editor-chrome': '#071917',
+      '--sim-success':     '#4ADE80',
+      '--sim-success-bg':  '#062010',
+      '--sim-warn':        '#FBBF24',
+      '--sim-warn-bg':     '#221808',
+      '--sim-danger':      '#F87171',
+      '--sim-danger-bg':   '#220A10',
+      '--sim-btn-fg':      '#051615',
     },
     swatches: ['#FAFAF9','#FFFFFF','#0D9488','#1C1917','#78716C','#134E4A'],
   },
@@ -414,7 +552,7 @@ const PALETTES = [
     id: 'navy-deep',
     name: 'Navy Credence',
     sub: 'Authoritative & serious',
-    vars: {
+    lightVars: {
       '--sim-bg':          '#EFF4FB',
       '--sim-surface':     '#FFFFFF',
       '--sim-accent':      '#1E40AF',
@@ -429,6 +567,24 @@ const PALETTES = [
       '--sim-warn-bg':     '#FEF3C7',
       '--sim-danger':      '#B91C1C',
       '--sim-danger-bg':   '#FEE2E2',
+      '--sim-btn-fg':      '#ffffff',
+    },
+    darkVars: {
+      '--sim-bg':          '#060D18',
+      '--sim-surface':     '#0D1B2A',
+      '--sim-accent':      '#60A5FA',
+      '--sim-text-strong': '#E2EAF4',
+      '--sim-text-secondary': '#7090AF',
+      '--sim-border':      '#162032',
+      '--sim-editor-bg':   '#030810',
+      '--sim-editor-chrome': '#07101C',
+      '--sim-success':     '#4ADE80',
+      '--sim-success-bg':  '#062010',
+      '--sim-warn':        '#FBBF24',
+      '--sim-warn-bg':     '#201608',
+      '--sim-danger':      '#F87171',
+      '--sim-danger-bg':   '#200808',
+      '--sim-btn-fg':      '#060D18',
     },
     swatches: ['#EFF4FB','#FFFFFF','#1E40AF','#0D1B2A','#4A6281','#0D1B2A'],
   },
@@ -436,7 +592,7 @@ const PALETTES = [
     id: 'graphite-violet',
     name: 'Graphite & Violet',
     sub: 'Bold & distinctive',
-    vars: {
+    lightVars: {
       '--sim-bg':          '#FAFAFF',
       '--sim-surface':     '#FFFFFF',
       '--sim-accent':      '#6D28D9',
@@ -451,6 +607,24 @@ const PALETTES = [
       '--sim-warn-bg':     '#FEF3C7',
       '--sim-danger':      '#DC2626',
       '--sim-danger-bg':   '#FEE2E2',
+      '--sim-btn-fg':      '#ffffff',
+    },
+    darkVars: {
+      '--sim-bg':          '#0C0A1A',
+      '--sim-surface':     '#18162C',
+      '--sim-accent':      '#A78BFA',
+      '--sim-text-strong': '#EDE9FE',
+      '--sim-text-secondary': '#8B85C8',
+      '--sim-border':      '#2D2A4E',
+      '--sim-editor-bg':   '#07050F',
+      '--sim-editor-chrome': '#0F0D20',
+      '--sim-success':     '#4ADE80',
+      '--sim-success-bg':  '#0A1E10',
+      '--sim-warn':        '#FBBF24',
+      '--sim-warn-bg':     '#221A08',
+      '--sim-danger':      '#F87171',
+      '--sim-danger-bg':   '#220A0A',
+      '--sim-btn-fg':      '#0C0A1A',
     },
     swatches: ['#FAFAFF','#FFFFFF','#6D28D9','#1E1B4B','#6366F1','#1E1B4B'],
   },
@@ -458,7 +632,7 @@ const PALETTES = [
     id: 'sand-rust',
     name: 'Sand & Rust',
     sub: 'Warm & editorial',
-    vars: {
+    lightVars: {
       '--sim-bg':          '#FAF8F5',
       '--sim-surface':     '#FFFFFF',
       '--sim-accent':      '#C2410C',
@@ -473,6 +647,24 @@ const PALETTES = [
       '--sim-warn-bg':     '#FEF3C7',
       '--sim-danger':      '#B91C1C',
       '--sim-danger-bg':   '#FEE2E2',
+      '--sim-btn-fg':      '#ffffff',
+    },
+    darkVars: {
+      '--sim-bg':          '#130B04',
+      '--sim-surface':     '#1F1208',
+      '--sim-accent':      '#FB923C',
+      '--sim-text-strong': '#FEF0E0',
+      '--sim-text-secondary': '#B08860',
+      '--sim-border':      '#2E1E0C',
+      '--sim-editor-bg':   '#0A0603',
+      '--sim-editor-chrome': '#120C06',
+      '--sim-success':     '#4ADE80',
+      '--sim-success-bg':  '#0A2010',
+      '--sim-warn':        '#FBBF24',
+      '--sim-warn-bg':     '#241806',
+      '--sim-danger':      '#F87171',
+      '--sim-danger-bg':   '#240A08',
+      '--sim-btn-fg':      '#ffffff',
     },
     swatches: ['#FAF8F5','#FFFFFF','#C2410C','#1C130A','#7C6E62','#1C130A'],
   },
@@ -480,7 +672,7 @@ const PALETTES = [
     id: 'forest-ink',
     name: 'Forest & Ink',
     sub: 'Natural & grounded',
-    vars: {
+    lightVars: {
       '--sim-bg':          '#F5F7F4',
       '--sim-surface':     '#FFFFFF',
       '--sim-accent':      '#166534',
@@ -495,18 +687,258 @@ const PALETTES = [
       '--sim-warn-bg':     '#FEF3C7',
       '--sim-danger':      '#DC2626',
       '--sim-danger-bg':   '#FEE2E2',
+      '--sim-btn-fg':      '#ffffff',
+    },
+    darkVars: {
+      '--sim-bg':          '#0D1A10',
+      '--sim-surface':     '#132218',
+      '--sim-accent':      '#4ADE80',
+      '--sim-text-strong': '#E8F5E9',
+      '--sim-text-secondary': '#6BBF7D',
+      '--sim-border':      '#1D3829',
+      '--sim-editor-bg':   '#070E08',
+      '--sim-editor-chrome': '#0D1A10',
+      '--sim-success':     '#4ADE80',
+      '--sim-success-bg':  '#0A2210',
+      '--sim-warn':        '#FBBF24',
+      '--sim-warn-bg':     '#221A06',
+      '--sim-danger':      '#F87171',
+      '--sim-danger-bg':   '#22080A',
+      '--sim-btn-fg':      '#0D1A10',
     },
     swatches: ['#F5F7F4','#FFFFFF','#166534','#14291B','#4B6858','#14291B'],
   },
+  {
+    id: 'chalk',
+    name: 'Chalk',
+    sub: 'Chalkboard academic',
+    lightVars: {
+      '--sim-bg':          '#F9F8F2',
+      '--sim-surface':     '#FFFEF5',
+      '--sim-accent':      '#1A5C3A',
+      '--sim-text-strong': '#1B2A1E',
+      '--sim-text-secondary': '#5A6D5E',
+      '--sim-border':      '#DDE8DD',
+      '--sim-editor-bg':   '#0F2D1A',
+      '--sim-editor-chrome': '#163D24',
+      '--sim-success':     '#15803D',
+      '--sim-success-bg':  '#DCFCE7',
+      '--sim-warn':        '#D97706',
+      '--sim-warn-bg':     '#FEF3C7',
+      '--sim-danger':      '#DC2626',
+      '--sim-danger-bg':   '#FEE2E2',
+      '--sim-btn-fg':      '#ffffff',
+    },
+    darkVars: {
+      '--sim-bg':          '#0C1F13',
+      '--sim-surface':     '#142A1C',
+      '--sim-accent':      '#D4EDDA',
+      '--sim-text-strong': '#EDF7EF',
+      '--sim-text-secondary': '#7AAE87',
+      '--sim-border':      '#1E3D28',
+      '--sim-editor-bg':   '#060F09',
+      '--sim-editor-chrome': '#0C1F13',
+      '--sim-success':     '#4ADE80',
+      '--sim-success-bg':  '#072010',
+      '--sim-warn':        '#FBBF24',
+      '--sim-warn-bg':     '#201A06',
+      '--sim-danger':      '#F87171',
+      '--sim-danger-bg':   '#22080A',
+      '--sim-btn-fg':      '#0C1F13',
+    },
+    swatches: ['#F9F8F2','#FFFEF5','#1A5C3A','#1B2A1E','#5A6D5E','#0F2D1A'],
+  },
+  {
+    id: 'parchment',
+    name: 'Parchment',
+    sub: 'Scholarly manuscript',
+    lightVars: {
+      '--sim-bg':          '#F5F0E8',
+      '--sim-surface':     '#FFF9F0',
+      '--sim-accent':      '#7C3A10',
+      '--sim-text-strong': '#2A1A08',
+      '--sim-text-secondary': '#8B7355',
+      '--sim-border':      '#E0D4C0',
+      '--sim-editor-bg':   '#1A0E05',
+      '--sim-editor-chrome': '#251508',
+      '--sim-success':     '#15803D',
+      '--sim-success-bg':  '#D8F0E4',
+      '--sim-warn':        '#B45309',
+      '--sim-warn-bg':     '#FEF3C7',
+      '--sim-danger':      '#B91C1C',
+      '--sim-danger-bg':   '#FEE2E2',
+      '--sim-btn-fg':      '#ffffff',
+    },
+    darkVars: {
+      '--sim-bg':          '#120C05',
+      '--sim-surface':     '#1E1409',
+      '--sim-accent':      '#D4A96A',
+      '--sim-text-strong': '#F5E6CC',
+      '--sim-text-secondary': '#9E7A4A',
+      '--sim-border':      '#2C1E0A',
+      '--sim-editor-bg':   '#080502',
+      '--sim-editor-chrome': '#110A04',
+      '--sim-success':     '#4ADE80',
+      '--sim-success-bg':  '#0A2010',
+      '--sim-warn':        '#FBBF24',
+      '--sim-warn-bg':     '#241A06',
+      '--sim-danger':      '#F87171',
+      '--sim-danger-bg':   '#240A08',
+      '--sim-btn-fg':      '#120C05',
+    },
+    swatches: ['#F5F0E8','#FFF9F0','#7C3A10','#2A1A08','#8B7355','#1A0E05'],
+  },
+  {
+    id: 'cobalt-gold',
+    name: 'Cobalt & Gold',
+    sub: 'Academic prestige',
+    lightVars: {
+      '--sim-bg':          '#EDF2F8',
+      '--sim-surface':     '#FFFFFF',
+      '--sim-accent':      '#1A3A8F',
+      '--sim-text-strong': '#0A1628',
+      '--sim-text-secondary': '#4A6080',
+      '--sim-border':      '#C0D0E4',
+      '--sim-editor-bg':   '#0A1628',
+      '--sim-editor-chrome': '#122040',
+      '--sim-success':     '#15803D',
+      '--sim-success-bg':  '#DCFCE7',
+      '--sim-warn':        '#B45309',
+      '--sim-warn-bg':     '#FEF3C7',
+      '--sim-danger':      '#B91C1C',
+      '--sim-danger-bg':   '#FEE2E2',
+      '--sim-btn-fg':      '#ffffff',
+    },
+    darkVars: {
+      '--sim-bg':          '#050D1E',
+      '--sim-surface':     '#0C1A30',
+      '--sim-accent':      '#F5C842',
+      '--sim-text-strong': '#EBF0FF',
+      '--sim-text-secondary': '#6080A8',
+      '--sim-border':      '#122040',
+      '--sim-editor-bg':   '#030810',
+      '--sim-editor-chrome': '#07101C',
+      '--sim-success':     '#4ADE80',
+      '--sim-success-bg':  '#062010',
+      '--sim-warn':        '#FBBF24',
+      '--sim-warn-bg':     '#201A06',
+      '--sim-danger':      '#F87171',
+      '--sim-danger-bg':   '#220808',
+      '--sim-btn-fg':      '#050D1E',
+    },
+    swatches: ['#EDF2F8','#FFFFFF','#1A3A8F','#0A1628','#4A6080','#0A1628'],
+  },
+  {
+    id: 'lab-amber',
+    name: 'Lab Amber',
+    sub: 'Data terminal glow',
+    lightVars: {
+      '--sim-bg':          '#FAF8F4',
+      '--sim-surface':     '#FFFFFF',
+      '--sim-accent':      '#B45309',
+      '--sim-text-strong': '#1A1208',
+      '--sim-text-secondary': '#7A6048',
+      '--sim-border':      '#E8DFD0',
+      '--sim-editor-bg':   '#1A1208',
+      '--sim-editor-chrome': '#241A0C',
+      '--sim-success':     '#15803D',
+      '--sim-success-bg':  '#DCFCE7',
+      '--sim-warn':        '#92400E',
+      '--sim-warn-bg':     '#FEF3C7',
+      '--sim-danger':      '#B91C1C',
+      '--sim-danger-bg':   '#FEE2E2',
+      '--sim-btn-fg':      '#ffffff',
+    },
+    darkVars: {
+      '--sim-bg':          '#0D0B07',
+      '--sim-surface':     '#1A1810',
+      '--sim-accent':      '#F59E0B',
+      '--sim-text-strong': '#FEF3C7',
+      '--sim-text-secondary': '#A07840',
+      '--sim-border':      '#2A2418',
+      '--sim-editor-bg':   '#070603',
+      '--sim-editor-chrome': '#100E08',
+      '--sim-success':     '#4ADE80',
+      '--sim-success-bg':  '#0A2010',
+      '--sim-warn':        '#FBBF24',
+      '--sim-warn-bg':     '#241A06',
+      '--sim-danger':      '#F87171',
+      '--sim-danger-bg':   '#240808',
+      '--sim-btn-fg':      '#0D0B07',
+    },
+    swatches: ['#FAF8F4','#FFFFFF','#B45309','#1A1208','#7A6048','#1A1208'],
+  },
+  {
+    id: 'seafoam-scholar',
+    name: 'Seafoam Scholar',
+    sub: 'Learner-friendly & calm',
+    lightVars: {
+      '--sim-bg':          '#F0F8F6',
+      '--sim-surface':     '#FFFFFF',
+      '--sim-accent':      '#0E7A6E',
+      '--sim-text-strong': '#0A2020',
+      '--sim-text-secondary': '#4A7070',
+      '--sim-border':      '#C8E4E0',
+      '--sim-editor-bg':   '#0A2020',
+      '--sim-editor-chrome': '#102C2C',
+      '--sim-success':     '#15803D',
+      '--sim-success-bg':  '#CCFBF1',
+      '--sim-warn':        '#D97706',
+      '--sim-warn-bg':     '#FEF3C7',
+      '--sim-danger':      '#E11D48',
+      '--sim-danger-bg':   '#FFE4E6',
+      '--sim-btn-fg':      '#ffffff',
+    },
+    darkVars: {
+      '--sim-bg':          '#050F0E',
+      '--sim-surface':     '#0A1E1C',
+      '--sim-accent':      '#5ECEBB',
+      '--sim-text-strong': '#D8F4F0',
+      '--sim-text-secondary': '#50908A',
+      '--sim-border':      '#102824',
+      '--sim-editor-bg':   '#030908',
+      '--sim-editor-chrome': '#071412',
+      '--sim-success':     '#4ADE80',
+      '--sim-success-bg':  '#062010',
+      '--sim-warn':        '#FBBF24',
+      '--sim-warn-bg':     '#221A06',
+      '--sim-danger':      '#F87171',
+      '--sim-danger-bg':   '#220A0E',
+      '--sim-btn-fg':      '#050F0E',
+    },
+    swatches: ['#F0F8F6','#FFFFFF','#0E7A6E','#0A2020','#4A7070','#0A2020'],
+  },
 ];
 
-function renderPreview(p) {
-  const v = p.vars;
+const COLOR_TOKENS = [
+  { label: 'bg',      key: '--sim-bg' },
+  { label: 'surface', key: '--sim-surface' },
+  { label: 'accent',  key: '--sim-accent' },
+  { label: 'text',    key: '--sim-text-strong' },
+  { label: 'muted',   key: '--sim-text-secondary' },
+  { label: 'border',  key: '--sim-border' },
+  { label: 'editor',  key: '--sim-editor-bg' },
+  { label: 'success', key: '--sim-success' },
+  { label: 'warn',    key: '--sim-warn' },
+  { label: 'danger',  key: '--sim-danger' },
+];
+
+let currentMode = 'light';
+let currentPaletteId = 'warm-ivory';
+
+function renderPreview(p, mode) {
+  const v = mode === 'dark' ? p.darkVars : p.lightVars;
   const styleStr = Object.entries(v).map(([k, val]) => `${k}: ${val}`).join('; ');
+
+  const colorGrid = COLOR_TOKENS.map(t => `
+    <div class="sim-color-swatch">
+      <div class="sim-color-block" style="background:${v[t.key]}"></div>
+      <div class="sim-color-token-name">${t.label}</div>
+      <div class="sim-color-hex">${v[t.key]}</div>
+    </div>`).join('');
 
   return `
 <div style="${styleStr}">
-  <!-- Topbar -->
   <div class="sim-topbar">
     <div class="sim-logo"><span class="sim-logo-dot"></span>datathink</div>
     <div class="sim-nav">
@@ -516,9 +948,7 @@ function renderPreview(p) {
       <button class="sim-nav-btn">Sign in</button>
     </div>
   </div>
-
   <div class="sim-body">
-    <!-- Hero -->
     <div class="sim-hero">
       <div>
         <div class="sim-eyebrow">Interview Preparation, Reasoned</div>
@@ -549,8 +979,6 @@ function renderPreview(p) {
         </div>
       </div>
     </div>
-
-    <!-- Track rows -->
     <div class="sim-tracks">
       <div class="sim-tracks-label">Seven tracks</div>
       <div class="sim-track-list">
@@ -574,12 +1002,14 @@ function renderPreview(p) {
         </div>
       </div>
     </div>
-
-    <!-- Status chips -->
     <div class="sim-chips">
       <span class="sim-chip sim-chip-success">✓ Correct</span>
       <span class="sim-chip sim-chip-warn">Hint available</span>
       <span class="sim-chip sim-chip-danger">Wrong answer</span>
+    </div>
+    <div class="sim-color-grid">
+      <div class="sim-color-grid-label">Color tokens</div>
+      ${colorGrid}
     </div>
   </div>
 </div>
@@ -592,11 +1022,16 @@ function renderRail() {
     const btn = document.createElement('button');
     btn.className = 'palette-btn' + (i === 0 ? ' active' : '');
     btn.dataset.id = p.id;
+    const lightSwatches = [p.lightVars['--sim-bg'], p.lightVars['--sim-surface'], p.lightVars['--sim-accent'], p.lightVars['--sim-text-strong']];
+    const darkSwatches  = [p.darkVars['--sim-bg'],  p.darkVars['--sim-surface'],  p.darkVars['--sim-accent'],  p.darkVars['--sim-text-strong']];
     btn.innerHTML = `
       <div class="palette-btn-name">${p.name}</div>
       <div class="palette-btn-sub">${p.sub}</div>
+      <div class="swatch-row" style="margin-bottom:3px">
+        ${lightSwatches.map(c => `<div class="swatch" style="background:${c}" title="${c}"></div>`).join('')}
+      </div>
       <div class="swatch-row">
-        ${p.swatches.map(c => `<div class="swatch" style="background:${c}"></div>`).join('')}
+        ${darkSwatches.map(c => `<div class="swatch" style="background:${c}" title="${c}"></div>`).join('')}
       </div>
     `;
     btn.addEventListener('click', () => selectPalette(p.id));
@@ -604,15 +1039,36 @@ function renderRail() {
   });
 }
 
+function updatePreviewLabel(p) {
+  document.getElementById('preview-label').textContent =
+    `"${p.name}" — ${p.sub} · ${currentMode === 'dark' ? 'Dark' : 'Light'} mode`;
+}
+
 function selectPalette(id) {
+  currentPaletteId = id;
   const p = PALETTES.find(x => x.id === id);
   if (!p) return;
-
   document.querySelectorAll('.palette-btn').forEach(b => b.classList.remove('active'));
   document.querySelector(`[data-id="${id}"]`).classList.add('active');
+  document.getElementById('preview').innerHTML = renderPreview(p, currentMode);
+  updatePreviewLabel(p);
+}
 
-  document.getElementById('preview').innerHTML = renderPreview(p);
-  document.getElementById('preview-label').textContent = `"${p.name}" — ${p.sub}`;
+function toggleMode() {
+  currentMode = currentMode === 'light' ? 'dark' : 'light';
+  const btn = document.getElementById('mode-toggle-btn');
+  if (currentMode === 'dark') {
+    btn.innerHTML = '<span class="mode-icon">🌙</span> Dark';
+    btn.classList.add('dark-active');
+  } else {
+    btn.innerHTML = '<span class="mode-icon">☀️</span> Light';
+    btn.classList.remove('dark-active');
+  }
+  const p = PALETTES.find(x => x.id === currentPaletteId);
+  if (p) {
+    document.getElementById('preview').innerHTML = renderPreview(p, currentMode);
+    updatePreviewLabel(p);
+  }
 }
 
 renderRail();

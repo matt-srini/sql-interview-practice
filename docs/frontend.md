@@ -11,9 +11,10 @@ React 18 + React Router + Vite. Monaco editor. Axios API client. Single global s
 Defined in `frontend/src/App.js`:
 
 ```
-/                                → LandingPage (editorial landing — hero IDE, role selector, 7-track index)
+/                                → LandingPage (editorial landing — hero IDE, role selector, 9-track index)
 /auth                            → AuthPage (register / sign in / forgot password / OAuth)
 /auth/reset-password             → ResetPasswordPage (consume reset token, set new password)
+/auth/verify-email               → VerifyEmailPage (consume email verification token)
 /dashboard                       → ProgressDashboard (cross-track progress)
 /mock                            → MockHub (mode/track/difficulty selector + history)  [AuthRequired]
 /mock/:id                        → MockSession (active session + inline summary)        [AuthRequired]
@@ -30,9 +31,9 @@ Defined in `frontend/src/App.js`:
 /questions/:id                   → redirect → /practice/sql/questions/:id  (legacy)
 ```
 
-`:topic` values: `sql` | `python` | `python-data` | `pyspark` | `data-engineering` | `data-modeling` | `statistics`
+`:topic` values: `sql` | `python` | `python-data` | `pyspark` | `data-engineering` | `data-modeling` | `statistics` | `ml-fundamentals` | `experimentation`
 
-Active tracks (`TRACK_SLUGS`): all 7 tracks above. `ALL_TRACK_SLUGS` is the same set (no more `comingSoon` tracks).
+Active tracks (`TRACK_SLUGS`): all 9 tracks above. `ALL_TRACK_SLUGS` is the same set (no more `comingSoon` tracks).
 
 App-level route changes now animate with a short fade-in wrapper (`.route-transition`) around the route tree.
 
@@ -51,7 +52,7 @@ Editorial 8-section layout (Phase E redesign). All sections use the `lp-*` CSS n
 3. **Wrong / Right** — 2-col diff table; right column rows stagger in on intersection.
 4. **Role Selector** — `role="tablist"` with 4 tabs (Data Analyst · Data Engineer · Analytics Engineer · Data Scientist). Each panel shows an ordered list of relevant tracks as cards (left 3px border in track color via inline style). Coming-soon tracks display a `lp-badge-soon` badge and no CTA link. Arrow-key keyboard navigation.
 5. **Proof Strip** — Stat row: N tracks · N+ questions. Question count uses `useCountUp(target, 900, inView)` rAF animation on scroll.
-6. **Tracks Index** — Dense list of all 7 tracks from `ALL_TRACK_SLUGS` (all live). Per-row: color dot, name, description, question count, format tagline, "Enter →" link. `.lp-track-enter` link colored with track's CSS color.
+6. **Tracks Index** — Dense list of all 9 tracks from `ALL_TRACK_SLUGS` (all live). Per-row: color dot, name, description, question count, format tagline, "Enter →" link. `.lp-track-enter` link colored with track's CSS color.
 7. **Guided Progressions** — Fetches `/api/paths`; renders `PathProgressCard` per path (same component used in TrackHub).
 8. **Pricing** — Free / Pro / Elite columns with monthly + lifetime CTAs. Hidden only for `lifetime_elite` users (pro users see it to discover Elite). Reuses existing `landing-tier-*` CSS classes.
 
@@ -97,14 +98,14 @@ Uses `useCatalog()` for question/progress data.
 
 ### QuestionPage (`/practice/:topic/questions/:id`)
 
-Main practice screen. Layout and behavior vary by topic:
+Main practice screen. Layout and behavior vary by modality and topic:
 
-| Topic | Editor | Left panel | Result area |
+| Track / modality slice | Editor | Left panel | Result area |
 |---|---|---|---|
 | SQL | Monaco (sql) | Schema viewer | ResultsTable (run + submit) |
-| Python | Monaco (python) | Description only | TestCasePanel + PrintOutputPanel |
+| Python / numerical Statistics | Monaco (python) | Description only | TestCasePanel + PrintOutputPanel |
 | Pandas | Monaco (python) | VariablesPanel + description | ResultsTable + PrintOutputPanel |
-| PySpark | Read-only code snippet (if present) | Description only | MCQPanel → reveal explanation |
+| PySpark and other reasoning-first tracks | Read-only snippet when present, otherwise no editor | Description and prompt context | Option-based or explanation-first verdict panel |
 
 - **SEO**: easy questions are indexable — `noindex` is omitted and a `canonical` link is injected via Helmet. Medium and hard questions retain `noindex, nofollow` because they 403 for unauthenticated crawlers. Title format: `"{Question Title} — {Track} {Primary Concept} — datathink"`.
 - Compact status line in question header (difficulty / question position / open count)
@@ -122,7 +123,7 @@ Main practice screen. Layout and behavior vary by topic:
 - **Keyboard shortcuts** (wired via Monaco `onMount` / `editor.addCommand`; refs prevent stale-closure bugs):
   - `Cmd/Ctrl + Enter` → Run Query / Run Code (safe, reversible; guarded by `running`, `submitting`, `isLocked`, `meta.hasRunCode`)
   - `Cmd/Ctrl + Shift + Enter` → Submit Answer (permanent; guarded by `running`, `submitting`, `isLocked`)
-  - Not active for MCQ (PySpark) questions — no editor is rendered
+  - Not active for non-executable questions — no editor is rendered on reasoning-first tracks
 - **Shortcut affordance + help popover**: Run/Submit buttons show inline `<kbd>` badges (`⌘↵`, `⌘⇧↵`) and editor chrome includes a `?` shortcut-help toggle. Pressing `?` outside editable fields opens/closes the same popover.
 - **Accessibility baseline hardening**: a shared focus-visible ring style now covers interactive controls (`a`, `button`, form inputs, tab controls, role-button surfaces), sidebar filter controls were refactored to avoid nested buttons, and mobile sidebar backdrop dismissal is keyboard reachable (Enter/Space).
 - **Editor height toggle** (`⊞`/`⊟` button in the editor topbar): switches Monaco between 340 px (default) and 560 px. Preference is persisted to `localStorage` under the key `editor-height-pref`.
@@ -165,6 +166,7 @@ Loading state now renders a skeleton card instead of plain text while fetching a
 
 Cross-track progress overview. Fetches `GET /api/dashboard`, `GET /api/dashboard/insights`, and `GET /api/mock/history` on mount.
 
+- Renders one overview card per active track (all 9 tracks), not just the original executable slice.
 - Returning users see an `InsightStrip` with 3 tiles: cross-track coaching sentence, streak days, weakest concept. The weakest concept tile shows a `summary` coaching sentence (from the insights payload), a primary link to the recommended learning path when `recommended_path_slug` is present ("Study in {title} →"), and a secondary "Practice a question →" link to the first unsolved `recommended_question_ids` entry.
 - Track cards now include `median_solve_seconds` and `accuracy_pct` rows from `/api/dashboard/insights`.
 - New users (no solves yet) see a dedicated empty state with CTAs into practice and learning paths.
@@ -175,7 +177,7 @@ Cross-track progress overview. Fetches `GET /api/dashboard`, `GET /api/dashboard
 
 Index of all learning paths. Grouped by track. Topic-filter pills narrow to a single track when `:topic` is present in the URL. Each path shown as a card with title, description, solved count, and a link to the path.
 
-Current catalog footprint shown on this page: **22 paths total** (SQL 7, Python 5, Pandas 5, PySpark 5).
+Current catalog footprint shown on this page: **42 paths total** (SQL 9, Python 6, Pandas 5, PySpark 5, Data Engineering 2, Data Modeling 4, Statistics 3, ML Fundamentals 4, Experimentation 4).
 
 - Adds an "In progress" rail above the grouped grids (`1 <= solved_count < question_count`), sorted by completion percentage descending.
 - Empty state upgraded from plain text to CTA card (`/practice/sql`, `/dashboard`).
@@ -326,12 +328,18 @@ All requests use `withCredentials: true` so the `session_token` cookie is sent d
 3. Run → `POST /api/python-data/run-code` → ResultsTable + PrintOutputPanel
 4. Submit → `POST /api/python-data/submit` → correct/incorrect + DataFrame comparison
 
-### PySpark MCQ
+### PySpark reasoning
 1. `/practice/pyspark/questions/:id` → fetch `/api/pyspark/questions/:id`
 2. MCQPanel shows options (+ code_snippet if present)
 3. User selects option → click Submit → `POST /api/pyspark/submit`
 4. Response `{ correct, explanation }` → MCQPanel highlights correct/wrong + reveals explanation
 5. No Run button, no code editor
+
+### Reasoning-first tracks
+1. `/practice/:topic/questions/:id` → fetch topic-specific question detail for Data Engineering, Data Modeling, ML Fundamentals, Experimentation, or conceptual Statistics
+2. Prompt renders the stem, supporting context, and option or scenario UI without pretending the task is executable
+3. Submit → topic-specific submit endpoint returns verdict + explanation
+4. No `Run` affordance unless the question's modality is executable
 
 ### Sample flow
 1. `/sample/:topic/:difficulty` → `GET /api/sample/:topic/:difficulty`
@@ -543,7 +551,7 @@ Full-screen layout. Does not use `AppShell`. Has two states:
 | Suite | File | Coverage |
 |---|---|---|
 | SidebarNav unit | `src/components/SidebarNav.test.js` | Collapse/expand difficulty groups, locked vs unlocked question rendering, navigation |
-| ProgressDashboard unit | `src/pages/ProgressDashboard.test.js` | X/Y count rendering for all 4 tracks, zero counts, loading/error states, regression guard against plain-int shape returned by older API |
+| ProgressDashboard unit | `src/pages/ProgressDashboard.test.js` | Legacy regression coverage for the original 4-track dashboard slice, plus X/Y count rendering, loading/error states, and guard against the older plain-int API shape |
 | Plan-tier e2e | `e2e/plan-tiers.spec.js` | Dashboard counts, sidebar lock state, TrackHub plan banner, mock difficulty gating — verified against live dev servers for elite/pro/free plans |
 
 **Tooling:**

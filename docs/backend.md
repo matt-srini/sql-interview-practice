@@ -211,7 +211,7 @@ This track uses `eval_kind="mixed"` with `mixed_subtype=True`. Each question has
 | GET | `/api/dashboard/insights` | Coaching metrics derived from submissions (per-track solve speed + accuracy, weakest concepts, streak, cross-track insight) |
 | GET | `/api/submissions` | Submission history for a question (`track`, `question_id`, `limit` query params; max 20) including optional `duration_ms` when provided by clients |
 
-Response shape: `{ tracks: { sql, python, python_data, pyspark }, concepts_by_track, recent_activity }`. Each track includes `by_difficulty: { easy: { solved, total }, medium: { solved, total }, hard: { solved, total } }` — note both `solved` and `total` are included in each difficulty object, not bare integers.
+Response shape includes every active track: `{ tracks: { sql, python, python_data, pyspark, data-engineering, data-modeling, statistics, ml-fundamentals, experimentation }, concepts_by_track, recent_activity }`. Each track includes `by_difficulty: { easy: { solved, total }, medium: { solved, total }, hard: { solved, total } }` — note both `solved` and `total` are included in each difficulty object, not bare integers.
 
 `GET /api/dashboard/insights` response shape:
 
@@ -231,6 +231,8 @@ Response shape: `{ tracks: { sql, python, python_data, pyspark }, concepts_by_tr
 }
 ```
 
+Example is abbreviated for readability; the real payload includes all 9 active tracks.
+
 Notes:
 - `median_solve_seconds` is computed from first-attempt to first-correct duration per solved question, then medianed per track.
 - `weakest_concepts` returns bottom 3 concepts by accuracy where attempts >= 3.
@@ -247,7 +249,7 @@ Notes:
 
 Paths are defined as JSON files in `backend/content/paths/`. The `path_loader.py` module reads them at startup. Each path record has `slug`, `title`, `description`, `topic`, and `questions[]` (ordered list of question IDs). The `/api/paths/{slug}` response enriches each question entry with its catalog metadata and the user's current state.
 
-Current footprint: **22 paths total** (SQL 7, Python 5, Pandas 5, PySpark 5). Path records also include `tier` (`free`/`pro`) and `role` (`starter`/`intermediate`/`advanced`) for access and unlock-shortcut semantics, plus `focus_concepts` (2–4 semantic concept tags), `outcomes` (one-sentence learning objective), and `recommended_after` (prerequisite path slugs).
+Current footprint: **42 paths total** (SQL 9, Python 6, Pandas 5, PySpark 5, Data Engineering 2, Data Modeling 4, Statistics 3, ML Fundamentals 4, Experimentation 4). Path records also include `tier` (`free`/`pro`) and `role` (`starter`/`intermediate`/`advanced`) for access and unlock-shortcut semantics, plus `focus_concepts` (2–4 semantic concept tags), `outcomes` (one-sentence learning objective), and `recommended_after` (prerequisite path slugs).
 
 The `GET /api/dashboard/insights` endpoint uses `focus_concepts` to attach `recommended_path_slug` and `recommended_path_title` to each entry in `weakest_concepts`, routing users from a diagnosed weak area directly to the most relevant accessible path. Starter paths take priority over intermediate, which take priority over advanced in that matching.
 

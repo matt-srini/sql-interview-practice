@@ -70,7 +70,7 @@ POST /api/python/submit  (or /api/python-data/submit)
 
 ---
 
-## Request lifecycle — PySpark MCQ
+## Request lifecycle — PySpark reasoning submit
 
 ```
 POST /api/pyspark/submit
@@ -328,12 +328,13 @@ ID scheme: **TXNNN** (T=track 1–9, X=difficulty 1–3, NNN=sequence 001–999)
 
 | Suite | Location | Coverage |
 |---|---|---|
-| Backend API | `backend/tests/test_api.py` | Auth, catalog, question fetch, submit, sample |
-| SQL evaluator | `backend/tests/test_evaluator.py` | Normalization, comparison, ORDER BY sensitivity |
-| Rate limiter | `backend/tests/test_rate_limiter.py` | Window reset, limit enforcement |
-| Plan tiers | `backend/tests/test_plan_tiers.py` | Catalog unlock rules, mock daily limits, dashboard shape — all 3 plan tiers × all 4 tracks |
+| Backend API | `backend/tests/test_01_system.py` through `backend/tests/test_20_data_modeling.py` | System, auth, catalog, track endpoints, mock, dashboard, payments, rate limiting, security, account |
+| SQL evaluator | `backend/tests/test_05_sql.py` | SQL execution, normalization, comparison, ORDER BY sensitivity |
+| Mock interviews | `backend/tests/test_11_mock.py` | Access rules, session lifecycle, mixed sessions, company filter gating, summary visibility |
+| Dashboard / insights | `backend/tests/test_12_dashboard.py` | Cross-track dashboard shape, insights metrics, weakest concepts, streaks, cache behavior |
+| Rate limiter | `backend/tests/test_15_rate_limiting.py` | Window reset, limit enforcement |
 | Frontend unit | `frontend/src/components/SidebarNav.test.js` | Question list collapse/expand, lock state rendering |
-| Frontend unit | `frontend/src/pages/ProgressDashboard.test.js` | X/Y count format, all 4 track cards, loading/error states, regression guard against plain-int shape |
+| Frontend unit | `frontend/src/pages/ProgressDashboard.test.js` | Legacy dashboard regression slice, X/Y count format, loading/error states, regression guard against plain-int shape |
 | E2E (Playwright) | `frontend/e2e/plan-tiers.spec.js` | Dashboard counts, sidebar lock state, TrackHub banner, mock difficulty gating — live dev servers |
 
 **Test infrastructure notes:**

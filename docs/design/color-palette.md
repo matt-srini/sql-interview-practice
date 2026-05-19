@@ -121,4 +121,4 @@ Character: calm, data-forward, slightly cooler than Forest & Ink. Works well if 
 
 ## Theme picker
 
-An interactive preview of all 8 evaluated palettes lives at [`docs/archive/theme-preview.html`](../archive/theme-preview.html). Load it via the Vite dev server at `/theme-preview.html`.
+An interactive preview of all 8 evaluated palettes lives at [`frontend/public/theme-preview.html`](../../frontend/public/theme-preview.html). Load it via the Vite dev server at `/theme-preview.html`.
