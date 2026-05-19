@@ -11,6 +11,8 @@ import json
 from pathlib import Path
 from typing import Any, Optional
 
+from interaction_modes import resolve_interaction_mode
+
 _CONTENT_DIR = Path(__file__).resolve().parent / "content" / "statistics_questions"
 _SCHEMA_CONFIG_PATH = _CONTENT_DIR / "schemas.json"
 
@@ -51,6 +53,11 @@ def _validate_question(question: dict[str, Any], *, id_ranges: dict[str, list[in
     subtype = str(question.get("subtype"))
     if subtype not in VALID_SUBTYPES:
         _fail(qid, f"Invalid subtype: {subtype}, must be 'conceptual' or 'numerical'")
+
+    try:
+        resolve_interaction_mode("statistics", question)
+    except ValueError as exc:
+        _fail(qid, str(exc))
 
     if subtype == "conceptual":
         _validate_conceptual(qid, question)
@@ -106,7 +113,7 @@ def _load_questions() -> list[dict[str, Any]]:
             if qid in seen_ids:
                 _fail(qid, "Duplicate question id")
             seen_ids.add(qid)
-            questions.append(question)
+            questions.append({**question, "interaction_mode": resolve_interaction_mode("statistics", question)})
 
     return questions
 
@@ -138,6 +145,7 @@ def get_public_question(question: dict[str, Any]) -> dict[str, Any]:
         "difficulty": question["difficulty"],
         "type": question["type"],
         "subtype": subtype,
+        "interaction_mode": question.get("interaction_mode"),
         "hints": question.get("hints", []),
         "concepts": question.get("concepts", []),
     }

@@ -4,11 +4,12 @@ import json
 from pathlib import Path
 from typing import Any, Optional
 
+from interaction_modes import resolve_interaction_mode
+
 _CONTENT_DIR = Path(__file__).resolve().parent / "content" / "pyspark_questions"
 _SCHEMA_CONFIG_PATH = _CONTENT_DIR / "schemas.json"
 
 VALID_TYPES = {"mcq", "predict_output", "debug", "optimization", "scenario"}
-VALID_INTERACTION_MODES = {"code_adjacent_reasoning"}
 
 
 def _fail(question_id: int, reason: str) -> None:
@@ -47,12 +48,10 @@ def _validate_question(question: dict[str, Any], *, id_ranges: dict[str, list[in
     if not isinstance(correct, int) or correct < 0 or correct >= len(options):
         _fail(qid, f"correct_option must be a valid index into options (0-{len(options)-1})")
 
-    interaction_mode = question.get("interaction_mode")
-    if interaction_mode is not None and interaction_mode not in VALID_INTERACTION_MODES:
-        _fail(
-            qid,
-            f"Invalid interaction_mode: {interaction_mode}, must be one of {VALID_INTERACTION_MODES}",
-        )
+    try:
+        resolve_interaction_mode("pyspark", question)
+    except ValueError as exc:
+        _fail(qid, str(exc))
 
 
 def _load_questions() -> list[dict[str, Any]]:
@@ -79,7 +78,7 @@ def _load_questions() -> list[dict[str, Any]]:
             if qid in seen_ids:
                 _fail(qid, "Duplicate question id")
             seen_ids.add(qid)
-            questions.append(question)
+            questions.append({**question, "interaction_mode": resolve_interaction_mode("pyspark", question)})
 
     return questions
 

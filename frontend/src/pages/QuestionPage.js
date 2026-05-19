@@ -165,16 +165,15 @@ export default function QuestionPage() {
     }
     return meta.hasMCQ ? 'mcq' : 'code';
   }, [meta.mixedSubtype, meta.hasMCQ, question?.subtype]);
+  const questionType = useMemo(() => {
+    const raw = String(question?.question_type ?? question?.type ?? '').trim().toLowerCase();
+    return raw ? raw.replace(/\s+/g, '_') : '';
+  }, [question?.question_type, question?.type]);
   const interactionMode = useMemo(() => {
-    const raw = String(
-      question?.interaction_mode
-      ?? question?.question_type
-      ?? question?.type
-      ?? ''
-    ).trim().toLowerCase();
+    const raw = String(question?.interaction_mode ?? '').trim().toLowerCase();
     if (!raw) return renderMode === 'mcq' ? 'mcq' : 'code';
     return raw.replace(/\s+/g, '_');
-  }, [question?.interaction_mode, question?.question_type, question?.type, renderMode]);
+  }, [question?.interaction_mode, renderMode]);
   const isReasoningTrack = meta.hasMCQ && !meta.hasRunCode;
   const isPySparkTrack = topic === 'pyspark';
   const [runHistory, setRunHistory] = useState(() => {
@@ -862,30 +861,31 @@ export default function QuestionPage() {
   const submitBtnLabel = useMemo(() => {
     if (submitting) return 'Checking…';
     if (renderMode !== 'mcq') return 'Submit Answer';
+    if (isReasoningTrack) {
+      if (questionType === 'predict_output') return 'Submit prediction';
+      if (questionType === 'debug') return 'Submit diagnosis';
+      if (questionType === 'optimization') return 'Submit optimization choice';
+      if (questionType === 'scenario') return 'Submit decision';
+    }
     if (isPySparkTrack) {
-      if (interactionMode === 'predict_output') return 'Submit prediction';
-      if (interactionMode === 'debug') return 'Submit diagnosis';
-      if (interactionMode === 'optimization') return 'Submit optimization choice';
-      if (interactionMode === 'scenario') return 'Submit decision';
       return 'Submit reasoning';
     }
     if (isReasoningTrack) return 'Submit response';
     return 'Submit Answer';
-  }, [submitting, renderMode, isPySparkTrack, interactionMode, isReasoningTrack]);
+  }, [submitting, renderMode, isPySparkTrack, isReasoningTrack, questionType]);
   const mcqPromptHeading = useMemo(() => {
     if (!isReasoningTrack) return 'Choose the correct answer';
+    if (questionType === 'predict_output') return 'Predict the output';
+    if (questionType === 'debug') return 'Choose the best fix';
+    if (questionType === 'optimization') return 'Choose the best optimization';
+    if (questionType === 'scenario') {
+      return isPySparkTrack ? 'Choose the best engineering decision' : 'Choose the best decision';
+    }
     if (isPySparkTrack) {
-      if (interactionMode === 'predict_output') return 'Predict the output';
-      if (interactionMode === 'debug') return 'Choose the best fix';
-      if (interactionMode === 'optimization') return 'Choose the best optimization';
-      if (interactionMode === 'scenario') return 'Choose the best engineering decision';
       return 'Choose the strongest Spark reasoning';
     }
-    if (interactionMode === 'predict_output') return 'Predict the output';
-    if (interactionMode === 'debug') return 'Choose the best fix';
-    if (interactionMode === 'scenario') return 'Choose the best decision';
     return 'Choose the strongest response';
-  }, [isReasoningTrack, isPySparkTrack, interactionMode]);
+  }, [isReasoningTrack, isPySparkTrack, questionType]);
   const canRevealSolution = !!submitResult
     && (submitResult.correct || hintsShown >= (question.hints?.length ?? 0));
 

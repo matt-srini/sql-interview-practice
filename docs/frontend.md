@@ -108,6 +108,7 @@ Main practice screen. Layout and behavior vary by modality and topic:
 | PySpark and other reasoning-first tracks | Read-only snippet when present, otherwise no editor | Description and prompt context | Option-based or explanation-first verdict panel |
 
 - **SEO**: easy questions are indexable — `noindex` is omitted and a `canonical` link is injected via Helmet. Medium and hard questions retain `noindex, nofollow` because they 403 for unauthenticated crawlers. Title format: `"{Question Title} — {Track} {Primary Concept} — datathink"`.
+- **Modality-aware reasoning copy**: `QuestionPage` now reads `interaction_mode` as the coarse modality family and keeps `question.type` / `question_type` for the specific prompt verb, so constructed-reasoning tracks can expose stable metadata without losing subtype-specific copy like predict, debug, or scenario.
 - Compact status line in question header (difficulty / question position / open count)
 - On mobile, question actions use a low-profile sticky dock for Run / Submit controls
 - On correct: `refresh()` updates catalog context so sidebar reflects new unlock state
@@ -276,7 +277,7 @@ Provides current topic and track metadata to the entire component tree.
 
 `statistics` entry: `color: '#7A5AF0'`, `hasMCQ: true`, `hasRunCode: true`, `mixedSubtype: true`, `apiPrefix: '/statistics'`, `language: 'python'`. The `mixedSubtype: true` flag tells `QuestionPage.js` to derive `renderMode` from `question.subtype` at runtime rather than using the static `hasMCQ` flag — enabling a single page to render both conceptual reasoning and executable numerical questions.
 
-PySpark practice now also reads additive `interaction_mode` metadata when present and falls back to legacy `question_type` / `type` values to choose reasoning-first headings and submit labels.
+Reasoning-first practice now reads additive `interaction_mode` metadata across PySpark, Data Engineering, Data Modeling, ML Fundamentals, Experimentation, and Statistics. `QuestionPage` keeps `question.type` / `question_type` separate so headings and submit labels can still distinguish predict-output, debug, optimization, and scenario variants even when multiple question forms share the same modality family.
 
 ### `catalogContext.js`
 

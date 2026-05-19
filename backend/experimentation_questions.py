@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 from typing import Any, Optional
 
+from interaction_modes import resolve_interaction_mode
+
 _CONTENT_DIR = Path(__file__).resolve().parent / "content" / "experimentation_questions"
 _SCHEMA_CONFIG_PATH = _CONTENT_DIR / "schemas.json"
 
@@ -46,6 +48,11 @@ def _validate_question(question: dict[str, Any], *, id_ranges: dict[str, list[in
     if not isinstance(correct, int) or correct < 0 or correct >= len(options):
         _fail(qid, f"correct_option must be a valid index into options (0-{len(options)-1})")
 
+    try:
+        resolve_interaction_mode("experimentation", question)
+    except ValueError as exc:
+        _fail(qid, str(exc))
+
 
 def _load_questions() -> list[dict[str, Any]]:
     schema_config = _load_json(_SCHEMA_CONFIG_PATH)
@@ -71,7 +78,7 @@ def _load_questions() -> list[dict[str, Any]]:
             if qid in seen_ids:
                 _fail(qid, "Duplicate question id")
             seen_ids.add(qid)
-            questions.append(question)
+            questions.append({**question, "interaction_mode": resolve_interaction_mode("experimentation", question)})
 
     return questions
 
@@ -101,6 +108,7 @@ def get_public_question(question: dict[str, Any]) -> dict[str, Any]:
         "description": question["description"],
         "difficulty": question["difficulty"],
         "type": question["type"],
+        "interaction_mode": question.get("interaction_mode"),
         "code_snippet": question.get("code_snippet"),
         "scenario_context": question.get("scenario_context"),
         "options": question["options"],

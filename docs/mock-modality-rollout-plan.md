@@ -2,7 +2,7 @@
 
 Planning document for the practice and mock modality migration.
 
-Status: execution started, Phase 0 audit complete
+Status: execution started, Phase 0 audit complete, Phase 2 metadata generalization in progress
 Date: 2026-05-19
 Owner: GPT-5.4 orchestrator
 Implementers: parallel GPT Codex agents
@@ -20,7 +20,8 @@ Current state:
 
 - Phase 0 is complete as a docs-and-audit foundation phase
 - no product-code behavior changed in Phase 0
-- Phase 1 PySpark-first practice uplift is now in progress: additive metadata exposure and frontend terminology cleanup
+- Phase 1 PySpark-first practice uplift is complete: additive metadata exposure and frontend terminology cleanup landed
+- Phase 2 is in progress: reasoning-track payloads now expose stable `interaction_mode` metadata across Data Engineering, Data Modeling, ML Fundamentals, Experimentation, and Statistics, while frontend prompt copy keeps modality family separate from question type
 
 ## Objective
 
