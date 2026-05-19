@@ -744,7 +744,7 @@
       "Confounding: Passed Screening is a confounder that causally affects both coding experience and system design ability, and should be adjusted for to remove bias",
       "Survivorship bias: candidates who failed screening are excluded, but this only reduces sample size and does not distort the correlation structure"
     ],
-    "correct_option": 2,
+    "correct_option": 1,
     "explanation": "A collider is a variable with two incoming arrows (A → C ← B). Conditioning on a collider (here, selecting only screened candidates) opens a non-causal association between its parents (X and Y) even if X and Y are independent in the population. Intuitively: among those who passed screening, a candidate with weak system design skills must have strong coding experience to have been admitted (and vice versa), creating a negative correlation purely as an artefact of the selection filter. This is sometimes called Berkson's bias and is a special case of selection bias. The fix is to analyse the full candidate pool, not the filtered subgroup — never condition on a collider.",
     "hints": [
       "A confounder has arrows pointing TO both the treatment and outcome. A collider has arrows pointing FROM both the treatment and outcome. Which pattern does Passed Screening fit?",
