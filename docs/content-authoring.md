@@ -301,6 +301,7 @@ Verified current allocation for existing tracks:
 | Experimentation | 91001–91030 (30p) | 92001–92030 (30p) · 92031–92042 (12m) | 93001–93020 (20p) · 93021–93033 (13m) |
 | Data Modeling | 61001–61025 (25p) | 62001–62025 (25p) | 63001–63020 (20p) · 63021 (1m) |
 | Data Engineering | 51001–51030 (30p) | 52001–52030 (30p) | 53001–53020 (20p) · 53021 (1m) |
+| Statistics | 71001–71031 (31p) | 72001–72041 (41p) | 73001–73024 (24p) · 73025–73029 (5m) |
 
 ### SQL sample IDs (3-digit, SQL only)
 

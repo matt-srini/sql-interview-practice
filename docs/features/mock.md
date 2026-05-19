@@ -32,7 +32,7 @@ Custom mode validates server-side: `num_questions` must be 1–5, `time_minutes`
 | PySpark | ✅ | 20 mock-only questions |
 | ML Fundamentals | ✅ | 25 mock-only questions |
 | Experimentation | ✅ | 25 mock-only questions |
-| Statistics | ✅ | 3 mock-only questions |
+| Statistics | ✅ | 4 mock-only questions |
 | Data Modeling | ✅ | 1 mock-only question (expanding) |
 | Data Engineering | ✅ | 1 mock-only question (expanding) |
 

@@ -759,5 +759,33 @@
     ],
     "order": 28,
     "difficulty": "hard"
+  },
+  {
+    "id": 73029,
+    "title": "Non-Parametric Test Selection When Assumptions Fail",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "mock_only": true,
+    "description": "An analyst is comparing daily checkout values (in USD) between a treatment group (n=52) and a control group (n=50) from an A/B test. Before running a t-test, they check assumptions:\n\n• Shapiro-Wilk test on both groups: p < 0.001 (strongly rejects normality in both)\n• Both distributions are severely right-skewed with several high-value outliers\n• Levene's test rejects equal variance (p = 0.018)\n• The two groups are independent (no natural pairing)\n\nThe analyst's question is: does the treatment group tend to produce higher checkout values than the control group?\n\nWhich test is most appropriate?",
+    "options": [
+      "Welch's two-sample t-test — adjusts the degrees of freedom to account for unequal variances, making it valid here since the equal-variance assumption is handled and the sample sizes are large enough for the CLT to apply",
+      "Mann-Whitney U test — a rank-based test that requires neither normality nor equal variance; tests whether observations from one distribution tend to rank higher than the other; appropriate for two independent non-normal groups",
+      "Log-transform both groups to reduce skew, then apply Student's two-sample t-test — the transformation should bring both distributions close enough to normality that the t-test is valid, while preserving the comparison between groups",
+      "Kruskal-Wallis test — a non-parametric test that makes no normality assumption; appropriate here because both normality and equal-variance assumptions have been violated"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B (Mann-Whitney U) is correct. When normality is violated for two independent groups, the Mann-Whitney U test (also called the Wilcoxon rank-sum test) is the standard non-parametric alternative. It tests H₀: P(X > Y) = 0.5 — whether observations from the treatment distribution tend to rank above control observations — without assuming any particular distributional shape or equal variances. At n=50–52, the normal approximation to the Mann-Whitney statistic is accurate and the test has good power.\n\nOption A (Welch's t-test) only addresses the unequal-variance problem. It still relies on the t-distribution approximation, which requires the sampling distribution of the group means to be approximately normal. For severely right-skewed distributions with outliers, the CLT convergence at n≈50 is unreliable — the sampling distribution of the mean is still skewed, making the p-values and confidence intervals from a t-test invalid. Welch's t-test is the right fix for unequal variance when distributions are already approximately normal; it is not a remedy for non-normality.\n\nOption C (log-transform + t-test) is a common and sometimes valid approach for right-skewed positive data. Its limitation here is that the transformation changes the estimand: the test is no longer asking whether the treatment group tends to produce higher checkout values on the original dollar scale — it is asking whether the geometric means differ. If the analyst's question is about the original scale (as stated), the log-transformed analysis answers a different question. Additionally, if the transformed distributions still fail normality checks, the same problem recurs with added complexity.\n\nOption D (Kruskal-Wallis) is technically valid for two groups — it reduces to Mann-Whitney U in the two-group case — but it is the non-parametric alternative to one-way ANOVA, designed for three or more independent groups. Using it for a two-group comparison works mathematically but signals either a misapplication of the test's purpose or an overgeneralised approach. The appropriate tool for comparing exactly two independent non-normal distributions is Mann-Whitney U.",
+    "hints": [
+      "Two assumptions have been violated: normality and equal variance. Welch's t-test addresses one of these; the correct answer addresses both without modifying the data or changing what is being measured.",
+      "The test you need compares two independent non-normal groups by ranking all observations together and asking whether one group's ranks tend to be higher — it requires only that the distributions are continuous and the observations are independent."
+    ],
+    "concepts": [
+      "non-parametric tests",
+      "hypothesis testing",
+      "normality assumption",
+      "test selection"
+    ],
+    "order": 29,
+    "difficulty": "hard"
   }
 ]

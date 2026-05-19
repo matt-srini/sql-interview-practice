@@ -11,10 +11,9 @@ import { track as trackEvent } from '../analytics';
 // Tracks that pool into a single mixed-track session (in_mixed_mock=True in backend).
 const MIXED_MOCK_TRACKS = ['sql', 'python', 'python-data', 'pyspark'];
 
-// Tracks without a dedicated mock-only question bank yet — sessions draw from practice questions only.
-// data-modeling removed 2026-05-19 (63021 added). data-engineering removed 2026-05-19 (53021 added).
-// Remaining: statistics (content authoring in progress).
-const NO_MOCK_BANK_TRACKS = new Set(['statistics']);
+// All tracks now have at least one dedicated mock-only question.
+// data-modeling: 63021 (2026-05-19). data-engineering: 53021 (2026-05-19). statistics: 73025–73029.
+const NO_MOCK_BANK_TRACKS = new Set();
 
 const MOCK_ROLES = [
   { id: 'analyst',            label: 'Data Analyst',       tracks: ['sql', 'statistics', 'python-data', 'python'] },
