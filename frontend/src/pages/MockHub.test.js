@@ -1,0 +1,109 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
+
+const { mockApiGet, mockUseAuth } = vi.hoisted(() => ({
+  mockApiGet: vi.fn(),
+  mockUseAuth: vi.fn(),
+}));
+
+vi.mock('../api', () => ({
+  default: {
+    get: (...args) => mockApiGet(...args),
+    post: vi.fn(),
+  },
+}));
+
+vi.mock('../contexts/AuthContext', () => ({
+  useAuth: () => mockUseAuth(),
+}));
+
+vi.mock('../components/Topbar', () => ({
+  default: () => <div data-testid="topbar" />,
+}));
+
+vi.mock('../components/UpgradeButton', () => ({
+  default: ({ label }) => <button type="button">{label}</button>,
+}));
+
+vi.mock('../analytics', () => ({ track: vi.fn() }));
+
+import MockHub from './MockHub';
+
+function renderHub(entryState) {
+  return render(
+    <HelmetProvider>
+      <MemoryRouter initialEntries={[{ pathname: '/mock', state: entryState }]}>
+        <Routes>
+          <Route path="/mock" element={<MockHub />} />
+        </Routes>
+      </MemoryRouter>
+    </HelmetProvider>
+  );
+}
+
+beforeEach(() => {
+  mockUseAuth.mockReturnValue({
+    user: { id: 'u1', plan: 'elite', email: 'test@datathink.co', name: 'Tester' },
+  });
+
+  mockApiGet.mockImplementation((path) => {
+    if (path === '/mock/history') return Promise.resolve({ data: [] });
+    if (path === '/mock/analytics') {
+      return Promise.resolve({
+        data: {
+          benchmark_summary: { total_sessions: 0 },
+          drill_summary: { total_sessions: 0 },
+          mode_breakdown: { benchmark: 0, drill: 0 },
+          top_concepts: [],
+          weak_concepts: [],
+        },
+      });
+    }
+    if (path === '/mock/access') {
+      return Promise.resolve({
+        data: {
+          access: {
+            easy: { can_start: true },
+            medium: { can_start: true },
+            hard: { can_start: true },
+            mixed: { can_start: true },
+          },
+        },
+      });
+    }
+    return Promise.resolve({ data: {} });
+  });
+});
+
+afterEach(() => {
+  vi.clearAllMocks();
+  localStorage.clear();
+});
+
+describe('MockHub preset intake', () => {
+  it('applies a recommended drill preset from summary navigation', async () => {
+    renderHub({
+      mockPreset: {
+        mode: 'custom',
+        track: 'python',
+        difficulty: 'medium',
+        numQuestions: 3,
+        timeMinutes: 45,
+        note: 'Follow up on this benchmark with a short targeted drill while the weak spots are still fresh.',
+      },
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Recommended next step')).toBeInTheDocument();
+      expect(screen.getByText(/weak spots are still fresh/i)).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Python' }).className).toMatch(/active/);
+      expect(screen.getByDisplayValue('3')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('45')).toBeInTheDocument();
+    });
+  });
+});

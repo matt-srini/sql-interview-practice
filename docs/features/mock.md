@@ -141,7 +141,7 @@ Shown after `POST /api/mock/:id/finish`:
 - **Time used** — `MM:SS used of MM:SS limit`.
 - **Per-question breakdown** — solved/unsolved badge, time spent, expandable **"See solution"** toggle (reference solution + explanation, revealed only after finish).
 - **(Pro+) Concept breakdown table** — lists every concept that appeared in the session with `correct / attempted`, sorted worst-first.
-- **(Pro+) "Drill weak concepts →"** — links to `/practice/:track?concepts=...` pre-filtered to the worst 2 concepts from the session.
+- **(Pro+) "Drill weak concepts →"** — drill summaries link to `/practice/:track?concepts=...` pre-filtered to the worst 2 concepts from the session, and benchmark summaries can still surface the same concept-focused follow-up inside the concept block.
 - **(Elite) Session debrief** — a coaching narrative panel shown above the per-question list. Generated server-side (template-based, no external AI) from session data and submission history. Contains:
   - **Headline** — one-sentence overall verdict with score and time context.
   - **Patterns** — up to 3 observations: which concepts were strong/weak, follow-up question performance, and whether a single question dominated session time.
@@ -150,7 +150,8 @@ Shown after `POST /api/mock/:id/finish`:
   - Returned as `debrief` in the `POST /api/mock/:id/finish` response. `null` for non-Elite plans.
 - **(Elite) "Known weakness" badge** — when a session concept matches one of the user's cross-session `weakest_concepts` from the dashboard insights, the concept row is highlighted in amber and tagged "known weakness". Elite users also see a path recommendation link ("Study in {title} →") when `recommended_path_slug` is present; Pro users see a generic drill link.
 - **Share result** — copies a summary string to clipboard.
-- **Restart CTA** — routes back to `/mock` as `Start another benchmark` or `Start another drill` depending on the finished session mode.
+- **Mode-aware footer actions** — benchmark summaries now emphasize review (`Review benchmarks`) and offer a `Plan follow-up drill` handoff back into MockHub; drill summaries emphasize targeted follow-up (`Drill weak concepts →` when available, otherwise a prefilled short-drill recommendation) plus a secondary return to the drill lobby.
+- **Summary-to-hub handoff** — clicking the follow-up drill action sends `location.state.mockPreset` into MockHub, which displays a `Recommended next step` banner and pre-fills the drill planner with track, difficulty, and short-session defaults.
 
 ---
 

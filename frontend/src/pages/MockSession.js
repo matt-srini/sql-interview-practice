@@ -430,6 +430,19 @@ export default function MockSession() {
       .slice(0, 2)
       .map((row) => conceptSlug(row.concept))
       .filter(Boolean);
+    const recommendedDrillDifficulty = (sum?.difficulty || session?.difficulty || 'easy') === 'mixed'
+      ? 'medium'
+      : (sum?.difficulty || session?.difficulty || 'easy');
+    const drillPreset = {
+      mode: 'custom',
+      track: drillTrack,
+      difficulty: recommendedDrillDifficulty,
+      numQuestions: 2,
+      timeMinutes: 30,
+      note: summaryDescriptor.isBenchmark
+        ? 'Follow up on this benchmark with a short targeted drill while the weak spots are still fresh.'
+        : 'Stay in drill mode and keep pressure on the same weak area with a short focused follow-up.',
+    };
 
     let comparisonCopy = null;
     if (typeof baselineAccuracy === 'number') {
@@ -571,7 +584,7 @@ export default function MockSession() {
                     );
                   })}
                 </div>
-                {drillConcepts.length > 0 && (() => {
+                {summaryDescriptor.isBenchmark && drillConcepts.length > 0 && (() => {
                   // Elite: prefer a path recommendation for the top weak session concept
                   if (isElite) {
                     const topWeak = conceptRows.find(r => r.track === drillTrack && r.accuracy < 1);
@@ -612,9 +625,40 @@ export default function MockSession() {
               >
                 {shareCopied ? '✓ Copied!' : 'Share result'}
               </button>
-              <button className="btn btn-primary" onClick={() => navigate('/mock')}>
-                {summaryDescriptor.isBenchmark ? 'Start another benchmark' : 'Start another drill'}
-              </button>
+              {summaryDescriptor.isBenchmark ? (
+                <>
+                  <button className="btn btn-secondary" onClick={() => navigate('/mock')}>
+                    Review benchmarks
+                  </button>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => navigate('/mock', { state: { mockPreset: drillPreset } })}
+                  >
+                    Plan follow-up drill
+                  </button>
+                </>
+              ) : (
+                <>
+                  {isProOrElite && drillConcepts.length > 0 ? (
+                    <Link
+                      to={`/practice/${drillTrack}?concepts=${drillConcepts.join(',')}`}
+                      className="btn btn-primary"
+                    >
+                      Drill weak concepts →
+                    </Link>
+                  ) : (
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => navigate('/mock', { state: { mockPreset: drillPreset } })}
+                    >
+                      Continue targeted drill
+                    </button>
+                  )}
+                  <button className="btn btn-secondary" onClick={() => navigate('/mock')}>
+                    Back to drill lobby
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>

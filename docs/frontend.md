@@ -548,10 +548,11 @@ Full-screen layout. Does not use `AppShell`. Has two states:
 - Summary topbar and intro card now distinguish `Benchmark summary` vs `Drill summary`, show the human-readable mode label, and restate the session shape before the score block.
 - Score card: `X/Y correct, Z% above/below your session average` (comparison against `GET /api/dashboard/insights` track accuracy baseline), plus time used
 - Per-concept session accuracy row (`correct/attempts`) built from concepts touched in this mock
-- "Drill weak concepts" CTA to `/practice/{track}?concepts={slug1,slug2}`
+- Benchmark summaries now keep review-oriented footer actions (`Review benchmarks`) and can hand users back to MockHub with a prefilled follow-up drill recommendation.
+- Drill summaries now push targeted follow-up more explicitly: Pro/Elite users get a footer `Drill weak concepts` CTA to `/practice/{track}?concepts={slug1,slug2}`, while other drill cases route back to `/mock` with a recommended short drill preset.
 - Per-question rows: title · solved badge · time spent · collapsible solution
 - Share CTA → `navigator.clipboard.writeText(...)`, now prefixed with the human-readable mode label
-- Primary CTA returns to `/mock` as `Start another benchmark` or `Start another drill` depending on the completed session mode
+- MockHub accepts summary-driven `location.state.mockPreset` recommendations and surfaces them as a `Recommended next step` banner plus prefilled drill planner state.
 
 **Reload recovery:** On mount, if no `location.state.sessionData`, fetches `GET /api/mock/:id`. Computes `remainingS = time_limit_s - elapsed_since_started_at`.
 

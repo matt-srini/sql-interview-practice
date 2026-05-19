@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import api from '../api';
 import { useAuth } from '../contexts/AuthContext';
@@ -96,8 +96,10 @@ function formatDuration(timeLimitS, timeUsedS) {
 }
 
 export default function MockHub() {
+  const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const appliedPresetKeyRef = useRef(null);
 
   const rawPlan = user?.plan ?? 'free';
   const normalisedPlan = rawPlan.startsWith('lifetime_') ? rawPlan.replace('lifetime_', '') : rawPlan;
@@ -152,6 +154,7 @@ export default function MockHub() {
   // Pre-flight access state
   const [accessState, setAccessState] = useState(null);
   const [accessLoading, setAccessLoading] = useState(false);
+  const [presetNotice, setPresetNotice] = useState(null);
 
   const benchmarkBlueprint = getBenchmarkBlueprint(track);
   const modeCards = getMockModeCards(track);
@@ -169,6 +172,37 @@ export default function MockHub() {
       setMode('30min');
     }
   }, [track, mode]);
+
+  useEffect(() => {
+    const preset = location.state?.mockPreset;
+    if (!preset || appliedPresetKeyRef.current === location.key) return;
+
+    appliedPresetKeyRef.current = location.key;
+
+    const nextTrack = [...TRACK_SLUGS, 'mixed'].includes(preset.track) ? preset.track : 'sql';
+    const nextMode = preset.mode === 'benchmark' && nextTrack === 'mixed'
+      ? '30min'
+      : (preset.mode || '30min');
+    const nextDifficulty = DIFFICULTIES.includes(preset.difficulty) ? preset.difficulty : 'easy';
+
+    setMode(nextMode);
+    setTrack(nextTrack);
+    setDifficulty(nextDifficulty);
+    setNumQuestions(typeof preset.numQuestions === 'number' ? Math.max(1, Math.min(5, preset.numQuestions)) : 2);
+    setTimeMinutes(typeof preset.timeMinutes === 'number' ? Math.max(10, Math.min(90, preset.timeMinutes)) : 30);
+    setFocusMode(false);
+    setFocusConcepts([]);
+    setStartError(null);
+    setPresetNotice(preset.note || null);
+
+    const roleTracks = selectedRole
+      ? (MOCK_ROLES.find(r => r.id === selectedRole)?.tracks ?? []).filter(t => TRACK_SLUGS.includes(t))
+      : [];
+    if (selectedRole && nextTrack !== 'mixed' && !roleTracks.includes(nextTrack)) {
+      setSelectedRole(null);
+      localStorage.removeItem('mock_role');
+    }
+  }, [location.key, location.state, selectedRole]);
 
   function handleRoleSelect(roleId) {
     // Passing null = "All"; clicking the active role also returns to "All"
@@ -337,6 +371,13 @@ export default function MockHub() {
             <button className="mock-help-btn" onClick={() => setShowHelp(true)} aria-label="How it works">?</button>
           </p>
         </section>
+
+        {presetNotice && (
+          <section className="mock-hub-section mock-setup-recommendation">
+            <div className="mock-setup-recommendation-kicker">Recommended next step</div>
+            <p className="mock-setup-recommendation-copy">{presetNotice}</p>
+          </section>
+        )}
 
         {/* Mode selector */}
         <section className="mock-hub-section">

@@ -8182,6 +8182,26 @@ select {
 .mock-hub-section {
   margin-bottom: 2rem;
 }
+.mock-setup-recommendation {
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface-card));
+  border: 1px solid color-mix(in srgb, var(--accent) 14%, transparent);
+  border-radius: var(--radius-md);
+  padding: 0.95rem 1.1rem;
+}
+.mock-setup-recommendation-kicker {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+.mock-setup-recommendation-copy {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
 .mock-mode-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

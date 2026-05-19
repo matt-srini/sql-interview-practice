@@ -92,6 +92,29 @@ function makeSessionData(numQuestions = 2) {
   };
 }
 
+function makeCompletedSummary(overrides = {}) {
+  return {
+    session_id: 1,
+    mode: 'benchmark',
+    track: 'sql',
+    difficulty: 'easy',
+    score: 1,
+    solved_count: 1,
+    total_count: 1,
+    time_used_s: 420,
+    time_limit_s: 1800,
+    questions: [
+      {
+        ...makeQuestion(1),
+        concepts: ['WINDOW FUNCTIONS', 'JOINS'],
+        is_solved: false,
+        solution_query: 'select 1',
+      },
+    ],
+    ...overrides,
+  };
+}
+
 function renderSession(sessionData) {
   return render(
     <MemoryRouter initialEntries={[{ pathname: '/mock/1', state: { sessionData } }]}>
@@ -413,6 +436,33 @@ describe('MockSession review modal', () => {
     await waitFor(() => {
       // The modal review list should have a ⚑ marker
       expect(screen.getByText('⚑')).toBeInTheDocument();
+    });
+  });
+});
+
+describe('MockSession summary actions', () => {
+  it('shows review and follow-up drill actions for benchmark summaries', async () => {
+    const completedSession = { ...makeSessionData(1), status: 'completed', mode: 'benchmark' };
+    mockApiPost.mockResolvedValueOnce({ data: makeCompletedSummary({ mode: 'benchmark' }) });
+
+    renderSession(completedSession);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Review benchmarks' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Plan follow-up drill' })).toBeInTheDocument();
+    });
+  });
+
+  it('shows targeted follow-up CTA for drill summaries', async () => {
+    const completedSession = { ...makeSessionData(1), status: 'completed', mode: 'custom' };
+    mockApiPost.mockResolvedValueOnce({ data: makeCompletedSummary({ mode: 'custom' }) });
+
+    renderSession(completedSession);
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: 'Drill weak concepts →' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Back to drill lobby' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Plan follow-up drill' })).not.toBeInTheDocument();
     });
   });
 });

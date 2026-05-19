@@ -188,7 +188,7 @@ sql-interview-practice/
 │   │       ├── LearningPathsIndex.js   # Index of all paths at /learn and /learn/:topic (grouped + in-progress rail)
 │   │       ├── ProgressDashboard.js    # Cross-track progress + coaching insights at /dashboard
 │   │       ├── MockHub.js              # Mock interview lobby at /mock (benchmark/drill selection, benchmark blueprint + drill planner framing, separated analytics/history)
-│   │       ├── MockSession.js          # Active mock session + post-mortem insights at /mock/:id with benchmark/drill-aware session framing
+│   │       ├── MockSession.js          # Active mock session + post-mortem insights at /mock/:id with benchmark/drill-aware session framing and follow-up CTAs
 │   │       ├── SampleQuestionPage.js   # Topic-aware sample page with per-question draft autosave
 │   │       ├── AuthPage.js
 │   │       ├── ResetPasswordPage.js    # Password reset token consumer at /auth/reset-password
