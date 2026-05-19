@@ -681,7 +681,7 @@ export default function MockHub() {
                   )}
                 </ul>
                 <div className="mock-elite-panel-cta">
-                  <UpgradeButton tier="elite" label={isPro ? 'Upgrade to Elite →' : 'See Elite plans →'} source="mock_elite_panel" />
+                  <UpgradeButton tier="elite" label="Upgrade to Elite →" source="mock_elite_panel" />
                   {isPro && (
                     <span className="mock-elite-panel-cta-note">You're on Pro — one tier away.</span>
                   )}
