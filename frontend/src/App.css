@@ -3268,6 +3268,61 @@ select {
   color: var(--text-secondary);
 }
 
+.question-evidence-stack {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.question-evidence-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.45rem 0.7rem;
+}
+
+.question-evidence-kicker {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.question-evidence-note {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.question-evidence-grid {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.question-evidence-grid--split {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.question-evidence-card {
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #0B1710;
+}
+
+.question-evidence-card-label {
+  display: block;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.4rem 1rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
 .question-form-badge {
   display: inline-flex;
   align-items: center;
@@ -5588,8 +5643,6 @@ select {
    ============================================================ */
 .question-code-snippet {
   background: #0F1C13;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 14px;
   padding: 1rem;
   font-size: 0.82rem;
   color: #D8D5CE;
@@ -5597,14 +5650,11 @@ select {
   white-space: pre-wrap;
   line-height: 1.65;
   font-family: var(--font-mono);
-  margin-top: 0.25rem;
+  margin: 0;
 }
 
 .scenario-context-block {
-  margin-top: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 14px;
-  overflow: hidden;
+  margin-top: 0;
 }
 
 .scenario-context-label {
@@ -5629,6 +5679,12 @@ select {
   line-height: 1.65;
   font-family: var(--font-mono);
   margin: 0;
+}
+
+@media (max-width: 900px) {
+  .question-evidence-grid--split {
+    grid-template-columns: 1fr;
+  }
 }
 /* ============================================================
    Dashboard (v2)

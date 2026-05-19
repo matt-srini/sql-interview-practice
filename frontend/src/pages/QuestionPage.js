@@ -863,6 +863,11 @@ export default function QuestionPage() {
     () => getQuestionPromptGuidance(question, { renderMode, isReasoningTrack, isPySparkTrack }),
     [question, renderMode, isReasoningTrack, isPySparkTrack]
   );
+  const hasPromptEvidence = renderMode === 'mcq' && !!(question?.code_snippet || question?.scenario_context);
+  const evidenceTitle = interactionMode === 'code_adjacent_reasoning' ? 'Evidence to inspect' : 'Prompt context';
+  const evidenceNote = interactionMode === 'code_adjacent_reasoning'
+    ? 'Use these artifacts before you choose an answer.'
+    : 'Review the prompt artifacts alongside the written scenario.';
 
   const submitBtnLabel = useMemo(() => {
     if (submitting) return 'Checking…';
@@ -997,17 +1002,27 @@ export default function QuestionPage() {
 
             <p className="description-text">{renderDescription(question.description)}</p>
 
-            {/* MCQ tracks: show code snippet (question stem) if present */}
-            {renderMode === 'mcq' && question.code_snippet && (
-              <pre className="question-code-snippet">{question.code_snippet}</pre>
-            )}
-
-            {/* MCQ scenario type: show observed output / logs panel */}
-            {renderMode === 'mcq' && question.scenario_context && (
-              <div className="scenario-context-block">
-                <span className="scenario-context-label">Observed output / logs</span>
-                <pre className="scenario-context-pre">{question.scenario_context}</pre>
-              </div>
+            {hasPromptEvidence && (
+              <section className="question-evidence-stack" aria-label={evidenceTitle}>
+                <div className="question-evidence-header">
+                  <span className="question-evidence-kicker">{evidenceTitle}</span>
+                  <span className="question-evidence-note">{evidenceNote}</span>
+                </div>
+                <div className={`question-evidence-grid${question.code_snippet && question.scenario_context ? ' question-evidence-grid--split' : ''}`}>
+                  {question.code_snippet && (
+                    <div className="question-evidence-card">
+                      <span className="question-evidence-card-label">Code path</span>
+                      <pre className="question-code-snippet">{question.code_snippet}</pre>
+                    </div>
+                  )}
+                  {question.scenario_context && (
+                    <div className="question-evidence-card scenario-context-block">
+                      <span className="question-evidence-card-label scenario-context-label">Observed output / logs</span>
+                      <pre className="scenario-context-pre">{question.scenario_context}</pre>
+                    </div>
+                  )}
+                </div>
+              </section>
             )}
 
             {isLocked && (() => {

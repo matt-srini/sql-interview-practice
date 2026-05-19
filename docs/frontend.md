@@ -112,6 +112,7 @@ Main practice screen. Layout and behavior vary by modality and topic:
 - **Modality-aware reasoning copy**: `QuestionPage` now reads `interaction_mode` as the coarse modality family and keeps `question.type` / `question_type` for the specific prompt verb, so constructed-reasoning tracks can expose stable metadata without losing subtype-specific copy like predict, debug, or scenario.
 - **Question-form badge**: when a question exposes `type` / `question_type` metadata, the header now shows a compact badge like `Debug`, `Scenario`, `Predict output`, or `Numerical` next to the difficulty pill so the interaction model is visible before the user starts reading.
 - **Prompt-guidance strip**: reasoning-first and code-adjacent MCQ prompts now render a compact guidance block under the header that spells out the modality family, the exact task, and what evidence to inspect before answering.
+- **Code-adjacent evidence layout**: when a reasoning prompt includes a code snippet and/or observed output, `QuestionPage` groups those artifacts into an explicit evidence stack with labeled cards so code-adjacent prompts feel like diagnosis/prediction work rather than generic MCQ copy.
 - Compact status line in question header (difficulty / question position / open count)
 - On mobile, question actions use a low-profile sticky dock for Run / Submit controls
 - On correct: `refresh()` updates catalog context so sidebar reflects new unlock state

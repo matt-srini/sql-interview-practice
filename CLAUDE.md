@@ -182,7 +182,7 @@ sql-interview-practice/
 │   │   │   └── Topbar.js           # Shared top nav bar used by all standalone pages (Practice dropdown, Mock, Dashboard, auth)
 │   │   └── pages/
 │   │       ├── LandingPage.js          # Fixed-topbar landing with track/sample tabs and compact progress panels
-│   │       ├── QuestionPage.js         # Topic-aware question page (all 4 tracks, question-form badges, prompt-guidance chrome, shortcuts, draft autosave, soft timer, bookmarks, unlock/streak milestone toasts)
+│   │       ├── QuestionPage.js         # Topic-aware question page (all 4 tracks, question-form badges, prompt-guidance/evidence chrome, shortcuts, draft autosave, soft timer, bookmarks, unlock/streak milestone toasts)
 │   │       ├── TrackHubPage.js         # Per-track landing (progress, next-up summary, question-form preview, concept preview, paths)
 │   │       ├── LearningPath.js         # Curated path page at /learn/:topic/:slug (breadcrumb, progress, completion banner)
 │   │       ├── LearningPathsIndex.js   # Index of all paths at /learn and /learn/:topic (grouped + in-progress rail)

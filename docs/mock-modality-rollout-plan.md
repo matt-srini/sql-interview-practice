@@ -2,7 +2,7 @@
 
 Planning document for the practice and mock modality migration.
 
-Status: execution started, Phase 0 audit complete, Phase 2 complete, Phase 3 in progress
+Status: execution started, Phase 0 audit complete, Phase 2 complete, Phase 3 complete
 Date: 2026-05-19
 Owner: GPT-5.4 orchestrator
 Implementers: parallel GPT Codex agents
@@ -22,7 +22,7 @@ Current state:
 - no product-code behavior changed in Phase 0
 - Phase 1 PySpark-first practice uplift is complete: additive metadata exposure and frontend terminology cleanup landed
 - Phase 2 is complete: reasoning-track payloads now expose stable `interaction_mode` metadata across Data Engineering, Data Modeling, ML Fundamentals, Experimentation, and Statistics; frontend prompt copy keeps modality family separate from question type; ML Fundamentals and Experimentation hook audits are complete with recorded gaps
-- Phase 3 is in progress: reasoning-track catalog rows now expose additive `type` metadata; practice surfaces show question-form badges in SidebarNav and QuestionPage chrome; SidebarNav supports question-form filtering for mixed-form catalogs; QuestionPage now shows prompt-guidance chrome for reasoning prompts; TrackHub now previews mixed question forms in the header
+- Phase 3 is complete: reasoning-track catalog rows expose additive `type` metadata; practice surfaces show question-form badges in SidebarNav and QuestionPage chrome; SidebarNav supports question-form filtering for mixed-form catalogs; QuestionPage adds prompt-guidance and evidence-layout chrome for reasoning prompts; TrackHub previews mixed question forms in the header
 
 ## Objective
 
@@ -321,7 +321,7 @@ Exit criteria:
 
 Goal: make practice mode visibly smarter, not just better tagged.
 
-Status: in progress 2026-05-19 — question-form badges, SidebarNav question-form filters, QuestionPage prompt-guidance chrome, and TrackHub question-form previews landed; deeper layout changes remain open.
+Status: complete 2026-05-19 — question-form badges, SidebarNav question-form filters, QuestionPage prompt-guidance/evidence chrome, and TrackHub question-form previews landed.
 
 Product outcomes:
 
