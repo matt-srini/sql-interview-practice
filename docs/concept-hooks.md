@@ -779,7 +779,9 @@ Goal: full concept coverage, not tricky framing.
 
 ## ML Fundamentals
 
-> **Audit status:** Hooks written 2026-05-18. Gap analysis against question bank is deferred (Phase 7). The question bank (90 practice + 25 mock) already has 24 concept tags; audit will verify coverage once these hooks are reviewed.
+> **Audit status:** Hook-vs-bank audit completed 2026-05-19 with status: complete with gaps recorded. The current bank (90 practice + 25 mock) spans 29 concept families and is strongest in bias/variance and overfitting, cross-validation and leakage, evaluation metrics, ensemble reasoning, and production monitoring.
+>
+> **Recorded gaps:** direct coverage remains weak or absent for parametric vs non-parametric framing, inductive bias, encoding strategy, activation-function comparisons, batch normalization, attention/self-attention, and first-class PCA vs t-SNE vs UMAP tradeoffs. AUC-ROC vs AUC-PR, dropout, and interpretability-method comparisons are present only shallowly.
 
 ### Foundations
 
@@ -846,7 +848,9 @@ Goal: full concept coverage, not tricky framing.
 
 ## Experimentation
 
-> **Audit status:** Hooks written 2026-05-18. Gap analysis against question bank is deferred (Phase 7). The question bank (80 practice + 25 mock) has 22 concept tags; audit will verify coverage once these hooks are reviewed.
+> **Audit status:** Hook-vs-bank audit completed 2026-05-19 with status: complete with gaps recorded. The current bank (80 practice + 25 mock) covers all 22 concept families and is strongest in experiment design, power and significance, multiple testing and SRM, network effects and holdouts, quasi-experimental methods, Bayesian experimentation, bandits, and variance reduction.
+>
+> **Recorded gaps:** ratio metrics and delta-method reasoning are not directly covered, surrogate-vs-long-term metric validation remains shallow, and control-group/control-vs-holdout/A/A nuance is present but concentrated in a small foundation subset rather than a deep cluster.
 
 ### Foundations & Hypothesis Formulation
 

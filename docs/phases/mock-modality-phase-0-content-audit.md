@@ -105,7 +105,12 @@ Current metadata inventory (115 total):
 Phase 0 reading:
 - high scenario share supports constructed-reasoning framing.
 - small `debug`/`predict_output` pool is a candidate set for later selected code-adjacent lane (per spec), but not broad enough to reframe the track today.
-- concept-hooks section exists, but full hook-vs-bank audit is explicitly unfinished and must not be treated as complete.
+
+Phase 2 audit update (2026-05-19):
+- hook-vs-bank audit is complete with gaps recorded; this track should no longer be treated as unaudited.
+- strongest coverage clusters: bias-variance and overfitting, leakage and splitting, metrics and imbalance, ensemble reasoning, and production monitoring.
+- recorded gaps: parametric vs non-parametric framing, inductive bias, encoding strategy, activation-function comparisons, batch normalization, attention/self-attention, and deeper PCA vs t-SNE vs UMAP treatment.
+- shallow-but-present areas: AUC-ROC vs AUC-PR, dropout, and interpretability-method tradeoffs.
 
 ### Experimentation
 
@@ -119,7 +124,12 @@ Current metadata inventory (105 total):
 Phase 0 reading:
 - strongest constructed-reasoning shape among non-hybrid tracks due scenario dominance.
 - small debug/predict subset is currently conceptual in nature; no forced code-adjacent promotion in Phase 1.
-- concept-hooks section exists, but hook coverage audit is explicitly unfinished.
+
+Phase 2 audit update (2026-05-19):
+- hook-vs-bank audit is complete with gaps recorded; this track should no longer be treated as unaudited.
+- broad hook coverage is strong enough to treat the taxonomy as mapped; all 22 concept families are represented somewhere in the current bank.
+- strongest coverage clusters: experiment design and power, significance and multiple testing, SRM, network effects and holdouts, quasi-experimental methods, Bayesian experimentation, bandits, and variance reduction.
+- recorded gaps: direct ratio-metric / delta-method coverage, deeper surrogate-vs-long-term metric validation, and broader control-vs-holdout / A/A nuance beyond a small foundation subset.
 
 ## 4) Explicit Track Classification: Metadata-Only vs Targeted-Rewrite vs Likely Net-New Later
 
@@ -147,7 +157,7 @@ Reason:
 - PySpark (medium, mainly for advanced benchmark mix)
 
 Reason:
-- ML Fundamentals and Experimentation hook-bank reconciliation is unfinished.
+- ML Fundamentals and Experimentation audits are now complete with recorded gaps, and both still have enough uncovered or shallow hooks to justify selective net-new work later.
 - advanced mock-blueprint depth likely needs additional high-signal items after rewrite triage, not only retagging.
 
 ## 5) Concept-Hooks Reconciliation Summary
@@ -158,11 +168,11 @@ Cross-doc reconciliation summary (`docs/concept-hooks.md` + `docs/concept-expans
 - Data Engineering: hooks present and prior gap analysis marked complete.
 - Data Modeling: hooks present and prior gap analysis marked complete.
 - Statistics: hooks present and prior gap analysis marked complete.
-- ML Fundamentals: hooks are written, but audit status explicitly says gap analysis is deferred/unfinished.
-- Experimentation: hooks are written, but audit status explicitly says gap analysis is deferred/unfinished.
+- ML Fundamentals: audit completed 2026-05-19 with gaps recorded; follow-on work is targeted authoring, not hook-definition.
+- Experimentation: audit completed 2026-05-19 with gaps recorded; follow-on work is targeted authoring, not hook-definition.
 
 Critical governance note:
-- ML Fundamentals and Experimentation must remain tagged as unfinished concept-hook audits in rollout tracking; they are not backlog "nice-to-haves" and should be called out as required work in Phase 2+ content execution.
+- ML Fundamentals and Experimentation no longer belong in the "unfinished audit" bucket; their recorded gaps should stay explicit in rollout tracking so future authoring work is driven by evidence instead of being treated as generic backlog.
 
 ## 6) Advanced Mock-Only Hook Coverage Status And Remaining Expansion
 

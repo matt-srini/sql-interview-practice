@@ -2,7 +2,7 @@
 
 Planning document for the practice and mock modality migration.
 
-Status: execution started, Phase 0 audit complete, Phase 2 metadata generalization in progress
+Status: execution started, Phase 0 audit complete, Phase 2 complete
 Date: 2026-05-19
 Owner: GPT-5.4 orchestrator
 Implementers: parallel GPT Codex agents
@@ -21,7 +21,7 @@ Current state:
 - Phase 0 is complete as a docs-and-audit foundation phase
 - no product-code behavior changed in Phase 0
 - Phase 1 PySpark-first practice uplift is complete: additive metadata exposure and frontend terminology cleanup landed
-- Phase 2 is in progress: reasoning-track payloads now expose stable `interaction_mode` metadata across Data Engineering, Data Modeling, ML Fundamentals, Experimentation, and Statistics, while frontend prompt copy keeps modality family separate from question type
+- Phase 2 is complete: reasoning-track payloads now expose stable `interaction_mode` metadata across Data Engineering, Data Modeling, ML Fundamentals, Experimentation, and Statistics; frontend prompt copy keeps modality family separate from question type; ML Fundamentals and Experimentation hook audits are complete with recorded gaps
 
 ## Objective
 
@@ -76,13 +76,13 @@ Current content stance by track:
 | Data Engineering | No | No | Medium | Medium |
 | Data Modeling | No | No | Medium | Medium |
 | Statistics | No | No | Medium | Low |
-| ML Fundamentals | No | Yes | Medium-high | Medium |
-| Experimentation | No | Yes | Medium-high | Medium |
+| ML Fundamentals | No | No | Medium-high | Medium |
+| Experimentation | No | No | Medium-high | Medium |
 
 Immediate unanswered content questions to be resolved in-phase:
 
-- ML Fundamentals hook coverage has been written in concept-hooks but not audited against the bank
-- Experimentation hook coverage has been written in concept-hooks but not audited against the bank
+- ML Fundamentals audit is complete with recorded gaps; future work is targeted authoring rather than further hook-definition
+- Experimentation audit is complete with recorded gaps; future work is targeted authoring rather than further hook-definition
 - mock-only advanced-topic hook coverage exists only for a subset of tracks and must be extended to all tracks for future automation use
 
 ## Operating Model
@@ -283,6 +283,8 @@ Exit criteria:
 ## Phase 2: Reasoning-Track Metadata Generalization
 
 Goal: extend the PySpark model to Data Engineering, Data Modeling, ML Fundamentals, Experimentation, and conceptual Statistics.
+
+Status: complete 2026-05-19
 
 Product outcomes:
 

@@ -1,9 +1,9 @@
 # Concept Coverage Expansion Plan
 
-Tracks concept-hooks.md coverage against the question bank, identifies gaps, and drives new question authoring across all 8 tracks.
+Tracks concept-hooks.md coverage against the question bank, identifies gaps, and drives new question authoring across all 9 tracks.
 
 **Initiated:** 2026-05-18  
-**Status:** Phase 5 pending (Phase 0 complete 2026-05-18, Phase 1 complete 2026-05-18, Phase 2 complete 2026-05-18, Phase 3 complete 2026-05-19, Phase 4 complete 2026-05-19)
+**Status:** Phase 6 pending (Phase 0 complete 2026-05-18, Phase 1 complete 2026-05-18, Phase 2 complete 2026-05-18, Phase 3 complete 2026-05-19, Phase 4 complete 2026-05-19, Phase 5 complete 2026-05-19)
 
 ---
 
@@ -18,10 +18,14 @@ Tracks concept-hooks.md coverage against the question bank, identifies gaps, and
 | Data Engineering | ✅ hooks 1–67 (Phase 0 expanded) | ✅ done | ✅ Phase 4 (+6) |
 | Data Modeling | ✅ hooks 1–57 (Phase 0 expanded) | ✅ done | ✅ Phase 4 (+6) |
 | Statistics | ✅ hooks 1–84 (Phase 0 expanded) | ✅ done | ✅ Phase 2 (+20) |
-| ML Fundamentals | ✅ hooks 1–40 (Phase 0 written) | ❌ deferred to Phase 7 | ⬜ Phase 7 |
-| Experimentation | ✅ hooks 1–33 (written 2026-05-18) | ❌ deferred to Phase 7 | ⬜ Phase 7 |
+| ML Fundamentals | ✅ hooks 1–40 (Phase 0 written) | ✅ complete with gaps recorded (2026-05-19) | ⬜ follow-on authoring only if gaps warrant |
+| Experimentation | ✅ hooks 1–33 (written 2026-05-18) | ✅ complete with gaps recorded (2026-05-19) | ⬜ follow-on authoring only if gaps warrant |
 
-> **ML Fundamentals & Experimentation note:** Hooks are written; gap analysis and question authoring are deferred — they will be separate phases after the hooks are reviewed.
+> **ML Fundamentals & Experimentation note:** Gap analysis is now complete for both tracks. Remaining work is targeted question authoring driven by the recorded gaps, not additional hook-definition work.
+
+Recorded audit outcomes:
+- ML Fundamentals: strongest coverage is in bias-variance and overfitting, leakage and splitting, metrics and imbalance, ensembles, and monitoring; recorded gaps include parametric vs non-parametric, inductive bias, encoding strategy, activation functions, batch normalization, attention, and deeper representation-learning comparisons.
+- Experimentation: all 22 concept families are represented in the current bank; recorded gaps include direct ratio-metric/delta-method coverage, deeper surrogate-metric validation, and broader control-vs-holdout/A/A nuance beyond the current foundation subset.
 
 ---
 
@@ -372,17 +376,18 @@ Pythonic Patterns (3 medium):
 ---
 
 ### Phase 5 — New learning paths (4 new, 2 updated)
-**Target:** `backend/content/paths/` (new JSON files)
+**Target:** `backend/content/paths/` (new JSON files)  
+**Status: ✅ Complete 2026-05-19** — 42 total paths (was 38); SQL: 9, Python: 6, Statistics: 3
 
 **New paths (all Pro / Advanced tier):**
-- [ ] `sql-string-and-date` — "SQL String & Date Functions" — 7 questions from Phase 1
-- [ ] `sql-advanced-patterns` — "Advanced SQL Patterns" — 7 questions from Phase 1 (ROLLUP, Recursive CTE, LATERAL, JSON, etc.)
-- [ ] `applied-stats` — "Applied Statistics for Data Work" — 8 questions from Phase 2 (bias patterns + applied A/B)
-- [ ] `practical-data-python` — "Practical Data Python" — 6 questions from Phase 3
+- [x] `sql-string-and-date` — "SQL String & Date Functions" — 7 questions (11033–11037, 12054, 12056)
+- [x] `sql-advanced-patterns` — "Advanced SQL Patterns" — 7 questions (12058–12063, 13044; set ops + ROLLUP + FILTER + Recursive CTE + GROUPING SETS)
+- [x] `applied-stats` — "Applied Statistics for Data Work" — 8 questions (72034–72041; bias patterns + logistic regression + odds ratio + paired t-test)
+- [x] `practical-data-python` — "Practical Data Python" — 6 questions (21031–21033, 21035, 22039–22040; CSV/JSON/datetime/defaultdict/chunked)
 
 **Updated paths (add new questions to existing path question lists):**
-- [ ] `experimental-design-inference` (Statistics) — add CUPED + MDE questions from Phase 2
-- [ ] `dataframe-fundamentals` (Pandas) — add SettingWithCopyWarning question from Phase 3
+- [x] `experimental-design-inference` (Statistics) — added 72031 (sequential testing), 72032 (metric sensitivity), 72033 (guardrail metrics); now 13 questions
+- [x] `dataframe-fundamentals` (Pandas) — added 31023 (SettingWithCopyWarning); now 7 questions
 
 ---
 
@@ -397,14 +402,14 @@ Pythonic Patterns (3 medium):
 
 ---
 
-### Phase 7 (future) — ML Fundamentals audit + question gaps
-**Blocked until:** Phase 0 ML hooks are reviewed and approved.
+### Phase 7 (future) — ML Fundamentals / Experimentation follow-on authoring
+**Input:** completed 2026-05-19 hook audits with recorded gaps.
 
-After the ML Fundamentals hooks in `concept-hooks.md` are finalized:
-- [ ] Run gap analysis: ML question bank (90 practice + 25 mock) vs new ML hooks
-- [ ] Identify any missing concept areas
-- [ ] Author new ML questions if gaps exist
-- [ ] Update learning paths if needed
+Future work from the completed audits:
+- [ ] Prioritize ML Fundamentals follow-on questions for the clearest uncovered hooks: parametric vs non-parametric, inductive bias, encoding strategy, activation functions, batch normalization, attention/self-attention, and deeper dimensionality-reduction tradeoffs.
+- [ ] Prioritize Experimentation follow-on questions for ratio metrics and delta method, stronger surrogate-vs-long-term metric validation, and deeper control-vs-holdout/A/A design nuance.
+- [ ] Keep advanced mock-only hook expansion separate; it remains a later phase and is not part of this bank-audit closeout.
+- [ ] Update learning paths only if the eventual new questions materially change track progression.
 
 ---
 
