@@ -174,7 +174,7 @@ Signature formulas:
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/api/pyspark/catalog` | PySpark catalog. Rows include additive `interaction_mode` metadata when present in content. |
+| GET | `/api/pyspark/catalog` | PySpark catalog. Rows include additive `type` and `interaction_mode` metadata when present in content. |
 | GET | `/api/pyspark/questions/{id}` | Question detail. Unlocked: full payload with `options` (no `correct_option`) plus additive `interaction_mode` metadata. Locked: 200 with `locked: true`, no `options` or `correct_option`. |
 | POST | `/api/pyspark/submit` | `{ selected_option, question_id, duration_ms? }` → `{ correct, explanation }`. No code execution. 403 if locked. |
 
@@ -182,7 +182,7 @@ Signature formulas:
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/api/data-engineering/catalog` | Data Engineering catalog. Rows include `interaction_mode: "constructed_reasoning"`. |
+| GET | `/api/data-engineering/catalog` | Data Engineering catalog. Rows include `type` plus `interaction_mode: "constructed_reasoning"`. |
 | GET | `/api/data-engineering/questions/{id}` | Question detail. Unlocked: full payload with `options` (no `correct_option`) plus `interaction_mode`. Locked: 200 with `locked: true`, no `options` or `correct_option`, but `interaction_mode` remains present. |
 | POST | `/api/data-engineering/submit` | `{ selected_option, question_id, duration_ms? }` → `{ correct, explanation }`. No code execution. 403 if locked. |
 
@@ -190,7 +190,7 @@ Signature formulas:
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/api/data-modeling/catalog` | Data Modeling catalog. Rows include `interaction_mode: "constructed_reasoning"`. |
+| GET | `/api/data-modeling/catalog` | Data Modeling catalog. Rows include `type` plus `interaction_mode: "constructed_reasoning"`. |
 | GET | `/api/data-modeling/questions/{id}` | Question detail. Unlocked: full payload with `options` (no `correct_option`) plus `interaction_mode`. Locked: 200 with `locked: true`, no `options` or `correct_option`, but `interaction_mode` remains present. |
 | POST | `/api/data-modeling/submit` | `{ selected_option, question_id, duration_ms? }` → `{ correct, explanation }`. No code execution. 403 if locked. |
 
@@ -198,7 +198,7 @@ Signature formulas:
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/api/ml-fundamentals/catalog` | ML Fundamentals catalog. Rows include `interaction_mode: "constructed_reasoning"` in the current bank. |
+| GET | `/api/ml-fundamentals/catalog` | ML Fundamentals catalog. Rows include `type` plus `interaction_mode: "constructed_reasoning"` in the current bank. |
 | GET | `/api/ml-fundamentals/questions/{id}` | Question detail. Unlocked: full payload with `options` (no `correct_option`) plus `interaction_mode`. Locked: 200 with `locked: true`, no `options` or `correct_option`, but `interaction_mode` remains present. |
 | POST | `/api/ml-fundamentals/submit` | `{ selected_option, question_id, duration_ms? }` → `{ correct, explanation }`. No code execution. 403 if locked. |
 
@@ -206,7 +206,7 @@ Signature formulas:
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/api/experimentation/catalog` | Experimentation catalog. Rows include `interaction_mode: "constructed_reasoning"`. |
+| GET | `/api/experimentation/catalog` | Experimentation catalog. Rows include `type` plus `interaction_mode: "constructed_reasoning"`. |
 | GET | `/api/experimentation/questions/{id}` | Question detail. Unlocked: full payload with `options` (no `correct_option`) plus `interaction_mode`. Locked: 200 with `locked: true`, no `options` or `correct_option`, but `interaction_mode` remains present. |
 | POST | `/api/experimentation/submit` | `{ selected_option, question_id, duration_ms? }` → `{ correct, explanation }`. No code execution. 403 if locked. |
 
@@ -216,7 +216,7 @@ This track uses `eval_kind="mixed"` with `mixed_subtype=True`. Each question has
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/api/statistics/catalog` | Statistics catalog. Each catalog entry includes both `subtype` and `interaction_mode` (`constructed_reasoning` for conceptual, `executable_problem_solving` for numerical). |
+| GET | `/api/statistics/catalog` | Statistics catalog. Each catalog entry includes `type`, `subtype`, and `interaction_mode` (`constructed_reasoning` for conceptual, `executable_problem_solving` for numerical). |
 | GET | `/api/statistics/questions/{id}` | Question detail. Conceptual: includes `options` (no `correct_option`) and `interaction_mode: "constructed_reasoning"`. Numerical: includes `starter_code` + `test_cases` (no expected outputs) and `interaction_mode: "executable_problem_solving"`. Both: `subtype` field. Locked: 200 with `locked: true` and preserved `interaction_mode`. |
 | POST | `/api/statistics/run-code` | `{ question_id, code }` — only works for numerical questions (400 for conceptual). Applies statistics import allowlist guard. |
 | POST | `/api/statistics/submit` | `{ question_id, selected_option }` for conceptual → `{ correct, subtype, explanation }`. `{ question_id, code }` for numerical → `{ correct, subtype, solution_code, explanation }`. 403 if locked. |

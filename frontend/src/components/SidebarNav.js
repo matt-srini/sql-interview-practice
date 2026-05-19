@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { NavLink, useSearchParams } from 'react-router-dom';
 import Fuse from 'fuse.js';
 import { useTopic } from '../contexts/TopicContext';
+import { getQuestionFormLabel } from '../questionFormLabel';
 import Skeleton from './Skeleton';
 
 // How many concept chips to show before the "show more" toggle
@@ -95,6 +96,7 @@ function QuestionStateLabel({ q, isActive = false }) {
 
 function QuestionContent({ q, isActive = false }) {
   const orderState = isActive ? 'current' : q.state === 'solved' ? 'solved' : q.state === 'locked' ? 'locked' : q.is_next ? 'next' : 'open';
+  const questionFormLabel = getQuestionFormLabel(q);
 
   return (
     <>
@@ -104,6 +106,9 @@ function QuestionContent({ q, isActive = false }) {
         </span>
         <span className="sidebar-question-main">
           <span className="sidebar-question-title">{q.title}</span>
+          {questionFormLabel && (
+            <span className="sidebar-question-form-badge">{questionFormLabel}</span>
+          )}
         </span>
       </div>
       <QuestionStateLabel q={q} isActive={isActive} />

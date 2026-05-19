@@ -1409,6 +1409,10 @@ select {
   min-width: 0;
   flex: 1;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.26rem;
 }
 
 .sidebar-question-title {
@@ -1420,6 +1424,21 @@ select {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.sidebar-question-form-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border-subtle));
+  background: color-mix(in srgb, var(--accent) 9%, var(--surface-card-alt));
+  color: color-mix(in srgb, var(--accent) 68%, var(--text-strong));
+  font-size: 0.63rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0.14rem 0.42rem;
+  text-transform: uppercase;
+  max-width: 100%;
 }
 
 .sidebar-question-label {
@@ -3215,6 +3234,20 @@ select {
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--text-muted);
+}
+
+.question-form-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--border-subtle));
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-card-alt));
+  color: color-mix(in srgb, var(--accent) 72%, var(--text-strong));
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 0.22rem 0.58rem;
+  text-transform: uppercase;
 }
 
 .description-text {

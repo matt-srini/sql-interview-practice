@@ -69,6 +69,7 @@ def test_tc_rm02_constructed_reasoning_catalog_rows_expose_interaction_mode(
     easy_group = next(group for group in body["groups"] if group["difficulty"] == "easy")
     row = next(question for question in easy_group["questions"] if question["id"] == expected_id)
     assert row["interaction_mode"] == "constructed_reasoning"
+    assert row["type"] == catalog_module.get_question(expected_id)["type"]
 
 
 @pytest.mark.parametrize("track_slug, catalog_module, _id_ranges", CONSTRUCTED_TRACK_CASES)
@@ -132,7 +133,9 @@ def test_tc_rm07_statistics_catalog_rows_expose_hybrid_interaction_modes():
     conceptual_row = next(question for question in easy_group["questions"] if question["subtype"] == "conceptual")
     numerical_row = next(question for question in easy_group["questions"] if question["subtype"] == "numerical")
     assert conceptual_row["interaction_mode"] == "constructed_reasoning"
+    assert conceptual_row["type"] == "mcq"
     assert numerical_row["interaction_mode"] == "executable_problem_solving"
+    assert numerical_row["type"] == "numerical"
 
 
 def test_tc_rm08_statistics_conceptual_detail_exposes_constructed_reasoning():

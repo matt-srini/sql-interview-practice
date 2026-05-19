@@ -16,6 +16,7 @@ import { useCatalog } from '../catalogContext';
 import { useTopic } from '../contexts/TopicContext';
 import { useAuth } from '../contexts/AuthContext';
 import UpgradeButton from '../components/UpgradeButton';
+import { getQuestionFormLabel } from '../questionFormLabel';
 import { parseSqlError } from '../utils/sqlErrorParser';
 import { renderDescription } from '../utils/renderDescription';
 import { useToast } from '../App';
@@ -857,6 +858,7 @@ export default function QuestionPage() {
     ? 'Python sandbox'
     : 'DuckDB sandbox';
   const timerLabel = formatDuration(elapsedMs) ?? '0:00';
+  const questionFormLabel = useMemo(() => getQuestionFormLabel(question), [question]);
 
   const submitBtnLabel = useMemo(() => {
     if (submitting) return 'Checking…';
@@ -956,6 +958,7 @@ export default function QuestionPage() {
                     >
                       {bookmarked ? '★ Bookmarked' : '☆ Bookmark'}
                     </button>
+                    {questionFormLabel && <span className="question-form-badge">{questionFormLabel}</span>}
                     <span className={`badge badge-${question.difficulty}`}>{question.difficulty}</span>
                   </div>
                 </div>

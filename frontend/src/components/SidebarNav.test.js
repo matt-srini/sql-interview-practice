@@ -132,4 +132,41 @@ describe('SidebarNav', () => {
       expect(within(view.container).queryByText('Revenue by Product')).not.toBeInTheDocument();
     });
   });
+
+  it('renders a question-form badge when catalog rows include question type metadata', () => {
+    const catalog = {
+      user_id: 'u1',
+      groups: [
+        {
+          difficulty: 'easy',
+          counts: { total: 1, solved: 0, unlocked: 1 },
+          questions: [
+            {
+              id: 1,
+              title: 'Spark plan regression',
+              difficulty: 'easy',
+              order: 1,
+              type: 'debug',
+              interaction_mode: 'code_adjacent_reasoning',
+              state: 'unlocked',
+              is_next: true,
+              concepts: ['joins'],
+            },
+          ],
+        },
+      ],
+    };
+
+    const view = renderWithRouter(
+      <SidebarNav
+        catalog={catalog}
+        collapsedByDiff={{ easy: false }}
+        toggleDiff={() => {}}
+        onNavigate={() => {}}
+      />,
+      { initialEntries: ['/practice/sql'] }
+    );
+
+    expect(within(view.container).getByText('Debug')).toBeInTheDocument();
+  });
 });

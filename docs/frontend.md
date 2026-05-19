@@ -109,6 +109,7 @@ Main practice screen. Layout and behavior vary by modality and topic:
 
 - **SEO**: easy questions are indexable — `noindex` is omitted and a `canonical` link is injected via Helmet. Medium and hard questions retain `noindex, nofollow` because they 403 for unauthenticated crawlers. Title format: `"{Question Title} — {Track} {Primary Concept} — datathink"`.
 - **Modality-aware reasoning copy**: `QuestionPage` now reads `interaction_mode` as the coarse modality family and keeps `question.type` / `question_type` for the specific prompt verb, so constructed-reasoning tracks can expose stable metadata without losing subtype-specific copy like predict, debug, or scenario.
+- **Question-form badge**: when a question exposes `type` / `question_type` metadata, the header now shows a compact badge like `Debug`, `Scenario`, `Predict output`, or `Numerical` next to the difficulty pill so the interaction model is visible before the user starts reading.
 - Compact status line in question header (difficulty / question position / open count)
 - On mobile, question actions use a low-profile sticky dock for Run / Submit controls
 - On correct: `refresh()` updates catalog context so sidebar reflects new unlock state
@@ -239,6 +240,7 @@ Accepts a `plan` prop (passed from AppShell) to drive progressive unlock behavio
 - Collapsible difficulty groups
 - Per-question state: `unlocked`, `locked`, `solved`, `next`, `current`
 - NavLinks point to `/practice/${topic}/questions/${id}` (topic from `useTopic()`)
+- Reasoning-heavy tracks now render a compact question-form badge in each row when the catalog includes additive `type` metadata, so users can tell `Debug` from `Scenario` or `Predict output` without opening the prompt.
 - **Progressive unlock bar** (`.sidebar-unlock-bar`): shown in difficulty group headers when there are locked questions. Displays a progress bar filling toward the next unlock threshold plus a "{N} more to unlock" label. Thresholds mirror `backend/unlock.py` (e.g. SQL/Python/Pandas medium: 8→3, 15→8, 25→all; PySpark medium: 12→3, 20→8, 30→all).
 - **Locked question tooltip** (`title` attribute on the locked row `div`): explains exactly how many more solves are needed — e.g. "Solve 7 more easy questions to unlock this". Pro users see "Upgrade to Elite to unlock all hard questions" on hard rows.
 - Concept filter (chip grid, most-frequent first, expand/collapse) and Company filter (SQL only)

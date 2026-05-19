@@ -164,7 +164,7 @@ sql-interview-practice/
 │   │   │   └── TopicContext.js     # TRACK_META, TopicProvider, useTopic()
 │   │   ├── components/
 │   │   │   ├── AppShell.js         # Challenge workspace shell, sidebar, track switcher
-│   │   │   ├── SidebarNav.js       # Question list, lock/solved/next states + bookmarks rail (topic-aware)
+│   │   │   ├── SidebarNav.js       # Question list, lock/solved/next states + bookmarks rail with question-form badges for reasoning tracks
 │   │   │   ├── CodeEditor.js       # Language-agnostic Monaco editor wrapper
 │   │   │   ├── SQLEditor.js        # Thin re-export of CodeEditor with language="sql"
 │   │   │   ├── ResultsTable.js    # Tabular output with sticky headers + horizontal overflow cue
@@ -182,7 +182,7 @@ sql-interview-practice/
 │   │   │   └── Topbar.js           # Shared top nav bar used by all standalone pages (Practice dropdown, Mock, Dashboard, auth)
 │   │   └── pages/
 │   │       ├── LandingPage.js          # Fixed-topbar landing with track/sample tabs and compact progress panels
-│   │       ├── QuestionPage.js         # Topic-aware question page (all 4 tracks, shortcuts, draft autosave, soft timer, bookmarks, unlock/streak milestone toasts)
+│   │       ├── QuestionPage.js         # Topic-aware question page (all 4 tracks, question-form badges, shortcuts, draft autosave, soft timer, bookmarks, unlock/streak milestone toasts)
 │   │       ├── TrackHubPage.js         # Per-track landing (progress, next-up summary, concept preview, paths)
 │   │       ├── LearningPath.js         # Curated path page at /learn/:topic/:slug (breadcrumb, progress, completion banner)
 │   │       ├── LearningPathsIndex.js   # Index of all paths at /learn and /learn/:topic (grouped + in-progress rail)
@@ -366,9 +366,9 @@ Locked MCQ questions return 200 with `locked: true` and no `options` or `correct
 | GET | `/api/python-data/catalog` | Pandas catalog |
 | POST | `/api/python-data/run-code` | Run pandas code |
 | POST | `/api/python-data/submit` | Submit pandas code |
-| GET | `/api/pyspark/catalog` | PySpark catalog |
+| GET | `/api/pyspark/catalog` | PySpark catalog (`type` + `interaction_mode` on reasoning rows) |
 | POST | `/api/pyspark/submit` | Submit MCQ answer |
-| GET | `/api/statistics/catalog` | Statistics catalog (subtype field per question) |
+| GET | `/api/statistics/catalog` | Statistics catalog (`type`, `subtype`, and `interaction_mode` per question) |
 | GET | `/api/statistics/questions/{id}` | Statistics question detail (conceptual: options; numerical: starter_code + test_cases) |
 | POST | `/api/statistics/run-code` | Run Python code for numerical statistics questions (400 for conceptual) |
 | POST | `/api/statistics/submit` | Submit answer: `selected_option` for conceptual, `code` for numerical |

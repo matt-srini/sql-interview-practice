@@ -60,6 +60,7 @@ async def get_statistics_catalog(
                     "title": q["title"],
                     "difficulty": q["difficulty"],
                     "order": q["order"],
+                    "type": q["type"],
                     "subtype": q["subtype"],
                     "interaction_mode": q.get("interaction_mode"),
                     "state": state,

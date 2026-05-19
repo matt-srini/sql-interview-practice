@@ -46,6 +46,7 @@ async def get_catalog(
                     "title": q["title"],
                     "difficulty": q["difficulty"],
                     "order": q["order"],
+                    "type": q["type"],
                     "interaction_mode": q.get("interaction_mode"),
                     "state": state,
                     "is_next": state == "unlocked" and next_questions[difficulty] == question_id,
