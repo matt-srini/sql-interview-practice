@@ -418,7 +418,9 @@ Three permanent accounts exist in the local Postgres DB for testing and browser 
 | **Pro** | `srinivas.assampally@gmail.com` | Mid-tier; 3 hard mocks/day, no Elite features |
 | **Elite** | `admin@datathink.co` | Full access — analytics, debrief, focus mode, unlimited |
 
-Passwords are PBKDF2-SHA256 hashed in the DB (`pwd_hash` + `pwd_salt` columns). To log in for browser preview, use the `/auth` sign-in form. The session cookie (`session_token`, `httponly=true`) is set server-side via the Vite proxy (`/api → localhost:8000`), so sign-in through the UI works normally in dev.
+**Password for all three:** `Test1234!`
+
+To log in for browser preview, sign in at `/auth` with the email above. The session cookie (`session_token`, `httponly=true`) is set server-side via the Vite proxy (`/api → localhost:8000`), so sign-in through the UI works normally in dev. Use `fetch('/api/auth/login', {method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email, password})})` from `preview_eval` to sign in programmatically.
 
 ---
 
