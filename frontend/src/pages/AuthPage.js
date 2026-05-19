@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import api from '../api';
 import Topbar from '../components/Topbar';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../App';
 
 // ─── Password validation ─────────────────────────────────────────────────────
 
@@ -77,6 +78,7 @@ export default function AuthPage() {
   const [devMagicLink, setDevMagicLink] = useState(null);
 
   const { login, register, requestMagicLink, user: _authUser } = useAuth();
+  const { notify } = useToast();
 
   // Pre-fill email/name when a logged-in OAuth user visits signup to add a password
   useEffect(() => {
@@ -184,7 +186,16 @@ export default function AuthPage() {
 
     try {
       if (mode === 'signin') {
-        await login(fields.email, fields.password);
+        const loginData = await login(fields.email, fields.password);
+        if (loginData?.merged_solves > 0) {
+          const n = loginData.merged_solves;
+          notify({
+            title: `${n} ${n === 1 ? 'solve' : 'solves'} saved`,
+            message: 'Your practice progress from this session has been added to your account.',
+            tone: 'success',
+            durationMs: 5000,
+          });
+        }
         navigate(returnTo || '/', { state: upgradeTier ? { upgradeTier } : undefined });
       } else if (mode === 'signup') {
         const complexityErr = validatePassword(fields.password);

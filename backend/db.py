@@ -969,12 +969,25 @@ async def record_plan_change(
         await session.commit()
 
 
-async def merge_users(from_user_id: str, to_user_id: str) -> None:
+async def merge_users(from_user_id: str, to_user_id: str) -> int:
+    """Merge anonymous user into a registered account.
+
+    Copies user_progress, user_sample_seen, and submissions rows from
+    *from_user_id* into *to_user_id*, then deletes the anonymous user row.
+    Returns the number of distinct solve rows that were merged (for UI feedback).
+    """
     if from_user_id == to_user_id:
-        return
+        return 0
 
     session_factory = _session_factory_or_raise()
     async with session_factory() as session:
+        # Count how many unique solves are being merged (for UI feedback).
+        count_result = await session.execute(
+            text("SELECT COUNT(*) FROM user_progress WHERE user_id = CAST(:from_user_id AS UUID)"),
+            {"from_user_id": from_user_id},
+        )
+        merged_count: int = count_result.scalar() or 0
+
         await session.execute(
             text(
                 """
@@ -1007,11 +1020,23 @@ async def merge_users(from_user_id: str, to_user_id: str) -> None:
                 "to_user_id": to_user_id,
             },
         )
+        # Reassign submission history rows so the history panel stays intact.
+        await session.execute(
+            text(
+                "UPDATE submissions SET user_id = CAST(:to_user_id AS UUID) "
+                "WHERE user_id = CAST(:from_user_id AS UUID)"
+            ),
+            {
+                "from_user_id": from_user_id,
+                "to_user_id": to_user_id,
+            },
+        )
         await session.execute(
             text("DELETE FROM users WHERE id = CAST(:from_user_id AS UUID)"),
             {"from_user_id": from_user_id},
         )
         await session.commit()
+        return merged_count
 
 
 async def get_recent_activity(user_id: str, limit: int = 10) -> list[dict[str, Any]]:

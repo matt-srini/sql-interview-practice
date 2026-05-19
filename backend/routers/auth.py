@@ -371,17 +371,26 @@ async def login(
 
     await clear_login_lock_state(candidate["id"])
 
+    merged_solves = 0
     if session_user and session_user["id"] != candidate["id"] and session_user.get("email") is None:
-        await merge_users(session_user["id"], candidate["id"])
+        merged_solves = await merge_users(session_user["id"], candidate["id"])
 
     existing_token = request.cookies.get("session_token")
     if existing_token:
         await delete_session(existing_token)
 
     token = await create_session(candidate["id"])
-    logger.info("[request_id=%s] Sign-in: user_id=%s", get_request_id(), candidate["id"])
+    logger.info(
+        "[request_id=%s] Sign-in: user_id=%s merged_solves=%d",
+        get_request_id(),
+        candidate["id"],
+        merged_solves,
+    )
     payload = JSONResponse(
-        content={"user": {"id": candidate["id"], "email": candidate["email"], "name": candidate["name"], "plan": candidate["plan"], "email_verified": candidate.get("email_verified", False)}}
+        content={
+            "user": {"id": candidate["id"], "email": candidate["email"], "name": candidate["name"], "plan": candidate["plan"], "email_verified": candidate.get("email_verified", False)},
+            "merged_solves": merged_solves,
+        }
     )
     set_session_cookie(payload, token)
     set_csrf_cookie(payload, secrets.token_urlsafe(24))
@@ -480,16 +489,33 @@ async def request_magic_link(body: MagicLinkRequest, request: Request) -> JSONRe
 
 
 @router.get("/magic-link/callback")
-async def magic_link_callback(token: str) -> RedirectResponse:
+async def magic_link_callback(token: str, request: Request) -> RedirectResponse:
     frontend_base = (FRONTEND_BASE_URL or APP_BASE_URL or "http://localhost:5173").rstrip("/")
 
     def _redirect_error(msg: str) -> RedirectResponse:
         params = urllib.parse.urlencode({"error": msg})
         return RedirectResponse(url=f"{frontend_base}/auth?{params}", status_code=302)
 
+    # Capture any anonymous session before overwriting it.
+    existing_session_user = await get_optional_current_user(request)
+
     user_id = await consume_magic_link_token(token)
     if user_id is None:
         return _redirect_error("This sign-in link is invalid or has expired.")
+
+    # Merge anonymous progress into the magic-link account.
+    if (
+        existing_session_user
+        and existing_session_user.get("email") is None
+        and existing_session_user["id"] != user_id
+    ):
+        merged = await merge_users(existing_session_user["id"], user_id)
+        logger.info(
+            "[request_id=%s] Magic-link sign-in merged anonymous progress: user_id=%s merged_solves=%d",
+            get_request_id(),
+            user_id,
+            merged,
+        )
 
     token_value = await create_session(user_id)
     response = RedirectResponse(url=f"{frontend_base}/", status_code=302)
@@ -630,12 +656,31 @@ async def oauth_callback(provider: str, request: Request) -> RedirectResponse:
     if not user_info:
         return _redirect_error("Could not retrieve account information from provider.")
 
+    # Capture the anonymous session *before* creating a new one so we can
+    # merge any solves the visitor accumulated while signed out.
+    existing_session_user = await get_optional_current_user(request)
+
     user = await get_or_create_oauth_user(
         provider=provider,
         provider_user_id=user_info["id"],
         email=user_info.get("email"),
         name=user_info.get("name"),
     )
+
+    # Merge anonymous progress into the OAuth account.
+    if (
+        existing_session_user
+        and existing_session_user.get("email") is None
+        and existing_session_user["id"] != user["id"]
+    ):
+        merged = await merge_users(existing_session_user["id"], user["id"])
+        logger.info(
+            "[request_id=%s] OAuth sign-in merged anonymous progress: provider=%s user_id=%s merged_solves=%d",
+            get_request_id(),
+            provider,
+            user["id"],
+            merged,
+        )
 
     token = await create_session(user["id"])
     logger.info("[request_id=%s] OAuth sign-in: provider=%s user_id=%s", get_request_id(), provider, user["id"])

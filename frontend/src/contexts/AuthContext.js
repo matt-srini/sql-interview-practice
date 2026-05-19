@@ -36,7 +36,7 @@ export function AuthProvider({ children }) {
     const res = await api.post('/auth/login', { email, password });
     setUser(res.data.user);
     identifyUser(res.data.user);
-    return res.data.user;
+    return res.data; // includes merged_solves for post-login toast
   }, []);
 
   const register = useCallback(async (email, name, password) => {
