@@ -473,5 +473,9 @@ cd backend && DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:543
 | Python | `.github/agents/python-question-authoring.agent.md` |
 | Pandas | `.github/agents/pandas-question-authoring.agent.md` |
 | PySpark | `.github/agents/pyspark-question-authoring.agent.md` |
+| Data Engineering | `.github/agents/data-engineering-question-authoring.agent.md` |
 | Data Modeling | `.github/agents/data-modeling-question-authoring.agent.md` |
+| Statistics | `.github/agents/statistics-question-authoring.agent.md` — dual-subtype (conceptual MCQ + numerical Python) |
+| ML Fundamentals | `.github/agents/ml-fundamentals-question-authoring.agent.md` |
+| Experimentation | `.github/agents/experimentation-question-authoring.agent.md` |
 | Any new track | `.github/agents/track-onboarding.agent.md` — drives full track onboarding end-to-end |

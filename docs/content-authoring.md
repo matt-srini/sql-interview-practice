@@ -12,7 +12,11 @@ This is the authoritative guide for creating, editing, and reviewing questions o
 - [`.github/agents/python-question-authoring.agent.md`](../.github/agents/python-question-authoring.agent.md)
 - [`.github/agents/pandas-question-authoring.agent.md`](../.github/agents/pandas-question-authoring.agent.md)
 - [`.github/agents/pyspark-question-authoring.agent.md`](../.github/agents/pyspark-question-authoring.agent.md)
+- [`.github/agents/data-engineering-question-authoring.agent.md`](../.github/agents/data-engineering-question-authoring.agent.md)
 - [`.github/agents/data-modeling-question-authoring.agent.md`](../.github/agents/data-modeling-question-authoring.agent.md)
+- [`.github/agents/statistics-question-authoring.agent.md`](../.github/agents/statistics-question-authoring.agent.md) — dual-subtype (conceptual MCQ + numerical Python)
+- [`.github/agents/ml-fundamentals-question-authoring.agent.md`](../.github/agents/ml-fundamentals-question-authoring.agent.md)
+- [`.github/agents/experimentation-question-authoring.agent.md`](../.github/agents/experimentation-question-authoring.agent.md)
 - [`.github/agents/track-onboarding.agent.md`](../.github/agents/track-onboarding.agent.md) — drives any new track end-to-end
 
 ---
