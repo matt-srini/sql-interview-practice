@@ -188,7 +188,7 @@ This is a **dual-subtype** track. Each question has `"subtype": "conceptual"` (M
 
 **Concept families for `statistics`** (used in concept pills and insights engine):
 
-`DESCRIPTIVE STATISTICS` · `PROBABILITY BASICS` · `CONDITIONAL PROBABILITY` · `EXPECTED VALUE` · `DISTRIBUTIONS` · `NORMAL DISTRIBUTION` · `HYPOTHESIS TESTING` · `CONFIDENCE INTERVALS` · `TYPE I AND TYPE II ERRORS` · `STATISTICAL POWER` · `A/B TESTING` · `CENTRAL LIMIT THEOREM` · `BAYESIAN REASONING` · `CORRELATION VS CAUSATION` · `REGRESSION` · `RESAMPLING METHODS` · `MULTIPLE COMPARISONS` · `ANOVA` · `VARIANCE DECOMPOSITION`
+`DESCRIPTIVE STATISTICS` · `PROBABILITY BASICS` · `CONDITIONAL PROBABILITY` · `EXPECTED VALUE` · `DISTRIBUTIONS` · `NORMAL DISTRIBUTION` · `HYPOTHESIS TESTING` · `CONFIDENCE INTERVALS` · `TYPE I AND TYPE II ERRORS` · `STATISTICAL POWER` · `A/B TESTING` · `CENTRAL LIMIT THEOREM` · `BAYESIAN REASONING` · `CORRELATION VS CAUSATION` · `REGRESSION` · `RESAMPLING METHODS` · `MULTIPLE COMPARISONS` · `ANOVA` · `VARIANCE DECOMPOSITION` · `NON-PARAMETRIC TESTS` · `LOGISTIC REGRESSION` · `CAUSAL INFERENCE` · `RESIDUAL DIAGNOSTICS`
 
 **Concept blocklist for `statistics`** (too implementation-specific — validator rejects these):
 `mean`, `median`, `variance`, `standard deviation`, `p-value`, `t-test`, `chi-squared`, `z-score`, `normal distribution`, `binomial distribution`, `scipy`, `numpy`, `statsmodels`, `r-squared`, `pearson`, `spearman`
@@ -301,7 +301,7 @@ Verified current allocation for existing tracks:
 | Experimentation | 91001–91030 (30p) | 92001–92030 (30p) · 92031–92042 (12m) | 93001–93020 (20p) · 93021–93033 (13m) |
 | Data Modeling | 61001–61025 (25p) | 62001–62025 (25p) | 63001–63020 (20p) · 63021 (1m) |
 | Data Engineering | 51001–51030 (30p) | 52001–52030 (30p) | 53001–53020 (20p) · 53021 (1m) |
-| Statistics | 71001–71031 (31p) | 72001–72041 (41p) | 73001–73024 (24p) · 73025–73029 (5m) |
+| Statistics | 71001–71031 (31p) | 72001–72041 (41p) | 73001–73025 (25p) · 73026–73033 (8m) |
 
 ### SQL sample IDs (3-digit, SQL only)
 

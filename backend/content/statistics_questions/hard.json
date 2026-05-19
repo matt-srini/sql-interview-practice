@@ -787,5 +787,118 @@
     ],
     "order": 29,
     "difficulty": "hard"
+  },
+  {
+    "id": 73030,
+    "title": "Logistic Regression Coefficient Interpretation",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "mock_only": true,
+    "description": "A data scientist fits a binary logistic regression to predict customer churn. The single predictor is months_since_last_purchase. The fitted coefficient is β = 0.43 (the intercept is not shown). A non-technical stakeholder asks what this number means in plain English.\n\nWhich interpretation is correct?",
+    "options": [
+      "For each additional month since last purchase, the probability of churn increases by 43 percentage points",
+      "For each additional month since last purchase, the log-odds of churn increase by 0.43 — meaning the odds of churning are multiplied by e^0.43 ≈ 1.54, a 54% increase in the odds of churn",
+      "For each additional month since last purchase, the odds of churn increase by 0.43",
+      "For each additional month since last purchase, a customer is 1.54 times more likely to churn — meaning their churn probability is multiplied by 1.54"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct. In logistic regression the coefficient β represents the change in log-odds per unit increase in the predictor. Exponentiating gives the odds ratio: e^0.43 ≈ 1.54, meaning the odds of churn are multiplied by 1.54 for each additional month of inactivity. This is the only interpretation that correctly identifies what β operates on (log-odds) and correctly converts it to an odds ratio.\n\nOption A mistakes β for a probability change. A 43 percentage-point increase in churn probability per month would produce absurd predictions — after just three months, probability would exceed 100%. Log-odds are unbounded; probabilities are not. The logistic link function exists precisely to map an unbounded linear score onto the (0, 1) probability interval.\n\nOption C mistakes log-odds for odds. β is added to the log-odds (additive on the log scale), which corresponds to multiplication on the odds scale (factor of e^β). Saying 'odds increase by 0.43' confuses additive log-odds change with additive odds change. The correct statement is that odds are multiplied by e^0.43 ≈ 1.54, not incremented by 0.43.\n\nOption D confuses an odds ratio with a probability ratio. A 1.54× increase in odds does not imply a 1.54× increase in probability. The relationship between the two depends on the baseline probability. For a rare event (e.g., 5% baseline churn), an odds ratio of 1.54 yields a probability ratio close to 1.54. For a common event (e.g., 40% baseline churn), the probability ratio is substantially lower. Odds ratios and probability ratios are approximately interchangeable only when the outcome is very rare.",
+    "hints": [
+      "Logistic regression models the log-odds of the outcome, not the probability directly. What does adding 0.43 to the log-odds correspond to on the odds scale?",
+      "Exponentiate the coefficient to convert from the log-odds scale to the odds scale. Then ask: is an odds ratio the same thing as a probability ratio?"
+    ],
+    "concepts": [
+      "logistic regression",
+      "odds ratio",
+      "coefficient interpretation",
+      "log-odds"
+    ],
+    "order": 30,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73031,
+    "title": "Residual Diagnostics and Linear Model Assumption Failure",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "mock_only": true,
+    "description": "An analyst fits a simple linear regression of house sale price on square footage. Three diagnostic plots are produced:\n\n1. Residuals vs Fitted: the spread of residuals increases as fitted values increase, forming a clear fan (cone) shape\n2. QQ plot of residuals: points follow the diagonal in the middle range but both tails curve away from it\n3. Residuals vs Predictor (square footage): residuals are scattered randomly with no discernible pattern\n\nWhich assumption is most directly violated, and what is the appropriate first remediation step?",
+    "options": [
+      "Independence of errors — the fan shape indicates autocorrelated residuals across observations; run a Durbin-Watson test and, if confirmed, switch to a GLS or time-series model",
+      "Homoscedasticity (constant variance) — the fan shape in residuals vs fitted is the canonical signal of heteroscedasticity; appropriate first steps include log-transforming the response or using weighted least squares",
+      "Normality of residuals — the QQ tail deviation is the primary signal; the fan shape is a coincidental artefact of a few high-leverage points; apply a Box-Cox transformation to the response",
+      "Linearity — the fan shape indicates a missing non-linear term; add a quadratic term for square footage"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct. A fan (cone) shape in the residuals-vs-fitted plot — where spread grows as fitted values increase — is the canonical diagnostic for heteroscedasticity: the variance of the errors is not constant across the range of predicted values. For house prices, this is expected behaviour because the absolute range of prices is much larger for expensive properties than cheap ones. The primary remediation options are a log- or square-root transformation of the response (which often stabilises variance for right-skewed, multiplicative outcomes like prices) or weighted least squares, where weights are inversely proportional to the estimated error variance.\n\nOption A misreads the fan shape as evidence of correlated errors (independence violation). Autocorrelation in residuals manifests as a structured pattern when residuals are plotted in time or spatial order — not as increasing spread across fitted values. The Durbin-Watson test is designed for first-order autocorrelation in time-ordered data, not for diagnosing heteroscedasticity.\n\nOption C misidentifies the QQ tail deviation as the primary violation. Fat tails in the QQ plot of pooled residuals are a common secondary symptom of heteroscedasticity: when variance is higher for large fitted values, the pooled residual distribution has heavier tails than a normal distribution even if errors at each fitted value are locally normal. Treating the QQ deviation as the root cause and applying Box-Cox first is addressing a symptom. Resolving the heteroscedasticity (e.g., via log transform) will typically normalise the QQ plot as a side effect.\n\nOption D inverts the reading of the third plot. Random scatter in residuals-vs-predictor is the desired outcome: it indicates that the linearity assumption holds. A non-linear relationship would produce a curved or U-shaped pattern in that plot. The fan shape in plot 1 is not evidence of missing curvature — it is evidence of non-constant variance.",
+    "hints": [
+      "Each diagnostic plot tests a different assumption: residuals vs fitted → constant variance; QQ plot → normality; residuals vs predictor → linearity. Which plot shows the clearest systematic departure from the expected pattern?",
+      "A fan shape that widens as fitted values increase has one canonical name in regression diagnostics. Which assumption requires the spread of residuals to be constant — not growing — across all levels of the fitted value?"
+    ],
+    "concepts": [
+      "residual diagnostics",
+      "heteroscedasticity",
+      "linear regression",
+      "model assumptions"
+    ],
+    "order": 31,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73032,
+    "title": "Causal DAG: Confounder, Mediator, or Collider",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "mock_only": true,
+    "description": "A researcher studies the causal effect of regular exercise (X) on cardiovascular health (Y). Three additional variables are under consideration for inclusion in a regression:\n\n• Age (Z₁): older individuals exercise less AND have worse cardiovascular health through independent ageing mechanisms — age is not caused by exercise\n• Resting heart rate (Z₂): exercise lowers resting heart rate, and a lower resting heart rate directly improves cardiovascular health; resting heart rate sits on the causal pathway from X to Y\n• Insurance status (Z₃): driven by income (which correlates with exercise habits) and by current health status; income was not measured in the study\n\nWhat is the correct classification and adjustment decision for each variable?",
+    "options": [
+      "Z₁ is a confounder → adjust for it. Z₂ is a mediator → do not adjust (conditioning blocks the causal path of interest). Z₃ is a collider → do not adjust (conditioning opens a spurious path through unmeasured income)",
+      "Z₁ is a mediator → do not adjust. Z₂ is a confounder → adjust. Z₃ is a collider → do not adjust",
+      "Z₁ is a confounder → adjust. Z₂ is a confounder → also adjust. Z₃ is a mediator → do not adjust",
+      "All three should be included as controls; adjusting for more variables always reduces residual confounding and produces a less biased causal estimate"
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct.\n\nZ₁ (Age) is a confounder: it has causal arrows into both the treatment (X, exercise) and the outcome (Y, cardiovascular health) through pathways that do not run through X. Omitting age leaves a backdoor path open — the observed association between X and Y would partially reflect the age effect rather than the exercise effect. Adjusting for age closes this backdoor path and isolates the causal effect of exercise.\n\nZ₂ (Resting heart rate) is a mediator: it lies on the causal pathway X → Z₂ → Y (exercise reduces resting heart rate, which improves health). Conditioning on a mediator blocks part of the very causal effect being measured. If the goal is to estimate the total causal effect of exercise on cardiovascular health — including the portion operating through resting heart rate — Z₂ must be excluded. Adjusting for it would remove that mechanistic pathway from the estimate and produce an underestimate of the total effect. Include a mediator only when the goal is specifically to estimate the direct effect that bypasses that mechanism.\n\nZ₃ (Insurance status) is a collider: it is caused by both income (which influences exercise habits) and by health status. A collider does not confound the X–Y relationship when left unadjusted — there is no open backdoor path through it. Conditioning on a collider opens a spurious association between its causes: adjusting for insurance status would activate a path through the unmeasured variable income, introducing bias that was not present before adjustment.\n\nOption B misclassifies both Z₁ and Z₂: age is not downstream of exercise (it cannot be a mediator) and resting heart rate is caused by exercise (it cannot be a confounder — a confounder must not be caused by the treatment). Option C treats resting heart rate as a second confounder, missing its mediator role. Option D is wrong in principle: indiscriminate adjustment is one of the most common causal inference errors. Adjusting for a mediator removes the effect of interest; adjusting for a collider creates new bias.",
+    "hints": [
+      "Draw the arrow direction for each variable: does it point INTO X and Y from outside (confounder), sit BETWEEN X and Y on a causal path (mediator), or receive arrows FROM both X's causes and Y (collider)?",
+      "For estimating the total causal effect of X on Y: close backdoor paths by adjusting for confounders; leave mediating paths open by not adjusting for mediators; never condition on colliders — it opens paths rather than closing them."
+    ],
+    "concepts": [
+      "causal DAG",
+      "confounding",
+      "mediation",
+      "collider bias",
+      "causal inference"
+    ],
+    "order": 32,
+    "difficulty": "hard"
+  },
+  {
+    "id": 73033,
+    "title": "Bayesian vs Frequentist Framing for a Weak-Evidence Launch Decision",
+    "subtype": "conceptual",
+    "type": "mcq",
+    "mock_only": true,
+    "description": "A product team runs an A/B test on a new onboarding flow. After 3 weeks: treatment conversion 3.4%, control 3.1%, relative lift +9.7%, two-sided p-value = 0.11. The team has historical context: over the past 18 months they shipped 8 similar onboarding changes — 6 showed positive lifts between 5–15%, 2 showed small negative effects.\n\nA stakeholder asks: 'The p-value didn't reach 0.05. Should we launch?'\n\nWhich analytical response is most defensible?",
+    "options": [
+      "Report that p = 0.11 does not meet the pre-specified α = 0.05 threshold; the null hypothesis is not rejected; do not launch without collecting more data. The historical success rate of past experiments is irrelevant to this experiment's decision.",
+      "Use the 8 historical experiments as an empirical prior — the base rate of positive effects is 75% (6/8). Combine this prior with the current experiment's likelihood to form a posterior distribution over the true lift. The posterior probability that the lift is positive is likely well above 50%, which supports a phased rollout with continued monitoring rather than a binary launch-or-not call.",
+      "Ignore the p-value: a 9.7% relative lift is large enough to be practically significant regardless of statistical significance. Rerun the experiment with a larger sample targeting 80% power for a 10% relative lift and launch if it replicates.",
+      "Switch to a one-sided test since the prior expectation was a positive lift; this halves the p-value to approximately 0.055, which is close enough to α = 0.05 to justify launching."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct. The frequentist p-value answers a narrow question: how surprising is this data under the null hypothesis of zero effect? It does not answer the decision question: what is the probability that launching this feature produces a positive outcome? The 8 historical experiments provide genuine prior information — a 75% empirical base rate of positive effects is exactly what a Bayesian prior is designed to encode. Combining this prior with the current experiment's likelihood through Bayes' theorem yields a posterior distribution over the true effect. Even with p = 0.11, the posterior probability that the true lift is positive may be 80–85% given the strong historical base rate. This posterior probability directly answers the stakeholder's decision question. A phased rollout with monitoring is a rational response to posterior uncertainty rather than treating the decision as binary.\n\nOption A applies the frequentist decision rule mechanically and explicitly discards the historical context. The p < 0.05 convention is a useful tool for controlling Type I error rates across many independent experiments, but it treats the threshold as a binary gate and ignores informative prior knowledge. In a product environment with relevant historical experiments, this approach is unnecessarily conservative and misses available information.\n\nOption C conflates practical and statistical significance. A 9.7% relative lift is a meaningful effect size if real, but the current experiment's data alone do not establish whether it is real — that is what the statistical test assesses. Recommending a better-powered rerun is reasonable advice, but 'ignore the p-value' treats the data as irrelevant to the inference, which is incorrect. The p-value is informative about the strength of evidence even when a threshold decision rule is not the right framework.\n\nOption D is post-hoc p-hacking. Switching from a two-sided to a one-sided test after observing the direction of the effect inflates the Type I error rate for the experiment. One-sided tests must be pre-specified before data collection to be valid. Applying one retroactively to push p from 0.11 to 0.055 and treating it as a launch justification compounds this error with the mechanical threshold problem from Option A.",
+    "hints": [
+      "The frequentist p-value answers 'how surprising is this data under the null?' The stakeholder is asking 'what is the probability this feature has a positive effect?' These are different questions. What statistical framework is designed to answer the second one?",
+      "Six of eight past similar experiments showed positive lifts between 5–15%. Which option actually incorporates this historical base rate into the analysis rather than declaring it irrelevant?"
+    ],
+    "concepts": [
+      "Bayesian inference",
+      "frequentist inference",
+      "prior information",
+      "decision making under uncertainty"
+    ],
+    "order": 33,
+    "difficulty": "hard"
   }
 ]
