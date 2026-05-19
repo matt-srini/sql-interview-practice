@@ -611,29 +611,8 @@ def _parse_iso_dt(s: str | None) -> datetime | None:
     return datetime.fromisoformat(s.replace("Z", "+00:00"))
 
 
-def _compute_mock_analytics(
-    sessions: list[dict],
-    events: list[dict],
-) -> dict[str, Any]:
-    """
-    Pure function — compute aggregate analytics from sessions + submission events.
-
-    sessions : list from get_mock_history (session_id, mode, track, difficulty,
-               started_at, ended_at, time_limit_s, status, total_count, solved_count)
-    events   : list from get_submission_events (track, question_id, is_correct,
-               submitted_at)
-
-    Returns a dict with:
-      total_sessions, sessions_last_30d, avg_score_pct, best_score_pct,
-      avg_time_used_pct, track_breakdown, difficulty_breakdown, score_trend,
-      top_concepts, weak_concepts
-    """
-    completed = [
-        s for s in sessions
-        if s.get("status") == "completed" and (s.get("total_count") or 0) > 0
-    ]
-
-    empty: dict[str, Any] = {
+def _empty_mock_session_summary() -> dict[str, Any]:
+    return {
         "total_sessions": 0,
         "sessions_last_30d": 0,
         "avg_score_pct": 0.0,
@@ -642,9 +621,16 @@ def _compute_mock_analytics(
         "track_breakdown": {},
         "difficulty_breakdown": {},
         "score_trend": [],
-        "top_concepts": [],
-        "weak_concepts": [],
     }
+
+
+def _compute_mock_session_summary(sessions: list[dict]) -> dict[str, Any]:
+    completed = [
+        s for s in sessions
+        if s.get("status") == "completed" and (s.get("total_count") or 0) > 0
+    ]
+
+    empty = _empty_mock_session_summary()
     if not completed:
         return empty
 
@@ -713,6 +699,57 @@ def _compute_mock_analytics(
         for d, v in diff_stats.items()
     }
 
+    return {
+        "total_sessions": len(completed),
+        "sessions_last_30d": sessions_last_30d,
+        "avg_score_pct": avg_score_pct,
+        "best_score_pct": best_score_pct,
+        "avg_time_used_pct": avg_time_used_pct,
+        "track_breakdown": track_breakdown,
+        "difficulty_breakdown": difficulty_breakdown,
+        "score_trend": score_trend,
+    }
+
+
+def _compute_mock_analytics(
+    sessions: list[dict],
+    events: list[dict],
+) -> dict[str, Any]:
+    """
+    Pure function — compute aggregate analytics from sessions + submission events.
+
+    sessions : list from get_mock_history (session_id, mode, track, difficulty,
+               started_at, ended_at, time_limit_s, status, total_count, solved_count)
+    events   : list from get_submission_events (track, question_id, is_correct,
+               submitted_at)
+
+    Returns overall analytics plus separated benchmark/drill summaries so
+    benchmark performance can be compared like-for-like.
+    """
+    overall = _compute_mock_session_summary(sessions)
+    completed = [
+        s for s in sessions
+        if s.get("status") == "completed" and (s.get("total_count") or 0) > 0
+    ]
+    benchmark_sessions = [s for s in completed if s.get("mode") == "benchmark"]
+    drill_sessions = [s for s in completed if s.get("mode") != "benchmark"]
+
+    mode_breakdown = {
+        "benchmark": len(benchmark_sessions),
+        "drill": len(drill_sessions),
+    }
+
+    empty_concepts: dict[str, Any] = {
+        **overall,
+        "mode_breakdown": mode_breakdown,
+        "benchmark_summary": _empty_mock_session_summary(),
+        "drill_summary": _empty_mock_session_summary(),
+        "top_concepts": [],
+        "weak_concepts": [],
+    }
+    if not completed:
+        return empty_concepts
+
     # Concept accuracy from submission events
     concept_attempts: dict[str, int] = defaultdict(int)
     concept_correct: dict[str, int] = defaultdict(int)
@@ -743,14 +780,10 @@ def _compute_mock_analytics(
     )[:3]
 
     return {
-        "total_sessions": len(completed),
-        "sessions_last_30d": sessions_last_30d,
-        "avg_score_pct": avg_score_pct,
-        "best_score_pct": best_score_pct,
-        "avg_time_used_pct": avg_time_used_pct,
-        "track_breakdown": track_breakdown,
-        "difficulty_breakdown": difficulty_breakdown,
-        "score_trend": score_trend,
+        **overall,
+        "mode_breakdown": mode_breakdown,
+        "benchmark_summary": _compute_mock_session_summary(benchmark_sessions),
+        "drill_summary": _compute_mock_session_summary(drill_sessions),
         "top_concepts": top_concepts,
         "weak_concepts": weak_concepts,
     }

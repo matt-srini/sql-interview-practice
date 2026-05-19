@@ -6,6 +6,7 @@ import {
   getMockSessionDescriptor,
   getSessionQuestionCount,
   getSessionTimeMinutes,
+  isBenchmarkMockMode,
   supportsBenchmarkMode,
 } from './mockModeConfig';
 
@@ -39,5 +40,10 @@ describe('mockModeConfig', () => {
       title: 'Custom follow-up drill',
       isBenchmark: false,
     });
+  });
+
+  it('identifies benchmark mode explicitly', () => {
+    expect(isBenchmarkMockMode('benchmark')).toBe(true);
+    expect(isBenchmarkMockMode('30min')).toBe(false);
   });
 });

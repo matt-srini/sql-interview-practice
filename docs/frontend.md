@@ -520,12 +520,13 @@ Standalone page using the shared `<Topbar active="mock" />`. Does not use `AppSh
 
 **Flow:** Select mode/track/difficulty → `POST /api/mock/start` → navigate to `/mock/:id` passing `sessionData` via router state.
 
-**Layout:** Benchmark/drill mode cards (3) → track-specific benchmark blueprint card when `mode='benchmark'` → config pills (track + difficulty) → custom controls (if mode=custom) → Start button → recent sessions table.
+**Layout:** Benchmark/drill mode cards (3) → track-specific benchmark blueprint card when `mode='benchmark'` → config pills (track + difficulty) → custom controls (if mode=custom) → Start button → benchmark analytics panel → split recent benchmark/drill history tables.
 
 - Benchmark is now the default starting mode on single-track sessions and is presented as the fixed-shape, serious mock.
 - Sprint drill (`30min`) and Custom drill are the flexible follow-up modes.
 - Mixed track is drill-only; when users switch to Mixed, MockHub automatically exits benchmark mode and explains why.
-- History rows format stored mode values into human labels (`Benchmark`, `Sprint drill`, `Custom drill`, `Full (legacy)`) so older sessions stay legible without preserving the old setup framing.
+- Elite analytics now use `benchmark_summary` as the comparable primary view and surface drill performance in a smaller secondary card.
+- History rows format stored mode values into human labels (`Benchmark`, `Sprint drill`, `Custom drill`, `Full (legacy)`) so older sessions stay legible without preserving the old setup framing, and the tables are split into `Recent benchmark sessions` and `Recent drill sessions`.
 
 When no history exists, shows a richer empty state with warm-up and dashboard CTAs.
 

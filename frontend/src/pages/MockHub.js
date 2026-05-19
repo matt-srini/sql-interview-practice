@@ -11,6 +11,7 @@ import {
   getBenchmarkBlueprint,
   getMockModeCards,
   getMockModeDisplayLabel,
+  isBenchmarkMockMode,
   getSessionQuestionCount,
   getSessionTimeMinutes,
 } from '../mockModeConfig';
@@ -155,6 +156,10 @@ export default function MockHub() {
   const modeCards = getMockModeCards(track);
   const effectiveQuestionCount = getSessionQuestionCount(mode, track, numQuestions);
   const effectiveTimeMinutes = getSessionTimeMinutes(mode, track, timeMinutes);
+  const benchmarkHistory = history.filter((session) => isBenchmarkMockMode(session.mode));
+  const drillHistory = history.filter((session) => !isBenchmarkMockMode(session.mode));
+  const benchmarkAnalytics = analytics?.benchmark_summary ?? null;
+  const drillAnalytics = analytics?.drill_summary ?? null;
 
   useEffect(() => {
     if (track === 'mixed' && mode === 'benchmark') {
@@ -594,34 +599,35 @@ export default function MockHub() {
           <section className="mock-hub-section mock-analytics-panel">
             <div className="mock-analytics-header">
               <span className="mock-analytics-elite-badge">Elite</span>
-              <h2 className="mock-analytics-title">Mock Analytics</h2>
+              <h2 className="mock-analytics-title">Benchmark Analytics</h2>
             </div>
             {analyticsLoading && <p className="mock-analytics-loading">Loading analytics…</p>}
-            {!analyticsLoading && analytics && analytics.total_sessions > 0 && (
+            {!analyticsLoading && analytics && benchmarkAnalytics && benchmarkAnalytics.total_sessions > 0 && (
               <>
                 <p className="mock-analytics-summary">
-                  {analytics.total_sessions} session{analytics.total_sessions !== 1 ? 's' : ''} total
-                  {analytics.sessions_last_30d > 0 && ` · ${analytics.sessions_last_30d} this month`}
+                  {benchmarkAnalytics.total_sessions} benchmark session{benchmarkAnalytics.total_sessions !== 1 ? 's' : ''}
+                  {benchmarkAnalytics.sessions_last_30d > 0 && ` · ${benchmarkAnalytics.sessions_last_30d} this month`}
+                  {analytics.mode_breakdown?.drill > 0 && ` · ${analytics.mode_breakdown.drill} drill session${analytics.mode_breakdown.drill !== 1 ? 's' : ''} tracked separately`}
                 </p>
                 <div className="mock-analytics-stat-row">
                   <div className="mock-analytics-stat">
-                    <span className="mock-analytics-stat-value">{analytics.avg_score_pct}%</span>
-                    <span className="mock-analytics-stat-label">Avg score</span>
+                    <span className="mock-analytics-stat-value">{benchmarkAnalytics.avg_score_pct}%</span>
+                    <span className="mock-analytics-stat-label">Avg benchmark score</span>
                   </div>
                   <div className="mock-analytics-stat">
-                    <span className="mock-analytics-stat-value">{analytics.best_score_pct}%</span>
-                    <span className="mock-analytics-stat-label">Best score</span>
+                    <span className="mock-analytics-stat-value">{benchmarkAnalytics.best_score_pct}%</span>
+                    <span className="mock-analytics-stat-label">Best benchmark score</span>
                   </div>
                   <div className="mock-analytics-stat">
-                    <span className="mock-analytics-stat-value">{analytics.avg_time_used_pct}%</span>
-                    <span className="mock-analytics-stat-label">Avg time used</span>
+                    <span className="mock-analytics-stat-value">{benchmarkAnalytics.avg_time_used_pct}%</span>
+                    <span className="mock-analytics-stat-label">Avg benchmark time used</span>
                   </div>
                 </div>
-                {analytics.score_trend.length > 1 && (
+                {benchmarkAnalytics.score_trend.length > 1 && (
                   <div className="mock-analytics-sparkline-wrap">
-                    <span className="mock-analytics-sparkline-label">Score trend (last {analytics.score_trend.length})</span>
+                    <span className="mock-analytics-sparkline-label">Benchmark score trend (last {benchmarkAnalytics.score_trend.length})</span>
                     <div className="mock-analytics-sparkline">
-                      {analytics.score_trend.map((score, i) => {
+                      {benchmarkAnalytics.score_trend.map((score, i) => {
                         const heightPct = Math.max(10, score);
                         const colorClass = score >= 75 ? 'good' : score >= 50 ? 'mid' : 'low';
                         return (
@@ -633,6 +639,15 @@ export default function MockHub() {
                           />
                         );
                       })}
+                    </div>
+                  </div>
+                )}
+                {drillAnalytics && drillAnalytics.total_sessions > 0 && (
+                  <div className="mock-analytics-secondary-row">
+                    <div className="mock-analytics-secondary-card">
+                      <span className="mock-analytics-secondary-label">Drills</span>
+                      <span className="mock-analytics-secondary-value">{drillAnalytics.total_sessions} sessions</span>
+                      <span className="mock-analytics-secondary-copy">{drillAnalytics.avg_score_pct}% avg score · {drillAnalytics.avg_time_used_pct}% avg time used</span>
                     </div>
                   </div>
                 )}
@@ -654,8 +669,14 @@ export default function MockHub() {
                 </div>
               </>
             )}
-            {!analyticsLoading && (!analytics || analytics.total_sessions === 0) && (
-              <p className="mock-analytics-empty">Complete your first mock session to see analytics here.</p>
+            {!analyticsLoading && analytics && benchmarkAnalytics && benchmarkAnalytics.total_sessions === 0 && (
+              <p className="mock-analytics-empty">
+                Complete your first benchmark session to unlock comparable benchmark analytics.
+                {analytics.mode_breakdown?.drill > 0 ? ` You already have ${analytics.mode_breakdown.drill} drill session${analytics.mode_breakdown.drill !== 1 ? 's' : ''} tracked separately.` : ''}
+              </p>
+            )}
+            {!analyticsLoading && !analytics && (
+              <p className="mock-analytics-empty">Complete your first benchmark session to see analytics here.</p>
             )}
           </section>
         )}
@@ -721,9 +742,9 @@ export default function MockHub() {
         )}
 
         {/* Recent sessions */}
-        {!historyLoading && history.length > 0 && (
+        {!historyLoading && benchmarkHistory.length > 0 && (
           <section className="mock-hub-section mock-hub-history">
-            <h2 className="mock-hub-history-title">Recent sessions</h2>
+            <h2 className="mock-hub-history-title">Recent benchmark sessions</h2>
             <table className="mock-history-table">
               <thead>
                 <tr>
@@ -731,7 +752,37 @@ export default function MockHub() {
                 </tr>
               </thead>
               <tbody>
-                {history.slice(0, 5).map(s => (
+                {benchmarkHistory.slice(0, 5).map(s => (
+                  <tr key={s.session_id}>
+                    <td>{formatDate(s.started_at)}</td>
+                    <td>{getMockModeDisplayLabel(s.mode)}</td>
+                    <td>{TRACK_LABELS[s.track] || s.track}</td>
+                    <td>{s.difficulty && <span className={`badge badge-${s.difficulty}`}>{s.difficulty}</span>}</td>
+                    <td>{s.solved_count}/{s.total_count}</td>
+                    <td>{formatDuration(s.time_limit_s, null)}</td>
+                    <td>
+                      <Link to={`/mock/${s.session_id}`} className="mock-review-link">
+                        {s.status === 'completed' ? 'Review →' : 'Resume →'}
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        )}
+
+        {!historyLoading && drillHistory.length > 0 && (
+          <section className="mock-hub-section mock-hub-history">
+            <h2 className="mock-hub-history-title">Recent drill sessions</h2>
+            <table className="mock-history-table">
+              <thead>
+                <tr>
+                  <th>Date</th><th>Mode</th><th>Track</th><th>Difficulty</th><th>Score</th><th>Time</th><th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {drillHistory.slice(0, 5).map(s => (
                   <tr key={s.session_id}>
                     <td>{formatDate(s.started_at)}</td>
                     <td>{getMockModeDisplayLabel(s.mode)}</td>

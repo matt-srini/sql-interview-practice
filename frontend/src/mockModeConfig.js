@@ -71,6 +71,10 @@ export function getMockModeDisplayLabel(mode) {
   return mode;
 }
 
+export function isBenchmarkMockMode(mode) {
+  return mode === 'benchmark';
+}
+
 export function getMockModeCards(track) {
   const benchmark = getBenchmarkBlueprint(track);
 

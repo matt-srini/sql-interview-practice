@@ -683,6 +683,62 @@ def test_tc165_get_analytics_returns_200_for_elite():
     body = r.json()
     assert "total_sessions" in body
     assert "avg_score_pct" in body
+    assert "benchmark_summary" in body
+    assert "drill_summary" in body
+
+
+def test_tc165b_analytics_separates_benchmark_from_drills():
+    """TC-165B: Analytics separates benchmark performance from drill sessions."""
+    with TestClient(app) as client:
+        user = _make_user(client, plan="elite")
+
+    conn = _db_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """INSERT INTO mock_sessions (user_id, mode, track, difficulty, time_limit_s, status, ended_at)
+                   VALUES (%s::uuid, 'benchmark', 'sql', 'medium', 3600, 'completed', NOW())
+                   RETURNING id""",
+                (user["id"],),
+            )
+            benchmark_session_id = cur.fetchone()[0]
+            cur.execute(
+                """INSERT INTO mock_session_questions (session_id, question_id, track, position, is_solved)
+                   VALUES (%s, 1001, 'sql', 1, true),
+                          (%s, 1002, 'sql', 2, true),
+                          (%s, 1003, 'sql', 3, false)""",
+                (benchmark_session_id, benchmark_session_id, benchmark_session_id),
+            )
+
+            cur.execute(
+                """INSERT INTO mock_sessions (user_id, mode, track, difficulty, time_limit_s, status, ended_at)
+                   VALUES (%s::uuid, '30min', 'pyspark', 'easy', 1800, 'completed', NOW())
+                   RETURNING id""",
+                (user["id"],),
+            )
+            drill_session_id = cur.fetchone()[0]
+            cur.execute(
+                """INSERT INTO mock_session_questions (session_id, question_id, track, position, is_solved)
+                   VALUES (%s, 3001, 'pyspark', 1, true),
+                          (%s, 3002, 'pyspark', 2, true)""",
+                (drill_session_id, drill_session_id),
+            )
+        conn.commit()
+    finally:
+        conn.close()
+
+    with TestClient(app) as client:
+        _make_user(client, plan="elite", existing_user=user)
+        r = client.get("/api/mock/analytics")
+
+    assert r.status_code == 200
+    body = r.json()
+    assert body["total_sessions"] == 2
+    assert body["mode_breakdown"] == {"benchmark": 1, "drill": 1}
+    assert body["benchmark_summary"]["total_sessions"] == 1
+    assert body["benchmark_summary"]["avg_score_pct"] == 66.7
+    assert body["drill_summary"]["total_sessions"] == 1
+    assert body["drill_summary"]["avg_score_pct"] == 100.0
 
 
 def test_tc166_get_analytics_returns_403_for_pro():

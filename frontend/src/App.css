@@ -10666,6 +10666,34 @@ select {
 .mock-analytics-sparkline-bar.good  { background: var(--success); }
 .mock-analytics-sparkline-bar.mid   { background: var(--warning); }
 .mock-analytics-sparkline-bar.low   { background: var(--danger); }
+.mock-analytics-secondary-row {
+  display: grid;
+  margin-bottom: 1rem;
+}
+.mock-analytics-secondary-card {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: var(--radius-sm);
+  background: rgba(20, 41, 27, 0.03);
+  border: 1px solid var(--border-subtle);
+}
+.mock-analytics-secondary-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+.mock-analytics-secondary-value {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+.mock-analytics-secondary-copy {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
 .mock-analytics-concepts {
   display: flex;
   flex-direction: column;

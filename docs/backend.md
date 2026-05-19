@@ -403,7 +403,7 @@ Prefix: `/api/mock`
 |---|---|---|---|
 | GET | `/api/mock/access` | required | Pre-flight access check: returns per-difficulty `can_start`, `block_reason`, `needs_upgrade`, `daily_limit`, `daily_used` for the given `?track=` and current plan. UI-only preflight — does not gate actual session creation. |
 | GET | `/api/mock/history` | required | Past sessions list (last 20), sorted by `started_at DESC` |
-| GET | `/api/mock/analytics` | required (Elite) | Aggregate analytics over last 50 sessions: score trends, concept accuracy, track/difficulty splits |
+| GET | `/api/mock/analytics` | required (Elite) | Aggregate analytics over last 50 sessions, including separated benchmark and drill summaries plus overall concept signals |
 | POST | `/api/mock/start` | required | Start a session; selects questions, persists, returns full question payloads. Returns **409** `{"error": "active_session_exists", "session_id": ..., "track": ..., "difficulty": ..., "mode": ...}` if the user already has an active session. |
 | GET | `/api/mock/{id}` | required | Load session state (for reload recovery) |
 | POST | `/api/mock/{id}/submit` | required | Evaluate an answer mid-session; updates `mock_session_questions`; no solutions returned |
@@ -413,6 +413,8 @@ Prefix: `/api/mock`
 > **Access enforcement:** `POST /api/mock/start` validates plan and daily limits server-side via `compute_mock_access()` before persisting any session. A 403 is returned if the user's plan doesn't allow the requested difficulty, or if daily limits are exhausted. The daily-limit check at `GET /api/mock/access` is a UI preflight only — it does not gate actual session creation.
 
 > **Mode enforcement:** `POST /api/mock/start` now accepts a fixed-shape `benchmark` mode in addition to the drill modes. `benchmark` is track-specific and rejects `track="mixed"` with 400. Legacy `60min` sessions remain readable in history, but new frontend setup flows no longer present them as a primary mode.
+
+> **Analytics separation:** `GET /api/mock/analytics` now returns additive `benchmark_summary`, `drill_summary`, and `mode_breakdown` fields so benchmark performance can be compared like-with-like while flexible drill sessions remain visible without contaminating comparable benchmark stats.
 
 ### Request bodies
 

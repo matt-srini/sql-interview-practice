@@ -96,17 +96,16 @@ Elite users can enable **Focus mode** on the mock setup page. When active, a con
 
 ## Mock History Analytics (Elite only)
 
-`GET /api/mock/analytics` returns aggregated stats over the last 50 completed sessions:
+`GET /api/mock/analytics` returns aggregated stats over the last 50 completed sessions. The session-level metrics are now separated so benchmark comparisons stay clean:
 
 - `total_sessions`, `sessions_last_30d`
-- `avg_score_pct`, `best_score_pct`, `avg_time_used_pct`
-- `track_breakdown`: per-track session count and avg score
-- `difficulty_breakdown`: per-difficulty session count and avg score
-- `score_trend`: last 10 session scores (chronological, for sparkline)
+- `benchmark_summary`: score/time/trend/breakdown metrics for benchmark sessions only
+- `drill_summary`: score/time/trend/breakdown metrics for non-benchmark sessions
+- `mode_breakdown`: counts for `benchmark` and `drill`
 - `top_concepts`: top 5 by attempt count (with accuracy)
 - `weak_concepts`: worst 3 concepts by accuracy (≥3 attempts, <60%)
 
-Returns 403 for non-Elite plans. Panel appears on MockHub.js above the history table.
+Returns 403 for non-Elite plans. On MockHub, the primary Elite panel now uses `benchmark_summary` as the comparable benchmark view and surfaces drills as a secondary summary.
 
 ---
 
@@ -153,7 +152,7 @@ Shown after `POST /api/mock/:id/finish`:
 
 ## History (`/mock` page)
 
-- Shows the last 20 sessions in a table: Date, Mode, Track, Difficulty, Score (X/Y), Time limit.
+- Shows the last 20 sessions split into benchmark and drill sections so fixed-shape benchmarks are not visually blended with flexible drills.
 - Mode labels are normalized in the UI so users see `Benchmark`, `Sprint drill`, `Custom drill`, or `Full (legacy)` instead of raw stored mode keys.
 - **Review →** for completed sessions, **Resume →** for in-progress ones.
 - Empty state links to practice tracks and the dashboard.
@@ -179,7 +178,7 @@ Shown after `POST /api/mock/:id/finish`:
 |---|---|---|---|
 | GET | `/api/mock/access` | Required | Pre-flight: per-difficulty access state for a given track |
 | GET | `/api/mock/history` | Required | Last 20 sessions |
-| GET | `/api/mock/analytics` | Required (Elite) | Aggregate analytics over last 50 sessions — scores, trends, concepts |
+| GET | `/api/mock/analytics` | Required (Elite) | Aggregate analytics over last 50 sessions — benchmark/drill summaries, trends, and concept signals |
 | POST | `/api/mock/start` | Required | Start a session; accepts `mode="benchmark"` for fixed-shape track benchmarks and `focus_concepts` for Elite focus mode. Returns 409 if an active session already exists (body includes `session_id`, `track`, `difficulty`, `mode`). |
 | GET | `/api/mock/:id` | Required | Load/reload session state |
 | POST | `/api/mock/:id/submit` | Required | Submit one answer mid-session |
@@ -195,6 +194,7 @@ See `backend/tests/test_11_mock.py` for the focused mock backend suite covering:
 - Daily limit enforcement (free medium 1/day, pro hard 3/day, elite unlimited)
 - Session lifecycle, summary visibility, and mixed-session behavior for the current mock system
 - Benchmark mode track-shape enforcement, including the statistics `1 numerical + 2 conceptual` blueprint and mixed-track rejection
+- Analytics separation between benchmark and drill sessions
 - Custom mode validation
 - Mixed track sessions
 - Company filter gating (free/pro blocked, elite/lifetime_elite allowed)
