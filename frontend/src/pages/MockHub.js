@@ -131,6 +131,12 @@ export default function MockHub() {
   const [focusMode, setFocusMode] = useState(false);
   const [focusConcepts, setFocusConcepts] = useState([]);
 
+  // Elite intelligence panel expand/collapse (non-Elite users only)
+  const [elitePanelOpen, setElitePanelOpen] = useState(() => {
+    const stored = localStorage.getItem('mock_elite_panel_open');
+    return stored === null ? true : stored === 'true';
+  });
+
   // Analytics — Elite only
   const [analytics, setAnalytics] = useState(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
@@ -634,39 +640,56 @@ export default function MockHub() {
               <h2 className="mock-elite-panel-title">
                 {isPro ? 'One step from Elite' : 'Sharper prep, session by session'}
               </h2>
+              <button
+                type="button"
+                className="mock-elite-panel-toggle"
+                onClick={() => {
+                  const next = !elitePanelOpen;
+                  setElitePanelOpen(next);
+                  localStorage.setItem('mock_elite_panel_open', String(next));
+                }}
+                aria-expanded={elitePanelOpen}
+                aria-label={elitePanelOpen ? 'Collapse Elite features' : 'Expand Elite features'}
+              >
+                {elitePanelOpen ? '↑' : '↓'}
+              </button>
             </div>
-            <p className="mock-elite-panel-desc">
-              {isPro
-                ? "You're on Pro. Upgrade to Elite for focus mode, session analytics, and a coaching debrief after every mock."
-                : 'Know exactly where you stand — before the interview room.'}
-            </p>
-            <ul className="mock-elite-features">
-              <li className="mock-elite-feature">
-                <span className="mock-elite-feature-name">Focus mode</span>
-                <span className="mock-elite-feature-desc">Target specific concepts — your session draws only from questions tagged with them.</span>
-              </li>
-              <li className="mock-elite-feature">
-                <span className="mock-elite-feature-name">Score trends</span>
-                <span className="mock-elite-feature-desc">See if you're improving session over session, across every track.</span>
-              </li>
-              <li className="mock-elite-feature">
-                <span className="mock-elite-feature-name">Concept breakdown</span>
-                <span className="mock-elite-feature-desc">Know exactly which topics are costing you before the real interview.</span>
-              </li>
-              <li className="mock-elite-feature">
-                <span className="mock-elite-feature-name">Coaching debrief</span>
-                <span className="mock-elite-feature-desc">One priority fix identified after every session — so you always know what to work on next.</span>
-              </li>
-              {!isPro && (
-                <li className="mock-elite-feature">
-                  <span className="mock-elite-feature-name">Unlimited sessions</span>
-                  <span className="mock-elite-feature-desc">No daily caps on any difficulty level.</span>
-                </li>
-              )}
-            </ul>
-            <div className="mock-elite-panel-cta">
-              <UpgradeButton tier="elite" label="Upgrade to Elite →" source="mock_elite_panel" />
-            </div>
+            {elitePanelOpen && (
+              <>
+                <p className="mock-elite-panel-desc">
+                  {isPro
+                    ? "You're on Pro. Upgrade to Elite for focus mode, session analytics, and a coaching debrief after every mock."
+                    : 'Know exactly where you stand — before the interview room.'}
+                </p>
+                <ul className="mock-elite-features">
+                  <li className="mock-elite-feature">
+                    <span className="mock-elite-feature-name">Focus mode</span>
+                    <span className="mock-elite-feature-desc">Target specific concepts — your session draws only from questions tagged with them.</span>
+                  </li>
+                  <li className="mock-elite-feature">
+                    <span className="mock-elite-feature-name">Score trends</span>
+                    <span className="mock-elite-feature-desc">See if you're improving session over session, across every track.</span>
+                  </li>
+                  <li className="mock-elite-feature">
+                    <span className="mock-elite-feature-name">Concept breakdown</span>
+                    <span className="mock-elite-feature-desc">Know exactly which topics are costing you before the real interview.</span>
+                  </li>
+                  <li className="mock-elite-feature">
+                    <span className="mock-elite-feature-name">Coaching debrief</span>
+                    <span className="mock-elite-feature-desc">One priority fix identified after every session — so you always know what to work on next.</span>
+                  </li>
+                  {!isPro && (
+                    <li className="mock-elite-feature">
+                      <span className="mock-elite-feature-name">Unlimited sessions</span>
+                      <span className="mock-elite-feature-desc">No daily caps on any difficulty level.</span>
+                    </li>
+                  )}
+                </ul>
+                <div className="mock-elite-panel-cta">
+                  <UpgradeButton tier="elite" label="Upgrade to Elite →" source="mock_elite_panel" />
+                </div>
+              </>
+            )}
           </section>
         )}
 

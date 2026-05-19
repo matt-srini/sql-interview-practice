@@ -10482,6 +10482,22 @@ select {
   gap: 0.6rem;
   margin-bottom: 0.5rem;
 }
+.mock-elite-panel-toggle {
+  margin-left: auto;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 0.2rem 0.45rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.mock-elite-panel-toggle:hover {
+  background: var(--surface-hover);
+  color: var(--text-strong);
+}
 .mock-elite-panel-title {
   font-size: 1rem;
   font-weight: 700;
