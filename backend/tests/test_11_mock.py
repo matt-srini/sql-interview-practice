@@ -709,3 +709,17 @@ def test_tc170_solution_present_for_all_questions_after_finish():
     assert r_finish.status_code == 200
     for q in r_finish.json().get("questions", []):
         assert "solution" in q and q["solution"] is not None
+
+
+def test_tc171_mock_payload_exposes_interaction_mode_when_present():
+    """TC-171: Mock question payload includes interaction_mode when provided by content."""
+    from routers.mock import _public_question_payload
+
+    question = dict(_pyspark_easy_q)
+    question["interaction_mode"] = "code_adjacent_reasoning"
+
+    payload = _public_question_payload(question, "pyspark")
+
+    assert payload.get("interaction_mode") == "code_adjacent_reasoning"
+    assert payload.get("type") == question.get("type")
+    assert payload.get("question_type") == question.get("type")

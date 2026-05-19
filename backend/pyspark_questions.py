@@ -8,6 +8,7 @@ _CONTENT_DIR = Path(__file__).resolve().parent / "content" / "pyspark_questions"
 _SCHEMA_CONFIG_PATH = _CONTENT_DIR / "schemas.json"
 
 VALID_TYPES = {"mcq", "predict_output", "debug", "optimization", "scenario"}
+VALID_INTERACTION_MODES = {"code_adjacent_reasoning"}
 
 
 def _fail(question_id: int, reason: str) -> None:
@@ -45,6 +46,13 @@ def _validate_question(question: dict[str, Any], *, id_ranges: dict[str, list[in
     correct = question.get("correct_option")
     if not isinstance(correct, int) or correct < 0 or correct >= len(options):
         _fail(qid, f"correct_option must be a valid index into options (0-{len(options)-1})")
+
+    interaction_mode = question.get("interaction_mode")
+    if interaction_mode is not None and interaction_mode not in VALID_INTERACTION_MODES:
+        _fail(
+            qid,
+            f"Invalid interaction_mode: {interaction_mode}, must be one of {VALID_INTERACTION_MODES}",
+        )
 
 
 def _load_questions() -> list[dict[str, Any]]:
@@ -101,6 +109,7 @@ def get_public_question(question: dict[str, Any]) -> dict[str, Any]:
         "description": question["description"],
         "difficulty": question["difficulty"],
         "type": question["type"],
+        "interaction_mode": question.get("interaction_mode"),
         "code_snippet": question.get("code_snippet"),
         "scenario_context": question.get("scenario_context"),
         "options": question["options"],

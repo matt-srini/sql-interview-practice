@@ -54,7 +54,7 @@ export const TRACK_META = {
     hasRunCode: false,
     hasMCQ: true,
     mixedSubtype: false,
-    tagline: 'conceptual · MCQ · predict output',
+    tagline: 'spark reasoning · predict output · debug',
   },
   'data-engineering': {
     label: 'Data Engineering',
@@ -65,7 +65,7 @@ export const TRACK_META = {
     hasRunCode: false,
     hasMCQ: true,
     mixedSubtype: false,
-    tagline: 'conceptual · MCQ · scenario',
+    tagline: 'systems reasoning · scenario · debug',
   },
   'data-modeling': {
     label: 'Data Modeling',
@@ -76,7 +76,7 @@ export const TRACK_META = {
     hasRunCode: false,
     hasMCQ: true,
     mixedSubtype: false,
-    tagline: 'MCQ · scenario · schema design',
+    tagline: 'modeling reasoning · scenario · schema design',
   },
   statistics: {
     label: 'Statistics',
@@ -87,7 +87,7 @@ export const TRACK_META = {
     hasRunCode: true,
     hasMCQ: true,
     mixedSubtype: true,
-    tagline: 'conceptual · numerical · MCQ',
+    tagline: 'conceptual reasoning · numerical',
   },
   'ml-fundamentals': {
     label: 'ML Fundamentals',
@@ -98,7 +98,7 @@ export const TRACK_META = {
     hasRunCode: false,
     hasMCQ: true,
     mixedSubtype: false,
-    tagline: 'conceptual · MCQ · scenario',
+    tagline: 'model reasoning · scenario · debug',
   },
   experimentation: {
     label: 'Experimentation',
@@ -109,7 +109,7 @@ export const TRACK_META = {
     hasRunCode: false,
     hasMCQ: true,
     mixedSubtype: false,
-    tagline: 'MCQ · scenario · experiment design',
+    tagline: 'experiment reasoning · scenario · predict output',
   },
 };
 

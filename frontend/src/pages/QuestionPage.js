@@ -165,6 +165,18 @@ export default function QuestionPage() {
     }
     return meta.hasMCQ ? 'mcq' : 'code';
   }, [meta.mixedSubtype, meta.hasMCQ, question?.subtype]);
+  const interactionMode = useMemo(() => {
+    const raw = String(
+      question?.interaction_mode
+      ?? question?.question_type
+      ?? question?.type
+      ?? ''
+    ).trim().toLowerCase();
+    if (!raw) return renderMode === 'mcq' ? 'mcq' : 'code';
+    return raw.replace(/\s+/g, '_');
+  }, [question?.interaction_mode, question?.question_type, question?.type, renderMode]);
+  const isReasoningTrack = meta.hasMCQ && !meta.hasRunCode;
+  const isPySparkTrack = topic === 'pyspark';
   const [runHistory, setRunHistory] = useState(() => {
     try { return JSON.parse(sessionStorage.getItem(`run-history:${topic}:${id}`) ?? '[]'); } catch { return []; }
   });
@@ -836,18 +848,44 @@ export default function QuestionPage() {
 
   // Editor title based on topic
   const editorTitle = renderMode === 'mcq'
-    ? 'Code preview'
+    ? (isReasoningTrack ? 'Prompt context' : 'Code preview')
     : meta.language === 'python'
     ? 'Python editor'
     : 'SQL editor';
   const editorNote = renderMode === 'mcq'
-    ? 'Read-only'
+    ? (isReasoningTrack ? 'Read-only context panel' : 'Read-only')
     : meta.language === 'python'
     ? 'Python sandbox'
     : 'DuckDB sandbox';
   const timerLabel = formatDuration(elapsedMs) ?? '0:00';
 
-  const submitBtnLabel = submitting ? 'Checking…' : 'Submit Answer';
+  const submitBtnLabel = useMemo(() => {
+    if (submitting) return 'Checking…';
+    if (renderMode !== 'mcq') return 'Submit Answer';
+    if (isPySparkTrack) {
+      if (interactionMode === 'predict_output') return 'Submit prediction';
+      if (interactionMode === 'debug') return 'Submit diagnosis';
+      if (interactionMode === 'optimization') return 'Submit optimization choice';
+      if (interactionMode === 'scenario') return 'Submit decision';
+      return 'Submit reasoning';
+    }
+    if (isReasoningTrack) return 'Submit response';
+    return 'Submit Answer';
+  }, [submitting, renderMode, isPySparkTrack, interactionMode, isReasoningTrack]);
+  const mcqPromptHeading = useMemo(() => {
+    if (!isReasoningTrack) return 'Choose the correct answer';
+    if (isPySparkTrack) {
+      if (interactionMode === 'predict_output') return 'Predict the output';
+      if (interactionMode === 'debug') return 'Choose the best fix';
+      if (interactionMode === 'optimization') return 'Choose the best optimization';
+      if (interactionMode === 'scenario') return 'Choose the best engineering decision';
+      return 'Choose the strongest Spark reasoning';
+    }
+    if (interactionMode === 'predict_output') return 'Predict the output';
+    if (interactionMode === 'debug') return 'Choose the best fix';
+    if (interactionMode === 'scenario') return 'Choose the best decision';
+    return 'Choose the strongest response';
+  }, [isReasoningTrack, isPySparkTrack, interactionMode]);
   const canRevealSolution = !!submitResult
     && (submitResult.correct || hintsShown >= (question.hints?.length ?? 0));
 
@@ -992,7 +1030,7 @@ export default function QuestionPage() {
                 ? Math.max(0, medThresholdEntry[0] - mediumSolved)
                 : null;
               const solveMoreCopy = difficulty === 'medium' && nextEasyNeeded > 0
-                ? `Solve ${nextEasyNeeded} more easy ${topic === 'sql' ? 'SQL' : topic} question${nextEasyNeeded !== 1 ? 's' : ''} to unlock this.`
+                ? `Solve ${nextEasyNeeded} more easy ${meta.label} question${nextEasyNeeded !== 1 ? 's' : ''} to unlock this.`
                 : difficulty === 'hard' && nextMediumNeeded > 0
                 ? `Solve ${nextMediumNeeded} more medium question${nextMediumNeeded !== 1 ? 's' : ''} to unlock this.`
                 : null;
@@ -1118,7 +1156,7 @@ export default function QuestionPage() {
           {renderMode === 'mcq' ? (
             <div className="card">
               <div className="section-heading">
-                <h3>Choose the correct answer</h3>
+                <h3>{mcqPromptHeading}</h3>
               </div>
               <MCQPanel
                 options={question.options ?? []}
@@ -1129,6 +1167,10 @@ export default function QuestionPage() {
                 correctIndex={submitResult?.correct_index ?? null}
                 explanation={(submitResult?.correct || showSolution) ? (submitResult?.explanation ?? '') : ''}
                 locked={isLocked}
+                explanationLabel={isReasoningTrack ? 'Reasoning' : 'Explanation'}
+                lockedCopy={isReasoningTrack
+                  ? 'Unlock to see response options and reasoning notes'
+                  : 'Unlock to see answer options and explanation'}
               />
               <div className="editor-footer editor-footer-plain question-action-dock">
                 <div className="button-row question-action-row">

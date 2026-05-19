@@ -25,7 +25,8 @@
       "column resolution",
       "query analysis phase",
       "error handling"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42002,
@@ -54,7 +55,8 @@
       "shuffle",
       "partitioning",
       "performance"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42003,
@@ -83,7 +85,8 @@
       "narrow transformation",
       "WIDE-AGGREGATION SHUFFLE",
       "partitioning"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42004,
@@ -111,7 +114,8 @@
       "join optimization",
       "shuffle elimination",
       "F.broadcast"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42005,
@@ -140,7 +144,8 @@
       "DoubleType",
       "aggregation output types",
       "printSchema"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42006,
@@ -169,7 +174,8 @@
       "executor memory",
       "PARTITION SHAPE CONTROL",
       "performance tuning"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42007,
@@ -198,7 +204,8 @@
       "DENSE_RANK",
       "ROW_NUMBER",
       "ties handling"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42008,
@@ -227,7 +234,8 @@
       "UDF",
       "executor memory",
       "serialization"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42009,
@@ -256,7 +264,8 @@
       "CSV reading",
       "schema definition",
       "production patterns"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42010,
@@ -285,7 +294,8 @@
       "shuffle optimization",
       "spark.serializer",
       "performance tuning"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42011,
@@ -314,7 +324,8 @@
       "skewed join",
       "partition imbalance",
       "join optimization"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42012,
@@ -343,7 +354,8 @@
       "Hive partitioning",
       "directory structure",
       "partition pruning"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42013,
@@ -372,7 +384,8 @@
       "broadcast join",
       "autoBroadcastJoinThreshold",
       "join optimization"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42014,
@@ -401,7 +414,8 @@
       "physical plan",
       "query optimization",
       "analysis phase"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42015,
@@ -430,7 +444,8 @@
       "row group pruning",
       "Catalyst optimizer",
       "I/O optimization"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42016,
@@ -459,7 +474,8 @@
       "micro-batch",
       "continuous processing",
       "streaming vs batch"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42017,
@@ -488,7 +504,8 @@
       "structured streaming",
       "custom sinks",
       "micro-batch"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42018,
@@ -517,7 +534,8 @@
       "Catalyst optimizer",
       "query performance",
       "execution plan equivalence"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42019,
@@ -546,7 +564,8 @@
       "recomputation",
       "memory management",
       "pipeline optimization"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42020,
@@ -575,7 +594,8 @@
       "SHUFFLE BOUNDARY DETECTION",
       "STAGE DECOMPOSITION",
       "TASK SCHEDULING"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42021,
@@ -604,7 +624,8 @@
       "task scheduling",
       "spark.speculation",
       "fault tolerance"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42022,
@@ -633,7 +654,8 @@
       "initialization overhead",
       "UDF optimization",
       "RDD API"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42023,
@@ -662,7 +684,8 @@
       "task metrics",
       "stage detail",
       "join performance"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42024,
@@ -691,7 +714,8 @@
       "PARTITION PRUNING",
       "I-O REDUCTION",
       "RUNTIME JOIN FILTERING"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42025,
@@ -720,7 +744,8 @@
       "toPandas",
       "driver memory",
       "data collection anti-patterns"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42026,
@@ -749,7 +774,8 @@
       "MATCHED VS UNMATCHED WRITE PATHS",
       "MERGE-CONDITION LOGIC",
       "INCREMENTAL TABLE RECONCILIATION"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42027,
@@ -778,7 +804,8 @@
       "versionAsOf",
       "transaction log",
       "data recovery"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42028,
@@ -807,7 +834,8 @@
       "update mode",
       "append mode",
       "stateful aggregation"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42029,
@@ -836,7 +864,8 @@
       "broadcast()",
       "small table optimization",
       "join strategy"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42030,
@@ -865,7 +894,8 @@
       "schema evolution",
       "mergeSchema",
       "AnalysisException"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42031,
@@ -894,7 +924,8 @@
       "KAFKA PARTITION PARALLELISM",
       "STATEFUL AGGREGATION SCALING",
       "MICRO-BATCH BACKPRESSURE"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42032,
@@ -923,7 +954,8 @@
       "HINT OVERRIDE CONDITIONS",
       "JOIN STRATEGY SELECTION",
       "PRODUCTION VS DEV DATA SIZE MISMATCH"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42033,
@@ -952,7 +984,8 @@
       "null propagation",
       "Python None vs Spark null",
       "production vs dev data differences"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42034,
@@ -981,7 +1014,8 @@
       "AnalysisException",
       "column reference qualification",
       "explicit vs shorthand join syntax"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42035,
@@ -1000,7 +1034,7 @@
       "The Parquet output write is the bottleneck \u2014 380 GB of shuffle data takes much longer to write than 190 GB from last week"
     ],
     "correct_option": 2,
-    "explanation": "The metrics show **290 GB of shuffle spill to disk** \u2014 the smoking gun. With 420 GB \u00f7 200 partitions = 2.1 GB per partition, and only 4 GB executor memory (with ~2.4 GB available for execution), there is almost no margin. Last week's 210 GB produced ~1 GB partitions that fit comfortably; doubling the data exceeded the threshold. Spark spills what won't fit in memory to local disk, which is 10\u2013100\u00d7 slower. The fix is to increase `spark.sql.shuffle.partitions` proportional to data size: 420 GB \u00f7 200 MB target = ~2100 partitions. Option A is partially correct (high GC time is a symptom of memory pressure) but adjusting `memoryFraction` alone is risky and doesn't fix the fundamental undersizing. Option B is wrong \u2014 coalescing the input reduces map-side parallelism but doesn't help the reduce stage where spill occurs. Option D is wrong \u2014 the spill metrics are on the shuffle/aggregation stage, not the Parquet write.",
+    "explanation": "The metrics show **290 GB of shuffle spill to disk** \u2014 the smoking gun. With 420 GB ÷ 200 partitions = 2.1 GB per partition, and only 4 GB executor memory (with ~2.4 GB available for execution), there is almost no margin. Last week's 210 GB produced ~1 GB partitions that fit comfortably; doubling the data exceeded the threshold. Spark spills what won't fit in memory to local disk, which is 10\u2013100\u00d7 slower. The fix is to increase `spark.sql.shuffle.partitions` proportional to data size: 420 GB ÷ 200 MB target = ~2100 partitions. Option A is partially correct (high GC time is a symptom of memory pressure) but adjusting `memoryFraction` alone is risky and doesn't fix the fundamental undersizing. Option B is wrong \u2014 coalescing the input reduces map-side parallelism but doesn't help the reduce stage where spill occurs. Option D is wrong \u2014 the spill metrics are on the shuffle/aggregation stage, not the Parquet write.",
     "hints": [
       "Shuffle Spill (Disk) is the key metric: it means Spark ran out of memory to hold shuffle data and fell back to disk \u2014 divide data size by partition count to see why",
       "The guideline is 128\u2013256 MB per shuffle partition; if your data doubles, your partition count should also roughly double"
@@ -1010,7 +1044,8 @@
       "EXECUTOR MEMORY PRESSURE",
       "DISK SPILL DIAGNOSIS",
       "PERFORMANCE REGRESSION FROM DATA GROWTH"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42036,
@@ -1039,7 +1074,8 @@
       "PREDICATE PUSHDOWN IN MERGE",
       "PARTITION KEY IN JOIN CONDITIONS",
       "FULL TABLE SCAN DIAGNOSIS"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42037,
@@ -1068,7 +1104,8 @@
       "SCHEMA EVOLUTION IN STREAMING",
       "CHECKPOINT RECOVERY CONSTRAINTS",
       "STREAMING JOB RESTART STRATEGIES"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42038,
@@ -1097,7 +1134,8 @@
       "STRAGGLER TASK ANALYSIS",
       "SPARK UI TASK METRICS",
       "SKEW JOIN REMEDIATION"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42039,
@@ -1126,7 +1164,8 @@
       "DataFrame persistence",
       "spill to disk",
       "memory pressure"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42040,
@@ -1154,7 +1193,8 @@
       "explode semantics",
       "null handling",
       "array column transformation"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42041,
@@ -1182,7 +1222,8 @@
       "window function frame",
       "cumulative aggregation",
       "rowsBetween semantics"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42042,
@@ -1211,7 +1252,8 @@
       "JVM-Python boundary",
       "serialization cost",
       "Catalyst native execution"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42043,
@@ -1240,7 +1282,8 @@
       "persistence lifecycle",
       "iterative algorithm",
       "executor memory management"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42044,
@@ -1268,7 +1311,8 @@
       "schema nullability",
       "union schema resolution",
       "permissive nullability"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42045,
@@ -1297,7 +1341,8 @@
       "key salting",
       "join optimization",
       "hot key handling"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42046,
@@ -1327,7 +1372,8 @@
       "anti-pattern avoidance",
       "cluster-side aggregation",
       "materialisation cost"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42047,
@@ -1357,7 +1403,8 @@
       "straggler task",
       "shuffle partition imbalance",
       "GC pressure"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42048,
@@ -1387,7 +1434,8 @@
       "partitioned write",
       "cloud storage metadata cost",
       "output parallelism tuning"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42049,
@@ -1405,9 +1453,9 @@
       "pages_list and pages_set produce the same sorted output after Spark normalizes both arrays at the end of the aggregation stage"
     ],
     "correct_option": 0,
-    "explanation": "`collect_list()` collects all values into an array including duplicates, but the order depends on task processing order — which is non-deterministic across shuffles. To guarantee order, pair it with `F.sort_array()` or use `F.array_sort()`. `collect_set()` deduplicates values into an array, but the order within the set is also non-deterministic — it is not sorted alphabetically or by any other predictable rule. For user1, `pages_list` will contain 3 elements (with 'home' appearing twice) in an unspecified order; `pages_set` will contain 2 unique elements in an unspecified order. Neither function guarantees element ordering.",
+    "explanation": "`collect_list()` collects all values into an array including duplicates, but the order depends on task processing order \u2014 which is non-deterministic across shuffles. To guarantee order, pair it with `F.sort_array()` or use `F.array_sort()`. `collect_set()` deduplicates values into an array, but the order within the set is also non-deterministic \u2014 it is not sorted alphabetically or by any other predictable rule. For user1, `pages_list` will contain 3 elements (with 'home' appearing twice) in an unspecified order; `pages_set` will contain 2 unique elements in an unspecified order. Neither function guarantees element ordering.",
     "hints": [
-      "Spark distributes data across partitions and processes them in parallel — is there a guaranteed global processing order within a groupBy?",
+      "Spark distributes data across partitions and processes them in parallel \u2014 is there a guaranteed global processing order within a groupBy?",
       "collect_set() deduplicates, but deduplication and sorting are different operations. Does the Spark documentation for collect_set guarantee alphabetical order?"
     ],
     "concepts": [
@@ -1416,7 +1464,8 @@
       "aggregation",
       "array ordering",
       "non-determinism"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 42050,
@@ -1428,15 +1477,15 @@
     "title": "Pivot with dynamic schema: driver OOM at high cardinality",
     "description": "A Spark job fails with OutOfMemoryError on the driver after running for 45 minutes. Identify the root cause and the correct fix.",
     "code_snippet": "from pyspark.sql import functions as F\n\n# events has 500M rows; event_type has ~800 distinct values\nevents = spark.table(\"raw.events\")\n\npivoted = events.groupBy(\"user_id\").pivot(\"event_type\").agg(F.count(\"*\"))\npivoted.write.parquet(\"/output/user_event_pivot\")",
-    "scenario_context": "Cluster: 20 executors × 16 GB each (total 320 GB)\nDriver: 8 GB heap\nTable: raw.events — 500 million rows, 12 columns\nColumn event_type: ~800 distinct values\n\nJob metrics at failure (45 min in):\n  Stage 2 of 3: 100% complete\n  Stage 3 of 3: 0% — driver OOM during task serialization\n  Driver GC overhead limit exceeded — heap exhausted before Stage 3 begins",
+    "scenario_context": "Cluster: 20 executors \u00d7 16 GB each (total 320 GB)\nDriver: 8 GB heap\nTable: raw.events \u2014 500 million rows, 12 columns\nColumn event_type: ~800 distinct values\n\nJob metrics at failure (45 min in):\n  Stage 2 of 3: 100% complete\n  Stage 3 of 3: 0% \u2014 driver OOM during task serialization\n  Driver GC overhead limit exceeded \u2014 heap exhausted before Stage 3 begins",
     "options": [
-      "pivot() without an explicit values list forces Spark to run a full distinct scan of event_type across all 500M rows to discover the ~800 column names, then materializes the full cross-product schema on the driver for plan serialization — with 8 GB driver heap and 800 columns, plan serialization exhausts memory; fix by passing the known values list: .pivot('event_type', known_values)",
-      "The OOM is caused by agg(F.count('*')) allocating 800 separate accumulators per executor — replace F.count('*') with F.approx_count_distinct('*') to reduce the per-executor aggregation state",
-      "The OOM is a driver-side issue unrelated to pivot — the 500M-row table exceeds spark.sql.files.maxPartitionBytes, causing all data to land on one partition and overflow the driver; fix by repartitioning before the pivot",
-      "Stage 3 OOM is caused by skewed user_id keys — a few users have millions of events that won't fit in a single executor partition; fix with salted keys before the groupBy"
+      "pivot() without an explicit values list forces Spark to run a full distinct scan of event_type across all 500M rows to discover the ~800 column names, then materializes the full cross-product schema on the driver for plan serialization \u2014 with 8 GB driver heap and 800 columns, plan serialization exhausts memory; fix by passing the known values list: .pivot('event_type', known_values)",
+      "The OOM is caused by agg(F.count('*')) allocating 800 separate accumulators per executor \u2014 replace F.count('*') with F.approx_count_distinct('*') to reduce the per-executor aggregation state",
+      "The OOM is a driver-side issue unrelated to pivot \u2014 the 500M-row table exceeds spark.sql.files.maxPartitionBytes, causing all data to land on one partition and overflow the driver; fix by repartitioning before the pivot",
+      "Stage 3 OOM is caused by skewed user_id keys \u2014 a few users have millions of events that won't fit in a single executor partition; fix with salted keys before the groupBy"
     ],
     "correct_option": 0,
-    "explanation": "When `pivot()` is called without an explicit `values` list, Spark runs a full distinct scan of the pivot column to discover all unique values before constructing the output schema. For 500M rows with 800 distinct event types, this is an expensive full scan. The OOM occurs during plan serialization for Stage 3: the output schema has 800 column definitions, and Spark must serialize the full plan to every executor. With an 8 GB driver heap, this serialization exhausts memory before Stage 3 begins.\n\nThe fix is to pass the known values list explicitly:\n```python\nknown_values = [row.event_type for row in events.select('event_type').distinct().collect()]\npivoted = events.groupBy('user_id').pivot('event_type', known_values).agg(F.count('*'))\n```\nThis skips the expensive distinct-scan stage and keeps the schema construction on the driver predictable. If 800 columns is still too wide, filter to the top-N most common event types or use a long/sparse representation instead of a wide pivot.\n\nOption B is incorrect — count(*) uses a single counter per group, not 800 separate accumulators.\nOption C is incorrect — maxPartitionBytes affects read partitioning, not driver heap.\nOption D (skew) causes executor OOM, not driver OOM during plan serialization.",
+    "explanation": "When `pivot()` is called without an explicit `values` list, Spark runs a full distinct scan of the pivot column to discover all unique values before constructing the output schema. For 500M rows with 800 distinct event types, this is an expensive full scan. The OOM occurs during plan serialization for Stage 3: the output schema has 800 column definitions, and Spark must serialize the full plan to every executor. With an 8 GB driver heap, this serialization exhausts memory before Stage 3 begins.\n\nThe fix is to pass the known values list explicitly:\n```python\nknown_values = [row.event_type for row in events.select('event_type').distinct().collect()]\npivoted = events.groupBy('user_id').pivot('event_type', known_values).agg(F.count('*'))\n```\nThis skips the expensive distinct-scan stage and keeps the schema construction on the driver predictable. If 800 columns is still too wide, filter to the top-N most common event types or use a long/sparse representation instead of a wide pivot.\n\nOption B is incorrect \u2014 count(*) uses a single counter per group, not 800 separate accumulators.\nOption C is incorrect \u2014 maxPartitionBytes affects read partitioning, not driver heap.\nOption D (skew) causes executor OOM, not driver OOM during plan serialization.",
     "hints": [
       "What does Spark need to know before it can construct the output schema for a pivot? Where does it get that information when no values list is provided?",
       "The OOM is on the driver, not the executors. What operation runs exclusively on the driver just before Stage 3 starts?"
@@ -1447,6 +1496,7 @@
       "driver OOM",
       "schema inference cost",
       "wide DataFrame"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   }
 ]

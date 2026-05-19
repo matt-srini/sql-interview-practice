@@ -26,7 +26,8 @@
       "data skew",
       "broadcast join",
       "shuffle optimization"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43002,
@@ -55,7 +56,8 @@
       "off-heap memory",
       "YARN container",
       "executor memory"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43003,
@@ -84,7 +86,8 @@
       "star schema",
       "partition pruning",
       "AQE"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43004,
@@ -113,7 +116,8 @@
       "shuffle coalescing",
       "skew join",
       "broadcast join conversion"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43005,
@@ -142,7 +146,8 @@
       "Exchange operator",
       "HashAggregate",
       "performance bottleneck"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43006,
@@ -171,7 +176,8 @@
       "OutOfMemoryError",
       "actions",
       "large data"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43007,
@@ -200,7 +206,8 @@
       "map-side combine",
       "shuffle",
       "RDD API"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43008,
@@ -229,7 +236,8 @@
       "predicate pushdown",
       "column pruning",
       "file format"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43009,
@@ -258,7 +266,8 @@
       "GC PRESSURE ANALYSIS",
       "SHUFFLE BOTTLENECK DETECTION",
       "PERFORMANCE TUNING"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43010,
@@ -287,7 +296,8 @@
       "fault tolerance",
       "DAG lineage",
       "iterative algorithms"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43011,
@@ -316,7 +326,8 @@
       "garbage collection",
       "JVM GC",
       "execution engine"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43012,
@@ -345,7 +356,8 @@
       "data skipping",
       "file-level statistics",
       "predicate pushdown"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43013,
@@ -374,7 +386,8 @@
       "shuffle reduction",
       "false positives",
       "probabilistic data structures"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43014,
@@ -403,7 +416,8 @@
       "advisoryPartitionSizeInBytes",
       "partition tuning",
       "task overhead"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43015,
@@ -432,7 +446,8 @@
       "late data",
       "state management",
       "structured streaming"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43016,
@@ -461,7 +476,8 @@
       "state expiration",
       "streaming state",
       "memory management"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43017,
@@ -490,7 +506,8 @@
       "co-location",
       "coalesce",
       "sortWithinPartitions"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43018,
@@ -519,7 +536,8 @@
       "IDEMPOTENT SINK DESIGN",
       "DELTA LAKE STREAMING SINKS",
       "FAILURE-SAFE OUTPUT HANDLING"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43019,
@@ -548,7 +566,8 @@
       "TABLE MAINTENANCE TRADE-OFFS",
       "UPDATE-PATH PERFORMANCE",
       "STORAGE LAYOUT OPTIMIZATION"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43020,
@@ -577,7 +596,8 @@
       "BROADCAST ELIGIBILITY REASSESSMENT",
       "SORT-MERGE FALLBACK LOGIC",
       "RUNTIME OPTIMIZATION"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43021,
@@ -606,7 +626,8 @@
       "STREAMING WINDOW FINALIZATION",
       "APPEND-MODE EMISSION RULES",
       "EVENT-TIME GUARANTEE BOUNDARIES"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43022,
@@ -635,7 +656,8 @@
       "COLUMN-STATISTICS FILTERING",
       "DELTA TABLE LAYOUT OPTIMIZATION",
       "PARTITION VS FILE-LEVEL PRUNING"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43023,
@@ -665,7 +687,8 @@
       "query plan optimization",
       "partition scan strategy",
       "explain plan diagnosis"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43024,
@@ -695,7 +718,8 @@
       "on-disk vs in-memory size divergence",
       "JVM object overhead",
       "autoBroadcastJoinThreshold"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43025,
@@ -725,7 +749,8 @@
       "sort-merge join task count",
       "partition count inheritance",
       "selective filter with large join"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43026,
@@ -755,7 +780,8 @@
       "task output commit protocol",
       "external side effect safety",
       "at-least-once write semantics"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43027,
@@ -784,7 +810,8 @@
       "iterative algorithm memory",
       "persistence lifecycle",
       "DAG complexity growth"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43028,
@@ -813,7 +840,8 @@
       "null vs empty array",
       "outer lateral view",
       "row preservation"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43029,
@@ -842,7 +870,8 @@
       "ROWS vs RANGE",
       "tie handling",
       "running aggregation"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43030,
@@ -871,7 +900,8 @@
       "Apache Arrow serialisation",
       "vectorised execution",
       "partition-level transfer"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43031,
@@ -901,7 +931,8 @@
       "checkpoint for lineage truncation",
       "DAG depth limit",
       "iterative algorithm pattern"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43032,
@@ -931,7 +962,8 @@
       "source deduplication",
       "upsert correctness",
       "CDC pipeline design"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43033,
@@ -960,7 +992,8 @@
       "skew join optimisation",
       "runtime plan rewriting",
       "partition splitting"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43034,
@@ -990,7 +1023,8 @@
       "event time vs processing time",
       "late data handling",
       "streaming window semantics"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43035,
@@ -1019,7 +1053,8 @@
       "partition key alignment",
       "star schema optimisation",
       "scan-time pruning"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 43036,
@@ -1048,6 +1083,7 @@
       "Catalyst schema inference",
       "type promotion",
       "conservative nullability"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   }
 ]

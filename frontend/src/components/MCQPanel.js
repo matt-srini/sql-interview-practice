@@ -16,13 +16,15 @@ export default function MCQPanel({
   correctIndex,
   explanation,
   locked = false,
+  explanationLabel = 'Explanation',
+  lockedCopy = 'Unlock to see response options and reasoning',
 }) {
   if (locked) {
     return (
       <div className="mcq-panel">
         <div className="mcq-locked">
           <span className="mcq-locked-icon" aria-hidden="true">&#8855;</span>
-          <p className="mcq-locked-copy">Unlock to see answer options and explanation</p>
+          <p className="mcq-locked-copy">{lockedCopy}</p>
         </div>
       </div>
     );
@@ -60,7 +62,7 @@ export default function MCQPanel({
 
       {submitted && explanation && (
         <div className="mcq-explanation">
-          <div className="mcq-explanation-label">Explanation</div>
+          <div className="mcq-explanation-label">{explanationLabel}</div>
           <p>{explanation}</p>
         </div>
       )}

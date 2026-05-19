@@ -6,6 +6,7 @@ from starlette.testclient import TestClient
 
 import backend.main as main
 from conftest import _make_user
+import pyspark_questions as pyspark_catalog
 from pyspark_questions import get_questions_by_difficulty
 
 app = main.app
@@ -111,3 +112,40 @@ def test_tc112_locked_pyspark_submit_returns_403():
             "selected_option": 0,
         })
     assert r.status_code == 403
+
+
+def test_tc113_loader_rejects_invalid_interaction_mode():
+    """TC-113: Loader validation rejects unsupported interaction_mode values."""
+    candidate = dict(_easy_q)
+    candidate["interaction_mode"] = "invalid_mode"
+    with pytest.raises(ValueError, match="Invalid interaction_mode"):
+        pyspark_catalog._validate_question(
+            candidate,
+            id_ranges={
+                "easy": [_easy_id, _easy_id],
+                "medium": [42001, 43000],
+                "hard": [43001, 44000],
+            },
+        )
+
+
+def test_tc114_catalog_rows_expose_interaction_mode_field():
+    """TC-114: Catalog rows include interaction_mode key (additive metadata)."""
+    with TestClient(app) as client:
+        _make_user(client, plan="free")
+        r = client.get("/api/pyspark/catalog")
+    assert r.status_code == 200
+    body = r.json()
+    easy_group = next(g for g in body["groups"] if g["difficulty"] == "easy")
+    first_q = easy_group["questions"][0]
+    assert "interaction_mode" in first_q
+
+
+def test_tc115_detail_exposes_interaction_mode_field():
+    """TC-115: Question detail includes interaction_mode key for unlocked payloads."""
+    with TestClient(app) as client:
+        _make_user(client, plan="free")
+        r = client.get(f"/api/pyspark/questions/{_easy_id}")
+    assert r.status_code == 200
+    body = r.json()
+    assert "interaction_mode" in body

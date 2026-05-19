@@ -385,6 +385,8 @@ def _public_question_payload(question: dict, track: str) -> dict:
     # shape is consistent regardless of which question is selected.
     payload["type"] = question.get("type")
     payload["framing"] = question.get("framing")
+    if question.get("interaction_mode") is not None:
+        payload["interaction_mode"] = question.get("interaction_mode")
     # result_preview, debug_error, starter_code only apply to SQL and Pandas;
     # PySpark uses "debug" type differently (MCQ-style, no code editor).
     if track in ("sql", "python-data"):

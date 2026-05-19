@@ -203,7 +203,7 @@ When `solved_count === question_count`, a completion banner is shown with a "Wha
 | TestCasePanel | `components/TestCasePanel.js` | Python test case results (pass/fail per case, input/expected/actual, hidden summary) |
 | PrintOutputPanel | `components/PrintOutputPanel.js` | Captured stdout block (rendered only if non-empty) |
 | VariablesPanel | `components/VariablesPanel.js` | Available DataFrame variables with CSV source and column list |
-| MCQPanel | `components/MCQPanel.js` | Radio-button MCQ with correct/wrong highlighting and explanation after submit |
+| MCQPanel | `components/MCQPanel.js` | Radio-button response panel with configurable explanation/lock copy; still used for option-based reasoning tracks |
 | ConceptPanel | `components/ConceptPanel.js` | Slide-in concept detail panel opened from concept pills on `QuestionPage` |
 | InsightStrip | `components/InsightStrip.js` | Dashboard coaching strip: cross-track insight, streak tile, weakest concept tile. Weakest concept tile shows a coaching `summary` sentence, a primary path link ("Study in …") when `recommended_path_slug` is present, and a secondary "Practice a question →" link from `recommended_question_ids`. |
 | Skeleton | `components/Skeleton.js` | Reusable shimmer primitive (`skeleton-block` + `skeleton-shimmer`) used in QuestionPage, SidebarNav, TrackHubPage, ProgressDashboard |
@@ -264,18 +264,19 @@ Provides current topic and track metadata to the entire component tree.
   language: 'python',
   hasRunCode: true,
   hasMCQ: false,
-  totalQuestions: 82,          // real question count (sql=95, python=83, python-data=82, pyspark=90)
   tagline: 'pandas · numpy · data wrangling',
 }
 ```
 
 `TopicProvider` reads `:topic` from URL params via `useParams()`. `useTopic()` returns `{ topic, meta }`.
 
-**Track registry (`frontend/src/trackRegistry.js`):** Single source of truth for all track metadata (`TRACK_META`). Adding a track here is the only frontend change needed — catalog paths, sidebar, TrackHub, and SidebarNav all read from it. Current tracks: `sql`, `python`, `python-data`, `pyspark`, `data-engineering`, `data-modeling`, `statistics`.
+**Track registry (`frontend/src/trackRegistry.js`):** Single source of truth for all track metadata (`TRACK_META`). Adding a track here is the only frontend change needed — catalog paths, sidebar, TrackHub, and SidebarNav all read from it. Current tracks: `sql`, `python`, `python-data`, `pyspark`, `data-engineering`, `data-modeling`, `statistics`, `ml-fundamentals`, `experimentation`.
 
-`data-engineering` entry: `color: '#B9762B'`, `hasMCQ: true`, `hasRunCode: false`, `apiPrefix: '/data-engineering'`, `totalQuestions: 80`.
+`data-engineering` entry: `color: '#B9762B'`, `hasMCQ: true`, `hasRunCode: false`, `apiPrefix: '/data-engineering'`.
 
-`statistics` entry: `color: '#7A5AF0'`, `hasMCQ: true`, `hasRunCode: true`, `mixedSubtype: true`, `apiPrefix: '/statistics'`, `language: 'python'`, `totalQuestions: 80`. The `mixedSubtype: true` flag tells `QuestionPage.js` to derive `renderMode` from `question.subtype` at runtime rather than using the static `hasMCQ` flag — enabling a single page to render both MCQ (for conceptual questions) and code editor (for numerical questions).
+`statistics` entry: `color: '#7A5AF0'`, `hasMCQ: true`, `hasRunCode: true`, `mixedSubtype: true`, `apiPrefix: '/statistics'`, `language: 'python'`. The `mixedSubtype: true` flag tells `QuestionPage.js` to derive `renderMode` from `question.subtype` at runtime rather than using the static `hasMCQ` flag — enabling a single page to render both conceptual reasoning and executable numerical questions.
+
+PySpark practice now also reads additive `interaction_mode` metadata when present and falls back to legacy `question_type` / `type` values to choose reasoning-first headings and submit labels.
 
 ### `catalogContext.js`
 

@@ -20,7 +20,7 @@ Current state:
 
 - Phase 0 is complete as a docs-and-audit foundation phase
 - no product-code behavior changed in Phase 0
-- Phase 1 is authorized next: PySpark-first practice uplift with additive metadata exposure and frontend terminology cleanup
+- Phase 1 PySpark-first practice uplift is now in progress: additive metadata exposure and frontend terminology cleanup
 
 ## Objective
 

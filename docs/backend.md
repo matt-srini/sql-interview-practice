@@ -36,7 +36,7 @@ Registered in `backend/main.py`:
 | `routers/razorpay.py` | `/api/razorpay` | Order/Subscription creation, client verify, webhook handler |
 | `routers/python_questions.py` | `/api/python` | Python algorithm catalog, detail, run-code, submit |
 | `routers/python_data_questions.py` | `/api/python-data` | Pandas catalog, detail, run-code, submit |
-| `routers/pyspark_questions.py` | `/api/pyspark` | PySpark catalog, detail, submit (MCQ only) |
+| `routers/pyspark_questions.py` | `/api/pyspark` | PySpark catalog, detail, submit (reasoning track; additive `interaction_mode` metadata) |
 | `routers/data_engineering_questions.py` | `/api/data-engineering` | Data Engineering catalog, detail, submit (MCQ only) |
 | `routers/data_modeling_questions.py` | `/api/data-modeling` | Data Modeling catalog, detail, submit (MCQ only) |
 | `routers/statistics_questions.py` | `/api/statistics` | Statistics catalog, detail, run-code (numerical only), submit (conceptual MCQ or numerical code) |
@@ -172,8 +172,8 @@ Signature formulas:
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/api/pyspark/catalog` | PySpark catalog |
-| GET | `/api/pyspark/questions/{id}` | Question detail. Unlocked: full payload with `options` (no `correct_option`). Locked: 200 with `locked: true`, no `options` or `correct_option`. |
+| GET | `/api/pyspark/catalog` | PySpark catalog. Rows include additive `interaction_mode` metadata when present in content. |
+| GET | `/api/pyspark/questions/{id}` | Question detail. Unlocked: full payload with `options` (no `correct_option`) plus additive `interaction_mode` metadata. Locked: 200 with `locked: true`, no `options` or `correct_option`. |
 | POST | `/api/pyspark/submit` | `{ selected_option, question_id, duration_ms? }` → `{ correct, explanation }`. No code execution. 403 if locked. |
 
 ### Data Engineering — `/api/data-engineering`
@@ -309,7 +309,7 @@ Files: `python_guard.py` → `python_evaluator.py` → `python_sandbox_harness.p
 - Data mode: loads DataFrames via `pd.read_csv`, `exec()`s user code with `pd`/`np` in namespace, calls `solve(**dataframes)`, serializes result DataFrame to JSON
 
 **PySpark evaluation:**
-No execution at all. `POST /api/pyspark/submit` compares `body.selected_option == question["correct_option"]` and returns `{ correct, explanation }`.
+No execution at all. `POST /api/pyspark/submit` compares `body.selected_option == question["correct_option"]` and returns `{ correct, explanation }`. `interaction_mode` is additive metadata only; it does not change PySpark scoring semantics in Phase 1.
 
 ---
 

@@ -685,7 +685,7 @@ Multi-step pipeline with 2+ dependent transformations. Non-obvious patterns: `Mu
 
 ## What this track tests
 
-Spark architecture, the PySpark DataFrame API, and production optimization. **No code is executed** — all questions are multiple choice with 4 options. The goal: test whether the candidate can *reason about* what Spark will do, not whether they can recall config values.
+Spark architecture, the PySpark DataFrame API, and production optimization. **No code is executed** — questions remain option-based, but the track is framed as code-adjacent reasoning rather than generic quiz work. The goal: test whether the candidate can *reason about* what Spark will do, not whether they can recall config values.
 
 ---
 
@@ -740,6 +740,7 @@ Topics: AQE internals, DPP, skew join / salting, pandas UDF memory, Z-ordering, 
   "order": 10,
   "topic": "pyspark",
   "type": "debug",
+  "interaction_mode": "code_adjacent_reasoning",
   "difficulty": "easy",
   "title": "UDF Return Type Mismatch",
   "description": "A data engineer registers a UDF with `returnType=StringType()` but the Python function returns an integer. What happens when the DataFrame action fires?",
@@ -760,6 +761,7 @@ Topics: AQE internals, DPP, skew join / salting, pandas UDF memory, Z-ordering, 
 
 **Field notes:**
 - `correct_option` is **0-indexed** (0 = first option)
+- `interaction_mode` should be `code_adjacent_reasoning` for Phase 1 PySpark questions. It is additive metadata used by practice and mock surfaces; it does not change evaluation behavior.
 - Explanation must address **all 4 options** — explain why each wrong answer is wrong
 - Distractors must represent actual misconceptions, not obviously wrong answers
 - For `predict_output`: keep code mentally runnable with ≤5 simple rows

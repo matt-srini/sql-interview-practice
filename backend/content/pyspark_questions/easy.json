@@ -23,7 +23,8 @@
       "transformations vs actions",
       "lazy evaluation",
       "DAG execution"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41002,
@@ -50,7 +51,8 @@
       "DAG",
       "Catalyst optimizer",
       "execution plan"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41003,
@@ -77,7 +79,8 @@
       "Catalyst optimizer",
       "Tungsten",
       "schema"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41004,
@@ -104,7 +107,8 @@
       "executor",
       "cluster architecture",
       "task scheduling"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41005,
@@ -131,7 +135,8 @@
       "schema inference",
       "StringType",
       "inferSchema"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41006,
@@ -160,7 +165,8 @@
       "DataFrame immutability",
       "pandas migration traps",
       "TypeError"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41007,
@@ -187,7 +193,8 @@
       "transformations vs actions",
       "job execution",
       "DAG"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41008,
@@ -215,7 +222,8 @@
       "shuffle",
       "WIDE-AGGREGATION SHUFFLE",
       "partitioning"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41009,
@@ -244,7 +252,8 @@
       "AnalysisException",
       "session-scoped views",
       "plan analysis phase"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41010,
@@ -272,7 +281,8 @@
       "storage level",
       "lazy evaluation",
       "recomputation"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41011,
@@ -299,7 +309,8 @@
       "parallelism",
       "block size",
       "data distribution"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41012,
@@ -326,7 +337,8 @@
       "count",
       "show",
       "return values"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41013,
@@ -353,7 +365,8 @@
       "sort",
       "global sort",
       "shuffle"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41014,
@@ -380,7 +393,8 @@
       "column names",
       "immutability",
       "schema"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41015,
@@ -407,7 +421,8 @@
       "non-determinism",
       "distributed systems",
       "deduplication"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41016,
@@ -436,7 +451,8 @@
       "getOrCreate semantics",
       "session lifecycle",
       "idempotent factory"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41017,
@@ -463,7 +479,8 @@
       "overwrite",
       "parquet",
       "output management"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41018,
@@ -491,7 +508,8 @@
       "conditional expressions",
       "type inference",
       "StringType"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41019,
@@ -519,7 +537,8 @@
       "JVM",
       "Catalyst optimizer",
       "performance"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41020,
@@ -548,7 +567,8 @@
       "cast null-on-failure",
       "type coercion semantics",
       "null production"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41021,
@@ -575,7 +595,8 @@
       "unionByName",
       "positional matching",
       "schema alignment"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41022,
@@ -602,7 +623,8 @@
       "dropDuplicates",
       "deduplication",
       "subset columns"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41023,
@@ -631,7 +653,8 @@
       "nullable vs non-nullable",
       "IntegerType inference",
       "schema analysis"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41024,
@@ -658,7 +681,8 @@
       "column renaming",
       "select",
       "Column expressions"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41025,
@@ -687,7 +711,8 @@
       "side-effect methods",
       "StructType",
       "return values"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41026,
@@ -716,7 +741,8 @@
       "NDJSON vs multi-line JSON",
       "silent null production",
       "read option debugging"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41027,
@@ -744,7 +770,8 @@
       "Catalyst optimizer",
       "query planning",
       "debugging"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41028,
@@ -772,7 +799,8 @@
       "transformations vs actions",
       "DRIVER-SIDE MATERIALIZATION RISK",
       "Row objects"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41029,
@@ -800,7 +828,8 @@
       "DAG",
       "iterative algorithms",
       "fault tolerance"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41030,
@@ -828,7 +857,8 @@
       "performance",
       "type inference",
       "schema"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41031,
@@ -856,7 +886,8 @@
       "alias",
       "col() function",
       "predict output"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41032,
@@ -884,7 +915,8 @@
       "PySpark API vs pandas",
       "driver memory",
       "debug"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41033,
@@ -911,7 +943,8 @@
       "WIDE-AGGREGATION SHUFFLE",
       "aggregation",
       "predict output"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41034,
@@ -939,7 +972,8 @@
       "driver memory",
       "distributed aggregation",
       "debug"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41035,
@@ -967,7 +1001,8 @@
       "type contract",
       "null propagation",
       "debug"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41036,
@@ -995,7 +1030,8 @@
       "materialization timing",
       "persist",
       "predict output"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41037,
@@ -1023,7 +1059,8 @@
       "partition pruning",
       "filter coalescence",
       "logical plan"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41038,
@@ -1051,7 +1088,8 @@
       "WIDE-AGGREGATION SHUFFLE",
       "stage boundary",
       "performance"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41039,
@@ -1077,7 +1115,8 @@
       "F.expr",
       "SQL expressions",
       "DataFrame API"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41040,
@@ -1104,7 +1143,8 @@
       "cross join",
       "Cartesian product",
       "AnalysisException"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   },
   {
     "id": 41041,
@@ -1130,6 +1170,7 @@
       "Dataset vs DataFrame",
       "type safety",
       "Python PySpark API"
-    ]
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   }
 ]

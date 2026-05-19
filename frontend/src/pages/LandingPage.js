@@ -91,7 +91,7 @@ const IDE_TRACKS = [
     label: 'PySpark',
     color: '#D94F3D',
     fname: 'transformations.md',
-    badge: 'PySpark · MCQ',
+    badge: 'PySpark · Reasoning',
     code: null,
     type: 'mcq',
     question: 'Which PySpark operation triggers immediate execution?',
@@ -103,7 +103,7 @@ const IDE_TRACKS = [
     label: 'Data Eng',
     color: '#B9762B',
     fname: 'isolation.md',
-    badge: 'Data Eng · MCQ',
+    badge: 'Data Eng · Reasoning',
     code: null,
     type: 'mcq',
     question: 'Which isolation level prevents phantom reads?',
@@ -115,7 +115,7 @@ const IDE_TRACKS = [
     label: 'Modeling',
     color: '#3F8E8C',
     fname: 'star_schema.md',
-    badge: 'Modeling · MCQ',
+    badge: 'Modeling · Reasoning',
     code: null,
     type: 'mcq',
     question: 'In a star schema, fact tables primarily store...',
@@ -127,7 +127,7 @@ const IDE_TRACKS = [
     label: 'Statistics',
     color: '#7A5AF0',
     fname: 'ab_test.md',
-    badge: 'Statistics · MCQ',
+    badge: 'Statistics · Reasoning',
     code: null,
     type: 'mcq',
     question: 'p = 0.023 at α = 0.05. What is the correct conclusion?',
@@ -139,7 +139,7 @@ const IDE_TRACKS = [
     label: 'ML',
     color: '#E0456A',
     fname: 'model_selection.md',
-    badge: 'ML · MCQ',
+    badge: 'ML · Reasoning',
     code: null,
     type: 'mcq',
     question: 'Your model hits 97% accuracy but completely misses the fraud class. What is the most likely root cause?',
@@ -151,7 +151,7 @@ const IDE_TRACKS = [
     label: 'Experiment',
     color: '#0EA5E9',
     fname: 'ab_design.md',
-    badge: 'Experiment · MCQ',
+    badge: 'Experiment · Reasoning',
     code: null,
     type: 'mcq',
     question: 'You peek at day 3 of a 7-day A/B test and p = 0.04. You stop early. What is the actual risk?',
@@ -719,11 +719,11 @@ function TracksIndexSection() {
     sql:                'SQL · DuckDB',
     python:             'Python · sandbox',
     'python-data':      'Pandas · sandbox',
-    pyspark:            'MCQ · predict output',
-    'data-engineering': 'MCQ · scenario',
-    'data-modeling':    'MCQ · schema design',
-    statistics:         'MCQ + numerical',
-    experimentation:    'MCQ · scenario',
+    pyspark:            'reasoning · predict output',
+    'data-engineering': 'reasoning · scenario',
+    'data-modeling':    'reasoning · schema design',
+    statistics:         'conceptual + numerical',
+    experimentation:    'reasoning · scenario',
   };
 
   return (
@@ -819,7 +819,7 @@ function PricingSection({ userPlan, currency }) {
             </div>
             <ul className="landing-tier-list">
               <li>All easy questions{FREE_EASY ? ` (${FREE_EASY})` : ''}</li>
-              <li>Medium + hard unlock as you solve (hard cap: 8 per code track, 5 per MCQ track)</li>
+              <li>Medium + hard unlock as you solve (hard cap: 8 per code track, 5 per reasoning track)</li>
               <li>2-step progressive hints — mental model first, technique second</li>
               <li>Official solutions with explanation after hints</li>
               <li>SQL query quality analysis on correct answers</li>
