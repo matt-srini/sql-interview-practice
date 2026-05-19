@@ -20,7 +20,23 @@ Custom mode validates server-side: `num_questions` must be 1–5, `time_minutes`
 
 ## Tracks and Difficulties
 
-**Tracks:** SQL, Python, Pandas, PySpark, Mixed (draws from all four)
+**Tracks:** SQL, Python, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, Experimentation, Mixed (SQL + Python + Pandas + PySpark only)
+
+**Mock-only question bank status:**
+
+| Track | Dedicated mock bank? | Notes |
+|---|---|---|
+| SQL | ✅ | 38 mock-only questions |
+| Python | ✅ | 20 mock-only questions |
+| Pandas | ✅ | 24 mock-only questions |
+| PySpark | ✅ | 20 mock-only questions |
+| ML Fundamentals | ✅ | 25 mock-only questions |
+| Experimentation | ✅ | 25 mock-only questions |
+| Statistics | ✅ | 3 mock-only questions |
+| Data Modeling | ✅ | 1 mock-only question (expanding) |
+| Data Engineering | ⚠️ Practice-only | Mock-only bank in authoring |
+
+Sessions for tracks without a dedicated mock bank draw from practice questions. The Mixed track pools only the four code-execution tracks (SQL, Python, Pandas, PySpark).
 
 **Difficulties:** Easy, Medium, Hard, Mixed (blend)
 

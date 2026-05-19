@@ -895,3 +895,150 @@ Goal: full concept coverage, not tricky framing.
 31. Causal inference from experiments — what assumptions make an A/B test causal, and what common violations weaken the causal claim?
 32. Long-term experiment effects — how do you measure effects that materialize after the experiment ends, and what role does a persistent holdout play?
 33. Variance reduction: stratification — how does pre-stratification reduce residual variance, and what practical constraint limits its application to large n?
+
+---
+
+## Mock-Only Advanced Topics
+
+> These hooks cover the mock-only question bank being built for Data Modeling, Data Engineering, and Statistics. All are Pro/Elite gated. Each hook is written as a stand-alone interview prompt suitable for social media posts, ad copy, and email sequences.
+>
+> Format: concept name — the challenge or tension the candidate must reason through.
+
+---
+
+### Data Modeling — Advanced Mock Topics
+
+#### Bi-Temporal Modeling
+
+1. Valid time vs transaction time — what is the difference between when a fact was true in the world and when your system recorded it, and why does a standard SCD Type 2 only preserve one of them?
+2. Backdated price correction — a price effective from March 1 is corrected on March 20. What does a bi-temporal table preserve that SCD Type 2 destroys, and which regulatory query can no longer be answered after that destruction?
+3. System-time snapshot query — how do you answer "what did our database believe about customer X's contract price on March 15" when multiple corrections have accumulated since then?
+4. Bi-temporal correction mechanics — when a correction arrives, which rows are closed, which are inserted, and why is the original row never deleted?
+5. Two-predicate bi-temporal scan — what are the two independent date-range filters a bi-temporal query applies, and which index supports each one?
+
+#### Semi-Additive Metrics
+
+6. Semi-additive measure — why is it wrong to SUM daily inventory balances across a month, even though summing across products on a single day is perfectly valid?
+7. Snapshot fact design for inventory — what fact table type models daily balances, and what aggregate functions are safe vs unsafe for the time dimension?
+8. Account balance in a data warehouse — a finance analyst SUMs month-end balances across 12 months and gets a number 12× too large. What went wrong in the model and how do you fix it?
+9. Additive vs semi-additive vs non-additive — classify revenue, headcount, and profit margin by additivity type, and explain what each classification means for how analysts must write their queries.
+
+#### Versioned Bridge Weights for Attribution
+
+10. Static vs versioned bridge weights — a promotional attribution split changes from 50/50 to 60/40 on a specific date. How does your bridge table record both the old and new weights without corrupting historical attribution?
+11. Temporal many-to-many — you need to model a relationship where both the membership (which entities are linked) and the weighting (how revenue is split) change independently over time. What grain does the bridge table need?
+12. Weight factor fan trap — an analyst joins a fact table through an unfiltered bridge table and gets inflated revenue totals. What causes the inflation and what query change fixes it?
+
+#### Competing Hierarchies
+
+13. One entity, three rollups — a product must roll up to brand for marketing, to category for supply chain, and to cost center for finance. What are the two main design options and what does each one cost in maintenance?
+14. Competing hierarchy semantics — two business units define "product category" differently. Where does the correct hierarchy live — the dimension table, a separate bridge, or a semantic layer — and what governance decision determines that?
+15. Alternate hierarchy in a star schema — how do you support ad-hoc switching between two valid rollup paths (e.g., geographic vs sales territory) without duplicating the fact table?
+
+#### Funnel Eligibility vs Conversion
+
+16. Exposure vs eligibility vs conversion — why are these three separate grains in a funnel model, and what analytical error results from storing them in a single fact table?
+17. Denominator drift — a conversion rate drops 4 points week over week. Conversions are flat. What modeling problem causes the denominator to change without a real change in user behaviour?
+18. Eligibility fact table grain — what constitutes one row in an eligibility fact table, and what makes it different from the event that triggers eligibility versus the event that constitutes conversion?
+
+#### Metric Definition Governance
+
+19. Mart vs semantic layer ownership — "active customer" is defined differently in a dbt mart model and in the BI semantic layer. How do you decide which definition wins and where the canonical metric should live?
+20. Metric proliferation — three analysts each create a dbt model with a slightly different revenue definition. Six months later, three dashboards disagree. What structural change prevents this?
+21. Semantic layer trade-off — moving metric definitions from marts to a semantic layer gains consistency but adds a dependency layer. What breaks in the development workflow if the semantic layer is unavailable?
+
+#### Degenerate Dimension Grain Bugs
+
+22. Mixed-grain degenerate dimension — a fact table stores order-level events and line-level events in the same table, using order_id as a degenerate dimension. An analyst runs SUM(revenue) and gets results that are too high. What is the grain bug and how do you diagnose it from the query output alone?
+23. Degenerate dimension vs dimension table — what is the signal that an order number or transaction ID should remain a degenerate dimension rather than being promoted to a full dimension table?
+24. Grain bug through symptoms — revenue totals are consistently inflated by a factor that varies by order size. No join is obviously wrong. Walk through the diagnostic steps that identify a grain mismatch as the root cause.
+
+#### Feature Store Point-in-Time Correctness
+
+25. Point-in-time join — what does it mean for a training dataset to be "point-in-time correct," and what happens to model performance when a naive join to a slowly-changing dimension violates this property?
+26. Late-arriving dimension in a feature store — a user segment attribute (e.g., premium vs standard) arrives 48 hours late due to a batch pipeline delay. How does this affect rows already materialized in the training mart, and what repair strategy preserves historical correctness?
+27. Feature store vs warehouse mart — what specific temporal guarantee does a purpose-built feature store provide that a standard dbt incremental model cannot without significant extra engineering?
+
+---
+
+### Data Engineering — Advanced Mock Topics
+
+#### Data Contract Breach Incident Response
+
+1. Schema change during peak traffic — a producer deploys a breaking schema change at the worst possible time. Partial bad data has already landed in downstream jobs. What is the correct triage order — quarantine, replay, or rollback — and why does order matter?
+2. Producer vs consumer ownership — when a data contract is breached, who owns the incident: the producer who shipped the change or the consumer who broke? How does your answer change with a schema registry vs without one?
+3. Communication strategy during a data incident — a contract breach corrupts an hour of data that has already been read by three downstream teams. What do you communicate, to whom, and in what order, before the fix is deployed?
+4. Partial bad data in a downstream aggregate — a breaking schema change caused 20 minutes of NULL values in a revenue field that has already been rolled up into a daily aggregate. What is the minimal correct remediation?
+
+#### Snapshot-to-CDC Cutover
+
+5. Bulk snapshot + CDC overlap — after the initial bulk load finishes, you enable log-based CDC. There is a window where both pipelines are active. How do you prevent duplicate rows from events that occurred during the overlap?
+6. Delete propagation after cutover — deletes that happened during the snapshot window were not captured. CDC captures all future deletes. How do you close the gap without a full resnapshot?
+7. Cutover sequencing — what is the correct order of operations for a snapshot-to-CDC cutover that preserves exactly-once delivery, and what is the earliest point at which you can safely disable the snapshot job?
+8. Late-arriving CDC events — CDC events sometimes arrive out of order relative to the snapshot. How does your target table handle an update event that arrives before the initial insert for that row?
+
+#### Streaming Backpressure Diagnosis
+
+9. Kafka lag that only spikes at burst time — consumer lag is near-zero most of the day but climbs to 4 hours during the 9am traffic spike. Is the bottleneck in processing throughput, state store I/O, or watermark configuration? How do you tell the difference from metrics alone?
+10. Backpressure vs late events — what is the operational difference between a processing backlog (consumer can't keep up) and late events (data arrives after the expected window), and why does applying the wrong fix make each problem worse?
+11. State store growth under burst load — a stateful streaming job's RocksDB state store grows unboundedly during burst windows. What is the most likely cause, and what configuration change addresses it without losing correctness?
+12. Watermark interaction with backpressure — when a consumer falls behind and the watermark advances based on event time, what happens to windows that close while the consumer is still processing earlier events?
+
+#### Right-to-Be-Forgotten Across Storage Layers
+
+13. Bronze-Silver-Gold deletion propagation — a GDPR deletion request arrives. You need to purge data from raw storage, refined tables, aggregated metrics, and downstream serving layers. What gets hard-deleted, what gets anonymized, and what gets tombstoned, and why?
+14. Aggregate retention after deletion — a user's revenue was included in a daily aggregate that is still served by the BI layer. After deletion, do you recompute the aggregate, redact it, or leave it? What does your legal team actually need?
+15. Auditability after erasure — after a right-to-be-forgotten request is fulfilled, you must be able to prove to a regulator that the data was deleted. What do you retain in the audit log, and what specifically must you not retain?
+16. Deletion in immutable storage — your raw layer is an append-only object store (S3/GCS). You cannot edit existing objects. How do you implement a deletion request in a system that was designed to be immutable?
+
+#### Streaming Checkpoint and Savepoint Recovery
+
+17. Checkpoint vs savepoint — when do you use a checkpoint vs a savepoint for streaming job recovery, and which one can you take without stopping the job?
+18. Streaming upgrade failure — your new Flink job version fails to start after deployment. The old state checkpoint is on disk, but the operator state schema changed. What is recoverable and what requires replay from source?
+19. State compatibility after schema evolution — a streaming job upgrades and a new field is added to the state schema. What compatibility guarantees do you need from the state backend, and how do you test for them before the production cutover?
+20. Replay vs restore — after a failed upgrade, you have two recovery options: restore from the last savepoint or replay from Kafka offset 0. What determines which is faster, which is safer, and which is cheaper?
+
+#### Column Evolution With Consumer Lag
+
+21. Backward-compatible change that still breaks — a producer adds a nullable column to a topic. The schema registry marks the change as backward compatible. A downstream sink job still throws a deserialization error. What is the most likely cause?
+22. Lagging consumer + schema change — a consumer is 2 hours behind at the moment a new nullable column is added. What does the deserializer read for that field in messages published before vs after the schema update, and what contract assumption does each case test?
+23. Schema registry evolution strategy — your Kafka topic has 12 active consumers at different lag positions. You need to add a required field. What evolution strategy do you use, and what does "required" actually mean in an Avro or Protobuf context when consumers are at different schema versions?
+
+---
+
+### Statistics — Advanced Mock Topics
+
+#### Non-Parametric Test Selection
+
+1. Normality assumption violated — your residuals show heavy tails and the Shapiro-Wilk test rejects normality. Do you use a permutation test, Mann-Whitney U, log-transform first, or bootstrap CI? What drives the choice?
+2. Mann-Whitney vs t-test — the two distributions have similar medians but very different shapes. The t-test returns p = 0.04, Mann-Whitney returns p = 0.21. Which result should you report and why?
+3. Permutation test vs parametric — what does a permutation test assume that a t-test does not, and what does it give up in exchange for that weaker assumption?
+4. Equal variance assumption — Levene's test rejects the equal-variance assumption for your two-sample comparison. Which test do you use instead of Student's t, and what does it change about the degrees of freedom calculation?
+
+#### Residual Diagnostics and Model Assumption Failure
+
+5. Funnel shape in residuals — the residual plot fans out as fitted values increase, forming a cone. What assumption does this violate, what is the technical name for this pattern, and what transformation or model change addresses it?
+6. QQ plot fat tails — the QQ plot of residuals curves away from the diagonal at both ends. What does this tell you about the distribution of errors, and what does it invalidate in your inference?
+7. Residual autocorrelation — you run a linear regression on weekly time-series data and the Durbin-Watson statistic is 0.9. What breaks in standard OLS inference and what model or correction addresses it?
+8. Non-linearity in residuals — residuals form a U-shape when plotted against a predictor. What assumption is violated and what model change fixes it?
+9. High-leverage point vs outlier — a residual plot shows one point with a very small residual but extreme leverage. Why is this observation still dangerous for the fitted model, and how do Cook's distance and leverage together tell a more complete story?
+
+#### Bayesian Decision Under Uncertainty
+
+10. Prior from analogous launches — you have results from 5 similar past experiments. A new experiment shows a weak positive signal (p = 0.12 frequentist). How do you use the prior experiments to build a posterior estimate, and what does that change about the launch decision?
+11. Bayesian stopping — your Bayesian experiment shows P(B > A) = 0.91 after 60% of planned sample size. Should you stop? What is the risk you are explicitly accepting, and how does this differ from frequentist early stopping?
+12. Decision loss function — you are deciding whether to launch a feature. False positives cost $50K (roll back), false negatives cost $200K (missed revenue). How does this asymmetry change the decision threshold under a Bayesian framework vs a frequentist one?
+13. Weak evidence + strong prior — a product experiment shows a marginally positive lift (p = 0.09). Your team has shipped 10 similar features with an average lift of 3%. What does a Bayesian analysis say that a frequentist analysis cannot?
+
+#### CUPED — Conceptual Reasoning
+
+14. When CUPED helps — what property of the pre-experiment metric makes it a useful covariate for variance reduction, and what type of noise does it specifically not remove?
+15. CUPED covariate selection — you have five candidate pre-period metrics: DAU, revenue, session length, feature usage rate, and churn score. Which makes the best CUPED covariate and what correlation threshold makes it worth using?
+16. CUPED vs stratification — both reduce variance in experiment estimates. When does CUPED outperform pre-stratification, and when is stratification the better choice?
+
+#### Causal DAG Reasoning
+
+17. Confounder vs mediator vs collider — what does controlling for each node type do to your estimated causal effect, and in which case does conditioning introduce bias rather than removing it?
+18. Collider bias in a hiring model — you fit a model on employees only (conditioning on "hired"). Two independent predictors — technical skill and cultural fit — appear negatively correlated in the sample. What structural feature of the DAG explains this?
+19. Mediator conditioning — you want to estimate the total causal effect of education on earnings. You control for occupation. What have you inadvertently done to your estimate, and what should you do instead?
+20. Identifying confounders in an observational study — you observe that ice cream sales and drowning rates are correlated. Sketch the minimal DAG, identify the confounder, and explain what adjustment is needed for a valid causal estimate.

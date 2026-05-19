@@ -11,10 +11,10 @@ import { track as trackEvent } from '../analytics';
 // Tracks that pool into a single mixed-track session (in_mixed_mock=True in backend).
 const MIXED_MOCK_TRACKS = ['sql', 'python', 'python-data', 'pyspark'];
 
-// TODO: data-engineering, data-modeling, and statistics have no dedicated mock-only
-// question banks yet. Sessions for these tracks draw from practice questions only.
-// Content authoring task: add mock_only questions for all three tracks.
-const NO_MOCK_BANK_TRACKS = new Set(['data-engineering', 'data-modeling', 'statistics']);
+// Tracks without a dedicated mock-only question bank yet — sessions draw from practice questions only.
+// data-modeling was removed 2026-05-19 (first mock-only question added: 63021).
+// Remaining: data-engineering and statistics (content authoring in progress).
+const NO_MOCK_BANK_TRACKS = new Set(['data-engineering', 'statistics']);
 
 const MOCK_ROLES = [
   { id: 'analyst',            label: 'Data Analyst',       tracks: ['sql', 'statistics', 'python-data', 'python'] },
@@ -49,7 +49,7 @@ const TRACK_CONCEPT_MAP = {
   'ml-fundamentals': ['CLASSIFICATION METRICS','BIAS-VARIANCE TRADEOFF','DATA LEAKAGE DETECTION','OVERFITTING DIAGNOSIS','CROSS-VALIDATION DESIGN','ENSEMBLE STRATEGY','CLASS IMBALANCE HANDLING','REGULARIZATION EFFECT','HYPERPARAMETER SENSITIVITY','DIMENSIONALITY REDUCTION','TRAINING-SERVING SKEW','FEATURE SELECTION STRATEGY','MODEL MONITORING'],
   experimentation: ['EXPERIMENT DESIGN','CAUSAL INFERENCE','STATISTICAL POWER','METRIC SELECTION','MULTIPLE TESTING','NETWORK EFFECTS','VARIANCE REDUCTION','A/B TEST MECHANICS','TYPE I AND TYPE II ERRORS','EXPERIMENT DURATION','SEGMENTATION ANALYSIS','BAYESIAN EXPERIMENTATION','QUASI-EXPERIMENTAL METHODS'],
   'data-engineering': ['DATA QUALITY','STORAGE ARCHITECTURE','DELIVERY SEMANTICS','LINEAGE & OBSERVABILITY','SCHEDULING & SLAS','IDEMPOTENCY','BATCH VS STREAMING','SCHEMA EVOLUTION','PARTITIONING & PRUNING','ORCHESTRATION','WATERMARKING','BACKFILL DESIGN'],
-  'data-modeling': ['FACT TABLE DESIGN','DIMENSIONAL MODELING','DIMENSION DESIGN','SCHEMA FROM REQUIREMENTS','DENORMALIZATION TRADEOFF','NORMALIZATION','GRAIN DEFINITION','SCD STRUCTURE','DBT MODELING','REFERENTIAL INTEGRITY','SURROGATE VS NATURAL KEYS'],
+  'data-modeling': ['FACT TABLE DESIGN','DIMENSIONAL MODELING','DIMENSION DESIGN','SCHEMA FROM REQUIREMENTS','DENORMALIZATION TRADEOFF','NORMALIZATION','GRAIN DEFINITION','SCD STRUCTURE','DBT MODELING','REFERENTIAL INTEGRITY','SURROGATE VS NATURAL KEYS','BI-TEMPORAL MODELING'],
   statistics: ['PROBABILITY','HYPOTHESIS TESTING','DESCRIPTIVE STATISTICS','DISTRIBUTIONS','CONFIDENCE INTERVALS','STATISTICAL POWER','BAYESIAN INFERENCE','EXPECTED VALUE','MULTIPLE COMPARISONS','REGRESSION','SAMPLING DISTRIBUTIONS','INDEPENDENCE'],
 };
 
