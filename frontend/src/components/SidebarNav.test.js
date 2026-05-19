@@ -124,12 +124,67 @@ describe('SidebarNav', () => {
       { initialEntries: ['/practice/sql'] }
     );
 
-    const search = within(view.container).getByPlaceholderText('Title, concept, or difficulty');
+    const search = within(view.container).getByPlaceholderText('Title, concept, form, or difficulty');
     await user.type(search, 'window funct');
 
     expect(within(view.container).getByText('Session Retention Cohort')).toBeInTheDocument();
     await waitFor(() => {
       expect(within(view.container).queryByText('Revenue by Product')).not.toBeInTheDocument();
+    });
+  });
+
+  it('filters sidebar questions by question-form chip', async () => {
+    const user = userEvent.setup();
+    const catalog = {
+      user_id: 'u1',
+      groups: [
+        {
+          difficulty: 'easy',
+          counts: { total: 2, solved: 0, unlocked: 2 },
+          questions: [
+            {
+              id: 1,
+              title: 'Spark plan regression',
+              difficulty: 'easy',
+              order: 1,
+              type: 'debug',
+              interaction_mode: 'code_adjacent_reasoning',
+              state: 'unlocked',
+              is_next: true,
+              concepts: ['joins'],
+            },
+            {
+              id: 2,
+              title: 'Partitioning tradeoffs',
+              difficulty: 'easy',
+              order: 2,
+              type: 'scenario',
+              interaction_mode: 'constructed_reasoning',
+              state: 'unlocked',
+              is_next: false,
+              concepts: ['partitioning'],
+            },
+          ],
+        },
+      ],
+    };
+
+    const view = renderWithRouter(
+      <SidebarNav
+        catalog={catalog}
+        collapsedByDiff={{ easy: false }}
+        toggleDiff={() => {}}
+        onNavigate={() => {}}
+      />,
+      { initialEntries: ['/practice/sql'] }
+    );
+
+    await user.click(within(view.container).getByRole('button', { name: /^filters/i }));
+    await user.click(within(view.container).getByRole('button', { name: 'Debug' }));
+
+    expect(within(view.container).getByText('Spark plan regression')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(within(view.container).queryByText('Partitioning tradeoffs')).not.toBeInTheDocument();
     });
   });
 

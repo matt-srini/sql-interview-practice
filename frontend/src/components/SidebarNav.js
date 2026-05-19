@@ -167,6 +167,20 @@ function buildCompanyList(groups) {
     .map(([company]) => company);
 }
 
+function buildQuestionFormList(groups) {
+  const freq = {};
+  for (const g of groups) {
+    for (const q of g.questions) {
+      const formLabel = getQuestionFormLabel(q);
+      if (!formLabel) continue;
+      freq[formLabel] = (freq[formLabel] ?? 0) + 1;
+    }
+  }
+  return Object.entries(freq)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([label]) => label);
+}
+
 function ConceptFilter({ groups, activeFilters, onToggle, onClear }) {
   const [expanded, setExpanded] = useState(false);
   const filterRef = useRef(null);
@@ -277,6 +291,47 @@ function CompanyFilter({ groups, activeFilters, onToggle, onClear }) {
   );
 }
 
+function QuestionFormFilter({ groups, activeFilters, onToggle, onClear }) {
+  const questionForms = useMemo(() => buildQuestionFormList(groups), [groups]);
+
+  if (questionForms.length <= 1) return null;
+
+  const activeList = questionForms.filter((label) => activeFilters.has(label));
+  const inactiveList = questionForms.filter((label) => !activeFilters.has(label));
+
+  function renderChip(label) {
+    const active = activeFilters.has(label);
+    return (
+      <button
+        key={label}
+        className={`sidebar-concept-chip${active ? ' sidebar-concept-chip-active' : ''}`}
+        onClick={() => onToggle(label)}
+        title={label}
+      >
+        {label}
+        {active && <span className="sidebar-concept-chip-x" aria-hidden="true">×</span>}
+      </button>
+    );
+  }
+
+  return (
+    <div className="sidebar-concept-filter sidebar-question-form-filter">
+      <div className="sidebar-concept-filter-header">
+        <span className="sidebar-concept-filter-label">Filter by question form</span>
+        {activeFilters.size > 0 && (
+          <button className="sidebar-concept-clear" onClick={onClear}>
+            Clear
+          </button>
+        )}
+      </div>
+      <div className="sidebar-concept-chips">
+        {activeList.map(renderChip)}
+        {inactiveList.map(renderChip)}
+      </div>
+    </div>
+  );
+}
+
 export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNavigate, plan = 'free', isLoading = false }) {
   const { topic } = useTopic();
   const [searchParams] = useSearchParams();
@@ -293,6 +348,7 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
 
   const [activeFilters, setActiveFilters] = useState(new Set());
   const [activeCompanyFilters, setActiveCompanyFilters] = useState(new Set());
+  const [activeQuestionFormFilters, setActiveQuestionFormFilters] = useState(new Set());
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [easyExpanded, setEasyExpanded] = useState(false);
   const [bookmarkedIds, setBookmarkedIds] = useState([]);
@@ -395,14 +451,28 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
     setActiveCompanyFilters(new Set());
   }
 
+  function toggleQuestionFormFilter(label) {
+    setActiveQuestionFormFilters((prev) => {
+      const next = new Set(prev);
+      if (next.has(label)) next.delete(label);
+      else next.add(label);
+      return next;
+    });
+  }
+
+  function clearQuestionFormFilters() {
+    setActiveQuestionFormFilters(new Set());
+  }
+
   function clearAllFilters() {
     clearFilters();
     clearCompanyFilters();
+    clearQuestionFormFilters();
     setSearchQuery('');
   }
 
-  const anyFilterActive = activeFilters.size > 0 || activeCompanyFilters.size > 0;
-  const totalActiveFilters = activeFilters.size + activeCompanyFilters.size;
+  const anyFilterActive = activeFilters.size > 0 || activeCompanyFilters.size > 0 || activeQuestionFormFilters.size > 0;
+  const totalActiveFilters = activeFilters.size + activeCompanyFilters.size + activeQuestionFormFilters.size;
 
   const searchMatchesById = useMemo(() => {
     const query = searchQuery.trim();
@@ -417,6 +487,7 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
           title: question.title ?? '',
           concepts: question.concepts ?? [],
           difficulty: group.difficulty ?? '',
+          questionForm: getQuestionFormLabel(question) ?? '',
         });
       });
     });
@@ -428,9 +499,11 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
         const title = String(entry.title || '').toLowerCase();
         const difficulty = String(entry.difficulty || '').toLowerCase();
         const concepts = (entry.concepts || []).join(' ').toLowerCase();
+        const questionForm = String(entry.questionForm || '').toLowerCase();
         return title.includes(normalizedQuery)
           || difficulty.includes(normalizedQuery)
-          || concepts.includes(normalizedQuery);
+          || concepts.includes(normalizedQuery)
+          || questionForm.includes(normalizedQuery);
       })
       .map((entry) => Number(entry.id));
 
@@ -445,7 +518,8 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
       keys: [
         { name: 'title', weight: 0.7 },
         { name: 'concepts', weight: 0.2 },
-        { name: 'difficulty', weight: 0.1 },
+        { name: 'questionForm', weight: 0.15 },
+        { name: 'difficulty', weight: 0.05 },
       ],
     });
 
@@ -457,15 +531,17 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
     );
   }, [groups, searchQuery]);
 
-  // Apply concept + company filters (AND logic)
+  // Apply concept + company + question form filters (AND logic)
   const filteredGroups = useMemo(() => {
     if (!anyFilterActive && !searchMatchesById) return groups;
     return groups.map((g) => {
       const questions = g.questions.filter((q) => {
         const conceptMatch = activeFilters.size === 0 || (q.concepts ?? []).some((c) => activeFilters.has(c));
         const companyMatch = activeCompanyFilters.size === 0 || (q.companies ?? []).some((c) => activeCompanyFilters.has(c));
+        const questionFormLabel = getQuestionFormLabel(q);
+        const questionFormMatch = activeQuestionFormFilters.size === 0 || (questionFormLabel && activeQuestionFormFilters.has(questionFormLabel));
         const textMatch = !searchMatchesById || searchMatchesById.has(Number(q.id));
-        return conceptMatch && companyMatch && textMatch;
+        return conceptMatch && companyMatch && questionFormMatch && textMatch;
       });
       return {
         ...g,
@@ -477,7 +553,7 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
         },
       };
     }).filter((g) => g.questions.length > 0);
-  }, [groups, activeFilters, activeCompanyFilters, anyFilterActive, searchMatchesById]);
+  }, [groups, activeFilters, activeCompanyFilters, activeQuestionFormFilters, anyFilterActive, searchMatchesById]);
 
   const bookmarkedQuestions = useMemo(() => {
     if (!bookmarkedIds.length) return [];
@@ -520,7 +596,7 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
             type="search"
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="Title, concept, or difficulty"
+            placeholder="Title, concept, form, or difficulty"
             className="sidebar-search-input"
           />
           {searchQuery.trim() && (
@@ -580,6 +656,12 @@ export default function SidebarNav({ catalog, collapsedByDiff, toggleDiff, onNav
               activeFilters={activeCompanyFilters}
               onToggle={toggleCompanyFilter}
               onClear={clearCompanyFilters}
+            />
+            <QuestionFormFilter
+              groups={groups}
+              activeFilters={activeQuestionFormFilters}
+              onToggle={toggleQuestionFormFilter}
+              onClear={clearQuestionFormFilters}
             />
           </div>
         )}

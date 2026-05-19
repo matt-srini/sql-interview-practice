@@ -22,7 +22,7 @@ Current state:
 - no product-code behavior changed in Phase 0
 - Phase 1 PySpark-first practice uplift is complete: additive metadata exposure and frontend terminology cleanup landed
 - Phase 2 is complete: reasoning-track payloads now expose stable `interaction_mode` metadata across Data Engineering, Data Modeling, ML Fundamentals, Experimentation, and Statistics; frontend prompt copy keeps modality family separate from question type; ML Fundamentals and Experimentation hook audits are complete with recorded gaps
-- Phase 3 is in progress: reasoning-track catalog rows now expose additive `type` metadata and practice surfaces show question-form badges in SidebarNav and QuestionPage chrome
+- Phase 3 is in progress: reasoning-track catalog rows now expose additive `type` metadata; practice surfaces show question-form badges in SidebarNav and QuestionPage chrome; SidebarNav now supports question-form filtering for mixed-form catalogs
 
 ## Objective
 
@@ -321,7 +321,7 @@ Exit criteria:
 
 Goal: make practice mode visibly smarter, not just better tagged.
 
-Status: in progress 2026-05-19 — question-form badges landed in SidebarNav and QuestionPage; filters and deeper layout changes remain open.
+Status: in progress 2026-05-19 — question-form badges and SidebarNav question-form filters landed; deeper layout changes remain open.
 
 Product outcomes:
 

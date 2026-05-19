@@ -241,6 +241,7 @@ Accepts a `plan` prop (passed from AppShell) to drive progressive unlock behavio
 - Per-question state: `unlocked`, `locked`, `solved`, `next`, `current`
 - NavLinks point to `/practice/${topic}/questions/${id}` (topic from `useTopic()`)
 - Reasoning-heavy tracks now render a compact question-form badge in each row when the catalog includes additive `type` metadata, so users can tell `Debug` from `Scenario` or `Predict output` without opening the prompt.
+- Sidebar filters now include a `Filter by question form` chip group when a catalog contains more than one distinct form label, letting users narrow reasoning-heavy banks by variants like `Debug`, `Scenario`, `Predict output`, or `Numerical`.
 - **Progressive unlock bar** (`.sidebar-unlock-bar`): shown in difficulty group headers when there are locked questions. Displays a progress bar filling toward the next unlock threshold plus a "{N} more to unlock" label. Thresholds mirror `backend/unlock.py` (e.g. SQL/Python/Pandas medium: 8→3, 15→8, 25→all; PySpark medium: 12→3, 20→8, 30→all).
 - **Locked question tooltip** (`title` attribute on the locked row `div`): explains exactly how many more solves are needed — e.g. "Solve 7 more easy questions to unlock this". Pro users see "Upgrade to Elite to unlock all hard questions" on hard rows.
 - Concept filter (chip grid, most-frequent first, expand/collapse) and Company filter (SQL only)

@@ -164,7 +164,7 @@ sql-interview-practice/
 │   │   │   └── TopicContext.js     # TRACK_META, TopicProvider, useTopic()
 │   │   ├── components/
 │   │   │   ├── AppShell.js         # Challenge workspace shell, sidebar, track switcher
-│   │   │   ├── SidebarNav.js       # Question list, lock/solved/next states + bookmarks rail with question-form badges for reasoning tracks
+│   │   │   ├── SidebarNav.js       # Question list, lock/solved/next states + bookmarks rail with question-form badges and question-form filters for reasoning tracks
 │   │   │   ├── CodeEditor.js       # Language-agnostic Monaco editor wrapper
 │   │   │   ├── SQLEditor.js        # Thin re-export of CodeEditor with language="sql"
 │   │   │   ├── ResultsTable.js    # Tabular output with sticky headers + horizontal overflow cue
