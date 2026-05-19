@@ -464,10 +464,11 @@ cd backend && DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:543
 | `docs/features/mock.md` | Mock interview feature reference — plan gates, endpoints, coaching insights, test coverage |
 | `docs/features/dashboard.md` | Dashboard feature reference — plan gates, endpoints, coaching insights, streak logic, caching |
 
-**AI question authoring agents** (track-specific prompts for generating questions with Claude):
+**AI question authoring agents** (prompts for generating questions with Claude):
 
 | Track | Agent file |
 |---|---|
+| **All tracks (universal)** | `.github/agents/question-authoring.agent.md` — start here; all 9 tracks, all difficulties, practice + mock-only, self-contained guardrails |
 | SQL | `.github/agents/sql-question-authoring.agent.md` |
 | Python | `.github/agents/python-question-authoring.agent.md` |
 | Pandas | `.github/agents/pandas-question-authoring.agent.md` |

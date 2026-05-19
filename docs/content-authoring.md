@@ -7,6 +7,7 @@ This is the authoritative guide for creating, editing, and reviewing questions o
 **New track onboarding:** See [`docs/track-onboarding.md`](./track-onboarding.md) for the complete phase-by-phase process (spec → backend → frontend → content → paths → docs). The AI agent prompt is at [`.github/agents/track-onboarding.agent.md`](../.github/agents/track-onboarding.agent.md).
 
 **AI authoring agents** (use these when generating questions with Claude):
+- [`.github/agents/question-authoring.agent.md`](../.github/agents/question-authoring.agent.md) — **universal authoring agent**: all 9 tracks, all difficulties, practice + mock-only, self-contained guardrails. Start here; use the per-track agents below only for deep schema specifics.
 - [`.github/agents/sql-question-authoring.agent.md`](../.github/agents/sql-question-authoring.agent.md)
 - [`.github/agents/python-question-authoring.agent.md`](../.github/agents/python-question-authoring.agent.md)
 - [`.github/agents/pandas-question-authoring.agent.md`](../.github/agents/pandas-question-authoring.agent.md)
