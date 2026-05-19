@@ -7,6 +7,13 @@ import { TRACK_SLUGS, TRACK_LABELS } from '../trackRegistry';
 import Topbar from '../components/Topbar';
 import UpgradeButton from '../components/UpgradeButton';
 import { track as trackEvent } from '../analytics';
+import {
+  getBenchmarkBlueprint,
+  getMockModeCards,
+  getMockModeDisplayLabel,
+  getSessionQuestionCount,
+  getSessionTimeMinutes,
+} from '../mockModeConfig';
 
 // Tracks that pool into a single mixed-track session (in_mixed_mock=True in backend).
 const MIXED_MOCK_TRACKS = ['sql', 'python', 'python-data', 'pyspark'];
@@ -32,10 +39,10 @@ const PYSPARK_FORMAT_LABELS = {
 };
 
 const PYSPARK_FORMAT_TARGETS = {
-  easy:   ['mcq', 'predict_output', 'mcq', 'predict_output', 'debug'],
-  medium: ['mcq', 'scenario', 'debug', 'predict_output', 'mcq'],
-  hard:   ['mcq', 'scenario', 'predict_output', 'mcq', 'scenario'],
-  mixed:  ['mcq', 'scenario', 'predict_output', 'debug', 'mcq'],
+  easy:   ['mcq', 'predict_output', 'mcq', 'predict_output', 'debug', 'mcq'],
+  medium: ['mcq', 'scenario', 'debug', 'predict_output', 'mcq', 'optimization'],
+  hard:   ['mcq', 'scenario', 'predict_output', 'mcq', 'scenario', 'mcq'],
+  mixed:  ['mcq', 'scenario', 'predict_output', 'debug', 'mcq', 'scenario'],
 };
 
 const MIXED_DIFF_TARGETS = ['easy', 'medium', 'hard', 'medium', 'hard'];
@@ -113,7 +120,7 @@ export default function MockHub() {
     : TRACK_SLUGS;
   const filteredTracks = [...filteredSlugs, 'mixed'];
 
-  const [mode, setMode] = useState('30min');
+  const [mode, setMode] = useState('benchmark');
   const [track, setTrack] = useState('sql');
   const [difficulty, setDifficulty] = useState('easy');
   const [numQuestions, setNumQuestions] = useState(2);
@@ -143,6 +150,17 @@ export default function MockHub() {
   // Pre-flight access state
   const [accessState, setAccessState] = useState(null);
   const [accessLoading, setAccessLoading] = useState(false);
+
+  const benchmarkBlueprint = getBenchmarkBlueprint(track);
+  const modeCards = getMockModeCards(track);
+  const effectiveQuestionCount = getSessionQuestionCount(mode, track, numQuestions);
+  const effectiveTimeMinutes = getSessionTimeMinutes(mode, track, timeMinutes);
+
+  useEffect(() => {
+    if (track === 'mixed' && mode === 'benchmark') {
+      setMode('30min');
+    }
+  }, [track, mode]);
 
   function handleRoleSelect(roleId) {
     // Passing null = "All"; clicking the active role also returns to "All"
@@ -266,12 +284,6 @@ export default function MockHub() {
     };
   }
 
-  const modeCards = [
-    { key: '30min', label: 'Quick', sublabel: '30 min · 2 questions', desc: 'Fast-paced warm-up session' },
-    { key: '60min', label: 'Full',  sublabel: '60 min · 3 questions', desc: 'Realistic interview length' },
-    { key: 'custom', label: 'Custom', sublabel: 'You choose',         desc: 'Set your own pace and depth' },
-  ];
-
   const isMixedTrack = track === 'mixed';
   const hasMockBank  = !NO_MOCK_BANK_TRACKS.has(track);
 
@@ -291,7 +303,8 @@ export default function MockHub() {
             <p className="mock-modal-body">
               You already have an active{' '}
               <strong>{TRACK_LABELS[activeSessionConflict.track] || activeSessionConflict.track}</strong>{' '}
-              <strong>{activeSessionConflict.difficulty}</strong> mock session. Resume it or end it before starting a new one.
+              <strong>{activeSessionConflict.difficulty}</strong>{' '}
+              <strong>{getMockModeDisplayLabel(activeSessionConflict.mode)}</strong> session. Resume it or end it before starting a new one.
             </p>
             <div className="mock-modal-actions">
               <button className="btn btn-secondary" onClick={() => setActiveSessionConflict(null)}>Cancel</button>
@@ -323,8 +336,13 @@ export default function MockHub() {
               <button
                 key={card.key}
                 type="button"
-                className={`mock-mode-card ${mode === card.key ? 'selected' : ''}`}
-                onClick={() => { setMode(card.key); setStartError(null); }}
+                className={`mock-mode-card ${mode === card.key ? 'selected' : ''}${card.disabled ? ' mock-mode-card-disabled' : ''}`}
+                onClick={() => {
+                  if (card.disabled) return;
+                  setMode(card.key);
+                  setStartError(null);
+                }}
+                disabled={card.disabled}
               >
                 <div className="mock-mode-card-label">{card.label}</div>
                 <div className="mock-mode-card-sublabel">{card.sublabel}</div>
@@ -333,6 +351,17 @@ export default function MockHub() {
             ))}
           </div>
         </section>
+
+        {mode === 'benchmark' && benchmarkBlueprint && (
+          <section className="mock-hub-section mock-benchmark-blueprint">
+            <div className="mock-benchmark-blueprint-kicker">Benchmark blueprint</div>
+            <div className="mock-benchmark-blueprint-main">
+              <span className="mock-benchmark-blueprint-shape">{benchmarkBlueprint.summary}</span>
+              <span className="mock-benchmark-blueprint-time">{benchmarkBlueprint.timeMinutes} min fixed session</span>
+            </div>
+            <p className="mock-benchmark-blueprint-copy">{benchmarkBlueprint.description}</p>
+          </section>
+        )}
 
         {/* Custom controls */}
         {mode === 'custom' && (
@@ -430,7 +459,7 @@ export default function MockHub() {
         {/* Mixed track note */}
         {isMixedTrack && (
           <div className="mock-track-note">
-            Draws questions from {MIXED_MOCK_TRACKS.map(s => TRACK_LABELS[s]).join(' · ')} — the four code-execution tracks.
+            Draws questions from {MIXED_MOCK_TRACKS.map(s => TRACK_LABELS[s]).join(' · ')} — the four code-execution tracks. Mixed stays drill-only while benchmark mode becomes track-specific.
           </div>
         )}
 
@@ -535,12 +564,12 @@ export default function MockHub() {
 
         {/* What to expect */}
         {(() => {
-          const effectiveN = mode === '30min' ? 2 : mode === '60min' ? 3 : numQuestions;
-          const expectations = getSessionExpectations(track, difficulty, effectiveN);
-          if (!expectations.length) return null;
+          const expectations = getSessionExpectations(track, difficulty, effectiveQuestionCount);
+          if (mode !== 'benchmark' && !expectations.length) return null;
           return (
             <div className="mock-session-expect">
               <span className="mock-session-expect-label">Expect</span>
+              <span className="mock-session-expect-line">{effectiveQuestionCount} questions · {effectiveTimeMinutes} min</span>
               {expectations.map((line, i) => (
                 <span key={i} className="mock-session-expect-line">{line}</span>
               ))}
@@ -556,7 +585,7 @@ export default function MockHub() {
             onClick={handleStart}
             disabled={starting || accessLoading || (accessState && !accessState.access?.[difficulty]?.can_start)}
           >
-            {starting ? 'Starting…' : 'Start Mock Interview'}
+            {starting ? 'Starting…' : mode === 'benchmark' ? 'Start benchmark' : 'Start drill session'}
           </button>
         </section>
 
@@ -705,7 +734,7 @@ export default function MockHub() {
                 {history.slice(0, 5).map(s => (
                   <tr key={s.session_id}>
                     <td>{formatDate(s.started_at)}</td>
-                    <td>{s.mode}</td>
+                    <td>{getMockModeDisplayLabel(s.mode)}</td>
                     <td>{TRACK_LABELS[s.track] || s.track}</td>
                     <td>{s.difficulty && <span className={`badge badge-${s.difficulty}`}>{s.difficulty}</span>}</td>
                     <td>{s.solved_count}/{s.total_count}</td>
@@ -741,8 +770,9 @@ export default function MockHub() {
                 <button className="mock-help-close" onClick={() => setShowHelp(false)} aria-label="Close">✕</button>
               </div>
               <ol className="mock-help-steps">
-                <li>Choose mode — Quick (30 min, 2 questions), Full (60 min, 3 questions), or Custom.</li>
+                <li>Choose a session type — Benchmark for the fixed-shape track benchmark, Sprint drill for a short calibration round, or Custom drill for targeted follow-up practice.</li>
                 <li>Filter by role to see the tracks most relevant to your interview target, then pick a track and difficulty. Mixed draws from {MIXED_MOCK_TRACKS.map(s => TRACK_LABELS[s]).join(', ')} only.</li>
+                <li>Benchmark mode is track-specific and fixed-shape. Mixed remains drill-only.</li>
                 <li><strong>(Elite)</strong> Enable <strong>Focus mode</strong> to target specific concepts — your session draws from questions tagged with them.</li>
                 <li>During the session — a countdown timer runs. Write your answer and submit each question independently.</li>
                 <li>No solutions are revealed mid-session.</li>

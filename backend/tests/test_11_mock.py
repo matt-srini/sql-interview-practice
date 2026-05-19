@@ -131,6 +131,41 @@ def test_tc136_custom_mode_num_questions():
     assert len(r.json()["questions"]) == 3
 
 
+def test_tc136b_benchmark_mode_uses_track_specific_shape():
+    """TC-136B: Benchmark mode on PySpark uses the track-specific fixed shape."""
+    with TestClient(app) as client:
+        _make_user(client, plan="elite")
+        r = _start_pyspark_session(client, mode="benchmark", difficulty="easy")
+    assert r.status_code in (200, 201)
+    assert len(r.json()["questions"]) == 6
+    assert r.json()["time_limit_s"] == 2400
+
+
+def test_tc136c_statistics_benchmark_uses_mixed_subtype_shape():
+    """TC-136C: Statistics benchmark returns 1 numerical + 2 conceptual questions."""
+    with TestClient(app) as client:
+        _make_user(client, plan="elite")
+        r = client.post("/api/mock/start", json={
+            "mode": "benchmark", "track": "statistics", "difficulty": "easy",
+        })
+    assert r.status_code in (200, 201)
+    subtypes = [q.get("subtype") for q in r.json()["questions"]]
+    assert subtypes.count("numerical") == 1
+    assert subtypes.count("conceptual") == 2
+    assert r.json()["time_limit_s"] == 2700
+
+
+def test_tc136d_benchmark_mode_rejects_mixed_track():
+    """TC-136D: Benchmark mode is track-specific and rejects mixed-track sessions."""
+    with TestClient(app) as client:
+        _make_user(client, plan="elite")
+        r = client.post("/api/mock/start", json={
+            "mode": "benchmark", "track": "mixed", "difficulty": "mixed",
+        })
+    assert r.status_code == 400
+    assert "mixed" in r.json().get("error", "").lower() or "mixed" in r.json().get("detail", "").lower()
+
+
 def test_tc137_num_questions_out_of_range_returns_400():
     """TC-137: num_questions=0 or 6 → 400."""
     with TestClient(app) as client:

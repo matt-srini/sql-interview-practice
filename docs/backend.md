@@ -412,16 +412,32 @@ Prefix: `/api/mock`
 
 > **Access enforcement:** `POST /api/mock/start` validates plan and daily limits server-side via `compute_mock_access()` before persisting any session. A 403 is returned if the user's plan doesn't allow the requested difficulty, or if daily limits are exhausted. The daily-limit check at `GET /api/mock/access` is a UI preflight only — it does not gate actual session creation.
 
+> **Mode enforcement:** `POST /api/mock/start` now accepts a fixed-shape `benchmark` mode in addition to the drill modes. `benchmark` is track-specific and rejects `track="mixed"` with 400. Legacy `60min` sessions remain readable in history, but new frontend setup flows no longer present them as a primary mode.
+
 ### Request bodies
 
 **`POST /start`**
 ```json
-{ "mode": "30min|60min|custom", "track": "sql|python|python-data|pyspark|mixed",
+{ "mode": "benchmark|30min|60min|custom", "track": "sql|python|python-data|pyspark|mixed",
   "difficulty": "easy|medium|hard|mixed",
   "num_questions": 2,   // custom only, 1-5
   "time_minutes": 30    // custom only, 10-90
 }
 ```
+
+`benchmark` ignores `num_questions` and `time_minutes`; the router applies a fixed blueprint by track:
+
+| Track | Benchmark shape | `time_limit_s` |
+|---|---|---|
+| SQL | 3 questions | 3600 |
+| Python | 2 questions | 3000 |
+| Pandas | 2 questions | 3000 |
+| Statistics | 3 questions (`1 numerical + 2 conceptual`) | 2700 |
+| PySpark | 6 questions | 2400 |
+| Data Engineering | 6 questions | 2400 |
+| Data Modeling | 5 questions | 2400 |
+| ML Fundamentals | 6 questions | 2400 |
+| Experimentation | 6 questions | 2400 |
 
 **`POST /{id}/submit`**
 ```json
@@ -443,6 +459,10 @@ mock_session_questions (id BIGSERIAL, session_id BIGINT→mock_sessions, questio
 `is_follow_up = true` marks questions that were injected as targeted follow-ups based on weak-spot analysis of the user's prior submission history (sourced via `_inject_follow_ups()` in `mock.py`). The debrief pattern observation uses this flag to surface follow-up performance as a coaching signal.
 
 ### Question selection
+
+- Benchmark sessions now use track-aware composition instead of the old universal quick/full sizing.
+- Statistics benchmark sessions enforce a subtype mix of exactly `1 numerical + 2 conceptual` before randomization.
+- PySpark benchmark sessions use a six-slot format template so the benchmark stays code-adjacent rather than collapsing into generic MCQ sampling.
 
 - Questions are randomly sampled from the user's unlocked pool (via `compute_unlock_state`).
 - `mixed` track: pools questions from all 4 catalogs.

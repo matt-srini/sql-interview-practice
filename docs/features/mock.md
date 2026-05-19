@@ -10,11 +10,27 @@ The mock interview system lets users practise under real interview conditions: a
 
 | Mode | Time limit | Questions |
 |---|---|---|
-| Quick | 30 min | 2 |
-| Full | 60 min | 3 |
-| Custom | 10–90 min (user-set) | 1–5 (user-set) |
+| Benchmark | Track-specific fixed shape | Track-specific fixed shape |
+| Sprint drill | 30 min | 2 |
+| Custom drill | 10–90 min (user-set) | 1–5 (user-set) |
 
-Custom mode validates server-side: `num_questions` must be 1–5, `time_minutes` must be 10–90.
+Benchmark is now the primary serious mock mode. It is fixed-shape by track and rejects the Mixed track. Mixed remains drill-only.
+
+Benchmark blueprints:
+
+| Track | Benchmark shape | Time limit |
+|---|---|---|
+| SQL | 3 executable problems | 60 min |
+| Python | 2 executable problems | 50 min |
+| Pandas | 2 executable problems | 50 min |
+| Statistics | 1 numerical + 2 conceptual | 45 min |
+| PySpark | 6 code-adjacent reasoning prompts | 40 min |
+| Data Engineering | 6 constructed reasoning prompts | 40 min |
+| Data Modeling | 5 constructed reasoning prompts | 40 min |
+| ML Fundamentals | 6 constructed reasoning prompts | 40 min |
+| Experimentation | 6 constructed reasoning prompts | 40 min |
+
+Custom drill validates server-side: `num_questions` must be 1–5, `time_minutes` must be 10–90.
 
 ---
 
@@ -36,7 +52,7 @@ Custom mode validates server-side: `num_questions` must be 1–5, `time_minutes`
 | Data Modeling | ✅ | 1 mock-only question (expanding) |
 | Data Engineering | ✅ | 1 mock-only question (expanding) |
 
-Sessions for tracks without a dedicated mock bank draw from practice questions. The Mixed track pools only the four code-execution tracks (SQL, Python, Pandas, PySpark).
+Sessions for tracks without a dedicated mock bank draw from practice questions. The Mixed track pools only the four code-execution tracks (SQL, Python, Pandas, PySpark) and is available only in drill modes.
 
 **Difficulties:** Easy, Medium, Hard, Mixed (blend)
 
@@ -135,6 +151,7 @@ Shown after `POST /api/mock/:id/finish`:
 ## History (`/mock` page)
 
 - Shows the last 20 sessions in a table: Date, Mode, Track, Difficulty, Score (X/Y), Time limit.
+- Mode labels are normalized in the UI so users see `Benchmark`, `Sprint drill`, `Custom drill`, or `Full (legacy)` instead of raw stored mode keys.
 - **Review →** for completed sessions, **Resume →** for in-progress ones.
 - Empty state links to practice tracks and the dashboard.
 
@@ -142,13 +159,14 @@ Shown after `POST /api/mock/:id/finish`:
 
 ## How to Use (the `?` button on /mock)
 
-1. **Choose mode** — Quick (30 min, 2 questions), Full (60 min, 3 questions), or Custom.
+1. **Choose session type** — Benchmark for the fixed-shape track benchmark, Sprint drill for a short calibration round, or Custom drill for targeted follow-up practice.
 2. **Pick track and difficulty** — Difficulty buttons show live access state (remaining daily sessions or upgrade CTAs).
-3. **(Elite, SQL track)** Optionally select a **Company** filter.
-4. **Start** — the timer starts immediately.
-5. **During the session** — write your answer in the editor, run it to check, and submit each question. No solutions are shown yet.
-6. **End session** — click "End session" or let the timer run out.
-7. **Review** — see your score, solutions to every question, and (Elite) your concept weak-spots with a drill link.
+3. **Track benchmark availability** — Mixed stays drill-only; single-track sessions can use Benchmark.
+4. **(Elite, SQL track)** Optionally select a **Company** filter.
+5. **Start** — the timer starts immediately.
+6. **During the session** — write your answer in the editor, run it to check, and submit each question. No solutions are shown yet.
+7. **End session** — click "End session" or let the timer run out.
+8. **Review** — see your score, solutions to every question, and (Elite) your concept weak-spots with a drill link.
 
 ---
 
@@ -159,7 +177,7 @@ Shown after `POST /api/mock/:id/finish`:
 | GET | `/api/mock/access` | Required | Pre-flight: per-difficulty access state for a given track |
 | GET | `/api/mock/history` | Required | Last 20 sessions |
 | GET | `/api/mock/analytics` | Required (Elite) | Aggregate analytics over last 50 sessions — scores, trends, concepts |
-| POST | `/api/mock/start` | Required | Start a session; accepts `focus_concepts` for Elite focus mode. Returns 409 if an active session already exists (body includes `session_id`, `track`, `difficulty`, `mode`). |
+| POST | `/api/mock/start` | Required | Start a session; accepts `mode="benchmark"` for fixed-shape track benchmarks and `focus_concepts` for Elite focus mode. Returns 409 if an active session already exists (body includes `session_id`, `track`, `difficulty`, `mode`). |
 | GET | `/api/mock/:id` | Required | Load/reload session state |
 | POST | `/api/mock/:id/submit` | Required | Submit one answer mid-session |
 | POST | `/api/mock/:id/finish` | Required | End session, get full summary with solutions |
@@ -173,6 +191,7 @@ See `backend/tests/test_11_mock.py` for the focused mock backend suite covering:
 - Access endpoint (all plans, all difficulties)
 - Daily limit enforcement (free medium 1/day, pro hard 3/day, elite unlimited)
 - Session lifecycle, summary visibility, and mixed-session behavior for the current mock system
+- Benchmark mode track-shape enforcement, including the statistics `1 numerical + 2 conceptual` blueprint and mixed-track rejection
 - Custom mode validation
 - Mixed track sessions
 - Company filter gating (free/pro blocked, elite/lifetime_elite allowed)

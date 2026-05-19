@@ -187,7 +187,7 @@ sql-interview-practice/
 │   │       ├── LearningPath.js         # Curated path page at /learn/:topic/:slug (breadcrumb, progress, completion banner)
 │   │       ├── LearningPathsIndex.js   # Index of all paths at /learn and /learn/:topic (grouped + in-progress rail)
 │   │       ├── ProgressDashboard.js    # Cross-track progress + coaching insights at /dashboard
-│   │       ├── MockHub.js              # Mock interview lobby at /mock (mode/track/difficulty selection + empty state)
+│   │       ├── MockHub.js              # Mock interview lobby at /mock (benchmark/drill selection, benchmark blueprint preview, history)
 │   │       ├── MockSession.js          # Active mock session + post-mortem insights at /mock/:id
 │   │       ├── SampleQuestionPage.js   # Topic-aware sample page with per-question draft autosave
 │   │       ├── AuthPage.js
@@ -330,6 +330,8 @@ Locked MCQ questions return 200 with `locked: true` and no `options` or `correct
 
 **Learning path shortcuts:** completing the Starter path for a track → all medium unlocked immediately; completing the Intermediate path → full hard cap unlocked. Either acts as an express-lane alternative to threshold grinding.
 
+**Mock modes:** `benchmark` is now the serious, fixed-shape track benchmark; `30min` and `custom` are drill modes; Mixed is drill-only. Legacy `60min` sessions can still exist in history but are no longer the primary setup path.
+
 **Mock daily limits:** Free = 1 medium/day · Pro = 3 hard/day · Elite = unlimited.
 
 **Elite mock exclusives:** (1) Focus mode — `focus_concepts` param in `/start` filters pool to concept-tagged questions; (2) Mock history analytics — `GET /api/mock/analytics` returns score trends, concept breakdown, and track/difficulty splits over last 50 sessions.
@@ -380,7 +382,7 @@ Locked MCQ questions return 200 with `locked: true` and no `options` or `correct
 | GET | `/api/mock/access` | Pre-flight access check — per-difficulty `can_start`, `block_reason`, `needs_upgrade`, `daily_limit`, `daily_used` |
 | GET | `/api/mock/history` | Past mock sessions list (last 20) |
 | GET | `/api/mock/analytics` | Elite only: aggregate analytics over last 50 sessions |
-| POST | `/api/mock/start` | Start a mock session `{ mode, track, difficulty, focus_concepts? }` → `{ session_id, questions[], time_limit_s, started_at, focus_fallback }`. Returns 409 if user has an active session (includes `session_id` in error body). |
+| POST | `/api/mock/start` | Start a mock session `{ mode, track, difficulty, focus_concepts? }` → `{ session_id, questions[], time_limit_s, started_at, focus_fallback }`. `mode="benchmark"` applies a track-specific fixed blueprint and rejects `track="mixed"`; `30min` and `custom` remain drill sessions. Returns 409 if user has an active session (includes `session_id` in error body). |
 | GET | `/api/mock/{id}` | Session state for reload recovery |
 | POST | `/api/mock/{id}/submit` | Submit answer mid-session → `{ correct, feedback }` (no solution revealed) |
 | POST | `/api/mock/{id}/finish` | End session → full summary with per-question solutions |

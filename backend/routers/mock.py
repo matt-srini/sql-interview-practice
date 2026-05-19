@@ -58,6 +58,18 @@ MODE_CONFIGS: dict[str, dict[str, int]] = {
     "60min": {"num_questions": 3, "time_limit_s": 3600},
 }
 
+BENCHMARK_CONFIGS: dict[str, dict[str, int]] = {
+    "sql": {"num_questions": 3, "time_limit_s": 3600},
+    "python": {"num_questions": 2, "time_limit_s": 3000},
+    "python-data": {"num_questions": 2, "time_limit_s": 3000},
+    "statistics": {"num_questions": 3, "time_limit_s": 2700},
+    "pyspark": {"num_questions": 6, "time_limit_s": 2400},
+    "data-engineering": {"num_questions": 6, "time_limit_s": 2400},
+    "data-modeling": {"num_questions": 5, "time_limit_s": 2400},
+    "ml-fundamentals": {"num_questions": 6, "time_limit_s": 2400},
+    "experimentation": {"num_questions": 6, "time_limit_s": 2400},
+}
+
 VALID_TRACKS = {t.slug for t in TRACKS} | {"mixed"}
 VALID_DIFFICULTIES = {"easy", "medium", "hard", "mixed"}
 
@@ -68,7 +80,7 @@ TRACK_TO_TOPIC: dict[str, str] = {t.slug: t.db_topic for t in TRACKS}
 # ── Request models ─────────────────────────────────────────────────────────────
 
 class MockStartRequest(BaseModel):
-    mode: str           # '30min' | '60min' | 'custom'
+    mode: str           # 'benchmark' | '30min' | '60min' | 'custom'
     track: str          # 'sql' | 'python' | 'python-data' | 'pyspark' | 'mixed'
     difficulty: str     # 'easy' | 'medium' | 'hard' | 'mixed'
     num_questions: int | None = None   # custom mode only, 1–5
@@ -175,12 +187,15 @@ def _pyspark_format_targets(difficulty: str, num_questions: int) -> list[str]:
       mixed:  all of the above combined
     """
     targets: dict[str, list[str]] = {
-        "easy":   ["mcq", "predict_output", "mcq", "predict_output", "debug"],
-        "medium": ["mcq", "scenario", "debug", "predict_output", "mcq"],
-        "hard":   ["mcq", "scenario", "predict_output", "mcq", "scenario"],
-        "mixed":  ["mcq", "scenario", "predict_output", "debug", "mcq"],
+        "easy":   ["mcq", "predict_output", "mcq", "predict_output", "debug", "mcq"],
+        "medium": ["mcq", "scenario", "debug", "predict_output", "mcq", "optimization"],
+        "hard":   ["mcq", "scenario", "predict_output", "mcq", "scenario", "mcq"],
+        "mixed":  ["mcq", "scenario", "predict_output", "debug", "mcq", "scenario"],
     }
-    return targets.get(difficulty, ["mcq"] * num_questions)[:num_questions]
+    base = targets.get(difficulty, ["mcq"] * num_questions)
+    if len(base) >= num_questions:
+        return base[:num_questions]
+    return base + [base[-1] if base else "mcq"] * (num_questions - len(base))
 
 
 def _sample_by_format(
@@ -256,12 +271,38 @@ def _sample_by_difficulty(
     return chosen
 
 
+def _fresh_first_sample(pool: list[dict], count: int, mocked_ids: set[int]) -> list[dict]:
+    fresh = [q for q in pool if int(q["id"]) not in mocked_ids]
+    stale = [q for q in pool if int(q["id"]) in mocked_ids]
+    if len(fresh) >= count:
+        return random.sample(fresh, count)
+    if len(fresh) + len(stale) >= count:
+        return fresh + random.sample(stale, count - len(fresh))
+    return []
+
+
+def _sample_statistics_benchmark(pool: list[dict], mocked_ids: set[int]) -> list[dict]:
+    numerical = [q for q in pool if q.get("subtype") == "numerical"]
+    conceptual = [q for q in pool if q.get("subtype") == "conceptual"]
+
+    chosen_numerical = _fresh_first_sample(numerical, 1, mocked_ids)
+    chosen_conceptual = _fresh_first_sample(conceptual, 2, mocked_ids)
+
+    if len(chosen_numerical) != 1 or len(chosen_conceptual) != 2:
+        return []
+
+    chosen = chosen_numerical + chosen_conceptual
+    random.shuffle(chosen)
+    return chosen
+
+
 async def _select_questions(
     track: str,
     difficulty: str,
     num_questions: int,
     user: dict,
     focus_concepts: list[str] | None = None,
+    mode: str | None = None,
 ) -> tuple[list[dict], bool]:
     """
     Select `num_questions` questions for a mock session with freshness scoring.
@@ -337,6 +378,10 @@ async def _select_questions(
 
         chosen_raw = guaranteed + filler
         random.shuffle(chosen_raw)
+    elif mode == "benchmark" and track == "statistics":
+        chosen_raw = _sample_statistics_benchmark(pool, mocked_ids)
+        if len(chosen_raw) < num_questions:
+            raise _not_enough
     elif track != "mixed" and get_track(track).eval_kind == "mcq" and difficulty != "mixed":
         fmt_targets = _pyspark_format_targets(difficulty, num_questions)
         chosen_raw = _sample_by_format(pool, fmt_targets, mocked_ids)
@@ -858,7 +903,15 @@ async def start_session(
         raise HTTPException(status_code=403, detail=access["block_copy"] or "Access denied.")
 
     # Derive num_questions and time_limit_s
-    if body.mode in MODE_CONFIGS:
+    if body.mode == "benchmark":
+        if body.track == "mixed":
+            raise HTTPException(status_code=400, detail="Benchmark mode is not available for mixed track sessions.")
+        benchmark = BENCHMARK_CONFIGS.get(body.track)
+        if benchmark is None:
+            raise HTTPException(status_code=400, detail="Benchmark mode is not configured for this track.")
+        num_questions = benchmark["num_questions"]
+        time_limit_s = benchmark["time_limit_s"]
+    elif body.mode in MODE_CONFIGS:
         num_questions = MODE_CONFIGS[body.mode]["num_questions"]
         time_limit_s = MODE_CONFIGS[body.mode]["time_limit_s"]
     elif body.mode == "custom":
@@ -871,7 +924,7 @@ async def start_session(
         num_questions = nq
         time_limit_s = tm * 60
     else:
-        raise HTTPException(status_code=400, detail="Invalid mode. Must be '30min', '60min', or 'custom'.")
+        raise HTTPException(status_code=400, detail="Invalid mode. Must be 'benchmark', '30min', '60min', or 'custom'.")
 
     # Validate focus_concepts (Elite only, max 3 items)
     focus_concepts: list[str] | None = None
@@ -899,7 +952,7 @@ async def start_session(
 
     # Select questions
     selected, focus_fallback = await _select_questions(
-        body.track, body.difficulty, num_questions, current_user, focus_concepts
+        body.track, body.difficulty, num_questions, current_user, focus_concepts, body.mode
     )
 
     # Fetch question details for response

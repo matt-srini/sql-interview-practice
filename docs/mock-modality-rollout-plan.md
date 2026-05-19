@@ -2,7 +2,7 @@
 
 Planning document for the practice and mock modality migration.
 
-Status: execution started, Phase 0 audit complete, Phase 2 complete, Phase 3 complete
+Status: execution started, Phase 0 audit complete, Phase 2 complete, Phase 3 complete, Phase 4 in progress
 Date: 2026-05-19
 Owner: GPT-5.4 orchestrator
 Implementers: parallel GPT Codex agents
@@ -23,6 +23,7 @@ Current state:
 - Phase 1 PySpark-first practice uplift is complete: additive metadata exposure and frontend terminology cleanup landed
 - Phase 2 is complete: reasoning-track payloads now expose stable `interaction_mode` metadata across Data Engineering, Data Modeling, ML Fundamentals, Experimentation, and Statistics; frontend prompt copy keeps modality family separate from question type; ML Fundamentals and Experimentation hook audits are complete with recorded gaps
 - Phase 3 is complete: reasoning-track catalog rows expose additive `type` metadata; practice surfaces show question-form badges in SidebarNav and QuestionPage chrome; SidebarNav supports question-form filtering for mixed-form catalogs; QuestionPage adds prompt-guidance and evidence-layout chrome for reasoning prompts; TrackHub previews mixed question forms in the header
+- Phase 4 is in progress: mock backend now accepts a real `benchmark` mode with track-specific fixed shapes; Statistics benchmark enforces a `1 numerical + 2 conceptual` mix; MockHub now defaults to benchmark, reframes short/custom sessions as drills, and treats Mixed as drill-only
 
 ## Objective
 

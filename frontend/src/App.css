@@ -8105,8 +8105,17 @@ select {
   background: var(--surface-card);
   text-align: left;
 }
+.mock-mode-card:disabled {
+  cursor: not-allowed;
+}
 .mock-mode-card:hover {
   border-color: var(--accent);
+}
+.mock-mode-card-disabled {
+  opacity: 0.68;
+}
+.mock-mode-card-disabled:hover {
+  border-color: var(--border-subtle);
 }
 .mock-mode-card.selected {
   border-color: var(--accent);
@@ -8126,6 +8135,49 @@ select {
 }
 .mock-mode-card-desc {
   font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+.mock-benchmark-blueprint {
+  background: linear-gradient(135deg, rgba(22, 101, 52, 0.08), rgba(91, 106, 240, 0.08));
+  border: 1px solid rgba(22, 101, 52, 0.14);
+  border-radius: var(--radius-md);
+  padding: 1.1rem 1.2rem;
+}
+.mock-benchmark-blueprint-kicker {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 0.55rem;
+}
+.mock-benchmark-blueprint-main {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+  margin-bottom: 0.45rem;
+}
+.mock-benchmark-blueprint-shape,
+.mock-benchmark-blueprint-time {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.32rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+.mock-benchmark-blueprint-shape {
+  background: rgba(22, 101, 52, 0.12);
+  color: var(--accent);
+}
+.mock-benchmark-blueprint-time {
+  background: rgba(91, 106, 240, 0.1);
+  color: #3d4ed7;
+}
+.mock-benchmark-blueprint-copy {
+  margin: 0;
+  font-size: 0.88rem;
   color: var(--text-secondary);
 }
 .mock-custom-controls {
