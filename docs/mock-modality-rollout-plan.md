@@ -2,7 +2,7 @@
 
 Planning document for the practice and mock modality migration.
 
-Status: execution started, Phase 0 audit complete, Phase 2 complete, Phase 3 complete, Phase 4 in progress
+Status: execution started, Phase 0 audit complete, Phase 2 complete, Phase 3 complete, Phase 4 in progress, Phase 5 started
 Date: 2026-05-19
 Owner: GPT-5.4 orchestrator
 Implementers: parallel GPT Codex agents
@@ -24,6 +24,7 @@ Current state:
 - Phase 2 is complete: reasoning-track payloads now expose stable `interaction_mode` metadata across Data Engineering, Data Modeling, ML Fundamentals, Experimentation, and Statistics; frontend prompt copy keeps modality family separate from question type; ML Fundamentals and Experimentation hook audits are complete with recorded gaps
 - Phase 3 is complete: reasoning-track catalog rows expose additive `type` metadata; practice surfaces show question-form badges in SidebarNav and QuestionPage chrome; SidebarNav supports question-form filtering for mixed-form catalogs; QuestionPage adds prompt-guidance and evidence-layout chrome for reasoning prompts; TrackHub previews mixed question forms in the header
 - Phase 4 is in progress: mock backend now accepts a real `benchmark` mode with track-specific fixed shapes; Statistics benchmark enforces a `1 numerical + 2 conceptual` mix; reasoning-track benchmarks now use track-specific type targets instead of PySpark's global sampler; MockHub now defaults to benchmark, reframes short/custom sessions as drills, treats Mixed as drill-only, and separates benchmark analytics/history from drills; MockSession active and summary chrome now carry benchmark-vs-drill framing so the session experience matches the new setup model
+- Phase 5 has started with the first drill-split UX slice: MockHub now introduces `/mock` as a benchmarks-and-drills surface instead of a generic mock page, while the role-filter track mapping is aligned with the canonical Data Engineer track set (`data-modeling` included)
 
 ## Objective
 

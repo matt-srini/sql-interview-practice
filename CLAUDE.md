@@ -187,7 +187,7 @@ sql-interview-practice/
 │   │       ├── LearningPath.js         # Curated path page at /learn/:topic/:slug (breadcrumb, progress, completion banner)
 │   │       ├── LearningPathsIndex.js   # Index of all paths at /learn and /learn/:topic (grouped + in-progress rail)
 │   │       ├── ProgressDashboard.js    # Cross-track progress + coaching insights at /dashboard
-│   │       ├── MockHub.js              # Mock interview lobby at /mock (benchmark/drill selection, benchmark blueprint preview, separated analytics/history)
+│   │       ├── MockHub.js              # Mock interview lobby at /mock (benchmark/drill selection, explicit benchmark/drill framing, separated analytics/history)
 │   │       ├── MockSession.js          # Active mock session + post-mortem insights at /mock/:id with benchmark/drill-aware session framing
 │   │       ├── SampleQuestionPage.js   # Topic-aware sample page with per-question draft autosave
 │   │       ├── AuthPage.js

@@ -8160,6 +8160,14 @@ select {
   margin-bottom: 2rem;
   padding-top: 1rem;
 }
+.mock-hub-kicker {
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.45rem;
+}
 .mock-hub-title {
   font-size: 2rem;
   font-weight: 800;

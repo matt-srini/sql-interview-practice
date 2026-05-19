@@ -25,7 +25,7 @@ const NO_MOCK_BANK_TRACKS = new Set();
 
 const MOCK_ROLES = [
   { id: 'analyst',            label: 'Data Analyst',       tracks: ['sql', 'statistics', 'python-data', 'python'] },
-  { id: 'engineer',           label: 'Data Engineer',      tracks: ['python', 'sql', 'pyspark', 'data-engineering'] },
+  { id: 'engineer',           label: 'Data Engineer',      tracks: ['python', 'sql', 'pyspark', 'data-engineering', 'data-modeling'] },
   { id: 'analytics_engineer', label: 'Analytics Engineer', tracks: ['sql', 'data-modeling', 'python-data', 'python'] },
   { id: 'scientist',          label: 'Data Scientist',     tracks: ['ml-fundamentals', 'statistics', 'experimentation', 'python', 'sql'] },
 ];
@@ -295,8 +295,8 @@ export default function MockHub() {
   return (
     <div className="mock-hub-page">
       <Helmet>
-        <title>Mock Interview — datathink</title>
-        <meta name="description" content="Simulate real data interview conditions with timed SQL, Python, Pandas, and PySpark mock sessions." />
+        <title>Benchmarks & Drills — datathink</title>
+        <meta name="description" content="Use fixed-shape interview benchmarks and flexible drills across SQL, Python, Pandas, PySpark, and reasoning tracks." />
         <meta name="robots" content="noindex" />
       </Helmet>
       <Topbar active="mock" userExtras={planPillNode} />
@@ -327,9 +327,10 @@ export default function MockHub() {
       <main className="mock-hub-main">
         {/* Hero */}
         <section className="mock-hub-hero">
-          <h1 className="mock-hub-title">Mock Interview</h1>
+          <div className="mock-hub-kicker">Benchmarks and drills</div>
+          <h1 className="mock-hub-title">Interview Practice</h1>
           <p className="mock-hub-subtitle">
-            Simulate real interview conditions with a countdown timer.
+            Use benchmarks for fixed-shape comparability, then drills for targeted follow-up practice.
             <button className="mock-help-btn" onClick={() => setShowHelp(true)} aria-label="How it works">?</button>
           </p>
         </section>
@@ -817,7 +818,7 @@ export default function MockHub() {
           <div className="mock-help-overlay" role="dialog" aria-modal="true" aria-labelledby="mock-help-title">
             <div className="mock-help-modal">
               <div className="mock-help-modal-header">
-                <h2 id="mock-help-title">How mock interviews work</h2>
+                <h2 id="mock-help-title">How benchmarks and drills work</h2>
                 <button className="mock-help-close" onClick={() => setShowHelp(false)} aria-label="Close">✕</button>
               </div>
               <ol className="mock-help-steps">

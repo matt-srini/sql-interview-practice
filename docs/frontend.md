@@ -522,6 +522,8 @@ Standalone page using the shared `<Topbar active="mock" />`. Does not use `AppSh
 
 **Layout:** Benchmark/drill mode cards (3) → track-specific benchmark blueprint card when `mode='benchmark'` → config pills (track + difficulty) → custom controls (if mode=custom) → Start button → benchmark analytics panel → split recent benchmark/drill history tables.
 
+- MockHub hero now frames `/mock` explicitly as a benchmarks-and-drills surface instead of a generic mock page, which is the first visible Phase 5 drill split cue.
+- The Data Engineer role filter now includes Data Modeling, matching the canonical role mapping used elsewhere in the product.
 - Benchmark is now the default starting mode on single-track sessions and is presented as the fixed-shape, serious mock.
 - Sprint drill (`30min`) and Custom drill are the flexible follow-up modes.
 - Mixed track is drill-only; when users switch to Mixed, MockHub automatically exits benchmark mode and explains why.

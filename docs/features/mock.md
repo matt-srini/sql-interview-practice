@@ -2,7 +2,7 @@
 
 ## Overview
 
-The mock interview system lets users practise under real interview conditions: a countdown timer, no mid-session solutions, and a post-session debrief. It is accessible to all authenticated users at `/mock` (requires login).
+The mock interview system lets users practise under real interview conditions: a countdown timer, no mid-session solutions, and a post-session debrief. It is accessible to all authenticated users at `/mock` (requires login) and now frames the surface explicitly as benchmarks plus drills, rather than a single undifferentiated mock mode.
 
 ---
 
