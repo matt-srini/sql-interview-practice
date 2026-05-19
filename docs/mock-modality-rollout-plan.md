@@ -2,10 +2,25 @@
 
 Planning document for the practice and mock modality migration.
 
-Status: planning approved, execution not started
+Status: execution started, Phase 0 audit complete
 Date: 2026-05-19
 Owner: GPT-5.4 orchestrator
 Implementers: parallel GPT Codex agents
+
+## Execution Status
+
+Completed artifacts:
+
+- [docs/phases/mock-modality-phase-0-backend-audit.md](./phases/mock-modality-phase-0-backend-audit.md)
+- [docs/phases/mock-modality-phase-0-frontend-audit.md](./phases/mock-modality-phase-0-frontend-audit.md)
+- [docs/phases/mock-modality-phase-0-content-audit.md](./phases/mock-modality-phase-0-content-audit.md)
+- [docs/phases/mock-modality-phase-0-review.md](./phases/mock-modality-phase-0-review.md)
+
+Current state:
+
+- Phase 0 is complete as a docs-and-audit foundation phase
+- no product-code behavior changed in Phase 0
+- Phase 1 is authorized next: PySpark-first practice uplift with additive metadata exposure and frontend terminology cleanup
 
 ## Objective
 
