@@ -408,6 +408,20 @@ Locked MCQ questions return 200 with `locked: true` and no `options` or `correct
 
 ---
 
+## Local dev accounts
+
+Three permanent accounts exist in the local Postgres DB for testing and browser preview. Always use these — never create throwaway accounts for plan-level UI testing.
+
+| Plan | Email | Notes |
+|---|---|---|
+| **Free** | `matt.srini@gmail.com` | Default non-paying user |
+| **Pro** | `srinivas.assampally@gmail.com` | Mid-tier; 3 hard mocks/day, no Elite features |
+| **Elite** | `admin@datathink.co` | Full access — analytics, debrief, focus mode, unlimited |
+
+Passwords are PBKDF2-SHA256 hashed in the DB (`pwd_hash` + `pwd_salt` columns). To log in for browser preview, use the `/auth` sign-in form. The session cookie (`session_token`, `httponly=true`) is set server-side via the Vite proxy (`/api → localhost:8000`), so sign-in through the UI works normally in dev.
+
+---
+
 ## Local development
 
 > Full details, node path quirks, and Alembic migration commands: **[`docs/deployment.md`](docs/deployment.md)**
