@@ -176,3 +176,60 @@ export function getMockSessionDescriptor(mode, track) {
     isBenchmark: false,
   };
 }
+
+export function getMockSetupDescriptor(mode, track, customCount, customMinutes) {
+  const descriptor = getMockSessionDescriptor(mode, track);
+
+  if (mode === 'benchmark') {
+    return {
+      ...descriptor,
+      sectionLabel: 'Benchmark setup',
+      summaryLine: descriptor.summaryLine,
+      detailLines: [
+        'Track-specific fixed shape for clean score comparisons over time.',
+      ],
+    };
+  }
+
+  if (mode === '30min') {
+    return {
+      ...descriptor,
+      sectionLabel: 'Drill plan',
+      summaryLine: '2 questions · 30 min cap',
+      detailLines: [
+        'Best for a short calibration round, a warm-up, or a quick pace check.',
+        'Drills stay separated from benchmark analytics so experimentation does not muddy comparability.',
+      ],
+    };
+  }
+
+  if (mode === 'custom') {
+    const questionLabel = `${customCount} question${customCount === 1 ? '' : 's'}`;
+    return {
+      ...descriptor,
+      sectionLabel: 'Drill plan',
+      summaryLine: `${questionLabel} · ${customMinutes} min cap`,
+      detailLines: [
+        'Tune scope and time after a benchmark when you want to isolate one weakness.',
+        'Use custom drills for follow-up practice without changing the benchmark baseline.',
+      ],
+    };
+  }
+
+  if (mode === '60min') {
+    return {
+      ...descriptor,
+      sectionLabel: 'Drill plan',
+      summaryLine: '3 questions · 60 min cap',
+      detailLines: [
+        'Legacy full-length drills remain reviewable, but new setup now favors benchmark plus focused drills.',
+      ],
+    };
+  }
+
+  return {
+    ...descriptor,
+    sectionLabel: 'Session setup',
+    detailLines: [],
+  };
+}

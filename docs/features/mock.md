@@ -34,6 +34,8 @@ Benchmark composition now follows track-specific type targets where the bank sup
 
 Custom drill validates server-side: `num_questions` must be 1–5, `time_minutes` must be 10–90.
 
+On MockHub, drill modes now get their own planner surface with session shape, purpose, and inline custom controls. That keeps drill setup visually distinct from the fixed-shape benchmark blueprint instead of presenting drills as only alternate mode cards.
+
 ---
 
 ## Tracks and Difficulties
@@ -164,7 +166,7 @@ Shown after `POST /api/mock/:id/finish`:
 ## How to Use (the `?` button on /mock)
 
 1. **Choose session type** — Benchmark for the fixed-shape track benchmark, Sprint drill for a short calibration round, or Custom drill for targeted follow-up practice.
-2. **Pick track and difficulty** — Difficulty buttons show live access state (remaining daily sessions or upgrade CTAs).
+2. **Pick track and difficulty** — Difficulty buttons show live access state (remaining daily sessions or upgrade CTAs). Drill modes also show a dedicated planner card with the session shape before you start.
 3. **Track benchmark availability** — Mixed stays drill-only; single-track sessions can use Benchmark.
 4. **(Elite, SQL track)** Optionally select a **Company** filter.
 5. **Start** — the timer starts immediately.

@@ -8271,6 +8271,102 @@ select {
   font-size: 0.88rem;
   color: var(--text-secondary);
 }
+.mock-drill-plan {
+  background: linear-gradient(135deg, rgba(91, 106, 240, 0.08), rgba(22, 101, 52, 0.06));
+  border: 1px solid rgba(91, 106, 240, 0.14);
+  border-radius: var(--radius-md);
+  padding: 1.1rem 1.2rem;
+}
+.mock-drill-plan-kicker {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #3d4ed7;
+  font-weight: 700;
+  margin-bottom: 0.55rem;
+}
+.mock-drill-plan-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.mock-drill-plan-title-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  align-items: flex-start;
+}
+.mock-drill-plan-title {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--text-strong);
+  font-weight: 700;
+}
+.mock-drill-plan-mode {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(91, 106, 240, 0.12);
+  color: #3d4ed7;
+  font-size: 0.76rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.mock-drill-plan-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.mock-drill-plan-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.32rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--text-strong);
+}
+.mock-drill-plan-chip-track {
+  background: rgba(22, 101, 52, 0.12);
+  color: var(--accent);
+}
+.mock-drill-plan-copy {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+.mock-drill-plan-shape {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.6rem;
+  align-items: center;
+}
+.mock-drill-plan-shape-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+}
+.mock-drill-plan-shape-line {
+  font-size: 0.82rem;
+  color: var(--text-strong);
+  font-weight: 600;
+}
+.mock-drill-plan-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.mock-drill-plan-note {
+  margin: 0;
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
 .mock-custom-controls {
   background: var(--surface-card);
   border-radius: var(--radius-md);
@@ -8279,6 +8375,11 @@ select {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+.mock-custom-controls-inline {
+  background: rgba(255, 255, 255, 0.66);
+  border-color: rgba(91, 106, 240, 0.14);
+  padding: 0.95rem 1rem;
 }
 .mock-custom-row {
   display: flex;
@@ -8952,6 +9053,9 @@ select {
   .mock-hub-config-row {
     flex-direction: column;
     align-items: flex-start;
+  }
+  .mock-drill-plan-title-row {
+    flex-direction: column;
   }
   .mock-summary-card {
     padding: 1.25rem;

@@ -11,6 +11,7 @@ import {
   getBenchmarkBlueprint,
   getMockModeCards,
   getMockModeDisplayLabel,
+  getMockSetupDescriptor,
   isBenchmarkMockMode,
   getSessionQuestionCount,
   getSessionTimeMinutes,
@@ -154,12 +155,14 @@ export default function MockHub() {
 
   const benchmarkBlueprint = getBenchmarkBlueprint(track);
   const modeCards = getMockModeCards(track);
+  const setupDescriptor = getMockSetupDescriptor(mode, track, numQuestions, timeMinutes);
   const effectiveQuestionCount = getSessionQuestionCount(mode, track, numQuestions);
   const effectiveTimeMinutes = getSessionTimeMinutes(mode, track, timeMinutes);
   const benchmarkHistory = history.filter((session) => isBenchmarkMockMode(session.mode));
   const drillHistory = history.filter((session) => !isBenchmarkMockMode(session.mode));
   const benchmarkAnalytics = analytics?.benchmark_summary ?? null;
   const drillAnalytics = analytics?.drill_summary ?? null;
+  const expectationLines = getSessionExpectations(track, difficulty, effectiveQuestionCount);
 
   useEffect(() => {
     if (track === 'mixed' && mode === 'benchmark') {
@@ -369,26 +372,58 @@ export default function MockHub() {
           </section>
         )}
 
-        {/* Custom controls */}
-        {mode === 'custom' && (
-          <section className="mock-hub-section mock-custom-controls">
-            <div className="mock-custom-row">
-              <label className="mock-custom-label">Questions</label>
-              <input
-                className="mock-custom-input"
-                type="number" min="1" max="5" value={numQuestions}
-                onChange={e => setNumQuestions(Math.max(1, Math.min(5, Number(e.target.value))))}
-              />
-              <span className="mock-custom-hint">(1–5)</span>
-            </div>
-            <div className="mock-custom-row">
-              <label className="mock-custom-label">Time (minutes)</label>
-              <input
-                className="mock-custom-input"
-                type="number" min="10" max="90" value={timeMinutes}
-                onChange={e => setTimeMinutes(Math.max(10, Math.min(90, Number(e.target.value))))}
-              />
-              <span className="mock-custom-hint">(10–90)</span>
+        {mode !== 'benchmark' && setupDescriptor && (
+          <section className="mock-hub-section mock-drill-plan">
+            <div className="mock-drill-plan-kicker">{setupDescriptor.sectionLabel}</div>
+            <div className="mock-drill-plan-main">
+              <div className="mock-drill-plan-title-row">
+                <h2 className="mock-drill-plan-title">{setupDescriptor.title}</h2>
+                <span className="mock-drill-plan-mode">{setupDescriptor.modeLabel}</span>
+              </div>
+              <div className="mock-drill-plan-chips">
+                <span className="mock-drill-plan-chip">{effectiveQuestionCount} questions</span>
+                <span className="mock-drill-plan-chip">{effectiveTimeMinutes} min cap</span>
+                <span className="mock-drill-plan-chip mock-drill-plan-chip-track">{TRACK_LABELS[track]}</span>
+              </div>
+              <p className="mock-drill-plan-copy">{setupDescriptor.description}</p>
+              {expectationLines.length > 0 && (
+                <div className="mock-drill-plan-shape">
+                  <span className="mock-drill-plan-shape-label">Session shape</span>
+                  {expectationLines.map((line, index) => (
+                    <span key={index} className="mock-drill-plan-shape-line">{line}</span>
+                  ))}
+                </div>
+              )}
+              {setupDescriptor.detailLines?.length > 0 && (
+                <div className="mock-drill-plan-notes">
+                  {setupDescriptor.detailLines.map((line) => (
+                    <p key={line} className="mock-drill-plan-note">{line}</p>
+                  ))}
+                </div>
+              )}
+
+              {mode === 'custom' && (
+                <div className="mock-custom-controls mock-custom-controls-inline">
+                  <div className="mock-custom-row">
+                    <label className="mock-custom-label">Questions</label>
+                    <input
+                      className="mock-custom-input"
+                      type="number" min="1" max="5" value={numQuestions}
+                      onChange={e => setNumQuestions(Math.max(1, Math.min(5, Number(e.target.value))))}
+                    />
+                    <span className="mock-custom-hint">(1–5)</span>
+                  </div>
+                  <div className="mock-custom-row">
+                    <label className="mock-custom-label">Time (minutes)</label>
+                    <input
+                      className="mock-custom-input"
+                      type="number" min="10" max="90" value={timeMinutes}
+                      onChange={e => setTimeMinutes(Math.max(10, Math.min(90, Number(e.target.value))))}
+                    />
+                    <span className="mock-custom-hint">(10–90)</span>
+                  </div>
+                </div>
+              )}
             </div>
           </section>
         )}
@@ -569,19 +604,15 @@ export default function MockHub() {
         })()}
 
         {/* What to expect */}
-        {(() => {
-          const expectations = getSessionExpectations(track, difficulty, effectiveQuestionCount);
-          if (mode !== 'benchmark' && !expectations.length) return null;
-          return (
-            <div className="mock-session-expect">
-              <span className="mock-session-expect-label">Expect</span>
-              <span className="mock-session-expect-line">{effectiveQuestionCount} questions · {effectiveTimeMinutes} min</span>
-              {expectations.map((line, i) => (
-                <span key={i} className="mock-session-expect-line">{line}</span>
-              ))}
-            </div>
-          );
-        })()}
+        {mode === 'benchmark' && (
+          <div className="mock-session-expect">
+            <span className="mock-session-expect-label">Expect</span>
+            <span className="mock-session-expect-line">{effectiveQuestionCount} questions · {effectiveTimeMinutes} min</span>
+            {expectationLines.map((line, i) => (
+              <span key={i} className="mock-session-expect-line">{line}</span>
+            ))}
+          </div>
+        )}
 
         {startError && <p className="mock-hub-error">{startError}</p>}
 

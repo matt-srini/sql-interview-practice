@@ -3,6 +3,7 @@ import {
   getBenchmarkBlueprint,
   getMockModeCards,
   getMockModeDisplayLabel,
+  getMockSetupDescriptor,
   getMockSessionDescriptor,
   getSessionQuestionCount,
   getSessionTimeMinutes,
@@ -39,6 +40,17 @@ describe('mockModeConfig', () => {
       phaseLabel: 'Drill session',
       title: 'Custom follow-up drill',
       isBenchmark: false,
+    });
+  });
+
+  it('builds setup descriptors for drill planning surfaces', () => {
+    expect(getMockSetupDescriptor('30min', 'sql', 2, 30)).toMatchObject({
+      sectionLabel: 'Drill plan',
+      summaryLine: '2 questions · 30 min cap',
+    });
+    expect(getMockSetupDescriptor('custom', 'sql', 4, 55)).toMatchObject({
+      sectionLabel: 'Drill plan',
+      summaryLine: '4 questions · 55 min cap',
     });
   });
 
