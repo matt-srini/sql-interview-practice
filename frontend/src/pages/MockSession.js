@@ -14,6 +14,7 @@ import { TRACK_META } from '../contexts/TopicContext';
 import { TRACK_LABELS } from '../trackRegistry';
 import { track as trackEvent } from '../analytics';
 import { renderDescription } from '../utils/renderDescription';
+import { getMockSessionDescriptor } from '../mockModeConfig';
 
 function formatTime(s) {
   if (s == null || s < 0) return '00:00';
@@ -183,6 +184,8 @@ export default function MockSession() {
   }, [remainingS === null, status]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentQuestion = questions[activeQ] || null;
+  const sessionTrack = session?.track || currentQuestion?.track || 'sql';
+  const sessionDescriptor = getMockSessionDescriptor(session?.mode, sessionTrack);
 
   // Follow-up banner: show for 3s when user navigates to an is_follow_up question
   useEffect(() => {
@@ -408,6 +411,7 @@ export default function MockSession() {
     // drill link targets the most actionable single track rather than whichever
     // track happened to appear first in the question list.
     const sessionTrack = sum?.track || session?.track || 'sql';
+    const summaryDescriptor = getMockSessionDescriptor(sum?.mode || session?.mode, sessionTrack);
     let drillTrack;
     if (sessionTrack === 'mixed') {
       const weakByTrack = {};
@@ -439,18 +443,27 @@ export default function MockSession() {
       const diff = session?.difficulty || sum?.difficulty || '';
       const trk = TRACK_LABELS[session?.track || sum?.track] || '';
       const mins = timeUsedS ? Math.floor(timeUsedS / 60) : '?';
-      return `${solvedCount}/${totalCount} ${diff} ${trk} questions in ${mins}m`;
+      return `${summaryDescriptor.modeLabel}: ${solvedCount}/${totalCount} ${diff} ${trk} questions in ${mins}m`;
     }
 
     return (
       <div className="mock-shell">
         <header className="mock-topbar">
           <Link to="/mock" className="btn btn-secondary btn-compact">← Back to Mock</Link>
-          <span className="mock-topbar-title">Session Summary</span>
+          <span className="mock-topbar-title">{summaryDescriptor.isBenchmark ? 'Benchmark summary' : 'Drill summary'}</span>
           <span />
         </header>
         <div className="mock-summary-scroll">
           <div className="mock-summary-card">
+            <div className="mock-session-summary-intro">
+              <span className={`mock-session-summary-badge${summaryDescriptor.isBenchmark ? ' mock-session-summary-badge--benchmark' : ''}`}>
+                {summaryDescriptor.modeLabel}
+              </span>
+              <div className="mock-session-summary-title">{summaryDescriptor.title}</div>
+              {summaryDescriptor.summaryLine && (
+                <div className="mock-session-summary-copy">{summaryDescriptor.summaryLine}</div>
+              )}
+            </div>
             <div className="mock-summary-score" style={{
               color: solvedCount === 0 ? 'var(--danger)' : solvedCount > totalCount / 2 ? 'var(--success)' : 'var(--text-strong)',
             }}>
@@ -600,7 +613,7 @@ export default function MockSession() {
                 {shareCopied ? '✓ Copied!' : 'Share result'}
               </button>
               <button className="btn btn-primary" onClick={() => navigate('/mock')}>
-                New mock interview
+                {summaryDescriptor.isBenchmark ? 'Start another benchmark' : 'Start another drill'}
               </button>
             </div>
           </div>
@@ -690,6 +703,22 @@ export default function MockSession() {
               Not enough focus concept questions — session includes similar questions to fill the gap.
             </div>
           )}
+
+          <div className={`mock-session-context${sessionDescriptor.isBenchmark ? ' mock-session-context--benchmark' : ''}`}>
+            <div className="mock-session-context-head">
+              <span className={`mock-session-context-badge${sessionDescriptor.isBenchmark ? ' mock-session-context-badge--benchmark' : ''}`}>
+                {sessionDescriptor.modeLabel}
+              </span>
+              <span className="mock-session-context-track">{TRACK_LABELS[session?.track] || TRACK_LABELS[currentQuestion?.track] || session?.track}</span>
+            </div>
+            <div className="mock-session-context-title">{sessionDescriptor.title}</div>
+            {sessionDescriptor.summaryLine && (
+              <div className="mock-session-context-summary">{sessionDescriptor.summaryLine}</div>
+            )}
+            {sessionDescriptor.description && (
+              <p className="mock-session-context-copy">{sessionDescriptor.description}</p>
+            )}
+          </div>
 
           {q && (
             <>

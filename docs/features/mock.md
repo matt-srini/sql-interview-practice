@@ -112,6 +112,7 @@ Returns 403 for non-Elite plans. Panel appears on MockHub.js above the history t
 
 ## Active Session (`/mock/:id`)
 
+- **Session framing card** in the left panel makes the current session type explicit: benchmark sessions show the fixed-shape blueprint framing for that track, while drills show flexible follow-up framing.
 - **Countdown timer** in the topbar — colour-coded: normal → amber (<10 min) → red (<3 min). Browser tab title updates with remaining time.
 - **Auto-finish** when timer reaches 0.
 - **Question navigation** — numbered dot tabs, each shows solved/unsolved state.
@@ -131,6 +132,7 @@ Returns 403 for non-Elite plans. Panel appears on MockHub.js above the history t
 
 Shown after `POST /api/mock/:id/finish`:
 
+- **Mode-aware summary framing** — topbar and intro block now distinguish benchmark vs drill, restate the session shape, and keep older legacy `60min` sessions readable.
 - **Score headline** — `X/Y correct`.
 - **(Pro+)** Baseline comparison — `X% above/below your historical accuracy` pulled from `/api/dashboard/insights`.
 - **Time used** — `MM:SS used of MM:SS limit`.
@@ -145,6 +147,7 @@ Shown after `POST /api/mock/:id/finish`:
   - Returned as `debrief` in the `POST /api/mock/:id/finish` response. `null` for non-Elite plans.
 - **(Elite) "Known weakness" badge** — when a session concept matches one of the user's cross-session `weakest_concepts` from the dashboard insights, the concept row is highlighted in amber and tagged "known weakness". Elite users also see a path recommendation link ("Study in {title} →") when `recommended_path_slug` is present; Pro users see a generic drill link.
 - **Share result** — copies a summary string to clipboard.
+- **Restart CTA** — routes back to `/mock` as `Start another benchmark` or `Start another drill` depending on the finished session mode.
 
 ---
 

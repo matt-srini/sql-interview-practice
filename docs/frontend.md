@@ -535,17 +535,19 @@ Full-screen layout. Does not use `AppShell`. Has two states:
 
 **Active state:**
 - Custom topbar: `[◀ Exit] [Q1• Q2○ Q3○] [MM:SS timer] [End session]`
+- Left panel now opens with a session-context card that makes the current mode explicit: benchmark sessions show a fixed-shape benchmark badge, shape summary, and track-specific benchmark framing; drills show flexible drill framing instead.
 - Body: 280px left panel (question description/schema + concepts) | flex-grow right panel (editor + run/submit)
 - Timer: countdown from `time_limit_s`. Recomputed from `started_at` on reload. Auto-finishes when it hits zero.
 - Timer CSS states: neutral → `.mock-timer--warning` (<10min) → `.mock-timer--danger` (<3min, pulsing)
 
 **Summary state (after finish):**
+- Summary topbar and intro card now distinguish `Benchmark summary` vs `Drill summary`, show the human-readable mode label, and restate the session shape before the score block.
 - Score card: `X/Y correct, Z% above/below your session average` (comparison against `GET /api/dashboard/insights` track accuracy baseline), plus time used
 - Per-concept session accuracy row (`correct/attempts`) built from concepts touched in this mock
 - "Drill weak concepts" CTA to `/practice/{track}?concepts={slug1,slug2}`
 - Per-question rows: title · solved badge · time spent · collapsible solution
-- Share CTA → `navigator.clipboard.writeText(...)`
-- "New mock interview" → `/mock`
+- Share CTA → `navigator.clipboard.writeText(...)`, now prefixed with the human-readable mode label
+- Primary CTA returns to `/mock` as `Start another benchmark` or `Start another drill` depending on the completed session mode
 
 **Reload recovery:** On mount, if no `location.state.sessionData`, fetches `GET /api/mock/:id`. Computes `remainingS = time_limit_s - elapsed_since_started_at`.
 

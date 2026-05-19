@@ -3,6 +3,7 @@ import {
   getBenchmarkBlueprint,
   getMockModeCards,
   getMockModeDisplayLabel,
+  getMockSessionDescriptor,
   getSessionQuestionCount,
   getSessionTimeMinutes,
   supportsBenchmarkMode,
@@ -25,5 +26,18 @@ describe('mockModeConfig', () => {
     expect(getMockModeDisplayLabel('60min')).toBe('Full (legacy)');
     expect(getSessionQuestionCount('benchmark', 'statistics', 4)).toBe(3);
     expect(getSessionTimeMinutes('benchmark', 'statistics', 30)).toBe(45);
+  });
+
+  it('describes benchmark and drill session chrome copy', () => {
+    expect(getMockSessionDescriptor('benchmark', 'sql')).toMatchObject({
+      phaseLabel: 'Benchmark session',
+      title: 'Fixed-shape track benchmark',
+      isBenchmark: true,
+    });
+    expect(getMockSessionDescriptor('custom', 'sql')).toMatchObject({
+      phaseLabel: 'Drill session',
+      title: 'Custom follow-up drill',
+      isBenchmark: false,
+    });
   });
 });

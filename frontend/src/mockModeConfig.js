@@ -114,3 +114,61 @@ export function getSessionTimeMinutes(mode, track, customMinutes) {
   if (mode === 'custom') return customMinutes;
   return customMinutes;
 }
+
+export function getMockSessionDescriptor(mode, track) {
+  const modeLabel = getMockModeDisplayLabel(mode);
+  const benchmark = getBenchmarkBlueprint(track);
+
+  if (mode === 'benchmark' && benchmark) {
+    return {
+      modeLabel,
+      phaseLabel: 'Benchmark session',
+      title: 'Fixed-shape track benchmark',
+      summaryLine: `${benchmark.summary} · ${benchmark.timeMinutes} min fixed session`,
+      description: benchmark.description,
+      isBenchmark: true,
+    };
+  }
+
+  if (mode === '30min') {
+    return {
+      modeLabel,
+      phaseLabel: 'Drill session',
+      title: 'Short calibration drill',
+      summaryLine: '2 questions · 30 min cap',
+      description: 'Use sprint drills to pressure-test pace, warm up before a benchmark, or quickly diagnose weak spots.',
+      isBenchmark: false,
+    };
+  }
+
+  if (mode === 'custom') {
+    return {
+      modeLabel,
+      phaseLabel: 'Drill session',
+      title: 'Custom follow-up drill',
+      summaryLine: 'Flexible timing and scope',
+      description: 'Use custom drills when you want to tune depth, duration, or concept coverage after reviewing a benchmark.',
+      isBenchmark: false,
+    };
+  }
+
+  if (mode === '60min') {
+    return {
+      modeLabel,
+      phaseLabel: 'Legacy drill session',
+      title: 'Legacy full-length drill',
+      summaryLine: '3 questions · 60 min cap',
+      description: 'Older full-length sessions remain reviewable, but new setup flows now separate benchmark and drill more explicitly.',
+      isBenchmark: false,
+    };
+  }
+
+  return {
+    modeLabel,
+    phaseLabel: 'Mock session',
+    title: 'Interview session',
+    summaryLine: '',
+    description: '',
+    isBenchmark: false,
+  };
+}
