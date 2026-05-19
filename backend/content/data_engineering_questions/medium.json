@@ -737,5 +737,85 @@
       "LINEAGE & OBSERVABILITY",
       "DATA QUALITY"
     ]
+  },
+  {
+    "id": 52031,
+    "order": 31,
+    "title": "Backpressure in a Streaming Pipeline",
+    "difficulty": "medium",
+    "type": "scenario",
+    "scenario_context": "A real-time enrichment pipeline reads from a Kafka topic (producer rate: 50,000 messages/sec), calls an external enrichment API per message, and writes to a second Kafka topic. Over the past hour the consumer lag has grown from 10K to 4.2M messages. Enrichment API latency is stable at 12ms per call. The consumer group has 8 pods, each processing messages sequentially.",
+    "description": "What is the root cause of the growing lag, and what is the most effective first remediation step?",
+    "options": [
+      "The consumer throughput (8 pods × 1 call/12ms ≈ 667 msg/sec) is far below the producer rate (50,000 msg/sec) — this is backpressure; the most effective fix is to increase consumer parallelism (more pods or async batched API calls) to raise throughput above the producer rate",
+      "The growing lag is caused by the Kafka topic having too few partitions — Kafka limits one consumer per partition, so adding more pods beyond the partition count has no effect; the fix is to increase the partition count to match the desired pod count",
+      "The enrichment API is the bottleneck because 12ms per call is too slow; the correct fix is to cache API responses in Redis so repeated lookups return in under 1ms and the consumer can catch up",
+      "The consumer lag is a monitoring artifact — Kafka resets consumer offsets when lag exceeds a threshold; the actual processing is healthy and the lag will self-correct once the consumer group rebalances"
+    ],
+    "correct_option": 0,
+    "explanation": "Backpressure occurs when the consumer's processing throughput is lower than the producer's write rate, causing the queue (Kafka consumer lag) to grow unboundedly. Here: 8 pods × (1000ms / 12ms) ≈ 667 messages/sec capacity vs 50,000 messages/sec produced — a 75× gap. The primary fix is to increase parallelism: add more consumer pods (requires enough Kafka partitions to support them) and/or switch from sequential to async/batched API calls. With 50 concurrent async calls per pod at 12ms each, a single pod achieves ~4,100 msg/sec; 12 such pods ≈ 50,000 msg/sec.\n\nOption B is partially correct as a prerequisite (partition count does cap parallelism) but it is the second step, not the root cause diagnosis. The root cause is the throughput math, not partition count alone.\n\nOption C (caching) helps only if a large fraction of enrichment calls are repeated lookups for the same key. Nothing in the scenario indicates repeated keys — treating it as the primary fix is speculative.\n\nOption D is false — Kafka consumer lag is a real metric and does not self-correct without intervention.",
+    "hints": [
+      "Calculate the maximum throughput achievable with the current setup (pods × messages per second per pod) and compare it to the producer rate.",
+      "Backpressure means the consumer cannot keep up with the producer. The solution always involves increasing consumer throughput, reducing the work per message, or slowing the producer."
+    ],
+    "concepts": [
+      "BACKPRESSURE",
+      "STREAMING ARCHITECTURE",
+      "KAFKA CONSUMER LAG",
+      "PARALLELISM"
+    ]
+  },
+  {
+    "id": 52032,
+    "order": 32,
+    "title": "GDPR Erasure in an Immutable Data Lake: Crypto Shredding",
+    "difficulty": "medium",
+    "type": "mcq",
+    "description": "A data platform stores Parquet files in S3 and uses Spark for batch processing. The legal team requires GDPR-compliant erasure within 72 hours of a deletion request, but the raw Parquet files are immutable and cannot be retroactively modified. Which approach satisfies the erasure requirement without physically rewriting historical Parquet files?",
+    "options": [
+      "Crypto shredding: encrypt each user's PII fields with a per-user key stored in a KMS; on erasure request, delete the user's key from the KMS — the encrypted data in Parquet becomes permanently unreadable without rewriting any files",
+      "Pseudonymization: replace user PII with a deterministic hash at ingest time; on erasure request, delete the hash mapping from the lookup table — the hash in Parquet is irreversible without the mapping",
+      "Data masking: apply column-level masking policies in the query engine (e.g., Apache Ranger) so that deleted users' PII is replaced with NULL at read time — physical data is unchanged but logically erased",
+      "Partition-level deletion: partition Parquet files by user_id so each user's data lands in its own partition directory; on erasure request, delete the S3 prefix for that user"
+    ],
+    "correct_option": 0,
+    "explanation": "Crypto shredding (cryptographic erasure) is the standard technique for GDPR erasure in immutable storage systems. Each user's sensitive columns are encrypted with a unique key managed in a KMS (AWS KMS, HashiCorp Vault, etc.). When a deletion request arrives, the key is deleted from the KMS. Without the key, the ciphertext in Parquet files is computationally indistinguishable from random data and cannot be decrypted — GDPR considers this equivalent to erasure. No Parquet files need to be rewritten.\n\nOption B (pseudonymization) is not sufficient. GDPR considers pseudonymous data still personal if re-identification is possible. Deleting the mapping table removes the easy lookup path, but if the original data space is small enough to brute-force, the hash can be reversed.\n\nOption C (query-layer masking) is access control, not erasure. The physical PII still exists in the Parquet files; it is merely hidden at read time. A user with direct S3 access could still read it. This does not satisfy GDPR's right to erasure.\n\nOption D (partition-level deletion by user_id) physically deletes data but requires partitioning by user_id — impractical for analytical fact tables because it creates millions of tiny partitions and breaks date-range query efficiency.",
+    "hints": [
+      "GDPR's right to erasure requires that data can no longer be accessed or reconstructed. What happens to encrypted data when its decryption key is destroyed?",
+      "Masking and pseudonymization hide data from readers but don't remove it from storage. Crypto shredding is different — why?"
+    ],
+    "concepts": [
+      "CRYPTO SHREDDING",
+      "GDPR COMPLIANCE",
+      "DATA GOVERNANCE",
+      "IMMUTABLE STORAGE"
+    ]
+  },
+  {
+    "id": 52033,
+    "order": 33,
+    "title": "Operationalizing Data Contracts: Schema Registry and CI Enforcement",
+    "difficulty": "medium",
+    "type": "mcq",
+    "description": "A data platform team wants to formalize data contracts between producer and consumer teams. Which mechanism most effectively prevents breaking schema changes from reaching downstream consumers in a continuous deployment environment?",
+    "options": [
+      "Store schema definitions as versioned files in a schema registry; add a CI step that runs a backward/forward compatibility check on every producer PR — fail the build if the change breaks any registered consumer schema",
+      "Require producer teams to post a Slack message in #data-contracts at least 24 hours before deploying a schema change, so consumers have time to update their code",
+      "Use strong typing in the producer's application code (e.g., Avro or Protobuf classes); if the producer compiles without errors, the schema is compatible with all consumers",
+      "Run a nightly batch job that compares the current live schema of each topic against a snapshot taken 24 hours earlier; alert the on-call engineer if any columns were removed or renamed"
+    ],
+    "correct_option": 0,
+    "explanation": "A schema registry with CI-enforced compatibility checks is the industry-standard operationalization of data contracts. Key properties: (1) schemas are version-controlled and discoverable; (2) compatibility rules (backward, forward, full) are machine-enforced, not dependent on human communication; (3) the check runs at PR time, before deployment — breaking changes are blocked at the source rather than detected after consumers fail. Tools like Confluent Schema Registry, AWS Glue Schema Registry, or a Git-hosted JSON Schema repo with a compatibility CLI all implement this pattern.\n\nOption B (Slack notification) is informal and not enforceable — it depends on producers remembering to post and consumers reading it in time. It doesn't prevent accidental breaking changes.\n\nOption C (producer compilation) checks the producer's own types, not consumer compatibility. A producer can rename a field in a way that compiles cleanly on its side but breaks every downstream consumer that expects the old name.\n\nOption D (nightly diff) detects breaking changes after the fact — potentially 23+ hours after deployment. At that point, downstream consumers have already been failing for nearly a day.",
+    "hints": [
+      "The goal is to prevent breaking changes from being deployed, not just to detect them after the fact. Which option blocks the change at the source?",
+      "Human coordination (Slack, email) is not a contract. A contract is machine-enforced."
+    ],
+    "concepts": [
+      "DATA CONTRACT",
+      "SCHEMA REGISTRY",
+      "CI/CD",
+      "BACKWARD COMPATIBILITY",
+      "SCHEMA EVOLUTION"
+    ]
   }
 ]

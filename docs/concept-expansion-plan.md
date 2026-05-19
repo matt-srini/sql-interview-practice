@@ -3,7 +3,7 @@
 Tracks concept-hooks.md coverage against the question bank, identifies gaps, and drives new question authoring across all 8 tracks.
 
 **Initiated:** 2026-05-18  
-**Status:** Phase 4 pending (Phase 0 complete 2026-05-18, Phase 1 complete 2026-05-18, Phase 2 complete 2026-05-18, Phase 3 complete 2026-05-19)
+**Status:** Phase 5 pending (Phase 0 complete 2026-05-18, Phase 1 complete 2026-05-18, Phase 2 complete 2026-05-18, Phase 3 complete 2026-05-19, Phase 4 complete 2026-05-19)
 
 ---
 
@@ -12,11 +12,11 @@ Tracks concept-hooks.md coverage against the question bank, identifies gaps, and
 | Track | Hooks in concept-hooks.md | Gap analysis done? | Questions added? |
 |---|---|---|---|
 | SQL | ✅ hooks 1–92 (Phase 0 expanded) | ✅ done | ✅ Phase 1 (+22) |
-| PySpark | ✅ hooks 1–66 (Phase 0 expanded) | ✅ done | ⬜ Phase 4 |
+| PySpark | ✅ hooks 1–66 (Phase 0 expanded) | ✅ done | ✅ Phase 4 (+5) |
 | Pandas | ✅ hooks 1–67 (Phase 0 expanded) | ✅ done | ✅ Phase 3 (+12) |
 | Python | ✅ hooks 1–67 (Phase 0 expanded) | ✅ done | ✅ Phase 3 (+12) |
-| Data Engineering | ✅ hooks 1–67 (Phase 0 expanded) | ✅ done | ⬜ Phase 4 |
-| Data Modeling | ✅ hooks 1–57 (Phase 0 expanded) | ✅ done | ⬜ Phase 4 |
+| Data Engineering | ✅ hooks 1–67 (Phase 0 expanded) | ✅ done | ✅ Phase 4 (+6) |
+| Data Modeling | ✅ hooks 1–57 (Phase 0 expanded) | ✅ done | ✅ Phase 4 (+6) |
 | Statistics | ✅ hooks 1–84 (Phase 0 expanded) | ✅ done | ✅ Phase 2 (+20) |
 | ML Fundamentals | ✅ hooks 1–40 (Phase 0 written) | ❌ deferred to Phase 7 | ⬜ Phase 7 |
 | Experimentation | ✅ hooks 1–33 (written 2026-05-18) | ❌ deferred to Phase 7 | ⬜ Phase 7 |
@@ -343,30 +343,31 @@ Pythonic Patterns (3 medium):
 ---
 
 ### Phase 4 — PySpark (+5) + DE (+6) + DM (+6) fills
-**Target files:** pyspark, data_engineering, data_modeling question directories
+**Target files:** pyspark, data_engineering, data_modeling question directories  
+**Status: ✅ Complete 2026-05-19** — PySpark 106 practice (41/39/26) + 21 mock-only; DE 86 practice (30/33/23) + 1 mock-only; DM 76 practice (25/28/23) + 1 mock-only
 
-**PySpark (5 questions — all practice except 1 mock-only):**
-- [ ] collect_list() vs collect_set() — ordering and deduplication guarantees (medium, practice)
-- [ ] Pivot with dynamic schema — what happens when pivot columns are runtime-determined (medium, mock-only)
-- [ ] F.expr() usage — when a SQL string in the DataFrame API is useful (easy, practice)
-- [ ] Cross join opt-in — why PySpark requires explicit permission (easy, practice)
-- [ ] DataFrame vs Dataset typed safety — when the extra type safety matters in practice (easy, practice)
+**PySpark (5 questions — 4 practice + 1 mock-only):**
+- [x] 41039 — F.expr() usage — when a SQL string in the DataFrame API is useful (easy, practice)
+- [x] 41040 — Cross join opt-in — why PySpark requires .crossJoin() (easy, practice)
+- [x] 41041 — DataFrame vs Dataset typed safety — Dataset[T] only in Scala/Java (easy, practice)
+- [x] 42049 — collect_list() vs collect_set() — ordering and deduplication guarantees (medium, practice)
+- [x] 42050 — Pivot with dynamic schema — driver OOM at high cardinality without values list (medium, mock-only)
 
 **Data Engineering (6 questions — all practice):**
-- [ ] Backpressure and flow control — what happens when consumers can't keep up (medium)
-- [ ] Privacy/compliance architecture — PII handling, deletion workflows, access boundaries (medium)
-- [ ] Data contract operationalization — enforcement, versioning, rollout mechanics (medium)
-- [ ] Warehouse cost modeling — how storage, compute, scan volume drive spend (hard)
-- [ ] Warehouse cost deep-dive — partition/clustering impact on bytes scanned (hard)
-- [ ] Incident containment patterns — blast radius limiting, staged recovery (hard)
+- [x] 52031 — Backpressure in a streaming pipeline — throughput math + parallelism fix (medium, scenario)
+- [x] 52032 — GDPR erasure in immutable data lake — crypto shredding via per-user KMS key deletion (medium, mcq)
+- [x] 52033 — Data contract operationalization — schema registry + CI compatibility check (medium, mcq)
+- [x] 53022 — Snowflake warehouse cost optimization — separate warehouses + auto-suspend sizing (hard, scenario)
+- [x] 53023 — BigQuery cost reduction — date partitioning + cluster + incremental export (hard, scenario)
+- [x] 53024 — Schema drift incident — containment, last-good snapshot, alias at ingest, contract test (hard, scenario)
 
 **Data Modeling (6 questions — all practice):**
-- [ ] Bi-temporal modeling — valid time vs system time and when both matter (hard)
-- [ ] Bi-temporal query pattern — finding a record valid at a given business date as-of a system date (hard)
-- [ ] Semantic layer governance — centrally defined metrics and what marts alone can't enforce (medium)
-- [ ] Semi-additive metric design — balances and inventory measures across time dimensions (medium)
-- [ ] Alternate rollup hierarchy — multiple rollup paths for the same dimension (medium)
-- [ ] Cross-hierarchy reporting — querying across hierarchies with different structures (hard)
+- [x] 62026 — Semantic layer governance — centralized metric definition vs view vs documentation (medium, mcq)
+- [x] 62027 — Semi-additive facts — bank balance: additive across accounts, not across time (medium, mcq)
+- [x] 62028 — Multi-valued dimension — bridge table for 0–5 promotions per order (medium, mcq)
+- [x] 63022 — Bi-temporal query predicates — recorded_from/to for transaction time, valid_from/to for business time (hard, scenario)
+- [x] 63023 — Cross-hierarchy reporting — flat columns in dim_product + RANK() OVER PARTITION BY each hierarchy (hard, scenario)
+- [x] 63024 — Fact-to-fact fan-out join — pre-aggregate in CTEs before joining on customer_id (hard, scenario)
 
 ---
 

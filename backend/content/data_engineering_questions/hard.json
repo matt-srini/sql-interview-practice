@@ -531,5 +531,92 @@
       "INCIDENT RESPONSE",
       "SCHEMA EVOLUTION"
     ]
+  },
+  {
+    "id": 53022,
+    "order": 22,
+    "title": "Snowflake Warehouse Cost Optimization: Separate Warehouses and Auto-Suspend",
+    "difficulty": "hard",
+    "type": "scenario",
+    "scenario_context": "A company's Snowflake spend has grown to $45,000/month. All workloads share a single X-Large warehouse (16 credits/hour, auto-suspend disabled). Usage analysis shows three distinct workload patterns:\n  - Analyst ad-hoc queries: 20–30 bursts/day, 2–5 min each, business hours only (8 AM–6 PM)\n  - Overnight dbt batch runs: 4 jobs/night, each 45–90 min, 10 PM–4 AM\n  - BI dashboard refresh: every 5 min, 15–30 sec each, 7 AM–9 PM\n\nThe warehouse idles for roughly 9 hours/day (nights after batch + weekends). Credits are $3.00 each.",
+    "description": "Which warehouse configuration reduces cost the most while maintaining performance isolation between workloads?",
+    "options": [
+      "Split into three warehouses sized for each workload: (1) Analyst — L (8 credits/hr), auto-suspend 5 min; (2) Batch — XL (16 credits/hr), auto-suspend 10 min, scheduled resume at 10 PM; (3) BI — XS (1 credit/hr), auto-suspend 2 min — estimated savings: ~60% vs current flat-rate XL with no suspend",
+      "Keep the single XL warehouse but enable auto-suspend at 60 minutes — the warehouse will suspend during the nightly idle and resume automatically for each workload, cutting cost roughly proportional to the idle fraction",
+      "Downsize the single warehouse from XL to L (8 credits/hr) — halves the credit rate, and since Snowflake auto-scales a single warehouse vertically on demand, all three workloads will still complete within their SLA windows",
+      "Use Snowflake's multi-cluster warehouse with min=1, max=4, and auto-suspend at 30 min — the cluster scales from 1 to 4 nodes during peak load and suspends during idle, combining all three workloads without performance degradation"
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. Separate warehouses sized for each workload's actual needs, combined with aggressive auto-suspend, minimizes idle credit burn while preserving performance isolation.\n\nSizing rationale:\n- Analyst (L): L handles interactive queries; 5-minute auto-suspend catches the gap between bursts without leaving the warehouse running all day.\n- Batch (XL): XL is appropriate for dbt's parallel model runs; scheduled resume at 10 PM avoids the 30-second cold-start on the first job; 10-minute suspend prevents idle credits between jobs in the batch window.\n- BI (XS): XS is sufficient for 15–30 second refreshes on pre-built queries; 2-minute auto-suspend ensures the warehouse suspends between 5-minute refresh cycles (5 min interval − 30 sec query = 4.5 min idle > 2 min suspend threshold).\n\nEstimated cost: Analyst L ~$7,200/month + Batch XL ~$8,640/month + BI XS ~$130/month ≈ $16,000/month vs $45,000 (~64% savings).\n\nOption B (auto-suspend at 60 min) helps but the 60-minute window means the warehouse stays running for 60 minutes after the last analyst query each evening — still wastes hours of nightly idle at XL rate. Mixing BI refreshes with batch also causes resource contention.\n\nOption C (downsize to L) does not address idle time and incorrectly claims Snowflake scales vertically within a single warehouse — Snowflake scales horizontally (multi-cluster), not vertically.\n\nOption D (multi-cluster) is designed for concurrency bursts (many simultaneous users), not for isolating workload types with different compute needs. It cannot suspend credits for one workload pattern while another runs.",
+    "hints": [
+      "The biggest cost driver is idle time on an expensive warehouse. What is the nightly idle duration, and how much does that cost at XL rates with no auto-suspend?",
+      "Auto-suspend reduces idle cost, but the suspend window must be shorter than the gap between queries. What is the gap between BI dashboard refreshes?",
+      "Separate warehouses let you right-size each workload independently — a 30-second BI refresh does not need the same compute as a 90-minute dbt run."
+    ],
+    "concepts": [
+      "SNOWFLAKE COST OPTIMIZATION",
+      "WAREHOUSE SIZING",
+      "AUTO-SUSPEND",
+      "WORKLOAD ISOLATION",
+      "CLOUD COST MODELING"
+    ]
+  },
+  {
+    "id": 53023,
+    "order": 23,
+    "title": "BigQuery Cost Reduction: Partitioning, Incremental Exports, and Scan Optimization",
+    "difficulty": "hard",
+    "type": "scenario",
+    "scenario_context": "A company's BigQuery bill is $38,000/month (on-demand at $5/TB scanned). Usage breakdown:\n  - Analyst ad-hoc queries: avg 2 TB/query, 200 queries/day — $2,000/day\n  - Daily full export to GCS: SELECT * FROM events (8 TB table, full scan every night) — $40/day\n  - Dashboard queries: 500/day, avg 400 GB scanned each — $1,000/day\n\nThe events table columns: event_id, user_id, event_type, event_timestamp, properties (JSON), created_date (DATE). No partitioning or clustering is applied. All analyst queries filter on created_date and event_type.",
+    "description": "Which set of changes has the largest combined cost impact?",
+    "options": [
+      "Partition events by created_date and cluster by event_type: analyst and dashboard queries filtering on created_date will scan only matched partitions (typically 1–7 days of a 3-year table = ~0.1–0.5% of data); replace the nightly full export with an incremental export of only the new partition (~7 GB vs 8 TB); total scan reduction: ~95–99% across all workloads",
+      "Enable BigQuery BI Engine for the dashboard workload: BI Engine caches dashboard query results in memory and serves them at near-zero scan cost; the $800/month flat fee recovers cost in the first month since dashboard queries account for $30,000/month",
+      "Switch all workloads from on-demand to flat-rate reservations at the 2,000 slot tier ($10,000/month flat): the current $38,000/month on-demand bill makes the commitment immediately cost-effective",
+      "Materialize analyst queries as scheduled query results into a summary table updated nightly; analysts query the summary table (KB, not TB) instead of raw events — eliminates ad-hoc scan cost without changing the underlying table structure"
+    ],
+    "correct_option": 0,
+    "explanation": "Option A (partition + cluster + incremental export) has the highest impact because it reduces bytes scanned across all three workloads simultaneously.\n\nPartitioning by created_date means a query filtering `WHERE created_date = '2024-01-15'` scans only 1 day of a 3-year table. If analysts typically filter to 1–7 days, scanned data drops from 2 TB to ~2–14 GB per query (99%+ reduction). Dashboard queries filtering to the last day drop from 400 GB to ~400 MB each. The incremental export replaces an 8 TB nightly full-table scan with a single-partition export of ~7 GB (1 day of data), reducing export cost from $40/day to ~$0.035/day.\n\nOption B (BI Engine) addresses only the dashboard workload and only partially — BI Engine caches query results, not raw table scans; queries that touch non-cached columns still scan. It does not touch analyst or export costs.\n\nOption C (flat-rate reservations) converts variable scan cost to a fixed slot commitment — cheaper than $38,000 on-demand, but it does not reduce bytes scanned. If queries are poorly written and scan more data, the fixed rate advantage erodes. Partitioning reduces the actual work done, benefiting both on-demand and flat-rate pricing.\n\nOption D (summary table) helps analysts but does not reduce export costs or dashboard scan costs, and adds an engineering maintenance burden.",
+    "hints": [
+      "BigQuery charges for bytes scanned, not rows returned. What fraction of an 8 TB table does a query with a date filter on a date-partitioned table actually scan?",
+      "The nightly full export scans the entire 8 TB table. How much data does an incremental export (new partition only) scan instead?",
+      "Which change reduces bytes scanned across the most workloads simultaneously?"
+    ],
+    "concepts": [
+      "BIGQUERY COST OPTIMIZATION",
+      "PARTITIONING & CLUSTERING",
+      "INCREMENTAL EXPORT",
+      "BYTES SCANNED",
+      "CLOUD COST MODELING"
+    ]
+  },
+  {
+    "id": 53024,
+    "order": 24,
+    "title": "Schema Drift Incident: Containment and Forward-Fix Strategy",
+    "difficulty": "hard",
+    "type": "scenario",
+    "scenario_context": "At 6:14 AM, a Spark batch pipeline fails with: `AnalysisException: cannot resolve 'customer_id' given input columns`. Investigation reveals the upstream MySQL source renamed the column from `customer_id` to `cust_id` at 5:00 AM without notifying the data team. The pipeline runs every hour and has failed 2 consecutive runs. Downstream BI dashboards that read from the pipeline's output table have been dark since 6:14 AM. Pipeline path: MySQL → Spark → Parquet (landing zone) → dbt (staging) → BI dashboards.",
+    "description": "What is the correct sequence of immediate containment actions followed by the permanent forward-fix?",
+    "options": [
+      "Immediate: (1) Disable the hourly pipeline trigger to stop further failed runs; (2) re-point the dbt staging model to the last successful Parquet output (5:00 AM run, before the rename) — dashboards recover from last-good data; Permanent fix: (3) add a column alias at the MySQL ingestion layer (`cust_id AS customer_id`) to insulate the pipeline from source renames; (4) add a schema contract test that asserts `customer_id` is present in the ingested schema and fails fast before writing any data",
+      "Immediate: (1) Contact the upstream MySQL team and ask them to revert the column rename; (2) once reverted, re-enable the pipeline — dashboards recover automatically on the next successful run; Permanent fix: (3) add a Slack channel for upstream teams to announce schema changes in advance",
+      "Immediate: (1) Manually edit the dbt staging model to read `cust_id` instead of `customer_id`; (2) re-run the hourly pipeline immediately — it will succeed with the renamed column; Permanent fix: (3) document the column rename in the data catalog",
+      "Immediate: (1) Scale the Spark cluster to 4× its normal size to process the backlog of 2 missed hourly runs faster; (2) re-enable the trigger once caught up; Permanent fix: (3) add monitoring on the pipeline's dashboard refresh latency so future outages are detected faster"
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. The containment + forward-fix strategy follows the principle: stop the bleeding first, restore service from last-known-good state, then fix the root cause permanently.\n\nImmediate actions:\n1. Disable the trigger — a pipeline failing every hour generates alert fatigue and obscures signal. Stopping it prevents further failures while the fix is applied.\n2. Re-point dbt to last-good Parquet — the 5:00 AM run succeeded (before the rename), so the Parquet landing zone contains valid data. Re-pointing dbt to this snapshot restores dashboards in minutes without waiting for a pipeline fix or a MySQL revert.\n\nPermanent fix:\n3. Column alias at ingest — `SELECT cust_id AS customer_id` in the MySQL reader layer decouples all downstream models from the source's column naming. When the source renames a column again, the alias is the single change point.\n4. Schema contract test — a pre-write assertion that `customer_id` is present in the ingested DataFrame fails fast with a clear error before any Parquet is written with corrupt schema, preventing the silent 2-run failure window.\n\nOption B (ask MySQL team to revert) depends on an external team responding at 6:14 AM. Even if they agree, the revert can take hours, extending the dashboard outage unnecessarily.\n\nOption C (edit dbt staging to use cust_id) is a quick fix that re-exposes the same fragility. If the source renames again, every dbt model referencing the column must be updated. The fix belongs in the ingestion layer.\n\nOption D (scale the cluster) misdiagnoses the problem. The failures are a schema mismatch, not a throughput issue. More compute does not fix an AnalysisException.",
+    "hints": [
+      "When a pipeline fails due to a breaking schema change, the first priority is stopping further failed runs and restoring dashboards from the last valid data — not necessarily fixing the pipeline immediately.",
+      "Where in the pipeline is the best place to absorb source schema changes? The ingestion layer or the transformation layer?",
+      "A schema contract test at the start of the pipeline catches schema drift before any data is written to the landing zone."
+    ],
+    "concepts": [
+      "INCIDENT RESPONSE",
+      "SCHEMA EVOLUTION",
+      "DATA CONTRACT",
+      "PIPELINE RESILIENCE",
+      "INGESTION LAYER"
+    ]
   }
 ]

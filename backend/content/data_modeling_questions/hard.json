@@ -567,5 +567,90 @@
       "SCD STRUCTURE",
       "DIMENSION DESIGN"
     ]
+  },
+  {
+    "id": 63022,
+    "order": 22,
+    "title": "Bi-Temporal Queries: Correct Predicates for Both Time Axes",
+    "difficulty": "hard",
+    "type": "scenario",
+    "scenario_context": "A pricing table uses bi-temporal modeling with four date columns:\n  valid_from    DATE  -- when the price became contractually effective\n  valid_to      DATE  -- when the price ceased to be contractually effective (9999-12-31 = currently valid)\n  recorded_from DATE  -- when the system first recorded this row\n  recorded_to   DATE  -- when this row was superseded in the system (9999-12-31 = currently recorded)\n\nRow history for customer X:\n  Row 1: price=$500, valid_from=2024-03-01, valid_to=9999-12-31, recorded_from=2024-03-01, recorded_to=2024-03-20\n  Row 2: price=$450, valid_from=2024-03-01, valid_to=9999-12-31, recorded_from=2024-03-20, recorded_to=9999-12-31\n  (On March 20, the system corrected the March 1 price from $500 to $450 retroactively)",
+    "description": "A regulator asks: 'What price did your system report for customer X on March 15?' (transaction-time query). A billing team asks: 'What is the currently active price for customer X?' (current valid-time query). Which pair of SQL predicates correctly answers each question?",
+    "options": [
+      "Regulator (transaction-time, March 15): WHERE '2024-03-15' BETWEEN recorded_from AND recorded_to — returns Row 1 ($500, the price the system held on March 15 before the correction); Billing (current valid-time): WHERE valid_to = '9999-12-31' AND recorded_to = '9999-12-31' — returns Row 2 ($450, the current corrected price)",
+      "Regulator: WHERE valid_from <= '2024-03-15' AND valid_to >= '2024-03-15' — returns the price valid on March 15 in business time; Billing: WHERE recorded_to = '9999-12-31' — returns the latest recorded row regardless of its validity period",
+      "Regulator: WHERE recorded_from = '2024-03-15' — returns the row first recorded on that exact date; Billing: WHERE valid_from = (SELECT MAX(valid_from) FROM prices WHERE customer_id = X) — returns the most recently effective price",
+      "Both queries use the same predicate: WHERE valid_from <= :date AND valid_to >= :date — the valid_from/valid_to axis captures both the business fact and when the system knew about it, because corrections update valid_from retroactively"
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. Bi-temporal modeling has two independent time axes:\n\n**Transaction-time (system time):** What did the system hold on a given date? Predicate: `WHERE :system_date BETWEEN recorded_from AND recorded_to`. On March 15, Row 1 is the active system row (recorded_from=Mar 1, recorded_to=Mar 20). BETWEEN returns Row 1 → price $500. This is what was reported in March 15 statements, invoices, or regulatory filings.\n\n**Valid-time (business time, current):** What is the currently known price for customer X? Both axes must be currently open: `WHERE valid_to = '9999-12-31' AND recorded_to = '9999-12-31'`. Returns Row 2 → price $450 (the corrected price, currently valid, currently recorded).\n\nOption B mixes the axes. The regulator predicate filters on valid_from/valid_to (business time), which returns the price *contractually* active on March 15 — that is Row 2 ($450, backdated to March 1). But the regulator is asking what the *system reported* on March 15, which was $500 before the correction. These are different questions.\n\nOption C uses an equality predicate on recorded_from — no row was created on March 15 (they were created March 1 and March 20), so this returns zero rows.\n\nOption D collapses both axes into one, which is the definition of a non-bi-temporal design. A backdated correction setting valid_from=March 1 for Row 2 would make it appear as if $450 was always known since March 1 — erasing the record that the system ever held $500.",
+    "hints": [
+      "Transaction-time asks 'what did the system believe?' — which columns track when the system created/closed each row?",
+      "Valid-time asks 'what is the business fact?' — which columns track when the business contract was active?",
+      "For a current valid-time query, both time axes must be open-ended (9999-12-31). Why do you need both conditions, not just one?"
+    ],
+    "concepts": [
+      "BI-TEMPORAL MODELING",
+      "TRANSACTION TIME",
+      "VALID TIME",
+      "TEMPORAL QUERY",
+      "SCD STRUCTURE"
+    ]
+  },
+  {
+    "id": 63023,
+    "order": 23,
+    "title": "Cross-Hierarchy Reporting: Two Hierarchies in One Dimension",
+    "difficulty": "hard",
+    "type": "scenario",
+    "scenario_context": "A retailer has dim_product with products in two independent hierarchies:\n  - Merchandise hierarchy: product → subcategory → category → department\n  - Finance hierarchy: product → cost_center → division → region\n\nAnalysts need to report: 'Top 3 products by revenue within each department AND within each division in the same query.' Both hierarchies must be navigable independently.\n\nCurrent design uses two separate dimension tables (dim_product_merch, dim_product_finance) joined to fact_sales via product_id.",
+    "description": "Which design supports efficient cross-hierarchy reporting in a single query without row multiplication?",
+    "options": [
+      "Consolidate both hierarchies as flat columns in a single dim_product table (department, category, subcategory, division, cost_center, region as direct product attributes); use RANK() OVER (PARTITION BY department ORDER BY revenue DESC) and RANK() OVER (PARTITION BY division ORDER BY revenue DESC) in one query against the single dimension",
+      "Keep the two separate dimension tables and join both to fact_sales; use UNION ALL to combine department-level and division-level results with a hierarchy_type column to distinguish them",
+      "Build role-playing dimensions where dim_product_merch and dim_product_finance are views of the same base table filtered by a hierarchy_type flag; join both views to fact_sales with different aliases",
+      "Use a bridge table (bridge_product_hierarchy) with columns (product_id, hierarchy_type, level_name, level_value) and join fact_sales through the bridge — one row per (product, hierarchy level), allowing arbitrary hierarchy traversal"
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct for standard dimensional modeling of multiple fixed hierarchies on the same dimension. Storing all hierarchy levels as flat, denormalized attributes on each product row enables cross-hierarchy reporting in a single join (fact_sales → dim_product) without row multiplication:\n\n```sql\nSELECT product_name, department, division, revenue,\n  RANK() OVER (PARTITION BY department ORDER BY revenue DESC) AS dept_rank,\n  RANK() OVER (PARTITION BY division ORDER BY revenue DESC) AS div_rank\nFROM fact_sales fs JOIN dim_product dp USING (product_id)\n```\n\nFiltering `WHERE dept_rank <= 3 OR div_rank <= 3` returns top-3 in either hierarchy in one pass. Each fact_sales row joins to exactly one dim_product row — no multiplication.\n\nOption B (UNION ALL of two separate joins) joins fact_sales twice and unions the results, producing 2× the I/O and compute. Window function ranking must happen after the union, complicating the query.\n\nOption C (role-playing dimension) is for the same dimension playing *different roles* in one query (e.g., ship_date vs order_date from dim_date), not for two different hierarchies on the same entity. It does not simplify the join.\n\nOption D (bridge table for hierarchy traversal) is appropriate for variable-depth hierarchies (e.g., org charts with unlimited depth), but it introduces one row per hierarchy level per product, multiplying rows during joins and requiring careful DISTINCT or pre-aggregation. It is over-engineered for fixed, known hierarchy levels.",
+    "hints": [
+      "If each product belongs to exactly one position in each hierarchy, can you store all hierarchy-level attributes as simple columns on the product row?",
+      "Joining fact_sales to one dim_product with all hierarchy columns vs. joining to two separate dimension tables — which approach produces one fact row per join, and which produces multiple?"
+    ],
+    "concepts": [
+      "CROSS-HIERARCHY REPORTING",
+      "DIMENSION DESIGN",
+      "MULTIPLE HIERARCHIES",
+      "WINDOW FUNCTIONS",
+      "CONFORMED DIMENSION"
+    ]
+  },
+  {
+    "id": 63024,
+    "order": 24,
+    "title": "Fact-to-Fact Join: Avoiding Fan-Out Row Multiplication",
+    "difficulty": "hard",
+    "type": "scenario",
+    "scenario_context": "A data warehouse has two fact tables:\n  fact_orders: 50M rows — (order_id, customer_id, order_date, order_revenue)\n  fact_support_tickets: 8M rows — (ticket_id, customer_id, created_date, resolution_days)\n\nAn analyst writes:\n\n```sql\nSELECT\n  fo.customer_id,\n  SUM(fo.order_revenue) AS total_revenue,\n  AVG(fst.resolution_days) AS avg_resolution\nFROM fact_orders fo\nJOIN fact_support_tickets fst ON fo.customer_id = fst.customer_id\nWHERE YEAR(fo.order_date) = 2024\n  AND YEAR(fst.created_date) = 2024\nGROUP BY fo.customer_id\n```\n\nThe query produces revenue figures 3–15× higher than expected for some customers.",
+    "description": "What causes the inflated revenue, and how should the query be rewritten?",
+    "options": [
+      "The join of two fact tables on customer_id produces a cross product per customer: a customer with 10 orders and 5 tickets generates 50 joined rows — each order is repeated once per matching ticket, so SUM(order_revenue) counts each order's revenue 5 times; fix by pre-aggregating each fact in a CTE before joining on customer_id",
+      "The inflation is caused by the WHERE clause filtering on two different date columns — SQL applies only the first predicate when filtering on separate tables; fix by splitting into two subqueries filtered independently",
+      "AVG(fst.resolution_days) over a joined result set incorrectly averages over duplicated rows — use MEDIAN(fst.resolution_days) instead, which is resistant to duplication artifacts in fact-to-fact joins",
+      "The join key (customer_id) is not selective enough — use a more granular key like (customer_id, order_date) and add a date-range condition in the join predicate to prevent row multiplication"
+    ],
+    "correct_option": 0,
+    "explanation": "Joining two fact tables through a shared dimension key produces a Cartesian product within each key group — the classic fan-out problem. For a customer with 10 orders and 5 support tickets, the JOIN produces 10 × 5 = 50 rows. `SUM(order_revenue)` then sums each order's revenue 5 times, inflating the result by 5×. The inflation factor equals the number of matching rows in the other fact table, which varies per customer — hence the 3–15× range.\n\nCorrect approach — pre-aggregate each fact independently in CTEs:\n\n```sql\nWITH order_totals AS (\n    SELECT customer_id, SUM(order_revenue) AS total_revenue\n    FROM fact_orders\n    WHERE YEAR(order_date) = 2024\n    GROUP BY customer_id\n),\nticket_stats AS (\n    SELECT customer_id, AVG(resolution_days) AS avg_resolution\n    FROM fact_support_tickets\n    WHERE YEAR(created_date) = 2024\n    GROUP BY customer_id\n)\nSELECT o.customer_id, o.total_revenue, t.avg_resolution\nFROM order_totals o\nJOIN ticket_stats t ON o.customer_id = t.customer_id\n```\n\nEach CTE produces one row per customer before the join, so the final join is 1:1 and neither metric is inflated.\n\nOption B is incorrect — both WHERE predicates apply correctly; SQL does not drop predicates on multiple date columns.\n\nOption C is incorrect — MEDIAN also computes over duplicated rows. Changing the aggregation function does not remove the fan-out; it only changes which inflated statistic you compute.\n\nOption D is incorrect — using a more granular join key (customer_id, order_date) joins orders to tickets sharing the exact same date, producing a different fan-out, not eliminating it. There is no fact-to-fact join key that prevents fan-out — only pre-aggregation does.",
+    "hints": [
+      "How many rows does a JOIN of two tables produce when customer A has 10 rows in one fact and 5 rows in the other? What does SUM() compute over those 50 rows?",
+      "The fix is to reduce each fact to one row per customer *before* joining — not to change the join condition or the aggregation function."
+    ],
+    "concepts": [
+      "FACT-TO-FACT JOIN",
+      "FAN-OUT",
+      "ROW MULTIPLICATION",
+      "PRE-AGGREGATION",
+      "GRAIN MISMATCH"
+    ]
   }
 ]

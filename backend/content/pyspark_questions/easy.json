@@ -1052,5 +1052,84 @@
       "stage boundary",
       "performance"
     ]
+  },
+  {
+    "id": 41039,
+    "order": 39,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "F.expr() — SQL expressions in the DataFrame API",
+    "description": "A developer writes the following transformation:\n\n```python\nfrom pyspark.sql import functions as F\n\nresult = df.withColumn(\n    \"label\",\n    F.expr(\"CASE WHEN amount > 100 THEN 'high' ELSE 'low' END\")\n)\n```\n\nWhat does `F.expr()` enable that native Column API methods (like `F.when()`) do not?",
+    "code_snippet": "from pyspark.sql import functions as F\n\nresult = df.withColumn(\n    \"label\",\n    F.expr(\"CASE WHEN amount > 100 THEN 'high' ELSE 'low' END\")\n)",
+    "options": [
+      "Write arbitrary SQL string expressions — any valid Spark SQL fragment can be embedded in a DataFrame transformation without switching to spark.sql()",
+      "Execute DML statements (INSERT, UPDATE, DELETE) directly against a DataFrame without going through a temp view",
+      "Reference Python variables by name inside the SQL string without explicitly passing them as parameters",
+      "Access and modify the Spark logical execution plan from within the DataFrame transformation API"
+    ],
+    "correct_option": 0,
+    "explanation": "`F.expr()` parses a SQL string into a Column expression, allowing any valid Spark SQL fragment — CASE/WHEN, string functions, date arithmetic, window specs — to be used wherever a Column is expected. This is useful for complex expressions that would be verbose in the method-chaining API and for dynamically generated SQL fragments. `F.expr()` does not enable DML, cannot reference Python scope variables by name (only SQL column names), and does not expose the execution plan. It is purely a Column factory.",
+    "hints": [
+      "F.expr() returns a Column object — what kind of SQL constructs can you put inside the string argument?"
+    ],
+    "concepts": [
+      "F.expr",
+      "SQL expressions",
+      "DataFrame API"
+    ]
+  },
+  {
+    "id": 41040,
+    "order": 40,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "Cross join: explicit opt-in required",
+    "description": "A developer writes:\n\n```python\nresult = df_customers.join(df_products)\n```\n\nNo join condition is specified. What happens?",
+    "code_snippet": "result = df_customers.join(df_products)",
+    "options": [
+      "Spark raises an AnalysisException — a join condition is required; use .crossJoin() to explicitly request a Cartesian product",
+      "Spark performs an implicit inner join on all columns with matching names, behaving like pandas merge()",
+      "Spark silently performs a cross join (Cartesian product) and logs a warning at the INFO level",
+      "Spark defers evaluation until an action is triggered, then infers the join key from overlapping column names at runtime"
+    ],
+    "correct_option": 0,
+    "explanation": "PySpark requires that `.join()` is always called with an explicit condition. If no condition is provided, Spark raises an `AnalysisException: Join condition is missing`. To produce a Cartesian product, you must call `.crossJoin()` explicitly — this is a safety design choice, since accidental cross joins on large tables can produce billions of rows and exhaust cluster memory. Unlike pandas `.merge()`, PySpark does not infer join keys from overlapping column names.",
+    "hints": [
+      "PySpark is designed to make accidentally expensive operations hard to trigger. What would a join with no condition produce, and why is that dangerous enough to require an explicit call?"
+    ],
+    "concepts": [
+      "join",
+      "cross join",
+      "Cartesian product",
+      "AnalysisException"
+    ]
+  },
+  {
+    "id": 41041,
+    "order": 41,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "easy",
+    "title": "DataFrame vs Dataset[T]: Python type safety",
+    "description": "Which of the following statements about PySpark's type system in Python is correct?",
+    "code_snippet": null,
+    "options": [
+      "Python PySpark only has dynamically-typed DataFrames; the strongly-typed Dataset[T] API exists only in Scala and Java",
+      "Python PySpark supports Dataset[T] through type annotations on function signatures when using Python 3.10 or later",
+      "PySpark DataFrames are strongly typed at runtime — applying a transformation to the wrong column type raises a TypeError immediately",
+      "Python PySpark DataFrames are backed by pandas DataFrames internally when pandas is installed"
+    ],
+    "correct_option": 0,
+    "explanation": "PySpark's Dataset[T] API — where T is a user-defined Scala/Java class and type errors are caught at compile time — is available only in Scala and Java. In Python, PySpark only has DataFrames (equivalent to `Dataset[Row]`), which are dynamically typed: schema information is available at runtime via `.schema`, but Python type annotations have no effect on Spark's type checking. Type errors in Python PySpark surface at runtime (when the DAG is executed), not at definition time. DataFrames are not backed by pandas; they are distributed across executor JVMs and must be explicitly collected with `.toPandas()` to produce a local pandas DataFrame.",
+    "hints": [
+      "Dataset[T] requires a compile-time type parameter (T) bound to a class. Which languages support compile-time generics the way Spark's Dataset API requires?"
+    ],
+    "concepts": [
+      "Dataset vs DataFrame",
+      "type safety",
+      "Python PySpark API"
+    ]
   }
 ]

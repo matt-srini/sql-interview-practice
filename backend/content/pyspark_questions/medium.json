@@ -1388,5 +1388,65 @@
       "cloud storage metadata cost",
       "output parallelism tuning"
     ]
+  },
+  {
+    "id": 42049,
+    "order": 49,
+    "topic": "pyspark",
+    "type": "mcq",
+    "difficulty": "medium",
+    "title": "collect_list vs collect_set: ordering and deduplication guarantees",
+    "description": "Given the following aggregation:\n\n```python\nfrom pyspark.sql import functions as F\n\ndf = spark.createDataFrame([\n    (\"user1\", \"home\"), (\"user1\", \"cart\"),\n    (\"user1\", \"home\"), (\"user2\", \"home\"),\n    (\"user2\", \"checkout\")\n], [\"user_id\", \"page\"])\n\nresult = df.groupBy(\"user_id\").agg(\n    F.collect_list(\"page\").alias(\"pages_list\"),\n    F.collect_set(\"page\").alias(\"pages_set\")\n)\n```\n\nWhich statement correctly describes the output?",
+    "code_snippet": "from pyspark.sql import functions as F\n\ndf = spark.createDataFrame([\n    (\"user1\", \"home\"), (\"user1\", \"cart\"),\n    (\"user1\", \"home\"), (\"user2\", \"home\"),\n    (\"user2\", \"checkout\")\n], [\"user_id\", \"page\"])\n\nresult = df.groupBy(\"user_id\").agg(\n    F.collect_list(\"page\").alias(\"pages_list\"),\n    F.collect_set(\"page\").alias(\"pages_set\")\n)",
+    "options": [
+      "pages_list preserves duplicates but does not guarantee element order; pages_set deduplicates but also does not guarantee element order",
+      "pages_list preserves the original DataFrame row order; pages_set is unordered but unique",
+      "pages_list is ordered by insertion timestamp; pages_set is sorted alphabetically after deduplication",
+      "pages_list and pages_set produce the same sorted output after Spark normalizes both arrays at the end of the aggregation stage"
+    ],
+    "correct_option": 0,
+    "explanation": "`collect_list()` collects all values into an array including duplicates, but the order depends on task processing order — which is non-deterministic across shuffles. To guarantee order, pair it with `F.sort_array()` or use `F.array_sort()`. `collect_set()` deduplicates values into an array, but the order within the set is also non-deterministic — it is not sorted alphabetically or by any other predictable rule. For user1, `pages_list` will contain 3 elements (with 'home' appearing twice) in an unspecified order; `pages_set` will contain 2 unique elements in an unspecified order. Neither function guarantees element ordering.",
+    "hints": [
+      "Spark distributes data across partitions and processes them in parallel — is there a guaranteed global processing order within a groupBy?",
+      "collect_set() deduplicates, but deduplication and sorting are different operations. Does the Spark documentation for collect_set guarantee alphabetical order?"
+    ],
+    "concepts": [
+      "collect_list",
+      "collect_set",
+      "aggregation",
+      "array ordering",
+      "non-determinism"
+    ]
+  },
+  {
+    "id": 42050,
+    "order": 50,
+    "topic": "pyspark",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Pivot with dynamic schema: driver OOM at high cardinality",
+    "description": "A Spark job fails with OutOfMemoryError on the driver after running for 45 minutes. Identify the root cause and the correct fix.",
+    "code_snippet": "from pyspark.sql import functions as F\n\n# events has 500M rows; event_type has ~800 distinct values\nevents = spark.table(\"raw.events\")\n\npivoted = events.groupBy(\"user_id\").pivot(\"event_type\").agg(F.count(\"*\"))\npivoted.write.parquet(\"/output/user_event_pivot\")",
+    "scenario_context": "Cluster: 20 executors × 16 GB each (total 320 GB)\nDriver: 8 GB heap\nTable: raw.events — 500 million rows, 12 columns\nColumn event_type: ~800 distinct values\n\nJob metrics at failure (45 min in):\n  Stage 2 of 3: 100% complete\n  Stage 3 of 3: 0% — driver OOM during task serialization\n  Driver GC overhead limit exceeded — heap exhausted before Stage 3 begins",
+    "options": [
+      "pivot() without an explicit values list forces Spark to run a full distinct scan of event_type across all 500M rows to discover the ~800 column names, then materializes the full cross-product schema on the driver for plan serialization — with 8 GB driver heap and 800 columns, plan serialization exhausts memory; fix by passing the known values list: .pivot('event_type', known_values)",
+      "The OOM is caused by agg(F.count('*')) allocating 800 separate accumulators per executor — replace F.count('*') with F.approx_count_distinct('*') to reduce the per-executor aggregation state",
+      "The OOM is a driver-side issue unrelated to pivot — the 500M-row table exceeds spark.sql.files.maxPartitionBytes, causing all data to land on one partition and overflow the driver; fix by repartitioning before the pivot",
+      "Stage 3 OOM is caused by skewed user_id keys — a few users have millions of events that won't fit in a single executor partition; fix with salted keys before the groupBy"
+    ],
+    "correct_option": 0,
+    "explanation": "When `pivot()` is called without an explicit `values` list, Spark runs a full distinct scan of the pivot column to discover all unique values before constructing the output schema. For 500M rows with 800 distinct event types, this is an expensive full scan. The OOM occurs during plan serialization for Stage 3: the output schema has 800 column definitions, and Spark must serialize the full plan to every executor. With an 8 GB driver heap, this serialization exhausts memory before Stage 3 begins.\n\nThe fix is to pass the known values list explicitly:\n```python\nknown_values = [row.event_type for row in events.select('event_type').distinct().collect()]\npivoted = events.groupBy('user_id').pivot('event_type', known_values).agg(F.count('*'))\n```\nThis skips the expensive distinct-scan stage and keeps the schema construction on the driver predictable. If 800 columns is still too wide, filter to the top-N most common event types or use a long/sparse representation instead of a wide pivot.\n\nOption B is incorrect — count(*) uses a single counter per group, not 800 separate accumulators.\nOption C is incorrect — maxPartitionBytes affects read partitioning, not driver heap.\nOption D (skew) causes executor OOM, not driver OOM during plan serialization.",
+    "hints": [
+      "What does Spark need to know before it can construct the output schema for a pivot? Where does it get that information when no values list is provided?",
+      "The OOM is on the driver, not the executors. What operation runs exclusively on the driver just before Stage 3 starts?"
+    ],
+    "concepts": [
+      "pivot",
+      "dynamic schema",
+      "driver OOM",
+      "schema inference cost",
+      "wide DataFrame"
+    ]
   }
 ]

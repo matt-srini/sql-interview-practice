@@ -662,5 +662,84 @@
       "STORAGE ARCHITECTURE TRADEOFFS",
       "FACT TABLE DESIGN"
     ]
+  },
+  {
+    "id": 62026,
+    "order": 26,
+    "title": "Semantic Layer: Centralized Metric Governance",
+    "difficulty": "medium",
+    "type": "mcq",
+    "description": "An analytics team discovers that three different BI dashboards report different values for 'Monthly Active Users (MAU)'. Investigation reveals each dashboard owner wrote their own SQL definition. Which approach prevents this divergence and ensures all consumers use a consistent MAU definition?",
+    "options": [
+      "Define MAU once in a centralized semantic layer (e.g., dbt Metrics, LookML, or Cube.js) with a single governed definition; all BI tools query the semantic layer rather than writing raw SQL — formula changes propagate automatically to all consumers",
+      "Document the canonical MAU definition in a Confluence page and require all dashboard owners to read it before writing SQL — divergence is a process problem, not a technical one, and documentation is the most durable fix",
+      "Create a shared SQL view `v_mau` in the data warehouse and grant all BI tools read access; dashboard owners query the view so all use the same logic",
+      "Run a quarterly audit comparing MAU values across dashboards; when divergences are found, the data team standardizes the definition and notifies owners"
+    ],
+    "correct_option": 0,
+    "explanation": "A semantic layer centralizes metric definitions in a single versioned, governed source. Metrics like MAU are defined once with all business logic (e.g., 'a user who performed at least one qualifying action in a rolling 28-day window, excluding internal accounts') and exposed as named, queryable metrics via an API or metadata layer. BI tools query the semantic layer's metric catalog rather than writing raw SQL, so all dashboards are guaranteed to use the same definition. When the business redefines MAU, the change is made once and propagates everywhere.\n\nOption B (documentation) is a human-coordination solution — documentation is not enforced at query time, and new dashboard owners may not read it or may interpret it differently.\n\nOption C (shared view) is a good partial solution but has two limitations: (1) the view must be maintained manually as business logic evolves; (2) users can still query underlying tables and bypass the view. A semantic layer adds API-enforced access and version control.\n\nOption D (quarterly audit) is reactive — divergences exist for months before being caught, and by that time stakeholders have made decisions based on conflicting numbers.",
+    "hints": [
+      "The root cause is that each team can define 'MAU' independently in SQL. Which approach makes it technically impossible to use a different definition?",
+      "A semantic layer sits between BI tools and the data warehouse. What does it expose to BI tools instead of raw SQL access?"
+    ],
+    "concepts": [
+      "SEMANTIC LAYER",
+      "METRIC GOVERNANCE",
+      "DATA MODELING GOVERNANCE",
+      "SINGLE SOURCE OF TRUTH"
+    ]
+  },
+  {
+    "id": 62027,
+    "order": 27,
+    "title": "Semi-Additive Facts: Account Balance in a Periodic Snapshot",
+    "difficulty": "medium",
+    "type": "mcq",
+    "description": "A data warehouse tracks daily end-of-day bank account balances in a periodic snapshot fact table:\n\n```\nfact_account_balance\n  account_id  date          balance\n  1001        2024-01-01    $5,000\n  1002        2024-01-01    $3,200\n  1001        2024-01-02    $5,400\n  1002        2024-01-02    $3,100\n```\n\nWhich aggregation is meaningful?",
+    "options": [
+      "SUM(balance) across all accounts on a single date ($8,200 on 2024-01-01) is valid — it represents total deposits held that day; SUM(balance) across dates for one account ($10,400 for account 1001) is not meaningful — it has no business interpretation",
+      "SUM(balance) across dates for one account ($10,400 for account 1001) represents the total balance held over the period — a useful cash-flow metric; AVG is not valid because averaging a balance overstates compound interest",
+      "Neither SUM across accounts nor SUM across dates is valid for a balance column — balances are fully non-additive; use COUNT(DISTINCT account_id) as the primary fact metric",
+      "SUM(balance) is always valid regardless of the time dimension — the periodic snapshot guarantees that each row represents an independent, non-overlapping measurement"
+    ],
+    "correct_option": 0,
+    "explanation": "Account balance is a classic semi-additive fact. It is additive across accounts (or any non-time dimension) at a single point in time: summing all account balances on 2024-01-01 gives the total deposits in the bank — a meaningful metric. It is not additive across time: summing account 1001's balance across Jan 1 and Jan 2 gives $10,400, which conflates two snapshots of the same money and has no business meaning.\n\nThe canonical approach for time-based aggregation of semi-additive facts is to use non-additive aggregations: the balance at a specific date (point-in-time snapshot), AVG(balance) as a period-average approximation, or MIN/MAX for floor/ceiling tracking. These are valid; SUM across time is not.\n\nSemi-additive is distinct from fully non-additive (e.g., ratios, percentages) — balance IS additive along the account dimension, just not along the date dimension.",
+    "hints": [
+      "A periodic snapshot stores one row per entity per time period — the same $5,000 appears in both Jan 1 and Jan 2 rows for account 1001. What does summing both rows produce, and does that number mean anything?",
+      "Semi-additive means 'additive along some dimensions but not all.' Which dimension makes balance non-additive — account_id or date?"
+    ],
+    "concepts": [
+      "SEMI-ADDITIVE FACTS",
+      "PERIODIC SNAPSHOT",
+      "FACT TABLE DESIGN",
+      "ADDITIVE VS NON-ADDITIVE"
+    ]
+  },
+  {
+    "id": 62028,
+    "order": 28,
+    "title": "Multi-Valued Dimension: Bridge Table for Promotions",
+    "difficulty": "medium",
+    "type": "mcq",
+    "description": "An e-commerce warehouse has `fact_orders` and `dim_promotion`. Each order can have 0 to 5 promotions applied. The current design stores promotions as a comma-separated string in `fact_orders.promotion_ids`. Analytics requires accurate counts of orders per promotion. Which design correctly handles the many-to-many relationship?",
+    "options": [
+      "Introduce a bridge table `bridge_order_promotion` with (order_id, promotion_id, weight_factor); join fact_orders → bridge → dim_promotion; use COUNT(DISTINCT order_id) for order counts and SUM(revenue * weight_factor) for weighted revenue to avoid double-counting",
+      "Denormalize dim_promotion into fact_orders by adding five nullable columns (promotion_1 through promotion_5); queries UNION across all five columns to count orders per promotion",
+      "Split fact_orders into fact_orders_no_promo and fact_orders_with_promo; join fact_orders_with_promo to dim_promotion using the first promotion_id only",
+      "Leave the comma-separated string as-is and parse it at query time using string_split() or REGEXP; parsing overhead is acceptable for modern analytical engines"
+    ],
+    "correct_option": 0,
+    "explanation": "A bridge table is the standard solution for many-to-many dimension relationships in dimensional modeling. `bridge_order_promotion` has one row per (order, promotion) pair, plus an optional `weight_factor` (e.g., 1/N for N promotions applied) for proportional attribution. Queries use `COUNT(DISTINCT order_id)` to avoid double-counting: a join from fact_orders through the bridge to dim_promotion produces one row per (order, promotion) pair, so a naive `COUNT(*)` counts an order with 3 promotions three times.\n\nOption B (five nullable columns) hard-codes the maximum into the schema and requires a UNION of five joins for any promotion-level analysis. If an order ever gets a 6th promotion, the schema breaks.\n\nOption C (split table) discards multi-promotion information by joining only on the first promotion. It also fragments the fact table unnecessarily.\n\nOption D (parse at query time) works technically but has real costs: the string must be parsed on every query, predicate pushdown is ineffective on unparsed strings, and indexing is impossible. It is engineering debt, not a dimensional modeling solution.",
+    "hints": [
+      "When the cardinality between a fact and dimension is many-to-many (one order, many promotions), what is the relational solution for linking them without denormalization?",
+      "After joining fact_orders to bridge_order_promotion, how many rows does an order with 3 promotions produce? How does this affect COUNT(*) vs COUNT(DISTINCT order_id)?"
+    ],
+    "concepts": [
+      "BRIDGE TABLE",
+      "MANY-TO-MANY DIMENSION",
+      "MULTI-VALUED DIMENSION",
+      "FACT TABLE DESIGN",
+      "DOUBLE-COUNTING"
+    ]
   }
 ]
