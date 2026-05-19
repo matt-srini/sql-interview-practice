@@ -34,7 +34,7 @@ Custom mode validates server-side: `num_questions` must be 1–5, `time_minutes`
 | Experimentation | ✅ | 25 mock-only questions |
 | Statistics | ✅ | 3 mock-only questions |
 | Data Modeling | ✅ | 1 mock-only question (expanding) |
-| Data Engineering | ⚠️ Practice-only | Mock-only bank in authoring |
+| Data Engineering | ✅ | 1 mock-only question (expanding) |
 
 Sessions for tracks without a dedicated mock bank draw from practice questions. The Mixed track pools only the four code-execution tracks (SQL, Python, Pandas, PySpark).
 

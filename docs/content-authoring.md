@@ -150,7 +150,7 @@ Authoring constraints for path files in `backend/content/paths/`:
 
 **Concept families for `data-engineering` (used in `concept_families.py`):**
 
-`ETL VS ELT` · `IDEMPOTENCY` · `BACKFILL DESIGN` · `ORCHESTRATION` · `SCHEDULING & SLAS` · `SCHEMA EVOLUTION` · `BATCH VS STREAMING` · `WATERMARKING` · `DELIVERY SEMANTICS` · `PARTITIONING & PRUNING` · `STORAGE LAYOUT & FILE FORMATS` · `CDC & INGESTION` · `DATA QUALITY` · `LINEAGE & OBSERVABILITY` · `SCD OPERATIONS` · `STORAGE ARCHITECTURE` · `COST OPTIMIZATION` · `INCIDENT RESPONSE`
+`ETL VS ELT` · `IDEMPOTENCY` · `BACKFILL DESIGN` · `ORCHESTRATION` · `SCHEDULING & SLAS` · `SCHEMA EVOLUTION` · `BATCH VS STREAMING` · `WATERMARKING` · `DELIVERY SEMANTICS` · `PARTITIONING & PRUNING` · `STORAGE LAYOUT & FILE FORMATS` · `CDC & INGESTION` · `DATA QUALITY` · `LINEAGE & OBSERVABILITY` · `SCD OPERATIONS` · `STORAGE ARCHITECTURE` · `COST OPTIMIZATION` · `INCIDENT RESPONSE` · `DATA CONTRACT`
 
 **Concept blocklist for `data-engineering`** (too implementation-specific — validator rejects these as concept tags):
 `airflow`, `spark`, `kafka`, `flink`, `dbt`, `s3`, `glue`, `task`, `operator`, `sensor`, `trigger`, `pipeline`, `etl`, `elt`, `cron`
@@ -300,6 +300,7 @@ Verified current allocation for existing tracks:
 | ML Fundamentals | 81001–81030 (30p) | 82001–82035 (35p) · 82036–82047 (12m) | 83001–83025 (25p) · 83026–83038 (13m) |
 | Experimentation | 91001–91030 (30p) | 92001–92030 (30p) · 92031–92042 (12m) | 93001–93020 (20p) · 93021–93033 (13m) |
 | Data Modeling | 61001–61025 (25p) | 62001–62025 (25p) | 63001–63020 (20p) · 63021 (1m) |
+| Data Engineering | 51001–51030 (30p) | 52001–52030 (30p) | 53001–53020 (20p) · 53021 (1m) |
 
 ### SQL sample IDs (3-digit, SQL only)
 

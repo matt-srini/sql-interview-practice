@@ -12,9 +12,9 @@ import { track as trackEvent } from '../analytics';
 const MIXED_MOCK_TRACKS = ['sql', 'python', 'python-data', 'pyspark'];
 
 // Tracks without a dedicated mock-only question bank yet — sessions draw from practice questions only.
-// data-modeling was removed 2026-05-19 (first mock-only question added: 63021).
-// Remaining: data-engineering and statistics (content authoring in progress).
-const NO_MOCK_BANK_TRACKS = new Set(['data-engineering', 'statistics']);
+// data-modeling removed 2026-05-19 (63021 added). data-engineering removed 2026-05-19 (53021 added).
+// Remaining: statistics (content authoring in progress).
+const NO_MOCK_BANK_TRACKS = new Set(['statistics']);
 
 const MOCK_ROLES = [
   { id: 'analyst',            label: 'Data Analyst',       tracks: ['sql', 'statistics', 'python-data', 'python'] },
@@ -48,7 +48,7 @@ const TRACK_CONCEPT_MAP = {
   pyspark: ['DATAFRAME API','GROUPBY','JOINS','WINDOW FUNCTIONS','UDFs','PARTITIONING','AGGREGATION','STREAMING','CACHING','BROADCAST JOIN'],
   'ml-fundamentals': ['CLASSIFICATION METRICS','BIAS-VARIANCE TRADEOFF','DATA LEAKAGE DETECTION','OVERFITTING DIAGNOSIS','CROSS-VALIDATION DESIGN','ENSEMBLE STRATEGY','CLASS IMBALANCE HANDLING','REGULARIZATION EFFECT','HYPERPARAMETER SENSITIVITY','DIMENSIONALITY REDUCTION','TRAINING-SERVING SKEW','FEATURE SELECTION STRATEGY','MODEL MONITORING'],
   experimentation: ['EXPERIMENT DESIGN','CAUSAL INFERENCE','STATISTICAL POWER','METRIC SELECTION','MULTIPLE TESTING','NETWORK EFFECTS','VARIANCE REDUCTION','A/B TEST MECHANICS','TYPE I AND TYPE II ERRORS','EXPERIMENT DURATION','SEGMENTATION ANALYSIS','BAYESIAN EXPERIMENTATION','QUASI-EXPERIMENTAL METHODS'],
-  'data-engineering': ['DATA QUALITY','STORAGE ARCHITECTURE','DELIVERY SEMANTICS','LINEAGE & OBSERVABILITY','SCHEDULING & SLAS','IDEMPOTENCY','BATCH VS STREAMING','SCHEMA EVOLUTION','PARTITIONING & PRUNING','ORCHESTRATION','WATERMARKING','BACKFILL DESIGN'],
+  'data-engineering': ['DATA QUALITY','STORAGE ARCHITECTURE','DELIVERY SEMANTICS','LINEAGE & OBSERVABILITY','SCHEDULING & SLAS','IDEMPOTENCY','BATCH VS STREAMING','SCHEMA EVOLUTION','PARTITIONING & PRUNING','ORCHESTRATION','WATERMARKING','BACKFILL DESIGN','DATA CONTRACT'],
   'data-modeling': ['FACT TABLE DESIGN','DIMENSIONAL MODELING','DIMENSION DESIGN','SCHEMA FROM REQUIREMENTS','DENORMALIZATION TRADEOFF','NORMALIZATION','GRAIN DEFINITION','SCD STRUCTURE','DBT MODELING','REFERENTIAL INTEGRITY','SURROGATE VS NATURAL KEYS','BI-TEMPORAL MODELING'],
   statistics: ['PROBABILITY','HYPOTHESIS TESTING','DESCRIPTIVE STATISTICS','DISTRIBUTIONS','CONFIDENCE INTERVALS','STATISTICAL POWER','BAYESIAN INFERENCE','EXPECTED VALUE','MULTIPLE COMPARISONS','REGRESSION','SAMPLING DISTRIBUTIONS','INDEPENDENCE'],
 };
@@ -636,9 +636,9 @@ export default function MockHub() {
         {!isElite && (
           <section className="mock-hub-section mock-elite-panel">
             <div className="mock-elite-panel-header">
-              <span className="mock-analytics-elite-badge">Elite</span>
+              <span className="mock-elite-wordmark">Elite</span>
               <h2 className="mock-elite-panel-title">
-                {isPro ? 'One step from Elite' : 'Sharper prep, session by session'}
+                {isPro ? 'One step from Elite' : 'What Elite adds to every session'}
               </h2>
               <button
                 type="button"
@@ -649,18 +649,14 @@ export default function MockHub() {
                   localStorage.setItem('mock_elite_panel_open', String(next));
                 }}
                 aria-expanded={elitePanelOpen}
-                aria-label={elitePanelOpen ? 'Collapse Elite features' : 'Expand Elite features'}
+                aria-label={elitePanelOpen ? 'Collapse' : 'Expand'}
               >
-                {elitePanelOpen ? '↑' : '↓'}
+                {elitePanelOpen ? '▴' : '▾'}
               </button>
             </div>
+
             {elitePanelOpen && (
-              <>
-                <p className="mock-elite-panel-desc">
-                  {isPro
-                    ? "You're on Pro. Upgrade to Elite for focus mode, session analytics, and a coaching debrief after every mock."
-                    : 'Know exactly where you stand — before the interview room.'}
-                </p>
+              <div className="mock-elite-panel-body">
                 <ul className="mock-elite-features">
                   <li className="mock-elite-feature">
                     <span className="mock-elite-feature-name">Focus mode</span>
@@ -668,27 +664,30 @@ export default function MockHub() {
                   </li>
                   <li className="mock-elite-feature">
                     <span className="mock-elite-feature-name">Score trends</span>
-                    <span className="mock-elite-feature-desc">See if you're improving session over session, across every track.</span>
+                    <span className="mock-elite-feature-desc">Track whether you're improving session over session, across every track.</span>
                   </li>
                   <li className="mock-elite-feature">
                     <span className="mock-elite-feature-name">Concept breakdown</span>
-                    <span className="mock-elite-feature-desc">Know exactly which topics are costing you before the real interview.</span>
+                    <span className="mock-elite-feature-desc">Know which topics are costing you before the real interview.</span>
                   </li>
                   <li className="mock-elite-feature">
                     <span className="mock-elite-feature-name">Coaching debrief</span>
-                    <span className="mock-elite-feature-desc">One priority fix identified after every session — so you always know what to work on next.</span>
+                    <span className="mock-elite-feature-desc">One priority fix after every session — so you always know what to work on next.</span>
                   </li>
                   {!isPro && (
                     <li className="mock-elite-feature">
                       <span className="mock-elite-feature-name">Unlimited sessions</span>
-                      <span className="mock-elite-feature-desc">No daily caps on any difficulty level.</span>
+                      <span className="mock-elite-feature-desc">No daily caps on any difficulty.</span>
                     </li>
                   )}
                 </ul>
                 <div className="mock-elite-panel-cta">
-                  <UpgradeButton tier="elite" label="Upgrade to Elite →" source="mock_elite_panel" />
+                  <UpgradeButton tier="elite" label={isPro ? 'Upgrade to Elite →' : 'See Elite plans →'} source="mock_elite_panel" />
+                  {isPro && (
+                    <span className="mock-elite-panel-cta-note">You're on Pro — one tier away.</span>
+                  )}
                 </div>
-              </>
+              </div>
             )}
           </section>
         )}
