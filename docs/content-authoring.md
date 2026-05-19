@@ -168,7 +168,7 @@ Authoring constraints for path files in `backend/content/paths/`:
 
 **Concept families for `data-modeling`** (used in concept pills and insights engine):
 
-`DIMENSIONAL MODELING` · `NORMALIZATION` · `DENORMALIZATION TRADEOFF` · `FACT TABLE DESIGN` · `DIMENSION DESIGN` · `SURROGATE VS NATURAL KEYS` · `SCD STRUCTURE` · `GRAIN DEFINITION` · `BRIDGE & MANY-TO-MANY` · `SCHEMA FROM REQUIREMENTS` · `STORAGE ARCHITECTURE TRADEOFFS` · `DATA VAULT` · `WIDE VS NARROW` · `OLTP VS OLAP` · `MEASURE ADDITIVITY` · `ROLE-PLAYING DIMENSIONS` · `CONFORMED DIMENSIONS` · `SCHEMA EVOLUTION`
+`DIMENSIONAL MODELING` · `NORMALIZATION` · `DENORMALIZATION TRADEOFF` · `FACT TABLE DESIGN` · `DIMENSION DESIGN` · `SURROGATE VS NATURAL KEYS` · `SCD STRUCTURE` · `GRAIN DEFINITION` · `BRIDGE & MANY-TO-MANY` · `SCHEMA FROM REQUIREMENTS` · `STORAGE ARCHITECTURE TRADEOFFS` · `DATA VAULT` · `WIDE VS NARROW` · `OLTP VS OLAP` · `MEASURE ADDITIVITY` · `ROLE-PLAYING DIMENSIONS` · `CONFORMED DIMENSIONS` · `SCHEMA EVOLUTION` · `BI-TEMPORAL MODELING`
 
 **Concept blocklist for `data-modeling`** (too implementation-specific — validator rejects these as concept tags):
 `star schema`, `snowflake schema`, `fact table`, `dimension table`, `foreign key`, `primary key`, `scd`, `surrogate key`, `natural key`, `dbt`, `hub`, `link`, `satellite`
@@ -299,6 +299,7 @@ Verified current allocation for existing tracks:
 | PySpark | 41001–41038 (38p) | 42001–42038 (38p) · 42039–42048 (10m) | 43001–43026 (26p) · 43027–43036 (10m) |
 | ML Fundamentals | 81001–81030 (30p) | 82001–82035 (35p) · 82036–82047 (12m) | 83001–83025 (25p) · 83026–83038 (13m) |
 | Experimentation | 91001–91030 (30p) | 92001–92030 (30p) · 92031–92042 (12m) | 93001–93020 (20p) · 93021–93033 (13m) |
+| Data Modeling | 61001–61025 (25p) | 62001–62025 (25p) | 63001–63020 (20p) · 63021 (1m) |
 
 ### SQL sample IDs (3-digit, SQL only)
 

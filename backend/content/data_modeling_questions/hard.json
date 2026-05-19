@@ -539,5 +539,33 @@
       "FACT TABLE DESIGN",
       "DENORMALIZATION TRADEOFF"
     ]
+  },
+  {
+    "id": 63021,
+    "order": 21,
+    "title": "Bi-Temporal Pricing History for Backdated Corrections",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A B2B SaaS company maintains a contract_prices table in Snowflake tracking the negotiated monthly price for each enterprise customer. Prices change infrequently but are sometimes corrected retroactively — for example, a price agreed on March 1 at $500/month might be discovered to be incorrect and corrected to $450/month on March 20, with the effective date backdated to March 1. Finance has two distinct, non-negotiable reporting requirements: (1) valid-time queries — 'what price was contractually active for customer X on business date D?' used for billing reconciliation; (2) transaction-time queries — 'what did our system hold for customer X's price as of system date D?' used when regulators ask what was reported in a March 15 monthly statement. The table currently holds roughly 8,000 active contracts; corrections occur on approximately 5% of contracts per month.",
+    "description": "Which design cleanly satisfies both reporting requirements as backdated corrections accumulate over time?",
+    "options": [
+      "Option A — Bi-temporal table: add four date columns — valid_from and valid_to for the business-time axis, and recorded_from and recorded_to for the system-time axis. When a correction arrives on March 20: close recorded_to = March 20 on the original row and insert a corrected row with the corrected price, valid_from = March 1, and recorded_from = March 20. Both query types become simple date-range predicates on indexed columns.",
+      "Option B — SCD Type 2 with a correction_flag BOOLEAN and correction_applied_at TIMESTAMP. Original rows are retained; corrections add new rows with the corrected valid_from and the flag set to true. Transaction-time queries reconstruct system state by scanning rows where correction_applied_at is on or before the as-of system date and applying a ROW_NUMBER() window to find the latest belief per customer.",
+      "Option C — Two separate tables: contract_prices (SCD Type 2, manages valid time only) and price_audit_log (append-only copy of every row version with a logged_at timestamp). Valid-time queries use contract_prices; audit queries use price_audit_log. Each table is managed independently.",
+      "Option D — Append-only event log: every price change or correction is a new row with (customer_id, price, valid_from, event_timestamp). No rows are ever updated or closed. Both query types reconstruct state by applying a ROW_NUMBER() over event_timestamp and filtering on valid_from, keeping only the most recent event for each valid range as of the desired system date."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. Bi-temporal modeling adds two independent time axes as first-class columns: business (valid) time and system (transaction) time. When a backdated correction arrives, the original row's recorded_to is closed and a corrected row is inserted — the original is never deleted. This means the table always contains the full correction history. Both query types reduce to a two-predicate range scan: WHERE :business_date BETWEEN valid_from AND valid_to AND '9999-12-31' = recorded_to for the current system view, or WHERE :business_date BETWEEN valid_from AND valid_to AND :system_date BETWEEN recorded_from AND recorded_to for a historical system snapshot. No reconstruction, no flag scanning, no cross-table joins — both predicates land on indexed columns.\n\nOption B is a common half-measure. The correction_flag + correction_applied_at approach can record that a correction happened and when, but it cannot cleanly reconstruct what the system held at an arbitrary past point in time when multiple corrections have accumulated. If three corrections have been applied to one customer over six months, finding the system state on any specific date requires scanning all rows, ordering by correction_applied_at, and evaluating overlapping valid ranges in code — none of which is a simple index scan. The design conflates both time axes into a single ordered row stream with no physical separation between 'when the business fact was true' and 'when the system believed it.'\n\nOption C correctly identifies that two concerns need two stores, but physical separation creates a synchronization risk: if the write to contract_prices succeeds but the corresponding write to price_audit_log fails (network blip, transaction boundary mismatch), the audit trail is silently incomplete. The cross-table join for queries that need both axes is also non-trivial — the dimension evolves via SCD Type 2 while the audit log is append-only, so schemas can drift. This pattern is common in practice as an engineering approximation, but it is not a coherent model: there is no single table that correctly answers either query type alone, and the combination adds operational fragility.\n\nOption D (append-only event log) is architecturally sound for immutable stores but imposes reconstructive complexity on every consumer. A ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY event_timestamp) computed at query time is expensive and error-prone in an OLAP warehouse used by analysts who write ad-hoc SQL. The design also has an ambiguity: if multiple events exist for the same customer with overlapping valid ranges (an original and a correction, both starting March 1), determining which one was 'current' as of a past system date requires careful event-ordering logic that belongs in the ETL layer, not in every analyst query.",
+    "hints": [
+      "A standard SCD Type 2 manages one time axis — it records when the business fact was valid, but it cannot preserve what the system believed before a correction was applied. Ask which design has independent columns for both axes.",
+      "When a backdated correction is applied on March 20 with effective date March 1, two independent dates are in play: the date the business fact became true (March 1) and the date the system learned about it (March 20). Both need to be independently queryable without reconstruction.",
+      "A bi-temporal table answers both query types with simple range predicates on indexed date columns — WHERE :date BETWEEN valid_from AND valid_to for business time, and WHERE :date BETWEEN recorded_from AND recorded_to for system time. If a design requires ROW_NUMBER() or a cross-table join to answer either query, it is not truly bi-temporal."
+    ],
+    "concepts": [
+      "BI-TEMPORAL MODELING",
+      "SCD STRUCTURE",
+      "DIMENSION DESIGN"
+    ]
   }
 ]
