@@ -166,6 +166,31 @@ def test_tc136d_benchmark_mode_rejects_mixed_track():
     assert "mixed" in r.json().get("error", "").lower() or "mixed" in r.json().get("detail", "").lower()
 
 
+def test_tc136e_ml_benchmark_includes_debug_and_predict_output_when_available():
+    """TC-136E: ML Fundamentals benchmark composition includes advanced reasoning forms."""
+    with TestClient(app) as client:
+        _make_user(client, plan="elite")
+        r = client.post("/api/mock/start", json={
+            "mode": "benchmark", "track": "ml-fundamentals", "difficulty": "hard",
+        })
+    assert r.status_code in (200, 201)
+    types = [q.get("type") for q in r.json()["questions"]]
+    assert "debug" in types
+    assert "predict_output" in types
+    assert len(types) == 6
+
+
+def test_tc136f_non_benchmark_ml_session_is_not_forced_into_benchmark_shape():
+    """TC-136F: Drill sessions on reasoning tracks are not forced into benchmark-only type coverage."""
+    with TestClient(app) as client:
+        _make_user(client, plan="elite")
+        r = client.post("/api/mock/start", json={
+            "mode": "30min", "track": "ml-fundamentals", "difficulty": "hard",
+        })
+    assert r.status_code in (200, 201)
+    assert len(r.json()["questions"]) == 2
+
+
 def test_tc137_num_questions_out_of_range_returns_400():
     """TC-137: num_questions=0 or 6 → 400."""
     with TestClient(app) as client:

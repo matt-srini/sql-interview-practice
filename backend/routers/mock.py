@@ -296,6 +296,22 @@ def _sample_statistics_benchmark(pool: list[dict], mocked_ids: set[int]) -> list
     return chosen
 
 
+def _benchmark_type_targets(track: str, difficulty: str, num_questions: int) -> list[str]:
+    if track == "pyspark":
+        return _pyspark_format_targets(difficulty, num_questions)
+
+    targets: dict[str, list[str]] = {
+        "data-engineering": ["scenario", "mcq", "debug", "scenario", "scenario", "mcq"],
+        "data-modeling": ["scenario", "mcq", "scenario", "mcq", "scenario"],
+        "ml-fundamentals": ["scenario", "mcq", "predict_output", "debug", "scenario", "mcq"],
+        "experimentation": ["scenario", "mcq", "predict_output", "debug", "scenario", "mcq"],
+    }
+    base = targets.get(track, ["mcq"] * num_questions)
+    if len(base) >= num_questions:
+        return base[:num_questions]
+    return base + [base[-1] if base else "mcq"] * (num_questions - len(base))
+
+
 async def _select_questions(
     track: str,
     difficulty: str,
@@ -382,7 +398,12 @@ async def _select_questions(
         chosen_raw = _sample_statistics_benchmark(pool, mocked_ids)
         if len(chosen_raw) < num_questions:
             raise _not_enough
-    elif track != "mixed" and get_track(track).eval_kind == "mcq" and difficulty != "mixed":
+    elif mode == "benchmark" and track != "mixed" and get_track(track).eval_kind == "mcq":
+        fmt_targets = _benchmark_type_targets(track, difficulty, num_questions)
+        chosen_raw = _sample_by_format(pool, fmt_targets, mocked_ids)
+        if len(chosen_raw) < num_questions:
+            raise _not_enough
+    elif track == "pyspark" and difficulty != "mixed":
         fmt_targets = _pyspark_format_targets(difficulty, num_questions)
         chosen_raw = _sample_by_format(pool, fmt_targets, mocked_ids)
         if len(chosen_raw) < num_questions:

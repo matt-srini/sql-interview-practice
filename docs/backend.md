@@ -416,6 +416,8 @@ Prefix: `/api/mock`
 
 > **Analytics separation:** `GET /api/mock/analytics` now returns additive `benchmark_summary`, `drill_summary`, and `mode_breakdown` fields so benchmark performance can be compared like-with-like while flexible drill sessions remain visible without contaminating comparable benchmark stats.
 
+> **Benchmark composition:** benchmark sessions now use track-specific composition targets for reasoning tracks instead of reusing PySpark's format sampler globally. PySpark retains its own format template; Statistics retains its `1 numerical + 2 conceptual` split; Data Engineering, Data Modeling, ML Fundamentals, and Experimentation now use track-specific `type` targets so benchmark coverage reflects the actual modality of each track.
+
 ### Request bodies
 
 **`POST /start`**

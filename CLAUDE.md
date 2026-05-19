@@ -332,6 +332,8 @@ Locked MCQ questions return 200 with `locked: true` and no `options` or `correct
 
 **Mock modes:** `benchmark` is now the serious, fixed-shape track benchmark; `30min` and `custom` are drill modes; Mixed is drill-only. Legacy `60min` sessions can still exist in history but are no longer the primary setup path.
 
+**Benchmark composition:** PySpark keeps its own format-targeted benchmark template, Statistics benchmarks enforce `1 numerical + 2 conceptual`, and the other reasoning tracks now use track-specific `type` targets during benchmark selection instead of reusing PySpark's format sampler.
+
 **Mock daily limits:** Free = 1 medium/day · Pro = 3 hard/day · Elite = unlimited.
 
 **Elite mock exclusives:** (1) Focus mode — `focus_concepts` param in `/start` filters pool to concept-tagged questions; (2) Mock history analytics — `GET /api/mock/analytics` returns separated `benchmark_summary` and `drill_summary` session metrics plus overall concept signals over the last 50 sessions.

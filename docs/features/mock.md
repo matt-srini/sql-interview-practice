@@ -30,6 +30,8 @@ Benchmark blueprints:
 | ML Fundamentals | 6 constructed reasoning prompts | 40 min |
 | Experimentation | 6 constructed reasoning prompts | 40 min |
 
+Benchmark composition now follows track-specific type targets where the bank supports them. For example, PySpark benchmarks still target code-adjacent Spark forms, Statistics benchmarks enforce `1 numerical + 2 conceptual`, and ML Fundamentals / Experimentation benchmarks explicitly pull from scenario, MCQ, predict-output, and debug forms instead of inheriting PySpark's composition rules.
+
 Custom drill validates server-side: `num_questions` must be 1–5, `time_minutes` must be 10–90.
 
 ---
@@ -195,6 +197,7 @@ See `backend/tests/test_11_mock.py` for the focused mock backend suite covering:
 - Session lifecycle, summary visibility, and mixed-session behavior for the current mock system
 - Benchmark mode track-shape enforcement, including the statistics `1 numerical + 2 conceptual` blueprint and mixed-track rejection
 - Analytics separation between benchmark and drill sessions
+- Track-specific benchmark composition for reasoning tracks
 - Custom mode validation
 - Mixed track sessions
 - Company filter gating (free/pro blocked, elite/lifetime_elite allowed)
