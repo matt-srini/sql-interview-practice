@@ -110,6 +110,7 @@ Main practice screen. Layout and behavior vary by modality and topic:
 - **SEO**: easy questions are indexable — `noindex` is omitted and a `canonical` link is injected via Helmet. Medium and hard questions retain `noindex, nofollow` because they 403 for unauthenticated crawlers. Title format: `"{Question Title} — {Track} {Primary Concept} — datathink"`.
 - **Modality-aware reasoning copy**: `QuestionPage` now reads `interaction_mode` as the coarse modality family and keeps `question.type` / `question_type` for the specific prompt verb, so constructed-reasoning tracks can expose stable metadata without losing subtype-specific copy like predict, debug, or scenario.
 - **Question-form badge**: when a question exposes `type` / `question_type` metadata, the header now shows a compact badge like `Debug`, `Scenario`, `Predict output`, or `Numerical` next to the difficulty pill so the interaction model is visible before the user starts reading.
+- **Prompt-guidance strip**: reasoning-first and code-adjacent MCQ prompts now render a compact guidance block under the header that spells out the modality family, the exact task, and what evidence to inspect before answering.
 - Compact status line in question header (difficulty / question position / open count)
 - On mobile, question actions use a low-profile sticky dock for Run / Submit controls
 - On correct: `refresh()` updates catalog context so sidebar reflects new unlock state
@@ -280,7 +281,7 @@ Provides current topic and track metadata to the entire component tree.
 
 `statistics` entry: `color: '#7A5AF0'`, `hasMCQ: true`, `hasRunCode: true`, `mixedSubtype: true`, `apiPrefix: '/statistics'`, `language: 'python'`. The `mixedSubtype: true` flag tells `QuestionPage.js` to derive `renderMode` from `question.subtype` at runtime rather than using the static `hasMCQ` flag — enabling a single page to render both conceptual reasoning and executable numerical questions.
 
-Reasoning-first practice now reads additive `interaction_mode` metadata across PySpark, Data Engineering, Data Modeling, ML Fundamentals, Experimentation, and Statistics. `QuestionPage` keeps `question.type` / `question_type` separate so headings and submit labels can still distinguish predict-output, debug, optimization, and scenario variants even when multiple question forms share the same modality family.
+Reasoning-first practice now reads additive `interaction_mode` metadata across PySpark, Data Engineering, Data Modeling, ML Fundamentals, Experimentation, and Statistics. `QuestionPage` keeps `question.type` / `question_type` separate so headings, header guidance, and submit labels can still distinguish predict-output, debug, optimization, and scenario variants even when multiple question forms share the same modality family.
 
 ### `catalogContext.js`
 

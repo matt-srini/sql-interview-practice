@@ -16,7 +16,7 @@ import { useCatalog } from '../catalogContext';
 import { useTopic } from '../contexts/TopicContext';
 import { useAuth } from '../contexts/AuthContext';
 import UpgradeButton from '../components/UpgradeButton';
-import { getQuestionFormLabel } from '../questionFormLabel';
+import { getQuestionFormLabel, getQuestionPromptGuidance } from '../questionFormLabel';
 import { parseSqlError } from '../utils/sqlErrorParser';
 import { renderDescription } from '../utils/renderDescription';
 import { useToast } from '../App';
@@ -859,6 +859,10 @@ export default function QuestionPage() {
     : 'DuckDB sandbox';
   const timerLabel = formatDuration(elapsedMs) ?? '0:00';
   const questionFormLabel = useMemo(() => getQuestionFormLabel(question), [question]);
+  const questionPromptGuidance = useMemo(
+    () => getQuestionPromptGuidance(question, { renderMode, isReasoningTrack, isPySparkTrack }),
+    [question, renderMode, isReasoningTrack, isPySparkTrack]
+  );
 
   const submitBtnLabel = useMemo(() => {
     if (submitting) return 'Checking…';
@@ -964,6 +968,13 @@ export default function QuestionPage() {
                 </div>
                 {workspaceStatus && (
                   <p className="question-status-line">{workspaceStatus}</p>
+                )}
+                {questionPromptGuidance && (
+                  <div className="question-prompt-guidance" aria-label="Prompt guidance">
+                    <div className="question-prompt-guidance-kicker">{questionPromptGuidance.modeLabel}</div>
+                    <div className="question-prompt-guidance-task">{questionPromptGuidance.taskLabel}</div>
+                    <p className="question-prompt-guidance-copy">{questionPromptGuidance.evidenceLabel}</p>
+                  </div>
                 )}
               </div>
             </div>
