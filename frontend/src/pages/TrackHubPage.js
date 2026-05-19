@@ -11,6 +11,7 @@ import PathProgressCard from '../components/PathProgressCard';
 import TierBanner from '../components/TierBanner';
 import UpgradeButton from '../components/UpgradeButton';
 import Skeleton from '../components/Skeleton';
+import { summarizeQuestionForms } from '../questionFormLabel';
 
 function pickNextQuestionId(catalog) {
   if (!catalog) return null;
@@ -57,6 +58,10 @@ export default function TrackHubPage() {
   const nextId = useMemo(() => pickNextQuestionId(catalog), [catalog]);
   const firstId = useMemo(() => pickFirstQuestionId(catalog), [catalog]);
   const continueId = nextId ?? firstId;
+  const questionFormSummary = useMemo(
+    () => summarizeQuestionForms(catalog?.groups ?? []),
+    [catalog]
+  );
 
   const totalSolved = useMemo(() => {
     if (!catalog) return 0;
@@ -203,6 +208,19 @@ export default function TrackHubPage() {
             <span className="track-hub-tagline">{meta.tagline}</span>
           </div>
           <p className="track-hub-desc">{meta.description}</p>
+          {questionFormSummary.length > 1 && (
+            <div className="track-hub-form-strip" aria-label="Question forms in this track">
+              <span className="track-hub-form-strip-label">What you'll practice</span>
+              <div className="track-hub-form-strip-chips">
+                {questionFormSummary.map((item) => (
+                  <span key={item.label} className="track-hub-form-chip">
+                    <span>{item.label}</span>
+                    <span className="track-hub-form-chip-count">{item.count}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="thub-stat-card" style={{ '--track-color': meta.color }}>

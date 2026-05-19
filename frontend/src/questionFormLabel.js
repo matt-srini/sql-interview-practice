@@ -72,3 +72,21 @@ export function getQuestionPromptGuidance(question, options = {}) {
     evidenceLabel: getEvidenceLabel(question, interactionMode),
   };
 }
+
+export function summarizeQuestionForms(groups = [], options = {}) {
+  const { limit = 4 } = options;
+  const counts = new Map();
+
+  groups.forEach((group) => {
+    (group?.questions ?? []).forEach((question) => {
+      const label = getQuestionFormLabel(question);
+      if (!label) return;
+      counts.set(label, (counts.get(label) ?? 0) + 1);
+    });
+  });
+
+  return Array.from(counts.entries())
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, limit)
+    .map(([label, count]) => ({ label, count }));
+}

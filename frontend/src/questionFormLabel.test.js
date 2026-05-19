@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getQuestionFormLabel, getQuestionPromptGuidance } from './questionFormLabel';
+import { getQuestionFormLabel, getQuestionPromptGuidance, summarizeQuestionForms } from './questionFormLabel';
 
 describe('questionFormLabel helpers', () => {
   it('derives debug badges and prompt guidance for code-adjacent reasoning prompts', () => {
@@ -38,5 +38,31 @@ describe('questionFormLabel helpers', () => {
     };
 
     expect(getQuestionPromptGuidance(question, { renderMode: 'code', isReasoningTrack: false })).toBeNull();
+  });
+
+  it('summarizes the most common question forms across catalog groups', () => {
+    const groups = [
+      {
+        difficulty: 'easy',
+        questions: [
+          { type: 'debug', interaction_mode: 'code_adjacent_reasoning' },
+          { type: 'scenario', interaction_mode: 'constructed_reasoning' },
+          { type: 'scenario', interaction_mode: 'constructed_reasoning' },
+        ],
+      },
+      {
+        difficulty: 'medium',
+        questions: [
+          { type: 'predict_output', interaction_mode: 'code_adjacent_reasoning' },
+          { type: 'scenario', interaction_mode: 'constructed_reasoning' },
+        ],
+      },
+    ];
+
+    expect(summarizeQuestionForms(groups)).toEqual([
+      { label: 'Scenario', count: 3 },
+      { label: 'Debug', count: 1 },
+      { label: 'Predict output', count: 1 },
+    ]);
   });
 });

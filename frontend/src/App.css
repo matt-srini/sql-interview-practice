@@ -4905,6 +4905,55 @@ select {
   line-height: 1.65;
 }
 
+.track-hub-form-strip {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem 0.7rem;
+}
+
+.track-hub-form-strip-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.track-hub-form-strip-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.track-hub-form-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  padding: 0.34rem 0.62rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 16%, var(--border-subtle));
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface-card-alt));
+  color: var(--text-strong);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.track-hub-form-chip-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.2rem;
+  height: 1.2rem;
+  padding: 0 0.22rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: color-mix(in srgb, var(--accent) 70%, var(--text-strong));
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
 .track-hub-progress-card {
   display: flex;
   flex-direction: column;

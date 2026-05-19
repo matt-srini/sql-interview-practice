@@ -183,7 +183,7 @@ sql-interview-practice/
 │   │   └── pages/
 │   │       ├── LandingPage.js          # Fixed-topbar landing with track/sample tabs and compact progress panels
 │   │       ├── QuestionPage.js         # Topic-aware question page (all 4 tracks, question-form badges, prompt-guidance chrome, shortcuts, draft autosave, soft timer, bookmarks, unlock/streak milestone toasts)
-│   │       ├── TrackHubPage.js         # Per-track landing (progress, next-up summary, concept preview, paths)
+│   │       ├── TrackHubPage.js         # Per-track landing (progress, next-up summary, question-form preview, concept preview, paths)
 │   │       ├── LearningPath.js         # Curated path page at /learn/:topic/:slug (breadcrumb, progress, completion banner)
 │   │       ├── LearningPathsIndex.js   # Index of all paths at /learn and /learn/:topic (grouped + in-progress rail)
 │   │       ├── ProgressDashboard.js    # Cross-track progress + coaching insights at /dashboard
