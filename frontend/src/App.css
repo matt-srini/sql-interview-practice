@@ -8152,7 +8152,7 @@ select {
   background: var(--bg-page);
 }
 .mock-hub-main {
-  max-width: 760px;
+  max-width: 1060px;
   margin: 0 auto;
   padding: 2rem 1.25rem 4rem;
 }
@@ -8181,6 +8181,126 @@ select {
 }
 .mock-hub-section {
   margin-bottom: 2rem;
+}
+
+/* ── MockHub two-column lobby (Phase 5A) ── */
+.mock-hub-lobby {
+  display: grid;
+  grid-template-columns: 1fr 292px;
+  gap: 2rem;
+  align-items: start;
+  margin-bottom: 2.5rem;
+}
+.mock-hub-left-col {
+  min-width: 0;
+}
+.mock-hub-rail {
+  position: sticky;
+  top: 72px;
+}
+.mock-rail-card {
+  background: var(--surface-card);
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 1.1rem 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+.mock-rail-kicker {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.mock-rail-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  align-self: flex-start;
+}
+.mock-rail-mode-badge--benchmark {
+  background: rgba(22, 101, 52, 0.12);
+  color: var(--accent);
+}
+.mock-rail-mode-badge--drill {
+  background: rgba(91, 106, 240, 0.12);
+  color: #3d4ed7;
+}
+.mock-rail-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0.75rem 0;
+}
+.mock-rail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.mock-rail-row--shape {
+  justify-content: flex-start;
+}
+.mock-rail-key {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+.mock-rail-val {
+  font-size: 0.85rem;
+  color: var(--text-strong);
+  font-weight: 600;
+  text-align: right;
+}
+.mock-rail-shape-line {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+.mock-rail-focus-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.mock-rail-focus-pill {
+  font-size: 0.7rem;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+.mock-rail-access {
+  padding: 0.6rem 0.7rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.mock-rail-access--remaining {
+  background: var(--surface-card-soft);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+.mock-rail-access--blocked {
+  background: var(--warning-soft);
+  color: var(--warning-text);
+  font-weight: 500;
+}
+.mock-rail-error {
+  color: var(--danger);
+  background: var(--danger-soft);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.7rem;
+  font-size: 0.82rem;
+  margin: 0;
 }
 .mock-setup-recommendation {
   background: color-mix(in srgb, var(--accent) 7%, var(--surface-card));
@@ -9117,6 +9237,12 @@ select {
 
 /* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 900px) {
+  .mock-hub-lobby {
+    grid-template-columns: 1fr;
+  }
+  .mock-hub-rail {
+    position: static;
+  }
   .mock-mode-cards {
     grid-template-columns: 1fr;
   }

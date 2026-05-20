@@ -332,6 +332,9 @@ export default function MockHub() {
   const isMixedTrack = track === 'mixed';
   const hasMockBank  = !NO_MOCK_BANK_TRACKS.has(track);
 
+  // Rail access state
+  const railDiffState = getDifficultyButtonState(difficulty);
+
   return (
     <div className="mock-hub-page">
       <Helmet>
@@ -365,312 +368,379 @@ export default function MockHub() {
       )}
 
       <main className="mock-hub-main">
-        {/* Hero */}
-        <section className="mock-hub-hero">
-          <div className="mock-hub-kicker">Benchmarks and drills</div>
-          <h1 className="mock-hub-title">Interview Practice</h1>
-          <p className="mock-hub-subtitle">
-            Use benchmarks for fixed-shape comparability, then drills for targeted follow-up practice.
-            <button className="mock-help-btn" onClick={() => setShowHelp(true)} aria-label="How it works">?</button>
-          </p>
-        </section>
 
-        {presetNotice && (
-          <section className="mock-hub-section mock-setup-recommendation">
-            <div className="mock-setup-recommendation-kicker">Recommended next step</div>
-            <p className="mock-setup-recommendation-copy">{presetNotice}</p>
-          </section>
-        )}
+        {/* ── Two-column lobby ── */}
+        <div className="mock-hub-lobby">
 
-        {/* Mode selector */}
-        <section className="mock-hub-section">
-          <div className="mock-mode-cards">
-            {modeCards.map(card => (
-              <button
-                key={card.key}
-                type="button"
-                className={`mock-mode-card ${mode === card.key ? 'selected' : ''}${card.disabled ? ' mock-mode-card-disabled' : ''}`}
-                onClick={() => {
-                  if (card.disabled) return;
-                  setMode(card.key);
-                  setStartError(null);
-                }}
-                disabled={card.disabled}
-              >
-                <div className="mock-mode-card-label">{card.label}</div>
-                <div className="mock-mode-card-sublabel">{card.sublabel}</div>
-                <div className="mock-mode-card-desc">{card.desc}</div>
-              </button>
-            ))}
-          </div>
-        </section>
+          {/* Left: primary setup lane */}
+          <div className="mock-hub-left-col">
 
-        {mode === 'benchmark' && benchmarkBlueprint && (
-          <section className="mock-hub-section mock-benchmark-blueprint">
-            <div className="mock-benchmark-blueprint-kicker">Benchmark blueprint</div>
-            <div className="mock-benchmark-blueprint-main">
-              <span className="mock-benchmark-blueprint-shape">{benchmarkBlueprint.summary}</span>
-              <span className="mock-benchmark-blueprint-time">{benchmarkBlueprint.timeMinutes} min fixed session</span>
-            </div>
-            <p className="mock-benchmark-blueprint-copy">{benchmarkBlueprint.description}</p>
-          </section>
-        )}
+            {/* Hero */}
+            <section className="mock-hub-hero">
+              <div className="mock-hub-kicker">Benchmarks and drills</div>
+              <h1 className="mock-hub-title">Interview Practice</h1>
+              <p className="mock-hub-subtitle">
+                Use benchmarks for fixed-shape comparability, then drills for targeted follow-up practice.
+                <button className="mock-help-btn" onClick={() => setShowHelp(true)} aria-label="How it works">?</button>
+              </p>
+            </section>
 
-        {mode !== 'benchmark' && setupDescriptor && (
-          <section className="mock-hub-section mock-drill-plan">
-            <div className="mock-drill-plan-kicker">{setupDescriptor.sectionLabel}</div>
-            <div className="mock-drill-plan-main">
-              <div className="mock-drill-plan-title-row">
-                <h2 className="mock-drill-plan-title">{setupDescriptor.title}</h2>
-                <span className="mock-drill-plan-mode">{setupDescriptor.modeLabel}</span>
-              </div>
-              <div className="mock-drill-plan-chips">
-                <span className="mock-drill-plan-chip">{effectiveQuestionCount} questions</span>
-                <span className="mock-drill-plan-chip">{effectiveTimeMinutes} min cap</span>
-                <span className="mock-drill-plan-chip mock-drill-plan-chip-track">{TRACK_LABELS[track]}</span>
-              </div>
-              <p className="mock-drill-plan-copy">{setupDescriptor.description}</p>
-              {expectationLines.length > 0 && (
-                <div className="mock-drill-plan-shape">
-                  <span className="mock-drill-plan-shape-label">Session shape</span>
-                  {expectationLines.map((line, index) => (
-                    <span key={index} className="mock-drill-plan-shape-line">{line}</span>
-                  ))}
-                </div>
-              )}
-              {setupDescriptor.detailLines?.length > 0 && (
-                <div className="mock-drill-plan-notes">
-                  {setupDescriptor.detailLines.map((line) => (
-                    <p key={line} className="mock-drill-plan-note">{line}</p>
-                  ))}
-                </div>
-              )}
+            {/* Recommendation banner */}
+            {presetNotice && (
+              <section className="mock-hub-section mock-setup-recommendation">
+                <div className="mock-setup-recommendation-kicker">Recommended next step</div>
+                <p className="mock-setup-recommendation-copy">{presetNotice}</p>
+              </section>
+            )}
 
-              {mode === 'custom' && (
-                <div className="mock-custom-controls mock-custom-controls-inline">
-                  <div className="mock-custom-row">
-                    <label className="mock-custom-label">Questions</label>
-                    <input
-                      className="mock-custom-input"
-                      type="number" min="1" max="5" value={numQuestions}
-                      onChange={e => setNumQuestions(Math.max(1, Math.min(5, Number(e.target.value))))}
-                    />
-                    <span className="mock-custom-hint">(1–5)</span>
-                  </div>
-                  <div className="mock-custom-row">
-                    <label className="mock-custom-label">Time (minutes)</label>
-                    <input
-                      className="mock-custom-input"
-                      type="number" min="10" max="90" value={timeMinutes}
-                      onChange={e => setTimeMinutes(Math.max(10, Math.min(90, Number(e.target.value))))}
-                    />
-                    <span className="mock-custom-hint">(10–90)</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </section>
-        )}
-
-        {/* Configuration */}
-        <section className="mock-hub-section">
-          <div className="mock-hub-config">
-
-            {/* Role filter */}
-            <div className="mock-hub-config-row">
-              <span className="mock-hub-config-label">Role</span>
-              <div className="mock-role-pills">
-                <button
-                  type="button"
-                  className={`mock-role-pill ${!selectedRole ? 'active' : ''}`}
-                  onClick={() => handleRoleSelect(null)}
-                >
-                  All
-                </button>
-                {MOCK_ROLES.map(r => (
+            {/* Mode selector */}
+            <section className="mock-hub-section">
+              <div className="mock-mode-cards">
+                {modeCards.map(card => (
                   <button
-                    key={r.id}
+                    key={card.key}
                     type="button"
-                    className={`mock-role-pill ${selectedRole === r.id ? 'active' : ''}`}
-                    onClick={() => handleRoleSelect(r.id)}
+                    className={`mock-mode-card ${mode === card.key ? 'selected' : ''}${card.disabled ? ' mock-mode-card-disabled' : ''}`}
+                    onClick={() => {
+                      if (card.disabled) return;
+                      setMode(card.key);
+                      setStartError(null);
+                    }}
+                    disabled={card.disabled}
                   >
-                    {r.label}
+                    <div className="mock-mode-card-label">{card.label}</div>
+                    <div className="mock-mode-card-sublabel">{card.sublabel}</div>
+                    <div className="mock-mode-card-desc">{card.desc}</div>
                   </button>
                 ))}
               </div>
-            </div>
+            </section>
 
-            {/* Track */}
-            <div className="mock-hub-config-row">
-              <span className="mock-hub-config-label">Track</span>
-              <div className="mock-config-pills">
-                {filteredTracks.map(t => (
-                  <button
-                    key={t}
-                    type="button"
-                    className={`mock-config-pill ${track === t ? 'active' : ''}`}
-                    onClick={() => { setTrack(t); setFocusMode(false); setFocusConcepts([]); setStartError(null); }}
-                  >
-                    {TRACK_LABELS[t]}
-                  </button>
-                ))}
-              </div>
-            </div>
+            {/* Benchmark blueprint */}
+            {mode === 'benchmark' && benchmarkBlueprint && (
+              <section className="mock-hub-section mock-benchmark-blueprint">
+                <div className="mock-benchmark-blueprint-kicker">Benchmark blueprint</div>
+                <div className="mock-benchmark-blueprint-main">
+                  <span className="mock-benchmark-blueprint-shape">{benchmarkBlueprint.summary}</span>
+                  <span className="mock-benchmark-blueprint-time">{benchmarkBlueprint.timeMinutes} min fixed session</span>
+                </div>
+                <p className="mock-benchmark-blueprint-copy">{benchmarkBlueprint.description}</p>
+              </section>
+            )}
 
-            {/* Difficulty */}
-            <div className="mock-hub-config-row">
-              <span className="mock-hub-config-label">Difficulty</span>
-              <div className="mock-config-pills">
-                {DIFFICULTIES.map(d => {
-                  const btnState = getDifficultyButtonState(d);
-                  const isSelected = difficulty === d;
-                  return (
+            {/* Drill planner */}
+            {mode !== 'benchmark' && setupDescriptor && (
+              <section className="mock-hub-section mock-drill-plan">
+                <div className="mock-drill-plan-kicker">{setupDescriptor.sectionLabel}</div>
+                <div className="mock-drill-plan-main">
+                  <div className="mock-drill-plan-title-row">
+                    <h2 className="mock-drill-plan-title">{setupDescriptor.title}</h2>
+                    <span className="mock-drill-plan-mode">{setupDescriptor.modeLabel}</span>
+                  </div>
+                  <div className="mock-drill-plan-chips">
+                    <span className="mock-drill-plan-chip">{effectiveQuestionCount} questions</span>
+                    <span className="mock-drill-plan-chip">{effectiveTimeMinutes} min cap</span>
+                    <span className="mock-drill-plan-chip mock-drill-plan-chip-track">{TRACK_LABELS[track]}</span>
+                  </div>
+                  <p className="mock-drill-plan-copy">{setupDescriptor.description}</p>
+                  {expectationLines.length > 0 && (
+                    <div className="mock-drill-plan-shape">
+                      <span className="mock-drill-plan-shape-label">Session shape</span>
+                      {expectationLines.map((line, index) => (
+                        <span key={index} className="mock-drill-plan-shape-line">{line}</span>
+                      ))}
+                    </div>
+                  )}
+                  {setupDescriptor.detailLines?.length > 0 && (
+                    <div className="mock-drill-plan-notes">
+                      {setupDescriptor.detailLines.map((line) => (
+                        <p key={line} className="mock-drill-plan-note">{line}</p>
+                      ))}
+                    </div>
+                  )}
+
+                  {mode === 'custom' && (
+                    <div className="mock-custom-controls mock-custom-controls-inline">
+                      <div className="mock-custom-row">
+                        <label className="mock-custom-label">Questions</label>
+                        <input
+                          className="mock-custom-input"
+                          type="number" min="1" max="5" value={numQuestions}
+                          onChange={e => setNumQuestions(Math.max(1, Math.min(5, Number(e.target.value))))}
+                        />
+                        <span className="mock-custom-hint">(1–5)</span>
+                      </div>
+                      <div className="mock-custom-row">
+                        <label className="mock-custom-label">Time (minutes)</label>
+                        <input
+                          className="mock-custom-input"
+                          type="number" min="10" max="90" value={timeMinutes}
+                          onChange={e => setTimeMinutes(Math.max(10, Math.min(90, Number(e.target.value))))}
+                        />
+                        <span className="mock-custom-hint">(10–90)</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {/* Configuration: role, track, difficulty */}
+            <section className="mock-hub-section">
+              <div className="mock-hub-config">
+
+                {/* Role filter */}
+                <div className="mock-hub-config-row">
+                  <span className="mock-hub-config-label">Role</span>
+                  <div className="mock-role-pills">
                     <button
-                      key={d}
                       type="button"
-                      className={`mock-config-pill ${isSelected ? 'active' : ''} ${btnState.blocked ? 'mock-config-pill--blocked' : ''}`}
-                      onClick={() => { setDifficulty(d); setStartError(null); }}
-                      aria-disabled={btnState.blocked}
+                      className={`mock-role-pill ${!selectedRole ? 'active' : ''}`}
+                      onClick={() => handleRoleSelect(null)}
                     >
-                      {DIFFICULTY_LABELS[d]}
+                      All
                     </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </section>
+                    {MOCK_ROLES.map(r => (
+                      <button
+                        key={r.id}
+                        type="button"
+                        className={`mock-role-pill ${selectedRole === r.id ? 'active' : ''}`}
+                        onClick={() => handleRoleSelect(r.id)}
+                      >
+                        {r.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-        {/* Mixed track note */}
-        {isMixedTrack && (
-          <div className="mock-track-note">
-            Draws questions from {MIXED_MOCK_TRACKS.map(s => TRACK_LABELS[s]).join(' · ')} — the four code-execution tracks. Mixed stays drill-only while benchmark mode becomes track-specific.
-          </div>
-        )}
+                {/* Track */}
+                <div className="mock-hub-config-row">
+                  <span className="mock-hub-config-label">Track</span>
+                  <div className="mock-config-pills">
+                    {filteredTracks.map(t => (
+                      <button
+                        key={t}
+                        type="button"
+                        className={`mock-config-pill ${track === t ? 'active' : ''}`}
+                        onClick={() => { setTrack(t); setFocusMode(false); setFocusConcepts([]); setStartError(null); }}
+                      >
+                        {TRACK_LABELS[t]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-        {/* No dedicated mock bank note */}
-        {!isMixedTrack && !hasMockBank && (
-          <div className="mock-track-note mock-track-note--info">
-            No dedicated mock question bank yet for this track — this session draws from practice questions.
-          </div>
-        )}
-
-        {/* Focus mode — shown to all, locked for non-Elite */}
-        {!isMixedTrack && (
-          <section className="mock-hub-section mock-focus-section">
-            {isElite ? (
-              <>
-                <label className="mock-focus-label">
-                  <input
-                    type="checkbox"
-                    checked={focusMode}
-                    onChange={e => { setFocusMode(e.target.checked); setFocusConcepts([]); }}
-                  />
-                  <span>Focus mode</span>
-                  <span className="mock-focus-label-sub">— target specific concepts in this session</span>
-                </label>
-                {focusMode && (
-                  <div className="mock-focus-concepts">
-                    {(TRACK_CONCEPT_MAP[track] || []).map(c => {
-                      const selected = focusConcepts.includes(c);
-                      const disabled = !selected && focusConcepts.length >= 3;
+                {/* Difficulty */}
+                <div className="mock-hub-config-row">
+                  <span className="mock-hub-config-label">Difficulty</span>
+                  <div className="mock-config-pills">
+                    {DIFFICULTIES.map(d => {
+                      const btnState = getDifficultyButtonState(d);
+                      const isSelected = difficulty === d;
                       return (
                         <button
-                          key={c}
+                          key={d}
                           type="button"
-                          className={`mock-focus-concept-pill${selected ? ' selected' : ''}`}
-                          onClick={() => {
-                            if (selected) setFocusConcepts(prev => prev.filter(x => x !== c));
-                            else if (!disabled) setFocusConcepts(prev => [...prev, c]);
-                          }}
-                          disabled={disabled}
+                          className={`mock-config-pill ${isSelected ? 'active' : ''} ${btnState.blocked ? 'mock-config-pill--blocked' : ''}`}
+                          onClick={() => { setDifficulty(d); setStartError(null); }}
+                          aria-disabled={btnState.blocked}
                         >
-                          {c}
+                          {DIFFICULTY_LABELS[d]}
                         </button>
                       );
                     })}
-                    <p className="mock-focus-hint">Select 1–3 concepts. Session draws from questions tagged with them.</p>
                   </div>
-                )}
-              </>
-            ) : (
-              <div className="mock-focus-locked">
-                <div className="mock-focus-locked-header">
-                  <input type="checkbox" disabled className="mock-focus-locked-check" />
-                  <span className="mock-focus-locked-label">Focus mode</span>
-                  <span className="mock-elite-badge-inline">Elite</span>
                 </div>
-                <p className="mock-focus-locked-desc">
-                  Target specific concepts — your session draws only from questions tagged with them.
-                </p>
+              </div>
+            </section>
+
+            {/* Mixed track note */}
+            {isMixedTrack && (
+              <div className="mock-track-note">
+                Draws questions from {MIXED_MOCK_TRACKS.map(s => TRACK_LABELS[s]).join(' · ')} — the four code-execution tracks. Mixed stays drill-only while benchmark mode becomes track-specific.
               </div>
             )}
-          </section>
-        )}
 
-        {/* Difficulty notice */}
-        {(() => {
-          if (difficulty === 'medium' || difficulty === 'hard') {
-            const notice = getDifficultyButtonState(difficulty);
-            if (!notice.chip) return null;
-            return (
-              <div className={`mock-diff-notice${notice.blocked ? ' mock-diff-notice--blocked' : ''}`}>
-                <span>{notice.chip}</span>
-                {notice.chipAction && notice.chipAction}
+            {/* No dedicated mock bank note */}
+            {!isMixedTrack && !hasMockBank && (
+              <div className="mock-track-note mock-track-note--info">
+                No dedicated mock question bank yet for this track — this session draws from practice questions.
               </div>
-            );
-          }
-          if (difficulty === 'mixed' && accessState) {
-            const medBlocked = accessState.access?.medium?.can_start === false;
-            const hardBlocked = accessState.access?.hard?.can_start === false;
-            if (medBlocked && hardBlocked) {
-              return (
-                <div className="mock-diff-notice mock-diff-notice--info">
-                  <span>With your current access, this mix will only include easy questions.</span>
-                  {accessState.access?.medium?.needs_upgrade && (
-                    <UpgradeButton tier={accessState.access.medium.needs_upgrade} label="Unlock more with Pro" compact source="mock_mixed_notice" />
-                  )}
+            )}
+
+            {/* Focus mode — shown to all, locked for non-Elite */}
+            {!isMixedTrack && (
+              <section className="mock-hub-section mock-focus-section">
+                {isElite ? (
+                  <>
+                    <label className="mock-focus-label">
+                      <input
+                        type="checkbox"
+                        checked={focusMode}
+                        onChange={e => { setFocusMode(e.target.checked); setFocusConcepts([]); }}
+                      />
+                      <span>Focus mode</span>
+                      <span className="mock-focus-label-sub">— target specific concepts in this session</span>
+                    </label>
+                    {focusMode && (
+                      <div className="mock-focus-concepts">
+                        {(TRACK_CONCEPT_MAP[track] || []).map(c => {
+                          const selected = focusConcepts.includes(c);
+                          const disabled = !selected && focusConcepts.length >= 3;
+                          return (
+                            <button
+                              key={c}
+                              type="button"
+                              className={`mock-focus-concept-pill${selected ? ' selected' : ''}`}
+                              onClick={() => {
+                                if (selected) setFocusConcepts(prev => prev.filter(x => x !== c));
+                                else if (!disabled) setFocusConcepts(prev => [...prev, c]);
+                              }}
+                              disabled={disabled}
+                            >
+                              {c}
+                            </button>
+                          );
+                        })}
+                        <p className="mock-focus-hint">Select 1–3 concepts. Session draws from questions tagged with them.</p>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="mock-focus-locked">
+                    <div className="mock-focus-locked-header">
+                      <input type="checkbox" disabled className="mock-focus-locked-check" />
+                      <span className="mock-focus-locked-label">Focus mode</span>
+                      <span className="mock-elite-badge-inline">Elite</span>
+                    </div>
+                    <p className="mock-focus-locked-desc">
+                      Target specific concepts — your session draws only from questions tagged with them.
+                    </p>
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* Difficulty notice */}
+            {(() => {
+              if (difficulty === 'medium' || difficulty === 'hard') {
+                const notice = getDifficultyButtonState(difficulty);
+                if (!notice.chip) return null;
+                return (
+                  <div className={`mock-diff-notice${notice.blocked ? ' mock-diff-notice--blocked' : ''}`}>
+                    <span>{notice.chip}</span>
+                    {notice.chipAction && notice.chipAction}
+                  </div>
+                );
+              }
+              if (difficulty === 'mixed' && accessState) {
+                const medBlocked = accessState.access?.medium?.can_start === false;
+                const hardBlocked = accessState.access?.hard?.can_start === false;
+                if (medBlocked && hardBlocked) {
+                  return (
+                    <div className="mock-diff-notice mock-diff-notice--info">
+                      <span>With your current access, this mix will only include easy questions.</span>
+                      {accessState.access?.medium?.needs_upgrade && (
+                        <UpgradeButton tier={accessState.access.medium.needs_upgrade} label="Unlock more with Pro" compact source="mock_mixed_notice" />
+                      )}
+                    </div>
+                  );
+                }
+                if (hardBlocked) {
+                  return (
+                    <div className="mock-diff-notice mock-diff-notice--info">
+                      <span>Hard questions aren't included yet — this mix will draw from easy and medium.</span>
+                      {accessState.access?.hard?.needs_upgrade && (
+                        <UpgradeButton tier={accessState.access.hard.needs_upgrade} label="Unlock hard with Pro" compact source="mock_mixed_hard_notice" />
+                      )}
+                    </div>
+                  );
+                }
+              }
+              return null;
+            })()}
+
+          </div>{/* end mock-hub-left-col */}
+
+          {/* Right: sticky session brief rail */}
+          <aside className="mock-hub-rail">
+            <div className="mock-rail-card">
+              <span className="mock-rail-kicker">Session brief</span>
+
+              {/* Mode badge */}
+              <span className={`mock-rail-mode-badge mock-rail-mode-badge--${mode === 'benchmark' ? 'benchmark' : 'drill'}`}>
+                {getMockModeDisplayLabel(mode)}
+              </span>
+
+              {/* Detail rows */}
+              <div className="mock-rail-details">
+                <div className="mock-rail-row">
+                  <span className="mock-rail-key">Track</span>
+                  <span className="mock-rail-val">{TRACK_LABELS[track]}</span>
                 </div>
-              );
-            }
-            if (hardBlocked) {
-              return (
-                <div className="mock-diff-notice mock-diff-notice--info">
-                  <span>Hard questions aren't included yet — this mix will draw from easy and medium.</span>
-                  {accessState.access?.hard?.needs_upgrade && (
-                    <UpgradeButton tier={accessState.access.hard.needs_upgrade} label="Unlock hard with Pro" compact source="mock_mixed_hard_notice" />
-                  )}
+                <div className="mock-rail-row">
+                  <span className="mock-rail-key">Difficulty</span>
+                  <span className={`badge badge-${difficulty}`}>{DIFFICULTY_LABELS[difficulty]}</span>
                 </div>
-              );
-            }
-          }
-          return null;
-        })()}
+                {effectiveQuestionCount > 0 && (
+                  <div className="mock-rail-row">
+                    <span className="mock-rail-key">Questions</span>
+                    <span className="mock-rail-val">{effectiveQuestionCount}</span>
+                  </div>
+                )}
+                {effectiveTimeMinutes > 0 && (
+                  <div className="mock-rail-row">
+                    <span className="mock-rail-key">Time limit</span>
+                    <span className="mock-rail-val">{effectiveTimeMinutes} min</span>
+                  </div>
+                )}
+                {expectationLines.map((line, i) => (
+                  <div key={i} className="mock-rail-row mock-rail-row--shape">
+                    <span className="mock-rail-shape-line">{line}</span>
+                  </div>
+                ))}
+              </div>
 
-        {/* What to expect */}
-        {mode === 'benchmark' && (
-          <div className="mock-session-expect">
-            <span className="mock-session-expect-label">Expect</span>
-            <span className="mock-session-expect-line">{effectiveQuestionCount} questions · {effectiveTimeMinutes} min</span>
-            {expectationLines.map((line, i) => (
-              <span key={i} className="mock-session-expect-line">{line}</span>
-            ))}
-          </div>
-        )}
+              {/* Focus concepts if any selected */}
+              {isElite && focusMode && focusConcepts.length > 0 && (
+                <div className="mock-rail-focus-pills">
+                  {focusConcepts.map(c => (
+                    <span key={c} className="mock-rail-focus-pill">{c}</span>
+                  ))}
+                </div>
+              )}
 
-        {startError && <p className="mock-hub-error">{startError}</p>}
+              {/* Access state notice */}
+              {railDiffState.blocked ? (
+                <div className="mock-rail-access mock-rail-access--blocked">
+                  <span>{railDiffState.chip}</span>
+                  {railDiffState.chipAction}
+                </div>
+              ) : railDiffState.chip && railDiffState.chip !== 'Unlimited' ? (
+                <div className="mock-rail-access mock-rail-access--remaining">
+                  {railDiffState.chip}
+                </div>
+              ) : null}
 
-        <section className="mock-hub-section mock-hub-start-row">
-          <button
-            className="btn btn-primary mock-start-btn"
-            onClick={handleStart}
-            disabled={starting || accessLoading || (accessState && !accessState.access?.[difficulty]?.can_start)}
-          >
-            {starting ? 'Starting…' : mode === 'benchmark' ? 'Start benchmark' : 'Start drill session'}
-          </button>
-        </section>
+              {/* Error */}
+              {startError && <p className="mock-rail-error">{startError}</p>}
 
-        {/* Elite analytics panel — visible to Elite users */}
+              {/* Start CTA */}
+              <button
+                className="btn btn-primary mock-start-btn"
+                onClick={handleStart}
+                disabled={starting || accessLoading || (accessState && !accessState.access?.[difficulty]?.can_start)}
+              >
+                {starting ? 'Starting…' : mode === 'benchmark' ? 'Start benchmark' : 'Start drill session'}
+              </button>
+            </div>
+          </aside>
+
+        </div>{/* end mock-hub-lobby */}
+
+        {/* ── Below lobby: analytics and history ── */}
+
+        {/* Elite analytics panel */}
         {isElite && (
           <section className="mock-hub-section mock-analytics-panel">
             <div className="mock-analytics-header">
@@ -817,7 +887,7 @@ export default function MockHub() {
           </section>
         )}
 
-        {/* Recent sessions */}
+        {/* Recent benchmark sessions */}
         {!historyLoading && benchmarkHistory.length > 0 && (
           <section className="mock-hub-section mock-hub-history">
             <h2 className="mock-hub-history-title">Recent benchmark sessions</h2>
@@ -929,28 +999,29 @@ export default function MockHub() {
           </section>
         )}
 
-        {/* How it works modal */}
-        {showHelp && (
-          <div className="mock-help-overlay" role="dialog" aria-modal="true" aria-labelledby="mock-help-title">
-            <div className="mock-help-modal">
-              <div className="mock-help-modal-header">
-                <h2 id="mock-help-title">How benchmarks and drills work</h2>
-                <button className="mock-help-close" onClick={() => setShowHelp(false)} aria-label="Close">✕</button>
-              </div>
-              <ol className="mock-help-steps">
-                <li>Choose a session type — Benchmark for the fixed-shape track benchmark, Sprint drill for a short calibration round, or Custom drill for targeted follow-up practice.</li>
-                <li>Filter by role to see the tracks most relevant to your interview target, then pick a track and difficulty. Mixed draws from {MIXED_MOCK_TRACKS.map(s => TRACK_LABELS[s]).join(', ')} only.</li>
-                <li>Benchmark mode is track-specific and fixed-shape. Mixed remains drill-only.</li>
-                <li><strong>(Elite)</strong> Enable <strong>Focus mode</strong> to target specific concepts — your session draws from questions tagged with them.</li>
-                <li>During the session — a countdown timer runs. Write your answer and submit each question independently.</li>
-                <li>No solutions are revealed mid-session.</li>
-                <li>After finishing — you'll see your score, time used, and <strong>(Elite)</strong> a coaching debrief with concept weak-spots and a priority action.</li>
-                <li><strong>(Elite)</strong> Check your <strong>Mock analytics</strong> panel to track score trends and concept performance across all sessions.</li>
-              </ol>
-            </div>
-          </div>
-        )}
       </main>
+
+      {/* How it works modal */}
+      {showHelp && (
+        <div className="mock-help-overlay" role="dialog" aria-modal="true" aria-labelledby="mock-help-title">
+          <div className="mock-help-modal">
+            <div className="mock-help-modal-header">
+              <h2 id="mock-help-title">How benchmarks and drills work</h2>
+              <button className="mock-help-close" onClick={() => setShowHelp(false)} aria-label="Close">✕</button>
+            </div>
+            <ol className="mock-help-steps">
+              <li>Choose a session type — Benchmark for the fixed-shape track benchmark, Sprint drill for a short calibration round, or Custom drill for targeted follow-up practice.</li>
+              <li>Filter by role to see the tracks most relevant to your interview target, then pick a track and difficulty. Mixed draws from {MIXED_MOCK_TRACKS.map(s => TRACK_LABELS[s]).join(', ')} only.</li>
+              <li>Benchmark mode is track-specific and fixed-shape. Mixed remains drill-only.</li>
+              <li><strong>(Elite)</strong> Enable <strong>Focus mode</strong> to target specific concepts — your session draws from questions tagged with them.</li>
+              <li>During the session — a countdown timer runs. Write your answer and submit each question independently.</li>
+              <li>No solutions are revealed mid-session.</li>
+              <li>After finishing — you'll see your score, time used, and <strong>(Elite)</strong> a coaching debrief with concept weak-spots and a priority action.</li>
+              <li><strong>(Elite)</strong> Check your <strong>Mock analytics</strong> panel to track score trends and concept performance across all sessions.</li>
+            </ol>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
