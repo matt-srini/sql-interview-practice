@@ -453,10 +453,46 @@ export default function MockSession() {
     }
 
     function shareText() {
-      const diff = session?.difficulty || sum?.difficulty || '';
-      const trk = TRACK_LABELS[session?.track || sum?.track] || '';
-      const mins = timeUsedS ? Math.floor(timeUsedS / 60) : '?';
-      return `${summaryDescriptor.modeLabel}: ${solvedCount}/${totalCount} ${diff} ${trk} questions in ${mins}m`;
+      const diff = sum?.difficulty || session?.difficulty || '';
+      const trk = TRACK_LABELS[sum?.track || session?.track] || '';
+      const diffLabel = diff ? diff.charAt(0).toUpperCase() + diff.slice(1) : '';
+      const pct = totalCount > 0 ? Math.round((solvedCount / totalCount) * 100) : 0;
+      const modeLabel = summaryDescriptor.isBenchmark ? 'benchmark' : 'drill';
+
+      const lines = [
+        `${trk} ${modeLabel} · ${diffLabel} · ${solvedCount}/${totalCount} (${pct}%)`,
+      ];
+
+      if (typeof baselineAccuracy === 'number') {
+        const delta = Math.round((sessionAccuracy - baselineAccuracy) * 100);
+        if (delta > 0) lines.push(`${delta}% above my avg accuracy`);
+        else if (delta < 0) lines.push(`${Math.abs(delta)}% below my avg accuracy`);
+        else lines.push('on par with my avg accuracy');
+      }
+
+      const weakConcepts = conceptRows
+        .filter((r) => r.attempts > 0 && r.accuracy < 1)
+        .slice(0, 2)
+        .map((r) => r.concept);
+      if (weakConcepts.length > 0) lines.push(`Weak spots: ${weakConcepts.join(', ')}`);
+
+      lines.push('datathink.co');
+      return lines.join('\n');
+    }
+
+    async function handleShare() {
+      const text = shareText();
+      if (navigator.share) {
+        try {
+          await navigator.share({ text });
+          return;
+        } catch (e) {
+          if (e.name === 'AbortError') return;
+        }
+      }
+      navigator.clipboard?.writeText(text).catch(() => {});
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
     }
 
     return (
@@ -617,11 +653,7 @@ export default function MockSession() {
             <div className="mock-summary-actions">
               <button
                 className="btn btn-secondary"
-                onClick={() => {
-                  navigator.clipboard?.writeText(shareText()).catch(() => {});
-                  setShareCopied(true);
-                  setTimeout(() => setShareCopied(false), 2000);
-                }}
+                onClick={handleShare}
               >
                 {shareCopied ? '✓ Copied!' : 'Share result'}
               </button>
