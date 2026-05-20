@@ -693,19 +693,19 @@ Spark architecture, the PySpark DataFrame API, and production optimization. **No
 
 | Type | Use for |
 |---|---|
-| `mcq` | Conceptual understanding anchored in a real-world scenario |
+| `conceptual` | Conceptual understanding anchored in a real-world scenario |
 | `predict_output` | Given a PySpark snippet, predict what it returns or what error it raises |
 | `debug` | Given broken code or an error message, identify the root cause and fix |
 | `optimization` | Given a Spark job description, choose the best performance strategy |
 | `scenario` | Multi-clue production diagnosis: given job configuration, observed behavior, error logs, and/or metrics — identify the root cause or correct remediation |
 
-**Easy tier must mix types** — do not use pure-recall MCQ at easy level. Prefer `predict_output`, `debug`, or `scenario` to force mental execution tracing. Pure-recall MCQ is only acceptable at easy when the concept cannot be meaningfully tested by code tracing.
+**Easy tier must mix types** — do not use pure-recall conceptual at easy level. Prefer `predict_output`, `debug`, or `scenario` to force mental execution tracing. Pure-recall conceptual is only acceptable at easy when the concept cannot be meaningfully tested by code tracing.
 
 **Target type distribution:**
 
 | Type | Target share |
 |---|---|
-| `mcq` | ~48% |
+| `conceptual` | ~48% |
 | `predict_output` | ~17% |
 | `debug` | ~13% |
 | `scenario` | ~13% |

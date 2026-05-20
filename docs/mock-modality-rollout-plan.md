@@ -725,7 +725,7 @@ All questions in reasoning tracks use multiple-choice as the response mechanism.
 
 | Type | Meaning |
 |---|---|
-| `mcq` | Conceptual or scenario question answered by picking the best option — no code to trace |
+| `conceptual` | Conceptual or scenario question answered by picking the best option — no code to trace |
 | `predict_output` | Given a code snippet, predict what it returns or what error fires |
 | `debug` | Given broken code or an error message, identify the root cause and fix |
 | `scenario` | Production diagnosis: given logs, metrics, or job configuration, identify root cause or best remediation |
@@ -751,13 +751,20 @@ These are concrete, pre-diagnosed issues — not editorial judgment calls. Resol
 
 Current state (practice questions only):
 
-| Difficulty | Conceptual | Code-adjacent | % code-adjacent | Spec target |
-|---|---|---|---|---|
-| easy | 23 | 18 | 44% | ~52% |
-| medium | 25 | 14 | 36% | ~52% |
-| hard | 20 | 6 | 23% | ~52% |
+| Difficulty | Total | Conceptual | Code-adjacent | % code-adjacent | After +10 hard |
+|---|---|---|---|---|---|
+| easy | 41 | 23 | 18 (predict_output 14 · debug 4) | 44% | unchanged |
+| medium | 39 | 25 | 14 (debug 6 · scenario 5 · predict_output 1 · optimization 2) | 36% | unchanged |
+| hard | 26 | 20 | 6 (scenario 4 · predict_output 2) | 23% | 16/36 = 44% |
+| **all** | **106** | **68** | **38** | **36%** | **48/116 = 41%** |
 
-Hard tier is the priority: 20 conceptual vs 6 code-adjacent (77% conceptual). The hard tier should be testing multi-factor production trade-offs — AQE internals, DPP, skew join/salting, watermark behavior, speculative execution — via `predict_output` and `scenario` formats that require actual mental tracing, not conceptual recall. Add 8–10 hard code-adjacent questions to bring the hard tier closer to the spec target.
+Spec target (`docs/content-authoring.md`) is ~52% code-adjacent across the full track. That is not reachable by addition alone without an implausible volume of new questions; the practical Phase 7 target for hard tier is ≥40% code-adjacent (up from 23%) with no removals. Medium is in scope only if hard additions alone leave obvious coverage holes in AQE/DPP.
+
+Hard tier conceptual questions already cover every hard topic (AQE, DPP, skew join, watermarks, speculative execution) — many well. The deficit is code-adjacent *formats* that force mental execution tracing, not missing topic coverage. New questions must use a distinct angle from the 20 existing conceptual questions: give a snippet or observed behavior, not a conceptual prompt.
+
+Target: add exactly 10 hard practice questions (`predict_output` and `scenario` only — no new `conceptual` at hard). Split recommendation:
+- 5 × `predict_output`: AQE partition coalescing output prediction, skew join salting output trace, watermark boundary late-data drop prediction, DPP activation from partition column usage, pandas UDF null propagation
+- 5 × `scenario`: multi-signal production diagnosis (straggler + AQE interaction, broadcast OOM under tight driver heap, Delta MERGE write amplification, speculative execution duplicate side effects, streaming watermark + trigger interval mismatch)
 
 **Gap B — Data Engineering has 0 debug questions; benchmark template expects one**
 
@@ -765,17 +772,25 @@ Hard tier is the priority: 20 conceptual vs 6 code-adjacent (77% conceptual). Th
 
 **Gap C — Data Engineering and Data Modeling have 1 mock-only question each**
 
-DE: 1 mock-only (hard scenario). DM: 1 mock-only (hard scenario). Their benchmarks draw almost entirely from practice questions users have already seen. A benchmark that serves previously-seen content is not a valid benchmark. Add 12–15 mock-only questions per track at medium and hard so the fresh-first sampler has a real pool to draw from.
+DE: 1 mock-only (hard scenario, ID 53024). DM: 1 mock-only (hard scenario, ID 63024). Their benchmarks draw almost entirely from practice questions users have already seen. A benchmark that serves previously-seen content is not a valid benchmark. Add 12–15 mock-only questions per track at medium and hard so the fresh-first sampler has a real pool to draw from.
 
-Target mock-only pool minimums after Phase 7:
+DE benchmark template is 6 slots: `["scenario", "conceptual", "debug", "scenario", "scenario", "conceptual"]`. For benchmarks at medium or hard, freshness-first sampling needs ≥6 unseen questions in the right type distribution. With only 1 mock-only question today, every DE benchmark is drawing from practice questions the user has already seen.
 
-| Track | Current mock-only (med+hard) | Phase 7 target |
-|---|---|---|
-| Data Engineering | 1 | 13–15 |
-| Data Modeling | 1 | 12–14 |
-| PySpark | 21 | no change needed |
-| ML Fundamentals | 25 | no change needed |
-| Experimentation | 25 | no change needed |
+DM benchmark template is 5 slots: `["scenario", "conceptual", "scenario", "conceptual", "scenario"]`. Same problem: 1 mock-only question is nowhere near enough for a meaningful fresh pool.
+
+Target mock-only pool minimums and next available IDs:
+
+| Track | Current mock-only (med+hard) | Phase 7 target | Next medium ID | Next hard ID |
+|---|---|---|---|---|
+| Data Engineering | 1 (hard only) | 6 medium + 7–8 hard = 13–14 total | 52034 | 53025 |
+| Data Modeling | 1 (hard only) | 6 medium + 6–7 hard = 12–13 total | 62029 | 63025 |
+| PySpark | 21 (10 medium + 10 hard + 1 hard) | no change needed | — | — |
+| ML Fundamentals | 25 | no change needed | — | — |
+| Experimentation | 25 | no change needed | — | — |
+
+Type split for DE mock-only additions: scenario-heavy (7–8 scenario), conceptual (4–5), debug (2). This matches the benchmark template and covers the concept-hook gaps without duplicating the practice bank.
+
+Type split for DM mock-only additions: scenario-heavy (8–9 scenario), conceptual (4–5). DM has no debug or predict_output in its type vocabulary.
 
 ### Quality bar
 
@@ -822,39 +837,57 @@ These are the gaps Phase 7 authoring should draw from first. Do not author quest
 
 **Lane 1: PySpark hard tier (Gap A)**
 
-- Scope: `backend/content/pyspark_questions/hard.json` and `backend/content/pyspark_questions/medium.json`
-- Task: add 8–10 new hard practice questions in code-adjacent formats (`predict_output`, `scenario`) covering AQE, DPP, skew join/salting, watermark/late data, speculative execution, pandas UDF memory
-- Also review medium tier and add 3–5 code-adjacent practice questions at medium if weak spots exist
-- Do not touch existing questions unless a specific weakness is identified; new additions are preferred over rewrites here because the easy and medium tiers are already closer to target
-- Each new question must use a realistic code snippet or `scenario_context` block per the PySpark schema rules in `docs/content-authoring.md`
+- Scope: `backend/content/pyspark_questions/hard.json` (primary); medium.json only if hard additions leave obvious AQE/DPP coverage holes
+- Task: add exactly 10 new hard practice questions — 5 × `predict_output` + 5 × `scenario`. No new `conceptual` at hard.
+- `predict_output` targets: (1) AQE partition coalescing — predict output partition count after a wide aggregation; (2) skew join salting — predict join output count/schema after manual salting; (3) watermark boundary — given watermark expression and event-time values, predict which late records are dropped vs retained; (4) DPP activation — given a filter on a non-partition column vs partition column, predict whether DPP fires; (5) pandas UDF null handling — predict what the UDF returns when the input column contains nulls
+- `scenario` targets: (1) straggler task + AQE skew hint interaction producing unexpected partition count; (2) driver OOM during broadcast relation construction for a join within a UDF; (3) Delta MERGE producing write amplification at scale — given metrics, diagnose; (4) speculative execution creating duplicate writes to a non-idempotent sink; (5) structured streaming watermark + trigger interval mismatch causing delayed output in update mode
+- Next available IDs: hard starts at 43037 (43027–43036 are mock-only)
+- Do not touch existing hard questions; the 20 conceptual questions already cover every hard topic — the gap is format diversity, not topic coverage
+- Each new question must have a realistic `code_snippet` or `scenario_context` per `docs/content-authoring.md` PySpark schema rules
 - Update ID allocation table in `docs/concept-expansion-plan.md`
 
 **Lane 2: Data Engineering gap resolution (Gaps B + C)**
 
 - Scope: `backend/content/data_engineering_questions/medium.json` and `hard.json`
-- Task A (Gap B): add 3–5 debug questions covering realistic DE failure modes — each must have a `debug_error` field with a realistic error string and a single-bug root cause
-- Task B (Gap C): add 12–15 mock-only questions (`"mock_only": true`) at medium and hard, spanning the concept-hook gaps listed above; type distribution should target scenario-heavy with some conceptual and at least 2 debug questions in the mock-only set
-- The benchmark template already expects `["scenario", "conceptual", "debug", "scenario", "scenario", "conceptual"]` — the new debug content makes this template actually deliverable
-- Concept tags must not duplicate existing practice questions at the same difficulty
+
+Task A — Gap B (debug questions, practice):
+- Add 4 debug practice questions: 2 medium (IDs 52034–52035) + 2 hard (IDs 53025–53026). One additional hard if a strong candidate exists (53027).
+- Each must include a `debug_error` field with a realistic error string. Single-bug root cause, no compound failures.
+- Topic targets: (1) schema compatibility violation — Avro/Parquet schema evolution error on a downstream consumer after an upstream ALTER; (2) idempotency bug — backfill job that re-inserts instead of upserts, producing duplicate rows; (3) CDC replication lag — watermark misconfiguration causing late events to be dropped silently; (4) partition overwrite — dynamic partition overwrite deleting unexpected partitions due to missing `spark.sql.sources.partitionOverwriteMode` setting
+- These are practice questions, not mock-only. The debug concept is weak across the entire DE bank; these should be in the practice progression.
+
+Task B — Gap C (mock-only pool):
+- Add 13 mock-only questions: 6 medium (IDs 52036–52041) + 7 hard (IDs 53028–53034, noting 53024 is already taken)
+- Type split: 7–8 scenario, 4–5 conceptual, 2 debug (mock-only debug questions cover more niche failure modes than the practice debug questions above)
+- Concept targets from hook audit gaps: backpressure and flow control mechanics, privacy/compliance architecture decisions, data contract enforcement patterns, warehouse cost modeling (partition vs clustering vs materialized view tradeoff), incident containment playbooks (runbook design, circuit breakers in pipelines)
+- No concept tag may duplicate an existing practice question at the same difficulty level
 - Update ID allocation table in `docs/concept-expansion-plan.md`
 
 **Lane 3: Data Modeling mock-only pool (Gap C)**
 
 - Scope: `backend/content/data_modeling_questions/medium.json` and `hard.json`
-- Task: add 12–14 mock-only questions (`"mock_only": true`) at medium and hard
-- Focus areas: bi-temporal modeling, semantic layer governance, conformed dimension governance across business units, SCD choice under conflicting business requirements, schema evolution strategy
-- All at scenario or mcq type (DM does not have debug/predict_output in its type vocabulary)
-- Concept tags must not duplicate existing practice questions at the same difficulty
+- Task: add 12 mock-only questions: 6 medium (IDs 62029–62034) + 6 hard (IDs 63025–63030), noting 63024 is already taken
+- Type split: scenario-heavy (8–9 scenario) + conceptual (3–4). DM valid types are `scenario` and `conceptual` only — no debug/predict_output.
+- Benchmark template is 5 slots: `["scenario", "conceptual", "scenario", "conceptual", "scenario"]` — mock-only additions should include enough conceptual questions to fill the 2 conceptual slots with fresh content
+- Concept targets from hook audit gaps: bi-temporal modeling (transaction time vs valid time separation, bitemporal SCD design), semantic layer governance (certified vs experimental metrics, ownership and deprecation), conformed dimension governance across business units, SCD type selection under conflicting retention and query requirements, schema evolution strategy when downstream consumers have heterogeneous schema expectations
+- No concept tag may duplicate an existing practice question at the same difficulty level
 - Update ID allocation table in `docs/concept-expansion-plan.md`
 
 **Lane 4: Experimentation + ML Fundamentals targeted additions**
 
-- Scope: `backend/content/experimentation_questions/` and `backend/content/ml_fundamentals_questions/`
-- Source: use the recorded gap audit in `docs/concept-expansion-plan.md` as the targeting source; do not reopen taxonomy work
-- Task: add or rewrite only where concept coverage is genuinely thin; existing mock-only pools (25 each) are solid so additions here are practice-bank gaps, not pool gaps
-- Experimentation focus: ratio-metric/delta-method, surrogate-metric validation, A/A test design nuance
-- ML Fundamentals focus: parametric vs non-parametric tradeoffs, encoding strategy, batch normalization mechanics
-- Volume: 4–8 questions per track maximum; do not expand for expansion's sake
+Context: both tracks already have healthy mock-only pools (25 each) and broad concept-family coverage. These additions fill recorded concept-hook gaps in the practice bank only — no mock-only work needed here.
+
+Experimentation — current practice bank: easy 30 (all conceptual), medium 30 (27 scenario · 2 predict_output · 1 debug), hard 20 (16 scenario · 2 predict_output · 2 debug).
+- Next medium IDs: 92043–92046 (4 questions max). Next hard IDs: 93034–93037 (4 questions max).
+- Gap hooks (from `docs/concept-hooks.md`): hook 22 (ratio metrics + delta method), hook 24 (surrogate vs long-term metrics validation), hooks 4–5–6 (control group design / holdout groups / A/A test nuance — present but shallow)
+- Task: add 4 practice questions targeting these hooks. 2 medium (92043–92044): delta-method variance reduction for ratio metrics (scenario), surrogate metric validation framework (conceptual). 2 hard (93034–93035): A/A test detecting platform bias (scenario), ratio metric sensitivity vs count metric for sample-size planning (predict_output or scenario).
+- Type guidance: delta-method and ratio metrics lend themselves to `predict_output` (given a formula or code, predict variance/CI output) or `scenario` (given test results, identify the sensitivity mistake). Keep them out of pure `conceptual` format since the concepts are already present in the bank.
+
+ML Fundamentals — current practice bank: easy 30 (all conceptual), medium 35 (19 conceptual · 13 scenario · 2 predict_output · 1 debug), hard 25 (19 scenario · 4 conceptual · 1 predict_output · 1 debug).
+- Next medium IDs: 82048–82051 (4 questions max). Next hard IDs: 83039–83041 (3 questions max).
+- Gap hooks (from `docs/concept-hooks.md`): hook 3 (parametric vs non-parametric models), hook 4 (inductive bias), hook 23 (encoding strategy), hook 31 (activation function comparisons), hook 32 (batch normalization), hook 35 (attention mechanism)
+- Task: add 6 practice questions targeting these hooks. 3 medium (82048–82050): parametric vs non-parametric capacity tradeoffs (conceptual), encoding strategy for tree vs linear models (scenario), activation function selection for deep vs shallow networks (conceptual). 3 hard (83039–83041): batch normalization placement and gradient stability (scenario or predict_output), attention mechanism — scaled dot-product output interpretation (predict_output), inductive bias comparison for SVM vs tree vs NN under distribution shift (scenario).
+- Type guidance: prefer `scenario` or `predict_output` over pure `conceptual` for hard questions. Easy and medium already have ~57% conceptual; don't increase that share further.
 
 **Lane 5: Content governance (runs after lanes 1–4)**
 
@@ -874,13 +907,16 @@ These are the gaps Phase 7 authoring should draw from first. Do not author quest
 
 ### Acceptance criteria
 
-- PySpark hard tier: code-adjacent format questions increased; hard tier is closer to 50/50 conceptual vs code-adjacent
-- Data Engineering: at least 3 debug questions exist in the bank; `_sample_by_format` can fill the debug slot in a DE benchmark without silent fallback
-- Data Engineering and Data Modeling: mock-only pool at medium+hard is ≥12 questions each
-- All rewritten or new questions pass the FAANG senior-interviewer test from `docs/content-authoring.md`
-- All touched questions have concept tags reviewed and accurate
+- PySpark hard tier: exactly 10 new hard practice questions added (`predict_output` + `scenario`); hard tier is ≥40% code-adjacent (up from 23%)
+- Data Engineering: ≥4 debug practice questions exist; `_sample_by_format` can fill the debug slot in a DE benchmark from the practice pool without silent fallback
+- Data Engineering mock-only pool at medium+hard: ≥13 questions total (was 1)
+- Data Modeling mock-only pool at medium+hard: ≥12 questions total (was 1)
+- Experimentation: 4 new practice questions targeting ratio-metric/delta-method, surrogate metrics, and A/A design hooks
+- ML Fundamentals: 6 new practice questions targeting parametric/non-parametric, encoding strategy, activation functions, batch normalization, attention hooks
+- All new questions pass the FAANG senior-interviewer test from `docs/content-authoring.md`
+- All new questions have concept tags reviewed and accurate (not inherited from a nearby question by mistake)
 - All new mock-only questions use concept angles distinct from practice questions at the same difficulty
-- `docs/concept-expansion-plan.md` records what was authored vs rewritten in Phase 7 with ID references
+- `docs/concept-expansion-plan.md` updated with every ID allocated in Phase 7 and reason for addition
 
 ### Validation commands
 
@@ -908,11 +944,13 @@ git diff -- docs/concept-expansion-plan.md docs/content-authoring.md
 
 ### Exit criteria
 
-- Gap A resolved: PySpark hard tier has materially more code-adjacent questions than it started with
-- Gap B resolved: DE has debug questions; benchmark type template is deliverable
-- Gap C resolved: DE and DM each have ≥12 mock-only questions at medium+hard
-- hook audit gaps from `docs/concept-expansion-plan.md` are addressed for Experimentation and ML Fundamentals
-- reasoning tracks feel premium by content quality, not only UI
+- Gap A resolved: PySpark hard tier practice pool is 36 questions, ≥16 code-adjacent (≥44%)
+- Gap B resolved: DE debug practice pool has ≥4 questions; a DE benchmark at any difficulty can fill the `debug` slot from the real pool
+- Gap C resolved: DE has ≥13 mock-only questions at medium+hard; DM has ≥12 mock-only questions at medium+hard
+- Experimentation and ML Fundamentals hook audit gaps addressed: hooks 22 + 24 + A/A nuance covered for Exp; hooks 3 + 4 + 23 + 31 + 32 + 35 covered for ML
+- All new IDs recorded in `docs/concept-expansion-plan.md`
+- Full test suite passes (`tests/test_08_pyspark.py`, `tests/test_19_data_engineering.py`, `tests/test_20_data_modeling.py`, `tests/test_31_reasoning_metadata.py`, `tests/test_11_mock.py`)
+- No duplicate IDs in the bank
 - content additions remain targeted and justified, not opportunistic bank expansion
 - another model can pick up any remaining Phase 7 work from the audit trail without re-auditing the whole bank
 
