@@ -3551,6 +3551,7 @@ select {
   overflow: hidden;
   background: #0F2218;
   box-shadow: 0 8px 40px rgba(10, 22, 14, 0.22);
+  flex-shrink: 0; /* prevent flex parents from compressing the wrapper and clipping the footer */
 }
 
 .editor-workspace {

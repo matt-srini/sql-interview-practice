@@ -94,6 +94,7 @@ export default function MockSession() {
   const handleSubmitRef = useRef(null);
   const runningRef = useRef(false);
   const submittingRef = useRef(false);
+  const resultsCardRef = useRef(null);
 
   const handleFinish = useCallback(async () => {
     if (finishCalled.current) return;
@@ -243,6 +244,10 @@ export default function MockSession() {
         : { code: getCode(q), question_id: q.id };
       const r = await api.post(endpoint, payload);
       setRunResults(prev => ({ ...prev, [q.id]: r.data }));
+      // Scroll results into view so user doesn't miss them (and can still see buttons above)
+      requestAnimationFrame(() => {
+        resultsCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
     } catch (err) {
       const errMsg = err?.response?.data?.error || err?.response?.data?.detail || 'Run failed';
       setRunResults(prev => ({ ...prev, [q.id]: { error: errMsg } }));
@@ -1043,7 +1048,7 @@ export default function MockSession() {
 
               {/* SQL run result */}
               {q.track === 'sql' && currentRunResult && !currentRunResult.error && currentRunResult.columns && (
-                <div className="results-card">
+                <div className="results-card" ref={resultsCardRef}>
                   <div className="results-header">
                     <span>Query Result</span>
                     <span>{(currentRunResult.rows ?? []).length} row{(currentRunResult.rows ?? []).length !== 1 ? 's' : ''}</span>
@@ -1054,15 +1059,15 @@ export default function MockSession() {
 
               {/* Python run results */}
               {q.track === 'python' && currentRunResult && !currentRunResult.error && (
-                <>
+                <div ref={resultsCardRef}>
                   <TestCasePanel results={currentRunResult.test_results ?? []} hiddenSummary={null} />
                   <PrintOutputPanel output={currentRunResult.stdout ?? ''} />
-                </>
+                </div>
               )}
 
               {/* Pandas run result */}
               {q.track === 'python-data' && currentRunResult && !currentRunResult.error && (
-                <>
+                <div ref={resultsCardRef}>
                   {currentRunResult.columns && (
                     <div className="results-card">
                       <div className="results-header">
@@ -1073,11 +1078,11 @@ export default function MockSession() {
                     </div>
                   )}
                   <PrintOutputPanel output={currentRunResult.stdout ?? ''} />
-                </>
+                </div>
               )}
 
               {currentRunResult?.error && (
-                <div className="mock-run-error">{currentRunResult.error}</div>
+                <div className="mock-run-error" ref={resultsCardRef}>{currentRunResult.error}</div>
               )}
             </>
           )}
