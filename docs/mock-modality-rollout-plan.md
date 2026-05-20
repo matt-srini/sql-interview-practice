@@ -738,7 +738,7 @@ The term "MCQ" refers only to the response format (multiple choice). It says not
 ### Product outcomes
 
 - reasoning tracks feel premium because the questions themselves demand diagnosis, interpretation, prioritization, and tradeoff thinking — not just because the UI labels changed
-- PySpark hard tier shifts from predominantly conceptual toward the ~48% conceptual / ~52% code-adjacent target in `docs/content-authoring.md`
+- PySpark hard tier shifts from 23% code-adjacent to ≥44% code-adjacent (full track moves from 36% to ~41%); the long-range spec target of ~52% across all tiers requires medium-tier additions beyond Phase 7 scope
 - Data Engineering gains its first debug questions so the benchmark type template can deliver on its stated format distribution
 - Data Engineering and Data Modeling gain viable mock-only pools so benchmarks can serve fresh, unseen questions to users who have completed the practice track
 - targeted net-new questions are added only where concept-hook coverage or benchmark blueprint coverage is still materially weak after rewrites
@@ -768,7 +768,7 @@ Target: add exactly 10 hard practice questions (`predict_output` and `scenario` 
 
 **Gap B — Data Engineering has 0 debug questions; benchmark template expects one**
 
-`_benchmark_type_targets` for `data-engineering` = `["scenario", "conceptual", "debug", "scenario", "scenario", "conceptual"]`. DE has zero debug questions in any difficulty file. `_sample_by_format` silently falls back when the debug slot is unfillable, so no error fires — but the benchmark is silently delivering a different type distribution than the spec intends. Add 3–5 debug questions covering realistic DE failure modes: schema compatibility violations, idempotency bugs in backfill jobs, late-data watermark misconfiguration, CDC replication lag issues.
+`_benchmark_type_targets` for `data-engineering` = `["scenario", "conceptual", "debug", "scenario", "scenario", "conceptual"]`. DE has zero debug questions in any difficulty file. `_sample_by_format` silently falls back when the debug slot is unfillable, so no error fires — but the benchmark is silently delivering a different type distribution than the spec intends. Add 4 debug questions (2 medium + 2 hard, topics specified in Lane 2) so the debug slot in the benchmark template is genuinely fillable.
 
 **Gap C — Data Engineering and Data Modeling have 1 mock-only question each**
 
@@ -784,7 +784,7 @@ Target mock-only pool minimums and next available IDs:
 |---|---|---|---|---|
 | Data Engineering | 1 (hard only) | 6 medium + 7–8 hard = 13–14 total | 52034 | 53025 |
 | Data Modeling | 1 (hard only) | 6 medium + 6–7 hard = 12–13 total | 62029 | 63025 |
-| PySpark | 21 (10 medium + 10 hard + 1 hard) | no change needed | — | — |
+| PySpark | 21 (11 medium + 10 hard) | no change needed | — | — |
 | ML Fundamentals | 25 | no change needed | — | — |
 | Experimentation | 25 | no change needed | — | — |
 
