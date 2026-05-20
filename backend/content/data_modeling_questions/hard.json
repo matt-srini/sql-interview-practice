@@ -676,8 +676,7 @@
     ],
     "concepts": [
       "CONFORMED DIMENSIONS",
-      "SURROGATE KEYS",
-      "NATURAL KEY CONFLICTS",
+      "SURROGATE VS NATURAL KEYS",
       "DATA VAULT",
       "DIMENSIONAL MODELING"
     ]
@@ -703,9 +702,7 @@
       "A permanent alias gives consumers an existing name that keeps working. What does it NOT provide that a deprecation-with-sunset-date does provide?"
     ],
     "concepts": [
-      "SEMANTIC LAYER GOVERNANCE",
-      "DATA GOVERNANCE",
-      "DATA CONTRACT",
+      "SEMANTIC LAYER",
       "DIMENSIONAL MODELING"
     ]
   },
@@ -755,15 +752,13 @@
     "correct_option": 0,
     "explanation": "The audit request is a transaction-time (system-time) query: 'what did your database contain on November 30th?' — not 'what was true in the business on November 30th?' SCD Type 2's effective_from/effective_to is a valid-time model. A backdated correction added in December with effective_from in November looks identical in valid-time queries to a row that was genuinely present in November. Bi-temporal modeling adds a system-time axis (sys_start/sys_end) that records when each row was current in the database itself, independently of its business validity period. A corrected row added in December will have sys_start = December, regardless of its effective_from being backdated to November. The November 30th system-time query correctly excludes all December insertions and returns the exact set of rows that existed in the database that day. Option B (weekly snapshots) works operationally but is imprecise — the snapshot nearest to November 30th might be November 25th, missing 5 days of legitimate changes — and requires restoring potentially large table snapshots for a single query. Option C (reject backdated corrections) prevents future occurrences but provides no remedy for the 12,000 corrections already applied; it also prevents legitimate data corrections that have valid business reasons (late-arriving source data, discovered errors). Option D (first_inserted_at) captures row creation time but not modification time. When a correction closes an existing row by updating its effective_to, the original row's first_inserted_at is unchanged but its effective_to has been modified. The filter `WHERE first_inserted_at <= Nov 30 AND effective_to > Nov 30` cannot reconstruct the row's pre-modification effective_to value.",
     "hints": [
-      "The SCD Type 2 valid-time query returns what is now believed to be true on November 30th. The audit request asks what was in the database on November 30th. Are these the same question?",
+      "The valid-time query returns what is believed to be true on November 30th based on current data. The audit request asks what was in the database on November 30th. Are these the same question?",
       "A backdated correction inserted in December has effective_from in November. What should sys_start be for that corrected row — November (when the business fact was valid) or December (when it was entered into the system)?"
     ],
     "concepts": [
       "BI-TEMPORAL MODELING",
-      "AUDIT COMPLIANCE",
-      "SCD OPERATIONS",
-      "TEMPORAL QUERY",
-      "REGULATORY REPORTING"
+      "SCD STRUCTURE",
+      "DIMENSIONAL MODELING"
     ]
   },
   {
@@ -789,9 +784,7 @@
     ],
     "concepts": [
       "SCHEMA EVOLUTION",
-      "DATA CONTRACT",
-      "DIMENSIONAL MODELING",
-      "DATA GOVERNANCE"
+      "DIMENSIONAL MODELING"
     ]
   },
   {
@@ -817,7 +810,7 @@
     "concepts": [
       "PERIODIC SNAPSHOT",
       "FACT TABLE DESIGN",
-      "STORAGE ARCHITECTURE",
+      "STORAGE ARCHITECTURE TRADEOFFS",
       "DIMENSIONAL MODELING",
       "SEMI-ADDITIVE FACTS"
     ]

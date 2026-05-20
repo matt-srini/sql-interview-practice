@@ -760,14 +760,13 @@
     "correct_option": 0,
     "explanation": "Option A is bi-temporal modeling. SCD Type 2's effective_from/effective_to axis records when a fact was true in business reality (valid time). After the November 5th load, the SCD table shows: 'Active' from a prior date to October 14th, 'Under Review' from October 15th to present. A valid-time query for October 31st returns 'Under Review' — which reflects the backdated business fact but NOT what the system actually contained on October 31st when the report was generated. The system-time axis (sys_start/sys_end) records when each row was current in the database. The 'Under Review' row has sys_start = November 5th. A transaction-time query for October 31st excludes it and returns the 'Active' row (sys_start before October 31st, sys_end = November 5th when it was superseded). Option B is wrong: after the backdated load, 'Under Review' has effective_from = October 15th — the valid-time predicate for October 31st returns 'Under Review', not 'Active'. The current SCD gives the wrong audit answer. Option C is incomplete: date_loaded captures when a row was inserted, not when an existing row's effective_to was modified. When the correction was applied, the 'Active' row's effective_to was changed to October 14th — this modification happened after October 31st, but date_loaded reflects the original insert time. The audit filter cannot reconstruct the pre-modification table state from create timestamps alone. Option D (nightly snapshots) works operationally but is expensive, imprecise for intraday queries, and depends on backup infrastructure rather than query logic.",
     "hints": [
-      "After the November 5th backdated load, what does the valid-time SCD Type 2 predicate return for October 31st? Is that the answer the auditor needs?",
+      "After the November 5th backdated load, what does the valid-time predicate return for October 31st? Is that the answer the auditor needs?",
       "Bi-temporal modeling has two independent time axes. Which axis tracks 'when was this row current in the database' independently of 'when was the business fact valid'?"
     ],
     "concepts": [
       "BI-TEMPORAL MODELING",
-      "SCD OPERATIONS",
-      "AUDIT COMPLIANCE",
-      "TEMPORAL QUERY"
+      "SCD STRUCTURE",
+      "DIMENSIONAL MODELING"
     ]
   },
   {
@@ -788,14 +787,13 @@
     "correct_option": 0,
     "explanation": "In Kimball-style dimensional modeling, a conformed dimension should contain only universally applicable attributes — facts that every consuming team could reasonably rely on. A CRM-specific sales_territory is owned by Sales, populated from a Sales-only source, and has no meaning for Finance or Legal. Adding it to the shared dimension couples Sales' iteration velocity to shared dimension change management, introduces a CRM dependency into a Finance-critical table, and forces Finance and Legal to re-validate an attribute that is not their concern. The dimension extension table (Option A) is the standard Kimball pattern for exactly this situation: the shared dimension remains stable and focused on universal attributes; Sales-specific attributes live in a dedicated extension table joined via customer_sk. Finance and Legal are entirely unaffected — they touch no new code. Option B is pragmatic and works if all consumers use explicit column lists, but it violates the spirit of conformation and creates gradual schema drift as more BU-specific columns accumulate. Option C is too rigid — the extension table pattern is precisely the designed mechanism that prevents both adding noise to the shared dimension and rejecting valid BU needs. Option D is effectively Option B reframed; adding the column to the shared table changes the shared schema regardless of documentation, and still requires Finance/Legal CI validation on the next deployment.",
     "hints": [
-      "A conformed dimension is shared across all business units. What is the Kimball pattern for extending a shared dimension with attributes that only one business unit needs?",
+      "The Sales-specific attribute comes from a CRM that Finance and Legal do not own or consume. Does it belong in the universal shared dimension, or should it live in a separate extension table that downstream consumers join on demand?",
       "The extension table joins to the shared dimension via surrogate key (customer_sk). Which teams need to modify their models, and which teams are entirely unaffected by the addition?"
     ],
     "concepts": [
       "CONFORMED DIMENSIONS",
       "SCHEMA EVOLUTION",
-      "DIMENSIONAL MODELING",
-      "DATA GOVERNANCE"
+      "DIMENSIONAL MODELING"
     ]
   },
   {
@@ -819,8 +817,7 @@
       "Why is a version increment important when a metric transitions from Experimental to Certified? Who benefits from seeing the version change?"
     ],
     "concepts": [
-      "SEMANTIC LAYER GOVERNANCE",
-      "DATA GOVERNANCE",
+      "SEMANTIC LAYER",
       "DIMENSIONAL MODELING"
     ]
   },
@@ -842,12 +839,12 @@
     "correct_option": 0,
     "explanation": "SCD Type 6 satisfies all three constraints simultaneously. Full Type 2 row versioning preserves every historical change as a separate row — satisfying Compliance's 7-year audit requirement. The current_value and previous_value columns (the Type 3 component) on the current row allow BI dashboards to retrieve current + prior risk category with a single WHERE current_flag = 1 filter, without a lag join to the prior row. The 40M row count is not reduced — that is the inherent cost of storing full history — but the BI query cost is reduced because the current_flag index directs BI queries to one row per customer, leaving historical rows untouched during normal operations. Option B (SCD Type 2 with archive partition) is operationally complex: partition boundaries require maintenance; the definition of 'current + previous' requires custom partitioning logic; BI queries must explicitly exclude the archive partition. Option C (SCD Type 3 rolling columns) is capped at 7 prior values — a customer reassigned 8+ times in 7 years loses the oldest change, violating the Compliance requirement. Option D (SCD Type 1 + separate audit log) splits history across two systems with different schemas; BI queries require joining the main dimension to the audit log with LAG(), which is more expensive than reading a column on the current row; compliance queries join two separate tables.",
     "hints": [
-      "SCD Type 6 combines three SCD types. Which component satisfies the Compliance requirement? Which component satisfies the BI team's requirement?",
-      "SCD Type 3 stores a fixed number of prior values as columns. What happens when a customer's risk category changes more times than the number of prior-value columns in 7 years?"
+      "One SCD variant combines full row versioning with current-value columns on the current row. Which part of that design satisfies the Compliance audit requirement, and which part satisfies the BI team's current-and-prior lookup requirement?",
+      "One option stores a fixed number of prior values as columns. What happens when a customer's risk category changes more times than the number of prior-value columns in 7 years?"
     ],
     "concepts": [
-      "SCD OPERATIONS",
-      "STORAGE ARCHITECTURE",
+      "SCD STRUCTURE",
+      "STORAGE ARCHITECTURE TRADEOFFS",
       "DIMENSIONAL MODELING"
     ]
   },
@@ -873,9 +870,7 @@
     ],
     "concepts": [
       "SCHEMA EVOLUTION",
-      "DATA CONTRACT",
-      "DIMENSIONAL MODELING",
-      "DATA GOVERNANCE"
+      "DIMENSIONAL MODELING"
     ]
   },
   {
@@ -896,12 +891,12 @@
     "correct_option": 0,
     "explanation": "The change-event log is the most storage-efficient design that preserves intraday point-in-time accuracy. Storage scales with actual change rate: at 2.5 changes per user per day on average, the change-event log produces rows proportional to actual user activity rather than a guaranteed full-state snapshot for every user every day. Users who rarely change preferences produce almost no rows. Point-in-time queries filter by changed_at ≤ event_timestamp and take the most recent value per (user_id, notification_type) — accurate to the second. Option B (deduplication of no-ops) is valid only if most of the 100–150M daily rows are phantom changes from the source system. The scenario states users genuinely toggle preferences 2–3 times per day — these are real changes, not no-ops. Removing real changes would incorrectly delete valid history. Option C (daily end-of-day snapshot) reduces storage to 18B rows/year and is much better than SCD Type 2, but caps accuracy at one day. If a user changes preferences at 10 AM and a click event occurs at 2 PM, the daily snapshot returns the prior end-of-day preference state — wrong for any intraday event analysis. The scenario explicitly requires second-level accuracy. Option D (SCD Type 1) destroys historical capability entirely and offloads the problem to the clickstream team.",
     "hints": [
-      "SCD Type 2 stores one row per change for the full preference state (12 types per user). How does the change-event log's storage compare for a user who changes rarely vs frequently?",
+      "Storing a full preference state snapshot (12 types per row) on every change versus storing one row per individual change event — how does storage scale differently for a user who changes preferences rarely versus frequently?",
       "A daily end-of-day snapshot has one row per user per day. If a user changes preferences at 10 AM and a click event occurs at 2 PM, does the daily snapshot return the correct preference state at event time?"
     ],
     "concepts": [
-      "SCD OPERATIONS",
-      "STORAGE ARCHITECTURE",
+      "SCD STRUCTURE",
+      "STORAGE ARCHITECTURE TRADEOFFS",
       "FACT TABLE DESIGN",
       "DIMENSIONAL MODELING"
     ]
