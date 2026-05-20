@@ -180,7 +180,7 @@ describe('MockSession verdict message', () => {
     await submitCurrentQuestion();
 
     await waitFor(() => {
-      expect(screen.getByText('✗ Not quite — review your logic and try again.')).toBeInTheDocument();
+      expect(screen.getByText('✗ Not quite. Each question is one shot — move on or end your session.')).toBeInTheDocument();
     });
   });
 });
@@ -293,41 +293,41 @@ describe('MockSession navigation arrows', () => {
   });
 });
 
-// ── "Skip for now →" button ────────────────────────────────────────────────────
+// ── "Next question →" button ────────────────────────────────────────────────────
 
 describe('MockSession skip button', () => {
-  it('shows "Skip for now →" after a wrong answer on a non-last question', async () => {
+  it('shows "Next question →" after a wrong answer on a non-last question', async () => {
     mockApiPost.mockResolvedValueOnce({ data: { correct: false, feedback: [] } });
     renderSession(makeSessionData(2));
     await submitCurrentQuestion();
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Skip for now →' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Next question →' })).toBeInTheDocument();
     });
   });
 
-  it('does NOT show "Skip for now →" after a wrong answer on the last question', async () => {
+  it('does NOT show "Next question →" after a wrong answer on the last question', async () => {
     mockApiPost.mockResolvedValueOnce({ data: { correct: false, feedback: [] } });
     renderSession(makeSessionData(1));
     await submitCurrentQuestion();
     await waitFor(() => {
-      expect(screen.queryByRole('button', { name: 'Skip for now →' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Next question →' })).not.toBeInTheDocument();
     });
   });
 
-  it('does NOT show "Skip for now →" after a correct answer', async () => {
+  it('does NOT show "Next question →" after a correct answer', async () => {
     renderSession(makeSessionData(2));
     await submitCurrentQuestion();
     await waitFor(() => {
-      expect(screen.queryByRole('button', { name: 'Skip for now →' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Next question →' })).not.toBeInTheDocument();
     });
   });
 
-  it('"Skip for now →" advances to Q2', async () => {
+  it('"Next question →" advances to Q2', async () => {
     mockApiPost.mockResolvedValueOnce({ data: { correct: false, feedback: [] } });
     renderSession(makeSessionData(2));
     await submitCurrentQuestion();
-    await waitFor(() => screen.getByRole('button', { name: 'Skip for now →' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Skip for now →' }));
+    await waitFor(() => screen.getByRole('button', { name: 'Next question →' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Next question →' }));
     await waitFor(() => {
       const q2Tab = screen.getByRole('button', { name: /Q2/ });
       expect(q2Tab.className).toMatch(/active/);
@@ -448,7 +448,7 @@ describe('MockSession summary actions', () => {
     renderSession(completedSession);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Review benchmarks' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Back to Mock' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Plan follow-up drill' })).toBeInTheDocument();
     });
   });

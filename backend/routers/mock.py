@@ -623,6 +623,32 @@ def _evaluate_submission(
     return False, {"error": f"Unknown track: {track}"}
 
 
+def _validate_non_empty_input(
+    track: str,
+    code: str | None,
+    selected_option: int | None,
+    question: dict,
+) -> None:
+    """
+    Raise 422 if the submission carries no real answer.
+
+    Called BEFORE any DB write so blank/missing submissions never consume
+    the question's one-submit slot.
+    """
+    if track in ("sql", "python", "python-data"):
+        if not code or not code.strip():
+            raise HTTPException(status_code=422, detail="Code cannot be blank")
+    elif get_track(track).eval_kind == "mcq":
+        if selected_option is None:
+            raise HTTPException(status_code=422, detail="An option must be selected")
+    elif get_track(track).mixed_subtype:
+        subtype = question.get("subtype", "conceptual")
+        if subtype == "conceptual" and selected_option is None:
+            raise HTTPException(status_code=422, detail="An option must be selected")
+        elif subtype == "numerical" and (not code or not code.strip()):
+            raise HTTPException(status_code=422, detail="Code cannot be blank")
+
+
 # ── Analytics helper ──────────────────────────────────────────────────────────
 
 def _parse_iso_dt(s: str | None) -> datetime | None:
@@ -1063,6 +1089,7 @@ async def get_session(
             **_public_question_payload(q, q_row["track"]),
             "position": q_row["position"],
             "is_solved": q_row["is_solved"],
+            "submitted_at": q_row.get("submitted_at"),
             "final_code": q_row["final_code"],
             "time_spent_s": q_row["time_spent_s"],
             "is_follow_up": q_row.get("is_follow_up", False),
@@ -1100,11 +1127,22 @@ async def submit_answer(
     if body.question_id not in session_q_ids:
         raise HTTPException(status_code=400, detail="Question not part of this session")
 
+    # One-submit-per-question guard — check before any DB write
+    already_submitted = next(
+        (q["submitted_at"] for q in session.get("questions", []) if q["question_id"] == body.question_id),
+        None,
+    )
+    if already_submitted is not None:
+        raise HTTPException(status_code=409, detail="Question already submitted for this session")
+
     # Load full question
     catalog = _get_catalog_for_track(body.track)
     question = catalog.get_question(body.question_id)
     if question is None:
         raise HTTPException(status_code=404, detail="Question not found")
+
+    # Reject blank/empty input before consuming the submit slot
+    _validate_non_empty_input(body.track, body.code, body.selected_option, question)
 
     # Evaluate
     accepted, result = _evaluate_submission(body.track, question, body.code, body.selected_option)

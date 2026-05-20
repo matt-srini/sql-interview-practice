@@ -7792,6 +7792,15 @@ select {
   margin-top: 0.625rem;
 }
 
+/* ── Submit note (below action row, code tracks only) ─────── */
+.mock-submit-note {
+  margin: 0.4rem 0 0;
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+  text-align: center;
+  opacity: 0.8;
+}
+
 /* ── Review modal ────────────────────────────────────────── */
 .mock-modal--review {
   max-width: 480px;

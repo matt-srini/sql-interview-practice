@@ -1009,7 +1009,7 @@ export default function MockHub() {
               <li>Filter by role to see the tracks most relevant to your interview target, then pick a track and difficulty. Mixed draws from {MIXED_MOCK_TRACKS.map(s => TRACK_LABELS[s]).join(', ')} only.</li>
               <li>Benchmark mode is track-specific and fixed-shape. Mixed remains drill-only.</li>
               <li><strong>(Elite)</strong> Enable <strong>Focus mode</strong> to target specific concepts — your session draws from questions tagged with them.</li>
-              <li>During the session — a countdown timer runs. Write your answer and submit each question independently.</li>
+              <li>During the session — a countdown timer runs. Write your answer and <strong>run it as many times as you like</strong> to test. When ready, <strong>submit once — each question is one shot</strong>. You can keep editing after submitting but your score for that question is locked.</li>
               <li>No solutions are revealed mid-session.</li>
               <li>After finishing — you'll see your score, time used, and <strong>(Elite)</strong> a coaching debrief with concept weak-spots and a priority action.</li>
               <li><strong>(Elite)</strong> Check your <strong>Mock analytics</strong> panel to track score trends and concept performance across all sessions.</li>

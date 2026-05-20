@@ -122,7 +122,7 @@ Returns 403 for non-Elite plans. On MockHub, the primary Elite panel now uses `b
 - **Run code** — SQL, Python, and Pandas support running code against the live evaluator mid-session (same as practice mode). PySpark is MCQ-only.
 - **SQL schema viewer** — Description / Schema toggle in the left panel.
 - **Hints and concept tags** visible on each question.
-- **Submit per question** — returns correct/incorrect + feedback immediately. **No solution revealed mid-session** (verified by API; solutions are withheld from the `/submit` response).
+- **Submit per question** — returns correct/incorrect + feedback immediately. **No solution revealed mid-session** (verified by API; solutions are withheld from the `/submit` response). Each question allows exactly one real submission — a second `/submit` for the same question returns 409. Blank code or a missing MCQ selection returns 422 and does not consume the slot, so users can freely run and fix before committing their final answer.
 - **Exit confirmation** — clicking Exit or End Session shows a confirm dialog.
 - **Discard prompt** — if a user exits within ~60 seconds of starting with no activity (no submissions), the frontend offers to discard the session entirely. `DELETE /api/mock/:id` removes it from history and stats. The server enforces a 120-second window; requests outside the window return 403.
 - **Active session guard** — starting a new session while one is already active returns 409 from `POST /api/mock/start`. The response body includes the existing `session_id`, `track`, `difficulty`, and `mode` so the UI can offer a "Resume" link.
@@ -173,7 +173,7 @@ Shown after `POST /api/mock/:id/finish`:
 3. **Track benchmark availability** — Mixed stays drill-only; single-track sessions can use Benchmark.
 4. **(Elite, SQL track)** Optionally select a **Company** filter.
 5. **Start** — the timer starts immediately.
-6. **During the session** — write your answer in the editor, run it to check, and submit each question. No solutions are shown yet.
+6. **During the session** — write your answer and run it as many times as you like to test. When ready, submit — **each question is one shot**. Blank code or an unselected MCQ option is rejected before it counts. After submitting you can keep editing, but your score for that question is locked.
 7. **End session** — click "End session" or let the timer run out.
 8. **Review** — see your score, solutions to every question, and (Elite) your concept weak-spots with a drill link.
 

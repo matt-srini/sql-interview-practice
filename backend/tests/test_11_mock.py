@@ -839,3 +839,132 @@ def test_tc171_mock_payload_exposes_interaction_mode_when_present():
     assert payload.get("interaction_mode") == "code_adjacent_reasoning"
     assert payload.get("type") == question.get("type")
     assert payload.get("question_type") == question.get("type")
+
+
+# ---------------------------------------------------------------------------
+# One-submit-per-question guard (TC-172 to TC-176)
+# ---------------------------------------------------------------------------
+
+def test_tc172_blank_code_submit_returns_422_and_does_not_consume_question():
+    """TC-172: Blank code submit → 422; question submitted_at remains null."""
+    with TestClient(app) as client:
+        _make_user(client, plan="pro")
+        r_start = client.post("/api/mock/start", json={
+            "mode": "30min", "track": "sql", "difficulty": "medium",
+        })
+        assert r_start.status_code in (200, 201)
+        session_id = r_start.json()["session_id"]
+        first_q = r_start.json()["questions"][0]
+
+        # Blank code submit
+        r_blank = client.post(f"/api/mock/{session_id}/submit", json={
+            "question_id": first_q["id"],
+            "track": "sql",
+            "code": "   ",
+        })
+        assert r_blank.status_code == 422
+
+        # Confirm question slot is still open (submitted_at is null)
+        r_state = client.get(f"/api/mock/{session_id}")
+        assert r_state.status_code == 200
+        q_rows = {q["id"]: q for q in r_state.json()["questions"]}
+        assert q_rows[first_q["id"]]["submitted_at"] is None
+
+
+def test_tc173_missing_mcq_option_returns_422_and_does_not_consume_question():
+    """TC-173: MCQ submit with no selected_option → 422; question slot untouched."""
+    with TestClient(app) as client:
+        _make_user(client, plan="pro")
+        r_start = _start_pyspark_session(client)
+        assert r_start.status_code in (200, 201)
+        session_id = r_start.json()["session_id"]
+        first_q = r_start.json()["questions"][0]
+
+        # No option selected
+        r_blank = client.post(f"/api/mock/{session_id}/submit", json={
+            "question_id": first_q["id"],
+            "track": "pyspark",
+        })
+        assert r_blank.status_code == 422
+
+        # Question slot still open
+        r_state = client.get(f"/api/mock/{session_id}")
+        q_rows = {q["id"]: q for q in r_state.json()["questions"]}
+        assert q_rows[first_q["id"]]["submitted_at"] is None
+
+
+def test_tc174_second_submit_after_correct_returns_409():
+    """TC-174: Submitting a question a second time after a correct answer → 409."""
+    with TestClient(app) as client:
+        _make_user(client, plan="pro")
+        r_start = _start_pyspark_session(client)
+        session_id = r_start.json()["session_id"]
+        first_q = r_start.json()["questions"][0]
+
+        # First submit — correct
+        r1 = client.post(f"/api/mock/{session_id}/submit", json={
+            "question_id": first_q["id"],
+            "track": "pyspark",
+            "selected_option": _pyspark_correct,
+        })
+        assert r1.status_code == 200
+        assert r1.json()["correct"] is True
+
+        # Second submit — same question
+        r2 = client.post(f"/api/mock/{session_id}/submit", json={
+            "question_id": first_q["id"],
+            "track": "pyspark",
+            "selected_option": _pyspark_correct,
+        })
+        assert r2.status_code == 409
+
+
+def test_tc175_second_submit_after_wrong_returns_409():
+    """TC-175: Submitting a question a second time after a wrong answer → 409."""
+    with TestClient(app) as client:
+        _make_user(client, plan="pro")
+        r_start = _start_pyspark_session(client)
+        session_id = r_start.json()["session_id"]
+        first_q = r_start.json()["questions"][0]
+
+        # First submit — wrong
+        r1 = client.post(f"/api/mock/{session_id}/submit", json={
+            "question_id": first_q["id"],
+            "track": "pyspark",
+            "selected_option": _pyspark_wrong,
+        })
+        assert r1.status_code == 200
+        assert r1.json()["correct"] is False
+
+        # Second submit — still 409
+        r2 = client.post(f"/api/mock/{session_id}/submit", json={
+            "question_id": first_q["id"],
+            "track": "pyspark",
+            "selected_option": _pyspark_correct,
+        })
+        assert r2.status_code == 409
+
+
+def test_tc176_blank_submit_does_not_block_subsequent_real_submit():
+    """TC-176: Blank submit (422) does not consume the slot; real submit after succeeds."""
+    with TestClient(app) as client:
+        _make_user(client, plan="pro")
+        r_start = _start_pyspark_session(client)
+        session_id = r_start.json()["session_id"]
+        first_q = r_start.json()["questions"][0]
+
+        # Blank submit — rejected
+        r_blank = client.post(f"/api/mock/{session_id}/submit", json={
+            "question_id": first_q["id"],
+            "track": "pyspark",
+        })
+        assert r_blank.status_code == 422
+
+        # Real submit — should succeed
+        r_real = client.post(f"/api/mock/{session_id}/submit", json={
+            "question_id": first_q["id"],
+            "track": "pyspark",
+            "selected_option": _pyspark_correct,
+        })
+        assert r_real.status_code == 200
+        assert r_real.json()["correct"] is True

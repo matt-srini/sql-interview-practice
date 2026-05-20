@@ -993,12 +993,15 @@ export default function MockSession() {
                     <button
                       className="btn btn-primary"
                       onClick={handleSubmit}
-                      disabled={submitting || solved[q.id]}
+                      disabled={submitting || !!currentResult || !getCode(q)?.trim()}
                     >
-                      <span>{submitting ? 'Checking…' : solved[q.id] ? '✓ Solved' : 'Submit'}</span>
+                      <span>
+                        {submitting ? 'Checking…' : solved[q.id] ? '✓ Solved' : !!currentResult ? '✗ Submitted' : 'Submit'}
+                      </span>
                       <kbd className="shortcut-kbd">⌘⇧↵</kbd>
                     </button>
                   </div>
+                  <p className="mock-submit-note">Run freely to test — Submit is final for this question.</p>
                 </div>
               </div>
 
@@ -1077,9 +1080,9 @@ export default function MockSession() {
                   <button
                     className="btn btn-primary"
                     onClick={handleSubmit}
-                    disabled={submitting || solved[q.id] || mcqSelections[q.id] === undefined}
+                    disabled={submitting || !!currentResult || mcqSelections[q.id] === undefined}
                   >
-                    {submitting ? 'Checking…' : solved[q.id] ? '✓ Solved' : 'Submit'}
+                    {submitting ? 'Checking…' : solved[q.id] ? '✓ Solved' : !!currentResult ? '✗ Submitted' : 'Submit'}
                   </button>
                 </div>
               </div>
@@ -1095,7 +1098,7 @@ export default function MockSession() {
                   ? activeQ < questions.length - 1
                     ? '✓ Correct! Move to the next question.'
                     : '✓ Correct! All done — end your session.'
-                  : '✗ Not quite — review your logic and try again.'}
+                  : '✗ Not quite. Each question is one shot — move on or end your session.'}
               {!currentResult.error && !currentResult.correct && currentResult.feedback?.length > 0 && (
                 <ul className="mock-feedback-list">
                   {currentResult.feedback.map((f, i) => <li key={i}>{f}</li>)}
@@ -1106,7 +1109,7 @@ export default function MockSession() {
                   className="btn btn-secondary mock-skip-btn"
                   onClick={() => setActiveQ(activeQ + 1)}
                 >
-                  Skip for now →
+                  Next question →
                 </button>
               )}
             </div>
