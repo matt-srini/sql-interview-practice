@@ -34,7 +34,7 @@ Before writing any code or content, answer every question below in a short spec 
 | **Eval kind** | `sql` · `python` · `pandas` · `mcq` · `mixed` — drives submission dispatch |
 | **Unlock profile** | `code` (SQL/Python/Pandas thresholds) or `mcq` (PySpark/MCQ — higher thresholds) |
 | **In mixed mock?** | Should this track appear in the `"mixed"` mock pool? |
-| **Track color** | Unique hex, consistent with the existing palette. Current palette: SQL `#5B6AF0` · Python `#2D9E6B` · Pandas `#C47F17` · PySpark `#D94F3D` · DE `#B9762B` · Data Modeling `#3F8E8C` · Statistics `#7A5AF0` |
+| **Track color** | Unique hex, consistent with the existing palette. Current palette: SQL `#5B6AF0` · Python `#2D9E6B` · Pandas `#C47F17` · PySpark `#D94F3D` · DE `#B9762B` · Data Modeling `#3F8E8C` · Statistics `#7A5AF0` · ML Fundamentals `#E0456A` · Experimentation `#0EA5E9` |
 | **Track slug** | URL-safe, hyphenated, unique. Becomes the `:topic` route param. |
 | **T digit** | Next free from `backend/tracks.py` reserved list (currently 8–9). |
 

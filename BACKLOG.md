@@ -1,6 +1,6 @@
 # Platform Backlog
 
-Consolidated backlog for features deferred while new tracks are being launched. Do not start any phase here until new-tracks-roadmap.md Phase 1 (Data Engineering) is live. Remove items as they ship; update `docs/` and `CLAUDE.md` in the same commit.
+Consolidated backlog for features deferred from the main roadmap. Remove items as they ship; update `docs/` and `CLAUDE.md` in the same commit.
 
 ---
 

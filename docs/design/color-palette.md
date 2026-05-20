@@ -97,6 +97,8 @@ These are each track's own brand identity and must remain stable across theme ch
 | Data Engineering | `#B9762B` (sienna) |
 | Data Modeling | `#3F8E8C` (teal) |
 | Statistics | `#7A5AF0` (violet) |
+| ML Fundamentals | `#E0456A` (rose) |
+| Experimentation | `#0EA5E9` (sky) |
 
 ---
 

@@ -48,7 +48,7 @@ Keep all five lenses active at once. The best decisions here satisfy all of them
 
 ## What this is
 
-A data interview practice platform covering nine tracks. Users write SQL or Python, answer MCQ questions, get instant feedback, and work through gated challenge banks.
+A data interview practice platform covering nine tracks. Users write SQL or Python, answer conceptual questions, get instant feedback, and work through gated challenge banks.
 
 **Modes per track:**
 - **Challenge mode** — plan-aware unlock rules, persistent progress, 828 practice questions across 9 tracks

@@ -319,6 +319,8 @@ All files that previously hardcoded track lists — `unlock.py`, `routers/mock.p
 | Data Engineering | 51001–51999 | 52001–52999 | 53001–53999 |
 | Data Modeling | 61001–61999 | 62001–62999 | 63001–63999 |
 | Statistics | 71001–71999 | 72001–72999 | 73001–73999 |
+| ML Fundamentals | 81001–81999 | 82001–82999 | 83001–83999 |
+| Experimentation | 91001–91999 | 92001–92999 | 93001–93999 |
 
 ID scheme: **TXNNN** (T=track 1–9, X=difficulty 1–3, NNN=sequence 001–999). Sample IDs: **TXS** (3 digits, S=1–3). SQL samples `111–133` only; other tracks serve samples from their practice pool by `order`.
 

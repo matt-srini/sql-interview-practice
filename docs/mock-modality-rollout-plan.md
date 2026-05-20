@@ -2,7 +2,7 @@
 
 Planning document for the practice and mock modality migration.
 
-Status: execution started, Phase 0 audit complete, Phase 2 complete, Phase 3 complete, Phase 4 complete, Phase 5A complete, Phase 6 planned
+Status: execution started, Phase 0 audit complete, Phase 2 complete, Phase 3 complete, Phase 4 complete, Phase 5A complete, Phase 6 complete
 Date: 2026-05-19
 Owner: GPT-5.4 orchestrator
 Implementers: parallel GPT Codex agents
