@@ -369,29 +369,29 @@ export default function MockHub() {
 
       <main className="mock-hub-main">
 
-        {/* Hero spans full width above the lobby */}
-        <section className="mock-hub-hero">
-          <div className="mock-hub-kicker">Benchmarks and drills</div>
-          <h1 className="mock-hub-title">Interview Practice</h1>
-          <p className="mock-hub-subtitle">
-            Use benchmarks for fixed-shape comparability, then drills for targeted follow-up practice.
-            <button className="mock-help-btn" onClick={() => setShowHelp(true)} aria-label="How it works">?</button>
-          </p>
-        </section>
-
-        {/* Recommendation banner also spans full width above lobby */}
-        {presetNotice && (
-          <section className="mock-hub-section mock-setup-recommendation">
-            <div className="mock-setup-recommendation-kicker">Recommended next step</div>
-            <p className="mock-setup-recommendation-copy">{presetNotice}</p>
-          </section>
-        )}
-
         {/* ── Two-column lobby ── */}
         <div className="mock-hub-lobby">
 
           {/* Left: primary setup lane */}
           <div className="mock-hub-left-col">
+
+            {/* Hero */}
+            <section className="mock-hub-hero">
+              <div className="mock-hub-kicker">Benchmarks and drills</div>
+              <h1 className="mock-hub-title">Interview Practice</h1>
+              <p className="mock-hub-subtitle">
+                Use benchmarks for fixed-shape comparability, then drills for targeted follow-up practice.
+                <button className="mock-help-btn" onClick={() => setShowHelp(true)} aria-label="How it works">?</button>
+              </p>
+            </section>
+
+            {/* Recommendation banner */}
+            {presetNotice && (
+              <section className="mock-hub-section mock-setup-recommendation">
+                <div className="mock-setup-recommendation-kicker">Recommended next step</div>
+                <p className="mock-setup-recommendation-copy">{presetNotice}</p>
+              </section>
+            )}
 
             {/* Mode selector */}
             <section className="mock-hub-section">
@@ -694,11 +694,6 @@ export default function MockHub() {
                     <span className="mock-rail-val">{effectiveTimeMinutes} min</span>
                   </div>
                 )}
-                {expectationLines.map((line, i) => (
-                  <div key={i} className="mock-rail-row mock-rail-row--shape">
-                    <span className="mock-rail-shape-line">{line}</span>
-                  </div>
-                ))}
               </div>
 
               {/* Focus concepts if any selected */}
