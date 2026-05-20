@@ -1,9 +1,9 @@
 [
   {
     "id": 72001,
-    "title": "Central Limit Theorem — When It Applies",
+    "title": "Central Limit Theorem \u2014 When It Applies",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A quality engineer samples 40 components per batch to monitor weight. Component weights are right-skewed in the population. Which statement about the distribution of sample means is most accurate?",
     "options": [
       "The sample means will also be right-skewed because they inherit the shape of the population distribution",
@@ -12,7 +12,7 @@
       "The distribution of sample means cannot be characterized without knowing the exact form of the population distribution"
     ],
     "correct_option": 2,
-    "explanation": "The Central Limit Theorem states that for sufficiently large n (typically n ≥ 30), the sampling distribution of the mean is approximately normal regardless of the population's shape. With n=40, CLT applies even though the population is skewed. The t-distribution is used for inference, not for describing CLT convergence.",
+    "explanation": "The Central Limit Theorem states that for sufficiently large n (typically n \u2265 30), the sampling distribution of the mean is approximately normal regardless of the population's shape. With n=40, CLT applies even though the population is skewed. The t-distribution is used for inference, not for describing CLT convergence.",
     "hints": [
       "The CLT is about the behavior of sample means, not individual observations.",
       "Consider what sample size is generally considered sufficient for the CLT to kick in."
@@ -30,7 +30,7 @@
     "title": "Standard Error of the Mean",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "A population has standard deviation σ = 24. Write a Python function `solve()` that returns the standard error of the mean for a sample of size n = 36, rounded to 4 decimal places.",
+    "description": "A population has standard deviation \u03c3 = 24. Write a Python function `solve()` that returns the standard error of the mean for a sample of size n = 36, rounded to 4 decimal places.",
     "starter_code": "def solve():\n    # SE = sigma / sqrt(n)\n    pass",
     "expected_code": "def solve():\n    import math\n    sigma = 24\n    n = 36\n    return round(sigma / math.sqrt(n), 4)",
     "test_cases": [
@@ -39,10 +39,10 @@
         "expected_output": 4.0
       }
     ],
-    "explanation": "Standard error = σ/√n = 24/√36 = 24/6 = 4.0. The standard error quantifies how much sample means vary around the true population mean.",
+    "explanation": "Standard error = \u03c3/\u221an = 24/\u221a36 = 24/6 = 4.0. The standard error quantifies how much sample means vary around the true population mean.",
     "hints": [
       "Standard error measures the spread of the sampling distribution of the mean.",
-      "SE = σ / √n; larger samples produce smaller standard errors."
+      "SE = \u03c3 / \u221an; larger samples produce smaller standard errors."
     ],
     "concepts": [
       "central limit theorem",
@@ -57,7 +57,7 @@
     "title": "95% Confidence Interval for a Mean",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "A sample of 100 observations has mean x̄ = 50 and population standard deviation σ = 10. Write a Python function `solve()` that returns a tuple (lower, upper) for the 95% confidence interval, each rounded to 4 decimal places. Use z* = 1.96.",
+    "description": "A sample of 100 observations has mean x\u0304 = 50 and population standard deviation \u03c3 = 10. Write a Python function `solve()` that returns a tuple (lower, upper) for the 95% confidence interval, each rounded to 4 decimal places. Use z* = 1.96.",
     "starter_code": "def solve():\n    # 95% CI: (x_bar - 1.96*SE, x_bar + 1.96*SE)\n    pass",
     "expected_code": "def solve():\n    import math\n    x_bar, sigma, n, z = 50, 10, 100, 1.96\n    se = sigma / math.sqrt(n)\n    margin = z * se\n    return (round(x_bar - margin, 4), round(x_bar + margin, 4))",
     "test_cases": [
@@ -69,10 +69,10 @@
         ]
       }
     ],
-    "explanation": "SE = 10/√100 = 1.0. Margin = 1.96 × 1.0 = 1.96. CI = (50−1.96, 50+1.96) = (48.04, 51.96).",
+    "explanation": "SE = 10/\u221a100 = 1.0. Margin = 1.96 \u00d7 1.0 = 1.96. CI = (50\u22121.96, 50+1.96) = (48.04, 51.96).",
     "hints": [
-      "An interval estimate captures where the true parameter likely falls, based on the sample mean and a spread measure — the width depends on variability and sample size.",
-      "SE = σ/√n; for 95% CI use z* = 1.96."
+      "An interval estimate captures where the true parameter likely falls, based on the sample mean and a spread measure \u2014 the width depends on variability and sample size.",
+      "SE = \u03c3/\u221an; for 95% CI use z* = 1.96."
     ],
     "concepts": [
       "confidence intervals",
@@ -86,7 +86,7 @@
     "id": 72004,
     "title": "Interpreting a Confidence Interval",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A 95% confidence interval for mean customer spend is ($42, $58). Which interpretation is correct?",
     "options": [
       "There is a 95% probability that the true mean lies between $42 and $58, given the data we observed",
@@ -97,7 +97,7 @@
     "correct_option": 2,
     "explanation": "The frequentist confidence interval is a statement about the procedure, not a probability about a fixed unknown parameter. If we repeated sampling many times and built a CI each time, 95% of those intervals would capture the true mean. The true mean is fixed; only the interval is random.",
     "hints": [
-      "Once an interval is computed, the true mean either is or isn't in it — the probability is 0 or 1.",
+      "Once an interval is computed, the true mean either is or isn't in it \u2014 the probability is 0 or 1.",
       "Think about what varies across repeated experiments: the data and hence the interval, not the true mean."
     ],
     "concepts": [
@@ -112,18 +112,18 @@
     "id": 72005,
     "title": "Null and Alternative Hypothesis Setup",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A company claims its new algorithm reduces mean processing time to below 200 ms. A data scientist wants to test this claim. What are the correct null and alternative hypotheses?",
     "options": [
-      "H₀: μ < 200 ms (the algorithm works); H₁: μ ≥ 200 ms (the algorithm does not work)",
-      "H₀: μ = 200 ms (no improvement, or worse); H₁: μ < 200 ms (mean is lower than claimed)",
-      "H₀: μ = 200 ms; H₁: μ ≠ 200 ms (two-tailed test because we are unsure of direction)",
-      "H₀: the algorithm works; H₁: the algorithm does not reduce processing time, stated in plain English"
+      "H\u2080: \u03bc < 200 ms (the algorithm works); H\u2081: \u03bc \u2265 200 ms (the algorithm does not work)",
+      "H\u2080: \u03bc = 200 ms (no improvement, or worse); H\u2081: \u03bc < 200 ms (mean is lower than claimed)",
+      "H\u2080: \u03bc = 200 ms; H\u2081: \u03bc \u2260 200 ms (two-tailed test because we are unsure of direction)",
+      "H\u2080: the algorithm works; H\u2081: the algorithm does not reduce processing time, stated in plain English"
     ],
     "correct_option": 2,
-    "explanation": "The null hypothesis is the skeptical, default position — that the algorithm offers no improvement (μ ≥ 200 ms, often stated as μ = 200 ms for testing). The alternative captures what we want to detect (μ < 200 ms), making this a one-tailed test. Hypotheses must be expressed in terms of population parameters.",
+    "explanation": "The null hypothesis is the skeptical, default position \u2014 that the algorithm offers no improvement (\u03bc \u2265 200 ms, often stated as \u03bc = 200 ms for testing). The alternative captures what we want to detect (\u03bc < 200 ms), making this a one-tailed test. Hypotheses must be expressed in terms of population parameters.",
     "hints": [
-      "Consider what you'd assume if the new treatment or condition had no effect at all — that 'no-effect' position is what the test starts from.",
+      "Consider what you'd assume if the new treatment or condition had no effect at all \u2014 that 'no-effect' position is what the test starts from.",
       "The alternative hypothesis is the direction of the effect we are trying to detect."
     ],
     "concepts": [
@@ -138,19 +138,19 @@
     "id": 72006,
     "title": "p-Value Interpretation",
     "subtype": "conceptual",
-    "type": "mcq",
-    "description": "A hypothesis test yields p = 0.03 at significance level α = 0.05. Which statement correctly interprets this result?",
+    "type": "conceptual",
+    "description": "A hypothesis test yields p = 0.03 at significance level \u03b1 = 0.05. Which statement correctly interprets this result?",
     "options": [
       "There is a 3% probability that the null hypothesis is true, so it should be rejected",
-      "We reject the null hypothesis; if H₀ were true, data this extreme would occur only 3% of the time by chance",
+      "We reject the null hypothesis; if H\u2080 were true, data this extreme would occur only 3% of the time by chance",
       "The effect is practically significant because the p-value is below the threshold of 0.05",
-      "We accept the alternative hypothesis as definitively true because p < α confirms it"
+      "We accept the alternative hypothesis as definitively true because p < \u03b1 confirms it"
     ],
     "correct_option": 2,
-    "explanation": "The p-value is P(data as extreme as observed | H₀ is true). A p-value of 0.03 < α means we reject H₀ at the 5% level. It does not give the probability that H₀ is true, nor does it imply practical significance. We fail to reject or reject H₀; we never 'accept' H₁ as certain truth.",
+    "explanation": "The p-value is P(data as extreme as observed | H\u2080 is true). A p-value of 0.03 < \u03b1 means we reject H\u2080 at the 5% level. It does not give the probability that H\u2080 is true, nor does it imply practical significance. We fail to reject or reject H\u2080; we never 'accept' H\u2081 as certain truth.",
     "hints": [
-      "Ask yourself: what is being computed here — is it the probability that H₀ is true, or the probability of seeing data at least this extreme if H₀ were true?",
-      "Rejecting H₀ when p < α means the observed data is sufficiently unlikely under the null assumption."
+      "Ask yourself: what is being computed here \u2014 is it the probability that H\u2080 is true, or the probability of seeing data at least this extreme if H\u2080 were true?",
+      "Rejecting H\u2080 when p < \u03b1 means the observed data is sufficiently unlikely under the null assumption."
     ],
     "concepts": [
       "hypothesis testing",
@@ -163,16 +163,16 @@
     "id": 72007,
     "title": "Type I and Type II Errors",
     "subtype": "conceptual",
-    "type": "mcq",
-    "description": "In a medical screening test, H₀ is 'patient does not have the disease'. The test concludes the patient is positive (disease present), but the patient is actually healthy. What type of error is this, and what is its probability called?",
+    "type": "conceptual",
+    "description": "In a medical screening test, H\u2080 is 'patient does not have the disease'. The test concludes the patient is positive (disease present), but the patient is actually healthy. What type of error is this, and what is its probability called?",
     "options": [
-      "Type II error (false negative), with probability called β; the test missed a real disease case",
-      "Type I error (false positive), with probability called α; we rejected a true null hypothesis",
-      "Type I error (false positive), with probability called β; the significance level controls this rate",
-      "Type II error (false negative), with probability called 1−α; it decreases as power increases"
+      "Type II error (false negative), with probability called \u03b2; the test missed a real disease case",
+      "Type I error (false positive), with probability called \u03b1; we rejected a true null hypothesis",
+      "Type I error (false positive), with probability called \u03b2; the significance level controls this rate",
+      "Type II error (false negative), with probability called 1\u2212\u03b1; it decreases as power increases"
     ],
     "correct_option": 2,
-    "explanation": "A Type I error is rejecting a true H₀. Here H₀ is 'healthy' and the test incorrectly rejects it — a false positive. The probability of a Type I error is α (the significance level). A Type II error (β) would be failing to detect a disease that is actually present.",
+    "explanation": "A Type I error is rejecting a true H\u2080. Here H\u2080 is 'healthy' and the test incorrectly rejects it \u2014 a false positive. The probability of a Type I error is \u03b1 (the significance level). A Type II error (\u03b2) would be failing to detect a disease that is actually present.",
     "hints": [
       "Consider the two ways a decision can be wrong: you can act on a false signal, or you can miss a real signal. What does each correspond to in a test?",
       "Think about which hypothesis is true and what the test decision was."
@@ -190,19 +190,19 @@
     "id": 72008,
     "title": "Statistical Power",
     "subtype": "conceptual",
-    "type": "mcq",
-    "description": "A clinical trial has 80% statistical power at α = 0.05. Which of the following is a correct statement about this test?",
+    "type": "conceptual",
+    "description": "A clinical trial has 80% statistical power at \u03b1 = 0.05. Which of the following is a correct statement about this test?",
     "options": [
-      "If the treatment has a real effect, the test has an 80% chance of detecting it and rejecting H₀",
-      "If H₀ is true, the test will incorrectly reject it 80% of the time, indicating poor calibration",
+      "If the treatment has a real effect, the test has an 80% chance of detecting it and rejecting H\u2080",
+      "If H\u2080 is true, the test will incorrectly reject it 80% of the time, indicating poor calibration",
       "The test will produce a Type II error 80% of the time, meaning it usually misses real effects",
       "Power of 80% means the effect size must be exactly 0.80 standard deviations for the test to work"
     ],
     "correct_option": 1,
-    "explanation": "Statistical power = 1 − β = P(reject H₀ | H₁ is true). With 80% power, when a real effect exists the test detects it 80% of the time. The Type II error rate (β) is therefore 20%. Power is controlled by sample size, effect size, and α — not by the effect size value directly.",
+    "explanation": "Statistical power = 1 \u2212 \u03b2 = P(reject H\u2080 | H\u2081 is true). With 80% power, when a real effect exists the test detects it 80% of the time. The Type II error rate (\u03b2) is therefore 20%. Power is controlled by sample size, effect size, and \u03b1 \u2014 not by the effect size value directly.",
     "hints": [
       "Power is the probability of correctly detecting an effect when one truly exists.",
-      "Power = 1 − β, where β is the probability of a Type II error."
+      "Power = 1 \u2212 \u03b2, where \u03b2 is the probability of a Type II error."
     ],
     "concepts": [
       "statistical power",
@@ -217,7 +217,7 @@
     "title": "One-Sample Z-Test Statistic",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "A sample of n=64 has mean x̄=52, population σ=8, and H₀: μ=50. Write a Python function `solve()` that returns the z-test statistic rounded to 4 decimal places.",
+    "description": "A sample of n=64 has mean x\u0304=52, population \u03c3=8, and H\u2080: \u03bc=50. Write a Python function `solve()` that returns the z-test statistic rounded to 4 decimal places.",
     "starter_code": "def solve():\n    # z = (x_bar - mu0) / (sigma / sqrt(n))\n    pass",
     "expected_code": "def solve():\n    import math\n    x_bar, mu0, sigma, n = 52, 50, 8, 64\n    se = sigma / math.sqrt(n)\n    return round((x_bar - mu0) / se, 4)",
     "test_cases": [
@@ -226,10 +226,10 @@
         "expected_output": 2.0
       }
     ],
-    "explanation": "SE = 8/√64 = 1.0. z = (52−50)/1.0 = 2.0. This z-score tells us the sample mean is 2 standard errors above the hypothesized mean.",
+    "explanation": "SE = 8/\u221a64 = 1.0. z = (52\u221250)/1.0 = 2.0. This z-score tells us the sample mean is 2 standard errors above the hypothesized mean.",
     "hints": [
       "The z-test statistic measures how many standard errors the sample mean is from the hypothesized population mean.",
-      "z = (x̄ − μ₀) / (σ/√n)."
+      "z = (x\u0304 \u2212 \u03bc\u2080) / (\u03c3/\u221an)."
     ],
     "concepts": [
       "hypothesis testing",
@@ -243,19 +243,19 @@
     "id": 72010,
     "title": "When to Use t vs z Distribution",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A researcher has a sample of n=15 observations and does not know the population standard deviation. The data appear roughly normally distributed. Which distribution should be used for inference?",
     "options": [
       "The z-distribution (standard normal), because the sample mean is approximately normally distributed by CLT",
-      "The t-distribution with 14 degrees of freedom, because σ is unknown and n is small",
+      "The t-distribution with 14 degrees of freedom, because \u03c3 is unknown and n is small",
       "The z-distribution, because n=15 is sufficient for the Central Limit Theorem to make the z-test valid",
       "The chi-squared distribution, because we are estimating a variance-related quantity from sample data"
     ],
     "correct_option": 2,
-    "explanation": "When the population standard deviation σ is unknown and must be estimated from the sample, the t-distribution is appropriate. With n=15, degrees of freedom = n−1 = 14. The t-distribution has heavier tails than the normal to account for additional uncertainty from estimating σ. The z-test requires known σ.",
+    "explanation": "When the population standard deviation \u03c3 is unknown and must be estimated from the sample, the t-distribution is appropriate. With n=15, degrees of freedom = n\u22121 = 14. The t-distribution has heavier tails than the normal to account for additional uncertainty from estimating \u03c3. The z-test requires known \u03c3.",
     "hints": [
       "The key question is: do you know the true population standard deviation, or must you estimate it?",
-      "When σ is unknown, replace it with the sample standard deviation s and use the t-distribution."
+      "When \u03c3 is unknown, replace it with the sample standard deviation s and use the t-distribution."
     ],
     "concepts": [
       "t-distribution",
@@ -279,10 +279,10 @@
         "expected_output": 0.7746
       }
     ],
-    "explanation": "Pearson r = Σ(xi−x̄)(yi−ȳ) / √[Σ(xi−x̄)² × Σ(yi−ȳ)²]. x̄=3, ȳ=4. Numerator=6, denominator=√(10×6)≈7.746, r≈0.7746.",
+    "explanation": "Pearson r = \u03a3(xi\u2212x\u0304)(yi\u2212\u0233) / \u221a[\u03a3(xi\u2212x\u0304)\u00b2 \u00d7 \u03a3(yi\u2212\u0233)\u00b2]. x\u0304=3, \u0233=4. Numerator=6, denominator=\u221a(10\u00d76)\u22487.746, r\u22480.7746.",
     "hints": [
       "Pearson r measures the strength and direction of a linear relationship between two variables.",
-      "r = Cov(X,Y) / (SD(X) × SD(Y)); compute deviations from each variable's mean."
+      "r = Cov(X,Y) / (SD(X) \u00d7 SD(Y)); compute deviations from each variable's mean."
     ],
     "concepts": [
       "correlation",
@@ -296,7 +296,7 @@
     "id": 72012,
     "title": "Correlation vs Causation",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A study finds a strong positive correlation (r = 0.85) between ice cream sales and drowning incidents. A newspaper headline reads: 'Ice cream causes drowning.' What is the most fundamental problem with this conclusion?",
     "options": [
       "The correlation coefficient of 0.85 is not high enough to establish causation; r must exceed 0.95 for a causal claim",
@@ -305,7 +305,7 @@
       "The headline is technically correct since the p-value of the correlation was below 0.05, proving causation statistically"
     ],
     "correct_option": 2,
-    "explanation": "Correlation measures co-movement but cannot establish a causal mechanism. Here a confounding variable — summer weather — drives both ice cream sales and swimming (hence drowning) simultaneously. No correlation coefficient threshold proves causation; establishing causation requires experimental control or strong causal reasoning.",
+    "explanation": "Correlation measures co-movement but cannot establish a causal mechanism. Here a confounding variable \u2014 summer weather \u2014 drives both ice cream sales and swimming (hence drowning) simultaneously. No correlation coefficient threshold proves causation; establishing causation requires experimental control or strong causal reasoning.",
     "hints": [
       "Ask: is there a third variable that could explain why both X and Y change together?",
       "Correlation quantifies association; proving causation requires ruling out confounders or conducting randomized experiments."
@@ -320,9 +320,9 @@
   },
   {
     "id": 72013,
-    "title": "A/B Test — Identifying the Correct Setup",
+    "title": "A/B Test \u2014 Identifying the Correct Setup",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A product team wants to test whether a new checkout button color increases conversions. They plan to show the new button to all users on Mondays and the old button on other days. What is the primary flaw in this design?",
     "options": [
       "The sample size is too small because only one day per week is used for the treatment condition",
@@ -349,7 +349,7 @@
     "title": "Minimum Sample Size for A/B Test",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "For a two-proportion z-test with α=0.05 (two-tailed, z_α/2=1.96), power=0.80 (z_β=0.842), baseline conversion p₁=0.10, and minimum detectable effect Δ=0.02 (so p₂=0.12), compute the required sample size per group using the formula: n = (z_α/2 + z_β)² × (p₁(1−p₁) + p₂(1−p₂)) / Δ². Write a Python function `solve()` that returns this n as an integer (ceiling).",
+    "description": "For a two-proportion z-test with \u03b1=0.05 (two-tailed, z_\u03b1/2=1.96), power=0.80 (z_\u03b2=0.842), baseline conversion p\u2081=0.10, and minimum detectable effect \u0394=0.02 (so p\u2082=0.12), compute the required sample size per group using the formula: n = (z_\u03b1/2 + z_\u03b2)\u00b2 \u00d7 (p\u2081(1\u2212p\u2081) + p\u2082(1\u2212p\u2082)) / \u0394\u00b2. Write a Python function `solve()` that returns this n as an integer (ceiling).",
     "starter_code": "def solve():\n    # Use the two-proportion sample size formula\n    pass",
     "expected_code": "def solve():\n    import math\n    z_alpha2, z_beta = 1.96, 0.842\n    p1, p2 = 0.10, 0.12\n    delta = p2 - p1\n    numerator = (z_alpha2 + z_beta)**2 * (p1*(1-p1) + p2*(1-p2))\n    n = numerator / delta**2\n    return math.ceil(n)",
     "test_cases": [
@@ -358,10 +358,10 @@
         "expected_output": 3840
       }
     ],
-    "explanation": "n = (1.96+0.842)² × (0.10×0.90 + 0.12×0.88) / 0.02² = 7.8516 × 0.1956 / 0.0004 ≈ 3839.24. Ceiling = 3840.",
+    "explanation": "n = (1.96+0.842)\u00b2 \u00d7 (0.10\u00d70.90 + 0.12\u00d70.88) / 0.02\u00b2 = 7.8516 \u00d7 0.1956 / 0.0004 \u2248 3839.24. Ceiling = 3840.",
     "hints": [
-      "The formula balances Type I error (α), power (1−β), and the variance under each proportion.",
-      "n = (z_α/2 + z_β)² × [p₁(1−p₁) + p₂(1−p₂)] / (p₂−p₁)²; take the ceiling."
+      "The formula balances Type I error (\u03b1), power (1\u2212\u03b2), and the variance under each proportion.",
+      "n = (z_\u03b1/2 + z_\u03b2)\u00b2 \u00d7 [p\u2081(1\u2212p\u2081) + p\u2082(1\u2212p\u2082)] / (p\u2082\u2212p\u2081)\u00b2; take the ceiling."
     ],
     "concepts": [
       "A/B testing",
@@ -375,18 +375,18 @@
     "id": 72015,
     "title": "Law of Large Numbers",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A fair coin has been flipped 100 times and landed heads 65 times. A gambler argues the next flip is more likely to be tails because 'the law of averages demands balance.' Is the gambler correct?",
     "options": [
       "Yes, because the Law of Large Numbers guarantees that tails will occur more frequently to compensate for the excess heads",
       "No, each flip is independent; the Law of Large Numbers describes long-run frequencies, not short-run corrections",
-      "Yes, but only if the coin is fair — a fair coin must produce exactly equal head and tail counts over any 100 flips",
+      "Yes, but only if the coin is fair \u2014 a fair coin must produce exactly equal head and tail counts over any 100 flips",
       "No, because the Law of Large Numbers only applies to normally distributed variables, not coin flips"
     ],
     "correct_option": 2,
-    "explanation": "Each coin flip is independent — past outcomes do not affect future ones. The LLN states that as n→∞, the sample proportion converges to the true probability, but this happens because future large samples dilute the early deviation, not because the coin 'corrects' itself. The gambler's fallacy is confusing independence with long-run convergence.",
+    "explanation": "Each coin flip is independent \u2014 past outcomes do not affect future ones. The LLN states that as n\u2192\u221e, the sample proportion converges to the true probability, but this happens because future large samples dilute the early deviation, not because the coin 'corrects' itself. The gambler's fallacy is confusing independence with long-run convergence.",
     "hints": [
-      "Independence of trials is the key concept here — does the coin have memory?",
+      "Independence of trials is the key concept here \u2014 does the coin have memory?",
       "The LLN predicts convergence of long-run averages, not short-run corrections to deviations."
     ],
     "concepts": [
@@ -411,10 +411,10 @@
         "expected_output": 0.1008
       }
     ],
-    "explanation": "P(X=k) = λ^k × e^{−λ} / k! = 3^5 × e^{−3} / 5! = 243 × 0.049787 / 120 ≈ 0.1008.",
+    "explanation": "P(X=k) = \u03bb^k \u00d7 e^{\u2212\u03bb} / k! = 3^5 \u00d7 e^{\u22123} / 5! = 243 \u00d7 0.049787 / 120 \u2248 0.1008.",
     "hints": [
       "The Poisson distribution models counts of rare events in a fixed interval with a constant average rate.",
-      "P(X=k) = λ^k × e^(−λ) / k!; use math.exp and math.factorial."
+      "P(X=k) = \u03bb^k \u00d7 e^(\u2212\u03bb) / k!; use math.exp and math.factorial."
     ],
     "concepts": [
       "Poisson distribution",
@@ -428,16 +428,16 @@
     "id": 72017,
     "title": "Bayesian vs Frequentist Reasoning",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A Bayesian statistician says: 'Given the data, the probability that the conversion rate exceeds 10% is 0.87.' A frequentist statistician objects. What is the source of the frequentist's objection?",
     "options": [
-      "The frequentist objects because the posterior probability should be 0.95 when using standard α=0.05 threshold",
+      "The frequentist objects because the posterior probability should be 0.95 when using standard \u03b1=0.05 threshold",
       "The frequentist objects because in the frequentist view, parameters are fixed unknowns, not random variables with probability distributions",
       "The frequentist agrees with the statement because both frameworks always produce the same numerical probability",
       "The frequentist objects because Bayesian methods require more data than frequentist methods to produce valid results"
     ],
     "correct_option": 2,
-    "explanation": "Frequentists treat population parameters as fixed but unknown constants. Assigning a probability to 'the conversion rate exceeds 10%' is meaningless in the frequentist framework — parameters don't have probability distributions. Bayesians treat parameters as random variables and use prior beliefs + data to form posterior distributions.",
+    "explanation": "Frequentists treat population parameters as fixed but unknown constants. Assigning a probability to 'the conversion rate exceeds 10%' is meaningless in the frequentist framework \u2014 parameters don't have probability distributions. Bayesians treat parameters as random variables and use prior beliefs + data to form posterior distributions.",
     "hints": [
       "In frequentism, probability is the long-run frequency of events, not a degree of belief about a fixed parameter.",
       "Ask: can a fixed (non-random) parameter have a probability of being above a threshold?"
@@ -455,7 +455,7 @@
     "title": "Bayes' Theorem Application",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "A disease affects 1% of a population. A test is 95% sensitive (P(+|disease)=0.95) and 90% specific (P(−|no disease)=0.90). Write a Python function `solve()` that returns P(disease | test positive) rounded to 4 decimal places.",
+    "description": "A disease affects 1% of a population. A test is 95% sensitive (P(+|disease)=0.95) and 90% specific (P(\u2212|no disease)=0.90). Write a Python function `solve()` that returns P(disease | test positive) rounded to 4 decimal places.",
     "starter_code": "def solve():\n    # Use Bayes' theorem: P(D|+) = P(+|D)*P(D) / P(+)\n    pass",
     "expected_code": "def solve():\n    p_d = 0.01\n    p_pos_given_d = 0.95\n    p_neg_given_no_d = 0.90\n    p_no_d = 1 - p_d\n    p_pos_given_no_d = 1 - p_neg_given_no_d\n    p_pos = p_pos_given_d * p_d + p_pos_given_no_d * p_no_d\n    p_d_given_pos = (p_pos_given_d * p_d) / p_pos\n    return round(p_d_given_pos, 4)",
     "test_cases": [
@@ -464,10 +464,10 @@
         "expected_output": 0.0876
       }
     ],
-    "explanation": "P(+) = 0.95×0.01 + 0.10×0.99 = 0.0095 + 0.099 = 0.1085. P(D|+) = 0.0095/0.1085 ≈ 0.0876. Due to the low prevalence, even a mostly-accurate test has a low positive predictive value.",
+    "explanation": "P(+) = 0.95\u00d70.01 + 0.10\u00d70.99 = 0.0095 + 0.099 = 0.1085. P(D|+) = 0.0095/0.1085 \u2248 0.0876. Due to the low prevalence, even a mostly-accurate test has a low positive predictive value.",
     "hints": [
       "Use the law of total probability to compute P(+) across both disease-present and disease-absent cases.",
-      "P(D|+) = P(+|D) × P(D) / [P(+|D)×P(D) + P(+|no D)×P(no D)]."
+      "P(D|+) = P(+|D) \u00d7 P(D) / [P(+|D)\u00d7P(D) + P(+|no D)\u00d7P(no D)]."
     ],
     "concepts": [
       "Bayes' theorem",
@@ -481,19 +481,19 @@
     "id": 72019,
     "title": "Confidence Interval Width and Sample Size",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A 95% confidence interval for a population mean is currently 10 units wide. Approximately how wide will the interval be if the sample size is quadrupled?",
     "options": [
       "40 units wide, because quadrupling the sample increases precision linearly and hence widens the interval",
-      "5 units wide, because the width scales with 1/√n, and √4 = 2, so the width is halved",
+      "5 units wide, because the width scales with 1/\u221an, and \u221a4 = 2, so the width is halved",
       "2.5 units wide, because quadrupling the sample quadruples precision, reducing width by a factor of 4",
       "10 units wide, because confidence interval width depends on the confidence level, not sample size"
     ],
     "correct_option": 2,
-    "explanation": "CI width = 2 × z* × σ/√n. Quadrupling n replaces √n with √(4n) = 2√n, so the standard error halves and the width halves. Original width 10 → new width 5. Width scales with 1/√n, not 1/n.",
+    "explanation": "CI width = 2 \u00d7 z* \u00d7 \u03c3/\u221an. Quadrupling n replaces \u221an with \u221a(4n) = 2\u221an, so the standard error halves and the width halves. Original width 10 \u2192 new width 5. Width scales with 1/\u221an, not 1/n.",
     "hints": [
-      "The margin of error includes a 1/√n term — think about how quadrupling n changes that term.",
-      "Width ∝ 1/√n; if n is multiplied by 4, √n is multiplied by 2."
+      "The margin of error includes a 1/\u221an term \u2014 think about how quadrupling n changes that term.",
+      "Width \u221d 1/\u221an; if n is multiplied by 4, \u221an is multiplied by 2."
     ],
     "concepts": [
       "confidence intervals",
@@ -507,19 +507,19 @@
     "id": 72020,
     "title": "Poisson Expected Value and Variance",
     "subtype": "conceptual",
-    "type": "mcq",
-    "description": "For a Poisson random variable with parameter λ=7, what are the mean and variance?",
+    "type": "conceptual",
+    "description": "For a Poisson random variable with parameter \u03bb=7, what are the mean and variance?",
     "options": [
       "Mean = 7, Variance = 49, because variance is always the square of the mean for Poisson",
-      "Mean = 7, Variance = 7, because both the mean and variance of a Poisson equal λ",
-      "Mean = √7, Variance = 7, because the mean of a Poisson is the square root of λ",
-      "Mean = 7, Variance = √7, because the standard deviation of a Poisson equals the square root of λ"
+      "Mean = 7, Variance = 7, because both the mean and variance of a Poisson equal \u03bb",
+      "Mean = \u221a7, Variance = 7, because the mean of a Poisson is the square root of \u03bb",
+      "Mean = 7, Variance = \u221a7, because the standard deviation of a Poisson equals the square root of \u03bb"
     ],
     "correct_option": 2,
-    "explanation": "A defining property of the Poisson distribution is that its mean and variance are both equal to λ. With λ=7: E[X]=7 and Var(X)=7. The standard deviation is √7 ≈ 2.65, but that is not the variance.",
+    "explanation": "A defining property of the Poisson distribution is that its mean and variance are both equal to \u03bb. With \u03bb=7: E[X]=7 and Var(X)=7. The standard deviation is \u221a7 \u2248 2.65, but that is not the variance.",
     "hints": [
       "The Poisson distribution has a special property relating its two parameters.",
-      "For a Poisson distribution, E[X] = Var(X) = λ."
+      "For a Poisson distribution, E[X] = Var(X) = \u03bb."
     ],
     "concepts": [
       "Poisson distribution",
@@ -546,10 +546,10 @@
         ]
       }
     ],
-    "explanation": "E[X] = np = 50×0.4 = 20. Var(X) = np(1−p) = 50×0.4×0.6 = 12. SD = √12 ≈ 3.4641.",
+    "explanation": "E[X] = np = 50\u00d70.4 = 20. Var(X) = np(1\u2212p) = 50\u00d70.4\u00d70.6 = 12. SD = \u221a12 \u2248 3.4641.",
     "hints": [
       "The mean and variance of a Binomial have closed-form expressions in terms of n and p.",
-      "E[X] = np; Var(X) = np(1−p); SD = √(np(1−p))."
+      "E[X] = np; Var(X) = np(1\u2212p); SD = \u221a(np(1\u2212p))."
     ],
     "concepts": [
       "distributions",
@@ -573,10 +573,10 @@
         "expected_output": 0.0324
       }
     ],
-    "explanation": "SE = √(p(1−p)/n) = √(0.30×0.70/200) = √(0.00105) ≈ 0.0324.",
+    "explanation": "SE = \u221a(p(1\u2212p)/n) = \u221a(0.30\u00d70.70/200) = \u221a(0.00105) \u2248 0.0324.",
     "hints": [
       "The sampling distribution of a proportion has a standard error analogous to that of a mean.",
-      "SE(p̂) = √(p(1−p)/n)."
+      "SE(p\u0302) = \u221a(p(1\u2212p)/n)."
     ],
     "concepts": [
       "sampling distributions",
@@ -590,7 +590,7 @@
     "id": 72023,
     "title": "Effect of Outlier on Correlation",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A dataset of 50 points has Pearson r = 0.10 (essentially no linear correlation). One influential outlier is added, and r jumps to 0.72. What does this illustrate about Pearson correlation?",
     "options": [
       "Pearson r is highly robust to outliers because it is based on ranks rather than raw values",
@@ -601,8 +601,8 @@
     "correct_option": 2,
     "explanation": "Pearson r is computed from the actual values of X and Y. A single extreme point with large deviations from both means can disproportionately inflate the covariance and thus r. This is a known weakness of Pearson r; Spearman's rank correlation is more robust to outliers.",
     "hints": [
-      "Pearson r relies on means and actual values, not ranks — how do extreme values affect means?",
-      "Consider how one point with very large deviations from both x̄ and ȳ affects the covariance numerator."
+      "Pearson r relies on means and actual values, not ranks \u2014 how do extreme values affect means?",
+      "Consider how one point with very large deviations from both x\u0304 and \u0233 affects the covariance numerator."
     ],
     "concepts": [
       "correlation",
@@ -616,18 +616,18 @@
     "id": 72024,
     "title": "Multiple Testing Problem",
     "subtype": "conceptual",
-    "type": "mcq",
-    "description": "A researcher runs 20 independent hypothesis tests at α = 0.05 each, with all null hypotheses actually being true. What is the probability of obtaining at least one false positive (Type I error) across all 20 tests?",
+    "type": "conceptual",
+    "description": "A researcher runs 20 independent hypothesis tests at \u03b1 = 0.05 each, with all null hypotheses actually being true. What is the probability of obtaining at least one false positive (Type I error) across all 20 tests?",
     "options": [
       "0.05, because the significance level controls the error rate per test, not across tests",
-      "Approximately 0.64, because P(at least one false positive) = 1 − (1−0.05)^20 ≈ 0.64",
+      "Approximately 0.64, because P(at least one false positive) = 1 \u2212 (1\u22120.05)^20 \u2248 0.64",
       "1.00, because running 20 tests guarantees at least one false positive by the law of large numbers",
-      "0.25, computed as 5 tests × 0.05, the expected number of false positives across 20 tests"
+      "0.25, computed as 5 tests \u00d7 0.05, the expected number of false positives across 20 tests"
     ],
     "correct_option": 2,
-    "explanation": "P(at least one false positive) = 1 − P(no false positives) = 1 − (0.95)^20 ≈ 1 − 0.358 = 0.642. This family-wise error rate inflation is the multiple comparisons problem. Corrections like Bonferroni (α/m per test) address this by lowering the per-test threshold.",
+    "explanation": "P(at least one false positive) = 1 \u2212 P(no false positives) = 1 \u2212 (0.95)^20 \u2248 1 \u2212 0.358 = 0.642. This family-wise error rate inflation is the multiple comparisons problem. Corrections like Bonferroni (\u03b1/m per test) address this by lowering the per-test threshold.",
     "hints": [
-      "Use the complement: P(at least one) = 1 − P(none).",
+      "Use the complement: P(at least one) = 1 \u2212 P(none).",
       "Each test independently has a 0.95 chance of not producing a false positive."
     ],
     "concepts": [
@@ -643,7 +643,7 @@
     "title": "Bonferroni Correction",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "A study runs 8 simultaneous hypothesis tests and wants to control the family-wise error rate at α = 0.05. Write a Python function `solve()` that returns the Bonferroni-corrected per-test significance threshold rounded to 4 decimal places.",
+    "description": "A study runs 8 simultaneous hypothesis tests and wants to control the family-wise error rate at \u03b1 = 0.05. Write a Python function `solve()` that returns the Bonferroni-corrected per-test significance threshold rounded to 4 decimal places.",
     "starter_code": "def solve():\n    # Bonferroni: alpha_corrected = alpha / m\n    pass",
     "expected_code": "def solve():\n    alpha = 0.05\n    m = 8\n    return round(alpha / m, 4)",
     "test_cases": [
@@ -652,10 +652,10 @@
         "expected_output": 0.0063
       }
     ],
-    "explanation": "The Bonferroni correction divides the target α by the number of tests: 0.05/8 = 0.00625 ≈ 0.0063. Each individual test must meet this stricter threshold to maintain FWER ≤ 0.05.",
+    "explanation": "The Bonferroni correction divides the target \u03b1 by the number of tests: 0.05/8 = 0.00625 \u2248 0.0063. Each individual test must meet this stricter threshold to maintain FWER \u2264 0.05.",
     "hints": [
       "The Bonferroni correction distributes the allowable error rate equally across all tests.",
-      "Per-test threshold = overall α / number of tests."
+      "Per-test threshold = overall \u03b1 / number of tests."
     ],
     "concepts": [
       "multiple comparisons",
@@ -670,7 +670,7 @@
     "title": "Expected Number of Events (Poisson)",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "Emails arrive at a rate of 10 per hour. Write a Python function `solve()` that returns the probability of receiving 0 emails in a 12-minute window (λ_window = 10 × 12/60 = 2), rounded to 4 decimal places.",
+    "description": "Emails arrive at a rate of 10 per hour. Write a Python function `solve()` that returns the probability of receiving 0 emails in a 12-minute window (\u03bb_window = 10 \u00d7 12/60 = 2), rounded to 4 decimal places.",
     "starter_code": "def solve():\n    # P(X=0) for Poisson(lambda=2)\n    pass",
     "expected_code": "def solve():\n    import math\n    lam = 10 * (12 / 60)\n    return round(math.exp(-lam), 4)",
     "test_cases": [
@@ -679,10 +679,10 @@
         "expected_output": 0.1353
       }
     ],
-    "explanation": "In 12 minutes, expected arrivals = 10×(12/60) = 2. P(X=0) = e^{−2} ≈ 0.1353.",
+    "explanation": "In 12 minutes, expected arrivals = 10\u00d7(12/60) = 2. P(X=0) = e^{\u22122} \u2248 0.1353.",
     "hints": [
       "Scale the Poisson rate to the window of interest first.",
-      "P(X=0) = e^{−λ}; no factorial needed since 0! = 1."
+      "P(X=0) = e^{\u2212\u03bb}; no factorial needed since 0! = 1."
     ],
     "concepts": [
       "Poisson distribution",
@@ -696,19 +696,19 @@
     "id": 72027,
     "title": "Selecting the Right Hypothesis Test",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A data scientist wants to determine whether the mean session duration differs significantly between two independent groups of users (Group A: n=45, Group B: n=52). The population standard deviations are unknown. Which test is most appropriate?",
     "options": [
       "A one-sample z-test comparing each group's mean against a known population value separately",
-      "A two-sample independent t-test (Welch's t-test) comparing the means of two independent groups with unknown σ",
+      "A two-sample independent t-test (Welch's t-test) comparing the means of two independent groups with unknown \u03c3",
       "A paired t-test because the same users appear in both groups on different days of the week",
       "A chi-squared test of independence because session duration is a count-based categorical variable"
     ],
     "correct_option": 2,
     "explanation": "Comparing means between two independent groups with unknown population standard deviations calls for a two-sample t-test. Welch's variant is preferred when equal variances are not assumed. A paired t-test requires matched pairs from the same subjects. Chi-squared tests are for categorical data, not continuous means.",
     "hints": [
-      "Identify: how many groups? Are observations paired or independent? Is σ known?",
-      "Two independent groups + unknown σ → two-sample t-test."
+      "Identify: how many groups? Are observations paired or independent? Is \u03c3 known?",
+      "Two independent groups + unknown \u03c3 \u2192 two-sample t-test."
     ],
     "concepts": [
       "hypothesis testing",
@@ -723,7 +723,7 @@
     "title": "CLT Sampling Distribution Mean",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "A population has mean μ=80 and standard deviation σ=15. Samples of size n=25 are drawn repeatedly. Write a Python function `solve()` that returns a tuple (mean_of_sampling_dist, std_error) for the sampling distribution of the mean, where std_error is rounded to 4 decimal places.",
+    "description": "A population has mean \u03bc=80 and standard deviation \u03c3=15. Samples of size n=25 are drawn repeatedly. Write a Python function `solve()` that returns a tuple (mean_of_sampling_dist, std_error) for the sampling distribution of the mean, where std_error is rounded to 4 decimal places.",
     "starter_code": "def solve():\n    # By CLT: sampling dist mean = mu, SE = sigma/sqrt(n)\n    pass",
     "expected_code": "def solve():\n    import math\n    mu, sigma, n = 80, 15, 25\n    se = sigma / math.sqrt(n)\n    return (mu, round(se, 4))",
     "test_cases": [
@@ -735,10 +735,10 @@
         ]
       }
     ],
-    "explanation": "By the CLT, the sampling distribution of x̄ has mean μ = 80 and standard error σ/√n = 15/5 = 3.0.",
+    "explanation": "By the CLT, the sampling distribution of x\u0304 has mean \u03bc = 80 and standard error \u03c3/\u221an = 15/5 = 3.0.",
     "hints": [
       "The sampling distribution of the mean is centered at the population mean.",
-      "Its spread is measured by the standard error = σ/√n."
+      "Its spread is measured by the standard error = \u03c3/\u221an."
     ],
     "concepts": [
       "central limit theorem",
@@ -752,7 +752,7 @@
     "id": 72029,
     "title": "Log-Normal Distribution and Log Transformation",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A data scientist observes that the distribution of website session durations is approximately log-normal. What does this tell her about the underlying variable, and which transformation makes it suitable for standard parametric tests?",
     "options": [
       "Session durations can take negative values; a square-root transformation normalises them",
@@ -761,7 +761,7 @@
       "The distribution is symmetric with a long left tail; a log-transform is not appropriate because it amplifies the left tail"
     ],
     "correct_option": 2,
-    "explanation": "A log-normal random variable X has the property that ln(X) is normally distributed. Log-normal distributions arise naturally when a positive quantity results from the multiplicative product of many independent factors — session durations, income, and particle sizes are classic examples. Log-transforming the data converts the skewed distribution to an approximately normal one, validating parametric test assumptions. Session durations are always non-negative, not Poisson (Poisson is for counts), and log-normal is right-skewed, not left-skewed.",
+    "explanation": "A log-normal random variable X has the property that ln(X) is normally distributed. Log-normal distributions arise naturally when a positive quantity results from the multiplicative product of many independent factors \u2014 session durations, income, and particle sizes are classic examples. Log-transforming the data converts the skewed distribution to an approximately normal one, validating parametric test assumptions. Session durations are always non-negative, not Poisson (Poisson is for counts), and log-normal is right-skewed, not left-skewed.",
     "hints": [
       "If ln(X) is normal, what distribution does X follow? Reverse the naming convention.",
       "Think about what happens when you multiply random quantities: if each multiplicative factor contributes a log-additive term, the CLT applies to the log-scale."
@@ -779,7 +779,7 @@
     "id": 72030,
     "title": "F-Statistic and ANOVA",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "An analyst runs a one-way ANOVA across five product categories and obtains an F-statistic of 4.8 with p = 0.002. What does the F-statistic represent, and where does the F-distribution come from?",
     "options": [
       "It is the ratio of the largest group mean to the smallest; it follows an F-distribution because means are normally distributed",
@@ -788,9 +788,9 @@
       "It is the sum of squared z-scores for all observations, divided by the number of groups minus one"
     ],
     "correct_option": 2,
-    "explanation": "The F-statistic = MSB / MSW, where MSB (mean square between groups) measures variance explained by group membership and MSW (mean square within groups) measures unexplained variance. Under the null hypothesis that all group means are equal, both MSB and MSW estimate the same σ², so their ratio is close to 1. Large F values indicate the group means differ more than random noise predicts. The F-distribution arises because the ratio of two independent chi-squared random variables, each divided by their degrees of freedom, follows an F-distribution.",
+    "explanation": "The F-statistic = MSB / MSW, where MSB (mean square between groups) measures variance explained by group membership and MSW (mean square within groups) measures unexplained variance. Under the null hypothesis that all group means are equal, both MSB and MSW estimate the same \u03c3\u00b2, so their ratio is close to 1. Large F values indicate the group means differ more than random noise predicts. The F-distribution arises because the ratio of two independent chi-squared random variables, each divided by their degrees of freedom, follows an F-distribution.",
     "hints": [
-      "ANOVA partitions total variance into 'between groups' and 'within groups' — the F-statistic is the ratio of these two components.",
+      "ANOVA partitions total variance into 'between groups' and 'within groups' \u2014 the F-statistic is the ratio of these two components.",
       "Under the null (all means equal), what would you expect the ratio of between-group to within-group variance to be?"
     ],
     "concepts": [
@@ -806,16 +806,16 @@
     "id": 72031,
     "title": "Sequential Testing and the Peeking Problem",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "An engineer runs an A/B test on a checkout flow. After three days, the p-value drops below 0.05 and they call the result significant. A statistician objects that the test suffers from the 'peeking problem'. What specifically goes wrong when a test is stopped as soon as p < 0.05?",
     "options": [
       "The test loses statistical power because fewer observations are collected than planned",
-      "The Type I error rate inflates above α; under repeated peeks, you will eventually observe p < 0.05 by chance even when the null hypothesis is true",
+      "The Type I error rate inflates above \u03b1; under repeated peeks, you will eventually observe p < 0.05 by chance even when the null hypothesis is true",
       "The p-value is biased upward when computed on a running sample, so only results below 0.01 are trustworthy with early stopping",
       "The sample mean is not normally distributed at small sample sizes, so t-test assumptions are violated before the planned sample size is reached"
     ],
     "correct_option": 2,
-    "explanation": "Each time you peek at the data and test for significance, you take an additional chance of observing p < 0.05 purely by chance. The probability of ever seeing a false positive grows with the number of peeks — simulations show that peeking at every new observation and stopping when p < 0.05 inflates the true Type I error rate to over 20% even with α = 0.05. Sequential testing methods (e.g., alpha spending, SPRT) are designed to control the Type I error rate across multiple looks at the data.",
+    "explanation": "Each time you peek at the data and test for significance, you take an additional chance of observing p < 0.05 purely by chance. The probability of ever seeing a false positive grows with the number of peeks \u2014 simulations show that peeking at every new observation and stopping when p < 0.05 inflates the true Type I error rate to over 20% even with \u03b1 = 0.05. Sequential testing methods (e.g., alpha spending, SPRT) are designed to control the Type I error rate across multiple looks at the data.",
     "hints": [
       "Imagine tossing a fair coin and computing p-value for 'is this coin fair?' after every flip. If you keep flipping long enough, will you eventually see a run that looks significant?",
       "The 5% threshold applies to a single test on a pre-specified sample. What happens to family-wise error rate when you run multiple tests?"
@@ -832,9 +832,9 @@
   },
   {
     "id": 72032,
-    "title": "Metric Sensitivity — Mean vs Median Under Treatment",
+    "title": "Metric Sensitivity \u2014 Mean vs Median Under Treatment",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "An A/B test for a new recommendation algorithm shows mean revenue per user increased 8% in the treatment group, but median revenue per user increased only 1%. There is no data error. What is the most likely explanation?",
     "options": [
       "The mean is computed incorrectly when group sizes differ between treatment and control",
@@ -843,9 +843,9 @@
       "The standard error of the mean is larger than the standard error of the median, causing the mean to overestimate the true effect"
     ],
     "correct_option": 2,
-    "explanation": "The mean is sensitive to extreme values; the median is not. An 8% mean increase with only a 1% median increase is a strong signal that the treatment effect is concentrated among high spenders — a few users with large revenue increases dominate the mean. This pattern matters for decision-making: if the goal is broad improvement across users, the median is the more relevant metric. If the goal is total revenue (which is the sum, not the median), the mean increase is what matters. Choosing the right metric requires understanding who is driving the effect.",
+    "explanation": "The mean is sensitive to extreme values; the median is not. An 8% mean increase with only a 1% median increase is a strong signal that the treatment effect is concentrated among high spenders \u2014 a few users with large revenue increases dominate the mean. This pattern matters for decision-making: if the goal is broad improvement across users, the median is the more relevant metric. If the goal is total revenue (which is the sum, not the median), the mean increase is what matters. Choosing the right metric requires understanding who is driving the effect.",
     "hints": [
-      "A revenue distribution is typically right-skewed — a small fraction of users generate a large fraction of revenue. Which summary statistic is more sensitive to these top spenders?",
+      "A revenue distribution is typically right-skewed \u2014 a small fraction of users generate a large fraction of revenue. Which summary statistic is more sensitive to these top spenders?",
       "Imagine 100 users: 95 see no change and 5 top spenders each triple their spend. How does this affect the mean vs median?"
     ],
     "concepts": [
@@ -862,7 +862,7 @@
     "id": 72033,
     "title": "Guardrail Metric Violation",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "An A/B test improves the primary metric (click-through rate, +5%, p < 0.01) but a guardrail metric (average session duration) drops by 12% with p < 0.001. How should the team interpret this result?",
     "options": [
       "The result is a clear win: primary metrics determine launch decisions, and guardrail metrics are informational only",
@@ -871,7 +871,7 @@
       "The test should be re-run with a different randomisation unit to separate the two metric effects"
     ],
     "correct_option": 2,
-    "explanation": "Guardrail metrics exist precisely to catch cases where a feature improves a primary metric through harmful means — e.g., more clicks because users are confused and clicking everything, not because the feature is genuinely useful. A 12% drop in session duration is a large, statistically significant signal that something is degrading the experience. The correct response is to investigate the mechanism: are users clicking and then immediately leaving? The team should not ship until they understand whether the session drop is a causal consequence of the feature and whether it represents real user harm.",
+    "explanation": "Guardrail metrics exist precisely to catch cases where a feature improves a primary metric through harmful means \u2014 e.g., more clicks because users are confused and clicking everything, not because the feature is genuinely useful. A 12% drop in session duration is a large, statistically significant signal that something is degrading the experience. The correct response is to investigate the mechanism: are users clicking and then immediately leaving? The team should not ship until they understand whether the session drop is a causal consequence of the feature and whether it represents real user harm.",
     "hints": [
       "Why would a product team track multiple metrics rather than optimising a single KPI? What could go wrong if you only optimise one number?",
       "A guardrail metric 'firing' (moving significantly in the wrong direction) should prompt investigation, not be dismissed as secondary."
@@ -890,7 +890,7 @@
     "id": 72034,
     "title": "Survivorship Bias in Investment Analysis",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A fintech company studies the investment strategies of its most profitable users to build a recommendation model. The dataset includes only users who are still active today. What bias is most likely introduced, and how does it distort the analysis?",
     "options": [
       "Confirmation bias: analysts find patterns consistent with their prior beliefs about successful strategies",
@@ -899,10 +899,10 @@
       "Hawthorne bias: users who know they are being studied change their investment behaviour during the observation period"
     ],
     "correct_option": 2,
-    "explanation": "Survivorship bias occurs when analysis is restricted to entities that passed a selection filter — here, users who are still active. Users who adopted poor strategies lost money and churned, so their strategies are absent from the dataset. The surviving strategies look uniformly successful not because they are inherently better, but because the failures have been removed. This inflates perceived strategy performance. The canonical example is Abraham Wald's WWII aircraft analysis: studying only planes that returned (survivors) showed which areas were not critical, because planes hit there still survived.",
+    "explanation": "Survivorship bias occurs when analysis is restricted to entities that passed a selection filter \u2014 here, users who are still active. Users who adopted poor strategies lost money and churned, so their strategies are absent from the dataset. The surviving strategies look uniformly successful not because they are inherently better, but because the failures have been removed. This inflates perceived strategy performance. The canonical example is Abraham Wald's WWII aircraft analysis: studying only planes that returned (survivors) showed which areas were not critical, because planes hit there still survived.",
     "hints": [
       "Who is missing from this dataset? What happened to users who tried certain strategies and then stopped using the platform?",
-      "A mutual fund that closes after three years of poor returns is removed from historical benchmarks — this is the same bias in a different domain."
+      "A mutual fund that closes after three years of poor returns is removed from historical benchmarks \u2014 this is the same bias in a different domain."
     ],
     "concepts": [
       "survivorship bias",
@@ -917,7 +917,7 @@
     "id": 72035,
     "title": "Berkson's Bias",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A hospital researcher studying admitted patients finds a surprising negative correlation between smoking and obesity. In the general population, no such correlation exists. Which phenomenon best explains this finding?",
     "options": [
       "Confounding: there is an unmeasured third variable (age) that independently causes both smoking and obesity",
@@ -926,7 +926,7 @@
       "Measurement error: hospital self-reported smoking rates are systematically lower than true rates, attenuating a positive correlation toward negative"
     ],
     "correct_option": 3,
-    "explanation": "Berkson's bias (a form of collider bias) arises when a study sample is drawn from a population that is itself selected based on having at least one of the conditions under study. Both smoking and obesity independently increase the chance of hospitalisation. Conditional on being hospitalised, someone with one condition is less likely to also have the other — because either condition alone was sufficient for admission. This creates a negative correlation within the hospital that does not exist in the general population. Avoiding Berkson's bias requires sampling from the general population, not from a selected sub-population like hospital admissions.",
+    "explanation": "Berkson's bias (a form of collider bias) arises when a study sample is drawn from a population that is itself selected based on having at least one of the conditions under study. Both smoking and obesity independently increase the chance of hospitalisation. Conditional on being hospitalised, someone with one condition is less likely to also have the other \u2014 because either condition alone was sufficient for admission. This creates a negative correlation within the hospital that does not exist in the general population. Avoiding Berkson's bias requires sampling from the general population, not from a selected sub-population like hospital admissions.",
     "hints": [
       "Think about who ends up in the hospital: a non-smoker, non-obese person may not be hospitalised as often. How does this selection affect the correlation you observe among patients?",
       "This is a real-world version of collider bias: hospitalisation is a collider caused by both smoking and obesity."
@@ -945,8 +945,8 @@
     "id": 72036,
     "title": "Regression to the Mean",
     "subtype": "conceptual",
-    "type": "mcq",
-    "description": "A sports magazine features a baseball player who batted .400 in his first season — far above the league average of .260. The following season he bats .280. The magazine concludes their cover story 'jinxed' him. What is the statistical explanation?",
+    "type": "conceptual",
+    "description": "A sports magazine features a baseball player who batted .400 in his first season \u2014 far above the league average of .260. The following season he bats .280. The magazine concludes their cover story 'jinxed' him. What is the statistical explanation?",
     "options": [
       "The additional fame reduced his motivation and practice frequency, causing a genuine performance decline",
       "Regression to the mean: extreme first-season performance partly reflects luck; a second observation tends to be closer to the player's true underlying ability",
@@ -954,10 +954,10 @@
       "A single season is too small a sample to estimate a batting average, so both seasons are equally unreliable measures"
     ],
     "correct_option": 2,
-    "explanation": "Regression to the mean occurs whenever a variable is measured with noise. An extreme observation (like batting .400) is likely a combination of high true ability and unusually good luck. On a second measurement, the luck component averages out, pulling the result back toward the player's true mean. The magazine cover story is not causal — the player was likely always a ~.270 hitter who had an exceptional first season. Regression to the mean is a common misattribution trap: observing a recovery after an intervention applied at the worst point (e.g., coaching after a bad game) can look like the intervention worked, when the recovery would have happened anyway.",
+    "explanation": "Regression to the mean occurs whenever a variable is measured with noise. An extreme observation (like batting .400) is likely a combination of high true ability and unusually good luck. On a second measurement, the luck component averages out, pulling the result back toward the player's true mean. The magazine cover story is not causal \u2014 the player was likely always a ~.270 hitter who had an exceptional first season. Regression to the mean is a common misattribution trap: observing a recovery after an intervention applied at the worst point (e.g., coaching after a bad game) can look like the intervention worked, when the recovery would have happened anyway.",
     "hints": [
       "If true ability is constant but performance includes random noise each season, what would you expect an outlier season (very high or very low) to be followed by?",
-      "Galton observed this in heights: very tall parents tend to have children shorter than them, and very short parents tend to have children taller — all converging toward the population mean."
+      "Galton observed this in heights: very tall parents tend to have children shorter than them, and very short parents tend to have children taller \u2014 all converging toward the population mean."
     ],
     "concepts": [
       "regression to the mean",
@@ -972,19 +972,19 @@
     "id": 72037,
     "title": "Goodhart's Law",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A customer service centre adopts a KPI of 'average call handling time under 4 minutes'. Call centre agents quickly bring average handling time down to 3.5 minutes, but customer satisfaction scores fall sharply. Which principle explains this outcome?",
     "options": [
       "Simpson's paradox: the overall average hides a reversal when data is segmented by agent experience level",
-      "Goodhart's Law: once a measure becomes a target, it ceases to be a good measure — agents optimised the metric by cutting calls short rather than resolving customer issues",
+      "Goodhart's Law: once a measure becomes a target, it ceases to be a good measure \u2014 agents optimised the metric by cutting calls short rather than resolving customer issues",
       "The central limit theorem: with many agents averaging independently, the mean converges to the population mean regardless of individual call quality",
       "Overfitting: the KPI was calibrated on a training period that did not represent the full distribution of customer issues"
     ],
     "correct_option": 2,
-    "explanation": "Goodhart's Law ('When a measure becomes a target, it ceases to be a good measure') describes the distortion that occurs when agents optimise a proxy metric rather than the underlying goal. Call handling time was a reasonable proxy for efficiency — until it became a target. Agents then found ways to reduce call time (hanging up early, rushing through scripts) that satisfied the metric but undermined the actual goal: resolving customer problems. The fix is to track the underlying goal directly (satisfaction, first-call resolution rate) alongside the proxy, or to regularly rotate proxies so they cannot be gamed.",
+    "explanation": "Goodhart's Law ('When a measure becomes a target, it ceases to be a good measure') describes the distortion that occurs when agents optimise a proxy metric rather than the underlying goal. Call handling time was a reasonable proxy for efficiency \u2014 until it became a target. Agents then found ways to reduce call time (hanging up early, rushing through scripts) that satisfied the metric but undermined the actual goal: resolving customer problems. The fix is to track the underlying goal directly (satisfaction, first-call resolution rate) alongside the proxy, or to regularly rotate proxies so they cannot be gamed.",
     "hints": [
       "What was the original reason for tracking average handling time? Was it the goal itself, or a proxy for something else?",
-      "Consider how school exam scores change when exam performance becomes the target of teacher evaluation — same principle."
+      "Consider how school exam scores change when exam performance becomes the target of teacher evaluation \u2014 same principle."
     ],
     "concepts": [
       "Goodhart's Law",
@@ -1000,7 +1000,7 @@
     "id": 72038,
     "title": "Sampling Bias in Funnel Analysis",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "An analyst wants to understand why users who reach step 3 of a 5-step sign-up funnel convert at only 40%. She surveys 1,000 users who reached step 3 about their motivations and friction points. Why is this sample not representative of all users who started the funnel at step 1?",
     "options": [
       "The sample is too small: at least 10,000 step-3 users are needed for the survey to be statistically valid",
@@ -1009,7 +1009,7 @@
       "The conversion rate formula is undefined when users can re-enter the funnel multiple times"
     ],
     "correct_option": 2,
-    "explanation": "Funnel analysis is subject to systematic selection bias: each step selects for increasingly engaged or motivated users. Users who reached step 3 have already successfully navigated two prior steps, so they represent a higher-intent population than the original step-1 cohort. Surveying them tells you about friction at step 3 only, not why the much larger group dropped at steps 1 or 2. To understand early-funnel drop-off, you need data from users at those earlier stages — not from survivors. This is structurally similar to survivorship bias: you are studying only the survivors of the earlier steps.",
+    "explanation": "Funnel analysis is subject to systematic selection bias: each step selects for increasingly engaged or motivated users. Users who reached step 3 have already successfully navigated two prior steps, so they represent a higher-intent population than the original step-1 cohort. Surveying them tells you about friction at step 3 only, not why the much larger group dropped at steps 1 or 2. To understand early-funnel drop-off, you need data from users at those earlier stages \u2014 not from survivors. This is structurally similar to survivorship bias: you are studying only the survivors of the earlier steps.",
     "hints": [
       "Who is missing from your survey sample? What happened to users who started at step 1 but never reached step 3?",
       "Consider how engagement level differs between someone who made it through two sign-up steps versus someone who left immediately."
@@ -1026,20 +1026,20 @@
   },
   {
     "id": 72039,
-    "title": "Logistic Regression — Log-Odds Interpretation",
+    "title": "Logistic Regression \u2014 Log-Odds Interpretation",
     "subtype": "conceptual",
-    "type": "mcq",
-    "description": "A data scientist models the probability of customer churn using logistic regression. The coefficient on account age (in days) is −0.05. What does this coefficient mean, and why is logistic regression preferred over linear regression for a binary outcome?",
+    "type": "conceptual",
+    "description": "A data scientist models the probability of customer churn using logistic regression. The coefficient on account age (in days) is \u22120.05. What does this coefficient mean, and why is logistic regression preferred over linear regression for a binary outcome?",
     "options": [
       "Each additional day reduces the predicted churn probability by exactly 5 percentage points; linear regression is avoided because it cannot handle binary labels",
-      "Each additional day multiplies the odds of churn by e^(−0.05) ≈ 0.951; logistic regression is preferred because its output is bounded between 0 and 1, making it a valid probability model",
+      "Each additional day multiplies the odds of churn by e^(\u22120.05) \u2248 0.951; logistic regression is preferred because its output is bounded between 0 and 1, making it a valid probability model",
       "Each additional day reduces the log-likelihood of the model by 0.05; this means the model becomes less certain about its predictions as account age increases",
       "The coefficient is the log-probability of churn at zero account age; logistic regression is used because it linearises the log-probability"
     ],
     "correct_option": 2,
-    "explanation": "In logistic regression, coefficients represent the change in the log-odds of the outcome per unit change in the predictor. A coefficient of −0.05 means each additional day multiplies the odds of churn by e^(−0.05) ≈ 0.951 — roughly a 5% reduction in the odds per day, not the probability. Linear regression applied to a binary outcome can predict probabilities below 0 or above 1, violating the probability axioms. Logistic regression uses the sigmoid function to map any real-valued linear predictor to (0, 1), making it naturally suited for binary classification.",
+    "explanation": "In logistic regression, coefficients represent the change in the log-odds of the outcome per unit change in the predictor. A coefficient of \u22120.05 means each additional day multiplies the odds of churn by e^(\u22120.05) \u2248 0.951 \u2014 roughly a 5% reduction in the odds per day, not the probability. Linear regression applied to a binary outcome can predict probabilities below 0 or above 1, violating the probability axioms. Logistic regression uses the sigmoid function to map any real-valued linear predictor to (0, 1), making it naturally suited for binary classification.",
     "hints": [
-      "Log-odds = ln(p / (1-p)). A coefficient β means: for each unit increase in x, the log-odds changes by β. Exponentiate β to get the odds ratio.",
+      "Log-odds = ln(p / (1-p)). A coefficient \u03b2 means: for each unit increase in x, the log-odds changes by \u03b2. Exponentiate \u03b2 to get the odds ratio.",
       "What happens if you predict probability = 1.2 with linear regression? Why is that a problem?"
     ],
     "concepts": [
@@ -1056,7 +1056,7 @@
     "id": 72040,
     "title": "Odds Ratio vs Relative Risk",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A clinical trial reports that a new drug reduces the odds of an adverse event by 50% (odds ratio = 0.5). The baseline rate of adverse events in the control group is 40%. A journalist reports this as 'the drug halves your risk'. Is this accurate?",
     "options": [
       "Yes: an odds ratio of 0.5 always equals a relative risk of 0.5, so the risk is exactly halved in all cases",
@@ -1065,10 +1065,10 @@
       "Yes: the odds ratio is a conservative estimate of relative risk, so the journalist is understating the drug's benefit"
     ],
     "correct_option": 2,
-    "explanation": "Odds ratio (OR) and relative risk (RR) are only approximately equal when the baseline event rate is low (rare disease assumption, typically < 10%). With a 40% baseline rate, OR = 0.5 does not mean RR = 0.5. Working it out: control odds = 0.4/0.6 = 0.667; treatment odds = 0.667 × 0.5 = 0.333; treatment probability = 0.333/1.333 ≈ 0.25. So RR = 0.25/0.40 = 0.625 — the treatment reduces risk by 37.5%, not 50%. The OR overstates the relative risk reduction at high baseline rates, a common source of misinterpretation in medical journalism.",
+    "explanation": "Odds ratio (OR) and relative risk (RR) are only approximately equal when the baseline event rate is low (rare disease assumption, typically < 10%). With a 40% baseline rate, OR = 0.5 does not mean RR = 0.5. Working it out: control odds = 0.4/0.6 = 0.667; treatment odds = 0.667 \u00d7 0.5 = 0.333; treatment probability = 0.333/1.333 \u2248 0.25. So RR = 0.25/0.40 = 0.625 \u2014 the treatment reduces risk by 37.5%, not 50%. The OR overstates the relative risk reduction at high baseline rates, a common source of misinterpretation in medical journalism.",
     "hints": [
       "Recall: Odds = p / (1-p). Try computing the treatment group probability from OR = 0.5 and baseline p = 0.4, then compare to the control probability.",
-      "The rare disease assumption: when p is small, p/(1-p) ≈ p, so OR ≈ RR. At p = 0.40, this approximation breaks down."
+      "The rare disease assumption: when p is small, p/(1-p) \u2248 p, so OR \u2248 RR. At p = 0.40, this approximation breaks down."
     ],
     "concepts": [
       "odds ratio",
@@ -1084,7 +1084,7 @@
     "id": 72041,
     "title": "Paired vs Unpaired t-Test",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A researcher measures blood pressure in 50 patients before and after a new drug. She plans to use an independent-samples (unpaired) t-test comparing the before and after groups as if they were separate samples. A colleague recommends a paired t-test instead. What advantage does the paired test provide?",
     "options": [
       "The paired test increases the effective sample size by treating each patient as two independent observations",
@@ -1093,7 +1093,7 @@
       "The independent-samples test is invalid when the two groups are different sizes, and before/after groups technically have the same size"
     ],
     "correct_option": 2,
-    "explanation": "In a paired design, each subject serves as their own control. The analysis uses the difference score (after − before) for each patient, eliminating between-subject variability (e.g., patient A naturally has higher blood pressure than patient B). This reduces the residual variance in the test, increasing statistical power to detect a true treatment effect. The independent-samples t-test ignores the pairing and treats the 50 before and 50 after measurements as 100 independent observations, inflating the variance estimate with irrelevant between-subject noise. The paired t-test is valid here because the data are naturally paired — each 'after' observation is linked to a specific 'before' observation from the same person.",
+    "explanation": "In a paired design, each subject serves as their own control. The analysis uses the difference score (after \u2212 before) for each patient, eliminating between-subject variability (e.g., patient A naturally has higher blood pressure than patient B). This reduces the residual variance in the test, increasing statistical power to detect a true treatment effect. The independent-samples t-test ignores the pairing and treats the 50 before and 50 after measurements as 100 independent observations, inflating the variance estimate with irrelevant between-subject noise. The paired t-test is valid here because the data are naturally paired \u2014 each 'after' observation is linked to a specific 'before' observation from the same person.",
     "hints": [
       "What is the source of variability in an unpaired t-test? Does the variation in baseline blood pressure between patients help you detect the drug's effect?",
       "If patient A has baseline 160 mmHg and patient B has baseline 120 mmHg, which test uses this information more efficiently?"

@@ -1,0 +1,19 @@
+{
+  "slug": "practical-data-python",
+  "title": "Practical Data Python",
+  "description": "Build the Python toolkit data engineers and analysts use before pandas even enters the picture — parsing CSVs and JSON logs, working with datetimes, grouping with defaultdict, and processing large files in memory-safe chunks.",
+  "topic": "python",
+  "questions": [21031, 21032, 21033, 21035, 22039, 22040],
+  "tier": "pro",
+  "role": "advanced",
+  "focus_concepts": [
+    "CSV PROCESSING",
+    "JSON PARSING",
+    "DATETIME HANDLING",
+    "DEFAULTDICT GROUPING",
+    "CHUNKED PROCESSING",
+    "LOG FILTERING"
+  ],
+  "outcomes": "You'll parse CSV files with DictReader, load and filter JSON logs, convert date strings with strptime, group records with defaultdict, process large iterables in bounded-memory chunks, and write clean Python pipelines for real data-engineering tasks.",
+  "recommended_after": ["arrays-and-hashing"]
+}

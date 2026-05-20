@@ -522,12 +522,12 @@ Standalone page using the shared `<Topbar active="mock" />`. Does not use `AppSh
 
 **Layout:** Two-column desktop lobby (`1fr 292px` CSS grid, 1060px max-width). Left column: hero → mode cards (3) → track-specific benchmark blueprint or dedicated drill planner → config pills (track + difficulty). Right rail (sticky at top 72px): session brief card showing active mode badge, track, difficulty, question count, time limit, access state, and the anchored start button. Below the lobby: Elite analytics panel → split recent benchmark/drill history tables with first-run and partial-history benchmark/drill guidance. Collapses to single-column below 900px.
 
-- MockHub hero now frames `/mock` explicitly as a benchmarks-and-drills surface instead of a generic mock page, which is the first visible Phase 5 drill split cue.
+- MockHub hero now frames `/mock` as a baseline-then-improvement workflow in plain language (`benchmark` first, `drills` second), with the help button rendered as a separate adjacent control rather than inline punctuation.
 - The Data Engineer role filter now includes Data Modeling, matching the canonical role mapping used elsewhere in the product.
 - Benchmark is now the default starting mode on single-track sessions and is presented as the fixed-shape, serious mock.
 - Sprint drill (`30min`) and Custom drill are the flexible follow-up modes.
 - Drill modes now render a dedicated planner card with the session shape, purpose, and inline custom controls so drills read as a separate setup surface instead of just alternate mode cards.
-- Mixed track is drill-only; when users switch to Mixed, MockHub automatically exits benchmark mode and explains why.
+- Mixed track is drill-only; when users switch to Mixed, MockHub automatically exits benchmark mode and explains why both below the config card and inside the main drill-plan card so the restriction is visible in the primary setup surface.
 - Elite analytics now use `benchmark_summary` as the comparable primary view and surface drill performance in a smaller secondary card.
 - History rows format stored mode values into human labels (`Benchmark`, `Sprint drill`, `Custom drill`, `Full (legacy)`) so older sessions stay legible without preserving the old setup framing, and the tables are split into `Recent benchmark sessions` and `Recent drill sessions`.
 - When no history exists, MockHub now teaches the benchmark-then-drill workflow explicitly instead of collapsing to a single generic empty state.

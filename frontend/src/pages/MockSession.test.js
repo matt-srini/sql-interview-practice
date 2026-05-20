@@ -39,7 +39,11 @@ vi.mock('../components/CodeEditor', () => ({
 }));
 
 vi.mock('../components/MCQPanel', () => ({
-  default: () => <div data-testid="mcq-panel" />,
+  default: ({ onSelect }) => (
+    <div data-testid="mcq-panel">
+      <button type="button" onClick={() => onSelect?.(0)}>Select A</button>
+    </div>
+  ),
 }));
 
 vi.mock('../components/SchemaViewer', () => ({
@@ -50,10 +54,12 @@ vi.mock('../analytics', () => ({ track: vi.fn() }));
 
 vi.mock('../contexts/TopicContext', () => ({
   TRACK_META: {
-    sql: { label: 'SQL' },
-    python: { label: 'Python' },
-    'python-data': { label: 'Pandas' },
-    pyspark: { label: 'PySpark' },
+    sql: { label: 'SQL', hasRunCode: true, hasMCQ: false, mixedSubtype: false },
+    python: { label: 'Python', hasRunCode: true, hasMCQ: false, mixedSubtype: false },
+    'python-data': { label: 'Pandas', hasRunCode: true, hasMCQ: false, mixedSubtype: false },
+    pyspark: { label: 'PySpark', hasRunCode: false, hasMCQ: true, mixedSubtype: false },
+    'data-engineering': { label: 'Data Engineering', hasRunCode: false, hasMCQ: true, mixedSubtype: false },
+    statistics: { label: 'Statistics', hasRunCode: true, hasMCQ: true, mixedSubtype: true },
   },
 }));
 
@@ -75,6 +81,13 @@ function makeQuestion(id) {
     final_code: null,
     starter_code: null,
     is_follow_up: false,
+  };
+}
+
+function makeTrackQuestion(id, overrides = {}) {
+  return {
+    ...makeQuestion(id),
+    ...overrides,
   };
 }
 
@@ -222,6 +235,45 @@ describe('MockSession submit lock', () => {
     });
     // No feedback text visible
     expect(screen.queryByText('hint')).not.toBeInTheDocument();
+  });
+
+  it('submits selected_option for non-PySpark MCQ tracks', async () => {
+    const sessionData = {
+      ...makeSessionData(1),
+      track: 'data-engineering',
+      questions: [makeTrackQuestion(1, { track: 'data-engineering', options: ['A', 'B'] })],
+    };
+    renderSession(sessionData);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Select A' }));
+    await submitCurrentQuestion();
+
+    await waitFor(() => {
+      expect(mockApiPost).toHaveBeenCalledWith('/mock/1/submit', expect.objectContaining({
+        question_id: 1,
+        track: 'data-engineering',
+        selected_option: 0,
+      }));
+    });
+  });
+
+  it('submits code for numerical Statistics questions', async () => {
+    const sessionData = {
+      ...makeSessionData(1),
+      track: 'statistics',
+      questions: [makeTrackQuestion(1, { track: 'statistics', subtype: 'numerical', starter_code: 'def solution():\n    return 1\n' })],
+    };
+    renderSession(sessionData);
+
+    await submitCurrentQuestion();
+
+    await waitFor(() => {
+      expect(mockApiPost).toHaveBeenCalledWith('/mock/1/submit', expect.objectContaining({
+        question_id: 1,
+        track: 'statistics',
+        code: expect.any(String),
+      }));
+    });
   });
 });
 

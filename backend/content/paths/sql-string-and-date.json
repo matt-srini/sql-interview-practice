@@ -1,0 +1,19 @@
+{
+  "slug": "sql-string-and-date",
+  "title": "SQL String & Date Functions",
+  "description": "Master the string and date functions that appear constantly in real-world analytics queries — trimming and parsing text columns, extracting date parts, computing date differences, and handling timezone offsets.",
+  "topic": "sql",
+  "questions": [11033, 11034, 11035, 11036, 11037, 12054, 12056],
+  "tier": "pro",
+  "role": "advanced",
+  "focus_concepts": [
+    "STRING TRIMMING",
+    "SUBSTRING EXTRACTION",
+    "STRING CONCATENATION",
+    "DATE ARITHMETIC",
+    "DATE TRUNCATION",
+    "REGEX REPLACEMENT"
+  ],
+  "outcomes": "You'll handle messy string columns (TRIM, SPLIT_PART, CONCAT, REGEXP_REPLACE), work confidently with date columns (DATE_TRUNC, CURRENT_DATE arithmetic, INTERVAL), and avoid the common timezone trap in reporting queries.",
+  "recommended_after": ["aggregation-patterns"]
+}

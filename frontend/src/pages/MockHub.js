@@ -36,15 +36,15 @@ const DIFFICULTIES = ['easy', 'medium', 'hard', 'mixed'];
 const DIFFICULTY_LABELS = { easy: 'Easy', medium: 'Medium', hard: 'Hard', mixed: 'Mixed' };
 
 const PYSPARK_FORMAT_LABELS = {
-  mcq: 'MCQ', predict_output: 'Predict Output', debug: 'Debug',
+  conceptual: 'Conceptual', predict_output: 'Predict Output', debug: 'Debug',
   scenario: 'Scenario', optimization: 'Optimization',
 };
 
 const PYSPARK_FORMAT_TARGETS = {
-  easy:   ['mcq', 'predict_output', 'mcq', 'predict_output', 'debug', 'mcq'],
-  medium: ['mcq', 'scenario', 'debug', 'predict_output', 'mcq', 'optimization'],
-  hard:   ['mcq', 'scenario', 'predict_output', 'mcq', 'scenario', 'mcq'],
-  mixed:  ['mcq', 'scenario', 'predict_output', 'debug', 'mcq', 'scenario'],
+  easy:   ['conceptual', 'predict_output', 'conceptual', 'predict_output', 'debug', 'conceptual'],
+  medium: ['conceptual', 'scenario', 'debug', 'predict_output', 'conceptual', 'optimization'],
+  hard:   ['conceptual', 'scenario', 'predict_output', 'conceptual', 'scenario', 'conceptual'],
+  mixed:  ['conceptual', 'scenario', 'predict_output', 'debug', 'conceptual', 'scenario'],
 };
 
 const MIXED_DIFF_TARGETS = ['easy', 'medium', 'hard', 'medium', 'hard'];

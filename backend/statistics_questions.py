@@ -17,7 +17,7 @@ _CONTENT_DIR = Path(__file__).resolve().parent / "content" / "statistics_questio
 _SCHEMA_CONFIG_PATH = _CONTENT_DIR / "schemas.json"
 
 VALID_SUBTYPES = {"conceptual", "numerical"}
-VALID_TYPES = {"mcq", "scenario", "numerical"}
+VALID_TYPES = {"conceptual", "scenario", "numerical"}
 
 
 def _fail(question_id: int, reason: str) -> None:

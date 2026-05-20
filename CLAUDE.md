@@ -386,7 +386,7 @@ Locked MCQ questions return 200 with `locked: true` and no `options` or `correct
 | GET | `/api/mock/analytics` | Elite only: aggregate analytics over last 50 sessions with separated benchmark and drill summaries |
 | POST | `/api/mock/start` | Start a mock session `{ mode, track, difficulty, focus_concepts? }` → `{ session_id, questions[], time_limit_s, started_at, focus_fallback }`. `mode="benchmark"` applies a track-specific fixed blueprint and rejects `track="mixed"`; `30min` and `custom` remain drill sessions. Returns 409 if user has an active session (includes `session_id` in error body). |
 | GET | `/api/mock/{id}` | Session state for reload recovery |
-| POST | `/api/mock/{id}/submit` | Submit answer mid-session → `{ correct, feedback }` (no solution revealed) |
+| POST | `/api/mock/{id}/submit` | Submit answer mid-session → one real submission per question; returns `{ correct }` with no mid-session solution reveal; second submit returns 409 and blank input returns 422 without consuming the slot |
 | POST | `/api/mock/{id}/finish` | End session → full summary with per-question solutions |
 | DELETE | `/api/mock/{id}` | Discard an active session started within 2 minutes (returns 204); 403 if older than 2 min or already completed |
 | GET | `/api/sample/{topic}/{difficulty}` | Next unseen sample (409 when exhausted) |

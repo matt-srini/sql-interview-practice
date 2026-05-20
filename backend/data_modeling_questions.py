@@ -9,7 +9,7 @@ from interaction_modes import resolve_interaction_mode
 _CONTENT_DIR = Path(__file__).resolve().parent / "content" / "data_modeling_questions"
 _SCHEMA_CONFIG_PATH = _CONTENT_DIR / "schemas.json"
 
-VALID_TYPES = {"mcq", "predict_output", "debug", "optimization", "scenario"}
+VALID_TYPES = {"conceptual", "predict_output", "debug", "optimization", "scenario"}
 
 
 def _fail(question_id: int, reason: str) -> None:

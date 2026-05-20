@@ -1309,6 +1309,7 @@ async def submit_mock_question(
                     time_spent_s = :time_spent_s
                 WHERE session_id = :session_id
                   AND question_id = :question_id
+                                    AND submitted_at IS NULL
                   AND EXISTS (
                       SELECT 1 FROM mock_sessions
                       WHERE id = :session_id

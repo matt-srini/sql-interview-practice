@@ -133,7 +133,7 @@ def test_tc_rm07_statistics_catalog_rows_expose_hybrid_interaction_modes():
     conceptual_row = next(question for question in easy_group["questions"] if question["subtype"] == "conceptual")
     numerical_row = next(question for question in easy_group["questions"] if question["subtype"] == "numerical")
     assert conceptual_row["interaction_mode"] == "constructed_reasoning"
-    assert conceptual_row["type"] == "mcq"
+    assert conceptual_row["type"] == "conceptual"
     assert numerical_row["interaction_mode"] == "executable_problem_solving"
     assert numerical_row["type"] == "numerical"
 

@@ -14,12 +14,15 @@
       "The evaluation metric implementation changed between the two time periods"
     ],
     "correct_option": 1,
-    "explanation": "When retraining on recent data restores performance on the recent holdout but degrades it on an older validation set, this is the hallmark of concept drift — the statistical relationship between features and the target has shifted over time. The 3-month-old validation set reflects the old distribution; the recent holdout reflects the new one. Both can't be simultaneously optimized if the underlying distribution has changed. A feature pipeline bug would affect the current holdout too. Overfitting would manifest as poor generalization on all holdouts, not selective improvement.",
+    "explanation": "When retraining on recent data restores performance on the recent holdout but degrades it on an older validation set, this is the hallmark of concept drift \u2014 the statistical relationship between features and the target has shifted over time. The 3-month-old validation set reflects the old distribution; the recent holdout reflects the new one. Both can't be simultaneously optimized if the underlying distribution has changed. A feature pipeline bug would affect the current holdout too. Overfitting would manifest as poor generalization on all holdouts, not selective improvement.",
     "hints": [
       "Consider what it means when old data and new data tell the model different things.",
-      "Retraining helps on new data but hurts on old data — what does that imply about the relationship between inputs and outputs over time?"
+      "Retraining helps on new data but hurts on old data \u2014 what does that imply about the relationship between inputs and outputs over time?"
     ],
-    "concepts": ["MODEL MONITORING", "TRAINING-SERVING SKEW"]
+    "concepts": [
+      "MODEL MONITORING",
+      "TRAINING-SERVING SKEW"
+    ]
   },
   {
     "id": 83002,
@@ -36,12 +39,15 @@
       "Use tanh activations and double the number of layers"
     ],
     "correct_option": 1,
-    "explanation": "The original problem is vanishing gradients — sigmoid saturates and squashes gradients near zero in deep networks. Switching to ReLU fixes vanishing gradients (gradients in early layers increase), but wild loss oscillation suggests the learning rate is too high for the new gradient scale. Batch normalization stabilizes activations and gradient magnitudes across layers, making training more stable without requiring an extreme learning rate reduction. Learning rate warmup gives the optimizer a gentler start. This combination addresses both the gradient pathology and the oscillation without reverting to sigmoid.",
+    "explanation": "The original problem is vanishing gradients \u2014 sigmoid saturates and squashes gradients near zero in deep networks. Switching to ReLU fixes vanishing gradients (gradients in early layers increase), but wild loss oscillation suggests the learning rate is too high for the new gradient scale. Batch normalization stabilizes activations and gradient magnitudes across layers, making training more stable without requiring an extreme learning rate reduction. Learning rate warmup gives the optimizer a gentler start. This combination addresses both the gradient pathology and the oscillation without reverting to sigmoid.",
     "hints": [
       "Early layer zero gradients + sigmoid = vanishing gradients. ReLU oscillation = unstable gradient scale.",
       "What technique both normalizes activations and reduces sensitivity to learning rate magnitude?"
     ],
-    "concepts": ["GRADIENT PATHOLOGY", "NEURAL NETWORK DESIGN"]
+    "concepts": [
+      "GRADIENT PATHOLOGY",
+      "NEURAL NETWORK DESIGN"
+    ]
   },
   {
     "id": 83003,
@@ -52,18 +58,21 @@
     "title": "Transfer Learning Strategy for Small Medical Dataset",
     "description": "You have 800 labeled chest X-ray images (400 normal, 400 pathological). You want to build a classifier. A colleague suggests fine-tuning a ResNet-50 pretrained on ImageNet. Another suggests training from scratch. A third suggests using the pretrained ResNet-50 as a fixed feature extractor with only the classification head trained. Which approach is most appropriate and why?",
     "options": [
-      "Train from scratch — medical images are too different from ImageNet for transfer to help",
-      "Fine-tune the full network — ImageNet features don't transfer to X-rays so all weights need updating",
-      "Use pretrained ResNet-50 as fixed feature extractor — 800 images are too few to fine-tune all layers without catastrophic overfitting",
-      "Fine-tune only the last 2-3 convolutional blocks — early layers capture general edges/textures that transfer well; later layers encode ImageNet-specific semantics worth adapting"
+      "Train from scratch \u2014 medical images are too different from ImageNet for transfer to help",
+      "Fine-tune the full network \u2014 ImageNet features don't transfer to X-rays so all weights need updating",
+      "Use pretrained ResNet-50 as fixed feature extractor \u2014 800 images are too few to fine-tune all layers without catastrophic overfitting",
+      "Fine-tune only the last 2-3 convolutional blocks \u2014 early layers capture general edges/textures that transfer well; later layers encode ImageNet-specific semantics worth adapting"
     ],
     "correct_option": 3,
-    "explanation": "With only 800 images, full fine-tuning risks overfitting (millions of parameters, few samples). Training from scratch is even worse — you discard all pretrained structure. The fixed feature extractor approach is too conservative: X-ray semantics differ enough from ImageNet that ImageNet-specific higher-level features hurt. The optimal strategy is partial fine-tuning: freeze early layers (which capture domain-general edges and textures that do transfer) and fine-tune only the last few convolutional blocks and the classification head. This adapts higher-level representations to the new domain without overfitting on small data.",
+    "explanation": "With only 800 images, full fine-tuning risks overfitting (millions of parameters, few samples). Training from scratch is even worse \u2014 you discard all pretrained structure. The fixed feature extractor approach is too conservative: X-ray semantics differ enough from ImageNet that ImageNet-specific higher-level features hurt. The optimal strategy is partial fine-tuning: freeze early layers (which capture domain-general edges and textures that do transfer) and fine-tune only the last few convolutional blocks and the classification head. This adapts higher-level representations to the new domain without overfitting on small data.",
     "hints": [
-      "Early convolutional layers detect edges and textures — these are domain-general. Later layers detect ImageNet-specific objects.",
+      "Early convolutional layers detect edges and textures \u2014 these are domain-general. Later layers detect ImageNet-specific objects.",
       "With 800 samples and millions of parameters, how much of the network can you safely update?"
     ],
-    "concepts": ["TRANSFER LEARNING STRATEGY", "OVERFITTING DIAGNOSIS"]
+    "concepts": [
+      "TRANSFER LEARNING STRATEGY",
+      "OVERFITTING DIAGNOSIS"
+    ]
   },
   {
     "id": 83004,
@@ -80,34 +89,40 @@
       "All five features equally contribute to leakage"
     ],
     "correct_option": 2,
-    "explanation": "`account_status_changed_this_month` and `plan_downgrade_flag` are the leakage culprits. If a customer churns within the next 30 days, they may have already downgraded their plan or changed their account status as a precursor to churning — during the same month the label was assigned. At prediction time, you wouldn't know these events have occurred yet. This is temporal leakage: features that causally follow or co-occur with the target label being used as predictors. The other features represent historical behavior knowable at prediction time. In production, these features aren't available for future churn events, causing the massive AUC drop.",
+    "explanation": "`account_status_changed_this_month` and `plan_downgrade_flag` are the leakage culprits. If a customer churns within the next 30 days, they may have already downgraded their plan or changed their account status as a precursor to churning \u2014 during the same month the label was assigned. At prediction time, you wouldn't know these events have occurred yet. This is temporal leakage: features that causally follow or co-occur with the target label being used as predictors. The other features represent historical behavior knowable at prediction time. In production, these features aren't available for future churn events, causing the massive AUC drop.",
     "hints": [
       "Temporal leakage: a feature computed in the same window as your label may already encode the label.",
       "Which features describe events that would only happen *because* a customer is about to churn?"
     ],
-    "concepts": ["DATA LEAKAGE DETECTION", "TRAINING-SERVING SKEW"]
+    "concepts": [
+      "DATA LEAKAGE DETECTION",
+      "TRAINING-SERVING SKEW"
+    ]
   },
   {
     "id": 83005,
     "order": 5,
     "topic": "ml-fundamentals",
-    "type": "mcq",
+    "type": "conceptual",
     "difficulty": "hard",
     "title": "Interpretability vs Accuracy Tradeoff Under Regulatory Constraints",
     "description": "A bank must deploy a credit scoring model that explains every rejection to applicants and can be audited by a regulator. The data science team has three candidate models: (A) gradient boosting with SHAP explanations, (B) a logistic regression with engineered interaction features, (C) a neural network with LIME post-hoc explanations. Which model best satisfies the regulatory requirement and why?",
     "options": [
-      "Model A — SHAP values give exact, model-consistent feature attributions that satisfy most explainability regulations",
-      "Model B — logistic regression provides inherent, per-feature weight interpretability that regulators can audit without post-hoc approximation",
-      "Model C — LIME explanations are simpler to communicate to applicants than SHAP",
-      "Model A and C equally — both use post-hoc explanation frameworks that are now accepted under most financial regulations"
+      "Model A \u2014 SHAP values give exact, model-consistent feature attributions that satisfy most explainability regulations",
+      "Model B \u2014 logistic regression provides inherent, per-feature weight interpretability that regulators can audit without post-hoc approximation",
+      "Model C \u2014 LIME explanations are simpler to communicate to applicants than SHAP",
+      "Model A and C equally \u2014 both use post-hoc explanation frameworks that are now accepted under most financial regulations"
     ],
     "correct_option": 1,
-    "explanation": "Model B (logistic regression) provides inherent interpretability — every coefficient is a stable, global, auditable weight. Regulators can inspect the model directly without relying on post-hoc approximation tools. SHAP (Model A) is locally faithful to gradient boosting but SHAP values can change per sample and the underlying model is still a black box — many regulators (GDPR, ECOA) require the *model itself* to be interpretable, not just the explanation. LIME (Model C) is a local approximation and is even less reliable than SHAP. For high-stakes regulated decisions, inherent interpretability via logistic regression is the safest choice, even at some accuracy cost.",
+    "explanation": "Model B (logistic regression) provides inherent interpretability \u2014 every coefficient is a stable, global, auditable weight. Regulators can inspect the model directly without relying on post-hoc approximation tools. SHAP (Model A) is locally faithful to gradient boosting but SHAP values can change per sample and the underlying model is still a black box \u2014 many regulators (GDPR, ECOA) require the *model itself* to be interpretable, not just the explanation. LIME (Model C) is a local approximation and is even less reliable than SHAP. For high-stakes regulated decisions, inherent interpretability via logistic regression is the safest choice, even at some accuracy cost.",
     "hints": [
       "Post-hoc explanation tools explain predictions, not the model itself. Regulators often require the latter.",
       "Which model can you hand directly to a regulator to audit, without explaining how the explanations were generated?"
     ],
-    "concepts": ["INTERPRETABILITY TRADEOFF", "DEPLOYMENT CONSTRAINTS"]
+    "concepts": [
+      "INTERPRETABILITY TRADEOFF",
+      "DEPLOYMENT CONSTRAINTS"
+    ]
   },
   {
     "id": 83006,
@@ -124,12 +139,15 @@
       "The 74% is too pessimistic; time-series split wastes data by never using later data for training"
     ],
     "correct_option": 1,
-    "explanation": "Standard k-fold randomly shuffles data before splitting, meaning future observations can appear in a fold's training set while earlier observations are in the test set. This is temporal leakage — the model effectively sees the future during training, inflating accuracy to 91%. Time-series split enforces strict temporal order: training always precedes testing. The 74% reflects how the model will actually perform in deployment, where it must generalize to future data it has never seen. The 17-point gap between the two numbers quantifies the severity of the temporal leakage. The 74% should drive the deployment decision.",
+    "explanation": "Standard k-fold randomly shuffles data before splitting, meaning future observations can appear in a fold's training set while earlier observations are in the test set. This is temporal leakage \u2014 the model effectively sees the future during training, inflating accuracy to 91%. Time-series split enforces strict temporal order: training always precedes testing. The 74% reflects how the model will actually perform in deployment, where it must generalize to future data it has never seen. The 17-point gap between the two numbers quantifies the severity of the temporal leakage. The 74% should drive the deployment decision.",
     "hints": [
       "In time series, randomly shuffled folds let future data contaminate training sets.",
-      "Production deployment means predicting future values from past observations only — which validation setup mirrors that?"
+      "Production deployment means predicting future values from past observations only \u2014 which validation setup mirrors that?"
     ],
-    "concepts": ["CROSS-VALIDATION DESIGN", "DATA LEAKAGE DETECTION"]
+    "concepts": [
+      "CROSS-VALIDATION DESIGN",
+      "DATA LEAKAGE DETECTION"
+    ]
   },
   {
     "id": 83007,
@@ -138,20 +156,23 @@
     "type": "predict_output",
     "difficulty": "hard",
     "title": "Predicting the Effect of L1 vs L2 Regularization on Correlated Features",
-    "description": "A linear regression model is fit on a dataset where `feature_A` and `feature_B` are nearly perfectly correlated (r = 0.98). Without regularization, the model assigns weights [15.2, -14.8] to [feature_A, feature_B]. You fit the same model twice: once with L1 regularization (λ=1.0) and once with L2 regularization (λ=1.0). What weight patterns will you observe for [feature_A, feature_B]?",
+    "description": "A linear regression model is fit on a dataset where `feature_A` and `feature_B` are nearly perfectly correlated (r = 0.98). Without regularization, the model assigns weights [15.2, -14.8] to [feature_A, feature_B]. You fit the same model twice: once with L1 regularization (\u03bb=1.0) and once with L2 regularization (\u03bb=1.0). What weight patterns will you observe for [feature_A, feature_B]?",
     "options": [
-      "L1: [15.2, -14.8], L2: [0.2, 0.0] — L1 preserves the original weights; L2 drives one to zero",
-      "L1: [0.2, 0.0] or [0.0, -0.2], L2: [~0.15, ~-0.15] — L1 selects one feature and zeros the other; L2 shrinks both equally",
-      "L1: [7.6, -7.4], L2: [7.6, -7.4] — both regularizers split the weight equally between correlated features",
-      "L1: [0.0, 0.0], L2: [15.2, -14.8] — L1 zeros both correlated features; L2 preserves them"
+      "L1: [15.2, -14.8], L2: [0.2, 0.0] \u2014 L1 preserves the original weights; L2 drives one to zero",
+      "L1: [0.2, 0.0] or [0.0, -0.2], L2: [~0.15, ~-0.15] \u2014 L1 selects one feature and zeros the other; L2 shrinks both equally",
+      "L1: [7.6, -7.4], L2: [7.6, -7.4] \u2014 both regularizers split the weight equally between correlated features",
+      "L1: [0.0, 0.0], L2: [15.2, -14.8] \u2014 L1 zeros both correlated features; L2 preserves them"
     ],
     "correct_option": 1,
-    "explanation": "L1 (lasso) regularization promotes sparsity. When two features are highly correlated, L1 tends to select one arbitrarily and drive the other to exactly zero — the large, canceling weights are penalized more than a single moderate weight. L2 (ridge) regularization penalizes the *square* of weights, making large weights expensive. With correlated features, L2 spreads the coefficient mass across both features, shrinking both toward zero but keeping them both non-zero and roughly equal in magnitude. The original [15.2, -14.8] pattern represents the correlated feature instability — both regularizers eliminate it, but through different geometric mechanisms.",
+    "explanation": "L1 (lasso) regularization promotes sparsity. When two features are highly correlated, L1 tends to select one arbitrarily and drive the other to exactly zero \u2014 the large, canceling weights are penalized more than a single moderate weight. L2 (ridge) regularization penalizes the *square* of weights, making large weights expensive. With correlated features, L2 spreads the coefficient mass across both features, shrinking both toward zero but keeping them both non-zero and roughly equal in magnitude. The original [15.2, -14.8] pattern represents the correlated feature instability \u2014 both regularizers eliminate it, but through different geometric mechanisms.",
     "hints": [
-      "L1 penalty is the absolute value of each weight — it creates corners in the loss landscape where one weight hits zero.",
-      "L2 penalty is the squared value — it prefers many small weights over one large weight, distributing across correlated features."
+      "L1 penalty is the absolute value of each weight \u2014 it creates corners in the loss landscape where one weight hits zero.",
+      "L2 penalty is the squared value \u2014 it prefers many small weights over one large weight, distributing across correlated features."
     ],
-    "concepts": ["REGULARIZATION EFFECT", "FEATURE SELECTION STRATEGY"]
+    "concepts": [
+      "REGULARIZATION EFFECT",
+      "FEATURE SELECTION STRATEGY"
+    ]
   },
   {
     "id": 83008,
@@ -162,18 +183,21 @@
     "title": "Selecting Evaluation Metrics for a Multi-Class Imbalanced Classifier",
     "description": "You are building a medical diagnosis model that classifies patient scans into: Normal (70%), Benign tumor (20%), Malignant tumor (10%). The cost of missing a malignant case is very high; over-diagnosing benign as malignant causes unnecessary stress and procedures. Your team is debating between macro-averaged F1, weighted-averaged F1, and class-specific recall for malignant. Which metric set should drive the deployment decision?",
     "options": [
-      "Weighted F1 — it naturally accounts for class imbalance by weighting each class by support",
-      "Macro F1 alone — it treats all classes equally, which is fair for medical contexts",
+      "Weighted F1 \u2014 it naturally accounts for class imbalance by weighting each class by support",
+      "Macro F1 alone \u2014 it treats all classes equally, which is fair for medical contexts",
       "Malignant class recall as the primary metric, with malignant precision as a secondary constraint to bound over-diagnosis",
-      "Accuracy — the 70% normal class ensures it will be high enough to be meaningful"
+      "Accuracy \u2014 the 70% normal class ensures it will be high enough to be meaningful"
     ],
     "correct_option": 2,
-    "explanation": "When missing one class (malignant) is catastrophically costly and the classes are imbalanced, aggregate metrics mask the most important information. Weighted F1 rewards the dominant Normal class and can look excellent even if the model fails on malignant cases. Macro F1 treats all classes equally but doesn't encode the asymmetric cost structure. Accuracy is useless — a model predicting Normal for everything achieves 70%. The right approach: malignant recall as the primary metric (how often do we catch malignant cases?) with malignant precision as a secondary constraint (how often are our malignant predictions correct, to bound unnecessary procedures). This directly encodes the asymmetric cost tradeoff.",
+    "explanation": "When missing one class (malignant) is catastrophically costly and the classes are imbalanced, aggregate metrics mask the most important information. Weighted F1 rewards the dominant Normal class and can look excellent even if the model fails on malignant cases. Macro F1 treats all classes equally but doesn't encode the asymmetric cost structure. Accuracy is useless \u2014 a model predicting Normal for everything achieves 70%. The right approach: malignant recall as the primary metric (how often do we catch malignant cases?) with malignant precision as a secondary constraint (how often are our malignant predictions correct, to bound unnecessary procedures). This directly encodes the asymmetric cost tradeoff.",
     "hints": [
       "When the cost of one type of error vastly exceeds another, aggregate metrics hide the most important failure mode.",
       "For a rare but dangerous class, what does it mean if recall is 90% vs 60%?"
     ],
-    "concepts": ["CLASSIFICATION METRICS", "CLASS IMBALANCE HANDLING"]
+    "concepts": [
+      "CLASSIFICATION METRICS",
+      "CLASS IMBALANCE HANDLING"
+    ]
   },
   {
     "id": 83009,
@@ -182,20 +206,23 @@
     "type": "scenario",
     "difficulty": "hard",
     "title": "Model Calibration in a Risk-Scoring System",
-    "description": "A credit risk model outputs probability scores. The model has AUC = 0.89 (excellent discrimination). However, when you plot a calibration curve (reliability diagram), all predicted probabilities between 0.6–0.9 correspond to only 40–55% actual default rates. The model is being used downstream to set interest rates where predicted probability maps directly to a specific rate tier. What is the impact of the miscalibration and how should it be fixed?",
+    "description": "A credit risk model outputs probability scores. The model has AUC = 0.89 (excellent discrimination). However, when you plot a calibration curve (reliability diagram), all predicted probabilities between 0.6\u20130.9 correspond to only 40\u201355% actual default rates. The model is being used downstream to set interest rates where predicted probability maps directly to a specific rate tier. What is the impact of the miscalibration and how should it be fixed?",
     "options": [
       "The miscalibration has no business impact since AUC measures discrimination, not absolute probabilities",
-      "The model systematically overestimates default probability, leading to higher interest rates than warranted — fix with Platt scaling or isotonic regression on a held-out calibration set",
+      "The model systematically overestimates default probability, leading to higher interest rates than warranted \u2014 fix with Platt scaling or isotonic regression on a held-out calibration set",
       "The model is underfit; add more features and retrain to fix both discrimination and calibration simultaneously",
       "Replace the model with logistic regression, which is inherently well-calibrated"
     ],
     "correct_option": 1,
-    "explanation": "AUC measures *discrimination* (ranking ability) — it doesn't care about absolute probability values. A model can perfectly rank customers by risk (AUC=1.0) while producing completely wrong probability values. When predicted scores of 0.6–0.9 correspond to actual rates of 40–55%, the model overestimates risk in the high-score range. In an interest rate system where probabilities map directly to rates, this causes systematic overcharging. The fix is post-hoc calibration: Platt scaling (logistic regression on model outputs) or isotonic regression applied to a held-out calibration set, which adjusts the probability scale without changing the model's ranking behavior.",
+    "explanation": "AUC measures *discrimination* (ranking ability) \u2014 it doesn't care about absolute probability values. A model can perfectly rank customers by risk (AUC=1.0) while producing completely wrong probability values. When predicted scores of 0.6\u20130.9 correspond to actual rates of 40\u201355%, the model overestimates risk in the high-score range. In an interest rate system where probabilities map directly to rates, this causes systematic overcharging. The fix is post-hoc calibration: Platt scaling (logistic regression on model outputs) or isotonic regression applied to a held-out calibration set, which adjusts the probability scale without changing the model's ranking behavior.",
     "hints": [
       "AUC tells you the model ranks borrowers correctly. Calibration tells you whether the probabilities are trustworthy as probabilities.",
       "If your predicted probability is 0.8 but real defaults are 50%, what happens to customers in that score band?"
     ],
-    "concepts": ["MODEL CALIBRATION", "DEPLOYMENT CONSTRAINTS"]
+    "concepts": [
+      "MODEL CALIBRATION",
+      "DEPLOYMENT CONSTRAINTS"
+    ]
   },
   {
     "id": 83010,
@@ -212,12 +239,15 @@
       "Stacking and averaging are equivalent if base models are diverse; the RMSE difference reflects sampling variance, not structural differences"
     ],
     "correct_option": 1,
-    "explanation": "Simple averaging assigns equal weight to all base models regardless of their relative performance or error correlation. A linear meta-learner in stacking can learn that the gradient boosting model contributes more in certain feature ranges while the neural network excels in others — it exploits complementary error patterns that averaging discards. The critical risk: if the meta-learner is trained on base model predictions from the *same training data*, the base models have already overfit those samples, giving the meta-learner inflated signal. The fix is out-of-fold (cross-validated) predictions: each base model is trained on k-1 folds and predicts the held-out fold, giving the meta-learner predictions that are honest out-of-sample estimates.",
+    "explanation": "Simple averaging assigns equal weight to all base models regardless of their relative performance or error correlation. A linear meta-learner in stacking can learn that the gradient boosting model contributes more in certain feature ranges while the neural network excels in others \u2014 it exploits complementary error patterns that averaging discards. The critical risk: if the meta-learner is trained on base model predictions from the *same training data*, the base models have already overfit those samples, giving the meta-learner inflated signal. The fix is out-of-fold (cross-validated) predictions: each base model is trained on k-1 folds and predicts the held-out fold, giving the meta-learner predictions that are honest out-of-sample estimates.",
     "hints": [
       "Equal-weight averaging can't account for one model being better in certain regions of the input space.",
       "If the meta-learner sees the base models' in-sample predictions, what are those predictions relative to the training targets?"
     ],
-    "concepts": ["ENSEMBLE STRATEGY", "OVERFITTING DIAGNOSIS"]
+    "concepts": [
+      "ENSEMBLE STRATEGY",
+      "OVERFITTING DIAGNOSIS"
+    ]
   },
   {
     "id": 83011,
@@ -228,40 +258,46 @@
     "title": "MNAR Missing Data and Imputation Bias",
     "description": "A dataset for income prediction has 22% missing values in the `income_reported` field. Analysis shows missingness correlates strongly with the income value itself (high earners selectively skip the field). You consider: (A) mean imputation, (B) median imputation, (C) multiple imputation with MICE, (D) create a binary `income_missing` feature + use XGBoost's native missing value handling. Which approach introduces the least bias and why?",
     "options": [
-      "Approach A — mean imputation is unbiased because it preserves the training set mean",
-      "Approach C — multiple imputation models the conditional distribution of the missing value, reducing bias versus single-value imputation even under MNAR",
-      "Approach D — XGBoost's native handler + missingness indicator encodes which rows are missing as a feature, letting the model learn the missingness pattern without imputing a value that doesn't exist",
-      "Approach B — the median is more robust to high-earner outliers and thus less biased than the mean"
+      "Approach A \u2014 mean imputation is unbiased because it preserves the training set mean",
+      "Approach C \u2014 multiple imputation models the conditional distribution of the missing value, reducing bias versus single-value imputation even under MNAR",
+      "Approach D \u2014 XGBoost's native handler + missingness indicator encodes which rows are missing as a feature, letting the model learn the missingness pattern without imputing a value that doesn't exist",
+      "Approach B \u2014 the median is more robust to high-earner outliers and thus less biased than the mean"
     ],
     "correct_option": 2,
-    "explanation": "When data is Missing Not At Random (MNAR), the missingness is related to the unobserved value itself (high earners skip the field). Mean/median imputation replaces missing values with statistics from the observed distribution — but the observed distribution underrepresents high earners, so both estimators are systematically biased downward. MICE (multiple imputation) models the conditional distribution but still relies on observed data patterns, and under MNAR it cannot fully recover the true distribution without external information. Approach D is strongest: the `income_missing` binary feature lets the model learn that missingness itself is predictive (high earners are missing), and XGBoost's native handler routes missing observations down the optimal split direction learned from data — neither imputing a biased value nor discarding the observation.",
+    "explanation": "When data is Missing Not At Random (MNAR), the missingness is related to the unobserved value itself (high earners skip the field). Mean/median imputation replaces missing values with statistics from the observed distribution \u2014 but the observed distribution underrepresents high earners, so both estimators are systematically biased downward. MICE (multiple imputation) models the conditional distribution but still relies on observed data patterns, and under MNAR it cannot fully recover the true distribution without external information. Approach D is strongest: the `income_missing` binary feature lets the model learn that missingness itself is predictive (high earners are missing), and XGBoost's native handler routes missing observations down the optimal split direction learned from data \u2014 neither imputing a biased value nor discarding the observation.",
     "hints": [
-      "MNAR means the missingness depends on the value you're trying to impute — any single imputed value will be biased.",
+      "MNAR means the missingness depends on the value you're trying to impute \u2014 any single imputed value will be biased.",
       "What if the fact that the value is missing is itself informative?"
     ],
-    "concepts": ["MISSING DATA STRATEGY", "DATA LEAKAGE DETECTION"]
+    "concepts": [
+      "MISSING DATA STRATEGY",
+      "DATA LEAKAGE DETECTION"
+    ]
   },
   {
     "id": 83012,
     "order": 12,
     "topic": "ml-fundamentals",
-    "type": "mcq",
+    "type": "conceptual",
     "difficulty": "hard",
     "title": "Hyperparameter Sensitivity: Learning Rate Schedules",
     "description": "You are training a large transformer model and observe that: with constant lr=0.001 the model diverges in early epochs; with constant lr=0.0001 it converges but slowly and plateaus at suboptimal loss; with lr=0.001 + cosine annealing schedule it converges well but the final loss is 0.3 above the benchmark. A colleague suggests 1-cycle learning rate policy with a warmup phase. Why does 1-cycle outperform the other strategies?",
     "options": [
       "1-cycle uses a higher peak learning rate than constant lr=0.001, which prevents the optimizer from getting stuck in local minima",
-      "1-cycle begins with a very low lr (warmup), ramps to a high peak lr to escape saddle points/flat regions, then anneals to a very low lr for fine-grained convergence — combining the benefits of large and small learning rates sequentially",
+      "1-cycle begins with a very low lr (warmup), ramps to a high peak lr to escape saddle points/flat regions, then anneals to a very low lr for fine-grained convergence \u2014 combining the benefits of large and small learning rates sequentially",
       "1-cycle prevents overfitting by automatically applying dropout at the warmup phase",
       "1-cycle is identical to cosine annealing but with a longer schedule, which explains the improvement"
     ],
     "correct_option": 1,
-    "explanation": "A constant high lr (0.001) causes divergence early when weights are randomly initialized and gradients are large. A constant low lr (0.0001) is stable but too small to escape flat loss regions efficiently. Cosine annealing starts at the peak lr and decays — it still risks early instability. The 1-cycle policy solves this sequentially: (1) warmup from a very small lr stabilizes early training; (2) ramp to a high peak lr lets the optimizer traverse the loss landscape aggressively and escape saddle points; (3) final aggressive cooldown to near-zero lr enables fine-grained convergence that constant schedules can't achieve. This is why 1-cycle often outperforms both constant lr and cosine annealing on the same model.",
+    "explanation": "A constant high lr (0.001) causes divergence early when weights are randomly initialized and gradients are large. A constant low lr (0.0001) is stable but too small to escape flat loss regions efficiently. Cosine annealing starts at the peak lr and decays \u2014 it still risks early instability. The 1-cycle policy solves this sequentially: (1) warmup from a very small lr stabilizes early training; (2) ramp to a high peak lr lets the optimizer traverse the loss landscape aggressively and escape saddle points; (3) final aggressive cooldown to near-zero lr enables fine-grained convergence that constant schedules can't achieve. This is why 1-cycle often outperforms both constant lr and cosine annealing on the same model.",
     "hints": [
       "Think about what stage of training benefits from a large learning rate vs a small one.",
-      "Warmup + peak + cooldown — each phase solves a different problem in the training dynamics."
+      "Warmup + peak + cooldown \u2014 each phase solves a different problem in the training dynamics."
     ],
-    "concepts": ["HYPERPARAMETER SENSITIVITY", "GRADIENT DESCENT BEHAVIOR"]
+    "concepts": [
+      "HYPERPARAMETER SENSITIVITY",
+      "GRADIENT DESCENT BEHAVIOR"
+    ]
   },
   {
     "id": 83013,
@@ -273,17 +309,20 @@
     "description": "A team applies PCA to their full dataset (10,000 samples, 500 features) to reduce to 50 components, then splits into 80% train / 20% test. They achieve 88% accuracy. A reviewer flags the procedure as invalid and reruns with PCA fit on training data only then applied to test data. Accuracy drops to 81%. Why is the original procedure invalid, and what specifically does the 7-point gap represent?",
     "options": [
       "Applying PCA before splitting is invalid because PCA is a supervised method that uses labels from the test set",
-      "Applying PCA before splitting leaks test-set covariance structure into the transformation, allowing the model to implicitly learn from test-set distribution information — the 7-point gap measures the magnitude of this leakage",
+      "Applying PCA before splitting leaks test-set covariance structure into the transformation, allowing the model to implicitly learn from test-set distribution information \u2014 the 7-point gap measures the magnitude of this leakage",
       "The 7-point gap is just sampling variance; the procedure is valid because PCA is unsupervised and doesn't use labels",
       "PCA must always be applied after splitting to reduce computation, not for statistical reasons"
     ],
     "correct_option": 1,
-    "explanation": "PCA is unsupervised (no labels), but it computes eigenvectors from the full data covariance matrix — including test samples. When the test set's variance structure contributes to the principal components, the transformation is tuned to those specific test samples. At evaluation time, the test features are projected onto components that were partly computed from them — a form of data leakage. The correct pipeline is: fit PCA on train only, transform both train and test with the train-derived components. The 7-point accuracy drop (88% → 81%) directly measures how much the leakage inflated the original estimate — a substantial overestimate of generalization ability.",
+    "explanation": "PCA is unsupervised (no labels), but it computes eigenvectors from the full data covariance matrix \u2014 including test samples. When the test set's variance structure contributes to the principal components, the transformation is tuned to those specific test samples. At evaluation time, the test features are projected onto components that were partly computed from them \u2014 a form of data leakage. The correct pipeline is: fit PCA on train only, transform both train and test with the train-derived components. The 7-point accuracy drop (88% \u2192 81%) directly measures how much the leakage inflated the original estimate \u2014 a substantial overestimate of generalization ability.",
     "hints": [
-      "PCA doesn't use labels, but it does use the data distribution — and the test set is part of that distribution.",
+      "PCA doesn't use labels, but it does use the data distribution \u2014 and the test set is part of that distribution.",
       "At evaluation time, should the model have seen any statistical structure from the test set during any preprocessing step?"
     ],
-    "concepts": ["DATA LEAKAGE DETECTION", "DIMENSIONALITY REDUCTION"]
+    "concepts": [
+      "DATA LEAKAGE DETECTION",
+      "DIMENSIONALITY REDUCTION"
+    ]
   },
   {
     "id": 83014,
@@ -292,20 +331,23 @@
     "type": "scenario",
     "difficulty": "hard",
     "title": "Boosting Failure Mode: Noisy Labels",
-    "description": "An AdaBoost model achieves 95% training accuracy but only 62% test accuracy — a huge gap. Your dataset has approximately 15% label noise (corrupted labels). A random forest on the same data achieves 88% train / 81% test accuracy. Why does boosting fail so dramatically with noisy labels while bagging is more robust?",
+    "description": "An AdaBoost model achieves 95% training accuracy but only 62% test accuracy \u2014 a huge gap. Your dataset has approximately 15% label noise (corrupted labels). A random forest on the same data achieves 88% train / 81% test accuracy. Why does boosting fail so dramatically with noisy labels while bagging is more robust?",
     "options": [
       "AdaBoost uses deeper trees than random forest, causing more overfitting regardless of label noise",
-      "AdaBoost iteratively upweights misclassified samples — mislabeled samples are consistently misclassified, so they accumulate extreme weights, causing later iterations to overfit specifically to noise",
+      "AdaBoost iteratively upweights misclassified samples \u2014 mislabeled samples are consistently misclassified, so they accumulate extreme weights, causing later iterations to overfit specifically to noise",
       "Random forest uses more trees than AdaBoost, which averages out the label noise across more estimators",
-      "AdaBoost is sensitive to class imbalance, not label noise — the issue is that your labels are imbalanced"
+      "AdaBoost is sensitive to class imbalance, not label noise \u2014 the issue is that your labels are imbalanced"
     ],
     "correct_option": 1,
-    "explanation": "AdaBoost's core mechanism is its weakness: misclassified samples receive exponentially increasing weights in successive iterations. Mislabeled samples are *always* misclassified (because the correct label contradicts the true pattern) — so they accumulate disproportionately high weights across all iterations. Later base learners are forced to specialize on these impossible-to-fit samples, driving the model to overfit to noise rather than signal. Random forest uses bootstrap sampling + feature randomization to build diverse, uncorrelated trees. Averaging their predictions means noise in any individual tree's training sample is diluted across the ensemble, not amplified. Bagging dampens noise; boosting amplifies it.",
+    "explanation": "AdaBoost's core mechanism is its weakness: misclassified samples receive exponentially increasing weights in successive iterations. Mislabeled samples are *always* misclassified (because the correct label contradicts the true pattern) \u2014 so they accumulate disproportionately high weights across all iterations. Later base learners are forced to specialize on these impossible-to-fit samples, driving the model to overfit to noise rather than signal. Random forest uses bootstrap sampling + feature randomization to build diverse, uncorrelated trees. Averaging their predictions means noise in any individual tree's training sample is diluted across the ensemble, not amplified. Bagging dampens noise; boosting amplifies it.",
     "hints": [
       "Boosting focuses more attention on samples that keep being wrong. What happens when 'wrong' means the label is corrupted?",
       "Bagging averages many models; boosting sequences them. How does each strategy respond to outliers?"
     ],
-    "concepts": ["BOOSTING MECHANICS", "ENSEMBLE STRATEGY"]
+    "concepts": [
+      "BOOSTING MECHANICS",
+      "ENSEMBLE STRATEGY"
+    ]
   },
   {
     "id": 83015,
@@ -317,17 +359,20 @@
     "description": "For a gradient boosted model, you compute three types of feature importance: (1) split-based impurity (Gini) importance ranks `age` first; (2) permutation importance ranks `income` first; (3) SHAP values rank `credit_utilization` first. The three rankings disagree significantly. What is the most likely explanation and which importance measure should drive feature selection?",
     "options": [
       "The disagreements reflect random seed variance; run each method 10 times and average the rankings",
-      "Split-based importance is biased toward high-cardinality features; permutation importance can be unreliable with correlated features; SHAP provides consistent, locally-faithful attributions — use SHAP for feature selection",
+      "Split-based importance is biased toward high-cardinality features; permutation importance can be unreliable with correlated features; SHAP provides consistent, locally-faithful attributions \u2014 use SHAP for feature selection",
       "Permutation importance is always correct for tree models; use it for feature selection",
       "The disagreement means the model is unstable; retrain with different hyperparameters until the rankings converge"
     ],
     "correct_option": 1,
-    "explanation": "Each importance measure has a known bias: (1) Split-based (Gini) importance inflates the importance of high-cardinality or continuous features because they offer more split points — `age` may be selected frequently purely due to cardinality. (2) Permutation importance can misattribute importance when features are correlated — permuting `income` may give credit to `credit_utilization` if they're correlated, because the correlated feature partially compensates for the permuted one. (3) SHAP values are grounded in Shapley game theory, are locally consistent (sum to the model's output), and are additive — they are the most theoretically principled measure for feature attribution. For feature selection decisions, SHAP is the most reliable choice.",
+    "explanation": "Each importance measure has a known bias: (1) Split-based (Gini) importance inflates the importance of high-cardinality or continuous features because they offer more split points \u2014 `age` may be selected frequently purely due to cardinality. (2) Permutation importance can misattribute importance when features are correlated \u2014 permuting `income` may give credit to `credit_utilization` if they're correlated, because the correlated feature partially compensates for the permuted one. (3) SHAP values are grounded in Shapley game theory, are locally consistent (sum to the model's output), and are additive \u2014 they are the most theoretically principled measure for feature attribution. For feature selection decisions, SHAP is the most reliable choice.",
     "hints": [
-      "High-cardinality continuous features get more split opportunities in decision trees — does that make them genuinely more important?",
+      "High-cardinality continuous features get more split opportunities in decision trees \u2014 does that make them genuinely more important?",
       "When features are correlated, permuting one may not fully break its relationship with the target."
     ],
-    "concepts": ["FEATURE IMPORTANCE INTERPRETATION", "FEATURE SELECTION STRATEGY"]
+    "concepts": [
+      "FEATURE IMPORTANCE INTERPRETATION",
+      "FEATURE SELECTION STRATEGY"
+    ]
   },
   {
     "id": 83016,
@@ -336,20 +381,23 @@
     "type": "debug",
     "difficulty": "hard",
     "title": "Debugging a Regression Model with Heteroscedastic Residuals",
-    "description": "A linear regression model predicts housing prices. Plotting residuals vs fitted values shows a clear funnel shape: small predicted values have residuals clustered around ±5k, while large predicted values have residuals spread ±80k. The model's R² is 0.78 but confidence intervals on large-price predictions are unreliable. What is the diagnostic finding and correct fix?",
+    "description": "A linear regression model predicts housing prices. Plotting residuals vs fitted values shows a clear funnel shape: small predicted values have residuals clustered around \u00b15k, while large predicted values have residuals spread \u00b180k. The model's R\u00b2 is 0.78 but confidence intervals on large-price predictions are unreliable. What is the diagnostic finding and correct fix?",
     "options": [
       "The model has multicollinearity; apply ridge regression to stabilize coefficients",
-      "The residuals are heteroscedastic — variance increases with fitted values. Fix by log-transforming the target (price → log(price)) or using weighted least squares with weights proportional to 1/fitted²",
+      "The residuals are heteroscedastic \u2014 variance increases with fitted values. Fix by log-transforming the target (price \u2192 log(price)) or using weighted least squares with weights proportional to 1/fitted\u00b2",
       "The model is underfit; add polynomial features to capture the nonlinear relationship",
       "The residuals are autocorrelated; apply a time-series correction"
     ],
     "correct_option": 1,
-    "explanation": "A funnel shape in the residuals vs. fitted values plot is the diagnostic signature of heteroscedasticity — non-constant error variance. Linear regression assumes homoscedasticity (constant variance), so OLS coefficient estimates remain unbiased but standard errors and confidence intervals are wrong. For housing prices, prices are typically right-skewed and variance scales with value. Log-transforming the target (log(price)) often stabilizes variance because the percentage errors become more constant. Alternatively, weighted least squares (WLS) can downweight high-price observations where variance is high. Neither multicollinearity (VIF test) nor autocorrelation (Durbin-Watson) would produce this funnel pattern.",
+    "explanation": "A funnel shape in the residuals vs. fitted values plot is the diagnostic signature of heteroscedasticity \u2014 non-constant error variance. Linear regression assumes homoscedasticity (constant variance), so OLS coefficient estimates remain unbiased but standard errors and confidence intervals are wrong. For housing prices, prices are typically right-skewed and variance scales with value. Log-transforming the target (log(price)) often stabilizes variance because the percentage errors become more constant. Alternatively, weighted least squares (WLS) can downweight high-price observations where variance is high. Neither multicollinearity (VIF test) nor autocorrelation (Durbin-Watson) would produce this funnel pattern.",
     "hints": [
       "What shape in a residuals vs. fitted plot signals that variance is not constant across the range of predictions?",
       "If your residuals fan out as fitted values increase, what property of linear regression is being violated?"
     ],
-    "concepts": ["REGRESSION METRICS", "BIAS-VARIANCE TRADEOFF"]
+    "concepts": [
+      "REGRESSION METRICS",
+      "BIAS-VARIANCE TRADEOFF"
+    ]
   },
   {
     "id": 83017,
@@ -361,17 +409,20 @@
     "description": "A team is building a churn prediction model on 150 features (mix of numerical and categorical). They debate between: (A) gradient boosting (XGBoost), (B) a 5-layer deep neural network with batch norm and dropout, (C) a shallow neural network (2 hidden layers, 128 units each), and (D) a random forest. On 500k training samples, gradient boosting currently achieves RMSE=4.1. Which generalization is most accurate?",
     "options": [
       "Deep neural networks always outperform tree methods on large tabular datasets because they can learn arbitrary feature interactions",
-      "Gradient boosting (XGBoost) typically outperforms deep neural networks on tabular data because trees naturally handle mixed types, require less preprocessing, and are robust to outliers — the 500k sample count doesn't change this",
+      "Gradient boosting (XGBoost) typically outperforms deep neural networks on tabular data because trees naturally handle mixed types, require less preprocessing, and are robust to outliers \u2014 the 500k sample count doesn't change this",
       "Random forests are always preferred over gradient boosting for large datasets because they are trivially parallelizable",
       "Shallow neural networks with 2 layers outperform deep networks on tabular data because tabular patterns don't require depth"
     ],
     "correct_option": 1,
-    "explanation": "Despite the dominance of deep learning in vision and NLP, gradient boosting consistently outperforms deep neural networks on tabular data in practice. Multiple benchmarks confirm this. The reasons: tree-based methods handle mixed feature types natively (no scaling, encoding required), are robust to outliers and irrelevant features (feature subsampling), and their sequential boosting mechanism efficiently captures feature interactions without deep architecture. Deep networks on tabular data require extensive preprocessing, are sensitive to hyperparameters, and struggle with the irregular, non-smooth manifolds typical of tabular datasets. With 500k rows, this advantage holds — neural network wins emerge primarily at very large scale (millions of rows) and when features have strong spatial/sequential structure.",
+    "explanation": "Despite the dominance of deep learning in vision and NLP, gradient boosting consistently outperforms deep neural networks on tabular data in practice. Multiple benchmarks confirm this. The reasons: tree-based methods handle mixed feature types natively (no scaling, encoding required), are robust to outliers and irrelevant features (feature subsampling), and their sequential boosting mechanism efficiently captures feature interactions without deep architecture. Deep networks on tabular data require extensive preprocessing, are sensitive to hyperparameters, and struggle with the irregular, non-smooth manifolds typical of tabular datasets. With 500k rows, this advantage holds \u2014 neural network wins emerge primarily at very large scale (millions of rows) and when features have strong spatial/sequential structure.",
     "hints": [
       "Deep learning dominates unstructured data (images, text). Does that automatically generalize to tabular data?",
-      "What properties of tabular data — mixed types, outliers, irrelevant features — favor tree methods over neural networks?"
+      "What properties of tabular data \u2014 mixed types, outliers, irrelevant features \u2014 favor tree methods over neural networks?"
     ],
-    "concepts": ["NEURAL NETWORK DESIGN", "ENSEMBLE STRATEGY"]
+    "concepts": [
+      "NEURAL NETWORK DESIGN",
+      "ENSEMBLE STRATEGY"
+    ]
   },
   {
     "id": 83018,
@@ -382,40 +433,46 @@
     "title": "Training-Serving Skew from Feature Pipeline Divergence",
     "description": "A recommender model trained offline achieves 0.82 NDCG. In production, NDCG drops to 0.61. Debugging reveals: the training pipeline computes `user_avg_rating` as the mean of all historical ratings; the serving pipeline computes it as the mean of only the last 30 days of ratings. User activity patterns changed significantly in the past year. What type of failure is this and how should it be prevented?",
     "options": [
-      "This is concept drift — the user behavior has changed and the model needs retraining",
-      "This is training-serving skew caused by feature definition divergence — the same feature name masks two different computations, causing a distribution shift at serving time that the model has never seen",
-      "This is an overfitting problem — the model memorized all-time ratings rather than recent patterns",
-      "This is label noise — the NDCG metric is computed differently offline and online"
+      "This is concept drift \u2014 the user behavior has changed and the model needs retraining",
+      "This is training-serving skew caused by feature definition divergence \u2014 the same feature name masks two different computations, causing a distribution shift at serving time that the model has never seen",
+      "This is an overfitting problem \u2014 the model memorized all-time ratings rather than recent patterns",
+      "This is label noise \u2014 the NDCG metric is computed differently offline and online"
     ],
     "correct_option": 1,
-    "explanation": "Training-serving skew occurs when the feature computation at training time differs from feature computation at inference time. Here, `user_avg_rating` is the same feature name but different definitions: all-time mean (training) vs 30-day mean (serving). For users whose behavior shifted recently, the 30-day mean is systematically different from the all-time mean — the model has never seen the serving-time distribution of this feature. This is distinct from concept drift (the target relationship changing) and from overfitting (the model would still generalize if features were consistent). Prevention requires a feature store that enforces identical computation logic in both training and serving pipelines, with point-in-time correctness for time-windowed features.",
+    "explanation": "Training-serving skew occurs when the feature computation at training time differs from feature computation at inference time. Here, `user_avg_rating` is the same feature name but different definitions: all-time mean (training) vs 30-day mean (serving). For users whose behavior shifted recently, the 30-day mean is systematically different from the all-time mean \u2014 the model has never seen the serving-time distribution of this feature. This is distinct from concept drift (the target relationship changing) and from overfitting (the model would still generalize if features were consistent). Prevention requires a feature store that enforces identical computation logic in both training and serving pipelines, with point-in-time correctness for time-windowed features.",
     "hints": [
       "Same feature name, two different implementations. What does the model expect vs what does it receive?",
       "How do you ensure that what the model learned during training is what it receives during inference?"
     ],
-    "concepts": ["TRAINING-SERVING SKEW", "MODEL MONITORING"]
+    "concepts": [
+      "TRAINING-SERVING SKEW",
+      "MODEL MONITORING"
+    ]
   },
   {
     "id": 83019,
     "order": 19,
     "topic": "ml-fundamentals",
-    "type": "mcq",
+    "type": "conceptual",
     "difficulty": "hard",
     "title": "Clustering Evaluation When Ground Truth Is Unknown",
     "description": "You have clustered 50,000 customer records into 8 segments using k-means. Ground truth labels don't exist. Your team proposes evaluating using: (A) silhouette score, (B) Davies-Bouldin index, (C) inertia (within-cluster sum of squares), and (D) visual inspection of a 2D UMAP projection. A stakeholder asks which combination provides the most complete picture of cluster quality. What should you recommend?",
     "options": [
-      "Inertia alone — it is the objective k-means minimizes, so it directly measures solution quality",
-      "Silhouette score + Davies-Bouldin index together — both are internal validity metrics measuring cohesion and separation but from complementary perspectives; UMAP is useful but reflects dimensionality reduction quality, not true cluster structure",
-      "UMAP visual inspection + silhouette — visual inspection validates what metrics might miss and is essential for high-dimensional data",
-      "All four equally — combining multiple metrics always gives a more complete picture than any subset"
+      "Inertia alone \u2014 it is the objective k-means minimizes, so it directly measures solution quality",
+      "Silhouette score + Davies-Bouldin index together \u2014 both are internal validity metrics measuring cohesion and separation but from complementary perspectives; UMAP is useful but reflects dimensionality reduction quality, not true cluster structure",
+      "UMAP visual inspection + silhouette \u2014 visual inspection validates what metrics might miss and is essential for high-dimensional data",
+      "All four equally \u2014 combining multiple metrics always gives a more complete picture than any subset"
     ],
     "correct_option": 1,
-    "explanation": "Silhouette score (cohesion vs separation, range -1 to 1; higher is better) and Davies-Bouldin index (inter-cluster distance / intra-cluster scatter ratio; lower is better) are complementary internal validity indices that measure different aspects of cluster quality without requiring ground truth. Using both catches cases where one might be misleadingly favorable. Inertia always decreases with more clusters (not useful alone) and rewards k-means' specific objective — a model that perfectly minimizes inertia may still produce meaningless segments. UMAP projections reflect the quality of the 2D embedding, not the 50-dimensional cluster structure — visual separation in UMAP doesn't guarantee cluster validity in the original space. Silhouette + Davies-Bouldin is the most rigorous combination.",
+    "explanation": "Silhouette score (cohesion vs separation, range -1 to 1; higher is better) and Davies-Bouldin index (inter-cluster distance / intra-cluster scatter ratio; lower is better) are complementary internal validity indices that measure different aspects of cluster quality without requiring ground truth. Using both catches cases where one might be misleadingly favorable. Inertia always decreases with more clusters (not useful alone) and rewards k-means' specific objective \u2014 a model that perfectly minimizes inertia may still produce meaningless segments. UMAP projections reflect the quality of the 2D embedding, not the 50-dimensional cluster structure \u2014 visual separation in UMAP doesn't guarantee cluster validity in the original space. Silhouette + Davies-Bouldin is the most rigorous combination.",
     "hints": [
-      "Inertia decreases monotonically with k — does a lower inertia always mean better clusters?",
-      "UMAP is a dimensionality reduction tool — do 2D projections faithfully preserve the full high-dimensional structure?"
+      "Inertia decreases monotonically with k \u2014 does a lower inertia always mean better clusters?",
+      "UMAP is a dimensionality reduction tool \u2014 do 2D projections faithfully preserve the full high-dimensional structure?"
     ],
-    "concepts": ["CLUSTERING EVALUATION", "DIMENSIONALITY REDUCTION"]
+    "concepts": [
+      "CLUSTERING EVALUATION",
+      "DIMENSIONALITY REDUCTION"
+    ]
   },
   {
     "id": 83020,
@@ -426,18 +483,21 @@
     "title": "Class Imbalance in Production: When SMOTE Hurts",
     "description": "A fraud detection model is trained on 1% fraud / 99% legitimate transactions. A data scientist applies SMOTE to the full dataset before splitting into train and test, achieving 0.88 AUC. Another applies SMOTE only to the training set after the split, yielding 0.83 AUC. A third trains without SMOTE but adjusts the classification threshold, achieving 0.85 AUC. Which is the most valid evaluation setup and what does the AUC difference between approaches 1 and 2 represent?",
     "options": [
-      "Approach 1 is most valid — using all available data for SMOTE maximizes synthetic sample quality",
-      "Approach 2 is most valid — SMOTE applied before splitting leaks synthetic samples derived from test-set observations into the training set; the 0.05 AUC gap measures this leakage",
-      "Approach 3 is most valid — threshold adjustment doesn't change the model, only the operating point, making it the cleanest experiment",
+      "Approach 1 is most valid \u2014 using all available data for SMOTE maximizes synthetic sample quality",
+      "Approach 2 is most valid \u2014 SMOTE applied before splitting leaks synthetic samples derived from test-set observations into the training set; the 0.05 AUC gap measures this leakage",
+      "Approach 3 is most valid \u2014 threshold adjustment doesn't change the model, only the operating point, making it the cleanest experiment",
       "All three are equally valid evaluation setups; AUC differences reflect model variance, not methodology"
     ],
     "correct_option": 1,
-    "explanation": "Applying SMOTE before the train-test split is a form of data leakage. SMOTE generates synthetic minority samples by interpolating between real samples — if test-set samples participate in generating SMOTE points that end up in the training set, the model has seen information derived from the test set. This inflates the AUC from 0.83 to 0.88. Approach 2 is correct: SMOTE must be fit on training data only and applied to training data only, with the test set remaining pristine to simulate real-world evaluation. Approach 3 (threshold adjustment) is a valid production strategy but doesn't change the AUC, so comparing it to the other two on AUC is apples-to-oranges.",
+    "explanation": "Applying SMOTE before the train-test split is a form of data leakage. SMOTE generates synthetic minority samples by interpolating between real samples \u2014 if test-set samples participate in generating SMOTE points that end up in the training set, the model has seen information derived from the test set. This inflates the AUC from 0.83 to 0.88. Approach 2 is correct: SMOTE must be fit on training data only and applied to training data only, with the test set remaining pristine to simulate real-world evaluation. Approach 3 (threshold adjustment) is a valid production strategy but doesn't change the AUC, so comparing it to the other two on AUC is apples-to-oranges.",
     "hints": [
       "SMOTE interpolates between real samples. If test samples contribute to synthetic training samples, is the test set truly unseen?",
       "Where in the pipeline should any data augmentation technique be applied to preserve evaluation validity?"
     ],
-    "concepts": ["CLASS IMBALANCE HANDLING", "DATA LEAKAGE DETECTION"]
+    "concepts": [
+      "CLASS IMBALANCE HANDLING",
+      "DATA LEAKAGE DETECTION"
+    ]
   },
   {
     "id": 83021,
@@ -448,40 +508,46 @@
     "title": "Selecting Features Under Multicollinearity",
     "description": "A regression model uses 12 features. VIF analysis reveals that `household_income`, `individual_income`, and `net_worth` all have VIF > 10, indicating severe multicollinearity. Removing all three degrades RMSE from 4.2 to 5.8. Keeping all three gives unstable coefficients (large standard errors). Your team proposes: (A) keep all three and accept coefficient instability, (B) keep only `net_worth`, (C) apply PCA to the three features and use the first principal component, (D) apply ridge regression to handle multicollinearity without dropping features. Which approach best preserves predictive power while addressing the instability?",
     "options": [
-      "Approach B — keeping only the highest-level aggregation reduces redundancy while preserving the most information",
-      "Approach A — multicollinearity inflates standard errors but OLS predictions remain unbiased, so instability is acceptable",
-      "Approach D — ridge regression adds L2 penalty that stabilizes coefficients by distributing weight across correlated features, preserving the predictive signal of all three variables without requiring manual selection or dimensionality reduction",
-      "Approach C — PCA extracts the maximum variance direction, which is more informative than any individual feature"
+      "Approach B \u2014 keeping only the highest-level aggregation reduces redundancy while preserving the most information",
+      "Approach A \u2014 multicollinearity inflates standard errors but OLS predictions remain unbiased, so instability is acceptable",
+      "Approach D \u2014 ridge regression adds L2 penalty that stabilizes coefficients by distributing weight across correlated features, preserving the predictive signal of all three variables without requiring manual selection or dimensionality reduction",
+      "Approach C \u2014 PCA extracts the maximum variance direction, which is more informative than any individual feature"
     ],
     "correct_option": 2,
-    "explanation": "Ridge regression (L2 regularization) directly addresses multicollinearity. By adding λ∑β² to the loss, it constrains the magnitude of all coefficients, distributing the coefficient mass across correlated features rather than allowing them to take extreme, canceling values. The resulting coefficients are biased but have much lower variance (the bias-variance tradeoff in action) — and predictions improve. Approach A keeps the instability. Approach B throws away signal (RMSE worsens significantly). Approach C works but discards interpretability and may not perfectly capture the features' individual relationships with the target. Ridge is the principled solution: it exploits all three correlated features while taming coefficient instability.",
+    "explanation": "Ridge regression (L2 regularization) directly addresses multicollinearity. By adding \u03bb\u2211\u03b2\u00b2 to the loss, it constrains the magnitude of all coefficients, distributing the coefficient mass across correlated features rather than allowing them to take extreme, canceling values. The resulting coefficients are biased but have much lower variance (the bias-variance tradeoff in action) \u2014 and predictions improve. Approach A keeps the instability. Approach B throws away signal (RMSE worsens significantly). Approach C works but discards interpretability and may not perfectly capture the features' individual relationships with the target. Ridge is the principled solution: it exploits all three correlated features while taming coefficient instability.",
     "hints": [
       "Multicollinearity inflates coefficient variance but doesn't bias predictions. What regularizer directly penalizes large coefficients?",
-      "L2 regularization doesn't zero out features — it spreads weight across them. How does that help with correlated features?"
+      "L2 regularization doesn't zero out features \u2014 it spreads weight across them. How does that help with correlated features?"
     ],
-    "concepts": ["REGULARIZATION EFFECT", "FEATURE SELECTION STRATEGY"]
+    "concepts": [
+      "REGULARIZATION EFFECT",
+      "FEATURE SELECTION STRATEGY"
+    ]
   },
   {
     "id": 83022,
     "order": 22,
     "topic": "ml-fundamentals",
-    "type": "mcq",
+    "type": "conceptual",
     "difficulty": "hard",
     "title": "Model Deployment Constraints: Latency vs Accuracy",
     "description": "A recommendation system must return results in under 20ms at p99. Your best model (transformer-based) achieves NDCG@10 of 0.84 but has p99 latency of 85ms. A gradient boosted model achieves NDCG@10 of 0.76 but p99 latency of 12ms. You also explore: (A) model distillation into a smaller transformer, (B) approximate nearest neighbor search with a precomputed embedding index, (C) serving the full transformer with GPU batching. Which strategy most likely achieves both the 20ms SLA and the highest possible NDCG?",
     "options": [
-      "Strategy C — GPU batching amortizes the transformer inference cost and can bring p99 below 20ms without sacrificing NDCG",
-      "Strategy B — precomputing user and item embeddings offline allows online serving to be pure approximate nearest neighbor lookup (sub-millisecond) while retaining the representation quality of the full transformer",
-      "Strategy A — knowledge distillation preserves most of the transformer's quality in a smaller model that is faster to inference",
-      "Deploy the gradient boosted model — operational constraints override model quality; NDCG differences are rarely user-perceptible"
+      "Strategy C \u2014 GPU batching amortizes the transformer inference cost and can bring p99 below 20ms without sacrificing NDCG",
+      "Strategy B \u2014 precomputing user and item embeddings offline allows online serving to be pure approximate nearest neighbor lookup (sub-millisecond) while retaining the representation quality of the full transformer",
+      "Strategy A \u2014 knowledge distillation preserves most of the transformer's quality in a smaller model that is faster to inference",
+      "Deploy the gradient boosted model \u2014 operational constraints override model quality; NDCG differences are rarely user-perceptible"
     ],
     "correct_option": 1,
-    "explanation": "Strategy B (two-tower embedding + approximate nearest neighbor retrieval) is the canonical solution to this problem at scale. The key insight: compute user and item embeddings offline using the full transformer; at serving time, only a fast ANN lookup (e.g., FAISS, ScaNN) is needed — this runs in sub-millisecond time. You get the representation quality of the full transformer (NDCG close to 0.84) with the serving latency of a lookup table. Strategy C (GPU batching) can help but typically can't get transformer inference from 85ms to 20ms at p99 without significantly different hardware. Strategy A (distillation) sacrifices some quality for speed and doesn't fully resolve the latency problem. Strategy D is a last resort.",
+    "explanation": "Strategy B (two-tower embedding + approximate nearest neighbor retrieval) is the canonical solution to this problem at scale. The key insight: compute user and item embeddings offline using the full transformer; at serving time, only a fast ANN lookup (e.g., FAISS, ScaNN) is needed \u2014 this runs in sub-millisecond time. You get the representation quality of the full transformer (NDCG close to 0.84) with the serving latency of a lookup table. Strategy C (GPU batching) can help but typically can't get transformer inference from 85ms to 20ms at p99 without significantly different hardware. Strategy A (distillation) sacrifices some quality for speed and doesn't fully resolve the latency problem. Strategy D is a last resort.",
     "hints": [
       "What if the expensive part (transformer inference) could be done offline, not at request time?",
       "Separating representation learning (offline) from retrieval (online) is a common production ML pattern."
     ],
-    "concepts": ["DEPLOYMENT CONSTRAINTS", "MODEL MONITORING"]
+    "concepts": [
+      "DEPLOYMENT CONSTRAINTS",
+      "MODEL MONITORING"
+    ]
   },
   {
     "id": 83023,
@@ -492,18 +558,21 @@
     "title": "Hyperparameter Tuning: Grid Search vs Bayesian Optimization",
     "description": "You need to tune 8 hyperparameters for a gradient boosted model: learning_rate (log-scale), n_estimators, max_depth, min_child_weight, subsample, colsample_bytree, gamma, and reg_lambda. Each model evaluation takes 4 minutes. Your compute budget is 48 hours. Which tuning strategy is most appropriate and why?",
     "options": [
-      "Grid search with 3 values per parameter — 3^8 = 6,561 evaluations provides exhaustive coverage of the space",
-      "Random search with 500 iterations — random search in high-dimensional spaces outperforms grid search because it avoids the grid's alignment bias and explores more unique values per dimension",
-      "Bayesian optimization (e.g., TPE or Gaussian Process) with ~700 iterations — it models the objective function surface, prioritizing regions likely to improve the metric, which is more sample-efficient than random search",
-      "Manual tuning by a domain expert — hyperparameter tuning tools are overkill for 8 parameters"
+      "Grid search with 3 values per parameter \u2014 3^8 = 6,561 evaluations provides exhaustive coverage of the space",
+      "Random search with 500 iterations \u2014 random search in high-dimensional spaces outperforms grid search because it avoids the grid's alignment bias and explores more unique values per dimension",
+      "Bayesian optimization (e.g., TPE or Gaussian Process) with ~700 iterations \u2014 it models the objective function surface, prioritizing regions likely to improve the metric, which is more sample-efficient than random search",
+      "Manual tuning by a domain expert \u2014 hyperparameter tuning tools are overkill for 8 parameters"
     ],
     "correct_option": 2,
-    "explanation": "With 8 hyperparameters and 4-minute evaluations in a 48-hour budget, you have ~720 evaluations available. Grid search with 3 values/parameter requires 6,561 evaluations — far exceeds budget. Random search is better than grid search (the Bergstra & Bengio insight: grid search wastes budget on redundant values along dimensions that don't matter), but it ignores information from previous evaluations. Bayesian optimization builds a surrogate model of the objective function and uses it to select the next point most likely to improve. With ~700 evaluations in a complex 8D space where learning_rate dominates and interactions exist, TPE-based Bayesian optimization (used in Optuna, Hyperopt) typically finds better configurations than random search in the same budget.",
+    "explanation": "With 8 hyperparameters and 4-minute evaluations in a 48-hour budget, you have ~720 evaluations available. Grid search with 3 values/parameter requires 6,561 evaluations \u2014 far exceeds budget. Random search is better than grid search (the Bergstra & Bengio insight: grid search wastes budget on redundant values along dimensions that don't matter), but it ignores information from previous evaluations. Bayesian optimization builds a surrogate model of the objective function and uses it to select the next point most likely to improve. With ~700 evaluations in a complex 8D space where learning_rate dominates and interactions exist, TPE-based Bayesian optimization (used in Optuna, Hyperopt) typically finds better configurations than random search in the same budget.",
     "hints": [
       "Grid search: 3^8 = 6,561 evaluations. At 4 minutes each, how many hours is that?",
       "Bayesian optimization uses past evaluations to guide future ones. How does that change search efficiency?"
     ],
-    "concepts": ["HYPERPARAMETER SENSITIVITY", "CROSS-VALIDATION DESIGN"]
+    "concepts": [
+      "HYPERPARAMETER SENSITIVITY",
+      "CROSS-VALIDATION DESIGN"
+    ]
   },
   {
     "id": 83024,
@@ -512,7 +581,7 @@
     "type": "scenario",
     "difficulty": "hard",
     "title": "Evaluating a Model Under Distribution Shift",
-    "description": "A model was trained on data from January–August 2023. Your evaluation holdout is September–October 2023. The model achieves 0.85 AUC on the holdout. In November–December 2023 (after deployment), AUC drops to 0.71. Your monitoring shows the input feature distributions in November–December are statistically different from September–October (PSI > 0.25 on 4 key features). What is the correct interpretation and next action?",
+    "description": "A model was trained on data from January\u2013August 2023. Your evaluation holdout is September\u2013October 2023. The model achieves 0.85 AUC on the holdout. In November\u2013December 2023 (after deployment), AUC drops to 0.71. Your monitoring shows the input feature distributions in November\u2013December are statistically different from September\u2013October (PSI > 0.25 on 4 key features). What is the correct interpretation and next action?",
     "options": [
       "The model is overfitting; retrain with more regularization",
       "The evaluation holdout was too easy; use a harder test set next time",
@@ -520,12 +589,15 @@
       "The PSI threshold of 0.25 is too strict; recalibrate the monitoring thresholds to avoid false alarms"
     ],
     "correct_option": 2,
-    "explanation": "PSI (Population Stability Index) > 0.2 is the standard threshold for significant distribution shift. With PSI > 0.25 on 4 features coinciding with a 14-point AUC drop, this is covariate shift — the input feature distribution has changed, even if the target relationship hasn't. The immediate diagnostic is: (1) identify which 4 features drifted and why (data pipeline issue? real-world behavior change?); (2) measure whether the model's predictions for the new distribution are systematically off (model degradation) or whether the drift will self-correct (seasonal, pipeline transient); (3) decide between partial retrain (add recent data), full retrain, or feature engineering to make the model robust to the shifted features. PSI thresholds are empirically validated and shouldn't be lowered to make alerts go away.",
+    "explanation": "PSI (Population Stability Index) > 0.2 is the standard threshold for significant distribution shift. With PSI > 0.25 on 4 features coinciding with a 14-point AUC drop, this is covariate shift \u2014 the input feature distribution has changed, even if the target relationship hasn't. The immediate diagnostic is: (1) identify which 4 features drifted and why (data pipeline issue? real-world behavior change?); (2) measure whether the model's predictions for the new distribution are systematically off (model degradation) or whether the drift will self-correct (seasonal, pipeline transient); (3) decide between partial retrain (add recent data), full retrain, or feature engineering to make the model robust to the shifted features. PSI thresholds are empirically validated and shouldn't be lowered to make alerts go away.",
     "hints": [
       "PSI > 0.25 on 4 features means those features look very different from what the model was trained on.",
       "Covariate shift = input distribution changes; concept drift = relationship between inputs and output changes. Which is signaled by feature PSI?"
     ],
-    "concepts": ["MODEL MONITORING", "TRAINING-SERVING SKEW"]
+    "concepts": [
+      "MODEL MONITORING",
+      "TRAINING-SERVING SKEW"
+    ]
   },
   {
     "id": 83025,
@@ -534,20 +606,23 @@
     "type": "scenario",
     "difficulty": "hard",
     "title": "Loss Function Selection for Skewed Regression Targets",
-    "description": "You are training a regression model to predict delivery times. The target distribution is right-skewed: 80% of deliveries are 20–40 minutes, but 20% are 60–180 minutes (rare long deliveries due to weather, traffic). You care more about not underestimating long delivery times than about symmetric error on typical deliveries. Which loss function is most appropriate and why?",
+    "description": "You are training a regression model to predict delivery times. The target distribution is right-skewed: 80% of deliveries are 20\u201340 minutes, but 20% are 60\u2013180 minutes (rare long deliveries due to weather, traffic). You care more about not underestimating long delivery times than about symmetric error on typical deliveries. Which loss function is most appropriate and why?",
     "options": [
-      "MSE (mean squared error) — it penalizes large errors heavily through squaring, which focuses the model on the long-tail outliers",
-      "MAE (mean absolute error) — it is robust to outliers and treats all errors symmetrically, which is fair for skewed distributions",
-      "Quantile loss targeting the 80th or 90th percentile — it allows the model to predict upper-bound delivery times, systematically overestimating to avoid underprediction of long deliveries",
-      "Huber loss — it balances MSE's sensitivity to large errors with MAE's robustness, giving the best of both"
+      "MSE (mean squared error) \u2014 it penalizes large errors heavily through squaring, which focuses the model on the long-tail outliers",
+      "MAE (mean absolute error) \u2014 it is robust to outliers and treats all errors symmetrically, which is fair for skewed distributions",
+      "Quantile loss targeting the 80th or 90th percentile \u2014 it allows the model to predict upper-bound delivery times, systematically overestimating to avoid underprediction of long deliveries",
+      "Huber loss \u2014 it balances MSE's sensitivity to large errors with MAE's robustness, giving the best of both"
     ],
     "correct_option": 2,
-    "explanation": "MSE penalizes large errors heavily but symmetrically — it doesn't encode the asymmetric preference (underestimating long deliveries is worse than overestimating). MAE is symmetric and median-targeting. Huber is a blend but still symmetric. Quantile loss (also called pinball loss) directly encodes the asymmetric preference: at the 80th or 90th percentile, the model learns to predict values that are exceeded by the target only 10–20% of the time. This means predictions are conservative upper-bound estimates — exactly what's needed when underpredicting a long delivery causes a bad customer experience. For right-skewed targets where one direction of error costs more, quantile regression is the principled choice.",
+    "explanation": "MSE penalizes large errors heavily but symmetrically \u2014 it doesn't encode the asymmetric preference (underestimating long deliveries is worse than overestimating). MAE is symmetric and median-targeting. Huber is a blend but still symmetric. Quantile loss (also called pinball loss) directly encodes the asymmetric preference: at the 80th or 90th percentile, the model learns to predict values that are exceeded by the target only 10\u201320% of the time. This means predictions are conservative upper-bound estimates \u2014 exactly what's needed when underpredicting a long delivery causes a bad customer experience. For right-skewed targets where one direction of error costs more, quantile regression is the principled choice.",
     "hints": [
-      "MSE, MAE, and Huber are all symmetric — they penalize overestimation and underestimation equally.",
-      "What if you want a model that's *deliberately* pessimistic — predicting the 90th percentile delivery time rather than the median?"
+      "MSE, MAE, and Huber are all symmetric \u2014 they penalize overestimation and underestimation equally.",
+      "What if you want a model that's *deliberately* pessimistic \u2014 predicting the 90th percentile delivery time rather than the median?"
     ],
-    "concepts": ["LOSS FUNCTION SELECTION", "REGRESSION METRICS"]
+    "concepts": [
+      "LOSS FUNCTION SELECTION",
+      "REGRESSION METRICS"
+    ]
   },
   {
     "id": 83026,
@@ -559,18 +634,21 @@
     "title": "Diagnosing Catastrophic Forgetting in Continual Learning",
     "description": "A text classification model is deployed and periodically retrained on new data batches to adapt to changing language patterns. After retraining on batch 5 (new slang and terminology), the model's accuracy on batch 1 topics drops from 89% to 61%. Accuracy on batch 5 topics is 91%. This phenomenon is called catastrophic forgetting. Which mitigation strategy is most appropriate without full retraining from scratch?",
     "options": [
-      "Increase the learning rate for batch 5 training — faster adaptation prevents forgetting by converging faster",
-      "Use elastic weight consolidation (EWC) or replay memory — EWC constrains parameter updates for weights critical to previous tasks; replay mixes old samples into new training batches to maintain performance across all batches",
-      "Use a separate model for each batch and ensemble at inference time — catastrophic forgetting only affects single models",
-      "Reduce model capacity (fewer parameters) — smaller models are more robust to forgetting because they have less to forget"
+      "Increase the learning rate for batch 5 training \u2014 faster adaptation prevents forgetting by converging faster",
+      "Use elastic weight consolidation (EWC) or replay memory \u2014 EWC constrains parameter updates for weights critical to previous tasks; replay mixes old samples into new training batches to maintain performance across all batches",
+      "Use a separate model for each batch and ensemble at inference time \u2014 catastrophic forgetting only affects single models",
+      "Reduce model capacity (fewer parameters) \u2014 smaller models are more robust to forgetting because they have less to forget"
     ],
     "correct_option": 1,
-    "explanation": "Catastrophic forgetting occurs when gradient updates for new data overwrite the parameter configurations learned for old data. EWC (Elastic Weight Consolidation) mitigates this by computing a Fisher information matrix after each task to identify which weights were most important, then adding a regularization penalty that constrains updates to those weights during subsequent training. Replay memory (experience replay) maintains a buffer of representative samples from previous batches and mixes them into new training mini-batches — the model sees both old and new patterns simultaneously. These are complementary: EWC is parameter-space regularization; replay is data-space regularization. A higher learning rate worsens forgetting. Separate models per batch are impractical at scale and miss cross-batch transfer.",
+    "explanation": "Catastrophic forgetting occurs when gradient updates for new data overwrite the parameter configurations learned for old data. EWC (Elastic Weight Consolidation) mitigates this by computing a Fisher information matrix after each task to identify which weights were most important, then adding a regularization penalty that constrains updates to those weights during subsequent training. Replay memory (experience replay) maintains a buffer of representative samples from previous batches and mixes them into new training mini-batches \u2014 the model sees both old and new patterns simultaneously. These are complementary: EWC is parameter-space regularization; replay is data-space regularization. A higher learning rate worsens forgetting. Separate models per batch are impractical at scale and miss cross-batch transfer.",
     "hints": [
       "Catastrophic forgetting = new gradient updates overwrite old knowledge. What constrains gradient updates to preserve old task performance?",
-      "Experience replay is used in RL for a similar reason — what does it achieve in that context?"
+      "Experience replay is used in RL for a similar reason \u2014 what does it achieve in that context?"
     ],
-    "concepts": ["MODEL MONITORING", "GRADIENT PATHOLOGY"]
+    "concepts": [
+      "MODEL MONITORING",
+      "GRADIENT PATHOLOGY"
+    ]
   },
   {
     "id": 83027,
@@ -582,18 +660,21 @@
     "title": "Choosing Between Random Search and Hyperband for Hyperparameter Optimization",
     "description": "You need to tune a neural network with 10 hyperparameters. Each full training run takes 6 hours. You have a compute budget of 120 GPU-hours (~20 full runs). A colleague suggests Hyperband (successive halving). Another prefers Bayesian optimization. You note that early performance at epoch 5 is a reasonable predictor of final performance at epoch 100. Which strategy is most sample-efficient and why?",
     "options": [
-      "Bayesian optimization — it is always more sample-efficient than Hyperband for any number of hyperparameters",
-      "Hyperband — it exploits the early performance correlation: run many configurations for a few epochs, stop poor performers early, and allocate remaining budget to promising ones; this explores far more configurations than Bayesian optimization in the same wall-clock budget",
-      "Random search — 20 runs is enough to find a good hyperparameter set by chance",
-      "Grid search — it is the most thorough and with 20 runs you can cover 2 values per parameter (2^10 = 1024, so this is insufficient)"
+      "Bayesian optimization \u2014 it is always more sample-efficient than Hyperband for any number of hyperparameters",
+      "Hyperband \u2014 it exploits the early performance correlation: run many configurations for a few epochs, stop poor performers early, and allocate remaining budget to promising ones; this explores far more configurations than Bayesian optimization in the same wall-clock budget",
+      "Random search \u2014 20 runs is enough to find a good hyperparameter set by chance",
+      "Grid search \u2014 it is the most thorough and with 20 runs you can cover 2 values per parameter (2^10 = 1024, so this is insufficient)"
     ],
     "correct_option": 1,
-    "explanation": "Hyperband exploits the insight that early performance correlates with final performance — a configuration that performs poorly at epoch 5 is unlikely to become excellent at epoch 100. By running many configurations for a few epochs (cheap), eliminating the bottom half, and progressively allocating budget to survivors, Hyperband evaluates far more configurations than Bayesian optimization within the same total GPU-hours. With 6-hour runs and 120 GPU-hours, Bayesian optimization can evaluate ~20 configurations. Hyperband might evaluate 100+ configurations at 1/5 the epochs, then 50 at 2/5, and so on — exploring the space far more broadly. The condition 'early performance predicts final performance' is the key assumption enabling this. If that correlation is weak, Hyperband degrades toward random search.",
+    "explanation": "Hyperband exploits the insight that early performance correlates with final performance \u2014 a configuration that performs poorly at epoch 5 is unlikely to become excellent at epoch 100. By running many configurations for a few epochs (cheap), eliminating the bottom half, and progressively allocating budget to survivors, Hyperband evaluates far more configurations than Bayesian optimization within the same total GPU-hours. With 6-hour runs and 120 GPU-hours, Bayesian optimization can evaluate ~20 configurations. Hyperband might evaluate 100+ configurations at 1/5 the epochs, then 50 at 2/5, and so on \u2014 exploring the space far more broadly. The condition 'early performance predicts final performance' is the key assumption enabling this. If that correlation is weak, Hyperband degrades toward random search.",
     "hints": [
       "Hyperband's key assumption: short runs predict long runs. Does that hold here?",
       "With 120 GPU-hours and 6-hour full runs, how many configurations can Bayesian optimization evaluate? How many can Hyperband evaluate?"
     ],
-    "concepts": ["HYPERPARAMETER SENSITIVITY", "NEURAL NETWORK DESIGN"]
+    "concepts": [
+      "HYPERPARAMETER SENSITIVITY",
+      "NEURAL NETWORK DESIGN"
+    ]
   },
   {
     "id": 83028,
@@ -603,20 +684,23 @@
     "difficulty": "hard",
     "mock_only": true,
     "title": "Double Descent: Understanding the Modern Bias-Variance Regime",
-    "description": "You train neural networks of increasing parameter count on a fixed dataset. You observe: for models with fewer parameters than data points, test error decreases as model size grows (classical regime). At the interpolation threshold (parameters ≈ data points), test error peaks sharply. Beyond the interpolation threshold, test error decreases again as models grow larger (modern regime). This contradicts classical bias-variance theory. What explains the second descent?",
+    "description": "You train neural networks of increasing parameter count on a fixed dataset. You observe: for models with fewer parameters than data points, test error decreases as model size grows (classical regime). At the interpolation threshold (parameters \u2248 data points), test error peaks sharply. Beyond the interpolation threshold, test error decreases again as models grow larger (modern regime). This contradicts classical bias-variance theory. What explains the second descent?",
     "options": [
-      "The second descent is a measurement artifact — neural networks with more parameters are always overfitting, but the overfitting is too small to detect",
-      "In the over-parameterized regime, gradient descent finds minimum-norm interpolating solutions that generalize well because they impose implicit regularization through the optimization dynamics — the model memorizes training data but with the 'smoothest' possible function that fits it",
-      "Larger models have better representational capacity and simply learn the data distribution better — this confirms that more parameters always helps",
+      "The second descent is a measurement artifact \u2014 neural networks with more parameters are always overfitting, but the overfitting is too small to detect",
+      "In the over-parameterized regime, gradient descent finds minimum-norm interpolating solutions that generalize well because they impose implicit regularization through the optimization dynamics \u2014 the model memorizes training data but with the 'smoothest' possible function that fits it",
+      "Larger models have better representational capacity and simply learn the data distribution better \u2014 this confirms that more parameters always helps",
       "The second descent only occurs when explicit regularization (dropout, weight decay) is applied; without it, test error continues to rise"
     ],
     "correct_option": 1,
-    "explanation": "Classical bias-variance theory predicts a U-shaped test error curve: too few parameters → high bias; too many → high variance (overfitting). The double descent phenomenon shows a second regime. In the over-parameterized region (parameters >> data), there are infinitely many functions that perfectly fit the training data. Gradient descent with small learning rate converges to the minimum-norm solution — the simplest function (in L2 weight norm sense) that achieves zero training error. This minimum-norm solution tends to generalize because it avoids fitting high-frequency patterns that would require large weights. This implicit bias of gradient descent toward smooth solutions acts as regularization, even without explicit regularization terms. This was formalized in work by Belkin et al. (2019) and challenges the classical overfitting story.",
+    "explanation": "Classical bias-variance theory predicts a U-shaped test error curve: too few parameters \u2192 high bias; too many \u2192 high variance (overfitting). The double descent phenomenon shows a second regime. In the over-parameterized region (parameters >> data), there are infinitely many functions that perfectly fit the training data. Gradient descent with small learning rate converges to the minimum-norm solution \u2014 the simplest function (in L2 weight norm sense) that achieves zero training error. This minimum-norm solution tends to generalize because it avoids fitting high-frequency patterns that would require large weights. This implicit bias of gradient descent toward smooth solutions acts as regularization, even without explicit regularization terms. This was formalized in work by Belkin et al. (2019) and challenges the classical overfitting story.",
     "hints": [
       "When a model has more parameters than data points, many functions can fit the training set perfectly. Which one does gradient descent find?",
-      "The minimum-norm interpolating solution — why would a 'small-norm' function generalize better than an arbitrary interpolating function?"
+      "The minimum-norm interpolating solution \u2014 why would a 'small-norm' function generalize better than an arbitrary interpolating function?"
     ],
-    "concepts": ["BIAS-VARIANCE TRADEOFF", "NEURAL NETWORK DESIGN"]
+    "concepts": [
+      "BIAS-VARIANCE TRADEOFF",
+      "NEURAL NETWORK DESIGN"
+    ]
   },
   {
     "id": 83029,
@@ -628,18 +712,21 @@
     "title": "Causal vs Predictive Modeling: When the Distinction Matters",
     "description": "A marketing team wants to identify customers to target with a discount to prevent churn. They train a churn prediction model (AUC=0.88) and plan to target the top 10% of customers by predicted churn probability. A data scientist argues this is the wrong approach. What is the flaw and what should be done instead?",
     "options": [
-      "The model's AUC is too low — retrain to achieve 0.95+ before targeting",
+      "The model's AUC is too low \u2014 retrain to achieve 0.95+ before targeting",
       "Targeting high-predicted-churn customers with discounts conflates prediction with causation: customers who were going to churn anyway (and would have left regardless of treatment) dilute ROI; customers who would have stayed anyway waste discount budget. The correct approach is uplift modeling to estimate the causal effect of the discount on each customer's churn probability",
-      "The approach is correct — high churn probability customers are exactly the right targets for retention offers",
+      "The approach is correct \u2014 high churn probability customers are exactly the right targets for retention offers",
       "The flaw is targeting only 10%; expand to 25% to maximize coverage of true churners"
     ],
     "correct_option": 1,
-    "explanation": "This is the prediction vs causation distinction in a business context. A churn prediction model identifies *who will churn*, not *who will respond to treatment*. Four customer segments exist: (1) Sure things — churn regardless of discount (wasted spend); (2) Lost causes — won't churn regardless (don't need the discount); (3) Persuadables — churn without discount, stay with it (ideal targets); (4) Do not disturbs — would stay without discount but might churn due to the intervention itself. A prediction model mixes all four groups; a high churn score is dominated by sure-things (who are churning regardless). Uplift modeling estimates the *incremental* effect of treatment — the difference in churn probability with vs without the discount — identifying the Persuadables. This requires experimental data (past A/B tests) and models the causal impact, not just the prediction.",
+    "explanation": "This is the prediction vs causation distinction in a business context. A churn prediction model identifies *who will churn*, not *who will respond to treatment*. Four customer segments exist: (1) Sure things \u2014 churn regardless of discount (wasted spend); (2) Lost causes \u2014 won't churn regardless (don't need the discount); (3) Persuadables \u2014 churn without discount, stay with it (ideal targets); (4) Do not disturbs \u2014 would stay without discount but might churn due to the intervention itself. A prediction model mixes all four groups; a high churn score is dominated by sure-things (who are churning regardless). Uplift modeling estimates the *incremental* effect of treatment \u2014 the difference in churn probability with vs without the discount \u2014 identifying the Persuadables. This requires experimental data (past A/B tests) and models the causal impact, not just the prediction.",
     "hints": [
-      "High predicted churn ≠ high likelihood of being saved by a discount. What if they're going to leave no matter what?",
+      "High predicted churn \u2260 high likelihood of being saved by a discount. What if they're going to leave no matter what?",
       "What experiment would let you distinguish customers who respond to discounts from those who churn regardless?"
     ],
-    "concepts": ["DATA LEAKAGE DETECTION", "MODEL MONITORING"]
+    "concepts": [
+      "DATA LEAKAGE DETECTION",
+      "MODEL MONITORING"
+    ]
   },
   {
     "id": 83030,
@@ -649,20 +736,23 @@
     "difficulty": "hard",
     "mock_only": true,
     "title": "Embedding Space Drift in Production NLP Models",
-    "description": "A sentiment analysis model using a fixed pretrained BERT embedding (frozen, not fine-tuned) achieves 0.91 F1 at launch. Over 18 months, F1 degrades to 0.74. Monitoring shows input text distributions have shifted significantly — new product categories, industry jargon, and abbreviations dominate recent reviews. The embedding layer has not changed. What type of failure is this and what are the remediation options?",
+    "description": "A sentiment analysis model using a fixed pretrained BERT embedding (frozen, not fine-tuned) achieves 0.91 F1 at launch. Over 18 months, F1 degrades to 0.74. Monitoring shows input text distributions have shifted significantly \u2014 new product categories, industry jargon, and abbreviations dominate recent reviews. The embedding layer has not changed. What type of failure is this and what are the remediation options?",
     "options": [
-      "This is label drift — the definition of positive/negative sentiment has changed over 18 months",
+      "This is label drift \u2014 the definition of positive/negative sentiment has changed over 18 months",
       "This is embedding space mismatch: the frozen BERT embeddings were pretrained on general text corpora that don't represent the new domain vocabulary. Out-of-vocabulary tokens default to [UNK], degrading the classifier input. Remediation: fine-tune BERT on recent domain data or replace with a domain-adapted embedding model",
-      "This is model decay caused by the frozen weights — retrain the classifier head only to restore performance",
-      "This is data quality degradation — the review platform has attracted lower-quality text that no model can handle well"
+      "This is model decay caused by the frozen weights \u2014 retrain the classifier head only to restore performance",
+      "This is data quality degradation \u2014 the review platform has attracted lower-quality text that no model can handle well"
     ],
     "correct_option": 1,
-    "explanation": "Frozen pretrained embeddings represent a vocabulary and semantic space from the pretraining corpus. When domain vocabulary shifts significantly (new jargon, abbreviations, product categories), tokens appear that the embedding model either handles poorly or maps to [UNK]. The classifier head then receives degraded, noisy feature vectors — the embedding bottleneck. Retraining only the classifier head (on frozen embeddings) won't help because the degraded embeddings are the input. The fix requires updating the embedding layer: either fine-tuning BERT on recent domain-specific text (domain adaptation) or replacing it with a model pretrained on similar domain data. This is a form of training-serving skew — the text distribution at training time differs from the text at serving time, and the fixed embedding layer doesn't adapt.",
+    "explanation": "Frozen pretrained embeddings represent a vocabulary and semantic space from the pretraining corpus. When domain vocabulary shifts significantly (new jargon, abbreviations, product categories), tokens appear that the embedding model either handles poorly or maps to [UNK]. The classifier head then receives degraded, noisy feature vectors \u2014 the embedding bottleneck. Retraining only the classifier head (on frozen embeddings) won't help because the degraded embeddings are the input. The fix requires updating the embedding layer: either fine-tuning BERT on recent domain-specific text (domain adaptation) or replacing it with a model pretrained on similar domain data. This is a form of training-serving skew \u2014 the text distribution at training time differs from the text at serving time, and the fixed embedding layer doesn't adapt.",
     "hints": [
       "The embedding layer is frozen. What happens when it encounters words it was never trained on?",
       "Fine-tuning just the classifier head can't fix problems in its inputs. Where does the failure originate?"
     ],
-    "concepts": ["TRANSFER LEARNING STRATEGY", "TRAINING-SERVING SKEW"]
+    "concepts": [
+      "TRANSFER LEARNING STRATEGY",
+      "TRAINING-SERVING SKEW"
+    ]
   },
   {
     "id": 83031,
@@ -674,18 +764,21 @@
     "title": "Fairness vs Accuracy Tradeoff in Algorithmic Decision Making",
     "description": "A hiring model achieves 0.87 AUC overall. Disaggregated analysis reveals: group A (majority, 70% of data) has AUC=0.91; group B (minority, 30% of data) has AUC=0.79. The team proposes separate models per group to equalize AUC. A legal reviewer flags concerns about demographic-based decision boundaries. What is the correct framing of this tradeoff and what approach balances fairness with legal constraints?",
     "options": [
-      "Deploy the single model — overall AUC=0.87 is excellent and disaggregated AUC is not a legally recognized metric",
-      "Deploy separate models per group — equalized AUC is the fairest outcome regardless of legal constraints",
+      "Deploy the single model \u2014 overall AUC=0.87 is excellent and disaggregated AUC is not a legally recognized metric",
+      "Deploy separate models per group \u2014 equalized AUC is the fairest outcome regardless of legal constraints",
       "Conduct a fairness audit measuring multiple metrics (equalized odds, demographic parity, calibration by group); investigate root causes of the 12-point AUC gap (feature distribution? label quality? sample size?); if the gap stems from biased training data or features, address those root causes rather than applying separate models which may introduce their own disparate impact",
-      "Accept the gap as inherent — group B has 30% of samples so lower AUC is statistically expected"
+      "Accept the gap as inherent \u2014 group B has 30% of samples so lower AUC is statistically expected"
     ],
     "correct_option": 2,
-    "explanation": "The 12-point AUC gap signals potential disparate impact — the model is systematically less accurate for group B. The correct response is not to simply deploy separate models (which may violate equal treatment laws) or ignore the gap. A proper fairness audit should: (1) measure multiple fairness metrics — equalized odds (equal TPR/FPR), demographic parity (equal positive rate), calibration by group; (2) diagnose root causes — is group B underrepresented in training? Are the features measured less accurately for group B? Are labels biased? (3) Address root causes: collect more group B data, audit feature quality, recalibrate. Separate models can be legally problematic if they constitute explicit demographic segmentation in high-stakes contexts. The goal is a single model with equalized error rates, achieved through data and feature improvements.",
+    "explanation": "The 12-point AUC gap signals potential disparate impact \u2014 the model is systematically less accurate for group B. The correct response is not to simply deploy separate models (which may violate equal treatment laws) or ignore the gap. A proper fairness audit should: (1) measure multiple fairness metrics \u2014 equalized odds (equal TPR/FPR), demographic parity (equal positive rate), calibration by group; (2) diagnose root causes \u2014 is group B underrepresented in training? Are the features measured less accurately for group B? Are labels biased? (3) Address root causes: collect more group B data, audit feature quality, recalibrate. Separate models can be legally problematic if they constitute explicit demographic segmentation in high-stakes contexts. The goal is a single model with equalized error rates, achieved through data and feature improvements.",
     "hints": [
       "AUC gap of 12 points between groups signals the model performs worse for a protected group. What could cause this?",
-      "Separate models per demographic group — does equal accuracy guarantee fair treatment, or does it introduce other legal risks?"
+      "Separate models per demographic group \u2014 does equal accuracy guarantee fair treatment, or does it introduce other legal risks?"
     ],
-    "concepts": ["INTERPRETABILITY TRADEOFF", "CLASSIFICATION METRICS"]
+    "concepts": [
+      "INTERPRETABILITY TRADEOFF",
+      "CLASSIFICATION METRICS"
+    ]
   },
   {
     "id": 83032,
@@ -698,17 +791,20 @@
     "description": "You are training a multi-layer LSTM on sequence data. After 3 epochs, training loss suddenly jumps from 0.8 to 147.3 and stays elevated. Gradient norms before the explosion: [2.1, 1.8, 2.3, 1.9, 891.4]. The next mini-batch norms are all > 500. You add gradient clipping (max_norm=5.0) and the loss becomes stable. Why does gradient explosion occur in RNNs specifically, and why does clipping fix it without harming convergence?",
     "options": [
       "Gradient explosion occurs because RNNs have too many parameters; clipping reduces the effective parameter count",
-      "Gradient explosion in RNNs arises from repeated multiplication of the same weight matrix through time during backpropagation through time (BPTT) — if the spectral radius of the weight matrix > 1, gradients grow exponentially. Clipping rescales the gradient vector's magnitude without changing its direction, preventing parameter updates from overshooting while preserving the update direction",
+      "Gradient explosion in RNNs arises from repeated multiplication of the same weight matrix through time during backpropagation through time (BPTT) \u2014 if the spectral radius of the weight matrix > 1, gradients grow exponentially. Clipping rescales the gradient vector's magnitude without changing its direction, preventing parameter updates from overshooting while preserving the update direction",
       "Gradient explosion is caused by the activation function saturation; clipping prevents saturation by bounding activations",
       "Gradient explosion occurs only with poor weight initialization; clipping masks this bug rather than fixing it"
     ],
     "correct_option": 1,
-    "explanation": "In an LSTM/RNN, backpropagation through time (BPTT) computes gradients by repeatedly multiplying through the recurrent weight matrix W for each time step. If the largest singular value (spectral radius) of W is > 1, repeated matrix multiplication causes gradient magnitudes to grow exponentially with sequence length. A single bad mini-batch can produce an enormous gradient that catastrophically disrupts learned weights. Gradient clipping scales the entire gradient vector by max_norm/‖g‖ when ‖g‖ > max_norm, preserving the direction of the gradient update while bounding its magnitude. This means the optimizer still steps toward the loss minimum — just with a bounded step size. Unlike restricting learning rate, clipping is adaptive to the gradient scale and only activates when necessary.",
+    "explanation": "In an LSTM/RNN, backpropagation through time (BPTT) computes gradients by repeatedly multiplying through the recurrent weight matrix W for each time step. If the largest singular value (spectral radius) of W is > 1, repeated matrix multiplication causes gradient magnitudes to grow exponentially with sequence length. A single bad mini-batch can produce an enormous gradient that catastrophically disrupts learned weights. Gradient clipping scales the entire gradient vector by max_norm/\u2016g\u2016 when \u2016g\u2016 > max_norm, preserving the direction of the gradient update while bounding its magnitude. This means the optimizer still steps toward the loss minimum \u2014 just with a bounded step size. Unlike restricting learning rate, clipping is adaptive to the gradient scale and only activates when necessary.",
     "hints": [
       "In RNNs, gradients flow back through the same weight matrix at each time step. What happens when you multiply a matrix by itself 100 times if its eigenvalues > 1?",
       "Gradient clipping changes the magnitude but not the direction of the gradient. What does that preserve?"
     ],
-    "concepts": ["GRADIENT PATHOLOGY", "NEURAL NETWORK DESIGN"]
+    "concepts": [
+      "GRADIENT PATHOLOGY",
+      "NEURAL NETWORK DESIGN"
+    ]
   },
   {
     "id": 83033,
@@ -720,18 +816,21 @@
     "title": "Feature Store Architecture for Training-Serving Parity",
     "description": "A financial services ML platform has 15 models in production sharing many features (account age, transaction velocity, device fingerprint). Features are currently computed independently in: (A) offline batch pipelines for training, (B) real-time APIs for serving. A post-mortem reveals 3 incidents over 6 months caused by feature computation divergence between A and B. What architecture change eliminates this class of bug?",
     "options": [
-      "Rewrite all serving pipelines in Python to match the training pipeline's language — language differences cause most divergence bugs",
-      "Add more monitoring to detect divergence faster — architecture changes are expensive and the bugs are rare enough to handle reactively",
-      "Implement a feature store with a single feature computation definition per feature, shared by both the offline (training) and online (serving) retrieval paths — this enforces training-serving parity by construction",
-      "Separate features into training-only and serving-only groups — reducing shared features eliminates divergence risk"
+      "Rewrite all serving pipelines in Python to match the training pipeline's language \u2014 language differences cause most divergence bugs",
+      "Add more monitoring to detect divergence faster \u2014 architecture changes are expensive and the bugs are rare enough to handle reactively",
+      "Implement a feature store with a single feature computation definition per feature, shared by both the offline (training) and online (serving) retrieval paths \u2014 this enforces training-serving parity by construction",
+      "Separate features into training-only and serving-only groups \u2014 reducing shared features eliminates divergence risk"
     ],
     "correct_option": 2,
-    "explanation": "The root cause of training-serving skew incidents is that the same feature is defined twice — once for offline training and once for online serving — and the two implementations drift apart over time due to independent bug fixes, refactoring, or requirement changes. A feature store centralizes feature computation: each feature has a single, canonical definition (transformation logic, window size, imputation strategy) registered in the store. The offline training pipeline retrieves features from the same store (via historical point-in-time lookups), and the online serving API retrieves features from the same store (via real-time lookups). The computation is identical by construction, eliminating the class of divergence bugs entirely. Examples: Feast, Tecton, Hopsworks. Monitoring detects problems after they occur; a feature store prevents them.",
+    "explanation": "The root cause of training-serving skew incidents is that the same feature is defined twice \u2014 once for offline training and once for online serving \u2014 and the two implementations drift apart over time due to independent bug fixes, refactoring, or requirement changes. A feature store centralizes feature computation: each feature has a single, canonical definition (transformation logic, window size, imputation strategy) registered in the store. The offline training pipeline retrieves features from the same store (via historical point-in-time lookups), and the online serving API retrieves features from the same store (via real-time lookups). The computation is identical by construction, eliminating the class of divergence bugs entirely. Examples: Feast, Tecton, Hopsworks. Monitoring detects problems after they occur; a feature store prevents them.",
     "hints": [
       "Two independent implementations of the same feature will eventually diverge. What's the architectural solution to having one implementation?",
       "Point-in-time correctness in a feature store means training sees exactly what serving would have seen at that moment."
     ],
-    "concepts": ["TRAINING-SERVING SKEW", "DEPLOYMENT CONSTRAINTS"]
+    "concepts": [
+      "TRAINING-SERVING SKEW",
+      "DEPLOYMENT CONSTRAINTS"
+    ]
   },
   {
     "id": 83034,
@@ -743,18 +842,21 @@
     "title": "Handling Class Imbalance with Ensemble Methods",
     "description": "A fraud detection problem has 0.3% positive rate (3 fraud per 1000 transactions). You have 2 million training samples. You compare: (A) XGBoost with scale_pos_weight=333 (ratio of negatives to positives), (B) undersampling negatives to 10:1 ratio then training XGBoost without class weights, (C) BalancedBaggingClassifier (undersamples each tree's bootstrap sample to balance), (D) cost-sensitive learning where misclassification costs are set based on fraud vs legitimate transaction dollar values. Which approach(es) are most appropriate and what is the key distinction between them?",
     "options": [
-      "Approach A only — scale_pos_weight is the canonical solution for XGBoost class imbalance",
-      "Approach B only — undersampling is always preferable to overweighting because it reduces training time",
+      "Approach A only \u2014 scale_pos_weight is the canonical solution for XGBoost class imbalance",
+      "Approach B only \u2014 undersampling is always preferable to overweighting because it reduces training time",
       "Approaches A and D are most appropriate: A adjusts gradient weights within the existing framework; D incorporates domain knowledge about the actual cost of errors. B discards 99% of legitimate transaction data. C is a reasonable alternative that combines undersampling with ensemble diversity",
       "All four are equivalent; choose based on implementation ease"
     ],
     "correct_option": 2,
-    "explanation": "Scale_pos_weight (A) tells XGBoost to weight positive samples 333x more in gradient computations — equivalent to upsampling but without actually duplicating data. This is efficient and works well. Cost-sensitive learning (D) is the most principled approach for fraud: the actual business cost of a missed fraud ($5,000 loss) vs a false alert ($50 review cost) should directly inform the misclassification penalties, not an arbitrary weight derived from class ratios. Undersampling (B) discards 99.97% of legitimate transactions — valuable negative signal is thrown away; with 2 million samples you can afford to use all the data. BalancedBaggingClassifier (C) is a reasonable middle ground: undersamples within each bootstrap to balance while maintaining diversity across trees. The key insight: at 2 million samples, you don't need sampling tricks for capacity — you need the right objective that reflects business costs.",
+    "explanation": "Scale_pos_weight (A) tells XGBoost to weight positive samples 333x more in gradient computations \u2014 equivalent to upsampling but without actually duplicating data. This is efficient and works well. Cost-sensitive learning (D) is the most principled approach for fraud: the actual business cost of a missed fraud ($5,000 loss) vs a false alert ($50 review cost) should directly inform the misclassification penalties, not an arbitrary weight derived from class ratios. Undersampling (B) discards 99.97% of legitimate transactions \u2014 valuable negative signal is thrown away; with 2 million samples you can afford to use all the data. BalancedBaggingClassifier (C) is a reasonable middle ground: undersamples within each bootstrap to balance while maintaining diversity across trees. The key insight: at 2 million samples, you don't need sampling tricks for capacity \u2014 you need the right objective that reflects business costs.",
     "hints": [
       "With 2 million samples, is discarding 99% of the majority class really necessary for computational reasons?",
       "The class imbalance ratio (333:1) reflects frequency, not cost. Should cost and frequency be conflated?"
     ],
-    "concepts": ["CLASS IMBALANCE HANDLING", "ENSEMBLE STRATEGY"]
+    "concepts": [
+      "CLASS IMBALANCE HANDLING",
+      "ENSEMBLE STRATEGY"
+    ]
   },
   {
     "id": 83035,
@@ -767,17 +869,20 @@
     "description": "K-means is applied to a customer segmentation problem. The dataset has two clear natural clusters visible in 2D projection: one large, spherical cluster (5,000 points) and one elongated elliptical cluster (2,000 points). K-means with k=2 produces silhouette=0.42 and Davies-Bouldin=1.8 (mediocre). Gaussian Mixture Models (GMM) with k=2 produces silhouette=0.61 and Davies-Bouldin=0.9. Why does GMM outperform k-means here?",
     "options": [
       "GMM is always superior to k-means because it is a probabilistic model",
-      "K-means assumes spherical, equal-variance clusters and uses Euclidean distance to assign points to the nearest centroid. The elongated cluster violates the spherical assumption — k-means splits it incorrectly. GMM models each cluster as a multivariate Gaussian with its own covariance matrix, capturing elliptical cluster shapes",
+      "K-means assumes spherical, equal-variance clusters and uses Euclidean distance to assign points to the nearest centroid. The elongated cluster violates the spherical assumption \u2014 k-means splits it incorrectly. GMM models each cluster as a multivariate Gaussian with its own covariance matrix, capturing elliptical cluster shapes",
       "GMM outperforms because it uses more parameters and therefore fits the data better",
       "K-means failed because the clusters are imbalanced (5,000 vs 2,000 points); GMM handles imbalance natively"
     ],
     "correct_option": 1,
-    "explanation": "K-means minimizes within-cluster sum of squared Euclidean distances. This implicitly assumes clusters are spherical (equal variance in all directions) and similar in size. The elongated elliptical cluster has high variance along one axis — k-means interprets points at the elongated cluster's far ends as closer to the spherical cluster's centroid, incorrectly splitting the elliptical cluster. Gaussian Mixture Models fit a separate full covariance matrix per component, allowing each Gaussian to be oriented, scaled, and shaped arbitrarily. The elliptical cluster is naturally captured by a Gaussian with a diagonal/rotated covariance. This structural advantage explains the silhouette improvement (0.42 → 0.61). When data has non-spherical clusters, GMM is preferred. When clusters are spherical and k-means' assumptions hold, k-means is often sufficient and faster.",
+    "explanation": "K-means minimizes within-cluster sum of squared Euclidean distances. This implicitly assumes clusters are spherical (equal variance in all directions) and similar in size. The elongated elliptical cluster has high variance along one axis \u2014 k-means interprets points at the elongated cluster's far ends as closer to the spherical cluster's centroid, incorrectly splitting the elliptical cluster. Gaussian Mixture Models fit a separate full covariance matrix per component, allowing each Gaussian to be oriented, scaled, and shaped arbitrarily. The elliptical cluster is naturally captured by a Gaussian with a diagonal/rotated covariance. This structural advantage explains the silhouette improvement (0.42 \u2192 0.61). When data has non-spherical clusters, GMM is preferred. When clusters are spherical and k-means' assumptions hold, k-means is often sufficient and faster.",
     "hints": [
       "K-means assigns each point to the nearest centroid using Euclidean distance. What cluster shape does this implicitly assume?",
       "An elongated cluster means variance is high in one direction. Which algorithm can model directional variance?"
     ],
-    "concepts": ["CLUSTERING EVALUATION", "DIMENSIONALITY REDUCTION"]
+    "concepts": [
+      "CLUSTERING EVALUATION",
+      "DIMENSIONALITY REDUCTION"
+    ]
   },
   {
     "id": 83036,
@@ -789,18 +894,21 @@
     "title": "Model Monitoring: Choosing Between Data Drift and Concept Drift Alerts",
     "description": "Your production churn model has two monitoring alerts: (1) feature drift alert fires when PSI > 0.2 on any feature; (2) outcome drift alert fires when the predicted positive rate deviates > 15% from baseline. Over 3 months, alert 1 fires repeatedly (PSI on `tenure` and `monthly_charges` both > 0.25) but the model's business KPI (churn rate caught) holds steady. Alert 2 has never fired. What is the correct interpretation and action?",
     "options": [
-      "Alert 1 indicates model failure — feature drift always causes model degradation and the model must be retrained immediately",
-      "The combination suggests covariate shift (feature distributions changed) but the model's learned relationship between features and churn is stable — the model is adapting adequately. Investigate *why* tenure and monthly_charges shifted; retrain only if business KPI starts degrading or if the shift represents a structural change in the customer base",
+      "Alert 1 indicates model failure \u2014 feature drift always causes model degradation and the model must be retrained immediately",
+      "The combination suggests covariate shift (feature distributions changed) but the model's learned relationship between features and churn is stable \u2014 the model is adapting adequately. Investigate *why* tenure and monthly_charges shifted; retrain only if business KPI starts degrading or if the shift represents a structural change in the customer base",
       "Alert 2 not firing means there is no problem; disable alert 1 as a false positive",
       "Both alerts firing together is the only meaningful signal; a single alert is always noise"
     ],
     "correct_option": 1,
-    "explanation": "Feature drift (alert 1) signals that the input distribution has changed — the model receives feature values outside its training distribution. Concept drift (alert 2) signals that the feature-to-label relationship has changed. The combination here is interesting: features drifted but business outcomes held steady. This means the model is still learning the correct relationship from the shifted features — perhaps because the relationship between tenure/charges and churn is nonlinear but stable, or because the shift is within the model's learned manifold. The right response is not immediate retraining (the model is working) but investigation: Why did tenure and charges shift? Is it a data pipeline change, a pricing strategy change, or customer mix change? If structural, proactive retraining is warranted. If transient, monitor and wait. Only retrain when KPIs actually degrade.",
+    "explanation": "Feature drift (alert 1) signals that the input distribution has changed \u2014 the model receives feature values outside its training distribution. Concept drift (alert 2) signals that the feature-to-label relationship has changed. The combination here is interesting: features drifted but business outcomes held steady. This means the model is still learning the correct relationship from the shifted features \u2014 perhaps because the relationship between tenure/charges and churn is nonlinear but stable, or because the shift is within the model's learned manifold. The right response is not immediate retraining (the model is working) but investigation: Why did tenure and charges shift? Is it a data pipeline change, a pricing strategy change, or customer mix change? If structural, proactive retraining is warranted. If transient, monitor and wait. Only retrain when KPIs actually degrade.",
     "hints": [
       "Feature drift tells you the inputs changed. Concept drift tells you the input-output relationship changed. Which one actually breaks the model?",
       "If the business KPI is stable despite feature drift, what does that imply about the model's robustness to this particular shift?"
     ],
-    "concepts": ["MODEL MONITORING", "TRAINING-SERVING SKEW"]
+    "concepts": [
+      "MODEL MONITORING",
+      "TRAINING-SERVING SKEW"
+    ]
   },
   {
     "id": 83037,
@@ -810,20 +918,23 @@
     "difficulty": "hard",
     "mock_only": true,
     "title": "Optimizing the Precision-Recall Tradeoff for High-Volume Decisions",
-    "description": "A content moderation model flags potentially violating posts for human review. At the default threshold (0.5), precision=0.72 and recall=0.61. The review team can handle 5,000 posts/day. Current volume: 8,000 flagged/day. By lowering the threshold to 0.3, recall increases to 0.84 but flagged volume rises to 14,000/day — well above capacity. A senior PM asks: what is the correct framework for selecting the threshold given the capacity constraint?",
+    "description": "A content moderation model flags potentially violating posts for human review. At the default threshold (0.5), precision=0.72 and recall=0.61. The review team can handle 5,000 posts/day. Current volume: 8,000 flagged/day. By lowering the threshold to 0.3, recall increases to 0.84 but flagged volume rises to 14,000/day \u2014 well above capacity. A senior PM asks: what is the correct framework for selecting the threshold given the capacity constraint?",
     "options": [
-      "Always optimize for maximum recall regardless of capacity — missing content violations is worse than overwhelming reviewers",
-      "Always optimize for maximum precision — reviewers should only see items the model is very confident about",
-      "Set the threshold to the value that maximizes precision subject to the constraint that flagged volume ≤ 5,000/day — this frames threshold selection as a constrained optimization problem where operational capacity is the binding constraint, not an arbitrary precision/recall target",
-      "Use the default threshold (0.5) — vendor-default thresholds are calibrated for general use cases"
+      "Always optimize for maximum recall regardless of capacity \u2014 missing content violations is worse than overwhelming reviewers",
+      "Always optimize for maximum precision \u2014 reviewers should only see items the model is very confident about",
+      "Set the threshold to the value that maximizes precision subject to the constraint that flagged volume \u2264 5,000/day \u2014 this frames threshold selection as a constrained optimization problem where operational capacity is the binding constraint, not an arbitrary precision/recall target",
+      "Use the default threshold (0.5) \u2014 vendor-default thresholds are calibrated for general use cases"
     ],
     "correct_option": 2,
-    "explanation": "This is a constrained optimization problem. The business constraint is hard: review team capacity = 5,000/day. Given this constraint, the objective should be to maximize recall (catch as many violations as possible) subject to the capacity constraint (flagged volume ≤ 5,000). This means finding the highest threshold value that produces exactly 5,000 flagged items/day — maximizing the fraction of true violations in the 5,000 reviewable items. The framework: (1) Plot flagged volume vs threshold across the PR curve; (2) find the threshold range where flagged volume ≈ 5,000; (3) at that threshold, read off precision and recall. This is often called operating at a fixed review budget. The PM framing of 'best precision at fixed recall' or 'best recall at fixed capacity' is the correct formulation.",
+    "explanation": "This is a constrained optimization problem. The business constraint is hard: review team capacity = 5,000/day. Given this constraint, the objective should be to maximize recall (catch as many violations as possible) subject to the capacity constraint (flagged volume \u2264 5,000). This means finding the highest threshold value that produces exactly 5,000 flagged items/day \u2014 maximizing the fraction of true violations in the 5,000 reviewable items. The framework: (1) Plot flagged volume vs threshold across the PR curve; (2) find the threshold range where flagged volume \u2248 5,000; (3) at that threshold, read off precision and recall. This is often called operating at a fixed review budget. The PM framing of 'best precision at fixed recall' or 'best recall at fixed capacity' is the correct formulation.",
     "hints": [
       "You can't review 14,000 posts with a 5,000-person-day capacity. What optimization problem does this constraint create?",
       "At a fixed flagged volume of 5,000/day, which threshold maximizes the number of true violations caught?"
     ],
-    "concepts": ["CLASSIFICATION METRICS", "DEPLOYMENT CONSTRAINTS"]
+    "concepts": [
+      "CLASSIFICATION METRICS",
+      "DEPLOYMENT CONSTRAINTS"
+    ]
   },
   {
     "id": 83038,
@@ -836,16 +947,19 @@
     "description": "You are building an anomaly detection system for manufacturing defects using 500 sensor readings per unit. Normal units' readings follow consistent patterns; defective units show subtle deviations across correlated sensor groups. You apply PCA to reduce to 20 components (capturing 95% variance) before training an Isolation Forest. Performance is poor (AUC=0.61). Without PCA, using raw 500-d features, Isolation Forest achieves AUC=0.72. What explains the degradation and what is the better approach?",
     "options": [
       "PCA degradation means the sensor data is non-linear; switch to a non-linear model instead of using PCA",
-      "PCA discarded the 5% variance that contains the anomaly signal — defect patterns are often low-variance, subtle deviations that PCA's variance-maximization objective eliminates first; for anomaly detection, retain more components or use anomaly-preserving reduction",
+      "PCA discarded the 5% variance that contains the anomaly signal \u2014 defect patterns are often low-variance, subtle deviations that PCA's variance-maximization objective eliminates first; for anomaly detection, retain more components or use anomaly-preserving reduction",
       "Isolation Forest is the wrong algorithm; use DBSCAN after PCA instead",
       "PCA degrades performance because it changes the scale of features; apply standardization after PCA to fix this"
     ],
     "correct_option": 1,
-    "explanation": "This is a fundamental mismatch between PCA's objective and anomaly detection's needs. PCA retains the directions of maximum variance — the 95% that describes normal operating patterns. Anomalies (manufacturing defects) are precisely the data points that *deviate from normal patterns in low-variance directions*. The remaining 5% variance PCA discarded contains exactly the signal that distinguishes defects from normal units. By projecting to 20 components, you've eliminated the subtle sensor deviations that indicate defects. For anomaly detection, several alternatives work better: (1) keep more PCA components (or all of them); (2) use kernel PCA to capture non-linear normal manifolds; (3) use an autoencoder where reconstruction error serves as the anomaly score; (4) apply UMAP in unsupervised mode which better preserves local structure. The reconstruction error approach is particularly elegant — normal units reconstruct well; anomalous units don't.",
+    "explanation": "This is a fundamental mismatch between PCA's objective and anomaly detection's needs. PCA retains the directions of maximum variance \u2014 the 95% that describes normal operating patterns. Anomalies (manufacturing defects) are precisely the data points that *deviate from normal patterns in low-variance directions*. The remaining 5% variance PCA discarded contains exactly the signal that distinguishes defects from normal units. By projecting to 20 components, you've eliminated the subtle sensor deviations that indicate defects. For anomaly detection, several alternatives work better: (1) keep more PCA components (or all of them); (2) use kernel PCA to capture non-linear normal manifolds; (3) use an autoencoder where reconstruction error serves as the anomaly score; (4) apply UMAP in unsupervised mode which better preserves local structure. The reconstruction error approach is particularly elegant \u2014 normal units reconstruct well; anomalous units don't.",
     "hints": [
-      "PCA maximizes retained variance. Anomalies are deviations from normal patterns — where in the variance spectrum do those deviations live?",
+      "PCA maximizes retained variance. Anomalies are deviations from normal patterns \u2014 where in the variance spectrum do those deviations live?",
       "If a defect causes a subtle but consistent sensor deviation, is that deviation high-variance or low-variance relative to the normal operating distribution?"
     ],
-    "concepts": ["DIMENSIONALITY REDUCTION", "OVERFITTING DIAGNOSIS"]
+    "concepts": [
+      "DIMENSIONALITY REDUCTION",
+      "OVERFITTING DIAGNOSIS"
+    ]
   }
 ]

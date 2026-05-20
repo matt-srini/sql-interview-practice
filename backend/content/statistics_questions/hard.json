@@ -13,10 +13,10 @@
         "expected_output": 0.3629
       }
     ],
-    "explanation": "P(HHH|fair)=0.125, P(HHH|biased)=0.512. P(HHH)=0.125×0.70 + 0.512×0.30 = 0.0875+0.1536=0.2411. Posterior = 0.0875/0.2411 ≈ 0.3629.",
+    "explanation": "P(HHH|fair)=0.125, P(HHH|biased)=0.512. P(HHH)=0.125\u00d70.70 + 0.512\u00d70.30 = 0.0875+0.1536=0.2411. Posterior = 0.0875/0.2411 \u2248 0.3629.",
     "hints": [
-      "Think about updating your prior belief with evidence from an experiment — two competing hypotheses need to be compared based on how likely each makes the data.",
-      "P(fair|data) = P(data|fair)×P(fair) / [P(data|fair)×P(fair) + P(data|biased)×P(biased)]."
+      "Think about updating your prior belief with evidence from an experiment \u2014 two competing hypotheses need to be compared based on how likely each makes the data.",
+      "P(fair|data) = P(data|fair)\u00d7P(fair) / [P(data|fair)\u00d7P(fair) + P(data|biased)\u00d7P(biased)]."
     ],
     "concepts": [
       "Bayesian inference",
@@ -30,7 +30,7 @@
     "id": 73002,
     "title": "Simpson's Paradox",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "Hospital A treats 100 severe patients (80 survive) and 200 mild patients (190 survive). Hospital B treats 200 severe patients (140 survive) and 100 mild patients (95 survive). Hospital A has a higher overall survival rate, but Hospital B has a higher survival rate within each severity group. What phenomenon explains this?",
     "options": [
       "Regression to the mean: extreme outcomes in small samples tend to move toward the population average over time",
@@ -39,9 +39,9 @@
       "The base rate fallacy: one cannot compare percentages derived from groups of different sizes mathematically"
     ],
     "correct_option": 2,
-    "explanation": "Hospital A: overall (270/300 = 90%). Hospital B: (235/300 = 78.3%). But within severe patients, B has 140/200=70% vs A's 80/100=80% — A wins; within mild, B has 95/100=95% vs A's 190/200=95% — tie. The reversal occurs because Hospital B treats proportionally more severe (harder) cases, making its aggregate rate appear worse despite equal or better within-group performance. This is Simpson's paradox.",
+    "explanation": "Hospital A: overall (270/300 = 90%). Hospital B: (235/300 = 78.3%). But within severe patients, B has 140/200=70% vs A's 80/100=80% \u2014 A wins; within mild, B has 95/100=95% vs A's 190/200=95% \u2014 tie. The reversal occurs because Hospital B treats proportionally more severe (harder) cases, making its aggregate rate appear worse despite equal or better within-group performance. This is Simpson's paradox.",
     "hints": [
-      "Check whether one hospital systematically treats more of the harder cases — that imbalance can flip aggregate conclusions.",
+      "Check whether one hospital systematically treats more of the harder cases \u2014 that imbalance can flip aggregate conclusions.",
       "Simpson's paradox arises when a lurking variable (severity) creates different group compositions that reverse a trend."
     ],
     "concepts": [
@@ -54,7 +54,7 @@
   },
   {
     "id": 73003,
-    "title": "Maximum Likelihood Estimation — Bernoulli",
+    "title": "Maximum Likelihood Estimation \u2014 Bernoulli",
     "subtype": "numerical",
     "type": "numerical",
     "description": "You observe 7 successes in 10 Bernoulli trials. Write a Python function `solve()` that returns the maximum likelihood estimate of p (the success probability), rounded to 4 decimal places.",
@@ -66,7 +66,7 @@
         "expected_output": 0.7
       }
     ],
-    "explanation": "The log-likelihood for Bernoulli is L(p) = k·log(p) + (n−k)·log(1−p). Taking dL/dp = 0 gives p̂ = k/n = 7/10 = 0.70. The MLE is simply the observed proportion.",
+    "explanation": "The log-likelihood for Bernoulli is L(p) = k\u00b7log(p) + (n\u2212k)\u00b7log(1\u2212p). Taking dL/dp = 0 gives p\u0302 = k/n = 7/10 = 0.70. The MLE is simply the observed proportion.",
     "hints": [
       "MLE finds the parameter value that maximizes the probability of the observed data.",
       "For Bernoulli trials, maximize the log-likelihood by setting its derivative to zero."
@@ -83,18 +83,18 @@
     "id": 73004,
     "title": "Bootstrap Confidence Interval Logic",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A researcher uses bootstrapping to construct a 95% confidence interval for the median of a small dataset. Which statement best describes what bootstrapping does?",
     "options": [
       "Bootstrapping fits a parametric model to the data, then draws samples from that fitted distribution to build a CI",
       "Bootstrapping repeatedly resamples from the observed data with replacement, computes the statistic each time, and uses the resulting distribution to build a CI",
-      "Bootstrapping uses the t-distribution with n−1 degrees of freedom when the population distribution is unknown",
+      "Bootstrapping uses the t-distribution with n\u22121 degrees of freedom when the population distribution is unknown",
       "Bootstrapping is only valid when the original sample size exceeds 200, otherwise the t-distribution must be used"
     ],
     "correct_option": 2,
-    "explanation": "The bootstrap treats the observed sample as a proxy for the population. By resampling with replacement and computing the statistic (e.g., median) on each resample, it empirically approximates the sampling distribution — without assuming any parametric family. This is especially valuable when no closed-form formula exists for the statistic's distribution.",
+    "explanation": "The bootstrap treats the observed sample as a proxy for the population. By resampling with replacement and computing the statistic (e.g., median) on each resample, it empirically approximates the sampling distribution \u2014 without assuming any parametric family. This is especially valuable when no closed-form formula exists for the statistic's distribution.",
     "hints": [
-      "Bootstrap is a non-parametric resampling technique — it makes minimal distributional assumptions.",
+      "Bootstrap is a non-parametric resampling technique \u2014 it makes minimal distributional assumptions.",
       "Think about how repeated resampling from your own data mimics the process of repeatedly sampling from the population."
     ],
     "concepts": [
@@ -122,7 +122,7 @@
         ]
       }
     ],
-    "explanation": "For data [1..100], the 2.5th percentile index = 0.025×99 = 2.475 → 3 + 0.475×(4−3) = 3.475. The 97.5th percentile index = 0.975×99 = 96.525 → 97 + 0.525×(98−97) = 97.525.",
+    "explanation": "For data [1..100], the 2.5th percentile index = 0.025\u00d799 = 2.475 \u2192 3 + 0.475\u00d7(4\u22123) = 3.475. The 97.5th percentile index = 0.975\u00d799 = 96.525 \u2192 97 + 0.525\u00d7(98\u221297) = 97.525.",
     "hints": [
       "The percentile bootstrap CI uses empirical quantiles of the bootstrap statistic distribution.",
       "Use linear interpolation between adjacent sorted values to compute fractional percentiles."
@@ -139,19 +139,19 @@
     "id": 73006,
     "title": "R-Squared Interpretation",
     "subtype": "conceptual",
-    "type": "mcq",
-    "description": "A simple linear regression model predicting house prices from square footage has R² = 0.82. Which interpretation is correct?",
+    "type": "conceptual",
+    "description": "A simple linear regression model predicting house prices from square footage has R\u00b2 = 0.82. Which interpretation is correct?",
     "options": [
       "The regression model has an 82% chance of predicting the correct price for any given house",
       "Square footage explains 82% of the variance in house prices in this sample; 18% remains unexplained",
       "The correlation between square footage and price is 0.82, indicating a strong positive relationship",
-      "Adding more predictors cannot raise R² above 0.82 because it is a theoretical upper bound for this dataset"
+      "Adding more predictors cannot raise R\u00b2 above 0.82 because it is a theoretical upper bound for this dataset"
     ],
     "correct_option": 2,
-    "explanation": "R² is the proportion of variance in Y explained by the model. R²=0.82 means the regression line accounts for 82% of the total variance in prices; the remaining 18% is residual (unexplained) variance. The correlation r = √R² ≈ 0.906, not 0.82 itself. R² can only increase as more predictors are added (adjusted R² corrects for this).",
+    "explanation": "R\u00b2 is the proportion of variance in Y explained by the model. R\u00b2=0.82 means the regression line accounts for 82% of the total variance in prices; the remaining 18% is residual (unexplained) variance. The correlation r = \u221aR\u00b2 \u2248 0.906, not 0.82 itself. R\u00b2 can only increase as more predictors are added (adjusted R\u00b2 corrects for this).",
     "hints": [
-      "R² measures goodness of fit — what fraction of the total variability is captured by the model.",
-      "Think of R² as 1 minus the fraction of variance that the model leaves unexplained."
+      "R\u00b2 measures goodness of fit \u2014 what fraction of the total variability is captured by the model.",
+      "Think of R\u00b2 as 1 minus the fraction of variance that the model leaves unexplained."
     ],
     "concepts": [
       "regression",
@@ -165,7 +165,7 @@
     "title": "Computing R-Squared",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "Given actual values Y = [3, 5, 4, 7, 6] and predicted values Ŷ = [2.8, 5.2, 3.9, 6.8, 6.3], write a Python function `solve()` that returns R² rounded to 4 decimal places.",
+    "description": "Given actual values Y = [3, 5, 4, 7, 6] and predicted values \u0176 = [2.8, 5.2, 3.9, 6.8, 6.3], write a Python function `solve()` that returns R\u00b2 rounded to 4 decimal places.",
     "starter_code": "def solve():\n    # R^2 = 1 - SS_res / SS_tot\n    pass",
     "expected_code": "def solve():\n    Y = [3, 5, 4, 7, 6]\n    Y_pred = [2.8, 5.2, 3.9, 6.8, 6.3]\n    y_mean = sum(Y) / len(Y)\n    ss_tot = sum((y - y_mean)**2 for y in Y)\n    ss_res = sum((y - yp)**2 for y, yp in zip(Y, Y_pred))\n    return round(1 - ss_res / ss_tot, 4)",
     "test_cases": [
@@ -174,10 +174,10 @@
         "expected_output": 0.978
       }
     ],
-    "explanation": "ȳ=5. SS_tot=(3-5)²+(5-5)²+(4-5)²+(7-5)²+(6-5)²=4+0+1+4+1=10. SS_res=0.04+0.04+0.01+0.04+0.09=0.22. R²=1−0.22/10=0.978.",
+    "explanation": "\u0233=5. SS_tot=(3-5)\u00b2+(5-5)\u00b2+(4-5)\u00b2+(7-5)\u00b2+(6-5)\u00b2=4+0+1+4+1=10. SS_res=0.04+0.04+0.01+0.04+0.09=0.22. R\u00b2=1\u22120.22/10=0.978.",
     "hints": [
-      "R² = 1 − SS_residual / SS_total, where SS_total uses deviations from the mean of Y.",
-      "SS_residual = Σ(y_i − ŷ_i)²; SS_total = Σ(y_i − ȳ)²."
+      "R\u00b2 = 1 \u2212 SS_residual / SS_total, where SS_total uses deviations from the mean of Y.",
+      "SS_residual = \u03a3(y_i \u2212 \u0177_i)\u00b2; SS_total = \u03a3(y_i \u2212 \u0233)\u00b2."
     ],
     "concepts": [
       "regression",
@@ -190,7 +190,7 @@
     "id": 73008,
     "title": "Bias-Variance Tradeoff",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A machine learning model trained on the training set has very low training error but very high test error. In terms of the bias-variance tradeoff, what is the most likely diagnosis?",
     "options": [
       "High bias and low variance: the model is too simple to capture patterns in either the training or test data",
@@ -199,7 +199,7 @@
       "Low bias and low variance: the model has ideal fit and the high test error is caused by a mismatch in data distributions"
     ],
     "correct_option": 2,
-    "explanation": "Low training error means the model fits the training data well (low bias). High test error means the model fails to generalize, capturing noise rather than signal — this is overfitting, characterized by high variance. The bias-variance tradeoff says reducing one typically increases the other; overfitting is the high-variance regime.",
+    "explanation": "Low training error means the model fits the training data well (low bias). High test error means the model fails to generalize, capturing noise rather than signal \u2014 this is overfitting, characterized by high variance. The bias-variance tradeoff says reducing one typically increases the other; overfitting is the high-variance regime.",
     "hints": [
       "Ask: does the model fail on training data (high bias) or only on new data (high variance)?",
       "Overfitting = excellent training performance + poor test performance = low bias + high variance."
@@ -226,10 +226,10 @@
         "expected_output": 16.0
       }
     ],
-    "explanation": "χ² = (30−50)²/50 + (70−50)²/50 = 400/50 + 400/50 = 8 + 8 = 16.0.",
+    "explanation": "\u03c7\u00b2 = (30\u221250)\u00b2/50 + (70\u221250)\u00b2/50 = 400/50 + 400/50 = 8 + 8 = 16.0.",
     "hints": [
       "The chi-squared statistic measures discrepancy between observed and expected counts.",
-      "χ² = Σ (O_i − E_i)² / E_i over all categories."
+      "\u03c7\u00b2 = \u03a3 (O_i \u2212 E_i)\u00b2 / E_i over all categories."
     ],
     "concepts": [
       "chi-squared tests",
@@ -241,21 +241,21 @@
   },
   {
     "id": 73010,
-    "title": "Multiple Comparisons — FWER",
+    "title": "Multiple Comparisons \u2014 FWER",
     "subtype": "conceptual",
-    "type": "mcq",
-    "description": "A researcher conducts pairwise t-tests on all pairs from 5 groups without any correction. How many pairwise tests are performed, and what is the approximate family-wise error rate at α=0.05?",
+    "type": "conceptual",
+    "description": "A researcher conducts pairwise t-tests on all pairs from 5 groups without any correction. How many pairwise tests are performed, and what is the approximate family-wise error rate at \u03b1=0.05?",
     "options": [
-      "5 tests, FWER ≈ 0.226, because 5 choose 1 tests are run and each has a 5% error rate",
-      "10 tests, FWER ≈ 0.401, because C(5,2)=10 and FWER = 1 − (0.95)^10 ≈ 0.40",
-      "20 tests, FWER ≈ 0.642, because all ordered pairs (5×4) are tested and FWER = 1−0.95^20",
+      "5 tests, FWER \u2248 0.226, because 5 choose 1 tests are run and each has a 5% error rate",
+      "10 tests, FWER \u2248 0.401, because C(5,2)=10 and FWER = 1 \u2212 (0.95)^10 \u2248 0.40",
+      "20 tests, FWER \u2248 0.642, because all ordered pairs (5\u00d74) are tested and FWER = 1\u22120.95^20",
       "10 tests, FWER = 0.50, because with 10 tests we expect exactly half to produce false positives"
     ],
     "correct_option": 2,
-    "explanation": "C(5,2) = 10 pairwise tests. Under all-true-null, FWER = 1 − (1−0.05)^10 = 1 − 0.95^10 ≈ 1 − 0.5987 ≈ 0.40. This motivates corrections like Bonferroni or Tukey's HSD when comparing multiple group means.",
+    "explanation": "C(5,2) = 10 pairwise tests. Under all-true-null, FWER = 1 \u2212 (1\u22120.05)^10 = 1 \u2212 0.95^10 \u2248 1 \u2212 0.5987 \u2248 0.40. This motivates corrections like Bonferroni or Tukey's HSD when comparing multiple group means.",
     "hints": [
       "Count pairwise comparisons using combinations: C(k,2) for k groups.",
-      "FWER = 1 − (1−α)^m where m is the number of tests, assuming independence."
+      "FWER = 1 \u2212 (1\u2212\u03b1)^m where m is the number of tests, assuming independence."
     ],
     "concepts": [
       "multiple comparisons",
@@ -268,10 +268,10 @@
   },
   {
     "id": 73011,
-    "title": "Power Analysis — Effect Size",
+    "title": "Power Analysis \u2014 Effect Size",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "Cohen's d is computed as d = (μ₁ − μ₂) / σ_pooled. Group 1: mean=52, Group 2: mean=48, pooled SD=10. Write a Python function `solve()` that returns Cohen's d rounded to 4 decimal places.",
+    "description": "Cohen's d is computed as d = (\u03bc\u2081 \u2212 \u03bc\u2082) / \u03c3_pooled. Group 1: mean=52, Group 2: mean=48, pooled SD=10. Write a Python function `solve()` that returns Cohen's d rounded to 4 decimal places.",
     "starter_code": "def solve():\n    # Cohen's d = (mu1 - mu2) / pooled_sd\n    pass",
     "expected_code": "def solve():\n    mu1, mu2, sd_pooled = 52, 48, 10\n    return round(abs(mu1 - mu2) / sd_pooled, 4)",
     "test_cases": [
@@ -280,10 +280,10 @@
         "expected_output": 0.4
       }
     ],
-    "explanation": "d = |52 − 48| / 10 = 4/10 = 0.40. By convention, d=0.2 is small, d=0.5 medium, d=0.8 large. This effect would be considered between small and medium.",
+    "explanation": "d = |52 \u2212 48| / 10 = 4/10 = 0.40. By convention, d=0.2 is small, d=0.5 medium, d=0.8 large. This effect would be considered between small and medium.",
     "hints": [
       "Cohen's d standardizes the mean difference using a pooled spread measure.",
-      "d = |μ₁ − μ₂| / σ_pooled."
+      "d = |\u03bc\u2081 \u2212 \u03bc\u2082| / \u03c3_pooled."
     ],
     "concepts": [
       "statistical power",
@@ -295,9 +295,9 @@
   },
   {
     "id": 73012,
-    "title": "Variance Decomposition — ANOVA Logic",
+    "title": "Variance Decomposition \u2014 ANOVA Logic",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "In a one-way ANOVA with k=3 groups and N=30 total observations, the total sum of squares (SS_Total) is split into SS_Between and SS_Within. What does SS_Between measure and why is it the quantity of interest?",
     "options": [
       "SS_Between measures variability of individual observations within each group around that group's mean; it captures noise",
@@ -306,7 +306,7 @@
       "SS_Between measures pairwise mean differences and equals the sum of all C(k,2) t-statistics squared"
     ],
     "correct_option": 2,
-    "explanation": "ANOVA partitions total variance: SS_Total = SS_Between + SS_Within. SS_Between (or SS_Treatment) captures how much group means deviate from the overall grand mean — the signal. SS_Within captures random variation within groups — the noise. The F-statistic = (SS_Between/(k−1)) / (SS_Within/(N−k)) tests whether group means are all equal.",
+    "explanation": "ANOVA partitions total variance: SS_Total = SS_Between + SS_Within. SS_Between (or SS_Treatment) captures how much group means deviate from the overall grand mean \u2014 the signal. SS_Within captures random variation within groups \u2014 the noise. The F-statistic = (SS_Between/(k\u22121)) / (SS_Within/(N\u2212k)) tests whether group means are all equal.",
     "hints": [
       "Think about what varies between groups versus within groups in an experiment.",
       "ANOVA's F-test is a ratio of variance explained by group membership to unexplained within-group variance."
@@ -324,7 +324,7 @@
     "title": "MLE for Exponential Distribution",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "You observe inter-arrival times [2.1, 3.5, 1.8, 4.2, 2.9] from an exponential distribution with rate λ. The MLE of λ is 1/x̄. Write a Python function `solve()` that returns the MLE of λ rounded to 4 decimal places.",
+    "description": "You observe inter-arrival times [2.1, 3.5, 1.8, 4.2, 2.9] from an exponential distribution with rate \u03bb. The MLE of \u03bb is 1/x\u0304. Write a Python function `solve()` that returns the MLE of \u03bb rounded to 4 decimal places.",
     "starter_code": "def solve():\n    # MLE for exponential rate: lambda_hat = 1 / mean(data)\n    pass",
     "expected_code": "def solve():\n    data = [2.1, 3.5, 1.8, 4.2, 2.9]\n    mean = sum(data) / len(data)\n    return round(1 / mean, 4)",
     "test_cases": [
@@ -333,9 +333,9 @@
         "expected_output": 0.3448
       }
     ],
-    "explanation": "x̄ = (2.1+3.5+1.8+4.2+2.9)/5 = 14.5/5 = 2.9. λ̂ = 1/2.9 ≈ 0.3448.",
+    "explanation": "x\u0304 = (2.1+3.5+1.8+4.2+2.9)/5 = 14.5/5 = 2.9. \u03bb\u0302 = 1/2.9 \u2248 0.3448.",
     "hints": [
-      "For an exponential distribution, the log-likelihood is maximized at λ = 1/x̄.",
+      "For an exponential distribution, the log-likelihood is maximized at \u03bb = 1/x\u0304.",
       "Compute the sample mean first, then take its reciprocal."
     ],
     "concepts": [
@@ -348,18 +348,18 @@
   },
   {
     "id": 73014,
-    "title": "Survival Analysis — Hazard Rate",
+    "title": "Survival Analysis \u2014 Hazard Rate",
     "subtype": "conceptual",
-    "type": "mcq",
-    "description": "In survival analysis, the hazard rate h(t) is defined as the instantaneous rate of failure at time t given survival to time t. For an exponential survival model with constant hazard h(t) = λ, what does this 'memoryless' property mean in practice?",
+    "type": "conceptual",
+    "description": "In survival analysis, the hazard rate h(t) is defined as the instantaneous rate of failure at time t given survival to time t. For an exponential survival model with constant hazard h(t) = \u03bb, what does this 'memoryless' property mean in practice?",
     "options": [
-      "The probability of failing in the next instant depends on how long the subject has already survived — older subjects are more likely to fail",
-      "The conditional probability of failing in the next small interval given survival to time t is the same regardless of t — past survival provides no information about future risk",
+      "The probability of failing in the next instant depends on how long the subject has already survived \u2014 older subjects are more likely to fail",
+      "The conditional probability of failing in the next small interval given survival to time t is the same regardless of t \u2014 past survival provides no information about future risk",
       "The hazard rate decreases over time for exponential models, meaning the longer a subject survives, the safer they become",
       "The memoryless property only applies to discrete-time survival models; the exponential applies to continuous lifetimes without the property"
     ],
     "correct_option": 2,
-    "explanation": "The exponential distribution is memoryless: P(T > t+s | T > t) = P(T > s) for all t,s ≥ 0. A component that has survived t hours is statistically 'as good as new.' The hazard is constant (not increasing or decreasing), so past survival time conveys no information about residual life — unlike the Weibull distribution, which can model increasing or decreasing hazard.",
+    "explanation": "The exponential distribution is memoryless: P(T > t+s | T > t) = P(T > s) for all t,s \u2265 0. A component that has survived t hours is statistically 'as good as new.' The hazard is constant (not increasing or decreasing), so past survival time conveys no information about residual life \u2014 unlike the Weibull distribution, which can model increasing or decreasing hazard.",
     "hints": [
       "The memoryless property means past history is irrelevant to the conditional future risk.",
       "Think about whether knowing a component has lasted 100 hours changes your expectation of how much longer it will last."
@@ -386,10 +386,10 @@
         "expected_output": 0.42
       }
     ],
-    "explanation": "S(4) = (1−2/10) × (1−1/8) × (1−2/5) = 0.8 × 0.875 × 0.6 = 0.42.",
+    "explanation": "S(4) = (1\u22122/10) \u00d7 (1\u22121/8) \u00d7 (1\u22122/5) = 0.8 \u00d7 0.875 \u00d7 0.6 = 0.42.",
     "hints": [
       "The Kaplan-Meier estimator multiplies survival probabilities across all event times up to t.",
-      "At each event time: multiply current S by (1 − d/n) where d is deaths and n is the risk set size."
+      "At each event time: multiply current S by (1 \u2212 d/n) where d is deaths and n is the risk set size."
     ],
     "concepts": [
       "survival analysis",
@@ -404,7 +404,7 @@
     "title": "Method of Moments for Normal Distribution",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "Using the method of moments, estimates for a normal distribution are μ̂ = x̄ and σ̂² = (1/n) Σ(xi − x̄)². For data = [4, 8, 6, 5, 7], write a Python function `solve()` that returns a tuple (mu_hat, sigma2_hat) rounded to 4 decimal places each.",
+    "description": "Using the method of moments, estimates for a normal distribution are \u03bc\u0302 = x\u0304 and \u03c3\u0302\u00b2 = (1/n) \u03a3(xi \u2212 x\u0304)\u00b2. For data = [4, 8, 6, 5, 7], write a Python function `solve()` that returns a tuple (mu_hat, sigma2_hat) rounded to 4 decimal places each.",
     "starter_code": "def solve():\n    # Method of moments: mu_hat = mean, sigma2_hat = population variance\n    pass",
     "expected_code": "def solve():\n    data = [4, 8, 6, 5, 7]\n    n = len(data)\n    mu = sum(data) / n\n    sigma2 = sum((x - mu)**2 for x in data) / n\n    return (round(mu, 4), round(sigma2, 4))",
     "test_cases": [
@@ -416,7 +416,7 @@
         ]
       }
     ],
-    "explanation": "x̄ = 30/5 = 6.0. Deviations²: 4, 4, 0, 1, 1 → sum=10. σ̂² = 10/5 = 2.0.",
+    "explanation": "x\u0304 = 30/5 = 6.0. Deviations\u00b2: 4, 4, 0, 1, 1 \u2192 sum=10. \u03c3\u0302\u00b2 = 10/5 = 2.0.",
     "hints": [
       "Method of moments sets sample moments equal to theoretical moments to estimate parameters.",
       "For the normal, the first moment gives the mean estimate; the second central moment gives the variance estimate."
@@ -443,7 +443,7 @@
         "expected_output": 9.0
       }
     ],
-    "explanation": "MS_Between = 80/2 = 40. MS_Within = 120/27 ≈ 4.444. F = 40/4.444 ≈ 9.0.",
+    "explanation": "MS_Between = 80/2 = 40. MS_Within = 120/27 \u2248 4.444. F = 40/4.444 \u2248 9.0.",
     "hints": [
       "Mean squares are sums of squares divided by their degrees of freedom.",
       "F = MS_Between / MS_Within; a large F suggests group means differ more than expected by chance."
@@ -458,10 +458,10 @@
   },
   {
     "id": 73018,
-    "title": "Regression — Bias-Variance Decomposition",
+    "title": "Regression \u2014 Bias-Variance Decomposition",
     "subtype": "conceptual",
-    "type": "mcq",
-    "description": "For a prediction model, the expected mean squared error can be decomposed as MSE = Bias² + Variance + Irreducible Error. A model has Bias²=4, Variance=9, and Irreducible Error=2. A more complex model reduces Bias² to 1 but increases Variance to 16. Should you use the more complex model?",
+    "type": "conceptual",
+    "description": "For a prediction model, the expected mean squared error can be decomposed as MSE = Bias\u00b2 + Variance + Irreducible Error. A model has Bias\u00b2=4, Variance=9, and Irreducible Error=2. A more complex model reduces Bias\u00b2 to 1 but increases Variance to 16. Should you use the more complex model?",
     "options": [
       "Yes, because reducing bias is always the most important objective in predictive modeling regardless of variance",
       "No, because the more complex model has total MSE = 1+16+2 = 19, higher than the simpler model's MSE = 4+9+2 = 15",
@@ -471,7 +471,7 @@
     "correct_option": 2,
     "explanation": "Simple model MSE = 4+9+2 = 15. Complex model MSE = 1+16+2 = 19. Despite lower bias, the complexity increase inflates variance enough to raise total expected prediction error. The irreducible error (noise in the data) is the same for both. A good model minimizes total MSE, not just one component.",
     "hints": [
-      "Compute the total MSE for each model: Bias² + Variance + Irreducible Error.",
+      "Compute the total MSE for each model: Bias\u00b2 + Variance + Irreducible Error.",
       "Lower bias does not automatically mean lower total error if variance increases enough to compensate."
     ],
     "concepts": [
@@ -486,19 +486,19 @@
     "id": 73019,
     "title": "Chi-Squared Test of Independence",
     "subtype": "conceptual",
-    "type": "mcq",
-    "description": "A 2×2 contingency table shows survey responses for two groups. The chi-squared test of independence yields χ²=12.4 with df=1. At α=0.05, the critical value is 3.84. What is the correct conclusion?",
+    "type": "conceptual",
+    "description": "A 2\u00d72 contingency table shows survey responses for two groups. The chi-squared test of independence yields \u03c7\u00b2=12.4 with df=1. At \u03b1=0.05, the critical value is 3.84. What is the correct conclusion?",
     "options": [
-      "Fail to reject H₀; the variables appear independent because χ²=12.4 is too large to be explained by chance",
-      "Reject H₀ (independence); χ²=12.4 > 3.84 provides evidence that the two variables are associated",
-      "Reject H₀ and conclude causation; a significant chi-squared test proves one variable causes the other",
-      "Accept H₀; the chi-squared test can only confirm independence, never reject it with a 2×2 table"
+      "Fail to reject H\u2080; the variables appear independent because \u03c7\u00b2=12.4 is too large to be explained by chance",
+      "Reject H\u2080 (independence); \u03c7\u00b2=12.4 > 3.84 provides evidence that the two variables are associated",
+      "Reject H\u2080 and conclude causation; a significant chi-squared test proves one variable causes the other",
+      "Accept H\u2080; the chi-squared test can only confirm independence, never reject it with a 2\u00d72 table"
     ],
     "correct_option": 2,
-    "explanation": "When χ² > critical value, we reject the null hypothesis of independence. Here 12.4 > 3.84, so we reject H₀ and conclude there is statistically significant evidence of an association between the two variables. This does not establish causation — chi-squared tests only evaluate association in categorical data.",
+    "explanation": "When \u03c7\u00b2 > critical value, we reject the null hypothesis of independence. Here 12.4 > 3.84, so we reject H\u2080 and conclude there is statistically significant evidence of an association between the two variables. This does not establish causation \u2014 chi-squared tests only evaluate association in categorical data.",
     "hints": [
       "Compare the computed test statistic to the critical value at the given significance level.",
-      "Rejecting H₀ of independence means the data provide evidence of an association, not causation."
+      "Rejecting H\u2080 of independence means the data provide evidence of an association, not causation."
     ],
     "concepts": [
       "chi-squared tests",
@@ -512,19 +512,19 @@
     "id": 73020,
     "title": "Posterior Update with Conjugate Prior",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A Beta(2,2) prior is placed on a proportion p. After observing 8 successes and 3 failures, what is the posterior distribution, and what is the posterior mean?",
     "options": [
-      "Beta(8,3) posterior with mean 8/11 ≈ 0.727, because prior parameters are replaced by the observed counts",
+      "Beta(8,3) posterior with mean 8/11 \u2248 0.727, because prior parameters are replaced by the observed counts",
       "Beta(10,5) posterior with mean 10/15 = 0.667, because the Beta prior is conjugate to the Binomial likelihood",
-      "Normal(0.667, σ²) posterior, because the CLT applies to the posterior with n=11 observations",
-      "Beta(16,6) posterior with mean 16/22 ≈ 0.727, because all parameters are doubled for a two-sided Beta"
+      "Normal(0.667, \u03c3\u00b2) posterior, because the CLT applies to the posterior with n=11 observations",
+      "Beta(16,6) posterior with mean 16/22 \u2248 0.727, because all parameters are doubled for a two-sided Beta"
     ],
     "correct_option": 2,
-    "explanation": "The Beta distribution is the conjugate prior for the Binomial likelihood. Starting from Beta(α=2, β=2) and observing s=8 successes and f=3 failures, the posterior is Beta(α+s, β+f) = Beta(10, 5). The posterior mean is α'/(α'+β') = 10/15 = 0.667, which is a weighted blend of the prior mean (0.5) and the data proportion (8/11≈0.727).",
+    "explanation": "The Beta distribution is the conjugate prior for the Binomial likelihood. Starting from Beta(\u03b1=2, \u03b2=2) and observing s=8 successes and f=3 failures, the posterior is Beta(\u03b1+s, \u03b2+f) = Beta(10, 5). The posterior mean is \u03b1'/(\u03b1'+\u03b2') = 10/15 = 0.667, which is a weighted blend of the prior mean (0.5) and the data proportion (8/11\u22480.727).",
     "hints": [
-      "The Beta-Binomial conjugate pair means the posterior is also Beta — just with updated parameters.",
-      "Posterior parameters: α' = α + successes, β' = β + failures. Posterior mean = α'/(α'+β')."
+      "The Beta-Binomial conjugate pair means the posterior is also Beta \u2014 just with updated parameters.",
+      "Posterior parameters: \u03b1' = \u03b1 + successes, \u03b2' = \u03b2 + failures. Posterior mean = \u03b1'/(\u03b1'+\u03b2')."
     ],
     "concepts": [
       "Bayesian inference",
@@ -548,10 +548,10 @@
         "expected_output": 0.6522
       }
     ],
-    "explanation": "Posterior: Beta(15, 8). Mean = 15/(15+8) = 15/23 ≈ 0.6522.",
+    "explanation": "Posterior: Beta(15, 8). Mean = 15/(15+8) = 15/23 \u2248 0.6522.",
     "hints": [
-      "Update the Beta parameters by adding observed counts, then compute the mean as α'/(α'+β').",
-      "Beta conjugate update: α' = α + successes, β' = β + failures."
+      "Update the Beta parameters by adding observed counts, then compute the mean as \u03b1'/(\u03b1'+\u03b2').",
+      "Beta conjugate update: \u03b1' = \u03b1 + successes, \u03b2' = \u03b2 + failures."
     ],
     "concepts": [
       "Bayesian inference",
@@ -565,16 +565,16 @@
     "id": 73022,
     "title": "Bonferroni Correction Power Loss",
     "subtype": "conceptual",
-    "type": "mcq",
-    "description": "Applying the Bonferroni correction to control FWER at α=0.05 across 20 tests makes each per-test threshold α/20 = 0.0025. What is the primary statistical cost of this correction?",
+    "type": "conceptual",
+    "description": "Applying the Bonferroni correction to control FWER at \u03b1=0.05 across 20 tests makes each per-test threshold \u03b1/20 = 0.0025. What is the primary statistical cost of this correction?",
     "options": [
       "It increases the Type I error rate because lowering the threshold makes each test more likely to produce false positives",
       "It decreases power (increases Type II error rate) because a stricter threshold makes it harder to detect true effects",
       "It has no statistical cost; Bonferroni always improves both Type I and Type II error rates simultaneously",
-      "It inflates the variance of the test statistic, making the test statistic distribution non-normal under H₀"
+      "It inflates the variance of the test statistic, making the test statistic distribution non-normal under H\u2080"
     ],
     "correct_option": 2,
-    "explanation": "By lowering the rejection threshold from 0.05 to 0.0025, the Bonferroni correction controls false positives at the cost of requiring stronger evidence to reject any single H₀. This reduces the probability of detecting true effects (lower power, higher β). Bonferroni is conservative — it trades power for FWER control, which can be undesirably strict when tests are positively correlated.",
+    "explanation": "By lowering the rejection threshold from 0.05 to 0.0025, the Bonferroni correction controls false positives at the cost of requiring stronger evidence to reject any single H\u2080. This reduces the probability of detecting true effects (lower power, higher \u03b2). Bonferroni is conservative \u2014 it trades power for FWER control, which can be undesirably strict when tests are positively correlated.",
     "hints": [
       "Power is the probability of detecting a true effect. What happens to power when you raise the bar for rejection?",
       "Stricter thresholds reduce false positives but also reduce true positives."
@@ -593,7 +593,7 @@
     "title": "Variance of a Linear Combination",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "Independent random variables X and Y have Var(X)=4 and Var(Y)=9. Write a Python function `solve()` that returns Var(2X − 3Y) as a float.",
+    "description": "Independent random variables X and Y have Var(X)=4 and Var(Y)=9. Write a Python function `solve()` that returns Var(2X \u2212 3Y) as a float.",
     "starter_code": "def solve():\n    # Var(aX + bY) = a^2*Var(X) + b^2*Var(Y) when X,Y independent\n    pass",
     "expected_code": "def solve():\n    var_x, var_y = 4, 9\n    a, b = 2, -3\n    return float(a**2 * var_x + b**2 * var_y)",
     "test_cases": [
@@ -602,10 +602,10 @@
         "expected_output": 97.0
       }
     ],
-    "explanation": "Var(2X − 3Y) = 2²×Var(X) + (−3)²×Var(Y) = 4×4 + 9×9 = 16 + 81 = 97.",
+    "explanation": "Var(2X \u2212 3Y) = 2\u00b2\u00d7Var(X) + (\u22123)\u00b2\u00d7Var(Y) = 4\u00d74 + 9\u00d79 = 16 + 81 = 97.",
     "hints": [
-      "For independent variables, variances of linear combinations add — but constants get squared.",
-      "Var(aX + bY) = a²Var(X) + b²Var(Y) when X and Y are independent."
+      "For independent variables, variances of linear combinations add \u2014 but constants get squared.",
+      "Var(aX + bY) = a\u00b2Var(X) + b\u00b2Var(Y) when X and Y are independent."
     ],
     "concepts": [
       "variance decomposition",
@@ -619,16 +619,16 @@
     "id": 73024,
     "title": "Bootstrap vs Parametric CI Tradeoffs",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A researcher needs to build a confidence interval for the ratio of two medians from heavily skewed data with n=25 per group. Which approach is most defensible and why?",
     "options": [
-      "Parametric z-interval, because the CLT guarantees normality of the ratio of medians for any n ≥ 30",
+      "Parametric z-interval, because the CLT guarantees normality of the ratio of medians for any n \u2265 30",
       "Bootstrap percentile interval, because no closed-form sampling distribution exists for a ratio of medians, and resampling is distribution-free",
       "Parametric t-interval with 24 degrees of freedom, because the t-distribution is always appropriate for small samples",
       "No valid CI can be constructed for a ratio of medians; only means have known sampling distributions"
     ],
     "correct_option": 2,
-    "explanation": "The ratio of two medians has no standard closed-form sampling distribution, especially under skewness. The bootstrap makes no normality assumptions and works for any statistic — making it the natural choice here. With n=25, the CLT does not guarantee normality for the ratio of medians (a non-linear transformation). The t-distribution assumes normality of the underlying variable.",
+    "explanation": "The ratio of two medians has no standard closed-form sampling distribution, especially under skewness. The bootstrap makes no normality assumptions and works for any statistic \u2014 making it the natural choice here. With n=25, the CLT does not guarantee normality for the ratio of medians (a non-linear transformation). The t-distribution assumes normality of the underlying variable.",
     "hints": [
       "Ask: is there a known parametric formula for the standard error of this specific statistic?",
       "When the statistic is complex or the distribution is non-normal, resampling methods like bootstrap are the flexible alternative."
@@ -648,7 +648,7 @@
     "subtype": "numerical",
     "type": "numerical",
     "mock_only": true,
-    "description": "You plan an A/B test for a checkout flow with a baseline conversion rate of 10%. Each group will receive 5,000 users. Using α = 0.05 (two-tailed, z = 1.96) and power = 0.80 (z = 0.842), write a Python function `solve()` that returns the minimum detectable effect (MDE) as an absolute difference, rounded to 4 decimal places.\n\nUse the formula: MDE = (z_α/2 + z_β) × √(2p(1−p) / n)",
+    "description": "You plan an A/B test for a checkout flow with a baseline conversion rate of 10%. Each group will receive 5,000 users. Using \u03b1 = 0.05 (two-tailed, z = 1.96) and power = 0.80 (z = 0.842), write a Python function `solve()` that returns the minimum detectable effect (MDE) as an absolute difference, rounded to 4 decimal places.\n\nUse the formula: MDE = (z_\u03b1/2 + z_\u03b2) \u00d7 \u221a(2p(1\u2212p) / n)",
     "starter_code": "import math\n\ndef solve():\n    # alpha=0.05 two-tailed z=1.96, power=0.80 z=0.842\n    # baseline p=0.10, n=5000 per group\n    pass",
     "expected_code": "import math\n\ndef solve():\n    z_alpha = 1.96\n    z_beta = 0.842\n    p = 0.10\n    n = 5000\n    mde = (z_alpha + z_beta) * math.sqrt(2 * p * (1 - p) / n)\n    return round(mde, 4)",
     "test_cases": [
@@ -657,10 +657,10 @@
         "expected_output": 0.0168
       }
     ],
-    "explanation": "MDE = (1.96 + 0.842) × √(2 × 0.10 × 0.90 / 5000) = 2.802 × √(0.000036) = 2.802 × 0.006 = 0.016812 ≈ 0.0168. This means the experiment can reliably detect a lift as small as 1.68 percentage points (e.g., 10% → 11.68%) with 80% power. Increasing n or baseline variance (p closer to 0.5) would shrink the MDE; requiring higher power or a smaller α would widen it.",
+    "explanation": "MDE = (1.96 + 0.842) \u00d7 \u221a(2 \u00d7 0.10 \u00d7 0.90 / 5000) = 2.802 \u00d7 \u221a(0.000036) = 2.802 \u00d7 0.006 = 0.016812 \u2248 0.0168. This means the experiment can reliably detect a lift as small as 1.68 percentage points (e.g., 10% \u2192 11.68%) with 80% power. Increasing n or baseline variance (p closer to 0.5) would shrink the MDE; requiring higher power or a smaller \u03b1 would widen it.",
     "hints": [
-      "The MDE formula combines the critical value for your significance level (z_α/2) and for your desired power (z_β), then scales by the standard deviation of the proportion difference under the null.",
-      "√(2p(1−p)/n) is the standard error of the difference between two proportions when both groups have the same n and the same null-hypothesis rate p."
+      "The MDE formula combines the critical value for your significance level (z_\u03b1/2) and for your desired power (z_\u03b2), then scales by the standard deviation of the proportion difference under the null.",
+      "\u221a(2p(1\u2212p)/n) is the standard error of the difference between two proportions when both groups have the same n and the same null-hypothesis rate p."
     ],
     "concepts": [
       "minimum detectable effect",
@@ -678,7 +678,7 @@
     "subtype": "numerical",
     "type": "numerical",
     "mock_only": true,
-    "description": "In a two-week A/B test, you have the following group-level statistics:\n\n- Treatment: post-experiment mean revenue = 12.5, pre-experiment mean revenue = 11.2\n- Control: post-experiment mean revenue = 12.0, pre-experiment mean revenue = 10.8\n- Grand pre-experiment mean across all users: 11.0\n- θ (CUPED coefficient estimated from pooled data): 0.8\n\nWrite a Python function `solve()` that returns the CUPED-adjusted treatment effect (adjusted treatment mean minus adjusted control mean), rounded to 4 decimal places.\n\nFormula: Y_cuped = Y_post − θ × (X_pre − X_pre_grand)",
+    "description": "In a two-week A/B test, you have the following group-level statistics:\n\n- Treatment: post-experiment mean revenue = 12.5, pre-experiment mean revenue = 11.2\n- Control: post-experiment mean revenue = 12.0, pre-experiment mean revenue = 10.8\n- Grand pre-experiment mean across all users: 11.0\n- \u03b8 (CUPED coefficient estimated from pooled data): 0.8\n\nWrite a Python function `solve()` that returns the CUPED-adjusted treatment effect (adjusted treatment mean minus adjusted control mean), rounded to 4 decimal places.\n\nFormula: Y_cuped = Y_post \u2212 \u03b8 \u00d7 (X_pre \u2212 X_pre_grand)",
     "starter_code": "def solve():\n    # Compute CUPED-adjusted mean for each group, then return the difference\n    pass",
     "expected_code": "def solve():\n    theta = 0.8\n    x_grand = 11.0\n\n    y_post_t, x_pre_t = 12.5, 11.2\n    y_post_c, x_pre_c = 12.0, 10.8\n\n    y_cuped_t = y_post_t - theta * (x_pre_t - x_grand)\n    y_cuped_c = y_post_c - theta * (x_pre_c - x_grand)\n\n    return round(y_cuped_t - y_cuped_c, 4)",
     "test_cases": [
@@ -687,10 +687,10 @@
         "expected_output": 0.18
       }
     ],
-    "explanation": "CUPED (Controlled-experiment Using Pre-Experiment Data) adjusts each group's post-experiment mean using a pre-experiment covariate to reduce variance. Treatment adjusted: 12.5 − 0.8×(11.2−11.0) = 12.5 − 0.16 = 12.34. Control adjusted: 12.0 − 0.8×(10.8−11.0) = 12.0 + 0.16 = 12.16. Adjusted effect = 12.34 − 12.16 = 0.18. The raw effect was 12.5 − 12.0 = 0.5, but pre-experiment imbalance (treatment group had higher pre-experiment revenue) explained 0.32 of it. CUPED recovers the true effect by removing this covariate-driven component.",
+    "explanation": "CUPED (Controlled-experiment Using Pre-Experiment Data) adjusts each group's post-experiment mean using a pre-experiment covariate to reduce variance. Treatment adjusted: 12.5 \u2212 0.8\u00d7(11.2\u221211.0) = 12.5 \u2212 0.16 = 12.34. Control adjusted: 12.0 \u2212 0.8\u00d7(10.8\u221211.0) = 12.0 + 0.16 = 12.16. Adjusted effect = 12.34 \u2212 12.16 = 0.18. The raw effect was 12.5 \u2212 12.0 = 0.5, but pre-experiment imbalance (treatment group had higher pre-experiment revenue) explained 0.32 of it. CUPED recovers the true effect by removing this covariate-driven component.",
     "hints": [
-      "The CUPED formula removes the linear component of the correlation between the pre-experiment metric and the post-experiment outcome. A higher θ means stronger correlation and more adjustment.",
-      "The grand pre-experiment mean X_pre_grand is the same for both groups — it centres the covariate. Each group's pre-experiment deviation from this mean drives its adjustment."
+      "The CUPED formula removes the linear component of the correlation between the pre-experiment metric and the post-experiment outcome. A higher \u03b8 means stronger correlation and more adjustment.",
+      "The grand pre-experiment mean X_pre_grand is the same for both groups \u2014 it centres the covariate. Each group's pre-experiment deviation from this mean drives its adjustment."
     ],
     "concepts": [
       "CUPED",
@@ -706,8 +706,8 @@
     "id": 73027,
     "title": "MCAR, MAR, and MNAR Missingness Mechanisms",
     "subtype": "conceptual",
-    "type": "mcq",
-    "description": "A survey on weekly exercise hours has 30% missing responses. Data scientists consider three possible missingness mechanisms. Which of the following scenarios correctly describes MNAR (Missing Not At Random) — the most analytically dangerous mechanism?",
+    "type": "conceptual",
+    "description": "A survey on weekly exercise hours has 30% missing responses. Data scientists consider three possible missingness mechanisms. Which of the following scenarios correctly describes MNAR (Missing Not At Random) \u2014 the most analytically dangerous mechanism?",
     "options": [
       "Responses are missing because a software glitch randomly dropped every third submission regardless of its content",
       "Responses are missing because the glitch dropped submissions from users who logged in on mobile; mobile usage is recorded and is unrelated to exercise habits",
@@ -715,7 +715,7 @@
       "Responses are missing because older users (who exercise less on average) are less comfortable with the survey technology; age is recorded in the dataset"
     ],
     "correct_option": 3,
-    "explanation": "MNAR means the probability of missingness depends on the missing value itself — people who exercise little are more likely to skip precisely because of their low exercise level. The observed data will systematically overestimate exercise frequency, and this bias cannot be corrected using observed variables alone. Option A is MCAR (missingness is fully random, independent of all variables — safe to ignore with a complete-case analysis). Option B is also approximately MCAR since mobile usage is unrelated to exercise. Option D is MAR: missingness depends on age (an observed variable), so it can be addressed using multiple imputation or model-based methods that condition on age.",
+    "explanation": "MNAR means the probability of missingness depends on the missing value itself \u2014 people who exercise little are more likely to skip precisely because of their low exercise level. The observed data will systematically overestimate exercise frequency, and this bias cannot be corrected using observed variables alone. Option A is MCAR (missingness is fully random, independent of all variables \u2014 safe to ignore with a complete-case analysis). Option B is also approximately MCAR since mobile usage is unrelated to exercise. Option D is MAR: missingness depends on age (an observed variable), so it can be addressed using multiple imputation or model-based methods that condition on age.",
     "hints": [
       "For each scenario, ask: 'Does the probability of missingness depend on the unobserved value itself, or only on observed variables?' If the answer is the former, it is MNAR.",
       "MCAR and MAR can both be handled with standard imputation. MNAR requires sensitivity analysis or external data because the missingness pattern is baked into the missing values."
@@ -733,19 +733,19 @@
   },
   {
     "id": 73028,
-    "title": "Causal DAG — Collider Bias",
+    "title": "Causal DAG \u2014 Collider Bias",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "mock_only": true,
-    "description": "A recruiter analyses employees who passed a technical screening (S) and observes a negative correlation between years of coding experience (X) and performance on a system design question (Y). In the full candidate pool, no such correlation exists.\n\nThe causal DAG is: X (Coding Experience) → S (Passed Screening) ← Y (System Design Ability)\n\nWhat is the correct statistical explanation for the negative correlation observed within the screened group?",
+    "description": "A recruiter analyses employees who passed a technical screening (S) and observes a negative correlation between years of coding experience (X) and performance on a system design question (Y). In the full candidate pool, no such correlation exists.\n\nThe causal DAG is: X (Coding Experience) \u2192 S (Passed Screening) \u2190 Y (System Design Ability)\n\nWhat is the correct statistical explanation for the negative correlation observed within the screened group?",
     "options": [
       "Coding experience causes candidates to over-prepare for system design practice, reducing their novel thinking ability",
-      "Collider bias: Passed Screening (S) is a collider — caused by both X and Y; conditioning on passing the screening opens a spurious path between X and Y, creating a negative correlation within the filtered group",
+      "Collider bias: Passed Screening (S) is a collider \u2014 caused by both X and Y; conditioning on passing the screening opens a spurious path between X and Y, creating a negative correlation within the filtered group",
       "Confounding: Passed Screening is a confounder that causally affects both coding experience and system design ability, and should be adjusted for to remove bias",
       "Survivorship bias: candidates who failed screening are excluded, but this only reduces sample size and does not distort the correlation structure"
     ],
     "correct_option": 1,
-    "explanation": "A collider is a variable with two incoming arrows (A → C ← B). Conditioning on a collider (here, selecting only screened candidates) opens a non-causal association between its parents (X and Y) even if X and Y are independent in the population. Intuitively: among those who passed screening, a candidate with weak system design skills must have strong coding experience to have been admitted (and vice versa), creating a negative correlation purely as an artefact of the selection filter. This is sometimes called Berkson's bias and is a special case of selection bias. The fix is to analyse the full candidate pool, not the filtered subgroup — never condition on a collider.",
+    "explanation": "A collider is a variable with two incoming arrows (A \u2192 C \u2190 B). Conditioning on a collider (here, selecting only screened candidates) opens a non-causal association between its parents (X and Y) even if X and Y are independent in the population. Intuitively: among those who passed screening, a candidate with weak system design skills must have strong coding experience to have been admitted (and vice versa), creating a negative correlation purely as an artefact of the selection filter. This is sometimes called Berkson's bias and is a special case of selection bias. The fix is to analyse the full candidate pool, not the filtered subgroup \u2014 never condition on a collider.",
     "hints": [
       "A confounder has arrows pointing TO both the treatment and outcome. A collider has arrows pointing FROM both the treatment and outcome. Which pattern does Passed Screening fit?",
       "Think about who makes it through screening: to pass without strong system design, you need exceptional coding skills. Does this create a within-group negative correlation even if the two skills are independent in the population?"
@@ -764,20 +764,20 @@
     "id": 73029,
     "title": "Non-Parametric Test Selection When Assumptions Fail",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "mock_only": true,
-    "description": "An analyst is comparing daily checkout values (in USD) between a treatment group (n=52) and a control group (n=50) from an A/B test. Before running a t-test, they check assumptions:\n\n• Shapiro-Wilk test on both groups: p < 0.001 (strongly rejects normality in both)\n• Both distributions are severely right-skewed with several high-value outliers\n• Levene's test rejects equal variance (p = 0.018)\n• The two groups are independent (no natural pairing)\n\nThe analyst's question is: does the treatment group tend to produce higher checkout values than the control group?\n\nWhich test is most appropriate?",
+    "description": "An analyst is comparing daily checkout values (in USD) between a treatment group (n=52) and a control group (n=50) from an A/B test. Before running a t-test, they check assumptions:\n\n\u2022 Shapiro-Wilk test on both groups: p < 0.001 (strongly rejects normality in both)\n\u2022 Both distributions are severely right-skewed with several high-value outliers\n\u2022 Levene's test rejects equal variance (p = 0.018)\n\u2022 The two groups are independent (no natural pairing)\n\nThe analyst's question is: does the treatment group tend to produce higher checkout values than the control group?\n\nWhich test is most appropriate?",
     "options": [
-      "Welch's two-sample t-test — adjusts the degrees of freedom to account for unequal variances, making it valid here since the equal-variance assumption is handled and the sample sizes are large enough for the CLT to apply",
-      "Mann-Whitney U test — a rank-based test that requires neither normality nor equal variance; tests whether observations from one distribution tend to rank higher than the other; appropriate for two independent non-normal groups",
-      "Log-transform both groups to reduce skew, then apply Student's two-sample t-test — the transformation should bring both distributions close enough to normality that the t-test is valid, while preserving the comparison between groups",
-      "Kruskal-Wallis test — a non-parametric test that makes no normality assumption; appropriate here because both normality and equal-variance assumptions have been violated"
+      "Welch's two-sample t-test \u2014 adjusts the degrees of freedom to account for unequal variances, making it valid here since the equal-variance assumption is handled and the sample sizes are large enough for the CLT to apply",
+      "Mann-Whitney U test \u2014 a rank-based test that requires neither normality nor equal variance; tests whether observations from one distribution tend to rank higher than the other; appropriate for two independent non-normal groups",
+      "Log-transform both groups to reduce skew, then apply Student's two-sample t-test \u2014 the transformation should bring both distributions close enough to normality that the t-test is valid, while preserving the comparison between groups",
+      "Kruskal-Wallis test \u2014 a non-parametric test that makes no normality assumption; appropriate here because both normality and equal-variance assumptions have been violated"
     ],
     "correct_option": 1,
-    "explanation": "Option B (Mann-Whitney U) is correct. When normality is violated for two independent groups, the Mann-Whitney U test (also called the Wilcoxon rank-sum test) is the standard non-parametric alternative. It tests H₀: P(X > Y) = 0.5 — whether observations from the treatment distribution tend to rank above control observations — without assuming any particular distributional shape or equal variances. At n=50–52, the normal approximation to the Mann-Whitney statistic is accurate and the test has good power.\n\nOption A (Welch's t-test) only addresses the unequal-variance problem. It still relies on the t-distribution approximation, which requires the sampling distribution of the group means to be approximately normal. For severely right-skewed distributions with outliers, the CLT convergence at n≈50 is unreliable — the sampling distribution of the mean is still skewed, making the p-values and confidence intervals from a t-test invalid. Welch's t-test is the right fix for unequal variance when distributions are already approximately normal; it is not a remedy for non-normality.\n\nOption C (log-transform + t-test) is a common and sometimes valid approach for right-skewed positive data. Its limitation here is that the transformation changes the estimand: the test is no longer asking whether the treatment group tends to produce higher checkout values on the original dollar scale — it is asking whether the geometric means differ. If the analyst's question is about the original scale (as stated), the log-transformed analysis answers a different question. Additionally, if the transformed distributions still fail normality checks, the same problem recurs with added complexity.\n\nOption D (Kruskal-Wallis) is technically valid for two groups — it reduces to Mann-Whitney U in the two-group case — but it is the non-parametric alternative to one-way ANOVA, designed for three or more independent groups. Using it for a two-group comparison works mathematically but signals either a misapplication of the test's purpose or an overgeneralised approach. The appropriate tool for comparing exactly two independent non-normal distributions is Mann-Whitney U.",
+    "explanation": "Option B (Mann-Whitney U) is correct. When normality is violated for two independent groups, the Mann-Whitney U test (also called the Wilcoxon rank-sum test) is the standard non-parametric alternative. It tests H\u2080: P(X > Y) = 0.5 \u2014 whether observations from the treatment distribution tend to rank above control observations \u2014 without assuming any particular distributional shape or equal variances. At n=50\u201352, the normal approximation to the Mann-Whitney statistic is accurate and the test has good power.\n\nOption A (Welch's t-test) only addresses the unequal-variance problem. It still relies on the t-distribution approximation, which requires the sampling distribution of the group means to be approximately normal. For severely right-skewed distributions with outliers, the CLT convergence at n\u224850 is unreliable \u2014 the sampling distribution of the mean is still skewed, making the p-values and confidence intervals from a t-test invalid. Welch's t-test is the right fix for unequal variance when distributions are already approximately normal; it is not a remedy for non-normality.\n\nOption C (log-transform + t-test) is a common and sometimes valid approach for right-skewed positive data. Its limitation here is that the transformation changes the estimand: the test is no longer asking whether the treatment group tends to produce higher checkout values on the original dollar scale \u2014 it is asking whether the geometric means differ. If the analyst's question is about the original scale (as stated), the log-transformed analysis answers a different question. Additionally, if the transformed distributions still fail normality checks, the same problem recurs with added complexity.\n\nOption D (Kruskal-Wallis) is technically valid for two groups \u2014 it reduces to Mann-Whitney U in the two-group case \u2014 but it is the non-parametric alternative to one-way ANOVA, designed for three or more independent groups. Using it for a two-group comparison works mathematically but signals either a misapplication of the test's purpose or an overgeneralised approach. The appropriate tool for comparing exactly two independent non-normal distributions is Mann-Whitney U.",
     "hints": [
       "Two assumptions have been violated: normality and equal variance. Welch's t-test addresses one of these; the correct answer addresses both without modifying the data or changing what is being measured.",
-      "The test you need compares two independent non-normal groups by ranking all observations together and asking whether one group's ranks tend to be higher — it requires only that the distributions are continuous and the observations are independent."
+      "The test you need compares two independent non-normal groups by ranking all observations together and asking whether one group's ranks tend to be higher \u2014 it requires only that the distributions are continuous and the observations are independent."
     ],
     "concepts": [
       "non-parametric tests",
@@ -792,17 +792,17 @@
     "id": 73030,
     "title": "Logistic Regression Coefficient Interpretation",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "mock_only": true,
-    "description": "A data scientist fits a binary logistic regression to predict customer churn. The single predictor is months_since_last_purchase. The fitted coefficient is β = 0.43 (the intercept is not shown). A non-technical stakeholder asks what this number means in plain English.\n\nWhich interpretation is correct?",
+    "description": "A data scientist fits a binary logistic regression to predict customer churn. The single predictor is months_since_last_purchase. The fitted coefficient is \u03b2 = 0.43 (the intercept is not shown). A non-technical stakeholder asks what this number means in plain English.\n\nWhich interpretation is correct?",
     "options": [
       "For each additional month since last purchase, the probability of churn increases by 43 percentage points",
-      "For each additional month since last purchase, the log-odds of churn increase by 0.43 — meaning the odds of churning are multiplied by e^0.43 ≈ 1.54, a 54% increase in the odds of churn",
+      "For each additional month since last purchase, the log-odds of churn increase by 0.43 \u2014 meaning the odds of churning are multiplied by e^0.43 \u2248 1.54, a 54% increase in the odds of churn",
       "For each additional month since last purchase, the odds of churn increase by 0.43",
-      "For each additional month since last purchase, a customer is 1.54 times more likely to churn — meaning their churn probability is multiplied by 1.54"
+      "For each additional month since last purchase, a customer is 1.54 times more likely to churn \u2014 meaning their churn probability is multiplied by 1.54"
     ],
     "correct_option": 1,
-    "explanation": "Option B is correct. In logistic regression the coefficient β represents the change in log-odds per unit increase in the predictor. Exponentiating gives the odds ratio: e^0.43 ≈ 1.54, meaning the odds of churn are multiplied by 1.54 for each additional month of inactivity. This is the only interpretation that correctly identifies what β operates on (log-odds) and correctly converts it to an odds ratio.\n\nOption A mistakes β for a probability change. A 43 percentage-point increase in churn probability per month would produce absurd predictions — after just three months, probability would exceed 100%. Log-odds are unbounded; probabilities are not. The logistic link function exists precisely to map an unbounded linear score onto the (0, 1) probability interval.\n\nOption C mistakes log-odds for odds. β is added to the log-odds (additive on the log scale), which corresponds to multiplication on the odds scale (factor of e^β). Saying 'odds increase by 0.43' confuses additive log-odds change with additive odds change. The correct statement is that odds are multiplied by e^0.43 ≈ 1.54, not incremented by 0.43.\n\nOption D confuses an odds ratio with a probability ratio. A 1.54× increase in odds does not imply a 1.54× increase in probability. The relationship between the two depends on the baseline probability. For a rare event (e.g., 5% baseline churn), an odds ratio of 1.54 yields a probability ratio close to 1.54. For a common event (e.g., 40% baseline churn), the probability ratio is substantially lower. Odds ratios and probability ratios are approximately interchangeable only when the outcome is very rare.",
+    "explanation": "Option B is correct. In logistic regression the coefficient \u03b2 represents the change in log-odds per unit increase in the predictor. Exponentiating gives the odds ratio: e^0.43 \u2248 1.54, meaning the odds of churn are multiplied by 1.54 for each additional month of inactivity. This is the only interpretation that correctly identifies what \u03b2 operates on (log-odds) and correctly converts it to an odds ratio.\n\nOption A mistakes \u03b2 for a probability change. A 43 percentage-point increase in churn probability per month would produce absurd predictions \u2014 after just three months, probability would exceed 100%. Log-odds are unbounded; probabilities are not. The logistic link function exists precisely to map an unbounded linear score onto the (0, 1) probability interval.\n\nOption C mistakes log-odds for odds. \u03b2 is added to the log-odds (additive on the log scale), which corresponds to multiplication on the odds scale (factor of e^\u03b2). Saying 'odds increase by 0.43' confuses additive log-odds change with additive odds change. The correct statement is that odds are multiplied by e^0.43 \u2248 1.54, not incremented by 0.43.\n\nOption D confuses an odds ratio with a probability ratio. A 1.54\u00d7 increase in odds does not imply a 1.54\u00d7 increase in probability. The relationship between the two depends on the baseline probability. For a rare event (e.g., 5% baseline churn), an odds ratio of 1.54 yields a probability ratio close to 1.54. For a common event (e.g., 40% baseline churn), the probability ratio is substantially lower. Odds ratios and probability ratios are approximately interchangeable only when the outcome is very rare.",
     "hints": [
       "Logistic regression models the log-odds of the outcome, not the probability directly. What does adding 0.43 to the log-odds correspond to on the odds scale?",
       "Exponentiate the coefficient to convert from the log-odds scale to the odds scale. Then ask: is an odds ratio the same thing as a probability ratio?"
@@ -820,20 +820,20 @@
     "id": 73031,
     "title": "Residual Diagnostics and Linear Model Assumption Failure",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "mock_only": true,
     "description": "An analyst fits a simple linear regression of house sale price on square footage. Three diagnostic plots are produced:\n\n1. Residuals vs Fitted: the spread of residuals increases as fitted values increase, forming a clear fan (cone) shape\n2. QQ plot of residuals: points follow the diagonal in the middle range but both tails curve away from it\n3. Residuals vs Predictor (square footage): residuals are scattered randomly with no discernible pattern\n\nWhich assumption is most directly violated, and what is the appropriate first remediation step?",
     "options": [
-      "Independence of errors — the fan shape indicates autocorrelated residuals across observations; run a Durbin-Watson test and, if confirmed, switch to a GLS or time-series model",
-      "Homoscedasticity (constant variance) — the fan shape in residuals vs fitted is the canonical signal of heteroscedasticity; appropriate first steps include log-transforming the response or using weighted least squares",
-      "Normality of residuals — the QQ tail deviation is the primary signal; the fan shape is a coincidental artefact of a few high-leverage points; apply a Box-Cox transformation to the response",
-      "Linearity — the fan shape indicates a missing non-linear term; add a quadratic term for square footage"
+      "Independence of errors \u2014 the fan shape indicates autocorrelated residuals across observations; run a Durbin-Watson test and, if confirmed, switch to a GLS or time-series model",
+      "Homoscedasticity (constant variance) \u2014 the fan shape in residuals vs fitted is the canonical signal of heteroscedasticity; appropriate first steps include log-transforming the response or using weighted least squares",
+      "Normality of residuals \u2014 the QQ tail deviation is the primary signal; the fan shape is a coincidental artefact of a few high-leverage points; apply a Box-Cox transformation to the response",
+      "Linearity \u2014 the fan shape indicates a missing non-linear term; add a quadratic term for square footage"
     ],
     "correct_option": 1,
-    "explanation": "Option B is correct. A fan (cone) shape in the residuals-vs-fitted plot — where spread grows as fitted values increase — is the canonical diagnostic for heteroscedasticity: the variance of the errors is not constant across the range of predicted values. For house prices, this is expected behaviour because the absolute range of prices is much larger for expensive properties than cheap ones. The primary remediation options are a log- or square-root transformation of the response (which often stabilises variance for right-skewed, multiplicative outcomes like prices) or weighted least squares, where weights are inversely proportional to the estimated error variance.\n\nOption A misreads the fan shape as evidence of correlated errors (independence violation). Autocorrelation in residuals manifests as a structured pattern when residuals are plotted in time or spatial order — not as increasing spread across fitted values. The Durbin-Watson test is designed for first-order autocorrelation in time-ordered data, not for diagnosing heteroscedasticity.\n\nOption C misidentifies the QQ tail deviation as the primary violation. Fat tails in the QQ plot of pooled residuals are a common secondary symptom of heteroscedasticity: when variance is higher for large fitted values, the pooled residual distribution has heavier tails than a normal distribution even if errors at each fitted value are locally normal. Treating the QQ deviation as the root cause and applying Box-Cox first is addressing a symptom. Resolving the heteroscedasticity (e.g., via log transform) will typically normalise the QQ plot as a side effect.\n\nOption D inverts the reading of the third plot. Random scatter in residuals-vs-predictor is the desired outcome: it indicates that the linearity assumption holds. A non-linear relationship would produce a curved or U-shaped pattern in that plot. The fan shape in plot 1 is not evidence of missing curvature — it is evidence of non-constant variance.",
+    "explanation": "Option B is correct. A fan (cone) shape in the residuals-vs-fitted plot \u2014 where spread grows as fitted values increase \u2014 is the canonical diagnostic for heteroscedasticity: the variance of the errors is not constant across the range of predicted values. For house prices, this is expected behaviour because the absolute range of prices is much larger for expensive properties than cheap ones. The primary remediation options are a log- or square-root transformation of the response (which often stabilises variance for right-skewed, multiplicative outcomes like prices) or weighted least squares, where weights are inversely proportional to the estimated error variance.\n\nOption A misreads the fan shape as evidence of correlated errors (independence violation). Autocorrelation in residuals manifests as a structured pattern when residuals are plotted in time or spatial order \u2014 not as increasing spread across fitted values. The Durbin-Watson test is designed for first-order autocorrelation in time-ordered data, not for diagnosing heteroscedasticity.\n\nOption C misidentifies the QQ tail deviation as the primary violation. Fat tails in the QQ plot of pooled residuals are a common secondary symptom of heteroscedasticity: when variance is higher for large fitted values, the pooled residual distribution has heavier tails than a normal distribution even if errors at each fitted value are locally normal. Treating the QQ deviation as the root cause and applying Box-Cox first is addressing a symptom. Resolving the heteroscedasticity (e.g., via log transform) will typically normalise the QQ plot as a side effect.\n\nOption D inverts the reading of the third plot. Random scatter in residuals-vs-predictor is the desired outcome: it indicates that the linearity assumption holds. A non-linear relationship would produce a curved or U-shaped pattern in that plot. The fan shape in plot 1 is not evidence of missing curvature \u2014 it is evidence of non-constant variance.",
     "hints": [
-      "Each diagnostic plot tests a different assumption: residuals vs fitted → constant variance; QQ plot → normality; residuals vs predictor → linearity. Which plot shows the clearest systematic departure from the expected pattern?",
-      "A fan shape that widens as fitted values increase has one canonical name in regression diagnostics. Which assumption requires the spread of residuals to be constant — not growing — across all levels of the fitted value?"
+      "Each diagnostic plot tests a different assumption: residuals vs fitted \u2192 constant variance; QQ plot \u2192 normality; residuals vs predictor \u2192 linearity. Which plot shows the clearest systematic departure from the expected pattern?",
+      "A fan shape that widens as fitted values increase has one canonical name in regression diagnostics. Which assumption requires the spread of residuals to be constant \u2014 not growing \u2014 across all levels of the fitted value?"
     ],
     "concepts": [
       "residual diagnostics",
@@ -848,20 +848,20 @@
     "id": 73032,
     "title": "Causal DAG: Confounder, Mediator, or Collider",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "mock_only": true,
-    "description": "A researcher studies the causal effect of regular exercise (X) on cardiovascular health (Y). Three additional variables are under consideration for inclusion in a regression:\n\n• Age (Z₁): older individuals exercise less AND have worse cardiovascular health through independent ageing mechanisms — age is not caused by exercise\n• Resting heart rate (Z₂): exercise lowers resting heart rate, and a lower resting heart rate directly improves cardiovascular health; resting heart rate sits on the causal pathway from X to Y\n• Insurance status (Z₃): driven by income (which correlates with exercise habits) and by current health status; income was not measured in the study\n\nWhat is the correct classification and adjustment decision for each variable?",
+    "description": "A researcher studies the causal effect of regular exercise (X) on cardiovascular health (Y). Three additional variables are under consideration for inclusion in a regression:\n\n\u2022 Age (Z\u2081): older individuals exercise less AND have worse cardiovascular health through independent ageing mechanisms \u2014 age is not caused by exercise\n\u2022 Resting heart rate (Z\u2082): exercise lowers resting heart rate, and a lower resting heart rate directly improves cardiovascular health; resting heart rate sits on the causal pathway from X to Y\n\u2022 Insurance status (Z\u2083): driven by income (which correlates with exercise habits) and by current health status; income was not measured in the study\n\nWhat is the correct classification and adjustment decision for each variable?",
     "options": [
-      "Z₁ is a confounder → adjust for it. Z₂ is a mediator → do not adjust (conditioning blocks the causal path of interest). Z₃ is a collider → do not adjust (conditioning opens a spurious path through unmeasured income)",
-      "Z₁ is a mediator → do not adjust. Z₂ is a confounder → adjust. Z₃ is a collider → do not adjust",
-      "Z₁ is a confounder → adjust. Z₂ is a confounder → also adjust. Z₃ is a mediator → do not adjust",
+      "Z\u2081 is a confounder \u2192 adjust for it. Z\u2082 is a mediator \u2192 do not adjust (conditioning blocks the causal path of interest). Z\u2083 is a collider \u2192 do not adjust (conditioning opens a spurious path through unmeasured income)",
+      "Z\u2081 is a mediator \u2192 do not adjust. Z\u2082 is a confounder \u2192 adjust. Z\u2083 is a collider \u2192 do not adjust",
+      "Z\u2081 is a confounder \u2192 adjust. Z\u2082 is a confounder \u2192 also adjust. Z\u2083 is a mediator \u2192 do not adjust",
       "All three should be included as controls; adjusting for more variables always reduces residual confounding and produces a less biased causal estimate"
     ],
     "correct_option": 0,
-    "explanation": "Option A is correct.\n\nZ₁ (Age) is a confounder: it has causal arrows into both the treatment (X, exercise) and the outcome (Y, cardiovascular health) through pathways that do not run through X. Omitting age leaves a backdoor path open — the observed association between X and Y would partially reflect the age effect rather than the exercise effect. Adjusting for age closes this backdoor path and isolates the causal effect of exercise.\n\nZ₂ (Resting heart rate) is a mediator: it lies on the causal pathway X → Z₂ → Y (exercise reduces resting heart rate, which improves health). Conditioning on a mediator blocks part of the very causal effect being measured. If the goal is to estimate the total causal effect of exercise on cardiovascular health — including the portion operating through resting heart rate — Z₂ must be excluded. Adjusting for it would remove that mechanistic pathway from the estimate and produce an underestimate of the total effect. Include a mediator only when the goal is specifically to estimate the direct effect that bypasses that mechanism.\n\nZ₃ (Insurance status) is a collider: it is caused by both income (which influences exercise habits) and by health status. A collider does not confound the X–Y relationship when left unadjusted — there is no open backdoor path through it. Conditioning on a collider opens a spurious association between its causes: adjusting for insurance status would activate a path through the unmeasured variable income, introducing bias that was not present before adjustment.\n\nOption B misclassifies both Z₁ and Z₂: age is not downstream of exercise (it cannot be a mediator) and resting heart rate is caused by exercise (it cannot be a confounder — a confounder must not be caused by the treatment). Option C treats resting heart rate as a second confounder, missing its mediator role. Option D is wrong in principle: indiscriminate adjustment is one of the most common causal inference errors. Adjusting for a mediator removes the effect of interest; adjusting for a collider creates new bias.",
+    "explanation": "Option A is correct.\n\nZ\u2081 (Age) is a confounder: it has causal arrows into both the treatment (X, exercise) and the outcome (Y, cardiovascular health) through pathways that do not run through X. Omitting age leaves a backdoor path open \u2014 the observed association between X and Y would partially reflect the age effect rather than the exercise effect. Adjusting for age closes this backdoor path and isolates the causal effect of exercise.\n\nZ\u2082 (Resting heart rate) is a mediator: it lies on the causal pathway X \u2192 Z\u2082 \u2192 Y (exercise reduces resting heart rate, which improves health). Conditioning on a mediator blocks part of the very causal effect being measured. If the goal is to estimate the total causal effect of exercise on cardiovascular health \u2014 including the portion operating through resting heart rate \u2014 Z\u2082 must be excluded. Adjusting for it would remove that mechanistic pathway from the estimate and produce an underestimate of the total effect. Include a mediator only when the goal is specifically to estimate the direct effect that bypasses that mechanism.\n\nZ\u2083 (Insurance status) is a collider: it is caused by both income (which influences exercise habits) and by health status. A collider does not confound the X\u2013Y relationship when left unadjusted \u2014 there is no open backdoor path through it. Conditioning on a collider opens a spurious association between its causes: adjusting for insurance status would activate a path through the unmeasured variable income, introducing bias that was not present before adjustment.\n\nOption B misclassifies both Z\u2081 and Z\u2082: age is not downstream of exercise (it cannot be a mediator) and resting heart rate is caused by exercise (it cannot be a confounder \u2014 a confounder must not be caused by the treatment). Option C treats resting heart rate as a second confounder, missing its mediator role. Option D is wrong in principle: indiscriminate adjustment is one of the most common causal inference errors. Adjusting for a mediator removes the effect of interest; adjusting for a collider creates new bias.",
     "hints": [
       "Draw the arrow direction for each variable: does it point INTO X and Y from outside (confounder), sit BETWEEN X and Y on a causal path (mediator), or receive arrows FROM both X's causes and Y (collider)?",
-      "For estimating the total causal effect of X on Y: close backdoor paths by adjusting for confounders; leave mediating paths open by not adjusting for mediators; never condition on colliders — it opens paths rather than closing them."
+      "For estimating the total causal effect of X on Y: close backdoor paths by adjusting for confounders; leave mediating paths open by not adjusting for mediators; never condition on colliders \u2014 it opens paths rather than closing them."
     ],
     "concepts": [
       "causal DAG",
@@ -877,20 +877,20 @@
     "id": 73033,
     "title": "Bayesian vs Frequentist Framing for a Weak-Evidence Launch Decision",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "mock_only": true,
-    "description": "A product team runs an A/B test on a new onboarding flow. After 3 weeks: treatment conversion 3.4%, control 3.1%, relative lift +9.7%, two-sided p-value = 0.11. The team has historical context: over the past 18 months they shipped 8 similar onboarding changes — 6 showed positive lifts between 5–15%, 2 showed small negative effects.\n\nA stakeholder asks: 'The p-value didn't reach 0.05. Should we launch?'\n\nWhich analytical response is most defensible?",
+    "description": "A product team runs an A/B test on a new onboarding flow. After 3 weeks: treatment conversion 3.4%, control 3.1%, relative lift +9.7%, two-sided p-value = 0.11. The team has historical context: over the past 18 months they shipped 8 similar onboarding changes \u2014 6 showed positive lifts between 5\u201315%, 2 showed small negative effects.\n\nA stakeholder asks: 'The p-value didn't reach 0.05. Should we launch?'\n\nWhich analytical response is most defensible?",
     "options": [
-      "Report that p = 0.11 does not meet the pre-specified α = 0.05 threshold; the null hypothesis is not rejected; do not launch without collecting more data. The historical success rate of past experiments is irrelevant to this experiment's decision.",
-      "Use the 8 historical experiments as an empirical prior — the base rate of positive effects is 75% (6/8). Combine this prior with the current experiment's likelihood to form a posterior distribution over the true lift. The posterior probability that the lift is positive is likely well above 50%, which supports a phased rollout with continued monitoring rather than a binary launch-or-not call.",
+      "Report that p = 0.11 does not meet the pre-specified \u03b1 = 0.05 threshold; the null hypothesis is not rejected; do not launch without collecting more data. The historical success rate of past experiments is irrelevant to this experiment's decision.",
+      "Use the 8 historical experiments as an empirical prior \u2014 the base rate of positive effects is 75% (6/8). Combine this prior with the current experiment's likelihood to form a posterior distribution over the true lift. The posterior probability that the lift is positive is likely well above 50%, which supports a phased rollout with continued monitoring rather than a binary launch-or-not call.",
       "Ignore the p-value: a 9.7% relative lift is large enough to be practically significant regardless of statistical significance. Rerun the experiment with a larger sample targeting 80% power for a 10% relative lift and launch if it replicates.",
-      "Switch to a one-sided test since the prior expectation was a positive lift; this halves the p-value to approximately 0.055, which is close enough to α = 0.05 to justify launching."
+      "Switch to a one-sided test since the prior expectation was a positive lift; this halves the p-value to approximately 0.055, which is close enough to \u03b1 = 0.05 to justify launching."
     ],
     "correct_option": 1,
-    "explanation": "Option B is correct. The frequentist p-value answers a narrow question: how surprising is this data under the null hypothesis of zero effect? It does not answer the decision question: what is the probability that launching this feature produces a positive outcome? The 8 historical experiments provide genuine prior information — a 75% empirical base rate of positive effects is exactly what a Bayesian prior is designed to encode. Combining this prior with the current experiment's likelihood through Bayes' theorem yields a posterior distribution over the true effect. Even with p = 0.11, the posterior probability that the true lift is positive may be 80–85% given the strong historical base rate. This posterior probability directly answers the stakeholder's decision question. A phased rollout with monitoring is a rational response to posterior uncertainty rather than treating the decision as binary.\n\nOption A applies the frequentist decision rule mechanically and explicitly discards the historical context. The p < 0.05 convention is a useful tool for controlling Type I error rates across many independent experiments, but it treats the threshold as a binary gate and ignores informative prior knowledge. In a product environment with relevant historical experiments, this approach is unnecessarily conservative and misses available information.\n\nOption C conflates practical and statistical significance. A 9.7% relative lift is a meaningful effect size if real, but the current experiment's data alone do not establish whether it is real — that is what the statistical test assesses. Recommending a better-powered rerun is reasonable advice, but 'ignore the p-value' treats the data as irrelevant to the inference, which is incorrect. The p-value is informative about the strength of evidence even when a threshold decision rule is not the right framework.\n\nOption D is post-hoc p-hacking. Switching from a two-sided to a one-sided test after observing the direction of the effect inflates the Type I error rate for the experiment. One-sided tests must be pre-specified before data collection to be valid. Applying one retroactively to push p from 0.11 to 0.055 and treating it as a launch justification compounds this error with the mechanical threshold problem from Option A.",
+    "explanation": "Option B is correct. The frequentist p-value answers a narrow question: how surprising is this data under the null hypothesis of zero effect? It does not answer the decision question: what is the probability that launching this feature produces a positive outcome? The 8 historical experiments provide genuine prior information \u2014 a 75% empirical base rate of positive effects is exactly what a Bayesian prior is designed to encode. Combining this prior with the current experiment's likelihood through Bayes' theorem yields a posterior distribution over the true effect. Even with p = 0.11, the posterior probability that the true lift is positive may be 80\u201385% given the strong historical base rate. This posterior probability directly answers the stakeholder's decision question. A phased rollout with monitoring is a rational response to posterior uncertainty rather than treating the decision as binary.\n\nOption A applies the frequentist decision rule mechanically and explicitly discards the historical context. The p < 0.05 convention is a useful tool for controlling Type I error rates across many independent experiments, but it treats the threshold as a binary gate and ignores informative prior knowledge. In a product environment with relevant historical experiments, this approach is unnecessarily conservative and misses available information.\n\nOption C conflates practical and statistical significance. A 9.7% relative lift is a meaningful effect size if real, but the current experiment's data alone do not establish whether it is real \u2014 that is what the statistical test assesses. Recommending a better-powered rerun is reasonable advice, but 'ignore the p-value' treats the data as irrelevant to the inference, which is incorrect. The p-value is informative about the strength of evidence even when a threshold decision rule is not the right framework.\n\nOption D is post-hoc p-hacking. Switching from a two-sided to a one-sided test after observing the direction of the effect inflates the Type I error rate for the experiment. One-sided tests must be pre-specified before data collection to be valid. Applying one retroactively to push p from 0.11 to 0.055 and treating it as a launch justification compounds this error with the mechanical threshold problem from Option A.",
     "hints": [
       "The frequentist p-value answers 'how surprising is this data under the null?' The stakeholder is asking 'what is the probability this feature has a positive effect?' These are different questions. What statistical framework is designed to answer the second one?",
-      "Six of eight past similar experiments showed positive lifts between 5–15%. Which option actually incorporates this historical base rate into the analysis rather than declaring it irrelevant?"
+      "Six of eight past similar experiments showed positive lifts between 5\u201315%. Which option actually incorporates this historical base rate into the analysis rather than declaring it irrelevant?"
     ],
     "concepts": [
       "Bayesian inference",

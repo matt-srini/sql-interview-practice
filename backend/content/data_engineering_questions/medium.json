@@ -29,7 +29,7 @@
     "order": 2,
     "title": "Forward vs Backward Compatibility Trade-offs",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A team enforces FORWARD compatibility on their event schema. A new producer adds a required field `payment_method` with no default value. Old consumers receive events with this new field. What happens?",
     "options": [
       "Old consumers that don't know about `payment_method` may fail or discard the field \u2014 forward compatibility requires that new fields are optional with defaults so old readers can safely ignore them",
@@ -79,7 +79,7 @@
     "order": 4,
     "title": "Micro-Batch vs True Streaming Latency",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A team is building a real-time recommendation system. Events must be processed within 500 milliseconds of arriving to update user affinity scores. They are deciding between micro-batch (10-second trigger intervals) and native event-by-event streaming. Which should they choose, and why?",
     "options": [
       "Native event-by-event streaming \u2014 micro-batch with 10-second intervals introduces at least 10 seconds of latency, violating the 500ms SLA",
@@ -103,7 +103,7 @@
     "order": 5,
     "title": "Stateful Streaming: Session Windows",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A streaming pipeline computes user session windows that close after 30 minutes of inactivity. An e-commerce user adds items to their cart, then goes idle for 45 minutes, then checks out. How many sessions does this create, and why?",
     "options": [
       "Two sessions \u2014 the 30-minute inactivity gap exceeds the session timeout, so the cart-addition events form one session and the checkout event forms a new session",
@@ -178,7 +178,7 @@
     "order": 8,
     "title": "Event Time vs Processing Time",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A mobile app batches events locally and uploads them when connectivity is restored \u2014 sometimes hours later. A streaming job uses processing time for its hourly aggregation windows. What problem does this create?",
     "options": [
       "Events that occurred at 2 PM are processed at 8 PM and assigned to the 8 PM window, making the 2 PM window incomplete and the 8 PM window inflated",
@@ -202,7 +202,7 @@
     "order": 9,
     "title": "Watermark and Window Completeness",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A streaming job uses a 10-minute tumbling window with a 5-minute watermark. An event with event_time = 10:05 AM arrives at processing_time = 10:22 AM. The watermark at 10:22 AM is at 10:17 AM. Is the event included in the 10:00\u201310:10 window?",
     "options": [
       "No \u2014 the watermark at 10:17 AM has already passed the window's end time (10:10 AM), so the 10:00\u201310:10 window is already closed and the event is dropped as late",
@@ -252,7 +252,7 @@
     "order": 11,
     "title": "Data Quality: Row Count Assertions",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A daily pipeline loads 1 million rows on average. One day it loads 12 rows. No errors were raised. Which assertion type would have caught this anomaly?",
     "options": [
       "A row count threshold assertion that fails when the row count deviates by more than a configured percentage from a rolling 7-day average",
@@ -276,7 +276,7 @@
     "order": 12,
     "title": "Exactly-Once Semantics: Producer Side",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A producer sends a message to a message broker. The broker receives and writes the message, but the acknowledgment is lost in the network. The producer retries. With at-least-once semantics, a duplicate exists in the broker. What mechanism do transactional producers use to achieve exactly-once semantics in this scenario?",
     "options": [
       "Producers assign a sequence number to each message; the broker detects and deduplicates retries by comparing sequence numbers to the last committed offset per producer",
@@ -350,7 +350,7 @@
     "order": 15,
     "title": "Orchestration: Event-Driven vs Schedule Trigger",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A downstream pipeline must run only after an upstream team's pipeline completes and drops a completion marker file. The upstream team's completion time varies between 30 minutes and 3 hours. What orchestration trigger is most appropriate?",
     "options": [
       "An event-driven file-presence check that polls for the marker file and triggers the downstream pipeline immediately when it appears",
@@ -399,7 +399,7 @@
     "order": 17,
     "title": "SLA Budgeting Across Pipeline Stages",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A pipeline has an end-to-end SLA of 60 minutes. It has three sequential stages: ingestion (10 min), transformation (35 min), and serving (10 min). The total is 55 minutes, giving only a 5-minute SLA buffer. How should the team improve resilience against occasional stage overruns?",
     "options": [
       "Set stage-level SLOs (e.g., ingestion \u226412 min, transformation \u226438 min, serving \u226410 min) with automated alerts when any stage exceeds its budget, enabling early intervention before end-to-end SLA is breached",
@@ -423,7 +423,7 @@
     "order": 18,
     "title": "Backfill Design: Partition-Aware Reruns",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A daily pipeline failed for 5 days due to a bug that has now been fixed. The pipeline must reprocess the 5 missing days. Which backfill strategy is most operationally safe?",
     "options": [
       "Run one day at a time in chronological order, validating each partition's output before triggering the next, to catch any residual issues early without contaminating multiple days at once",
@@ -473,7 +473,7 @@
     "order": 20,
     "title": "Partition Pruning: Filter Pushdown",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A table is partitioned by `region` and `event_date`. A query filters `WHERE region = 'US' AND event_date >= '2024-01-01'`. Which statement about predicate pushdown is correct?",
     "options": [
       "The query engine pushes both predicates down to the storage layer, skipping all partitions that don't match either condition before reading any data",
@@ -522,7 +522,7 @@
     "order": 22,
     "title": "Parquet vs Avro: Choosing a File Format",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A team needs to choose a file format for a data lakehouse. Two use cases exist: (1) high-throughput analytics with aggregations over a few columns from wide tables, and (2) event streaming where each full record must be serialized and deserialized efficiently. Which format pair is most appropriate?",
     "options": [
       "Parquet for analytics (columnar layout enables column-level I/O skipping) and Avro for streaming (row-oriented serialization is fast for full-record processing)",
@@ -571,7 +571,7 @@
     "order": 24,
     "title": "CDC: Handling DDL Changes",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A log-based CDC pipeline is replicating a source table to a data warehouse. The source DBA adds a new NOT NULL column with a default value. What must the CDC pipeline do to handle this change correctly?",
     "options": [
       "Detect the DDL change event in the transaction log, apply the schema change to the target table, and ensure subsequent DML events include the new column's value",
@@ -595,7 +595,7 @@
     "order": 25,
     "title": "CDC: Initial Load Sequencing",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A team sets up CDC on a production database table with 500 million existing rows. They need to get all current data into the warehouse first, then switch to capturing incremental changes. What is the correct sequencing?",
     "options": [
       "Record the current log offset before the initial full load begins; after the full load completes, replay CDC events from that offset to catch changes that occurred during the load",
@@ -619,7 +619,7 @@
     "order": 26,
     "title": "Data Lineage: Column-Level Tracking",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A compliance team asks: 'Which source columns contribute to the `revenue_usd` column in the executive dashboard?' This requires tracing data through 12 transformation steps. What type of lineage is needed?",
     "options": [
       "Column-level lineage \u2014 tracks how each individual output column is derived from specific source columns through transformations",
@@ -668,7 +668,7 @@
     "order": 28,
     "title": "Cost Optimization: Format and Partition Impact",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A data team spends 70% of their cloud budget on query compute. Most queries filter on `event_date` and aggregate `revenue`. The table stores 3 years of history with 500 billion rows in CSV format. Which change has the largest cost-reduction impact?",
     "options": [
       "Convert to columnar Parquet with Snappy compression and partition by `event_date` \u2014 this combines column pruning, compression, and partition pruning to reduce bytes scanned by 90%+",
@@ -718,7 +718,7 @@
     "order": 30,
     "title": "ELT Transformation Layers: Debugging a Wrong Metric",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "An ELT architecture has three layers: raw (verbatim source data), staging (cleaned, typed, deduplicated), and mart (business-logic aggregates). A data analyst reports that a revenue metric is wrong. What is the correct order to investigate?",
     "options": [
       "Start at the mart layer to check business logic; if correct, inspect staging for data quality issues; trace to raw last if the problem isn't found upstream",
@@ -747,15 +747,15 @@
     "scenario_context": "A real-time enrichment pipeline reads from a Kafka topic (producer rate: 50,000 messages/sec), calls an external enrichment API per message, and writes to a second Kafka topic. Over the past hour the consumer lag has grown from 10K to 4.2M messages. Enrichment API latency is stable at 12ms per call. The consumer group has 8 pods, each processing messages sequentially.",
     "description": "What is the root cause of the growing lag, and what is the most effective first remediation step?",
     "options": [
-      "The consumer throughput (8 pods × 1 call/12ms ≈ 667 msg/sec) is far below the producer rate (50,000 msg/sec) — this is backpressure; the most effective fix is to increase consumer parallelism (more pods or async batched API calls) to raise throughput above the producer rate",
-      "The growing lag is caused by the Kafka topic having too few partitions — Kafka limits one consumer per partition, so adding more pods beyond the partition count has no effect; the fix is to increase the partition count to match the desired pod count",
+      "The consumer throughput (8 pods \u00d7 1 call/12ms \u2248 667 msg/sec) is far below the producer rate (50,000 msg/sec) \u2014 this is backpressure; the most effective fix is to increase consumer parallelism (more pods or async batched API calls) to raise throughput above the producer rate",
+      "The growing lag is caused by the Kafka topic having too few partitions \u2014 Kafka limits one consumer per partition, so adding more pods beyond the partition count has no effect; the fix is to increase the partition count to match the desired pod count",
       "The enrichment API is the bottleneck because 12ms per call is too slow; the correct fix is to cache API responses in Redis so repeated lookups return in under 1ms and the consumer can catch up",
-      "The consumer lag is a monitoring artifact — Kafka resets consumer offsets when lag exceeds a threshold; the actual processing is healthy and the lag will self-correct once the consumer group rebalances"
+      "The consumer lag is a monitoring artifact \u2014 Kafka resets consumer offsets when lag exceeds a threshold; the actual processing is healthy and the lag will self-correct once the consumer group rebalances"
     ],
     "correct_option": 0,
-    "explanation": "Backpressure occurs when the consumer's processing throughput is lower than the producer's write rate, causing the queue (Kafka consumer lag) to grow unboundedly. Here: 8 pods × (1000ms / 12ms) ≈ 667 messages/sec capacity vs 50,000 messages/sec produced — a 75× gap. The primary fix is to increase parallelism: add more consumer pods (requires enough Kafka partitions to support them) and/or switch from sequential to async/batched API calls. With 50 concurrent async calls per pod at 12ms each, a single pod achieves ~4,100 msg/sec; 12 such pods ≈ 50,000 msg/sec.\n\nOption B is partially correct as a prerequisite (partition count does cap parallelism) but it is the second step, not the root cause diagnosis. The root cause is the throughput math, not partition count alone.\n\nOption C (caching) helps only if a large fraction of enrichment calls are repeated lookups for the same key. Nothing in the scenario indicates repeated keys — treating it as the primary fix is speculative.\n\nOption D is false — Kafka consumer lag is a real metric and does not self-correct without intervention.",
+    "explanation": "Backpressure occurs when the consumer's processing throughput is lower than the producer's write rate, causing the queue (Kafka consumer lag) to grow unboundedly. Here: 8 pods \u00d7 (1000ms / 12ms) \u2248 667 messages/sec capacity vs 50,000 messages/sec produced \u2014 a 75\u00d7 gap. The primary fix is to increase parallelism: add more consumer pods (requires enough Kafka partitions to support them) and/or switch from sequential to async/batched API calls. With 50 concurrent async calls per pod at 12ms each, a single pod achieves ~4,100 msg/sec; 12 such pods \u2248 50,000 msg/sec.\n\nOption B is partially correct as a prerequisite (partition count does cap parallelism) but it is the second step, not the root cause diagnosis. The root cause is the throughput math, not partition count alone.\n\nOption C (caching) helps only if a large fraction of enrichment calls are repeated lookups for the same key. Nothing in the scenario indicates repeated keys \u2014 treating it as the primary fix is speculative.\n\nOption D is false \u2014 Kafka consumer lag is a real metric and does not self-correct without intervention.",
     "hints": [
-      "Calculate the maximum throughput achievable with the current setup (pods × messages per second per pod) and compare it to the producer rate.",
+      "Calculate the maximum throughput achievable with the current setup (pods \u00d7 messages per second per pod) and compare it to the producer rate.",
       "Backpressure means the consumer cannot keep up with the producer. The solution always involves increasing consumer throughput, reducing the work per message, or slowing the producer."
     ],
     "concepts": [
@@ -770,19 +770,19 @@
     "order": 32,
     "title": "GDPR Erasure in an Immutable Data Lake: Crypto Shredding",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A data platform stores Parquet files in S3 and uses Spark for batch processing. The legal team requires GDPR-compliant erasure within 72 hours of a deletion request, but the raw Parquet files are immutable and cannot be retroactively modified. Which approach satisfies the erasure requirement without physically rewriting historical Parquet files?",
     "options": [
-      "Crypto shredding: encrypt each user's PII fields with a per-user key stored in a KMS; on erasure request, delete the user's key from the KMS — the encrypted data in Parquet becomes permanently unreadable without rewriting any files",
-      "Pseudonymization: replace user PII with a deterministic hash at ingest time; on erasure request, delete the hash mapping from the lookup table — the hash in Parquet is irreversible without the mapping",
-      "Data masking: apply column-level masking policies in the query engine (e.g., Apache Ranger) so that deleted users' PII is replaced with NULL at read time — physical data is unchanged but logically erased",
+      "Crypto shredding: encrypt each user's PII fields with a per-user key stored in a KMS; on erasure request, delete the user's key from the KMS \u2014 the encrypted data in Parquet becomes permanently unreadable without rewriting any files",
+      "Pseudonymization: replace user PII with a deterministic hash at ingest time; on erasure request, delete the hash mapping from the lookup table \u2014 the hash in Parquet is irreversible without the mapping",
+      "Data masking: apply column-level masking policies in the query engine (e.g., Apache Ranger) so that deleted users' PII is replaced with NULL at read time \u2014 physical data is unchanged but logically erased",
       "Partition-level deletion: partition Parquet files by user_id so each user's data lands in its own partition directory; on erasure request, delete the S3 prefix for that user"
     ],
     "correct_option": 0,
-    "explanation": "Crypto shredding (cryptographic erasure) is the standard technique for GDPR erasure in immutable storage systems. Each user's sensitive columns are encrypted with a unique key managed in a KMS (AWS KMS, HashiCorp Vault, etc.). When a deletion request arrives, the key is deleted from the KMS. Without the key, the ciphertext in Parquet files is computationally indistinguishable from random data and cannot be decrypted — GDPR considers this equivalent to erasure. No Parquet files need to be rewritten.\n\nOption B (pseudonymization) is not sufficient. GDPR considers pseudonymous data still personal if re-identification is possible. Deleting the mapping table removes the easy lookup path, but if the original data space is small enough to brute-force, the hash can be reversed.\n\nOption C (query-layer masking) is access control, not erasure. The physical PII still exists in the Parquet files; it is merely hidden at read time. A user with direct S3 access could still read it. This does not satisfy GDPR's right to erasure.\n\nOption D (partition-level deletion by user_id) physically deletes data but requires partitioning by user_id — impractical for analytical fact tables because it creates millions of tiny partitions and breaks date-range query efficiency.",
+    "explanation": "Crypto shredding (cryptographic erasure) is the standard technique for GDPR erasure in immutable storage systems. Each user's sensitive columns are encrypted with a unique key managed in a KMS (AWS KMS, HashiCorp Vault, etc.). When a deletion request arrives, the key is deleted from the KMS. Without the key, the ciphertext in Parquet files is computationally indistinguishable from random data and cannot be decrypted \u2014 GDPR considers this equivalent to erasure. No Parquet files need to be rewritten.\n\nOption B (pseudonymization) is not sufficient. GDPR considers pseudonymous data still personal if re-identification is possible. Deleting the mapping table removes the easy lookup path, but if the original data space is small enough to brute-force, the hash can be reversed.\n\nOption C (query-layer masking) is access control, not erasure. The physical PII still exists in the Parquet files; it is merely hidden at read time. A user with direct S3 access could still read it. This does not satisfy GDPR's right to erasure.\n\nOption D (partition-level deletion by user_id) physically deletes data but requires partitioning by user_id \u2014 impractical for analytical fact tables because it creates millions of tiny partitions and breaks date-range query efficiency.",
     "hints": [
       "GDPR's right to erasure requires that data can no longer be accessed or reconstructed. What happens to encrypted data when its decryption key is destroyed?",
-      "Masking and pseudonymization hide data from readers but don't remove it from storage. Crypto shredding is different — why?"
+      "Masking and pseudonymization hide data from readers but don't remove it from storage. Crypto shredding is different \u2014 why?"
     ],
     "concepts": [
       "CRYPTO SHREDDING",
@@ -796,16 +796,16 @@
     "order": 33,
     "title": "Operationalizing Data Contracts: Schema Registry and CI Enforcement",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A data platform team wants to formalize data contracts between producer and consumer teams. Which mechanism most effectively prevents breaking schema changes from reaching downstream consumers in a continuous deployment environment?",
     "options": [
-      "Store schema definitions as versioned files in a schema registry; add a CI step that runs a backward/forward compatibility check on every producer PR — fail the build if the change breaks any registered consumer schema",
+      "Store schema definitions as versioned files in a schema registry; add a CI step that runs a backward/forward compatibility check on every producer PR \u2014 fail the build if the change breaks any registered consumer schema",
       "Require producer teams to post a Slack message in #data-contracts at least 24 hours before deploying a schema change, so consumers have time to update their code",
       "Use strong typing in the producer's application code (e.g., Avro or Protobuf classes); if the producer compiles without errors, the schema is compatible with all consumers",
       "Run a nightly batch job that compares the current live schema of each topic against a snapshot taken 24 hours earlier; alert the on-call engineer if any columns were removed or renamed"
     ],
     "correct_option": 0,
-    "explanation": "A schema registry with CI-enforced compatibility checks is the industry-standard operationalization of data contracts. Key properties: (1) schemas are version-controlled and discoverable; (2) compatibility rules (backward, forward, full) are machine-enforced, not dependent on human communication; (3) the check runs at PR time, before deployment — breaking changes are blocked at the source rather than detected after consumers fail. Tools like Confluent Schema Registry, AWS Glue Schema Registry, or a Git-hosted JSON Schema repo with a compatibility CLI all implement this pattern.\n\nOption B (Slack notification) is informal and not enforceable — it depends on producers remembering to post and consumers reading it in time. It doesn't prevent accidental breaking changes.\n\nOption C (producer compilation) checks the producer's own types, not consumer compatibility. A producer can rename a field in a way that compiles cleanly on its side but breaks every downstream consumer that expects the old name.\n\nOption D (nightly diff) detects breaking changes after the fact — potentially 23+ hours after deployment. At that point, downstream consumers have already been failing for nearly a day.",
+    "explanation": "A schema registry with CI-enforced compatibility checks is the industry-standard operationalization of data contracts. Key properties: (1) schemas are version-controlled and discoverable; (2) compatibility rules (backward, forward, full) are machine-enforced, not dependent on human communication; (3) the check runs at PR time, before deployment \u2014 breaking changes are blocked at the source rather than detected after consumers fail. Tools like Confluent Schema Registry, AWS Glue Schema Registry, or a Git-hosted JSON Schema repo with a compatibility CLI all implement this pattern.\n\nOption B (Slack notification) is informal and not enforceable \u2014 it depends on producers remembering to post and consumers reading it in time. It doesn't prevent accidental breaking changes.\n\nOption C (producer compilation) checks the producer's own types, not consumer compatibility. A producer can rename a field in a way that compiles cleanly on its side but breaks every downstream consumer that expects the old name.\n\nOption D (nightly diff) detects breaking changes after the fact \u2014 potentially 23+ hours after deployment. At that point, downstream consumers have already been failing for nearly a day.",
     "hints": [
       "The goal is to prevent breaking changes from being deployed, not just to detect them after the fact. Which option blocks the change at the source?",
       "Human coordination (Slack, email) is not a contract. A contract is machine-enforced."

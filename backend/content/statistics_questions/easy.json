@@ -3,7 +3,7 @@
     "id": 71001,
     "title": "Mean vs Median Under Skew",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A dataset of household incomes in a city is heavily right-skewed due to a small number of billionaires. Which measure of central tendency best represents the 'typical' household income, and why?",
     "options": [
       "The mean, because it uses all data points and is mathematically unbiased for any distribution",
@@ -40,7 +40,7 @@
         "expected_output": 5.7143
       }
     ],
-    "explanation": "Sum all values: 4+7+13+2+1+8+5 = 40. Divide by count (7): 40/7 ≈ 5.7143.",
+    "explanation": "Sum all values: 4+7+13+2+1+8+5 = 40. Divide by count (7): 40/7 \u2248 5.7143.",
     "hints": [
       "The arithmetic mean is the sum of all values divided by the number of values.",
       "Use Python's built-in sum() and len() functions, then round to 4 decimal places."
@@ -82,19 +82,19 @@
     "id": 71004,
     "title": "Interquartile Range Interpretation",
     "subtype": "conceptual",
-    "type": "mcq",
-    "description": "A boxplot shows Q1 = 20, Q3 = 50. A data point has a value of 110. Using the standard 1.5 × IQR rule, should this point be classified as an outlier?",
+    "type": "conceptual",
+    "description": "A boxplot shows Q1 = 20, Q3 = 50. A data point has a value of 110. Using the standard 1.5 \u00d7 IQR rule, should this point be classified as an outlier?",
     "options": [
       "No, because 110 is less than Q3 plus twice the IQR, which is the correct threshold for outliers",
-      "Yes, because 110 exceeds the upper fence of Q3 + 1.5 × IQR = 50 + 45 = 95",
+      "Yes, because 110 exceeds the upper fence of Q3 + 1.5 \u00d7 IQR = 50 + 45 = 95",
       "No, because the IQR rule only applies when the sample size is greater than 100 observations",
       "Yes, because any value above Q3 is automatically flagged as a potential outlier by definition"
     ],
     "correct_option": 2,
-    "explanation": "IQR = Q3 − Q1 = 50 − 20 = 30. Upper fence = Q3 + 1.5 × IQR = 50 + 45 = 95. Since 110 > 95, the point is classified as an outlier. The 1.5×IQR rule has no minimum sample size requirement.",
+    "explanation": "IQR = Q3 \u2212 Q1 = 50 \u2212 20 = 30. Upper fence = Q3 + 1.5 \u00d7 IQR = 50 + 45 = 95. Since 110 > 95, the point is classified as an outlier. The 1.5\u00d7IQR rule has no minimum sample size requirement.",
     "hints": [
       "Calculate IQR first, then compute the upper fence using the 1.5 multiplier.",
-      "Upper fence = Q3 + 1.5 × (Q3 − Q1)."
+      "Upper fence = Q3 + 1.5 \u00d7 (Q3 \u2212 Q1)."
     ],
     "concepts": [
       "descriptive statistics",
@@ -118,9 +118,9 @@
         "expected_output": 2.0
       }
     ],
-    "explanation": "Mean = 40/8 = 5. Squared deviations: 9,1,1,1,0,0,4,16 → sum=32. Population variance = 32/8 = 4. Standard deviation = √4 = 2.0.",
+    "explanation": "Mean = 40/8 = 5. Squared deviations: 9,1,1,1,0,0,4,16 \u2192 sum=32. Population variance = 32/8 = 4. Standard deviation = \u221a4 = 2.0.",
     "hints": [
-      "Population standard deviation divides by N, not N−1.",
+      "Population standard deviation divides by N, not N\u22121.",
       "Compute the mean first, then average the squared deviations, then take the square root."
     ],
     "concepts": [
@@ -134,19 +134,19 @@
     "id": 71006,
     "title": "Complementary Event Probability",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "The probability that a randomly chosen flight arrives on time is 0.78. What is the probability that the flight does NOT arrive on time?",
     "options": [
       "0.78, because the complement shares the same probability as the original event",
-      "0.22, because P(not A) = 1 − P(A) and 1 − 0.78 = 0.22",
+      "0.22, because P(not A) = 1 \u2212 P(A) and 1 \u2212 0.78 = 0.22",
       "0.39, because the complement probability is always half the original probability",
       "Cannot be determined without knowing the total number of flights in the sample"
     ],
     "correct_option": 2,
-    "explanation": "For any event A, P(not A) = 1 − P(A). Here P(late) = 1 − 0.78 = 0.22. This requires only that the total probability of all outcomes equals 1, which is an axiom of probability.",
+    "explanation": "For any event A, P(not A) = 1 \u2212 P(A). Here P(late) = 1 \u2212 0.78 = 0.22. This requires only that the total probability of all outcomes equals 1, which is an axiom of probability.",
     "hints": [
       "All probabilities for mutually exclusive exhaustive outcomes must sum to 1.",
-      "P(complement) = 1 − P(original event)."
+      "P(complement) = 1 \u2212 P(original event)."
     ],
     "concepts": [
       "probability",
@@ -159,19 +159,19 @@
     "id": 71007,
     "title": "Union Probability (Non-Mutually Exclusive)",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "In a class, P(student plays chess) = 0.40, P(student plays tennis) = 0.35, and P(student plays both) = 0.15. What is P(student plays chess OR tennis)?",
     "options": [
       "0.75, found by simply adding P(chess) + P(tennis) without any adjustment for overlap",
-      "0.60, found by P(chess) + P(tennis) − P(both) = 0.40 + 0.35 − 0.15",
-      "0.25, found by multiplying P(chess) × P(tennis) since they are independent events",
-      "0.14, found by multiplying P(chess) × P(tennis) to find the joint probability"
+      "0.60, found by P(chess) + P(tennis) \u2212 P(both) = 0.40 + 0.35 \u2212 0.15",
+      "0.25, found by multiplying P(chess) \u00d7 P(tennis) since they are independent events",
+      "0.14, found by multiplying P(chess) \u00d7 P(tennis) to find the joint probability"
     ],
     "correct_option": 2,
-    "explanation": "The inclusion-exclusion principle states P(A∪B) = P(A) + P(B) − P(A∩B). Without subtracting the overlap, students who play both are counted twice. Here: 0.40 + 0.35 − 0.15 = 0.60.",
+    "explanation": "The inclusion-exclusion principle states P(A\u222aB) = P(A) + P(B) \u2212 P(A\u2229B). Without subtracting the overlap, students who play both are counted twice. Here: 0.40 + 0.35 \u2212 0.15 = 0.60.",
     "hints": [
       "When events can occur simultaneously, adding their probabilities double-counts the overlap.",
-      "Use the inclusion-exclusion formula: P(A or B) = P(A) + P(B) − P(A and B)."
+      "Use the inclusion-exclusion formula: P(A or B) = P(A) + P(B) \u2212 P(A and B)."
     ],
     "concepts": [
       "probability",
@@ -186,7 +186,7 @@
     "title": "Probability of Union Calculation",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "P(A) = 0.5, P(B) = 0.4, P(A∩B) = 0.2. Write a Python function `solve()` that returns P(A∪B) as a float rounded to 4 decimal places.",
+    "description": "P(A) = 0.5, P(B) = 0.4, P(A\u2229B) = 0.2. Write a Python function `solve()` that returns P(A\u222aB) as a float rounded to 4 decimal places.",
     "starter_code": "def solve():\n    # Compute P(A union B) using the inclusion-exclusion principle\n    pass",
     "expected_code": "def solve():\n    p_a = 0.5\n    p_b = 0.4\n    p_ab = 0.2\n    return round(p_a + p_b - p_ab, 4)",
     "test_cases": [
@@ -195,10 +195,10 @@
         "expected_output": 0.7
       }
     ],
-    "explanation": "P(A∪B) = P(A) + P(B) − P(A∩B) = 0.5 + 0.4 − 0.2 = 0.7.",
+    "explanation": "P(A\u222aB) = P(A) + P(B) \u2212 P(A\u2229B) = 0.5 + 0.4 \u2212 0.2 = 0.7.",
     "hints": [
       "Use the inclusion-exclusion principle to avoid double-counting.",
-      "P(A∪B) = P(A) + P(B) − P(A∩B)."
+      "P(A\u222aB) = P(A) + P(B) \u2212 P(A\u2229B)."
     ],
     "concepts": [
       "probability",
@@ -212,19 +212,19 @@
     "id": 71009,
     "title": "Independent vs Dependent Events",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A bag contains 3 red and 2 blue balls. Two balls are drawn **with replacement**. Are the two draws independent, and what is P(both red)?",
     "options": [
-      "Not independent; P(both red) = (3/5) × (2/4) = 0.30 because removing the first ball changes the composition",
-      "Independent; P(both red) = (3/5) × (3/5) = 0.36 because replacement restores the original composition",
+      "Not independent; P(both red) = (3/5) \u00d7 (2/4) = 0.30 because removing the first ball changes the composition",
+      "Independent; P(both red) = (3/5) \u00d7 (3/5) = 0.36 because replacement restores the original composition",
       "Independent; P(both red) = (3/5) + (3/5) = 1.20, found by adding individual probabilities",
-      "Not independent; P(both red) = (3/5) × (3/5) = 0.36 regardless of replacement status"
+      "Not independent; P(both red) = (3/5) \u00d7 (3/5) = 0.36 regardless of replacement status"
     ],
     "correct_option": 2,
-    "explanation": "With replacement, the composition is reset after each draw, so the outcome of the first draw does not affect the second. The events are independent. P(both red) = P(red) × P(red) = 3/5 × 3/5 = 9/25 = 0.36.",
+    "explanation": "With replacement, the composition is reset after each draw, so the outcome of the first draw does not affect the second. The events are independent. P(both red) = P(red) \u00d7 P(red) = 3/5 \u00d7 3/5 = 9/25 = 0.36.",
     "hints": [
       "Ask: does the first draw change the pool from which the second draw is made?",
-      "For independent events, P(A and B) = P(A) × P(B)."
+      "For independent events, P(A and B) = P(A) \u00d7 P(B)."
     ],
     "concepts": [
       "probability",
@@ -238,16 +238,16 @@
     "id": 71010,
     "title": "Conditional Probability Definition",
     "subtype": "conceptual",
-    "type": "mcq",
-    "description": "P(A) = 0.6, P(B) = 0.5, P(A∩B) = 0.3. What is P(A | B), the probability of A given that B has occurred?",
+    "type": "conceptual",
+    "description": "P(A) = 0.6, P(B) = 0.5, P(A\u2229B) = 0.3. What is P(A | B), the probability of A given that B has occurred?",
     "options": [
       "0.60, because knowing B occurred does not change the probability of A since they are independent",
       "0.50, because P(A|B) always equals P(B) by the symmetry of conditional probability",
-      "0.60, computed as P(A∩B) divided by P(A) rather than by P(B)",
-      "0.60, computed as P(A∩B) / P(B) = 0.3 / 0.5 = 0.60"
+      "0.60, computed as P(A\u2229B) divided by P(A) rather than by P(B)",
+      "0.60, computed as P(A\u2229B) / P(B) = 0.3 / 0.5 = 0.60"
     ],
     "correct_option": 3,
-    "explanation": "P(A|B) = P(A∩B) / P(B) = 0.3 / 0.5 = 0.60. In this case the result equals P(A), which confirms A and B are independent (P(A|B) = P(A)). Option C uses the wrong denominator.",
+    "explanation": "P(A|B) = P(A\u2229B) / P(B) = 0.3 / 0.5 = 0.60. In this case the result equals P(A), which confirms A and B are independent (P(A|B) = P(A)). Option C uses the wrong denominator.",
     "hints": [
       "Conditional probability restricts the sample space to the event that is known to have occurred.",
       "P(A|B) = P(A and B) / P(B)."
@@ -264,7 +264,7 @@
     "title": "Conditional Probability Calculation",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "P(A∩B) = 0.12, P(B) = 0.40. Write a Python function `solve()` that returns P(A | B) rounded to 4 decimal places.",
+    "description": "P(A\u2229B) = 0.12, P(B) = 0.40. Write a Python function `solve()` that returns P(A | B) rounded to 4 decimal places.",
     "starter_code": "def solve():\n    # Compute P(A given B) = P(A and B) / P(B)\n    pass",
     "expected_code": "def solve():\n    p_ab = 0.12\n    p_b = 0.40\n    return round(p_ab / p_b, 4)",
     "test_cases": [
@@ -273,10 +273,10 @@
         "expected_output": 0.3
       }
     ],
-    "explanation": "P(A|B) = P(A∩B) / P(B) = 0.12 / 0.40 = 0.30.",
+    "explanation": "P(A|B) = P(A\u2229B) / P(B) = 0.12 / 0.40 = 0.30.",
     "hints": [
       "Conditional probability restricts the universe to events where B has happened.",
-      "P(A|B) = P(A∩B) / P(B)."
+      "P(A|B) = P(A\u2229B) / P(B)."
     ],
     "concepts": [
       "conditional probability",
@@ -289,10 +289,10 @@
     "id": 71012,
     "title": "Bernoulli Trial Definition",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "Which of the following is the best example of a Bernoulli trial?",
     "options": [
-      "Rolling a standard six-sided die and recording which number (1–6) comes up on each roll",
+      "Rolling a standard six-sided die and recording which number (1\u20136) comes up on each roll",
       "Flipping a fair coin once and recording whether the outcome is heads or tails",
       "Drawing cards from a deck without replacement until an ace appears, recording the draw number",
       "Measuring the exact height of 50 randomly selected adults in centimetres"
@@ -325,10 +325,10 @@
         "expected_output": 0.2344
       }
     ],
-    "explanation": "P(X=4) = C(6,4) × 0.5^4 × 0.5^2 = 15 × 0.0625 × 0.25 = 15/64 ≈ 0.2344.",
+    "explanation": "P(X=4) = C(6,4) \u00d7 0.5^4 \u00d7 0.5^2 = 15 \u00d7 0.0625 \u00d7 0.25 = 15/64 \u2248 0.2344.",
     "hints": [
       "Use the binomial probability mass function with the appropriate combination formula.",
-      "P(X=k) = C(n,k) × p^k × (1−p)^(n−k); use math.comb for combinations."
+      "P(X=k) = C(n,k) \u00d7 p^k \u00d7 (1\u2212p)^(n\u2212k); use math.comb for combinations."
     ],
     "concepts": [
       "distributions",
@@ -342,7 +342,7 @@
     "id": 71014,
     "title": "Uniform Distribution Probability",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A continuous uniform distribution spans from a=2 to b=10. What is the probability that a randomly drawn value falls between 4 and 7?",
     "options": [
       "0.375, computed as the length of the interval (4 to 7) divided by the total range (2 to 10)",
@@ -351,7 +351,7 @@
       "Cannot be determined without knowing the specific probability density at each point"
     ],
     "correct_option": 1,
-    "explanation": "For a continuous uniform distribution on [a, b], P(c ≤ X ≤ d) = (d−c)/(b−a). Here (7−4)/(10−2) = 3/8 = 0.375. Option B is incorrect because symmetry is about the midpoint (6), not about coverage. Option C ignores the lower bound.",
+    "explanation": "For a continuous uniform distribution on [a, b], P(c \u2264 X \u2264 d) = (d\u2212c)/(b\u2212a). Here (7\u22124)/(10\u22122) = 3/8 = 0.375. Option B is incorrect because symmetry is about the midpoint (6), not about coverage. Option C ignores the lower bound.",
     "hints": [
       "In a uniform distribution, probability is proportional to the length of the interval.",
       "Divide the length of the target interval by the total length of the distribution's support."
@@ -369,7 +369,7 @@
     "title": "Z-Score Calculation",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "A population has mean μ = 70 and standard deviation σ = 8. Write a Python function `solve()` that returns the z-score for a value of 86, rounded to 4 decimal places.",
+    "description": "A population has mean \u03bc = 70 and standard deviation \u03c3 = 8. Write a Python function `solve()` that returns the z-score for a value of 86, rounded to 4 decimal places.",
     "starter_code": "def solve():\n    # Compute the z-score for x=86, mu=70, sigma=8\n    pass",
     "expected_code": "def solve():\n    x, mu, sigma = 86, 70, 8\n    return round((x - mu) / sigma, 4)",
     "test_cases": [
@@ -378,10 +378,10 @@
         "expected_output": 2.0
       }
     ],
-    "explanation": "z = (x − μ) / σ = (86 − 70) / 8 = 16 / 8 = 2.0. A z-score of 2 means the value is 2 standard deviations above the mean.",
+    "explanation": "z = (x \u2212 \u03bc) / \u03c3 = (86 \u2212 70) / 8 = 16 / 8 = 2.0. A z-score of 2 means the value is 2 standard deviations above the mean.",
     "hints": [
       "A z-score measures how many standard deviations a value is from the mean.",
-      "z = (x − μ) / σ."
+      "z = (x \u2212 \u03bc) / \u03c3."
     ],
     "concepts": [
       "distributions",
@@ -395,7 +395,7 @@
     "id": 71016,
     "title": "68-95-99.7 Rule Application",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "IQ scores follow a normal distribution with mean 100 and standard deviation 15. Approximately what percentage of people have an IQ between 70 and 130?",
     "options": [
       "Approximately 68%, because 70 and 130 are each one standard deviation from the mean of 100",
@@ -404,10 +404,10 @@
       "Approximately 50%, because the normal distribution is symmetric and we are taking one side only"
     ],
     "correct_option": 2,
-    "explanation": "70 = 100 − 2×15 and 130 = 100 + 2×15, so the interval spans ±2 standard deviations. By the empirical (68-95-99.7) rule, approximately 95% of observations fall within ±2σ. The ±1σ range captures ~68% and ±3σ captures ~99.7%.",
+    "explanation": "70 = 100 \u2212 2\u00d715 and 130 = 100 + 2\u00d715, so the interval spans \u00b12 standard deviations. By the empirical (68-95-99.7) rule, approximately 95% of observations fall within \u00b12\u03c3. The \u00b11\u03c3 range captures ~68% and \u00b13\u03c3 captures ~99.7%.",
     "hints": [
       "First determine how many standard deviations 70 and 130 are from the mean.",
-      "Apply the empirical rule: ±1σ ≈ 68%, ±2σ ≈ 95%, ±3σ ≈ 99.7%."
+      "Apply the empirical rule: \u00b11\u03c3 \u2248 68%, \u00b12\u03c3 \u2248 95%, \u00b13\u03c3 \u2248 99.7%."
     ],
     "concepts": [
       "distributions",
@@ -422,7 +422,7 @@
     "title": "Expected Value of Discrete Distribution",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "A game pays $10 with probability 0.20, $2 with probability 0.50, and −$5 with probability 0.30. Write a Python function `solve()` that returns the expected payout rounded to 4 decimal places.",
+    "description": "A game pays $10 with probability 0.20, $2 with probability 0.50, and \u2212$5 with probability 0.30. Write a Python function `solve()` that returns the expected payout rounded to 4 decimal places.",
     "starter_code": "def solve():\n    # Compute E[X] = sum of x_i * p_i\n    pass",
     "expected_code": "def solve():\n    outcomes = [(10, 0.20), (2, 0.50), (-5, 0.30)]\n    ev = sum(x * p for x, p in outcomes)\n    return round(ev, 4)",
     "test_cases": [
@@ -431,10 +431,10 @@
         "expected_output": 1.5
       }
     ],
-    "explanation": "E[X] = 10×0.20 + 2×0.50 + (−5)×0.30 = 2.0 + 1.0 − 1.5 = 1.5.",
+    "explanation": "E[X] = 10\u00d70.20 + 2\u00d70.50 + (\u22125)\u00d70.30 = 2.0 + 1.0 \u2212 1.5 = 1.5.",
     "hints": [
       "Expected value is the probability-weighted sum of all possible outcomes.",
-      "E[X] = Σ x_i × P(X = x_i)."
+      "E[X] = \u03a3 x_i \u00d7 P(X = x_i)."
     ],
     "concepts": [
       "expected value",
@@ -448,16 +448,16 @@
     "id": 71018,
     "title": "Expected Value Interpretation",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A lottery ticket costs $5. The prize distribution gives E[prize] = $3.50. What does this expected value tell you about playing the lottery?",
     "options": [
       "Playing is profitable because the expected prize ($3.50) is close to the cost ($5.00) and variance makes individual wins possible",
-      "Playing loses $1.50 on average per ticket because the expected net gain is $3.50 − $5.00 = −$1.50",
+      "Playing loses $1.50 on average per ticket because the expected net gain is $3.50 \u2212 $5.00 = \u2212$1.50",
       "The expected value guarantees you will receive exactly $3.50 if you play the lottery once",
       "The expected value is irrelevant since lottery outcomes are random and cannot be predicted in advance"
     ],
     "correct_option": 2,
-    "explanation": "The expected net gain per ticket is $3.50 − $5.00 = −$1.50. This means if you play many times, you lose $1.50 on average per ticket. Expected value is not a guarantee for a single trial; it reflects the long-run average outcome.",
+    "explanation": "The expected net gain per ticket is $3.50 \u2212 $5.00 = \u2212$1.50. This means if you play many times, you lose $1.50 on average per ticket. Expected value is not a guarantee for a single trial; it reflects the long-run average outcome.",
     "hints": [
       "Net gain equals prize minus cost. Compute the expected net gain.",
       "A negative expected value means the player loses money on average in the long run."
@@ -474,19 +474,19 @@
     "id": 71019,
     "title": "Combinations vs Permutations",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A team of 3 must be selected from 8 candidates. How many different teams are possible, and which formula applies?",
     "options": [
-      "8 × 7 × 6 = 336 teams, using permutations because we care about who is team captain",
+      "8 \u00d7 7 \u00d7 6 = 336 teams, using permutations because we care about who is team captain",
       "C(8,3) = 56 teams, using combinations because order within the team does not matter",
       "8^3 = 512 teams, because each of the 3 spots can be filled by any of the 8 candidates independently",
       "8! = 40320 teams, because all possible orderings of all candidates must be enumerated"
     ],
     "correct_option": 2,
-    "explanation": "Since the team members are interchangeable (no roles), order does not matter, so we use combinations: C(8,3) = 8!/(3!×5!) = 56. Permutations (P(8,3)=336) would apply if roles were assigned. 8^3 incorrectly allows repetition.",
+    "explanation": "Since the team members are interchangeable (no roles), order does not matter, so we use combinations: C(8,3) = 8!/(3!\u00d75!) = 56. Permutations (P(8,3)=336) would apply if roles were assigned. 8^3 incorrectly allows repetition.",
     "hints": [
       "Ask: does the order in which people are selected matter for the final outcome?",
-      "Combinations are used when order does not matter; C(n,r) = n! / (r! × (n−r)!)."
+      "Combinations are used when order does not matter; C(n,r) = n! / (r! \u00d7 (n\u2212r)!)."
     ],
     "concepts": [
       "combinatorics",
@@ -501,7 +501,7 @@
     "title": "Number of Combinations",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "Write a Python function `solve()` that returns C(10, 3) — the number of ways to choose 3 items from 10 without regard to order.",
+    "description": "Write a Python function `solve()` that returns C(10, 3) \u2014 the number of ways to choose 3 items from 10 without regard to order.",
     "starter_code": "def solve():\n    # Compute C(10, 3)\n    pass",
     "expected_code": "def solve():\n    import math\n    return math.comb(10, 3)",
     "test_cases": [
@@ -510,10 +510,10 @@
         "expected_output": 120
       }
     ],
-    "explanation": "C(10,3) = 10! / (3! × 7!) = (10×9×8) / (3×2×1) = 720/6 = 120.",
+    "explanation": "C(10,3) = 10! / (3! \u00d7 7!) = (10\u00d79\u00d78) / (3\u00d72\u00d71) = 720/6 = 120.",
     "hints": [
       "The combination formula counts selections where order does not matter.",
-      "C(n,r) = n! / (r! × (n−r)!); Python's math.comb computes this directly."
+      "C(n,r) = n! / (r! \u00d7 (n\u2212r)!); Python's math.comb computes this directly."
     ],
     "concepts": [
       "combinatorics",
@@ -562,10 +562,10 @@
         "expected_output": 20.0
       }
     ],
-    "explanation": "Lower half: [5,10,15,20] → Q1=(10+15)/2=12.5. Upper half: [25,30,35,40] → Q3=(30+35)/2=32.5. IQR = 32.5−12.5 = 20.0.",
+    "explanation": "Lower half: [5,10,15,20] \u2192 Q1=(10+15)/2=12.5. Upper half: [25,30,35,40] \u2192 Q3=(30+35)/2=32.5. IQR = 32.5\u221212.5 = 20.0.",
     "hints": [
       "Split the sorted data into two equal halves and find the median of each half.",
-      "IQR = Q3 − Q1; Q1 and Q3 are medians of the lower and upper halves respectively."
+      "IQR = Q3 \u2212 Q1; Q1 and Q3 are medians of the lower and upper halves respectively."
     ],
     "concepts": [
       "descriptive statistics",
@@ -579,19 +579,19 @@
     "id": 71023,
     "title": "Sample Space Counting",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A restaurant menu offers 3 starters, 4 mains, and 2 desserts. If a customer chooses exactly one from each course, how many distinct full meals are possible?",
     "options": [
       "9 distinct meals, computed by adding 3 + 4 + 2 since each choice is made independently",
-      "24 distinct meals, computed as 3 × 4 × 2 using the multiplication rule for independent choices",
-      "12 distinct meals, computed as 3 × 4 because dessert choice is considered optional by default",
+      "24 distinct meals, computed as 3 \u00d7 4 \u00d7 2 using the multiplication rule for independent choices",
+      "12 distinct meals, computed as 3 \u00d7 4 because dessert choice is considered optional by default",
       "48 distinct meals, computed by doubling the product to account for order of eating the courses"
     ],
     "correct_option": 2,
-    "explanation": "When making sequential independent choices, the total number of outcomes is the product of the options at each step — the multiplication rule (fundamental counting principle). 3 × 4 × 2 = 24. Addition would apply only if choosing exactly one course total.",
+    "explanation": "When making sequential independent choices, the total number of outcomes is the product of the options at each step \u2014 the multiplication rule (fundamental counting principle). 3 \u00d7 4 \u00d7 2 = 24. Addition would apply only if choosing exactly one course total.",
     "hints": [
       "When choices are made from independent categories, use multiplication, not addition.",
-      "The fundamental counting principle: if there are m ways for one event and n for another, there are m×n combined ways."
+      "The fundamental counting principle: if there are m ways for one event and n for another, there are m\u00d7n combined ways."
     ],
     "concepts": [
       "combinatorics",
@@ -615,10 +615,10 @@
         "expected_output": 336
       }
     ],
-    "explanation": "P(8,3) = 8!/(8−3)! = 8×7×6 = 336. Order matters because 1st, 2nd, and 3rd are distinct outcomes.",
+    "explanation": "P(8,3) = 8!/(8\u22123)! = 8\u00d77\u00d76 = 336. Order matters because 1st, 2nd, and 3rd are distinct outcomes.",
     "hints": [
       "Order matters when assigning ranked positions, so use permutations.",
-      "P(n,r) = n! / (n−r)!; math.perm(n, r) computes this."
+      "P(n,r) = n! / (n\u2212r)!; math.perm(n, r) computes this."
     ],
     "concepts": [
       "combinatorics",
@@ -632,7 +632,7 @@
     "title": "Probability of Intersection (Independent Events)",
     "subtype": "numerical",
     "type": "numerical",
-    "description": "P(A) = 0.6 and P(B) = 0.7, and A and B are independent. Write a Python function `solve()` that returns P(A∩B) rounded to 4 decimal places.",
+    "description": "P(A) = 0.6 and P(B) = 0.7, and A and B are independent. Write a Python function `solve()` that returns P(A\u2229B) rounded to 4 decimal places.",
     "starter_code": "def solve():\n    # For independent events, P(A and B) = P(A) * P(B)\n    pass",
     "expected_code": "def solve():\n    return round(0.6 * 0.7, 4)",
     "test_cases": [
@@ -641,10 +641,10 @@
         "expected_output": 0.42
       }
     ],
-    "explanation": "For independent events, P(A∩B) = P(A) × P(B) = 0.6 × 0.7 = 0.42.",
+    "explanation": "For independent events, P(A\u2229B) = P(A) \u00d7 P(B) = 0.6 \u00d7 0.7 = 0.42.",
     "hints": [
       "Independence means knowing A gives no information about B.",
-      "For independent events: P(A and B) = P(A) × P(B)."
+      "For independent events: P(A and B) = P(A) \u00d7 P(B)."
     ],
     "concepts": [
       "probability",
@@ -657,7 +657,7 @@
     "id": 71026,
     "title": "Normal Distribution Symmetry",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "Heights are normally distributed with mean 170 cm and standard deviation 6 cm. What percentage of people are taller than 170 cm?",
     "options": [
       "Approximately 68%, because most data falls within one standard deviation of the mean",
@@ -693,7 +693,7 @@
         "expected_output": 0.0769
       }
     ],
-    "explanation": "There are 4 Kings in a 52-card deck. P(King) = 4/52 ≈ 0.0769.",
+    "explanation": "There are 4 Kings in a 52-card deck. P(King) = 4/52 \u2248 0.0769.",
     "hints": [
       "Basic probability = number of favorable outcomes / total outcomes in sample space.",
       "Count the Kings and divide by the deck size."
@@ -719,10 +719,10 @@
         "expected_output": 0.6667
       }
     ],
-    "explanation": "E[X] = (1+2+3)/3 = 2. E[X²] = (1+4+9)/3 = 14/3. Var(X) = 14/3 − 4 = 2/3 ≈ 0.6667.",
+    "explanation": "E[X] = (1+2+3)/3 = 2. E[X\u00b2] = (1+4+9)/3 = 14/3. Var(X) = 14/3 \u2212 4 = 2/3 \u2248 0.6667.",
     "hints": [
-      "Variance measures spread: Var(X) = E[X²] − (E[X])².",
-      "Compute E[X] and E[X²] separately using probability-weighted sums."
+      "Variance measures spread: Var(X) = E[X\u00b2] \u2212 (E[X])\u00b2.",
+      "Compute E[X] and E[X\u00b2] separately using probability-weighted sums."
     ],
     "concepts": [
       "descriptive statistics",
@@ -736,7 +736,7 @@
     "id": 71029,
     "title": "Kurtosis and Tail Behaviour",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A distribution is described as having high positive excess kurtosis (leptokurtic). Which statement best describes this distribution compared to a normal distribution with the same mean and variance?",
     "options": [
       "It has a flatter peak and lighter tails, so extreme values are rarer than under normality",
@@ -745,10 +745,10 @@
       "It is bimodal, with two distinct peaks symmetrically placed around the mean"
     ],
     "correct_option": 2,
-    "explanation": "Excess kurtosis measures how much probability mass sits in the tails relative to a normal distribution. Positive excess kurtosis (leptokurtic) means a sharper central peak and heavier tails — extreme values are more likely than normality predicts. Financial return distributions are a classic example: large moves (crashes or spikes) happen more often than a normal model expects. Negative excess kurtosis (platykurtic) describes flatter distributions with lighter tails.",
+    "explanation": "Excess kurtosis measures how much probability mass sits in the tails relative to a normal distribution. Positive excess kurtosis (leptokurtic) means a sharper central peak and heavier tails \u2014 extreme values are more likely than normality predicts. Financial return distributions are a classic example: large moves (crashes or spikes) happen more often than a normal model expects. Negative excess kurtosis (platykurtic) describes flatter distributions with lighter tails.",
     "hints": [
-      "Kurtosis describes the shape of the tails, not the spread — a high-kurtosis distribution can have the same variance as a normal one yet produce far more outliers.",
-      "Think about which real-world phenomena (financial returns, natural disasters) have 'fat tails' — that is leptokurtic behaviour."
+      "Kurtosis describes the shape of the tails, not the spread \u2014 a high-kurtosis distribution can have the same variance as a normal one yet produce far more outliers.",
+      "Think about which real-world phenomena (financial returns, natural disasters) have 'fat tails' \u2014 that is leptokurtic behaviour."
     ],
     "concepts": [
       "kurtosis",
@@ -763,7 +763,7 @@
     "id": 71030,
     "title": "Binomial vs Bernoulli Relationship",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "Which statement correctly describes the relationship between the Bernoulli and Binomial distributions?",
     "options": [
       "The Binomial distribution is a special case of the Bernoulli where the success probability p = 0.5",
@@ -772,7 +772,7 @@
       "The Bernoulli distribution models continuous outcomes, while the Binomial models discrete counts"
     ],
     "correct_option": 2,
-    "explanation": "A Bernoulli(p) random variable models a single trial with two outcomes (success or failure). A Binomial(n, p) random variable counts the total number of successes in n independent Bernoulli(p) trials. Setting n = 1 in the Binomial reduces it exactly to a Bernoulli — so Bernoulli is the n = 1 special case. Both are discrete distributions.",
+    "explanation": "A Bernoulli(p) random variable models a single trial with two outcomes (success or failure). A Binomial(n, p) random variable counts the total number of successes in n independent Bernoulli(p) trials. Setting n = 1 in the Binomial reduces it exactly to a Bernoulli \u2014 so Bernoulli is the n = 1 special case. Both are discrete distributions.",
     "hints": [
       "Think about what a Binomial variable counts: the sum of n independent coin flips, each of which is a single Bernoulli trial.",
       "What does the Binomial formula produce when n = 1?"
@@ -790,7 +790,7 @@
     "id": 71031,
     "title": "Geometric Distribution and Memorylessness",
     "subtype": "conceptual",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "You flip a fair coin repeatedly until you get the first heads. The number of flips follows a Geometric distribution. Which property of the Geometric distribution is unique among discrete distributions?",
     "options": [
       "Its mean always equals its variance for any value of the success probability p",
@@ -799,7 +799,7 @@
       "Its probability mass function is symmetric around the mean for all values of p"
     ],
     "correct_option": 2,
-    "explanation": "The Geometric distribution is the unique discrete distribution with the memoryless property: P(X > k + m | X > k) = P(X > m). Intuitively, past failures carry no information about future success — each trial is independent. This mirrors the exponential distribution's memorylessness in continuous time. The mean of Geometric(p) is 1/p and the variance is (1−p)/p², so they are not equal in general. The distribution is also right-skewed, not symmetric.",
+    "explanation": "The Geometric distribution is the unique discrete distribution with the memoryless property: P(X > k + m | X > k) = P(X > m). Intuitively, past failures carry no information about future success \u2014 each trial is independent. This mirrors the exponential distribution's memorylessness in continuous time. The mean of Geometric(p) is 1/p and the variance is (1\u2212p)/p\u00b2, so they are not equal in general. The distribution is also right-skewed, not symmetric.",
     "hints": [
       "The memoryless property says that 'forgetting' how long you have already waited leaves the distribution unchanged. Which other common distribution (continuous) shares this property?",
       "Think about independence: if each flip is independent, does knowing you flipped tails 10 times in a row change the probability the next flip is heads?"

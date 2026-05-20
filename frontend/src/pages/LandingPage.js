@@ -93,7 +93,7 @@ const IDE_TRACKS = [
     fname: 'transformations.md',
     badge: 'PySpark · Reasoning',
     code: null,
-    type: 'mcq',
+    type: 'conceptual',
     question: 'Which PySpark operation triggers immediate execution?',
     options: ['filter()', 'map()', 'collect()', 'groupBy()'],
     correct: 2,
@@ -105,7 +105,7 @@ const IDE_TRACKS = [
     fname: 'isolation.md',
     badge: 'Data Eng · Reasoning',
     code: null,
-    type: 'mcq',
+    type: 'conceptual',
     question: 'Which isolation level prevents phantom reads?',
     options: ['Read Committed', 'Repeatable Read', 'Serializable', 'Read Uncommitted'],
     correct: 2,
@@ -117,7 +117,7 @@ const IDE_TRACKS = [
     fname: 'star_schema.md',
     badge: 'Modeling · Reasoning',
     code: null,
-    type: 'mcq',
+    type: 'conceptual',
     question: 'In a star schema, fact tables primarily store...',
     options: ['Dimension attributes', 'Business metrics', 'Entity relationships', 'Lookup values'],
     correct: 1,
@@ -129,7 +129,7 @@ const IDE_TRACKS = [
     fname: 'ab_test.md',
     badge: 'Statistics · Reasoning',
     code: null,
-    type: 'mcq',
+    type: 'conceptual',
     question: 'p = 0.023 at α = 0.05. What is the correct conclusion?',
     options: ['Fail to reject H₀', 'Reject H₀', 'Inconclusive result', 'Accept the null'],
     correct: 1,
@@ -141,7 +141,7 @@ const IDE_TRACKS = [
     fname: 'model_selection.md',
     badge: 'ML · Reasoning',
     code: null,
-    type: 'mcq',
+    type: 'conceptual',
     question: 'Your model hits 97% accuracy but completely misses the fraud class. What is the most likely root cause?',
     options: ['Learning rate too high', 'Class imbalance', 'Model underfitting', 'Feature collinearity'],
     correct: 1,
@@ -153,7 +153,7 @@ const IDE_TRACKS = [
     fname: 'ab_design.md',
     badge: 'Experiment · Reasoning',
     code: null,
-    type: 'mcq',
+    type: 'conceptual',
     question: 'You peek at day 3 of a 7-day A/B test and p = 0.04. You stop early. What is the actual risk?',
     options: ['None — p < 0.05 is always safe', 'Type I error rate is inflated above 5%', 'Statistical power decreases', 'The effect size is overstated by the sample split'],
     correct: 1,
@@ -360,7 +360,7 @@ function HeroIDE({ reduced }) {
             </>
           )}
 
-          {activeTrack.type === 'mcq' && (
+          {activeTrack.type === 'conceptual' && (
             <div className="lp-ide-mcq">
               <p className="lp-ide-mcq-q">{activeTrack.question}</p>
               <div className="lp-ide-mcq-opts">

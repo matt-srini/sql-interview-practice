@@ -1,0 +1,20 @@
+{
+  "slug": "sql-advanced-patterns",
+  "title": "Advanced SQL Patterns",
+  "description": "Go beyond everyday SELECT — master set operations for combining result sets, advanced aggregation with ROLLUP and FILTER, and recursive CTEs for hierarchical and gap-filling queries.",
+  "topic": "sql",
+  "questions": [12058, 12059, 12060, 12061, 12062, 12063, 13044],
+  "tier": "pro",
+  "role": "advanced",
+  "focus_concepts": [
+    "UNION SET OPERATION",
+    "INTERSECT SET OPERATION",
+    "EXCEPT SET OPERATION",
+    "ROLLUP SUBTOTALS",
+    "AGGREGATE FILTER",
+    "RECURSIVE CTE",
+    "GROUPING SETS"
+  ],
+  "outcomes": "You'll combine result sets cleanly with UNION/INTERSECT/EXCEPT, produce multi-level subtotals with ROLLUP and GROUPING SETS, write conditional aggregates with FILTER(WHERE ...), and build recursive CTEs for hierarchy traversal and calendar spines.",
+  "recommended_after": ["aggregation-patterns", "window-functions-mastery"]
+}

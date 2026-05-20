@@ -54,7 +54,7 @@ export function getQuestionFormLabel(question) {
   if (interactionMode === 'constructed_reasoning') return 'Reasoning';
   if (interactionMode === 'executable_problem_solving') return 'Code';
 
-  if (questionType === 'mcq') return 'Reasoning';
+  if (questionType === 'conceptual') return 'Reasoning';
 
   return null;
 }

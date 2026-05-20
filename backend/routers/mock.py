@@ -181,21 +181,21 @@ def _pyspark_format_targets(difficulty: str, num_questions: int) -> list[str]:
     """
     Target format slot sequence for PySpark sessions.
     Based on actual pool distribution:
-      easy:   mcq(20), predict_output(14), debug(4)
-      medium: mcq(28), scenario(8), debug(6), predict_output(4), optimization(2)
-      hard:   mcq(25), scenario(7), predict_output(4)
+      easy:   conceptual(23), predict_output(14), debug(4)
+      medium: conceptual(25), scenario(9), debug(6), predict_output(1), optimization(2) [practice only]
+      hard:   conceptual(20), scenario(4), predict_output(2) [practice only]
       mixed:  all of the above combined
     """
     targets: dict[str, list[str]] = {
-        "easy":   ["mcq", "predict_output", "mcq", "predict_output", "debug", "mcq"],
-        "medium": ["mcq", "scenario", "debug", "predict_output", "mcq", "optimization"],
-        "hard":   ["mcq", "scenario", "predict_output", "mcq", "scenario", "mcq"],
-        "mixed":  ["mcq", "scenario", "predict_output", "debug", "mcq", "scenario"],
+        "easy":   ["conceptual", "predict_output", "conceptual", "predict_output", "debug", "conceptual"],
+        "medium": ["conceptual", "scenario", "debug", "predict_output", "conceptual", "optimization"],
+        "hard":   ["conceptual", "scenario", "predict_output", "conceptual", "scenario", "conceptual"],
+        "mixed":  ["conceptual", "scenario", "predict_output", "debug", "conceptual", "scenario"],
     }
-    base = targets.get(difficulty, ["mcq"] * num_questions)
+    base = targets.get(difficulty, ["conceptual"] * num_questions)
     if len(base) >= num_questions:
         return base[:num_questions]
-    return base + [base[-1] if base else "mcq"] * (num_questions - len(base))
+    return base + [base[-1] if base else "conceptual"] * (num_questions - len(base))
 
 
 def _sample_by_format(
@@ -209,7 +209,7 @@ def _sample_by_format(
     """
     by_type: dict[str, list[dict]] = {}
     for q in pool:
-        by_type.setdefault(q.get("type", "mcq"), []).append(q)
+        by_type.setdefault(q.get("type", "conceptual"), []).append(q)
 
     chosen: list[dict] = []
     used_ids: set[int] = set()
@@ -301,15 +301,15 @@ def _benchmark_type_targets(track: str, difficulty: str, num_questions: int) -> 
         return _pyspark_format_targets(difficulty, num_questions)
 
     targets: dict[str, list[str]] = {
-        "data-engineering": ["scenario", "mcq", "debug", "scenario", "scenario", "mcq"],
-        "data-modeling": ["scenario", "mcq", "scenario", "mcq", "scenario"],
-        "ml-fundamentals": ["scenario", "mcq", "predict_output", "debug", "scenario", "mcq"],
-        "experimentation": ["scenario", "mcq", "predict_output", "debug", "scenario", "mcq"],
+        "data-engineering": ["scenario", "conceptual", "debug", "scenario", "scenario", "conceptual"],
+        "data-modeling": ["scenario", "conceptual", "scenario", "conceptual", "scenario"],
+        "ml-fundamentals": ["scenario", "conceptual", "predict_output", "debug", "scenario", "conceptual"],
+        "experimentation": ["scenario", "conceptual", "predict_output", "debug", "scenario", "conceptual"],
     }
-    base = targets.get(track, ["mcq"] * num_questions)
+    base = targets.get(track, ["conceptual"] * num_questions)
     if len(base) >= num_questions:
         return base[:num_questions]
-    return base + [base[-1] if base else "mcq"] * (num_questions - len(base))
+    return base + [base[-1] if base else "conceptual"] * (num_questions - len(base))
 
 
 async def _select_questions(
@@ -482,7 +482,7 @@ def _public_question_payload(question: dict, track: str) -> dict:
     # MCQ tracks (PySpark, Data Engineering, …): include options and display fields
     if get_track(track).eval_kind == "mcq":
         payload["options"] = question.get("options", [])
-        payload["question_type"] = question.get("type", "mcq")
+        payload["question_type"] = question.get("type", "conceptual")
         payload["code_snippet"] = question.get("code_snippet")
         payload["scenario_context"] = question.get("scenario_context")
     # Mixed subtype (Statistics): branch on per-question subtype
@@ -491,7 +491,7 @@ def _public_question_payload(question: dict, track: str) -> dict:
         payload["subtype"] = subtype
         if subtype == "conceptual":
             payload["options"] = question.get("options", [])
-            payload["question_type"] = question.get("type", "mcq")
+            payload["question_type"] = question.get("type", "conceptual")
             payload["code_snippet"] = question.get("code_snippet")
             payload["scenario_context"] = question.get("scenario_context")
         else:  # numerical
@@ -1127,14 +1127,6 @@ async def submit_answer(
     if body.question_id not in session_q_ids:
         raise HTTPException(status_code=400, detail="Question not part of this session")
 
-    # One-submit-per-question guard — check before any DB write
-    already_submitted = next(
-        (q["submitted_at"] for q in session.get("questions", []) if q["question_id"] == body.question_id),
-        None,
-    )
-    if already_submitted is not None:
-        raise HTTPException(status_code=409, detail="Question already submitted for this session")
-
     # Load full question
     catalog = _get_catalog_for_track(body.track)
     question = catalog.get_question(body.question_id)
@@ -1148,7 +1140,7 @@ async def submit_answer(
     accepted, result = _evaluate_submission(body.track, question, body.code, body.selected_option)
 
     # Persist mock submission record
-    await submit_mock_question(
+    persisted = await submit_mock_question(
         session_id=session_id,
         question_id=body.question_id,
         user_id=current_user["id"],
@@ -1156,6 +1148,8 @@ async def submit_answer(
         code=body.code,
         time_spent_s=body.time_spent_s,
     )
+    if not persisted:
+        raise HTTPException(status_code=409, detail="Question already submitted for this session")
 
     # Track progress if correct
     if accepted:

@@ -14,10 +14,10 @@
       "Order and line item dual-grain: two separate columns tracking both order total and line revenue in one row"
     ],
     "correct_option": 1,
-    "explanation": "The order line item grain is the finest granularity at which revenue is naturally additive without splitting or approximating. Order-level grain prevents line-item analysis and forces UNNEST or JSON parsing. Kit component grain requires revenue allocation logic that introduces rounding error and hides original transaction amounts. A 'dual-grain' concept is not valid — a fact table must have exactly one declared grain; mixing grains in one row violates the foundational design rule and causes double-counting when aggregated.",
+    "explanation": "The order line item grain is the finest granularity at which revenue is naturally additive without splitting or approximating. Order-level grain prevents line-item analysis and forces UNNEST or JSON parsing. Kit component grain requires revenue allocation logic that introduces rounding error and hides original transaction amounts. A 'dual-grain' concept is not valid \u2014 a fact table must have exactly one declared grain; mixing grains in one row violates the foundational design rule and causes double-counting when aggregated.",
     "hints": [
       "Think about which level of detail lets every revenue measure sum cleanly without any allocation math.",
-      "A fact table must have a single declared grain — not a mix of two levels.",
+      "A fact table must have a single declared grain \u2014 not a mix of two levels.",
       "The grain should be the lowest level at which revenue is recorded without splitting."
     ],
     "concepts": [
@@ -41,7 +41,7 @@
       "SCD Type 6 (hybrid): combine Type 1 current value, Type 2 row versioning, and Type 3 prior value columns for maximum flexibility"
     ],
     "correct_option": 1,
-    "explanation": "Type 2 is the only option that satisfies requirement (1) — knowing the tier at the time of each historical purchase — because it maintains a full row-per-version timeline. Type 1 destroys history, making past purchase analysis impossible. Type 3 only retains the most recent prior value, which satisfies requirement (2) but cannot answer 'what was the tier two changes ago'. Type 6 satisfies both requirements technically, but it is significantly more complex than needed; Type 2 alone already handles both questions, since the previous tier is derivable by querying the prior row version.",
+    "explanation": "Type 2 is the only option that satisfies requirement (1) \u2014 knowing the tier at the time of each historical purchase \u2014 because it maintains a full row-per-version timeline. Type 1 destroys history, making past purchase analysis impossible. Type 3 only retains the most recent prior value, which satisfies requirement (2) but cannot answer 'what was the tier two changes ago'. Type 6 satisfies both requirements technically, but it is significantly more complex than needed; Type 2 alone already handles both questions, since the previous tier is derivable by querying the prior row version.",
     "hints": [
       "Consider which requirement demands knowing the state at an arbitrary past point in time.",
       "One of the options only stores a single previous value, not the full history.",
@@ -58,7 +58,7 @@
     "order": 3,
     "title": "SCD Type 2: Performance vs. Storage Tradeoff",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A data warehouse dimension table uses SCD Type 2 for a customer entity with 50 million customers, each averaging 4 historical versions. Query teams report that joins to the fact table are slow because every fact row must be matched to the correct version using date-range filters. Which design change best resolves the performance problem without discarding history?",
     "options": [
       "Switch to SCD Type 1, overwriting old values to eliminate the version rows",
@@ -67,7 +67,7 @@
       "Increase the sort key on the dimension table to prioritize current_flag ordering"
     ],
     "correct_option": 1,
-    "explanation": "Storing the version-specific surrogate key on the fact row at load time eliminates the date-range join entirely — the fact row directly points to the exact dimension version that was current when the event occurred. Type 1 discards history and breaks historical accuracy. A current-only view solves queries about present state but cannot answer historical questions that require past tier/attribute values. Resorting on current_flag reduces I/O for current lookups but does not eliminate the need for range matching on historical joins.",
+    "explanation": "Storing the version-specific surrogate key on the fact row at load time eliminates the date-range join entirely \u2014 the fact row directly points to the exact dimension version that was current when the event occurred. Type 1 discards history and breaks historical accuracy. A current-only view solves queries about present state but cannot answer historical questions that require past tier/attribute values. Resorting on current_flag reduces I/O for current lookups but does not eliminate the need for range matching on historical joins.",
     "hints": [
       "The bottleneck is the date-range filter needed to match each fact row to the right dimension version.",
       "What if the fact row already knew exactly which version of the dimension was active when it was recorded?",
@@ -90,7 +90,7 @@
     "options": [
       "Add a multi-valued course_ids array column to the student dimension row",
       "Create a bridge table linking student_key and course_key, with a weighting factor for additive measures, and join it between the fact table and both dimensions",
-      "Duplicate student rows — one row per enrolled course — in the student dimension itself",
+      "Duplicate student rows \u2014 one row per enrolled course \u2014 in the student dimension itself",
       "Flatten the relationship into a single wide fact table with columns course_1, course_2 ... course_N for each student"
     ],
     "correct_option": 1,
@@ -111,7 +111,7 @@
     "order": 5,
     "title": "Bridge Table Weighting Factor Edge Case",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A sales fact table is joined through a bridge table to an account-manager dimension, where each sale may be credited to 1, 2, or 3 account managers with equal splits. A report summing total_sale_amount per manager produces numbers that look correct in isolation but the company-wide total doubles or triples when checked against the order total. What is the most likely cause?",
     "options": [
       "The bridge table is missing a current_flag column to filter inactive manager assignments",
@@ -122,7 +122,7 @@
     "correct_option": 1,
     "explanation": "When a fact table joins to a bridge table without applying the weighting factor, each sale row is replicated once per manager assignment. Summing sale amount without dividing by the weight counts the full amount for each manager, inflating totals. A missing current_flag would cause duplicates for historical assignments but would not systematically multiply totals by the number of managers. Duplicate natural keys in the dimension would cause a different fan-out pattern (dimension side, not bridge side). Surrogate key joins in bridge tables are direct, not date-range based; that problem is specific to SCD Type 2 joins.",
     "hints": [
-      "Bridge tables introduce fan-out — each fact row gets N bridge rows. What must be applied to keep sums correct?",
+      "Bridge tables introduce fan-out \u2014 each fact row gets N bridge rows. What must be applied to keep sums correct?",
       "Check whether the weighting factor column is being multiplied against the measure before aggregation.",
       "The total across managers should equal the total of the original fact table."
     ],
@@ -137,8 +137,8 @@
     "order": 6,
     "title": "dbt Staging Layer Responsibilities",
     "difficulty": "medium",
-    "type": "mcq",
-    "description": "A dbt project has models structured as sources → staging → marts. A data engineer proposes adding business logic — such as classifying customers into segments based on lifetime value thresholds — directly in the staging models. Which statement best describes why this is an anti-pattern?",
+    "type": "conceptual",
+    "description": "A dbt project has models structured as sources \u2192 staging \u2192 marts. A data engineer proposes adding business logic \u2014 such as classifying customers into segments based on lifetime value thresholds \u2014 directly in the staging models. Which statement best describes why this is an anti-pattern?",
     "options": [
       "Staging models cannot reference sources; they must reference other staging models first",
       "Staging models should be thin, source-faithful transformations; business logic belongs in intermediate or mart models where it can be reused and tested independently",
@@ -148,7 +148,7 @@
     "correct_option": 1,
     "explanation": "Staging models are intended to be thin, one-to-one representations of source tables with light cleaning (renaming, casting, deduplication). Embedding business logic like segment thresholds couples source representation to business rules, making the logic hard to test in isolation, invisible to downstream mart authors, and brittle when thresholds change. Business logic belongs in intermediate or mart models. The other options are incorrect: staging models can and commonly do reference sources directly; materialization type is independent of logic complexity; and macros are optional helpers, not required for conditional SQL.",
     "hints": [
-      "Think about what happens if the segment threshold changes — how many models would need to be updated?",
+      "Think about what happens if the segment threshold changes \u2014 how many models would need to be updated?",
       "Each dbt layer has a defined responsibility. Staging is the 'clean source copy' layer.",
       "Business rules should live where they can be tested and reused by multiple downstream models."
     ],
@@ -173,10 +173,10 @@
       "Incremental: only new rows are appended each run, and the window function is computed only on the newly added rows"
     ],
     "correct_option": 2,
-    "explanation": "A table materialization pre-computes the expensive join and window function once per dbt run, so 200 BI queries hit the stored result rather than re-executing the complex logic each time. A view would re-run the full join + window function on every one of 200 queries per day, creating enormous compute load. Ephemeral models inline as CTEs into every referencing model — they do not help with direct BI tool queries and compound the compute problem. Incremental materialization sounds efficient, but window functions like 30-day rolling revenue depend on surrounding rows; computing the window only on new rows produces incorrect rolling totals for boundary rows.",
+    "explanation": "A table materialization pre-computes the expensive join and window function once per dbt run, so 200 BI queries hit the stored result rather than re-executing the complex logic each time. A view would re-run the full join + window function on every one of 200 queries per day, creating enormous compute load. Ephemeral models inline as CTEs into every referencing model \u2014 they do not help with direct BI tool queries and compound the compute problem. Incremental materialization sounds efficient, but window functions like 30-day rolling revenue depend on surrounding rows; computing the window only on new rows produces incorrect rolling totals for boundary rows.",
     "hints": [
       "Consider what happens to query performance if 200 BI queries each re-run a window function over large tables.",
-      "An incremental model only processes new rows — is that safe for a window function that looks backward in time?",
+      "An incremental model only processes new rows \u2014 is that safe for a window function that looks backward in time?",
       "The goal is to pre-compute once, then serve many reads cheaply."
     ],
     "concepts": [
@@ -190,8 +190,8 @@
     "order": 8,
     "title": "dbt: Intermediate Layer Purpose",
     "difficulty": "medium",
-    "type": "mcq",
-    "description": "A dbt project has two mart models — fct_orders and fct_returns — that each independently join orders, customers, and products staging tables and apply the same customer segment logic. A senior engineer suggests extracting the shared logic into an intermediate model. What is the PRIMARY benefit of this refactor?",
+    "type": "conceptual",
+    "description": "A dbt project has two mart models \u2014 fct_orders and fct_returns \u2014 that each independently join orders, customers, and products staging tables and apply the same customer segment logic. A senior engineer suggests extracting the shared logic into an intermediate model. What is the PRIMARY benefit of this refactor?",
     "options": [
       "Intermediate models are always materialized as tables, which makes mart models faster to build",
       "The shared transformation is defined once, tested once, and reused consistently, eliminating the risk of the two mart models diverging",
@@ -199,7 +199,7 @@
       "Extracting the logic reduces the number of source references, which lowers Snowflake credit consumption"
     ],
     "correct_option": 1,
-    "explanation": "The core benefit of the intermediate layer is single-source-of-truth for shared transformations. When customer segment logic lives in two mart models, a future change (e.g., threshold update) must be applied in both places and may be applied inconsistently. One intermediate model, tested independently, propagates correctly to both marts. Intermediate models are not always tables — they default to views unless explicitly configured. They do not bypass the DAG; dbt respects their position in the dependency graph. Reducing source references is an incidental side effect, not the primary architectural benefit.",
+    "explanation": "The core benefit of the intermediate layer is single-source-of-truth for shared transformations. When customer segment logic lives in two mart models, a future change (e.g., threshold update) must be applied in both places and may be applied inconsistently. One intermediate model, tested independently, propagates correctly to both marts. Intermediate models are not always tables \u2014 they default to views unless explicitly configured. They do not bypass the DAG; dbt respects their position in the dependency graph. Reducing source references is an incidental side effect, not the primary architectural benefit.",
     "hints": [
       "What problem arises when the same business rule is written twice in two separate files?",
       "Think about maintainability: where should shared logic live so it only needs to change in one place?",
@@ -217,7 +217,7 @@
     "title": "Modeling a Subscription Funnel: Grain Choice",
     "difficulty": "medium",
     "type": "scenario",
-    "scenario_context": "A SaaS company wants to track the subscription lifecycle: trial_started → paid_converted → churned → reactivated. Each transition has a timestamp and a revenue impact. The analytics team needs to calculate time-between-stages and cohort conversion rates.",
+    "scenario_context": "A SaaS company wants to track the subscription lifecycle: trial_started \u2192 paid_converted \u2192 churned \u2192 reactivated. Each transition has a timestamp and a revenue impact. The analytics team needs to calculate time-between-stages and cohort conversion rates.",
     "description": "What is the most appropriate fact table grain for this use case?",
     "options": [
       "One row per subscription (customer), with separate timestamp columns for each lifecycle stage",
@@ -226,9 +226,9 @@
       "One row per customer-month, aggregating lifecycle events within each calendar month"
     ],
     "correct_option": 1,
-    "explanation": "One row per lifecycle event (event_type grain) supports both time-between-stages calculation (using LAG or self-joins over ordered events) and cohort analysis (group by trial_started cohort, filter by event_type). It is also extensible — new event types are added as rows, not columns. One row per subscription with separate timestamp columns creates a sparse, wide table that makes time-between-stages easy but cannot accommodate more than one event of each type and becomes unwieldy as the lifecycle grows. Daily and monthly grains pre-aggregate data, losing the exact timestamps needed for duration calculations.",
+    "explanation": "One row per lifecycle event (event_type grain) supports both time-between-stages calculation (using LAG or self-joins over ordered events) and cohort analysis (group by trial_started cohort, filter by event_type). It is also extensible \u2014 new event types are added as rows, not columns. One row per subscription with separate timestamp columns creates a sparse, wide table that makes time-between-stages easy but cannot accommodate more than one event of each type and becomes unwieldy as the lifecycle grows. Daily and monthly grains pre-aggregate data, losing the exact timestamps needed for duration calculations.",
     "hints": [
-      "Think about which level of detail — one row per event, one row per session, or one row per state transition — lets you compute time-between-steps without aggregating away information you need.",
+      "Think about which level of detail \u2014 one row per event, one row per session, or one row per state transition \u2014 lets you compute time-between-steps without aggregating away information you need.",
       "A new stage added to the lifecycle should not require a schema change.",
       "Think about accumulating snapshot vs. transaction fact table design patterns."
     ],
@@ -243,19 +243,19 @@
     "order": 10,
     "title": "Conformed vs Role-Playing Dimensions",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A data warehouse has a single date dimension. The fact_orders table needs to reference three dates: order_date, ship_date, and delivery_date. What is the correct dimensional modeling approach?",
     "options": [
-      "Create three separate date dimension tables — dim_order_date, dim_ship_date, dim_delivery_date — each with their own copy of the calendar attributes",
+      "Create three separate date dimension tables \u2014 dim_order_date, dim_ship_date, dim_delivery_date \u2014 each with their own copy of the calendar attributes",
       "Add order_date, ship_date, and delivery_date as measure columns in the fact table with no dimension relationship",
-      "Use one shared date dimension and create three foreign key columns in the fact table — order_date_key, ship_date_key, delivery_date_key — each pointing to the same dimension",
+      "Use one shared date dimension and create three foreign key columns in the fact table \u2014 order_date_key, ship_date_key, delivery_date_key \u2014 each pointing to the same dimension",
       "Store all three dates as a single date_key on the fact table and add a date_type column to distinguish them"
     ],
     "correct_option": 2,
-    "explanation": "Role-playing dimensions solve exactly this problem: the same physical dimension table (dim_date) is referenced multiple times from the fact table under different aliases. Three separate foreign keys on the fact table — each joining to the same dim_date — preserve the full calendar attribute set for each role without duplicating dimension storage. Three separate physical copies waste storage, create consistency problems if calendar logic changes, and violate the conformed dimension principle. Storing dates as measures loses the ability to filter/group by calendar attributes (month, quarter, fiscal period). A single date_key with a date_type column makes it impossible to filter on all three dates simultaneously in one query.",
+    "explanation": "Role-playing dimensions solve exactly this problem: the same physical dimension table (dim_date) is referenced multiple times from the fact table under different aliases. Three separate foreign keys on the fact table \u2014 each joining to the same dim_date \u2014 preserve the full calendar attribute set for each role without duplicating dimension storage. Three separate physical copies waste storage, create consistency problems if calendar logic changes, and violate the conformed dimension principle. Storing dates as measures loses the ability to filter/group by calendar attributes (month, quarter, fiscal period). A single date_key with a date_type column makes it impossible to filter on all three dates simultaneously in one query.",
     "hints": [
       "The same dimension table can serve multiple relationships in a single fact table.",
-      "Think about what 'conformed' means — the dimension attributes should be consistent regardless of which date role is used.",
+      "Think about what 'conformed' means \u2014 the dimension attributes should be consistent regardless of which date role is used.",
       "Each date role needs its own foreign key column pointing to the shared dimension."
     ],
     "concepts": [
@@ -279,7 +279,7 @@
       "Normalize the flags into a single key-value attribute table joined to the fact table via a bridge"
     ],
     "correct_option": 2,
-    "explanation": "A junk dimension consolidates multiple low-cardinality flags and code columns into a single dimension table, replacing 6 foreign keys with one. The junk dimension is pre-populated with every combination of the flag values (at most 2×2×2×3×4×2 = 192 rows in this case), making it small and fast to join. Keeping all flags on the fact row as degenerate dimensions works but bloats the fact row width and prevents reuse across multiple fact tables. Six separate small dimensions create 6 foreign keys on the fact table for trivially low-cardinality data — a well-known anti-pattern called 'dimension explosion'. A key-value bridge table is the most complex option and makes set-based filtering (e.g., WHERE is_gift = true AND promo_type = 'BOGO') extremely cumbersome.",
+    "explanation": "A junk dimension consolidates multiple low-cardinality flags and code columns into a single dimension table, replacing 6 foreign keys with one. The junk dimension is pre-populated with every combination of the flag values (at most 2\u00d72\u00d72\u00d73\u00d74\u00d72 = 192 rows in this case), making it small and fast to join. Keeping all flags on the fact row as degenerate dimensions works but bloats the fact row width and prevents reuse across multiple fact tables. Six separate small dimensions create 6 foreign keys on the fact table for trivially low-cardinality data \u2014 a well-known anti-pattern called 'dimension explosion'. A key-value bridge table is the most complex option and makes set-based filtering (e.g., WHERE is_gift = true AND promo_type = 'BOGO') extremely cumbersome.",
     "hints": [
       "Low-cardinality flags and codes that don't deserve their own dimension often get grouped together.",
       "Count the number of foreign keys each approach adds to the fact table.",
@@ -296,18 +296,18 @@
     "order": 12,
     "title": "Degenerate Dimension: When to Use One",
     "difficulty": "medium",
-    "type": "mcq",
-    "description": "An order line item fact table includes an order_number column. The order_number has no additional attributes stored elsewhere — it is purely a transaction identifier used for grouping line items within an order. How should order_number be modeled?",
+    "type": "conceptual",
+    "description": "An order line item fact table includes an order_number column. The order_number has no additional attributes stored elsewhere \u2014 it is purely a transaction identifier used for grouping line items within an order. How should order_number be modeled?",
     "options": [
       "Create a dim_order table with order_number as the natural key and a surrogate key, even though it has no attributes beyond the identifier",
-      "Store order_number directly on the fact table as a degenerate dimension — a dimension key with no corresponding dimension table",
+      "Store order_number directly on the fact table as a degenerate dimension \u2014 a dimension key with no corresponding dimension table",
       "Hash the order_number and store it as a non-nullable measure column for grouping purposes",
       "Remove order_number entirely since fact tables should only contain measure columns and foreign keys to dimensions"
     ],
     "correct_option": 1,
-    "explanation": "A degenerate dimension is exactly the right model for transaction identifiers like order numbers, invoice IDs, or ticket numbers that have no additional descriptive attributes to store in a dimension table. It lives on the fact row and enables grouping (e.g., SELECT order_number, SUM(revenue)) without requiring a join. Creating a dim_order table for an attribute-free identifier adds an unnecessary join and a pointless surrogate key. Hashing an identifier as a measure column is semantically incorrect — it is a key, not a measure. Removing the identifier entirely destroys the ability to group line items by order.",
+    "explanation": "A degenerate dimension is exactly the right model for transaction identifiers like order numbers, invoice IDs, or ticket numbers that have no additional descriptive attributes to store in a dimension table. It lives on the fact row and enables grouping (e.g., SELECT order_number, SUM(revenue)) without requiring a join. Creating a dim_order table for an attribute-free identifier adds an unnecessary join and a pointless surrogate key. Hashing an identifier as a measure column is semantically incorrect \u2014 it is a key, not a measure. Removing the identifier entirely destroys the ability to group line items by order.",
     "hints": [
-      "Not every identifier needs its own dimension table — only ones with attributes worth joining.",
+      "Not every identifier needs its own dimension table \u2014 only ones with attributes worth joining.",
       "Transaction numbers like order IDs typically have no descriptive columns of their own.",
       "A degenerate dimension stays on the fact row and has no corresponding lookup table."
     ],
@@ -322,16 +322,16 @@
     "order": 13,
     "title": "Referential Integrity in Analytics Warehouses",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A Snowflake data warehouse team is debating whether to define foreign key constraints between fact and dimension tables. A senior engineer argues that enforcing referential integrity via database constraints is unnecessary in an analytics warehouse. Which response most accurately characterizes the tradeoff?",
     "options": [
-      "Foreign key constraints should always be enforced — without them, the query optimizer cannot plan efficient joins",
+      "Foreign key constraints should always be enforced \u2014 without them, the query optimizer cannot plan efficient joins",
       "Snowflake enforces foreign key constraints, so they should be declared for correctness; the performance impact is negligible",
       "Most cloud analytics warehouses do not enforce foreign key constraints, but declaring them informally documents relationships and may inform query optimization; data quality is enforced upstream in the pipeline instead",
       "Foreign key constraints cause all INSERT operations to fail on orphaned rows, making incremental loads impossible"
     ],
     "correct_option": 2,
-    "explanation": "In Snowflake (and BigQuery, Redshift), foreign key constraints are accepted syntactically but NOT enforced at write time. They serve as documentation and may be used by the query optimizer for pruning or join reordering in some systems, but they do not prevent orphaned rows. Data quality responsibility shifts to upstream validation in dbt tests, pipeline checks, or data contracts. The first option is incorrect because most cloud DWs do not use FK constraints for join planning. The second is factually wrong — Snowflake accepts but does not enforce FKs. The fourth overstates enforcement that does not exist in these systems.",
+    "explanation": "In Snowflake (and BigQuery, Redshift), foreign key constraints are accepted syntactically but NOT enforced at write time. They serve as documentation and may be used by the query optimizer for pruning or join reordering in some systems, but they do not prevent orphaned rows. Data quality responsibility shifts to upstream validation in dbt tests, pipeline checks, or data contracts. The first option is incorrect because most cloud DWs do not use FK constraints for join planning. The second is factually wrong \u2014 Snowflake accepts but does not enforce FKs. The fourth overstates enforcement that does not exist in these systems.",
     "hints": [
       "Think about whether cloud data warehouses like Snowflake and BigQuery actually enforce foreign key constraints.",
       "If constraints aren't enforced by the database engine, where does data quality validation happen instead?",
@@ -360,7 +360,7 @@
     "correct_option": 2,
     "explanation": "Inserting a placeholder 'unknown' dimension row with a reserved key is the standard Kimball pattern for late-arriving dimensions. It preserves the fact row (so revenue is not lost), allows reports to flag 'unknown product' rather than silently excluding sales, and supports a back-fill update when the real product row arrives. Rejecting fact rows loses revenue data and creates a reprocessing pipeline that is complex and error-prone. Dropping the foreign key column destroys the ability to analyze sales by product at all. A NOT NULL constraint sounds operationally safe but causes the ETL to fail entirely on every product launch, blocking all sales from loading until the dimension is fixed.",
     "hints": [
-      "The goal is to never lose a fact row — even when the dimension isn't ready yet.",
+      "The goal is to never lose a fact row \u2014 even when the dimension isn't ready yet.",
       "Analytics systems often use a reserved 'unknown' or 'not yet assigned' dimension member.",
       "The fact can be updated retroactively once the dimension member arrives."
     ],
@@ -376,7 +376,7 @@
     "title": "When to Denormalize in an Analytics Model",
     "difficulty": "medium",
     "type": "scenario",
-    "scenario_context": "A hospitality company has a normalized OLTP schema: bookings → guests → guest_preferences → preference_categories. Analysts constantly need booking revenue alongside guest city and top preference category. Each query joins 4 tables. The data team is debating whether to denormalize the analytics model.",
+    "scenario_context": "A hospitality company has a normalized OLTP schema: bookings \u2192 guests \u2192 guest_preferences \u2192 preference_categories. Analysts constantly need booking revenue alongside guest city and top preference category. Each query joins 4 tables. The data team is debating whether to denormalize the analytics model.",
     "description": "Which argument BEST justifies denormalizing guest city and top preference category into the bookings fact table for analytics?",
     "options": [
       "Denormalization should be avoided in analytics models because it increases storage costs beyond what the business can justify",
@@ -385,11 +385,11 @@
       "The analytics model should stay normalized to match the OLTP schema, ensuring a single source of truth"
     ],
     "correct_option": 1,
-    "explanation": "Denormalization in analytics is a deliberate tradeoff: accepting some redundancy to avoid expensive multi-table joins on every query. When city and top preference category are used in the majority of queries, pre-joining them into the dimension or fact layer reduces query complexity, latency, and warehouse compute costs. Storage in columnar cloud warehouses is cheap relative to compute. The first option overstates storage cost concerns — storage is rarely the constraint. The third option is incorrect; SCD Type 2 handles attribute changes in analytics without requiring immutability. The fourth conflates OLTP normalization (designed for write efficiency and update anomaly prevention) with OLAP optimization, which is read-first.",
+    "explanation": "Denormalization in analytics is a deliberate tradeoff: accepting some redundancy to avoid expensive multi-table joins on every query. When city and top preference category are used in the majority of queries, pre-joining them into the dimension or fact layer reduces query complexity, latency, and warehouse compute costs. Storage in columnar cloud warehouses is cheap relative to compute. The first option overstates storage cost concerns \u2014 storage is rarely the constraint. The third option is incorrect; SCD Type 2 handles attribute changes in analytics without requiring immutability. The fourth conflates OLTP normalization (designed for write efficiency and update anomaly prevention) with OLAP optimization, which is read-first.",
     "hints": [
-      "Analytics workloads are read-heavy — the cost of repeated joins on popular attributes compounds quickly.",
+      "Analytics workloads are read-heavy \u2014 the cost of repeated joins on popular attributes compounds quickly.",
       "Storage is cheap in columnar cloud warehouses; compute is not.",
-      "Denormalization in analytics is intentional, not accidental — it is a known tradeoff, not a mistake."
+      "Denormalization in analytics is intentional, not accidental \u2014 it is a known tradeoff, not a mistake."
     ],
     "concepts": [
       "DENORMALIZATION TRADEOFF",
@@ -402,7 +402,7 @@
     "order": 16,
     "title": "Denormalization Tradeoff: Update Anomalies in Analytics",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A data team denormalizes a customer's country into every row of a 500-million-row fact table for query performance. Six months later, the source system corrects a data quality error: 200,000 customers had the wrong country assigned. What is the PRIMARY operational risk introduced by this denormalization?",
     "options": [
       "The fact table cannot store string columns, so the country value will be silently truncated",
@@ -414,7 +414,7 @@
     "explanation": "Update anomalies are the central risk of denormalization: when the same value is stored in millions of rows, any correction must propagate across all of them, which is expensive and error-prone. In a normalized model, updating the customer's country in dim_customer propagates instantly to all joined queries. Fact tables in columnar stores do support string columns without truncation. Partition pruning is a query optimization independent of schema normalization. BI tools support both normalized and denormalized schemas.",
     "hints": [
       "Consider what happens when a fact in a denormalized column needs to be corrected across millions of rows.",
-      "In a normalized model, a single dimension update propagates to all fact rows at query time — no fact rows need touching.",
+      "In a normalized model, a single dimension update propagates to all fact rows at query time \u2014 no fact rows need touching.",
       "The classic risk of denormalization is exactly this scenario."
     ],
     "concepts": [
@@ -438,11 +438,11 @@
       "One big tables prevent duplicate dimension values by embedding attributes directly, which star schemas cannot guarantee"
     ],
     "correct_option": 1,
-    "explanation": "The strongest case for OBT in a small-team, BI-tool-first context is simplicity: analysts drag dimensions and metrics without managing join paths, and iteration is fast. This is a genuine and widely accepted tradeoff for small teams. OBTs do not inherently enforce referential integrity — in fact, they lose referential integrity guarantees by removing foreign key relationships. OBTs do not universally outperform star schemas; star schemas with columnar pruning can be faster for selective queries. OBTs can create more duplication of dimension values, not less.",
+    "explanation": "The strongest case for OBT in a small-team, BI-tool-first context is simplicity: analysts drag dimensions and metrics without managing join paths, and iteration is fast. This is a genuine and widely accepted tradeoff for small teams. OBTs do not inherently enforce referential integrity \u2014 in fact, they lose referential integrity guarantees by removing foreign key relationships. OBTs do not universally outperform star schemas; star schemas with columnar pruning can be faster for selective queries. OBTs can create more duplication of dimension values, not less.",
     "hints": [
       "Think about what a solo analyst in a BI tool struggles with most: join complexity or column breadth?",
       "OBT trades storage efficiency and update simplicity for query accessibility.",
-      "The right answer depends on team size, tooling, and iteration speed — not just database theory."
+      "The right answer depends on team size, tooling, and iteration speed \u2014 not just database theory."
     ],
     "concepts": [
       "WIDE VS NARROW",
@@ -455,7 +455,7 @@
     "order": 18,
     "title": "Wide Table Scalability Limits",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "An analytics team starts with a single wide table (OBT) approach. After 18 months, the table has 120 columns, 3 teams query it, and the business has added new entity types that require joining back to source systems. Which limitation is most likely to force a schema restructure?",
     "options": [
       "Columnar storage systems impose a hard limit of 100 columns per table, forcing a split",
@@ -464,10 +464,10 @@
       "BI tools cannot connect to tables with more than 80 columns, causing reporting failures"
     ],
     "correct_option": 1,
-    "explanation": "The key scaling failure of OBT is governance: as teams multiply, each team may apply slightly different filters or derive columns differently, causing metric disagreements. Adding new entities requires adding columns (schema changes) rather than simply joining a new dimension table. Columnar systems support hundreds or thousands of columns — there is no practical 100-column limit. Wide tables can be incrementally loaded using standard ETL techniques. BI tools support arbitrarily wide tables.",
+    "explanation": "The key scaling failure of OBT is governance: as teams multiply, each team may apply slightly different filters or derive columns differently, causing metric disagreements. Adding new entities requires adding columns (schema changes) rather than simply joining a new dimension table. Columnar systems support hundreds or thousands of columns \u2014 there is no practical 100-column limit. Wide tables can be incrementally loaded using standard ETL techniques. BI tools support arbitrarily wide tables.",
     "hints": [
       "Think about what happens when multiple teams each want to define 'active customer' slightly differently on the same table.",
-      "Adding a new entity type in a star schema means adding a new dimension table — what does it mean in an OBT?",
+      "Adding a new entity type in a star schema means adding a new dimension table \u2014 what does it mean in an OBT?",
       "Governance and consistency are the long-term challenges of a wide table approach."
     ],
     "concepts": [
@@ -482,7 +482,7 @@
     "title": "Accumulating Snapshot Fact Table for Order Fulfillment",
     "difficulty": "medium",
     "type": "scenario",
-    "scenario_context": "A logistics company wants to track how long orders spend at each fulfillment stage: placed → picked → packed → shipped → delivered. For each order, the company needs to report on cycle times at every stage and how many orders are currently in each stage.",
+    "scenario_context": "A logistics company wants to track how long orders spend at each fulfillment stage: placed \u2192 picked \u2192 packed \u2192 shipped \u2192 delivered. For each order, the company needs to report on cycle times at every stage and how many orders are currently in each stage.",
     "description": "Which fact table pattern best supports this use case?",
     "options": [
       "Transaction fact table: one row per fulfillment event per order, with an event_type column and a single timestamp",
@@ -494,7 +494,7 @@
     "explanation": "Accumulating snapshot fact tables are purpose-built for pipeline/process workflows where a single entity (order) passes through defined sequential stages. Each row is updated as milestones are reached, making cycle time computation trivial (shipped_date - placed_date). Milestone completion counts are a simple GROUP BY with IS NOT NULL checks. A transaction fact table requires complex self-joins or window functions to pivot events into stage durations. A periodic snapshot creates enormous row counts for long-running orders and makes cycle time computation harder. A dimension-only model without a fact table cannot carry additive measures like duration or revenue.",
     "hints": [
       "Think about which pattern stores one row per order and updates it over time as stages complete.",
-      "Cycle time is the difference between two milestone timestamps — which model makes that trivial to compute?",
+      "Cycle time is the difference between two milestone timestamps \u2014 which model makes that trivial to compute?",
       "This pattern is specifically designed for pipeline/workflow tracking with defined stages."
     ],
     "concepts": [
@@ -508,7 +508,7 @@
     "order": 20,
     "title": "Grain Definition: Sessions with Variable Event Counts",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A product analytics team models user sessions. Each session contains a variable number of page view events (1 to 500+). The team needs session-level metrics (session_duration, pages_per_session) and event-level metrics (time_on_page). A junior analyst proposes a session-grain fact table with a pages_in_session integer column. What is the key limitation of this approach?",
     "options": [
       "Session-grain tables are not supported in columnar databases, which require event-level granularity",
@@ -517,7 +517,7 @@
       "Session-grain fact tables require surrogate keys on every page, which the source data does not provide"
     ],
     "correct_option": 1,
-    "explanation": "A session-grain table with only a pages_in_session count cannot support page-level metrics like time_on_page — that detail is aggregated away by the session grain choice. To support both session and page metrics, you need either (a) an event-grain fact table with session attributes denormalized in, (b) two fact tables at different grains, or (c) nested records (available in BigQuery but lossy for SQL aggregation). Columnar databases support session-level tables without issue. Third normal form is an OLTP concern; analytics models deliberately denormalize. Surrogate keys are not required for page-level detail.",
+    "explanation": "A session-grain table with only a pages_in_session count cannot support page-level metrics like time_on_page \u2014 that detail is aggregated away by the session grain choice. To support both session and page metrics, you need either (a) an event-grain fact table with session attributes denormalized in, (b) two fact tables at different grains, or (c) nested records (available in BigQuery but lossy for SQL aggregation). Columnar databases support session-level tables without issue. Third normal form is an OLTP concern; analytics models deliberately denormalize. Surrogate keys are not required for page-level detail.",
     "hints": [
       "Once you decide what one row represents, ask: what detail can you no longer recover from that representation? Can a count column substitute for the missing detail?",
       "Session-level and page-level are two different grains. Which metrics belong to each?",
@@ -544,7 +544,7 @@
       "A single account-grain dimension table containing all license and contact data as nested repeated fields"
     ],
     "correct_option": 1,
-    "explanation": "Two fact tables at the appropriate grain for each business process, sharing a conformed dim_account, is the textbook solution for organizations with multiple distinct business processes (revenue vs. activity). Finance queries fct_mrr without joining to contact noise; CS queries fct_activity without revenue cluttering the model. A single contact-product grain table would fan out MRR across all contacts, causing double-counting of revenue. A wide table with NULLs (a 'heterogeneous fact table') mixes two grains in one table — summing mrr_amount would count it once per contact rather than once per account. A pure dimension table with nested fields cannot support additive fact aggregations.",
+    "explanation": "Two fact tables at the appropriate grain for each business process, sharing a conformed dim_account, is the textbook solution for organizations with multiple distinct business processes (revenue vs. activity). Finance queries fct_mrr without joining to contact noise; CS queries fct_activity without revenue cluttering the model. A single contact-product grain table would fan out MRR across all contacts, causing double-counting of revenue. A wide table with NULLs (a 'heterogeneous fact table') mixes two grains in one table \u2014 summing mrr_amount would count it once per contact rather than once per account. A pure dimension table with nested fields cannot support additive fact aggregations.",
     "hints": [
       "When two teams need completely different grains of data, sharing a single fact table often causes double-counting.",
       "Conformed dimensions let multiple fact tables share the same dimension, enabling cross-business-process analysis.",
@@ -562,19 +562,19 @@
     "title": "Schema from Requirements: Product Hierarchy Rollup",
     "difficulty": "medium",
     "type": "scenario",
-    "scenario_context": "A CPG company sells products organized in a four-level hierarchy: Brand → Category → Subcategory → SKU. Analysts need to slice revenue at any level of the hierarchy. The data team is modeling this in a dimensional model.",
+    "scenario_context": "A CPG company sells products organized in a four-level hierarchy: Brand \u2192 Category \u2192 Subcategory \u2192 SKU. Analysts need to slice revenue at any level of the hierarchy. The data team is modeling this in a dimensional model.",
     "description": "How should the product hierarchy be modeled in the product dimension?",
     "options": [
       "Store only the SKU in the dimension; compute hierarchy rollups using recursive CTEs at query time",
       "Flatten the hierarchy by adding brand_name, category_name, subcategory_name, and sku_name as columns in the dim_product row, one row per SKU",
-      "Create four separate dimension tables — dim_brand, dim_category, dim_subcategory, dim_sku — joined in a snowflake schema",
+      "Create four separate dimension tables \u2014 dim_brand, dim_category, dim_subcategory, dim_sku \u2014 joined in a snowflake schema",
       "Store the hierarchy as a parent_id self-referencing column in a single dim_product table"
     ],
     "correct_option": 1,
     "explanation": "Flattening a balanced hierarchy into columns on the leaf-level (SKU) dimension row is the standard Kimball approach. Each SKU row carries its full ancestry (brand, category, subcategory) as denormalized attributes, allowing GROUP BY at any level without any joins. Recursive CTEs at query time are expensive and complex for every report user. A snowflake schema (four separate dimension tables) supports hierarchy rollups but requires 3 extra joins on every query and provides no accuracy advantage for a stable hierarchy. A self-referencing parent_id design is an OLTP pattern; it requires recursive queries and is hostile to BI tools that expect flat relational structures.",
     "hints": [
       "BI tools work best when all hierarchy levels are visible as flat columns on a single dimension row.",
-      "Analysts need GROUP BY at any level — how can you make that work without recursive SQL?",
+      "Analysts need GROUP BY at any level \u2014 how can you make that work without recursive SQL?",
       "A snowflake schema normalizes hierarchy levels, but what does that cost at query time?"
     ],
     "concepts": [
@@ -594,13 +594,13 @@
     "options": [
       "One wide fact table with all possible event attribute columns, using NULLs for attributes that do not apply to each event type",
       "One base fact table at the patient-event grain (shared measures: patient_key, event_type, event_date, interaction_flag) plus event-type-specific extension tables joined by event_key for detailed attributes",
-      "Four separate fully independent fact tables — fct_appointments, fct_labs, fct_prescriptions, fct_diagnoses — with no shared structure",
+      "Four separate fully independent fact tables \u2014 fct_appointments, fct_labs, fct_prescriptions, fct_diagnoses \u2014 with no shared structure",
       "A single dim_event table with all attributes and event_type as a column, with a fact table referencing only the event_key"
     ],
     "correct_option": 1,
     "explanation": "A base fact table plus event-type extension tables (sometimes called a 'supertype/subtype' or 'core + satellite' pattern) is the best fit. The base table carries shared measures for cross-event analysis (engagement scoring), while extension tables store event-specific attributes accessed only when drilling in. A single wide table with NULLs creates a sparse, hard-to-document schema; NULL columns are invisible to BI tools and confuse analysts. Four fully separate tables make cross-event aggregation require UNION ALL and prevent a shared engagement score computation. A pure dimension table for events with no measures cannot carry additive facts.",
     "hints": [
-      "Think about what all four event types have in common — that shared structure belongs in the base table.",
+      "Think about what all four event types have in common \u2014 that shared structure belongs in the base table.",
       "Event-specific attributes (lab test code, prescription drug name) don't belong on every row.",
       "The pattern of a shared core table + specific extension tables avoids both NULL sprawl and schema duplication."
     ],
@@ -615,8 +615,8 @@
     "order": 24,
     "title": "SCD Type 2 vs Type 3: When Type 3 is Sufficient",
     "difficulty": "medium",
-    "type": "mcq",
-    "description": "A retail company's analytics team needs to analyze sales performance before and after a store was reclassified from 'Regional' to 'National' tier. They only care about the current tier and the immediately preceding tier — not earlier history. The reclassification happens at most once every two years per store. Which SCD approach is most appropriate?",
+    "type": "conceptual",
+    "description": "A retail company's analytics team needs to analyze sales performance before and after a store was reclassified from 'Regional' to 'National' tier. They only care about the current tier and the immediately preceding tier \u2014 not earlier history. The reclassification happens at most once every two years per store. Which SCD approach is most appropriate?",
     "options": [
       "SCD Type 2: maintain full row-per-version history with effective date ranges for the store dimension",
       "SCD Type 1: overwrite the tier column in place; the historical analysis requirement is a misunderstanding of analytics needs",
@@ -626,7 +626,7 @@
     "correct_option": 2,
     "explanation": "SCD Type 3 is the right fit when the business requirement is explicitly limited to current value and the single most recent prior value, and the attribute changes infrequently (at most once every two years). Type 3 adds a previous_tier column, which satisfies both reporting needs with minimal schema complexity. Type 2 would also satisfy the requirement but introduces row versioning, date-range join complexity, and storage overhead that is unnecessary given the explicitly bounded requirement. Type 1 destroys history entirely, making the before/after analysis impossible. Type 6 is even more complex than Type 2 and is justified only when the team needs both unlimited history and a current-vs-prior snapshot simultaneously.",
     "hints": [
-      "How many historical values does the team actually need — unlimited, or just one previous value?",
+      "How many historical values does the team actually need \u2014 unlimited, or just one previous value?",
       "When the requirement is explicitly 'current and previous only', simpler is better.",
       "Consider the complexity cost of row versioning when you only need to track one change backward."
     ],
@@ -651,10 +651,10 @@
       "Partition by user_id (high cardinality) to enable per-user query isolation and fast user-level lookups"
     ],
     "correct_option": 1,
-    "explanation": "BigQuery partitioning on event_date (DATE) ensures that queries filtering on a date range scan only the relevant day/range partitions, dramatically reducing bytes processed. Clustering by content_category within each partition further narrows the physical blocks BigQuery reads for category-filtered queries. Partitioning by content_category (12 values) would create only 12 partitions covering 5 years each — still enormous per-partition scan sizes. Clustering on event_date within content_category partitions is less effective because analysts filter on date first. No partitioning means every query scans all 10 billion rows. Partitioning by high-cardinality user_id creates tens of millions of micro-partitions, which BigQuery limits and which degrades metadata management.",
+    "explanation": "BigQuery partitioning on event_date (DATE) ensures that queries filtering on a date range scan only the relevant day/range partitions, dramatically reducing bytes processed. Clustering by content_category within each partition further narrows the physical blocks BigQuery reads for category-filtered queries. Partitioning by content_category (12 values) would create only 12 partitions covering 5 years each \u2014 still enormous per-partition scan sizes. Clustering on event_date within content_category partitions is less effective because analysts filter on date first. No partitioning means every query scans all 10 billion rows. Partitioning by high-cardinality user_id creates tens of millions of micro-partitions, which BigQuery limits and which degrades metadata management.",
     "hints": [
-      "Partition on the column most frequently used as the first filter — it determines which partitions are scanned.",
-      "Clustering is a secondary sort within each partition — the order of partition then cluster matters.",
+      "Partition on the column most frequently used as the first filter \u2014 it determines which partitions are scanned.",
+      "Clustering is a secondary sort within each partition \u2014 the order of partition then cluster matters.",
       "High-cardinality columns make poor partition keys; date is almost always the best partition column for time-series data."
     ],
     "concepts": [
@@ -668,16 +668,16 @@
     "order": 26,
     "title": "Semantic Layer: Centralized Metric Governance",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "An analytics team discovers that three different BI dashboards report different values for 'Monthly Active Users (MAU)'. Investigation reveals each dashboard owner wrote their own SQL definition. Which approach prevents this divergence and ensures all consumers use a consistent MAU definition?",
     "options": [
-      "Define MAU once in a centralized semantic layer (e.g., dbt Metrics, LookML, or Cube.js) with a single governed definition; all BI tools query the semantic layer rather than writing raw SQL — formula changes propagate automatically to all consumers",
-      "Document the canonical MAU definition in a Confluence page and require all dashboard owners to read it before writing SQL — divergence is a process problem, not a technical one, and documentation is the most durable fix",
+      "Define MAU once in a centralized semantic layer (e.g., dbt Metrics, LookML, or Cube.js) with a single governed definition; all BI tools query the semantic layer rather than writing raw SQL \u2014 formula changes propagate automatically to all consumers",
+      "Document the canonical MAU definition in a Confluence page and require all dashboard owners to read it before writing SQL \u2014 divergence is a process problem, not a technical one, and documentation is the most durable fix",
       "Create a shared SQL view `v_mau` in the data warehouse and grant all BI tools read access; dashboard owners query the view so all use the same logic",
       "Run a quarterly audit comparing MAU values across dashboards; when divergences are found, the data team standardizes the definition and notifies owners"
     ],
     "correct_option": 0,
-    "explanation": "A semantic layer centralizes metric definitions in a single versioned, governed source. Metrics like MAU are defined once with all business logic (e.g., 'a user who performed at least one qualifying action in a rolling 28-day window, excluding internal accounts') and exposed as named, queryable metrics via an API or metadata layer. BI tools query the semantic layer's metric catalog rather than writing raw SQL, so all dashboards are guaranteed to use the same definition. When the business redefines MAU, the change is made once and propagates everywhere.\n\nOption B (documentation) is a human-coordination solution — documentation is not enforced at query time, and new dashboard owners may not read it or may interpret it differently.\n\nOption C (shared view) is a good partial solution but has two limitations: (1) the view must be maintained manually as business logic evolves; (2) users can still query underlying tables and bypass the view. A semantic layer adds API-enforced access and version control.\n\nOption D (quarterly audit) is reactive — divergences exist for months before being caught, and by that time stakeholders have made decisions based on conflicting numbers.",
+    "explanation": "A semantic layer centralizes metric definitions in a single versioned, governed source. Metrics like MAU are defined once with all business logic (e.g., 'a user who performed at least one qualifying action in a rolling 28-day window, excluding internal accounts') and exposed as named, queryable metrics via an API or metadata layer. BI tools query the semantic layer's metric catalog rather than writing raw SQL, so all dashboards are guaranteed to use the same definition. When the business redefines MAU, the change is made once and propagates everywhere.\n\nOption B (documentation) is a human-coordination solution \u2014 documentation is not enforced at query time, and new dashboard owners may not read it or may interpret it differently.\n\nOption C (shared view) is a good partial solution but has two limitations: (1) the view must be maintained manually as business logic evolves; (2) users can still query underlying tables and bypass the view. A semantic layer adds API-enforced access and version control.\n\nOption D (quarterly audit) is reactive \u2014 divergences exist for months before being caught, and by that time stakeholders have made decisions based on conflicting numbers.",
     "hints": [
       "The root cause is that each team can define 'MAU' independently in SQL. Which approach makes it technically impossible to use a different definition?",
       "A semantic layer sits between BI tools and the data warehouse. What does it expose to BI tools instead of raw SQL access?"
@@ -694,19 +694,19 @@
     "order": 27,
     "title": "Semi-Additive Facts: Account Balance in a Periodic Snapshot",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "A data warehouse tracks daily end-of-day bank account balances in a periodic snapshot fact table:\n\n```\nfact_account_balance\n  account_id  date          balance\n  1001        2024-01-01    $5,000\n  1002        2024-01-01    $3,200\n  1001        2024-01-02    $5,400\n  1002        2024-01-02    $3,100\n```\n\nWhich aggregation is meaningful?",
     "options": [
-      "SUM(balance) across all accounts on a single date ($8,200 on 2024-01-01) is valid — it represents total deposits held that day; SUM(balance) across dates for one account ($10,400 for account 1001) is not meaningful — it has no business interpretation",
-      "SUM(balance) across dates for one account ($10,400 for account 1001) represents the total balance held over the period — a useful cash-flow metric; AVG is not valid because averaging a balance overstates compound interest",
-      "Neither SUM across accounts nor SUM across dates is valid for a balance column — balances are fully non-additive; use COUNT(DISTINCT account_id) as the primary fact metric",
-      "SUM(balance) is always valid regardless of the time dimension — the periodic snapshot guarantees that each row represents an independent, non-overlapping measurement"
+      "SUM(balance) across all accounts on a single date ($8,200 on 2024-01-01) is valid \u2014 it represents total deposits held that day; SUM(balance) across dates for one account ($10,400 for account 1001) is not meaningful \u2014 it has no business interpretation",
+      "SUM(balance) across dates for one account ($10,400 for account 1001) represents the total balance held over the period \u2014 a useful cash-flow metric; AVG is not valid because averaging a balance overstates compound interest",
+      "Neither SUM across accounts nor SUM across dates is valid for a balance column \u2014 balances are fully non-additive; use COUNT(DISTINCT account_id) as the primary fact metric",
+      "SUM(balance) is always valid regardless of the time dimension \u2014 the periodic snapshot guarantees that each row represents an independent, non-overlapping measurement"
     ],
     "correct_option": 0,
-    "explanation": "Account balance is a classic semi-additive fact. It is additive across accounts (or any non-time dimension) at a single point in time: summing all account balances on 2024-01-01 gives the total deposits in the bank — a meaningful metric. It is not additive across time: summing account 1001's balance across Jan 1 and Jan 2 gives $10,400, which conflates two snapshots of the same money and has no business meaning.\n\nThe canonical approach for time-based aggregation of semi-additive facts is to use non-additive aggregations: the balance at a specific date (point-in-time snapshot), AVG(balance) as a period-average approximation, or MIN/MAX for floor/ceiling tracking. These are valid; SUM across time is not.\n\nSemi-additive is distinct from fully non-additive (e.g., ratios, percentages) — balance IS additive along the account dimension, just not along the date dimension.",
+    "explanation": "Account balance is a classic semi-additive fact. It is additive across accounts (or any non-time dimension) at a single point in time: summing all account balances on 2024-01-01 gives the total deposits in the bank \u2014 a meaningful metric. It is not additive across time: summing account 1001's balance across Jan 1 and Jan 2 gives $10,400, which conflates two snapshots of the same money and has no business meaning.\n\nThe canonical approach for time-based aggregation of semi-additive facts is to use non-additive aggregations: the balance at a specific date (point-in-time snapshot), AVG(balance) as a period-average approximation, or MIN/MAX for floor/ceiling tracking. These are valid; SUM across time is not.\n\nSemi-additive is distinct from fully non-additive (e.g., ratios, percentages) \u2014 balance IS additive along the account dimension, just not along the date dimension.",
     "hints": [
-      "A periodic snapshot stores one row per entity per time period — the same $5,000 appears in both Jan 1 and Jan 2 rows for account 1001. What does summing both rows produce, and does that number mean anything?",
-      "Semi-additive means 'additive along some dimensions but not all.' Which dimension makes balance non-additive — account_id or date?"
+      "A periodic snapshot stores one row per entity per time period \u2014 the same $5,000 appears in both Jan 1 and Jan 2 rows for account 1001. What does summing both rows produce, and does that number mean anything?",
+      "Semi-additive means 'additive along some dimensions but not all.' Which dimension makes balance non-additive \u2014 account_id or date?"
     ],
     "concepts": [
       "SEMI-ADDITIVE FACTS",
@@ -720,10 +720,10 @@
     "order": 28,
     "title": "Multi-Valued Dimension: Bridge Table for Promotions",
     "difficulty": "medium",
-    "type": "mcq",
+    "type": "conceptual",
     "description": "An e-commerce warehouse has `fact_orders` and `dim_promotion`. Each order can have 0 to 5 promotions applied. The current design stores promotions as a comma-separated string in `fact_orders.promotion_ids`. Analytics requires accurate counts of orders per promotion. Which design correctly handles the many-to-many relationship?",
     "options": [
-      "Introduce a bridge table `bridge_order_promotion` with (order_id, promotion_id, weight_factor); join fact_orders → bridge → dim_promotion; use COUNT(DISTINCT order_id) for order counts and SUM(revenue * weight_factor) for weighted revenue to avoid double-counting",
+      "Introduce a bridge table `bridge_order_promotion` with (order_id, promotion_id, weight_factor); join fact_orders \u2192 bridge \u2192 dim_promotion; use COUNT(DISTINCT order_id) for order counts and SUM(revenue * weight_factor) for weighted revenue to avoid double-counting",
       "Denormalize dim_promotion into fact_orders by adding five nullable columns (promotion_1 through promotion_5); queries UNION across all five columns to count orders per promotion",
       "Split fact_orders into fact_orders_no_promo and fact_orders_with_promo; join fact_orders_with_promo to dim_promotion using the first promotion_id only",
       "Leave the comma-separated string as-is and parse it at query time using string_split() or REGEXP; parsing overhead is acceptable for modern analytical engines"

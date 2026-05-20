@@ -1,0 +1,20 @@
+{
+  "slug": "applied-stats",
+  "title": "Applied Statistics for Data Work",
+  "description": "Sharpen your statistical intuition for the judgment calls data roles face every day: recognizing cognitive bias traps in data, designing experiments that avoid confounds, and choosing the right test for the right structure.",
+  "topic": "statistics",
+  "questions": [72034, 72035, 72036, 72037, 72038, 72039, 72040, 72041],
+  "tier": "pro",
+  "role": "advanced",
+  "focus_concepts": [
+    "SURVIVORSHIP BIAS",
+    "SAMPLING BIAS",
+    "REGRESSION TO THE MEAN",
+    "GOODHART'S LAW",
+    "LOGISTIC REGRESSION",
+    "ODDS RATIO",
+    "PAIRED T-TEST"
+  ],
+  "outcomes": "You'll recognize survivorship, Berkson's, and sampling bias in real datasets; avoid Goodhart's Law traps in metric design; interpret logistic regression coefficients and odds ratios correctly; and know when to use a paired vs unpaired t-test.",
+  "recommended_after": ["experimental-design-inference"]
+}
