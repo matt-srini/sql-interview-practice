@@ -540,9 +540,13 @@ Full-screen layout. Does not use `AppShell`. Has two states:
 **Active state:**
 - Custom topbar: `[◀ Exit] [Q1• Q2○ Q3○] [MM:SS timer] [End session]`
 - Left panel now opens with a session-context card that makes the current mode explicit: benchmark sessions show a fixed-shape benchmark badge, shape summary, and track-specific benchmark framing; drills show flexible drill framing instead.
+- Below the session-context card: a `.mock-session-rule` sidebar callout (left-bordered, muted background) with two concise lines: "Each question is one shot — run freely before you commit." and "Use ← → at the top to move between questions."
 - Body: 280px left panel (question description/schema + concepts) | flex-grow right panel (editor + run/submit)
 - Timer: countdown from `time_limit_s`. Recomputed from `started_at` on reload. Auto-finishes when it hits zero.
 - Timer CSS states: neutral → `.mock-timer--warning` (<10min) → `.mock-timer--danger` (<3min, pulsing)
+- **Submit model (one-shot):** Each question allows exactly one real submission. The submit button is disabled once `submitted[q.id]` is true. Blank code (code tracks) or a missing MCQ selection also disables the button. After a wrong submit the button label switches to `✗ Submitted`. **No feedback is rendered from submit** — the button state is the only signal. Run results remain visible and unaffected by submit (Run never clears the submit lock).
+- **Post-submit navigation:** After any submit (correct or wrong), a `Next question →` button appears on non-last questions. On the last question after submitting, a `.mock-all-done` nudge paragraph appears ("All questions answered — end your session when ready.") instead.
+- **Reload recovery:** `submitted{}` state is initialised from `submitted_at` per question in the `GET /api/mock/{id}` response, so the one-shot lock survives page reload.
 
 **Summary state (after finish):**
 - Summary topbar and intro card now distinguish `Benchmark summary` vs `Drill summary`, show the human-readable mode label, and restate the session shape before the score block.

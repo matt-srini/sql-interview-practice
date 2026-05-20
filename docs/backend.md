@@ -405,8 +405,8 @@ Prefix: `/api/mock`
 | GET | `/api/mock/history` | required | Past sessions list (last 20), sorted by `started_at DESC` |
 | GET | `/api/mock/analytics` | required (Elite) | Aggregate analytics over last 50 sessions, including separated benchmark and drill summaries plus overall concept signals |
 | POST | `/api/mock/start` | required | Start a session; selects questions, persists, returns full question payloads. Returns **409** `{"error": "active_session_exists", "session_id": ..., "track": ..., "difficulty": ..., "mode": ...}` if the user already has an active session. |
-| GET | `/api/mock/{id}` | required | Load session state (for reload recovery) |
-| POST | `/api/mock/{id}/submit` | required | Evaluate an answer mid-session; updates `mock_session_questions`; no solutions returned |
+| GET | `/api/mock/{id}` | required | Load session state (for reload recovery). Each question row includes `submitted_at` so the client can restore the one-shot submit lock after a page reload. |
+| POST | `/api/mock/{id}/submit` | required | Evaluate an answer mid-session; updates `mock_session_questions`; no solutions returned. Returns **409** if the question was already submitted this session. Returns **422** if code is blank or MCQ option is missing — neither consumes the one-shot slot. |
 | POST | `/api/mock/{id}/finish` | required | Mark session completed; returns summary with per-question solutions (idempotent) |
 | DELETE | `/api/mock/{id}` | required | Discard an active session entirely (removes from history/stats). Only allowed within 120 s of `started_at`; returns 204. Returns 400 if already completed, 403 if older than 120 s. |
 
