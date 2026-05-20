@@ -529,7 +529,7 @@ Validation requirements for the first slice
 - run a frontend production build after the layout changes
 - manually verify one benchmark path and one drill path in the browser at desktop width and mobile width
 
-Prompt for the implementing model
+Suggested implementation prompt for the implementing model
 
 - "Implement only the first Phase 5A slice from docs/mock-modality-rollout-plan.md: convert MockHub into a two-column desktop lobby with a sticky right-rail session brief while preserving current benchmark/drill behavior, recommendation presets, analytics logic, and history logic. Do not touch backend contracts or other pages. Update focused tests, run the mock Playwright flow, and run a frontend build."
 
