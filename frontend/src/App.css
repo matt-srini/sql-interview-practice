@@ -5341,8 +5341,13 @@ select {
 }
 
 .mcq-option--selected {
-  border-color: var(--accent-soft-strong);
-  background: var(--accent-soft);
+  border-color: var(--accent);
+  background: rgba(22, 101, 52, 0.10);
+}
+.mcq-option--selected .mcq-option-letter {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
 }
 
 .mcq-option--correct {
@@ -6547,6 +6552,8 @@ select {
 [data-theme="dark"] .sidebar-error { color: var(--danger); }
 [data-theme="dark"] .track-tile { background: var(--surface-card); border-color: var(--border-subtle); }
 [data-theme="dark"] .mcq-option { background: var(--surface-card-alt); }
+[data-theme="dark"] .mcq-option--selected { border-color: var(--accent); background: rgba(74, 222, 128, 0.12); }
+[data-theme="dark"] .mcq-option--selected .mcq-option-letter { background: var(--accent); border-color: var(--accent); color: #0D1A10; }
 [data-theme="dark"] .mcq-option--correct { color: #B8E5CE; }
 [data-theme="dark"] .mcq-option--wrong { color: #F0C8C3; }
 [data-theme="dark"] .mcq-explanation { background: var(--surface-card-alt); }
@@ -7792,13 +7799,16 @@ select {
   margin-top: 0.625rem;
 }
 
-/* ── Submit note (below action row, code tracks only) ─────── */
-.mock-submit-note {
-  margin: 0.4rem 0 0;
+/* ── One-shot rule note (below session context in left panel) ── */
+.mock-session-rule {
   font-size: 0.74rem;
+  line-height: 1.5;
   color: var(--text-secondary);
-  text-align: center;
-  opacity: 0.8;
+  padding: 0.45rem 0.7rem;
+  margin-bottom: 1rem;
+  border-left: 2px solid var(--border-strong);
+  background: var(--surface-card-alt);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
 /* ── Review modal ────────────────────────────────────────── */

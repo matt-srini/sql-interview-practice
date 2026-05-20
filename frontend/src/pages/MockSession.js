@@ -796,6 +796,10 @@ export default function MockSession() {
             )}
           </div>
 
+          <div className="mock-session-rule">
+            Each question is one shot — run freely before you commit to an answer.
+          </div>
+
           {q && (
             <>
               {/* Follow-up fade-in banner */}
@@ -1001,7 +1005,6 @@ export default function MockSession() {
                       <kbd className="shortcut-kbd">⌘⇧↵</kbd>
                     </button>
                   </div>
-                  <p className="mock-submit-note">Run freely to test — Submit is final for this question.</p>
                 </div>
               </div>
 
