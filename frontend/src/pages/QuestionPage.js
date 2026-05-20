@@ -816,6 +816,41 @@ export default function QuestionPage() {
     return { path: pathContext, currentIndex, total: questions.length, prev, next };
   }, [pathContext, id]);
 
+  // These memos depend on question (possibly null) but must be declared before early returns
+  const questionFormLabel = useMemo(() => getQuestionFormLabel(question), [question]);
+  const questionPromptGuidance = useMemo(
+    () => getQuestionPromptGuidance(question, { renderMode, isReasoningTrack, isPySparkTrack }),
+    [question, renderMode, isReasoningTrack, isPySparkTrack]
+  );
+  const submitBtnLabel = useMemo(() => {
+    if (submitting) return 'Checking…';
+    if (renderMode !== 'mcq') return 'Submit Answer';
+    if (isReasoningTrack) {
+      if (questionType === 'predict_output') return 'Submit prediction';
+      if (questionType === 'debug') return 'Submit diagnosis';
+      if (questionType === 'optimization') return 'Submit optimization choice';
+      if (questionType === 'scenario') return 'Submit decision';
+    }
+    if (isPySparkTrack) {
+      return 'Submit reasoning';
+    }
+    if (isReasoningTrack) return 'Submit response';
+    return 'Submit Answer';
+  }, [submitting, renderMode, isPySparkTrack, isReasoningTrack, questionType]);
+  const mcqPromptHeading = useMemo(() => {
+    if (!isReasoningTrack) return 'Choose the correct answer';
+    if (questionType === 'predict_output') return 'Predict the output';
+    if (questionType === 'debug') return 'Choose the best fix';
+    if (questionType === 'optimization') return 'Choose the best optimization';
+    if (questionType === 'scenario') {
+      return isPySparkTrack ? 'Choose the best engineering decision' : 'Choose the best decision';
+    }
+    if (isPySparkTrack) {
+      return 'Choose the strongest Spark reasoning';
+    }
+    return 'Choose the strongest response';
+  }, [isReasoningTrack, isPySparkTrack, questionType]);
+
   if (loadError) {
     return (
       <main className="container" style={{ paddingTop: '2rem' }}>
@@ -858,45 +893,11 @@ export default function QuestionPage() {
     ? 'Python sandbox'
     : 'DuckDB sandbox';
   const timerLabel = formatDuration(elapsedMs) ?? '0:00';
-  const questionFormLabel = useMemo(() => getQuestionFormLabel(question), [question]);
-  const questionPromptGuidance = useMemo(
-    () => getQuestionPromptGuidance(question, { renderMode, isReasoningTrack, isPySparkTrack }),
-    [question, renderMode, isReasoningTrack, isPySparkTrack]
-  );
   const hasPromptEvidence = renderMode === 'mcq' && !!(question?.code_snippet || question?.scenario_context);
   const evidenceTitle = interactionMode === 'code_adjacent_reasoning' ? 'Evidence to inspect' : 'Prompt context';
   const evidenceNote = interactionMode === 'code_adjacent_reasoning'
     ? 'Use these artifacts before you choose an answer.'
     : 'Review the prompt artifacts alongside the written scenario.';
-
-  const submitBtnLabel = useMemo(() => {
-    if (submitting) return 'Checking…';
-    if (renderMode !== 'mcq') return 'Submit Answer';
-    if (isReasoningTrack) {
-      if (questionType === 'predict_output') return 'Submit prediction';
-      if (questionType === 'debug') return 'Submit diagnosis';
-      if (questionType === 'optimization') return 'Submit optimization choice';
-      if (questionType === 'scenario') return 'Submit decision';
-    }
-    if (isPySparkTrack) {
-      return 'Submit reasoning';
-    }
-    if (isReasoningTrack) return 'Submit response';
-    return 'Submit Answer';
-  }, [submitting, renderMode, isPySparkTrack, isReasoningTrack, questionType]);
-  const mcqPromptHeading = useMemo(() => {
-    if (!isReasoningTrack) return 'Choose the correct answer';
-    if (questionType === 'predict_output') return 'Predict the output';
-    if (questionType === 'debug') return 'Choose the best fix';
-    if (questionType === 'optimization') return 'Choose the best optimization';
-    if (questionType === 'scenario') {
-      return isPySparkTrack ? 'Choose the best engineering decision' : 'Choose the best decision';
-    }
-    if (isPySparkTrack) {
-      return 'Choose the strongest Spark reasoning';
-    }
-    return 'Choose the strongest response';
-  }, [isReasoningTrack, isPySparkTrack, questionType]);
   const canRevealSolution = !!submitResult
     && (submitResult.correct || hintsShown >= (question.hints?.length ?? 0));
 
