@@ -462,6 +462,77 @@ Recommended implementation order:
 5. Elite feature previews that feel aspirational instead of purely disabled or teaser text
 6. Responsive regression pass to ensure mobile remains calm and readable
 
+Execution brief for another model:
+
+- treat Phase 5A as a frontend-only MockHub redesign unless a later artifact surface proves that a required field is genuinely missing from an existing response
+- prefer one reviewable slice at a time; do not try to land all six implementation-order items in one pass
+- preserve the benchmark-vs-drill product contract already shipped in Phases 4 and 5; this phase is about hierarchy, framing, and layout quality rather than re-litigating the product model
+
+First implementation slice: required scope
+
+- widen MockHub from the current narrow single-column composition into a two-column desktop lobby
+- keep the existing shared Topbar and overall page entry framing
+- move active setup controls into the left primary column
+- add a sticky right rail that always shows the current session brief and the primary start action on desktop
+- keep the current benchmark default, drill planner, recommendation banner, analytics panel, and split benchmark/drill history content, but reorganize them into the new hierarchy rather than redesigning their underlying logic
+- do not change backend contracts in the first slice
+- do not redesign MockSession, Dashboard, Account, or Practice as part of this slice
+
+First implementation slice: explicit non-goals
+
+- no new mock modes
+- no entitlement-rule changes
+- no analytics calculation changes
+- no new debrief logic
+- no AppShell migration for MockHub
+- no visual-token rewrite across the rest of the product
+
+Desktop layout contract for the first slice
+
+- desktop breakpoint should present a true two-column lobby rather than a wide single column with inline cards
+- left column is the primary reading and interaction lane; it owns hero framing, mode choice, benchmark hero or drill planner, and track/difficulty controls
+- right rail is narrower, sticky, and decision-oriented; it owns the condensed session brief, access state, and the anchored primary start CTA
+- analytics and history stay below the top lobby band rather than competing with setup controls above the fold
+- benchmark should read as the primary serious path when active; drill options should still feel intentional, but visually secondary
+- the user should be able to understand the currently selected session type, track, difficulty, and start readiness without scanning the entire page
+
+Tablet and mobile contract for the first slice
+
+- tablet may collapse to a single column if the two-column layout becomes cramped, but the session brief must remain visually close to the primary setup controls
+- mobile must remain single-column, calm, and readable
+- sticky behavior may be reduced or disabled on smaller screens if it harms usability
+- no desktop-only dependency should make the start CTA or access state hard to find on touch devices
+
+Section placement contract
+
+- top of page: benchmarks-and-drills hero and any recommendation banner
+- primary setup lane: mode selection, then benchmark hero when `mode='benchmark'` or drill planner when `mode!='benchmark'`, then track/difficulty controls
+- decision rail: sticky session brief with session type, track, difficulty, timing, question count, access state, and start CTA
+- lower page: benchmark analytics first, then benchmark history and drill history artifacts
+- first-run and partial-history guidance should stay near history, not inside the primary setup lane
+
+Acceptance criteria for the first slice
+
+- on desktop, MockHub is visibly two-column and no longer reads as a vertically stacked setup form
+- the primary start CTA is visible in the right rail without requiring the user to scan past analytics or history
+- benchmark mode is visually dominant when selected and no longer appears as one peer-level card among equal alternatives
+- drill setup remains fully functional and clearly distinct from benchmark setup
+- analytics and history do not compete with setup for top-of-page attention
+- the existing recommendation preset flow from MockSession summary still works unchanged
+- mixed remains drill-only and the current benchmark/drill behavior rules are unchanged
+- mobile and narrow-tablet layouts remain readable with no broken sticky behavior or inaccessible CTA state
+
+Validation requirements for the first slice
+
+- update focused frontend tests for any DOM or copy expectations affected by the MockHub restructuring
+- run the existing MockHub unit coverage and the repeatable mock Playwright flow before calling the slice done
+- run a frontend production build after the layout changes
+- manually verify one benchmark path and one drill path in the browser at desktop width and mobile width
+
+Suggested implementation prompt for another model
+
+- "Implement only the first Phase 5A slice from docs/mock-modality-rollout-plan.md: convert MockHub into a two-column desktop lobby with a sticky right-rail session brief while preserving current benchmark/drill behavior, recommendation presets, analytics logic, and history logic. Do not touch backend contracts or other pages. Update focused tests, run the mock Playwright flow, and run a frontend build."
+
 Phase 5A scope guard:
 
 - this layout plan belongs to MockHub only
