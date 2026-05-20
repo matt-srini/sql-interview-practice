@@ -1443,6 +1443,14 @@ export default function QuestionPage() {
             </>
           )}
 
+          {/* Statistics numerical run results */}
+          {isPythonRunResult && topic === 'statistics' && (
+            <>
+              <TestCasePanel results={runResult.test_results ?? []} hiddenSummary={null} />
+              <PrintOutputPanel output={runResult.stdout ?? ''} />
+            </>
+          )}
+
           {submitError && <div className="error-box">{submitError}</div>}
 
           {/* Skeleton verdict — visible while submission is being evaluated */}

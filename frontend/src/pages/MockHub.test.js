@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 
@@ -118,6 +118,7 @@ describe('MockHub history framing', () => {
     renderHub();
 
     await waitFor(() => {
+      expect(screen.getByText('Use benchmarks for a consistent interview-style check, then drills to work on the gaps you find.')).toBeInTheDocument();
       expect(screen.getByText('Start with a benchmark, then drill the misses')).toBeInTheDocument();
       expect(screen.getByText('Use benchmarks for comparability')).toBeInTheDocument();
       expect(screen.getByText('Use drills for follow-up reps')).toBeInTheDocument();
@@ -169,6 +170,41 @@ describe('MockHub history framing', () => {
       expect(screen.getByText('Recent benchmark sessions')).toBeInTheDocument();
       expect(screen.getByText('No drill sessions yet')).toBeInTheDocument();
       expect(screen.queryByText('Start with a benchmark, then drill the misses')).not.toBeInTheDocument();
+    });
+  });
+});
+
+describe('MockHub mixed-track framing', () => {
+  it('surfaces a drill-only note in the main plan area for mixed track', async () => {
+    renderHub({
+      mockPreset: {
+        mode: 'benchmark',
+        track: 'mixed',
+        difficulty: 'mixed',
+      },
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Mixed is drill-only')).toBeInTheDocument();
+      expect(screen.getByText('Benchmarks stay single-track for cleaner comparison.')).toBeInTheDocument();
+      expect(screen.getByText('Mixed draws from SQL · Python · Pandas · PySpark. Pick one track for a benchmark.')).toBeInTheDocument();
+    });
+  });
+
+  it('keeps the help button outside the subtitle paragraph flow', async () => {
+    renderHub();
+
+    await waitFor(() => {
+      expect(screen.getByText('Use benchmarks for a consistent interview-style check, then drills to work on the gaps you find.')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'How it works' })).toBeInTheDocument();
+    });
+
+    const subtitle = screen.getByText('Use benchmarks for a consistent interview-style check, then drills to work on the gaps you find.');
+    const helpButton = screen.getByRole('button', { name: 'How it works' });
+    expect(subtitle.parentElement).not.toBe(helpButton.parentElement?.closest('p'));
+    fireEvent.click(helpButton);
+    await waitFor(() => {
+      expect(screen.getByText('How benchmarks and drills work')).toBeInTheDocument();
     });
   });
 });

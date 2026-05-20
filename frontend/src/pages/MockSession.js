@@ -44,6 +44,23 @@ const DEFAULT_CODE = {
   pyspark: '',
 };
 
+function isConceptualMcqQuestion(question, meta) {
+  if (!question || !meta) return false;
+  if (meta.mixedSubtype) return question.subtype !== 'numerical';
+  return !!meta.hasMCQ;
+}
+
+function isRunCodeQuestion(question, meta) {
+  if (!question || !meta) return false;
+  if (meta.mixedSubtype) return question.subtype === 'numerical';
+  return !!meta.hasRunCode;
+}
+
+function getInitialCode(question) {
+  if (!question) return '';
+  return question.final_code || question.starter_code || DEFAULT_CODE[question.track] || '';
+}
+
 export default function MockSession() {
   const { id } = useParams();
   const location = useLocation();
@@ -129,8 +146,7 @@ export default function MockSession() {
     const initialSolved = {};
     const initialSubmitted = {};
     (data.questions || []).forEach(q => {
-      // Debug questions pre-fill the editor with starter_code unless the user already submitted
-      initialCodes[q.id] = q.final_code || (q.type === 'debug' ? (q.starter_code || '') : null) || DEFAULT_CODE[q.track] || '';
+      initialCodes[q.id] = getInitialCode(q);
       initialSolved[q.id] = q.is_solved || false;
       initialSubmitted[q.id] = q.submitted_at != null;
     });
@@ -192,6 +208,7 @@ export default function MockSession() {
   const currentQuestion = questions[activeQ] || null;
   const sessionTrack = session?.track || currentQuestion?.track || 'sql';
   const sessionDescriptor = getMockSessionDescriptor(session?.mode, sessionTrack);
+  const currentMeta = currentQuestion ? TRACK_META[currentQuestion.track] : null;
 
   // Follow-up banner: show for 3s when user navigates to an is_follow_up question
   useEffect(() => {
@@ -231,7 +248,7 @@ export default function MockSession() {
     const q = currentQuestion;
     const track = q.track;
     const meta = TRACK_META[track];
-    if (!meta || !meta.hasRunCode) return;
+    if (!meta || !isRunCodeQuestion(q, meta)) return;
 
     setRunning(true);
     setRunResults(prev => ({ ...prev, [q.id]: null }));
@@ -268,7 +285,7 @@ export default function MockSession() {
         track: q.track,
         time_spent_s: null,
       };
-      if (q.track === 'pyspark') {
+      if (isConceptualMcqQuestion(q, TRACK_META[q.track])) {
         payload.selected_option = mcqSelections[q.id] !== undefined ? mcqSelections[q.id] : null;
       } else {
         payload.code = getCode(q);
@@ -289,7 +306,7 @@ export default function MockSession() {
               const next = { ...prev };
               updatedQuestions.forEach(uq => {
                 if (next[uq.id] === undefined) {
-                  next[uq.id] = uq.final_code || (uq.type === 'debug' ? (uq.starter_code || '') : null) || DEFAULT_CODE[uq.track] || '';
+                  next[uq.id] = getInitialCode(uq);
                 }
               });
               return next;
@@ -816,7 +833,7 @@ export default function MockSession() {
 
           <div className="mock-session-rule">
             <span>
-              {meta && !meta.hasMCQ
+              {isRunCodeQuestion(q, meta)
                 ? 'Each question is one shot — run freely before you commit.'
                 : 'Each question is one shot — select carefully before you commit.'}
             </span>
@@ -938,7 +955,7 @@ export default function MockSession() {
             Question ↑
           </button>
 
-          {q && meta && !meta.hasMCQ && (
+          {q && meta && !isConceptualMcqQuestion(q, meta) && (
             <>
               {/* Debug question: show error callout and "fix the bug" prompt */}
               {q.type === 'debug' && (
@@ -968,7 +985,7 @@ export default function MockSession() {
                     >?</button>
                     <button
                       className="editor-expand-btn"
-                      onClick={() => setCode(q.id, DEFAULT_CODE[q.track] || '')}
+                      onClick={() => setCode(q.id, getInitialCode({ track: q.track, starter_code: q.starter_code }))}
                       title="Reset to default"
                       aria-label="Reset to default"
                     >↺</button>
@@ -983,7 +1000,7 @@ export default function MockSession() {
 
                 {shortcutHelpOpen && (
                   <div className="workspace-shortcut-popover" role="dialog" aria-label="Keyboard shortcuts">
-                    {meta.hasRunCode && (
+                    {isRunCodeQuestion(q, meta) && (
                       <div className="workspace-shortcut-row">
                         <span>{q.track === 'sql' ? 'Run query' : 'Run code'}</span>
                         <kbd className="shortcut-kbd">⌘↵</kbd>
@@ -1007,7 +1024,7 @@ export default function MockSession() {
                 />
                 <div className="editor-footer question-action-dock">
                   <div className="button-row question-action-row">
-                    {meta.hasRunCode && (
+                    {isRunCodeQuestion(q, meta) && (
                       <button
                         className="btn btn-secondary"
                         onClick={handleRun}
@@ -1035,7 +1052,7 @@ export default function MockSession() {
               {running && !currentRunResult && (
                 <div className="results-card">
                   <div className="results-header">
-                    <span>{q.track === 'python' ? 'Running tests…' : 'Query Result'}</span>
+                    <span>{(q.track === 'python' || (q.track === 'statistics' && isRunCodeQuestion(q, meta))) ? 'Running tests…' : 'Query Result'}</span>
                     <Skeleton className="skeleton-line" width="2.5rem" height="11px" />
                   </div>
                   <div className="results-skeleton-body">
@@ -1081,13 +1098,21 @@ export default function MockSession() {
                 </div>
               )}
 
+              {/* Statistics numerical run results */}
+              {q.track === 'statistics' && isRunCodeQuestion(q, meta) && currentRunResult && !currentRunResult.error && (
+                <div ref={resultsCardRef}>
+                  <TestCasePanel results={currentRunResult.test_results ?? []} hiddenSummary={null} />
+                  <PrintOutputPanel output={currentRunResult.stdout ?? ''} />
+                </div>
+              )}
+
               {currentRunResult?.error && (
                 <div className="mock-run-error" ref={resultsCardRef}>{currentRunResult.error}</div>
               )}
             </>
           )}
 
-          {q && meta?.hasMCQ && (
+          {q && currentMeta && isConceptualMcqQuestion(q, currentMeta) && (
             <div className="card">
               <div className="section-heading">
                 <h3>Choose the correct answer</h3>
