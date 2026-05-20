@@ -8207,7 +8207,7 @@ select {
 }
 .mock-hub-subtitle {
   color: var(--text-secondary);
-  font-size: 1rem;
+  font-size: 0.88rem;
   margin: 0;
 }
 .mock-hub-subtitle-row {
