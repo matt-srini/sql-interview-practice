@@ -339,7 +339,7 @@ export default function MockHub() {
     <div className="mock-hub-page">
       <Helmet>
         <title>Benchmarks & Drills — datathink</title>
-        <meta name="description" content="Use fixed-shape interview benchmarks and flexible drills across SQL, Python, Pandas, PySpark, and reasoning tracks." />
+        <meta name="description" content="Set your baseline with benchmarks, then use drills to improve weak areas across SQL, Python, Pandas, PySpark, and reasoning tracks." />
         <meta name="robots" content="noindex" />
       </Helmet>
       <Topbar active="mock" userExtras={planPillNode} />
@@ -379,10 +379,12 @@ export default function MockHub() {
             <section className="mock-hub-hero">
               <div className="mock-hub-kicker">Benchmarks and drills</div>
               <h1 className="mock-hub-title">Interview Practice</h1>
-              <p className="mock-hub-subtitle">
-                Use benchmarks for fixed-shape comparability, then drills for targeted follow-up practice.
+              <div className="mock-hub-subtitle-row">
+                <p className="mock-hub-subtitle">
+                  Use benchmarks for a consistent interview-style check, then drills to work on the gaps you find.
+                </p>
                 <button className="mock-help-btn" onClick={() => setShowHelp(true)} aria-label="How it works">?</button>
-              </p>
+              </div>
             </section>
 
             {/* Recommendation banner */}
@@ -431,32 +433,30 @@ export default function MockHub() {
             {/* Drill planner */}
             {mode !== 'benchmark' && setupDescriptor && (
               <section className="mock-hub-section mock-drill-plan">
-                <div className="mock-drill-plan-kicker">{setupDescriptor.sectionLabel}</div>
                 <div className="mock-drill-plan-main">
+                  {isMixedTrack && (
+                    <div className="mock-drill-plan-alert" role="note">
+                      <span className="mock-drill-plan-alert-pill">Mixed is drill-only</span>
+                      <p className="mock-drill-plan-alert-copy">
+                        Benchmarks stay single-track for cleaner comparison.
+                      </p>
+                    </div>
+                  )}
                   <div className="mock-drill-plan-title-row">
-                    <h2 className="mock-drill-plan-title">{setupDescriptor.title}</h2>
+                    <span className="mock-drill-plan-kicker">{setupDescriptor.sectionLabel}</span>
                     <span className="mock-drill-plan-mode">{setupDescriptor.modeLabel}</span>
                   </div>
                   <div className="mock-drill-plan-chips">
-                    <span className="mock-drill-plan-chip">{effectiveQuestionCount} questions</span>
-                    <span className="mock-drill-plan-chip">{effectiveTimeMinutes} min cap</span>
+                    <span className="mock-drill-plan-chip">{effectiveQuestionCount} q</span>
+                    <span className="mock-drill-plan-chip">{effectiveTimeMinutes} min</span>
                     <span className="mock-drill-plan-chip mock-drill-plan-chip-track">{TRACK_LABELS[track]}</span>
+                    {expectationLines.map((line, index) => (
+                      <span key={index} className="mock-drill-plan-chip mock-drill-plan-chip-shape">{line}</span>
+                    ))}
                   </div>
                   <p className="mock-drill-plan-copy">{setupDescriptor.description}</p>
-                  {expectationLines.length > 0 && (
-                    <div className="mock-drill-plan-shape">
-                      <span className="mock-drill-plan-shape-label">Session shape</span>
-                      {expectationLines.map((line, index) => (
-                        <span key={index} className="mock-drill-plan-shape-line">{line}</span>
-                      ))}
-                    </div>
-                  )}
                   {setupDescriptor.detailLines?.length > 0 && (
-                    <div className="mock-drill-plan-notes">
-                      {setupDescriptor.detailLines.map((line) => (
-                        <p key={line} className="mock-drill-plan-note">{line}</p>
-                      ))}
-                    </div>
+                    <p className="mock-drill-plan-note">{setupDescriptor.detailLines[0]}</p>
                   )}
 
                   {mode === 'custom' && (
@@ -557,7 +557,7 @@ export default function MockHub() {
             {/* Mixed track note */}
             {isMixedTrack && (
               <div className="mock-track-note">
-                Draws questions from {MIXED_MOCK_TRACKS.map(s => TRACK_LABELS[s]).join(' · ')} — the four code-execution tracks. Mixed stays drill-only while benchmark mode becomes track-specific.
+                Mixed draws from {MIXED_MOCK_TRACKS.map(s => TRACK_LABELS[s]).join(' · ')}. Pick one track for a benchmark.
               </div>
             )}
 

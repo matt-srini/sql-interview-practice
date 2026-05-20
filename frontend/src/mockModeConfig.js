@@ -196,10 +196,7 @@ export function getMockSetupDescriptor(mode, track, customCount, customMinutes) 
       ...descriptor,
       sectionLabel: 'Drill plan',
       summaryLine: '2 questions · 30 min cap',
-      detailLines: [
-        'Best for a short calibration round, a warm-up, or a quick pace check.',
-        'Drills stay separated from benchmark analytics so experimentation does not muddy comparability.',
-      ],
+      detailLines: [],
     };
   }
 
@@ -209,10 +206,7 @@ export function getMockSetupDescriptor(mode, track, customCount, customMinutes) 
       ...descriptor,
       sectionLabel: 'Drill plan',
       summaryLine: `${questionLabel} · ${customMinutes} min cap`,
-      detailLines: [
-        'Tune scope and time after a benchmark when you want to isolate one weakness.',
-        'Use custom drills for follow-up practice without changing the benchmark baseline.',
-      ],
+      detailLines: [],
     };
   }
 
