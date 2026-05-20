@@ -715,6 +715,7 @@ export default function MockSession() {
   const meta = q ? TRACK_META[q.track] : null;
   const currentResult = q ? results[q.id] : null;
   const currentRunResult = q ? runResults[q.id] : null;
+  const allSubmitted = questions.length > 0 && questions.every(qx => submitted[qx.id]);
 
   return (
     <div className="mock-shell">
@@ -1123,7 +1124,7 @@ export default function MockSession() {
               Next question →
             </button>
           )}
-          {submitted[q?.id] && activeQ === questions.length - 1 && (
+          {allSubmitted && activeQ === questions.length - 1 && (
             <p className="mock-all-done">All questions answered — end your session when ready.</p>
           )}
         </div>

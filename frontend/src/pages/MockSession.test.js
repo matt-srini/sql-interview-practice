@@ -195,6 +195,22 @@ describe('MockSession submit lock', () => {
     });
   });
 
+  it('does NOT show "All questions answered" nudge when only the last question is submitted', async () => {
+    // Regression: nudge must not appear just because the user submitted the
+    // last-position question — ALL questions must be submitted.
+    renderSession(makeSessionData(2));
+
+    // Navigate to Q2 (last question) without submitting Q1
+    const q2Tab = await screen.findByRole('button', { name: /Q2/ });
+    fireEvent.click(q2Tab);
+
+    await submitCurrentQuestion();
+
+    await waitFor(() => {
+      expect(screen.queryByText('All questions answered — end your session when ready.')).not.toBeInTheDocument();
+    });
+  });
+
   it('shows no verdict error text after a wrong submission', async () => {
     mockApiPost.mockResolvedValueOnce({ data: { correct: false, feedback: ['hint'] } });
     renderSession(makeSessionData(1));
