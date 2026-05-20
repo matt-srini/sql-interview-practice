@@ -741,5 +741,169 @@
       "FACT TABLE DESIGN",
       "DOUBLE-COUNTING"
     ]
+  },
+  {
+    "id": 62029,
+    "order": 29,
+    "title": "Bi-Temporal Modeling: When SCD Type 2 Cannot Reconstruct System State",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A medical device company tracks device recall status using SCD Type 2. A status change from 'Active' to 'Under Review' was entered into the system on November 5th but was backdated to October 15th (the date the business decision was made). Regulatory auditors ask: 'What recall status did your system report for device D-441 on October 31st?' The current SCD Type 2 query for October 31st returns 'Under Review' (because the row has effective_from = October 15th). But the October monthly report sent to regulators on October 31st showed 'Active' — the 'Under Review' row hadn't been loaded yet.",
+    "description": "Your current SCD Type 2 gives the wrong answer to the auditor's question because a backdated correction changes what history looks like today versus what the system contained at the time of the report. Which design pattern makes this audit question answerable directly from the data warehouse?",
+    "options": [
+      "Add a second timestamp pair — sys_start and sys_end — to each SCD row, tracking when that row was current in the database independently of its effective_from/effective_to validity dates. A transaction-time query for 'what was in the system on October 31st' filters on `'2023-10-31' BETWEEN sys_start AND sys_end`, returning the 'Active' row that existed in the database before the November 5th load.",
+      "SCD Type 2 already answers this question: the 'Active' row has effective_from before October 31st, so the predicate WHERE effective_from <= '2023-10-31' AND effective_to > '2023-10-31' returns 'Active' — no design change is needed.",
+      "Add a date_loaded column to each SCD row. For the audit query, filter WHERE date_loaded <= '2023-10-31' AND effective_to > '2023-10-31' to find rows that were loaded before October 31st and still valid on that date.",
+      "Maintain a nightly snapshot of the full dimension table in a separate cold-storage schema. Audit queries read the snapshot for the relevant date rather than the live dimension, giving an exact replica of the system state on any past date."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is bi-temporal modeling. SCD Type 2's effective_from/effective_to axis records when a fact was true in business reality (valid time). After the November 5th load, the SCD table shows: 'Active' from a prior date to October 14th, 'Under Review' from October 15th to present. A valid-time query for October 31st returns 'Under Review' — which reflects the backdated business fact but NOT what the system actually contained on October 31st when the report was generated. The system-time axis (sys_start/sys_end) records when each row was current in the database. The 'Under Review' row has sys_start = November 5th. A transaction-time query for October 31st excludes it and returns the 'Active' row (sys_start before October 31st, sys_end = November 5th when it was superseded). Option B is wrong: after the backdated load, 'Under Review' has effective_from = October 15th — the valid-time predicate for October 31st returns 'Under Review', not 'Active'. The current SCD gives the wrong audit answer. Option C is incomplete: date_loaded captures when a row was inserted, not when an existing row's effective_to was modified. When the correction was applied, the 'Active' row's effective_to was changed to October 14th — this modification happened after October 31st, but date_loaded reflects the original insert time. The audit filter cannot reconstruct the pre-modification table state from create timestamps alone. Option D (nightly snapshots) works operationally but is expensive, imprecise for intraday queries, and depends on backup infrastructure rather than query logic.",
+    "hints": [
+      "After the November 5th backdated load, what does the valid-time SCD Type 2 predicate return for October 31st? Is that the answer the auditor needs?",
+      "Bi-temporal modeling has two independent time axes. Which axis tracks 'when was this row current in the database' independently of 'when was the business fact valid'?"
+    ],
+    "concepts": [
+      "BI-TEMPORAL MODELING",
+      "SCD OPERATIONS",
+      "AUDIT COMPLIANCE",
+      "TEMPORAL QUERY"
+    ]
+  },
+  {
+    "id": 62030,
+    "order": 30,
+    "title": "Conformed Dimension Extension: Adding a Business-Unit-Specific Attribute",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A global company has a shared `dim_customer` conformed dimension used by 8 downstream dbt models across the Sales, Finance, and Legal teams. The Sales team requests adding a `sales_territory` column, sourced exclusively from the CRM system. Finance and Legal have no use for this attribute, but they rely on dim_customer's schema stability — any schema change requires their dbt models to be re-tested and re-run in CI. Two designs are being evaluated: (A) add the column directly to dim_customer, or (B) create a separate dim_customer_sales_ext extension table with (customer_sk, sales_territory).",
+    "description": "Which design best preserves the conformed dimension contract while satisfying the Sales team's need?",
+    "options": [
+      "Create a separate dim_customer_sales_ext table with (customer_sk, sales_territory) populated from the CRM; Sales dbt models join dim_customer to the extension table via customer_sk; Finance and Legal models require no changes because the shared dimension schema is unmodified",
+      "Add sales_territory as a nullable column to dim_customer with documented ownership (Sales) and source (CRM); advise all teams to use explicit column lists rather than SELECT * to prevent future schema changes from silently breaking downstream models",
+      "Reject the request; a conformed dimension must contain only attributes shared by all consuming business units — Sales-only attributes sourced from a non-shared system have no place in the shared dimension",
+      "Add sales_territory to dim_customer but document it as a Sales-owned column in the data catalog; Finance and Legal models ignore it because they never select it explicitly"
+    ],
+    "correct_option": 0,
+    "explanation": "In Kimball-style dimensional modeling, a conformed dimension should contain only universally applicable attributes — facts that every consuming team could reasonably rely on. A CRM-specific sales_territory is owned by Sales, populated from a Sales-only source, and has no meaning for Finance or Legal. Adding it to the shared dimension couples Sales' iteration velocity to shared dimension change management, introduces a CRM dependency into a Finance-critical table, and forces Finance and Legal to re-validate an attribute that is not their concern. The dimension extension table (Option A) is the standard Kimball pattern for exactly this situation: the shared dimension remains stable and focused on universal attributes; Sales-specific attributes live in a dedicated extension table joined via customer_sk. Finance and Legal are entirely unaffected — they touch no new code. Option B is pragmatic and works if all consumers use explicit column lists, but it violates the spirit of conformation and creates gradual schema drift as more BU-specific columns accumulate. Option C is too rigid — the extension table pattern is precisely the designed mechanism that prevents both adding noise to the shared dimension and rejecting valid BU needs. Option D is effectively Option B reframed; adding the column to the shared table changes the shared schema regardless of documentation, and still requires Finance/Legal CI validation on the next deployment.",
+    "hints": [
+      "A conformed dimension is shared across all business units. What is the Kimball pattern for extending a shared dimension with attributes that only one business unit needs?",
+      "The extension table joins to the shared dimension via surrogate key (customer_sk). Which teams need to modify their models, and which teams are entirely unaffected by the addition?"
+    ],
+    "concepts": [
+      "CONFORMED DIMENSIONS",
+      "SCHEMA EVOLUTION",
+      "DIMENSIONAL MODELING",
+      "DATA GOVERNANCE"
+    ]
+  },
+  {
+    "id": 62031,
+    "order": 31,
+    "title": "Semantic Layer Governance: Certified vs Experimental Metric Lifecycle",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A data platform introduces a two-tier metric governance model: Certified (vetted, version-managed, with an assigned owner and refresh SLA) and Experimental (self-service, subject to change, no SLA guarantee). An analyst creates an experimental metric `revenue_net` that subtracts refunds from gross revenue. The Finance team validates the calculation and wants to adopt it as the canonical revenue metric across all dashboards. Which promotion process is correct?",
+    "options": [
+      "Finance submits a definition review; the data platform team confirms the calculation, assigns an owner (Finance) and a refresh SLA, moves the metric to Certified status in the semantic layer catalog, and increments the version to v1; existing experimental consumers can remain on the experimental version or migrate to Certified — both coexist during a documented transition window",
+      "Promote automatically: the metric has been in production use and validated implicitly by Finance's adoption; moving it to Certified without a formal review process is appropriate because experimental production usage proves correctness",
+      "Delete the experimental metric and have Finance re-create it directly in the Certified tier from scratch; the experimental metric cannot be promoted in place because its historical lineage belongs to the experimental namespace",
+      "Mark the experimental metric as Certified immediately without a version change; all existing consumers automatically inherit Certified status and SLA coverage without any migration or notification required"
+    ],
+    "correct_option": 0,
+    "explanation": "A promotion from Experimental to Certified requires three steps: (1) definition validation — the calculation is reviewed and agreed upon by the owning business unit; (2) ownership and SLA assignment — who maintains this metric, at what refresh cadence, with what quality guarantee; (3) version management — the metric gets a version identifier so consumers know the governance status changed and can explicitly adopt the Certified version. The coexistence of both versions during a transition window matters: experimental consumers who rely on the metric as-is may not be ready to accept the SLA constraints or version pinning that come with Certified status. They should be able to stay on the experimental version until they deliberate migrate. Option B (auto-promote based on usage) is dangerous: usage count is not a correctness signal. A widely-used wrong metric should not receive a Certified status and SLA guarantee automatically. Option C (delete and rebuild) destroys work unnecessarily, breaks existing experimental consumers, and erases lineage history with no benefit — there is no architectural reason to rebuild a correct metric. Option D (immediate promotion, no version change) leaves consumers with no signal that the metric's governance status changed; they cannot distinguish the pre-promotion experimental metric from the post-promotion certified one, and no SLA negotiation or ownership assignment has happened.",
+    "hints": [
+      "What three properties does a Certified metric have that an Experimental metric lacks?",
+      "Why is a version increment important when a metric transitions from Experimental to Certified? Who benefits from seeing the version change?"
+    ],
+    "concepts": [
+      "SEMANTIC LAYER GOVERNANCE",
+      "DATA GOVERNANCE",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 62032,
+    "order": 32,
+    "title": "SCD Type Selection Under Conflicting Retention and Query Requirements",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A financial institution tracks customer risk category (Low, Medium, High). Three teams have competing requirements: (1) Compliance requires the full 7-year change history for every customer for regulatory audit purposes; (2) the BI team says their dashboards only ever query current and prior risk category — they never look at anything older than the last change; (3) the DBA team warns that 7 years of SCD Type 2 rows will produce 40M+ rows for 500K customers due to frequent quarterly reassignments, and point-in-time BI queries are already slow due to the current_flag scan.",
+    "description": "Which SCD strategy satisfies all three constraints without requiring separate audit tables or complex query logic for the BI team?",
+    "options": [
+      "SCD Type 6 (hybrid): maintain the full Type 2 row versioning history (satisfying Compliance's 7-year requirement), while adding current_value and previous_value columns to the current row so BI dashboards can retrieve both values from a single WHERE current_flag = 1 row without joining to prior rows; the current_flag index makes BI queries fast even as the 40M history rows grow",
+      "SCD Type 2 with an archive partition: keep only the current and previous row in the active partition; automatically move older rows to a cold archive partition after each new change; BI queries scan only the active partition; compliance audits union both partitions",
+      "SCD Type 3 with a rolling 7-column history: store current_risk plus prev_1_risk through prev_6_risk as columns; each assignment shifts the prior values one column to the right; the table stays at one row per customer regardless of change frequency",
+      "SCD Type 1 (overwrite) for the dimension plus a separate risk_audit append-only log capturing every change event; BI queries read the main dimension for current value plus a LAG() on the audit log for prior value; compliance reads the full audit log"
+    ],
+    "correct_option": 0,
+    "explanation": "SCD Type 6 satisfies all three constraints simultaneously. Full Type 2 row versioning preserves every historical change as a separate row — satisfying Compliance's 7-year audit requirement. The current_value and previous_value columns (the Type 3 component) on the current row allow BI dashboards to retrieve current + prior risk category with a single WHERE current_flag = 1 filter, without a lag join to the prior row. The 40M row count is not reduced — that is the inherent cost of storing full history — but the BI query cost is reduced because the current_flag index directs BI queries to one row per customer, leaving historical rows untouched during normal operations. Option B (SCD Type 2 with archive partition) is operationally complex: partition boundaries require maintenance; the definition of 'current + previous' requires custom partitioning logic; BI queries must explicitly exclude the archive partition. Option C (SCD Type 3 rolling columns) is capped at 7 prior values — a customer reassigned 8+ times in 7 years loses the oldest change, violating the Compliance requirement. Option D (SCD Type 1 + separate audit log) splits history across two systems with different schemas; BI queries require joining the main dimension to the audit log with LAG(), which is more expensive than reading a column on the current row; compliance queries join two separate tables.",
+    "hints": [
+      "SCD Type 6 combines three SCD types. Which component satisfies the Compliance requirement? Which component satisfies the BI team's requirement?",
+      "SCD Type 3 stores a fixed number of prior values as columns. What happens when a customer's risk category changes more times than the number of prior-value columns in 7 years?"
+    ],
+    "concepts": [
+      "SCD OPERATIONS",
+      "STORAGE ARCHITECTURE",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 62033,
+    "order": 33,
+    "title": "Schema Evolution for a Shared Dimension: Breaking vs Non-Breaking Change Classification",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A shared `dim_product` table is consumed by 20 downstream assets: 8 dbt models, 6 Tableau workbooks, 4 Python scripts, and 2 R Markdown reports. The data modeling team plans two changes: (1) adding a nullable `eco_label` column; (2) renaming `prod_sku` to `product_sku`. Which classification and communication protocol is correct for each change?",
+    "options": [
+      "Adding eco_label is non-breaking: consumers using explicit column lists are unaffected; consumers using SELECT * gain a new nullable column without errors. Renaming prod_sku to product_sku is breaking: any consumer referencing prod_sku by name will fail with a column-not-found error. Non-breaking changes require a changelog entry; breaking changes require a deprecation window (keep both column names via dual-write or a view alias), a migration guide sent to all 20 consumer owners, and removal of the old name only after all consumers confirm migration.",
+      "Both changes are non-breaking in a columnar warehouse because the engine reads only the columns explicitly selected; adding or renaming a column does not alter how existing queries read other referenced columns.",
+      "Both changes are breaking because they modify the physical schema of a shared production table; any modification to a shared dimension requires full consumer-coordination review and simultaneous deployment regardless of change type.",
+      "Adding eco_label is non-breaking for SQL consumers but breaking for Python and R consumers that use schema-inference methods with strict column validation; renaming prod_sku is non-breaking as long as all consumer owners are notified via email at least two weeks in advance."
+    ],
+    "correct_option": 0,
+    "explanation": "The breaking vs non-breaking distinction is precise: a non-breaking change is one that existing consumers can absorb without any code modification; a breaking change causes existing code to fail or produce wrong results. Adding a nullable eco_label column does not change the name, type, or presence of any existing column — all 20 consumers' queries continue to work unchanged. Renaming prod_sku is unambiguously breaking: any query, Tableau workbook, Python script, or R report that references prod_sku by name will throw a column-not-found error on next execution. The correct protocol for the rename: maintain both the old and new column names simultaneously (add product_sku as an alias or dual-write column, deprecate prod_sku with a sunset date), send a migration guide to all 20 consumer owners, and remove prod_sku only after all consumers have updated and confirmed migration. Option B is incorrect — the query engine reading only selected columns is irrelevant; any consumer that explicitly references prod_sku by name fails after the rename. Option C overstates the impact of nullable column additions, which are the canonical definition of a non-breaking schema change. Option D is partially true about strict Python/R schema validators, but this is a consumer implementation detail, not a semantic breaking change in the dimension itself; the correct response is to note it in the migration guide rather than reclassifying all column additions as breaking.",
+    "hints": [
+      "A column rename breaks any query that references the old column name. How many of the 20 consumers explicitly reference prod_sku in their SQL, workbooks, or scripts?",
+      "A non-breaking change is one that existing consumers can absorb without modification. Does adding a nullable column break any existing SELECT col1, col2 FROM dim_product query?"
+    ],
+    "concepts": [
+      "SCHEMA EVOLUTION",
+      "DATA CONTRACT",
+      "DIMENSIONAL MODELING",
+      "DATA GOVERNANCE"
+    ]
+  },
+  {
+    "id": 62034,
+    "order": 34,
+    "title": "High-Churn SCD: When Type 2 Row Explosion Becomes Impractical",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A social media platform tracks user notification preferences (on/off for 12 notification types). Users toggle preferences an average of 2–3 times per day. With SCD Type 2, `dim_user_preferences` for 50M users grows by 100–150M new rows per day — producing 36–55B rows annually. Storage costs are prohibitive and all BI queries require a heavy WHERE current_flag = 1 filter. The analytics team's key requirement is: 'What were user X's notification preferences at the time of click event Y?' (accurate to the second, not just the day).",
+    "description": "Which design change best controls the storage growth while preserving intraday point-in-time accuracy for event-level analytics?",
+    "options": [
+      "Replace SCD Type 2 with a change-event log: store one row per actual preference change with a (user_id, changed_at, notification_type, new_value) schema; point-in-time queries find the last state before an event using `WHERE changed_at <= event_timestamp ORDER BY changed_at DESC LIMIT 1` per (user, notification type); storage scales only with the actual change rate, not at a fixed per-user-per-day rate",
+      "Keep SCD Type 2 but add a row-deduplication job that removes consecutive rows with identical preference values; if most of the 100–150M daily rows are no-op duplicates logged by the source system, deduplication could substantially reduce the row count",
+      "Replace SCD Type 2 with a daily point-in-time snapshot: store one row per user per day capturing the end-of-day preference state; point-in-time queries join on snapshot_date = event_date; daily storage drops to 50M rows/day instead of 100–150M",
+      "Switch to SCD Type 1 (overwrite) to eliminate row growth entirely; historical preference queries rely on the clickstream system's own event log rather than the dimension table"
+    ],
+    "correct_option": 0,
+    "explanation": "The change-event log is the most storage-efficient design that preserves intraday point-in-time accuracy. Storage scales with actual change rate: at 2.5 changes per user per day on average, the change-event log produces rows proportional to actual user activity rather than a guaranteed full-state snapshot for every user every day. Users who rarely change preferences produce almost no rows. Point-in-time queries filter by changed_at ≤ event_timestamp and take the most recent value per (user_id, notification_type) — accurate to the second. Option B (deduplication of no-ops) is valid only if most of the 100–150M daily rows are phantom changes from the source system. The scenario states users genuinely toggle preferences 2–3 times per day — these are real changes, not no-ops. Removing real changes would incorrectly delete valid history. Option C (daily end-of-day snapshot) reduces storage to 18B rows/year and is much better than SCD Type 2, but caps accuracy at one day. If a user changes preferences at 10 AM and a click event occurs at 2 PM, the daily snapshot returns the prior end-of-day preference state — wrong for any intraday event analysis. The scenario explicitly requires second-level accuracy. Option D (SCD Type 1) destroys historical capability entirely and offloads the problem to the clickstream team.",
+    "hints": [
+      "SCD Type 2 stores one row per change for the full preference state (12 types per user). How does the change-event log's storage compare for a user who changes rarely vs frequently?",
+      "A daily end-of-day snapshot has one row per user per day. If a user changes preferences at 10 AM and a click event occurs at 2 PM, does the daily snapshot return the correct preference state at event time?"
+    ],
+    "concepts": [
+      "SCD OPERATIONS",
+      "STORAGE ARCHITECTURE",
+      "FACT TABLE DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
   }
 ]

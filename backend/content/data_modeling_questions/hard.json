@@ -652,5 +652,174 @@
       "PRE-AGGREGATION",
       "GRAIN MISMATCH"
     ]
+  },
+  {
+    "id": 63025,
+    "order": 25,
+    "title": "Post-Acquisition Conformed Dimension: Resolving Overlapping Natural Keys",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "Company A acquires Company B. Both have a `customer` table with integer customer_id values starting at 1. Company A has 2M customer records (IDs 1–2,000,000); Company B has 800K records (IDs 1–800,000). The keys overlap: Company A customer_id=1001 and Company B customer_id=1001 are different people. The combined platform must serve cross-company analytics (e.g., combined revenue by customer segment) and must preserve the full order history from both companies. There is no requirement to identify shared customers across both companies — the two customer bases are completely disjoint.",
+    "description": "Which dimensional modeling strategy correctly creates a unified conformed `dim_customer` without losing history or producing incorrect cross-company joins?",
+    "options": [
+      "Generate new globally unique integer surrogate keys (1 through 2.8M) for all customers from both companies; maintain a natural_key_map table (global_customer_sk, source_system, original_customer_id) for reverse lookup; re-key all fact tables from both companies to use global_customer_sk; the conformed dimension has one row per unique (source, original_id) pair and the surrogate key is its primary key",
+      "Create a compound natural key combining source system prefix and original ID (e.g., 'A-1001' vs 'B-1001'); use this compound string as the dimension primary key; update all fact tables to use the compound string key; no surrogate key is needed because the compound key is globally unique",
+      "Keep two separate dimension tables (dim_customer_a and dim_customer_b); create a UNION ALL view dim_customer_combined with a source_system flag column; all analytics queries filter on source_system to prevent cross-company key collisions",
+      "Assign Company B all customer IDs above 2,000,000 by adding a 2,000,000 offset to all Company B customer IDs; update Company B's fact table rows to use offset IDs; use a single dim_customer table with no source_system tracking"
+    ],
+    "correct_option": 0,
+    "explanation": "Generating new globally unique surrogate keys is the canonical Data Vault and Kimball approach for merging dimension tables from sources with conflicting natural keys. The global surrogate key is a meaningless integer with no business semantics — this is the correct property of a surrogate key. The natural_key_map table preserves the ability to trace any global surrogate key back to its source system and original ID, which is essential for reverse lookups and audits. All fact tables from both companies are re-keyed once to use the new global surrogate keys. After migration, the conformed dimension is the single source of truth for all cross-company analytics. Option B (compound string key) uses a natural key as the dimension primary key. While globally unique, string join keys are slower than integer surrogate keys at scale, and the compound string encodes business meaning into the key — which creates maintenance issues if source system codes change. All fact tables still require re-keying (same effort as Option A with worse performance). Option C (UNION ALL view) is not a true conformed dimension — it is two separate dimensions in a view. Any cross-company analysis that needs to relate entities (e.g., comparing customer segments across both companies) requires a genuine unified dimension, not a union of two independent ones. Analytics that need consistent segment definitions across companies cannot be expressed correctly via a view union. Option D (offset hack) creates a fragile implicit convention: the offset assumes Company A will never grow beyond 2M customers; if it does, new keys from Company A collide with offset Company B keys. It also provides no source tracking — you cannot determine which company a customer came from by looking at the key alone.",
+    "hints": [
+      "When two source systems have overlapping natural keys, what is the standard dimensional modeling pattern for creating a unified dimension with a stable primary key?",
+      "The natural_key_map table preserves the source system and original ID for every row in the conformed dimension. Why is this mapping necessary even after all fact tables have been re-keyed to global surrogate keys?"
+    ],
+    "concepts": [
+      "CONFORMED DIMENSIONS",
+      "SURROGATE KEYS",
+      "NATURAL KEY CONFLICTS",
+      "DATA VAULT",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63026,
+    "order": 26,
+    "title": "Semantic Layer: Deprecating a Certified Metric Without Breaking Downstream Consumers",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A data platform certifies metrics in a semantic layer. The current certified metric `total_revenue` calculates gross revenue without deducting refunds. Finance needs a corrected metric `gross_revenue_net` that deducts refunds. 40 downstream consumers reference `total_revenue`: 18 Tableau workbooks, 12 dbt mart models, 7 Looker dashboards, and 3 Excel pivot tables connected via JDBC. The Finance team proposes renaming `total_revenue` to `gross_revenue_net` immediately. What is the correct deprecation and migration strategy?",
+    "options": [
+      "Keep `total_revenue` active and simultaneously publish `gross_revenue_net` as a new certified metric; mark `total_revenue` as Deprecated in the semantic layer catalog with a clearly communicated 60-day sunset date; emit deprecation warnings to each consumer referencing the deprecated metric; notify all 40 consumer owners with a migration guide; remove `total_revenue` only after the sunset date has passed and all consumers have migrated or explicitly acknowledged",
+      "Rename `total_revenue` to `gross_revenue_net` immediately in the semantic layer; all 40 consumers receive a metric-not-found error on next refresh; send a migration announcement email with a 2-week update window; restore the metric name if any team cannot update in time",
+      "Make `total_revenue` a permanent alias pointing to `gross_revenue_net` in the semantic layer; all 40 consumers keep working under their existing name without changes; Finance uses the new canonical name; the alias is maintained indefinitely to avoid forced migration",
+      "Fork the semantic layer into a v1 namespace (containing `total_revenue`) and a v2 namespace (containing `gross_revenue_net`); consumers must explicitly opt into v2 on their own schedule; maintain v1 indefinitely so no consumer is ever forced to migrate"
+    ],
+    "correct_option": 0,
+    "explanation": "The standard certified metric deprecation lifecycle is: (1) publish the new metric alongside the old one — zero downtime for existing consumers; (2) mark the old metric as Deprecated with a sunset date — consumers are warned but not broken; (3) notify all consumer owners with a migration guide specific to their tool (different for Tableau, dbt, Looker, and Excel JDBC); (4) remove the deprecated metric only after the sunset date has passed and all consumers have confirmed migration. The 60-day window accounts for the slowest-moving consumer type (Excel JDBC connections often require manual updates by business users who may not monitor platform announcements). Option B (immediate rename) is not acceptable for a production platform: it breaks all 40 consumers simultaneously at next refresh, including Excel pivot tables and Tableau workbooks used by business stakeholders who cannot update in 2 weeks. Option C (permanent alias) is a governance antipattern: aliases create invisible dependencies in the catalog; when the underlying calculation changes in the future, both names silently reflect the change; consumers never learn the canonical metric name; and there is no migration signal in the catalog. Permanent aliases defeat the purpose of metric version management. Option D (forever v1 namespace) is equivalent: the v1 namespace must be maintained indefinitely with the same rigor as the v2 namespace — doubling maintenance — and consumers have no incentive to ever migrate, since nothing forces them to.",
+    "hints": [
+      "Why is it important to publish `gross_revenue_net` before deprecating `total_revenue`, rather than renaming `total_revenue` in place?",
+      "A permanent alias gives consumers an existing name that keeps working. What does it NOT provide that a deprecation-with-sunset-date does provide?"
+    ],
+    "concepts": [
+      "SEMANTIC LAYER GOVERNANCE",
+      "DATA GOVERNANCE",
+      "DATA CONTRACT",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63027,
+    "order": 27,
+    "title": "Semi-Additive Fact Design for Balance with Period-Change Analytics",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A bank's data warehouse has a daily account balance fact table (fact_account_balance_daily) with one row per (account_id, balance_date) and a `balance_amount` column. The Finance team needs two query patterns: (1) As-at balance: what was the total balance across all accounts on a specific date? Requires picking the balance for each account as of that date — summing across dates double-counts the same money. (2) Period change: what was the net change in total balance between two dates? Requires SUM(balance on date B) − SUM(balance on date A). A third team asks whether `balance_amount` can also support SUM queries for monthly interest accrual reporting across all accounts.",
+    "description": "Which fact table design and column strategy correctly supports all three query patterns?",
+    "options": [
+      "Keep the current snapshot (balance_amount per account per day) for pattern 1 and pattern 2 (computed as two single-date SUM queries subtracted); add a separate `daily_change` column to the same row capturing the day-over-day net balance movement; monthly interest accrual uses SUM(daily_change) within the month, which is fully additive — no double-counting because it sums changes, not balances",
+      "Replace balance_amount with a flow (change) column: store only the daily net change rather than the absolute balance; pattern 1 requires a running SUM of all daily changes from account inception to the target date; pattern 2 is a SUM of daily changes between the two dates; interest accrual is also a SUM of flows",
+      "Keep balance_amount as-is and add a query-time note in the data catalog that balance_amount is semi-additive: it can be summed across accounts but not across dates; train analysts to write date-filtered queries; the interest accrual team must use a different approach",
+      "Store a monthly rollup fact table (fact_account_balance_monthly) alongside the daily table: the monthly table has one row per (account_id, month) with a month_end_balance and monthly_change column; pattern 1 uses the daily table; pattern 2 and accrual use the monthly rollup table"
+    ],
+    "correct_option": 0,
+    "explanation": "Storing both the snapshot (balance_amount, semi-additive) and the flow (daily_change, fully-additive) in the same fact row is the standard Kimball recommendation for semi-additive measures that need to support multiple query patterns. Pattern 1 (as-at balance): uses `WHERE balance_date = :target_date` on balance_amount — a direct single-date read. Pattern 2 (period change): uses `SUM(daily_change) WHERE balance_date BETWEEN :date_a AND :date_b` — fully additive over the date range, no double-counting. Interest accrual: uses `SUM(daily_change) WHERE balance_date BETWEEN month_start AND month_end` — same fully-additive column. Option B (change-only) makes pattern 1 impractical at scale: every single-date as-at balance query requires a running SUM of all daily changes from account inception (potentially years of data) for every account in the result set. This is the defining weakness of a flow-only model. Option C (documentation only) does not add the daily_change column needed for interest accrual — the interest team must compute accrual from balance differences across two dates (two full-table reads) rather than summing a pre-computed flow column. Option D (monthly rollup table) solves the accrual problem but adds a second table to maintain in sync with the daily table; it is operationally more complex than adding one column to the existing row and does not reduce the daily table's query complexity.",
+    "hints": [
+      "SUM(balance_amount) across multiple dates double-counts the same money. SUM(daily_change) across a date range is fully additive. Which design stores both so each query uses the correct column?",
+      "A flow-only table (Option B) stores only daily_change. What does a query for 'total account balance across all accounts on March 15th' require when there is no snapshot column?"
+    ],
+    "concepts": [
+      "SEMI-ADDITIVE FACTS",
+      "PERIODIC SNAPSHOT",
+      "FACT TABLE DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63028,
+    "order": 28,
+    "title": "Regulatory As-Of Reporting: When a Dimension Must Reconstruct Its Own Past State",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A financial institution receives a regulatory audit request: 'Provide the complete customer risk classification table as it existed in your data warehouse on November 30th, 2023.' The current `dim_customer_risk` uses SCD Type 2. Investigation reveals that between December 1st and today, 12,000 rows were corrected — some with effective_from dates backdated into the November period. The current SCD Type 2 table, queried for November 30th using `effective_from <= '2023-11-30' AND effective_to > '2023-11-30'`, reflects the post-correction state. It cannot distinguish whether a row was in the database on November 30th or was added afterward with a backdated effective_from.",
+    "description": "Which data warehouse design approach would have made this regulatory request answerable directly from the warehouse without relying on database backups or restore operations?",
+    "options": [
+      "Bi-temporal design with system-time tracking: each SCD row carries `sys_start TIMESTAMP` and `sys_end TIMESTAMP` recording when the row was current in the database, independent of its effective_from/effective_to validity period. A November 30th audit query filters `WHERE '2023-11-30' BETWEEN sys_start AND sys_end` on the system-time axis, returning exactly the rows that were in the database on that date — including rows inserted before November 30th and excluding rows inserted or modified after.",
+      "Retain weekly full-dimension table snapshots in cold storage for 12 months; audit queries read the snapshot nearest to the target date; the SCD Type 2 logic remains unchanged and needs no modification for compliance reporting.",
+      "Implement a data quality rule that rejects any effective_from date more than 7 days in the past; this prevents backdated corrections from altering the apparent historical record, ensuring the current SCD Type 2 table always reflects what was entered contemporaneously with real-world events.",
+      "Add a `first_inserted_at TIMESTAMP` column to each SCD row recording when it was first created; audit queries filter WHERE first_inserted_at <= '2023-11-30' AND effective_to > '2023-11-30' to find rows that were present on that date and still valid in business time."
+    ],
+    "correct_option": 0,
+    "explanation": "The audit request is a transaction-time (system-time) query: 'what did your database contain on November 30th?' — not 'what was true in the business on November 30th?' SCD Type 2's effective_from/effective_to is a valid-time model. A backdated correction added in December with effective_from in November looks identical in valid-time queries to a row that was genuinely present in November. Bi-temporal modeling adds a system-time axis (sys_start/sys_end) that records when each row was current in the database itself, independently of its business validity period. A corrected row added in December will have sys_start = December, regardless of its effective_from being backdated to November. The November 30th system-time query correctly excludes all December insertions and returns the exact set of rows that existed in the database that day. Option B (weekly snapshots) works operationally but is imprecise — the snapshot nearest to November 30th might be November 25th, missing 5 days of legitimate changes — and requires restoring potentially large table snapshots for a single query. Option C (reject backdated corrections) prevents future occurrences but provides no remedy for the 12,000 corrections already applied; it also prevents legitimate data corrections that have valid business reasons (late-arriving source data, discovered errors). Option D (first_inserted_at) captures row creation time but not modification time. When a correction closes an existing row by updating its effective_to, the original row's first_inserted_at is unchanged but its effective_to has been modified. The filter `WHERE first_inserted_at <= Nov 30 AND effective_to > Nov 30` cannot reconstruct the row's pre-modification effective_to value.",
+    "hints": [
+      "The SCD Type 2 valid-time query returns what is now believed to be true on November 30th. The audit request asks what was in the database on November 30th. Are these the same question?",
+      "A backdated correction inserted in December has effective_from in November. What should sys_start be for that corrected row — November (when the business fact was valid) or December (when it was entered into the system)?"
+    ],
+    "concepts": [
+      "BI-TEMPORAL MODELING",
+      "AUDIT COMPLIANCE",
+      "SCD OPERATIONS",
+      "TEMPORAL QUERY",
+      "REGULATORY REPORTING"
+    ]
+  },
+  {
+    "id": 63029,
+    "order": 29,
+    "title": "Zero-Downtime Schema Migration for a High-Fan-Out Fact Table",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A data platform must make two changes to `fact_events` (200M rows, consumed by 20 assets: 8 dbt models, 6 Tableau workbooks, 4 Python scripts, 2 R reports): (1) rename the column `evt_ts` to `event_timestamp`; (2) change `user_id` from BIGINT to VARCHAR to support a new UUID-based identity system. The platform team cannot take a multi-day downtime window — consumers cannot all update simultaneously, and some Tableau workbooks are maintained by business stakeholders who update on monthly schedules.",
+    "description": "Which migration strategy achieves zero consumer downtime while giving all 20 assets a realistic path to the new schema?",
+    "options": [
+      "Create a versioned view `fact_events_v2` that exposes the renamed column (`evt_ts AS event_timestamp`) and the cast user_id (`CAST(user_id AS VARCHAR) AS user_id`); keep the base `fact_events` table unchanged; communicate the migration path to all 20 consumer owners with a 60-day transition window; once all consumers point to fact_events_v2, rename the base table and update the view to a thin wrapper; no consumer experiences downtime during migration",
+      "Apply both changes to `fact_events` immediately; issue a migration announcement email with a 2-week update window; consumers that cannot update in time are temporarily broken until they apply the change; priority support is offered to Tableau workbook owners",
+      "Add `event_timestamp` as a new column alongside `evt_ts` and dual-write both during migration; add `user_id_str` as a new VARCHAR column alongside the existing BIGINT `user_id`; deprecate old columns after all consumers confirm migration; both old and new columns coexist for the duration of the migration window",
+      "Route all consumers through a semantic layer abstraction (dbt Semantic Layer or equivalent) that exposes `event_timestamp` and VARCHAR user_id as canonical field names regardless of the underlying physical column names; the physical migration happens transparently once all consumers adopt the semantic layer"
+    ],
+    "correct_option": 0,
+    "explanation": "A versioned view is the standard zero-downtime strategy for high-fan-out schema migrations. The view `fact_events_v2` exposes the new column name and cast type without any change to the underlying table. Consumers reading `fact_events` continue working unchanged; consumers reading `fact_events_v2` get the new schema immediately. Tableau workbooks maintained on monthly schedules can migrate during their next maintenance window — no urgency. Once all 20 consumers have migrated to fact_events_v2, the base table can be renamed and the view updated to a thin wrapper without any consumer impact. Option B (immediate breaking change) is incompatible with zero-downtime: it breaks all 20 consumers simultaneously. Tableau workbooks maintained by business stakeholders on monthly cycles will be broken for up to 4 weeks. Option C (dual columns) works but inflates the table schema: the table has both evt_ts and event_timestamp, plus user_id BIGINT and user_id_str VARCHAR, during the entire migration window. The dual-write requirement adds pipeline complexity and the risk of the two columns diverging. The view approach (Option A) achieves the same isolation without touching the base table. Option D (semantic layer) is a valid long-term architectural goal but it is not a migration strategy for a one-time schema change — it requires all 20 consumers to first adopt the semantic layer, which is itself a multi-month cross-team initiative and cannot be completed within a migration window.",
+    "hints": [
+      "A database view can rename columns and cast types without modifying the underlying table. How does fact_events_v2 give all 20 consumers a zero-downtime migration path?",
+      "The 60-day window lets each consumer team update on their own schedule. What makes Option B (immediate rename) incompatible with a 20-team migration where some teams update monthly?"
+    ],
+    "concepts": [
+      "SCHEMA EVOLUTION",
+      "DATA CONTRACT",
+      "DIMENSIONAL MODELING",
+      "DATA GOVERNANCE"
+    ]
+  },
+  {
+    "id": 63030,
+    "order": 30,
+    "title": "Intra-Day Periodic Snapshot: Granularity Trade-offs and Fact Table Design",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A trading platform requires account balance snapshots at market open, midday, and market close (3 per trading day) rather than once daily. The current daily snapshot produces 50M rows/day for 50M accounts. Moving to 3 snapshots produces 150M rows/day and 37.5B rows/year. Three designs are being evaluated: (A) a single fact table with a snapshot_label column ('open', 'mid', 'close'); (B) three separate fact tables, one per snapshot time; (C) a change-event log plus reconstruction logic. Which design correctly balances query flexibility, storage, and cross-snapshot analytical clarity?",
+    "options": [
+      "Design A (single table with snapshot_label): a compound primary key of (account_id, snapshot_timestamp) uniquely identifies each row; snapshot_label provides readability; date-level partitioning limits scan to one day's 150M rows; cross-snapshot comparison queries use `WHERE snapshot_label IN ('open', 'close')` in a single table scan without UNION ALL; the 3× row count is the unavoidable cost of 3× the granularity",
+      "Design B (three separate tables): each snapshot table is independently partitioned and sized; cross-snapshot comparison queries use UNION ALL; separate tables allow independent archiving if regulatory retention differs by snapshot type (e.g., close retained for 7 years, open and midday for 2 years)",
+      "Design C (change-event log + reconstruction): store only balance changes with a timestamp; reconstruct any snapshot time by summing changes from account inception to the target timestamp; storage grows only with real balance movements (many accounts are unchanged between open and close), dramatically reducing row count compared to storing three full snapshots per day",
+      "Design A with a twist: use a sparse representation where only accounts that changed between snapshots are stored; accounts with no intraday balance movement appear only at the end-of-day snapshot; the sparse design reduces 150M rows/day back toward 50M while retaining full intraday accuracy for active accounts"
+    ],
+    "correct_option": 0,
+    "explanation": "Design A (single table with snapshot_label) is the standard dimensional modeling approach for a fixed, known set of snapshot times per day. The advantages are clear: (1) cross-snapshot queries are single-table scans with a label filter — no UNION ALL, no JOIN complexity; (2) window functions like `LAG() OVER (PARTITION BY account_id ORDER BY snapshot_timestamp)` can compare consecutive snapshots in one pass; (3) date-level partitioning limits all analytical queries to the relevant day's rows; (4) the snapshot_label enables natural language filtering ('market_close') rather than timestamp arithmetic. The 3× row count is the direct, unavoidable cost of capturing 3× the granularity — it is not a design flaw. Design B (three tables) creates cross-snapshot query complexity: any analysis comparing open vs close balances requires UNION ALL or separate joins, complicating all analytical queries. The independent archiving argument is the strongest case for Design B, but regulatory retention differences between snapshot types are typically handled at the partition level within a single table (partitioning by snapshot_label OR by date + time range) rather than by splitting the table. Design C (change-event log) is storage-efficient but makes point-in-time balance queries expensive: 'what was the account balance at market open on March 15th?' requires summing all changes from account inception to market open for every account in the result — potentially years of changes. This is impractical for a 50M-account trading platform where open-balance queries are issued thousands of times per day. Design D (sparse representation) reduces storage at the cost of query complexity: analysts must now handle the distinction between 'row not present because unchanged' and 'row not present because error' — every balance query requires a COALESCE or gap-filling step, and analytical logic becomes significantly more complex.",
+    "hints": [
+      "For a fixed set of known snapshot times (open, mid, close), what column distinguishes each snapshot type, and what compound key uniquely identifies each row?",
+      "Design C stores only changes between snapshots. What does a query for 'total balance across all 50M accounts at market open on March 15th' require when there is no snapshot column?"
+    ],
+    "concepts": [
+      "PERIODIC SNAPSHOT",
+      "FACT TABLE DESIGN",
+      "STORAGE ARCHITECTURE",
+      "DIMENSIONAL MODELING",
+      "SEMI-ADDITIVE FACTS"
+    ]
   }
 ]
