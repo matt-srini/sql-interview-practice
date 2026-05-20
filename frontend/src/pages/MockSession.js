@@ -44,6 +44,22 @@ const DEFAULT_CODE = {
   pyspark: '',
 };
 
+/**
+ * Normalize run-code API responses so the frontend always sees the expected keys:
+ *   test_results  (backend may return `results`)
+ *   stdout        (backend may return `print_output`)
+ *   columns/rows  at the top level (Pandas nests them under `result`)
+ */
+function normalizeRunResult(data) {
+  if (!data) return data;
+  const d = { ...data };
+  if (!('test_results' in d)) d.test_results = d.results ?? [];
+  if (!('stdout' in d))       d.stdout = d.print_output ?? '';
+  if (d.result && !d.columns) d.columns = d.result.columns;
+  if (d.result && !d.rows)    d.rows    = d.result.rows;
+  return d;
+}
+
 function isConceptualMcqQuestion(question, meta) {
   if (!question || !meta) return false;
   if (meta.mixedSubtype) return question.subtype !== 'numerical';
@@ -260,7 +276,7 @@ export default function MockSession() {
         ? { query: getCode(q), question_id: q.id }
         : { code: getCode(q), question_id: q.id };
       const r = await api.post(endpoint, payload);
-      setRunResults(prev => ({ ...prev, [q.id]: r.data }));
+      setRunResults(prev => ({ ...prev, [q.id]: normalizeRunResult(r.data) }));
       // Scroll results into view so user doesn't miss them (and can still see buttons above)
       requestAnimationFrame(() => {
         resultsCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });

@@ -41,6 +41,23 @@ function getHintStepLabels(question) {
   return Array.from({ length: totalHints }, (_, index) => baseLabels[index] ?? `Hint ${index + 1}`);
 }
 
+/**
+ * Normalize run-code / submit API responses so the frontend always sees:
+ *   test_results  (backend may return `results` or `public_results`)
+ *   stdout        (backend may return `print_output`)
+ *   columns/rows  at the top level (Pandas nests them under `result`)
+ */
+function normalizeRunResult(data) {
+  if (!data) return data;
+  const d = { ...data };
+  if (!('test_results' in d)) d.test_results = d.results ?? d.public_results ?? [];
+  if (!('stdout' in d))       d.stdout = d.print_output ?? '';
+  // Flatten Pandas result.columns / result.rows to top level
+  if (d.result && !d.columns) d.columns = d.result.columns;
+  if (d.result && !d.rows)    d.rows    = d.result.rows;
+  return d;
+}
+
 
 
 export default function QuestionPage() {
@@ -554,7 +571,7 @@ export default function QuestionPage() {
         ? { code, question_id: Number(id) }
         : { query: code, question_id: Number(id) };
       const res = await api.post(runApiPath, payload);
-      setRunResult(res.data);
+      setRunResult(normalizeRunResult(res.data));
     } catch (err) {
       setRunError(formatExecutionError(err, 'Execution failed.'));
     } finally {
@@ -580,7 +597,7 @@ export default function QuestionPage() {
         payload = { query: code, question_id: Number(id), duration_ms: getElapsedDurationMs() };
       }
       const res = await api.post(submitApiPath, payload);
-      setSubmitResult(res.data);
+      setSubmitResult(normalizeRunResult(res.data));
       track('question_submitted', { track: topic, question_id: Number(id), difficulty: question?.difficulty, correct: res.data.correct });
       if (res.data.correct) {
         track('question_solved', { track: topic, question_id: Number(id), difficulty: question?.difficulty, first_try: priorAttemptCountRef.current === 0 });
