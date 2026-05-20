@@ -1014,7 +1014,8 @@ def test_tc174_second_submit_after_correct_returns_409():
         r_start = _start_pyspark_session(client)
         session_id = r_start.json()["session_id"]
         first_q = r_start.json()["questions"][0]
-        q_obj = next((q for q in _pyspark_catalog["easy"] if q["id"] == first_q["id"]), None)
+        all_qs = _pyspark_catalog["easy"] + _pyspark_catalog["medium"] + _pyspark_catalog["hard"]
+        q_obj = next((q for q in all_qs if q["id"] == first_q["id"]), None)
         correct = q_obj["correct_option"] if q_obj else _pyspark_correct
 
         # First submit — correct

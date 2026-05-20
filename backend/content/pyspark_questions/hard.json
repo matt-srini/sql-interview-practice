@@ -1085,5 +1085,315 @@
       "conservative nullability"
     ],
     "interaction_mode": "code_adjacent_reasoning"
+  },
+  {
+    "id": 43037,
+    "order": 37,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "title": "AQE Skew Join: How Many Tasks Process the Hot Partition?",
+    "description": "AQE is enabled with the configuration below. After the shuffle write stage completes, the probe-side output shows:\n- **Partition 0:** 1,920 MB\n- **Partitions 1–199:** 18 MB each (median ≈ 18 MB)\n\nHow many join tasks does AQE create **specifically for partition 0**?",
+    "code_snippet": "spark.conf.set(\"spark.sql.adaptive.enabled\", \"true\")\nspark.conf.set(\"spark.sql.adaptive.skewJoin.enabled\", \"true\")\nspark.conf.set(\"spark.sql.adaptive.advisoryPartitionSizeInBytes\", \"64mb\")\nspark.conf.set(\"spark.sql.adaptive.skewJoin.skewedPartitionFactor\", \"5\")\nspark.conf.set(\"spark.sql.adaptive.skewJoin.skewedPartitionThresholdInBytes\", \"256mb\")\n\n# After a shuffle stage:\n# Partition 0  : 1,920 MB\n# Partitions 1-199: ~18 MB each  (median = 18 MB)",
+    "scenario_context": null,
+    "options": [
+      "1 task — AQE's skew join detects the hot partition but queues it for a second-pass join after the non-skewed partitions finish; it still runs as a single task",
+      "5 tasks — the skewedPartitionFactor determines how many sub-tasks are created for each skewed partition",
+      "30 tasks — AQE splits partition 0 into ceil(1,920 MB ÷ 64 MB) = 30 sub-partitions, each processing ~64 MB; the build side is replicated once per sub-partition so every sub-task has all matching rows",
+      "200 tasks — AQE detects skew and resets the entire shuffle to the original partition count, redistributing all data evenly before the join"
+    ],
+    "correct_option": 2,
+    "explanation": "AQE's skew join detects partition 0 as skewed because 1,920 MB > `skewedPartitionFactor (5) × median (18 MB) = 90 MB` AND > `skewedPartitionThresholdInBytes (256 MB)` — both conditions must hold. AQE then splits partition 0 into `ceil(1,920 ÷ 64) = 30` sub-partitions, each targeting `advisoryPartitionSizeInBytes (64 MB)`. For each sub-partition, AQE replicates the corresponding build-side partition, so every sub-task joins its ~64 MB slice against all matching build rows. The 30 sub-tasks run in parallel, turning a single 1,920 MB bottleneck task into 30 manageable tasks. Non-skewed partitions 1–199 each run as normal single tasks. Option A is wrong — AQE splits skewed partitions at runtime; it does not queue them for a second pass. Option B is wrong — `skewedPartitionFactor` is a detection threshold multiplier (a partition must be > factor × median size to qualify as skewed), not a split count. Option D is wrong — AQE never reshuffles all data; it surgically restructures only the identified skewed partitions.",
+    "hints": [
+      "skewedPartitionFactor and skewedPartitionThresholdInBytes are detection thresholds, not split counts — once a partition is identified as skewed, how does AQE decide how many pieces to cut it into?",
+      "The advisory partition size is the target size per output partition — apply that same logic to the skewed partition's total size."
+    ],
+    "concepts": [
+      "AQE skew join splitting",
+      "skew detection threshold",
+      "build-side replication",
+      "runtime partition restructuring",
+      "advisoryPartitionSizeInBytes"
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
+  },
+  {
+    "id": 43038,
+    "order": 38,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "title": "Salted Join: What Does result.count() Return?",
+    "description": "`df_events` has **40,000 rows**, all with `user_id = 'bot'`. `df_users` has **1 row** with `user_id = 'bot'`.\n\nA salted join is applied to distribute the hot key. What does `result.count()` return?",
+    "code_snippet": "N_SALT = 8\n\n# Large side: assign each row a random salt 0–7\ndf_events_salted = (\n    df_events\n    .withColumn(\"_salt\", (F.rand() * N_SALT).cast(\"int\"))\n    .withColumn(\"uid_s\", F.concat(F.col(\"user_id\"), F.lit(\"_\"), F.col(\"_salt\")))\n)\n\n# Small side: explode to produce one copy per salt value\ndf_users_salted = (\n    df_users\n    .withColumn(\"_salts\", F.array([F.lit(i) for i in range(N_SALT)]))\n    .select(\"*\", F.explode(\"_salts\").alias(\"_salt\"))\n    .withColumn(\"uid_s\", F.concat(F.col(\"user_id\"), F.lit(\"_\"), F.col(\"_salt\")))\n)\n\nresult = df_events_salted.join(df_users_salted, on=\"uid_s\", how=\"inner\")\nresult.count()",
+    "scenario_context": null,
+    "options": [
+      "320,000 — the 8-way explode on the users side multiplies every match: 40,000 events × 8 salt copies = 320,000 output rows",
+      "40,000 — each event row carries one salt value 0–7 and joins to exactly the one users row that was exploded to the same salt; the distribution spreads load but does not multiply output cardinality",
+      "8 — after the join, rows are collapsed to one per salt bucket since all events in a bucket share the same salted key",
+      "0 — rand() produces floats in [0.0, 1.0) so casting to int always yields 0, but the users side has salts 1–7 for that bucket, producing no matches"
+    ],
+    "correct_option": 1,
+    "explanation": "Salting distributes a hot key across N partitions without multiplying output cardinality. Each event row is assigned one salt value (0–7 via `(rand() * 8).cast(int)`), producing a unique `uid_s` such as `'bot_3'`. The users side is exploded from 1 row into 8 rows (`'bot_0'` through `'bot_7'`). The inner join on `uid_s` matches each event row to exactly the one users row sharing its salt — `'bot_3'` matches only `'bot_3'`, not all 8. Result: 40,000 events × 1 matching user per event = 40,000 rows. Option A is the classic misunderstanding: the explode creates 8 small-side copies so that every possible salt value has a join partner, but a given event row with salt=3 cannot match the users row with salt=5. Option C is wrong — the join does not aggregate; all 40,000 individual rows are preserved. Option D is wrong — `(rand() * 8).cast(int)` yields integers 0 through 7 uniformly; rand() returns [0.0, 1.0) so the product spans [0.0, 8.0) and casts produce 0–7 inclusive.",
+    "hints": [
+      "Each event row carries exactly one salt value. How many users rows share that same salt value after the explode?",
+      "The explode on the small side ensures every possible salt has a join partner — it does not mean every event matches multiple users rows."
+    ],
+    "concepts": [
+      "salting hot key distribution",
+      "join cardinality with salting",
+      "explode for salt replication",
+      "skew join output row count",
+      "inner join cardinality"
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
+  },
+  {
+    "id": 43039,
+    "order": 39,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "title": "Watermark Boundary: Which Incoming Events Are Dropped?",
+    "description": "A Structured Streaming job runs in Append output mode with a **10-minute watermark** on `event_time`.\n\nThe previous micro-batch's maximum observed `event_time` was **14:20:00**.\n\nThe current micro-batch contains these four events:\n\n| Event | event_time |\n|---|---|\n| e1 | 14:25:00 |\n| e2 | 14:18:00 |\n| e3 | 14:10:00 |\n| e4 | 14:09:45 |\n\nWhich events are **silently dropped** due to the watermark?",
+    "code_snippet": "# Watermark threshold at start of this batch:\n#   = max_event_time_previous_batch - delay\n#   = 14:20:00 - 10 min\n#   = 14:10:00\n#\n# Drop condition: event_time < watermark_threshold  (strictly less than)\n#\n# e1: 14:25:00  vs  14:10:00\n# e2: 14:18:00  vs  14:10:00\n# e3: 14:10:00  vs  14:10:00\n# e4: 14:09:45  vs  14:10:00",
+    "scenario_context": null,
+    "options": [
+      "e4 only — the drop condition is strictly less than the watermark threshold (14:09:45 < 14:10:00 is true; 14:10:00 < 14:10:00 is false); e3 arrives exactly at the threshold and is retained",
+      "e3 and e4 — the watermark boundary is inclusive; events at exactly 14:10:00 are also considered late and dropped",
+      "No events are dropped — the watermark only evicts state from completed aggregation windows; it does not filter individual input rows",
+      "e2, e3, and e4 — the watermark always retains only events in the last 10 minutes relative to the current wall-clock processing time, not the observed event time"
+    ],
+    "correct_option": 0,
+    "explanation": "The watermark threshold = `max_previous_event_time (14:20:00) − delay (10 min) = 14:10:00`. Spark drops events where `event_time < watermark_threshold` — a **strict** less-than comparison. Evaluating each event: e1 (14:25:00 ≥ 14:10:00) retained; e2 (14:18:00 ≥ 14:10:00) retained; e3 (14:10:00 = 14:10:00, not strictly less) retained; e4 (14:09:45 < 14:10:00) dropped. Option B is the most common mistake: the boundary is strictly less than, not less than or equal to — an event arriving exactly at the threshold is not considered late. Option C is wrong — for stateful operators (window aggregations, stream-stream joins), Spark does drop late input rows below the watermark before they enter the state store; the watermark is not purely a state eviction hint. Option D confuses event-time watermarking with processing-time filtering; the watermark threshold is computed from observed event timestamps, not from wall-clock time.",
+    "hints": [
+      "Write out the arithmetic: watermark threshold = max previous event_time − delay. Which of the four events are strictly less than that threshold?",
+      "The drop condition is event_time < watermark — strictly less than, not less than or equal to. An event at exactly the threshold is on the boundary, not past it."
+    ],
+    "concepts": [
+      "watermark threshold arithmetic",
+      "late data drop condition",
+      "strict less-than boundary",
+      "event-time vs processing-time",
+      "stateful operator late data filtering"
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
+  },
+  {
+    "id": 43040,
+    "order": 40,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "title": "foreachBatch Driver Crash Mid-Write: What Is in the Output on Restart?",
+    "description": "A Structured Streaming job uses `foreachBatch` to append each micro-batch to a Parquet directory. The driver crashes **after writing 60% of batch 7's records** but **before the checkpoint is updated**.\n\nWhen the job restarts and recovers, what is the state of `/output/events/`?",
+    "code_snippet": "def write_batch(batch_df, batch_id):\n    (\n        batch_df\n        .write\n        .mode(\"append\")\n        .parquet(\"/output/events/\")\n    )\n\nquery = (\n    streaming_df\n    .writeStream\n    .foreachBatch(write_batch)\n    .option(\"checkpointLocation\", \"/checkpoints/events\")\n    .trigger(processingTime=\"1 minute\")\n    .start()\n)\n# Driver crashes during batch 7 after writing 60% of records.\n# Checkpoint for batch 7 was NOT committed before the crash.",
+    "scenario_context": null,
+    "options": [
+      "The output contains exactly the records written before the crash (60%); Spark detects the partial write via the uncommitted checkpoint and prevents the batch from being replayed",
+      "The output directory is empty for the failed batch; Spark rolls back partial Parquet writes when the checkpoint is uncommitted, then replays the full batch cleanly on restart",
+      "The output contains duplicate records — the 60% written before the crash plus a full 100% re-write on replay — because the uncommitted checkpoint causes the same source offsets to be re-delivered to write_batch, and append mode writes new files without deduplicating against what already exists",
+      "The job fails to restart; an uncommitted checkpoint leaves the checkpoint directory in a corrupt state requiring manual repair before the query can resume"
+    ],
+    "correct_option": 2,
+    "explanation": "Structured Streaming's checkpoint records the last **successfully committed** batch ID. Because batch 7's checkpoint was never written, on restart Spark replays the same source offsets (e.g., the same Kafka offset range) and delivers them as batch 7 again. `write_batch` runs a second time with a fresh `batch_df` covering all 100% of the records. The `mode(\"append\")` write appends new Parquet files to `/output/events/` without inspecting or removing the partial files from the failed run. The output now contains the 60% partial files plus a fresh 100% write — approximately 160% of the intended data. `foreachBatch` provides **at-least-once** delivery semantics; the user is responsible for making `write_batch` idempotent, for example by writing to a path keyed by `batch_id` with `mode(\"overwrite\")`, or by using a Delta table that can enforce transactional writes. Option A is wrong — Spark has no mechanism to detect or quarantine partial Parquet files in an external directory. Option B is wrong — Spark does not roll back filesystem writes; the checkpoint and the output path are independently managed. Option D is wrong — an uncommitted checkpoint simply means the last batch will replay; the checkpoint directory structure remains internally consistent.",
+    "hints": [
+      "The checkpoint tracks the last committed batch ID. If batch 7 wasn't committed, what does Spark re-deliver on restart — and what does append mode do when the same data arrives twice?",
+      "foreachBatch gives at-least-once guarantees. What responsibility does that place on the write_batch function?"
+    ],
+    "concepts": [
+      "foreachBatch at-least-once semantics",
+      "checkpoint recovery and batch replay",
+      "sink idempotency requirement",
+      "append mode duplicate writes",
+      "partial write on driver crash"
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
+  },
+  {
+    "id": 43041,
+    "order": 41,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "title": "Pandas UDF: Predicting Output for Null and Zero Inputs",
+    "description": "The pandas UDF below is applied to a DataFrame with four rows. What are the four output values for the `log_x` column?",
+    "code_snippet": "import math\nimport numpy as np\nimport pandas as pd\nfrom pyspark.sql.functions import pandas_udf\nfrom pyspark.sql import functions as F\n\n@pandas_udf(\"double\")\ndef safe_log(s: pd.Series) -> pd.Series:\n    return np.log(s)\n\ndata = [(1.0,), (None,), (math.e,), (0.0,)]\ndf = spark.createDataFrame(data, [\"x\"])\ndf.select(safe_log(F.col(\"x\")).alias(\"log_x\")).show()",
+    "scenario_context": null,
+    "options": [
+      "0.0 | null | 1.0 | -Infinity — Spark converts null inputs to NaN before passing to the pandas Series; np.log(NaN) = NaN, which Spark converts back to null on return; np.log(0.0) = -∞, a valid IEEE 754 double that is preserved",
+      "0.0 | NaN | 1.0 | null — null is passed as NaN and returned as NaN (not converted back to null); np.log(0.0) raises a domain error that Spark catches and converts to null",
+      "0.0 | 0.0 | 1.0 | 0.0 — Spark substitutes 0.0 as a safe default for both null inputs and non-finite results when returning from a DoubleType UDF",
+      "AnalysisException at runtime — pandas_udf cannot process nullable DoubleType input; the input column must be cast to a non-nullable type before the UDF executes"
+    ],
+    "correct_option": 0,
+    "explanation": "For numeric pandas UDFs, Spark converts **null column values to NaN** before constructing the pandas Series passed to the UDF. Inside the UDF, `np.log(NaN)` propagates NaN (IEEE 754 quiet NaN). When Spark reads the returned Series back into a Spark column, **NaN values are converted back to null** for nullable `DoubleType` results — so the None input row shows null in the output. `np.log(1.0) = 0.0` and `np.log(math.e) = 1.0` are straightforward. `np.log(0.0)` produces `-inf` (IEEE 754 negative infinity): this is a valid double value, not an error, and Spark does **not** convert -inf to null. The four output values are `0.0 | null | 1.0 | -Infinity`. Option B is wrong: Spark does convert NaN back to null on the return path from a pandas UDF — NaN and null are distinct in pandas but are both represented as null in Spark's type system. Option C is wrong: Spark does not substitute 0.0 for nulls or infinities in UDF results. Option D is wrong: pandas UDFs fully support nullable input columns; the null-to-NaN conversion is precisely the mechanism designed to handle them.",
+    "hints": [
+      "Spark uses NaN as the wire format for passing null values into a pandas UDF — and mirrors that in reverse when reading the result back. What does numpy produce for log(NaN), and what does Spark do with NaN on the way back out?",
+      "log(0) in IEEE 754 arithmetic is −∞, not an error and not null. Does Spark treat −∞ as a special value for DoubleType columns?"
+    ],
+    "concepts": [
+      "pandas UDF null-to-NaN conversion",
+      "NaN-to-null return semantics",
+      "IEEE 754 negative infinity preservation",
+      "nullable column handling in UDFs",
+      "np.log edge cases"
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
+  },
+  {
+    "id": 43042,
+    "order": 42,
+    "topic": "pyspark",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Iterative PageRank Crashes with StackOverflowError During Planning",
+    "description": "A team implements PageRank as a Spark loop. The job runs fine for 10 iterations in testing but crashes in production at iteration 49 with a `StackOverflowError` during query planning — not during execution. The data fits comfortably in cluster memory, and no tasks are launched before the crash.",
+    "code_snippet": "spark.sparkContext.setCheckpointDir(\"/checkpoints/pagerank\")\n\nranks = graph.vertices.select(\"id\", F.lit(1.0).alias(\"rank\"))\n\nfor i in range(50):\n    ranks = compute_pagerank_step(ranks, graph.edges)\n    # No checkpoint or persist inside the loop",
+    "scenario_context": "Driver log — iteration 49 planning phase:\n  [INFO]  Analyzing logical plan...\n  Exception in thread \"main\" java.lang.StackOverflowError\n    at o.a.spark.sql.catalyst.trees.TreeNode.foreach(TreeNode.scala:187)\n    at o.a.spark.sql.catalyst.trees.TreeNode.foreach(TreeNode.scala:187)\n    at o.a.spark.sql.catalyst.trees.TreeNode.foreach(TreeNode.scala:187)\n    ... (repeated 1,042 times)\n    at o.a.spark.sql.catalyst.analysis.Analyzer$$anonfun$execute\n\nSpark UI: no stages launched before the crash\nExecutor memory at crash time: 12% of capacity",
+    "options": [
+      "The checkpoint directory is on a local filesystem path that executor nodes cannot reach; the StackOverflowError is a misleading Java exception masking a network timeout when Spark tries to write checkpoint metadata",
+      "Each loop iteration creates a new DataFrame whose logical plan references the previous ranks DataFrame via Spark's lazy evaluation. After 50 iterations ranks carries a 50-level deep nested plan DAG. Catalyst traverses this plan recursively during analysis; the recursive tree-walk overflows the JVM call stack before a single task is submitted. The fix is to call ranks.checkpoint() (or ranks.localCheckpoint()) every 5–10 iterations to materialise the DataFrame and truncate the lineage to a single node.",
+      "The StackOverflowError is caused by Python recursion inside compute_pagerank_step — Spark's py4j bridge serialises Python call frames into the JVM, and 50 nested Python frames exceed the JVM stack limit",
+      "spark.sql.optimizer.maxIterations controls plan tree depth; raising it from the default 100 to 500 allows Catalyst to analyse deeper plans without overflowing"
+    ],
+    "correct_option": 1,
+    "explanation": "Spark uses **lazy evaluation**: `compute_pagerank_step(ranks, ...)` does not execute immediately — it returns a new DataFrame whose logical plan contains the previous `ranks` plan as a child node. After 50 iterations, `ranks` has a 50-level deep DAG where each node references the prior iteration's plan. When Catalyst analyzes this plan, it traverses the tree **recursively** — the call stack depth equals the plan depth. At 50 iterations with several plan nodes per step, the recursion exceeds the JVM's default stack size (~512–1024 frames) and throws `StackOverflowError`. The fix: call `ranks = ranks.checkpoint()` every 5–10 iterations. `checkpoint()` materialises the DataFrame to disk and returns a new DataFrame with a **truncated, single-node plan** — breaking the lineage chain. `localCheckpoint()` is faster (in-memory only) but does not survive a driver failure. The crash occurs before any tasks launch because it happens during Catalyst analysis, before physical plan construction. Option A is wrong — filesystem access issues produce `IOException`, not `StackOverflowError`, and would fail at the checkpoint call, not during plan analysis. Option C is wrong — py4j uses message passing, not nested JVM call frames; Python recursion does not contribute to the JVM stack. Option D is wrong — `maxIterations` controls how many optimisation rule application passes Catalyst makes, not the depth of the plan tree itself.",
+    "hints": [
+      "No stages launched and the error is inside Catalyst's tree traversal — what is growing with each loop iteration that Catalyst then has to recurse through?",
+      "Lazy evaluation means each call to compute_pagerank_step extends the logical plan rather than executing it. After N iterations, how deep is that plan, and how does Catalyst traverse it?"
+    ],
+    "concepts": [
+      "lineage accumulation in iterative algorithms",
+      "Catalyst recursive plan traversal",
+      "checkpoint for lineage truncation",
+      "lazy evaluation DAG depth",
+      "StackOverflow from deep logical plans"
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
+  },
+  {
+    "id": 43043,
+    "order": 43,
+    "topic": "pyspark",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Streaming Windows Always Emitted One Full Trigger Cycle Late",
+    "description": "A Structured Streaming job aggregates clickstream events into 2-minute tumbling windows with a 5-minute watermark. The trigger fires every minute. The ops team observes that window results always appear one full trigger cycle later than expected — the 11:00–11:02 window never emits at 11:02, only at 11:03 or later.",
+    "code_snippet": "df_agg = (\n    streaming_df\n    .withWatermark(\"event_time\", \"5 minutes\")\n    .groupBy(F.window(\"event_time\", \"2 minutes\"))\n    .count()\n)\n\nquery = (\n    df_agg\n    .writeStream\n    .outputMode(\"append\")\n    .format(\"delta\")\n    .option(\"checkpointLocation\", \"/checkpoints/clicks\")\n    .trigger(processingTime=\"1 minute\")\n    .start()\n)",
+    "scenario_context": "Trigger log (condensed):\n  T1 11:01 — max event_time ingested = 11:02:45\n              Watermark after T1   = 11:02:45 - 5 min = 10:57:45\n              Window 11:00-11:02 end (11:02) > watermark (10:57:45) → NOT released\n              Output: 0 windows emitted\n\n  T2 11:02 — max event_time ingested = 11:06:10\n              Watermark after T2   = 11:06:10 - 5 min = 11:01:10\n              Window 11:00-11:02 end (11:02) > watermark (11:01:10) → NOT released\n              Output: 0 windows emitted\n\n  T3 11:03 — max event_time ingested = 11:08:30\n              Watermark after T3   = 11:08:30 - 5 min = 11:03:30\n              Window 11:00-11:02 end (11:02) < watermark (11:03:30) → RELEASED\n              Output: 1 window emitted (11:00-11:02, count = 847)",
+    "options": [
+      "The Delta sink introduces a 1-minute metadata commit delay; switching to Parquet format or lowering delta.checkpointInterval eliminates the lag",
+      "In Append output mode a window is emitted only after the watermark has advanced strictly past the window's end time. The watermark advances only when new events with higher event_times arrive — not on wall-clock time. For the 11:00–11:02 window to emit, incoming events must push the watermark past 11:02; that requires event_times above 11:07:00. Even with a 1-minute trigger, no window can be released until a later batch delivers those higher event_times.",
+      "processingTime triggers and event-time watermarks are incompatible; the trigger delay compounds the watermark delay multiplicatively and the two must not be used together",
+      "The 2-minute window is shorter than the 5-minute watermark delay, which violates a Structured Streaming invariant; windows must be at least as wide as the watermark to guarantee correct emission timing"
+    ],
+    "correct_option": 1,
+    "explanation": "In **Append output mode**, a window result is emitted only when the watermark has advanced **strictly past** the window's end time. The watermark = `max observed event_time − watermark delay`. Critically, **the watermark only advances when new events with higher timestamps arrive** — not on wall-clock time, and not because the trigger fires. From the log: after T1 (watermark 10:57:45) and T2 (watermark 11:01:10), the window 11:00–11:02 has end time 11:02, which still exceeds both watermarks — the window cannot emit. Only at T3 do incoming events with event_time=11:08:30 push the watermark to 11:03:30, which finally exceeds 11:02, releasing the window. The one-trigger latency is not a bug — it is the correct behaviour of the watermark + Append mode combination. The latency is determined by how quickly the incoming event stream delivers timestamps high enough to advance the watermark, not by the trigger interval. Option A is wrong — Delta's commit latency is milliseconds; a full trigger-cycle delay means the window genuinely was not ready to emit. Option C is wrong — processingTime triggers and event-time watermarks are fully compatible and are the standard production pattern. Option D is wrong — there is no constraint requiring window duration ≥ watermark delay; the two parameters are independent.",
+    "hints": [
+      "Watermark advancement depends entirely on observed event_time values in incoming batches. What event_time must arrive before the watermark can surpass the 11:02 window end?",
+      "Even if the trigger fires every minute, can the watermark advance without new high-timestamp events? What controls how far the watermark moves each batch?"
+    ],
+    "concepts": [
+      "watermark advancement requires new data",
+      "append mode window emission condition",
+      "watermark delay and window release timing",
+      "event-time latency vs trigger interval",
+      "structured streaming output timing"
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
+  },
+  {
+    "id": 43044,
+    "order": 44,
+    "topic": "pyspark",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Delta MERGE Fails on Large Batch After Consumer Offset Reset",
+    "description": "A CDC pipeline merges Kafka change events into a Delta table using `foreachBatch`. It ran successfully for weeks processing ~50,000 events per batch. After a Kafka consumer offset reset replayed messages, a 200,000-event batch triggers an `AnalysisException`. Same code, same table.",
+    "code_snippet": "def upsert_to_delta(batch_df, batch_id):\n    (\n        DeltaTable.forName(spark, \"users\")\n        .alias(\"t\")\n        .merge(batch_df.alias(\"s\"), \"t.user_id = s.user_id\")\n        .whenMatchedUpdate(set={\n            \"name\":       col(\"s.name\"),\n            \"updated_at\": col(\"s.updated_at\")\n        })\n        .whenNotMatchedInsert(values={\n            \"user_id\":    col(\"s.user_id\"),\n            \"name\":       col(\"s.name\"),\n            \"updated_at\": col(\"s.updated_at\")\n        })\n        .execute()\n    )\n\nstreaming_df.writeStream.foreachBatch(upsert_to_delta).start()",
+    "scenario_context": "Normal operation (50K events/batch):\n  MERGE completes in 3 min 10 s — no errors\n\nAfter consumer offset reset (200K events):\n  org.apache.spark.sql.AnalysisException:\n    MERGE statement detected multiple rows matching on the same target row,\n    and resulted in an ambiguous update or delete.\n    Please update your MERGE statement to limit the number of source rows\n    that match a given target row.\n    SQLSTATE: 21506\n\nMERGE execution log:\n  [INFO]  Source DataFrame: 200,147 rows\n  [WARN]  Duplicate user_ids in source: 18,943 user_ids appear 2–5 times each",
+    "options": [
+      "Delta MERGE has an undocumented row-count limit; batches above 100,000 rows must be split into smaller chunks using the batch_id parameter",
+      "The offset reset replayed messages, producing multiple change events for the same user_id within a single source batch. The SQL MERGE standard (enforced by Delta) requires each target row to match at most one source row in a whenMatchedUpdate; when multiple source rows match the same target user_id, the update is ambiguous and Delta raises AnalysisException SQLSTATE 21506. The fix: deduplicate batch_df by user_id before the MERGE, keeping only the latest event per user_id (e.g. via a window function ordered by updated_at desc).",
+      "The AnalysisException is a schema evolution conflict: replayed Kafka messages used an older Avro schema with extra fields, triggering Delta's schema enforcement and masking as an ambiguous-match error",
+      "The error is caused by Delta's transaction log growing too large during the offset reset; running VACUUM before the MERGE resolves the ambiguous-match check"
+    ],
+    "correct_option": 1,
+    "explanation": "The SQL MERGE standard requires that each target row match **at most one source row** in a matched UPDATE or DELETE clause — otherwise the result is ambiguous (which of the N matching source rows should determine the final state?). Delta Lake enforces this invariant and raises `AnalysisException SQLSTATE 21506` when it detects violations. During normal operation, Kafka delivered each user_id at most once per batch window, so no conflicts arose. After the consumer offset reset, messages were replayed: 18,943 user_ids appear 2–5 times in the 200K-row batch — one row per replayed message. Each of those user_ids now matches multiple source rows for the same target user_id row, triggering the error. The fix is to deduplicate `batch_df` before the MERGE: `batch_df.withColumn('rn', row_number().over(Window.partitionBy('user_id').orderBy(desc('updated_at')))).filter('rn == 1')` ensures each target row can match at most one source row. Option A is wrong — Delta MERGE has no row-count limit; the error is specifically about duplicate source keys, not batch size. Option C is wrong — schema mismatches produce a different exception (`AnalysisException: A schema mismatch detected`), not SQLSTATE 21506. Option D is wrong — VACUUM manages file retention; it has no effect on MERGE's per-row cardinality check.",
+    "hints": [
+      "The error says 'multiple rows matching the same target row'. What property of the source DataFrame causes this — and what does a consumer offset reset do to the messages in a batch?",
+      "MERGE requires a 1-to-1 or many-to-1 relationship from source to target (many source rows can miss, but at most one can match each target row). How do you enforce that?"
+    ],
+    "concepts": [
+      "Delta MERGE ambiguous match constraint",
+      "source deduplication before MERGE",
+      "Kafka consumer offset reset side effects",
+      "CDC batch idempotency",
+      "SQL MERGE cardinality invariant"
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
+  },
+  {
+    "id": 43045,
+    "order": 45,
+    "topic": "pyspark",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "MERGE Scans 798 of 800 Files After 30 Days of Good Pruning",
+    "description": "A team runs `OPTIMIZE ZORDER BY (event_type)` on a Delta table and sees excellent file pruning on day 1. By day 30, the nightly CDC MERGE is scanning nearly the entire table. The table size and MERGE workload are unchanged.",
+    "code_snippet": "# One-time optimisation after the table was built\nspark.sql(\"\"\"\n    OPTIMIZE user_events\n    ZORDER BY (event_type)\n\"\"\")\n\n# Nightly CDC MERGE — join key is user_id\n(\n    DeltaTable.forName(spark, \"user_events\")\n    .alias(\"t\")\n    .merge(\n        df_updates.alias(\"s\"),\n        \"t.user_id = s.user_id\"\n    )\n    .whenMatchedUpdate(set={\"payload\": col(\"s.payload\")})\n    .execute()\n)",
+    "scenario_context": "Day 1 (immediately after OPTIMIZE ZORDER BY event_type):\n  MERGE duration   : 2 min 18 s\n  Files scanned    : 120 / 800\n  Skipping log     : event_type min/max statistics eliminated 680 files\n\nDay 30 (no OPTIMIZE or VACUUM since day 1):\n  MERGE duration   : 54 min\n  Files scanned    : 798 / 800\n  Skipping log     : [WARN] No data skipping statistics available for column 'user_id'\n                     [INFO] event_type: 6 distinct values, strong Z-order clustering present",
+    "options": [
+      "Delta's Z-order index expires after approximately 30 days; the fix is to increase delta.dataSkippingNumIndexedCols so that statistics are retained for longer",
+      "ZORDER BY (event_type) clusters files so each file holds a narrow range of event_type values — giving strong pruning when filtering on event_type. But MERGE joins on user_id, so Delta checks per-file user_id min/max statistics to skip files. Because data was sorted by event_type, user_id values are scattered randomly across all files; each file spans nearly the full user_id range, making file skipping on user_id impossible. Additionally, 30 days of incremental MERGE writes added new files with no ZORDER at all, diluting the original clustering. The fix: re-run OPTIMIZE ... ZORDER BY (user_id) periodically so files are clustered on the actual MERGE predicate column.",
+      "The day-30 regression is caused by Delta's auto-compaction writing thousands of small files that overwhelm the transaction log reader; running VACUUM resolves the metadata bloat and restores data skipping",
+      "Z-ordering is only effective on columns with high cardinality; event_type has only 6 distinct values, which made the day-1 pruning coincidental; switching to PARTITION BY event_type gives deterministic, permanent pruning"
+    ],
+    "correct_option": 1,
+    "explanation": "Delta's data skipping evaluates **per-file min/max statistics** for each column to decide which files can be skipped for a given predicate. `OPTIMIZE ZORDER BY (event_type)` reorders data so that each file contains a narrow band of `event_type` values — files whose `event_type` range doesn't overlap the query filter are eliminated instantly. But the MERGE predicate is `t.user_id = s.user_id`. Delta must check `user_id` min/max per file to prune files that cannot contain matching user_ids. After Z-ordering on `event_type`, user_id values within each file reflect whatever user_ids happened to co-occur with each event_type cluster — there is no clustering on user_id, so each file's user_id min/max spans nearly the full domain. No file can be skipped based on user_id, and MERGE scans everything. The 30-day compounding effect: each nightly MERGE appends new Parquet files written in arbitrary row order with no ZORDER — these new files have full-range user_id statistics as well, growing the unsorted fraction of the table. Fix: run `OPTIMIZE ... ZORDER BY (user_id)` periodically to cluster data on the MERGE join key. Option A is wrong — Z-order statistics don't expire; the issue is that the wrong column was clustered. Option C is wrong — VACUUM removes old file versions (for time-travel rollback); it does not affect data skipping statistics on active files. Option D is wrong — Z-ordering is effective on low-cardinality columns (the space-filling curve applies regardless of cardinality); the day-1 pruning on event_type was genuine but served the wrong query pattern.",
+    "hints": [
+      "Delta skips files based on per-file min/max statistics for the column in the filter predicate. Which column does the MERGE predicate filter on — and which column was ZORDER applied to?",
+      "After sorting by event_type, what does the distribution of user_id values look like within each file? Can Delta use per-file user_id min/max to eliminate any files?"
+    ],
+    "concepts": [
+      "Z-order clustering column mismatch",
+      "Delta data skipping on MERGE predicate",
+      "per-file min/max statistics",
+      "incremental write clustering dilution",
+      "OPTIMIZE ZORDER for MERGE workloads"
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
+  },
+  {
+    "id": 43046,
+    "order": 46,
+    "topic": "pyspark",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "9× Slowdown After Halving Executor Memory Despite Identical Total RAM",
+    "description": "A cost-optimisation exercise doubles the executor count and halves each executor's memory, keeping total cluster RAM constant. The nightly pipeline goes from 18 minutes to nearly 3 hours. All configuration aside from executor count and memory is unchanged.",
+    "code_snippet": "# Pipeline code unchanged\ndf_result = (\n    df_events\n    .groupBy(\"user_id\", \"session_id\")\n    .agg(\n        F.sum(\"revenue\").alias(\"total_revenue\"),\n        F.count(\"*\").alias(\"event_count\")\n    )\n    .join(df_users,    on=\"user_id\",    how=\"inner\")\n    .join(df_sessions, on=\"session_id\", how=\"inner\")\n    .filter(col(\"total_revenue\") > 0)\n)\ndf_result.write.mode(\"overwrite\").parquet(\"/output/daily_revenue\")\n\n# spark.sql.shuffle.partitions = 200  (unchanged throughout)",
+    "scenario_context": "Before (40 executors × 8 GB, 2 cores each):\n  Pipeline duration       : 18 min\n  Stage 4 (SortMergeJoin) : 17 min 40 s\n  Stage 4 GC time         : 4%\n  Stage 4 shuffle spill   : 0 bytes\n\nAfter (80 executors × 4 GB, 2 cores each):\n  Pipeline duration       : 2 h 51 min\n  Stage 4 (SortMergeJoin) : 2 h 48 min\n  Stage 4 GC time         : 43%\n  Stage 4 shuffle spill   : 847 GB\n\nDefaults unchanged:\n  spark.memory.fraction        = 0.6\n  spark.memory.storageFraction = 0.5",
+    "options": [
+      "With 80 executors and 200 shuffle partitions, 120 executors are idle during Stage 4; the bottleneck is parallelism starvation — raising spark.sql.shuffle.partitions to 400 resolves the slowdown regardless of executor memory",
+      "Halving executor memory halves the execution memory budget available to each sort task. With 4 GB executors and 2 cores per executor, each active task's execution memory = 4 GB × 0.6 / 2 = 1.2 GB (vs 2.4 GB before). A sort-merge join must sort its shuffle partition in memory; when the data exceeds this budget, Spark spills to disk and performs external merge-sort — reading and writing sorted runs from disk, which is 50–100× slower than in-memory sort. The 847 GB spill confirms nearly every sort operation fell back to disk. Total cluster memory is the same, but per-task sort capacity is halved.",
+      "The GC increase from 4% to 43% is caused by running 80 JVM instances simultaneously — stop-the-world GC pauses are synchronised across all executors, and 80 concurrent full-GC events create a cluster-wide pause that the 40-executor cluster never experienced",
+      "spark.sql.shuffle.partitions=200 is too low for 80 executors; each executor receives only 2.5 partitions on average, creating uneven load distribution that forces most executors to spill while a few are overloaded"
+    ],
+    "correct_option": 1,
+    "explanation": "The intuition that 'same total memory = same performance' breaks once per-task execution memory falls below the threshold needed to hold a sort buffer in memory. Execution memory per task = `executor_memory × memory.fraction / concurrent_tasks_per_executor = 4 GB × 0.6 / 2 = 1.2 GB`. Before the change: `8 GB × 0.6 / 2 = 2.4 GB` per task — enough to sort each shuffle partition in memory. After: 1.2 GB per task. A sort-merge join reads one shuffle partition, sorts it in memory, and merges it against the other side. When the sort data exceeds execution memory, Spark spills excess sorted runs to disk and performs **external merge-sort** — writing multiple spill files and reading them back during the merge phase. 847 GB of spill means the vast majority of sort operations went to disk, which is 50–100× slower than in-memory sort. High GC time (43%) is a secondary symptom: repeated allocation and release of sort buffers during spill cycles creates garbage collection pressure. The fix: restore 8 GB executors, reduce `spark.executor.cores` to 1 (doubling per-task memory), or increase `spark.sql.shuffle.partitions` to make each partition smaller. Option A is wrong — 200 partitions across 80 executors means 2.5 partitions per executor on average, which is acceptable load distribution; idle executors are not why Stage 4 took 2h 48m. Option C is wrong — JVM GC is per-JVM and not synchronised across the cluster; 80 independent GC cycles do not produce worse total pause time than 40 cycles with the same aggregate heap. Option D conflates partition size with sort spill; raising shuffle.partitions does help if individual partitions are too large, but that is a consequence of executor memory being halved, not an independent cause.",
+    "hints": [
+      "Before and after have identical total RAM but different per-executor amounts. What changes for each individual sort task's memory budget when executor memory is halved?",
+      "847 GB of spill means data that previously sorted in memory no longer fits. Trace the execution memory formula: how much memory does each active sort task have with 4 GB executors vs 8 GB?"
+    ],
+    "concepts": [
+      "per-task execution memory budget",
+      "sort-merge join spill to disk",
+      "external merge-sort overhead",
+      "memory.fraction and concurrent tasks",
+      "total RAM vs per-task memory fallacy"
+    ],
+    "interaction_mode": "code_adjacent_reasoning"
   }
 ]
