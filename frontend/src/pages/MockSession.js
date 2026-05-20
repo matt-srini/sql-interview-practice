@@ -809,7 +809,8 @@ export default function MockSession() {
           </div>
 
           <div className="mock-session-rule">
-            Each question is one shot — run freely before you commit to an answer.
+            <span>Each question is one shot — run freely before you commit.</span>
+            <span>Use ← → at the top to move between questions.</span>
           </div>
 
           {q && (

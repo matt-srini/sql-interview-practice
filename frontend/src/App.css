@@ -7809,6 +7809,9 @@ select {
 
 /* ── One-shot rule note (below session context in left panel) ── */
 .mock-session-rule {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
   font-size: 0.74rem;
   line-height: 1.5;
   color: var(--text-secondary);
