@@ -545,7 +545,7 @@ Full-screen layout. Does not use `AppShell`. Has two states:
 - Timer: countdown from `time_limit_s`. Recomputed from `started_at` on reload. Auto-finishes when it hits zero.
 - Timer CSS states: neutral → `.mock-timer--warning` (<10min) → `.mock-timer--danger` (<3min, pulsing)
 - **Submit model (one-shot):** Each question allows exactly one real submission. The submit button is disabled once `submitted[q.id]` is true. Blank code (code tracks) or a missing MCQ selection also disables the button. After a wrong submit the button label switches to `✗ Submitted`. **No feedback is rendered from submit** — the button state is the only signal. Run results remain visible and unaffected by submit (Run never clears the submit lock).
-- **Post-submit navigation:** After any submit (correct or wrong), a `Next question →` button appears on non-last questions. On the last question after submitting, a `.mock-all-done` nudge paragraph appears ("All questions answered — end your session when ready.") instead.
+- **Post-submit navigation:** After any submit (correct or wrong), a `Next question →` button appears on non-last questions. On the last question after submitting, a `.mock-all-done` nudge paragraph appears instead — two variants: "All questions answered — end your session when ready." when every question has been submitted (`allSubmitted`), or "End your session when ready, or go back to answer remaining questions." when some earlier questions are still unanswered.
 - **Reload recovery:** `submitted{}` state is initialised from `submitted_at` per question in the `GET /api/mock/{id}` response, so the one-shot lock survives page reload.
 
 **Summary state (after finish):**
