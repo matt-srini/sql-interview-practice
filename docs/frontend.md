@@ -520,7 +520,7 @@ Standalone page using the shared `<Topbar active="mock" />`. Does not use `AppSh
 
 **Flow:** Select mode/track/difficulty → `POST /api/mock/start` → navigate to `/mock/:id` passing `sessionData` via router state.
 
-**Layout:** Benchmark/drill mode cards (3) → track-specific benchmark blueprint card when `mode='benchmark'` or dedicated drill planner card when `mode!='benchmark'` → config pills (track + difficulty) → Start button → benchmark analytics panel → split recent benchmark/drill history tables with first-run and partial-history benchmark/drill guidance.
+**Layout:** Two-column desktop lobby (`1fr 292px` CSS grid, 1060px max-width). Left column: hero → mode cards (3) → track-specific benchmark blueprint or dedicated drill planner → config pills (track + difficulty). Right rail (sticky at top 72px): session brief card showing active mode badge, track, difficulty, question count, time limit, access state, and the anchored start button. Below the lobby: Elite analytics panel → split recent benchmark/drill history tables with first-run and partial-history benchmark/drill guidance. Collapses to single-column below 900px.
 
 - MockHub hero now frames `/mock` explicitly as a benchmarks-and-drills surface instead of a generic mock page, which is the first visible Phase 5 drill split cue.
 - The Data Engineer role filter now includes Data Modeling, matching the canonical role mapping used elsewhere in the product.
@@ -548,10 +548,10 @@ Full-screen layout. Does not use `AppShell`. Has two states:
 - Summary topbar and intro card now distinguish `Benchmark summary` vs `Drill summary`, show the human-readable mode label, and restate the session shape before the score block.
 - Score card: `X/Y correct, Z% above/below your session average` (comparison against `GET /api/dashboard/insights` track accuracy baseline), plus time used
 - Per-concept session accuracy row (`correct/attempts`) built from concepts touched in this mock
-- Benchmark summaries now keep review-oriented footer actions (`Review benchmarks`) and can hand users back to MockHub with a prefilled follow-up drill recommendation.
-- Drill summaries now push targeted follow-up more explicitly: Pro/Elite users get a footer `Drill weak concepts` CTA to `/practice/{track}?concepts={slug1,slug2}`, while other drill cases route back to `/mock` with a recommended short drill preset.
+- Benchmark summaries show footer actions: `Share result` + `Back to Mock` + `Plan follow-up drill` (primary).
+- Drill summaries push targeted follow-up: Pro/Elite users get `Drill weak concepts →` to `/practice/{track}?concepts={slug1,slug2}`; other cases get a prefilled short drill preset CTA plus `Back to drill lobby`.
 - Per-question rows: title · solved badge · time spent · collapsible solution
-- Share CTA → `navigator.clipboard.writeText(...)`, now prefixed with the human-readable mode label
+- Share CTA: uses `navigator.share({ text })` when available (mobile OS share sheet); falls back to `navigator.clipboard.writeText`. Share text format: `{Track} {benchmark/drill} · {Difficulty} · {N}/{total} ({pct}%)` + baseline delta line (Pro/Elite) + top 2 weak concept gaps + `datathink.co`.
 - MockHub accepts summary-driven `location.state.mockPreset` recommendations and surfaces them as a `Recommended next step` banner plus prefilled drill planner state.
 
 **Reload recovery:** On mount, if no `location.state.sessionData`, fetches `GET /api/mock/:id`. Computes `remainingS = time_limit_s - elapsed_since_started_at`.

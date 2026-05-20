@@ -187,7 +187,7 @@ sql-interview-practice/
 │   │       ├── LearningPath.js         # Curated path page at /learn/:topic/:slug (breadcrumb, progress, completion banner)
 │   │       ├── LearningPathsIndex.js   # Index of all paths at /learn and /learn/:topic (grouped + in-progress rail)
 │   │       ├── ProgressDashboard.js    # Cross-track progress + coaching insights at /dashboard
-│   │       ├── MockHub.js              # Mock interview lobby at /mock (benchmark/drill selection, benchmark blueprint + drill planner framing, separated analytics/history, first-run benchmark-vs-drill guidance)
+│   │       ├── MockHub.js              # Mock interview lobby at /mock — two-column desktop lobby (left: hero + mode cards + benchmark blueprint / drill planner + config; right rail: sticky session brief + start CTA); analytics and history below; collapses to single-column on mobile
 │   │       ├── MockSession.js          # Active mock session + post-mortem insights at /mock/:id with benchmark/drill-aware session framing and follow-up CTAs
 │   │       ├── SampleQuestionPage.js   # Topic-aware sample page with per-question draft autosave
 │   │       ├── AuthPage.js
@@ -213,7 +213,7 @@ sql-interview-practice/
 /auth/reset-password           → ResetPasswordPage (consume reset token, set new password)
 /auth/verify-email             → VerifyEmailPage (consume email verification token)
 /dashboard                     → ProgressDashboard (cross-track progress)
-/mock                          → MockHub (mode/track/difficulty selector + benchmark/drill onboarding + history)  [AuthRequired]
+/mock                          → MockHub (two-column desktop lobby: left config + right sticky session brief; benchmark/drill selection, session brief rail, analytics, history)  [AuthRequired]
 /mock/:id                      → MockSession (active session + inline summary)        [AuthRequired]
 /learn                         → LearningPathsIndex (all paths, grouped by track, topic pills)
 /learn/:topic                  → LearningPathsIndex (filtered to one track)

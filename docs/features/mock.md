@@ -149,8 +149,8 @@ Shown after `POST /api/mock/:id/finish`:
   - Historical context: if a session concept matches a known weak area in the user's submission history (≥3 past attempts, <60% accuracy), the pattern observation uses stronger "known weakness" language.
   - Returned as `debrief` in the `POST /api/mock/:id/finish` response. `null` for non-Elite plans.
 - **(Elite) "Known weakness" badge** — when a session concept matches one of the user's cross-session `weakest_concepts` from the dashboard insights, the concept row is highlighted in amber and tagged "known weakness". Elite users also see a path recommendation link ("Study in {title} →") when `recommended_path_slug` is present; Pro users see a generic drill link.
-- **Share result** — copies a summary string to clipboard.
-- **Mode-aware footer actions** — benchmark summaries now emphasize review (`Review benchmarks`) and offer a `Plan follow-up drill` handoff back into MockHub; drill summaries emphasize targeted follow-up (`Drill weak concepts →` when available, otherwise a prefilled short-drill recommendation) plus a secondary return to the drill lobby.
+- **Share result** — uses `navigator.share({ text })` when available (mobile OS share sheet) with clipboard fallback. Share text includes: `{Track} {benchmark/drill} · {Difficulty} · {N}/{total} ({pct}%)`, a baseline delta line for Pro/Elite (`X% above/below my avg accuracy`), the top 2 weak concept gaps from the session (all tiers), and `datathink.co`.
+- **Mode-aware footer actions** — benchmark summaries show `Share result` + `Back to Mock` + `Plan follow-up drill` (primary); drill summaries show `Drill weak concepts →` (Pro/Elite when weak concepts exist) or `Continue targeted drill` (prefilled short-drill preset), plus `Back to drill lobby`.
 - **Summary-to-hub handoff** — clicking the follow-up drill action sends `location.state.mockPreset` into MockHub, which displays a `Recommended next step` banner and pre-fills the drill planner with track, difficulty, and short-session defaults.
 
 ---
