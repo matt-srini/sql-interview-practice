@@ -540,7 +540,7 @@ Full-screen layout. Does not use `AppShell`. Has two states:
 **Active state:**
 - Custom topbar: `[◀ Exit] [Q1• Q2○ Q3○] [MM:SS timer] [End session]`
 - Left panel now opens with a session-context card that makes the current mode explicit: benchmark sessions show a fixed-shape benchmark badge, shape summary, and track-specific benchmark framing; drills show flexible drill framing instead.
-- Below the session-context card: a `.mock-session-rule` sidebar callout (left-bordered, muted background) with two concise lines: "Each question is one shot — run freely before you commit." and "Use ← → at the top to move between questions."
+- Below the session-context card: a `.mock-session-rule` sidebar callout (left-bordered, muted background) with two concise lines. The first line is track-aware: code tracks (`!meta.hasMCQ` — SQL, Python, Pandas) show "Each question is one shot — run freely before you commit."; MCQ/mixed tracks show "Each question is one shot — select carefully before you commit." The second line is always "Use ← → at the top to move between questions."
 - Body: 280px left panel (question description/schema + concepts) | flex-grow right panel (editor + run/submit)
 - Timer: countdown from `time_limit_s`. Recomputed from `started_at` on reload. Auto-finishes when it hits zero.
 - Timer CSS states: neutral → `.mock-timer--warning` (<10min) → `.mock-timer--danger` (<3min, pulsing)

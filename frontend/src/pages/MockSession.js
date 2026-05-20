@@ -809,7 +809,11 @@ export default function MockSession() {
           </div>
 
           <div className="mock-session-rule">
-            <span>Each question is one shot — run freely before you commit.</span>
+            <span>
+              {meta && !meta.hasMCQ
+                ? 'Each question is one shot — run freely before you commit.'
+                : 'Each question is one shot — select carefully before you commit.'}
+            </span>
             <span>Use ← → at the top to move between questions.</span>
           </div>
 
