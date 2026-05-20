@@ -187,7 +187,7 @@ sql-interview-practice/
 │   │       ├── LearningPath.js         # Curated path page at /learn/:topic/:slug (breadcrumb, progress, completion banner)
 │   │       ├── LearningPathsIndex.js   # Index of all paths at /learn and /learn/:topic (grouped + in-progress rail)
 │   │       ├── ProgressDashboard.js    # Cross-track progress + coaching insights at /dashboard
-│   │       ├── MockHub.js              # Mock interview lobby at /mock (benchmark/drill selection, benchmark blueprint + drill planner framing, separated analytics/history)
+│   │       ├── MockHub.js              # Mock interview lobby at /mock (benchmark/drill selection, benchmark blueprint + drill planner framing, separated analytics/history, first-run benchmark-vs-drill guidance)
 │   │       ├── MockSession.js          # Active mock session + post-mortem insights at /mock/:id with benchmark/drill-aware session framing and follow-up CTAs
 │   │       ├── SampleQuestionPage.js   # Topic-aware sample page with per-question draft autosave
 │   │       ├── AuthPage.js
@@ -213,7 +213,7 @@ sql-interview-practice/
 /auth/reset-password           → ResetPasswordPage (consume reset token, set new password)
 /auth/verify-email             → VerifyEmailPage (consume email verification token)
 /dashboard                     → ProgressDashboard (cross-track progress)
-/mock                          → MockHub (mode/track/difficulty selector + history)  [AuthRequired]
+/mock                          → MockHub (mode/track/difficulty selector + benchmark/drill onboarding + history)  [AuthRequired]
 /mock/:id                      → MockSession (active session + inline summary)        [AuthRequired]
 /learn                         → LearningPathsIndex (all paths, grouped by track, topic pills)
 /learn/:topic                  → LearningPathsIndex (filtered to one track)

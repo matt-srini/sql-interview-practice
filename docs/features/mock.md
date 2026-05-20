@@ -159,6 +159,8 @@ Shown after `POST /api/mock/:id/finish`:
 
 - Shows the last 20 sessions split into benchmark and drill sections so fixed-shape benchmarks are not visually blended with flexible drills.
 - Mode labels are normalized in the UI so users see `Benchmark`, `Sprint drill`, `Custom drill`, or `Full (legacy)` instead of raw stored mode keys.
+- First-run users now see explicit benchmark-versus-drill framing instead of a single generic empty state, so the lobby teaches when to benchmark and when to drill before any history exists.
+- Partial-history states are also explicit: benchmark-only users see `No drill sessions yet` guidance, while drill-only users see `No benchmark sessions yet` guidance.
 - **Review →** for completed sessions, **Resume →** for in-progress ones.
 - Empty state links to practice tracks and the dashboard.
 
@@ -208,3 +210,5 @@ See `backend/tests/test_11_mock.py` for the focused mock backend suite covering:
 - Solution visibility (absent during session, present after finish)
 
 There is no standalone `test_session_debrief.py` file in the current repository. Debrief behavior is validated indirectly through the mock and insights suites plus manual product review.
+
+Frontend e2e also covers repeatable mock plan-tier flows in `frontend/e2e/mock-plan-flows.spec.js`, including free/pro/elite setup surfaces, right/wrong PySpark submissions, drill summary actions, elite benchmark debrief visibility, and the `Plan follow-up drill` handoff back into MockHub.

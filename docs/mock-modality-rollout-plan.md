@@ -24,7 +24,8 @@ Current state:
 - Phase 2 is complete: reasoning-track payloads now expose stable `interaction_mode` metadata across Data Engineering, Data Modeling, ML Fundamentals, Experimentation, and Statistics; frontend prompt copy keeps modality family separate from question type; ML Fundamentals and Experimentation hook audits are complete with recorded gaps
 - Phase 3 is complete: reasoning-track catalog rows expose additive `type` metadata; practice surfaces show question-form badges in SidebarNav and QuestionPage chrome; SidebarNav supports question-form filtering for mixed-form catalogs; QuestionPage adds prompt-guidance and evidence-layout chrome for reasoning prompts; TrackHub previews mixed question forms in the header
 - Phase 4 is in progress: mock backend now accepts a real `benchmark` mode with track-specific fixed shapes; Statistics benchmark enforces a `1 numerical + 2 conceptual` mix; reasoning-track benchmarks now use track-specific type targets instead of PySpark's global sampler; MockHub now defaults to benchmark, reframes short/custom sessions as drills, treats Mixed as drill-only, and separates benchmark analytics/history from drills; MockSession active and summary chrome now carry benchmark-vs-drill framing so the session experience matches the new setup model
-- Phase 5 has started with the first drill-split UX slices: MockHub now introduces `/mock` as a benchmarks-and-drills surface instead of a generic mock page, the role-filter track mapping is aligned with the canonical Data Engineer track set (`data-modeling` included), drill modes now render a dedicated planner card with inline custom controls instead of relying on mode cards alone, and MockSession summaries now split benchmark-review CTAs from drill-follow-up CTAs via a prefilled handoff back into MockHub
+- Phase 5 has started with the first drill-split UX slices: MockHub now introduces `/mock` as a benchmarks-and-drills surface instead of a generic mock page, the role-filter track mapping is aligned with the canonical Data Engineer track set (`data-modeling` included), drill modes now render a dedicated planner card with inline custom controls instead of relying on mode cards alone, first-run and partial-history states now explain benchmark-versus-drill jobs explicitly, and MockSession summaries now split benchmark-review CTAs from drill-follow-up CTAs via a prefilled handoff back into MockHub
+- repeatable frontend QA now covers free/pro/elite mock flows through Playwright, including plan-specific `/mock` surfaces, right/wrong submissions, elite debrief visibility, and the summary-to-hub drill handoff
 
 ## Objective
 
@@ -415,6 +416,57 @@ Exit criteria:
 
 - user can distinguish benchmark from drill instantly
 - analytics remain clean
+
+### Phase 5A: MockHub Premium Lobby Layout Plan
+
+This is a MockHub-specific layout upgrade, not a product-wide visual rewrite.
+
+Assessment:
+
+- the current MockHub is structurally improved, but it still reads more like a setup form than a premium interview lobby because setup controls, planner copy, analytics, and history still compete at roughly the same visual weight
+- the core issue is hierarchy and composition, not the existing theme tokens; the page is too narrow and too vertically stacked for the importance of the mock surface
+- Practice should remain the only full workspace surface in the product; its wide shell is appropriate because users are actively working there
+- Dashboard should remain report-like and centered rather than being widened to match MockHub
+- Account should remain narrow and transactional rather than being promoted into a high-density product workspace
+
+Preserve:
+
+- shared Topbar and overall page framing so Mock still feels like the same product as Practice, Dashboard, and Account
+- Practice as the full-width, full-attention working surface
+- Dashboard as a structured coaching/report page
+- Account as a compact control-center page
+- the benchmark-vs-drill product model already landed in Phases 4 and 5
+
+Do not do:
+
+- do not turn MockHub into another AppShell-style workspace
+- do not widen Dashboard or Account just to create superficial cross-page consistency
+- do not chase “premium” through decorative effects alone; stronger hierarchy matters more than extra gloss
+- do not replace every simple pill control with a bespoke visual component unless it improves clarity or state communication
+
+Planned layout outcomes:
+
+- MockHub becomes a two-column desktop lobby with a wider max width than today
+- the left side owns configuration and session-type selection
+- the right rail becomes a sticky session brief with the active mode, track, difficulty, timing, question count, access state, and the anchored start action
+- benchmark becomes the primary hero path rather than one visually peer-level card among three
+- drills remain clearly secondary, but still intentional and premium rather than “fallback” options
+- lower-page analytics and history shift from utility tables toward a more artifact-like session dashboard
+
+Recommended implementation order:
+
+1. Layout-only widening and two-column lobby composition
+2. Benchmark hero redesign that folds the blueprint into the featured benchmark surface
+3. Richer track and difficulty controls with clearer access-state communication
+4. History and analytics redesign into stronger benchmark-vs-drill artifacts
+5. Elite feature previews that feel aspirational instead of purely disabled or teaser text
+6. Responsive regression pass to ensure mobile remains calm and readable
+
+Phase 5A scope guard:
+
+- this layout plan belongs to MockHub only
+- MockSession can inherit follow-up language and action cues from MockHub, but not the full layout treatment
+- no backend contract changes are required for the layout work itself unless a later artifact surface reveals a genuine missing field
 
 ## Phase 6: Analytics, Debrief, And Entitlement Cleanup
 

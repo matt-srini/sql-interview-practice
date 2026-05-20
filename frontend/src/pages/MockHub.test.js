@@ -1,11 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 
-const { mockApiGet, mockUseAuth } = vi.hoisted(() => ({
+const { mockApiGet, mockUseAuth, mockState } = vi.hoisted(() => ({
   mockApiGet: vi.fn(),
   mockUseAuth: vi.fn(),
+  mockState: {
+    history: [],
+  },
 }));
 
 vi.mock('../api', () => ({
@@ -47,9 +50,10 @@ beforeEach(() => {
   mockUseAuth.mockReturnValue({
     user: { id: 'u1', plan: 'elite', email: 'test@datathink.co', name: 'Tester' },
   });
+  mockState.history = [];
 
   mockApiGet.mockImplementation((path) => {
-    if (path === '/mock/history') return Promise.resolve({ data: [] });
+    if (path === '/mock/history') return Promise.resolve({ data: mockState.history });
     if (path === '/mock/analytics') {
       return Promise.resolve({
         data: {
@@ -78,6 +82,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  cleanup();
   vi.clearAllMocks();
   localStorage.clear();
 });
@@ -104,6 +109,66 @@ describe('MockHub preset intake', () => {
       expect(screen.getByRole('button', { name: 'Python' }).className).toMatch(/active/);
       expect(screen.getByDisplayValue('3')).toBeInTheDocument();
       expect(screen.getByDisplayValue('45')).toBeInTheDocument();
+    });
+  });
+});
+
+describe('MockHub history framing', () => {
+  it('shows benchmark-versus-drill onboarding when there is no history yet', async () => {
+    renderHub();
+
+    await waitFor(() => {
+      expect(screen.getByText('Start with a benchmark, then drill the misses')).toBeInTheDocument();
+      expect(screen.getByText('Use benchmarks for comparability')).toBeInTheDocument();
+      expect(screen.getByText('Use drills for follow-up reps')).toBeInTheDocument();
+    });
+  });
+
+  it('shows benchmark empty framing when only drill history exists', async () => {
+    mockState.history = [
+      {
+        session_id: 'drill-1',
+        mode: '30min',
+        track: 'sql',
+        difficulty: 'easy',
+        solved_count: 1,
+        total_count: 2,
+        time_limit_s: 1800,
+        status: 'completed',
+        started_at: '2026-05-20T00:00:00Z',
+      },
+    ];
+
+    renderHub();
+
+    await waitFor(() => {
+      expect(screen.getByText('Recent drill sessions')).toBeInTheDocument();
+      expect(screen.getByText('No benchmark sessions yet')).toBeInTheDocument();
+      expect(screen.queryByText('Start with a benchmark, then drill the misses')).not.toBeInTheDocument();
+    });
+  });
+
+  it('shows drill empty framing when only benchmark history exists', async () => {
+    mockState.history = [
+      {
+        session_id: 'benchmark-1',
+        mode: 'benchmark',
+        track: 'sql',
+        difficulty: 'easy',
+        solved_count: 2,
+        total_count: 3,
+        time_limit_s: 3600,
+        status: 'completed',
+        started_at: '2026-05-20T00:00:00Z',
+      },
+    ];
+
+    renderHub();
+
+    await waitFor(() => {
+      expect(screen.getByText('Recent benchmark sessions')).toBeInTheDocument();
+      expect(screen.getByText('No drill sessions yet')).toBeInTheDocument();
+      expect(screen.queryByText('Start with a benchmark, then drill the misses')).not.toBeInTheDocument();
     });
   });
 });

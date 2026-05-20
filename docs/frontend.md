@@ -520,7 +520,7 @@ Standalone page using the shared `<Topbar active="mock" />`. Does not use `AppSh
 
 **Flow:** Select mode/track/difficulty → `POST /api/mock/start` → navigate to `/mock/:id` passing `sessionData` via router state.
 
-**Layout:** Benchmark/drill mode cards (3) → track-specific benchmark blueprint card when `mode='benchmark'` or dedicated drill planner card when `mode!='benchmark'` → config pills (track + difficulty) → Start button → benchmark analytics panel → split recent benchmark/drill history tables.
+**Layout:** Benchmark/drill mode cards (3) → track-specific benchmark blueprint card when `mode='benchmark'` or dedicated drill planner card when `mode!='benchmark'` → config pills (track + difficulty) → Start button → benchmark analytics panel → split recent benchmark/drill history tables with first-run and partial-history benchmark/drill guidance.
 
 - MockHub hero now frames `/mock` explicitly as a benchmarks-and-drills surface instead of a generic mock page, which is the first visible Phase 5 drill split cue.
 - The Data Engineer role filter now includes Data Modeling, matching the canonical role mapping used elsewhere in the product.
@@ -530,8 +530,8 @@ Standalone page using the shared `<Topbar active="mock" />`. Does not use `AppSh
 - Mixed track is drill-only; when users switch to Mixed, MockHub automatically exits benchmark mode and explains why.
 - Elite analytics now use `benchmark_summary` as the comparable primary view and surface drill performance in a smaller secondary card.
 - History rows format stored mode values into human labels (`Benchmark`, `Sprint drill`, `Custom drill`, `Full (legacy)`) so older sessions stay legible without preserving the old setup framing, and the tables are split into `Recent benchmark sessions` and `Recent drill sessions`.
-
-When no history exists, shows a richer empty state with warm-up and dashboard CTAs.
+- When no history exists, MockHub now teaches the benchmark-then-drill workflow explicitly instead of collapsing to a single generic empty state.
+- When only one side of history exists, MockHub now renders targeted guidance (`No benchmark sessions yet` or `No drill sessions yet`) so users understand what the missing session type is for.
 
 ### MockSession (`pages/MockSession.js`)
 
@@ -573,6 +573,7 @@ Full-screen layout. Does not use `AppShell`. Has two states:
 | SidebarNav unit | `src/components/SidebarNav.test.js` | Collapse/expand difficulty groups, locked vs unlocked question rendering, navigation |
 | ProgressDashboard unit | `src/pages/ProgressDashboard.test.js` | Legacy regression coverage for the original 4-track dashboard slice, plus X/Y count rendering, loading/error states, and guard against the older plain-int API shape |
 | Plan-tier e2e | `e2e/plan-tiers.spec.js` | Dashboard counts, sidebar lock state, TrackHub plan banner, mock difficulty gating — verified against live dev servers for elite/pro/free plans |
+| Mock plan-tier e2e | `e2e/mock-plan-flows.spec.js` | Repeatable free/pro/elite MockHub + MockSession checks: plan-specific `/mock` surfaces, right/wrong PySpark submissions, drill summary CTA behavior, elite benchmark debrief, and summary-to-hub drill handoff |
 
 **Tooling:**
 - Unit tests: Vitest + React Testing Library + jsdom (`npm test`)

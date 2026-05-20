@@ -166,6 +166,9 @@ export default function MockHub() {
   const benchmarkAnalytics = analytics?.benchmark_summary ?? null;
   const drillAnalytics = analytics?.drill_summary ?? null;
   const expectationLines = getSessionExpectations(track, difficulty, effectiveQuestionCount);
+  const showFirstRunFraming = !historyLoading && history.length === 0;
+  const showBenchmarkEmptyFraming = !historyLoading && history.length > 0 && benchmarkHistory.length === 0;
+  const showDrillEmptyFraming = !historyLoading && history.length > 0 && drillHistory.length === 0;
 
   useEffect(() => {
     if (track === 'mixed' && mode === 'benchmark') {
@@ -875,9 +878,50 @@ export default function MockHub() {
           </section>
         )}
 
-        {!historyLoading && history.length === 0 && (
-          <section className="mock-hub-section mock-hub-empty-state">
-            <p className="mock-hub-empty">No mock sessions yet. Start your first interview simulation now.</p>
+        {showBenchmarkEmptyFraming && (
+          <section className="mock-hub-section mock-hub-history-empty mock-hub-history-empty--benchmark">
+            <div className="mock-hub-history-empty-kicker">Benchmark history</div>
+            <h2 className="mock-hub-history-title">No benchmark sessions yet</h2>
+            <p className="mock-hub-history-empty-copy">
+              Use one fixed-shape benchmark when you want a clean calibration point for this track. It gives you a comparable score baseline before you start tuning with drills.
+            </p>
+          </section>
+        )}
+
+        {showDrillEmptyFraming && (
+          <section className="mock-hub-section mock-hub-history-empty mock-hub-history-empty--drill">
+            <div className="mock-hub-history-empty-kicker">Drill history</div>
+            <h2 className="mock-hub-history-title">No drill sessions yet</h2>
+            <p className="mock-hub-history-empty-copy">
+              Use sprint or custom drills after a benchmark when you want extra reps on one weak area without muddying your benchmark baseline.
+            </p>
+          </section>
+        )}
+
+        {showFirstRunFraming && (
+          <section className="mock-hub-section mock-hub-empty-state mock-hub-empty-state--first-run">
+            <div className="mock-hub-empty-header">
+              <h2 className="mock-hub-history-title">Start with a benchmark, then drill the misses</h2>
+              <p className="mock-hub-empty-copy">
+                Benchmarks are for clean calibration. Drills are for warm-ups and targeted follow-up once you know where the session broke down.
+              </p>
+            </div>
+            <div className="mock-hub-empty-grid">
+              <div className="mock-hub-empty-card mock-hub-empty-card--benchmark">
+                <div className="mock-hub-empty-card-kicker">Benchmark first</div>
+                <h3 className="mock-hub-empty-card-title">Use benchmarks for comparability</h3>
+                <p className="mock-hub-empty-card-copy">
+                  Fixed-shape sessions give you the cleanest signal on pace and accuracy. Start here when you want a serious read on interview readiness.
+                </p>
+              </div>
+              <div className="mock-hub-empty-card mock-hub-empty-card--drill">
+                <div className="mock-hub-empty-card-kicker">Then drill</div>
+                <h3 className="mock-hub-empty-card-title">Use drills for follow-up reps</h3>
+                <p className="mock-hub-empty-card-copy">
+                  Sprint and custom drills are better for rehearsing one weakness, warming up, or pressure-testing a specific concept after a benchmark.
+                </p>
+              </div>
+            </div>
             <div className="mock-hub-empty-actions">
               <Link to="/practice/sql" className="btn btn-secondary btn-compact">Warm up in SQL</Link>
               <Link to="/dashboard" className="btn btn-secondary btn-compact">View progress dashboard</Link>
