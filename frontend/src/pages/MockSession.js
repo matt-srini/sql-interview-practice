@@ -1124,8 +1124,12 @@ export default function MockSession() {
               Next question →
             </button>
           )}
-          {allSubmitted && activeQ === questions.length - 1 && (
-            <p className="mock-all-done">All questions answered — end your session when ready.</p>
+          {submitted[q?.id] && activeQ === questions.length - 1 && (
+            <p className="mock-all-done">
+              {allSubmitted
+                ? 'All questions answered — end your session when ready.'
+                : 'End your session when ready, or go back to answer remaining questions.'}
+            </p>
           )}
         </div>
       </div>

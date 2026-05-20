@@ -195,9 +195,9 @@ describe('MockSession submit lock', () => {
     });
   });
 
-  it('does NOT show "All questions answered" nudge when only the last question is submitted', async () => {
-    // Regression: nudge must not appear just because the user submitted the
-    // last-position question — ALL questions must be submitted.
+  it('shows "end session or go back" nudge when only the last question is submitted', async () => {
+    // Regression: "All questions answered" must NOT appear — but the user
+    // should still see an actionable nudge on the last question.
     renderSession(makeSessionData(2));
 
     // Navigate to Q2 (last question) without submitting Q1
@@ -208,6 +208,7 @@ describe('MockSession submit lock', () => {
 
     await waitFor(() => {
       expect(screen.queryByText('All questions answered — end your session when ready.')).not.toBeInTheDocument();
+      expect(screen.getByText('End your session when ready, or go back to answer remaining questions.')).toBeInTheDocument();
     });
   });
 
