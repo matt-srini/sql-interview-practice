@@ -715,99 +715,206 @@ Phase-6 implementation rule:
 
 ## Phase 7: Content Quality Backfill
 
-Goal: improve weak reasoning questions that are currently too option-led or too thin.
+Goal: make reasoning-track questions earn the "reasoning" label by content depth, not just UI framing.
 
 This is a deliberate editorial phase, not a side effect of metadata work.
 
-Product outcomes:
+### Terminology note
+
+All questions in reasoning tracks use multiple-choice as the response mechanism. The question `type` field distinguishes *format*, not mechanism:
+
+| Type | Meaning |
+|---|---|
+| `mcq` | Conceptual or scenario question answered by picking the best option — no code to trace |
+| `predict_output` | Given a code snippet, predict what it returns or what error fires |
+| `debug` | Given broken code or an error message, identify the root cause and fix |
+| `scenario` | Production diagnosis: given logs, metrics, or job configuration, identify root cause or best remediation |
+| `optimization` | Given a job or pipeline description, choose the best performance or design strategy |
+
+`predict_output`, `debug`, `scenario`, and `optimization` are **code-adjacent formats** — they require mental execution tracing and are the core of what makes PySpark a code-adjacent reasoning track. All five types use multiple choice as the answer mechanism; the distinction is the cognitive demand of the question itself.
+
+The term "MCQ" refers only to the response format (multiple choice). It says nothing about whether a question tests recall or reasoning. All reasoning-track questions, regardless of type, should test analysis, tradeoffs, and interpretation — never definition recall.
+
+### Product outcomes
 
 - reasoning tracks feel premium because the questions themselves demand diagnosis, interpretation, prioritization, and tradeoff thinking — not just because the UI labels changed
-- weak reasoning questions are rewritten selectively where the current prompt shape is too shallow, too option-led, or too generic for the intended modality
-- benchmark pools have enough high-quality coverage per track that fixed-shape mocks do not rely on thin or repetitive question shapes
+- PySpark hard tier shifts from predominantly conceptual toward the ~48% conceptual / ~52% code-adjacent target in `docs/content-authoring.md`
+- Data Engineering gains its first debug questions so the benchmark type template can deliver on its stated format distribution
+- Data Engineering and Data Modeling gain viable mock-only pools so benchmarks can serve fresh, unseen questions to users who have completed the practice track
 - targeted net-new questions are added only where concept-hook coverage or benchmark blueprint coverage is still materially weak after rewrites
 
-Editorial selection rules:
+### Known structural gaps to resolve first
+
+These are concrete, pre-diagnosed issues — not editorial judgment calls. Resolve them before doing any open-ended quality pass.
+
+**Gap A — PySpark hard tier format imbalance**
+
+Current state (practice questions only):
+
+| Difficulty | Conceptual | Code-adjacent | % code-adjacent | Spec target |
+|---|---|---|---|---|
+| easy | 23 | 18 | 44% | ~52% |
+| medium | 25 | 14 | 36% | ~52% |
+| hard | 20 | 6 | 23% | ~52% |
+
+Hard tier is the priority: 20 conceptual vs 6 code-adjacent (77% conceptual). The hard tier should be testing multi-factor production trade-offs — AQE internals, DPP, skew join/salting, watermark behavior, speculative execution — via `predict_output` and `scenario` formats that require actual mental tracing, not conceptual recall. Add 8–10 hard code-adjacent questions to bring the hard tier closer to the spec target.
+
+**Gap B — Data Engineering has 0 debug questions; benchmark template expects one**
+
+`_benchmark_type_targets` for `data-engineering` = `["scenario", "mcq", "debug", "scenario", "scenario", "mcq"]`. DE has zero debug questions in any difficulty file. `_sample_by_format` silently falls back when the debug slot is unfillable, so no error fires — but the benchmark is silently delivering a different type distribution than the spec intends. Add 3–5 debug questions covering realistic DE failure modes: schema compatibility violations, idempotency bugs in backfill jobs, late-data watermark misconfiguration, CDC replication lag issues.
+
+**Gap C — Data Engineering and Data Modeling have 1 mock-only question each**
+
+DE: 1 mock-only (hard scenario). DM: 1 mock-only (hard scenario). Their benchmarks draw almost entirely from practice questions users have already seen. A benchmark that serves previously-seen content is not a valid benchmark. Add 12–15 mock-only questions per track at medium and hard so the fresh-first sampler has a real pool to draw from.
+
+Target mock-only pool minimums after Phase 7:
+
+| Track | Current mock-only (med+hard) | Phase 7 target |
+|---|---|---|
+| Data Engineering | 1 | 13–15 |
+| Data Modeling | 1 | 12–14 |
+| PySpark | 21 | no change needed |
+| ML Fundamentals | 25 | no change needed |
+| Experimentation | 25 | no change needed |
+
+### Quality bar
+
+Every question — rewritten or new — must pass the test in `docs/content-authoring.md`:
+
+> Would a senior data interviewer at Meta, Google, Stripe, or Amazon ask this in a 45-minute screen?
+
+Secondary checks from the same doc:
+- difficulty comes from reasoning complexity, not syntactic obscurity
+- distractors represent actual misconceptions a trained candidate would hold, not obviously wrong answers
+- explanations address all four options: why each wrong answer is wrong, not just why the correct answer is right
+- concept tags reflect the actual analytical pattern tested, not the tool name or API surface
+
+All rewritten questions must have concept tags reviewed and updated to reflect the rewritten question's actual conceptual focus. Tags feed the Elite debrief weak-concept signals and focus mode — stale tags degrade coaching accuracy silently.
+
+### Editorial selection rules
 
 - rewrite a question only if it shows one or more concrete weaknesses: thin stem, generic answer-elimination feel, weak evidence surface, shallow distractors, low diagnostic value, or mismatch between claimed difficulty and actual reasoning depth
 - do not churn strong questions just to make tone more dramatic
 - prefer targeted rewrites over replacement when the concept, ID, and curricular position are still correct
 - add new questions only when a real coverage gap remains after reviewing existing candidates and rewrite options
+- for new mock-only questions: the concept angle must be distinct from practice questions at the same difficulty
 
-Priority order:
+### Concept-hook gaps to drive new authoring
 
-1. PySpark
-2. Data Engineering
-3. Experimentation
-4. ML Fundamentals
-5. Data Modeling
+From the Phase 2 audit (`docs/concept-expansion-plan.md`):
 
-Priority rationale:
+- **Data Engineering:** backpressure and flow control, privacy/compliance architecture, data contract operationalization, warehouse cost modeling, incident containment patterns
+- **Data Modeling:** bi-temporal modeling, semantic layer governance, semi-additive metric design, advanced hierarchy variants
+- **ML Fundamentals:** parametric vs non-parametric reasoning, inductive bias, encoding strategy, activation function tradeoffs, batch normalization, attention mechanisms
+- **Experimentation:** ratio-metric/delta-method coverage, surrogate-metric validation, control-vs-holdout A/A test nuance
 
-- PySpark remains first because it has the highest concentration of thin code-adjacent reasoning questions and the most visible benchmark impact
-- Data Engineering and Experimentation follow because weak scenario quality there most directly affects whether the platform feels senior-level rather than quiz-like
-- ML Fundamentals is high leverage for the Data Scientist role surface but should use the completed hook audit rather than reopen taxonomy work
-- Data Modeling remains in scope but comes after the more obviously thin banks because its issues are often nuance and specificity rather than total shape failure
+These are the gaps Phase 7 authoring should draw from first. Do not author questions outside these concept families unless a benchmark slot cannot be filled otherwise.
 
-Content work types allowed in this phase:
+### Priority order
 
-- targeted rewrites of weak reasoning questions
-- selective new questions where concept-hooks coverage is still incomplete
-- selective mock-only additions where benchmark blueprint coverage is inadequate
+1. **PySpark** — fix hard tier code-adjacent format deficit (Gap A)
+2. **Data Engineering** — add debug questions (Gap B) + build mock-only pool (Gap C)
+3. **Data Modeling** — build mock-only pool (Gap C)
+4. **Experimentation** — targeted additions from hook audit gaps; existing mock-only pool is solid
+5. **ML Fundamentals** — targeted additions from hook audit gaps; existing mock-only pool is solid
 
-This phase is where the still-open ML Fundamentals and Experimentation audit outcomes may lead to new question authoring.
+### Implementation lanes
 
-Primary implementation surfaces:
+**Lane 1: PySpark hard tier (Gap A)**
 
-- content folders: `backend/content/pyspark_questions/`, `backend/content/data_engineering_questions/`, `backend/content/experimentation_questions/`, `backend/content/ml_fundamentals_questions/`, `backend/content/data_modeling_questions/`
-- supporting audit docs: `docs/concept-expansion-plan.md`, `docs/concept-hooks.md`, `docs/content-authoring.md`
-- if benchmark blueprint coverage changes materially, update the relevant rollout or feature docs that describe mock depth expectations
+- Scope: `backend/content/pyspark_questions/hard.json` and `backend/content/pyspark_questions/medium.json`
+- Task: add 8–10 new hard practice questions in code-adjacent formats (`predict_output`, `scenario`) covering AQE, DPP, skew join/salting, watermark/late data, speculative execution, pandas UDF memory
+- Also review medium tier and add 3–5 code-adjacent practice questions at medium if weak spots exist
+- Do not touch existing questions unless a specific weakness is identified; new additions are preferred over rewrites here because the easy and medium tiers are already closer to target
+- Each new question must use a realistic code snippet or `scenario_context` block per the PySpark schema rules in `docs/content-authoring.md`
+- Update ID allocation table in `docs/concept-expansion-plan.md`
 
-Suggested Codex lanes:
+**Lane 2: Data Engineering gap resolution (Gaps B + C)**
 
-1. PySpark + Data Engineering editorial lane
-   - rewrite the highest-value weak questions first
-   - prioritize code-adjacent diagnosis depth, realistic evidence surfaces, and stronger distractor quality
+- Scope: `backend/content/data_engineering_questions/medium.json` and `hard.json`
+- Task A (Gap B): add 3–5 debug questions covering realistic DE failure modes — each must have a `debug_error` field with a realistic error string and a single-bug root cause
+- Task B (Gap C): add 12–15 mock-only questions (`"mock_only": true`) at medium and hard, spanning the concept-hook gaps listed above; type distribution should target scenario-heavy with some mcq and at least 2 debug questions in the mock-only set
+- The benchmark template already expects `["scenario", "mcq", "debug", "scenario", "scenario", "mcq"]` — the new debug content makes this template actually deliverable
+- Concept tags must not duplicate existing practice questions at the same difficulty
+- Update ID allocation table in `docs/concept-expansion-plan.md`
 
-2. Experimentation + ML Fundamentals editorial lane
-   - use the completed hook audits as the targeting source
-   - add or rewrite only where concept coverage or interview realism is still clearly weak
+**Lane 3: Data Modeling mock-only pool (Gap C)**
 
-3. Data Modeling + benchmark-gap lane
-   - improve thin modeling prompts and add mock-only coverage only where the benchmark blueprint is under-supported
+- Scope: `backend/content/data_modeling_questions/medium.json` and `hard.json`
+- Task: add 12–14 mock-only questions (`"mock_only": true`) at medium and hard
+- Focus areas: bi-temporal modeling, semantic layer governance, conformed dimension governance across business units, SCD choice under conflicting business requirements, schema evolution strategy
+- All at scenario or mcq type (DM does not have debug/predict_output in its type vocabulary)
+- Concept tags must not duplicate existing practice questions at the same difficulty
+- Update ID allocation table in `docs/concept-expansion-plan.md`
 
-4. Content-governance lane
-   - update `docs/concept-expansion-plan.md` with what was rewritten vs newly added
-   - keep `docs/content-authoring.md` aligned if authoring rules, hint expectations, or concept-tag guidance are clarified during execution
+**Lane 4: Experimentation + ML Fundamentals targeted additions**
 
-Non-goals:
+- Scope: `backend/content/experimentation_questions/` and `backend/content/ml_fundamentals_questions/`
+- Source: use the recorded gap audit in `docs/concept-expansion-plan.md` as the targeting source; do not reopen taxonomy work
+- Task: add or rewrite only where concept coverage is genuinely thin; existing mock-only pools (25 each) are solid so additions here are practice-bank gaps, not pool gaps
+- Experimentation focus: ratio-metric/delta-method, surrogate-metric validation, A/A test design nuance
+- ML Fundamentals focus: parametric vs non-parametric tradeoffs, encoding strategy, batch normalization mechanics
+- Volume: 4–8 questions per track maximum; do not expand for expansion's sake
+
+**Lane 5: Content governance (runs after lanes 1–4)**
+
+- Update `docs/concept-expansion-plan.md` with every question rewritten vs newly added, reason for change, and ID allocated
+- Update the ID allocation table for any track where IDs were appended
+- If any concept-tag families were extended or renamed during Phase 7 authoring, update the family lists in `docs/content-authoring.md`
+- Run the duplicate-ID check from `docs/content-authoring.md` before closing the lane
+
+### Non-goals
 
 - no whole-bank rewrites
 - no modality taxonomy changes
-- no benchmark composition redesign
-- no frontend or backend UX work beyond what is strictly required to support new content metadata
+- no changes to `_benchmark_type_targets` in `backend/routers/mock.py` — the templates are correct; Phase 7 makes the content match them, not the other way around
+- no frontend or backend UX work
 - no new tracks, no new mock modes, and no entitlement changes
 - no question rewrites done purely for voice/style polish when the question is already structurally strong
 
-Acceptance criteria:
+### Acceptance criteria
 
-- rewritten questions are materially better on reasoning depth, not just cosmetically reworded
-- each changed question still fits its curricular role, difficulty, and concept tags
-- any net-new questions are justified by a real hook or benchmark-coverage gap documented in `docs/concept-expansion-plan.md`
-- the touched tracks feel less option-led and less repetitive in benchmark and practice contexts
-- another model can pick up any remaining Phase 7 work from the audit trail without re-auditing the whole bank
+- PySpark hard tier: code-adjacent format questions increased; hard tier is closer to 50/50 conceptual vs code-adjacent
+- Data Engineering: at least 3 debug questions exist in the bank; `_sample_by_format` can fill the debug slot in a DE benchmark without silent fallback
+- Data Engineering and Data Modeling: mock-only pool at medium+hard is ≥12 questions each
+- All rewritten or new questions pass the FAANG senior-interviewer test from `docs/content-authoring.md`
+- All touched questions have concept tags reviewed and accurate
+- All new mock-only questions use concept angles distinct from practice questions at the same difficulty
+- `docs/concept-expansion-plan.md` records what was authored vs rewritten in Phase 7 with ID references
 
-Validation commands:
+### Validation commands
 
-- `cd backend && ../.venv/bin/python -m pytest tests/test_08_pyspark.py tests/test_19_data_engineering.py tests/test_20_data_modeling.py tests/test_31_reasoning_metadata.py -q`
-- `cd backend && ../.venv/bin/python -m pytest tests/test_11_mock.py -q` *(run when mock-only additions or benchmark-supporting content changes are made)*
-- `cd /Users/matt/Work/projects/sql-interview-practice && git diff -- docs/concept-expansion-plan.md docs/content-authoring.md`
+```bash
+# Catalog and schema integrity
+cd backend && ../.venv/bin/python -m pytest tests/test_08_pyspark.py tests/test_19_data_engineering.py tests/test_20_data_modeling.py tests/test_31_reasoning_metadata.py -q
 
-Exit criteria:
+# Mock composition (run when mock-only additions or benchmark content changes land)
+cd backend && ../.venv/bin/python -m pytest tests/test_11_mock.py -q
 
-- weak questions are rewritten, not just re-labeled
+# Duplicate ID check
+.venv/bin/python -c "
+import json, glob
+all_ids = []
+for f in glob.glob('backend/content/*/*.json'):
+    if 'schemas' in f: continue
+    all_ids.extend(q['id'] for q in json.load(open(f)))
+dupes = [x for x in all_ids if all_ids.count(x) > 1]
+print('Duplicate IDs:', set(dupes) or 'none')
+"
+
+# Docs diff
+git diff -- docs/concept-expansion-plan.md docs/content-authoring.md
+```
+
+### Exit criteria
+
+- Gap A resolved: PySpark hard tier has materially more code-adjacent questions than it started with
+- Gap B resolved: DE has debug questions; benchmark type template is deliverable
+- Gap C resolved: DE and DM each have ≥12 mock-only questions at medium+hard
+- hook audit gaps from `docs/concept-expansion-plan.md` are addressed for Experimentation and ML Fundamentals
 - reasoning tracks feel premium by content quality, not only UI
 - content additions remain targeted and justified, not opportunistic bank expansion
-- another model can pick up Phase 7 from this brief without redefining rewrite thresholds, track order, or allowed content work types
+- another model can pick up any remaining Phase 7 work from the audit trail without re-auditing the whole bank
 
 ## Phase 8: Concept-Hooks Completion And Social Automation Readiness
 
