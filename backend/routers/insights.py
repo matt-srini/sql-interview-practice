@@ -607,6 +607,35 @@ def build_study_plan(
 
 
 # ---------------------------------------------------------------------------
+# Track-family classifier for modality-aware debrief language
+# ---------------------------------------------------------------------------
+
+_REASONING_TRACKS = frozenset({
+    "pyspark", "data-engineering", "data-modeling", "ml-fundamentals", "experimentation"
+})
+
+
+def _track_family(track: str, questions: list[dict[str, Any]]) -> str:
+    """
+    Return 'executable' or 'reasoning' for debrief language branching.
+
+    - reasoning: pyspark, data-engineering, data-modeling, ml-fundamentals, experimentation
+    - statistics: resolved from actual subtype mix — 'executable' if any numerical question
+      is present (code was written), 'reasoning' if all conceptual
+    - mixed: defaults to 'executable' (SQL/Python/Pandas dominate the mixed pool 3:1)
+    - all other tracks (sql, python, python-data): 'executable'
+    """
+    if track == "mixed":
+        return "executable"
+    if track in _REASONING_TRACKS:
+        return "reasoning"
+    if track != "statistics":
+        return "executable"
+    has_numerical = any(q.get("subtype") == "numerical" for q in questions)
+    return "executable" if has_numerical else "reasoning"
+
+
+# ---------------------------------------------------------------------------
 # Session debrief (Elite-only, called from mock.py finish endpoint)
 # ---------------------------------------------------------------------------
 
@@ -639,6 +668,7 @@ def build_session_debrief(
     time_limit_s: int = session_meta.get("time_limit_s") or 1800
     session_difficulty: str = session_meta.get("difficulty") or "medium"
     session_track: str = session_meta.get("track") or "sql"
+    family: str = _track_family(session_track, enriched_questions)
 
     # ── Build concept accuracy map from historical events ────────────────────
     # (track, concept) → (correct_total, attempt_total)
@@ -739,10 +769,12 @@ def build_session_debrief(
                     "but your history shows this concept still needs deliberate work."
                 )
             else:
-                patterns.append(
-                    f"{name} was inconsistent ({pct}% this session). "
+                approach_copy = (
                     "Try articulating the approach before writing code next time."
+                    if family == "executable"
+                    else "Try walking through the tradeoffs out loud before committing to your answer."
                 )
+                patterns.append(f"{name} was inconsistent ({pct}% this session). {approach_copy}")
 
     # Follow-up performance
     follow_ups = [q for q in enriched_questions if q.get("is_follow_up")]
@@ -783,12 +815,16 @@ def build_session_debrief(
     if not weak:
         if session_difficulty == "medium":
             priority_action = (
-                "You're handling this difficulty well. "
-                "Try a hard session to push your ceiling."
+                "You're reasoning through this difficulty well. Try a hard session to push your ceiling."
+                if family == "reasoning"
+                else "You're handling this difficulty well. Try a hard session to push your ceiling."
             )
         elif session_difficulty == "hard":
             priority_action = (
-                "Excellent — consistent hard-session performance is what "
+                "Excellent — consistent performance on hard reasoning questions is what "
+                "separates interview-ready candidates. Keep the cadence up."
+                if family == "reasoning"
+                else "Excellent — consistent hard-session performance is what "
                 "separates interview-ready candidates. Keep the cadence up."
             )
         else:
@@ -806,11 +842,24 @@ def build_session_debrief(
             priority_path_title = title
             priority_action = f'Work through the "{title}" path to reinforce {concept_name}.'
         else:
-            track_label = {"sql": "SQL", "python": "Python", "python-data": "Pandas", "pyspark": "PySpark"}.get(track, track)
-            priority_action = (
-                f"Drill {concept_name} in {track_label} practice mode — "
-                "filter by that concept tag and aim for 3 consecutive correct answers."
-            )
+            _TRACK_DISPLAY = {
+                "sql": "SQL", "python": "Python", "python-data": "Pandas",
+                "pyspark": "PySpark", "data-engineering": "Data Engineering",
+                "data-modeling": "Data Modeling", "ml-fundamentals": "ML Fundamentals",
+                "experimentation": "Experimentation", "statistics": "Statistics",
+            }
+            track_label = _TRACK_DISPLAY.get(track, track)
+            if family == "executable":
+                priority_action = (
+                    f"Drill {concept_name} in {track_label} practice mode — "
+                    "filter by that concept tag and aim for 3 consecutive correct answers."
+                )
+            else:
+                priority_action = (
+                    f"Drill {concept_name} in {track_label} practice mode — "
+                    "filter by that concept tag and focus on being able to state the tradeoffs "
+                    "and reasoning clearly without backtracking."
+                )
 
         # Recommend unseen drill questions
         candidate_qs = _CONCEPT_QUESTION_INDEX.get(top["track"], {}).get(concept_name, [])

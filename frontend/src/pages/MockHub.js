@@ -753,7 +753,7 @@ export default function MockHub() {
                 <div className="mock-analytics-stat-row">
                   <div className="mock-analytics-stat">
                     <span className="mock-analytics-stat-value">{benchmarkAnalytics.avg_score_pct}%</span>
-                    <span className="mock-analytics-stat-label">Avg benchmark score</span>
+                    <span className="mock-analytics-stat-label">Avg benchmark score (all tracks)</span>
                   </div>
                   <div className="mock-analytics-stat">
                     <span className="mock-analytics-stat-value">{benchmarkAnalytics.best_score_pct}%</span>
@@ -764,6 +764,22 @@ export default function MockHub() {
                     <span className="mock-analytics-stat-label">Avg benchmark time used</span>
                   </div>
                 </div>
+                {benchmarkAnalytics.track_breakdown && Object.keys(benchmarkAnalytics.track_breakdown).length > 1 && (
+                  <div className="mock-analytics-track-breakdown">
+                    <span className="mock-analytics-track-breakdown-label">Per-track breakdown</span>
+                    <div className="mock-analytics-track-rows">
+                      {Object.entries(benchmarkAnalytics.track_breakdown)
+                        .sort((a, b) => b[1].sessions - a[1].sessions)
+                        .map(([t, stats]) => (
+                          <div key={t} className="mock-analytics-track-row">
+                            <span className="mock-analytics-track-name">{TRACK_LABELS[t] || t}</span>
+                            <span className="mock-analytics-track-sessions">{stats.sessions} session{stats.sessions !== 1 ? 's' : ''}</span>
+                            <span className="mock-analytics-track-score">{stats.avg_score_pct}% avg</span>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
                 {benchmarkAnalytics.score_trend.length > 1 && (
                   <div className="mock-analytics-sparkline-wrap">
                     <span className="mock-analytics-sparkline-label">Benchmark score trend (last {benchmarkAnalytics.score_trend.length})</span>
@@ -821,6 +837,57 @@ export default function MockHub() {
             )}
           </section>
         )}
+
+        {/* Pro benchmark history card — stripped view, no concept panel or sparkline */}
+        {isPro && !isElite && (() => {
+          const scoredSessions = benchmarkHistory.filter(s => s.total_count > 0);
+          const proAvgScore = scoredSessions.length > 0
+            ? Math.round(scoredSessions.reduce((sum, s) => sum + (s.solved_count / s.total_count) * 100, 0) / scoredSessions.length)
+            : null;
+          const lastBenchmark = benchmarkHistory[0] || null;
+          return (
+            <section className="mock-hub-section mock-pro-history-panel">
+              <div className="mock-pro-history-header">
+                <h2 className="mock-pro-history-title">Benchmark history</h2>
+                {benchmarkHistory.length > 0 && (
+                  <span className="mock-pro-history-count">{benchmarkHistory.length} session{benchmarkHistory.length !== 1 ? 's' : ''}</span>
+                )}
+              </div>
+              {benchmarkHistory.length === 0 ? (
+                <p className="mock-pro-history-empty">
+                  Complete your first benchmark to see your history here.
+                </p>
+              ) : (
+                <div className="mock-pro-history-body">
+                  {proAvgScore !== null && (
+                    <div className="mock-pro-history-stat-row">
+                      <div className="mock-pro-history-stat">
+                        <span className="mock-pro-history-stat-value">{proAvgScore}%</span>
+                        <span className="mock-pro-history-stat-label">Avg score (all tracks)</span>
+                      </div>
+                    </div>
+                  )}
+                  {lastBenchmark && (
+                    <div className="mock-pro-history-last">
+                      <span className="mock-pro-history-last-label">Last benchmark</span>
+                      <span className="mock-pro-history-last-detail">
+                        {TRACK_LABELS[lastBenchmark.track] || lastBenchmark.track}
+                        {' · '}
+                        <span className={`badge badge-${lastBenchmark.difficulty}`}>{lastBenchmark.difficulty}</span>
+                        {' · '}
+                        {lastBenchmark.total_count > 0
+                          ? `${lastBenchmark.solved_count}/${lastBenchmark.total_count} solved`
+                          : '—'}
+                        {' · '}
+                        {formatDate(lastBenchmark.started_at)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </section>
+          );
+        })()}
 
         {/* Elite intelligence panel — teaser for Free and Pro users */}
         {!isElite && (

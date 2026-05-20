@@ -11097,6 +11097,129 @@ select {
   margin-left: auto;
 }
 
+/* ─── Elite per-track breakdown ─────────────────────────────────────────────── */
+.mock-analytics-track-breakdown {
+  margin-top: 0.75rem;
+  margin-bottom: 1rem;
+}
+.mock-analytics-track-breakdown-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  margin-bottom: 0.4rem;
+}
+.mock-analytics-track-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.mock-analytics-track-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.82rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: var(--radius-sm);
+  background: rgba(20, 41, 27, 0.03);
+  border: 1px solid var(--border-subtle);
+}
+.mock-analytics-track-name {
+  font-weight: 600;
+  color: var(--text-strong);
+  min-width: 10rem;
+}
+.mock-analytics-track-sessions {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+}
+.mock-analytics-track-score {
+  font-weight: 700;
+  color: var(--text-strong);
+  margin-left: auto;
+}
+
+/* ─── Pro benchmark history card ─────────────────────────────────────────────── */
+.mock-pro-history-panel {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+}
+.mock-pro-history-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+.mock-pro-history-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+}
+.mock-pro-history-count {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+.mock-pro-history-empty {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+.mock-pro-history-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+.mock-pro-history-stat-row {
+  display: flex;
+  gap: 1.5rem;
+}
+.mock-pro-history-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.mock-pro-history-stat-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-strong);
+  line-height: 1;
+}
+.mock-pro-history-stat-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+}
+.mock-pro-history-last {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: var(--radius-sm);
+  background: rgba(20, 41, 27, 0.03);
+  border: 1px solid var(--border-subtle);
+}
+.mock-pro-history-last-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+}
+.mock-pro-history-last-detail {
+  font-size: 0.85rem;
+  color: var(--text-strong);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
 /* ─── Mock role filter ───────────────────────────────────────────────────────── */
 .mock-role-pills {
   display: flex;

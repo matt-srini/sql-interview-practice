@@ -827,6 +827,120 @@ def test_tc170_solution_present_for_all_questions_after_finish():
         assert "solution" in q and q["solution"] is not None
 
 
+def test_tc172_reasoning_track_debrief_no_code_centric_language():
+    """TC-172: Elite session on a reasoning track must not produce code-centric debrief patterns.
+
+    PySpark is a reasoning track. Any inconsistency or priority-action copy must not
+    contain 'before writing code' or 'consecutive correct answers'.
+    """
+    from routers.insights import build_session_debrief
+
+    # Two questions sharing a concept, one wrong — triggers the inconsistency pattern.
+    questions = [
+        {
+            "id": 1, "track": "pyspark", "is_solved": True,
+            "concepts": ["DATAFRAME API"], "time_spent_s": 90,
+        },
+        {
+            "id": 2, "track": "pyspark", "is_solved": False,
+            "concepts": ["DATAFRAME API"], "time_spent_s": 120,
+        },
+    ]
+    session_meta = {
+        "difficulty": "medium", "track": "pyspark",
+        "time_used_s": 210, "time_limit_s": 2400,
+    }
+    debrief = build_session_debrief(questions, session_meta, [], "elite")
+    assert debrief is not None
+    all_text = " ".join(debrief.get("patterns", [])) + " " + (debrief.get("priority_action") or "")
+    assert "before writing code" not in all_text
+    assert "consecutive correct answers" not in all_text
+
+
+def test_tc173_reasoning_track_no_weak_concepts_uses_reasoning_copy():
+    """TC-173: Reasoning-track perfect session priority_action uses reasoning language."""
+    from routers.insights import build_session_debrief
+
+    questions = [
+        {"id": 1, "track": "data-engineering", "is_solved": True,
+         "concepts": ["DATA QUALITY"], "time_spent_s": 60},
+    ]
+    session_meta = {
+        "difficulty": "medium", "track": "data-engineering",
+        "time_used_s": 60, "time_limit_s": 2400,
+    }
+    debrief = build_session_debrief(questions, session_meta, [], "elite")
+    assert debrief is not None
+    action = debrief.get("priority_action") or ""
+    assert "reasoning" in action.lower() or "reasoning" in action.lower()
+    # Must not use executable phrasing
+    assert "before writing code" not in action
+    assert "consecutive correct answers" not in action
+
+
+def test_tc174_statistics_all_conceptual_uses_reasoning_language():
+    """TC-174: Statistics session with only conceptual questions → reasoning-family debrief."""
+    from routers.insights import build_session_debrief
+
+    questions = [
+        {"id": 1, "track": "statistics", "subtype": "conceptual",
+         "is_solved": True, "concepts": ["HYPOTHESIS TESTING"], "time_spent_s": 90},
+        {"id": 2, "track": "statistics", "subtype": "conceptual",
+         "is_solved": False, "concepts": ["HYPOTHESIS TESTING"], "time_spent_s": 120},
+    ]
+    session_meta = {
+        "difficulty": "medium", "track": "statistics",
+        "time_used_s": 210, "time_limit_s": 2700,
+    }
+    debrief = build_session_debrief(questions, session_meta, [], "elite")
+    assert debrief is not None
+    all_text = " ".join(debrief.get("patterns", [])) + " " + (debrief.get("priority_action") or "")
+    assert "before writing code" not in all_text
+    assert "consecutive correct answers" not in all_text
+
+
+def test_tc175_statistics_with_numerical_uses_executable_language():
+    """TC-175: Statistics session with a numerical question → executable-family debrief."""
+    from routers.insights import build_session_debrief
+
+    questions = [
+        {"id": 1, "track": "statistics", "subtype": "numerical",
+         "is_solved": True, "concepts": ["DISTRIBUTIONS"], "time_spent_s": 80},
+        {"id": 2, "track": "statistics", "subtype": "conceptual",
+         "is_solved": False, "concepts": ["DISTRIBUTIONS"], "time_spent_s": 100},
+    ]
+    session_meta = {
+        "difficulty": "medium", "track": "statistics",
+        "time_used_s": 180, "time_limit_s": 2700,
+    }
+    debrief = build_session_debrief(questions, session_meta, [], "elite")
+    assert debrief is not None
+    all_text = " ".join(debrief.get("patterns", [])) + " " + (debrief.get("priority_action") or "")
+    # Inconsistency pattern should fire with executable copy
+    # (one wrong, same concept, correct > 0) → "before writing code"
+    assert "before writing code" in all_text or "consecutive correct answers" in all_text
+
+
+def test_tc176_track_family_helper_resolves_correctly():
+    """TC-176: _track_family returns correct family for each track category."""
+    from routers.insights import _track_family
+
+    assert _track_family("sql", []) == "executable"
+    assert _track_family("python", []) == "executable"
+    assert _track_family("python-data", []) == "executable"
+    assert _track_family("pyspark", []) == "reasoning"
+    assert _track_family("data-engineering", []) == "reasoning"
+    assert _track_family("data-modeling", []) == "reasoning"
+    assert _track_family("ml-fundamentals", []) == "reasoning"
+    assert _track_family("experimentation", []) == "reasoning"
+    assert _track_family("mixed", []) == "executable"
+    # Statistics resolves from subtype composition
+    assert _track_family("statistics", [{"subtype": "numerical"}]) == "executable"
+    assert _track_family("statistics", [{"subtype": "conceptual"}]) == "reasoning"
+    assert _track_family("statistics", [{"subtype": "numerical"}, {"subtype": "conceptual"}]) == "executable"
+    assert _track_family("statistics", []) == "reasoning"  # no questions → no numerical → reasoning
+
+
 def test_tc171_mock_payload_exposes_interaction_mode_when_present():
     """TC-171: Mock question payload includes interaction_mode when provided by content."""
     from routers.mock import _public_question_payload
@@ -900,12 +1014,14 @@ def test_tc174_second_submit_after_correct_returns_409():
         r_start = _start_pyspark_session(client)
         session_id = r_start.json()["session_id"]
         first_q = r_start.json()["questions"][0]
+        q_obj = next((q for q in _pyspark_catalog["easy"] if q["id"] == first_q["id"]), None)
+        correct = q_obj["correct_option"] if q_obj else _pyspark_correct
 
         # First submit — correct
         r1 = client.post(f"/api/mock/{session_id}/submit", json={
             "question_id": first_q["id"],
             "track": "pyspark",
-            "selected_option": _pyspark_correct,
+            "selected_option": correct,
         })
         assert r1.status_code == 200
         assert r1.json()["correct"] is True
@@ -914,7 +1030,7 @@ def test_tc174_second_submit_after_correct_returns_409():
         r2 = client.post(f"/api/mock/{session_id}/submit", json={
             "question_id": first_q["id"],
             "track": "pyspark",
-            "selected_option": _pyspark_correct,
+            "selected_option": correct,
         })
         assert r2.status_code == 409
 
@@ -926,12 +1042,15 @@ def test_tc175_second_submit_after_wrong_returns_409():
         r_start = _start_pyspark_session(client)
         session_id = r_start.json()["session_id"]
         first_q = r_start.json()["questions"][0]
+        q_obj = next((q for q in _pyspark_catalog["easy"] if q["id"] == first_q["id"]), None)
+        correct = q_obj["correct_option"] if q_obj else _pyspark_correct
+        wrong = (correct + 1) % 4
 
         # First submit — wrong
         r1 = client.post(f"/api/mock/{session_id}/submit", json={
             "question_id": first_q["id"],
             "track": "pyspark",
-            "selected_option": _pyspark_wrong,
+            "selected_option": wrong,
         })
         assert r1.status_code == 200
         assert r1.json()["correct"] is False
@@ -940,7 +1059,7 @@ def test_tc175_second_submit_after_wrong_returns_409():
         r2 = client.post(f"/api/mock/{session_id}/submit", json={
             "question_id": first_q["id"],
             "track": "pyspark",
-            "selected_option": _pyspark_correct,
+            "selected_option": correct,
         })
         assert r2.status_code == 409
 
@@ -952,6 +1071,8 @@ def test_tc176_blank_submit_does_not_block_subsequent_real_submit():
         r_start = _start_pyspark_session(client)
         session_id = r_start.json()["session_id"]
         first_q = r_start.json()["questions"][0]
+        q_obj = next((q for q in _pyspark_catalog["easy"] if q["id"] == first_q["id"]), None)
+        correct = q_obj["correct_option"] if q_obj else _pyspark_correct
 
         # Blank submit — rejected
         r_blank = client.post(f"/api/mock/{session_id}/submit", json={
@@ -964,7 +1085,7 @@ def test_tc176_blank_submit_does_not_block_subsequent_real_submit():
         r_real = client.post(f"/api/mock/{session_id}/submit", json={
             "question_id": first_q["id"],
             "track": "pyspark",
-            "selected_option": _pyspark_correct,
+            "selected_option": correct,
         })
         assert r_real.status_code == 200
         assert r_real.json()["correct"] is True

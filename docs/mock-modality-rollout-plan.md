@@ -2,7 +2,7 @@
 
 Planning document for the practice and mock modality migration.
 
-Status: execution started, Phase 0 audit complete, Phase 2 complete, Phase 3 complete, Phase 4 complete, Phase 5A complete
+Status: execution started, Phase 0 audit complete, Phase 2 complete, Phase 3 complete, Phase 4 complete, Phase 5A complete, Phase 6 planned
 Date: 2026-05-19
 Owner: GPT-5.4 orchestrator
 Implementers: parallel GPT Codex agents
@@ -543,24 +543,195 @@ Phase 5A scope guard:
 
 Goal: make mock analytics and coaching modality-aware and tier-coherent.
 
-Focus areas:
+Product outcomes:
 
-- benchmark analytics only compare like with like
-- reasoning-track debriefs speak in diagnosis / interpretation language
-- coding-track debriefs speak in execution / approach language
-- Pro becomes the serious benchmark tier
-- Elite becomes the intelligent coaching tier
+- benchmark analytics compare only like with like, so a user can trust benchmark numbers as a real baseline for that track
+- drill analytics remain visible as drills, not blended into benchmark calibration metrics
+- reasoning-track debriefs speak in diagnosis / interpretation / prioritization language instead of coding language
+- coding-track debriefs speak in execution / debugging / approach language instead of generic coaching copy
+- Pro is the serious benchmark tier with credible baseline feedback but without Elite-only coaching intelligence
+- Elite is the intelligent coaching tier with cross-session concept signals and richer next-step guidance
 
-Exit criteria:
+### What is already done — do not re-implement
 
-- analytics are trustworthy by track family
-- entitlement story is cleaner than today
+Before starting any Phase 6 work, confirm these invariants are already satisfied in the current codebase:
+
+- `_compute_mock_analytics()` in `backend/routers/mock.py` already produces separated `benchmark_summary` and `drill_summary` objects and an explicit `mode_breakdown` count
+- Mixed-track sessions cannot be benchmarks — enforced server-side in `POST /api/mock/start`; they naturally fall into drill aggregates with no code change needed
+- `MockHub.js` already pulls the analytics panel exclusively from `benchmarkAnalytics` (the `benchmark_summary` field); drills are shown only in the secondary card
+- The `comparisonCopy` comparison line in `MockSession.js` summary is already gated to `isProOrElite` and uses the user's own historical accuracy — this is truthful for both tiers and requires no change
+
+Do not re-implement or refactor any of the above.
+
+### What this phase must actually change
+
+**Gap 1 — Debrief language is modality-blind (backend, highest priority)**
+
+`build_session_debrief()` in `backend/routers/insights.py` uses identical language for every track. The specific broken patterns:
+
+- Pattern copy `"Try articulating the approach before writing code next time."` is code-centric and fires on every track including Data Engineering, Experimentation, and Data Modeling where no code is written.
+- Priority action fallback `"filter by that concept tag and aim for 3 consecutive correct answers"` implies code drilling and is wrong for reasoning tracks.
+
+Fix: add a track-family classifier inside `build_session_debrief()` and branch pattern and priority-action copy on it. Do not change the headline logic — score-band headlines ("Solid session", "Tough session") are generic and correct for all tracks.
+
+Track family definitions for the debrief (these are the canonical buckets — use them verbatim):
+
+| Track family | Tracks |
+|---|---|
+| `executable` | sql, python, python-data |
+| `reasoning` | pyspark, data-engineering, data-modeling, ml-fundamentals, experimentation |
+| `statistics` | statistics (special-cased — see Statistics hybrid rule below) |
+
+Concrete language replacements:
+
+| Location in debrief | Executable copy | Reasoning copy |
+|---|---|---|
+| Inconsistent concept pattern | "Try articulating the approach before writing code next time." | "Try walking through the tradeoffs out loud before committing to your answer." |
+| Priority action fallback (no path match) | "filter by that concept tag and aim for 3 consecutive correct answers" | "focus on being able to state the tradeoffs and reasoning clearly without backtracking" |
+| Priority action (no weak concepts) — medium | "You're handling this difficulty well. Try a hard session to push your ceiling." | "You're reasoning through this difficulty well. Try a hard session to push your ceiling." |
+| Priority action (no weak concepts) — hard | "Excellent — consistent hard-session performance is what separates interview-ready candidates. Keep the cadence up." | "Excellent — consistent performance on hard reasoning questions is what separates interview-ready candidates. Keep the cadence up." |
+| Priority action (no weak concepts) — easy | "Good warmup. Move to a medium or hard session for a more realistic challenge." | "Good warmup. Move to a medium or hard session for a more realistic challenge." *(same — this one is fine)* |
+
+Statistics hybrid rule: check the actual subtype mix of `enriched_questions` in the session.
+
+- if the session has at least one `numerical` question → treat as `executable` for debrief language purposes (code was written)
+- if every question is `conceptual` → treat as `reasoning`
+- the standard Statistics benchmark is 1 numerical + 2 conceptual, so it will always resolve to `executable` family
+
+**Gap 2 — Cross-track analytics shown as a single aggregate number (frontend)**
+
+The Elite analytics panel in `MockHub.js` shows `benchmarkAnalytics.avg_score_pct` as a single "Avg benchmark score" number. This violates the analytics invariant "benchmark comparisons are track-specific, never cross-track" — if a user ran SQL and Experimentation benchmarks, the average is meaningless as a baseline for either.
+
+Fix: expose the `track_breakdown` field that `GET /api/mock/analytics` already returns. Below the aggregate stat row, add a per-track breakdown section that lists each track's session count and avg score. Label the aggregate stat as "Avg across all tracks" so users understand it spans tracks. No backend change is needed — the field is already in the response.
+
+Do not add a track filter control — that is scope creep. The per-track breakdown section is sufficient.
+
+**Gap 3 — Pro users see no analytics in MockHub (frontend)**
+
+Currently Pro users see only the Elite teaser panel in MockHub. The approved entitlement for Pro is "benchmark-facing performance context, no concept-coaching panel." Pro currently gets nothing except the comparison line in the MockSession summary (which is correct and should stay).
+
+Fix: add a stripped "Your benchmark history" card in `MockHub.js` that is visible to Pro users (not Free, not Elite — Elite gets the full panel). It shows:
+
+- total benchmark sessions completed
+- avg benchmark score across all tracks (labeled clearly as cross-track)
+- last benchmark session: track, difficulty, score, date
+
+No sparkline. No concept breakdown. No weak-concept signals. No drill stats. These are Elite-only.
+
+This card must be visually distinct from the Elite analytics panel — plainer, smaller, no sparkline or concept rows. It is factual history, not coaching intelligence.
+
+**Gap 4 — No tests for modality-aware debrief or Pro analytics tier (tests)**
+
+The existing TC-158–TC-162 cover debrief headlines by score band but do not cover:
+
+- A reasoning-track session must not contain code-centric pattern language ("before writing code", "consecutive correct answers")
+- A Pro user completing a benchmark session must receive `debrief: null` (Pro gets no debrief — Elite only)
+- A Pro user hitting `GET /api/mock/analytics` must receive 403 (Elite only)
+- The benchmark analytics response must not include drill sessions in `benchmark_summary.total_sessions`
+- Statistics: a session composed entirely of conceptual questions must produce reasoning-track debrief language; a session with at least one numerical question must produce executable-track language
+
+Add these as new test cases in `backend/tests/test_11_mock.py`.
+
+### Entitlement target for this phase
+
+| Tier | Benchmark access | Drill access | MockSession comparison line | MockHub analytics panel | Coaching debrief |
+|---|---|---|---|---|---|
+| Free | current free limits only | current free limits only | none | none | none |
+| Pro | yes | yes | yes — own historical accuracy vs this session | stripped benchmark history card (total sessions, avg score, last session row) — no concept panel, no sparkline | none |
+| Elite | yes | yes | yes | full panel: aggregate stats, sparkline, per-track breakdown, drill summary card, top/weak concept rows | full modality-aware debrief |
+
+Phase-6 implementation rule:
+
+- if a metric cannot be made truthful for a tier or mode, hide it instead of approximating
+
+### Analytics invariants
+
+- benchmark analytics never include drill sessions in their aggregates *(already enforced in backend — verify, do not re-implement)*
+- drill analytics remain separate and are always labeled as drills *(already enforced)*
+- mixed-track sessions never contribute to benchmark baselines *(already enforced by mode gating)*
+- benchmark comparisons are cross-track by default but must be labeled as such; per-track breakdowns must be visible so users can compare like-for-like within a track
+- benchmark comparisons only draw from sessions where `mode = "benchmark"`, not from drill sessions *(already enforced)*
+- if reasoning tracks need different language labels, the debrief must branch on track family — do not reuse one generic copy string
+
+### Debrief language rules
+
+- executable tracks (SQL, Python, Pandas, numerical Statistics) use execution / debugging / approach / precision language
+- reasoning tracks (PySpark, Data Engineering, Data Modeling, ML Fundamentals, Experimentation) use diagnosis / interpretation / prioritization / tradeoff language
+- Statistics is hybrid: resolve track family based on session subtype composition (see Gap 1 above)
+- benchmark debriefs should explain what the result says about interview readiness for that track; the current score-band headlines already do this correctly and must not change
+- drill summaries have no debrief (debrief is Elite + benchmark result only) — the existing `debrief: null` for non-Elite and the current summary CTAs are sufficient for drill follow-up framing
+
+### Primary implementation surfaces
+
+- backend: `backend/routers/insights.py` — modality-aware debrief language only; `backend/routers/mock.py` — no changes needed (analytics separation is already correct)
+- frontend: `frontend/src/pages/MockHub.js` — Pro benchmark history card, Elite per-track breakdown addition
+- tests: `backend/tests/test_11_mock.py` — new reasoning-track debrief test cases, Pro analytics 403 test, benchmark-only aggregation invariant test
+
+### Implementation lanes
+
+1. Backend debrief lane (`insights.py` only)
+   - add `_track_family(track, questions)` helper that returns `"executable"`, `"reasoning"`, or resolves Statistics from subtype mix
+   - branch pattern copy and priority action copy on track family using the concrete replacements specified in Gap 1
+   - do not change headline logic, historical concept lookup, follow-up detection, or time-sink pattern detection
+   - add new test cases for reasoning-track and Statistics hybrid debrief language
+
+2. Frontend analytics lane (`MockHub.js` only)
+   - add the Pro benchmark history card (visible to Pro, hidden from Free and Elite)
+   - add per-track breakdown rows under the Elite aggregate stat block
+   - label the aggregate "Avg across all tracks" to make the cross-track nature explicit
+   - no backend changes required — all needed fields already exist in the `/api/mock/analytics` response
+
+### Non-goals
+
+- no new mock modes
+- no benchmark composition changes
+- no changes to one-submit session mechanics
+- no new question authoring or content rewrites
+- no practice-page modality work outside what is required for truthful shared coaching language
+- no refactor of `_compute_mock_analytics()` or `_compute_mock_session_summary()` — the backend analytics computation is correct
+- no changes to `MockSession.js` summary — the existing comparison line, concept breakdown, CTA split, and share text are correct
+
+### Acceptance criteria
+
+- benchmark analytics shown to users are benchmark-only (already enforced); the UI now labels the aggregate as cross-track and shows per-track breakdown for Elite
+- Pro users see a stripped benchmark history card in MockHub; Free users see nothing; Elite users see the full panel
+- debrief language for reasoning tracks contains no code-execution phrasing ("before writing code", "3 consecutive correct answers")
+- debrief language for executable tracks continues to use execution / debugging / approach framing
+- Statistics sessions resolve track family from subtype composition, not from the track name alone
+- backend tests cover: reasoning-track debrief language, Pro 403 on analytics, benchmark-only aggregation invariant, Statistics conceptual-only → reasoning language, Statistics with numerical → executable language
+
+### Validation commands
+
+- `cd backend && ../.venv/bin/python -m pytest tests/test_11_mock.py -q`
+- `cd frontend && npm run test -- src/pages/MockHub.test.js src/pages/MockSession.test.js src/mockModeConfig.test.js`
+- `cd frontend && npx playwright test e2e/mock-plan-flows.spec.js`
+- `cd frontend && npm run build`
+
+### Exit criteria
+
+- analytics are trustworthy by track family and session mode
+- entitlement story is cleaner than today and visible in the UI, not just in docs
+- another model can pick up Phase 6 from this brief without redefining tier rules, analytics invariants, or debrief language templates — everything is specified concretely above
 
 ## Phase 7: Content Quality Backfill
 
 Goal: improve weak reasoning questions that are currently too option-led or too thin.
 
 This is a deliberate editorial phase, not a side effect of metadata work.
+
+Product outcomes:
+
+- reasoning tracks feel premium because the questions themselves demand diagnosis, interpretation, prioritization, and tradeoff thinking — not just because the UI labels changed
+- weak reasoning questions are rewritten selectively where the current prompt shape is too shallow, too option-led, or too generic for the intended modality
+- benchmark pools have enough high-quality coverage per track that fixed-shape mocks do not rely on thin or repetitive question shapes
+- targeted net-new questions are added only where concept-hook coverage or benchmark blueprint coverage is still materially weak after rewrites
+
+Editorial selection rules:
+
+- rewrite a question only if it shows one or more concrete weaknesses: thin stem, generic answer-elimination feel, weak evidence surface, shallow distractors, low diagnostic value, or mismatch between claimed difficulty and actual reasoning depth
+- do not churn strong questions just to make tone more dramatic
+- prefer targeted rewrites over replacement when the concept, ID, and curricular position are still correct
+- add new questions only when a real coverage gap remains after reviewing existing candidates and rewrite options
 
 Priority order:
 
@@ -570,6 +741,13 @@ Priority order:
 4. ML Fundamentals
 5. Data Modeling
 
+Priority rationale:
+
+- PySpark remains first because it has the highest concentration of thin code-adjacent reasoning questions and the most visible benchmark impact
+- Data Engineering and Experimentation follow because weak scenario quality there most directly affects whether the platform feels senior-level rather than quiz-like
+- ML Fundamentals is high leverage for the Data Scientist role surface but should use the completed hook audit rather than reopen taxonomy work
+- Data Modeling remains in scope but comes after the more obviously thin banks because its issues are often nuance and specificity rather than total shape failure
+
 Content work types allowed in this phase:
 
 - targeted rewrites of weak reasoning questions
@@ -578,11 +756,71 @@ Content work types allowed in this phase:
 
 This phase is where the still-open ML Fundamentals and Experimentation audit outcomes may lead to new question authoring.
 
+Primary implementation surfaces:
+
+- content folders: `backend/content/pyspark_questions/`, `backend/content/data_engineering_questions/`, `backend/content/experimentation_questions/`, `backend/content/ml_fundamentals_questions/`, `backend/content/data_modeling_questions/`
+- supporting audit docs: `docs/concept-expansion-plan.md`, `docs/concept-hooks.md`, `docs/content-authoring.md`
+- if benchmark blueprint coverage changes materially, update the relevant rollout or feature docs that describe mock depth expectations
+
+Suggested Codex lanes:
+
+1. PySpark + Data Engineering editorial lane
+   - rewrite the highest-value weak questions first
+   - prioritize code-adjacent diagnosis depth, realistic evidence surfaces, and stronger distractor quality
+
+2. Experimentation + ML Fundamentals editorial lane
+   - use the completed hook audits as the targeting source
+   - add or rewrite only where concept coverage or interview realism is still clearly weak
+
+3. Data Modeling + benchmark-gap lane
+   - improve thin modeling prompts and add mock-only coverage only where the benchmark blueprint is under-supported
+
+4. Content-governance lane
+   - update `docs/concept-expansion-plan.md` with what was rewritten vs newly added
+   - keep `docs/content-authoring.md` aligned if authoring rules, hint expectations, or concept-tag guidance are clarified during execution
+
+Non-goals:
+
+- no whole-bank rewrites
+- no modality taxonomy changes
+- no benchmark composition redesign
+- no frontend or backend UX work beyond what is strictly required to support new content metadata
+- no new tracks, no new mock modes, and no entitlement changes
+- no question rewrites done purely for voice/style polish when the question is already structurally strong
+
+Acceptance criteria:
+
+- rewritten questions are materially better on reasoning depth, not just cosmetically reworded
+- each changed question still fits its curricular role, difficulty, and concept tags
+- any net-new questions are justified by a real hook or benchmark-coverage gap documented in `docs/concept-expansion-plan.md`
+- the touched tracks feel less option-led and less repetitive in benchmark and practice contexts
+- another model can pick up any remaining Phase 7 work from the audit trail without re-auditing the whole bank
+
+Validation commands:
+
+- `cd backend && ../.venv/bin/python -m pytest tests/test_08_pyspark.py tests/test_19_data_engineering.py tests/test_20_data_modeling.py tests/test_31_reasoning_metadata.py -q`
+- `cd backend && ../.venv/bin/python -m pytest tests/test_11_mock.py -q` *(run when mock-only additions or benchmark-supporting content changes are made)*
+- `cd /Users/matt/Work/projects/sql-interview-practice && git diff -- docs/concept-expansion-plan.md docs/content-authoring.md`
+
+Exit criteria:
+
+- weak questions are rewritten, not just re-labeled
+- reasoning tracks feel premium by content quality, not only UI
+- content additions remain targeted and justified, not opportunistic bank expansion
+- another model can pick up Phase 7 from this brief without redefining rewrite thresholds, track order, or allowed content work types
+
 ## Phase 8: Concept-Hooks Completion And Social Automation Readiness
 
 Goal: make [docs/concept-hooks.md](./concept-hooks.md) exhaustive and usable for future social-media automation.
 
 This phase is documentation and curriculum-governance work, not product-code work.
+
+Product outcomes:
+
+- `docs/concept-hooks.md` becomes the reliable canonical concept inventory for every live track
+- every track gains an advanced mock-only hook section suitable for later social or content automation work
+- hook phrasing becomes publication-ready: concise, specific, and non-duplicative
+- hook docs, audit docs, and authoring docs agree on what is covered, what is missing, and what future authoring is still justified
 
 Requirements:
 
@@ -590,26 +828,59 @@ Requirements:
 - advanced mock-only hook sections are extended to all tracks, not just the currently covered subset
 - hook phrasing is made publication-ready for future automation use
 - the document clearly distinguishes between practice-track concept coverage and mock-only advanced-topic coverage
+- reconciled docs must make it obvious whether a gap is solved by existing questions, planned rewrites, or future net-new authoring
 
-Parallel Codex lanes:
+Primary implementation surfaces:
+
+- `docs/concept-hooks.md`
+- `docs/concept-expansion-plan.md`
+- `docs/content-authoring.md`
+- this rollout plan if hook completion changes the stated future authoring backlog
+
+Suggested Codex lanes:
 
 1. Hook expansion lane
    - extend advanced mock-only topic coverage to all tracks
+   - fill any remaining missing non-mock sections or uneven track coverage in `docs/concept-hooks.md`
+
 2. Audit reconciliation lane
    - make sure hook lists, audit notes, and content-expansion status agree
-3. Docs integration lane
-   - update planning docs if hook coverage changes imply future authoring work
+   - remove stale statements that no longer match current content reality
 
-Exit criteria:
+3. Publication-polish lane
+   - tighten hook wording so it is specific enough for automation use and consistent in style across tracks
+   - normalize section structure, phrasing patterns, and duplicate topic handling
+
+4. Docs integration lane
+   - update planning docs if hook coverage changes imply future authoring work
+   - update `docs/content-authoring.md` if concept-tag or hook-writing guidance changes during reconciliation
+
+Non-goals:
+
+- no product-code changes
+- no silent content JSON edits as part of hook cleanup unless explicitly scoped into another phase
+- no whole-bank audit restart
+- no social automation implementation itself — only readiness groundwork
+- no speculative new hook sprawl that is not tied to actual platform curriculum or mock roadmap needs
+
+Acceptance criteria:
 
 - every track has exhaustive non-mock hook coverage
 - every track has an advanced mock-only hook section suitable for future automation workflows
 - hook coverage status aligns with the content-expansion and modality plans
+- cross-doc contradictions between `concept-hooks`, `concept-expansion-plan`, and `content-authoring` are removed
+- another model can use the docs as a trustworthy source of truth without re-reconciling the three documents first
+
+Validation guidance:
+
+- `cd /Users/matt/Work/projects/sql-interview-practice && git diff -- docs/concept-hooks.md docs/concept-expansion-plan.md docs/content-authoring.md docs/mock-modality-rollout-plan.md`
+- if Phase 8 work also touches any content metadata files, run: `cd backend && ../.venv/bin/python -m pytest tests/test_31_reasoning_metadata.py -q`
 
 Exit criteria:
 
-- weak questions are rewritten, not just re-labeled
-- reasoning tracks feel premium by content quality, not only UI
+- hook coverage is exhaustive, publication-ready, and cross-doc consistent
+- future authoring needs are recorded explicitly instead of being left implicit in audit prose
+- another model can pick up Phase 8 from this brief without redefining what counts as exhaustive coverage or automation readiness
 
 ## Codex Tasking Template
 
