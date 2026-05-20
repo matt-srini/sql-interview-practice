@@ -292,6 +292,52 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
         "BROADCAST JOIN": [
             "BROADCAST",            # BROADCAST JOIN, BROADCAST VARIABLE, etc.
         ],
+        "SHUFFLE & PERFORMANCE": [
+            "SHUFFLE",              # shuffle, shuffle optimization, WIDE-AGGREGATION SHUFFLE, etc.
+            "PERFORMANCE",          # performance, performance tuning, performance bottleneck
+            "EXCHANGE",             # Exchange operator in explain plan
+            "REDUCEBYKEY",
+            "GROUPBYKEY",
+        ],
+        "CATALYST & QUERY PLANNING": [
+            "CATALYST",             # Catalyst optimizer (8 questions)
+            "LAZY EVAL",            # lazy evaluation (5 questions)
+            "LAZY ",                # lazy evaluation catch with trailing space
+            "PREDICATE PUSH",       # predicate pushdown (4 questions)
+            "LOGICAL PLAN",
+            "PHYSICAL PLAN",
+            "QUERY PLAN",           # query planning, query plan optimization
+            "EXPLAIN",              # explain, explain plan
+            "TRANSFORMATIONS VS",   # transformations vs actions (3 questions)
+            "NARROW VS WIDE",
+            "NARROW TRANSFORMATION",
+            "WIDE TRANSFORMATION",
+        ],
+        "MEMORY MANAGEMENT": [
+            "MEMORY",               # driver memory, executor memory, memory management, memory pressure
+            "OOM",                  # OutOfMemoryError, driver OOM
+            "OFF-HEAP",
+            "GC",                   # GC pressure, JVM GC
+            "HEAP",
+            "SPILL",                # spill to disk, DISK SPILL
+            "SERIALIZATION",        # serialization cost, Kryo serialization
+        ],
+        "DATA SKEW": [
+            "SKEW",                 # data skew (4), skew join (2), SKEW DIAGNOSIS
+            "SALTING",              # salting (2), key salting (1)
+            "HOT KEY",
+            "IMBALANCE",            # partition imbalance, shuffle partition imbalance
+        ],
+        "DELTA LAKE": [
+            "DELTA",                # Delta Lake (3), DELTA LAKE MERGE, DELTA LAKE WRITE, etc.
+        ],
+        "AQE": [
+            "AQE",                  # AQE (4 questions)
+            "ADAPTIVE QUERY",       # adaptive query execution (2 questions)
+            "ADAPTIVE",             # Adaptive Query Execution
+            "RUNTIME PLAN",         # runtime plan rewriting
+            "RUNTIME JOIN",         # RUNTIME JOIN STRATEGY SWITCHING
+        ],
     },
     "data-engineering": {
         "ETL VS ELT": [
