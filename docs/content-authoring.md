@@ -208,7 +208,7 @@ This is a **dual-subtype** track. Each question has `"subtype": "conceptual"` (M
 - Conceptual only: `options` (4 strings, each ≥ 20 chars), `correct_option` (int 0–3), `explanation`
 - Numerical only: `starter_code` (function stub), `expected_code` (full working implementation), `test_cases` (list of `{"input": [], "expected_output": value}`), `explanation`
 - Allowed imports for numerical code: `math`, `statistics`, `numpy`, `random`, `collections`, `itertools`, `functools`, `decimal`, `fractions`, `operator`, `typing`
-- `type` field: use `"mcq"` for conceptual, `"numerical"` for numerical
+- `type` field: use `"conceptual"` for conceptual, `"numerical"` for numerical
 - ID ranges: easy 71001–71028, medium 72001–72028, hard 73001–73024
 
 ### ML Fundamentals — concepts covered
@@ -232,7 +232,7 @@ This is a **dual-subtype** track. Each question has `"subtype": "conceptual"` (M
 **Schema rules for ML Fundamentals question JSON:**
 - All questions: `id`, `order`, `topic`, `type`, `difficulty`, `title`, `description`, `options` (4 strings), `correct_option` (int 0–3), `explanation`, `hints`, `concepts`
 - Optional: `code_snippet` (string, shown in monospace above options), `scenario_context` (string, shown as lead-in paragraph), `mock_only` (bool, default false)
-- Allowed `type` values: `"mcq"`, `"scenario"`, `"predict_output"`, `"debug"`
+- Allowed `type` values: `"conceptual"`, `"scenario"`, `"predict_output"`, `"debug"`
 - ID ranges: easy 81001–81030 (practice), medium 82001–82035 (practice) + 82036–82047 (mock), hard 83001–83025 (practice) + 83026–83038 (mock)
 
 ### Experimentation — concepts covered
@@ -256,7 +256,7 @@ This is a **dual-subtype** track. Each question has `"subtype": "conceptual"` (M
 **Schema rules for Experimentation question JSON:**
 - All questions: `id`, `order`, `topic`, `type`, `difficulty`, `title`, `description`, `options` (4 strings), `correct_option` (int 0–3), `explanation`, `hints`, `concepts`
 - Optional: `code_snippet` (string), `scenario_context` (string), `mock_only` (bool, default false)
-- Allowed `type` values: `"mcq"`, `"scenario"`, `"predict_output"`, `"debug"`
+- Allowed `type` values: `"conceptual"`, `"scenario"`, `"predict_output"`, `"debug"`
 - Hint counts: easy = 1, medium = 2, hard = 2
 - ID ranges: easy 91001–91030 (practice), medium 92001–92030 (practice) + 92031–92042 (mock), hard 93001–93020 (practice) + 93021–93033 (mock)
 

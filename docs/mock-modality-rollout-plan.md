@@ -761,7 +761,7 @@ Hard tier is the priority: 20 conceptual vs 6 code-adjacent (77% conceptual). Th
 
 **Gap B — Data Engineering has 0 debug questions; benchmark template expects one**
 
-`_benchmark_type_targets` for `data-engineering` = `["scenario", "mcq", "debug", "scenario", "scenario", "mcq"]`. DE has zero debug questions in any difficulty file. `_sample_by_format` silently falls back when the debug slot is unfillable, so no error fires — but the benchmark is silently delivering a different type distribution than the spec intends. Add 3–5 debug questions covering realistic DE failure modes: schema compatibility violations, idempotency bugs in backfill jobs, late-data watermark misconfiguration, CDC replication lag issues.
+`_benchmark_type_targets` for `data-engineering` = `["scenario", "conceptual", "debug", "scenario", "scenario", "conceptual"]`. DE has zero debug questions in any difficulty file. `_sample_by_format` silently falls back when the debug slot is unfillable, so no error fires — but the benchmark is silently delivering a different type distribution than the spec intends. Add 3–5 debug questions covering realistic DE failure modes: schema compatibility violations, idempotency bugs in backfill jobs, late-data watermark misconfiguration, CDC replication lag issues.
 
 **Gap C — Data Engineering and Data Modeling have 1 mock-only question each**
 
@@ -833,8 +833,8 @@ These are the gaps Phase 7 authoring should draw from first. Do not author quest
 
 - Scope: `backend/content/data_engineering_questions/medium.json` and `hard.json`
 - Task A (Gap B): add 3–5 debug questions covering realistic DE failure modes — each must have a `debug_error` field with a realistic error string and a single-bug root cause
-- Task B (Gap C): add 12–15 mock-only questions (`"mock_only": true`) at medium and hard, spanning the concept-hook gaps listed above; type distribution should target scenario-heavy with some mcq and at least 2 debug questions in the mock-only set
-- The benchmark template already expects `["scenario", "mcq", "debug", "scenario", "scenario", "mcq"]` — the new debug content makes this template actually deliverable
+- Task B (Gap C): add 12–15 mock-only questions (`"mock_only": true`) at medium and hard, spanning the concept-hook gaps listed above; type distribution should target scenario-heavy with some conceptual and at least 2 debug questions in the mock-only set
+- The benchmark template already expects `["scenario", "conceptual", "debug", "scenario", "scenario", "conceptual"]` — the new debug content makes this template actually deliverable
 - Concept tags must not duplicate existing practice questions at the same difficulty
 - Update ID allocation table in `docs/concept-expansion-plan.md`
 
