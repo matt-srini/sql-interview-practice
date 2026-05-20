@@ -75,6 +75,8 @@ export default function MockSession() {
   const [loadError, setLoadError] = useState(null);
   const [insights, setInsights] = useState(null);
   const [shareCopied, setShareCopied] = useState(false);
+  const [submitted, setSubmitted] = useState({});   // {qId: bool} — locked after any real submit; never cleared by Run
+  const [submitNetworkError, setSubmitNetworkError] = useState(null);
 
   const [showFollowUpBanner, setShowFollowUpBanner] = useState(false);
   const [focusFallback, setFocusFallback] = useState(false);
@@ -121,16 +123,19 @@ export default function MockSession() {
     setQuestions(data.questions || []);
     if (data.focus_fallback) setFocusFallback(true);
 
-    // Restore codes and solved state from server
+    // Restore codes, solved, and submitted state from server
     const initialCodes = {};
     const initialSolved = {};
+    const initialSubmitted = {};
     (data.questions || []).forEach(q => {
       // Debug questions pre-fill the editor with starter_code unless the user already submitted
       initialCodes[q.id] = q.final_code || (q.type === 'debug' ? (q.starter_code || '') : null) || DEFAULT_CODE[q.track] || '';
       initialSolved[q.id] = q.is_solved || false;
+      initialSubmitted[q.id] = q.submitted_at != null;
     });
     setCodes(initialCodes);
     setSolved(initialSolved);
+    setSubmitted(initialSubmitted);
 
     if (data.status === 'completed') {
       // Already finished — fetch summary
@@ -229,7 +234,6 @@ export default function MockSession() {
 
     setRunning(true);
     setRunResults(prev => ({ ...prev, [q.id]: null }));
-    setResults(prev => ({ ...prev, [q.id]: null }));
     try {
       const endpoint = track === 'sql'
         ? '/run-query'
@@ -248,11 +252,11 @@ export default function MockSession() {
   }
 
   async function handleSubmit() {
-    if (!currentQuestion || submitting || solved[currentQuestion.id]) return;
+    if (!currentQuestion || submitting || submitted[currentQuestion.id]) return;
     const q = currentQuestion;
 
     setSubmitting(true);
-    setResults(prev => ({ ...prev, [q.id]: null }));
+    setSubmitNetworkError(null);
     try {
       const payload = {
         question_id: q.id,
@@ -265,7 +269,8 @@ export default function MockSession() {
         payload.code = getCode(q);
       }
       const r = await api.post(`/mock/${id}/submit`, payload);
-      setResults(prev => ({ ...prev, [q.id]: r.data }));
+      // Lock the question — no feedback shown, outcome reflected only in button state
+      setSubmitted(prev => ({ ...prev, [q.id]: true }));
       if (r.data.correct) {
         setSolved(prev => ({ ...prev, [q.id]: true }));
         // If a follow-up was injected, re-fetch the session to get the updated question list
@@ -288,8 +293,15 @@ export default function MockSession() {
         }
       }
     } catch (err) {
-      const errMsg = err?.response?.data?.error || err?.response?.data?.detail || 'Submission failed';
-      setResults(prev => ({ ...prev, [q.id]: { error: errMsg } }));
+      const status = err?.response?.status;
+      if (status === 409) {
+        // Already submitted on the server — sync the UI to match
+        setSubmitted(prev => ({ ...prev, [q.id]: true }));
+      } else if (!status || status >= 500) {
+        // Genuine network/server failure — don't lock; let the user retry
+        setSubmitNetworkError('Submission failed — check your connection and try again.');
+      }
+      // 422 (blank input caught by UI guard) and other 4xx: no lock, user can retry
     } finally {
       setSubmitting(false);
     }
@@ -997,10 +1009,10 @@ export default function MockSession() {
                     <button
                       className="btn btn-primary"
                       onClick={handleSubmit}
-                      disabled={submitting || !!currentResult || !getCode(q)?.trim()}
+                      disabled={submitting || submitted[q.id] || !getCode(q)?.trim()}
                     >
                       <span>
-                        {submitting ? 'Checking…' : solved[q.id] ? '✓ Solved' : !!currentResult ? '✗ Submitted' : 'Submit'}
+                        {submitting ? 'Checking…' : solved[q.id] ? '✓ Solved' : submitted[q.id] ? '✗ Submitted' : 'Submit'}
                       </span>
                       <kbd className="shortcut-kbd">⌘⇧↵</kbd>
                     </button>
@@ -1083,43 +1095,22 @@ export default function MockSession() {
                   <button
                     className="btn btn-primary"
                     onClick={handleSubmit}
-                    disabled={submitting || !!currentResult || mcqSelections[q.id] === undefined}
+                    disabled={submitting || submitted[q.id] || mcqSelections[q.id] === undefined}
                   >
-                    {submitting ? 'Checking…' : solved[q.id] ? '✓ Solved' : !!currentResult ? '✗ Submitted' : 'Submit'}
+                    {submitting ? 'Checking…' : solved[q.id] ? '✓ Solved' : submitted[q.id] ? '✗ Submitted' : 'Submit'}
                   </button>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Submit verdict */}
-          {currentResult && (
-            <div className={`mock-verdict ${currentResult.correct ? 'mock-verdict--correct' : currentResult.error ? 'mock-verdict--error' : 'mock-verdict--wrong'}`}>
-              {currentResult.error
-                ? `Error: ${currentResult.error}`
-                : currentResult.correct
-                  ? activeQ < questions.length - 1
-                    ? '✓ Correct! Move to the next question.'
-                    : '✓ Correct! All done — end your session.'
-                  : '✗ Not quite. Each question is one shot — move on or end your session.'}
-              {!currentResult.error && !currentResult.correct && currentResult.feedback?.length > 0 && (
-                <ul className="mock-feedback-list">
-                  {currentResult.feedback.map((f, i) => <li key={i}>{f}</li>)}
-                </ul>
-              )}
-              {!currentResult.error && !currentResult.correct && activeQ < questions.length - 1 && (
-                <button
-                  className="btn btn-secondary mock-skip-btn"
-                  onClick={() => setActiveQ(activeQ + 1)}
-                >
-                  Next question →
-                </button>
-              )}
-            </div>
+          {/* Network/server error on submit (not shown for validation errors or feedback) */}
+          {submitNetworkError && !submitted[q?.id] && (
+            <div className="mock-verdict mock-verdict--error">{submitNetworkError}</div>
           )}
 
-          {/* Next question prompt (correct answer) */}
-          {solved[q?.id] && activeQ < questions.length - 1 && (
+          {/* Post-submit navigation — no feedback, just move forward */}
+          {submitted[q?.id] && activeQ < questions.length - 1 && (
             <button
               className="btn btn-secondary"
               onClick={() => setActiveQ(activeQ + 1)}
@@ -1127,13 +1118,16 @@ export default function MockSession() {
               Next question →
             </button>
           )}
+          {submitted[q?.id] && activeQ === questions.length - 1 && (
+            <p className="mock-all-done">All questions answered — end your session when ready.</p>
+          )}
         </div>
       </div>
 
       {/* Pre-submission review modal */}
       {showExitConfirm && (() => {
         const flaggedUnsolved = questions.filter(q => flagged[q.id] && !solved[q.id]);
-        const unattempted = questions.filter(q => !results[q.id] && !solved[q.id]);
+        const unattempted = questions.filter(q => !submitted[q.id] && !solved[q.id]);
         const hasIncomplete = flaggedUnsolved.length > 0 || unattempted.length > 0;
         const warningParts = [
           flaggedUnsolved.length > 0 && `${flaggedUnsolved.length} flagged question${flaggedUnsolved.length > 1 ? 's' : ''}`,

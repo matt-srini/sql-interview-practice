@@ -7799,6 +7799,14 @@ select {
   margin-top: 0.625rem;
 }
 
+/* ── All-done nudge (last question, after submit) ─────────── */
+.mock-all-done {
+  margin: 0.75rem 0 0;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
 /* ── One-shot rule note (below session context in left panel) ── */
 .mock-session-rule {
   font-size: 0.74rem;

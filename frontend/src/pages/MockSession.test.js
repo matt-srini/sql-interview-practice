@@ -144,82 +144,71 @@ async function submitCurrentQuestion() {
   fireEvent.click(btn);
 }
 
-// ── Verdict message ────────────────────────────────────────────────────────────
+// ── Submit lock and button state ──────────────────────────────────────────────
+// Mock mode shows no verdict text — only the button label changes and navigation appears.
 
-describe('MockSession verdict message', () => {
-  it('shows "Move to the next question." on a correct answer when not the last question', async () => {
+describe('MockSession submit lock', () => {
+  it('shows "✓ Solved" on the button after a correct submission', async () => {
     renderSession(makeSessionData(2));
     await submitCurrentQuestion();
 
     await waitFor(() => {
-      expect(screen.getByText('✓ Correct! Move to the next question.')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /✓ Solved/ })).toBeInTheDocument();
     });
   });
 
-  it('shows "All done — end your session." on a correct answer on the last question', async () => {
-    renderSession(makeSessionData(1));
-    await submitCurrentQuestion();
-
-    await waitFor(() => {
-      expect(screen.getByText('✓ Correct! All done — end your session.')).toBeInTheDocument();
-    });
-  });
-
-  it('never shows the last-question message on the first of two questions', async () => {
+  it('shows "✗ Submitted" on the button after a wrong submission', async () => {
+    mockApiPost.mockResolvedValueOnce({ data: { correct: false, feedback: [] } });
     renderSession(makeSessionData(2));
     await submitCurrentQuestion();
 
     await waitFor(() => {
-      expect(screen.queryByText('✓ Correct! All done — end your session.')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /✗ Submitted/ })).toBeInTheDocument();
     });
   });
 
-  it('shows the wrong-answer message when submission is incorrect', async () => {
-    mockApiPost.mockResolvedValueOnce({ data: { correct: false, feedback: ['Check your WHERE clause'] } });
+  it('disables the Submit button after any submission', async () => {
+    renderSession(makeSessionData(2));
+    await submitCurrentQuestion();
+
+    await waitFor(() => {
+      const btn = screen.getByRole('button', { name: /✓ Solved/ });
+      expect(btn).toBeDisabled();
+    });
+  });
+
+  it('shows "All questions answered" nudge on the last question after submit', async () => {
     renderSession(makeSessionData(1));
     await submitCurrentQuestion();
 
     await waitFor(() => {
-      expect(screen.getByText('✗ Not quite. Each question is one shot — move on or end your session.')).toBeInTheDocument();
+      expect(screen.getByText('All questions answered — end your session when ready.')).toBeInTheDocument();
     });
+  });
+
+  it('does NOT show "All questions answered" nudge on a non-last question', async () => {
+    renderSession(makeSessionData(2));
+    await submitCurrentQuestion();
+
+    await waitFor(() => {
+      expect(screen.queryByText('All questions answered — end your session when ready.')).not.toBeInTheDocument();
+    });
+  });
+
+  it('shows no verdict error text after a wrong submission', async () => {
+    mockApiPost.mockResolvedValueOnce({ data: { correct: false, feedback: ['hint'] } });
+    renderSession(makeSessionData(1));
+    await submitCurrentQuestion();
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /✗ Submitted/ })).toBeInTheDocument();
+    });
+    // No feedback text visible
+    expect(screen.queryByText('hint')).not.toBeInTheDocument();
   });
 });
 
-// ── "Next question →" button ───────────────────────────────────────────────────
-
-describe('MockSession next-question button', () => {
-  it('shows "Next question →" after a correct answer on a non-last question', async () => {
-    renderSession(makeSessionData(2));
-    await submitCurrentQuestion();
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Next question →' })).toBeInTheDocument();
-    });
-  });
-
-  it('does NOT show "Next question →" after a correct answer on the last question', async () => {
-    renderSession(makeSessionData(1));
-    await submitCurrentQuestion();
-
-    await waitFor(() => {
-      expect(screen.queryByRole('button', { name: 'Next question →' })).not.toBeInTheDocument();
-    });
-  });
-
-  it('clicking "Next question →" advances to Q2', async () => {
-    renderSession(makeSessionData(2));
-    await submitCurrentQuestion();
-
-    await waitFor(() => screen.getByRole('button', { name: 'Next question →' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Next question →' }));
-
-    await waitFor(() => {
-      // Q2 tab becomes active — the active tab button has class "active"
-      const q2Tab = screen.getByRole('button', { name: /Q2/ });
-      expect(q2Tab.className).toMatch(/active/);
-    });
-  });
-});
+// (Next question → button tests consolidated in "MockSession next-question button after submit" below)
 
 // ── Flag button ────────────────────────────────────────────────────────────────
 
@@ -294,8 +283,9 @@ describe('MockSession navigation arrows', () => {
 });
 
 // ── "Next question →" button ────────────────────────────────────────────────────
+// Shows after ANY submit (correct or wrong) when not the last question.
 
-describe('MockSession skip button', () => {
+describe('MockSession next-question button after submit', () => {
   it('shows "Next question →" after a wrong answer on a non-last question', async () => {
     mockApiPost.mockResolvedValueOnce({ data: { correct: false, feedback: [] } });
     renderSession(makeSessionData(2));
@@ -305,17 +295,17 @@ describe('MockSession skip button', () => {
     });
   });
 
-  it('does NOT show "Next question →" after a wrong answer on the last question', async () => {
-    mockApiPost.mockResolvedValueOnce({ data: { correct: false, feedback: [] } });
-    renderSession(makeSessionData(1));
+  it('shows "Next question →" after a correct answer on a non-last question', async () => {
+    renderSession(makeSessionData(2));
     await submitCurrentQuestion();
     await waitFor(() => {
-      expect(screen.queryByRole('button', { name: 'Next question →' })).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Next question →' })).toBeInTheDocument();
     });
   });
 
-  it('does NOT show "Next question →" after a correct answer', async () => {
-    renderSession(makeSessionData(2));
+  it('does NOT show "Next question →" after submit on the last question', async () => {
+    mockApiPost.mockResolvedValueOnce({ data: { correct: false, feedback: [] } });
+    renderSession(makeSessionData(1));
     await submitCurrentQuestion();
     await waitFor(() => {
       expect(screen.queryByRole('button', { name: 'Next question →' })).not.toBeInTheDocument();
@@ -400,7 +390,7 @@ describe('MockSession review modal', () => {
     // Single-question session — solve it
     renderSession(makeSessionData(1));
     await submitCurrentQuestion(); // correct by default
-    await waitFor(() => screen.getByText('✓ Correct! All done — end your session.'));
+    await waitFor(() => screen.getByText('All questions answered — end your session when ready.'));
 
     fireEvent.click(screen.getByRole('button', { name: 'End session' }));
     await waitFor(() => {
