@@ -165,7 +165,7 @@ test.describe('Mock plan-tier flows', () => {
     await page.goto(`/mock/${flow.sessionId}`);
     await expect(page.getByText('Benchmark summary')).toBeVisible();
     await expect(page.getByText('Session debrief')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Review benchmarks' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Back to Mock' })).toBeVisible();
     await page.getByRole('button', { name: 'Plan follow-up drill' }).click();
 
     await expect(page.getByText('Recommended next step')).toBeVisible();

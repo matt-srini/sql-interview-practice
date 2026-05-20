@@ -628,7 +628,7 @@ export default function MockSession() {
               {summaryDescriptor.isBenchmark ? (
                 <>
                   <button className="btn btn-secondary" onClick={() => navigate('/mock')}>
-                    Review benchmarks
+                    Back to Mock
                   </button>
                   <button
                     className="btn btn-primary"
