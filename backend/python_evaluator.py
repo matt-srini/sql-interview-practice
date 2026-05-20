@@ -55,6 +55,10 @@ def run_python_code(code: str, question: dict[str, Any]) -> dict[str, Any]:
     """
     Run user code against public test cases and return per-case results.
     Used by /run-code endpoint (shows only public test cases).
+
+    Normalises harness keys to match the frontend contract:
+      ``results``      → ``test_results``
+      ``print_output`` → ``stdout``
     """
     test_cases = question.get("test_cases", [])
     public_count = question.get("public_test_cases", len(test_cases))
@@ -66,6 +70,11 @@ def run_python_code(code: str, question: dict[str, Any]) -> dict[str, Any]:
         "test_cases": public_cases,
     }
     result = _spawn_harness(payload)
+    # Normalise harness keys → frontend-expected keys
+    if "results" in result:
+        result["test_results"] = result.pop("results")
+    if "print_output" in result:
+        result["stdout"] = result.pop("print_output")
     return result
 
 
@@ -103,7 +112,8 @@ def evaluate_python_code(code: str, question: dict[str, Any]) -> dict[str, Any]:
     return {
         "correct": all_passed,
         "error": result.get("error"),
-        "public_results": public_results,
+        # ``test_results`` matches the frontend TestCasePanel prop name
+        "test_results": public_results,
         "hidden_summary": {
             "passed": hidden_passed,
             "total": hidden_total,
@@ -115,6 +125,12 @@ def run_python_data_code(code: str, question: dict[str, Any]) -> dict[str, Any]:
     """
     Run user pandas/numpy code and return the resulting DataFrame.
     Used by /run-code endpoint for the Pandas track.
+
+    Normalises harness keys to match the frontend contract:
+      ``print_output``      → ``stdout``
+      ``result.columns``    → top-level ``columns``
+      ``result.rows``       → top-level ``rows``
+    The nested ``result`` dict is kept for internal use by ``evaluate_python_data_code``.
     """
     dataframes = question.get("dataframes", {})
     payload = {
@@ -123,7 +139,17 @@ def run_python_data_code(code: str, question: dict[str, Any]) -> dict[str, Any]:
         "dataframes": dataframes,
         "csv_dir": str(DATASETS_DIR),
     }
-    return _spawn_harness(payload)
+    raw = _spawn_harness(payload)
+    # Normalise print_output → stdout
+    if "print_output" in raw:
+        raw["stdout"] = raw.pop("print_output")
+    # Flatten columns/rows to top level for direct frontend access
+    nested = raw.get("result") or {}
+    if nested.get("columns") is not None:
+        raw["columns"] = nested["columns"]
+    if nested.get("rows") is not None:
+        raw["rows"] = nested["rows"]
+    return raw
 
 
 def evaluate_python_data_code(code: str, question: dict[str, Any]) -> dict[str, Any]:
@@ -138,7 +164,7 @@ def evaluate_python_data_code(code: str, question: dict[str, Any]) -> dict[str, 
             "error": user_output["error"],
             "user_result": None,
             "expected_result": None,
-            "print_output": user_output.get("print_output", ""),
+            "stdout": user_output.get("stdout", ""),
         }
 
     # Run expected code (trusted, same harness but no guard needed)
@@ -159,7 +185,7 @@ def evaluate_python_data_code(code: str, question: dict[str, Any]) -> dict[str, 
             "error": "Internal error: expected solution failed.",
             "user_result": None,
             "expected_result": None,
-            "print_output": user_output.get("print_output", ""),
+            "stdout": user_output.get("stdout", ""),
         }
 
     user_result = user_output.get("result")
@@ -179,5 +205,5 @@ def evaluate_python_data_code(code: str, question: dict[str, Any]) -> dict[str, 
         "error": None,
         "user_result": user_result,
         "expected_result": expected_result,
-        "print_output": user_output.get("print_output", ""),
+        "stdout": user_output.get("stdout", ""),
     }

@@ -1552,6 +1552,17 @@ export default function QuestionPage() {
             </>
           )}
 
+          {/* Statistics numerical submit: show test case results (same shape as Python) */}
+          {submitResult && topic === 'statistics' && (
+            <>
+              <TestCasePanel
+                results={submitResult.test_results ?? []}
+                hiddenSummary={submitResult.hidden_summary ?? null}
+              />
+              <PrintOutputPanel output={submitResult.stdout ?? ''} />
+            </>
+          )}
+
           {/* Python-Data submit: show DataFrame output only on wrong answers */}
           {submitResult && !submitResult.correct && topic === 'python-data' && submitResult.user_result && (
             <div className="results-compare-grid">
