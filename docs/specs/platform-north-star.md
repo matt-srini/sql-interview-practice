@@ -72,10 +72,11 @@ The dashboard should connect track-level performance, weak concepts, pacing, and
 
 ## Governance sources
 
-- `docs/concept-hooks.md` is the canonical concept inventory by track.
-- `docs/concept-expansion-plan.md` is the historical audit and expansion record.
+- `docs/concept-taxonomy.md` is the canonical concept-family registry per track and the follow-up dimension taxonomy. Every question concept tag must map to a family registered here.
+- `docs/concept-hooks.md` is the Socratic interview-hook inventory by track (used to seed conceptual coverage when authoring).
+- `docs/tracks/<track>.md` is the per-track knowledge base, philosophy, and authoring allocation matrix.
+- `.github/agents/question-authoring.agent.md` is the mandatory authoring entry point — no question is created or modified without it.
 - `frontend/src/pages/LandingPage.js` is the live role-to-track product mapping.
-- `docs/mock-modality-rollout-plan.md` is the execution plan for the current modality migration.
 
 ## Success bar
 
