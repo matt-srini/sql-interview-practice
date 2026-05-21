@@ -1,0 +1,147 @@
+# Python Track
+
+> **Authoring rule, no exceptions:** Every Python question is created or modified via [`.github/agents/question-authoring.agent.md`](../../.github/agents/question-authoring.agent.md). Direct edits to `backend/content/python_questions/*.json` bypass the difficulty arc and the concept-taxonomy contract.
+
+## What this track trains
+
+A working data professional writes Python every day — not LeetCode-style competitive programming, but **algorithmic reasoning applied to real problems**: dedupe a stream, build a session map, detect anomalies, run a state machine over events. The Python track tests whether a candidate can recognise the *shape* of a problem (sliding window? two pointers? dynamic programming? graph traversal?) and pick the right pattern with the right complexity.
+
+> *Datathink philosophy applied:* A candidate who can write a one-line list comprehension is everywhere. A candidate who, given a problem, names "this is a sliding window with constraint X, O(n) achievable, here's why," and then writes it cleanly — that's the practitioner who survives the second interview round.
+
+We are not training competitive coders. We are training data professionals who happen to need real algorithmic chops because the work demands it.
+
+## Modality
+
+**Executable problem-solving.** Subprocess-sandboxed Python execution. 5-second timeout. 512 MB RLIMIT_AS. AST-based pre-execution guard rejects unsafe imports / system calls. Test-case-based evaluation: candidate's function called with each test input, output compared to expected.
+
+## Schema essentials (function shape)
+
+Every question defines a top-level `def solve(...)` function with typed parameters. The test runner imports the candidate's module and calls `solve(*test_input)` for each test case. Return type must match the expected value exactly (type + structure + content).
+
+```python
+def solve(nums: list[int], target: int) -> int:
+    # candidate fills in
+    ...
+```
+
+No global mutable state. No I/O (no `print` in the function body). Determinism required.
+
+## ID range (TXNNN scheme)
+
+`T=2` for Python. Practice and `mock_only` share the same space within each difficulty.
+
+| Difficulty | ID range | File |
+|---|---|---|
+| Easy | 21001–21999 | `backend/content/python_questions/easy.json` |
+| Medium | 22001–22999 | `backend/content/python_questions/medium.json` |
+| Hard | 23001–23999 | `backend/content/python_questions/hard.json` |
+
+Samples in `backend/content/python_questions/sample/` use `2XS` 3-digit IDs.
+
+## Difficulty vocabulary
+
+| Tier | Reasoning depth | Patterns | Complexity expected | What's out |
+|---|---|---|---|---|
+| **Easy** | Single algorithmic concept. Basic data structures. | Linear scan, hash-map state, basic string manipulation, list comprehensions, simple counting | O(n) or O(n log n) | Nested DP, graph algorithms |
+| **Medium** | One named pattern in clean form. Recognising which pattern applies *is* the test. | Sliding window, two pointers, binary search (incl. on answer space), heap-based selection, BFS/DFS basics, 1D DP, backtracking | O(n) or O(n log n) | 2D DP, advanced graph (Dijkstra, Union-Find) |
+| **Hard** | Multi-step decomposition + non-obvious data structure choice. | 2D DP, graph algorithms (Dijkstra, Union-Find, topological sort, articulation), Trie, system-design data structures (LRU cache, median-from-stream heap pair), advanced string (KMP, Aho-Corasick where motivated) | Optimal complexity required — **no O(n²) accepted at hard if O(n log n) exists** | "Hard because the constraints are weird" |
+
+If a question's hardness comes from "you have to remember to handle the empty case AND the duplicates case AND the negative case AND..." — that's not hard, that's accumulation. Find the *one* pattern that's actually demanding.
+
+## Concept arc (early → late)
+
+| Tier | Progression |
+|---|---|
+| Easy | Linear scan + counters → hash-map membership / frequency → indexed-sequence reasoning → string parsing basics → list/collection transforms → simple greedy |
+| Medium | Sliding window (fixed + variable) → two pointers (sorted, fast/slow) → binary search (incl. parametric) → heap top-K patterns → 1D DP (sequence + partition) → BFS/DFS on grids and graphs → backtracking (subsets, permutations) |
+| Hard | 2D DP → graph algorithms (Dijkstra, Union-Find, topological sort) → Trie / Aho-Corasick → system-design DS (LRU, median heap, sliding-window max) → advanced state representations |
+
+## Concept families
+
+Full registry: [`docs/concept-taxonomy.md` → Python section](../concept-taxonomy.md#python--concept-families).
+
+16 canonical families covering algorithmic patterns. The blocklist rejects `for loop`, `if/else`, `function`, library names alone (`heapq`, `bisect`) — describe the *pattern*, not the syntactic mechanism.
+
+## Authoring allocation matrix
+
+| Question kind | Where it lives | When to author |
+|---|---|---|
+| **Practice easy** | `easy.json` no `mock_only` | One named pattern, clean, < 50 LOC reference solution |
+| **Practice medium** | `medium.json` no `mock_only` | One named pattern in non-obvious application |
+| **Practice hard** | `hard.json` no `mock_only` | Pattern + data-structure choice + complexity defense |
+| **Mock-only medium** | `medium.json` with `mock_only: true` | Real-world framing (event stream, dedupe a feed, build a session map) instead of abstract array problems. Heavier on `STRING PATTERN REASONING`, `HASH-MAP STATE`, `IN-PLACE TRANSFORMATION`. |
+| **Mock-only hard** | `hard.json` with `mock_only: true` | System-design-flavoured (design LRU, design rate limiter as algorithmic problem). Targets `GRAPH TRAVERSAL`, `DYNAMIC PROGRAMMING (2D)`. |
+| **Mock-only chain** | Parent + 1–3 follow-ups, all `mock_only: true` | Natural pivots: scale (10⁸ input), business rule (now ignore X), data quality (handle Nones), edge case (empty input), performance (O(n²) → O(n log n)) |
+
+**Easy mock-only: never.** Same rule as SQL.
+
+## Anti-patterns specific to Python
+
+- **Pure LeetCode trivia** — questions where the only difficulty is recognising an obscure named algorithm with no real-world analogue. Reject.
+- **Hard questions with O(n²) reference solutions** — at hard tier, if a better complexity exists, the reference must achieve it.
+- **Questions testing language quirks** — `__getitem__` exotica, `==` vs `is` gotchas. Not the test.
+- **String-manipulation puzzles disconnected from real work** — anagram-finding has its place; "rotate this string by Fibonacci(n)" is noise.
+- **Hidden test cases that change the problem** — every behaviour a hidden test enforces must be inferable from the public description.
+
+## JSON schema
+
+```json
+{
+  "id": 22018,
+  "order": 12,
+  "topic": "python",
+  "difficulty": "medium",
+  "title": "Longest substring with at most K distinct characters",
+  "description": "Given a string s and integer k, return the length of the longest substring of s that contains at most k distinct characters.\n\nConstraints:\n- 1 <= len(s) <= 10^5\n- 0 <= k <= 26\n- Lowercase English letters only.\n\nReturn 0 when k == 0.",
+  "starter_code": "def solve(s: str, k: int) -> int:\n    # Your code here\n    pass",
+  "expected_code": "def solve(s: str, k: int) -> int:\n    if k == 0:\n        return 0\n    from collections import defaultdict\n    counts = defaultdict(int)\n    left = best = 0\n    for right, ch in enumerate(s):\n        counts[ch] += 1\n        while len(counts) > k:\n            counts[s[left]] -= 1\n            if counts[s[left]] == 0:\n                del counts[s[left]]\n            left += 1\n        best = max(best, right - left + 1)\n    return best",
+  "solution_code": "<same as expected_code, optionally annotated>",
+  "explanation": "Sliding window with a count map. Time O(n), space O(min(k, alphabet)). Why the while-loop is O(n) amortized: each character is incremented and decremented at most once.",
+  "test_cases": [
+    {"input": ["eceba", 2], "expected": 3},
+    {"input": ["aa", 1], "expected": 2},
+    {"input": ["", 5], "expected": 0},
+    {"input": ["abc", 0], "expected": 0},
+    {"input": ["aabbcc", 2], "expected": 4}
+  ],
+  "public_test_cases": [
+    {"input": ["eceba", 2], "expected": 3},
+    {"input": ["aa", 1], "expected": 2}
+  ],
+  "hints": [
+    "The constraint is on distinct characters in a window — what data structure tracks that count cheaply?",
+    "Expand the window from the right; contract from the left when the constraint breaks."
+  ],
+  "concepts": ["SLIDING WINDOW", "HASH-MAP STATE"]
+}
+```
+
+Required:
+- `expected_code` and `solution_code` produce identical results on all `test_cases`.
+- At least one edge case in `test_cases` (empty input, boundary, degenerate input).
+- `public_test_cases` = exactly 2 (user can run before submit).
+- Hidden tests do not add new constraints beyond what the description states.
+- Hints follow the same discipline as other tracks: name the pattern / data structure, not the implementation.
+
+## Verification before commit
+
+```bash
+# 1. Reference solution passes all test cases
+cd backend && ../.venv/bin/python -c "
+import json
+q = json.load(open('content/python_questions/medium.json'))[INDEX]
+exec(q['expected_code'])
+for tc in q['test_cases']:
+    assert solve(*tc['input']) == tc['expected'], tc
+print('All test cases pass')
+"
+
+# 2. Complexity claim defensible
+# (For hard questions, eyeball that the expected_code achieves the claimed time/space.)
+
+# 3. Full content validation
+python scripts/validate_content.py
+
+# 4. Python evaluator tests
+cd backend && ../.venv/bin/python -m pytest tests/test_python_evaluator.py -q
+```
