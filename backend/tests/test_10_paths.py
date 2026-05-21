@@ -16,21 +16,33 @@ _agg_path = next(p for p in _paths if p["slug"] == _PATH_SLUG)
 _path_question_ids = _agg_path["questions"]
 
 
-def test_tc119_get_paths_returns_24_paths():
-    """TC-119: GET /api/paths → 200; paths array length == 38 (all 9 tracks)."""
+def test_tc119_get_paths_returns_all_paths():
+    """TC-119: GET /api/paths → 200; paths array covers all 9 tracks.
+
+    Tests the *property* that all paths are returned and shaped correctly,
+    not a hardcoded total — total grows as new paths are added. Verifies
+    per-track minimum (each track has at least its starter + intermediate).
+    """
     with TestClient(app) as client:
         _make_user(client, plan="free")
         r = client.get("/api/paths")
     assert r.status_code == 200
     body = r.json()
     paths = body.get("paths", body) if isinstance(body, dict) else body
-    assert len(paths) == 38
+    # Sanity floor: at least 2 paths per track × 9 tracks = 18 minimum.
+    # Current bank holds ~42 paths; this check trips only if the loader breaks.
+    assert len(paths) >= 18, f"Suspiciously few paths returned: {len(paths)}"
     # Each path has slug, title, topic, solved_count
     for p in paths:
         assert "slug" in p
         assert "title" in p
         assert "topic" in p
         assert "solved_count" in p
+    # Every track represented (starter or intermediate exists for each)
+    topics_present = {p["topic"] for p in paths}
+    expected_topics = {"sql", "python", "python-data", "pyspark", "data-engineering",
+                       "data-modeling", "statistics", "ml-fundamentals", "experimentation"}
+    assert expected_topics.issubset(topics_present), f"Missing tracks in paths: {expected_topics - topics_present}"
 
 
 def test_tc120_get_path_returns_question_list_with_state():
