@@ -934,5 +934,57 @@
       "When a hypothesis about segment differences is grounded in strong product intuition before the experiment, it can be part of the registered analysis plan."
     ],
     "concepts": ["SEGMENTATION ANALYSIS", "EXPERIMENT DESIGN"]
+  },
+  {
+    "id": 92043,
+    "order": 31,
+    "topic": "experimentation",
+    "type": "debug",
+    "difficulty": "medium",
+    "title": "CUPED Covariate Window: Contamination Through Post-Exposure Measurement",
+    "code_snippet": "# CUPED adjustment for a 14-day checkout rate A/B test\n# Intended: Y_cuped = Y - theta * (X - E[X])\n# X should be a pre-experiment covariate\n\nexperiment_data = load_experiment_data()\n# Fields: user_id, treatment (0/1),\n#   Y = checkout rate during experiment days 1–14\n#   X = checkout rate during experiment days 1–14  ← same window as Y\n\ntheta = np.cov(Y, X)[0, 1] / np.var(X)\nY_cuped = Y - theta * (X - np.mean(X))\n\nreport = {\n    'variance_reduction': '68%',   # unusually high\n    'p_value': 0.021,\n    'estimated_lift': '+0.3%'      # suspiciously small vs prior tests\n}",
+    "description": "The analyst applies CUPED and reports 68% variance reduction and a statistically significant but tiny +0.3% lift. Prior tests on comparable features showed 1–2% lifts. What is the root cause of this suspicious result?",
+    "options": [
+      "X is measured during the same experiment window as Y, so treatment group users' X values are influenced by the treatment itself; the contaminated covariate inflates theta and causes the CUPED adjustment to over-correct treatment group outcomes toward the control mean — the lift is underestimated and the variance reduction is overstated; X must be computed from a pre-experiment window (e.g., checkout rate during the 14 days before day 0) when it cannot be affected by treatment assignment",
+      "68% variance reduction is correct and desirable — high variance reduction confirms CUPED is working well; the +0.3% lift is likely the true effect, and prior tests showing 1–2% lifts should be re-examined for methodology errors rather than assuming the current result is wrong",
+      "The variance reduction formula has a sign error: Y_cuped should add the adjustment term (Y + theta * (X − E[X])) rather than subtract it; the subtraction artificially deflates treatment group adjusted outcomes, making the lift appear smaller than the true effect",
+      "Using the same metric for both Y and X creates circular adjustment regardless of time window — CUPED requires the covariate to be a different metric from the outcome variable; the fix is to use a proxy metric such as page views or session count as X instead of checkout rate"
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. CUPED removes pre-existing variance attributable to baseline user behavior — improving sensitivity without biasing the causal estimate — but only if the covariate X is measured in a period unaffected by treatment assignment. When X is measured during the experiment window, treatment group users' X values co-move with Y under the treatment effect. This inflates cov(Y, X), which inflates theta. The adjustment Y_cuped = Y − theta*(X − E[X]) then over-corrects treatment group outcomes toward the control mean, producing an underestimated lift and an overstated variance reduction. The 68% variance reduction and near-zero lift are the dual signature of this contamination. Fix: compute X from the 14 days before experiment start — the same metric, but measured when no treatment has been applied.\n\nOption B is wrong: while high variance reduction is desirable in principle, it should be interpreted in context. When combined with a lift that contradicts prior evidence from similar tests, it warrants investigation. Accepting the result without auditing the covariate window is a methodological error.\n\nOption C is wrong: the CUPED formula is correctly written as Y minus the adjustment term. Adding the adjustment would introduce bias in the opposite direction. The sign is not the bug.\n\nOption D is a misconception. Using the same metric measured in a pre-experiment window as the covariate is the standard and most effective CUPED formulation — pre-period checkout rate typically has the highest correlation with in-experiment checkout rate among all candidate covariates. The bug is the time window, not the choice of metric.",
+    "hints": [
+      "The covariate X is measured during the same 14-day window as the experiment. For users in the treatment group, is their checkout rate during this window guaranteed to be unaffected by the treatment assignment?",
+      "When X co-moves with Y under treatment, the estimated theta is inflated relative to a pre-experiment covariate. An over-inflated theta over-corrects the treatment group's outcomes — does this make the estimated lift larger or smaller than the true effect?"
+    ],
+    "concepts": [
+      "VARIANCE REDUCTION",
+      "EXPERIMENT DESIGN"
+    ]
+  },
+  {
+    "id": 92044,
+    "order": 32,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "medium",
+    "title": "Two-Sided Marketplace Equilibration: Why Short-Duration Tests Miss Steady-State Effects",
+    "scenario_context": "A marketplace platform tests a new seller pricing tool that makes it easier to set competitive prices. The experiment runs 14 days with 50,000 sellers per arm. At day 14, the primary metric — GMV per buyer visit — shows no significant effect (p = 0.31, estimated lift +0.2%). The team marks the experiment as failed. Six weeks later, a holdout group analysis reveals +4.3% GMV in the treatment group versus the holdout.",
+    "description": "Why did the 14-day read produce a null result while the six-week holdout revealed a meaningful positive effect?",
+    "options": [
+      "Two-sided marketplace interventions require an equilibration period: sellers must discover and experiment with the pricing tool over days to weeks, and buyers must discover and respond to the resulting price competition over additional weeks — the full steady-state effect only emerges after both sides have adapted; at day 14, early seller adoption was incomplete and buyer behavioral response had barely begun, making the GMV lift near zero at that horizon",
+      "The experiment was underpowered at 14 days: with 50,000 sellers per arm the minimum detectable effect was larger than 4.3%, so the 14-day read was always statistically unable to detect the true effect; running the same experiment for 14 days with a larger sample would have shown significance",
+      "The six-week holdout is confounded by network spillovers: holdout buyers who interacted with treated sellers received partial treatment through price competition, inflating the apparent treatment-vs-holdout gap; the true incremental lift from the tool is smaller than 4.3% once spillover is corrected",
+      "The null result at day 14 reflects over-aggressive initial pricing: sellers first set prices too high using the new tool, suppressing buyer demand; by week 6 they had settled on rational prices, producing the observed lift; the 14-day read captured a temporary pricing overshoot rather than a stable effect"
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. Two-sided marketplace interventions create a causal chain that spans both market sides. Sellers must (1) discover the tool, (2) run pricing experiments, and (3) arrive at competitive price points — a process that typically takes days to weeks. Buyers must then (4) encounter the changed prices in search results and (5) update their purchase behavior. At day 14, most sellers have only begun adoption and the downstream buyer behavioral shift is nascent. The GMV metric at day 14 measures an early-equilibration state rather than the eventual steady state. This is not a statistical power problem — the metric genuinely hadn't moved yet. Experiments that intervene on one side of a two-sided market need a duration that spans both sides' adaptation periods.\n\nOption B misdiagnoses the problem. A standard power calculation with 50,000 sellers per arm and a 4.3% GMV lift would show high power at day 14. The null result is not caused by insufficient sample size — the metric itself was near zero because the causal chain hadn't completed. Extending duration (not sample size) would have detected the effect.\n\nOption C inverts the contamination direction. If holdout buyers interacted with treated sellers, the holdout group's GMV would be contaminated upward, making the treatment-vs-holdout gap an underestimate of the true lift — not an overestimate. The contamination argument, if anything, makes the 4.3% figure conservative.\n\nOption D is inconsistent with the data trajectory. An over-aggressive pricing scenario predicts treatment GMV below control initially, then convergence — not a path from near-zero gap at day 14 to +4.3% at six weeks. The observed trajectory matches gradual equilibration rather than correction of an overshoot.",
+    "hints": [
+      "The intervention is on the seller side, but the primary metric reflects buyer purchase behavior. How many sequential behavioral steps separate a seller adopting the pricing tool from a buyer completing a purchase at the new price point?",
+      "If sellers need 2–3 weeks to fully adopt the tool and buyers need another 2–3 weeks to discover and respond to the resulting price changes, when would you expect to first observe a meaningful GMV lift?"
+    ],
+    "concepts": [
+      "EXPERIMENT DURATION",
+      "NETWORK EFFECTS"
+    ]
   }
 ]

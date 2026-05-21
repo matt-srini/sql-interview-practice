@@ -737,5 +737,57 @@
       "Think about what changes when the experiment ends and the treatment is applied to everyone: which part of the treatment-control gap was driven by redistribution rather than genuine productivity, and does that part persist at full rollout?"
     ],
     "concepts": ["NETWORK EFFECTS", "CAUSAL INFERENCE"]
+  },
+  {
+    "id": 93034,
+    "order": 21,
+    "topic": "experimentation",
+    "type": "scenario",
+    "difficulty": "hard",
+    "title": "Long-Run Holdout Group Decay: When the Counterfactual Diverges from Current Users",
+    "scenario_context": "A major consumer tech platform maintains a permanent 5% holdout group excluded from all product feature launches. After two years of continuous feature deployment, the holdout group's weekly active usage is 23% lower than the treatment group. Product leadership declares a 23% cumulative lift from all features deployed over the two-year period. The data science team raises a validity concern about this attribution.",
+    "description": "What is the primary validity concern with attributing the 23% usage gap to the cumulative effect of deployed features?",
+    "options": [
+      "A two-year holdout group has experienced a fundamentally different product: no UX improvements, no recommendation updates, no performance work — users who found the unimproved product inadequate may have churned or severely reduced usage, leaving a survivor population that is self-selected and no longer representative of what current treatment users would look like without treatment; the 23% gap conflates the causal effect of features with compositional divergence and differential attrition between the two groups over time",
+      "The 23% estimate is directionally correct but should be time-discounted: features deployed in month 1 had 24 months to compound their effect while features deployed in month 23 had only 1 month; applying a time-weighted discount to each feature's individual contribution would reduce the headline 23% to a smaller but internally consistent cumulative lift estimate",
+      "The measurement is valid because the holdout group was randomly assigned two years ago; random assignment at baseline is sufficient for valid causal inference at any subsequent measurement horizon, regardless of how divergent the two groups' product experiences have become over the two-year period",
+      "The 23% gap underestimates the true feature impact: holdout users who churn do so because the inferior product fails to retain them, removing the least-engaged users and biasing the surviving holdout toward users who derive less incremental value from features; the true average treatment effect on the full user population is therefore larger than 23%"
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. A holdout group's validity as a counterfactual rests on the stable unit treatment value assumption (SUTVA): holdout users' behavior must represent what treatment users would have done without treatment. Over two years, the holdout group experienced a product that fell progressively further behind the treatment product in quality. Users who needed improvements to stay engaged may have churned or reduced usage to accommodate the degraded experience. At the two-year mark, the holdout population is self-selected: survivors are those who tolerated an increasingly outdated product, a fundamentally different population from the average treatment user. Comparing treatment users (who received all features and retained engagement accordingly) against surviving holdout users confounds the causal feature effect with this compositional divergence and differential attrition.\n\nOption B introduces time-value discounting, which is not a correction for compositional validity. The usage gap is a point-in-time measurement — current weekly active usage. Discounting individual feature contributions does not address the self-selection bias in the holdout population's composition at the measurement date.\n\nOption C is wrong. Random assignment at baseline is necessary but not sufficient for valid long-run causal inference when the two groups have experienced radically different conditions and differential attrition for an extended period. Random assignment eliminates baseline confounding; it does not insulate against the compositional drift that occurs when the two groups experience different products and therefore exhibit different retention behavior over two years.\n\nOption D's argument is plausible in structure but wrong in conclusion here. Whether heavy users benefit more or less from incremental features depends on feature type. More critically, Option D does not address the compositional validity concern — it accepts the gap as a valid causal estimate and merely debates its magnitude. The data science team's concern is about the validity of the comparison, not its direction.",
+    "hints": [
+      "After two years without any product improvements, how likely is the holdout group's current composition and engagement level to represent what treatment users would look like without treatment? What has happened to holdout users who found the unimproved product inadequate?",
+      "Random assignment at the start of a holdout period ensures the groups are initially comparable. Does it guarantee they remain comparable after two years of experiencing different product quality, different recommendation quality, and different retention pressures?"
+    ],
+    "concepts": [
+      "HOLDOUT GROUPS",
+      "CAUSAL INFERENCE"
+    ]
+  },
+  {
+    "id": 93035,
+    "order": 22,
+    "topic": "experimentation",
+    "type": "debug",
+    "difficulty": "hard",
+    "title": "Switchback Experiment Analysis: Temporal Autocorrelation Inflates the Test Statistic",
+    "code_snippet": "# Ride-share platform: 7-day switchback experiment\n# Treatment/control alternates by day; ~200K active users/day\n# Metric: average ride completions per user\n\nperiods = pd.DataFrame({\n    'day':             [1,    2,    3,    4,    5,    6,    7],\n    'treatment':       [1,    0,    1,    0,    1,    0,    1],\n    'avg_completions': [4.82, 4.71, 4.85, 4.69, 4.79, 4.73, 4.83]\n})\n\ntreat = periods[periods.treatment == 1]['avg_completions']\nctrl  = periods[periods.treatment == 0]['avg_completions']\n\nfrom scipy.stats import ttest_ind\nt_stat, p_val = ttest_ind(treat, ctrl)\nprint(f't={t_stat:.2f}, p={p_val:.3f}')  # Output: t=5.17, p=0.035",
+    "description": "The t-test declares the experiment significant at α = 0.05 using 4 treatment periods and 3 control periods. A colleague argues this analysis is fundamentally flawed. What is the primary error, and what is the correct analytical approach?",
+    "options": [
+      "The t-test treats 4 treatment days and 3 control days as 7 independent observations, but daily rideshare completions are serially autocorrelated — the same commuting patterns, weather, and events make adjacent days correlated regardless of treatment assignment; this autocorrelation means the effective sample size is much smaller than 7 and the standard error is underestimated, inflating the t-statistic and producing a false-positive; the correct approach uses cluster-robust or Newey-West standard errors that account for within-week temporal dependence, or a mixed-effects model with a random effect for time block",
+      "The fatal flaw is unequal group sizes: 4 treatment periods vs 3 control periods violates the equal-n requirement for a two-sample t-test; reassigning day 7 to control to achieve a balanced 3-vs-3 design eliminates the bias from the extra treatment observation",
+      "avg_completions is a ratio metric; all ratio statistics require delta method variance correction before a t-test is valid; ttest_ind significantly underestimates the variance for ratio metrics, inflating the t-statistic by approximately √n for a dataset of this size",
+      "A switchback experiment with only 7 periods cannot satisfy the Central Limit Theorem requirement for normality of period-level means; a minimum of 30 periods is required before the t-test approximation is valid; the result should be discarded and the experiment extended to at least 30 alternating periods"
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. The standard independent-samples t-test assumes each observation is drawn independently from its population. In a time-series switchback experiment, daily averages are not independent — the same commuters travel on Monday and Tuesday, weekly seasonality (weekday vs weekend patterns) persists across adjacent days, and external shocks (weather, events) simultaneously affect consecutive days. Positive autocorrelation means observations share information: the effective number of independent data points is much smaller than 7. The t-test's standard error formula assumes independence and therefore underestimates the true standard error, inflating the t-statistic. The numerical pattern here (treatment days: 4.82, 4.85, 4.79, 4.83; control days: 4.71, 4.69, 4.73) is highly consistent within each group — a signature of correlated measurements, not independent sampling. The correct approach: cluster the standard errors at the day level (cluster-robust SE), apply Newey-West HAC correction, or use a mixed-effects model with a random intercept for time that absorbs the serial correlation before computing the treatment coefficient.\n\nOption B is wrong. Unequal group sizes in a two-sample t-test do not bias the estimate — ttest_ind handles unequal n correctly by default using Welch's t-test. Reassigning an observation to achieve balance would reduce information. Unequal n is not a validity issue.\n\nOption C applies to a different scenario. avg_completions here is the mean of a count metric computed over 200K users per day — not a ratio with a highly variable denominator. With 200K users per day, the CLT applies strongly to the daily mean, and the variance of the mean is well-estimated without delta method correction. The dominant error is autocorrelation, not ratio variance.\n\nOption D is incorrect. There is no universal 30-period minimum for switchback experiments. The CLT approximation applies when observations are independent and the distribution of the test statistic converges — with positive autocorrelation, the problem is the violated independence assumption, not the period count. Even 100 periods of positively autocorrelated data would produce inflated t-statistics under a standard t-test.",
+    "hints": [
+      "The t-test treats each day as an independent observation. In a rideshare market, is Tuesday's average ride count independent of Monday's? What shared factors create correlation between adjacent days in a time-series?",
+      "Positive autocorrelation between observations means consecutive measurements carry overlapping information — the effective sample size is smaller than the nominal count. How does overestimating the effective sample size affect the computed standard error and the resulting p-value?"
+    ],
+    "concepts": [
+      "SWITCHBACK EXPERIMENTS",
+      "EXPERIMENT DESIGN"
+    ]
   }
 ]
