@@ -92,19 +92,32 @@ This is the single source of truth. Any other doc that mentions mock plan gates 
 
 ### Daily caps, explained
 
-- **Free** — Unlimited easy `short_drill` so the daily habit hook lives without artificial counters. Exactly 1 `benchmark` per rolling 7 days (NOT calendar week — rolling avoids Monday-spike load and "I wasted my Sunday slot" frustration), any track, any difficulty. This is the *demo* — the free user gets to experience real benchmarking once a week and feel what they would be upgrading to. No mock-only content, no chains, no focus, no Loop.
+- **Free** — Unlimited easy `short_drill` so the daily habit hook lives without artificial counters. Exactly 1 `benchmark` per rolling 7 days (NOT calendar week — rolling avoids Monday-spike load and "I wasted my Sunday slot" frustration), any track, any difficulty. This is the *demo* — the free user gets to experience real benchmarking once a week and feel what they would be upgrading to. No drill access beyond easy, no mock-only content, no chains, no focus, no Loop. Mixed track is accessible within the free shape (easy `short_drill` mixed; 1 weekly benchmark can be Mixed too if the user picks Mixed as the track).
 
 - **Pro** — Inherits the Free benefits and adds:
   - **3 drills/day, combined** across `short_drill` (medium/hard) + `custom_drill` (any difficulty). User chooses how to spend: 3 short, 3 custom, or any mix. Easy `short_drill` does not count toward this cap.
   - **3 `benchmarks`/day**, any track/difficulty.
   - Mock-only content pool unlocked. Chain follow-ups eligible.
   - Daily caps reset at user-local midnight (server-side: tracked as UTC day with user's IANA TZ offset).
+  - **6 total/day is intentional, not aggressive.** A serious Pro user prepping for a single role covers 4–5 tracks (e.g. Data Engineer = Python + SQL + PySpark + DE + DM). 6 sessions/day across that spread is barely 1.2 sessions per track per day — a role-coverage floor, not a ceiling. Steady-state usage is 1–3/day; the cap absorbs interview-week peaks.
 
 - **Elite** — All Pro features, plus:
-  - Counts surfaced as "Unlimited" in UI. Backend enforces a soft anti-abuse rate-limit (~10 sessions/hour rolling) that never displays unless triggered.
+  - Counts surfaced as "Unlimited" in UI. Backend enforces a three-layer soft anti-abuse cap (never displayed unless triggered):
+    - **Burst gap:** minimum 30 s between `POST /api/mock/start` calls (defeats script-spam)
+    - **Hourly rate:** 5 sessions per rolling 60 min (the shortest mock is a 30-min `short_drill`, so 5/hr already implies 4 of 5 are discarded — far above human ceiling)
+    - **Daily total:** 20 sessions per rolling 24 h (caps total exposure under sustained abuse like password-sharing across multiple users)
   - `focus_concepts` filter (1–3 concept families per session).
   - **Interview Loop mode** (chain-driven iterative interviewer dialogue — see [Interview Loop](#interview-loop-mode-elite-only) below).
   - Deep analytics (cross-session trends, dimension analysis, readiness score, study plan), debrief coaching narrative.
+
+### Sessions that do NOT count against daily quota
+
+A session is consumed against the user's daily quota at `POST /api/mock/start`. **Two exceptions:**
+
+1. **Discard within the 2-minute window** — `DELETE /api/mock/:id` called within 120 s of `started_at` reverts the quota counter to its pre-start value. Misclicks and "wrong track" recoveries don't penalise the user. After 120 s the quota slot is locked in regardless of submission state.
+2. **Chain reclaim** — when a chain is discarded within the same 2-minute window, the chain is reclaimed (returned to the user's pool) AND the daily quota slot is reverted. A single misclick should never cost a quota slot + a chain — that's a double penalty for a UX failure, not user behaviour.
+
+These rules apply uniformly across all plan tiers. The semantics are identical for `benchmark`, `short_drill`, `custom_drill`, and Interview Loop sessions.
 
 ### Why this shape (design rationale)
 

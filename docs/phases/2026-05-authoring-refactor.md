@@ -277,17 +277,20 @@ After Phase 1 docs are committed, spin up dev preview, screenshot landing/worksp
 - [x] Update governance-source references in north-star.md
 - [x] Create this tracking doc
 
-### Pre-Phase 1 — Decision lock 🔄 in progress
+### Pre-Phase 1 — Decision lock ✅ completed 2026-05-21
 - [x] CLAUDE.md: pushback rule, doc-sync mapping, mandatory-agent rule
 - [x] CLAUDE.md: plan-tier section pointing at mock.md
 - [x] mock.md: canonical plan-tier matrix
 - [x] mock.md: chain atomicity section
 - [x] mock.md: Interview Loop spec section
 - [x] mock.md: 2-min discard UX requirements
-- [x] tracker doc: heavy enrichment (this section)
-- [ ] pricing.md: cross-link to mock.md as SoT
-- [ ] north-star.md: verify philosophy + mock.md cross-link
-- [ ] commit + push
+- [x] mock.md: discard + chain-reclaim don't count against quota (explicit section)
+- [x] mock.md: Elite anti-abuse 3-layer cap detailed (30 s + 5/hr + 20/day)
+- [x] mock.md: 6/day Pro rationale (role-coverage floor for 4–5 tracks)
+- [x] tracker doc: heavy enrichment + full decision log (16 entries)
+- [x] pricing.md: cross-link to mock.md as SoT
+- [x] north-star.md: philosophy verbatim + explicit mock.md cross-link
+- [x] commit 0888b1a + amendment commit
 
 ### Phase 1 commit A — Foundation specs ⏸ pending
 - [ ] Create `docs/concept-taxonomy.md`
@@ -347,6 +350,12 @@ This sizing is provisional. Re-evaluate against real Pro usage data once Phase 1
 | 2026-05-21 | Elite "unlimited" means soft backend rate-limit (~10/hr) hidden from UI | Anti-abuse defense without surfacing the limit as a feature |
 | 2026-05-21 | 2-min chain reclaim window stays; UX must be far more prominent (countdown chip + visible button) | Window is right; current UX (hidden behind Exit) is wrong |
 | 2026-05-21 | CLAUDE.md gets standing pushback rule + comprehensive doc-sync mapping + mandatory-agent rule | Codify the discipline that prevents this kind of refactor in future |
+| 2026-05-21 | Free stays benchmark-only (no weekly drill added) | User overrode my recommendation; reasoning "keep it simpler" — fewer counters, one clean demo moment, cleaner upgrade pitch |
+| 2026-05-21 | Mixed track stays accessible to Free within their session shape | User overrode my recommendation; reasoning "don't multiply gates that frustrate users." Mixed inherits each tier's mode/difficulty rules |
+| 2026-05-21 | Elite anti-abuse: 30 s burst gap + 5/hr + 20/day rolling | Three-layer defense against script-spam and password-sharing. All values well above human ceiling; invisible unless triggered |
+| 2026-05-21 | 2-min discard + chain reclaim do NOT count against daily quota | Misclick or "wrong track" recovery shouldn't cost a quota slot; double-penalty for chain users would be even worse |
+| 2026-05-21 | Concept-taxonomy research grounds families in industry sources (StrataScratch, DataLemur, Glassdoor posts, canonical textbooks) but never lifts question content. Research validates exhaustiveness only; question authoring stays aligned to datathink's own philosophy and flow | User-specified discipline: "don't lift questions, only search for exhaustiveness" |
+| 2026-05-21 | Everything after Phase 1 must be implementable by Sonnet from the docs alone | Phase 1 deliverables must be detailed enough that subsequent phases need no design conversation — taxonomy precise, mock contract complete, track docs prescriptive |
 
 ---
 
