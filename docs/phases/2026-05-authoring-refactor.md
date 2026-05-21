@@ -292,23 +292,52 @@ After Phase 1 docs are committed, spin up dev preview, screenshot landing/worksp
 - [x] north-star.md: philosophy verbatim + explicit mock.md cross-link
 - [x] commit 0888b1a + amendment commit
 
-### Phase 1 commit A — Foundation specs ⏸ pending
-- [ ] Create `docs/concept-taxonomy.md`
-- [ ] Extend `docs/specs/mock-benchmark-spec.md`
+### Phase 1 commit A — Foundation specs ✅ completed 2026-05-21 (commit `b1ddc6b`)
+- [x] `docs/concept-taxonomy.md` created — 920 lines, 9 per-track family registries + 7-dimension follow-up taxonomy
+- [x] `docs/specs/mock-benchmark-spec.md` extended with chain atomicity contract, Interview Loop spec, plan-gated pool sourcing reference
 
-### Phase 1 commit B — Track docs ⏸ pending
-- [ ] 9 × `docs/tracks/<track>.md`
+### Phase 1 commit B — Track docs ✅ completed 2026-05-21 (3 commits: `2396da7`, `bb66d11`, `ad0f4f6`)
+- [x] B-i: `docs/tracks/{sql,python,pandas}.md` (executable tracks)
+- [x] B-ii: `docs/tracks/{pyspark,statistics}.md` (code-adjacent + hybrid)
+- [x] B-iii: `docs/tracks/{data-engineering,data-modeling,ml-fundamentals,experimentation}.md` (constructed reasoning)
 
-### Phase 1 commit C — Universal agent + cross-cutting ⏸ pending
-- [ ] Refine universal authoring agent
-- [ ] Slim content-authoring.md
-- [ ] Philosophy verbatim in north-star.md
-- [ ] Delete 9 per-track agent files
+### Phase 1 commit C — Universal agent + cross-cutting ✅ completed 2026-05-21 (commit `c1ef9f4`)
+- [x] `.github/agents/question-authoring.agent.md` refined (philosophy verbatim, new primary test, taxonomy linkage, mandatory-agent rule, per-track schema stripped)
+- [x] `docs/content-authoring.md` slimmed from 988 → 313 lines
+- [x] `docs/specs/platform-north-star.md` updated with philosophy verbatim + mock.md cross-link (in earlier commit `0888b1a`)
+- [x] CLAUDE.md plan-tier section updated to point at mock.md as SoT
+- [x] 9 per-track agent files deleted
+- [x] README.md and `.github/agents/track-onboarding.agent.md` updated to remove stale references
 
-### Phase 1.5 — Frontend copy sweep ⏸ pending
-### Phase 1 followup — Color review ⏸ pending
-### Phase 2 — Content alignment ⏸ pending (depends on Phase 1)
-### Phase 3 — Interview Loop full stack ⏸ pending (depends on Phase 2)
+### Phase 1.5 — Frontend copy sweep ✅ completed 2026-05-21 (commit `fd1c1ca`)
+- [x] Landing hero (eyebrow / H1 / sub) reframed to philosophy
+- [x] Pricing cards rewritten for new plan-tier matrix (Free benchmark-only weekly + unlimited easy short_drill; Pro 3+3 cap; Elite + Interview Loop + per-dimension weak-spots)
+- [x] MockHub Elite features panel updated (Interview Loop, per-dimension weak-spots)
+- [x] FAQ "What are mocks" rewritten with 3 modes; Pro/Elite distinction updated
+- [x] Auth and landing meta descriptions reframed
+- [x] Surgical sweep — preserved "interview" language where it legitimately describes mock features
+
+### Phase 1 followup — Color review ✅ completed 2026-05-21 (commit `03e5881`)
+- [x] Eyes-on review of `--bg-page: #F5F7F4` on live dev server (hero + pricing surfaces)
+- [x] Computed-color verification via getComputedStyle (not just screenshots)
+- [x] Written memo at `docs/phases/2026-05-color-review.md` — recommend KEEP, no token change
+- [x] Two adjacent observations flagged for future separate pass (workspace topbar; Pro 8% accent already correct)
+
+### Phase 2 — Content alignment ⏸ pending (Sonnet picks up from here)
+This is the first phase a fresh Sonnet session should be able to execute end-to-end from the committed docs alone. Read [`docs/phases/2026-05-authoring-refactor.md`](2026-05-authoring-refactor.md) (this file) for the full brief.
+
+- [ ] Remap existing 993 question `concepts` arrays to new per-track families (~80% automatable, edge cases need human review). Tooling: write a script that reads `docs/concept-taxonomy.md`, applies the resolution algorithm, and proposes replacements for review.
+- [ ] Refactor `backend/concept_families.py` to load from `docs/concept-taxonomy.md` (or compile at build time). Eliminates the hand-mirror.
+- [ ] Author new mock-only content with `follow_up_dimension` + `follow_ups[]` — target 3-month Pro runway (~180 questions/track from current 8–38). Always via the universal authoring agent.
+- [ ] Add catalog-load validations to `validate_content.py`: chain integrity, dimension diversity, no orphans, no shared children, length bounds. Crash on violation.
+- [ ] Add CI check flagging question file edits without agent invocation marker.
+
+### Phase 3 — Interview Loop full stack ⏸ pending (depends on Phase 2 content)
+- [ ] DB: `mock_chain_consumption` table + Alembic migration (schema is fully specified in `docs/specs/mock-benchmark-spec.md`)
+- [ ] Backend: chain-aware selection (filter consumed parents + their children), Interview Loop endpoint, plan gating, soft rate-limit for Elite (30s gap + 5/hr + 20/day)
+- [ ] Frontend: Interview Loop card in MockHub, Loop session UI (interviewer-pivot framing card between chain questions), prominent 2-min discard countdown chip
+- [ ] Analytics: `loop_summary` payload in `/api/mock/analytics` Elite response; dimension-level weak-spot insight in dashboard
+- [ ] UI surface of plan-tier matrix (counter chips on MockHub, upgrade modals when gated capability clicked)
 
 ---
 
