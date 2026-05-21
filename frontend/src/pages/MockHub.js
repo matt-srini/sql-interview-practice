@@ -916,6 +916,10 @@ export default function MockHub() {
               <div className="mock-elite-panel-body">
                 <ul className="mock-elite-features">
                   <li className="mock-elite-feature">
+                    <span className="mock-elite-feature-name">Interview Loop</span>
+                    <span className="mock-elite-feature-desc">Chain-driven sessions where each follow-up pivots like a real interviewer — scale, business rule, dirty data, ambiguity.</span>
+                  </li>
+                  <li className="mock-elite-feature">
                     <span className="mock-elite-feature-name">Focus mode</span>
                     <span className="mock-elite-feature-desc">Target specific concepts — your session draws only from questions tagged with them.</span>
                   </li>
@@ -924,8 +928,8 @@ export default function MockHub() {
                     <span className="mock-elite-feature-desc">Track whether you're improving session over session, across every track.</span>
                   </li>
                   <li className="mock-elite-feature">
-                    <span className="mock-elite-feature-name">Concept breakdown</span>
-                    <span className="mock-elite-feature-desc">Know which topics are costing you before the real interview.</span>
+                    <span className="mock-elite-feature-name">Per-dimension weak spots</span>
+                    <span className="mock-elite-feature-desc">Which kinds of pivots break you — strong on scale, weak on ambiguity, etc.</span>
                   </li>
                   <li className="mock-elite-feature">
                     <span className="mock-elite-feature-name">Coaching debrief</span>

@@ -106,13 +106,13 @@ export default function FAQPage() {
                 <dd className="faq-a">Easy questions are available to everyone from the start. Medium and hard questions unlock as you solve more — the more you practice, the more you unlock. Completing a <Link to="/learn" className="faq-link">learning path</Link> fast-tracks unlocks for that track. Pro and Elite subscribers get immediate access to all questions.</dd>
               </div>
               <div className="faq-item">
-                <dt className="faq-q">What are mock interviews?</dt>
-                <dd className="faq-a">Mock interviews are timed practice sessions that simulate a real interview. You answer a set of questions under a time limit, then receive a full debrief with scores and concept-level feedback. Free users get one medium-difficulty mock per day; Pro users get three hard-difficulty mocks per day; Elite users have unlimited mocks and focus-mode sessions.</dd>
+                <dt className="faq-q">What are mock sessions?</dt>
+                <dd className="faq-a">Mocks are timed sessions in three modes: <strong>benchmark</strong> (fixed-shape readiness signal), <strong>short drill</strong> (30 min, 2 questions), and <strong>custom drill</strong> (1–5 questions, 10–90 min). Free users get unlimited easy short drills and one full benchmark per week. Pro users get three benchmarks per day plus three drills per day across difficulties. Elite users get unlimited sessions plus Interview Loop — chain-driven sessions where each follow-up pivots like a real interviewer.</dd>
               </div>
               <div className="faq-item">
                 <dt className="faq-q">What is the difference between Free, Pro, and Elite?</dt>
                 <dd className="faq-a">
-                  Free gives access to all easy questions and progressive medium/hard unlocks as you practice. Pro unlocks every question immediately and adds mock interviews. Elite includes everything in Pro plus unlimited mocks, focus-mode sessions targeting specific concepts, and personalised readiness scoring.{' '}
+                  Free gives access to all easy questions, progressive medium/hard unlocks as you practice, unlimited easy mock drills, and one full benchmark per week. Pro unlocks every question immediately, adds mock-only content with interviewer-style follow-up chains, and provides 3 benchmarks plus 3 drills per day. Elite includes everything in Pro plus Interview Loop mode, focus-mode targeting, per-dimension weak-spot detection, readiness scoring, and unlimited sessions.{' '}
                   {pricingLink}
                 </dd>
               </div>

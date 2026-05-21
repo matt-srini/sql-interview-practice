@@ -459,12 +459,12 @@ function HeroSection({ user, dashData, reduced }) {
     <section className="lp-section lp-hero">
       <div className="lp-inner lp-hero-inner">
         <div className="lp-hero-left">
-          <p className="lp-eyebrow">Interview preparation, reasoned</p>
+          <p className="lp-eyebrow">For data professionals — and those becoming them</p>
           <h1 className="lp-hero-h1">
-            Build the reasoning skills data interviews actually test.
+            Develop the reasoning that makes you genuinely effective with data.
           </h1>
           <p className="lp-hero-sub">
-            Real datasets. Real execution. The kind of thinking that earns the offer.
+            Real datasets. Real execution. The kind of thinking that holds up years into the job. If it also makes you exceptional in interviews — and it will — that's a consequence, not the goal.
           </p>
           <div className="lp-hero-actions">
             <Link className="btn btn-primary" to="/auth">Start thinking →</Link>
@@ -704,7 +704,7 @@ function ProofStripSection() {
           ))}
         </div>
         <p className="lp-proof-sub">
-          Questions modeled on interviews at Meta, Stripe, Airbnb, Google, Amazon, and Uber.
+          Reasoning patterns drawn from real practitioner work and real interview shapes at Meta, Stripe, Airbnb, Google, Amazon, and Uber.
         </p>
       </div>
     </section>
@@ -823,7 +823,8 @@ function PricingSection({ userPlan, currency }) {
               <li>2-step progressive hints — mental model first, technique second</li>
               <li>Official solutions with explanation after hints</li>
               <li>SQL query quality analysis on correct answers</li>
-              <li>Easy mock interviews (unlimited) · 1 medium mock/day</li>
+              <li>Unlimited easy short drills</li>
+              <li>1 full benchmark mock per week — any track, any difficulty</li>
               <li>Streak tracking</li>
             </ul>
             <div className="landing-tier-cta">
@@ -843,10 +844,11 @@ function PricingSection({ userPlan, currency }) {
               </div>
             </div>
             <ul className="landing-tier-list">
-              <li>Everything in Free — no hard cap</li>
+              <li>Everything in Free — no hard cap on practice</li>
               <li>All {ACTIVE_Q || '…'} questions, every medium + hard</li>
-              <li>Unlimited medium mocks · 3 hard mocks/day</li>
-              <li>Exclusive mock question bank — questions reserved for mock sessions, never shown in practice</li>
+              <li>3 benchmark mocks per day · 3 drills per day (short + custom combined)</li>
+              <li>Exclusive mock-only question bank — questions reserved for mock sessions, never shown in practice</li>
+              <li>Follow-up chains — interviewer-style pivots within mock sessions</li>
               <li>Post-mock debrief — per-question solutions and concept breakdown</li>
               <li>Weakest concept analysis + drill recommendations</li>
               <li>All learning paths</li>
@@ -879,10 +881,11 @@ function PricingSection({ userPlan, currency }) {
             </div>
             <ul className="landing-tier-list">
               <li>Everything in Pro</li>
-              <li>Unlimited hard mock interviews</li>
+              <li>Unlimited mock sessions — benchmarks, drills, and Interview Loop</li>
+              <li><strong>Interview Loop</strong> — chain-driven sessions where each follow-up pivots like a real interviewer (scale, business rule, data quality, ambiguity…)</li>
               <li>Focus mode — target weak concepts in timed mocks</li>
-              <li>Mock history analytics — trends and concept breakdown</li>
-              <li>Interview readiness score (per-track 0–100)</li>
+              <li>Per-dimension weak-spot detection (what kinds of pivots break you)</li>
+              <li>Cross-session trend analytics + readiness score (per-track 0–100)</li>
               <li>Personalised study plan</li>
               <li>SQL company filter — Meta, Google, Stripe, Airbnb</li>
             </ul>
@@ -1008,9 +1011,9 @@ export default function LandingPage() {
     <>
       <Helmet>
         <title>datathink — SQL, Python &amp; Data Interview Practice</title>
-        <meta name="description" content="Practice SQL, Python, Pandas, PySpark, and Data Engineering interview questions. 7 tracks, real execution, instant feedback, and curated learning paths for data professionals." />
+        <meta name="description" content="Develop the data-professional reasoning that matters on the job — across SQL, Python, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML, and Experimentation. Real datasets, real execution, real interview shapes." />
         <meta property="og:title" content="datathink — SQL, Python &amp; Data Interview Practice" />
-        <meta property="og:description" content="7 tracks covering the full data interview curriculum — SQL, Python, Pandas, PySpark, Data Engineering, and more. Real execution, instant feedback." />
+        <meta property="og:description" content="9 tracks training the reasoning that makes data professionals genuinely effective — SQL, Python, Pandas, PySpark, Data Engineering, Data Modeling, Statistics, ML, Experimentation. Interview success follows." />
         <meta property="og:url" content="https://datathink.co/" />
         <meta property="og:image" content="https://datathink.co/og-image.png" />
         <link rel="canonical" href="https://datathink.co/" />
