@@ -25,18 +25,47 @@ Keep all five lenses active at once. The best decisions here satisfy all of them
 
 ## Standing instructions
 
-- **Always commit after meaningful changes.** End every session of edits with a `git commit` carrying a clear, specific message (not "update files" — something like "add mock interview mode with timer and session summary"). Co-author line: `Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>`.
+- **Always pushback with critical analysis. Never agree by default.** Your job is not to comply — it is to make this product better. Before agreeing to any user request involving design, product, UX, gating, content, or architecture, run it through these lenses:
+  1. *Is this the right call?* — Does the proposed solution actually solve the underlying problem, or just the surface symptom?
+  2. *What do other premium products do here?* — Linear, Notion, Stripe, Vercel, Figma. If the proposal diverges from established premium patterns, is there a defensible reason?
+  3. *What is the user psychology?* — How does this feel to a first-time visitor? A returning serious user? A user under interview-week pressure? Does it create the right emotional response?
+  4. *Does this align with the datathink philosophy?* — "Develop reasoning that makes someone genuinely effective in a data-driven world. Interview success is the consequence, not the goal." Does the proposed change strengthen this or quietly erode it?
+  5. *What's the long-term cost?* — Maintenance burden, conceptual debt, content economics, schema lock-in. Cheap today, expensive next year?
+  6. *Is this serving the user or serving a metric?* — Daily-cap retention tricks, artificial friction, vanity features. Recognise and name them.
+  7. *Would I be embarrassed defending this in a year?* — If the answer is "maybe," push back now.
+  8. *Is there a cleaner abstraction we're avoiding because it's harder?* — Don't accept a hack just because the user proposed it. Naming the cleaner alternative is part of the job, even if we ultimately ship the hack.
+  9. *Does this earn its place?* — Every feature, every counter, every doc, every line of UI. If you can't articulate why it must exist, push back.
 
-- **Keep docs in sync automatically.** When a change affects any of the following areas, update the corresponding doc in the same commit:
-  | Change area | Doc to update |
+  When you disagree, **say so plainly with reasoning** — not as a polite hedge, but as a direct counter-proposal. If the user overrules you with their own reasoning, fine; record the decision and proceed. If they overrule you without reasoning, push back a second time. This is a feature, not insubordination.
+
+- **No stale docs, ever.** Every change to code, strategy, philosophy, or product behaviour MUST update the relevant source-of-truth docs in the same commit — not as a follow-up, not "later." Stale docs are the single largest cause of drift on this platform. The mapping below is comprehensive; use it.
+
+  | Change area | Source-of-truth doc |
   |---|---|
   | System design, data flows, execution model, scaling | `docs/architecture.md` |
-  | API routes, routers, backend behaviour | `docs/backend.md` |
-  | Pages, components, routes, design tokens | `docs/frontend.md` |
+  | API routes, routers, backend behaviour, persistence | `docs/backend.md` |
+  | Pages, components, routes, design tokens, frontend behaviour | `docs/frontend.md` |
   | Dataset schema, row counts, edge cases | `docs/datasets.md` |
-  | Env vars, Docker, Railway, deployment | `docs/deployment.md` |
-  | Question authoring rules, curriculum specs | `docs/content-authoring.md` |
-  | Product overview, tech stack, content footprint | This file (`CLAUDE.md`) |
+  | Env vars, Docker, Railway, deployment, secrets | `docs/deployment.md` |
+  | Question authoring schema + cross-track contract | `docs/content-authoring.md` |
+  | Per-track question philosophy, modality, datasets, concept arc, authoring allocation | `docs/tracks/<track>.md` |
+  | Concept-family registry (per-track) + follow-up dimension taxonomy | `docs/concept-taxonomy.md` |
+  | Socratic interview-hook inventory (used to seed concept coverage) | `docs/concept-hooks.md` |
+  | Pricing tiers, plan entitlements, Razorpay flows | `docs/features/pricing.md` |
+  | **Mock plan-tier matrix (canonical SoT)**, chain atomicity, Interview Loop contract | `docs/features/mock.md` |
+  | Mock benchmark invariants, blueprint principles, modality-mode mapping | `docs/specs/mock-benchmark-spec.md` |
+  | Practice modality matrix, eval kinds, subtypes | `docs/specs/practice-modality-spec.md` |
+  | Platform North Star, role-to-track framing, governance sources | `docs/specs/platform-north-star.md` |
+  | Dashboard insights, weak-spot detection, readiness scores | `docs/features/dashboard.md` |
+  | Product overview, tech stack, content footprint, routes summary | This file (`CLAUDE.md`) |
+  | User-facing platform guide | `docs/USERGUIDE.md` |
+  | New track onboarding process | `docs/track-onboarding.md` |
+
+  When in doubt: update more docs, not fewer. Cross-link aggressively. Every doc should link back to its SoT siblings.
+
+- **Never author or modify a question without the authoring agent.** Every new question, every edit to an existing question, MUST go through `.github/agents/question-authoring.agent.md`. Direct edits to question JSON files bypass the taxonomy contract, the difficulty arc, the hint guardrails, the concept-family registry, and the verification checklist — and have historically been the single largest source of content drift on this platform. If you are tempted to edit a question file by hand, stop and invoke the agent instead. This rule has no exceptions.
+
+- **Always commit after meaningful changes.** End every session of edits with a `git commit` carrying a clear, specific message (not "update files" — something like "add mock interview mode with timer and session summary"). Co-author line: `Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>`.
 
 - **Keep `CLAUDE.md` in sync.** When content footprint, tech stack, routes, or product behaviour changes, update the relevant section below in the same commit.
 
@@ -330,13 +359,18 @@ Locked MCQ questions return 200 with `locked: true` and no `options` or `correct
 
 **Learning path shortcuts:** completing the Starter path for a track → all medium unlocked immediately; completing the Intermediate path → full hard cap unlocked. Either acts as an express-lane alternative to threshold grinding.
 
-**Mock modes:** `benchmark` is now the serious, fixed-shape track benchmark; `30min` and `custom` are drill modes; Mixed is drill-only. Legacy `60min` sessions can still exist in history but are no longer the primary setup path.
+**Mock modes (canonical, post-2026-05 refactor):** `benchmark` (fixed-shape track readiness signal), `short_drill` (2 questions, 30 min — fast calibration), `custom_drill` (1–5 Q, 10–90 min — user-tuned to competency). Long-form drill (`60min`, 3-Q) is being retired; `custom_drill` covers that range. Mixed track remains drill-only. Legacy `60min` sessions in history are read-only.
+
+**Elite-only mock features:** `focus_concepts` filter (concept-targeted sessions), Interview Loop mode (chain-driven iterative interviewer dialogue, see `docs/features/mock.md`), deep analytics with readiness scores + study plan, session debrief coaching narrative.
+
+**Mock chain atomicity:** Parent questions with `follow_ups[]` (mock-only chains) travel as an atomic unit. A user sees the entire chain together exactly once, ever — never split across sessions, never re-shown after consumption. Chain is marked consumed at session start, reclaimable only within the 2-minute discard window. Single source of truth for chain mechanics: `docs/features/mock.md`.
+
+**Plan-tier matrix:** Full matrix lives in `docs/features/mock.md` as the canonical source of truth. Summary:
+- **Free** — Unlimited easy `short_drill` (fresh-first from practice pool). 1 `benchmark` per rolling 7 days, any track/difficulty (fresh-first from practice pool). No mock-only content. No chains. No focus. No Loop.
+- **Pro** — Inherits Free. + Unlimited easy `short_drill`, plus combined 3/day cap across medium/hard `short_drill` and any `custom_drill`. + 3 `benchmarks`/day. Mock-only content and chains eligible.
+- **Elite** — Unlimited count (soft backend rate-limit for abuse only, not surfaced in UI). + `focus_concepts`. + Interview Loop. + deep analytics + debrief.
 
 **Benchmark composition:** PySpark keeps its own format-targeted benchmark template, Statistics benchmarks enforce `1 numerical + 2 conceptual`, and the other reasoning tracks now use track-specific `type` targets during benchmark selection instead of reusing PySpark's format sampler.
-
-**Mock daily limits:** Free = 1 medium/day · Pro = 3 hard/day · Elite = unlimited.
-
-**Elite mock exclusives:** (1) Focus mode — `focus_concepts` param in `/start` filters pool to concept-tagged questions; (2) Mock history analytics — `GET /api/mock/analytics` returns separated `benchmark_summary` and `drill_summary` session metrics plus overall concept signals over the last 50 sessions.
 
 **Dashboard insights:** `GET /api/dashboard/insights` computes per-track solve count, median solve time, and accuracy from `submissions`; weakest concepts (bottom 3 with >=3 attempts); deterministic cross-track pacing insight (only when slow-fast gap >= 60s); consecutive `streak_days` ending today; and (Elite only) `readiness_scores` (per-track 0–100 score from practice coverage + mock accuracy + concept strength) and `study_plan` (ordered list of 3–5 personalised next steps). Results are cached in-process for 60 seconds per user.
 
@@ -419,8 +453,8 @@ Three permanent accounts exist in the local Postgres DB for testing and browser 
 | Plan | Email | Notes |
 |---|---|---|
 | **Free** | `matt.srini@gmail.com` | Default non-paying user |
-| **Pro** | `srinivas.assampally@gmail.com` | Mid-tier; 3 hard mocks/day, no Elite features |
-| **Elite** | `admin@datathink.co` | Full access — analytics, debrief, focus mode, unlimited |
+| **Pro** | `srinivas.assampally@gmail.com` | Mid-tier; 3 drills/day + 3 benchmarks/day cap, no Elite features (no focus, no Interview Loop) |
+| **Elite** | `admin@datathink.co` | Full access — analytics, debrief, focus mode, Interview Loop, unlimited |
 
 **Password for all three:** `Test1234!`
 

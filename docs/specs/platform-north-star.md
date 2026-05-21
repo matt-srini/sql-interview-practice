@@ -2,30 +2,50 @@
 
 Status: canonical planning spec
 Owner: product + orchestration
-Last updated: 2026-05-19
+Last updated: 2026-05-21
 
 ## Purpose
 
 This spec defines what datathink is trying to become at the product level so implementation work does not drift into disconnected feature shipping.
 
+## The datathink philosophy (canonical, verbatim)
+
+> We live in an era defined by data. Every transaction, interaction, and decision leaves a digital trace — and the volume of this data is growing faster than our collective ability to make sense of it.
+>
+> But data, on its own, means nothing. The real work is generating meaning from it — building systems that store it efficiently, retrieve it reliably, model it thoughtfully, and ultimately transform raw signal into insight that drives better decisions, better products, and better outcomes for people.
+>
+> This work gave rise to an entire class of technical professions: data engineers who design the pipelines, analysts who surface the patterns, scientists who build the models, and architects who ensure the systems scale. These are not peripheral roles — they are increasingly the backbone of how modern organizations function and grow.
+>
+> Datathink exists for these professionals — and for those becoming them.
+>
+> Not as another platform of interview puzzles to crack before a hiring deadline, but as a place to develop the kind of reasoning that makes someone genuinely effective in a data-driven world. The kind of professional who doesn't just write a correct query, but understands why the data is structured the way it is, what question is really worth asking, and how the answer should inform a decision.
+>
+> If that preparation also makes you exceptional in interviews — and it will — that's a consequence, not the goal.
+
+This text is the canonical product framing. Every authoring agent, every doc, and every user-facing surface should reflect it. The old "FAANG-level interview preparation" framing is retired as the primary frame and survives only as the secondary grounding test ("would the same reasoning earn the offer in a real interview screen?").
+
 ## Product goal
 
-Build the strongest data interview preparation platform for serious candidates by combining:
+Build the strongest platform for developing durable data-professional reasoning by combining:
 
-- a full practice curriculum that teaches durable reasoning patterns
+- a full practice curriculum that teaches reasoning patterns a practitioner relies on years into the role
 - role-aware track combinations that mirror real hiring funnels
 - a dashboard that diagnoses progress and weak areas across tracks
-- a mock layer that benchmarks interview readiness instead of acting like another practice surface
+- a mock layer that benchmarks readiness under realistic conditions — not "practice with a timer"
+
+Interview performance follows from reasoning quality. Build for the practitioner; the candidate gets the win.
 
 ## Core product model
 
 | Surface | Job to be done | What it is not |
 |---|---|---|
-| Practice | Learn the full curriculum by track and difficulty | Not a disposable teaser or a random drill bucket |
-| Samples | Let first-time users feel the product quickly | Not the main curriculum |
-| Learning paths | Curate order and accelerate unlocks | Not a separate content bank |
-| Dashboard | Turn attempt history into coaching and prioritization | Not just a vanity stats page |
-| Mock | Benchmark readiness under constraint | Not answer-reveal practice with a timer |
+| Practice | Build the reasoning durably, by track and difficulty | Not a disposable teaser or a random drill bucket |
+| Samples | Let first-time visitors feel the product quickly | Not the main curriculum |
+| Learning paths | Curate order and accelerate the right unlocks | Not a separate content bank |
+| Dashboard | Turn attempt history into coaching and prioritization | Not a vanity stats page |
+| Mock | Benchmark readiness under constraint — and via Interview Loop, simulate iterative interviewer dialogue | Not answer-reveal practice with a timer |
+
+**Mock layer canonical source of truth:** [`docs/features/mock.md`](../features/mock.md) — owns the plan-tier matrix, chain atomicity, Interview Loop contract, and discard-window UX. Do not restate mock gates in other docs; link.
 
 ## Canonical facts
 

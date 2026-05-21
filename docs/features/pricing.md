@@ -39,25 +39,27 @@ The entire `#landing-pricing` section is hidden only when `userPlan === 'lifetim
 
 ## Plan-feature mapping
 
+> **Mock plan gates: canonical source of truth is [`docs/features/mock.md`](./mock.md#plan-tier-matrix-canonical-sot).** Do not restate mock plan gates in this doc — link instead. The summary below is for at-a-glance reference; mock.md owns the full matrix, daily caps, rationale, and Interview Loop / chain mechanics.
+
 | Feature | Free | Pro | Elite |
 |---|---|---|---|
-| Easy questions (37 SQL · 39 Python · 27 Pandas · 41 PySpark) | ✓ All | ✓ All | ✓ All |
+| Easy questions (per-track easy bank) | ✓ All | ✓ All | ✓ All |
 | Medium questions | Batch-gated by easy solves | ✓ All | ✓ All |
 | Hard questions | Batch-gated (cap: **8** code / **5** PySpark) | ✓ All (no cap) | ✓ All (no cap) |
-| Learning paths | 3 per track (tier=`free` paths) | All (up to 5 per track) | All (up to 5 per track) |
-| Easy mocks | Unlimited | Unlimited | Unlimited |
-| Medium mocks | 1 per day | Unlimited | Unlimited |
-| Hard mocks | Blocked | 3 per day | Unlimited |
-| Mixed mocks | Follows track limits | Follows track limits | Unlimited |
-| Fresh mock question bank (medium + hard) | Blocked | ✓ | ✓ |
-| Company-filtered mocks | Blocked | Blocked | ✓ |
-| Focus mode mock (concept targeting) | Blocked | Blocked | ✓ |
-| Mock history analytics | Blocked | Blocked | ✓ |
+| Learning paths | Free paths (`tier=free`) | All | All |
+| **Mock — easy `short_drill`** | Unlimited (fresh-first from practice pool) | Unlimited | Unlimited |
+| **Mock — `benchmark`** | 1 per rolling 7 days, any difficulty | 3 per day | Unlimited |
+| **Mock — medium/hard `short_drill` + `custom_drill`** | Blocked | 3 per day combined | Unlimited |
+| **Mock-only question pool + follow-up chains** | Blocked | ✓ | ✓ |
+| **Mock — `focus_concepts` filter** | Blocked | Blocked | ✓ |
+| **Mock — Interview Loop mode** | Blocked | Blocked | ✓ |
+| **Mock — company filter (SQL)** | Blocked | Blocked | ✓ |
+| **Mock — history analytics + trend** | Blocked | Detailed history | + Trend, dimension analysis |
+| **Mock — coaching debrief + readiness score + study plan** | Blocked | Blocked | ✓ |
 | Weakest concept coaching (dashboard) | Blocked | ✓ | ✓ |
 | Top-3 weak areas coaching panel (dashboard) | Blocked | Blocked | ✓ (concept, accuracy %, summary, path + drill links) |
 | Interview readiness score (per-track) | Blocked | Blocked | ✓ |
 | Personalised study plan | Blocked | Blocked | ✓ |
-| Post-mock coaching debrief | Blocked | Blocked | ✓ |
 
 ### Lifetime variants
 
