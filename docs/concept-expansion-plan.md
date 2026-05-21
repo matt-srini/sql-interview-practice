@@ -3,7 +3,7 @@
 Tracks concept-hooks.md coverage against the question bank, identifies gaps, and drives new question authoring across all 9 tracks.
 
 **Initiated:** 2026-05-18  
-**Status:** Phase 6 complete 2026-05-20 (Phase 0 complete 2026-05-18, Phase 1 complete 2026-05-18, Phase 2 complete 2026-05-18, Phase 3 complete 2026-05-19, Phase 4 complete 2026-05-19, Phase 5 complete 2026-05-19)
+**Status:** Phase 7 complete 2026-05-21 (Phase 0 complete 2026-05-18, Phase 1 complete 2026-05-18, Phase 2 complete 2026-05-18, Phase 3 complete 2026-05-19, Phase 4 complete 2026-05-19, Phase 5 complete 2026-05-19, Phase 6 complete 2026-05-20)
 
 ---
 
@@ -104,9 +104,9 @@ Current state and next-available values:
 | Python | easy | 21030 · 30 | none | **21031** | **31** | n/a |
 | Python | medium | 22029 · 29 | 22037 · 37 | **22038** | **38** | n/a (all practice) |
 | Python | hard | 23024 · 24 | 23036 · 36 | **23037** | **37** | n/a |
-| PySpark | easy | 41038 · 38 | none | **41039** | **39** | n/a |
-| PySpark | medium | 42038 · 38 | 42048 · 48 | **42049** | **49** | after new practice |
-| PySpark | hard | 43026 · 26 | 43036 · 36 | **43037** | **37** | after new practice |
+| PySpark | easy | 41041 · 41 | none | **41042** | **42** | n/a |
+| PySpark | medium | 42049 · 49 | 42050 · 50 | **42051** | **51** | after new practice |
+| PySpark | hard | 43046 · 46 | 43036 · 36 | **43047** | **47** | after new practice |
 
 > **schemas.json:** No update needed — all new IDs fall within existing declared ranges (e.g. SQL 11001–11999). Catalog loader validates at startup and crashes on range violation.
 
@@ -178,8 +178,8 @@ Mock-only questions are drawn into the mock pool only for Pro/Elite users at med
 | Pandas | ✅ existing 24 | Add 3 new hard mock-only |
 | PySpark | ✅ existing 20 | Add 1 new hard mock-only (pivot with dynamic schema) |
 | Statistics | 0 today, **CAN add** | Add 3–4 hard mock-only (CUPED numerical, MDE numerical, causal DAG) — track-specific mock sessions are supported |
-| Data Engineering | 0, deferred | MCQ format is already assessment-like; hard practice Qs serve the same purpose; keep at 0 for now |
-| Data Modeling | 0, deferred | Same as DE; keep at 0 for now |
+| Data Engineering | ✅ 14 (6 medium + 8 hard added Phase 7) | Medium: backpressure, data contracts, residency, cost modeling, incident patterns; Hard: CDC, partition overwrite, schema merge, streaming/warehouse/privacy/schema topics |
+| Data Modeling | ✅ 13 (6 medium + 6 hard added Phase 7; 1 existing) | Medium: bi-temporal, conformed ext, semantic layer, SCD selection, schema evolution, high-churn SCD; Hard: post-acquisition conformed dim, metric deprecation, semi-additive, as-of reporting, zero-downtime migration, intra-day snapshot |
 | ML Fundamentals | ✅ existing 25 | New ML questions are practice unless audit reveals clear mock-only candidates |
 
 ### Learning path rules
@@ -402,14 +402,98 @@ Pythonic Patterns (3 medium):
 
 ---
 
-### Phase 7 (future) — ML Fundamentals / Experimentation follow-on authoring
-**Input:** completed 2026-05-19 hook audits with recorded gaps.
+### Phase 7 — PySpark / DE / DM / Exp / ML Fundamentals expansion
+**Status: ✅ Complete 2026-05-21**
 
-Future work from the completed audits:
-- [ ] Prioritize ML Fundamentals follow-on questions for the clearest uncovered hooks: parametric vs non-parametric, inductive bias, encoding strategy, activation functions, batch normalization, attention/self-attention, and deeper dimensionality-reduction tradeoffs.
-- [ ] Prioritize Experimentation follow-on questions for ratio metrics and delta method, stronger surrogate-vs-long-term metric validation, and deeper control-vs-holdout/A/A design nuance.
-- [ ] Keep advanced mock-only hook expansion separate; it remains a later phase and is not part of this bank-audit closeout.
-- [ ] Update learning paths only if the eventual new questions materially change track progression.
+Five lanes executed in order. Final state: 853 practice + 190 mock-only = 1,043 total questions.
+
+#### Lane 1 — PySpark hard (+10 practice, 43037–43046, orders 37–46)
+
+- [x] 43037 — predict_output — AQE Skew Join: How Many Tasks Process the Hot Partition?
+- [x] 43038 — predict_output — Salted Join: What Does result.count() Return?
+- [x] 43039 — predict_output — Watermark Boundary: Which Incoming Events Are Dropped?
+- [x] 43040 — predict_output — foreachBatch Driver Crash Mid-Write: What Is in the Output Table?
+- [x] 43041 — predict_output — Pandas UDF: Predicting Output for Null and Zero Inputs
+- [x] 43042 — scenario — Iterative PageRank Crashes with StackOverflowError During Plan Materialization
+- [x] 43043 — scenario — Streaming Windows Always Emitted One Full Trigger Cycle Late
+- [x] 43044 — scenario — Delta MERGE Fails on Large Batch After Consumer Offset Reset
+- [x] 43045 — scenario — MERGE Scans 798 of 800 Files After 30 Days of Good Pruning
+- [x] 43046 — scenario — 9× Slowdown After Halving Executor Memory Despite Identical Partition Count
+
+#### Lane 2 — Data Engineering (+2 medium practice, +6 medium mock-only, +3 hard practice, +7 hard mock-only)
+
+Medium practice (52034–52035, orders 34–35):
+- [x] 52034 — debug — Avro Consumer Failing After Producer Adds Required Field Without Default
+- [x] 52035 — debug — Backfill Job Producing Duplicate Rows in the Warehouse
+
+Medium mock-only (52036–52041, orders 36–41):
+- [x] 52036 — scenario — Consumer Lag Grows Unboundedly During Traffic Spike [FULL_TRANSITIVE schema compat]
+- [x] 52037 — scenario — Fact Table Corrupted by Bad Pipeline Write: Containment and Recovery
+- [x] 52038 — conceptual — Choosing the Right Data Contract Enforcement Tier
+- [x] 52039 — scenario — EU Data Residency: Preventing Cross-Region PII Replication
+- [x] 52040 — debug — Pipeline Keeps Flooding a Degraded Downstream System [backpressure]
+- [x] 52041 — conceptual — Clustering Key vs Partitioning for Mixed Read/Write Workloads
+
+Hard practice (53025–53027, orders 25–27):
+- [x] 53025 — debug — CDC Watermark Too Short — Late Debezium Events Silently Dropped
+- [x] 53026 — debug — Dynamic Partition Overwrite Deleting the Entire Table
+- [x] 53027 — debug — Schema Merge Upcasting Numeric Column to String Across Parquet Sources
+
+Hard mock-only (53028–53034, orders 28–34):
+- [x] 53028 — scenario — Sink-Side I/O Backpressure Causing Unbounded State Accumulation
+- [x] 53029 — scenario — Warehouse Cost Spike: Dashboard Refresh Rate Preventing Auto-Suspend
+- [x] 53030 — scenario — Incremental Pipeline Serving Stale Rows After Upstream Backfill Inversion
+- [x] 53031 — scenario — Breaking Schema Change Escaping CI: Non-Transitive Compatibility
+- [x] 53032 — conceptual — Privacy-Preserving Analytics: Trade-offs Across Three Techniques
+- [x] 53033 — debug — Duplicate Events from Two Streaming Pipelines Sharing a Checkpoint
+- [x] 53034 — conceptual — Designing an Effective Runbook for P1 Data Pipeline Incidents
+
+#### Lane 3 — Data Modeling (+6 medium mock-only, +6 hard mock-only)
+
+*Questions audited post-authoring against data-modeling-question-authoring.agent.md; concept tag and first-hint violations corrected before commit.*
+
+Medium mock-only (62029–62034, orders 29–34):
+- [x] 62029 — scenario — Bi-Temporal Modeling: When SCD Type 2 Cannot Reconstruct System State [concepts: BI-TEMPORAL MODELING, SCD STRUCTURE, DIMENSIONAL MODELING]
+- [x] 62030 — scenario — Conformed Dimension Extension: Adding a Business-Unit-Specific Attribute [concepts: CONFORMED DIMENSIONS, SCHEMA EVOLUTION, DIMENSIONAL MODELING]
+- [x] 62031 — conceptual — Semantic Layer Governance: Certified vs Experimental Metric Lifecycle [concepts: SEMANTIC LAYER, DIMENSIONAL MODELING]
+- [x] 62032 — scenario — SCD Type Selection Under Conflicting Retention and Query Requirements [concepts: SCD STRUCTURE, STORAGE ARCHITECTURE TRADEOFFS, DIMENSIONAL MODELING]
+- [x] 62033 — conceptual — Schema Evolution for a Shared Dimension: Breaking vs Non-Breaking Change Classification [concepts: SCHEMA EVOLUTION, DIMENSIONAL MODELING]
+- [x] 62034 — scenario — High-Churn SCD: When Type 2 Row Explosion Becomes Impractical [concepts: SCD STRUCTURE, STORAGE ARCHITECTURE TRADEOFFS, FACT TABLE DESIGN, DIMENSIONAL MODELING]
+
+Hard mock-only (63025–63030, orders 25–30):
+- [x] 63025 — scenario — Post-Acquisition Conformed Dimension: Resolving Overlapping Natural Keys [concepts: CONFORMED DIMENSIONS, SURROGATE VS NATURAL KEYS, DATA VAULT, DIMENSIONAL MODELING]
+- [x] 63026 — conceptual — Semantic Layer: Deprecating a Certified Metric Without Breaking Downstream Consumers [concepts: SEMANTIC LAYER, DIMENSIONAL MODELING]
+- [x] 63027 — scenario — Semi-Additive Fact Design for Balance with Period-Change Analytics [concepts: SEMI-ADDITIVE FACTS, PERIODIC SNAPSHOT, FACT TABLE DESIGN, DIMENSIONAL MODELING]
+- [x] 63028 — scenario — Regulatory As-Of Reporting: When a Dimension Must Reconstruct Its Own Past State [concepts: BI-TEMPORAL MODELING, SCD STRUCTURE, DIMENSIONAL MODELING]
+- [x] 63029 — scenario — Zero-Downtime Schema Migration for a High-Fan-Out Fact Table [concepts: SCHEMA EVOLUTION, DIMENSIONAL MODELING]
+- [x] 63030 — conceptual — Intra-Day Periodic Snapshot: Granularity Trade-offs and Fact Table Design [concepts: PERIODIC SNAPSHOT, FACT TABLE DESIGN, STORAGE ARCHITECTURE TRADEOFFS, DIMENSIONAL MODELING, SEMI-ADDITIVE FACTS]
+
+#### Lane 4 — Experimentation (+4 practice) and ML Fundamentals (+6 practice)
+
+Experimentation medium practice (92043–92044, orders 31–32):
+- [x] 92043 — debug — CUPED Covariate Window: Contamination Through Post-Exposure Measurement [concepts: VARIANCE REDUCTION, EXPERIMENT DESIGN]
+- [x] 92044 — scenario — Two-Sided Marketplace Equilibration: Why Short-Duration Tests Miss Steady-State Effects [concepts: EXPERIMENT DURATION, NETWORK EFFECTS]
+
+Experimentation hard practice (93034–93035, orders 21–22):
+- [x] 93034 — scenario — Long-Run Holdout Group Decay: When the Counterfactual Diverges from Current Users [concepts: HOLDOUT GROUPS, CAUSAL INFERENCE]
+- [x] 93035 — debug — Switchback Experiment Analysis: Temporal Autocorrelation Inflates the Test Statistic [concepts: SWITCHBACK EXPERIMENTS, EXPERIMENT DESIGN]
+
+ML Fundamentals medium practice (82048–82050, orders 36–38):
+- [x] 82048 — scenario — Missing Value Imputation Before Split: Why Preprocessing Order Invalidates Evaluation [concepts: MISSING DATA STRATEGY, DATA LEAKAGE DETECTION]
+- [x] 82049 — scenario — K-Means Evaluation: Reconciling Elbow Method and Silhouette Score Disagreement [concepts: CLUSTERING EVALUATION, HYPERPARAMETER SENSITIVITY]
+- [x] 82050 — debug — Feature Selection Before Train/Test Split: Implicit Test Target Leakage [concepts: FEATURE SELECTION STRATEGY, DATA LEAKAGE DETECTION]
+
+ML Fundamentals hard practice (83039–83041, orders 26–28):
+- [x] 83039 — scenario — Domain-Adaptive Pre-Training: When General Pre-Training Representations Misalign with Target Domain [concepts: TRANSFER LEARNING STRATEGY, DEPLOYMENT CONSTRAINTS]
+- [x] 83040 — scenario — Silent Feature Transformation: Upstream Business Logic Change Causes Precision Collapse [concepts: MODEL MONITORING, TRAINING-SERVING SKEW]
+- [x] 83041 — debug — Deep Sigmoid Network: Diagnosing Vanishing Gradients from Activation Saturation [concepts: GRADIENT PATHOLOGY, NEURAL NETWORK DESIGN]
+
+#### Lane 5 — Docs governance
+
+- [x] concept-expansion-plan.md updated with all Phase 7 IDs, titles, concepts
+- [x] CLAUDE.md updated: PySpark 106→116, DE 85→91, DM 70→76, Exp 80→84, MLF 90→96 practice; totals 843→853 practice, 165→190 mock-only
+- [x] Duplicate ID check passed: 1,043 total questions, 0 duplicates
+- [x] Concept tag blocklist audit: all Phase 7 questions use canonical tags; violations found post-authoring in Lane 3 were corrected before commit
 
 ---
 
