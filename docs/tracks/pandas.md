@@ -62,7 +62,16 @@ Samples in `backend/content/python_data_questions/sample/` use `3XS` 3-digit IDs
 
 Full registry: [`docs/concept-taxonomy.md` → Pandas section](../concept-taxonomy.md#pandas--concept-families).
 
-16 families. One new in the 2026-05 refactor: **`MEMORY & VECTORIZATION REASONING`** — real practitioners hit memory and speed problems constantly; the bank teaches vectorization implicitly through "your apply is too slow" framings but never tagged it as a family. Mock-only content from now on should test this directly.
+21 families. Six are new in the 2026-05 refactor. The first is Pandas-native; the other five are shared with the SQL track (same reasoning, same names — explicit cross-track alignment per the executable-track reusability principle):
+
+- **`MEMORY & VECTORIZATION REASONING`** (Pandas-native) — vectorize over `apply(lambda)`, dtype-driven memory choices, chunk-reading large files. No direct SQL analogue.
+- **`METRIC INTERPRETATION & DENOMINATOR CHOICE`** (shared with SQL) — picking and defending a metric definition under ambiguous business framing
+- **`DATA QUALITY SKEPTICISM`** (shared with SQL + PySpark) — duplicate / orphan / NULL / dtype-anomaly detection as a reasoning skill
+- **`DOUBLE-COUNTING DETECTION`** (shared with SQL + PySpark) — fan-out from one-to-many merges, inflated metrics, grain mismatch
+- **`OUTPUT SANITY VALIDATION`** (shared with SQL + PySpark) — self-checking pipeline output: shape assertion, dtype assertion, plausibility check
+- **`PERFORMANCE-AWARE ANALYTICS`** (shared with SQL) — broader analytical-cost reasoning beyond vectorize-vs-apply: pre-aggregation, cardinality control, scan reduction
+
+Two existing families renamed to align with SQL: `DEDUPLICATION & DISTINCT COUNTING` → `DEDUPLICATION LOGIC`, and `RANKING & TOP-K` → `RANKING & TOP-N PER GROUP`. Existing tags resolve unchanged through preserved match patterns.
 
 Blocklist rejects method-name tags (`groupby`, `merge`, `pivot_table`, `apply`). Describe the *reasoning*.
 

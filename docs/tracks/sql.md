@@ -70,15 +70,18 @@ Curriculum arc placement is enforced by the `order` field. **Order is not file-a
 
 Full registry: [`docs/concept-taxonomy.md` → SQL section](../concept-taxonomy.md#sql--concept-families).
 
-22 canonical families. Every `concepts` tag in every SQL question must map to one via the resolution algorithm in the taxonomy doc. The SQL blocklist forbids mechanic-name tags (`JOIN`, `GROUP BY`, `WINDOW FUNCTION`, etc.) — describe the *reasoning* the construct enables.
+25 canonical families. Every `concepts` tag in every SQL question must map to one via the resolution algorithm in the taxonomy doc. The SQL blocklist forbids mechanic-name tags (`JOIN`, `GROUP BY`, `WINDOW FUNCTION`, etc.) — describe the *reasoning* the construct enables.
 
-Three families are new in the 2026-05 refactor, surfacing reasoning patterns the bank had only implicit:
+Six families are new in the 2026-05 refactor, surfacing reasoning patterns the bank had only implicit. The first three are SQL-specific; the last three are shared with the Pandas track (and partially with PySpark) — same reasoning skill, transferable across executable analytics tracks:
 
 - **`METRIC INTERPRETATION & DENOMINATOR CHOICE`** — when "active user" or "revenue" has multiple defensible definitions, picking and defending one
 - **`DATA QUALITY SKEPTICISM`** — duplicate / orphan / NULL anomaly detection as a reasoning skill, not an afterthought
 - **`DOUBLE-COUNTING DETECTION`** — fan-out from joins, inflated metrics, grain mismatch debugging
+- **`METRIC RECONCILIATION`** — validating a computed metric against an independent source of truth (distinct from data-quality reasoning: this is about the *number*, not the *data*)
+- **`OUTPUT SANITY VALIDATION`** — self-checking your own analytical output before declaring done; the discipline that separates senior practitioners from junior ones
+- **`PERFORMANCE-AWARE ANALYTICS`** — choosing the more efficient analytical approach (scan reduction, pre-aggregation, cardinality control) without sacrificing correctness; distinct from engine-optimisation trivia
 
-Mock-only content authored from now on must lean into these three families to address the gap.
+Mock-only content authored from now on should lean into these six families to address the gap.
 
 ## Authoring allocation matrix
 

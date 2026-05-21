@@ -289,6 +289,27 @@ A real human with a different agenda enters the picture. The technical answer do
 **Member tags (canonical):** `FAN-OUT DETECTION`, `JOIN MULTIPLICATION`, `GRAIN MISMATCH`, `INFLATED METRIC DEBUG`
 **Why this is new:** the bank has `MULTI-TABLE ENTITY LINKING` (14) which tests *correct* joins. This new family targets the *failure mode* where joins inflate results. DM has `DOUBLE-COUNTING` (1) and `FAN-OUT` (1) tags surfacing this idea; SQL should have a parallel family.
 
+#### `METRIC RECONCILIATION` ⚡ *new family — real-world gap*
+**What it tests:** validating a computed metric against an independent source of truth — does my number match what finance / the source system / the prior pipeline reports? Reconciliation queries, cross-system checks, audit patterns, mismatch investigation.
+**Typical question shape:** "These two queries should produce the same total but they differ by N rows / N dollars — find why." Often anchors a debug or scenario question.
+**Match patterns:** `RECONCILIATION`, `AUDIT`, `CROSS-SOURCE VALIDATION`, `MISMATCH INVESTIGATION`, `SOURCE OF TRUTH`
+**Member tags (canonical):** `METRIC RECONCILIATION`, `CROSS-SOURCE RECONCILIATION`, `MISMATCH AUDIT`, `ROW-COUNT RECONCILIATION` (distinct from data-quality use of the same term — here the lens is *the metric*, not *the data*)
+**Why this is new:** distinct from `DATA QUALITY SKEPTICISM` — that family is about the *data* being dirty; this family is about the *computed metric* being verified against independent truth. Every senior analyst runs reconciliation queries weekly; the bank tested this only implicitly.
+
+#### `OUTPUT SANITY VALIDATION` ⚡ *new family — real-world gap*
+**What it tests:** self-checking your own analytical output before declaring done — row count plausibility, NULL-coverage sanity, distribution-shape spot-check, "does this number even make sense given the input?"
+**Typical question shape:** Mock-only scenarios where the candidate must defend why their answer is right (or, in debug variants, why an apparently-correct-looking answer is wrong because it failed a sanity check).
+**Match patterns:** `SANITY`, `OUTPUT VALIDATION`, `ROW COUNT CHECK`, `OUTPUT SANITY`, `PLAUSIBILITY CHECK`
+**Member tags (canonical):** `OUTPUT SANITY VALIDATION`, `RESULT PLAUSIBILITY CHECK`, `ROW COUNT SANITY`, `NULL COVERAGE SANITY`
+**Why this is new:** sanity-checking your own work is the discipline that separates senior practitioners from junior ones. The bank had no family teaching this explicitly — questions either had right answers or wrong answers, with no surface for "did you verify your own output?" Mock-only content should lean here.
+
+#### `PERFORMANCE-AWARE ANALYTICS` ⚡ *new family — real-world gap*
+**What it tests:** choosing the more efficient analytical approach without sacrificing correctness — avoiding unnecessary table scans, reducing cardinality explosion before joins, minimising repeated computation across CTEs, picking the simpler correct approach over the clever expensive one. **This is analytical reasoning about cost, not engine-optimisation trivia.**
+**Typical question shape:** "This query works but reads the events table 3 times — eliminate two of those reads while keeping the result identical." Or: "Two approaches give the same answer — which scales better and why?"
+**Match patterns:** `PERFORMANCE-AWARE`, `SCAN REDUCTION`, `CARDINALITY`, `REPEATED COMPUTATION`, `EFFICIENT APPROACH`, `COST-AWARE`
+**Member tags (canonical):** `SCAN REDUCTION`, `CARDINALITY REDUCTION`, `PRE-AGGREGATION STRATEGY`, `REPEATED COMPUTATION ELIMINATION`, `EFFICIENT ALTERNATIVE`
+**Why this is new:** distinct from the chain-dimension `performance_pivot` (which is a *follow-up* angle). This family is for *practice* and *mock-only single* questions where performance reasoning is the primary skill being tested. Real practitioners reason about cost constantly; the bank made this only a follow-up dimension, never a first-class family.
+
 ### SQL blocklist
 
 The following tags are **forbidden** as `concepts` values — they are mechanic names that obscure reasoning. The validator rejects them with a suggestion mapping to the canonical alternative:
@@ -459,15 +480,17 @@ The following tags are **forbidden** as `concepts` values — they are mechanic 
 **Match patterns:** `rolling`, `ROLLING`, `expanding`, `resample`, `cumsum`
 **Example existing tags:** rolling window (3), cumsum (3)
 
-#### `RANKING & TOP-K`
-**What it tests:** `.rank()` vs `.nlargest()` vs sort-and-slice; tie semantics; per-group top-K via groupby + transform.
-**Match patterns:** `rank`, `RANK`, `TOP-K`, `nlargest`
+#### `RANKING & TOP-N PER GROUP`
+**What it tests:** `.rank()` vs `.nlargest()` vs sort-and-slice; tie semantics; per-group top-N via groupby + transform; deterministic tie-breaking.
+**Match patterns:** `rank`, `RANK`, `TOP-K`, `TOP-N`, `nlargest`, `DETERMINISTIC TIE`
 **Example existing tags:** rank (4), TOP-K RESULT EXTRACTION (4)
+**Cross-track alignment:** same family name as SQL — `TOP-N` member preserved alongside `TOP-K` so existing pandas tags continue to resolve.
 
-#### `DEDUPLICATION & DISTINCT COUNTING`
-**What it tests:** `.drop_duplicates()` keying, `.nunique()` per group, `.value_counts()` shape.
+#### `DEDUPLICATION LOGIC`
+**What it tests:** `.drop_duplicates()` keying, `.nunique()` per group, `.value_counts()` shape; distinguishing "true duplicates" from "valid repeats."
 **Match patterns:** `DEDUP`, `DISTINCT`, `unique`, `value_counts`, `distinct counting`
 **Example existing tags:** DISTINCT ENTITY COUNTING (5), distinct counting (3)
+**Cross-track alignment:** same family name as SQL — the reasoning transfers directly. A `DUPLICATE EVENT COLLAPSE` tag works in both tracks.
 
 #### `BOOLEAN INDEXING & FILTERING`
 **What it tests:** boolean mask construction, `.loc[]` vs `.iloc[]` discipline, chained-condition filtering, query string syntax.
@@ -507,6 +530,41 @@ The following tags are **forbidden** as `concepts` values — they are mechanic 
 #### `DEBUG PANDAS`
 **Match patterns:** `debug`, `DEBUG`, `KeyError`
 **Example existing tags:** debug (5), KeyError (3)
+
+#### `METRIC INTERPRETATION & DENOMINATOR CHOICE` ⚡ *real-world gap*
+**What it tests:** same as the SQL family of the same name — picking the right metric definition under ambiguous business framing, choosing the right denominator for rates / ratios, recognising when "active user" / "revenue" / "session" has multiple defensible definitions, defending the call.
+**Typical question shape:** Mock-only ambiguity-pivot framings where the description deliberately leaves the metric definition open and the answer hinges on what the candidate picks.
+**Match patterns:** `ACTIVE-USER DEFINITION`, `DENOMINATOR`, `RATE BASE`, `AMBIGUOUS METRIC`, `METRIC INTERPRETATION`, `KPI INTERPRETATION`
+**Member tags (canonical):** `METRIC INTERPRETATION`, `DENOMINATOR SELECTION`, `RATE BASE NORMALIZATION`, `AMBIGUOUS KPI DEFINITION`, `BUSINESS RULE DISAMBIGUATION`
+**Cross-track alignment:** parallel to the SQL family. The same business-reasoning skill applies regardless of the language used to compute it.
+
+#### `DATA QUALITY SKEPTICISM` ⚡ *real-world gap*
+**What it tests:** same reasoning as the SQL family — noticing duplicates that shouldn't be there, finding orphan records, recognising suspicious NULLs, validating row counts against source-of-truth, anti-join reconciliation as a debugging tool. The pandas surface adds dtype-anomaly detection (object column where numeric expected, NaT vs NaN vs None).
+**Typical question shape:** Mock-only debug or scenario questions where the input DataFrame is dirty by design and the candidate must catch and address it before answering.
+**Match patterns:** `DATA QUALITY`, `DUPLICATE DETECTION`, `ORPHAN`, `NULL ANOMALY`, `DTYPE ANOMALY`, `ROW COUNT SANITY`
+**Member tags (canonical):** `DATA QUALITY SKEPTICISM`, `DUPLICATE DETECTION`, `ORPHAN RECORD CHECK`, `NULL ANOMALY INSPECTION`, `DTYPE ANOMALY DETECTION`
+**Cross-track alignment:** parallel to SQL. Real practitioners spend 30–50% of their time on data quality regardless of the tool.
+
+#### `DOUBLE-COUNTING DETECTION` ⚡ *real-world gap*
+**What it tests:** same as SQL — spotting fan-out from one-to-many merges, recognising inflated metrics from merging facts to facts, choosing aggregation grain to prevent multiplication. Pandas-specific failure mode: `merge(how='left')` that silently inflates rows when right side has duplicates on the join key.
+**Typical question shape:** Mock-only debug questions where a pandas pipeline "looks right" but returns inflated numbers because of a merge mistake.
+**Match patterns:** `FAN-OUT`, `JOIN MULTIPLICATION`, `MERGE MULTIPLICATION`, `GRAIN MISMATCH`, `INFLATED METRIC`
+**Member tags (canonical):** `FAN-OUT DETECTION`, `MERGE MULTIPLICATION`, `GRAIN MISMATCH`, `INFLATED METRIC DEBUG`
+**Cross-track alignment:** parallel to SQL.
+
+#### `OUTPUT SANITY VALIDATION` ⚡ *real-world gap*
+**What it tests:** same as the SQL family — self-checking your own pipeline's output before declaring done. Pandas-specific angle includes verifying `.reset_index(drop=True)` discipline, dtype assertions, shape assertions (no rows lost / no rows gained unexpectedly).
+**Typical question shape:** Mock-only scenarios where the pipeline produces an answer that *looks* correct but fails a sanity check the candidate should have run.
+**Match patterns:** `SANITY`, `OUTPUT VALIDATION`, `ROW COUNT CHECK`, `SHAPE ASSERTION`, `DTYPE ASSERTION`, `PLAUSIBILITY CHECK`
+**Member tags (canonical):** `OUTPUT SANITY VALIDATION`, `RESULT PLAUSIBILITY CHECK`, `SHAPE ASSERTION`, `DTYPE SANITY`
+**Cross-track alignment:** parallel to SQL.
+
+#### `PERFORMANCE-AWARE ANALYTICS` ⚡ *real-world gap*
+**What it tests:** choosing the more efficient pandas approach without sacrificing correctness — vectorize over `apply(lambda)`, pick the right dtype for memory, chunk large reads instead of loading everything, recognise the row-wise antipattern. **This is question-level performance reasoning, distinct from the `performance_pivot` chain dimension and from the existing `MEMORY & VECTORIZATION REASONING` family** (which focuses on the vectorize-vs-apply choice specifically; this family is the broader analytical-cost family that includes pre-aggregation, query pushdown, and scan-reduction reasoning).
+**Typical question shape:** "This pipeline finishes in 40 minutes on 10M rows — get it under 5 minutes without changing the output." Or: "Two approaches give the same answer — which scales better?"
+**Match patterns:** `PERFORMANCE-AWARE`, `SCAN REDUCTION`, `CARDINALITY REDUCTION`, `PRE-AGGREGATION STRATEGY`, `EFFICIENT APPROACH`, `COST-AWARE`
+**Member tags (canonical):** `PRE-AGGREGATION STRATEGY`, `SCAN REDUCTION`, `CARDINALITY REDUCTION`, `EFFICIENT ALTERNATIVE`
+**Cross-track alignment:** parallel to SQL. Note: `MEMORY & VECTORIZATION REASONING` stays as a separate Pandas-native family — it tests the specific vectorize-vs-apply tradeoff which has no direct SQL analogue.
 
 ### Pandas blocklist
 
@@ -625,6 +683,26 @@ The following tags are **forbidden** as `concepts` values — they are mechanic 
 **What it tests:** general performance reasoning — which configs to tune in what order, when to add hardware vs change code.
 **Match patterns:** `performance`, `PERFORMANCE TUNING`, `tuning`
 **Example existing tags:** performance (4), performance tuning (2)
+
+#### `DATA QUALITY SKEPTICISM` ⚡ *real-world gap*
+**What it tests:** PySpark surface of the cross-track family — recognising suspect data before processing it: late-arriving events that should have been watermarked, schema drift the read silently absorbed, NULL-key explosion on joins, duplicate event-IDs from at-least-once upstreams. The PySpark question-shape is usually `predict_output` ("what does this code do when the input has X dirty rows?") or `debug` ("the output looks wrong because the input was dirty in this specific way — diagnose").
+**Match patterns:** `DATA QUALITY`, `LATE EVENT`, `DUPLICATE EVENT`, `NULL KEY`, `SCHEMA DRIFT INSPECTION`, `DIRTY INPUT`
+**Member tags (canonical):** `DATA QUALITY SKEPTICISM`, `LATE-EVENT HANDLING`, `DUPLICATE EVENT COLLAPSE`, `NULL KEY DETECTION`, `DIRTY INPUT REASONING`
+**Cross-track alignment:** parallel to the SQL and Pandas families of the same name.
+
+#### `DOUBLE-COUNTING DETECTION` ⚡ *real-world gap*
+**What it tests:** spotting fan-out from one-to-many joins in PySpark, same conceptual failure mode as SQL — but the PySpark angle adds the operational consequence: a fan-out join in Spark not only inflates the output but also amplifies shuffle volume and can tip the job into OOM. The reasoning here is therefore *both* correctness and runtime impact.
+**Match patterns:** `FAN-OUT`, `JOIN MULTIPLICATION`, `GRAIN MISMATCH`, `INFLATED OUTPUT`
+**Member tags (canonical):** `FAN-OUT DETECTION`, `JOIN MULTIPLICATION`, `GRAIN MISMATCH`, `INFLATED OUTPUT DEBUG`
+**Cross-track alignment:** parallel to SQL and Pandas.
+
+#### `OUTPUT SANITY VALIDATION` ⚡ *real-world gap*
+**What it tests:** PySpark-specific self-check reasoning — `.count()` plausibility on the output DataFrame, `.printSchema()` shape verification after a transform, row-count assertions before writes, distribution-shape spot-checks via `describe()`. Surface for "did you verify your own pipeline before declaring it production-ready?"
+**Match patterns:** `SANITY`, `OUTPUT VALIDATION`, `ROW COUNT CHECK`, `SCHEMA ASSERTION`, `PLAUSIBILITY CHECK`
+**Member tags (canonical):** `OUTPUT SANITY VALIDATION`, `ROW COUNT ASSERTION`, `SCHEMA SHAPE CHECK`, `RESULT PLAUSIBILITY CHECK`
+**Cross-track alignment:** parallel to SQL and Pandas.
+
+**Note on PySpark scope of cross-track families:** `METRIC INTERPRETATION & DENOMINATOR CHOICE` is intentionally NOT added to PySpark. PySpark questions test reasoning about Spark execution (which is what the existing 18 families cover), not business-metric interpretation — even when PySpark is the implementation, the metric-interpretation reasoning happens upstream of the code. Similarly, `PERFORMANCE-AWARE ANALYTICS` is not added as a separate family: PySpark already has multiple performance-focused families (`SHUFFLE REASONING`, `JOIN STRATEGY SELECTION`, `DATA SKEW & MITIGATION`, `MEMORY MANAGEMENT`, `ADAPTIVE QUERY EXECUTION`, `CATALYST OPTIMIZER`, `PERFORMANCE TUNING & TRADE-OFFS`) and adding a generic-cost family would overlap them rather than fill a gap.
 
 ### PySpark blocklist
 

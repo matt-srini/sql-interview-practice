@@ -56,7 +56,15 @@ If a hard question's distractors are not all plausible — if a competent practi
 
 Full registry: [`docs/concept-taxonomy.md` → PySpark section](../concept-taxonomy.md#pyspark--concept-families).
 
-18 canonical families. **PySpark had the worst tag fragmentation in the bank** (493 unique tags / 623 occurrences before consolidation) — many existing tags were mechanic names like `shuffle`, `Catalyst optimizer`, `broadcast join` written lowercase. The new registry forces these into reasoning families: `SHUFFLE REASONING`, `CATALYST OPTIMIZER`, `JOIN STRATEGY SELECTION`. The mechanic terms remain as match patterns *within* families, not as tag values.
+21 canonical families. **PySpark had the worst tag fragmentation in the bank** (493 unique tags / 623 occurrences before consolidation) — many existing tags were mechanic names like `shuffle`, `Catalyst optimizer`, `broadcast join` written lowercase. The new registry forces these into reasoning families: `SHUFFLE REASONING`, `CATALYST OPTIMIZER`, `JOIN STRATEGY SELECTION`. The mechanic terms remain as match patterns *within* families, not as tag values.
+
+Three families are shared with the SQL and Pandas tracks under identical names (the executable-track reusability principle):
+
+- **`DATA QUALITY SKEPTICISM`** — late events, duplicate events, NULL keys, dirty input reasoning
+- **`DOUBLE-COUNTING DETECTION`** — fan-out joins (with the PySpark twist that fan-out also amplifies shuffle volume and OOM risk)
+- **`OUTPUT SANITY VALIDATION`** — `.count()` plausibility, `.printSchema()` shape checks, row-count assertions before writes
+
+Two cross-track families are **intentionally not** added to PySpark: `METRIC INTERPRETATION & DENOMINATOR CHOICE` (PySpark tests Spark execution reasoning, not business-metric interpretation) and `PERFORMANCE-AWARE ANALYTICS` (PySpark already has 6+ performance-focused families covering this space). See the taxonomy doc's PySpark section for the rationale.
 
 ## Authoring allocation matrix
 
