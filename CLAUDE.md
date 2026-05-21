@@ -505,18 +505,13 @@ cd backend && DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:543
 | `docs/features/mock.md` | Mock interview feature reference — plan gates, endpoints, coaching insights, test coverage |
 | `docs/features/dashboard.md` | Dashboard feature reference — plan gates, endpoints, coaching insights, streak logic, caching |
 
-**AI question authoring agents** (prompts for generating questions with Claude):
+**AI question authoring** — one universal agent, per-track knowledge in track docs:
 
-| Track | Agent file |
+| Purpose | File |
 |---|---|
-| **All tracks (universal)** | `.github/agents/question-authoring.agent.md` — start here; all 9 tracks, all difficulties, practice + mock-only, self-contained guardrails |
-| SQL | `.github/agents/sql-question-authoring.agent.md` |
-| Python | `.github/agents/python-question-authoring.agent.md` |
-| Pandas | `.github/agents/pandas-question-authoring.agent.md` |
-| PySpark | `.github/agents/pyspark-question-authoring.agent.md` |
-| Data Engineering | `.github/agents/data-engineering-question-authoring.agent.md` |
-| Data Modeling | `.github/agents/data-modeling-question-authoring.agent.md` |
-| Statistics | `.github/agents/statistics-question-authoring.agent.md` — dual-subtype (conceptual MCQ + numerical Python) |
-| ML Fundamentals | `.github/agents/ml-fundamentals-question-authoring.agent.md` |
-| Experimentation | `.github/agents/experimentation-question-authoring.agent.md` |
-| Any new track | `.github/agents/track-onboarding.agent.md` — drives full track onboarding end-to-end |
+| **Universal authoring agent (mandatory entry point for every question, every track, every edit)** | `.github/agents/question-authoring.agent.md` |
+| Per-track philosophy, datasets, ID range, difficulty vocabulary, concept arc, authoring allocation | `docs/tracks/<track>.md` (one file per track in `docs/tracks/`) |
+| Concept-family registry per track + 7 universal follow-up dimensions | `docs/concept-taxonomy.md` |
+| New track onboarding (end-to-end process) | `.github/agents/track-onboarding.agent.md` |
+
+The per-track question-authoring agent files (`sql-question-authoring.agent.md` etc.) were retired in the 2026-05 refactor — their content migrated to `docs/tracks/<track>.md` and to the universal agent. There is now **one** authoring entry point on the platform. Use it.

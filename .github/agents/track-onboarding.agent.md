@@ -19,8 +19,9 @@ Scan these for context:
 5. `backend/content/data_engineering_questions/` — reference MCQ-style track (no code execution)
 6. `backend/content/statistics_questions/` — reference mixed-subtype track
 7. `backend/content/paths/` — reference path JSON files
-8. `.github/agents/pyspark-question-authoring.agent.md` — reference question authoring agent for an MCQ track
-9. `.github/agents/data-engineering-question-authoring.agent.md` — reference agent for a scenario/MCQ track
+8. `.github/agents/question-authoring.agent.md` — the **mandatory** universal authoring agent; every question is created through it
+9. `docs/tracks/pyspark.md` — reference per-track knowledge doc for a code-adjacent MCQ track
+10. `docs/tracks/data-engineering.md` — reference per-track knowledge doc for a constructed-reasoning scenario/MCQ track
 
 ---
 

@@ -185,18 +185,13 @@ Useful endpoints:
 
 ### AI-assisted question authoring
 
-Use the agent prompt files in `.github/agents/` with Claude Code:
+**Mandatory rule, no exceptions:** every new question — and every edit to an existing question — goes through the single universal authoring agent. Direct edits to question JSON files bypass the difficulty arc, the taxonomy contract, and the verification checklist; they are the largest historical source of content drift on this platform.
 
-| Track | Agent file |
+| Purpose | File |
 |---|---|
-| **All tracks (start here)** | [`.github/agents/question-authoring.agent.md`](./.github/agents/question-authoring.agent.md) |
-| SQL | [`.github/agents/sql-question-authoring.agent.md`](./.github/agents/sql-question-authoring.agent.md) |
-| Python | [`.github/agents/python-question-authoring.agent.md`](./.github/agents/python-question-authoring.agent.md) |
-| Pandas | [`.github/agents/pandas-question-authoring.agent.md`](./.github/agents/pandas-question-authoring.agent.md) |
-| PySpark | [`.github/agents/pyspark-question-authoring.agent.md`](./.github/agents/pyspark-question-authoring.agent.md) |
-| Data Engineering | [`.github/agents/data-engineering-question-authoring.agent.md`](./.github/agents/data-engineering-question-authoring.agent.md) |
-| Data Modeling | [`.github/agents/data-modeling-question-authoring.agent.md`](./.github/agents/data-modeling-question-authoring.agent.md) |
-| Statistics | [`.github/agents/statistics-question-authoring.agent.md`](./.github/agents/statistics-question-authoring.agent.md) |
-| ML Fundamentals | [`.github/agents/ml-fundamentals-question-authoring.agent.md`](./.github/agents/ml-fundamentals-question-authoring.agent.md) |
-| Experimentation | [`.github/agents/experimentation-question-authoring.agent.md`](./.github/agents/experimentation-question-authoring.agent.md) |
-| New track end-to-end | [`.github/agents/track-onboarding.agent.md`](./.github/agents/track-onboarding.agent.md) |
+| **Universal authoring agent (always)** | [`.github/agents/question-authoring.agent.md`](./.github/agents/question-authoring.agent.md) |
+| Per-track knowledge (read while authoring) | [`docs/tracks/<track>.md`](./docs/tracks/) — one file per track |
+| Concept-family registry + 7 follow-up dimensions | [`docs/concept-taxonomy.md`](./docs/concept-taxonomy.md) |
+| Mock plan-tier matrix + chain mechanics | [`docs/features/mock.md`](./docs/features/mock.md) |
+| Cross-track contract + ID scheme | [`docs/content-authoring.md`](./docs/content-authoring.md) |
+| New track onboarding (end-to-end process) | [`.github/agents/track-onboarding.agent.md`](./.github/agents/track-onboarding.agent.md) |
