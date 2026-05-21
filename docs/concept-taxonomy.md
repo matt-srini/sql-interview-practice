@@ -1,0 +1,920 @@
+# Concept Taxonomy — canonical registry
+
+> **Source of truth for every `concepts` tag on every question, across all 9 tracks, plus the universal follow-up dimension taxonomy used in mock chains.** This file is the discipline. No `concepts` tag may appear in a question file unless it maps to a family registered here. New families require a PR to this file *first*.
+
+**Why this file exists.** Before this registry, concept tags drifted: SQL questions tagged with implementation primitives (`JOIN`, `GROUP BY`), PySpark questions accumulated 493 unique tags many of which were lowercase mechanic names (`shuffle`, `Catalyst optimizer`), Statistics tags were mixed-case and ad-hoc. The result was a fragmented inventory that mock focus mode and dashboard insights could only weakly aggregate over. This registry consolidates that history into per-track canonical families with explicit blocklists.
+
+**Discipline applied to this taxonomy.** Families are grounded in two practical lenses, not academic curricula:
+1. **Real business / engineering work** — does a working practitioner actually reason this way on the job?
+2. **Real interview shapes** — is this what a serious data interviewer probes for at FAANG, Stripe, Airbnb, Netflix, and the broader serious-data-employer market?
+
+If a family fails either test, it doesn't belong here. We are **not** building a textbook curriculum. We are surfacing the reasoning patterns serious practitioners and serious interviewers care about.
+
+---
+
+## How this file is used
+
+### By authors (and the authoring agent)
+
+- Every question's `concepts` array must contain 2–4 tags (5 only when a hard question genuinely teaches multiple dependent patterns).
+- Each tag is a free-form string the author writes — but it **must map to exactly one family** for that track via the resolution rules below.
+- The agent rejects any tag that resolves to no family OR matches a blocklist pattern.
+- New tag string fine, new family requires a PR to this doc.
+
+### By the backend (concept-families enforcement)
+
+- `backend/concept_families.py` is **derived from this file**. After any change to a per-track family registry here, regenerate or hand-mirror the Python dict so the catalog loader / mock focus / insights engine sees the same families.
+- The Phase 2 work item: refactor `concept_families.py` to read from this doc directly (YAML frontmatter or structured Markdown parse), eliminating the manual mirror.
+
+### By dashboards and mock focus mode
+
+- The **family name** is what users see as a concept pill, what surfaces in weak-spot insights, and what mock focus mode filters on.
+- The free-form tag is the authoring breadcrumb, surfaced only in admin/debug views.
+- This separation lets authors write descriptive tags without polluting user-facing UI.
+
+### Family resolution algorithm (mechanical)
+
+For each `tag` in a question's `concepts` array, find its family by trying in order:
+
+1. **Exact match** — tag appears verbatim in any family's `members` list → that family.
+2. **Substring match** — tag contains any of the family's `match_patterns` (case-insensitive substring) → that family. The first family in registry order wins; this is why specificity matters in pattern design (e.g. `WINDOW FUNCTIONS` family checks for `WINDOW` and `RUNNING TOTAL` before `AGGREGATION` checks for `AGGREG`).
+3. **Blocklist check** — tag matches any blocklist pattern for that track → **error**, catalog load crashes. Validator suggests the canonical alternative.
+4. **No match** — **error**, catalog load crashes. Author must either add the tag to an existing family's `members` list or propose a new family.
+
+### Updating this file
+
+1. Open a PR that includes (a) the family change, (b) the resulting `concept_families.py` change once Phase 2 codifies the pipeline, (c) reasoning rooted in real-world / interview value (not "completeness").
+2. If consolidating singleton tags into a family, list which tags collapse.
+3. Run `python scripts/validate_content.py` — it will refuse the PR if any existing question's `concepts` no longer resolves.
+
+---
+
+## The 7 universal follow-up dimensions (chain pivots)
+
+Used by every track's mock-only follow-up chains. Each follow-up in a chain must carry a `follow_up_dimension` value from this list; consecutive follow-ups in a chain must use different dimensions (no two `scale_pivot` follow-ups in a row).
+
+Full chain mechanics live in [`docs/features/mock.md`](features/mock.md#follow-up-chain-atomicity-proelite--mock-only-content). This taxonomy is the universal vocabulary used across all tracks.
+
+### `scale_pivot`
+The numbers change by an order of magnitude. The question itself doesn't morph; the answer's shape does.
+- **SQL example angle:** "Now the orders table holds 10 billion rows instead of 50 million. Does your query still finish?"
+- **Python example angle:** "Now the input list is 10⁸ elements. Walk me through what changes."
+- **Pandas example angle:** "The file is 50 GB. How does your pipeline change?"
+- **PySpark example angle:** "Cluster has 4 executors, dataset is 2 TB skewed. Your join above will fail — fix it."
+- **DE example angle:** "Throughput jumps 100×. Which part of this pipeline breaks first?"
+- **DM example angle:** "The dimension grows from 10 K rows to 100 M. Does your SCD strategy still work?"
+- **Stats example angle:** "Now you have 10× more samples per arm. Does your test design need to change?"
+- **ML example angle:** "Training set grows from 1 M to 100 M rows. What batching / memory / training-time tradeoffs surface?"
+- **Experimentation example angle:** "We need to ship a decision in 1/10th the time. What changes about your design?"
+
+### `business_rule_pivot`
+The business changes its definition of something — what counts, what doesn't, who's in, who's out. Question logic stays the same; the *definition* shifts.
+- SQL: "Now exclude refunded orders from revenue." / "Active means signed in *and* placed an order in the last 30 days."
+- Python: "Now ignore items where category is `internal`." 
+- Pandas: "Now exclude weekends from the DAU calculation."
+- PySpark: "Upstream service changed its semantics — what was an 'event' is now an 'attempt + outcome' pair."
+- DE: "Compliance requires you to exclude EU users from the warehouse copy. Adapt the pipeline."
+- DM: "Marketing now wants 'customer' to include trial users. Does your fact-table grain still work?"
+- Stats: "The metric definition changed mid-experiment. How do you handle the rolling cohort?"
+- ML: "Label definition just changed (was binary, now graded 1–5). Re-think the loss."
+- Experimentation: "The success metric is now NDCG@5 instead of CTR. Does your power calc still hold?"
+
+### `data_quality_pivot`
+The data is dirtier than the parent question implied. The candidate must adapt to duplicates, NULLs, late events, schema drift, orphan records.
+- SQL: "There are duplicate orders for the same `order_id`. What does that do to your answer?"
+- Python: "Input may contain None values. Handle gracefully."
+- Pandas: "Some sessions have NULL `user_id`. What happens to your groupby?"
+- PySpark: "Events arrive up to 24 hours late. Update your streaming logic."
+- DE: "Upstream just started double-writing for 30 min. Your overnight pipeline fired. Diagnose."
+- DM: "Conformed dimension came in with conflicting attributes from two source systems. Resolve."
+- Stats: "5% of observations are MNAR (missing not at random). Does your test still make sense?"
+- ML: "10% of labels are noisy. What changes about your training and evaluation?"
+- Experimentation: "Tracking gap from 2 PM to 5 PM yesterday. Salvage what you can from the experiment."
+
+### `edge_case_pivot`
+The case the parent question implicitly excluded — empty input, zero users, ties, single-day windows, single-row groups — now matters.
+- SQL: "What if a user has zero orders?" / "What if two products tied on revenue?"
+- Python: "What if the input is empty? What if it's a single element?"
+- Pandas: "What if the rolling window covers a single day?"
+- PySpark: "Empty partitions on one side of the join. What does your code return?"
+- DE: "First run of the pipeline, no historical state. Does your incremental logic still work?"
+- DM: "A dimension has zero matching rows in the fact. Does your grain hold?"
+- Stats: "n=5 per group. Is your t-test still valid?"
+- ML: "Rare class has 12 examples in train, 3 in test. What do you change?"
+- Experimentation: "One arm got 1% of the traffic by accident. Salvage what you can."
+
+### `performance_pivot`
+The answer works, but it's expensive. Reduce cost / latency / compute / scans without breaking correctness.
+- SQL: "This query works. Reduce repeated scans of `events`."
+- Python: "Your solution is O(n²). Can you get to O(n log n)?"
+- Pandas: "Apply-lambda is killing you on 10 M rows. Rewrite vectorized."
+- PySpark: "Three shuffles for one report. Eliminate two."
+- DE: "Daily cost just spiked 3×. Find why and propose a fix."
+- DM: "Fact table query takes 14 minutes. Where would aggregation help?"
+- Stats: "Your bootstrap takes 4 hours. Can you reduce variance another way?"
+- ML: "Inference latency is 500 ms. Budget is 50 ms. Choose."
+- Experimentation: "Power analysis says 6 weeks. Business says 2 weeks. What gives?"
+
+### `ambiguity_pivot`
+The question gets *less* specified, not more. The candidate must surface clarifying assumptions, name tradeoffs, or commit to a defensible reading.
+- SQL: "Define 'active user' for this report." (no answer provided — candidate proposes)
+- Python: "Optimize for what — readability, runtime, memory? Justify."
+- Pandas: "What time grain matters for this question? Defend your choice."
+- PySpark: "Should this run hourly or daily? Argue your call."
+- DE: "Is this a batch or streaming problem? Make the case."
+- DM: "What's the grain of this fact? You decide."
+- Stats: "Is this a one-tailed or two-tailed test? Defend it."
+- ML: "What's the right metric here? Why?"
+- Experimentation: "The stakeholder wants 'better engagement.' Define and defend a metric."
+
+### `stakeholder_pivot`
+A real human with a different agenda enters the picture. The technical answer doesn't change but the *delivery* of it does — and sometimes that forces a different answer.
+- SQL: "Exec wants this weekly, not monthly. What changes?"
+- Python: "Code review: the senior eng says your nested loop is unreadable. Refactor for readability."
+- Pandas: "Analyst on your team won't trust the result unless you can show your work step by step. Show it."
+- PySpark: "Infra team says this job hit the cluster cap last night. Negotiate the redesign."
+- DE: "Finance owner needs daily reconciliation reports by 9 AM. Your pipeline runs at 8:45 sometimes. Solve."
+- DM: "The data science team wants a different grain than the BI team. Pick or compromise."
+- Stats: "PM wants a simpler explanation than a p-value. Frame the answer."
+- ML: "Risk team blocks deployment because the model isn't explainable enough. What do you do?"
+- Experimentation: "Leadership wants to ship despite an inconclusive test. Frame your push-back."
+
+### Authoring rules summary
+
+- A chain (parent + follow-ups) of length N has N−1 follow-ups, each with a `follow_up_dimension`.
+- **Consecutive follow-ups must use different dimensions.** Two scale pivots in a row is repetitive; mix the angles.
+- The parent question carries no `follow_up_dimension` (it's the anchor).
+- Author intent matters: name the dimension that *best* describes the pivot, not the most flattering one.
+
+---
+
+## SQL — concept families
+
+**Modality:** Executable problem-solving. DuckDB execution.
+**Reasoning archetype:** Translate a business question into a deterministic data answer, anticipating where the data and the question are each ambiguous.
+**Current tag inventory:** 276 unique tags / 491 occurrences — heavy long-tail fragmentation. Top 30 tags cover ~70% of occurrences; the rest are singletons that consolidate into the families below.
+
+### Family registry
+
+#### `GROUPED AGGREGATION`
+**What it tests:** picking the right grain, picking the right aggregate, handling NULLs in aggregates, distinguishing `COUNT(*)` vs `COUNT(col)` vs `COUNT(DISTINCT col)`.
+**Typical question shape:** "compute X per Y" where Y is one or more grouping keys.
+**Match patterns:** `AGGREG` (covers GROUPED AGGREGATION, VALUE AGGREGATION, CONDITIONAL AGGREGATION, MULTI-AGGREGATE), `ORDERED-SET AGGR`
+**Example existing tags collapsing into this family:** GROUPED AGGREGATION (26), VALUE AGGREGATION (5), ROW COUNT AGGREGATION (6), CONDITIONAL AGGREGATION (5), MULTI-COLUMN SEGMENT AGGREGATION
+**Authoring note:** plain `SUM`, `COUNT`, `AVG` mechanic terms are blocklisted — describe the *reasoning* (e.g. `CONDITIONAL AGGREGATION` over `SUM CASE WHEN`).
+
+#### `POST-AGGREGATION FILTERING`
+**What it tests:** knowing that HAVING runs after GROUP BY, what aliases are visible in HAVING, when to push filters before vs after aggregation.
+**Typical question shape:** "find groups where the aggregate exceeds N."
+**Match patterns:** `POST-AGGREGATION FILTER`, `HAVING`
+**Example existing tags:** POST-AGGREGATION FILTERING (18), HAVING THRESHOLD (2), HAVING ON COUNT
+**Real-world angle:** filtering at the wrong layer is one of the most common analyst mistakes; this family is non-negotiable.
+
+#### `PRE-AGGREGATION FILTERING`
+**What it tests:** knowing what to filter at row level *before* aggregation, recognising when filter placement changes the result.
+**Match patterns:** `PRE-AGGREGATION FILTER`, `CONDITIONAL ROW FILTERING`, `RANGE FILTER`, `WHERE CLAUSE`, `IN CLAUSE`
+**Example existing tags:** CONDITIONAL ROW FILTERING (20), RANGE FILTERING (2), SET MEMBERSHIP FILTERING (2), PRE VS POST AGGREGATION FILTERING
+
+#### `MULTI-TABLE ENTITY LINKING`
+**What it tests:** picking the right join type and direction, recognising when LEFT vs INNER produces different counts, avoiding fan-out from one-to-many joins.
+**Match patterns:** `MULTI-TABLE`, `ENTITY LINKING`, `REQUIRED ENTITY MATCHING`, `OPTIONAL ENTITY PRESERVATION`, `LEFT JOIN DIRECTION`, `FULL OUTER`, `ANTI-JOIN`
+**Example existing tags:** MULTI-TABLE ENTITY LINKING (14), REQUIRED ENTITY MATCHING (8), OPTIONAL ENTITY PRESERVATION (6), ANTI-JOIN PATTERN (3), FULL OUTER JOIN RECONCILIATION (1)
+**Real-world angle:** "which users have no orders?" / "list users and their last support ticket if any" — both are entity-link reasoning, not join-mechanic recall.
+
+#### `WINDOW FUNCTIONS`
+**What it tests:** when window functions let you keep detail rows that GROUP BY would collapse, choosing the right partition, choosing rows-vs-range framing.
+**Match patterns:** `WINDOW`, `WINDOWING`, `ROWS VS RANGE`, `LAG WINDOW`, `LEAD`
+**Example existing tags:** WINDOW RANK (2), WINDOW RANK WITH PARTITION (2), POST-AGGREGATION WINDOWING (2), LAG WINDOW FUNCTION (1)
+**Authoring note:** the *use* (running totals, period-over-period, partitioned top-N) maps to other families below; this family is reserved for questions where the window-function *choice* is the reasoning challenge.
+
+#### `RUNNING TOTAL & MOVING WINDOW`
+**What it tests:** cumulative sums, moving averages, threshold detection inside a running calculation, ROWS-vs-RANGE frame distinctions.
+**Match patterns:** `RUNNING TOTAL`, `CUMULATIVE`, `MOVING AVERAGE`, `MOVING WINDOW`
+**Example existing tags:** RUNNING TOTAL THRESHOLD DETECTION (2), CUMULATIVE SUM, MOVING AVERAGE
+**Real-world angle:** "when did cumulative revenue first cross $1M?" — classic finance/ops question.
+
+#### `RANKING & TOP-N PER GROUP`
+**What it tests:** picking ROW_NUMBER vs RANK vs DENSE_RANK based on tie semantics, top-N-per-group via subquery/CTE/QUALIFY, deterministic tie-breaking.
+**Match patterns:** `RANK`, `TOP-N`, `DEDUPLICAT`, `LATEST STATE`, `DETERMINISTIC TIE`
+**Example existing tags:** PARTITIONED RANK FILTERING (3), TOP-N PER GROUP (3), TOP-N QUERY (2), WINDOW RANK (2), LATEST STATE DERIVATION (3), DETERMINISTIC TIE-BREAKING (2)
+**Real-world angle:** "top 3 products per category last quarter" — every analyst writes this.
+
+#### `DEDUPLICATION LOGIC`
+**What it tests:** distinguishing DISTINCT vs GROUP BY vs ROW_NUMBER()=1, picking the right keying for "true duplicates" vs "valid repeats."
+**Match patterns:** `DEDUP`, `DISTINCT ENTITY`, `DISTINCT COUNT`, `MEMBERSHIP-BASED DEDUPLICATION`
+**Example existing tags:** DISTINCT ENTITY COUNTING (4), DISTINCT COUNT (4), DEDUPLICATED RESULT SHAPING (1)
+**Real-world angle:** dirty event streams; tracking-system over-firing; the "is this a duplicate or a valid re-event?" question is a daily analyst task.
+
+#### `SUBQUERY PATTERNS`
+**What it tests:** when a correlated subquery is unavoidable, when EXISTS beats IN with NULLs, derived tables vs CTEs vs joins.
+**Match patterns:** `SUBQUERY`, `CORRELATED`, `EXISTS PATTERN`, `NESTED FILTER`, `SCALAR SUBQUERY`
+**Example existing tags:** CORRELATED SUBQUERY (7), NESTED FILTER LOGIC (5), EXISTS PATTERN (6), SCALAR SUBQUERY IN CASE
+**Authoring note:** when a problem is *equally* solvable by JOIN, prefer to teach the join; subquery problems should be where the join doesn't work or is ugly.
+
+#### `CTE PIPELINE`
+**What it tests:** decomposing a multi-step problem into named layers, sequencing CTEs so each depends on the prior, knowing when a CTE materializes.
+**Match patterns:** `CTE`, `MULTI-CTE`, `RECURSIVE`
+**Example existing tags:** CTE PIPELINE (2), MULTI-CTE PIPELINE (2), RECURSIVE CTE (2)
+**Real-world angle:** real production queries are 3–7 CTEs; teaching this is teaching "how analysts actually write SQL."
+
+#### `TIME-SERIES BUCKETING & ARITHMETIC`
+**What it tests:** date truncation, period-over-period comparisons, date arithmetic (month-end edge cases), calendar-spine joins for missing days.
+**Match patterns:** `DATE`, `TIME-`, `STRFTIME`, `TEMPORAL`, `MONTHLY`, `QUARTER`, `PERIOD-OVER-PERIOD`, `CALENDAR SPINE`, `BEFORE-AND-AFTER`
+**Example existing tags:** DATE TRUNCATION (2), DATE ARITHMETIC (2), MONTHLY TREND (2), TIME-WINDOW COMPARISON (2), PERIOD-OVER-PERIOD COMPARISON (1), QUARTER DERIVATION (1), CALENDAR SPINE (2), BEFORE-AND-AFTER COMPARISON (3)
+**Real-world angle:** time analysis is most of analytics work; never tag with `STRFTIME` (mechanic), always with the analytical pattern.
+
+#### `COHORT RETENTION`
+**What it tests:** defining a cohort key, calculating return rate over offset weeks/months, distinguishing rolling vs fixed cohorts.
+**Match patterns:** `COHORT`, `RETENTION`, `REACTIVATION`
+**Example existing tags:** COHORT ANALYSIS, RETENTION BY MONTH OFFSET, REACTIVATION
+**Real-world angle:** every growth team's bread and butter.
+
+#### `FUNNEL ANALYSIS`
+**What it tests:** sequencing steps, joining events to a session/journey, computing conversion rates with the right denominator.
+**Match patterns:** `FUNNEL`, `CONVERSION`, `STEP CONVERSION`
+**Example existing tags:** CONVERSION FUNNEL, FUNNEL DROPOFF, ACQUISITION FUNNEL
+**Real-world angle:** product / marketing analytics standard.
+
+#### `SESSIONIZATION`
+**What it tests:** assigning a session ID to events based on time gaps, gap-and-island detection, state machine reasoning on event streams.
+**Match patterns:** `SESSION`, `GAP`, `ISLAND`, `STATE TRANSITION`
+**Example existing tags:** SEQUENTIAL EVENT PATTERN (2), STATE TRANSITION DETECTION (3), USER-PRODUCT JOURNEY MODELING (2)
+**Real-world angle:** classic Meta / Stripe / Airbnb interview pattern; also a real analyst task for tracking quality investigations.
+
+#### `CONDITIONAL LOGIC & CASE`
+**What it tests:** CASE WHEN inside SUM/COUNT, CASE as a GROUP BY key for custom bucketing, rule-based row classification.
+**Match patterns:** `CASE WHEN`, `RULE-BASED`, `CONDITIONAL FLAG`, `CATEGORICAL SEGM`, `PRIORITY-BASED`, `PRECEDENCE-BASED`
+**Example existing tags:** RULE-BASED CLASSIFICATION (6), CONDITIONAL SEGMENT AGGREGATION (3), PRECEDENCE-BASED CLASSIFICATION (2), MULTI-COLUMN SEGMENT AGGREGATION
+
+#### `NULL HANDLING & COALESCE`
+**What it tests:** what NULL does in joins, aggregates, comparisons, ORDER BY; when COALESCE rescues you and when it lies.
+**Match patterns:** `NULL`, `COALESCE`, `ZERO-COUNT`, `IS NULL`, `IS NOT NULL`
+**Example existing tags:** ZERO-COUNT PRESERVATION (1), COALESCE NULL BRIDGING (1), COUNT NON-NULL vs COUNT STAR (1), NULL-BASED ROW FILTERING (3)
+
+#### `SET OPERATIONS & COMPARISON`
+**What it tests:** UNION vs UNION ALL, INTERSECT vs INNER JOIN, EXCEPT/MINUS with NULLs, anti-join patterns for "in A but not B" questions.
+**Match patterns:** `SET MEMBER`, `SET DIFFER`, `UNION`, `INTERSECT`, `EXCEPT`, `CROSS-SOURCE`
+**Example existing tags:** SET MEMBERSHIP FILTERING (2), BEHAVIORAL SET DIFFERENCE, CROSS-SOURCE RECONCILIATION
+
+#### `SELF-COMPARISON & RECURSION`
+**What it tests:** when self-joins solve hierarchy or row-vs-row comparison problems, recursive CTEs for variable-depth hierarchies.
+**Match patterns:** `SELF-COMPAR`, `ROW-LEVEL SELF`, `ROW-TO-ROW`, `RECURSIVE`, `HIERARCHY`
+**Example existing tags:** ROW-LEVEL SELF-COMPARISON (2), SELF-COMPARISON RANK EMULATION
+
+#### `STRING PARSING & PATTERN MATCHING`
+**What it tests:** SUBSTRING / SPLIT_PART / regex pickoff for extracting from delimited fields, LIKE vs ILIKE, pattern-based filtering.
+**Match patterns:** `STRING`, `SPLIT_PART`, `SUBSTRING`, `PATTERN-BASED`, `LIKE`, `REGEX`
+**Example existing tags:** SPLIT_PART (2), PATTERN-BASED FILTERING
+
+#### `RESULT SHAPING & ORDERING`
+**What it tests:** explicit ORDER BY when meaningful, column projection discipline, deterministic output shape, output-schema design.
+**Match patterns:** `RESULT ORDERING`, `COLUMN PROJECTION`, `DETERMINISTIC RESULT`, `OUTPUT SCHEMA`, `ORDER-FIRST`
+**Example existing tags:** DETERMINISTIC RESULT ORDERING (24), COLUMN PROJECTION (14), OUTPUT SCHEMA SHAPING, DEDUPLICATED RESULT SHAPING
+
+#### `METRIC INTERPRETATION & DENOMINATOR CHOICE` ⚡ *new family — real-world gap*
+**What it tests:** picking the right metric definition under ambiguous business framing, choosing the right denominator for rates/ratios, recognising when "active user" or "revenue" or "session" has multiple defensible definitions.
+**Typical question shape:** Mock-only ambiguity-pivot follow-ups; questions where the description deliberately leaves the metric definition open and the answer hinges on what the candidate picks and why.
+**Member tags (canonical):** `ACTIVE-USER DEFINITION`, `REVENUE BASIS CHOICE`, `DENOMINATOR SELECTION`, `RATE BASE NORMALIZATION`, `AMBIGUOUS METRIC`
+**Why this is new:** the existing bank had this implicit (questions about "active users" or "revenue including/excluding refunds") but never tagged the *reasoning* as a family. Mock content sized for Interview Loop will lean heavily on this family.
+
+#### `DATA QUALITY SKEPTICISM` ⚡ *new family — real-world gap*
+**What it tests:** noticing duplicates that shouldn't be there, finding orphan records, recognising suspicious NULLs, validating row counts against source-of-truth, anti-join reconciliation as a debugging tool.
+**Typical question shape:** Debug-SQL questions; scenario questions where the data is dirty by design and the candidate must catch and address it before answering.
+**Member tags (canonical):** `DUPLICATE DETECTION`, `ORPHAN RECORD CHECK`, `ROW COUNT RECONCILIATION`, `NULL ANOMALY INSPECTION`, `DATA QUALITY GATE`
+**Why this is new:** present implicitly via DEBUG SQL questions and dirty-data scenarios, but never surfaced as a coherent reasoning family. Real practitioners spend 30–50% of their time on data quality; this family must be teachable.
+
+#### `DOUBLE-COUNTING DETECTION` ⚡ *new family — real-world gap*
+**What it tests:** spotting fan-out from one-to-many joins, recognising inflated metrics from joining facts to facts, choosing aggregation grain to prevent multiplication.
+**Typical question shape:** Mock-only debug or scenario questions where a query "looks right" but returns inflated numbers because of a join mistake.
+**Member tags (canonical):** `FAN-OUT DETECTION`, `JOIN MULTIPLICATION`, `GRAIN MISMATCH`, `INFLATED METRIC DEBUG`
+**Why this is new:** the bank has `MULTI-TABLE ENTITY LINKING` (14) which tests *correct* joins. This new family targets the *failure mode* where joins inflate results. DM has `DOUBLE-COUNTING` (1) and `FAN-OUT` (1) tags surfacing this idea; SQL should have a parallel family.
+
+### SQL blocklist
+
+The following tags are **forbidden** as `concepts` values — they are mechanic names that obscure reasoning. The validator rejects them with a suggestion mapping to the canonical alternative:
+
+| Blocked tag | Canonical alternative |
+|---|---|
+| `JOIN` | Use the entity-link family or describe the analytical purpose |
+| `INNER JOIN`, `LEFT JOIN`, `RIGHT JOIN`, `FULL JOIN` | `MULTI-TABLE ENTITY LINKING` |
+| `GROUP BY` | `GROUPED AGGREGATION` (or the segment-pattern family) |
+| `HAVING` | `POST-AGGREGATION FILTERING` |
+| `WHERE` | `PRE-AGGREGATION FILTERING` (or the specific reasoning) |
+| `WINDOW FUNCTION`, `OVER`, `PARTITION BY` | a specific window family (RANKING, RUNNING TOTAL, etc.) |
+| `ROW_NUMBER`, `RANK`, `DENSE_RANK` | `RANKING & TOP-N PER GROUP` |
+| `LAG`, `LEAD` | the analytical purpose (period-over-period, gap detection) |
+| `CTE`, `WITH` | `CTE PIPELINE` |
+| `UNION`, `INTERSECT`, `EXCEPT` | `SET OPERATIONS & COMPARISON` |
+| `DISTINCT` | `DEDUPLICATION LOGIC` or `DISTINCT ENTITY COUNTING` |
+| `COUNT`, `SUM`, `AVG`, `MIN`, `MAX` | a specific aggregation family |
+| `CASE`, `IIF` | `CONDITIONAL LOGIC & CASE` |
+| `NULL`, `IS NULL`, `COALESCE` | `NULL HANDLING & COALESCE` |
+| `STRFTIME`, `EXTRACT`, `DATE_TRUNC` | `TIME-SERIES BUCKETING & ARITHMETIC` |
+| `LIKE`, `ILIKE`, `REGEX` | `STRING PARSING & PATTERN MATCHING` |
+| `OR`, `AND`, `IN`, `BETWEEN` | `PRE-AGGREGATION FILTERING` or specific |
+| `ORDER BY` | `RESULT SHAPING & ORDERING` |
+| `LIMIT` | `RESULT SHAPING & ORDERING` or `RANKING & TOP-N PER GROUP` |
+| `SUBQUERY`, `NESTED QUERY` | `SUBQUERY PATTERNS` |
+
+---
+
+## Python — concept families
+
+**Modality:** Executable problem-solving. Sandbox execution. Algorithm + data structure focus.
+**Reasoning archetype:** Pick the right algorithmic pattern for the problem shape; reason about time / space complexity; recognise when a brute-force solution doesn't scale.
+**Current tag inventory:** 219 unique tags / 366 occurrences — mid-fragmentation; algorithm pattern names are mostly clean (lowercase canonical) but with several singleton variants.
+
+### Family registry
+
+#### `SLIDING WINDOW`
+**What it tests:** recognising the "find / count substrings or subarrays satisfying property X" problem shape; expand/contract pointers; tracking window state efficiently.
+**Match patterns:** `sliding window`, `SLIDING WINDOW`
+**Example existing tags:** sliding window (6)
+
+#### `TWO POINTERS`
+**What it tests:** sorted-input traversal from both ends, fast/slow pointer for cycle / midpoint, pair-finding patterns.
+**Match patterns:** `two pointer`, `TWO POINTER`
+**Example existing tags:** two pointers (7)
+
+#### `HASH-MAP STATE`
+**What it tests:** O(1) membership testing, frequency counting, "have I seen this before" patterns, prefix-sum-with-hashmap.
+**Match patterns:** `hash map`, `HASH MAP`, `frequency count`, `MEMBERSHIP-BASED`
+**Example existing tags:** hash map (10), frequency count (2), MEMBERSHIP-BASED DEDUPLICATION (4)
+
+#### `BINARY SEARCH`
+**What it tests:** searching on a sorted array; binary search on the *answer space* (parametric search); finding boundaries (leftmost / rightmost matching).
+**Match patterns:** `binary search`, `BINARY SEARCH`
+**Example existing tags:** binary search (5)
+
+#### `INDEXED SEQUENCE REASONING`
+**What it tests:** array/list traversal where index *meaning* matters; subarray problems; prefix/suffix arrays; relative-position invariants.
+**Match patterns:** `INDEXED SEQUENCE`, `LINEAR STATE UPDATE`, `linear scan`, `subarray`, `prefix sum`
+**Example existing tags:** INDEXED SEQUENCE REASONING (19), LINEAR STATE UPDATE (7), linear scan (4), subarray (5), prefix sum (2)
+
+#### `STRING PATTERN REASONING`
+**What it tests:** character-level state machines, palindrome checking, anagram detection, KMP-style scanning, parsing tokens.
+**Match patterns:** `STRING PATTERN`, `string manipulation`, `STRING`
+**Example existing tags:** STRING PATTERN REASONING (6), string manipulation (7), ORDER-FIRST REASONING (7)
+
+#### `STACK & MONOTONIC STRUCTURES`
+**What it tests:** LIFO ordering, balanced-bracket patterns, monotonic stack for next-greater/next-smaller, expression evaluation.
+**Match patterns:** `stack`, `STACK`, `monotonic`
+**Example existing tags:** stack (5)
+
+#### `HEAP & PRIORITY QUEUE`
+**What it tests:** top-K patterns, streaming median, scheduling with priority, k-way merge.
+**Match patterns:** `heap`, `HEAP`, `priority queue`, `PRIORITY QUEUE`
+**Example existing tags:** priority queue (4), heap (3)
+
+#### `GREEDY CHOICE`
+**What it tests:** recognising when local optima compose to a global optimum; sorting + scan; interval scheduling; minimum-cost-to-X patterns.
+**Match patterns:** `greedy`, `GREEDY`, `interval scheduling`
+**Example existing tags:** greedy (5), interval scheduling (2)
+
+#### `DYNAMIC PROGRAMMING (1D)`
+**What it tests:** subproblem identification, state design, transition function, base cases; sequence DP (LIS, edit distance) vs partition DP (coin change, word break).
+**Match patterns:** `dynamic programming`, `DYNAMIC PROGRAMMING`, `1D DP`, `memoization`
+**Example existing tags:** dynamic programming (14), memoization (2)
+
+#### `DYNAMIC PROGRAMMING (2D)`
+**What it tests:** matrix-based DP, grid problems, two-dimensional state, when 2D collapses to 1D for memory.
+**Match patterns:** `2D DP`, `matrix DP`
+**Example existing tags:** matrix (4)
+
+#### `GRAPH TRAVERSAL (BFS / DFS)`
+**What it tests:** picking BFS vs DFS by problem shape, visited-set discipline, level-by-level vs depth-first reasoning, cycle detection.
+**Match patterns:** `BFS`, `DFS`, `graph`, `GRAPH`, `topological sort`
+**Example existing tags:** BFS (4), graph (4), topological sort (3)
+
+#### `BACKTRACKING & COMBINATORIAL SEARCH`
+**What it tests:** systematic exploration of a solution tree, pruning, restoring state, permutations / combinations / subsets.
+**Match patterns:** `backtracking`, `BACKTRACKING`, `combinatorics`, `recursion`
+**Example existing tags:** backtracking (3), recursion (2), combinatorics (2)
+
+#### `IN-PLACE TRANSFORMATION & SPACE OPTIMIZATION`
+**What it tests:** modifying input without extra allocation, two-pass with constant extra space, recognising when O(1) extra space is achievable.
+**Match patterns:** `in-place`, `IN-PLACE`, `SPACE`
+**Example existing tags:** in-place (2)
+
+#### `MODULAR ARITHMETIC & NUMBER THEORY`
+**What it tests:** modular operations to avoid overflow, GCD / LCM patterns, prime factorization, bit-manipulation tricks.
+**Match patterns:** `modular`, `MODULAR`, `number theory`
+**Example existing tags:** modular arithmetic (3)
+
+#### `LIST & COLLECTION TRANSFORMATION`
+**What it tests:** Pythonic list comprehensions and `collections.Counter` / `defaultdict` patterns; transformation pipelines.
+**Match patterns:** `list manipulation`, `LIST`, `collections`
+**Example existing tags:** list manipulation (3), collections (3)
+
+### Python blocklist
+
+| Blocked tag | Canonical alternative |
+|---|---|
+| `for loop`, `while loop` | the algorithmic pattern (sliding window, two pointers, etc.) |
+| `if/else`, `conditional` | the algorithmic pattern |
+| `function`, `def` | the algorithmic pattern |
+| `dictionary`, `dict` | `HASH-MAP STATE` |
+| `set` | `HASH-MAP STATE` (if membership) or specific |
+| `list`, `tuple` | the algorithmic pattern |
+| `heapq`, `bisect`, `collections.X` | the pattern that motivates the library (HEAP, BINARY SEARCH, etc.) |
+| `sort`, `sorted` | only allowed when sorting *is* the reasoning step (otherwise the pattern it enables) |
+| `lambda` | the algorithmic pattern |
+
+---
+
+## Pandas — concept families
+
+**Modality:** Executable problem-solving. Sandbox execution.
+**Reasoning archetype:** Express data transformations idiomatically (vectorized, accessor-driven) — never SQL-in-Python. Pick the right DataFrame operation for the problem shape.
+**Current tag inventory:** 263 unique tags / 494 occurrences — similar long-tail shape to SQL.
+
+### Family registry
+
+#### `GROUPED AGGREGATION`
+**Match patterns:** `GROUPED AGGREGATION`, `groupby aggregation`, `aggregation`, `named aggregation`
+**Example existing tags:** GROUPED AGGREGATION (41), aggregation (6), named aggregation (5), groupby aggregation (4)
+
+#### `MULTI-DATAFRAME ENTITY LINKING`
+**What it tests:** `merge` semantics (how / on / suffixes), recognising when `concat` vs `merge` vs `join` is right, handling many-to-many merges.
+**Match patterns:** `MULTI-DATAFRAME`, `multi-table join`, `ENTITY LINKING`, `MERGE`
+**Example existing tags:** MULTI-DATAFRAME ENTITY LINKING (20), multi-table join (4), left join (3)
+
+#### `RESHAPING & PIVOT`
+**What it tests:** `pivot` / `pivot_table` / `melt` / `stack` / `unstack` — picking the right one for the input vs desired shape.
+**Match patterns:** `WIDE-FORM RESHAPING`, `pivot`, `melt`, `stack`, `unstack`
+**Example existing tags:** WIDE-FORM RESHAPING (6)
+
+#### `MISSING VALUE STRATEGY`
+**What it tests:** when to drop, when to impute, picking the right fill value (zero vs mean vs forward-fill), distinguishing NaN from None from NaT.
+**Match patterns:** `MISSING-VALUE`, `missing values`, `IMPUTATION`, `fillna`
+**Example existing tags:** MISSING-VALUE IMPUTATION (4), missing values (4)
+
+#### `DATETIME OPERATIONS`
+**What it tests:** parsing strings to datetimes, `.dt` accessor for component extraction, timedelta arithmetic, timezone awareness.
+**Match patterns:** `datetime`, `DATETIME`, `timedelta`, `time series`, `date formatting`
+**Example existing tags:** datetime (15), DATETIME TYPE PARSING (4), timedelta (4), time series (7), date formatting (3)
+
+#### `WINDOW & ROLLING OPERATIONS`
+**What it tests:** `.rolling()` and `.expanding()` for windowed aggregates; `.resample()` for time-based windowing; ROWS-vs-window semantics.
+**Match patterns:** `rolling`, `ROLLING`, `expanding`, `resample`, `cumsum`
+**Example existing tags:** rolling window (3), cumsum (3)
+
+#### `RANKING & TOP-K`
+**What it tests:** `.rank()` vs `.nlargest()` vs sort-and-slice; tie semantics; per-group top-K via groupby + transform.
+**Match patterns:** `rank`, `RANK`, `TOP-K`, `nlargest`
+**Example existing tags:** rank (4), TOP-K RESULT EXTRACTION (4)
+
+#### `DEDUPLICATION & DISTINCT COUNTING`
+**What it tests:** `.drop_duplicates()` keying, `.nunique()` per group, `.value_counts()` shape.
+**Match patterns:** `DEDUP`, `DISTINCT`, `unique`, `value_counts`, `distinct counting`
+**Example existing tags:** DISTINCT ENTITY COUNTING (5), distinct counting (3)
+
+#### `BOOLEAN INDEXING & FILTERING`
+**What it tests:** boolean mask construction, `.loc[]` vs `.iloc[]` discipline, chained-condition filtering, query string syntax.
+**Match patterns:** `boolean indexing`, `BOOLEAN INDEXING`, `NULL-BASED ROW FILTERING`, `query`
+**Example existing tags:** boolean indexing (4), NULL-BASED ROW FILTERING (3)
+
+#### `COLUMN SELECTION & PROJECTION`
+**What it tests:** explicit column selection over `.iloc`, derived column expressions, `.assign()` for chain-friendly transforms.
+**Match patterns:** `column selection`, `derived columns`, `.assign`
+**Example existing tags:** column selection (5), derived columns (6)
+
+#### `METHOD CHAINING & PIPELINE STYLE`
+**What it tests:** writing pandas as a readable chain, avoiding intermediate variables, `.pipe()` for custom functions in chains.
+**Match patterns:** `METHOD CHAINING`, `pipe`, `chain`
+**Example existing tags:** METHOD CHAINING (3)
+
+#### `CATEGORICAL & BINNING`
+**What it tests:** `pd.cut` / `pd.qcut` for binning continuous data, `.astype('category')` for memory + speed.
+**Match patterns:** `BUCKETING`, `cut`, `qcut`, `CATEGORICAL`, `binning`
+**Example existing tags:** VALUE BUCKETING (4), ORDERED CATEGORICAL BINNING (3)
+
+#### `TRANSFORM VS AGGREGATE`
+**What it tests:** `.groupby().transform()` for per-group features that preserve row count vs `.groupby().agg()` for collapsing.
+**Match patterns:** `transform`, `TRANSFORM`
+**Example existing tags:** transform (4)
+
+#### `OUTPUT SHAPE & ORDERING`
+**What it tests:** `.reset_index(drop=True)` discipline, explicit `.sort_values()` for deterministic output, column ordering.
+**Match patterns:** `OUTPUT SCHEMA`, `RESULT ORDERING`, `DETERMINISTIC`, `reset_index`
+**Example existing tags:** DETERMINISTIC RESULT ORDERING (18), OUTPUT SCHEMA SHAPING (8)
+
+#### `MEMORY & VECTORIZATION REASONING` ⚡ *new family — real-world gap*
+**What it tests:** when `apply(lambda)` is fine vs when it's a 10× slowdown, picking dtypes for memory, chunking large reads, recognising the row-wise vs column-wise antipattern.
+**Member tags:** `VECTORIZATION OVER APPLY`, `DTYPE MEMORY CHOICE`, `CHUNK READING`, `APPLY VS TRANSFORM TRADEOFF`
+**Why this is new:** real practitioners hit memory and speed problems constantly with pandas; the bank has questions that *teach* vectorization implicitly but never tags it as a family. Mock content should test this directly.
+
+#### `DEBUG PANDAS`
+**Match patterns:** `debug`, `DEBUG`, `KeyError`
+**Example existing tags:** debug (5), KeyError (3)
+
+### Pandas blocklist
+
+| Blocked tag | Canonical alternative |
+|---|---|
+| `groupby`, `df.groupby` | `GROUPED AGGREGATION` (or `TRANSFORM VS AGGREGATE`) |
+| `merge`, `df.merge`, `join` | `MULTI-DATAFRAME ENTITY LINKING` |
+| `pivot`, `pivot_table`, `melt` | `RESHAPING & PIVOT` |
+| `fillna`, `dropna` | `MISSING VALUE STRATEGY` |
+| `dt`, `to_datetime` | `DATETIME OPERATIONS` |
+| `rolling`, `resample` | `WINDOW & ROLLING OPERATIONS` |
+| `rank`, `nlargest`, `nsmallest` | `RANKING & TOP-K` |
+| `drop_duplicates`, `nunique`, `value_counts` | `DEDUPLICATION & DISTINCT COUNTING` |
+| `loc`, `iloc`, `query` | `BOOLEAN INDEXING & FILTERING` or `COLUMN SELECTION & PROJECTION` |
+| `apply`, `apply(lambda)` | `MEMORY & VECTORIZATION REASONING` (or the underlying pattern) |
+| `concat`, `append` | the entity-link or reshape family |
+| `cut`, `qcut` | `CATEGORICAL & BINNING` |
+| `sort_values`, `reset_index` | `OUTPUT SHAPE & ORDERING` |
+
+---
+
+## PySpark — concept families
+
+**Modality:** Code-adjacent reasoning. No execution. MCQ / predict-output / debug / scenario / optimization.
+**Reasoning archetype:** Reason about Spark's execution model — what code triggers a shuffle, when broadcast wins, where memory goes, what AQE rewrites — without running the job.
+**Current tag inventory:** 493 unique tags / 623 occurrences — **worst fragmentation in the bank**. Many existing tags are mechanic names (`shuffle`, `Catalyst optimizer`, `broadcast join`) that should be blocklisted or moved into the family-level vocabulary.
+
+### Family registry
+
+#### `EXECUTION MODEL REASONING`
+**What it tests:** transformation-vs-action distinction, lazy evaluation, DAG construction, stage / task / job semantics.
+**Match patterns:** `lazy evaluation`, `EXECUTION MODEL`, `DAG`, `transformations vs actions`, `stage`, `lineage`
+**Example existing tags:** lazy evaluation (5), transformations vs actions (3), DAG (3)
+
+#### `NARROW VS WIDE TRANSFORMATIONS`
+**What it tests:** which operations require shuffles, which stay within partition, why this matters for performance.
+**Match patterns:** `narrow vs wide`, `WIDE-AGGREGATION SHUFFLE`, `shuffle boundary`
+**Example existing tags:** WIDE-AGGREGATION SHUFFLE (4), narrow vs wide
+
+#### `SHUFFLE REASONING`
+**What it tests:** identifying shuffle triggers, shuffle cost in I/O, `spark.sql.shuffle.partitions` tuning, shuffle elimination strategies.
+**Match patterns:** `shuffle`, `SHUFFLE`
+**Example existing tags:** shuffle (7), shuffle elimination (2), shuffle optimization (2)
+
+#### `JOIN STRATEGY SELECTION`
+**What it tests:** broadcast vs sort-merge vs shuffle-hash decision, `autoBroadcastJoinThreshold`, when to force broadcast.
+**Match patterns:** `broadcast join`, `JOIN`, `join optimization`, `autoBroadcast`, `BROADCAST`, `sort-merge`
+**Example existing tags:** broadcast join (4), join optimization (4), autoBroadcastJoinThreshold (2)
+
+#### `PARTITIONING STRATEGY`
+**What it tests:** partition count selection, `repartition` vs `coalesce` vs `partitionBy` on write, partition pruning, dynamic partition pruning.
+**Match patterns:** `partitioning`, `PARTITION SHAPE`, `partition pruning`, `coalesce`, `repartition`, `dynamic partition pruning`
+**Example existing tags:** partitioning (3), PARTITION SHAPE CONTROL (3), partition pruning (3), dynamic partition pruning (3), coalesce (2)
+
+#### `DATA SKEW & MITIGATION`
+**What it tests:** detecting skew, salting strategies, AQE skew-join optimization, custom partitioner approaches.
+**Match patterns:** `data skew`, `SKEW`, `salting`, `skew join`
+**Example existing tags:** data skew (4), salting (2)
+
+#### `ADAPTIVE QUERY EXECUTION`
+**What it tests:** what AQE rewrites at runtime, partition coalescing post-shuffle, sort-merge-to-broadcast conversion, skew handling.
+**Match patterns:** `AQE`, `adaptive query execution`, `runtime rewrite`
+**Example existing tags:** AQE (4), adaptive query execution (2)
+
+#### `CATALYST OPTIMIZER`
+**What it tests:** what the optimizer does for free (predicate pushdown, projection pushdown), logical vs physical plans, when optimizer cannot help.
+**Match patterns:** `Catalyst`, `CATALYST`, `optimizer`, `logical plan`, `physical plan`, `predicate pushdown`, `projection pushdown`
+**Example existing tags:** Catalyst optimizer (8), predicate pushdown (4), logical plan (2), physical plan (2)
+
+#### `MEMORY MANAGEMENT`
+**What it tests:** driver vs executor memory, OOM debugging, when `collect()` kills the driver, `cache`/`persist` storage levels.
+**Match patterns:** `memory`, `OOM`, `OutOfMemoryError`, `DRIVER-SIDE MATERIALIZATION`, `driver memory`, `executor memory`
+**Example existing tags:** driver memory (4), executor memory (3), OutOfMemoryError (2), DRIVER-SIDE MATERIALIZATION RISK (3)
+
+#### `CACHING & PERSISTENCE`
+**What it tests:** `cache()` vs `persist()` with explicit storage level, when caching helps vs hurts, `unpersist()` discipline.
+**Match patterns:** `cache`, `persist`, `unpersist`, `STORAGE LEVEL`
+**Example existing tags:** persist (3)
+
+#### `SCHEMA & TYPE HANDLING`
+**What it tests:** `inferSchema` tradeoffs, explicit `StructType`, schema evolution in Parquet, type coercion gotchas, CSV vs Parquet differences.
+**Match patterns:** `schema`, `SCHEMA`, `inferSchema`, `StructType`, `type coercion`
+**Example existing tags:** schema (3), inferSchema (3), schema inference (2), StructType (2)
+
+#### `FILE FORMATS & READERS`
+**What it tests:** Parquet vs CSV vs JSON tradeoffs, column projection benefits in columnar formats, file-size sweet spots.
+**Match patterns:** `Parquet`, `CSV reading`, `JSON`, `FILE FORMAT`, `columnar`
+**Example existing tags:** Parquet (3), CSV reading (3)
+
+#### `UDF & PYTHON BOUNDARY`
+**What it tests:** UDF performance cost, pandas-UDF (vectorized) vs regular UDF memory model, serialization overhead.
+**Match patterns:** `UDF`, `pandas UDF`, `serialization`
+**Example existing tags:** UDF (3), serialization (2)
+
+#### `STRUCTURED STREAMING`
+**What it tests:** output modes (append / update / complete), watermarks, late-data handling, stateful streaming.
+**Match patterns:** `structured streaming`, `STREAMING`, `watermark`, `output mode`
+**Example existing tags:** structured streaming (4)
+
+#### `DELTA LAKE OPERATIONS`
+**What it tests:** MERGE semantics, time travel, schema evolution, Z-ordering vs partitioning, ACID guarantees.
+**Match patterns:** `Delta Lake`, `DELTA`, `MERGE`, `Z-order`, `time travel`
+**Example existing tags:** Delta Lake (3)
+
+#### `FAULT TOLERANCE & RECOVERY`
+**What it tests:** lineage-based recovery, speculative execution, straggler tasks, what survives a worker death.
+**Match patterns:** `fault tolerance`, `FAULT`, `lineage`, `speculative execution`, `recovery`
+**Example existing tags:** fault tolerance (3)
+
+#### `DEBUG SPARK ERRORS`
+**What it tests:** reading `AnalysisException` for schema/column issues, `OutOfMemoryError` for skew/driver issues, common stack-trace interpretation.
+**Match patterns:** `AnalysisException`, `DEBUG`, `debug`, `Exception`
+**Example existing tags:** AnalysisException (5), debug (3)
+
+#### `PERFORMANCE TUNING & TRADE-OFFS`
+**What it tests:** general performance reasoning — which configs to tune in what order, when to add hardware vs change code.
+**Match patterns:** `performance`, `PERFORMANCE TUNING`, `tuning`
+**Example existing tags:** performance (4), performance tuning (2)
+
+### PySpark blocklist
+
+| Blocked tag | Canonical alternative |
+|---|---|
+| `withColumn`, `select`, `filter` | the reasoning pattern (transformation type, projection, etc.) |
+| `DataFrame`, `df` | reasoning family |
+| `Spark`, `SparkSession`, `spark.X` | reasoning family |
+| `RDD` | `EXECUTION MODEL REASONING` |
+| `parallelism` | `PARTITIONING STRATEGY` |
+| `executor`, `driver` (alone) | `MEMORY MANAGEMENT` (the reasoning, not the entity name) |
+
+---
+
+## Statistics — concept families
+
+**Modality:** Hybrid. Conceptual MCQ + numerical Python execution.
+**Reasoning archetype:** Choose the right inference tool for the question; recognise when assumptions don't hold; reason about uncertainty as a first-class quantity.
+**Current tag inventory:** 149 unique tags / 346 occurrences. Existing tags are mostly **lowercase canonical** (e.g. `probability`, `hypothesis testing`) — a casing inconsistency vs the rest of the bank that needs normalization. Families below use **lowercase** as the canonical form for this track only (preserves existing tags); the rest of the bank uses UPPERCASE.
+
+### Family registry
+
+#### `descriptive statistics`
+Mean, median, mode, IQR, std dev, outlier detection — the summary-statistic reasoning before any inference.
+**Match patterns:** `descriptive statistics`, `measures of central tendency`, `outliers`, `variance`, `standard deviation`
+**Example existing tags:** descriptive statistics (16), measures of central tendency (4), outliers (3)
+
+#### `probability & combinatorics`
+Sample space, conditional probability, independence, Bayes' theorem, permutations / combinations, expected value, variance of a random variable.
+**Match patterns:** `probability`, `combinatorics`, `combinations`, `permutations`, `expected value`, `Bayes`, `conditional probability`, `independence`
+**Example existing tags:** probability (20), expected value (5), independence (4), combinatorics (4), combinations (3), conditional probability (3), Bayes' theorem (2)
+
+#### `distributions`
+Bernoulli, binomial, Poisson, normal, t, chi-squared, exponential — when each applies, key parameters, when to approximate one with another.
+**Match patterns:** `distribution`, `Bernoulli`, `Poisson`, `binomial`, `normal`, `t-distribution`, `chi-squared`, `z-score`
+**Example existing tags:** distributions (12), Bernoulli distribution (3), Poisson distribution (3), discrete distributions (4), z-scores (3), probability distributions (3), t-distribution (2)
+
+#### `sampling & central limit theorem`
+Sampling distributions, standard error vs std dev, CLT applicability and limits, Law of Large Numbers.
+**Match patterns:** `sampling`, `central limit theorem`, `CLT`, `standard error`, `Law of Large Numbers`, `sample size`
+**Example existing tags:** sampling distributions (6), standard error (6), central limit theorem (3), sample size (2)
+
+#### `confidence intervals & estimation`
+CI construction, interpretation pitfalls, bootstrap CIs, point vs interval estimates, MLE basics.
+**Match patterns:** `confidence interval`, `parameter estimation`, `bootstrap`, `resampling`, `MLE`, `maximum likelihood`
+**Example existing tags:** confidence intervals (6), parameter estimation (3), bootstrap (3), resampling (3)
+
+#### `hypothesis testing`
+Null/alternative framing, p-value interpretation, test selection (t-test, z-test, chi-squared, ANOVA), one-tailed vs two-tailed.
+**Match patterns:** `hypothesis testing`, `p-value`, `null hypothesis`, `t-test`, `z-test`, `chi-squared test`, `ANOVA`
+**Example existing tags:** hypothesis testing (18), ANOVA (4)
+
+#### `errors & power`
+Type I / Type II errors, statistical power, effect size, power-vs-sample-size tradeoffs.
+**Match patterns:** `Type I`, `Type II`, `statistical power`, `effect size`, `power analysis`
+**Example existing tags:** statistical power (7), Type I error (4), Type II error (3)
+
+#### `multiple testing & correction`
+Bonferroni, FDR, family-wise error rate, why running 20 tests changes interpretation.
+**Match patterns:** `multiple comparisons`, `multiple testing`, `Bonferroni`, `FDR`
+**Example existing tags:** multiple comparisons (4)
+
+#### `bayesian inference`
+Prior / likelihood / posterior, conjugate priors, Bayes factors, frequentist-vs-Bayesian framing.
+**Match patterns:** `Bayesian`, `prior`, `posterior`, `Bayes factor`
+**Example existing tags:** Bayesian inference (6), frequentist inference (3)
+
+#### `correlation, regression & causality`
+Pearson vs Spearman, regression R², bias-variance in regression, residual analysis, correlation-vs-causation framing, confounding, Simpson's paradox.
+**Match patterns:** `correlation`, `regression`, `confounding`, `Simpson`, `causal inference`, `collider`, `selection bias`, `observational`, `odds ratio`
+**Example existing tags:** regression (5), correlation (3), confounding variables (3), causal inference (3), collider bias (3), observational study (4), selection bias (4), odds ratio (3)
+
+#### `experimental design (within stats)`
+A/B testing setup, randomization, controls, blocking — the part of experimentation that lives in the Statistics curriculum (more advanced experimentation lives in the Experimentation track).
+**Match patterns:** `experimental design`, `A/B testing` (when the question is about statistical design, not the platform-engineering of the experiment), `randomization`
+**Example existing tags:** A/B testing (7), experimental design (2)
+
+#### `variance decomposition & ANOVA`
+Total / between / within variance, ANOVA mechanics, F-statistic interpretation.
+**Match patterns:** `variance decomposition`, `ANOVA`, `F-statistic`
+**Example existing tags:** variance decomposition (6)
+
+### Statistics blocklist
+
+| Blocked tag | Canonical alternative |
+|---|---|
+| `statistics`, `stats` | a specific family |
+| `numpy`, `scipy`, `pandas` | the family, not the library |
+| `mean`, `median`, `mode` (alone) | `descriptive statistics` |
+| `python` | irrelevant — this track has subtype; conceptual carries no library, numerical uses Python by definition |
+
+---
+
+## Data Engineering — concept families
+
+**Modality:** Constructed reasoning. No execution. MCQ / scenario / debug.
+**Reasoning archetype:** System-level reasoning about pipelines, semantics, recovery, cost, and operational excellence.
+**Current tag inventory:** 41 unique tags / 276 occurrences — **already well-formed.** Top 20 tags cover ~95% of usage. This track's existing concept-family discipline is the model the others are catching up to.
+
+### Family registry (light formalization of existing structure)
+
+| Family | Match patterns | Notes |
+|---|---|---|
+| `ETL VS ELT` | `ETL`, `ELT` | When to load-then-transform vs transform-then-load |
+| `IDEMPOTENCY` | `IDEMPOTEN`, `idempoten` | The non-negotiable property of any production pipeline |
+| `BACKFILL DESIGN` | `BACKFILL` | Reprocessing history without breaking incrementality |
+| `ORCHESTRATION` | `ORCHESTRATION`, `DAG-based scheduling` | Dependency graphs, retries, conditional triggers |
+| `SCHEDULING & SLAS` | `SCHEDULING`, `SLA` | When jobs run, what happens when they miss |
+| `SCHEMA EVOLUTION` | `SCHEMA EVOLUTION`, `BACKWARD COMPATIBILITY`, `SCHEMA REGISTRY` | Adding/removing/renaming columns without breaking consumers |
+| `BATCH VS STREAMING` | `BATCH VS STREAMING`, `STREAMING ARCHITECTURE` | Choosing the right paradigm; lambda/kappa architecture |
+| `WATERMARKING` | `WATERMARK` | Late-data handling in streaming |
+| `DELIVERY SEMANTICS` | `DELIVERY SEMANTICS`, `at-least-once`, `at-most-once`, `exactly-once` | The 3-way tradeoff every DE owns |
+| `PARTITIONING & PRUNING` | `PARTITIONING`, `PRUNING` | Lay out for the query pattern |
+| `STORAGE LAYOUT & FILE FORMATS` | `STORAGE LAYOUT`, `FILE FORMAT`, `Parquet`, `ORC` | Columnar vs row, file size, compression |
+| `STORAGE ARCHITECTURE` | `STORAGE ARCHITECTURE`, `data lake`, `lakehouse`, `warehouse` | The high-level choice |
+| `CDC & INGESTION` | `CDC`, `INGESTION` | Change data capture mechanics |
+| `DATA QUALITY` | `DATA QUALITY` | Validation, contracts, alerting |
+| `DATA CONTRACT` | `DATA CONTRACT` | Producer/consumer schema agreements |
+| `LINEAGE & OBSERVABILITY` | `LINEAGE`, `OBSERVABILITY` | Tracing data, detecting silent failures |
+| `SCD OPERATIONS` | `SCD` | Slowly changing dimensions from the engineering side |
+| `COST OPTIMIZATION` | `COST`, `CLOUD COST`, `WAREHOUSE COST`, `BIGQUERY COST`, `SNOWFLAKE COST` | The bill is the constraint |
+| `INCIDENT RESPONSE` | `INCIDENT`, `PIPELINE RESILIENCE` | When something breaks at 3 AM |
+| `BACKPRESSURE` | `BACKPRESSURE`, `KAFKA CONSUMER LAG` | When producers outpace consumers |
+| `DATA GOVERNANCE` | `GOVERNANCE`, `GDPR`, `CRYPTO SHREDDING`, `IMMUTABLE STORAGE` | Compliance and policy |
+
+### Data Engineering blocklist
+
+| Blocked tag | Canonical alternative |
+|---|---|
+| `Airflow`, `Dagster`, `Prefect` (alone) | `ORCHESTRATION` |
+| `Kafka`, `Kinesis`, `Pulsar` (alone) | `BATCH VS STREAMING` or `BACKPRESSURE` |
+| `S3`, `GCS`, `ADLS` (alone) | `STORAGE ARCHITECTURE` |
+| `Snowflake`, `BigQuery`, `Redshift` (alone) | the family the question is about (cost, schema, etc.) |
+| `Spark`, `Flink`, `Beam` (alone) | the family the question is about |
+
+---
+
+## Data Modeling — concept families
+
+**Modality:** Constructed reasoning. No execution. MCQ / scenario.
+**Reasoning archetype:** Schema design under conflicting requirements, grain decisions, change-over-time tradeoffs.
+**Current tag inventory:** 44 unique tags / 268 occurrences — **already well-formed.**
+
+### Family registry
+
+| Family | Match patterns | Notes |
+|---|---|---|
+| `DIMENSIONAL MODELING` | `DIMENSIONAL MODELING`, `star schema`, `snowflake schema` | Kimball-style; the dominant practical paradigm |
+| `FACT TABLE DESIGN` | `FACT TABLE`, `fact type`, `transaction fact`, `accumulating snapshot`, `periodic snapshot` | What goes in a fact, what stays out |
+| `DIMENSION DESIGN` | `DIMENSION DESIGN`, `conformed`, `degenerate`, `junk dimension`, `role-playing` | Dimensional patterns and anti-patterns |
+| `GRAIN DEFINITION` | `GRAIN`, `grain alignment`, `grain mismatch` | The most-violated rule in real-world modeling |
+| `SCD STRUCTURE` | `SCD`, `slowly changing`, `Type 1`, `Type 2`, `Type 3`, `Type 4`, `Type 6` | Change-over-time semantics |
+| `SURROGATE VS NATURAL KEYS` | `SURROGATE`, `NATURAL KEY`, `key strategy` | When the source PK is the wrong PK for the warehouse |
+| `NORMALIZATION` | `NORMALIZATION`, `1NF`, `2NF`, `3NF`, `BCNF` | When to denormalize away from these |
+| `DENORMALIZATION TRADEOFF` | `DENORMALIZATION` | Performance vs integrity |
+| `BRIDGE & MANY-TO-MANY` | `BRIDGE`, `MANY-TO-MANY`, `multi-valued dimension`, `weighting factor` | Resolving many-to-many in dimensional models |
+| `SCHEMA FROM REQUIREMENTS` | `SCHEMA FROM REQUIREMENTS`, `requirements gathering` | The interview-realistic skill of inferring schema from a stakeholder brief |
+| `REFERENTIAL INTEGRITY` | `REFERENTIAL INTEGRITY`, `foreign key`, `orphan`, `cascade` | Consistency rules and what enforces them |
+| `AGGREGATE & SUMMARY DESIGN` | `AGGREGATE`, `SUMMARY DESIGN`, `pre-aggregation`, `cube` | Pre-built rollups for performance |
+| `BI-TEMPORAL MODELING` | `BI-TEMPORAL`, `TRANSACTION TIME`, `VALID TIME`, `as-of` | Both "when was it true" and "when did we know it" |
+| `DATA VAULT` | `DATA VAULT`, `hub`, `link`, `satellite` | The alternative paradigm; when it wins |
+| `SEMANTIC LAYER & METRIC GOVERNANCE` | `SEMANTIC LAYER`, `METRIC GOVERNANCE`, `metric definition`, `single source of truth` | dbt metrics, LookML, Cube — the layer above SQL |
+| `SCHEMA EVOLUTION` | `SCHEMA EVOLUTION` (DM-specific angle: model adaptation, not DE plumbing) | New attributes, new dimensions, deprecation |
+| `WIDE VS NARROW` | `WIDE VS NARROW`, `OBT (one big table)` | Modern warehouse antipattern debate |
+| `DBT MODELING` | `DBT MODELING`, `dbt` | Modern modeling workflow specifics |
+| `CONFORMED DIMENSIONS` | `CONFORMED DIMENSION`, `master data` | Cross-system consistency |
+| `HIERARCHIES & MULTI-PATH` | `HIERARCHIES`, `MULTI-VALUED`, `CROSS-HIERARCHY`, `MULTIPLE HIERARCHIES` | Org charts, product categorization with multiple parents |
+| `ADDITIVE VS NON-ADDITIVE` | `ADDITIVE`, `NON-ADDITIVE`, `SEMI-ADDITIVE` | Which measures sum cleanly across which dimensions |
+| `DOUBLE-COUNTING & FAN-OUT` | `DOUBLE-COUNTING`, `FAN-OUT`, `ROW MULTIPLICATION`, `FACT-TO-FACT JOIN` | The modeling failure mode that creates the SQL family of the same name |
+
+### Data Modeling blocklist
+
+| Blocked tag | Canonical alternative |
+|---|---|
+| `dbt`, `Looker`, `Cube` (alone) | the modeling concept the tool implements |
+| `primary key`, `foreign key` (alone) | `REFERENTIAL INTEGRITY` |
+
+---
+
+## ML Fundamentals — concept families
+
+**Modality:** Constructed reasoning. No execution. MCQ / scenario / predict-output / debug.
+**Reasoning archetype:** Diagnose model behavior, not write training code; recognise leakage and bias before they ship.
+**Current tag inventory:** 29 unique tags / 210 occurrences — **already tight.**
+
+### Family registry
+
+| Family | Match patterns | Notes |
+|---|---|---|
+| `BIAS-VARIANCE TRADEOFF` | `BIAS-VARIANCE`, `bias`, `variance` | The mental model that explains overfit / underfit |
+| `OVERFITTING DIAGNOSIS` | `OVERFITTING`, `underfitting`, `training accuracy gap` | Recognising symptoms before chasing causes |
+| `REGULARIZATION EFFECT` | `REGULARIZATION`, `L1`, `L2`, `dropout`, `early stopping` | Tools that trade bias for variance and vice versa |
+| `CROSS-VALIDATION DESIGN` | `CROSS-VALIDATION`, `K-fold`, `stratified`, `time-series CV`, `nested CV` | How you split decides what you measure |
+| `DATA SPLITTING STRATEGY` | `DATA SPLITTING`, `train/val/test`, `holdout`, `temporal split` | Beyond random 80/20 |
+| `DATA LEAKAGE DETECTION` | `DATA LEAKAGE`, `LEAKAGE`, `target leakage`, `train-test contamination` | The single most expensive failure mode in industry ML |
+| `CLASSIFICATION METRICS` | `CLASSIFICATION METRICS`, `precision`, `recall`, `F1`, `AUC`, `ROC`, `PR curve` | Picking the right metric for the business cost |
+| `REGRESSION METRICS` | `REGRESSION METRICS`, `RMSE`, `MAE`, `MAPE`, `R²` | Same, for continuous targets |
+| `CLASS IMBALANCE HANDLING` | `CLASS IMBALANCE`, `SMOTE`, `class weighting`, `resampling` | When 99% of labels are the boring class |
+| `FEATURE SCALING NECESSITY` | `FEATURE SCALING`, `standardization`, `normalization` | When it matters (gradient methods, distance methods) and when it doesn't (trees) |
+| `FEATURE SELECTION STRATEGY` | `FEATURE SELECTION`, `filter`, `wrapper`, `embedded` | Reducing dimensionality and noise |
+| `FEATURE IMPORTANCE INTERPRETATION` | `FEATURE IMPORTANCE`, `permutation importance`, `SHAP` | What the feature ranking actually tells you |
+| `DIMENSIONALITY REDUCTION` | `DIMENSIONALITY REDUCTION`, `PCA`, `t-SNE`, `UMAP` | Compressing feature space |
+| `MISSING DATA STRATEGY` | `MISSING DATA`, `imputation`, `missingness as signal` | Choices that affect model behaviour |
+| `ENSEMBLE STRATEGY` | `ENSEMBLE`, `bagging`, `boosting`, `stacking` | When combining helps; tradeoffs of each |
+| `BOOSTING MECHANICS` | `BOOSTING`, `gradient boosting`, `XGBoost`, `LightGBM`, `CatBoost` | The dominant tabular winner; why it dominates |
+| `MODEL CALIBRATION` | `CALIBRATION`, `Platt scaling`, `isotonic regression`, `reliability diagram` | When probabilities matter, not just rankings |
+| `SUPERVISED VS UNSUPERVISED` | `SUPERVISED`, `UNSUPERVISED`, `semi-supervised`, `self-supervised` | Problem-shape recognition |
+| `CLUSTERING EVALUATION` | `CLUSTERING`, `silhouette`, `inertia`, `Davies-Bouldin` | Metrics without ground truth |
+| `NEURAL NETWORK DESIGN` | `NEURAL NETWORK`, `architecture`, `depth vs width`, `activation` | Capacity, regularization, choice of layers |
+| `GRADIENT DESCENT BEHAVIOR` | `GRADIENT DESCENT`, `SGD`, `Adam`, `learning rate`, `momentum` | When optimizer choice changes outcome |
+| `GRADIENT PATHOLOGY` | `GRADIENT PATHOLOGY`, `vanishing gradient`, `exploding gradient`, `dead ReLU` | What goes wrong in deep nets |
+| `LOSS FUNCTION SELECTION` | `LOSS FUNCTION`, `cross-entropy`, `MSE`, `Huber`, `focal loss` | Aligning the loss with the business cost |
+| `HYPERPARAMETER SENSITIVITY` | `HYPERPARAMETER`, `tuning`, `grid search`, `random search`, `Bayesian optimization` | Which hyperparameters move metrics and which don't |
+| `TRANSFER LEARNING STRATEGY` | `TRANSFER LEARNING`, `pretrained`, `fine-tuning`, `frozen layers` | Reusing learned representations |
+| `MODEL MONITORING` | `MODEL MONITORING`, `drift`, `concept drift`, `data drift`, `feature drift` | Post-deployment health |
+| `TRAINING-SERVING SKEW` | `TRAINING-SERVING SKEW`, `train-serve`, `feature parity` | Why models that pass eval still fail in prod |
+| `DEPLOYMENT CONSTRAINTS` | `DEPLOYMENT`, `latency`, `memory`, `batch vs online`, `edge` | Production reality vs lab freedom |
+| `INTERPRETABILITY TRADEOFF` | `INTERPRETABILITY`, `explainability`, `black box`, `glass box` | Linear / tree-based / opaque |
+
+### ML Fundamentals blocklist
+
+| Blocked tag | Canonical alternative |
+|---|---|
+| `scikit-learn`, `sklearn`, `TensorFlow`, `PyTorch` | the concept the library is being used to teach |
+| `XGBoost`, `LightGBM`, `CatBoost` (alone) | `BOOSTING MECHANICS` (or the underlying tradeoff) |
+
+---
+
+## Experimentation — concept families
+
+**Modality:** Constructed reasoning. No execution. MCQ / scenario / predict-output / debug.
+**Reasoning archetype:** Design experiments that survive contact with reality (network effects, novelty, SRM, biased traffic); interpret results with appropriate uncertainty.
+**Current tag inventory:** 22 unique tags / 208 occurrences — **the tightest registry in the bank.**
+
+### Family registry
+
+| Family | Match patterns | Notes |
+|---|---|---|
+| `EXPERIMENT DESIGN` | `EXPERIMENT DESIGN`, `experimental design`, `randomization`, `treatment assignment`, `blocking` | The shape of the test |
+| `HYPOTHESIS FORMULATION` | `HYPOTHESIS FORMULATION`, `hypothesis`, `null`, `alternative` | What you're actually testing |
+| `METRIC SELECTION` | `METRIC SELECTION`, `OEC`, `north star metric`, `guardrail metric`, `proxy metric` | What you measure decides what you ship |
+| `A/B TEST MECHANICS` | `A/B TEST MECHANICS`, `treatment`, `control`, `randomization unit` | The mechanics any practitioner runs daily |
+| `STATISTICAL SIGNIFICANCE` | `STATISTICAL SIGNIFICANCE`, `p-value`, `confidence level` | When the result is real |
+| `STATISTICAL POWER` | `STATISTICAL POWER`, `MDE`, `minimum detectable effect`, `power calc` | How much signal you can detect at this sample size |
+| `TYPE I AND TYPE II ERRORS` | `TYPE I`, `TYPE II`, `false positive`, `false negative` | The two failure modes |
+| `EXPERIMENT DURATION` | `EXPERIMENT DURATION`, `sample size calc`, `peeking` | When to stop |
+| `CONFIDENCE INTERVALS` | `CONFIDENCE INTERVAL`, `CI`, `bootstrap interval` | Interpreting effect size with uncertainty |
+| `SAMPLE RATIO MISMATCH` | `SAMPLE RATIO MISMATCH`, `SRM`, `traffic imbalance` | The first thing you check before reading results |
+| `VARIANCE REDUCTION` | `VARIANCE REDUCTION`, `CUPED`, `stratification`, `regression adjustment` | Squeezing power from the data you have |
+| `NOVELTY EFFECTS` | `NOVELTY EFFECT`, `primacy effect`, `temporal effect` | Why short tests can mislead |
+| `NETWORK EFFECTS` | `NETWORK EFFECT`, `interference`, `SUTVA violation`, `peer effect` | When subjects influence each other |
+| `SEGMENTATION ANALYSIS` | `SEGMENTATION ANALYSIS`, `heterogeneous treatment effects`, `subgroup` | When the average hides the truth |
+| `MULTIPLE TESTING` | `MULTIPLE TESTING`, `Bonferroni`, `FDR` | When you test many metrics simultaneously |
+| `HOLDOUT GROUPS` | `HOLDOUT GROUPS`, `long-term holdout` | Measuring long-term effects |
+| `SWITCHBACK EXPERIMENTS` | `SWITCHBACK`, `time-based randomization` | Marketplaces and other interference-heavy domains |
+| `MULTI-ARMED BANDIT` | `MULTI-ARMED BANDIT`, `Thompson sampling`, `epsilon-greedy` | When exploration / exploitation matters |
+| `BAYESIAN EXPERIMENTATION` | `BAYESIAN EXPERIMENTATION`, `Bayesian A/B`, `posterior probability of improvement` | The alternative inference frame |
+| `QUASI-EXPERIMENTAL METHODS` | `QUASI-EXPERIMENTAL`, `diff-in-diff`, `regression discontinuity`, `synthetic control` | When you can't randomize |
+| `CAUSAL INFERENCE` | `CAUSAL INFERENCE`, `instrumental variables`, `propensity scoring`, `potential outcomes` | The deeper layer underneath A/B |
+| `SAMPLE SIZE BASICS` | `SAMPLE SIZE BASICS`, `power vs sample size` | Pre-test sizing fundamentals |
+
+### Experimentation blocklist
+
+| Blocked tag | Canonical alternative |
+|---|---|
+| `t-test`, `z-test`, `chi-squared` (alone, in experimentation context) | the test selection family or the broader statistical-significance family |
+| `Excel`, `Optimizely`, `Statsig` (alone) | the experimentation concept the tool implements |
+
+---
+
+## Validation rules (the discipline this taxonomy enforces)
+
+The `validate_content.py` script (Phase 2 work item) must enforce:
+
+1. **Every `concepts` tag resolves to exactly one registered family per track.** A tag matching no family **OR** matching a blocklist pattern crashes catalog load with a suggested canonical alternative.
+2. **Family count per question: 2–4** (5 max for hard questions teaching multiple dependent patterns). Outside that range = warning.
+3. **No duplicate families on a single question.** Two tags resolving to the same family is redundant — keep only the more specific tag.
+4. **No mock-only-specific families in practice content.** If we add follow-up-only families later (e.g. families that only make sense in chain follow-ups), they must be tagged as `mock_only=true` in the registry.
+5. **Chain `follow_up_dimension` must be from the 7-dimension list.** Anything else crashes catalog load.
+6. **Consecutive `follow_up_dimension` values within a chain must differ.** Validator flags two scale_pivots in a row.
+
+These validators are the discipline. They are intentionally strict: the cost of catalog-load-crash on a bad tag is small (the author fixes it before commit); the cost of accumulated tag drift is large (we just paid it).
+
+---
+
+## Glossary cross-reference
+
+- **Tag** — the free-form string an author writes in a question's `concepts` array
+- **Family** — the canonical registered group (e.g. `GROUPED AGGREGATION`) that tags resolve to
+- **Member tag** — an example tag listed in this doc as belonging to a family (informational, not exhaustive)
+- **Match pattern** — the substring(s) the family resolver checks when an exact-match fails
+- **Blocklist** — patterns that are forbidden as tags; usually mechanic/API names that obscure reasoning
+- **Follow-up dimension** — one of the 7 universal chain pivots; orthogonal to concept families
