@@ -65,6 +65,16 @@ Keep all five lenses active at once. The best decisions here satisfy all of them
 
 - **Never author or modify a question without the authoring agent.** Every new question, every edit to an existing question, MUST go through `.github/agents/question-authoring.agent.md`. Direct edits to question JSON files bypass the taxonomy contract, the difficulty arc, the hint guardrails, the concept-family registry, and the verification checklist — and have historically been the single largest source of content drift on this platform. If you are tempted to edit a question file by hand, stop and invoke the agent instead. This rule has no exceptions.
 
+  **How to invoke the agent operationally** (not just "use it" in spirit):
+  1. **Read the agent file first** — `.github/agents/question-authoring.agent.md`. Treat it as a binding contract, not a suggestion.
+  2. **Read the relevant track doc** — `docs/tracks/<track>.md` for the schema, difficulty vocabulary, concept arc, anti-patterns, and authoring-allocation matrix for that track.
+  3. **Read the concept-taxonomy doc** — `docs/concept-taxonomy.md` for the per-track family registry, blocklists, and the 7 follow-up dimensions if you're authoring chains.
+  4. **Follow the agent's final checklist literally** — every item, every time. The checklist is at the bottom of the agent file.
+  5. **Run the agent's verification commands** before committing. Validate IDs are unique, JSON parses, schema loader passes, evaluator tests pass.
+  6. **Surface ambiguous cases for human review** instead of guessing. The agent rejects multi-interpretation questions; you should reject ambiguous tag-remap calls and chain-membership calls the same way.
+
+- **Active refactor — the canonical pickup point.** When in doubt about "what's the next work," read [`docs/phases/2026-05-authoring-refactor.md`](docs/phases/2026-05-authoring-refactor.md) — it is the single self-contained tracking doc for the in-flight authoring-system refactor. It explains every locked decision with rationale, lists the remaining work items (Phase 2, Phase 3), and points at every source-of-truth doc. **Delete this CLAUDE.md bullet once Phase 3 ships and the tracker doc is removed.**
+
 - **Always commit after meaningful changes.** End every session of edits with a `git commit` carrying a clear, specific message (not "update files" — something like "add mock interview mode with timer and session summary"). Co-author line: `Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>`.
 
 - **Keep `CLAUDE.md` in sync.** When content footprint, tech stack, routes, or product behaviour changes, update the relevant section below in the same commit.

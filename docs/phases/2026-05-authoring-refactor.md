@@ -324,15 +324,38 @@ After Phase 1 docs are committed, spin up dev preview, screenshot landing/worksp
 - [x] Two adjacent observations flagged for future separate pass (workspace topbar; Pro 8% accent already correct)
 
 ### Phase 2 — Content alignment ⏸ pending (Sonnet picks up from here)
-This is the first phase a fresh Sonnet session should be able to execute end-to-end from the committed docs alone. Read [`docs/phases/2026-05-authoring-refactor.md`](2026-05-authoring-refactor.md) (this file) for the full brief.
+This is the first phase a fresh Sonnet session should be able to execute end-to-end from the committed docs alone. Read this file for the full brief.
 
-- [ ] Remap existing 993 question `concepts` arrays to new per-track families (~80% automatable, edge cases need human review). Tooling: write a script that reads `docs/concept-taxonomy.md`, applies the resolution algorithm, and proposes replacements for review.
-- [ ] Refactor `backend/concept_families.py` to load from `docs/concept-taxonomy.md` (or compile at build time). Eliminates the hand-mirror.
-- [ ] Author new mock-only content with `follow_up_dimension` + `follow_ups[]` — target 3-month Pro runway (~180 questions/track from current 8–38). Always via the universal authoring agent.
-- [ ] Add catalog-load validations to `validate_content.py`: chain integrity, dimension diversity, no orphans, no shared children, length bounds. Crash on violation.
-- [ ] Add CI check flagging question file edits without agent invocation marker.
+**Suggested execution order** (each item unblocks or de-risks the next):
+
+1. **Refactor `backend/concept_families.py` to load from `docs/concept-taxonomy.md`** — do this first so the remap (item 2) and the validation (item 4) both consume the same registry. Eliminates the hand-mirrored Python dict and makes the taxonomy doc the runtime source of truth. Catalog loader, mock focus mode, and dashboard insights all benefit immediately.
+2. **Remap existing 993 question `concepts` arrays** to new per-track families. Tooling: write a script that reads `docs/concept-taxonomy.md`, applies the resolution algorithm (exact → substring → blocklist → fail), and proposes replacements. ~80% automatable; the other ~20% needs disciplined judgement (see risk section below).
+3. **Add catalog-load validations to `validate_content.py`**: chain integrity (parent ↔ child back-refs, no nested chains, no shared children, length 2–4, dimension diversity in consecutive follow-ups), tag-resolution per the taxonomy, blocklist enforcement. Crash on violation.
+4. **Author new mock-only content** with `follow_up_dimension` + `follow_ups[]` — target 3-month Pro runway (~180 questions per track from current 8–38). **Always via the universal authoring agent** following the operational steps in CLAUDE.md.
+5. **Add CI check flagging question-file edits without agent invocation marker** — long-tail discipline; doesn't block Phase 3.
+
+### Phase 2 risk and discipline (read before starting)
+
+**The 993-question concept-tag remap is mostly mechanical, but the ~20% edge cases require real judgement.** Common edge-case shapes Sonnet will encounter:
+
+- **Multi-meaning tags** — e.g. an existing SQL tag like `DATA QUALITY CLASSIFICATION` could map to `DATA QUALITY SKEPTICISM` (if the question is about detecting bad data) OR to `CONDITIONAL LOGIC & CASE` (if the question is about classifying rows with rules). Same tag string, different intent depending on the question. Read the question, not just the tag.
+- **Blocklisted tags with non-obvious replacements** — e.g. a SQL question tagged `OR` (currently 3 occurrences) is a blocklisted boolean-operator tag, but the question itself might genuinely be about `PRE-AGGREGATION FILTERING` or `SET MEMBERSHIP FILTERING` depending on context.
+- **Tags that resolve to two near-identical families** — e.g. `RUNNING TOTAL THRESHOLD DETECTION` could resolve to `RUNNING TOTAL & MOVING WINDOW` (the calculation) or `PERFORMANCE-AWARE ANALYTICS` (if the question is about cost). Pick by question intent.
+- **Singleton tags that look bespoke** — many existing tags appear once and look like an author's free-form choice (e.g. `USER-PRODUCT JOURNEY MODELING`). Don't preserve these for sentimental reasons; map them to the closest registered family.
+- **Pandas-track renames** — existing `TOP-K RESULT EXTRACTION` resolves to the renamed `RANKING & TOP-N PER GROUP` family via the preserved `TOP-K` match pattern. **Don't rewrite the tag string**; the family-name update is enough.
+
+**Discipline rules for the remap:**
+
+1. **Never auto-apply edge-case decisions in bulk.** Surface them in a manifest for human review, or re-author the question through the agent so the full checklist runs.
+2. **Read the question, not just the tag.** A tag's meaning is downstream of the question's actual reasoning.
+3. **Never edit a question file by hand.** If a remap needs more than a `concepts` array rewrite (e.g. the question itself is incoherent with its tags), invoke the authoring agent for that question instead of patching.
+4. **Commit in batches of one track at a time.** SQL first, validate, commit, then Python, then Pandas, etc. Atomic rollback if a track-level batch turns out to have systemic remap errors.
+5. **Run the catalog loader after each batch.** A successful load is the signal the remap is internally consistent. A crash is the signal something is wrong — fix before continuing.
+6. **The mock content authoring (item 4) is the longest stretch of Phase 2.** Estimate: 9 tracks × ~170 new questions × ~10 min each through the agent = ~250 hours of focused work. This is not a one-session task. Pace accordingly; commit after each authoring session.
 
 ### Phase 3 — Interview Loop full stack ⏸ pending (depends on Phase 2 content)
+
+**Phase 3 — Interview Loop full stack** ⏸ pending (depends on Phase 2 content)
 - [ ] DB: `mock_chain_consumption` table + Alembic migration (schema is fully specified in `docs/specs/mock-benchmark-spec.md`)
 - [ ] Backend: chain-aware selection (filter consumed parents + their children), Interview Loop endpoint, plan gating, soft rate-limit for Elite (30s gap + 5/hr + 20/day)
 - [ ] Frontend: Interview Loop card in MockHub, Loop session UI (interviewer-pivot framing card between chain questions), prominent 2-min discard countdown chip
