@@ -48,6 +48,12 @@ Samples in `backend/content/python_questions/sample/` use `2XS` 3-digit IDs.
 
 If a question's hardness comes from "you have to remember to handle the empty case AND the duplicates case AND the negative case AND..." — that's not hard, that's accumulation. Find the *one* pattern that's actually demanding.
 
+**Every pattern above (and in the concept arc below) earns its place only if it maps to real data work — name the analogue.** Sliding window → event-stream windowing; heap top-K → heavy-hitters / hot keys; topological sort → pipeline DAG ordering & dependency resolution; Trie → key-prefix routing / dictionary tokenization; 2-D DP → record fuzzy-matching / sequence alignment / log diffing; graph connectivity & articulation → lineage criticality (single points of failure); BFS/DFS → reachability over a dependency or event graph. If you cannot name a data-work use for a pattern, it is competitive-programming trivia and does not belong here — the prime suspects are permutation/subset backtracking for its own sake, bit-manipulation tricks, and number-theory puzzles. This is the spine of the "What this track trains" framing above, applied to the ladder.
+
+**Deprioritized — out unless a genuine data analogue is articulable:** permutation/subset/N-queens backtracking, grid-path DP (unique-paths style), bit-manipulation tricks, number-theory/math puzzles, regex-matching DP, linked-list pointer gymnastics, geometry puzzles (rain water, container, histogram rectangles), and standalone matrix-simulation (spiral, Sudoku). The Difficulty-vocabulary and Concept-arc tables retain the *named patterns* (2-D DP, Trie, articulation, KMP/Aho-Corasick) because each has the analogue listed above — but their puzzle realisations are not authored here.
+
+> **No mock-only realism family for Python.** Unlike SQL/Pandas/PySpark, Python has no business-judgment assessment lens. The candidate lens — complexity & memory-aware reasoning — is *practice-gradable* here (the executable harness times out O(n²) solutions and OOMs load-everything approaches on large inputs — see Verification), so it is taught and graded in practice, not deferred to mock. In mock chains it is exercised via the `performance_pivot` follow-up dimension, not a concept tag.
+
 ### Representative tasks per tier
 
 Difficulty controls reasoning depth, never licenses puzzle trivia. Even easy questions should read like a small real engineering task, not "reverse a string by Fibonacci(n)".
@@ -63,8 +69,8 @@ Difficulty controls reasoning depth, never licenses puzzle trivia. Even easy que
 | Tier | Progression |
 |---|---|
 | Easy | Linear scan + counters → hash-map membership / frequency → indexed-sequence reasoning → string parsing basics → list/collection transforms → simple greedy |
-| Medium | Sliding window (fixed + variable) → two pointers (sorted, fast/slow) → binary search (incl. parametric) → heap top-K patterns → 1D DP (sequence + partition) → BFS/DFS on grids and graphs → backtracking (subsets, permutations) |
-| Hard | 2D DP → graph algorithms (Dijkstra, Union-Find, topological sort) → Trie / Aho-Corasick → system-design DS (LRU, median heap, sliding-window max) → advanced state representations |
+| Medium | Sliding window over event streams (fixed + variable) → two pointers on sorted data → binary search (incl. parametric — min capacity/rate) → heap top-K (heavy hitters) → 1D DP (sequence segmentation / tokenization) → BFS/DFS over dependency or event graphs |
+| Hard | graph algorithms with a pipeline analogue (topological sort → DAG/lineage ordering; Union-Find → record linkage; Dijkstra → critical-path/latency) → 2D DP as sequence diff/alignment (edit distance for fuzzy dedup) → Trie (key-prefix routing / autocomplete) / Aho-Corasick (multi-pattern log scanning) → system-design DS (LRU, median heap, sliding-window max) → advanced state representations |
 
 ## Concept families
 
@@ -103,26 +109,26 @@ Full registry: [`docs/concept-taxonomy.md` → Python section](../concept-taxono
   "order": 12,
   "topic": "python",
   "difficulty": "medium",
-  "title": "Longest substring with at most K distinct characters",
-  "description": "Given a string s and integer k, return the length of the longest substring of s that contains at most k distinct characters.\n\nConstraints:\n- 1 <= len(s) <= 10^5\n- 0 <= k <= 26\n- Lowercase English letters only.\n\nReturn 0 when k == 0.",
-  "starter_code": "def solve(s: str, k: int) -> int:\n    # Your code here\n    pass",
-  "expected_code": "def solve(s: str, k: int) -> int:\n    if k == 0:\n        return 0\n    from collections import defaultdict\n    counts = defaultdict(int)\n    left = best = 0\n    for right, ch in enumerate(s):\n        counts[ch] += 1\n        while len(counts) > k:\n            counts[s[left]] -= 1\n            if counts[s[left]] == 0:\n                del counts[s[left]]\n            left += 1\n        best = max(best, right - left + 1)\n    return best",
+  "title": "Longest log run with at most K distinct error codes",
+  "description": "You're scanning a service's log stream. Given a list `error_codes` (each entry is the error code on one log line, in time order) and an integer `k`, return the length of the longest contiguous run of log lines containing at most `k` distinct error codes — the longest stretch of stable behaviour before too many different failure modes appear.\n\nConstraints:\n- 0 <= len(error_codes) <= 10^5\n- 0 <= k <= number of distinct codes\n- Return 0 when k == 0.",
+  "starter_code": "def solve(error_codes: list, k: int) -> int:\n    # Your code here\n    pass",
+  "expected_code": "def solve(error_codes: list, k: int) -> int:\n    if k == 0:\n        return 0\n    from collections import defaultdict\n    counts = defaultdict(int)\n    left = best = 0\n    for right, code in enumerate(error_codes):\n        counts[code] += 1\n        while len(counts) > k:\n            counts[error_codes[left]] -= 1\n            if counts[error_codes[left]] == 0:\n                del counts[error_codes[left]]\n            left += 1\n        best = max(best, right - left + 1)\n    return best",
   "solution_code": "<same as expected_code, optionally annotated>",
-  "explanation": "Sliding window with a count map. Time O(n), space O(min(k, alphabet)). Why the while-loop is O(n) amortized: each character is incremented and decremented at most once.",
+  "explanation": "Sliding window with a count map over the log stream. Time O(n), space O(min(k, distinct codes)). The while-loop is O(n) amortized: each log line is added once (right) and removed at most once (left). This is the same windowed-aggregation shape used to bound any 'within a moving window' metric over an event stream.",
   "test_cases": [
-    {"input": ["eceba", 2], "expected": 3},
-    {"input": ["aa", 1], "expected": 2},
-    {"input": ["", 5], "expected": 0},
-    {"input": ["abc", 0], "expected": 0},
-    {"input": ["aabbcc", 2], "expected": 4}
+    {"input": [["500", "503", "500", "429", "504"], 2], "expected": 3},
+    {"input": [["504", "504"], 1], "expected": 2},
+    {"input": [[], 5], "expected": 0},
+    {"input": [["504", "500", "503"], 0], "expected": 0},
+    {"input": [["504", "504", "429", "429", "503", "503"], 2], "expected": 4}
   ],
   "public_test_cases": [
-    {"input": ["eceba", 2], "expected": 3},
-    {"input": ["aa", 1], "expected": 2}
+    {"input": [["500", "503", "500", "429", "504"], 2], "expected": 3},
+    {"input": [["504", "504"], 1], "expected": 2}
   ],
   "hints": [
-    "The constraint is on distinct characters in a window — what data structure tracks that count cheaply?",
-    "Expand the window from the right; contract from the left when the constraint breaks."
+    "The constraint is on distinct codes in a moving window — what structure tracks that count cheaply?",
+    "Expand the window from the right; contract from the left when the distinct-code count exceeds k."
   ],
   "concepts": ["SLIDING WINDOW", "HASH-MAP STATE"]
 }
@@ -148,8 +154,13 @@ for tc in q['test_cases']:
 print('All test cases pass')
 "
 
-# 2. Complexity claim defensible
-# (For hard questions, eyeball that the expected_code achieves the claimed time/space.)
+# 2. Complexity ENFORCED, not eyeballed
+# Hard (and complexity-sensitive medium) questions MUST include large hidden test_cases
+# sized so a brute-force / O(n²) solution times out (5 s) — and, where memory is the
+# lesson, so a load-everything approach trips the 512 MB RLIMIT while a streaming/
+# generator solution passes. The reference solution must clear them comfortably.
+# Keep public_test_cases small/illustrative; the enforcing inputs are hidden.
+# Defend the time/space claim in `explanation`.
 
 # 3. Full content validation
 python scripts/validate_content.py
