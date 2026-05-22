@@ -4227,5 +4227,437 @@
       "METRIC RECONCILIATION"
     ],
     "companies": []
+  },
+  {
+    "id": 12095,
+    "order": 95,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Multi-category buyers by plan tier",
+    "description": "A product analyst wants to understand cross-category buying behaviour. For each plan tier, count the number of distinct users who have completed orders containing products from more than one distinct category.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "plan_tier"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status"
+      ],
+      "order_items": [
+        "order_id",
+        "product_id"
+      ],
+      "products": [
+        "product_id",
+        "category_id"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv",
+      "order_items.csv",
+      "products.csv"
+    ],
+    "expected_query": "SELECT u.plan_tier, COUNT(DISTINCT u.user_id) AS multi_category_buyers\nFROM users u\nWHERE u.user_id IN (\n  SELECT o.user_id\n  FROM orders o\n  JOIN order_items oi ON o.order_id = oi.order_id\n  JOIN products p ON oi.product_id = p.product_id\n  WHERE o.status = 'completed'\n  GROUP BY o.user_id\n  HAVING COUNT(DISTINCT p.category_id) > 1\n)\nGROUP BY u.plan_tier\nORDER BY u.plan_tier",
+    "solution_query": "SELECT u.plan_tier, COUNT(DISTINCT u.user_id) AS multi_category_buyers\nFROM users u\nWHERE u.user_id IN (\n  SELECT o.user_id\n  FROM orders o\n  JOIN order_items oi ON o.order_id = oi.order_id\n  JOIN products p ON oi.product_id = p.product_id\n  WHERE o.status = 'completed'\n  GROUP BY o.user_id\n  HAVING COUNT(DISTINCT p.category_id) > 1\n)\nGROUP BY u.plan_tier\nORDER BY u.plan_tier",
+    "required_concepts": [
+      "subquery",
+      "grouped_agg",
+      "having",
+      "multi_join"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The subquery identifies users who have ordered from more than one category by grouping order_items by user and filtering with HAVING COUNT(DISTINCT category_id) > 1. The outer query then counts those users by plan tier. This is a classic scoping pattern: qualify a set of IDs with a complex condition, then aggregate the qualifying set by a dimension.",
+    "hints": [
+      "Start by finding the users who qualify (multi-category buyers) using a subquery with HAVING.",
+      "Once you have the qualifying user IDs, join back to users to get plan_tier and aggregate."
+    ],
+    "concepts": [
+      "DEDUPLICATION LOGIC",
+      "GROUPED AGGREGATION",
+      "MULTI-TABLE JOINS"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12096,
+    "order": 96,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Weekly event count over the last 12 weeks",
+    "description": "An engagement analyst wants to see the event volume trend over the last 12 weeks (84 days) ending at the most recent event in the dataset. Return week_start (truncated to week) and event_count, ordered chronologically.",
+    "difficulty": "medium",
+    "schema": {
+      "events": [
+        "event_id",
+        "user_id",
+        "event_time",
+        "event_name"
+      ]
+    },
+    "dataset_files": [
+      "events.csv"
+    ],
+    "expected_query": "SELECT\n  date_trunc('week', e.event_time) AS week_start,\n  COUNT(*) AS event_count\nFROM events e\nWHERE e.event_time >= (SELECT MAX(event_time) FROM events) - INTERVAL '84 days'\nGROUP BY 1\nORDER BY 1",
+    "solution_query": "SELECT\n  date_trunc('week', e.event_time) AS week_start,\n  COUNT(*) AS event_count\nFROM events e\nWHERE e.event_time >= (SELECT MAX(event_time) FROM events) - INTERVAL '84 days'\nGROUP BY 1\nORDER BY 1",
+    "required_concepts": [
+      "date_trunc",
+      "grouped_agg",
+      "subquery",
+      "interval_arithmetic"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Using MAX(event_time) as the anchor instead of a hardcoded date makes the query robust to dataset refreshes. date_trunc('week', ...) buckets each timestamp into its ISO week start. The 84-day interval covers 12 complete weeks.",
+    "hints": [
+      "Use a subquery to find MAX(event_time) as your rolling window anchor \u2014 never hardcode a date.",
+      "date_trunc('week', event_time) truncates each timestamp to the Monday of its week."
+    ],
+    "concepts": [
+      "TIME-SERIES BUCKETING & ARITHMETIC",
+      "GROUPED AGGREGATION"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12097,
+    "order": 97,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Inactive product percentage by category",
+    "description": "A catalog manager needs to audit product health. For each category, return the total product count, the number of inactive products (is_active = false), and the inactive percentage rounded to 1 decimal. Order by inactive percentage descending.",
+    "difficulty": "medium",
+    "schema": {
+      "products": [
+        "product_id",
+        "category_id",
+        "is_active"
+      ],
+      "categories": [
+        "category_id",
+        "category_name"
+      ]
+    },
+    "dataset_files": [
+      "products.csv",
+      "categories.csv"
+    ],
+    "expected_query": "SELECT\n  c.category_name,\n  COUNT(*) AS total_products,\n  SUM(CASE WHEN p.is_active = false THEN 1 ELSE 0 END) AS inactive_count,\n  ROUND(100.0 * SUM(CASE WHEN p.is_active = false THEN 1 ELSE 0 END) / COUNT(*), 1) AS inactive_pct\nFROM products p\nJOIN categories c ON p.category_id = c.category_id\nGROUP BY c.category_name\nORDER BY inactive_pct DESC",
+    "solution_query": "SELECT\n  c.category_name,\n  COUNT(*) AS total_products,\n  SUM(CASE WHEN p.is_active = false THEN 1 ELSE 0 END) AS inactive_count,\n  ROUND(100.0 * SUM(CASE WHEN p.is_active = false THEN 1 ELSE 0 END) / COUNT(*), 1) AS inactive_pct\nFROM products p\nJOIN categories c ON p.category_id = c.category_id\nGROUP BY c.category_name\nORDER BY inactive_pct DESC",
+    "required_concepts": [
+      "case_when",
+      "grouped_agg",
+      "join"
+    ],
+    "enforce_concepts": true,
+    "explanation": "CASE WHEN inside SUM() is the idiomatic SQL pattern for conditional counting \u2014 it avoids a self-join and keeps the logic in one pass. Multiplying by 100.0 (not 100) ensures floating-point division.",
+    "hints": [
+      "Use SUM(CASE WHEN is_active = false THEN 1 ELSE 0 END) to count inactive products per group.",
+      "Ensure you use 100.0 in the division to avoid integer truncation."
+    ],
+    "concepts": [
+      "CONDITIONAL LOGIC & CASE WHEN",
+      "GROUPED AGGREGATION"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12098,
+    "order": 98,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Email domain distribution by plan tier",
+    "description": "A growth analyst wants to understand which email providers are common among each plan tier. Extract the domain (part after '@') from each user's email, and for each plan_tier + domain combination with at least 5 users, return the count. Order by plan_tier, then user_count descending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "email",
+        "plan_tier"
+      ]
+    },
+    "dataset_files": [
+      "users.csv"
+    ],
+    "expected_query": "SELECT\n  plan_tier,\n  split_part(email, '@', 2) AS email_domain,\n  COUNT(*) AS user_count\nFROM users\nGROUP BY plan_tier, email_domain\nHAVING COUNT(*) >= 5\nORDER BY plan_tier, user_count DESC",
+    "solution_query": "SELECT\n  plan_tier,\n  split_part(email, '@', 2) AS email_domain,\n  COUNT(*) AS user_count\nFROM users\nGROUP BY plan_tier, email_domain\nHAVING COUNT(*) >= 5\nORDER BY plan_tier, user_count DESC",
+    "required_concepts": [
+      "string_function",
+      "grouped_agg",
+      "having"
+    ],
+    "enforce_concepts": true,
+    "explanation": "split_part(email, '@', 2) extracts the domain by splitting on '@' and taking the second token. Grouping by both plan_tier and the derived domain column, then filtering with HAVING, gives a clean distribution table.",
+    "hints": [
+      "Use split_part(email, '@', 2) to extract the domain portion of the email.",
+      "Group by both plan_tier and the derived domain, then use HAVING to filter small groups."
+    ],
+    "concepts": [
+      "STRING PARSING & MANIPULATION",
+      "GROUPED AGGREGATION"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12099,
+    "order": 99,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Most expensive completed order per user",
+    "description": "A finance analyst wants to identify each user's highest-value completed order for a VIP scoring model. For each user who has at least one completed order, return their user_id, the order_id of their most expensive order, its net_amount, and the order_date. Order by net_amount descending.",
+    "difficulty": "medium",
+    "schema": {
+      "orders": [
+        "order_id",
+        "user_id",
+        "status",
+        "net_amount",
+        "order_date"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv"
+    ],
+    "expected_query": "WITH ranked AS (\n  SELECT\n    o.user_id,\n    o.order_id,\n    o.net_amount,\n    o.order_date,\n    ROW_NUMBER() OVER (PARTITION BY o.user_id ORDER BY o.net_amount DESC) AS rn\n  FROM orders o\n  WHERE o.status = 'completed'\n)\nSELECT user_id, order_id, ROUND(net_amount, 2) AS net_amount, order_date\nFROM ranked\nWHERE rn = 1\nORDER BY net_amount DESC",
+    "solution_query": "WITH ranked AS (\n  SELECT\n    o.user_id,\n    o.order_id,\n    o.net_amount,\n    o.order_date,\n    ROW_NUMBER() OVER (PARTITION BY o.user_id ORDER BY o.net_amount DESC) AS rn\n  FROM orders o\n  WHERE o.status = 'completed'\n)\nSELECT user_id, order_id, ROUND(net_amount, 2) AS net_amount, order_date\nFROM ranked\nWHERE rn = 1\nORDER BY net_amount DESC",
+    "required_concepts": [
+      "window_function",
+      "cte",
+      "row_number"
+    ],
+    "enforce_concepts": true,
+    "explanation": "ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY net_amount DESC) assigns rank 1 to the most expensive order per user. Filtering rn = 1 in the outer query returns exactly one row per user \u2014 a classic top-N-per-group pattern using window functions.",
+    "hints": [
+      "Use ROW_NUMBER() partitioned by user_id and ordered by net_amount DESC.",
+      "Wrap in a CTE, then filter WHERE rn = 1 in the outer query."
+    ],
+    "concepts": [
+      "WINDOW FUNCTIONS & FRAMES",
+      "RANKING & TOP-N"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12100,
+    "order": 100,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Months with above-average unique active users",
+    "description": "A growth team wants to flag months that outperformed the average. Compute the number of unique users who fired any event per calendar month, then return only the months where that count exceeds the average across all months. Order by month.",
+    "difficulty": "medium",
+    "schema": {
+      "events": [
+        "event_id",
+        "user_id",
+        "event_time"
+      ]
+    },
+    "dataset_files": [
+      "events.csv"
+    ],
+    "expected_query": "WITH monthly_dau AS (\n  SELECT\n    strftime(event_time, '%Y-%m') AS month,\n    COUNT(DISTINCT user_id) AS unique_users\n  FROM events\n  GROUP BY 1\n)\nSELECT month, unique_users\nFROM monthly_dau\nWHERE unique_users > (SELECT AVG(unique_users) FROM monthly_dau)\nORDER BY month",
+    "solution_query": "WITH monthly_dau AS (\n  SELECT\n    strftime(event_time, '%Y-%m') AS month,\n    COUNT(DISTINCT user_id) AS unique_users\n  FROM events\n  GROUP BY 1\n)\nSELECT month, unique_users\nFROM monthly_dau\nWHERE unique_users > (SELECT AVG(unique_users) FROM monthly_dau)\nORDER BY month",
+    "required_concepts": [
+      "cte",
+      "grouped_agg",
+      "subquery",
+      "post_filter"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The CTE computes monthly unique user counts. The outer query's WHERE clause uses a scalar subquery to compute the average across all months and filters for above-average months \u2014 a common above-threshold pattern that avoids a self-join.",
+    "hints": [
+      "Compute monthly unique users in a CTE first.",
+      "In the outer query, filter WHERE unique_users > (SELECT AVG(unique_users) FROM the_cte)."
+    ],
+    "concepts": [
+      "SUBQUERY PATTERNS",
+      "GROUPED AGGREGATION",
+      "POST-AGGREGATION FILTERING"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12101,
+    "order": 101,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Highest-average-quantity product per category",
+    "description": "A merchandising analyst wants to find the product with the highest average ordered quantity in each category. Return category_name, product_name, and avg_qty (rounded to 2 decimal places), one row per category, ordered by category_name.",
+    "difficulty": "medium",
+    "schema": {
+      "order_items": [
+        "order_id",
+        "product_id",
+        "quantity"
+      ],
+      "products": [
+        "product_id",
+        "product_name",
+        "category_id"
+      ],
+      "categories": [
+        "category_id",
+        "category_name"
+      ]
+    },
+    "dataset_files": [
+      "order_items.csv",
+      "products.csv",
+      "categories.csv"
+    ],
+    "expected_query": "WITH product_avg_qty AS (\n  SELECT\n    p.product_id,\n    p.product_name,\n    c.category_name,\n    AVG(oi.quantity) AS avg_qty\n  FROM order_items oi\n  JOIN products p ON oi.product_id = p.product_id\n  JOIN categories c ON p.category_id = c.category_id\n  GROUP BY p.product_id, p.product_name, c.category_name\n),\nranked AS (\n  SELECT *,\n    ROW_NUMBER() OVER (PARTITION BY category_name ORDER BY avg_qty DESC) AS rn\n  FROM product_avg_qty\n)\nSELECT category_name, product_name, ROUND(avg_qty, 2) AS avg_qty\nFROM ranked\nWHERE rn = 1\nORDER BY category_name",
+    "solution_query": "WITH product_avg_qty AS (\n  SELECT\n    p.product_id,\n    p.product_name,\n    c.category_name,\n    AVG(oi.quantity) AS avg_qty\n  FROM order_items oi\n  JOIN products p ON oi.product_id = p.product_id\n  JOIN categories c ON p.category_id = c.category_id\n  GROUP BY p.product_id, p.product_name, c.category_name\n),\nranked AS (\n  SELECT *,\n    ROW_NUMBER() OVER (PARTITION BY category_name ORDER BY avg_qty DESC) AS rn\n  FROM product_avg_qty\n)\nSELECT category_name, product_name, ROUND(avg_qty, 2) AS avg_qty\nFROM ranked\nWHERE rn = 1\nORDER BY category_name",
+    "required_concepts": [
+      "cte",
+      "window_function",
+      "row_number",
+      "grouped_agg",
+      "multi_join"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Two CTEs: first computes per-product average quantity, second ranks products within each category by that average. Filtering rn = 1 selects the top product per category \u2014 the standard window-function top-N-per-group pattern.",
+    "hints": [
+      "Compute AVG(quantity) per product in a CTE, then use ROW_NUMBER() OVER (PARTITION BY category_name ORDER BY avg_qty DESC) to rank.",
+      "Filter WHERE rn = 1 in the outer query to get one winner per category."
+    ],
+    "concepts": [
+      "WINDOW FUNCTIONS & FRAMES",
+      "RANKING & TOP-N",
+      "GROUPED AGGREGATION"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12102,
+    "order": 102,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Users active in Q1 2024 but not Q2 2024",
+    "description": "A retention analyst wants to identify churned users from early 2024. Return the user_ids of users who completed at least one order in Q1 2024 (January\u2013March) but placed no completed orders in Q2 2024 (April\u2013June). Order by user_id.",
+    "difficulty": "medium",
+    "schema": {
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv"
+    ],
+    "expected_query": "SELECT user_id FROM orders\nWHERE status = 'completed'\n  AND order_date >= '2024-01-01' AND order_date < '2024-04-01'\nEXCEPT\nSELECT user_id FROM orders\nWHERE status = 'completed'\n  AND order_date >= '2024-04-01' AND order_date < '2024-07-01'\nORDER BY user_id",
+    "solution_query": "SELECT user_id FROM orders\nWHERE status = 'completed'\n  AND order_date >= '2024-01-01' AND order_date < '2024-04-01'\nEXCEPT\nSELECT user_id FROM orders\nWHERE status = 'completed'\n  AND order_date >= '2024-04-01' AND order_date < '2024-07-01'\nORDER BY user_id",
+    "required_concepts": [
+      "set_operations",
+      "date_filter"
+    ],
+    "enforce_concepts": true,
+    "explanation": "EXCEPT returns rows from the first SELECT that do not appear in the second. This is the cleanest expression of 'in set A but not in set B' \u2014 no LEFT JOIN, no NOT IN subquery. The half-open interval (>= start, < next_start) avoids edge cases with end-of-month timestamps.",
+    "hints": [
+      "EXCEPT is the cleanest operator for 'in set A but not in set B' \u2014 no join needed.",
+      "Use half-open intervals: >= '2024-01-01' AND < '2024-04-01' to avoid midnight edge cases."
+    ],
+    "concepts": [
+      "SET OPERATIONS & COMPARISON",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12103,
+    "order": 103,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Departments with above-average salary",
+    "description": "HR wants to flag well-compensated departments. Return the department_name and average salary (rounded to 2 decimal places) for each department whose average salary exceeds the company-wide average. Order by avg_salary descending.",
+    "difficulty": "medium",
+    "schema": {
+      "employees": [
+        "employee_id",
+        "salary",
+        "department_id"
+      ],
+      "departments": [
+        "department_id",
+        "department_name"
+      ]
+    },
+    "dataset_files": [
+      "employees.csv",
+      "departments.csv"
+    ],
+    "expected_query": "SELECT\n  d.department_name,\n  ROUND(AVG(e.salary), 2) AS avg_salary\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nGROUP BY d.department_name\nHAVING AVG(e.salary) > (SELECT AVG(salary) FROM employees)\nORDER BY avg_salary DESC",
+    "solution_query": "SELECT\n  d.department_name,\n  ROUND(AVG(e.salary), 2) AS avg_salary\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nGROUP BY d.department_name\nHAVING AVG(e.salary) > (SELECT AVG(salary) FROM employees)\nORDER BY avg_salary DESC",
+    "required_concepts": [
+      "grouped_agg",
+      "having",
+      "subquery",
+      "join"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The HAVING clause references a scalar subquery (company-wide average) to filter groups. This is more readable than a CTE for a two-level comparison: compute the group metric, compare to the global metric inline.",
+    "hints": [
+      "Use HAVING AVG(salary) > (SELECT AVG(salary) FROM employees) to compare department vs company average.",
+      "The scalar subquery inside HAVING is evaluated once and compared against each group's aggregate."
+    ],
+    "concepts": [
+      "SELF-COMPARISON PATTERNS",
+      "GROUPED AGGREGATION"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12104,
+    "order": 104,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Top 3 products by revenue per brand",
+    "description": "A brand performance analyst wants the top 3 revenue-generating products within each brand. Using completed orders only, return brand, product_name, revenue (rounded to 2 decimal places), and rank (1\u20133). Order by brand, then rank.",
+    "difficulty": "medium",
+    "schema": {
+      "order_items": [
+        "order_id",
+        "product_id",
+        "quantity",
+        "unit_price"
+      ],
+      "products": [
+        "product_id",
+        "product_name",
+        "brand"
+      ],
+      "orders": [
+        "order_id",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "order_items.csv",
+      "products.csv",
+      "orders.csv"
+    ],
+    "expected_query": "WITH product_revenue AS (\n  SELECT\n    p.product_id,\n    p.product_name,\n    p.brand,\n    SUM(oi.quantity * oi.unit_price) AS revenue\n  FROM order_items oi\n  JOIN products p ON oi.product_id = p.product_id\n  JOIN orders o ON oi.order_id = o.order_id\n  WHERE o.status = 'completed'\n  GROUP BY p.product_id, p.product_name, p.brand\n),\nranked AS (\n  SELECT *,\n    ROW_NUMBER() OVER (PARTITION BY brand ORDER BY revenue DESC) AS rn\n  FROM product_revenue\n)\nSELECT brand, product_name, ROUND(revenue, 2) AS revenue, rn\nFROM ranked\nWHERE rn <= 3\nORDER BY brand, rn",
+    "solution_query": "WITH product_revenue AS (\n  SELECT\n    p.product_id,\n    p.product_name,\n    p.brand,\n    SUM(oi.quantity * oi.unit_price) AS revenue\n  FROM order_items oi\n  JOIN products p ON oi.product_id = p.product_id\n  JOIN orders o ON oi.order_id = o.order_id\n  WHERE o.status = 'completed'\n  GROUP BY p.product_id, p.product_name, p.brand\n),\nranked AS (\n  SELECT *,\n    ROW_NUMBER() OVER (PARTITION BY brand ORDER BY revenue DESC) AS rn\n  FROM product_revenue\n)\nSELECT brand, product_name, ROUND(revenue, 2) AS revenue, rn\nFROM ranked\nWHERE rn <= 3\nORDER BY brand, rn",
+    "required_concepts": [
+      "cte",
+      "window_function",
+      "row_number",
+      "grouped_agg"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Two-CTE pattern: aggregate revenue per product in the first CTE, then rank within brand in the second. WHERE rn <= 3 selects the top 3 per brand. ROW_NUMBER() rather than RANK() ensures exactly 3 rows per brand even when two products are tied.",
+    "hints": [
+      "Compute total revenue per product in a CTE, then use ROW_NUMBER() OVER (PARTITION BY brand ORDER BY revenue DESC).",
+      "Filter WHERE rn <= 3 in the outer query to keep only the top 3 per brand."
+    ],
+    "concepts": [
+      "RANKING & TOP-N",
+      "WINDOW FUNCTIONS & FRAMES",
+      "GROUPED AGGREGATION"
+    ],
+    "companies": []
   }
 ]
