@@ -231,12 +231,12 @@
     "order": 3,
     "topic": "python",
     "difficulty": "medium",
-    "title": "Product of Array Except Self",
-    "description": "Given a list of integers `nums`, return a list `output` where `output[i]` is the product of all elements in `nums` except `nums[i]`. Do **not** use division, and solve in O(n).\n\n```\nsolve([1, 2, 3, 4])   # → [24, 12, 8, 6]\nsolve([-1, 1, 0, -3, 3])  # → [0, 0, 9, 0, 0]\n```",
-    "starter_code": "def solve(nums: list) -> list:\n    # No division allowed — O(n)\n    pass",
-    "expected_code": "def solve(nums):\n    n = len(nums)\n    result = [1] * n\n    prefix = 1\n    for i in range(n):\n        result[i] = prefix\n        prefix *= nums[i]\n    suffix = 1\n    for i in range(n - 1, -1, -1):\n        result[i] *= suffix\n        suffix *= nums[i]\n    return result",
-    "solution_code": "def solve(nums):\n    n = len(nums)\n    result = [1] * n\n    prefix = 1\n    for i in range(n):\n        result[i] = prefix\n        prefix *= nums[i]\n    suffix = 1\n    for i in range(n - 1, -1, -1):\n        result[i] *= suffix\n        suffix *= nums[i]\n    return result",
-    "explanation": "Two passes: the first pass fills each position with the product of all elements to its left (prefix product). The second pass multiplies each position by the product of all elements to its right (suffix product). The result at each index is prefix × suffix, which is the product of all other elements. This avoids division and runs in O(n) time with O(1) extra space (output array doesn't count).",
+    "title": "Leave-One-Out Signal Product",
+    "description": "An analytics pipeline needs to compute an influence score for each data source: the product of all *other* sources' signal weights. Given `weights`, a list of integers, return `result` where `result[i]` is the product of every element in `weights` except `weights[i]`. Solve in O(n) **without using division**.\n\n```\nsolve([1, 2, 3, 4])       # → [24, 12, 8, 6]\nsolve([-1, 1, 0, -3, 3])  # → [0, 0, 9, 0, 0]\n```",
+    "starter_code": "def solve(weights: list) -> list:\n    # O(n), no division\n    pass",
+    "expected_code": "def solve(weights):\n    n = len(weights)\n    result = [1] * n\n    prefix = 1\n    for i in range(n):\n        result[i] = prefix\n        prefix *= weights[i]\n    suffix = 1\n    for i in range(n - 1, -1, -1):\n        result[i] *= suffix\n        suffix *= weights[i]\n    return result",
+    "solution_code": "def solve(weights):\n    n = len(weights)\n    result = [1] * n\n    prefix = 1\n    for i in range(n):\n        result[i] = prefix\n        prefix *= weights[i]\n    suffix = 1\n    for i in range(n - 1, -1, -1):\n        result[i] *= suffix\n        suffix *= weights[i]\n    return result",
+    "explanation": "Two passes over the weight list. First pass: fill result[i] with the running prefix product of everything to the left of i (so result[0]=1, result[1]=weights[0], result[2]=weights[0]*weights[1], ...). Second pass: multiply each position by a running suffix product scanning from right to left. At position i, result[i] then holds prefix[i] × suffix[i] = product of all weights except weights[i]. Time O(n), space O(1) extra (output array doesn't count). This is the standard leave-one-out aggregation pattern: avoid recomputing by caching partial products in both directions.",
     "test_cases": [
       {
         "input": [
@@ -315,8 +315,8 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Build a prefix product array where prefix[i] is the product of all elements before index i.",
-      "Then multiply each prefix value by a running suffix product scanning from right to left."
+      "For each position, the answer is (product of everything to its left) × (product of everything to its right) — build each half in a single pass.",
+      "First pass left-to-right: store the running prefix product in result[i]. Second pass right-to-left: multiply result[i] by a running suffix product."
     ],
     "concepts": [
       "INDEXED SEQUENCE REASONING",
@@ -328,12 +328,12 @@
     "order": 4,
     "topic": "python",
     "difficulty": "medium",
-    "title": "Find Missing Number (XOR)",
-    "description": "Given a list `nums` containing `n - 1` distinct integers in the range `[0, n]`, find the one missing number. Solve in O(n) time and O(1) space using XOR.\n\n```\nsolve([3, 0, 1])       # → 2\nsolve([0, 1])           # → 2\nsolve([9,6,4,2,3,5,7,0,1])  # → 8\n```",
-    "starter_code": "def solve(nums: list) -> int:\n    # Use XOR — O(n) time, O(1) space\n    pass",
-    "expected_code": "def solve(nums):\n    n = len(nums)  # missing range is 0..n\n    xor = 0\n    for i in range(n + 1):\n        xor ^= i\n    for num in nums:\n        xor ^= num\n    return xor",
-    "solution_code": "def solve(nums):\n    n = len(nums)\n    xor = 0\n    for i in range(n + 1):\n        xor ^= i\n    for num in nums:\n        xor ^= num\n    return xor",
-    "explanation": "XOR every number from 0 to n, then XOR all numbers in the array. Every number that appears in both cancels out (x ^ x = 0), leaving only the missing number. This is O(n) time and O(1) space. An alternative is sum(range(n+1)) - sum(nums), which is equally elegant but the XOR approach avoids any overflow concern in languages without big integers.",
+    "title": "Find the Dropped Import ID",
+    "description": "A nightly batch imports a complete sequence of record IDs that should cover exactly 0 through n (n+1 consecutive integers), but exactly one was dropped during the load. Given the list `ids` of successfully imported IDs, find and return the missing one. Solve in O(n) time and O(1) extra space.\n\n```\nsolve([3, 0, 1])               # → 2\nsolve([9,6,4,2,3,5,7,0,1])    # → 8\nsolve([0])                     # → 1\n```",
+    "starter_code": "def solve(ids: list) -> int:\n    # O(n) time, O(1) space\n    pass",
+    "expected_code": "def solve(ids):\n    n = len(ids)  # n IDs present; expected range 0..n\n    return n * (n + 1) // 2 - sum(ids)",
+    "solution_code": "def solve(ids):\n    n = len(ids)\n    return n * (n + 1) // 2 - sum(ids)",
+    "explanation": "The expected sum of IDs 0 through n is n*(n+1)//2 (Gauss formula). The actual sum is sum(ids). Their difference is exactly the missing ID. One pass, O(n) time, O(1) space. Alternative: XOR all values 0..n then XOR all ids — the duplicate pairs cancel (x^x=0), leaving the missing value. Both approaches are O(n)/O(1); the sum formula is more readable. A set-difference approach (set(range(n+1)) - set(ids)) also works but uses O(n) space.",
     "test_cases": [
       {
         "input": [
@@ -389,11 +389,11 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "XOR has the property that x ^ x = 0 and x ^ 0 = x — use this to cancel out paired numbers.",
-      "XOR all numbers from 0 to n, then XOR all elements in the array; the surviving value is the missing one."
+      "If none were missing, the sum of all n+1 IDs would follow a simple closed-form formula — compare that to the actual sum.",
+      "The expected sum of integers 0 through n is n*(n+1)//2. The difference between that and sum(ids) is the missing ID."
     ],
     "concepts": [
-      "HASH-MAP STATE",
+      "MODULAR ARITHMETIC & NUMBER THEORY",
       "INDEXED SEQUENCE REASONING"
     ]
   },
@@ -956,12 +956,12 @@
     "order": 15,
     "topic": "python",
     "difficulty": "medium",
-    "title": "Evaluate Reverse Polish Notation",
-    "description": "Given a list of tokens in Reverse Polish Notation (postfix), evaluate the expression and return the integer result. Valid operators are `+`, `-`, `*`, `/` (integer division truncating toward zero).\n\n```\nsolve(['2','1','+','3','*'])        # → 9\nsolve(['4','13','5','/','+'])       # → 6\nsolve(['10','6','9','3','+','-1','*','/'])  # → -2\n```",
-    "starter_code": "def solve(tokens: list) -> int:\n    # Use a stack\n    pass",
+    "title": "KPI Formula Evaluator",
+    "description": "Your metrics service serializes compound KPI formulas in postfix notation — operands and operators are listed so each operator consumes the two most recently seen values. Given a list of `tokens` where each token is either an integer string or one of `+`, `-`, `*`, `/` (integer division truncating toward zero), evaluate the formula and return the result.\n\n```\nsolve(['2','1','+','3','*'])         # → 9   ( (2+1)*3 )\nsolve(['4','13','5','/','+'])        # → 6   ( 4 + 13/5 )\nsolve(['10','6','9','3','+','-1','*','/'])  # → -2\n```",
+    "starter_code": "def solve(tokens: list) -> int:\n    # Your code here\n    pass",
     "expected_code": "def solve(tokens):\n    stack = []\n    ops = {'+', '-', '*', '/'}\n    for t in tokens:\n        if t in ops:\n            b = stack.pop()\n            a = stack.pop()\n            if t == '+':\n                stack.append(a + b)\n            elif t == '-':\n                stack.append(a - b)\n            elif t == '*':\n                stack.append(a * b)\n            elif t == '/':\n                stack.append(int(a / b))  # truncate toward zero\n        else:\n            stack.append(int(t))\n    return stack[0]",
-    "solution_code": "def solve(tokens):\n    stack = []\n    ops = {'+', '-', '*', '/'}\n    for t in tokens:\n        if t in ops:\n            b = stack.pop()\n            a = stack.pop()\n            if t == '+':\n                stack.append(a + b)\n            elif t == '-':\n                stack.append(a - b)\n            elif t == '*':\n                stack.append(a * b)\n            elif t == '/':\n                stack.append(int(a / b))\n        else:\n            stack.append(int(t))\n    return stack[0]",
-    "explanation": "Use a stack. For each token: push numbers as integers. For operators, pop two operands (b then a — order matters for - and /), apply the operator, and push the result. Use int(a / b) rather than a // b to truncate toward zero for negative numbers (Python's // floors toward negative infinity). The stack will contain exactly one value at the end: the result.",
+    "solution_code": "def solve(tokens):\n    stack = []\n    ops = {'+', '-', '*', '/'}\n    for t in tokens:\n        if t in ops:\n            b = stack.pop()\n            a = stack.pop()\n            if t == '+':\n                stack.append(a + b)\n            elif t == '-':\n                stack.append(a - b)\n            elif t == '*':\n                stack.append(a * b)\n            elif t == '/': stack.append(int(a / b))\n        else:\n            stack.append(int(t))\n    return stack[0]",
+    "explanation": "A stack processes the token stream: push operands as integers; on an operator, pop two values (b then a — order matters for − and /), apply the operator, push the result. At the end the stack holds exactly one value: the formula result. Use int(a / b) rather than a // b to truncate toward zero for negative operands (Python's floor division rounds toward −∞). This is the canonical stack-based expression evaluator — the same pattern underlies formula engines, rule evaluators, and stack-based query languages.",
     "test_cases": [
       {
         "input": [
@@ -981,11 +981,10 @@
             "4",
             "13",
             "5",
-            "/",
-            "+"
+            "/"
           ]
         ],
-        "expected": 6
+        "expected": 2
       },
       {
         "input": [
@@ -1030,8 +1029,8 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "The expression resolves from the inside out as operators consume the most recent unresolved values.",
-      "For division, use int(a / b) — not a // b — to truncate toward zero (important for negative numbers)."
+      "An operator always applies to the two most-recently-seen unresolved values — what data structure naturally gives you that?",
+      "For division, use int(a / b) rather than a // b — Python's // floors toward negative infinity, but the spec requires truncation toward zero."
     ],
     "concepts": [
       "STACK & MONOTONIC STRUCTURES",
@@ -1043,12 +1042,12 @@
     "order": 18,
     "topic": "python",
     "difficulty": "medium",
-    "title": "Sort Colors (Dutch National Flag)",
-    "description": "Given a list `nums` containing only `0`s, `1`s, and `2`s, sort them in-place so all 0s come first, then 1s, then 2s. Use only constant extra space (no counting sort). Return the modified list.\n\n```\nsolve([2, 0, 2, 1, 1, 0])  # → [0, 0, 1, 1, 2, 2]\nsolve([2, 0, 1])             # → [0, 1, 2]\nsolve([0])                   # → [0]\n```",
-    "starter_code": "def solve(nums: list) -> list:\n    # One pass, three pointers (Dutch National Flag)\n    pass",
-    "expected_code": "def solve(nums):\n    lo, mid, hi = 0, 0, len(nums) - 1\n    while mid <= hi:\n        if nums[mid] == 0:\n            nums[lo], nums[mid] = nums[mid], nums[lo]\n            lo += 1\n            mid += 1\n        elif nums[mid] == 1:\n            mid += 1\n        else:\n            nums[mid], nums[hi] = nums[hi], nums[mid]\n            hi -= 1\n    return nums",
-    "solution_code": "def solve(nums):\n    lo, mid, hi = 0, 0, len(nums) - 1\n    while mid <= hi:\n        if nums[mid] == 0:\n            nums[lo], nums[mid] = nums[mid], nums[lo]\n            lo += 1\n            mid += 1\n        elif nums[mid] == 1:\n            mid += 1\n        else:\n            nums[mid], nums[hi] = nums[hi], nums[mid]\n            hi -= 1\n    return nums",
-    "explanation": "Dijkstra's Dutch National Flag algorithm uses three pointers: lo (boundary of 0s), mid (current element), hi (boundary of 2s). Invariant: nums[0..lo-1] = 0, nums[lo..mid-1] = 1, nums[hi+1..n-1] = 2. When nums[mid] is 0, swap with lo and advance both; when 1, just advance mid; when 2, swap with hi and decrement hi only (the swapped element needs examination). One pass, O(n) time, O(1) space.",
+    "title": "Priority-Partition Log Entries",
+    "description": "A log processor receives entries tagged with severity levels: `0` = INFO, `1` = WARN, `2` = ERROR. Reorder the list in-place so all INFO entries come first, then WARN, then ERROR — in a **single pass** using O(1) extra space. Return the modified list.\n\n```\nsolve([2, 0, 2, 1, 1, 0])  # → [0, 0, 1, 1, 2, 2]\nsolve([2, 0, 1])            # → [0, 1, 2]\n```",
+    "starter_code": "def solve(entries: list) -> list:\n    # One pass, O(1) extra space\n    pass",
+    "expected_code": "def solve(entries):\n    lo, mid, hi = 0, 0, len(entries) - 1\n    while mid <= hi:\n        if entries[mid] == 0:\n            entries[lo], entries[mid] = entries[mid], entries[lo]\n            lo += 1\n            mid += 1\n        elif entries[mid] == 1:\n            mid += 1\n        else:\n            entries[mid], entries[hi] = entries[hi], entries[mid]\n            hi -= 1\n    return entries",
+    "solution_code": "def solve(entries):\n    lo, mid, hi = 0, 0, len(entries) - 1\n    while mid <= hi:\n        if entries[mid] == 0:\n            entries[lo], entries[mid] = entries[mid], entries[lo]\n            lo += 1\n            mid += 1\n        elif entries[mid] == 1:\n            mid += 1\n        else:\n            entries[mid], entries[hi] = entries[hi], entries[mid]\n            hi -= 1\n    return entries",
+    "explanation": "Three pointers partition the list into four regions in one pass: [0..lo-1] = INFO confirmed, [lo..mid-1] = WARN confirmed, [mid..hi] = unseen, [hi+1..n-1] = ERROR confirmed. At entries[mid]: if INFO (0), swap with lo, advance both lo and mid (we know the swapped value is WARN); if WARN (1), advance mid only; if ERROR (2), swap with hi and decrement hi only — do not advance mid, since the value swapped in from hi is unseen. O(n) time, O(1) space. This three-way partition is the core of any in-place one-pass categorisation into three buckets.",
     "test_cases": [
       {
         "input": [
@@ -1131,8 +1130,8 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use three pointers: lo (end of 0-region), mid (current element), hi (start of 2-region).",
-      "When nums[mid] == 2, swap with hi and only decrement hi — do not advance mid, since the swapped element still needs to be examined."
+      "Use three pointers: lo (end of confirmed-INFO region), mid (current element under inspection), hi (start of confirmed-ERROR region).",
+      "When entries[mid] is ERROR (2), swap it to hi and only decrement hi — do not advance mid, because the value that came from hi has not yet been inspected."
     ],
     "concepts": [
       "TWO POINTERS",
@@ -1305,53 +1304,93 @@
     "order": 25,
     "topic": "python",
     "difficulty": "medium",
-    "title": "Longest Common Subsequence",
-    "description": "Given two strings `s1` and `s2`, return the length of their longest common subsequence (LCS). A subsequence does not need to be contiguous.\n\n```\nsolve('abcde', 'ace')    # → 3  ('ace')\nsolve('abc', 'abc')      # → 3\nsolve('abc', 'def')      # → 0\nsolve('oxcpqrsvwf', 'shmtulqrypy')  # → 2\n```",
-    "starter_code": "def solve(s1: str, s2: str) -> int:\n    # Dynamic programming — O(m*n)\n    pass",
-    "expected_code": "def solve(s1, s2):\n    m, n = len(s1), len(s2)\n    dp = [[0] * (n + 1) for _ in range(m + 1)]\n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            if s1[i - 1] == s2[j - 1]:\n                dp[i][j] = dp[i - 1][j - 1] + 1\n            else:\n                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])\n    return dp[m][n]",
-    "solution_code": "def solve(s1, s2):\n    m, n = len(s1), len(s2)\n    dp = [[0] * (n + 1) for _ in range(m + 1)]\n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            if s1[i - 1] == s2[j - 1]:\n                dp[i][j] = dp[i - 1][j - 1] + 1\n            else:\n                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])\n    return dp[m][n]",
-    "explanation": "Build an (m+1) × (n+1) DP table where dp[i][j] = LCS length of s1[:i] and s2[:j]. Recurrence: if characters match, dp[i][j] = dp[i-1][j-1] + 1; otherwise take the max of skipping one character from either string: max(dp[i-1][j], dp[i][j-1]). Base cases are zero (empty prefix). Answer is dp[m][n]. Time O(m·n), space O(m·n) — improvable to O(min(m,n)) with a rolling array. Naive recursion is O(2^(m+n)).",
+    "title": "Schema Version Alignment",
+    "description": "You are comparing two versions of a table schema — each expressed as an ordered list of field names. The 'stable core' of a schema migration is the longest sequence of fields that appears in **both** versions in the same relative order (not necessarily contiguous). Given `old_schema` and `new_schema`, return the length of their longest common subsequence.\n\n```\nsolve(['user_id','name','email','age','status'], ['user_id','email','status'])  # → 3\nsolve(['id','ts','val'], ['id','ts','val'])  # → 3\nsolve(['a','b','c'], ['d','e','f'])          # → 0\n```",
+    "starter_code": "def solve(old_schema: list, new_schema: list) -> int:\n    # Dynamic programming — O(m*n)\n    pass",
+    "expected_code": "def solve(old_schema, new_schema):\n    m, n = len(old_schema), len(new_schema)\n    dp = [[0] * (n + 1) for _ in range(m + 1)]\n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            if old_schema[i - 1] == new_schema[j - 1]:\n                dp[i][j] = dp[i - 1][j - 1] + 1\n            else:\n                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])\n    return dp[m][n]",
+    "solution_code": "def solve(old_schema, new_schema):\n    m, n = len(old_schema), len(new_schema)\n    dp = [[0] * (n + 1) for _ in range(m + 1)]\n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            if old_schema[i - 1] == new_schema[j - 1]:\n                dp[i][j] = dp[i - 1][j - 1] + 1\n            else:\n                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])\n    return dp[m][n]",
+    "explanation": "Build an (m+1) × (n+1) DP table where dp[i][j] = length of the longest common subsequence of old_schema[:i] and new_schema[:j]. Recurrence: if the fields match, extend the best result one step longer (dp[i-1][j-1] + 1); otherwise take the best of skipping a field from either side (max(dp[i-1][j], dp[i][j-1])). Base cases are zero (empty prefix). Time O(m·n), space O(m·n) — improvable to O(min(m,n)) with a rolling row. This 2-D DP shape is identical for any sequence-alignment problem: schema diffing, fuzzy deduplication, log alignment, version comparison.",
     "test_cases": [
       {
         "input": [
-          "abcde",
-          "ace"
+          [
+            "user_id",
+            "name",
+            "email",
+            "age",
+            "status"
+          ],
+          [
+            "user_id",
+            "email",
+            "status"
+          ]
         ],
         "expected": 3
       },
       {
         "input": [
-          "abc",
-          "abc"
+          [
+            "id",
+            "ts",
+            "val"
+          ],
+          [
+            "id",
+            "ts",
+            "val"
+          ]
         ],
         "expected": 3
       },
       {
         "input": [
-          "abc",
-          "def"
+          [
+            "a",
+            "b",
+            "c"
+          ],
+          [
+            "d",
+            "e",
+            "f"
+          ]
         ],
         "expected": 0
       },
       {
         "input": [
-          "",
-          "abc"
+          [],
+          [
+            "id",
+            "ts"
+          ]
         ],
         "expected": 0
       },
       {
         "input": [
-          "oxcpqrsvwf",
-          "shmtulqrypy"
+          [
+            "region",
+            "sales",
+            "cost",
+            "margin",
+            "tax"
+          ],
+          [
+            "sales",
+            "margin",
+            "tax",
+            "region"
+          ]
         ],
-        "expected": 2
+        "expected": 3
       }
     ],
     "public_test_cases": 2,
     "hints": [
-      "Build a 2D DP table where dp[i][j] is the LCS length of the first i characters of s1 and first j characters of s2.",
-      "If s1[i-1] == s2[j-1], dp[i][j] = dp[i-1][j-1] + 1. Otherwise dp[i][j] = max(dp[i-1][j], dp[i][j-1])."
+      "Build a 2-D table where dp[i][j] = longest common subsequence of the first i fields of old_schema and the first j fields of new_schema.",
+      "If old_schema[i-1] == new_schema[j-1], the answer extends by 1 from dp[i-1][j-1]. Otherwise take max(dp[i-1][j], dp[i][j-1]) — the best when you skip a field from either side."
     ],
     "concepts": [
       "DYNAMIC PROGRAMMING (2D)",

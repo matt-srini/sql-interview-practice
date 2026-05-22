@@ -189,67 +189,113 @@
     "order": 2,
     "topic": "python",
     "difficulty": "hard",
-    "title": "Minimum Window Substring",
-    "description": "Given strings `s` and `t`, return the **minimum window substring** of `s` that contains every character of `t` (including duplicates). Return `''` if no such window exists.\n\n```\nsolve('ADOBECODEBANC', 'ABC')  # → 'BANC'\nsolve('a', 'a')               # → 'a'\nsolve('a', 'b')               # → ''\nsolve('aa', 'aa')             # → 'aa'\n```",
-    "starter_code": "def solve(s: str, t: str) -> str:\n    # Your code here\n    pass",
-    "expected_code": "def solve(s, t):\n    if not t or not s:\n        return ''\n    need = {}\n    for ch in t:\n        need[ch] = need.get(ch, 0) + 1\n    required = len(need)\n    formed = 0\n    window = {}\n    left = 0\n    min_len = float('inf')\n    min_start = 0\n    for right, ch in enumerate(s):\n        window[ch] = window.get(ch, 0) + 1\n        if ch in need and window[ch] == need[ch]:\n            formed += 1\n        while formed == required:\n            if right - left + 1 < min_len:\n                min_len = right - left + 1\n                min_start = left\n            left_ch = s[left]\n            window[left_ch] -= 1\n            if left_ch in need and window[left_ch] < need[left_ch]:\n                formed -= 1\n            left += 1\n    return s[min_start:min_start + min_len] if min_len != float('inf') else ''",
-    "solution_code": "def solve(s, t):\n    if not t or not s:\n        return ''\n    need = {}\n    for ch in t:\n        need[ch] = need.get(ch, 0) + 1\n    required = len(need)\n    formed = 0\n    window = {}\n    left = 0\n    min_len = float('inf')\n    min_start = 0\n    for right, ch in enumerate(s):\n        window[ch] = window.get(ch, 0) + 1\n        if ch in need and window[ch] == need[ch]:\n            formed += 1\n        while formed == required:\n            if right - left + 1 < min_len:\n                min_len = right - left + 1\n                min_start = left\n            left_ch = s[left]\n            window[left_ch] -= 1\n            if left_ch in need and window[left_ch] < need[left_ch]:\n                formed -= 1\n            left += 1\n    return s[min_start:min_start + min_len] if min_len != float('inf') else ''",
-    "explanation": "Use a sliding window with two frequency maps: `need` (required counts from `t`) and `window` (current window counts). Expand `right` to include new characters; once all required characters are satisfied (`formed == required`), contract `left` to find the minimum valid window. Track the smallest window seen. Time: O(|s| + |t|), Space: O(|s| + |t|).",
+    "title": "Minimum Log Span Covering Required Events",
+    "description": "Your SRE tooling needs the tightest diagnostic window: find the shortest contiguous sublist of `events` that contains every event type in `required` (with repetition — if 'WARN' appears twice in `required`, the window must contain at least two 'WARN' events). Return that sublist. Return `[]` if no valid window exists.\n\n```\nsolve(['INFO','WARN','ERROR','INFO','WARN'], ['WARN','ERROR'])  # → ['WARN','ERROR']\nsolve(['WARN','INFO','WARN','ERROR'], ['WARN','WARN'])          # → ['WARN','INFO','WARN']\nsolve(['INFO','INFO'], ['ERROR'])                               # → []\n```",
+    "starter_code": "def solve(events: list, required: list) -> list:\n    # Your code here\n    pass",
+    "expected_code": "def solve(events, required):\n    if not required or not events:\n        return []\n    need = {}\n    for e in required:\n        need[e] = need.get(e, 0) + 1\n    required_count = len(need)\n    formed = 0\n    window = {}\n    left = 0\n    min_len = float('inf')\n    min_start = 0\n    for right, e in enumerate(events):\n        window[e] = window.get(e, 0) + 1\n        if e in need and window[e] == need[e]:\n            formed += 1\n        while formed == required_count:\n            if right - left + 1 < min_len:\n                min_len = right - left + 1\n                min_start = left\n            left_e = events[left]\n            window[left_e] -= 1\n            if left_e in need and window[left_e] < need[left_e]:\n                formed -= 1\n            left += 1\n    return events[min_start:min_start + min_len] if min_len != float('inf') else []",
+    "solution_code": "def solve(events, required):\n    if not required or not events:\n        return []\n    need = {}\n    for e in required:\n        need[e] = need.get(e, 0) + 1\n    required_count = len(need)\n    formed = 0\n    window = {}\n    left = 0\n    min_len = float('inf')\n    min_start = 0\n    for right, e in enumerate(events):\n        window[e] = window.get(e, 0) + 1\n        if e in need and window[e] == need[e]:\n            formed += 1\n        while formed == required_count:\n            if right - left + 1 < min_len:\n                min_len = right - left + 1\n                min_start = left\n            left_e = events[left]\n            window[left_e] -= 1\n            if left_e in need and window[left_e] < need[left_e]:\n                formed -= 1\n            left += 1\n    return events[min_start:min_start + min_len] if min_len != float('inf') else []",
+    "explanation": "Sliding window with two frequency maps: `need` (required counts) and `window` (current window counts). Expand `right` to cover new events; once all required event types are satisfied (`formed == required_count`), shrink from `left` to tighten the window. Track the minimum valid window seen. `formed` counts how many distinct required event types are exactly satisfied (window count == need count) — decrement it when shrinking drops a type below its required count. Time O(|events| + |required|), space O(distinct event types). This shrink-when-valid shape appears whenever you need the minimum-length window satisfying a multi-type coverage constraint over a stream.",
     "test_cases": [
       {
         "input": [
-          "ADOBECODEBANC",
-          "ABC"
+          [
+            "INFO",
+            "WARN",
+            "ERROR",
+            "INFO",
+            "WARN"
+          ],
+          [
+            "WARN",
+            "ERROR"
+          ]
         ],
-        "expected": "BANC"
+        "expected": [
+          "WARN",
+          "ERROR"
+        ]
       },
       {
         "input": [
-          "a",
-          "a"
+          [
+            "WARN",
+            "INFO",
+            "WARN",
+            "ERROR"
+          ],
+          [
+            "WARN",
+            "WARN"
+          ]
         ],
-        "expected": "a"
+        "expected": [
+          "WARN",
+          "INFO",
+          "WARN"
+        ]
       },
       {
         "input": [
-          "a",
-          "b"
+          [
+            "INFO",
+            "INFO"
+          ],
+          [
+            "ERROR"
+          ]
         ],
-        "expected": ""
+        "expected": []
       },
       {
         "input": [
-          "aa",
-          "aa"
+          [
+            "ERROR"
+          ],
+          [
+            "ERROR"
+          ]
         ],
-        "expected": "aa"
+        "expected": [
+          "ERROR"
+        ]
       },
       {
         "input": [
-          "abc",
-          "ac"
+          [],
+          [
+            "ERROR"
+          ]
         ],
-        "expected": "abc"
+        "expected": []
       },
       {
         "input": [
-          "cabwefgewcwaefgcf",
-          "cae"
+          [
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "A",
+            "B"
+          ],
+          [
+            "A",
+            "B",
+            "C"
+          ]
         ],
-        "expected": "cwae"
-      },
-      {
-        "input": [
-          "",
-          "a"
-        ],
-        "expected": ""
+        "expected": [
+          "A",
+          "B",
+          "C"
+        ]
       }
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use two pointers (sliding window) and two frequency dictionaries: one for what you need, one for what the current window contains.",
-      "Track how many distinct characters are 'satisfied' (window count >= needed count); shrink from the left whenever all are satisfied."
+      "Use two frequency maps: one for what the window must contain, one for what it currently contains. Track how many distinct event types are fully satisfied.",
+      "Once all required types are satisfied, shrink from the left as far as possible — only stop when removing the leftmost event drops a type below its required count."
     ],
     "concepts": [
       "SLIDING WINDOW",
@@ -262,42 +308,41 @@
     "order": 4,
     "topic": "python",
     "difficulty": "hard",
-    "title": "Word Break",
-    "description": "Given a string `s` and a list of dictionary words `word_dict`, return `True` if `s` can be segmented into one or more space-separated words that all appear in `word_dict`.\n\n```\nsolve('leetcode', ['leet','code'])            # → True\nsolve('applepenapple', ['apple','pen'])        # → True\nsolve('catsandog', ['cats','dog','sand','cat','an'])  # → False\nsolve('', ['a'])                               # → True\n```",
-    "starter_code": "def solve(s: str, word_dict: list) -> bool:\n    # Your code here\n    pass",
-    "expected_code": "def solve(s, word_dict):\n    word_set = set(word_dict)\n    n = len(s)\n    dp = [False] * (n + 1)\n    dp[0] = True\n    for i in range(1, n + 1):\n        for j in range(i):\n            if dp[j] and s[j:i] in word_set:\n                dp[i] = True\n                break\n    return dp[n]",
-    "solution_code": "def solve(s, word_dict):\n    word_set = set(word_dict)\n    n = len(s)\n    dp = [False] * (n + 1)\n    dp[0] = True\n    for i in range(1, n + 1):\n        for j in range(i):\n            if dp[j] and s[j:i] in word_set:\n                dp[i] = True\n                break\n    return dp[n]",
-    "explanation": "`dp[i]` is True if `s[:i]` can be segmented using dictionary words. Base case `dp[0] = True` (empty string). For each end index `i`, try all split points `j`: if `dp[j]` is True and `s[j:i]` is in the word set, then `dp[i] = True`. Convert `word_dict` to a set for O(1) lookups. Time: O(n² * k) where k is average word length for slicing; Space: O(n + W).",
+    "title": "ETL Field Tokenizer",
+    "description": "A legacy ETL pipeline strips whitespace from certain text fields before storage. To reconstruct the original tokens, you have a known vocabulary. Given a concatenated string `raw` and a list `vocabulary` of valid tokens, return `True` if `raw` can be completely segmented into one or more tokens from `vocabulary` (tokens may be reused).\n\n```\nsolve('orderstatus', ['order','status'])      # → True\nsolve('userprofile', ['user','profile'])      # → True\nsolve('badtoken', ['bad','ok'])              # → False\nsolve('', ['a'])                             # → True\n```",
+    "starter_code": "def solve(raw: str, vocabulary: list) -> bool:\n    # Your code here\n    pass",
+    "expected_code": "def solve(raw, vocabulary):\n    vocab_set = set(vocabulary)\n    n = len(raw)\n    dp = [False] * (n + 1)\n    dp[0] = True\n    for i in range(1, n + 1):\n        for j in range(i):\n            if dp[j] and raw[j:i] in vocab_set:\n                dp[i] = True\n                break\n    return dp[n]",
+    "solution_code": "def solve(raw, vocabulary):\n    vocab_set = set(vocabulary)\n    n = len(raw)\n    dp = [False] * (n + 1)\n    dp[0] = True\n    for i in range(1, n + 1):\n        for j in range(i):\n            if dp[j] and raw[j:i] in vocab_set:\n                dp[i] = True\n                break\n    return dp[n]",
+    "explanation": "`dp[i]` is True if `raw[:i]` can be fully segmented using vocabulary tokens. Base case `dp[0] = True` (empty string is trivially segmented). For each end index `i`, scan back through all split points `j`: if `dp[j]` is True (the prefix up to j is segmentable) and `raw[j:i]` is a known token, then `dp[i] = True`. Convert `vocabulary` to a set for O(1) lookup. Time O(n² · k) where k is average token length for slicing; space O(n + |vocab|). The key insight: whether the full string can be segmented depends only on whether each prefix can be — classic DP optimal-substructure over string prefixes, the same shape used in query parsing, rule-based NLP tokenisation, and protocol frame decoders.",
     "test_cases": [
       {
         "input": [
-          "leetcode",
+          "orderstatus",
           [
-            "leet",
-            "code"
+            "order",
+            "status"
           ]
         ],
         "expected": true
       },
       {
         "input": [
-          "applepenapple",
+          "userprofile",
           [
-            "apple",
-            "pen"
+            "user",
+            "profile",
+            "pro",
+            "file"
           ]
         ],
         "expected": true
       },
       {
         "input": [
-          "catsandog",
+          "badtoken",
           [
-            "cats",
-            "dog",
-            "sand",
-            "cat",
-            "an"
+            "bad",
+            "ok"
           ]
         ],
         "expected": false
@@ -322,11 +367,12 @@
       },
       {
         "input": [
-          "cars",
+          "cartfee",
           [
             "car",
-            "ca",
-            "rs"
+            "cart",
+            "fee",
+            "t"
           ]
         ],
         "expected": true
@@ -346,8 +392,8 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Ask whether progressively larger prefixes are solvable based on smaller prefixes you already know are valid.",
-      "For each index i, scan back through all split points j < i: if dp[j] is True and s[j:i] is in the word set, set dp[i] = True."
+      "Ask: for each prefix of `raw`, can it be fully segmented? Whether dp[i] is True depends only on smaller prefixes you've already decided.",
+      "For each end position i, scan back through split points j < i: if dp[j] is True and raw[j:i] is in the vocabulary set, set dp[i] = True."
     ],
     "concepts": [
       "DYNAMIC PROGRAMMING (1D)",
