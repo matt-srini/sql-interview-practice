@@ -36,6 +36,16 @@ DM samples are auto-sliced from the first 3 practice questions per difficulty.
 | **Medium** | Grain decisions under ambiguity, SCD trade-offs | SCD Type 2 vs 3 vs 4, bridge tables, Data Vault basics, schema from requirements, denormalization trade-offs |
 | **Hard** | Multi-hop grain alignment, conflicting requirements, governance | Multi-hop grain alignment, SCD under conflicting requirements, Data Vault vs Kimball, conformed-dimension governance, bi-temporal modeling, semantic layer trade-offs |
 
+### Representative scenarios per tier
+
+Difficulty controls reasoning depth, never licenses vocabulary trivia. Even easy questions are anchored in a realistic modeling decision.
+
+| Tier | Representative scenarios |
+|---|---|
+| **Easy** | Star vs snowflake for a stated reporting need · pick the fact-table type for an event · surrogate vs natural key for a given source · state the grain of a simple fact. One concept, clear right answer. |
+| **Medium** | Choose an SCD type under a change-tracking requirement · resolve a many-to-many with a bridge · infer a schema from a short stakeholder brief · denormalization trade-off for a query pattern. Grain/SCD decisions under ambiguity. |
+| **Hard** | Align grain across multiple facts · conformed-dimension governance across two source systems · Data Vault vs Kimball under conflicting requirements · bi-temporal modeling. Multi-hop judgement under conflicting requirements. |
+
 ## Concept arc (early → late)
 
 | Tier | Progression |
@@ -61,7 +71,9 @@ Full registry: [`docs/concept-taxonomy.md` → Data Modeling section](../concept
 | Mock-only hard | `hard.json` with `mock_only: true` | M&A scenarios (conformed dimensions across two companies), metric deprecation, zero-downtime migrations. |
 | Mock-only chain | parent + 1–3 follow-ups | Pivots: business rule (definition shifts), scale (dimension grows 100×), data quality (conflicting source attributes), stakeholder (DS team wants different grain). |
 
-**Easy mock-only: never.**
+**Easy mock-only: never.** Easy is practice-only.
+
+**Practice teaches, mock-only stress-tests transfer.** The difference is framing and stakeholder realism, not new concepts. A mock-only question recombines modeling reasoning the practice bank already teaches at that difficulty (or lower), anchored in a fresh stakeholder brief or migration scenario; it must not clone an existing practice question and must not introduce a concept family the curriculum never taught. If a mock would need an untaught concept, author the practice question first.
 
 ## Anti-patterns specific to DM
 

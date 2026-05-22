@@ -491,7 +491,7 @@ Run every item before pushing the launch commit.
 
 **Skipping Phase 1.** The concept coverage map feels like overhead but it's the only thing that guarantees curriculum coherence. Tracks authored without one develop blind spots (50% of questions on one concept, zero on another) that can't be easily fixed without renumbering.
 
-**Authoring mock questions before practice is complete.** Mock questions must use fresh concept angles. You can't know what angles are "fresh" until the practice bank is fully authored.
+**Authoring mock questions before practice is complete.** Mock-only questions recombine concepts the practice curriculum already taught, under fresh framing — they never debut a concept. You can't know which concepts are "already taught" (or which framings would just clone a practice question) until the practice bank is fully authored.
 
 **Setting `totalQuestions` in `trackRegistry.js` before content is complete.** The landing page shows this number. Keep `comingSoon: true` until content is fully authored, validated, and committed — then set `totalQuestions` to the final practice count and remove `comingSoon`.
 

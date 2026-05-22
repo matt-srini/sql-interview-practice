@@ -50,6 +50,16 @@ Samples in `backend/content/python_data_questions/sample/` use `3XS` 3-digit IDs
 
 **Critical:** every question must test *pandas-idiomatic thinking*. If a question is equally elegant in SQL, it doesn't belong here. The track's purpose is teaching pandas as a tool with its own grammar — not as a SQL substitute.
 
+### Representative tasks per tier
+
+Difficulty controls reasoning depth, never licenses method-recall drills. Even easy questions read like a small real data-wrangling task on a realistic frame.
+
+| Tier | Representative tasks |
+|---|---|
+| **Easy** | Parse a timestamp column and bucket by month · clean a `.str` field · count category frequencies · bin a numeric column · simple boolean-filtered summary. Small realistic wrangling, not "what's the keyword for X". |
+| **Medium** | Join two frames and compute a per-group metric · pivot sales by region/month · per-group feature via `transform` · rolling/resampled time series · percentile rank within group. Dashboard / KPI-style framing. |
+| **Hard** | Cohort retention pipeline · funnel with time-bucketed dropoff · memory-aware transform on a wide frame · multi-step lifecycle/state pipeline. Production-realistic analytics, memory and dtype awareness. |
+
 ## Concept arc (early → late)
 
 | Tier | Progression |
@@ -73,6 +83,8 @@ Full registry: [`docs/concept-taxonomy.md` → Pandas section](../concept-taxono
 
 Two existing families renamed to align with SQL: `DEDUPLICATION & DISTINCT COUNTING` → `DEDUPLICATION LOGIC`, and `RANKING & TOP-K` → `RANKING & TOP-N PER GROUP`. Existing tags resolve unchanged through preserved match patterns.
 
+**These six families currently have no question coverage** — they surface reasoning the bank only had implicitly. They are *practice-curriculum targets*, not mock material. Under the mock-only rule (no unseen concepts), establish them in **practice first** (Phase 2 remap of fitting existing questions + new practice authoring) before any mock-only content recombines them.
+
 Blocklist rejects method-name tags (`groupby`, `merge`, `pivot_table`, `apply`). Describe the *reasoning*.
 
 ## Authoring allocation matrix
@@ -82,11 +94,13 @@ Blocklist rejects method-name tags (`groupby`, `merge`, `pivot_table`, `apply`).
 | Practice easy | `easy.json` no `mock_only` | One idiomatic operation. Build accessor familiarity. |
 | Practice medium | `medium.json` no `mock_only` | Compose 2–3 operations. Idiom recognition. |
 | Practice hard | `hard.json` no `mock_only` | Multi-step pipeline. Memory and dtype awareness. |
-| Mock-only medium | `medium.json` with `mock_only: true` | Real-world framing: dirty CSV reads, mixed dtypes, missing-data realism. Target `MEMORY & VECTORIZATION REASONING`, `MISSING VALUE STRATEGY`, `DEBUG PANDAS`. |
+| Mock-only medium | `medium.json` with `mock_only: true` | Real-world framing: dirty CSV reads, mixed dtypes, missing-data realism. Recombine families with existing practice coverage (e.g. `MISSING VALUE STRATEGY`, `DEBUG PANDAS`). `MEMORY & VECTORIZATION REASONING` is a fit *only once practice teaches it*. |
 | Mock-only hard | `hard.json` with `mock_only: true` | Production-realistic pipelines: cohort analysis with dropoff, funnel with bucket time, retention curve. |
 | Mock-only chain | parent + 1–3 follow-ups | Pivots: scale (50 GB file), business rule (now exclude returns), data quality (mixed-dtype column), performance (apply → vectorize). |
 
-**Easy mock-only: never.**
+**Easy mock-only: never.** Easy is practice-only.
+
+**Practice teaches, mock-only stress-tests transfer.** The difference is framing, realism, and dirty-data conditions — not new operations. A mock-only question recombines pandas reasoning the practice bank already teaches at that difficulty (or lower) in a fresh business scenario; it must not clone an existing practice question and must not debut a concept family the curriculum never taught. If a mock would need an untaught concept, author the practice question first.
 
 ## Anti-patterns specific to Pandas
 

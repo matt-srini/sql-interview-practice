@@ -56,6 +56,16 @@ Samples use a separate `TXS` 3-digit format (`111–133`) in `backend/content/qu
 
 **Difficulty comes from reasoning complexity, never from syntactic obscurity.** If you can make a question harder by removing a clarification, it was ambiguous, not hard.
 
+### Allowed business scenarios per tier
+
+The construct table bounds the *tools*; this bounds the *feel*. Even easy questions resemble small real-world reporting/KPI tasks, never textbook SQL drills.
+
+| Tier | Representative business scenarios |
+|---|---|
+| **Easy** | Monthly revenue by country · active vs inactive users · users with no orders · first purchase date per user · simple category-level sales summaries · basic duplicate detection. The challenge is interpreting the requirement correctly (filtering logic, aggregation grain, NULL handling, dedup intent) — not recalling syntax. |
+| **Medium** | Monthly retention trends · top products by region · refund-adjusted revenue · users with declining activity · category contribution analysis · ticket-resolution KPI reporting · repeat-purchase behaviour · funnel drop-off summaries. The challenge is selecting the right analytical approach and sequencing logic (aggregation order, join direction/impact, WHERE vs HAVING, metric correctness). |
+| **Hard** | Cohort retention · funnel conversion breakdowns · sessionization · Pareto revenue contribution · customer-lifecycle state transitions · experiment-impact analysis · anomaly investigation · churn-risk detection · rolling KPI trends · fraud/anomaly heuristics. These resemble senior-level analytics, product-analytics, experimentation, and data-investigation tasks — the kind a practicing analyst still faces years into the role. The challenge is decomposing a realistic business problem into logically correct stages under edge cases, ambiguity, and dirty data. |
+
 ## Concept arc (early → late)
 
 | Tier | Progression |
@@ -81,7 +91,7 @@ Six families are new in the 2026-05 refactor, surfacing reasoning patterns the b
 - **`OUTPUT SANITY VALIDATION`** — self-checking your own analytical output before declaring done; the discipline that separates senior practitioners from junior ones
 - **`PERFORMANCE-AWARE ANALYTICS`** — choosing the more efficient analytical approach (scan reduction, pre-aggregation, cardinality control) without sacrificing correctness; distinct from engine-optimisation trivia
 
-Mock-only content authored from now on should lean into these six families to address the gap.
+**These six families currently have no question coverage** — the bank exercised this reasoning only implicitly and never tagged it. They are *practice-curriculum targets*, not mock material. Under the mock-only rule (no unseen concepts), they must be **established in practice first** — via the Phase 2 remap (re-tagging existing questions whose reasoning already fits) and new practice authoring — *before* any mock-only content recombines them. Until a family is taught in practice for this track, mock-only must not lean on it.
 
 ## Authoring allocation matrix
 
@@ -93,13 +103,13 @@ This is the contract that prevents ad-hoc "practice or mock?" decisions during a
 | **Practice medium (free with threshold unlock)** | `medium.json` no `mock_only` | When the question composes 2–3 concepts and reinforces prior tier. Curriculum role: build reasoning. |
 | **Practice hard (free with capped unlock, Pro full)** | `hard.json` no `mock_only` | When the question requires dependent reasoning steps. Curriculum role: build production-grade thinking. |
 | **Practice path content (free shortcut paths)** | Existing practice IDs referenced in `backend/content/paths/*.json` | When you are building a curated sequence. Do not author new questions just for paths — reference existing practice content. |
-| **Mock-only medium (Pro/Elite, single)** | `medium.json` with `mock_only: true` | When the question is fresh business angle not in practice catalog, no chain. Targets `METRIC INTERPRETATION`, `DATA QUALITY SKEPTICISM`, `DOUBLE-COUNTING DETECTION`, ambiguity-heavy framing. |
-| **Mock-only hard (Pro/Elite, single)** | `hard.json` with `mock_only: true` | Same as medium, raised difficulty. Often `reverse` or `debug` type. |
-| **Mock-only chain parent + follow-ups (Pro/Elite, sets up Interview Loop)** | Parent in `medium.json` or `hard.json` with `follow_ups: [...]`; children in same difficulty file with `mock_only: true`, `parent_id`, `follow_up_dimension` | When the question has natural interviewer pivots — exclude refunded orders, change time grain, scale up, address dirty data. Length 2–4 (parent + 1–3 follow-ups). Each follow-up uses a different `follow_up_dimension`. Powers Interview Loop. |
+| **Mock-only medium (Pro/Elite, single)** | `medium.json` with `mock_only: true` | When you can recombine medium-tier concepts the practice bank already teaches into a *fresh business scenario* (different KPI, time window, multi-table relationship), with mild ambiguity or dirty-data framing. No new concept families. The gap families (`METRIC INTERPRETATION`, `DATA QUALITY SKEPTICISM`, `DOUBLE-COUNTING DETECTION`) are natural fits *once practice teaches them* — until then, only recombine families with existing practice coverage. No chain. |
+| **Mock-only hard (Pro/Elite, single)** | `hard.json` with `mock_only: true` | Same as medium, raised difficulty. Often `reverse` or `debug` type. Still recombines learned hard-tier reasoning under unseen framing — never debuts a concept. |
+| **Mock-only chain parent + follow-ups (Pro/Elite, sets up Interview Loop)** | Parent in `medium.json` or `hard.json` with `follow_ups: [...]`; children in same difficulty file with `mock_only: true`, `parent_id`, `follow_up_dimension` | When the question has natural interviewer pivots — exclude refunded orders, change time grain, scale up, address dirty data. Length 2–4 (parent + 1–3 follow-ups). Each follow-up escalates exactly one `follow_up_dimension`, different from the previous. Powers Interview Loop. |
 
-**Easy mock-only: never.** Easy mocks for Free draw from the practice pool only; Pro/Elite get easy via the same practice pool when they want them. There's no business case for mock-only easy content.
+**Easy mock-only: never.** Easy is practice-only. Easy mocks for Free draw from the practice pool; Pro/Elite get easy via the same practice pool. There's no business case for mock-only easy content.
 
-**Content cap:** ≤15% of a mock-only batch may reinforce a concept family already in the practice bank at that difficulty. The other 85%+ must cover fresh business angles using existing datasets — different KPIs, time windows, multi-table relationships the practice bank doesn't explore.
+**Practice teaches, mock-only stress-tests transfer.** The difference is framing, realism, and ambiguity — *not* new concepts. A mock-only question recombines previously-learned SQL reasoning in a business scenario the practice bank doesn't explore (fresh KPI, time window, relationship, stakeholder pressure, dirty data). It must **not** clone the framing of an existing practice question, and it must **not** introduce a concept family the practice curriculum hasn't already taught at that difficulty or lower. If a mock would need an untaught concept, author the practice question first.
 
 ## Anti-patterns specific to SQL
 
@@ -109,7 +119,8 @@ This is the contract that prevents ad-hoc "practice or mock?" decisions during a
 - **Non-deterministic output** — ranking ties without a tie-breaker rule. Reject.
 - **Artificial multi-CTE pipelines** — chaining 5 CTEs when 2 would do, just to look harder. Reject.
 - **Stacking unrelated requirements to inflate difficulty** — "find top users AND their longest session AND their most recent ticket AND..." That's noise, not depth.
-- **Mocking with practice-bank concept overlap > 15%** — defeats the purpose of mock-only content.
+- **Mock-only that clones a practice question's framing** — same scenario with cosmetic changes defeats the purpose. Recombine learned concepts in a genuinely fresh business scenario instead.
+- **Mock-only that introduces an untaught concept** — mock evaluates *transfer* of learned reasoning; a concept the practice curriculum never taught has no business debuting in a mock. Author the practice question first.
 
 ## DuckDB syntax requirements
 

@@ -93,7 +93,9 @@ This is the spine of the bank. The same rule applies to every track; only the pe
 
 A question is hard because the *reasoning* is layered, never because you bolted on unrelated requirements. **If you can make a question harder by removing a clarification, it was ambiguous, not hard.**
 
-Per-track difficulty vocabulary tables: see each `docs/tracks/<track>.md`.
+**Every tier maps to realistic business work, never to textbook drills.** Difficulty controls *reasoning depth*; it never licenses toy exercises. Even an easy question should read like a small real-world reporting or KPI task — not a syntax-recall prompt or a function-name quiz. Each track doc lists *allowed business scenarios* per tier (e.g. for SQL: easy = "monthly revenue by country", "users with no orders"; medium = "monthly retention trends", "refund-adjusted revenue"; hard = "cohort retention", "sessionization", "Pareto contribution"). The construct list says *what tools are in bounds*; the scenario list says *what the question should feel like*. Both gate the question.
+
+Per-track difficulty vocabulary tables and allowed business scenarios: see each `docs/tracks/<track>.md`.
 
 ---
 
@@ -224,13 +226,29 @@ Per-track family lists, blocklists, and resolution rules: [`docs/concept-taxonom
 
 ## Mock-only authoring contract
 
-`mock_only: true` makes a question exclusive to mock sessions (Pro/Elite). It never appears in the practice catalog. Purpose: a genuinely fresh, unseen pool.
+`mock_only: true` makes a question exclusive to mock sessions (Pro/Elite). It never appears in the practice catalog.
 
 **Source of truth for plan gating, chain mechanics, Interview Loop:** [`docs/features/mock.md`](./features/mock.md).
 
-Summary contract:
-- Allocate IDs at the top of the difficulty range, after the last practice question. **Never at easy.**
-- **Content cap:** ≤15% of a mock batch may reinforce a concept family already in practice at that difficulty. The other 85%+ must cover fresh business / engineering angles.
+### What separates practice from mock-only
+
+The distinction is **framing, realism, ambiguity, and interview dynamics — not the introduction of new reasoning concepts.**
+
+| | Practice | Mock-only |
+|---|---|---|
+| Exists to | teach reasoning patterns; build the curriculum progressively | evaluate whether learned reasoning *transfers* under pressure and unfamiliar framing |
+| Orientation | learner / progression / curriculum | assessment / realism / adaptability |
+| Answers | "Can the learner understand and apply this pattern?" | "Can the learner transfer prior reasoning to an unfamiliar situation?" |
+| Framing | clean business framing, minimal ambiguity, pedagogical clarity | production-realistic; mild ambiguity, evolving requirements, edge cases, dirty data |
+| Concepts | introduces concepts systematically | **recombines and stress-tests already-taught concepts** |
+
+**The governing rule:** a mock-only question must **never introduce a reasoning concept the practice curriculum hasn't already taught at that difficulty.** It recombines previously-learned concepts in an unseen business scenario. A mock should feel like *a real interviewer extending the discussion naturally* — not an artificial puzzle escalation, and not a brand-new topic the candidate was never taught.
+
+### Mock-only contract
+
+- Allocate IDs at the top of the difficulty range, after the last practice question. **Never at easy** — easy is practice-only; mock-only exists at medium and hard only.
+- **No unseen concepts.** Every concept family a mock-only question tests must already appear in the practice bank for that track at that difficulty or lower. Mock-only adds *no* new families.
+- **Anti-duplication rule (replaces the old concept-novelty cap).** A mock-only question must not clone the *framing* of an existing practice question — it must recombine the same learned concepts in a **fresh business scenario** (different KPI, time window, multi-table relationship, stakeholder pressure, or dirty-data condition). Same reasoning, unseen surface. If a mock-only question would teach a concept the curriculum skipped, author the practice question first.
 - **Chain authoring rules:**
   - Parent (`follow_ups: [child_id, ...]`) and each child (`mock_only: true`, `parent_id`, `follow_up_dimension`) live in the same difficulty file
   - Chain length 2–4 (parent + 1–3 follow-ups)

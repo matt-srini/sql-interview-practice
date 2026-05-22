@@ -39,6 +39,16 @@ DE samples are auto-sliced from the first 3 practice questions per difficulty (n
 | **Medium** | 2 concept families composed OR a genuine trade-off; distractors are tempting | Schema-evolution trade-offs, watermarks and late-data handling, delivery semantics (at-least-once / at-most-once / exactly-once), backfill idempotency, small-file problem, partitioning strategy |
 | **Hard** | Multi-family judgement, ambiguous-by-design; best answer defensible but not obvious; distractors represent common expert-level mistakes | Exactly-once semantics across boundaries, incident response, lineage debugging under silent failures, partition-granularity cost trade-offs, schema-registry compatibility modes, data-contract violations |
 
+### Representative scenarios per tier
+
+Difficulty controls reasoning depth, never licenses tool-trivia or config-default recall. Even easy questions are anchored in a realistic pipeline situation.
+
+| Tier | Representative scenarios |
+|---|---|
+| **Easy** | Choose ETL vs ELT for a stated need · why a retried task must be idempotent · batch vs streaming for a given latency requirement · partitioning intuition for a query pattern. Single concept, clear scenario. |
+| **Medium** | "Consumer lag is growing — choose the fix" · which delivery semantic a use case needs · handling late data with watermarks · the small-file problem on a given write pattern. A genuine trade-off with tempting distractors. |
+| **Hard** | Exactly-once across a source→sink boundary · lineage debugging under a silent failure · partition-granularity cost trade-off under an SLA · schema-registry compatibility under producer/consumer disagreement. Multi-family judgement, ambiguous by design. |
+
 ## Concept arc (early → late)
 
 | Tier | Progression |
@@ -64,7 +74,9 @@ Full registry: [`docs/concept-taxonomy.md` → Data Engineering section](../conc
 | Mock-only hard | `hard.json` with `mock_only: true` | Multi-system scenarios under cost / SLA / compliance pressure. `EXACTLY-ONCE`, `LINEAGE & OBSERVABILITY`, `INCIDENT RESPONSE`, `COST OPTIMIZATION`. |
 | Mock-only chain | parent + 1–3 follow-ups | Pivots: scale (throughput 100×), business rule (compliance requires GDPR exclusion), data quality (schema drift), performance (cost spike), ambiguity (is this batch or streaming?). |
 
-**Easy mock-only: never.**
+**Easy mock-only: never.** Easy is practice-only.
+
+**Practice teaches, mock-only stress-tests transfer.** The difference is framing and incident realism, not new concepts. A mock-only question recombines DE reasoning the practice bank already teaches at that difficulty (or lower), anchored in a fresh incident or production scenario; it must not clone an existing practice question and must not introduce a concept family the curriculum never taught. If a mock would need an untaught concept, author the practice question first.
 
 ## Anti-patterns specific to DE
 

@@ -44,6 +44,16 @@ Samples in `backend/content/pyspark_questions/sample/` use `4XS` 3-digit IDs.
 
 If a hard question's distractors are not all plausible — if a competent practitioner immediately eliminates two — the question is medium dressed as hard.
 
+### Representative scenarios per tier
+
+Difficulty controls reasoning depth, never licenses default-value or API-signature recall. Even easy questions are anchored in a realistic Spark situation an engineer would actually reason through.
+
+| Tier | Representative scenarios |
+|---|---|
+| **Easy** | Predict the output of a `filter`/`select`/`withColumn` chain · trace lazy vs eager evaluation · spot the `AnalysisException` cause · narrow-vs-wide classification on a real snippet. Mental execution tracing, scenario-anchored. |
+| **Medium** | "This job shuffles three times — why?" · `repartition` vs `coalesce` for a given write · broadcast-join eligibility for a given size · Delta MERGE / schema-evolution behaviour. Two defensible options, one better. |
+| **Hard** | AQE skew-join coalescing under a real DAG · salting a hot key · pandas-UDF memory model vs regular UDF · watermark behaviour with late data · Z-ordering vs partition pruning trade-off. Production-grade multi-factor trade-off, all distractors plausible. |
+
 ## Concept arc (early → late)
 
 | Tier | Progression |
@@ -66,6 +76,8 @@ Three families are shared with the SQL and Pandas tracks under identical names (
 
 Two cross-track families are **intentionally not** added to PySpark: `METRIC INTERPRETATION & DENOMINATOR CHOICE` (PySpark tests Spark execution reasoning, not business-metric interpretation) and `PERFORMANCE-AWARE ANALYTICS` (PySpark already has 6+ performance-focused families covering this space). See the taxonomy doc's PySpark section for the rationale.
 
+**These three shared families currently have no question coverage** — they surface reasoning the bank only had implicitly. They are *practice-curriculum targets*, not mock material. Under the mock-only rule (no unseen concepts), establish them in **practice first** (Phase 2 remap + new practice authoring) before any mock-only content recombines them.
+
 ## Authoring allocation matrix
 
 | Question kind | Where | When |
@@ -77,7 +89,9 @@ Two cross-track families are **intentionally not** added to PySpark: `METRIC INT
 | Mock-only hard | `hard.json` with `mock_only: true` | AQE / skew / streaming-watermark scenarios. `DATA SKEW & MITIGATION`, `ADAPTIVE QUERY EXECUTION`, `STRUCTURED STREAMING`. |
 | Mock-only chain | parent + 1–3 follow-ups | Pivots: scale (cluster size cut in half), business rule (now exactly-once required), data quality (late events), performance (eliminate shuffle X). |
 
-**Easy mock-only: never.**
+**Easy mock-only: never.** Easy is practice-only.
+
+**Practice teaches, mock-only stress-tests transfer.** The difference is framing and realism, not new execution concepts. A mock-only question recombines Spark-execution reasoning the practice bank already teaches at that difficulty (or lower), anchored in a fresh failure mode or production scenario; it must not clone an existing practice question and must not introduce a concept family the curriculum never taught. If a mock would need an untaught concept, author the practice question first.
 
 ## Anti-patterns specific to PySpark
 

@@ -10,6 +10,8 @@
 
 If a family fails either test, it doesn't belong here. We are **not** building a textbook curriculum. We are surfacing the reasoning patterns serious practitioners and serious interviewers care about.
 
+> **⚡ gap families have zero coverage today.** Families marked `⚡ *real-world gap*` were added by the 2026-05 refactor to surface reasoning the bank previously had only *implicitly* — as of this writing **no question (practice or mock) is tagged to any of them**. They are **practice-curriculum targets**, not mock material. Per the locked mock-only rule (mock introduces no unseen concept — see [`docs/content-authoring.md`](content-authoring.md#what-separates-practice-from-mock-only)), each ⚡ family must be **established in practice first** — via the Phase 2 remap (re-tagging existing questions whose reasoning already fits) and new practice authoring — before any mock-only content recombines it. Do not author mock-only content that leans on a ⚡ family until that track's practice bank teaches it.
+
 ---
 
 ## How this file is used
@@ -54,6 +56,8 @@ For each `tag` in a question's `concepts` array, find its family by trying in or
 Used by every track's mock-only follow-up chains. Each follow-up in a chain must carry a `follow_up_dimension` value from this list; consecutive follow-ups in a chain must use different dimensions (no two `scale_pivot` follow-ups in a row).
 
 Full chain mechanics live in [`docs/features/mock.md`](features/mock.md#follow-up-chain-atomicity-proelite--mock-only-content). This taxonomy is the universal vocabulary used across all tracks.
+
+The five most common pivots — `scale_pivot`, `business_rule_pivot`, `ambiguity_pivot`, `edge_case_pivot`, `performance_pivot` — cover the bulk of natural interviewer escalations. `data_quality_pivot` (dirtier data than implied — distinct from `edge_case_pivot`) and `stakeholder_pivot` (a human with a different agenda changes the delivery) round out the set. A follow-up escalates **exactly one** dimension at a time; that single-axis escalation is what makes a chain feel like an interviewer extending the discussion rather than a new question.
 
 ### `scale_pivot`
 The numbers change by an order of magnitude. The question itself doesn't morph; the answer's shape does.
@@ -275,7 +279,7 @@ A real human with a different agenda enters the picture. The technical answer do
 **What it tests:** picking the right metric definition under ambiguous business framing, choosing the right denominator for rates/ratios, recognising when "active user" or "revenue" or "session" has multiple defensible definitions.
 **Typical question shape:** Mock-only ambiguity-pivot follow-ups; questions where the description deliberately leaves the metric definition open and the answer hinges on what the candidate picks and why.
 **Member tags (canonical):** `ACTIVE-USER DEFINITION`, `REVENUE BASIS CHOICE`, `DENOMINATOR SELECTION`, `RATE BASE NORMALIZATION`, `AMBIGUOUS METRIC`
-**Why this is new:** the existing bank had this implicit (questions about "active users" or "revenue including/excluding refunds") but never tagged the *reasoning* as a family. Mock content sized for Interview Loop will lean heavily on this family.
+**Why this is new:** the existing bank had this implicit (questions about "active users" or "revenue including/excluding refunds") but never tagged the *reasoning* as a family. **Currently zero coverage** — establish it in the practice curriculum first (Phase 2 remap + new practice authoring); only then may mock-only recombine it (mock introduces no unseen concept).
 
 #### `DATA QUALITY SKEPTICISM` ⚡ *new family — real-world gap*
 **What it tests:** noticing duplicates that shouldn't be there, finding orphan records, recognising suspicious NULLs, validating row counts against source-of-truth, anti-join reconciliation as a debugging tool.
@@ -301,7 +305,7 @@ A real human with a different agenda enters the picture. The technical answer do
 **Typical question shape:** Mock-only scenarios where the candidate must defend why their answer is right (or, in debug variants, why an apparently-correct-looking answer is wrong because it failed a sanity check).
 **Match patterns:** `SANITY`, `OUTPUT VALIDATION`, `ROW COUNT CHECK`, `OUTPUT SANITY`, `PLAUSIBILITY CHECK`
 **Member tags (canonical):** `OUTPUT SANITY VALIDATION`, `RESULT PLAUSIBILITY CHECK`, `ROW COUNT SANITY`, `NULL COVERAGE SANITY`
-**Why this is new:** sanity-checking your own work is the discipline that separates senior practitioners from junior ones. The bank had no family teaching this explicitly — questions either had right answers or wrong answers, with no surface for "did you verify your own output?" Mock-only content should lean here.
+**Why this is new:** sanity-checking your own work is the discipline that separates senior practitioners from junior ones. The bank had no family teaching this explicitly — questions either had right answers or wrong answers, with no surface for "did you verify your own output?" **Currently zero coverage** — teach it in practice first (Phase 2); mock-only may recombine it only once practice does, never as an unseen concept.
 
 #### `PERFORMANCE-AWARE ANALYTICS` ⚡ *new family — real-world gap*
 **What it tests:** choosing the more efficient analytical approach without sacrificing correctness — avoiding unnecessary table scans, reducing cardinality explosion before joins, minimising repeated computation across CTEs, picking the simpler correct approach over the clever expensive one. **This is analytical reasoning about cost, not engine-optimisation trivia.**
@@ -983,6 +987,7 @@ The `validate_content.py` script (Phase 2 work item) must enforce:
 4. **No mock-only-specific families in practice content.** If we add follow-up-only families later (e.g. families that only make sense in chain follow-ups), they must be tagged as `mock_only=true` in the registry.
 5. **Chain `follow_up_dimension` must be from the 7-dimension list.** Anything else crashes catalog load.
 6. **Consecutive `follow_up_dimension` values within a chain must differ.** Validator flags two scale_pivots in a row.
+7. **Mock-only introduces no unseen concept families.** Every family a `mock_only: true` question (or chain) tests must already appear in the practice bank for that track at that difficulty or lower. Mock-only recombines learned reasoning under fresh framing; it never debuts a concept the curriculum skipped. (Differentiation is framing/realism/ambiguity, not concept novelty — see [`docs/content-authoring.md`](content-authoring.md#what-separates-practice-from-mock-only).)
 
 These validators are the discipline. They are intentionally strict: the cost of catalog-load-crash on a bad tag is small (the author fixes it before commit); the cost of accumulated tag drift is large (we just paid it).
 

@@ -41,6 +41,16 @@ Samples for Statistics are auto-sliced from the first 3 practice questions per d
 | **Medium** | CLT, sampling distributions, confidence intervals for means, hypothesis-testing basics, Type I/II, power, correlation vs causation, A/B-test setup, sample-size estimation, Bayes basics, Law of Large Numbers, Poisson | Building CIs, running t-tests, computing power, sampling demonstrations |
 | **Hard** | Bayesian posterior calculation, multiple comparisons (Bonferroni / FDR), Simpson's paradox, power analysis with effect size, regression interpretation, bootstrap, MLE, chi-squared, ANOVA, survival analysis, variance decomposition | Bayesian updates by code, bootstrap CIs, MLE for non-trivial distributions, regression coefficient interpretation, ANOVA decomposition |
 
+### Representative scenarios per tier
+
+Difficulty controls reasoning depth, never licenses formula recall. Even easy questions ask what a number *means*, not just how to compute it.
+
+| Tier | Representative scenarios |
+|---|---|
+| **Easy** | Interpret a z-score for a single observation · conditional probability of an event from a described setup · what a mean/median gap implies · compute a single-distribution probability. One concept, unambiguous. |
+| **Medium** | Build a CI for a conversion rate · choose t vs z for a given sample · estimate sample size for an A/B test · separate correlation from causation in a real claim. Reasoning over inference tools. |
+| **Hard** | "PM ran 8 tests, one hit p<0.05" (multiple comparisons) · diagnose Simpson's paradox in segmented data · Bayesian posterior under a stated prior · bootstrap CI for a skewed metric. Production-grade statistical judgement. |
+
 ## Concept arc (early → late)
 
 | Tier | Progression |
@@ -68,7 +78,9 @@ Same concept families apply to both subtypes. A `central limit theorem` question
 | Mock-only hard | `hard.json` with `mock_only: true` | Match practice mix | Bayesian decision-making under conflicting priors; power-vs-effect-size argued under business pressure. |
 | Mock-only chain | parent + 1–3 follow-ups | Match practice mix per question | Pivots: ambiguity (PM wants a simpler answer), data quality (5% MNAR), business rule (definition changed), scale (10× more samples). Chains may stay subtype-pure (all conceptual or all numerical) for coherence. |
 
-**Easy mock-only: never.**
+**Easy mock-only: never.** Easy is practice-only.
+
+**Practice teaches, mock-only stress-tests transfer.** The difference is framing and realism, not new concepts. A mock-only question recombines statistical reasoning the practice bank already teaches at that difficulty (or lower), anchored in a fresh applied scenario; it must not clone an existing practice question and must not introduce a concept family the curriculum never taught. If a mock would need an untaught concept, author the practice question first.
 
 ## Anti-patterns specific to Statistics
 

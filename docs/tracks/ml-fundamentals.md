@@ -38,6 +38,16 @@ ML samples are auto-sliced from the first 3 practice questions per difficulty.
 | **Medium** | Trade-off reasoning; distractors are tempting | Ensembles, class imbalance, dimensionality reduction, calibration, leakage detection, boosting mechanics, feature importance interpretation |
 | **Hard** | Multi-factor production trade-offs; all distractors plausible | Neural network design choices, gradient pathology (vanishing / exploding), transfer learning, monitoring + drift detection, deployment constraints, training-serving skew |
 
+### Representative scenarios per tier
+
+Difficulty controls reasoning depth, never licenses algorithm-name trivia. Even easy questions test what a result *tells you*, not the calculation.
+
+| Tier | Representative scenarios |
+|---|---|
+| **Easy** | Read a learning curve for over/underfitting · pick a metric for an imbalanced classifier · why feature scaling matters for a given model · supervised vs unsupervised for a stated task. One concept, one right answer. |
+| **Medium** | Choose an imbalance strategy for a described dataset · spot leakage in a pipeline · interpret feature importance · calibration for a probability output. Trade-off with tempting distractors. |
+| **Hard** | "95% in eval, 70% in prod — why?" (training-serving skew) · gradient pathology in a deep net · drift-monitoring choice · deployment latency/memory trade-off. Production-grade multi-factor judgement. |
+
 ## Concept arc (early → late)
 
 | Tier | Progression |
@@ -63,7 +73,9 @@ Full registry: [`docs/concept-taxonomy.md` → ML Fundamentals section](../conce
 | Mock-only hard | `hard.json` with `mock_only: true` | Deep-net / deployment / drift scenarios. `GRADIENT PATHOLOGY`, `DEPLOYMENT CONSTRAINTS`, `INTERPRETABILITY TRADEOFF`. |
 | Mock-only chain | parent + 1–3 follow-ups | Pivots: scale (10× more training data), business rule (label def changes), data quality (10% noisy labels), edge case (rare class with 12 examples), performance (50ms latency budget), stakeholder (risk team blocks deployment). |
 
-**Easy mock-only: never.**
+**Easy mock-only: never.** Easy is practice-only.
+
+**Practice teaches, mock-only stress-tests transfer.** The difference is framing and production realism, not new concepts. A mock-only question recombines ML reasoning the practice bank already teaches at that difficulty (or lower), anchored in a fresh production or failure scenario; it must not clone an existing practice question and must not introduce a concept family the curriculum never taught. If a mock would need an untaught concept, author the practice question first.
 
 ## Anti-patterns specific to ML
 

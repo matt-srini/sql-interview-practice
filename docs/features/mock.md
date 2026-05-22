@@ -144,7 +144,7 @@ Plan-tier rules must be visible to the user, not buried in account settings. Req
 
 ## Follow-up Chain Atomicity (Pro/Elite — mock-only content)
 
-Follow-up chains are the platform's way of simulating real interviewer pivots — the moment a senior interviewer says "now exclude refunded orders" or "what if the dataset were 10× larger?" Every chain is anchored to a parent question and travels as an atomic unit.
+Follow-up chains are the platform's way of simulating real interviewer pivots — the moment a senior interviewer says "now exclude refunded orders" or "what if the dataset were 10× larger?" Every chain is anchored to a parent question and travels as an atomic unit. Chains recombine concepts the practice curriculum already taught (each follow-up escalating exactly one [dimension](../concept-taxonomy.md#the-7-universal-follow-up-dimensions-chain-pivots)); they never introduce an unseen concept — see the [practice-vs-mock-only basis](../content-authoring.md#what-separates-practice-from-mock-only).
 
 ### The atomicity rule (locked decision)
 

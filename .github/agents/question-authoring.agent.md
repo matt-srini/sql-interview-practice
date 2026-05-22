@@ -78,7 +78,9 @@ The agent's job is to *apply* the rules in these files, not to restate them. Whe
 
 A question is hard because the *reasoning* is layered, never because you bolted on unrelated requirements. **If you can make a question harder by removing a clarification, it was ambiguous, not hard.**
 
-Per-track difficulty vocabulary lives in each track's doc. Read the relevant one.
+**Every tier maps to realistic business work, never textbook drills.** Difficulty sets reasoning depth, never licenses toy exercises — even easy questions read like small real-world reporting / KPI tasks, not syntax-recall prompts. Each track doc lists *allowed business scenarios* per tier alongside allowed constructs; the construct list bounds the tools, the scenario list bounds the feel. Both gate the question.
+
+Per-track difficulty vocabulary and allowed business scenarios live in each track's doc. Read the relevant one.
 
 ---
 
@@ -167,13 +169,16 @@ Anti-patterns: H1 reading like the first line of the solution; pasting code / me
 
 ## Mock-only authoring contract
 
-`mock_only: true` makes a question exclusive to mock interview sessions (Pro/Elite). It never appears in the practice catalog. Purpose: a genuinely fresh, unseen pool.
+`mock_only: true` makes a question exclusive to mock interview sessions (Pro/Elite). It never appears in the practice catalog.
 
 Full plan-tier matrix and chain mechanics: [`docs/features/mock.md`](../../docs/features/mock.md).
 
+**Practice vs mock-only is about framing, not new concepts.** Practice teaches reasoning patterns with clean, pedagogical framing. Mock-only **recombines already-taught concepts** under production-realistic framing — mild ambiguity, evolving requirements, edge cases, dirty data — to test whether the learned reasoning *transfers*. A mock should feel like a real interviewer extending the discussion naturally, not a brand-new topic and not an artificial puzzle escalation.
+
 Summary:
-- **Allocate IDs at the top of the difficulty range, after the last practice question. Never at easy.**
-- **Content cap:** ≤ 15% of a mock batch may reinforce a concept family already in the practice bank at that difficulty. The other 85%+ must cover fresh business / engineering angles.
+- **Allocate IDs at the top of the difficulty range, after the last practice question. Never at easy** — easy is practice-only; mock-only is medium/hard only.
+- **No unseen concepts.** Every concept family a mock-only question tests must already appear in the practice bank for that track at that difficulty or lower. Mock-only adds no new families.
+- **Anti-duplication rule.** A mock-only question must not clone an existing practice question's framing. Recombine the same learned concepts in a fresh business scenario (different KPI, time window, relationship, stakeholder pressure, dirty-data condition). If a mock would require a concept the curriculum skipped, author the practice question first.
 - **Chain authoring rules:**
   - Parent (`follow_ups: [child_id, ...]`) and each child (`mock_only: true`, `parent_id`, `follow_up_dimension`) live in the same difficulty file
   - Chain length 2–4 (parent + 1–3 follow-ups)
@@ -246,6 +251,6 @@ Track-specific runtime checks live in each track doc's "Verification before comm
 - [ ] No invented columns / tables; schema matches CSV headers; DuckDB syntax (SQL); pandas-idiomatic (Pandas)
 - [ ] Hints follow the ladder; first hint does not leak the answer term
 - [ ] Concept tags map to registered families per track; none blocklisted; 2–4 tags
-- [ ] If `mock_only`: ≤15% concept overlap with practice; chain rules satisfied (dimensions, atomicity, length, ordering); reverse / debug / scenario rules satisfied
+- [ ] If `mock_only`: no unseen concept families (every family already taught in practice at that difficulty or lower); recombines learned concepts in a fresh business scenario, not a clone of a practice question's framing; chain rules satisfied (dimensions, atomicity, length, ordering); reverse / debug / scenario rules satisfied
 - [ ] Verification commands above pass clean
 - [ ] Output is valid JSON only (improvements: JSON + a short change-rationale list after it)

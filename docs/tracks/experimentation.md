@@ -38,6 +38,16 @@ Experimentation samples are auto-sliced from the first 3 practice questions per 
 | **Medium** | Trade-off; tempting distractors | Multiple testing, sample-ratio mismatch (SRM), novelty effects, variance reduction (CUPED), network effects, segmentation analysis |
 | **Hard** | Multi-factor; all distractors plausible | Causal inference (IV, propensity scoring, RDD), switchback experiments, Bayesian experimentation, multi-armed bandit, holdout groups, quasi-experimental methods |
 
+### Representative scenarios per tier
+
+Difficulty controls reasoning depth, never licenses formula or tool-name recall. Even easy questions are anchored in a real experiment decision.
+
+| Tier | Representative scenarios |
+|---|---|
+| **Easy** | Formulate a hypothesis + metric for a feature · what Type I/II error means for this test · basic power intuition · pick a primary metric for a stated goal. One concept, clear right answer. |
+| **Medium** | Diagnose a sample-ratio mismatch · correct for multiple testing · spot a novelty effect in a read · apply CUPED for variance reduction. Trade-off with tempting distractors. |
+| **Hard** | Pick a causal method when randomization is impossible · design a switchback for network effects · Bayesian vs frequentist read under business pressure · holdout-group design. Multi-factor, all distractors plausible. |
+
 ## Concept arc (early → late)
 
 | Tier | Progression |
@@ -63,7 +73,9 @@ Full registry: [`docs/concept-taxonomy.md` → Experimentation section](../conce
 | Mock-only hard | `hard.json` with `mock_only: true` | Causal / switchback / bandit / Bayesian-vs-frequentist debate. `CAUSAL INFERENCE`, `SWITCHBACK EXPERIMENTS`, `BAYESIAN EXPERIMENTATION`, `QUASI-EXPERIMENTAL METHODS`. |
 | Mock-only chain | parent + 1–3 follow-ups | Pivots: business rule (success metric changes mid-experiment), data quality (tracking gap), edge case (one arm got 1% by accident), stakeholder (leadership wants to ship despite inconclusive). |
 
-**Easy mock-only: never.**
+**Easy mock-only: never.** Easy is practice-only.
+
+**Practice teaches, mock-only stress-tests transfer.** The difference is framing and stakeholder realism, not new concepts. A mock-only question recombines experimentation reasoning the practice bank already teaches at that difficulty (or lower), anchored in a fresh real-world experiment scenario; it must not clone an existing practice question and must not introduce a concept family the curriculum never taught. If a mock would need an untaught concept, author the practice question first.
 
 ## Anti-patterns specific to Experimentation
 

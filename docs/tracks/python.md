@@ -48,6 +48,16 @@ Samples in `backend/content/python_questions/sample/` use `2XS` 3-digit IDs.
 
 If a question's hardness comes from "you have to remember to handle the empty case AND the duplicates case AND the negative case AND..." — that's not hard, that's accumulation. Find the *one* pattern that's actually demanding.
 
+### Representative tasks per tier
+
+Difficulty controls reasoning depth, never licenses puzzle trivia. Even easy questions should read like a small real engineering task, not "reverse a string by Fibonacci(n)".
+
+| Tier | Representative tasks |
+|---|---|
+| **Easy** | Count/frequency over a feed · dedupe a list of records · parse a log line · find the first unique element · basic running totals · simple membership checks. Realistic micro-tasks an engineer actually writes. |
+| **Medium** | Sliding-window over an event stream · sessionize events with two pointers · top-K frequent items · merge/schedule intervals · binary search over an answer space (min capacity / rate). Real engineering framing, one named pattern applied non-obviously. |
+| **Hard** | Design an LRU cache · median-from-stream · dependency resolution (topological order) · shortest path over a state graph · rate limiter as an algorithmic problem. Senior, system-flavoured decomposition with a non-obvious data-structure choice. |
+
 ## Concept arc (early → late)
 
 | Tier | Progression |
@@ -73,7 +83,9 @@ Full registry: [`docs/concept-taxonomy.md` → Python section](../concept-taxono
 | **Mock-only hard** | `hard.json` with `mock_only: true` | System-design-flavoured (design LRU, design rate limiter as algorithmic problem). Targets `GRAPH TRAVERSAL`, `DYNAMIC PROGRAMMING (2D)`. |
 | **Mock-only chain** | Parent + 1–3 follow-ups, all `mock_only: true` | Natural pivots: scale (10⁸ input), business rule (now ignore X), data quality (handle Nones), edge case (empty input), performance (O(n²) → O(n log n)) |
 
-**Easy mock-only: never.** Same rule as SQL.
+**Easy mock-only: never.** Easy is practice-only.
+
+**Practice teaches, mock-only stress-tests transfer.** The difference is framing and realism, not new patterns. A mock-only question recombines patterns the practice bank already teaches at that difficulty (or lower) under fresh, production-realistic framing — it must not clone an existing practice question and must not introduce an algorithmic pattern the curriculum never taught. If a mock would need an untaught pattern, author the practice question first.
 
 ## Anti-patterns specific to Python
 
