@@ -2309,7 +2309,7 @@
     "solution_query": "WITH user_revenue AS (\n  SELECT user_id,\n         SUM(net_amount) AS total_revenue\n  FROM orders\n  WHERE status = 'completed'\n  GROUP BY user_id\n),\nuser_purchases AS (\n  SELECT user_id,\n         COUNT(*) AS purchase_events\n  FROM events\n  WHERE event_name = 'purchase'\n  GROUP BY user_id\n)\nSELECT ur.user_id,\n       ur.total_revenue,\n       COALESCE(up.purchase_events, 0) AS purchase_events\nFROM user_revenue ur\nLEFT JOIN user_purchases up ON ur.user_id = up.user_id\nORDER BY ur.total_revenue DESC, ur.user_id ASC\nLIMIT 10;",
     "explanation": "Joining orders to events directly before aggregating creates a cross between every order row and every event row for the same user. With ~85 events per user on average, this inflates net_amount roughly 85\u00d7 for each user. The correct architecture is two independent CTEs \u2014 one that aggregates revenue at the user grain, one that aggregates event counts at the user grain \u2014 then a LEFT JOIN on user_id to combine them. The LEFT JOIN preserves users who have revenue but zero purchase events; COALESCE handles the NULL that arises when no matching event row exists.",
     "hints": [
-      "Compute each metric in a separate CTE before combining \u2014 the moment you join orders to events in a single FROM clause, every order fans out against every event for that user.",
+      "When a user has multiple orders and multiple events, joining those tables directly multiplies rows \u2014 each order pairs with every event, inflating both metrics. Compute each metric in isolation before combining.",
       "Pre-aggregate both CTEs to the user grain, then join them on user_id; the result is one row per user with both metrics correct.",
       "LEFT JOIN the purchases CTE so users with no purchase events still appear; use COALESCE to substitute 0 for the NULL purchase_events."
     ],
@@ -2366,7 +2366,7 @@
     "enforce_concepts": true,
     "explanation": "First CTE computes product-level revenue within the time window. Second CTE joins to products and applies DENSE_RANK() OVER (PARTITION BY brand ORDER BY revenue DESC) to rank products within each brand. WHERE brand_rank = 1 keeps only the top product per brand \u2014 DENSE_RANK handles ties by giving tied products the same rank (both would appear at rank 1).",
     "hints": [
-      "Compute per-product revenue in a CTE first, then join to get brand and apply the window function.",
+      "Each product's total revenue must be computed first \u2014 you cannot determine position within a brand group until you have the per-product totals to compare.",
       "DENSE_RANK means two products with equal revenue both get rank 1 \u2014 they both appear in the output."
     ],
     "concepts": [
@@ -2413,7 +2413,7 @@
     "enforce_concepts": true,
     "explanation": "Two CTEs compute independent totals: order_totals aggregates completed order net_amounts; payment_totals joins payments to orders to get user_id, then sums paid amounts. A LEFT JOIN from order_totals to payment_totals preserves users with no paid payments (COALESCE turns their NULL to 0). The discrepancy uses ABS() so over- and under-payment are both surfaced. WHERE discrepancy > 1 uses a tolerance of \u00a41 to ignore floating-point rounding.",
     "hints": [
-      "Build two separate CTEs \u2014 one for order totals, one for payment totals \u2014 then LEFT JOIN them so users with no payments still appear.",
+      "When reconciling two tables, keep each one intact until you are ready to compare \u2014 silently dropping rows that exist in one but not the other would hide the discrepancies you are trying to surface.",
       "COALESCE(payment_sum, 0) handles users who have completed orders but no paid payments."
     ],
     "concepts": [
@@ -2459,7 +2459,7 @@
     "enforce_concepts": true,
     "explanation": "The first CTE computes per-user per-month average order value. The second applies LAG(1) and LAG(2) partitioned by user_id and ordered by month to bring in the prior two months' AOVs alongside the current. The WHERE checks all three descend: current < prev < prev2. The IS NOT NULL guard ensures we have at least 3 months of history. DISTINCT removes users who appear multiple times if they have multiple qualifying windows.",
     "hints": [
-      "Use LAG with offset 1 and offset 2 to bring the previous two months' values into the same row.",
+      "Detecting three consecutive declining months requires comparing each month against the two prior months in the same row \u2014 think about how to pull those prior values alongside the current row.",
       "Add IS NOT NULL on prev2_aov to ensure 3 months of history exist \u2014 otherwise the first two months will always pass the condition vacuously."
     ],
     "concepts": [
@@ -2507,7 +2507,7 @@
     "enforce_concepts": true,
     "explanation": "LEFT JOIN retains orders even when there are no payment rows. COUNT(payment_id) counts all payment attempts (0 when no rows joined). COUNT(CASE WHEN status='paid') counts successful ones. HAVING keeps only orders where the paid count is zero \u2014 meaning completed orders that never got a paid payment. This is a classic data integrity check: status fields in one table contradicted by absence of evidence in another.",
     "hints": [
-      "Use LEFT JOIN so orders with no payments at all are included \u2014 INNER JOIN would exclude them.",
+      "Finding records that are absent in another table requires an approach that explicitly surfaces the non-matching case \u2014 not one that silently drops those rows.",
       "HAVING COUNT(CASE WHEN p.status = 'paid' THEN 1 END) = 0 filters after aggregation \u2014 it can't go in WHERE because it depends on the aggregate."
     ],
     "concepts": [
@@ -2546,7 +2546,7 @@
     "enforce_concepts": true,
     "explanation": "Four CTEs build up the classification: (1) distinct user-month activity pairs; (2) LAG to get each user's previous active month; (3) MIN month per user (to detect 'new'); (4) CASE to assign user_type based on whether it's their first month, whether prev_month is absent or > 60 days ago. Date subtraction (date1 - date2) in DuckDB returns an integer number of days, enabling the 60-day gap check without strftime or epoch conversion.",
     "hints": [
-      "Use LAG(active_month) partitioned by user_id to get the previous month \u2014 then subtract dates as DATE types to get the day gap.",
+      "To classify each month's activity as new, retained, or returned, you need to know whether the user was active in the prior month \u2014 consider how to look back one row within each user's ordered timeline.",
       "A user with NULL prev_month who is not in their first_month is a returning user \u2014 their activity gap extends back before your data window."
     ],
     "concepts": [
@@ -2681,7 +2681,7 @@
     "enforce_concepts": true,
     "explanation": "PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY distinct_buyers) computes the median across all product buyer counts. CROSS JOIN attaches this single value to every product row. The WHERE clause then filters to products exceeding it. This is a scalar subquery pattern \u2014 CROSS JOIN a one-row CTE is equivalent to a scalar subquery in the WHERE clause but makes the median visible in the output.",
     "hints": [
-      "PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY ...) computes the continuous median \u2014 it's the SQL standard function for medians.",
+      "The comparison requires a single benchmark value \u2014 the median buyer count across all products. SQL has an ordered-set aggregate function that computes this directly.",
       "CROSS JOIN the median CTE (one row) so you can reference it in both SELECT and WHERE without repeating the subquery."
     ],
     "concepts": [
@@ -2728,7 +2728,7 @@
     "enforce_concepts": true,
     "explanation": "The CTE finds sessions with at least one completed order within 24 hours by joining on user_id with a time-range condition on order_date (cast to TIMESTAMP to match session_start type). GROUP BY session_id deduplicates so each session appears once. The main query LEFT JOINs sessions to session_purchases so unconverted sessions still count in total_sessions. Conversion rate uses COUNT(DISTINCT sp.session_id) which is 0 when sp.session_id is NULL.",
     "hints": [
-      "The join between sessions and orders must include both user_id match AND a time window condition on order_date \u2014 not just user_id.",
+      "Linking a session to an order requires more than the same user \u2014 the order must also fall within a specific time window after the session started.",
       "GROUP BY session_id in the CTE deduplicates \u2014 a session is either converted or not, regardless of how many orders the user placed."
     ],
     "concepts": [
@@ -2773,7 +2773,7 @@
     "enforce_concepts": true,
     "explanation": "The CTE uses HAVING COUNT(*) >= 5 to pre-filter to power users \u2014 these users are a small subset of the full user base. The main query then joins to users for plan_tier and aggregates at the tier level. avg_orders averages per-user order counts (not total orders / users \u2014 that would be the same thing here, but the CTE makes it explicit). segment_revenue is the cohort's total spend, a useful size signal.",
     "hints": [
-      "Filter to power users in a CTE using HAVING COUNT(*) >= 5 before joining \u2014 this keeps the main query clean.",
+      "Isolate the qualifying users before computing per-tier counts \u2014 pre-filtering to the target population keeps the final aggregation clean.",
       "avg_orders averages the per-user order count from the CTE \u2014 not raw COUNT(*) in the outer GROUP BY."
     ],
     "concepts": [
@@ -2830,7 +2830,7 @@
     "enforce_concepts": true,
     "explanation": "Four CTEs build up the answer: (1) per-user-category-quarter spend via a 4-table join; (2) ROW_NUMBER() within each user-quarter by spend DESC, category_name ASC (alphabetical tie-breaking) to assign rank; (3 & 4) extract rank-1 category for Q1 and Q2. The final JOIN keeps only users present in both quarters, and WHERE ... <> filters to those who shifted categories. ROW_NUMBER() (not DENSE_RANK) ensures exactly one winner per user-quarter.",
     "hints": [
-      "Use ROW_NUMBER() not DENSE_RANK \u2014 you want exactly one winner per user per quarter, even if two categories are tied.",
+      "When ranking to select exactly one winner per group, consider whether ties should both make the cut or only one should \u2014 that choice determines which ranking approach is correct.",
       "Add category_name ASC as a secondary sort in the window function to break ties deterministically \u2014 the question says 'alphabetically first'."
     ],
     "concepts": [
@@ -2875,7 +2875,7 @@
     "enforce_concepts": true,
     "explanation": "LEAD(order_day) OVER (PARTITION BY user_id ORDER BY order_day) attaches the NEXT order date alongside the current one in the same row. Subtracting DATEs in DuckDB returns an integer (days). The WHERE filters to gaps >= 90 days and excludes the last order per user (where LEAD returns NULL). The DISTINCT isn't strictly needed if each (user_id, order_day) pair is unique, but it protects against duplicate orders on the same day.",
     "hints": [
-      "LEAD() is the forward-looking counterpart to LAG() \u2014 it brings the next row's value into the current row.",
+      "To detect reactivation, you need to compare each order's date against the next order for that user \u2014 look forward in the user's ordered sequence, not backward.",
       "DATE subtraction in DuckDB returns an integer (number of days), so (next_order_day - order_day) >= 90 works directly."
     ],
     "concepts": [
@@ -2920,7 +2920,7 @@
     "enforce_concepts": true,
     "explanation": "Joining users to support_tickets links the demographic dimensions (country, plan_tier) to the operational metric (resolution_hours). COUNT(DISTINCT user_id) counts unique users \u2014 one user can file multiple tickets. HAVING COUNT(ticket_id) >= 5 removes thin segments where averages are unstable. avg_resolution_hours includes NULL values in the AVG denominator reduction \u2014 tickets with no resolution_hours are excluded from the average by SQL's default NULL handling in AVG.",
     "hints": [
-      "COUNT(DISTINCT user_id) counts unique users who filed tickets \u2014 COUNT(*) would count tickets, not users.",
+      "The metric is the number of users who filed tickets, not the number of tickets \u2014 a user who filed multiple tickets should count once.",
       "HAVING filters on total ticket count after grouping \u2014 it belongs after GROUP BY, not in WHERE."
     ],
     "concepts": [
@@ -3027,7 +3027,7 @@
     "enforce_concepts": true,
     "explanation": "The CTE computes per-user LTV using LEFT JOIN so users with no orders get 0 (via COALESCE). The main query then computes two averages: avg_ltv_paying uses CASE WHEN lifetime_value > 0 inside AVG \u2014 SQL's NULL handling means 0-LTV users are excluded from AVG automatically since they're filtered by the CASE. avg_ltv_all divides total revenue by all users (the 'blended' LTV used in growth modelling). These two denominators tell different stories about channel quality.",
     "hints": [
-      "LEFT JOIN in the CTE \u2014 not INNER JOIN \u2014 ensures users with no orders appear with lifetime_value = 0.",
+      "Your denominator includes all users who signed up through each channel, not just those who made a purchase \u2014 the combination must preserve non-buyers so they contribute to the channel count.",
       "avg_ltv_paying uses CASE WHEN lifetime_value > 0 THEN lifetime_value END inside AVG \u2014 CASE returns NULL for 0-LTV users, and SQL's AVG automatically excludes NULLs."
     ],
     "concepts": [
@@ -3075,7 +3075,7 @@
     "enforce_concepts": true,
     "explanation": "The first CTE holds user signup dates. The second computes each user's first completed purchase date using MIN. The LEFT JOIN retains all users (including those who never purchased). The CASE WHEN checks whether the date gap is <= 7 (DATE subtraction returns integer days in DuckDB). COUNT(DISTINCT user_id) inside the CASE ensures each user is counted once even if the CASE matches multiple times.",
     "hints": [
-      "Compute each user's first purchase date in a CTE using MIN(order_date) \u2014 then LEFT JOIN so non-purchasers show up with NULL first_order_date.",
+      "Conversion rates require non-converters in the denominator \u2014 the approach must keep users who never purchased in the result, not silently exclude them.",
       "DATE subtraction (first_order_date - signup_date) returns an integer in DuckDB \u2014 no DATEDIFF needed."
     ],
     "concepts": [
@@ -3181,7 +3181,7 @@
     "enforce_concepts": true,
     "explanation": "Four-table join: orders \u2192 users (country), orders \u2192 order_items (revenue), order_items \u2192 products (name). COUNT(DISTINCT order_id) counts unique orders \u2014 if an order has two line items for the same product, COUNT(*) would over-count orders. SUM(line_amount) correctly sums all line item revenue including duplicates within an order. ORDER BY country then revenue DESC shows the top products first within each country.",
     "hints": [
-      "Use COUNT(DISTINCT order_id) for order_count \u2014 an order with two line items for the same product should count as one order.",
+      "When two tables are combined and rows multiply, a naive count inflates beyond the true number of original entities \u2014 think about how to count the source objects rather than the expanded row set.",
       "SUM(line_amount) is correct for revenue \u2014 it sums all line amounts across all qualifying rows."
     ],
     "concepts": [
@@ -3232,7 +3232,7 @@
     "enforce_concepts": true,
     "explanation": "After joining to order_items, each order appears once per line item \u2014 an order with 5 items produces 5 rows. COUNT(*) or COUNT(order_id) counts all those rows, inflating the order count by the average items-per-order. The fanout_inflation column makes this visible. This is the canonical example of the double-counting bug: a JOIN to a child table multiplies parent rows.",
     "hints": [
-      "COUNT(o.order_id) counts one row per order-item pair \u2014 COUNT(DISTINCT o.order_id) counts each order once. The difference is the fanout.",
+      "After joining orders to order_items, the row count expands \u2014 each order appears once per line item. Verify that your count measures orders rather than line items.",
       "The point of this query is to make the bug measurable \u2014 showing inflation = COUNT(*) - COUNT(DISTINCT) proves you understand the mechanism."
     ],
     "concepts": [
@@ -3283,7 +3283,7 @@
     "enforce_concepts": true,
     "explanation": "Three CTEs: product_revenue aggregates per-product, total computes the grand total, running adds a cumulative sum window. The WHERE condition (running_revenue - revenue < 0.8 \u00d7 total) includes a product if the cumulative total BEFORE this product was still under 80% \u2014 meaning this product's revenue is still 'within' the top 80% contribution group. This includes the product that crosses 80%.",
     "hints": [
-      "running_revenue - revenue is the cumulative total BEFORE this product is included \u2014 filter where that pre-product total is < 80% of overall revenue.",
+      "The 80% threshold test should be applied before the current product's revenue is added in \u2014 that way you include products that push the running total past the cutoff.",
       "CROSS JOIN a single-row CTE to attach the total revenue scalar to every product row."
     ],
     "concepts": [
@@ -3369,7 +3369,7 @@
     "enforce_concepts": true,
     "explanation": "CTE computes monthly aggregates including the success rate. The outer query applies LAG() OVER (PARTITION BY payment_method ORDER BY payment_month) to bring the prior month's rate alongside the current, then subtracts to get the change. PARTITION BY payment_method ensures LAG looks backwards within the same payment method only \u2014 without it, the lag would cross method boundaries.",
     "hints": [
-      "Compute monthly success rates in a CTE, then apply LAG in the outer query \u2014 window functions can't be nested directly.",
+      "Computing a period-over-period change requires two steps: calculate the per-period metric first, then compare each period to its predecessor in a separate pass.",
       "PARTITION BY payment_method in the LAG window ensures each method's timeline is independent \u2014 without it, the lag would cross method boundaries."
     ],
     "concepts": [
@@ -3408,7 +3408,7 @@
     "enforce_concepts": true,
     "explanation": "LAG(order_day) OVER (PARTITION BY user_id ORDER BY order_date) gives the previous order date alongside the current. WHERE prev_order_day IS NOT NULL excludes the first order per user (which has no predecessor) \u2014 these rows carry gaps. HAVING COUNT(*) >= 3 filters to users with at least 3 gaps (meaning at least 4 orders), ensuring the average is meaningful. DATE subtraction returns integer days.",
     "hints": [
-      "LAG gives the previous row's value \u2014 WHERE prev_order_day IS NOT NULL keeps only rows where a gap exists (excludes each user's first order).",
+      "The average inter-order gap requires bringing each order's predecessor date into the same row. Users' first orders have no predecessor \u2014 account for that in the filter.",
       "HAVING COUNT(*) >= 3 after WHERE excludes the first order \u2014 so it's checking the count of gap rows, not total orders."
     ],
     "concepts": [
@@ -3454,7 +3454,7 @@
     "enforce_concepts": true,
     "explanation": "NTILE(4) OVER (ORDER BY salary) assigns employees to 4 equal-size buckets globally (not per department). This is deliberate \u2014 the question asks for the global salary position. The CTE computes the quartile assignment; the outer query aggregates by department. top_quartile_count uses CASE WHEN to count only Q4 employees within each department, revealing which departments attract top-market salaries.",
     "hints": [
-      "NTILE(4) without PARTITION BY assigns quartiles globally across all employees \u2014 with PARTITION BY it would rank within each department separately. The question asks for global quartiles.",
+      "Quartiles can be computed globally or per department \u2014 determine which scope the question asks for before defining the window partition.",
       "The CTE attaches the quartile to each employee row; then GROUP BY department aggregates those rows."
     ],
     "concepts": [
@@ -3499,7 +3499,7 @@
     "enforce_concepts": true,
     "explanation": "ROW_NUMBER() assigns sequence positions within each user's order history. The second CTE pivots order_num=1 and order_num=2 into separate columns using MAX(CASE WHEN). Users with only one order get second_order = NULL. avg_days_to_reorder uses CASE WHEN inside AVG to exclude non-reorderers from the average \u2014 AVG automatically ignores NULLs, so CASE WHEN returning NULL for those users handles the exclusion.",
     "hints": [
-      "ROW_NUMBER() per user gives order sequence \u2014 then pivot order_num=1 and order_num=2 into columns using MAX(CASE WHEN).",
+      "First establish each order's position in the user's purchase history, then bring the first and second order dates into the same row for subtraction.",
       "CASE WHEN inside AVG returns NULL for users with no second order \u2014 AVG ignores NULLs, so only reorderers contribute to the average."
     ],
     "concepts": [
@@ -3546,7 +3546,7 @@
     "enforce_concepts": true,
     "explanation": "Single GROUP BY aggregation across multiple metric types: COUNT(DISTINCT brand) for diversity, COUNT(CASE WHEN is_active) for active inventory, MIN/MAX for price range. price_range = MAX - MIN directly in the SELECT avoids a self-join. active_pct divides by COUNT(product_id) (total products, including inactive) so the denominator is consistent with total_products.",
     "hints": [
-      "COUNT(CASE WHEN is_active = true THEN 1 END) counts active products \u2014 COUNT(*) would count all.",
+      "Active and total product counts can be computed in a single pass \u2014 a conditional expression can act as a filter inside an aggregation without requiring separate queries or multiple scans.",
       "price_range = MAX(price) - MIN(price) in a single SELECT \u2014 you don't need a subquery to compute both max and min."
     ],
     "concepts": [
@@ -3644,7 +3644,7 @@
     "enforce_concepts": true,
     "explanation": "COUNT(DISTINCT CASE WHEN event_name = 'view_product' THEN session_id END) counts unique sessions where this product was viewed \u2014 COUNT(DISTINCT session_id) without the CASE would count all event types. NULLIF(view_sessions, 0) guards against zero-view products (though WHERE view_sessions > 0 already filters them \u2014 NULLIF is defensive belt-and-suspenders practice). This is a funnel metric computed at the product level using session deduplication.",
     "hints": [
-      "COUNT(DISTINCT CASE WHEN event_name = 'view_product' THEN session_id END) counts unique sessions with a view event \u2014 the CASE WHEN inside DISTINCT is the key pattern.",
+      "When measuring reach for a specific event type, you need unique session counts \u2014 but only sessions in which that event occurred. A condition can be embedded inside an aggregation to avoid discarding unrelated rows.",
       "NULLIF(view_sessions, 0) prevents division-by-zero, though WHERE view_sessions > 0 already handles it \u2014 both guard the same edge case."
     ],
     "concepts": [
@@ -3730,7 +3730,7 @@
     "enforce_concepts": true,
     "explanation": "The CTE computes MAX(salary) per department. Joining it to employees gives each employee row their department's maximum alongside their own salary. The gap and gap_pct are arithmetic expressions in SELECT \u2014 no additional aggregation needed. An alternative using MAX() OVER (PARTITION BY department_id) achieves the same without a CTE, but the CTE approach makes the logic more explicit.",
     "hints": [
-      "Compute dept max in a CTE, then JOIN it back to employees \u2014 this puts dept_max_salary alongside each employee's individual salary in one row.",
+      "Each employee's salary gap requires knowing the department maximum \u2014 compute that at the department level first, then make it available row by row.",
       "The gap is just subtraction; the gap_pct is (gap / max) \u00d7 100 \u2014 both are plain arithmetic in SELECT, not aggregates."
     ],
     "concepts": [
@@ -3777,7 +3777,7 @@
     "enforce_concepts": true,
     "explanation": "Two CTEs: first_purchases finds each purchaser's first order date; pre_purchase_events joins events to first_purchases and filters to events before that date, then counts per user-event. The main query aggregates across users to get event-level metrics. INNER JOIN in pre_purchase_events implicitly excludes non-purchasers \u2014 only users with a first_purchase_date appear.",
     "hints": [
-      "JOIN events to first_purchases on user_id, then filter WHERE event_time < first_purchase_date \u2014 this scopes events to pre-purchase activity.",
+      "You only want events that happened before each user's first purchase \u2014 establish that first purchase date as a boundary, then use it to filter events.",
       "The main aggregation is two levels: per-user-event counts in the CTE, then cross-user aggregation in the outer query."
     ],
     "concepts": [
@@ -3823,7 +3823,7 @@
     "enforce_concepts": true,
     "explanation": "LEFT JOIN preserves users with no completed orders \u2014 they appear as cohort members with orders=0 and avg_order_value=NULL. HAVING filters cohort-months with fewer than 3 users (too small to be meaningful). orders_per_user is computed in the outer query from the CTE result \u2014 it's a ratio of two already-computed values, not a window function.",
     "hints": [
-      "LEFT JOIN orders so users with no completed orders remain in their cohort with orders = 0.",
+      "Every user belongs to a signup cohort regardless of purchase history \u2014 non-buyers should appear with zero orders rather than be absent from their cohort.",
       "HAVING COUNT(DISTINCT user_id) >= 3 filters after grouping \u2014 it's counting cohort size, not order count."
     ],
     "concepts": [
@@ -3960,7 +3960,7 @@
     "enforce_concepts": true,
     "explanation": "Two window functions in the CTE: ROW_NUMBER() assigns order position; COUNT(*) OVER (PARTITION BY user_id) gives total orders per user \u2014 accessible on every row. In the outer query, CASE WHEN seq=1 isolates first orders; CASE WHEN seq=total_orders AND total_orders>1 isolates last orders for multi-order users. AVG automatically excludes NULLs, so users with only 1 order don't skew avg_last_order_value.",
     "hints": [
-      "COUNT(*) OVER (PARTITION BY user_id) gives total_orders on every row \u2014 compare it to seq to identify the last order.",
+      "Identifying the last order requires knowing both a row's position in the sequence and the user's total order count \u2014 derive both from the same window partition.",
       "CASE WHEN seq = total_orders AND total_orders > 1 excludes single-order users from the last-order average \u2014 the AND condition handles this."
     ],
     "concepts": [
@@ -3998,8 +3998,8 @@
       "orders.csv",
       "products.csv"
     ],
-    "expected_query": "WITH order_product_pairs AS (\n    SELECT a.order_id, a.product_id AS product_a, b.product_id AS product_b\n    FROM order_items a\n    JOIN order_items b ON a.order_id = b.order_id AND a.product_id < b.product_id\n    JOIN orders o ON a.order_id = o.order_id\n    WHERE o.status = 'completed'\n)\nSELECT pa.product_name AS product_a_name, pb.product_name AS product_b_name,\n       COUNT(DISTINCT opp.order_id) AS co_purchase_count\nFROM order_product_pairs opp\nJOIN products pa ON opp.product_a = pa.product_id\nJOIN products pb ON opp.product_b = pb.product_id\nGROUP BY pa.product_name, pb.product_name\nORDER BY co_purchase_count DESC\nLIMIT 10",
-    "solution_query": "WITH order_product_pairs AS (\n    SELECT a.order_id, a.product_id AS product_a, b.product_id AS product_b\n    FROM order_items a\n    JOIN order_items b ON a.order_id = b.order_id AND a.product_id < b.product_id\n    JOIN orders o ON a.order_id = o.order_id\n    WHERE o.status = 'completed'\n)\nSELECT pa.product_name AS product_a_name, pb.product_name AS product_b_name,\n       COUNT(DISTINCT opp.order_id) AS co_purchase_count\nFROM order_product_pairs opp\nJOIN products pa ON opp.product_a = pa.product_id\nJOIN products pb ON opp.product_b = pb.product_id\nGROUP BY pa.product_name, pb.product_name\nORDER BY co_purchase_count DESC\nLIMIT 10;",
+    "expected_query": "WITH order_product_pairs AS (\n    SELECT a.order_id, a.product_id AS product_a, b.product_id AS product_b\n    FROM order_items a\n    JOIN order_items b ON a.order_id = b.order_id AND a.product_id < b.product_id\n    JOIN orders o ON a.order_id = o.order_id\n    WHERE o.status = 'completed'\n)\nSELECT pa.product_name AS product_a_name, pb.product_name AS product_b_name,\n       COUNT(DISTINCT opp.order_id) AS co_purchase_count\nFROM order_product_pairs opp\nJOIN products pa ON opp.product_a = pa.product_id\nJOIN products pb ON opp.product_b = pb.product_id\nGROUP BY pa.product_name, pb.product_name\nORDER BY co_purchase_count DESC, product_a_name, product_b_name\nLIMIT 10",
+    "solution_query": "WITH order_product_pairs AS (\n    SELECT a.order_id, a.product_id AS product_a, b.product_id AS product_b\n    FROM order_items a\n    JOIN order_items b ON a.order_id = b.order_id AND a.product_id < b.product_id\n    JOIN orders o ON a.order_id = o.order_id\n    WHERE o.status = 'completed'\n)\nSELECT pa.product_name AS product_a_name, pb.product_name AS product_b_name,\n       COUNT(DISTINCT opp.order_id) AS co_purchase_count\nFROM order_product_pairs opp\nJOIN products pa ON opp.product_a = pa.product_id\nJOIN products pb ON opp.product_b = pb.product_id\nGROUP BY pa.product_name, pb.product_name\nORDER BY co_purchase_count DESC, product_a_name, product_b_name\nLIMIT 10;",
     "required_concepts": [
       "cte",
       "self_join",
@@ -4009,7 +4009,7 @@
     "enforce_concepts": true,
     "explanation": "Self-joining order_items with AND a.product_id < b.product_id generates all ordered product pairs within each order \u2014 the < condition prevents duplicates (A,B and B,A) and self-pairs (A,A). Joining to orders filters to completed orders. COUNT(DISTINCT order_id) counts orders, not product-pair rows (an order with 3 of the same pair would still count once). This is the canonical pattern for market basket analysis.",
     "hints": [
-      "Self-join order_items ON same order_id AND product_id < product_b_id \u2014 the < condition generates each pair exactly once.",
+      "Generating all product pairs within an order requires pairing each item with every other item in the same order \u2014 the key challenge is producing each pair exactly once.",
       "COUNT(DISTINCT order_id) counts qualifying orders \u2014 not rows \u2014 so the unit of analysis is 'how many orders contained both products'."
     ],
     "concepts": [
@@ -4110,7 +4110,7 @@
     "enforce_concepts": true,
     "explanation": "The CTE computes per-product revenue. LEFT JOIN from products to sku_revenue preserves unsold products (sr columns are NULL). COUNT(DISTINCT p.product_id) counts all SKUs; COUNT(DISTINCT sr.product_id) counts only sold ones (NULL product_ids from unsold products are excluded by COUNT DISTINCT). NULLIF prevents division by zero for categories where no products were sold.",
     "hints": [
-      "LEFT JOIN sku_revenue so unsold products remain \u2014 COUNT(DISTINCT sr.product_id) will be 0 for categories with no sold products (NULL doesn't count).",
+      "Categories with no sold products should still appear in the result \u2014 the combination approach must not silently drop categories that have no matching entries in the sales data.",
       "NULLIF(COUNT(DISTINCT sr.product_id), 0) prevents division by zero for categories with no sold SKUs."
     ],
     "concepts": [
@@ -4150,7 +4150,7 @@
     "enforce_concepts": true,
     "explanation": "Three CTEs: (1) ROW_NUMBER ranks payments within each order by date; (2) WHERE attempt_num=1 isolates the first attempt per order; (3) any_paid collects orders that eventually got paid. LEFT JOIN preserves orders where recovery never happened. COUNT(DISTINCT ap.order_id) counts recoveries \u2014 NULL order_ids from unjoined rows aren't counted. The recovery_rate_pct reveals how often initial failure leads to eventual success.",
     "hints": [
-      "ROW_NUMBER() OVER (PARTITION BY order_id ORDER BY payment_date) numbers each order's payments chronologically \u2014 WHERE attempt_num = 1 gives the first.",
+      "To analyze the first payment attempt per order, establish the chronological position of each payment within its order, then isolate the first-attempt rows.",
       "LEFT JOIN any_paid so orders with no successful payment still appear in first_attempt with eventually_paid = 0."
     ],
     "concepts": [
@@ -4236,7 +4236,7 @@
     "enforce_concepts": true,
     "explanation": "Three-stage logic: (1) find each user's first completed order date, (2) use an EXISTS subquery to check for a subsequent completed order within 30 days, (3) aggregate into cohort months. CAST(order_date AS DATE) is required because order_date is stored as a timestamp. Adding 30 to a DATE in DuckDB adds 30 days (integer arithmetic on dates).",
     "hints": [
-      "Find each user's first order date with MIN() in a CTE, then use EXISTS() to check for a follow-up within 30 days.",
+      "Retention has two parts: anchoring each user's first-order date, then checking whether a subsequent order appeared within 30 days of it.",
       "CAST(order_date AS DATE) + 30 adds 30 days to a date in DuckDB."
     ],
     "concepts": [
@@ -4277,7 +4277,7 @@
     "enforce_concepts": true,
     "explanation": "COUNT(DISTINCT CASE WHEN event_name = 'X' THEN user_id END) is the standard pattern for counting distinct users who fired a specific event type within a group \u2014 it avoids a self-join or PIVOT. NULLIF prevents division by zero in months where nobody added to cart.",
     "hints": [
-      "Use COUNT(DISTINCT CASE WHEN event_name = 'add_to_cart' THEN user_id END) to count cart adders per month.",
+      "You need unique user counts, but only for users who performed a specific event \u2014 embedding the event filter inside the aggregation preserves all rows for other calculations in the same pass.",
       "Wrap the denominator in NULLIF(..., 0) to handle months with zero cart events."
     ],
     "concepts": [
@@ -4328,7 +4328,7 @@
     "enforce_concepts": true,
     "explanation": "LAG(revenue) OVER (PARTITION BY brand ORDER BY month) looks back one row within each brand's ordered time series. NULLIF on the denominator prevents divide-by-zero for a brand's first month. Using line_amount from order_items avoids recalculating quantity * unit_price.",
     "hints": [
-      "Compute monthly revenue per brand in a CTE, then apply LAG() OVER (PARTITION BY brand ORDER BY month).",
+      "Month-over-month change requires each month's value alongside its predecessor \u2014 build the monthly totals first, then compare within each brand's time series.",
       "Wrap the LAG() denominator in NULLIF(..., 0) to guard against division by zero in the first month."
     ],
     "concepts": [
@@ -4421,7 +4421,7 @@
     "enforce_concepts": true,
     "explanation": "ROW_NUMBER() assigns order sequence per user. The pivot using MAX(CASE WHEN order_num = 1 ...) brings first and second order onto one row. DATE subtraction gives integer days. HAVING COUNT(*) = 2 ensures both orders exist before pivoting. ORDER BY MIN(gap_days) produces natural bucket ordering without hardcoding string sort order.",
     "hints": [
-      "Use ROW_NUMBER() to rank orders per user, then pivot first and second order dates into one row using MAX(CASE WHEN ...).",
+      "To compute the gap between a user's first and second order, bring both dates into the same row \u2014 establish order sequence numbers first, then pivot.",
       "DATE subtraction in DuckDB returns integer days \u2014 use this to compute gap_days directly."
     ],
     "concepts": [
@@ -4470,7 +4470,7 @@
     "enforce_concepts": true,
     "explanation": "SUM(revenue) OVER (ORDER BY revenue DESC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) computes a running total including the current row. The WHERE clause (cumulative_rev - revenue) < 0.80 * total_rev tests whether the running total *before* adding this row is still below 80% \u2014 including any row that pushes the total past the threshold.",
     "hints": [
-      "Use SUM() OVER (ORDER BY revenue DESC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) to compute cumulative revenue.",
+      "Sort products from highest to lowest revenue and accumulate \u2014 the cutoff is when the running total crosses 80% of the grand total.",
       "The cutoff condition is (cumulative_rev - revenue) < 0.80 * total_rev \u2014 this includes the last product that tips the running total past 80%."
     ],
     "concepts": [
@@ -4523,7 +4523,7 @@
     "enforce_concepts": true,
     "explanation": "A LEFT JOIN followed by WHERE right_key IS NULL is the standard anti-join pattern \u2014 it finds rows in the left set with no match in the right set. This is more robust than NOT IN when the right set could contain NULLs. The two CTEs cleanly separate the two sets before joining.",
     "hints": [
-      "Use a LEFT JOIN on the paid payments set, then filter WHERE po.order_id IS NULL to get the anti-join.",
+      "To find completed orders with no paid payment, look for orders with no corresponding record in the payments table \u2014 the pattern for surfacing absent relationships is the key technique here.",
       "Isolate paid orders in a separate CTE first to keep the anti-join logic readable."
     ],
     "concepts": [
@@ -4570,7 +4570,7 @@
     "enforce_concepts": true,
     "explanation": "PERCENT_RANK() returns a value in [0, 1] where 0 is the lowest earner and 1 is the highest within the partition. Multiplying by 100 converts to a 0\u2013100 scale. The lowest earner in each department gets 0.0% and the highest gets 100.0%.",
     "hints": [
-      "PERCENT_RANK() OVER (PARTITION BY department_id ORDER BY salary) gives a 0-to-1 rank \u2014 multiply by 100 for a percentage.",
+      "To express how a salary compares to others in the same department, think in terms of relative standing \u2014 what fraction of colleagues earn less than this person?",
       "The lowest earner in each department gets percentile 0; the highest gets 100."
     ],
     "concepts": [
@@ -4616,7 +4616,7 @@
     "enforce_concepts": true,
     "explanation": "PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY salary) computes the median using linear interpolation. When median > mean, the distribution is negatively skewed \u2014 a few low earners pull the mean below the median. This is a useful diagnostic when evaluating compensation equity.",
     "hints": [
-      "PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY salary) is the SQL median function.",
+      "Mean and median serve different purposes \u2014 the median is the midpoint value in sorted order. SQL has an ordered-set aggregate that computes this per group.",
       "When median > mean the distribution is negatively skewed \u2014 a few very low values pull the average down."
     ],
     "concepts": [
@@ -4661,7 +4661,7 @@
     "enforce_concepts": true,
     "explanation": "A LEFT JOIN on support ticket users preserves buyers with no tickets (NULL join key). CASE WHEN tu.user_id IS NOT NULL converts the NULL flag into a readable label. AVG(ua.aov) averages the per-user AOV \u2014 not the raw order amounts \u2014 so each user contributes equally regardless of order volume.",
     "hints": [
-      "Compute per-user AOV in a CTE, then LEFT JOIN a distinct list of ticket users to flag the segment.",
+      "Every buyer belongs to one of two segments \u2014 those with at least one support ticket and those without. The combination must preserve buyers who have no ticket on record.",
       "CASE WHEN tu.user_id IS NOT NULL THEN 'With ...' handles the NULL resulting from no match."
     ],
     "concepts": [
@@ -4701,7 +4701,7 @@
     "enforce_concepts": true,
     "explanation": "Anchoring the window to MAX(event_time) makes the query dataset-agnostic. LAG() over the ordered CTE looks one row back \u2014 no self-join needed. The first week's LAG returns NULL (no prior week), which is expected and informative.",
     "hints": [
-      "Aggregate COUNT(DISTINCT user_id) by week in a CTE, then apply LAG() OVER (ORDER BY week_start) in the outer query.",
+      "Week-over-week change requires each week's user count next to the prior week's \u2014 compute weekly totals first, then look back one row in the ordered time series.",
       "Use MAX(event_time) as the anchor to avoid hardcoding a date."
     ],
     "concepts": [
@@ -4750,7 +4750,7 @@
     "enforce_concepts": true,
     "explanation": "DENSE_RANK() is preferred over ROW_NUMBER() here because tied products should share the same rank \u2014 a tie at rank 3 should not push a product to rank 4. WHERE buyer_rank <= 5 returns all products with ranks 1 through 5, including any ties at rank 5.",
     "hints": [
-      "Use DENSE_RANK() rather than ROW_NUMBER() so that tied products share the same rank.",
+      "When selecting the top 5, decide what should happen when two products are tied at the cutoff \u2014 some approaches give tied items the same position, others break the tie.",
       "Filter WHERE buyer_rank <= 5 \u2014 if two products are tied at rank 5, both are included."
     ],
     "concepts": [
@@ -4796,7 +4796,7 @@
     "enforce_concepts": true,
     "explanation": "Three CTEs separate concerns: order amounts, payment sums, and the discrepancy calculation. COALESCE handles orders with no payment record (gap = full order amount). ABS(discrepancy) > 0.01 filters floating-point near-zeros. This is a canonical data reconciliation pattern used in finance and billing audits.",
     "hints": [
-      "LEFT JOIN payment totals onto order totals so orders with no payment are preserved (gap = full order amount).",
+      "When reconciling two tables, the direction of the combination determines which gaps are visible \u2014 orders with no payment record must not be silently dropped.",
       "Use COALESCE(paid_amount, 0) to handle NULLs from the LEFT JOIN before computing discrepancy."
     ],
     "concepts": [
@@ -4887,7 +4887,7 @@
     "enforce_concepts": true,
     "explanation": "Three CTEs build up the logic: signups anchors the population, first_orders finds each user's earliest purchase, fast_converters computes the days gap. A LEFT JOIN on first_orders preserves users with no purchase (their gap is NULL). The CASE WHEN in the outer aggregation counts only users with a gap \u2264 30 days.",
     "hints": [
-      "LEFT JOIN first_orders onto signups so users who never ordered are preserved with NULL days_to_convert.",
+      "The conversion rate includes non-purchasers in the denominator \u2014 the approach must keep users with no orders in the result, not silently exclude them.",
       "In the final aggregation, use CASE WHEN days_to_convert IS NOT NULL AND days_to_convert <= 30 THEN 1 ELSE 0 END."
     ],
     "concepts": [
@@ -4931,7 +4931,7 @@
     "enforce_concepts": true,
     "explanation": "SUM(COUNT(*)) OVER () is a window function applied after GROUP BY \u2014 it sums all group counts to get the grand total for percentage computation. ORDER BY MIN(total_items) sorts buckets naturally (1, 2, 4, 6) rather than alphabetically.",
     "hints": [
-      "First SUM(quantity) per order in a CTE, then bucket with CASE WHEN in the outer query.",
+      "Two steps: compute total item quantity per order, then assign each order to a size bucket based on that total.",
       "SUM(COUNT(*)) OVER () gives the grand total after grouping \u2014 divide each bucket count by this for the percentage."
     ],
     "concepts": [
@@ -4977,7 +4977,7 @@
     "enforce_concepts": true,
     "explanation": "First CTE identifies sessions that had at least one purchase event. LEFT JOIN preserves sessions with no purchase (NULL join key). CASE WHEN converts the NULL flag into a 0/1 abandoned indicator. SUM(abandoned) / COUNT(*) gives the abandonment rate per source.",
     "hints": [
-      "Build a CTE of session_ids that had any 'purchase' event, then LEFT JOIN onto all sessions.",
+      "Start with all sessions and flag which ones contain a purchase \u2014 sessions without that flag are the abandoned ones.",
       "CASE WHEN sp.session_id IS NOT NULL THEN 0 ELSE 1 END creates the abandoned flag for SUM()."
     ],
     "concepts": [
@@ -5065,7 +5065,7 @@
     "enforce_concepts": true,
     "explanation": "SUM(SUM(e.salary)) OVER () is an aggregate-inside-a-window-function \u2014 the inner SUM() aggregates per group, the outer SUM() OVER () sums all groups to produce the grand total. This avoids a CTE or self-join just to compute the total.",
     "hints": [
-      "SUM(SUM(salary)) OVER () computes the grand total payroll \u2014 the inner SUM() runs within each group, the outer SUM() OVER () accumulates all groups.",
+      "Department payroll share needs the department total and the company-wide total simultaneously \u2014 a window over the grouped result can supply the company total without a separate query.",
       "No CTE needed for this pattern \u2014 the nested aggregate window function handles it in one pass."
     ],
     "concepts": [
@@ -5157,7 +5157,7 @@
     "enforce_concepts": true,
     "explanation": "Two LEFT JOINs bring in event and order presence per user. COUNT(fe.user_id) counts non-NULL values \u2014 users who had no event contribute NULL (not counted), automatically computing the correct numerator. This is cleaner than SUM(CASE WHEN ... THEN 1 ELSE 0 END) for funnel counts.",
     "hints": [
-      "LEFT JOIN each funnel stage so users who didn't reach that stage have NULL \u2014 COUNT(non-null column) handles the numerator automatically.",
+      "A funnel preserves all users at every stage \u2014 users who did not reach a step should appear with a count of zero, not disappear from the result entirely.",
       "COUNT(fe.user_id) counts only users who matched the event join \u2014 NULLs from non-matches are not counted."
     ],
     "concepts": [
@@ -5197,7 +5197,7 @@
     "enforce_concepts": true,
     "explanation": "Multiple CASE WHEN expressions in one GROUP BY pass compute three different conditional counts simultaneously. AVG(CASE WHEN status = 'resolved' THEN resolution_hours END) automatically ignores NULL (unresolved tickets) \u2014 equivalent to filtering then averaging. ORDER BY CASE sorts by business priority order rather than alphabetically.",
     "hints": [
-      "Use multiple SUM(CASE WHEN ...) expressions in a single GROUP BY to compute within_sla and total_resolved in one pass.",
+      "SLA compliance requires counting several things from the same ticket set \u2014 all can be derived in one pass using conditional aggregation.",
       "ORDER BY CASE priority WHEN 'urgent' THEN 1 ... END to sort by business severity rather than alphabetically."
     ],
     "concepts": [
@@ -5237,7 +5237,7 @@
     "enforce_concepts": true,
     "explanation": "A CROSS JOIN with the single-row anchor CTE distributes the maximum date to every user row without a correlated subquery. DATE subtraction gives integer days. CASE WHEN applies the threshold logic. The final CASE in ORDER BY maps business segments to a sort order.",
     "hints": [
-      "Use CROSS JOIN with a single-row anchor CTE to distribute the MAX date without a correlated subquery.",
+      "Every user needs to be compared against the same reference date \u2014 compute that date once in isolation, then make it available to every user row efficiently.",
       "DATE - DATE in DuckDB gives integer days \u2014 use this directly for the threshold checks."
     ],
     "concepts": [
@@ -5287,13 +5287,266 @@
     "enforce_concepts": true,
     "explanation": "Two levels: first compute distinct categories per order (CTE), then join back to orders to get net_amount, apply bucket labels, and aggregate. ORDER BY MIN(category_count) ensures buckets sort in ascending bucket-size order regardless of the string labels.",
     "hints": [
-      "COUNT(DISTINCT category_id) in the CTE \u2014 one row per order with its category diversity score.",
+      "First measure how many different categories each order covers, then group orders into diversity buckets based on that breadth.",
       "ORDER BY MIN(occ.category_count) sorts buckets naturally \u2014 '1 category' before '2 categories' before '3+' \u2014 regardless of string sort order."
     ],
     "concepts": [
       "MULTI-TABLE ENTITY LINKING",
       "CONDITIONAL LOGIC & CASE WHEN",
       "GROUPED AGGREGATION"
+    ],
+    "companies": []
+  },
+  {
+    "id": 13115,
+    "order": 115,
+    "mock_only": true,
+    "title": "Conversion rate denominator \u2014 observation window completeness",
+    "description": "A funnel analysis reports a 7-day signup-to-first-purchase conversion rate. A skeptical stakeholder asks: 'Did every user in that cohort actually have 7 full days to convert?' Write a query that classifies every user as either `observation_complete` (signed up at least 7 days before the latest order in the dataset) or `observation_truncated` (signed up too recently to have a 7-day window). Return `group_label`, `user_count`, and `pct_of_cohort` (rounded to 1 decimal), ordered by group_label.",
+    "difficulty": "hard",
+    "schema": {
+      "users": [
+        "user_id",
+        "signup_date"
+      ],
+      "orders": [
+        "order_id",
+        "order_date"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv"
+    ],
+    "expected_query": "WITH cutoff AS (\n    SELECT MAX(order_date) - INTERVAL '7 days' AS cutoff_date FROM orders\n),\ncohort AS (\n    SELECT u.user_id,\n           CASE WHEN u.signup_date <= c.cutoff_date\n                THEN 'observation_complete'\n                ELSE 'observation_truncated'\n           END AS group_label\n    FROM users u\n    CROSS JOIN cutoff c\n),\ncounts AS (\n    SELECT group_label, COUNT(*) AS user_count\n    FROM cohort\n    GROUP BY 1\n)\nSELECT group_label,\n       user_count,\n       ROUND(100.0 * user_count / SUM(user_count) OVER (), 1) AS pct_of_cohort\nFROM counts\nORDER BY group_label",
+    "solution_query": "WITH cutoff AS (\n    SELECT MAX(order_date) - INTERVAL '7 days' AS cutoff_date FROM orders\n),\ncohort AS (\n    SELECT u.user_id,\n           CASE WHEN u.signup_date <= c.cutoff_date\n                THEN 'observation_complete'\n                ELSE 'observation_truncated'\n           END AS group_label\n    FROM users u\n    CROSS JOIN cutoff c\n),\ncounts AS (\n    SELECT group_label, COUNT(*) AS user_count\n    FROM cohort\n    GROUP BY 1\n)\nSELECT group_label,\n       user_count,\n       ROUND(100.0 * user_count / SUM(user_count) OVER (), 1) AS pct_of_cohort\nFROM counts\nORDER BY group_label;",
+    "required_concepts": [
+      "cte",
+      "case_when",
+      "aggregate",
+      "window"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The cutoff CTE derives a data-anchored boundary: the latest order date minus 7 days. The cohort CTE classifies each user as observation_complete or truncated relative to that boundary. The counts CTE aggregates by group and the outer query adds window-based percentage. If a large share falls into observation_truncated, the reported conversion rate is systematically understated \u2014 a critical sanity flag before presenting the metric.",
+    "hints": [
+      "You need two things: each user's signup date and a cutoff that is 7 days before the latest activity in the dataset. The cutoff can be derived from the orders table without hardcoding a date.",
+      "Once you have the cutoff, classifying each user is a date comparison \u2014 then count each group and express each as a share of the total cohort."
+    ],
+    "concepts": [
+      "RESULT PLAUSIBILITY CHECK",
+      "ACQUISITION FUNNEL & COHORT ANALYSIS",
+      "OUTPUT SANITY VALIDATION"
+    ],
+    "companies": []
+  },
+  {
+    "id": 13116,
+    "order": 116,
+    "mock_only": true,
+    "title": "Salary distribution shape before reporting department averages",
+    "description": "Your report will state the average salary by department. Before publishing it, your manager asks you to verify that the average is a reliable summary and not distorted by outliers. Write a query that, for each department, returns the minimum, 25th-percentile, median, 75th-percentile, and maximum salary. Return `department_name`, `min_salary`, `p25_salary`, `median_salary`, `p75_salary`, and `max_salary`, ordered by department_name.",
+    "difficulty": "hard",
+    "schema": {
+      "employees": [
+        "employee_id",
+        "salary",
+        "department_id"
+      ],
+      "departments": [
+        "department_id",
+        "department_name"
+      ]
+    },
+    "dataset_files": [
+      "employees.csv",
+      "departments.csv"
+    ],
+    "expected_query": "SELECT d.department_name,\n       MIN(e.salary)                                                   AS min_salary,\n       PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY e.salary)        AS p25_salary,\n       PERCENTILE_CONT(0.50) WITHIN GROUP (ORDER BY e.salary)        AS median_salary,\n       PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY e.salary)        AS p75_salary,\n       MAX(e.salary)                                                   AS max_salary\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nGROUP BY d.department_name\nORDER BY d.department_name",
+    "solution_query": "SELECT d.department_name,\n       MIN(e.salary)                                                   AS min_salary,\n       PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY e.salary)        AS p25_salary,\n       PERCENTILE_CONT(0.50) WITHIN GROUP (ORDER BY e.salary)        AS median_salary,\n       PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY e.salary)        AS p75_salary,\n       MAX(e.salary)                                                   AS max_salary\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nGROUP BY d.department_name\nORDER BY d.department_name;",
+    "required_concepts": [
+      "aggregate",
+      "percentile",
+      "join"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The min/max are standard aggregates. The quartile and median values use PERCENTILE_CONT(fraction) WITHIN GROUP (ORDER BY salary), an ordered-set aggregate that interpolates the value at a given quantile within each department group. A department with a large gap between p75 and max has salary outliers that would inflate the mean \u2014 this distribution check makes that visible before the summary goes out.",
+    "hints": [
+      "The min and max are standard aggregates. The percentile values require an ordered-set aggregate that computes the value at a given quantile within each group \u2014 SQL has a built-in function for this.",
+      "Once you have the five distribution markers per department, compare p50 to the mean you would have reported \u2014 departments with a large p75-to-max gap are candidates for a caveat in your report."
+    ],
+    "concepts": [
+      "GROUPED AGGREGATION",
+      "OUTPUT SANITY VALIDATION"
+    ],
+    "companies": []
+  },
+  {
+    "id": 13117,
+    "order": 117,
+    "mock_only": true,
+    "title": "Orphan order audit \u2014 completed orders with no line items",
+    "description": "A per-order revenue pipeline joins `orders` to `order_items` to sum line amounts. Before trusting the output, verify that no completed order is silently excluded due to missing item rows. Write a diagnostic query that returns a single row with three figures: `total_completed_orders` (distinct orders with status='completed'), `orders_with_items` (completed orders that have at least one matching row in order_items), and `orders_without_items` (the gap between the two).",
+    "difficulty": "hard",
+    "schema": {
+      "orders": [
+        "order_id",
+        "status"
+      ],
+      "order_items": [
+        "order_item_id",
+        "order_id"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv",
+      "order_items.csv"
+    ],
+    "expected_query": "SELECT\n    COUNT(DISTINCT o.order_id)                                          AS total_completed_orders,\n    COUNT(DISTINCT oi.order_id)                                         AS orders_with_items,\n    COUNT(DISTINCT o.order_id) - COUNT(DISTINCT oi.order_id)           AS orders_without_items\nFROM orders o\nLEFT JOIN order_items oi ON o.order_id = oi.order_id\nWHERE o.status = 'completed'",
+    "solution_query": "SELECT\n    COUNT(DISTINCT o.order_id)                                          AS total_completed_orders,\n    COUNT(DISTINCT oi.order_id)                                         AS orders_with_items,\n    COUNT(DISTINCT o.order_id) - COUNT(DISTINCT oi.order_id)           AS orders_without_items\nFROM orders o\nLEFT JOIN order_items oi ON o.order_id = oi.order_id\nWHERE o.status = 'completed';",
+    "required_concepts": [
+      "left_join",
+      "count_distinct",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "A LEFT JOIN from orders to order_items preserves completed orders even when no matching item rows exist. COUNT(DISTINCT o.order_id) counts all completed orders; COUNT(DISTINCT oi.order_id) counts only those with at least one item row; the difference surfaces orphans. If orders_without_items > 0, any downstream revenue query that drops the unmatched orders will undercount both order volume and revenue.",
+    "hints": [
+      "You need two counts: completed orders in the orders table, and completed orders that have at least one line item. Preserve all completed orders in the combination so you can detect the missing-item case.",
+      "The gap between the two counts reveals orphan orders \u2014 completed orders with no item rows that would produce NULL revenue in a downstream pipeline."
+    ],
+    "concepts": [
+      "MULTI-TABLE ENTITY LINKING",
+      "ROW COUNT SANITY",
+      "OUTPUT SANITY VALIDATION"
+    ],
+    "companies": []
+  },
+  {
+    "id": 13118,
+    "order": 118,
+    "mock_only": true,
+    "title": "Collapse redundant orders CTEs \u2014 eliminate duplicate table scans",
+    "description": "The query below scans the `orders` table twice \u2014 once for order counts and once for revenue \u2014 then stitches the two results together. Rewrite it to scan `orders` exactly once while producing the same daily metrics.\n\n```sql\nWITH daily_orders AS (\n    SELECT DATE_TRUNC('day', order_date)::DATE AS day, COUNT(*) AS order_count\n    FROM orders WHERE status = 'completed' GROUP BY 1\n),\ndaily_revenue AS (\n    SELECT DATE_TRUNC('day', order_date)::DATE AS day, ROUND(SUM(net_amount),2) AS total_revenue\n    FROM orders WHERE status = 'completed' GROUP BY 1\n),\ndaily_signups AS (\n    SELECT DATE_TRUNC('day', signup_date)::DATE AS day, COUNT(*) AS signup_count\n    FROM users GROUP BY 1\n)\nSELECT o.day, o.order_count, r.total_revenue, s.signup_count\nFROM daily_orders o\nJOIN daily_revenue r ON o.day = r.day\nLEFT JOIN daily_signups s ON o.day = s.day\nORDER BY o.day\n```\n\nReturn `day`, `order_count`, `total_revenue`, and `signup_count`, ordered by `day` ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "orders": [
+        "order_id",
+        "order_date",
+        "status",
+        "net_amount"
+      ],
+      "users": [
+        "user_id",
+        "signup_date"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv",
+      "users.csv"
+    ],
+    "expected_query": "WITH daily_orders_revenue AS (\n    SELECT DATE_TRUNC('day', order_date)::DATE AS day,\n           COUNT(*)                            AS order_count,\n           ROUND(SUM(net_amount), 2)           AS total_revenue\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY 1\n),\ndaily_signups AS (\n    SELECT DATE_TRUNC('day', signup_date)::DATE AS day,\n           COUNT(*) AS signup_count\n    FROM users\n    GROUP BY 1\n)\nSELECT o.day, o.order_count, o.total_revenue, s.signup_count\nFROM daily_orders_revenue o\nLEFT JOIN daily_signups s ON o.day = s.day\nORDER BY o.day",
+    "solution_query": "WITH daily_orders_revenue AS (\n    SELECT DATE_TRUNC('day', order_date)::DATE AS day,\n           COUNT(*)                            AS order_count,\n           ROUND(SUM(net_amount), 2)           AS total_revenue\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY 1\n),\ndaily_signups AS (\n    SELECT DATE_TRUNC('day', signup_date)::DATE AS day,\n           COUNT(*) AS signup_count\n    FROM users\n    GROUP BY 1\n)\nSELECT o.day, o.order_count, o.total_revenue, s.signup_count\nFROM daily_orders_revenue o\nLEFT JOIN daily_signups s ON o.day = s.day\nORDER BY o.day;",
+    "required_concepts": [
+      "cte",
+      "aggregate",
+      "left_join"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The original scans orders twice with the same filter and the same grouping key, then inner-joins the two CTEs. Two aggregations over the same source, same filter, and same grain can always be collapsed into one CTE \u2014 the daily_orders_revenue CTE computes both metrics in a single pass. The INNER JOIN between daily_orders and daily_revenue becomes unnecessary; only the LEFT JOIN to daily_signups remains.",
+    "hints": [
+      "Two of the three CTEs scan the same source table with the same filter and the same time granularity \u2014 their metrics can be combined into a single aggregation pass without changing the result.",
+      "When two aggregations share the same source, the same filter, and the same grouping dimension, merging them into one CTE eliminates one full pass over the source data and removes a downstream combination step."
+    ],
+    "concepts": [
+      "REPEATED COMPUTATION ELIMINATION",
+      "CTE PIPELINE",
+      "PERFORMANCE-AWARE ANALYTICS"
+    ],
+    "companies": []
+  },
+  {
+    "id": 13119,
+    "order": 119,
+    "mock_only": true,
+    "title": "Push event filter before join to reduce cardinality",
+    "description": "The query below joins all 45,000 event rows to the sessions table before filtering to purchase events. Rewrite it to filter events to purchases first, then join \u2014 reducing the join's input from 45,000 rows to roughly 3,700.\n\n```sql\nSELECT s.device_type, s.traffic_source,\n       COUNT(DISTINCT e.session_id) AS sessions_with_purchase\nFROM events e\nJOIN sessions s ON e.session_id = s.session_id\nWHERE e.event_name = 'purchase'\nGROUP BY s.device_type, s.traffic_source\nORDER BY sessions_with_purchase DESC, s.device_type, s.traffic_source\n```\n\nReturn `device_type`, `traffic_source`, and `sessions_with_purchase`, ordered by `sessions_with_purchase` descending, then `device_type` and `traffic_source` ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "events": [
+        "session_id",
+        "event_name"
+      ],
+      "sessions": [
+        "session_id",
+        "device_type",
+        "traffic_source"
+      ]
+    },
+    "dataset_files": [
+      "events.csv",
+      "sessions.csv"
+    ],
+    "expected_query": "WITH purchase_sessions AS (\n    SELECT DISTINCT session_id\n    FROM events\n    WHERE event_name = 'purchase'\n)\nSELECT s.device_type, s.traffic_source,\n       COUNT(ps.session_id) AS sessions_with_purchase\nFROM purchase_sessions ps\nJOIN sessions s ON ps.session_id = s.session_id\nGROUP BY s.device_type, s.traffic_source\nORDER BY sessions_with_purchase DESC, s.device_type, s.traffic_source",
+    "solution_query": "WITH purchase_sessions AS (\n    SELECT DISTINCT session_id\n    FROM events\n    WHERE event_name = 'purchase'\n)\nSELECT s.device_type, s.traffic_source,\n       COUNT(ps.session_id) AS sessions_with_purchase\nFROM purchase_sessions ps\nJOIN sessions s ON ps.session_id = s.session_id\nGROUP BY s.device_type, s.traffic_source\nORDER BY sessions_with_purchase DESC, s.device_type, s.traffic_source;",
+    "required_concepts": [
+      "cte",
+      "join",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Filtering events to purchases inside a CTE before the join reduces the join's left-side cardinality from ~45K to ~3.7K rows \u2014 a 12x reduction. The DISTINCT in the CTE also deduplicates session IDs so the outer query can use COUNT instead of COUNT(DISTINCT). Query optimisers may reorder predicates, but explicit pre-filtering makes the intent clear and is robust across planning strategies.",
+    "hints": [
+      "Only purchase events contribute to the output \u2014 filtering to that subset before combining with sessions reduces the number of rows the combination must process by roughly 12x.",
+      "After isolating the relevant event rows, deduplicate by session so each session appears at most once before combining with session attributes."
+    ],
+    "concepts": [
+      "CARDINALITY REDUCTION",
+      "MULTI-TABLE ENTITY LINKING",
+      "PERFORMANCE-AWARE ANALYTICS"
+    ],
+    "companies": []
+  },
+  {
+    "id": 13120,
+    "order": 120,
+    "mock_only": true,
+    "title": "Top 10 spenders \u2014 pre-aggregate and limit instead of window-then-filter",
+    "description": "The query below uses a window function to number all users by total spend, then filters to the top 10. This numbers every user before discarding most of them. Rewrite it to compute the top 10 more directly \u2014 aggregate spend per user, sort, and limit without numbering every row.\n\n```sql\nWITH user_spend AS (\n    SELECT user_id, ROUND(SUM(net_amount), 2) AS total_spend\n    FROM orders WHERE status = 'completed' GROUP BY user_id\n),\nranked AS (\n    SELECT user_id, total_spend,\n           ROW_NUMBER() OVER (ORDER BY total_spend DESC, user_id) AS rn\n    FROM user_spend\n)\nSELECT u.user_id, u.name, r.total_spend\nFROM ranked r\nJOIN users u ON r.user_id = u.user_id\nWHERE r.rn <= 10\nORDER BY r.total_spend DESC, r.user_id\n```\n\nReturn `user_id`, `name`, and `total_spend`, ordered by `total_spend` descending, then `user_id` ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "orders": [
+        "order_id",
+        "user_id",
+        "status",
+        "net_amount"
+      ],
+      "users": [
+        "user_id",
+        "name"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv",
+      "users.csv"
+    ],
+    "expected_query": "WITH user_spend AS (\n    SELECT user_id,\n           ROUND(SUM(net_amount), 2) AS total_spend\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY user_id\n    ORDER BY total_spend DESC, user_id\n    LIMIT 10\n)\nSELECT u.user_id, u.name, us.total_spend\nFROM user_spend us\nJOIN users u ON us.user_id = u.user_id\nORDER BY us.total_spend DESC, us.user_id",
+    "solution_query": "WITH user_spend AS (\n    SELECT user_id,\n           ROUND(SUM(net_amount), 2) AS total_spend\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY user_id\n    ORDER BY total_spend DESC, user_id\n    LIMIT 10\n)\nSELECT u.user_id, u.name, us.total_spend\nFROM user_spend us\nJOIN users u ON us.user_id = u.user_id\nORDER BY us.total_spend DESC, us.user_id;",
+    "required_concepts": [
+      "cte",
+      "join",
+      "aggregate",
+      "limit"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The original numbers every user's spend with ROW_NUMBER() across the full aggregated result, then discards all but 10 rows. Moving the sort and LIMIT into the CTE stops materialization at 10 rows \u2014 no window function is needed when the goal is simply the top-N by a single sort key. Both approaches use the same tie-breaking (total_spend DESC, user_id ASC) so results are identical.",
+    "hints": [
+      "The two-CTE version numbers every user's spend before filtering to 10 \u2014 but the numbering is only needed to apply the cutoff. What if you applied the cutoff directly at the aggregation step instead?",
+      "Once spend is aggregated per user, applying a sort and a row limit inside that aggregation step stops you from materialising results you will never use."
+    ],
+    "concepts": [
+      "EFFICIENT ALTERNATIVE",
+      "RANKING & TOP-N PER GROUP",
+      "PERFORMANCE-AWARE ANALYTICS"
     ],
     "companies": []
   }

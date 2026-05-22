@@ -3019,7 +3019,7 @@
     "enforce_concepts": true,
     "explanation": "Three-table join links line items to products (for brand) and orders (for status filter). COUNT(DISTINCT order_id) counts unique orders per brand \u2014 not line item rows. GROUP BY brand then aggregates revenue and quantity across all line items for that brand among completed orders.",
     "hints": [
-      "Join order_items to products to get the brand, then join to orders to apply the status filter.",
+      "Identify which tables hold each piece of data you need: brand is a product attribute, revenue comes from line items, and the status filter lives on orders.",
       "Use COUNT(DISTINCT order_id) \u2014 not COUNT(*) \u2014 so multi-item orders are counted once per brand."
     ],
     "concepts": [
@@ -3109,7 +3109,7 @@
     "enforce_concepts": true,
     "explanation": "LEFT JOIN preserves all users (including those with no orders). CASE WHEN inside COUNT(DISTINCT ...) counts users satisfying each funnel condition. Using DISTINCT user_id \u2014 not order_id \u2014 ensures each user is counted once per stage even if they placed multiple orders. The denominator is signed_up (all users in that channel), making rates comparable across channels.",
     "hints": [
-      "Use LEFT JOIN so users with no orders are still counted in the signed_up total.",
+      "The funnel starts with all users in each channel \u2014 buyers are a subset. Make sure users who never ordered still appear in the signed-up count.",
       "Wrap the CASE WHEN condition inside COUNT(DISTINCT user_id) \u2014 not COUNT(*) \u2014 to count unique users per funnel stage."
     ],
     "concepts": [
@@ -3153,7 +3153,7 @@
     "enforce_concepts": true,
     "explanation": "The first CTE formats signup_date as YYYY-MM per user. The second CTE finds users whose order month equals their signup month. The main query does a LEFT JOIN (to keep months where no one converted) then counts cohort size vs converters per month. The denominator is cohort_size \u2014 the RIGHT denominator for a conversion rate, not total orders.",
     "hints": [
-      "Compare strftime(order_date, '%Y-%m') to signup_month \u2014 not a date range join \u2014 so the condition is month equality.",
+      "To match 'ordered in the same calendar month as signup,' align both dates to the same month grain before comparing them.",
       "LEFT JOIN the first_orders CTE to keep cohort months where no one ordered, ensuring the conversion rate shows 0% for those months."
     ],
     "concepts": [
@@ -3317,7 +3317,7 @@
     "enforce_concepts": true,
     "explanation": "The scalar subquery (SELECT AVG(price) FROM products WHERE is_active = true) computes the overall average once and is reused in both the SELECT list (to compute the delta) and the HAVING clause (to filter). WHERE is_active = true scopes both the main query and the subquery to active products only, so the benchmark is fair: brand average vs active-products average.",
     "hints": [
-      "Use a scalar subquery in both the SELECT list and HAVING \u2014 it computes a single number and can appear in both places.",
+      "You need the company-wide average price for two purposes: to filter brands and to display the comparison. A single computed value can appear in both places.",
       "Filter to is_active = true in both the outer query and the subquery so the benchmark (overall avg) is scoped to active products too."
     ],
     "concepts": [
@@ -3402,7 +3402,7 @@
     "enforce_concepts": true,
     "explanation": "CASE WHEN inside COUNT counts rows matching each size condition independently \u2014 no subqueries needed. BETWEEN 100 AND 500 is inclusive on both ends in SQL. WHERE status = 'completed' filters before grouping so cancelled orders don't contaminate the distribution. Each country gets exactly one row with all three size buckets populated.",
     "hints": [
-      "Three separate CASE WHEN expressions inside COUNT let you count all three size buckets in a single GROUP BY pass.",
+      "All size buckets can be computed in a single query \u2014 a conditional expression inside each aggregation handles the bucketing logic without needing separate queries.",
       "Apply the status filter in WHERE \u2014 not inside the CASE \u2014 so it applies before aggregation."
     ],
     "concepts": [
@@ -3484,7 +3484,7 @@
     "enforce_concepts": true,
     "explanation": "Adding WHERE device_type = 'desktop' restricts the session set before grouping \u2014 this is a pre-aggregation filter. The business rule change (redefining 'session' to mean only desktop sessions) is the simplest kind of pivot: a WHERE clause change. Conceptually, it restates the denominator of any subsequent conversion rate calculation.",
     "hints": [
-      "Filter to device_type = 'desktop' in WHERE before grouping \u2014 not inside a CASE WHEN, which would needlessly complicate the query.",
+      "Scope the dataset early: restrict to the target device type before grouping so you're aggregating only the relevant rows.",
       "The query structure is almost identical to the parent; the only addition is a single WHERE clause."
     ],
     "concepts": [
@@ -3533,7 +3533,7 @@
     "enforce_concepts": true,
     "explanation": "Joining users to orders links the plan tier dimension to the order metrics. strftime formats the timestamp-stored order_date into YYYY-MM for monthly grouping. WHERE status = 'completed' scopes to revenue-generating orders. GROUP BY both plan_tier and order_month produces the cross-tabulation finance needs.",
     "hints": [
-      "GROUP BY both plan_tier and order_month to get one row per plan-tier \u00d7 month combination.",
+      "Each unique combination of plan tier and month should produce one row \u2014 both dimensions need to be part of the aggregation key.",
       "Cast order_date to DATE before passing to strftime \u2014 order_date is stored as TIMESTAMP."
     ],
     "concepts": [
@@ -3581,7 +3581,7 @@
     "enforce_concepts": true,
     "explanation": "Removing the WHERE status filter exposes both statuses. CASE WHEN inside COUNT(DISTINCT) separates completed vs cancelled. The revenue SUM uses CASE WHEN to include net_amount only for completed orders (cancelled orders contributed no revenue). The cancellation rate denominator is COUNT(DISTINCT order_id) \u2014 all orders \u2014 making the rate a true fraction of total volume.",
     "hints": [
-      "Remove the WHERE status filter so cancelled orders appear \u2014 then use CASE WHEN inside COUNT to separate them.",
+      "If cancelled orders aren't appearing, check whether a filter is excluding them \u2014 removing it and using conditional counting within the group will surface both statuses.",
       "The cancellation rate denominator must be total orders (COUNT(DISTINCT order_id)) \u2014 not just completed orders."
     ],
     "concepts": [
@@ -3664,7 +3664,7 @@
     "enforce_concepts": true,
     "explanation": "The subquery computes the average salary per department. Joining this back to employees gives each employee their department average alongside their own salary, making the comparison straightforward in WHERE. An alternative using window functions (AVG OVER PARTITION BY department_id) achieves the same without a subquery \u2014 both are correct.",
     "hints": [
-      "Compute department averages in a subquery, then join it to employees so each employee row carries both their salary and their department average.",
+      "Each employee needs to know their department's average salary for comparison \u2014 compute that average at the department level first, then make it available alongside each individual row.",
       "The WHERE clause compares individual salary to department average \u2014 this filter can't be in HAVING because we're not grouping by employee."
     ],
     "concepts": [
@@ -3895,7 +3895,7 @@
     "enforce_concepts": true,
     "explanation": "CASE WHEN inside SUM pivots the two quarters into columns: Q3 and Q4 amounts. WHERE in the outer query filters to users with nonzero Q3 spend (ensuring 'both quarters' condition) and where Q4 exceeded Q3. Checking q3_spend > 0 is sufficient \u2014 if a user had Q4 spend but no Q3 spend, they're excluded by this condition. The alternative of two separate CTEs joined on user_id would also work.",
     "hints": [
-      "Pivot Q3 and Q4 spend into separate columns using SUM(CASE WHEN month IN (...)) within one GROUP BY.",
+      "You need quarterly totals side by side per user in a single row \u2014 conditional aggregation can pivot a time-period filter into separate output columns.",
       "Filter q3_spend > 0 in the outer WHERE to ensure the user was active in both quarters \u2014 users with only Q4 spend would pass q4_spend > q3_spend (comparing non-zero to 0)."
     ],
     "concepts": [
@@ -3951,7 +3951,7 @@
     "enforce_concepts": true,
     "explanation": "The CTE aggregates brand-category revenue using a 4-table join. The outer query applies DENSE_RANK() OVER (PARTITION BY brand ORDER BY revenue DESC) \u2014 this restarts the rank counter for each brand. The ORDER BY in the final SELECT orders for readability: show each brand's categories from highest to lowest revenue.",
     "hints": [
-      "PARTITION BY brand in DENSE_RANK resets the rank counter for each brand \u2014 without it, all categories would be ranked globally.",
+      "Rankings that reset per group require scoping the ranking window to each group \u2014 without that scope, all groups compete in a single global ranking.",
       "Build the brand-category revenue in a CTE first; you can't use window functions on the same level as GROUP BY in a single SELECT."
     ],
     "concepts": [
@@ -4000,7 +4000,7 @@
     "enforce_concepts": true,
     "explanation": "NOT IN (SELECT session_id FROM events WHERE event_name = 'purchase') excludes sessions that had a purchase event. The remaining sessions \u2014 never resulting in a purchase \u2014 are grouped by country. This is a set difference applied at the session level, then aggregated geographically. DISTINCT in the subquery reduces its size and is defensive against duplicates.",
     "hints": [
-      "NOT IN (SELECT session_id FROM events WHERE event_name = 'purchase') filters to sessions without any purchase event.",
+      "To find sessions without a purchase, first identify the sessions that do have purchases, then exclude them from the full set.",
       "JOIN to users after the NOT IN filter to get country \u2014 the filter applies to sessions before the join aggregates."
     ],
     "concepts": [
@@ -4082,7 +4082,7 @@
     "enforce_concepts": true,
     "explanation": "Two window functions in one SELECT: SUM() OVER (ORDER BY signup_month) produces a running total (cumulative users); SUM() OVER () with no ORDER BY and no frame spec computes the grand total (same value on every row), used as the denominator for share_of_total_pct. These two window specs co-exist in the same query \u2014 each window is independent.",
     "hints": [
-      "SUM OVER (ORDER BY month) gives a running total; SUM OVER () with no ORDER BY gives the grand total \u2014 use both in the same SELECT.",
+      "You need two window calculations simultaneously: one that accumulates month by month, and one that gives the fixed total across all months.",
       "The grand total denominator (SUM OVER ()) is the same value on every row \u2014 dividing monthly new_users by it gives each month's share."
     ],
     "concepts": [
@@ -4121,7 +4121,7 @@
     "enforce_concepts": true,
     "explanation": "COUNT(*) counts all payment rows per method. COUNT(CASE WHEN status='chargeback') isolates chargebacks. SUM(CASE WHEN status='chargeback' THEN amount ELSE 0 END) sums chargeback amounts \u2014 using ELSE 0 ensures non-chargeback rows contribute 0, not NULL. The rate uses COUNT(*) as denominator (all payment attempts for that method, regardless of outcome).",
     "hints": [
-      "Use CASE WHEN inside both COUNT and SUM to isolate chargebacks in a single GROUP BY pass.",
+      "Chargeback metrics and totals can be computed together in a single pass \u2014 a conditional expression inside each aggregation separates the chargeback subset from the full set.",
       "SUM(CASE WHEN ... THEN amount ELSE 0 END) avoids NULL \u2014 ELSE 0 means non-chargeback rows don't disappear from the sum."
     ],
     "concepts": [
@@ -4170,7 +4170,7 @@
     "enforce_concepts": true,
     "explanation": "GROUP BY two dimensions (country + plan_tier) produces the cross-tabulation. HAVING COUNT(DISTINCT order_id) >= 5 removes thin segments \u2014 segments with fewer than 5 orders produce unreliable averages. Distinct counts for both orders and users are correct here: one user can place multiple orders; one order belongs to one user but COUNT(DISTINCT user_id) ensures a shared order wouldn't be double-counted.",
     "hints": [
-      "GROUP BY both country and plan_tier to get the cross-segment view \u2014 every unique combination becomes one row.",
+      "The result needs one row for every combination of country and plan tier \u2014 both dimensions are part of the aggregation key.",
       "HAVING COUNT(DISTINCT order_id) >= 5 filters after aggregation, keeping only statistically meaningful segments."
     ],
     "concepts": [
@@ -4218,7 +4218,7 @@
     "enforce_concepts": true,
     "explanation": "The CTE captures the parent query's result. The outer query filters to above-average segments using a scalar subquery. AVG(revenue) OVER () (no partition, no order) attaches the grand average to every row \u2014 making it visible in the output alongside each segment's own revenue. Showing the benchmark in the output lets analysts validate the cutoff without running a second query.",
     "hints": [
-      "Use a scalar subquery in WHERE to filter: WHERE revenue > (SELECT AVG(revenue) FROM the_cte).",
+      "To keep only above-average segments, compute the overall average first \u2014 then compare each aggregated group to that scalar value to decide which ones make the cut.",
       "AVG(revenue) OVER () with no window spec computes the overall average and attaches it to every output row \u2014 useful for showing the benchmark."
     ],
     "concepts": [
@@ -4272,7 +4272,7 @@
     "enforce_concepts": true,
     "explanation": "The subquery identifies users who have ordered from more than one category by grouping order_items by user and filtering with HAVING COUNT(DISTINCT category_id) > 1. The outer query then counts those users by plan tier. This is a classic scoping pattern: qualify a set of IDs with a complex condition, then aggregate the qualifying set by a dimension.",
     "hints": [
-      "Start by finding the users who qualify (multi-category buyers) using a subquery with HAVING.",
+      "Break the problem into two steps: first identify which users have purchased from more than one category, then count those users by plan tier.",
       "Once you have the qualifying user IDs, join back to users to get plan_tier and aggregate."
     ],
     "concepts": [
@@ -4312,7 +4312,7 @@
     "enforce_concepts": true,
     "explanation": "Using MAX(event_time) as the anchor instead of a hardcoded date makes the query robust to dataset refreshes. date_trunc('week', ...) buckets each timestamp into its ISO week start. The 84-day interval covers 12 complete weeks.",
     "hints": [
-      "Use a subquery to find MAX(event_time) as your rolling window anchor \u2014 never hardcode a date.",
+      "Anchor the time window to the most recent event in the dataset rather than a hardcoded date \u2014 this keeps the query valid as data grows.",
       "date_trunc('week', event_time) truncates each timestamp to the Monday of its week."
     ],
     "concepts": [
@@ -4354,7 +4354,7 @@
     "enforce_concepts": true,
     "explanation": "CASE WHEN inside SUM() is the idiomatic SQL pattern for conditional counting \u2014 it avoids a self-join and keeps the logic in one pass. Multiplying by 100.0 (not 100) ensures floating-point division.",
     "hints": [
-      "Use SUM(CASE WHEN is_active = false THEN 1 ELSE 0 END) to count inactive products per group.",
+      "Active and total product counts can both be produced in a single pass \u2014 a conditional expression inside one aggregation targets the inactive subset while another captures everything.",
       "Ensure you use 100.0 in the division to avoid integer truncation."
     ],
     "concepts": [
@@ -4430,7 +4430,7 @@
     "enforce_concepts": true,
     "explanation": "ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY net_amount DESC) assigns rank 1 to the most expensive order per user. Filtering rn = 1 in the outer query returns exactly one row per user \u2014 a classic top-N-per-group pattern using window functions.",
     "hints": [
-      "Use ROW_NUMBER() partitioned by user_id and ordered by net_amount DESC.",
+      "Each user should appear exactly once with their highest-value order \u2014 the challenge is selecting one row per user based on order amount, keeping only the maximum per user.",
       "Wrap in a CTE, then filter WHERE rn = 1 in the outer query."
     ],
     "concepts": [
@@ -4519,7 +4519,7 @@
     "enforce_concepts": true,
     "explanation": "Two CTEs: first computes per-product average quantity, second ranks products within each category by that average. Filtering rn = 1 selects the top product per category \u2014 the standard window-function top-N-per-group pattern.",
     "hints": [
-      "Compute AVG(quantity) per product in a CTE, then use ROW_NUMBER() OVER (PARTITION BY category_name ORDER BY avg_qty DESC) to rank.",
+      "Two steps: compute the average quantity per product, then find which product ranks highest within each category.",
       "Filter WHERE rn = 1 in the outer query to get one winner per category."
     ],
     "concepts": [
@@ -4557,7 +4557,7 @@
     "enforce_concepts": true,
     "explanation": "EXCEPT returns rows from the first SELECT that do not appear in the second. This is the cleanest expression of 'in set A but not in set B' \u2014 no LEFT JOIN, no NOT IN subquery. The half-open interval (>= start, < next_start) avoids edge cases with end-of-month timestamps.",
     "hints": [
-      "EXCEPT is the cleanest operator for 'in set A but not in set B' \u2014 no join needed.",
+      "This is a set-difference problem: buyers present in one period who are absent in another. SQL has a dedicated operator for this pattern.",
       "Use half-open intervals: >= '2024-01-01' AND < '2024-04-01' to avoid midnight edge cases."
     ],
     "concepts": [
@@ -4600,7 +4600,7 @@
     "enforce_concepts": true,
     "explanation": "The HAVING clause references a scalar subquery (company-wide average) to filter groups. This is more readable than a CTE for a two-level comparison: compute the group metric, compare to the global metric inline.",
     "hints": [
-      "Use HAVING AVG(salary) > (SELECT AVG(salary) FROM employees) to compare department vs company average.",
+      "The filter references a group-level aggregate compared against a company-wide value \u2014 that comparison must happen after grouping.",
       "The scalar subquery inside HAVING is evaluated once and compared against each group's aggregate."
     ],
     "concepts": [
@@ -4650,7 +4650,7 @@
     "enforce_concepts": true,
     "explanation": "Two-CTE pattern: aggregate revenue per product in the first CTE, then rank within brand in the second. WHERE rn <= 3 selects the top 3 per brand. ROW_NUMBER() rather than RANK() ensures exactly 3 rows per brand even when two products are tied.",
     "hints": [
-      "Compute total revenue per product in a CTE, then use ROW_NUMBER() OVER (PARTITION BY brand ORDER BY revenue DESC).",
+      "To pick the top 3 revenue products per brand, you need each product's total revenue first \u2014 compute that aggregation before determining position within each brand group.",
       "Filter WHERE rn <= 3 in the outer query to keep only the top 3 per brand."
     ],
     "concepts": [
@@ -4687,7 +4687,7 @@
     "enforce_concepts": true,
     "explanation": "GROUP BY on two columns creates a cross-tab \u2014 one row per unique (issue_type, status) pair. This is a basic but frequently used pattern in operational reporting to understand ticket volume breakdown.",
     "hints": [
-      "GROUP BY both issue_type and status to get all unique combinations.",
+      "A two-dimensional cross-tab groups by both columns \u2014 each unique pairing of issue type and status becomes its own row.",
       "ORDER BY the same columns for a readable cross-tab layout."
     ],
     "concepts": [
@@ -4732,7 +4732,7 @@
     "enforce_concepts": true,
     "explanation": "Joining events to sessions surfaces the device_type for each event. Filtering on event_name and NULL product_id guards against malformed rows. COUNT(DISTINCT product_id) counts the breadth of product discovery; COUNT(DISTINCT user_id) gives the audience size.",
     "hints": [
-      "Join events to sessions to get device_type, then filter WHERE event_name = 'view_product'.",
+      "Device type is a session attribute, not an event attribute \u2014 you need to bring session context into your event-level analysis before you can aggregate by device type.",
       "Guard against NULL product_id rows with AND product_id IS NOT NULL."
     ],
     "concepts": [
@@ -4860,7 +4860,7 @@
     "enforce_concepts": true,
     "explanation": "ROWS BETWEEN 2 PRECEDING AND CURRENT ROW defines a 3-row window (current + 2 before). AVG() over this frame gives a rolling 3-month average. The first two months will have averages over 1 and 2 months respectively (smaller frames) \u2014 this is correct and expected.",
     "hints": [
-      "Compute monthly order counts in a CTE, then apply AVG() OVER (ORDER BY month ROWS BETWEEN 2 PRECEDING AND CURRENT ROW).",
+      "A rolling 3-month average includes the current month and the two preceding months in each calculation \u2014 define that window boundary over an ordered time series.",
       "The window frame ROWS BETWEEN 2 PRECEDING AND CURRENT ROW gives 3 rows: current + 2 previous."
     ],
     "concepts": [
@@ -4941,7 +4941,7 @@
     "enforce_concepts": true,
     "explanation": "Filtering WHERE status = 'resolved' before aggregation (pre-aggregation filter) ensures resolution_hours is only averaged over tickets that were actually resolved \u2014 including unresolved tickets would bring in NULL values which AVG() ignores, but the result would be misleading without the filter.",
     "hints": [
-      "Filter WHERE status = 'resolved' before grouping \u2014 don't average resolution_hours for open tickets.",
+      "Resolution time is only meaningful for tickets that have been resolved \u2014 filter to that subset before computing averages.",
       "ORDER BY avg_resolution_hours (not priority string) to rank from fastest to slowest."
     ],
     "concepts": [
@@ -4995,7 +4995,7 @@
     "enforce_concepts": true,
     "explanation": "Two CTEs: aggregate revenue per channel-product pair, then rank within each channel. ROW_NUMBER() rather than RANK() guarantees exactly one row per channel. The acquisition_channel \u2192 product revenue chain requires a 4-table join.",
     "hints": [
-      "Aggregate revenue per (acquisition_channel, product) in a CTE, then rank with ROW_NUMBER() OVER (PARTITION BY acquisition_channel ORDER BY revenue DESC).",
+      "Two steps: compute total revenue per channel-product pair, then identify the top product within each channel.",
       "Filter WHERE rn = 1 to return exactly one top product per channel."
     ],
     "concepts": [
@@ -5034,7 +5034,7 @@
     "enforce_concepts": true,
     "explanation": "Counting paid and refunded payments as conditional sums in one pass avoids self-joins. NULLIF prevents a divide-by-zero error in months with zero paid transactions. The WHERE clause in the outer query filters after aggregation \u2014 this is the standard CTE + post-filter pattern.",
     "hints": [
-      "Use SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) and SUM(CASE WHEN status = 'refunded' THEN 1 ELSE 0 END) in a CTE.",
+      "Paid and refunded counts can both be derived from a single pass through the data \u2014 compute them together before filtering to above-threshold months.",
       "Filter WHERE refunded_count > 0.10 * NULLIF(paid_count, 0) in the outer query."
     ],
     "concepts": [
@@ -5096,6 +5096,249 @@
       "WINDOW FUNCTIONS",
       "METRIC INTERPRETATION & DENOMINATOR CHOICE",
       "GROUPED AGGREGATION"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12115,
+    "order": 115,
+    "mock_only": true,
+    "title": "Acquisition channel NULL share \u2014 dimension completeness check",
+    "description": "Before segmenting revenue by acquisition channel, a senior analyst asks you to quantify how many user records have NULL in `acquisition_channel`. Write a query that returns two rows \u2014 one for records with a known channel and one for records where the channel is NULL \u2014 showing the user count and percentage of the total for each (rounded to 1 decimal). Order by user count descending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "acquisition_channel"
+      ]
+    },
+    "dataset_files": [
+      "users.csv"
+    ],
+    "expected_query": "WITH base AS (\n    SELECT\n        CASE WHEN acquisition_channel IS NULL THEN 'unknown' ELSE 'known' END AS channel_status,\n        COUNT(*) AS user_count\n    FROM users\n    GROUP BY 1\n)\nSELECT channel_status,\n       user_count,\n       ROUND(100.0 * user_count / SUM(user_count) OVER (), 1) AS pct_of_total\nFROM base\nORDER BY user_count DESC",
+    "solution_query": "WITH base AS (\n    SELECT\n        CASE WHEN acquisition_channel IS NULL THEN 'unknown' ELSE 'known' END AS channel_status,\n        COUNT(*) AS user_count\n    FROM users\n    GROUP BY 1\n)\nSELECT channel_status,\n       user_count,\n       ROUND(100.0 * user_count / SUM(user_count) OVER (), 1) AS pct_of_total\nFROM base\nORDER BY user_count DESC;",
+    "required_concepts": [
+      "cte",
+      "case_when",
+      "aggregate",
+      "window"
+    ],
+    "enforce_concepts": true,
+    "explanation": "A CTE groups users by whether acquisition_channel is NULL or not. The outer query uses a window function over the aggregated rows to compute each group's share of the total without a self-join. If all users have a known channel the query returns one row; if any are NULL both rows appear. Running this before a channel-segmentation report reveals whether the NULL share is large enough to distort results.",
+    "hints": [
+      "Classify each user by whether the channel field is NULL or populated, then count each group separately.",
+      "To express each group as a percentage of all users, you need the total count as a denominator \u2014 a window expression computed over the aggregated result provides it in a single pass."
+    ],
+    "concepts": [
+      "CONDITIONAL AGGREGATION",
+      "OUTPUT SANITY VALIDATION"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12116,
+    "order": 116,
+    "mock_only": true,
+    "title": "Monthly completed revenue \u2014 date-spine completeness check",
+    "description": "Before presenting a monthly revenue report for 2023, verify that no month is silently missing from the results. Write a query that produces the complete 12-month date spine for 2023 (one row per month from January through December) and attaches each month's total net revenue from completed orders. Months with no completed orders should appear with NULL rather than being absent. Return `month` and `total_revenue` (rounded to 2 decimal places), ordered by month.",
+    "difficulty": "medium",
+    "schema": {
+      "orders": [
+        "order_id",
+        "order_date",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv"
+    ],
+    "expected_query": "WITH spine AS (\n    SELECT CAST(gs AS DATE) AS month\n    FROM generate_series(DATE '2023-01-01', DATE '2023-12-01', INTERVAL '1 month') AS t(gs)\n),\nmonthly_revenue AS (\n    SELECT DATE_TRUNC('month', order_date)::DATE AS month,\n           ROUND(SUM(net_amount), 2) AS total_revenue\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY 1\n)\nSELECT s.month, mr.total_revenue\nFROM spine s\nLEFT JOIN monthly_revenue mr ON s.month = mr.month\nORDER BY s.month",
+    "solution_query": "WITH spine AS (\n    SELECT CAST(gs AS DATE) AS month\n    FROM generate_series(DATE '2023-01-01', DATE '2023-12-01', INTERVAL '1 month') AS t(gs)\n),\nmonthly_revenue AS (\n    SELECT DATE_TRUNC('month', order_date)::DATE AS month,\n           ROUND(SUM(net_amount), 2) AS total_revenue\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY 1\n)\nSELECT s.month, mr.total_revenue\nFROM spine s\nLEFT JOIN monthly_revenue mr ON s.month = mr.month\nORDER BY s.month;",
+    "required_concepts": [
+      "cte",
+      "generate_series",
+      "left_join",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The spine CTE generates all 12 month-start dates using DuckDB's generate_series. The revenue CTE aggregates completed orders per calendar month. A LEFT JOIN from spine to revenue ensures all 12 months appear \u2014 months with no revenue show NULL rather than being silently absent. This is the canonical pattern for catching missing periods in a time-series report before it reaches stakeholders.",
+    "hints": [
+      "Build the full 12-month reference set first using DuckDB's `generate_series` \u2014 this gives you an anchor of 12 dates that drives the output regardless of what the orders data contains.",
+      "Combine the date spine with actual revenue data in a way that preserves all 12 months \u2014 months with no matching revenue should appear with a NULL total, not disappear."
+    ],
+    "concepts": [
+      "ROW COUNT SANITY",
+      "DATE TRUNC & CALENDAR BUCKETING",
+      "OUTPUT SANITY VALIDATION"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12117,
+    "order": 117,
+    "mock_only": true,
+    "title": "User revenue pipeline \u2014 buyer vs non-buyer breakdown",
+    "description": "A per-user revenue summary is built by combining the `users` and `orders` tables. After the query runs, some users appear with NULL revenue and your team wonders whether those NULLs are expected (users who never ordered) or a data quality problem. Write a validation query that returns three figures as a single row: `active_buyers` (users with at least one completed order), `non_buyers` (users with no completed order), and `total_users` (all users in the users table).",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv"
+    ],
+    "expected_query": "WITH user_order_counts AS (\n    SELECT u.user_id, COUNT(o.order_id) AS completed_order_count\n    FROM users u\n    LEFT JOIN orders o ON u.user_id = o.user_id AND o.status = 'completed'\n    GROUP BY u.user_id\n)\nSELECT\n    COUNT(*) FILTER (WHERE completed_order_count > 0) AS active_buyers,\n    COUNT(*) FILTER (WHERE completed_order_count = 0) AS non_buyers,\n    COUNT(*)                                           AS total_users\nFROM user_order_counts",
+    "solution_query": "WITH user_order_counts AS (\n    SELECT u.user_id, COUNT(o.order_id) AS completed_order_count\n    FROM users u\n    LEFT JOIN orders o ON u.user_id = o.user_id AND o.status = 'completed'\n    GROUP BY u.user_id\n)\nSELECT\n    COUNT(*) FILTER (WHERE completed_order_count > 0) AS active_buyers,\n    COUNT(*) FILTER (WHERE completed_order_count = 0) AS non_buyers,\n    COUNT(*)                                           AS total_users\nFROM user_order_counts;",
+    "required_concepts": [
+      "cte",
+      "left_join",
+      "aggregate",
+      "filter_clause"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The CTE builds a per-user count of completed orders, preserving users with no matching orders. The outer query then uses conditional FILTER clauses to split the count into buyers and non-buyers without a second pass. If active_buyers + non_buyers = total_users, the NULLs in a downstream revenue pipeline are fully explained by users who never purchased \u2014 no data quality issue.",
+    "hints": [
+      "Every user belongs to one of two groups \u2014 those with at least one completed order and those without. Start by building a per-user completed-order count, making sure users with zero orders are still present.",
+      "Once you have per-user counts, a conditional expression inside each aggregation can separate the two groups in a single pass over the result."
+    ],
+    "concepts": [
+      "MULTI-TABLE ENTITY LINKING",
+      "OUTPUT SANITY VALIDATION"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12118,
+    "order": 118,
+    "mock_only": true,
+    "title": "Eliminate duplicate events scan \u2014 conditional aggregation rewrite",
+    "description": "The query below reads the `events` table twice to compute two event-type counts, then stitches the results together with a FULL OUTER JOIN. Rewrite it using conditional aggregation to read `events` exactly once while producing identical results.\n\n```sql\nWITH views AS (\n    SELECT user_id, COUNT(*) AS view_count\n    FROM events WHERE event_name = 'view_product' GROUP BY user_id\n),\ncarts AS (\n    SELECT user_id, COUNT(*) AS cart_count\n    FROM events WHERE event_name = 'add_to_cart' GROUP BY user_id\n)\nSELECT COALESCE(v.user_id, c.user_id) AS user_id,\n       COALESCE(v.view_count, 0) AS view_count,\n       COALESCE(c.cart_count, 0) AS cart_count\nFROM views v\nFULL OUTER JOIN carts c USING(user_id)\nORDER BY user_id\n```\n\nReturn `user_id`, `view_count`, and `cart_count`, ordered by `user_id`.",
+    "difficulty": "medium",
+    "schema": {
+      "events": [
+        "user_id",
+        "event_name"
+      ]
+    },
+    "dataset_files": [
+      "events.csv"
+    ],
+    "expected_query": "SELECT user_id,\n       COUNT(*) FILTER (WHERE event_name = 'view_product') AS view_count,\n       COUNT(*) FILTER (WHERE event_name = 'add_to_cart')  AS cart_count\nFROM events\nWHERE event_name IN ('view_product', 'add_to_cart')\nGROUP BY user_id\nORDER BY user_id",
+    "solution_query": "SELECT user_id,\n       COUNT(*) FILTER (WHERE event_name = 'view_product') AS view_count,\n       COUNT(*) FILTER (WHERE event_name = 'add_to_cart')  AS cart_count\nFROM events\nWHERE event_name IN ('view_product', 'add_to_cart')\nGROUP BY user_id\nORDER BY user_id;",
+    "required_concepts": [
+      "aggregate",
+      "filter_clause"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Both event metrics come from the same source table with the same grouping key. A conditional FILTER inside each COUNT computes both values in a single aggregation pass, eliminating the second table scan and the intermediate set operation. For large event tables this halves the I/O and removes the FULL JOIN entirely.",
+    "hints": [
+      "Both metrics come from the same table with the same grouping key \u2014 the only difference is which event type each count targets. A single pass over the table can compute both simultaneously.",
+      "A conditional expression inside an aggregation can separate subsets of rows without requiring separate queries or intermediate result sets."
+    ],
+    "concepts": [
+      "REPEATED COMPUTATION ELIMINATION",
+      "CONDITIONAL AGGREGATION",
+      "PERFORMANCE-AWARE ANALYTICS"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12119,
+    "order": 119,
+    "mock_only": true,
+    "title": "Pre-aggregate order items before joining to users",
+    "description": "The query below joins `users`, `orders`, and `order_items` in a single step before aggregating. `order_items` has many more rows than `orders` \u2014 every order row fans out into multiple item rows before the join to `users` is resolved. Rewrite it to pre-aggregate `order_items` to order-level totals first, then join that smaller intermediate set to `users`.\n\n```sql\nSELECT u.acquisition_channel,\n       COUNT(DISTINCT o.order_id)       AS order_count,\n       ROUND(SUM(oi.line_amount), 2)    AS total_revenue\nFROM users u\nJOIN orders o ON u.user_id = o.user_id AND o.status = 'completed'\nJOIN order_items oi ON o.order_id = oi.order_id\nGROUP BY u.acquisition_channel\nORDER BY total_revenue DESC\n```\n\nReturn `acquisition_channel`, `order_count`, and `total_revenue` (rounded to 2 decimal places), ordered by `total_revenue` descending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "acquisition_channel"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status"
+      ],
+      "order_items": [
+        "order_item_id",
+        "order_id",
+        "line_amount"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv",
+      "order_items.csv"
+    ],
+    "expected_query": "WITH order_totals AS (\n    SELECT o.order_id, o.user_id,\n           ROUND(SUM(oi.line_amount), 2) AS order_revenue\n    FROM orders o\n    JOIN order_items oi ON o.order_id = oi.order_id\n    WHERE o.status = 'completed'\n    GROUP BY o.order_id, o.user_id\n)\nSELECT u.acquisition_channel,\n       COUNT(ot.order_id)         AS order_count,\n       SUM(ot.order_revenue)      AS total_revenue\nFROM users u\nJOIN order_totals ot ON u.user_id = ot.user_id\nGROUP BY u.acquisition_channel\nORDER BY total_revenue DESC",
+    "solution_query": "WITH order_totals AS (\n    SELECT o.order_id, o.user_id,\n           ROUND(SUM(oi.line_amount), 2) AS order_revenue\n    FROM orders o\n    JOIN order_items oi ON o.order_id = oi.order_id\n    WHERE o.status = 'completed'\n    GROUP BY o.order_id, o.user_id\n)\nSELECT u.acquisition_channel,\n       COUNT(ot.order_id)         AS order_count,\n       SUM(ot.order_revenue)      AS total_revenue\nFROM users u\nJOIN order_totals ot ON u.user_id = ot.user_id\nGROUP BY u.acquisition_channel\nORDER BY total_revenue DESC;",
+    "required_concepts": [
+      "cte",
+      "join",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The original passes every order-item row through the join to users, then deduplicates with COUNT(DISTINCT). Pre-aggregating order_items to one row per order in the CTE reduces the join input from item-level cardinality to order-level cardinality \u2014 matching what the final aggregation actually needs. The downstream combination with users then handles one row per order rather than one row per line item.",
+    "hints": [
+      "The original passes every item row through the combination with users before deduplicating \u2014 acquisition channel is a user-level attribute, not an item-level one. Computing order totals first reduces what the downstream combination must handle.",
+      "After aggregating item rows to one row per order, each order has a single revenue figure that can be matched to a user and summed by channel without deduplication overhead."
+    ],
+    "concepts": [
+      "CARDINALITY REDUCTION",
+      "MULTI-TABLE ENTITY LINKING",
+      "PERFORMANCE-AWARE ANALYTICS"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12120,
+    "order": 120,
+    "mock_only": true,
+    "title": "Replace correlated subquery with pre-computed CTE",
+    "description": "The query below uses a correlated subquery to look up each active user's total completed-order revenue. The subquery re-executes once for every user row in the outer query. Rewrite it using a CTE to compute all user revenue totals in a single pass, then bring them alongside the user rows.\n\n```sql\nSELECT user_id, name,\n       (SELECT SUM(net_amount)\n        FROM orders\n        WHERE user_id = u.user_id AND status = 'completed') AS total_revenue\nFROM users u\nWHERE is_active = true\nORDER BY total_revenue DESC NULLS LAST, user_id\n```\n\nReturn `user_id`, `name`, and `total_revenue` (rounded to 2 decimal places), ordered by `total_revenue` descending (NULLs last), then `user_id` ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "name",
+        "is_active"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv"
+    ],
+    "expected_query": "WITH user_revenue AS (\n    SELECT user_id,\n           ROUND(SUM(net_amount), 2) AS total_revenue\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY user_id\n)\nSELECT u.user_id, u.name, ur.total_revenue\nFROM users u\nLEFT JOIN user_revenue ur ON u.user_id = ur.user_id\nWHERE u.is_active = true\nORDER BY total_revenue DESC NULLS LAST, u.user_id",
+    "solution_query": "WITH user_revenue AS (\n    SELECT user_id,\n           ROUND(SUM(net_amount), 2) AS total_revenue\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY user_id\n)\nSELECT u.user_id, u.name, ur.total_revenue\nFROM users u\nLEFT JOIN user_revenue ur ON u.user_id = ur.user_id\nWHERE u.is_active = true\nORDER BY total_revenue DESC NULLS LAST, u.user_id;",
+    "required_concepts": [
+      "cte",
+      "left_join",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The correlated subquery re-executes the revenue computation for every active user row \u2014 O(N) subquery invocations. Moving the aggregation into a CTE executes it exactly once, producing a keyed lookup result. A LEFT JOIN from users to that result retrieves each user's total without repeated computation, and preserves active users who have never ordered as NULL rather than dropping them.",
+    "hints": [
+      "A correlated subquery re-executes the same revenue computation for every active user \u2014 if there are 500 active users, the subquery runs 500 times. What if you computed all user totals once instead?",
+      "Once you have user revenue computed in a single pass, bring it alongside the user rows by matching on user_id \u2014 active users with no orders should appear with a NULL total rather than disappear."
+    ],
+    "concepts": [
+      "REPEATED COMPUTATION ELIMINATION",
+      "SUBQUERY & CORRELATED LOOKUP",
+      "PERFORMANCE-AWARE ANALYTICS"
     ],
     "companies": []
   }
