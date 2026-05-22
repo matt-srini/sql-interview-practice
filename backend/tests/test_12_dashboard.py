@@ -209,8 +209,17 @@ def test_tc181_streak_days_reflects_consecutive_days():
 # TC-182 to TC-191: Weakest concepts
 # ---------------------------------------------------------------------------
 
-def _get_concept_for_question(q: dict) -> str | None:
-    return q.get("concepts", [None])[0]
+def _get_concept_for_question(q: dict, track: str = "sql") -> str | None:
+    """Return the resolved family name for the first concept tag on the question.
+
+    The insights API aggregates at the family level (via resolve_to_family), so
+    tests must compare against family names, not raw tags.
+    """
+    from concept_families import resolve_to_family
+    raw = q.get("concepts", [None])[0]
+    if raw is None:
+        return None
+    return resolve_to_family(raw, track)
 
 
 def test_tc182_concept_with_3_attempts_appears_in_weakest():
