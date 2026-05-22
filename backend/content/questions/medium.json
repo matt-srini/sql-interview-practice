@@ -4659,5 +4659,444 @@
       "GROUPED AGGREGATION"
     ],
     "companies": []
+  },
+  {
+    "id": 12105,
+    "order": 105,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Support ticket count by issue type and status",
+    "description": "A support operations manager wants a cross-tab of ticket volume. Return issue_type, status, and ticket_count for every combination present in the data. Order by issue_type, then status.",
+    "difficulty": "medium",
+    "schema": {
+      "support_tickets": [
+        "ticket_id",
+        "issue_type",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "support_tickets.csv"
+    ],
+    "expected_query": "SELECT\n  issue_type,\n  status,\n  COUNT(*) AS ticket_count\nFROM support_tickets\nGROUP BY issue_type, status\nORDER BY issue_type, status",
+    "solution_query": "SELECT\n  issue_type,\n  status,\n  COUNT(*) AS ticket_count\nFROM support_tickets\nGROUP BY issue_type, status\nORDER BY issue_type, status",
+    "required_concepts": [
+      "grouped_agg",
+      "multi_column_group_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "GROUP BY on two columns creates a cross-tab \u2014 one row per unique (issue_type, status) pair. This is a basic but frequently used pattern in operational reporting to understand ticket volume breakdown.",
+    "hints": [
+      "GROUP BY both issue_type and status to get all unique combinations.",
+      "ORDER BY the same columns for a readable cross-tab layout."
+    ],
+    "concepts": [
+      "GROUPED AGGREGATION",
+      "RESULT SHAPING & ORDERING"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12106,
+    "order": 106,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Unique products viewed per device type",
+    "description": "A UX team wants to understand product discovery across device types. For each device_type, count the number of distinct products viewed (event_name = 'view_product') and the number of distinct users who viewed at least one product. Order by unique_products_viewed descending.",
+    "difficulty": "medium",
+    "schema": {
+      "events": [
+        "event_id",
+        "session_id",
+        "user_id",
+        "event_name",
+        "product_id"
+      ],
+      "sessions": [
+        "session_id",
+        "device_type"
+      ]
+    },
+    "dataset_files": [
+      "events.csv",
+      "sessions.csv"
+    ],
+    "expected_query": "SELECT\n  s.device_type,\n  COUNT(DISTINCT e.product_id) AS unique_products_viewed,\n  COUNT(DISTINCT s.user_id) AS unique_users\nFROM events e\nJOIN sessions s ON e.session_id = s.session_id\nWHERE e.event_name = 'view_product'\n  AND e.product_id IS NOT NULL\nGROUP BY s.device_type\nORDER BY unique_products_viewed DESC",
+    "solution_query": "SELECT\n  s.device_type,\n  COUNT(DISTINCT e.product_id) AS unique_products_viewed,\n  COUNT(DISTINCT s.user_id) AS unique_users\nFROM events e\nJOIN sessions s ON e.session_id = s.session_id\nWHERE e.event_name = 'view_product'\n  AND e.product_id IS NOT NULL\nGROUP BY s.device_type\nORDER BY unique_products_viewed DESC",
+    "required_concepts": [
+      "join",
+      "grouped_agg",
+      "count_distinct",
+      "filter"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Joining events to sessions surfaces the device_type for each event. Filtering on event_name and NULL product_id guards against malformed rows. COUNT(DISTINCT product_id) counts the breadth of product discovery; COUNT(DISTINCT user_id) gives the audience size.",
+    "hints": [
+      "Join events to sessions to get device_type, then filter WHERE event_name = 'view_product'.",
+      "Guard against NULL product_id rows with AND product_id IS NOT NULL."
+    ],
+    "concepts": [
+      "GROUPED AGGREGATION",
+      "SESSIONIZATION",
+      "MULTI-TABLE JOINS"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12107,
+    "order": 107,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Users who never completed a purchase",
+    "description": "A re-engagement team wants to identify registered users who have never converted to a buyer. Return the count of users who have no completed orders in the system.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv"
+    ],
+    "expected_query": "SELECT COUNT(*) AS never_purchased_users\nFROM users u\nWHERE NOT EXISTS (\n  SELECT 1 FROM orders o\n  WHERE o.user_id = u.user_id\n    AND o.status = 'completed'\n)",
+    "solution_query": "SELECT COUNT(*) AS never_purchased_users\nFROM users u\nWHERE NOT EXISTS (\n  SELECT 1 FROM orders o\n  WHERE o.user_id = u.user_id\n    AND o.status = 'completed'\n)",
+    "required_concepts": [
+      "not_exists",
+      "subquery",
+      "anti_join"
+    ],
+    "enforce_concepts": true,
+    "explanation": "NOT EXISTS is the idiomatic anti-join when you need to exclude users with any matching row. It short-circuits on the first match, making it efficient. An alternative is LEFT JOIN + WHERE order_id IS NULL, but NOT EXISTS expresses intent more clearly.",
+    "hints": [
+      "Use NOT EXISTS with a correlated subquery to find users with no completed orders.",
+      "Remember to filter o.status = 'completed' inside the subquery \u2014 otherwise cancelled orders would make a user appear to have purchased."
+    ],
+    "concepts": [
+      "DEDUPLICATION LOGIC",
+      "SUBQUERY PATTERNS"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12108,
+    "order": 108,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Revenue by active vs inactive product status",
+    "description": "A product manager wants to understand how much revenue comes from currently active products vs inactive ones. Using completed orders, return product_status ('Active' or 'Inactive'), the count of distinct products, and total_revenue (rounded to 2 decimal places). Order by product_status.",
+    "difficulty": "medium",
+    "schema": {
+      "products": [
+        "product_id",
+        "is_active"
+      ],
+      "order_items": [
+        "order_id",
+        "product_id",
+        "line_amount"
+      ],
+      "orders": [
+        "order_id",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "products.csv",
+      "order_items.csv",
+      "orders.csv"
+    ],
+    "expected_query": "SELECT\n  CASE WHEN p.is_active = true THEN 'Active' ELSE 'Inactive' END AS product_status,\n  COUNT(DISTINCT p.product_id) AS product_count,\n  ROUND(SUM(oi.line_amount), 2) AS total_revenue\nFROM products p\nJOIN order_items oi ON p.product_id = oi.product_id\nJOIN orders o ON oi.order_id = o.order_id\nWHERE o.status = 'completed'\nGROUP BY 1\nORDER BY 1",
+    "solution_query": "SELECT\n  CASE WHEN p.is_active = true THEN 'Active' ELSE 'Inactive' END AS product_status,\n  COUNT(DISTINCT p.product_id) AS product_count,\n  ROUND(SUM(oi.line_amount), 2) AS total_revenue\nFROM products p\nJOIN order_items oi ON p.product_id = oi.product_id\nJOIN orders o ON oi.order_id = o.order_id\nWHERE o.status = 'completed'\nGROUP BY 1\nORDER BY 1",
+    "required_concepts": [
+      "case_when",
+      "grouped_agg",
+      "multi_join"
+    ],
+    "enforce_concepts": true,
+    "explanation": "CASE WHEN on a boolean column converts true/false to a readable label. This is a two-group segmentation that reveals whether deprecated products still generate meaningful revenue \u2014 a common lifecycle question.",
+    "hints": [
+      "Use CASE WHEN is_active = true THEN 'Active' ELSE 'Inactive' END to create the segment label.",
+      "JOIN order_items to orders to filter on completed status, then aggregate."
+    ],
+    "concepts": [
+      "CONDITIONAL LOGIC & CASE WHEN",
+      "GROUPED AGGREGATION",
+      "MULTI-TABLE JOINS"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12109,
+    "order": 109,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "3-month rolling average order count",
+    "description": "An operations analyst wants to smooth out month-to-month noise in order volume. For each calendar month, compute the order_count (completed orders) and a rolling_3m_avg \u2014 the average of the current and two preceding months' counts (rounded to 1 decimal). Order by month.",
+    "difficulty": "medium",
+    "schema": {
+      "orders": [
+        "order_id",
+        "order_date",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv"
+    ],
+    "expected_query": "WITH monthly_orders AS (\n  SELECT\n    strftime(CAST(order_date AS DATE), '%Y-%m') AS month,\n    COUNT(*) AS order_count\n  FROM orders\n  WHERE status = 'completed'\n  GROUP BY 1\n)\nSELECT\n  month,\n  order_count,\n  ROUND(AVG(order_count) OVER (ORDER BY month ROWS BETWEEN 2 PRECEDING AND CURRENT ROW), 1) AS rolling_3m_avg\nFROM monthly_orders\nORDER BY month",
+    "solution_query": "WITH monthly_orders AS (\n  SELECT\n    strftime(CAST(order_date AS DATE), '%Y-%m') AS month,\n    COUNT(*) AS order_count\n  FROM orders\n  WHERE status = 'completed'\n  GROUP BY 1\n)\nSELECT\n  month,\n  order_count,\n  ROUND(AVG(order_count) OVER (ORDER BY month ROWS BETWEEN 2 PRECEDING AND CURRENT ROW), 1) AS rolling_3m_avg\nFROM monthly_orders\nORDER BY month",
+    "required_concepts": [
+      "cte",
+      "window_function",
+      "rows_frame",
+      "grouped_agg"
+    ],
+    "enforce_concepts": true,
+    "explanation": "ROWS BETWEEN 2 PRECEDING AND CURRENT ROW defines a 3-row window (current + 2 before). AVG() over this frame gives a rolling 3-month average. The first two months will have averages over 1 and 2 months respectively (smaller frames) \u2014 this is correct and expected.",
+    "hints": [
+      "Compute monthly order counts in a CTE, then apply AVG() OVER (ORDER BY month ROWS BETWEEN 2 PRECEDING AND CURRENT ROW).",
+      "The window frame ROWS BETWEEN 2 PRECEDING AND CURRENT ROW gives 3 rows: current + 2 previous."
+    ],
+    "concepts": [
+      "RUNNING TOTAL & MOVING WINDOW",
+      "WINDOW FUNCTIONS",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12110,
+    "order": 110,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Employee headcount by department and hire year",
+    "description": "HR wants to understand when each department built out its team. Return department_name, hire_year, and employee_count, ordered by department_name and then hire_year.",
+    "difficulty": "medium",
+    "schema": {
+      "employees": [
+        "employee_id",
+        "hire_date",
+        "department_id"
+      ],
+      "departments": [
+        "department_id",
+        "department_name"
+      ]
+    },
+    "dataset_files": [
+      "employees.csv",
+      "departments.csv"
+    ],
+    "expected_query": "SELECT\n  d.department_name,\n  EXTRACT(YEAR FROM e.hire_date) AS hire_year,\n  COUNT(*) AS employee_count\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nGROUP BY d.department_name, hire_year\nORDER BY d.department_name, hire_year",
+    "solution_query": "SELECT\n  d.department_name,\n  EXTRACT(YEAR FROM e.hire_date) AS hire_year,\n  COUNT(*) AS employee_count\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nGROUP BY d.department_name, hire_year\nORDER BY d.department_name, hire_year",
+    "required_concepts": [
+      "extract",
+      "grouped_agg",
+      "join"
+    ],
+    "enforce_concepts": true,
+    "explanation": "EXTRACT(YEAR FROM hire_date) pulls the year component from a date \u2014 simpler than strftime for a pure year extraction. Grouping on the derived hire_year column gives headcount by year per department.",
+    "hints": [
+      "Use EXTRACT(YEAR FROM hire_date) to get the hire year from the date column.",
+      "Group by both department_name and hire_year to get one row per department-year combination."
+    ],
+    "concepts": [
+      "GROUPED AGGREGATION",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12111,
+    "order": 111,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Average support ticket resolution time by priority",
+    "description": "A support team lead wants to understand if high-priority tickets are resolved faster. For resolved tickets, compute avg_resolution_hours, min_hours, and max_hours (all rounded to 1 decimal) by priority. Order by avg_resolution_hours ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "support_tickets": [
+        "ticket_id",
+        "priority",
+        "status",
+        "resolution_hours"
+      ]
+    },
+    "dataset_files": [
+      "support_tickets.csv"
+    ],
+    "expected_query": "SELECT\n  priority,\n  ROUND(AVG(resolution_hours), 1) AS avg_resolution_hours,\n  ROUND(MIN(resolution_hours), 1) AS min_hours,\n  ROUND(MAX(resolution_hours), 1) AS max_hours,\n  COUNT(*) AS resolved_tickets\nFROM support_tickets\nWHERE status = 'resolved'\nGROUP BY priority\nORDER BY avg_resolution_hours",
+    "solution_query": "SELECT\n  priority,\n  ROUND(AVG(resolution_hours), 1) AS avg_resolution_hours,\n  ROUND(MIN(resolution_hours), 1) AS min_hours,\n  ROUND(MAX(resolution_hours), 1) AS max_hours,\n  COUNT(*) AS resolved_tickets\nFROM support_tickets\nWHERE status = 'resolved'\nGROUP BY priority\nORDER BY avg_resolution_hours",
+    "required_concepts": [
+      "grouped_agg",
+      "filter",
+      "pre_aggregation_filter"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Filtering WHERE status = 'resolved' before aggregation (pre-aggregation filter) ensures resolution_hours is only averaged over tickets that were actually resolved \u2014 including unresolved tickets would bring in NULL values which AVG() ignores, but the result would be misleading without the filter.",
+    "hints": [
+      "Filter WHERE status = 'resolved' before grouping \u2014 don't average resolution_hours for open tickets.",
+      "ORDER BY avg_resolution_hours (not priority string) to rank from fastest to slowest."
+    ],
+    "concepts": [
+      "GROUPED AGGREGATION",
+      "PRE-AGGREGATION FILTERING"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12112,
+    "order": 112,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Top revenue product per acquisition channel",
+    "description": "A marketing analyst wants to know which product generated the most revenue from users acquired through each channel. Using completed orders, return acquisition_channel, product_name, and revenue (rounded to 2 decimal places) \u2014 one row per channel showing only the top product. Order by acquisition_channel.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "acquisition_channel"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status"
+      ],
+      "order_items": [
+        "order_id",
+        "product_id",
+        "line_amount"
+      ],
+      "products": [
+        "product_id",
+        "product_name"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv",
+      "order_items.csv",
+      "products.csv"
+    ],
+    "expected_query": "WITH channel_revenue AS (\n  SELECT\n    u.acquisition_channel,\n    p.product_id,\n    p.product_name,\n    SUM(oi.line_amount) AS revenue\n  FROM users u\n  JOIN orders o ON u.user_id = o.user_id\n  JOIN order_items oi ON o.order_id = oi.order_id\n  JOIN products p ON oi.product_id = p.product_id\n  WHERE o.status = 'completed'\n  GROUP BY u.acquisition_channel, p.product_id, p.product_name\n),\nranked AS (\n  SELECT *,\n    ROW_NUMBER() OVER (PARTITION BY acquisition_channel ORDER BY revenue DESC) AS rn\n  FROM channel_revenue\n)\nSELECT acquisition_channel, product_name, ROUND(revenue, 2) AS revenue\nFROM ranked\nWHERE rn = 1\nORDER BY acquisition_channel",
+    "solution_query": "WITH channel_revenue AS (\n  SELECT\n    u.acquisition_channel,\n    p.product_id,\n    p.product_name,\n    SUM(oi.line_amount) AS revenue\n  FROM users u\n  JOIN orders o ON u.user_id = o.user_id\n  JOIN order_items oi ON o.order_id = oi.order_id\n  JOIN products p ON oi.product_id = p.product_id\n  WHERE o.status = 'completed'\n  GROUP BY u.acquisition_channel, p.product_id, p.product_name\n),\nranked AS (\n  SELECT *,\n    ROW_NUMBER() OVER (PARTITION BY acquisition_channel ORDER BY revenue DESC) AS rn\n  FROM channel_revenue\n)\nSELECT acquisition_channel, product_name, ROUND(revenue, 2) AS revenue\nFROM ranked\nWHERE rn = 1\nORDER BY acquisition_channel",
+    "required_concepts": [
+      "cte",
+      "window_function",
+      "row_number",
+      "grouped_agg"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Two CTEs: aggregate revenue per channel-product pair, then rank within each channel. ROW_NUMBER() rather than RANK() guarantees exactly one row per channel. The acquisition_channel \u2192 product revenue chain requires a 4-table join.",
+    "hints": [
+      "Aggregate revenue per (acquisition_channel, product) in a CTE, then rank with ROW_NUMBER() OVER (PARTITION BY acquisition_channel ORDER BY revenue DESC).",
+      "Filter WHERE rn = 1 to return exactly one top product per channel."
+    ],
+    "concepts": [
+      "RANKING & TOP-N PER GROUP",
+      "WINDOW FUNCTIONS",
+      "MULTI-TABLE ENTITY LINKING"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12113,
+    "order": 113,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Months with refund rate above 10%",
+    "description": "A finance team wants to flag months with unusually high refund activity. For each calendar month, compute paid_count, refunded_count, and refund_rate_pct (refunded / paid, rounded to 1 decimal). Return only months where refunded payments exceed 10% of paid payments. Order by month.",
+    "difficulty": "medium",
+    "schema": {
+      "payments": [
+        "payment_id",
+        "payment_date",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "payments.csv"
+    ],
+    "expected_query": "WITH monthly_payments AS (\n  SELECT\n    strftime(payment_date, '%Y-%m') AS month,\n    SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) AS paid_count,\n    SUM(CASE WHEN status = 'refunded' THEN 1 ELSE 0 END) AS refunded_count\n  FROM payments\n  GROUP BY 1\n)\nSELECT month, paid_count, refunded_count,\n  ROUND(100.0 * refunded_count / NULLIF(paid_count, 0), 1) AS refund_rate_pct\nFROM monthly_payments\nWHERE refunded_count > 0.10 * NULLIF(paid_count, 0)\nORDER BY month",
+    "solution_query": "WITH monthly_payments AS (\n  SELECT\n    strftime(payment_date, '%Y-%m') AS month,\n    SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) AS paid_count,\n    SUM(CASE WHEN status = 'refunded' THEN 1 ELSE 0 END) AS refunded_count\n  FROM payments\n  GROUP BY 1\n)\nSELECT month, paid_count, refunded_count,\n  ROUND(100.0 * refunded_count / NULLIF(paid_count, 0), 1) AS refund_rate_pct\nFROM monthly_payments\nWHERE refunded_count > 0.10 * NULLIF(paid_count, 0)\nORDER BY month",
+    "required_concepts": [
+      "cte",
+      "case_when",
+      "post_filter",
+      "nullif"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Counting paid and refunded payments as conditional sums in one pass avoids self-joins. NULLIF prevents a divide-by-zero error in months with zero paid transactions. The WHERE clause in the outer query filters after aggregation \u2014 this is the standard CTE + post-filter pattern.",
+    "hints": [
+      "Use SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) and SUM(CASE WHEN status = 'refunded' THEN 1 ELSE 0 END) in a CTE.",
+      "Filter WHERE refunded_count > 0.10 * NULLIF(paid_count, 0) in the outer query."
+    ],
+    "concepts": [
+      "POST-AGGREGATION FILTERING",
+      "CONDITIONAL LOGIC & CASE WHEN",
+      "DATA QUALITY SKEPTICISM"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12114,
+    "order": 114,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Category revenue share per month",
+    "description": "A merchandising analyst wants to track how each category's share of monthly revenue shifts over time. For each month and category, return month, category_name, revenue, and revenue_share_pct (percentage of that month's total revenue, rounded to 1 decimal). Order by month, revenue_share_pct descending.",
+    "difficulty": "medium",
+    "schema": {
+      "order_items": [
+        "order_id",
+        "product_id",
+        "line_amount"
+      ],
+      "orders": [
+        "order_id",
+        "order_date",
+        "status"
+      ],
+      "products": [
+        "product_id",
+        "category_id"
+      ],
+      "categories": [
+        "category_id",
+        "category_name"
+      ]
+    },
+    "dataset_files": [
+      "order_items.csv",
+      "orders.csv",
+      "products.csv",
+      "categories.csv"
+    ],
+    "expected_query": "WITH monthly_category_rev AS (\n  SELECT\n    strftime(CAST(o.order_date AS DATE), '%Y-%m') AS month,\n    c.category_name,\n    SUM(oi.line_amount) AS revenue\n  FROM order_items oi\n  JOIN orders o ON oi.order_id = o.order_id\n  JOIN products p ON oi.product_id = p.product_id\n  JOIN categories c ON p.category_id = c.category_id\n  WHERE o.status = 'completed'\n  GROUP BY month, c.category_name\n)\nSELECT\n  month,\n  category_name,\n  ROUND(revenue, 2) AS revenue,\n  ROUND(100.0 * revenue / SUM(revenue) OVER (PARTITION BY month), 1) AS revenue_share_pct\nFROM monthly_category_rev\nORDER BY month, revenue_share_pct DESC",
+    "solution_query": "WITH monthly_category_rev AS (\n  SELECT\n    strftime(CAST(o.order_date AS DATE), '%Y-%m') AS month,\n    c.category_name,\n    SUM(oi.line_amount) AS revenue\n  FROM order_items oi\n  JOIN orders o ON oi.order_id = o.order_id\n  JOIN products p ON oi.product_id = p.product_id\n  JOIN categories c ON p.category_id = c.category_id\n  WHERE o.status = 'completed'\n  GROUP BY month, c.category_name\n)\nSELECT\n  month,\n  category_name,\n  ROUND(revenue, 2) AS revenue,\n  ROUND(100.0 * revenue / SUM(revenue) OVER (PARTITION BY month), 1) AS revenue_share_pct\nFROM monthly_category_rev\nORDER BY month, revenue_share_pct DESC",
+    "required_concepts": [
+      "cte",
+      "window_function",
+      "grouped_agg",
+      "multi_join"
+    ],
+    "enforce_concepts": true,
+    "explanation": "SUM(revenue) OVER (PARTITION BY month) computes each month's total revenue without collapsing rows \u2014 this is the window function share pattern. Dividing each category's revenue by the monthly total gives the revenue share.",
+    "hints": [
+      "Aggregate revenue per (month, category) in a CTE.",
+      "Use SUM(revenue) OVER (PARTITION BY month) to compute the month total, then divide the category revenue by it."
+    ],
+    "concepts": [
+      "WINDOW FUNCTIONS",
+      "METRIC INTERPRETATION & DENOMINATOR CHOICE",
+      "GROUPED AGGREGATION"
+    ],
+    "companies": []
   }
 ]

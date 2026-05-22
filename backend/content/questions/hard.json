@@ -4850,5 +4850,451 @@
       "TIME-SERIES BUCKETING & ARITHMETIC"
     ],
     "companies": []
+  },
+  {
+    "id": 13105,
+    "order": 104,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "30-day signup-to-purchase conversion rate by month",
+    "description": "A growth team wants to track how quickly new user cohorts convert to buyers. For each signup month, return total_signups, fast_converters (users whose first completed order was within 30 days of signup), and conversion_rate_pct (rounded to 1 decimal). Order by signup_month.",
+    "difficulty": "hard",
+    "schema": {
+      "users": [
+        "user_id",
+        "signup_date"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv"
+    ],
+    "expected_query": "WITH signups AS (\n  SELECT user_id, signup_date FROM users\n),\nfirst_orders AS (\n  SELECT user_id, MIN(CAST(order_date AS DATE)) AS first_order_date\n  FROM orders WHERE status = 'completed'\n  GROUP BY user_id\n),\nfast_converters AS (\n  SELECT\n    s.user_id,\n    s.signup_date,\n    (fo.first_order_date - s.signup_date) AS days_to_convert\n  FROM signups s\n  LEFT JOIN first_orders fo ON s.user_id = fo.user_id\n)\nSELECT\n  strftime(signup_date, '%Y-%m') AS signup_month,\n  COUNT(*) AS total_signups,\n  SUM(CASE WHEN days_to_convert IS NOT NULL AND days_to_convert <= 30 THEN 1 ELSE 0 END) AS fast_converters,\n  ROUND(100.0 * SUM(CASE WHEN days_to_convert IS NOT NULL AND days_to_convert <= 30 THEN 1 ELSE 0 END) / COUNT(*), 1) AS conversion_rate_pct\nFROM fast_converters\nGROUP BY 1\nORDER BY 1",
+    "solution_query": "WITH signups AS (\n  SELECT user_id, signup_date FROM users\n),\nfirst_orders AS (\n  SELECT user_id, MIN(CAST(order_date AS DATE)) AS first_order_date\n  FROM orders WHERE status = 'completed'\n  GROUP BY user_id\n),\nfast_converters AS (\n  SELECT\n    s.user_id,\n    s.signup_date,\n    (fo.first_order_date - s.signup_date) AS days_to_convert\n  FROM signups s\n  LEFT JOIN first_orders fo ON s.user_id = fo.user_id\n)\nSELECT\n  strftime(signup_date, '%Y-%m') AS signup_month,\n  COUNT(*) AS total_signups,\n  SUM(CASE WHEN days_to_convert IS NOT NULL AND days_to_convert <= 30 THEN 1 ELSE 0 END) AS fast_converters,\n  ROUND(100.0 * SUM(CASE WHEN days_to_convert IS NOT NULL AND days_to_convert <= 30 THEN 1 ELSE 0 END) / COUNT(*), 1) AS conversion_rate_pct\nFROM fast_converters\nGROUP BY 1\nORDER BY 1",
+    "required_concepts": [
+      "cte",
+      "left_join",
+      "case_when",
+      "date_arithmetic",
+      "grouped_agg"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Three CTEs build up the logic: signups anchors the population, first_orders finds each user's earliest purchase, fast_converters computes the days gap. A LEFT JOIN on first_orders preserves users with no purchase (their gap is NULL). The CASE WHEN in the outer aggregation counts only users with a gap \u2264 30 days.",
+    "hints": [
+      "LEFT JOIN first_orders onto signups so users who never ordered are preserved with NULL days_to_convert.",
+      "In the final aggregation, use CASE WHEN days_to_convert IS NOT NULL AND days_to_convert <= 30 THEN 1 ELSE 0 END."
+    ],
+    "concepts": [
+      "FUNNEL ANALYSIS",
+      "CTE PIPELINE",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
+    ],
+    "companies": []
+  },
+  {
+    "id": 13106,
+    "order": 105,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Order basket size distribution",
+    "description": "An e-commerce analyst wants to understand how large orders typically are. For completed orders, compute the total quantity of items per order, then bucket orders into: '1 item', '2-3 items', '4-5 items', '6+ items'. Return basket_size, order_count, and pct_of_orders (rounded to 1 decimal). Order by the bucket's lower bound (shortest first).",
+    "difficulty": "hard",
+    "schema": {
+      "order_items": [
+        "order_id",
+        "product_id",
+        "quantity"
+      ],
+      "orders": [
+        "order_id",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "order_items.csv",
+      "orders.csv"
+    ],
+    "expected_query": "WITH order_item_counts AS (\n  SELECT oi.order_id, SUM(oi.quantity) AS total_items\n  FROM order_items oi\n  JOIN orders o ON oi.order_id = o.order_id\n  WHERE o.status = 'completed'\n  GROUP BY oi.order_id\n)\nSELECT\n  CASE\n    WHEN total_items = 1 THEN '1 item'\n    WHEN total_items <= 3 THEN '2-3 items'\n    WHEN total_items <= 5 THEN '4-5 items'\n    ELSE '6+ items'\n  END AS basket_size,\n  COUNT(*) AS order_count,\n  ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 1) AS pct_of_orders\nFROM order_item_counts\nGROUP BY 1\nORDER BY MIN(total_items)",
+    "solution_query": "WITH order_item_counts AS (\n  SELECT oi.order_id, SUM(oi.quantity) AS total_items\n  FROM order_items oi\n  JOIN orders o ON oi.order_id = o.order_id\n  WHERE o.status = 'completed'\n  GROUP BY oi.order_id\n)\nSELECT\n  CASE\n    WHEN total_items = 1 THEN '1 item'\n    WHEN total_items <= 3 THEN '2-3 items'\n    WHEN total_items <= 5 THEN '4-5 items'\n    ELSE '6+ items'\n  END AS basket_size,\n  COUNT(*) AS order_count,\n  ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 1) AS pct_of_orders\nFROM order_item_counts\nGROUP BY 1\nORDER BY MIN(total_items)",
+    "required_concepts": [
+      "cte",
+      "case_when",
+      "window_function",
+      "grouped_agg"
+    ],
+    "enforce_concepts": true,
+    "explanation": "SUM(COUNT(*)) OVER () is a window function applied after GROUP BY \u2014 it sums all group counts to get the grand total for percentage computation. ORDER BY MIN(total_items) sorts buckets naturally (1, 2, 4, 6) rather than alphabetically.",
+    "hints": [
+      "First SUM(quantity) per order in a CTE, then bucket with CASE WHEN in the outer query.",
+      "SUM(COUNT(*)) OVER () gives the grand total after grouping \u2014 divide each bucket count by this for the percentage."
+    ],
+    "concepts": [
+      "CONDITIONAL LOGIC & CASE WHEN",
+      "WINDOW FUNCTIONS",
+      "GROUPED AGGREGATION"
+    ],
+    "companies": []
+  },
+  {
+    "id": 13107,
+    "order": 106,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Session abandonment rate by traffic source",
+    "description": "A marketing team wants to understand which acquisition channels have the highest session abandonment (sessions with no purchase event). For each traffic_source, return total_sessions, abandoned_sessions (no purchase event in the session), and abandonment_rate_pct (rounded to 1 decimal). Order by abandonment_rate_pct descending.",
+    "difficulty": "hard",
+    "schema": {
+      "sessions": [
+        "session_id",
+        "user_id",
+        "traffic_source"
+      ],
+      "events": [
+        "event_id",
+        "session_id",
+        "event_name"
+      ]
+    },
+    "dataset_files": [
+      "sessions.csv",
+      "events.csv"
+    ],
+    "expected_query": "WITH session_purchase AS (\n  SELECT DISTINCT session_id FROM events WHERE event_name = 'purchase'\n),\nsession_info AS (\n  SELECT\n    s.session_id,\n    s.traffic_source,\n    CASE WHEN sp.session_id IS NOT NULL THEN 0 ELSE 1 END AS abandoned\n  FROM sessions s\n  LEFT JOIN session_purchase sp ON s.session_id = sp.session_id\n)\nSELECT\n  traffic_source,\n  COUNT(*) AS total_sessions,\n  SUM(abandoned) AS abandoned_sessions,\n  ROUND(100.0 * SUM(abandoned) / COUNT(*), 1) AS abandonment_rate_pct\nFROM session_info\nGROUP BY traffic_source\nORDER BY abandonment_rate_pct DESC",
+    "solution_query": "WITH session_purchase AS (\n  SELECT DISTINCT session_id FROM events WHERE event_name = 'purchase'\n),\nsession_info AS (\n  SELECT\n    s.session_id,\n    s.traffic_source,\n    CASE WHEN sp.session_id IS NOT NULL THEN 0 ELSE 1 END AS abandoned\n  FROM sessions s\n  LEFT JOIN session_purchase sp ON s.session_id = sp.session_id\n)\nSELECT\n  traffic_source,\n  COUNT(*) AS total_sessions,\n  SUM(abandoned) AS abandoned_sessions,\n  ROUND(100.0 * SUM(abandoned) / COUNT(*), 1) AS abandonment_rate_pct\nFROM session_info\nGROUP BY traffic_source\nORDER BY abandonment_rate_pct DESC",
+    "required_concepts": [
+      "cte",
+      "left_join",
+      "case_when",
+      "grouped_agg",
+      "anti_join"
+    ],
+    "enforce_concepts": true,
+    "explanation": "First CTE identifies sessions that had at least one purchase event. LEFT JOIN preserves sessions with no purchase (NULL join key). CASE WHEN converts the NULL flag into a 0/1 abandoned indicator. SUM(abandoned) / COUNT(*) gives the abandonment rate per source.",
+    "hints": [
+      "Build a CTE of session_ids that had any 'purchase' event, then LEFT JOIN onto all sessions.",
+      "CASE WHEN sp.session_id IS NOT NULL THEN 0 ELSE 1 END creates the abandoned flag for SUM()."
+    ],
+    "concepts": [
+      "SESSIONIZATION",
+      "CTE PIPELINE",
+      "FUNNEL ANALYSIS"
+    ],
+    "companies": []
+  },
+  {
+    "id": 13108,
+    "order": 107,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Customer lifetime value by acquisition channel",
+    "description": "A growth analyst wants to assess which acquisition channels produce the highest-value customers. For each acquisition_channel, return the number of buyers (users with at least one completed order), avg_ltv (average total net_amount per user, rounded to 2 decimal places), and total_revenue (rounded to 2 decimal places). Order by avg_ltv descending.",
+    "difficulty": "hard",
+    "schema": {
+      "users": [
+        "user_id",
+        "acquisition_channel"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "orders.csv"
+    ],
+    "expected_query": "WITH user_ltv AS (\n  SELECT\n    u.user_id,\n    u.acquisition_channel,\n    SUM(o.net_amount) AS total_spent\n  FROM users u\n  JOIN orders o ON u.user_id = o.user_id\n  WHERE o.status = 'completed'\n  GROUP BY u.user_id, u.acquisition_channel\n)\nSELECT\n  acquisition_channel,\n  COUNT(*) AS buyers,\n  ROUND(AVG(total_spent), 2) AS avg_ltv,\n  ROUND(SUM(total_spent), 2) AS total_revenue\nFROM user_ltv\nGROUP BY acquisition_channel\nORDER BY avg_ltv DESC",
+    "solution_query": "WITH user_ltv AS (\n  SELECT\n    u.user_id,\n    u.acquisition_channel,\n    SUM(o.net_amount) AS total_spent\n  FROM users u\n  JOIN orders o ON u.user_id = o.user_id\n  WHERE o.status = 'completed'\n  GROUP BY u.user_id, u.acquisition_channel\n)\nSELECT\n  acquisition_channel,\n  COUNT(*) AS buyers,\n  ROUND(AVG(total_spent), 2) AS avg_ltv,\n  ROUND(SUM(total_spent), 2) AS total_revenue\nFROM user_ltv\nGROUP BY acquisition_channel\nORDER BY avg_ltv DESC",
+    "required_concepts": [
+      "cte",
+      "grouped_agg",
+      "join",
+      "two_level_aggregation"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Two-level aggregation: first sum orders per user (user_ltv CTE), then average those per-user totals by channel (outer query). This matters because AVG(net_amount) directly would weight by order count rather than user \u2014 a user with 10 small orders would count more than a user with 1 large order.",
+    "hints": [
+      "First aggregate total spending per user in a CTE, then average those per-user totals by channel.",
+      "Direct AVG(net_amount) would weight by order count, not user count \u2014 always aggregate to user level first."
+    ],
+    "concepts": [
+      "MULTI-TABLE ENTITY LINKING",
+      "METRIC INTERPRETATION & DENOMINATOR CHOICE",
+      "GROUPED AGGREGATION"
+    ],
+    "companies": []
+  },
+  {
+    "id": 13109,
+    "order": 108,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Department payroll share of total company payroll",
+    "description": "Finance wants a payroll breakdown. For each department, return department_name, headcount (employee count), dept_payroll (total salary, rounded to 2 decimal places), and payroll_share_pct (department payroll as a percentage of company total, rounded to 1 decimal). Order by dept_payroll descending.",
+    "difficulty": "hard",
+    "schema": {
+      "employees": [
+        "employee_id",
+        "salary",
+        "department_id"
+      ],
+      "departments": [
+        "department_id",
+        "department_name"
+      ]
+    },
+    "dataset_files": [
+      "employees.csv",
+      "departments.csv"
+    ],
+    "expected_query": "SELECT\n  d.department_name,\n  COUNT(e.employee_id) AS headcount,\n  ROUND(SUM(e.salary), 2) AS dept_payroll,\n  ROUND(100.0 * SUM(e.salary) / SUM(SUM(e.salary)) OVER (), 1) AS payroll_share_pct\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nGROUP BY d.department_name\nORDER BY dept_payroll DESC",
+    "solution_query": "SELECT\n  d.department_name,\n  COUNT(e.employee_id) AS headcount,\n  ROUND(SUM(e.salary), 2) AS dept_payroll,\n  ROUND(100.0 * SUM(e.salary) / SUM(SUM(e.salary)) OVER (), 1) AS payroll_share_pct\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nGROUP BY d.department_name\nORDER BY dept_payroll DESC",
+    "required_concepts": [
+      "window_function",
+      "grouped_agg",
+      "nested_agg_window"
+    ],
+    "enforce_concepts": true,
+    "explanation": "SUM(SUM(e.salary)) OVER () is an aggregate-inside-a-window-function \u2014 the inner SUM() aggregates per group, the outer SUM() OVER () sums all groups to produce the grand total. This avoids a CTE or self-join just to compute the total.",
+    "hints": [
+      "SUM(SUM(salary)) OVER () computes the grand total payroll \u2014 the inner SUM() runs within each group, the outer SUM() OVER () accumulates all groups.",
+      "No CTE needed for this pattern \u2014 the nested aggregate window function handles it in one pass."
+    ],
+    "concepts": [
+      "WINDOW FUNCTIONS",
+      "METRIC INTERPRETATION & DENOMINATOR CHOICE",
+      "GROUPED AGGREGATION"
+    ],
+    "companies": []
+  },
+  {
+    "id": 13110,
+    "order": 109,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Revenue from repeat buyers vs one-time buyers",
+    "description": "A retention analyst wants to quantify the value of repeat customers. Segment users with completed orders into 'One-time buyer' (exactly 1 completed order) and 'Repeat buyer' (2+ completed orders). Return segment, user_count, total_revenue, and avg_revenue_per_user (both rounded to 2 decimal places). Order by segment.",
+    "difficulty": "hard",
+    "schema": {
+      "orders": [
+        "order_id",
+        "user_id",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv"
+    ],
+    "expected_query": "WITH user_order_count AS (\n  SELECT user_id,\n    COUNT(*) AS order_count,\n    SUM(net_amount) AS total_spent\n  FROM orders\n  WHERE status = 'completed'\n  GROUP BY user_id\n),\nbuyer_segments AS (\n  SELECT\n    CASE WHEN order_count = 1 THEN 'One-time buyer' ELSE 'Repeat buyer' END AS segment,\n    total_spent\n  FROM user_order_count\n)\nSELECT\n  segment,\n  COUNT(*) AS user_count,\n  ROUND(SUM(total_spent), 2) AS total_revenue,\n  ROUND(AVG(total_spent), 2) AS avg_revenue_per_user\nFROM buyer_segments\nGROUP BY segment\nORDER BY segment",
+    "solution_query": "WITH user_order_count AS (\n  SELECT user_id,\n    COUNT(*) AS order_count,\n    SUM(net_amount) AS total_spent\n  FROM orders\n  WHERE status = 'completed'\n  GROUP BY user_id\n),\nbuyer_segments AS (\n  SELECT\n    CASE WHEN order_count = 1 THEN 'One-time buyer' ELSE 'Repeat buyer' END AS segment,\n    total_spent\n  FROM user_order_count\n)\nSELECT\n  segment,\n  COUNT(*) AS user_count,\n  ROUND(SUM(total_spent), 2) AS total_revenue,\n  ROUND(AVG(total_spent), 2) AS avg_revenue_per_user\nFROM buyer_segments\nGROUP BY segment\nORDER BY segment",
+    "required_concepts": [
+      "cte",
+      "case_when",
+      "grouped_agg",
+      "two_level_aggregation"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Two CTEs: user_order_count aggregates per-user, buyer_segments applies the segmentation logic. The outer query then aggregates the segments. Three-level thinking: row \u2192 user \u2192 segment. AVG(total_spent) averages per-user lifetime values \u2014 if you used AVG(net_amount) directly you'd weight by order count instead of user count.",
+    "hints": [
+      "First aggregate order count and total spend per user, then apply CASE WHEN order_count = 1 to assign segment.",
+      "Aggregate at segment level in the outer query \u2014 not at the order level, to avoid weighting by order volume."
+    ],
+    "concepts": [
+      "CONDITIONAL LOGIC & CASE WHEN",
+      "GROUPED AGGREGATION",
+      "DEDUPLICATION LOGIC"
+    ],
+    "companies": []
+  },
+  {
+    "id": 13111,
+    "order": 110,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "User acquisition funnel by signup cohort",
+    "description": "A product analyst wants to track how each signup cohort progresses through the funnel: signup \u2192 any event \u2192 first completed order. For each signup_month, return signed_up, had_first_event, made_first_purchase, event_rate_pct, and purchase_rate_pct (both rounded to 1 decimal). Order by signup_month.",
+    "difficulty": "hard",
+    "schema": {
+      "users": [
+        "user_id",
+        "signup_date"
+      ],
+      "events": [
+        "event_id",
+        "user_id",
+        "event_time"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "users.csv",
+      "events.csv",
+      "orders.csv"
+    ],
+    "expected_query": "WITH signups AS (\n  SELECT user_id, signup_date FROM users\n),\nfirst_events AS (\n  SELECT user_id, MIN(CAST(event_time AS DATE)) AS first_event_date\n  FROM events\n  GROUP BY user_id\n),\nfirst_orders AS (\n  SELECT user_id, MIN(CAST(order_date AS DATE)) AS first_order_date\n  FROM orders WHERE status = 'completed'\n  GROUP BY user_id\n)\nSELECT\n  strftime(s.signup_date, '%Y-%m') AS signup_month,\n  COUNT(*) AS signed_up,\n  COUNT(fe.user_id) AS had_first_event,\n  COUNT(fo.user_id) AS made_first_purchase,\n  ROUND(100.0 * COUNT(fe.user_id) / NULLIF(COUNT(*), 0), 1) AS event_rate_pct,\n  ROUND(100.0 * COUNT(fo.user_id) / NULLIF(COUNT(*), 0), 1) AS purchase_rate_pct\nFROM signups s\nLEFT JOIN first_events fe ON s.user_id = fe.user_id\nLEFT JOIN first_orders fo ON s.user_id = fo.user_id\nGROUP BY 1\nORDER BY 1",
+    "solution_query": "WITH signups AS (\n  SELECT user_id, signup_date FROM users\n),\nfirst_events AS (\n  SELECT user_id, MIN(CAST(event_time AS DATE)) AS first_event_date\n  FROM events\n  GROUP BY user_id\n),\nfirst_orders AS (\n  SELECT user_id, MIN(CAST(order_date AS DATE)) AS first_order_date\n  FROM orders WHERE status = 'completed'\n  GROUP BY user_id\n)\nSELECT\n  strftime(s.signup_date, '%Y-%m') AS signup_month,\n  COUNT(*) AS signed_up,\n  COUNT(fe.user_id) AS had_first_event,\n  COUNT(fo.user_id) AS made_first_purchase,\n  ROUND(100.0 * COUNT(fe.user_id) / NULLIF(COUNT(*), 0), 1) AS event_rate_pct,\n  ROUND(100.0 * COUNT(fo.user_id) / NULLIF(COUNT(*), 0), 1) AS purchase_rate_pct\nFROM signups s\nLEFT JOIN first_events fe ON s.user_id = fe.user_id\nLEFT JOIN first_orders fo ON s.user_id = fo.user_id\nGROUP BY 1\nORDER BY 1",
+    "required_concepts": [
+      "cte",
+      "left_join",
+      "funnel",
+      "grouped_agg",
+      "count_distinct"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Two LEFT JOINs bring in event and order presence per user. COUNT(fe.user_id) counts non-NULL values \u2014 users who had no event contribute NULL (not counted), automatically computing the correct numerator. This is cleaner than SUM(CASE WHEN ... THEN 1 ELSE 0 END) for funnel counts.",
+    "hints": [
+      "LEFT JOIN each funnel stage so users who didn't reach that stage have NULL \u2014 COUNT(non-null column) handles the numerator automatically.",
+      "COUNT(fe.user_id) counts only users who matched the event join \u2014 NULLs from non-matches are not counted."
+    ],
+    "concepts": [
+      "FUNNEL ANALYSIS",
+      "CTE PIPELINE",
+      "MULTI-TABLE ENTITY LINKING"
+    ],
+    "companies": []
+  },
+  {
+    "id": 13112,
+    "order": 111,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Support ticket SLA compliance by priority",
+    "description": "A support lead defines SLA as: tickets resolved within 24 hours. For each priority level, return total_tickets, within_sla (resolved tickets with resolution_hours <= 24), total_resolved, sla_compliance_pct (within_sla / total_resolved as %, rounded to 1 decimal), and avg_resolution_hours (rounded to 1 decimal). Order by urgency: urgent \u2192 high \u2192 medium \u2192 low.",
+    "difficulty": "hard",
+    "schema": {
+      "support_tickets": [
+        "ticket_id",
+        "priority",
+        "status",
+        "resolution_hours"
+      ]
+    },
+    "dataset_files": [
+      "support_tickets.csv"
+    ],
+    "expected_query": "SELECT\n  priority,\n  COUNT(*) AS total_tickets,\n  SUM(CASE WHEN status = 'resolved' AND resolution_hours <= 24 THEN 1 ELSE 0 END) AS within_sla,\n  SUM(CASE WHEN status = 'resolved' THEN 1 ELSE 0 END) AS total_resolved,\n  ROUND(100.0 * SUM(CASE WHEN status = 'resolved' AND resolution_hours <= 24 THEN 1 ELSE 0 END) /\n    NULLIF(SUM(CASE WHEN status = 'resolved' THEN 1 ELSE 0 END), 0), 1) AS sla_compliance_pct,\n  ROUND(AVG(CASE WHEN status = 'resolved' THEN resolution_hours END), 1) AS avg_resolution_hours\nFROM support_tickets\nGROUP BY priority\nORDER BY\n  CASE priority WHEN 'urgent' THEN 1 WHEN 'high' THEN 2 WHEN 'medium' THEN 3 ELSE 4 END",
+    "solution_query": "SELECT\n  priority,\n  COUNT(*) AS total_tickets,\n  SUM(CASE WHEN status = 'resolved' AND resolution_hours <= 24 THEN 1 ELSE 0 END) AS within_sla,\n  SUM(CASE WHEN status = 'resolved' THEN 1 ELSE 0 END) AS total_resolved,\n  ROUND(100.0 * SUM(CASE WHEN status = 'resolved' AND resolution_hours <= 24 THEN 1 ELSE 0 END) /\n    NULLIF(SUM(CASE WHEN status = 'resolved' THEN 1 ELSE 0 END), 0), 1) AS sla_compliance_pct,\n  ROUND(AVG(CASE WHEN status = 'resolved' THEN resolution_hours END), 1) AS avg_resolution_hours\nFROM support_tickets\nGROUP BY priority\nORDER BY\n  CASE priority WHEN 'urgent' THEN 1 WHEN 'high' THEN 2 WHEN 'medium' THEN 3 ELSE 4 END",
+    "required_concepts": [
+      "case_when",
+      "grouped_agg",
+      "nullif",
+      "custom_sort"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Multiple CASE WHEN expressions in one GROUP BY pass compute three different conditional counts simultaneously. AVG(CASE WHEN status = 'resolved' THEN resolution_hours END) automatically ignores NULL (unresolved tickets) \u2014 equivalent to filtering then averaging. ORDER BY CASE sorts by business priority order rather than alphabetically.",
+    "hints": [
+      "Use multiple SUM(CASE WHEN ...) expressions in a single GROUP BY to compute within_sla and total_resolved in one pass.",
+      "ORDER BY CASE priority WHEN 'urgent' THEN 1 ... END to sort by business severity rather than alphabetically."
+    ],
+    "concepts": [
+      "CONDITIONAL LOGIC & CASE WHEN",
+      "GROUPED AGGREGATION",
+      "RESULT SHAPING & ORDERING"
+    ],
+    "companies": []
+  },
+  {
+    "id": 13113,
+    "order": 112,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "User recency segmentation: Active, Lapsing, Churned",
+    "description": "A CRM team wants to classify users by how recently they were active. Anchor to the most recent event date in the dataset. Classify each user as: 'Active' (last event <= 30 days ago), 'Lapsing' (31-90 days), or 'Churned' (90+ days). Return segment, user_count, and avg_days_since_activity (rounded to 1 decimal). Order: Active first, then Lapsing, then Churned.",
+    "difficulty": "hard",
+    "schema": {
+      "events": [
+        "event_id",
+        "user_id",
+        "event_time"
+      ]
+    },
+    "dataset_files": [
+      "events.csv"
+    ],
+    "expected_query": "WITH last_event AS (\n  SELECT user_id, MAX(CAST(event_time AS DATE)) AS last_activity_date\n  FROM events\n  GROUP BY user_id\n),\nanchor AS (\n  SELECT MAX(CAST(event_time AS DATE)) AS max_date FROM events\n),\nsegmented AS (\n  SELECT\n    le.user_id,\n    (a.max_date - le.last_activity_date) AS days_since_last_activity,\n    CASE\n      WHEN (a.max_date - le.last_activity_date) <= 30 THEN 'Active'\n      WHEN (a.max_date - le.last_activity_date) <= 90 THEN 'Lapsing'\n      ELSE 'Churned'\n    END AS segment\n  FROM last_event le\n  CROSS JOIN anchor a\n)\nSELECT\n  segment,\n  COUNT(*) AS user_count,\n  ROUND(AVG(days_since_last_activity), 1) AS avg_days_since_activity\nFROM segmented\nGROUP BY segment\nORDER BY CASE segment WHEN 'Active' THEN 1 WHEN 'Lapsing' THEN 2 ELSE 3 END",
+    "solution_query": "WITH last_event AS (\n  SELECT user_id, MAX(CAST(event_time AS DATE)) AS last_activity_date\n  FROM events\n  GROUP BY user_id\n),\nanchor AS (\n  SELECT MAX(CAST(event_time AS DATE)) AS max_date FROM events\n),\nsegmented AS (\n  SELECT\n    le.user_id,\n    (a.max_date - le.last_activity_date) AS days_since_last_activity,\n    CASE\n      WHEN (a.max_date - le.last_activity_date) <= 30 THEN 'Active'\n      WHEN (a.max_date - le.last_activity_date) <= 90 THEN 'Lapsing'\n      ELSE 'Churned'\n    END AS segment\n  FROM last_event le\n  CROSS JOIN anchor a\n)\nSELECT\n  segment,\n  COUNT(*) AS user_count,\n  ROUND(AVG(days_since_last_activity), 1) AS avg_days_since_activity\nFROM segmented\nGROUP BY segment\nORDER BY CASE segment WHEN 'Active' THEN 1 WHEN 'Lapsing' THEN 2 ELSE 3 END",
+    "required_concepts": [
+      "cte",
+      "cross_join",
+      "case_when",
+      "date_arithmetic",
+      "grouped_agg"
+    ],
+    "enforce_concepts": true,
+    "explanation": "A CROSS JOIN with the single-row anchor CTE distributes the maximum date to every user row without a correlated subquery. DATE subtraction gives integer days. CASE WHEN applies the threshold logic. The final CASE in ORDER BY maps business segments to a sort order.",
+    "hints": [
+      "Use CROSS JOIN with a single-row anchor CTE to distribute the MAX date without a correlated subquery.",
+      "DATE - DATE in DuckDB gives integer days \u2014 use this directly for the threshold checks."
+    ],
+    "concepts": [
+      "SELF-COMPARISON & RECURSION",
+      "CTE PIPELINE",
+      "CONDITIONAL LOGIC & CASE WHEN"
+    ],
+    "companies": []
+  },
+  {
+    "id": 13114,
+    "order": 113,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Average order value by category diversity",
+    "description": "A merchandising team hypothesises that multi-category orders are higher value. For completed orders, count distinct categories per order, then bucket into '1 category', '2 categories', '3+ categories'. Return category_diversity, order_count, and avg_net_amount (rounded to 2 decimal places). Order by the bucket's lower bound.",
+    "difficulty": "hard",
+    "schema": {
+      "order_items": [
+        "order_id",
+        "product_id"
+      ],
+      "products": [
+        "product_id",
+        "category_id"
+      ],
+      "orders": [
+        "order_id",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "order_items.csv",
+      "products.csv",
+      "orders.csv"
+    ],
+    "expected_query": "WITH order_category_count AS (\n  SELECT\n    oi.order_id,\n    COUNT(DISTINCT p.category_id) AS category_count\n  FROM order_items oi\n  JOIN products p ON oi.product_id = p.product_id\n  GROUP BY oi.order_id\n)\nSELECT\n  CASE\n    WHEN occ.category_count = 1 THEN '1 category'\n    WHEN occ.category_count = 2 THEN '2 categories'\n    ELSE '3+ categories'\n  END AS category_diversity,\n  COUNT(*) AS order_count,\n  ROUND(AVG(o.net_amount), 2) AS avg_net_amount\nFROM order_category_count occ\nJOIN orders o ON occ.order_id = o.order_id\nWHERE o.status = 'completed'\nGROUP BY 1\nORDER BY MIN(occ.category_count)",
+    "solution_query": "WITH order_category_count AS (\n  SELECT\n    oi.order_id,\n    COUNT(DISTINCT p.category_id) AS category_count\n  FROM order_items oi\n  JOIN products p ON oi.product_id = p.product_id\n  GROUP BY oi.order_id\n)\nSELECT\n  CASE\n    WHEN occ.category_count = 1 THEN '1 category'\n    WHEN occ.category_count = 2 THEN '2 categories'\n    ELSE '3+ categories'\n  END AS category_diversity,\n  COUNT(*) AS order_count,\n  ROUND(AVG(o.net_amount), 2) AS avg_net_amount\nFROM order_category_count occ\nJOIN orders o ON occ.order_id = o.order_id\nWHERE o.status = 'completed'\nGROUP BY 1\nORDER BY MIN(occ.category_count)",
+    "required_concepts": [
+      "cte",
+      "count_distinct",
+      "case_when",
+      "grouped_agg",
+      "join"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Two levels: first compute distinct categories per order (CTE), then join back to orders to get net_amount, apply bucket labels, and aggregate. ORDER BY MIN(category_count) ensures buckets sort in ascending bucket-size order regardless of the string labels.",
+    "hints": [
+      "COUNT(DISTINCT category_id) in the CTE \u2014 one row per order with its category diversity score.",
+      "ORDER BY MIN(occ.category_count) sorts buckets naturally \u2014 '1 category' before '2 categories' before '3+' \u2014 regardless of string sort order."
+    ],
+    "concepts": [
+      "MULTI-TABLE ENTITY LINKING",
+      "CONDITIONAL LOGIC & CASE WHEN",
+      "GROUPED AGGREGATION"
+    ],
+    "companies": []
   }
 ]
