@@ -310,6 +310,202 @@ def _validate_mock_fields() -> None:
         raise ValueError(f"Mock field validation failed:\n{joined}")
 
 
+_TAXONOMY_VALIDATED_TRACKS: frozenset[str] = frozenset({
+    "sql",
+    # Add a track here once its concept_families.py registry is fully populated.
+    # Phase 2 covers SQL only; other tracks will be added in their own phases.
+})
+
+
+def _validate_concept_taxonomy() -> None:
+    """Every concept tag must resolve to a registered family for its track.
+
+    Tags that remain unresolved (resolve_to_family returns the input unchanged
+    and that string is not itself a registered family name) are authoring errors.
+    SQL blocklist tags (REVERSE SQL, DEBUG SQL, OR, etc.) are also caught here
+    because they have no registered family and won't match any pattern.
+
+    Only runs for tracks listed in _TAXONOMY_VALIDATED_TRACKS.
+    """
+    from concept_families import CONCEPT_FAMILIES, resolve_to_family
+
+    errors: list[str] = []
+
+    for track, file_path in _iter_question_files():
+        if track not in _TAXONOMY_VALIDATED_TRACKS:
+            continue
+        # Only check tracks whose families are fully registered in concept_families.py
+        families = CONCEPT_FAMILIES.get(track)
+        if not families:
+            continue
+
+        with file_path.open("r", encoding="utf-8") as handle:
+            questions = json.load(handle)
+
+        for q in questions:
+            qid = q.get("id", "<unknown>")
+            title = q.get("title", "<untitled>")
+            for concept in q.get("concepts", []):
+                if not isinstance(concept, str):
+                    continue
+                resolved = resolve_to_family(concept, track)
+                if resolved == concept.upper() and resolved not in families:
+                    errors.append(
+                        f"{track} {qid} {title}: concept tag {concept!r} does not resolve to any registered family"
+                    )
+
+    if errors:
+        joined = "\n".join(f"- {item}" for item in errors[:200])
+        remaining = max(0, len(errors) - 200)
+        if remaining:
+            joined += f"\n- ... and {remaining} more"
+        raise ValueError(f"Concept taxonomy validation failed:\n{joined}")
+
+
+def _validate_mock_only_realism() -> None:
+    """Validate mock-only realism family constraints.
+
+    Rules:
+    - Realism families (METRIC INTERPRETATION & DENOMINATOR CHOICE, OUTPUT SANITY
+      VALIDATION, PERFORMANCE-AWARE ANALYTICS, ...) must appear only on mock_only=true.
+    - A realism family must co-occur with ≥1 practice-grounded family (i.e. must
+      not be the question's *only* resolved family).
+    """
+    from concept_families import CONCEPT_FAMILIES, MOCK_ONLY_REALISM_FAMILIES, resolve_to_family
+
+    errors: list[str] = []
+
+    for track, file_path in _iter_question_files():
+        if track not in _TAXONOMY_VALIDATED_TRACKS:
+            continue
+        realism = MOCK_ONLY_REALISM_FAMILIES.get(track, set())
+        if not realism:
+            continue
+        families = CONCEPT_FAMILIES.get(track, {})
+
+        with file_path.open("r", encoding="utf-8") as handle:
+            questions = json.load(handle)
+
+        for q in questions:
+            qid = q.get("id", "<unknown>")
+            title = q.get("title", "<untitled>")
+            concepts = q.get("concepts", [])
+            resolved_families = [resolve_to_family(c, track) for c in concepts if isinstance(c, str)]
+            realism_present = [f for f in resolved_families if f in realism]
+
+            if not realism_present:
+                continue
+
+            # Rule 1: realism families only on mock_only questions
+            if not q.get("mock_only", False):
+                for fam in realism_present:
+                    errors.append(
+                        f"{track} {qid} {title}: realism family {fam!r} may only appear on mock_only questions"
+                    )
+
+            # Rule 2: must co-occur with at least one practice-grounded family
+            practice_grounded = [f for f in resolved_families if f in families and f not in realism]
+            if not practice_grounded:
+                errors.append(
+                    f"{track} {qid} {title}: all concept tags resolve to realism families only — "
+                    f"must co-occur with ≥1 practice-grounded family"
+                )
+
+    if errors:
+        joined = "\n".join(f"- {item}" for item in errors[:200])
+        raise ValueError(f"Mock-only realism family validation failed:\n{joined}")
+
+
+def _validate_chain_integrity() -> None:
+    """Validate follow-up chain structure.
+
+    Rules (from authoring agent):
+    - follow_ups[] on a parent must all exist in the same track file
+    - Each child listed in follow_ups must have mock_only=true
+    - Each child must have parent_id matching the parent's id
+    - Each child must have a follow_up_dimension
+    - Chain length 2-4 (parent + 1-3 children)
+    - No nested chains: children must not themselves have follow_ups
+    - No shared children: each child belongs to exactly one parent
+    - No easy mock_only (checked here to complement _validate_mock_fields)
+    """
+    errors: list[str] = []
+
+    all_children_seen: dict[str, set[int]] = {}  # track -> set of child IDs
+
+    for track, file_path in _iter_question_files():
+        difficulty = file_path.stem
+        with file_path.open("r", encoding="utf-8") as handle:
+            questions = json.load(handle)
+
+        q_by_id: dict[int, dict] = {int(q["id"]): q for q in questions if "id" in q}
+
+        if track not in all_children_seen:
+            all_children_seen[track] = set()
+
+        for q in questions:
+            qid = int(q.get("id", 0))
+            title = q.get("title", "<untitled>")
+
+            # Validate chains defined on this parent
+            follow_ups = q.get("follow_ups", [])
+            if follow_ups:
+                if not isinstance(follow_ups, list):
+                    errors.append(f"{track} {qid} {title}: follow_ups must be a list")
+                    continue
+
+                child_count = len(follow_ups)
+                if child_count > 3:
+                    errors.append(
+                        f"{track} {qid} {title}: chain has {child_count} follow-ups (max 3, chain length 2-4)"
+                    )
+
+                for child_id in follow_ups:
+                    child_id = int(child_id)
+                    if child_id in all_children_seen[track]:
+                        errors.append(
+                            f"{track} {qid} {title}: child {child_id} is shared across multiple parent chains"
+                        )
+                    all_children_seen[track].add(child_id)
+
+                    if child_id not in q_by_id:
+                        errors.append(
+                            f"{track} {qid} {title}: follow_ups child {child_id} not found in same difficulty file"
+                        )
+                        continue
+
+                    child = q_by_id[child_id]
+                    c_title = child.get("title", "<untitled>")
+
+                    if not child.get("mock_only", False):
+                        errors.append(
+                            f"{track} {child_id} {c_title}: chain child must have mock_only=true"
+                        )
+
+                    if int(child.get("parent_id", 0)) != qid:
+                        errors.append(
+                            f"{track} {child_id} {c_title}: parent_id {child.get('parent_id')!r} does not match parent {qid}"
+                        )
+
+                    if not child.get("follow_up_dimension"):
+                        errors.append(
+                            f"{track} {child_id} {c_title}: chain child must have follow_up_dimension"
+                        )
+
+                    if child.get("follow_ups"):
+                        errors.append(
+                            f"{track} {child_id} {c_title}: nested chains not allowed (child has follow_ups)"
+                        )
+
+            # No mock_only at easy
+            if q.get("mock_only", False) and difficulty == "easy":
+                errors.append(f"{track} {qid} {title}: mock_only=true not allowed at easy difficulty")
+
+    if errors:
+        joined = "\n".join(f"- {item}" for item in errors[:200])
+        raise ValueError(f"Chain integrity validation failed:\n{joined}")
+
+
 def _validate_paths(paths: list[dict], catalogs_by_topic: dict[str, dict[str, list[dict]]]) -> None:
     valid_topics = {t.slug for t in TRACKS}
     valid_tiers = {"free", "pro"}
@@ -391,6 +587,9 @@ def main() -> None:
     }
     _validate_paths(paths, catalogs_by_topic)
     _validate_concepts()
+    _validate_concept_taxonomy()
+    _validate_mock_only_realism()
+    _validate_chain_integrity()
     _validate_hints()
     _validate_statistics_subtypes()
     _validate_mcq_scenario_questions()
