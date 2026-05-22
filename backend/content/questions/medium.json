@@ -3411,5 +3411,363 @@
       "MULTI-TABLE ENTITY LINKING"
     ],
     "companies": []
+  },
+  {
+    "id": 12077,
+    "order": 77,
+    "mock_only": true,
+    "framing": "scenario",
+    "follow_ups": [
+      12078
+    ],
+    "title": "Session volume and user reach by traffic source",
+    "description": "The marketing team wants to understand which acquisition sources drive the most session volume and how efficiently each source generates distinct users. Write a query that returns `traffic_source`, `total_sessions`, `unique_users`, and `sessions_per_user` (total_sessions / unique_users, rounded to 2 dp). Order by `total_sessions` descending.",
+    "difficulty": "medium",
+    "schema": {
+      "sessions": [
+        "session_id",
+        "user_id",
+        "traffic_source"
+      ]
+    },
+    "dataset_files": [
+      "sessions.csv"
+    ],
+    "expected_query": "SELECT traffic_source,\n       COUNT(DISTINCT session_id) AS total_sessions,\n       COUNT(DISTINCT user_id) AS unique_users,\n       ROUND(COUNT(DISTINCT session_id) * 1.0 / COUNT(DISTINCT user_id), 2) AS sessions_per_user\nFROM sessions\nGROUP BY traffic_source\nORDER BY total_sessions DESC",
+    "solution_query": "SELECT traffic_source,\n       COUNT(DISTINCT session_id) AS total_sessions,\n       COUNT(DISTINCT user_id) AS unique_users,\n       ROUND(COUNT(DISTINCT session_id) * 1.0 / COUNT(DISTINCT user_id), 2) AS sessions_per_user\nFROM sessions\nGROUP BY traffic_source\nORDER BY total_sessions DESC;",
+    "required_concepts": [
+      "group_by",
+      "distinct_count",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "COUNT(DISTINCT session_id) counts unique sessions (each row is one session, but DISTINCT is safe practice). COUNT(DISTINCT user_id) counts unique users across all sessions for that source. sessions_per_user measures frequency \u2014 a high ratio indicates users return multiple times from the same source. Integer division would truncate to 0, so multiply by 1.0 before dividing.",
+    "hints": [
+      "sessions_per_user is sessions / users \u2014 make sure to avoid integer division by multiplying by 1.0.",
+      "COUNT(DISTINCT user_id) counts unique users, not sessions \u2014 one user with 10 sessions counts once."
+    ],
+    "concepts": [
+      "GROUPED AGGREGATION",
+      "DEDUPLICATION LOGIC",
+      "RESULT SHAPING & ORDERING"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12078,
+    "order": 78,
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 12077,
+    "follow_up_dimension": "business_rule_pivot",
+    "title": "Desktop-only session volume by traffic source",
+    "description": "After reviewing the previous session summary, the marketing team asks: 'Our desktop conversion rate is much higher \u2014 can you rerun this but only for desktop sessions?' Write a query that returns `traffic_source`, `desktop_sessions` (distinct session_ids where device_type = 'desktop'), and `unique_users` (distinct users who had at least one desktop session). Order by `desktop_sessions` descending.",
+    "difficulty": "medium",
+    "schema": {
+      "sessions": [
+        "session_id",
+        "user_id",
+        "traffic_source",
+        "device_type"
+      ]
+    },
+    "dataset_files": [
+      "sessions.csv"
+    ],
+    "expected_query": "SELECT traffic_source,\n       COUNT(DISTINCT session_id) AS desktop_sessions,\n       COUNT(DISTINCT user_id) AS unique_users\nFROM sessions\nWHERE device_type = 'desktop'\nGROUP BY traffic_source\nORDER BY desktop_sessions DESC",
+    "solution_query": "SELECT traffic_source,\n       COUNT(DISTINCT session_id) AS desktop_sessions,\n       COUNT(DISTINCT user_id) AS unique_users\nFROM sessions\nWHERE device_type = 'desktop'\nGROUP BY traffic_source\nORDER BY desktop_sessions DESC;",
+    "required_concepts": [
+      "group_by",
+      "where_filter",
+      "distinct_count"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Adding WHERE device_type = 'desktop' restricts the session set before grouping \u2014 this is a pre-aggregation filter. The business rule change (redefining 'session' to mean only desktop sessions) is the simplest kind of pivot: a WHERE clause change. Conceptually, it restates the denominator of any subsequent conversion rate calculation.",
+    "hints": [
+      "Filter to device_type = 'desktop' in WHERE before grouping \u2014 not inside a CASE WHEN, which would needlessly complicate the query.",
+      "The query structure is almost identical to the parent; the only addition is a single WHERE clause."
+    ],
+    "concepts": [
+      "PRE-AGGREGATION FILTERING",
+      "GROUPED AGGREGATION",
+      "RESULT SHAPING & ORDERING"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12079,
+    "order": 79,
+    "mock_only": true,
+    "framing": "scenario",
+    "follow_ups": [
+      12080
+    ],
+    "title": "Monthly completed revenue by plan tier",
+    "description": "The finance team tracks revenue by plan segment month by month. Write a query that returns `plan_tier`, `order_month` (formatted YYYY-MM), `completed_orders` (distinct completed order count), and `monthly_revenue` (sum of `net_amount` for completed orders, rounded to 2 dp). Include only completed orders. Order by `order_month` ascending, then `plan_tier` ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "plan_tier"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv",
+      "users.csv"
+    ],
+    "expected_query": "SELECT u.plan_tier,\n       strftime(CAST(o.order_date AS DATE), '%Y-%m') AS order_month,\n       COUNT(DISTINCT o.order_id) AS completed_orders,\n       ROUND(SUM(o.net_amount), 2) AS monthly_revenue\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nWHERE o.status = 'completed'\nGROUP BY u.plan_tier, order_month\nORDER BY order_month, u.plan_tier",
+    "solution_query": "SELECT u.plan_tier,\n       strftime(CAST(o.order_date AS DATE), '%Y-%m') AS order_month,\n       COUNT(DISTINCT o.order_id) AS completed_orders,\n       ROUND(SUM(o.net_amount), 2) AS monthly_revenue\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nWHERE o.status = 'completed'\nGROUP BY u.plan_tier, order_month\nORDER BY order_month, u.plan_tier;",
+    "required_concepts": [
+      "join",
+      "group_by",
+      "date_functions",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Joining users to orders links the plan tier dimension to the order metrics. strftime formats the timestamp-stored order_date into YYYY-MM for monthly grouping. WHERE status = 'completed' scopes to revenue-generating orders. GROUP BY both plan_tier and order_month produces the cross-tabulation finance needs.",
+    "hints": [
+      "GROUP BY both plan_tier and order_month to get one row per plan-tier \u00d7 month combination.",
+      "Cast order_date to DATE before passing to strftime \u2014 order_date is stored as TIMESTAMP."
+    ],
+    "concepts": [
+      "GROUPED AGGREGATION",
+      "MULTI-TABLE ENTITY LINKING",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12080,
+    "order": 80,
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 12079,
+    "follow_up_dimension": "edge_case_pivot",
+    "title": "Monthly revenue by plan tier including cancellation view",
+    "description": "After reviewing the completed-orders breakdown, the finance team asks: 'We're ignoring cancelled orders entirely \u2014 but what fraction of orders per segment are being cancelled? Can you add cancelled_orders and cancellation_rate_pct to the view?' Write a query that returns `plan_tier`, `order_month`, `completed_orders`, `cancelled_orders`, `revenue` (sum of net_amount for completed orders, rounded to 2 dp), and `cancellation_rate_pct` (cancelled_orders / total_orders \u00d7 100, rounded to 1 dp). Include all orders (both statuses). Order by `order_month` ascending, then `plan_tier` ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "plan_tier"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv",
+      "users.csv"
+    ],
+    "expected_query": "SELECT u.plan_tier,\n       strftime(CAST(o.order_date AS DATE), '%Y-%m') AS order_month,\n       COUNT(DISTINCT CASE WHEN o.status = 'completed' THEN o.order_id END) AS completed_orders,\n       COUNT(DISTINCT CASE WHEN o.status = 'cancelled' THEN o.order_id END) AS cancelled_orders,\n       ROUND(SUM(CASE WHEN o.status = 'completed' THEN o.net_amount ELSE 0 END), 2) AS revenue,\n       ROUND(100.0 * COUNT(DISTINCT CASE WHEN o.status = 'cancelled' THEN o.order_id END)\n             / COUNT(DISTINCT o.order_id), 1) AS cancellation_rate_pct\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nGROUP BY u.plan_tier, order_month\nORDER BY order_month, u.plan_tier",
+    "solution_query": "SELECT u.plan_tier,\n       strftime(CAST(o.order_date AS DATE), '%Y-%m') AS order_month,\n       COUNT(DISTINCT CASE WHEN o.status = 'completed' THEN o.order_id END) AS completed_orders,\n       COUNT(DISTINCT CASE WHEN o.status = 'cancelled' THEN o.order_id END) AS cancelled_orders,\n       ROUND(SUM(CASE WHEN o.status = 'completed' THEN o.net_amount ELSE 0 END), 2) AS revenue,\n       ROUND(100.0 * COUNT(DISTINCT CASE WHEN o.status = 'cancelled' THEN o.order_id END)\n             / COUNT(DISTINCT o.order_id), 1) AS cancellation_rate_pct\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nGROUP BY u.plan_tier, order_month\nORDER BY order_month, u.plan_tier;",
+    "required_concepts": [
+      "join",
+      "group_by",
+      "case_when",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Removing the WHERE status filter exposes both statuses. CASE WHEN inside COUNT(DISTINCT) separates completed vs cancelled. The revenue SUM uses CASE WHEN to include net_amount only for completed orders (cancelled orders contributed no revenue). The cancellation rate denominator is COUNT(DISTINCT order_id) \u2014 all orders \u2014 making the rate a true fraction of total volume.",
+    "hints": [
+      "Remove the WHERE status filter so cancelled orders appear \u2014 then use CASE WHEN inside COUNT to separate them.",
+      "The cancellation rate denominator must be total orders (COUNT(DISTINCT order_id)) \u2014 not just completed orders."
+    ],
+    "concepts": [
+      "CONDITIONAL LOGIC & CASE",
+      "GROUPED AGGREGATION",
+      "METRIC RECONCILIATION"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12081,
+    "order": 81,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "User registration breakdown by email domain",
+    "description": "The growth team wants to understand where users sign up from. Write a query that extracts the email domain (the part after '@') from each user's email and returns `email_domain`, `user_count`, `first_signup` (earliest signup_date for that domain), and `last_signup` (most recent signup_date). Order by `user_count` descending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "email",
+        "signup_date"
+      ]
+    },
+    "dataset_files": [
+      "users.csv"
+    ],
+    "expected_query": "SELECT split_part(email, '@', 2) AS email_domain,\n       COUNT(DISTINCT user_id) AS user_count,\n       MIN(signup_date) AS first_signup,\n       MAX(signup_date) AS last_signup\nFROM users\nGROUP BY email_domain\nORDER BY user_count DESC",
+    "solution_query": "SELECT split_part(email, '@', 2) AS email_domain,\n       COUNT(DISTINCT user_id) AS user_count,\n       MIN(signup_date) AS first_signup,\n       MAX(signup_date) AS last_signup\nFROM users\nGROUP BY email_domain\nORDER BY user_count DESC;",
+    "required_concepts": [
+      "string_functions",
+      "group_by",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "split_part(email, '@', 2) extracts the second token when splitting on '@' \u2014 the domain. In DuckDB, split_part is 1-indexed. GROUP BY email_domain aggregates user counts and date ranges per domain. MIN/MAX on a DATE column return the earliest and latest dates respectively.",
+    "hints": [
+      "split_part(email, '@', 2) extracts the domain \u2014 the second element after splitting on '@'. DuckDB's split_part is 1-indexed.",
+      "Group by the derived column expression (or alias it in a subquery) so you can reuse it in GROUP BY."
+    ],
+    "concepts": [
+      "STRING PARSING & PATTERN MATCHING",
+      "GROUPED AGGREGATION",
+      "RESULT SHAPING & ORDERING"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12082,
+    "order": 82,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Employees earning above their department average",
+    "description": "HR wants to identify employees who earn above the average salary in their own department. Write a query that returns `employee_id`, `employee_name`, `salary`, `department_name`, and `dept_avg_salary` (the average salary for their department, rounded to 2 dp). Include only employees whose salary exceeds their department average. Order by `salary` descending.",
+    "difficulty": "medium",
+    "schema": {
+      "employees": [
+        "employee_id",
+        "employee_name",
+        "salary",
+        "department_id"
+      ],
+      "departments": [
+        "department_id",
+        "department_name"
+      ]
+    },
+    "dataset_files": [
+      "departments.csv",
+      "employees.csv"
+    ],
+    "expected_query": "SELECT e.employee_id, e.employee_name, e.salary, d.department_name,\n       ROUND(dept_avg.avg_dept_salary, 2) AS dept_avg_salary\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nJOIN (\n    SELECT department_id, AVG(salary) AS avg_dept_salary\n    FROM employees\n    GROUP BY department_id\n) dept_avg ON e.department_id = dept_avg.department_id\nWHERE e.salary > dept_avg.avg_dept_salary\nORDER BY e.salary DESC",
+    "solution_query": "SELECT e.employee_id, e.employee_name, e.salary, d.department_name,\n       ROUND(dept_avg.avg_dept_salary, 2) AS dept_avg_salary\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nJOIN (\n    SELECT department_id, AVG(salary) AS avg_dept_salary\n    FROM employees\n    GROUP BY department_id\n) dept_avg ON e.department_id = dept_avg.department_id\nWHERE e.salary > dept_avg.avg_dept_salary\nORDER BY e.salary DESC;",
+    "required_concepts": [
+      "subquery",
+      "join",
+      "group_by",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The subquery computes the average salary per department. Joining this back to employees gives each employee their department average alongside their own salary, making the comparison straightforward in WHERE. An alternative using window functions (AVG OVER PARTITION BY department_id) achieves the same without a subquery \u2014 both are correct.",
+    "hints": [
+      "Compute department averages in a subquery, then join it to employees so each employee row carries both their salary and their department average.",
+      "The WHERE clause compares individual salary to department average \u2014 this filter can't be in HAVING because we're not grouping by employee."
+    ],
+    "concepts": [
+      "SUBQUERY PATTERNS",
+      "SELF-COMPARISON & RECURSION",
+      "MULTI-TABLE ENTITY LINKING"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12083,
+    "order": 83,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Product sales history: first and last sold date",
+    "description": "The merchandising team wants a market lifecycle view for each product. Write a query that returns `product_name`, `brand`, `first_sale` (earliest order_date for completed orders containing this product, as DATE), `last_sale` (most recent completed order date, as DATE), `times_sold` (count of distinct completed orders), and `days_on_market` (last_sale minus first_sale, as integer days). Include only products that have been sold at least once. Order by `times_sold` descending. Limit to 20 rows.",
+    "difficulty": "medium",
+    "schema": {
+      "order_items": [
+        "order_item_id",
+        "order_id",
+        "product_id"
+      ],
+      "orders": [
+        "order_id",
+        "status",
+        "order_date"
+      ],
+      "products": [
+        "product_id",
+        "product_name",
+        "brand"
+      ]
+    },
+    "dataset_files": [
+      "order_items.csv",
+      "orders.csv",
+      "products.csv"
+    ],
+    "expected_query": "WITH product_sales AS (\n    SELECT oi.product_id,\n           MIN(CAST(o.order_date AS DATE)) AS first_sale,\n           MAX(CAST(o.order_date AS DATE)) AS last_sale,\n           COUNT(DISTINCT o.order_id) AS times_sold\n    FROM order_items oi\n    JOIN orders o ON oi.order_id = o.order_id\n    WHERE o.status = 'completed'\n    GROUP BY oi.product_id\n)\nSELECT p.product_name, p.brand, ps.first_sale, ps.last_sale,\n       ps.times_sold,\n       (ps.last_sale - ps.first_sale) AS days_on_market\nFROM product_sales ps\nJOIN products p ON ps.product_id = p.product_id\nORDER BY ps.times_sold DESC\nLIMIT 20",
+    "solution_query": "WITH product_sales AS (\n    SELECT oi.product_id,\n           MIN(CAST(o.order_date AS DATE)) AS first_sale,\n           MAX(CAST(o.order_date AS DATE)) AS last_sale,\n           COUNT(DISTINCT o.order_id) AS times_sold\n    FROM order_items oi\n    JOIN orders o ON oi.order_id = o.order_id\n    WHERE o.status = 'completed'\n    GROUP BY oi.product_id\n)\nSELECT p.product_name, p.brand, ps.first_sale, ps.last_sale,\n       ps.times_sold,\n       (ps.last_sale - ps.first_sale) AS days_on_market\nFROM product_sales ps\nJOIN products p ON ps.product_id = p.product_id\nORDER BY ps.times_sold DESC\nLIMIT 20;",
+    "required_concepts": [
+      "cte",
+      "join",
+      "group_by",
+      "date_arithmetic"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The CTE aggregates per-product sales stats using MIN/MAX on the cast DATE. INNER JOIN to products (via the CTE) implicitly excludes unsold products \u2014 no sold product can appear in the CTE without a matching product row, but products with no order_items rows won't appear in the CTE at all. DATE subtraction gives the integer day count of market lifetime.",
+    "hints": [
+      "Cast order_date to DATE in the CTE so MIN/MAX return dates, not timestamps.",
+      "DATE subtraction (last_sale - first_sale) returns an integer number of days in DuckDB \u2014 no special function needed."
+    ],
+    "concepts": [
+      "CTE PIPELINE",
+      "TIME-SERIES BUCKETING & ARITHMETIC",
+      "MULTI-TABLE ENTITY LINKING"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12084,
+    "order": 84,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Registered users who have never placed an order",
+    "description": "The re-engagement team wants to target users who signed up but have never ordered. Write a query that returns `user_id`, `name`, `email`, `signup_date`, and `acquisition_channel` for all users with no rows in the `orders` table. Order by `signup_date` descending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "name",
+        "email",
+        "signup_date",
+        "acquisition_channel"
+      ],
+      "orders": [
+        "order_id",
+        "user_id"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv",
+      "users.csv"
+    ],
+    "expected_query": "SELECT u.user_id, u.name, u.email, u.signup_date, u.acquisition_channel\nFROM users u\nWHERE u.user_id NOT IN (\n    SELECT DISTINCT user_id FROM orders\n)\nORDER BY u.signup_date DESC",
+    "solution_query": "SELECT u.user_id, u.name, u.email, u.signup_date, u.acquisition_channel\nFROM users u\nWHERE u.user_id NOT IN (\n    SELECT DISTINCT user_id FROM orders\n)\nORDER BY u.signup_date DESC;",
+    "required_concepts": [
+      "not_in",
+      "subquery",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "NOT IN with a subquery is the most direct expression of 'user has no orders'. The subquery returns all user_ids that appear in orders; NOT IN excludes them from the result. An equivalent approach is a LEFT JOIN ... WHERE orders.order_id IS NULL (anti-join pattern) \u2014 both are correct. NOT IN is simpler to read but has a subtle NULL hazard: if the subquery returns any NULL, NOT IN returns no rows for the outer query. DISTINCT in the subquery is defensive practice.",
+    "hints": [
+      "NOT IN (SELECT user_id FROM orders) excludes users who have any order \u2014 users not in the subquery result are those with no orders.",
+      "Add DISTINCT to the subquery to reduce its size \u2014 it doesn't change correctness but improves clarity."
+    ],
+    "concepts": [
+      "SET OPERATIONS & COMPARISON",
+      "SUBQUERY PATTERNS",
+      "PRE-AGGREGATION FILTERING"
+    ],
+    "companies": []
   }
 ]

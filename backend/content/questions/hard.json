@@ -3036,5 +3036,524 @@
       "CTE PIPELINE"
     ],
     "companies": []
+  },
+  {
+    "id": 13066,
+    "order": 65,
+    "mock_only": true,
+    "framing": "scenario",
+    "follow_ups": [
+      13067
+    ],
+    "title": "7-day signup-to-first-purchase conversion by cohort month",
+    "description": "The growth team tracks how quickly new users convert. Write a query that groups users by `signup_month` (YYYY-MM from `signup_date`) and returns `signup_month`, `cohort_size` (users in that signup month), `converted_7d` (users who placed their first completed order within 7 days of signup), and `conversion_7d_pct` (converted_7d / cohort_size \u00d7 100, rounded to 1 dp). A user converts if their earliest completed order_date minus signup_date is <= 7 days. Order by `signup_month` ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "users": [
+        "user_id",
+        "signup_date"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv",
+      "users.csv"
+    ],
+    "expected_query": "WITH cohort AS (\n    SELECT user_id, signup_date\n    FROM users\n),\nfirst_purchase AS (\n    SELECT user_id, MIN(CAST(order_date AS DATE)) AS first_order_date\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY user_id\n)\nSELECT strftime(c.signup_date, '%Y-%m') AS signup_month,\n       COUNT(DISTINCT c.user_id) AS cohort_size,\n       COUNT(DISTINCT CASE\n           WHEN (fp.first_order_date - c.signup_date) <= 7 THEN c.user_id\n       END) AS converted_7d,\n       ROUND(COUNT(DISTINCT CASE\n           WHEN (fp.first_order_date - c.signup_date) <= 7 THEN c.user_id\n       END) * 100.0 / COUNT(DISTINCT c.user_id), 1) AS conversion_7d_pct\nFROM cohort c\nLEFT JOIN first_purchase fp ON c.user_id = fp.user_id\nGROUP BY signup_month\nORDER BY signup_month",
+    "solution_query": "WITH cohort AS (\n    SELECT user_id, signup_date\n    FROM users\n),\nfirst_purchase AS (\n    SELECT user_id, MIN(CAST(order_date AS DATE)) AS first_order_date\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY user_id\n)\nSELECT strftime(c.signup_date, '%Y-%m') AS signup_month,\n       COUNT(DISTINCT c.user_id) AS cohort_size,\n       COUNT(DISTINCT CASE\n           WHEN (fp.first_order_date - c.signup_date) <= 7 THEN c.user_id\n       END) AS converted_7d,\n       ROUND(COUNT(DISTINCT CASE\n           WHEN (fp.first_order_date - c.signup_date) <= 7 THEN c.user_id\n       END) * 100.0 / COUNT(DISTINCT c.user_id), 1) AS conversion_7d_pct\nFROM cohort c\nLEFT JOIN first_purchase fp ON c.user_id = fp.user_id\nGROUP BY signup_month\nORDER BY signup_month;",
+    "required_concepts": [
+      "cte",
+      "left_join",
+      "date_arithmetic",
+      "case_when"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The first CTE holds user signup dates. The second computes each user's first completed purchase date using MIN. The LEFT JOIN retains all users (including those who never purchased). The CASE WHEN checks whether the date gap is <= 7 (DATE subtraction returns integer days in DuckDB). COUNT(DISTINCT user_id) inside the CASE ensures each user is counted once even if the CASE matches multiple times.",
+    "hints": [
+      "Compute each user's first purchase date in a CTE using MIN(order_date) \u2014 then LEFT JOIN so non-purchasers show up with NULL first_order_date.",
+      "DATE subtraction (first_order_date - signup_date) returns an integer in DuckDB \u2014 no DATEDIFF needed."
+    ],
+    "concepts": [
+      "COHORT RETENTION",
+      "CTE PIPELINE",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
+    ],
+    "companies": []
+  },
+  {
+    "id": 13067,
+    "order": 66,
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 13066,
+    "follow_up_dimension": "scale_pivot",
+    "title": "30-day signup-to-first-purchase conversion by cohort month",
+    "description": "After reviewing the 7-day conversion report, the growth lead asks: 'Most users need more time to activate \u2014 can you rerun this with a 30-day window instead?' Write a query with the same structure as before but measuring users who placed their first completed order within 30 days of signup. Return `signup_month`, `cohort_size`, `converted_30d`, and `conversion_30d_pct` (rounded to 1 dp). Order by `signup_month` ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "users": [
+        "user_id",
+        "signup_date"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv",
+      "users.csv"
+    ],
+    "expected_query": "WITH cohort AS (\n    SELECT user_id, signup_date\n    FROM users\n),\nfirst_purchase AS (\n    SELECT user_id, MIN(CAST(order_date AS DATE)) AS first_order_date\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY user_id\n)\nSELECT strftime(c.signup_date, '%Y-%m') AS signup_month,\n       COUNT(DISTINCT c.user_id) AS cohort_size,\n       COUNT(DISTINCT CASE\n           WHEN (fp.first_order_date - c.signup_date) <= 30 THEN c.user_id\n       END) AS converted_30d,\n       ROUND(COUNT(DISTINCT CASE\n           WHEN (fp.first_order_date - c.signup_date) <= 30 THEN c.user_id\n       END) * 100.0 / COUNT(DISTINCT c.user_id), 1) AS conversion_30d_pct\nFROM cohort c\nLEFT JOIN first_purchase fp ON c.user_id = fp.user_id\nGROUP BY signup_month\nORDER BY signup_month",
+    "solution_query": "WITH cohort AS (\n    SELECT user_id, signup_date\n    FROM users\n),\nfirst_purchase AS (\n    SELECT user_id, MIN(CAST(order_date AS DATE)) AS first_order_date\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY user_id\n)\nSELECT strftime(c.signup_date, '%Y-%m') AS signup_month,\n       COUNT(DISTINCT c.user_id) AS cohort_size,\n       COUNT(DISTINCT CASE\n           WHEN (fp.first_order_date - c.signup_date) <= 30 THEN c.user_id\n       END) AS converted_30d,\n       ROUND(COUNT(DISTINCT CASE\n           WHEN (fp.first_order_date - c.signup_date) <= 30 THEN c.user_id\n       END) * 100.0 / COUNT(DISTINCT c.user_id), 1) AS conversion_30d_pct\nFROM cohort c\nLEFT JOIN first_purchase fp ON c.user_id = fp.user_id\nGROUP BY signup_month\nORDER BY signup_month;",
+    "required_concepts": [
+      "cte",
+      "left_join",
+      "date_arithmetic",
+      "case_when"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Only the threshold changes: <= 7 becomes <= 30. This scale pivot simulates the real interviewer question: 'Does your query generalise to different window sizes?' The answer must show how a hardcoded threshold is a maintenance risk \u2014 a parameterised approach or CTE-based constant would be cleaner at scale. The query logic, join structure, and output shape are otherwise identical.",
+    "hints": [
+      "The only change from the 7-day version is the threshold constant: 7 becomes 30.",
+      "In a production setting, this threshold would be a parameter \u2014 the interviewer is probing whether you notice the hardcoded value."
+    ],
+    "concepts": [
+      "COHORT RETENTION",
+      "CTE PIPELINE",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
+    ],
+    "companies": []
+  },
+  {
+    "id": 13068,
+    "order": 67,
+    "mock_only": true,
+    "framing": "scenario",
+    "follow_ups": [
+      13069
+    ],
+    "title": "Top completed-order product per country by line revenue",
+    "description": "The regional team wants to know which product generates the most revenue in each country based on completed orders. Write a query that returns `country`, `product_name`, `order_count` (distinct completed orders containing this product for that country), and `total_revenue` (sum of line_amount, rounded to 2 dp). Use COUNT(DISTINCT order_id) \u2014 not COUNT(*) \u2014 to avoid inflating counts when an order contains the same product multiple times. Order by `country` ascending, then `total_revenue` descending. Limit to 30 rows.",
+    "difficulty": "hard",
+    "schema": {
+      "users": [
+        "user_id",
+        "country"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status"
+      ],
+      "order_items": [
+        "order_item_id",
+        "order_id",
+        "product_id",
+        "line_amount"
+      ],
+      "products": [
+        "product_id",
+        "product_name"
+      ]
+    },
+    "dataset_files": [
+      "order_items.csv",
+      "orders.csv",
+      "products.csv",
+      "users.csv"
+    ],
+    "expected_query": "SELECT u.country, p.product_name,\n       COUNT(DISTINCT o.order_id) AS order_count,\n       ROUND(SUM(oi.line_amount), 2) AS total_revenue\nFROM orders o\nJOIN users u ON o.user_id = u.user_id\nJOIN order_items oi ON o.order_id = oi.order_id\nJOIN products p ON oi.product_id = p.product_id\nWHERE o.status = 'completed'\nGROUP BY u.country, p.product_name\nORDER BY u.country, total_revenue DESC\nLIMIT 30",
+    "solution_query": "SELECT u.country, p.product_name,\n       COUNT(DISTINCT o.order_id) AS order_count,\n       ROUND(SUM(oi.line_amount), 2) AS total_revenue\nFROM orders o\nJOIN users u ON o.user_id = u.user_id\nJOIN order_items oi ON o.order_id = oi.order_id\nJOIN products p ON oi.product_id = p.product_id\nWHERE o.status = 'completed'\nGROUP BY u.country, p.product_name\nORDER BY u.country, total_revenue DESC\nLIMIT 30;",
+    "required_concepts": [
+      "join",
+      "group_by",
+      "distinct_count",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Four-table join: orders \u2192 users (country), orders \u2192 order_items (revenue), order_items \u2192 products (name). COUNT(DISTINCT order_id) counts unique orders \u2014 if an order has two line items for the same product, COUNT(*) would over-count orders. SUM(line_amount) correctly sums all line item revenue including duplicates within an order. ORDER BY country then revenue DESC shows the top products first within each country.",
+    "hints": [
+      "Use COUNT(DISTINCT order_id) for order_count \u2014 an order with two line items for the same product should count as one order.",
+      "SUM(line_amount) is correct for revenue \u2014 it sums all line amounts across all qualifying rows."
+    ],
+    "concepts": [
+      "DOUBLE-COUNTING DETECTION",
+      "MULTI-TABLE ENTITY LINKING",
+      "GROUPED AGGREGATION"
+    ],
+    "companies": []
+  },
+  {
+    "id": 13069,
+    "order": 68,
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 13068,
+    "follow_up_dimension": "data_quality_pivot",
+    "title": "Quantify order-count fan-out from joining order_items",
+    "description": "After reviewing the product-per-country query, the interviewer asks: 'What goes wrong with order_count if you forget COUNT(DISTINCT) and just use COUNT(*)? Show me the inflation.' Write a query that returns `country`, `order_rows_with_items` (COUNT(*) after joining orders to order_items \u2014 i.e., one row per order-item pair), `actual_distinct_orders` (COUNT(DISTINCT order_id)), and `fanout_inflation` (the difference). Include only completed orders. Order by `fanout_inflation` descending.",
+    "difficulty": "hard",
+    "schema": {
+      "users": [
+        "user_id",
+        "country"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status"
+      ],
+      "order_items": [
+        "order_item_id",
+        "order_id"
+      ]
+    },
+    "dataset_files": [
+      "order_items.csv",
+      "orders.csv",
+      "users.csv"
+    ],
+    "expected_query": "SELECT u.country,\n       COUNT(o.order_id) AS order_rows_with_items,\n       COUNT(DISTINCT o.order_id) AS actual_distinct_orders,\n       COUNT(o.order_id) - COUNT(DISTINCT o.order_id) AS fanout_inflation\nFROM orders o\nJOIN users u ON o.user_id = u.user_id\nJOIN order_items oi ON o.order_id = oi.order_id\nWHERE o.status = 'completed'\nGROUP BY u.country\nORDER BY fanout_inflation DESC",
+    "solution_query": "SELECT u.country,\n       COUNT(o.order_id) AS order_rows_with_items,\n       COUNT(DISTINCT o.order_id) AS actual_distinct_orders,\n       COUNT(o.order_id) - COUNT(DISTINCT o.order_id) AS fanout_inflation\nFROM orders o\nJOIN users u ON o.user_id = u.user_id\nJOIN order_items oi ON o.order_id = oi.order_id\nWHERE o.status = 'completed'\nGROUP BY u.country\nORDER BY fanout_inflation DESC;",
+    "required_concepts": [
+      "join",
+      "group_by",
+      "distinct_count",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "After joining to order_items, each order appears once per line item \u2014 an order with 5 items produces 5 rows. COUNT(*) or COUNT(order_id) counts all those rows, inflating the order count by the average items-per-order. The fanout_inflation column makes this visible. This is the canonical example of the double-counting bug: a JOIN to a child table multiplies parent rows.",
+    "hints": [
+      "COUNT(o.order_id) counts one row per order-item pair \u2014 COUNT(DISTINCT o.order_id) counts each order once. The difference is the fanout.",
+      "The point of this query is to make the bug measurable \u2014 showing inflation = COUNT(*) - COUNT(DISTINCT) proves you understand the mechanism."
+    ],
+    "concepts": [
+      "DOUBLE-COUNTING DETECTION",
+      "MULTI-TABLE ENTITY LINKING",
+      "DATA QUALITY SKEPTICISM"
+    ],
+    "companies": []
+  },
+  {
+    "id": 13070,
+    "order": 69,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Products contributing to the first 80% of completed revenue (Pareto)",
+    "description": "The product catalogue team applies the Pareto principle: identify the products that collectively generate the first 80% of total completed revenue. Write a query that returns `product_name`, `brand`, `product_revenue` (per-product sum of line_amount for completed orders, rounded to 2 dp), and `cumulative_pct` (running cumulative revenue as a percentage of total, rounded to 2 dp). Include only products where their addition to the running total has not yet crossed the 80% threshold (i.e., the cumulative total before adding this product was still below 80% of total). Order by `product_revenue` descending.",
+    "difficulty": "hard",
+    "schema": {
+      "order_items": [
+        "order_item_id",
+        "order_id",
+        "product_id",
+        "line_amount"
+      ],
+      "orders": [
+        "order_id",
+        "status"
+      ],
+      "products": [
+        "product_id",
+        "product_name",
+        "brand"
+      ]
+    },
+    "dataset_files": [
+      "order_items.csv",
+      "orders.csv",
+      "products.csv"
+    ],
+    "expected_query": "WITH product_revenue AS (\n    SELECT oi.product_id, SUM(oi.line_amount) AS revenue\n    FROM order_items oi\n    JOIN orders o ON oi.order_id = o.order_id\n    WHERE o.status = 'completed'\n    GROUP BY oi.product_id\n),\ntotal AS (\n    SELECT SUM(revenue) AS total_revenue FROM product_revenue\n),\nrunning AS (\n    SELECT pr.product_id, pr.revenue,\n           SUM(pr.revenue) OVER (ORDER BY pr.revenue DESC) AS running_revenue,\n           t.total_revenue\n    FROM product_revenue pr\n    CROSS JOIN total t\n)\nSELECT p.product_name, p.brand,\n       ROUND(r.revenue, 2) AS product_revenue,\n       ROUND(r.running_revenue * 100.0 / r.total_revenue, 2) AS cumulative_pct\nFROM running r\nJOIN products p ON r.product_id = p.product_id\nWHERE r.running_revenue - r.revenue < r.total_revenue * 0.8\nORDER BY r.revenue DESC",
+    "solution_query": "WITH product_revenue AS (\n    SELECT oi.product_id, SUM(oi.line_amount) AS revenue\n    FROM order_items oi\n    JOIN orders o ON oi.order_id = o.order_id\n    WHERE o.status = 'completed'\n    GROUP BY oi.product_id\n),\ntotal AS (\n    SELECT SUM(revenue) AS total_revenue FROM product_revenue\n),\nrunning AS (\n    SELECT pr.product_id, pr.revenue,\n           SUM(pr.revenue) OVER (ORDER BY pr.revenue DESC) AS running_revenue,\n           t.total_revenue\n    FROM product_revenue pr\n    CROSS JOIN total t\n)\nSELECT p.product_name, p.brand,\n       ROUND(r.revenue, 2) AS product_revenue,\n       ROUND(r.running_revenue * 100.0 / r.total_revenue, 2) AS cumulative_pct\nFROM running r\nJOIN products p ON r.product_id = p.product_id\nWHERE r.running_revenue - r.revenue < r.total_revenue * 0.8\nORDER BY r.revenue DESC;",
+    "required_concepts": [
+      "cte",
+      "window_function",
+      "cross_join",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Three CTEs: product_revenue aggregates per-product, total computes the grand total, running adds a cumulative sum window. The WHERE condition (running_revenue - revenue < 0.8 \u00d7 total) includes a product if the cumulative total BEFORE this product was still under 80% \u2014 meaning this product's revenue is still 'within' the top 80% contribution group. This includes the product that crosses 80%.",
+    "hints": [
+      "running_revenue - revenue is the cumulative total BEFORE this product is included \u2014 filter where that pre-product total is < 80% of overall revenue.",
+      "CROSS JOIN a single-row CTE to attach the total revenue scalar to every product row."
+    ],
+    "concepts": [
+      "RUNNING TOTAL & MOVING WINDOW",
+      "WINDOW FUNCTIONS",
+      "CTE PIPELINE"
+    ],
+    "companies": []
+  },
+  {
+    "id": 13071,
+    "order": 70,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Session engagement metrics by device and traffic source",
+    "description": "The product analytics team wants to understand user engagement by session type. Write a query that returns `device_type`, `traffic_source`, `sessions` (total distinct sessions), `avg_events_per_session` (average event count per session, rounded to 1 dp), `bounce_sessions` (sessions with exactly 1 event \u2014 'bounced'), and `converting_sessions` (sessions with at least one 'purchase' event). Order by `avg_events_per_session` descending.",
+    "difficulty": "hard",
+    "schema": {
+      "sessions": [
+        "session_id",
+        "user_id",
+        "device_type",
+        "traffic_source"
+      ],
+      "events": [
+        "event_id",
+        "session_id",
+        "event_name"
+      ]
+    },
+    "dataset_files": [
+      "events.csv",
+      "sessions.csv"
+    ],
+    "expected_query": "WITH session_stats AS (\n    SELECT s.session_id, s.device_type, s.traffic_source,\n           COUNT(e.event_id) AS event_count,\n           COUNT(CASE WHEN e.event_name = 'purchase' THEN 1 END) AS purchases\n    FROM sessions s\n    LEFT JOIN events e ON s.session_id = e.session_id\n    GROUP BY s.session_id, s.device_type, s.traffic_source\n)\nSELECT device_type, traffic_source,\n       COUNT(DISTINCT session_id) AS sessions,\n       ROUND(AVG(event_count), 1) AS avg_events_per_session,\n       COUNT(CASE WHEN event_count = 1 THEN 1 END) AS bounce_sessions,\n       COUNT(CASE WHEN purchases > 0 THEN 1 END) AS converting_sessions\nFROM session_stats\nGROUP BY device_type, traffic_source\nORDER BY avg_events_per_session DESC",
+    "solution_query": "WITH session_stats AS (\n    SELECT s.session_id, s.device_type, s.traffic_source,\n           COUNT(e.event_id) AS event_count,\n           COUNT(CASE WHEN e.event_name = 'purchase' THEN 1 END) AS purchases\n    FROM sessions s\n    LEFT JOIN events e ON s.session_id = e.session_id\n    GROUP BY s.session_id, s.device_type, s.traffic_source\n)\nSELECT device_type, traffic_source,\n       COUNT(DISTINCT session_id) AS sessions,\n       ROUND(AVG(event_count), 1) AS avg_events_per_session,\n       COUNT(CASE WHEN event_count = 1 THEN 1 END) AS bounce_sessions,\n       COUNT(CASE WHEN purchases > 0 THEN 1 END) AS converting_sessions\nFROM session_stats\nGROUP BY device_type, traffic_source\nORDER BY avg_events_per_session DESC;",
+    "required_concepts": [
+      "cte",
+      "left_join",
+      "case_when",
+      "group_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Two-level aggregation: CTE aggregates events at the session level (event_count, purchases), then the main query aggregates sessions at the device\u00d7source level. LEFT JOIN in the CTE preserves sessions with no events (event_count = 0). The bounce definition (event_count = 1) and conversion definition (purchases > 0) are computed as CASE conditions in the outer GROUP BY.",
+    "hints": [
+      "Aggregate to the session level in a CTE first (event_count, purchase_flag), then aggregate sessions to the device\u00d7source level in the outer query.",
+      "LEFT JOIN sessions to events so sessions with no events are preserved \u2014 they have event_count = 0 and still affect the average."
+    ],
+    "concepts": [
+      "SESSIONIZATION",
+      "FUNNEL ANALYSIS",
+      "CTE PIPELINE"
+    ],
+    "companies": []
+  },
+  {
+    "id": 13072,
+    "order": 71,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Monthly payment success rate by method with month-over-month change",
+    "description": "The payments team monitors success rates over time. Write a query that returns `payment_method`, `payment_month` (YYYY-MM from `payment_date`), `total_attempts`, `paid_count` (status = 'paid'), `success_rate_pct` (paid / total \u00d7 100, rounded to 1 dp), and `rate_change_pct` (success_rate_pct minus the previous month's success_rate_pct for the same payment_method, rounded to 1 dp; NULL for the first month of each method). Order by `payment_method` ascending, then `payment_month` ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "payments": [
+        "payment_id",
+        "payment_method",
+        "payment_date",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "payments.csv"
+    ],
+    "expected_query": "WITH monthly_payments AS (\n    SELECT payment_method,\n           strftime(payment_date, '%Y-%m') AS payment_month,\n           COUNT(*) AS total_attempts,\n           COUNT(CASE WHEN status = 'paid' THEN 1 END) AS paid_count,\n           ROUND(COUNT(CASE WHEN status = 'paid' THEN 1 END) * 100.0 / COUNT(*), 1) AS success_rate_pct\n    FROM payments\n    GROUP BY payment_method, payment_month\n)\nSELECT payment_method, payment_month, total_attempts, paid_count, success_rate_pct,\n       ROUND(success_rate_pct - LAG(success_rate_pct) OVER (\n           PARTITION BY payment_method ORDER BY payment_month\n       ), 1) AS rate_change_pct\nFROM monthly_payments\nORDER BY payment_method, payment_month",
+    "solution_query": "WITH monthly_payments AS (\n    SELECT payment_method,\n           strftime(payment_date, '%Y-%m') AS payment_month,\n           COUNT(*) AS total_attempts,\n           COUNT(CASE WHEN status = 'paid' THEN 1 END) AS paid_count,\n           ROUND(COUNT(CASE WHEN status = 'paid' THEN 1 END) * 100.0 / COUNT(*), 1) AS success_rate_pct\n    FROM payments\n    GROUP BY payment_method, payment_month\n)\nSELECT payment_method, payment_month, total_attempts, paid_count, success_rate_pct,\n       ROUND(success_rate_pct - LAG(success_rate_pct) OVER (\n           PARTITION BY payment_method ORDER BY payment_month\n       ), 1) AS rate_change_pct\nFROM monthly_payments\nORDER BY payment_method, payment_month;",
+    "required_concepts": [
+      "cte",
+      "lag_window",
+      "case_when",
+      "group_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "CTE computes monthly aggregates including the success rate. The outer query applies LAG() OVER (PARTITION BY payment_method ORDER BY payment_month) to bring the prior month's rate alongside the current, then subtracts to get the change. PARTITION BY payment_method ensures LAG looks backwards within the same payment method only \u2014 without it, the lag would cross method boundaries.",
+    "hints": [
+      "Compute monthly success rates in a CTE, then apply LAG in the outer query \u2014 window functions can't be nested directly.",
+      "PARTITION BY payment_method in the LAG window ensures each method's timeline is independent \u2014 without it, the lag would cross method boundaries."
+    ],
+    "concepts": [
+      "RUNNING TOTAL & MOVING WINDOW",
+      "WINDOW FUNCTIONS",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
+    ],
+    "companies": []
+  },
+  {
+    "id": 13073,
+    "order": 72,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Average days between orders for repeat buyers",
+    "description": "The retention team wants to understand repurchase velocity. Write a query that, for each user who has placed at least 3 orders (any status), returns `user_id`, `order_count`, `avg_days_between_orders` (average gap between consecutive orders in days, rounded to 1 dp), `max_gap_days` (longest gap), and `min_gap_days` (shortest gap). Order by `avg_days_between_orders` ascending. Limit to 20 rows.",
+    "difficulty": "hard",
+    "schema": {
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv"
+    ],
+    "expected_query": "WITH ordered_orders AS (\n    SELECT user_id, CAST(order_date AS DATE) AS order_day,\n           LAG(CAST(order_date AS DATE)) OVER (\n               PARTITION BY user_id ORDER BY order_date\n           ) AS prev_order_day\n    FROM orders\n)\nSELECT user_id,\n       COUNT(*) AS order_count,\n       ROUND(AVG(order_day - prev_order_day), 1) AS avg_days_between_orders,\n       MAX(order_day - prev_order_day) AS max_gap_days,\n       MIN(order_day - prev_order_day) AS min_gap_days\nFROM ordered_orders\nWHERE prev_order_day IS NOT NULL\nGROUP BY user_id\nHAVING COUNT(*) >= 3\nORDER BY avg_days_between_orders ASC\nLIMIT 20",
+    "solution_query": "WITH ordered_orders AS (\n    SELECT user_id, CAST(order_date AS DATE) AS order_day,\n           LAG(CAST(order_date AS DATE)) OVER (\n               PARTITION BY user_id ORDER BY order_date\n           ) AS prev_order_day\n    FROM orders\n)\nSELECT user_id,\n       COUNT(*) AS order_count,\n       ROUND(AVG(order_day - prev_order_day), 1) AS avg_days_between_orders,\n       MAX(order_day - prev_order_day) AS max_gap_days,\n       MIN(order_day - prev_order_day) AS min_gap_days\nFROM ordered_orders\nWHERE prev_order_day IS NOT NULL\nGROUP BY user_id\nHAVING COUNT(*) >= 3\nORDER BY avg_days_between_orders ASC\nLIMIT 20;",
+    "required_concepts": [
+      "cte",
+      "lag_window",
+      "date_arithmetic",
+      "having"
+    ],
+    "enforce_concepts": true,
+    "explanation": "LAG(order_day) OVER (PARTITION BY user_id ORDER BY order_date) gives the previous order date alongside the current. WHERE prev_order_day IS NOT NULL excludes the first order per user (which has no predecessor) \u2014 these rows carry gaps. HAVING COUNT(*) >= 3 filters to users with at least 3 gaps (meaning at least 4 orders), ensuring the average is meaningful. DATE subtraction returns integer days.",
+    "hints": [
+      "LAG gives the previous row's value \u2014 WHERE prev_order_day IS NOT NULL keeps only rows where a gap exists (excludes each user's first order).",
+      "HAVING COUNT(*) >= 3 after WHERE excludes the first order \u2014 so it's checking the count of gap rows, not total orders."
+    ],
+    "concepts": [
+      "SELF-COMPARISON & RECURSION",
+      "WINDOW FUNCTIONS",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
+    ],
+    "companies": []
+  },
+  {
+    "id": 13074,
+    "order": 73,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Department salary quartile distribution",
+    "description": "HR wants to understand how salary is distributed across departments. Write a query that uses NTILE(4) to assign each employee to a salary quartile (1 = lowest, 4 = highest) globally, then aggregates by `department_name` and `region`. Return `department_name`, `region`, `employee_count`, `avg_salary` (rounded to 2 dp), `min_salary` (rounded to 2 dp), `max_salary` (rounded to 2 dp), and `top_quartile_count` (employees in quartile 4). Order by `avg_salary` descending.",
+    "difficulty": "hard",
+    "schema": {
+      "employees": [
+        "employee_id",
+        "employee_name",
+        "salary",
+        "department_id"
+      ],
+      "departments": [
+        "department_id",
+        "department_name",
+        "region"
+      ]
+    },
+    "dataset_files": [
+      "departments.csv",
+      "employees.csv"
+    ],
+    "expected_query": "WITH salary_bands AS (\n    SELECT e.employee_id, e.salary, d.department_name, d.region,\n           NTILE(4) OVER (ORDER BY e.salary) AS salary_quartile\n    FROM employees e\n    JOIN departments d ON e.department_id = d.department_id\n)\nSELECT department_name, region,\n       COUNT(*) AS employee_count,\n       ROUND(AVG(salary), 2) AS avg_salary,\n       ROUND(MIN(salary), 2) AS min_salary,\n       ROUND(MAX(salary), 2) AS max_salary,\n       COUNT(CASE WHEN salary_quartile = 4 THEN 1 END) AS top_quartile_count\nFROM salary_bands\nGROUP BY department_name, region\nORDER BY avg_salary DESC",
+    "solution_query": "WITH salary_bands AS (\n    SELECT e.employee_id, e.salary, d.department_name, d.region,\n           NTILE(4) OVER (ORDER BY e.salary) AS salary_quartile\n    FROM employees e\n    JOIN departments d ON e.department_id = d.department_id\n)\nSELECT department_name, region,\n       COUNT(*) AS employee_count,\n       ROUND(AVG(salary), 2) AS avg_salary,\n       ROUND(MIN(salary), 2) AS min_salary,\n       ROUND(MAX(salary), 2) AS max_salary,\n       COUNT(CASE WHEN salary_quartile = 4 THEN 1 END) AS top_quartile_count\nFROM salary_bands\nGROUP BY department_name, region\nORDER BY avg_salary DESC;",
+    "required_concepts": [
+      "cte",
+      "ntile_window",
+      "join",
+      "group_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "NTILE(4) OVER (ORDER BY salary) assigns employees to 4 equal-size buckets globally (not per department). This is deliberate \u2014 the question asks for the global salary position. The CTE computes the quartile assignment; the outer query aggregates by department. top_quartile_count uses CASE WHEN to count only Q4 employees within each department, revealing which departments attract top-market salaries.",
+    "hints": [
+      "NTILE(4) without PARTITION BY assigns quartiles globally across all employees \u2014 with PARTITION BY it would rank within each department separately. The question asks for global quartiles.",
+      "The CTE attaches the quartile to each employee row; then GROUP BY department aggregates those rows."
+    ],
+    "concepts": [
+      "RANKING & TOP-N PER GROUP",
+      "WINDOW FUNCTIONS",
+      "MULTI-TABLE ENTITY LINKING"
+    ],
+    "companies": []
+  },
+  {
+    "id": 13075,
+    "order": 74,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Time to second order by acquisition channel",
+    "description": "The growth team wants to know how quickly users re-order after their first completed purchase, broken down by acquisition channel. Write a query that returns `acquisition_channel`, `users_with_1plus_orders` (distinct users with at least one completed order), `users_reordered` (users with at least two completed orders), and `avg_days_to_reorder` (average days between first and second completed order for users who reordered, rounded to 1 dp). Order by `avg_days_to_reorder` ascending.",
+    "difficulty": "hard",
+    "schema": {
+      "users": [
+        "user_id",
+        "acquisition_channel"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv",
+      "users.csv"
+    ],
+    "expected_query": "WITH user_order_sequence AS (\n    SELECT user_id, CAST(order_date AS DATE) AS order_day,\n           ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY order_date) AS order_num\n    FROM orders\n    WHERE status = 'completed'\n),\nfirst_second AS (\n    SELECT user_id,\n           MAX(CASE WHEN order_num = 1 THEN order_day END) AS first_order,\n           MAX(CASE WHEN order_num = 2 THEN order_day END) AS second_order\n    FROM user_order_sequence\n    GROUP BY user_id\n)\nSELECT u.acquisition_channel,\n       COUNT(DISTINCT fs.user_id) AS users_with_1plus_orders,\n       COUNT(DISTINCT CASE WHEN fs.second_order IS NOT NULL THEN fs.user_id END) AS users_reordered,\n       ROUND(AVG(CASE WHEN fs.second_order IS NOT NULL\n           THEN (fs.second_order - fs.first_order) END), 1) AS avg_days_to_reorder\nFROM first_second fs\nJOIN users u ON fs.user_id = u.user_id\nGROUP BY u.acquisition_channel\nORDER BY avg_days_to_reorder ASC",
+    "solution_query": "WITH user_order_sequence AS (\n    SELECT user_id, CAST(order_date AS DATE) AS order_day,\n           ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY order_date) AS order_num\n    FROM orders\n    WHERE status = 'completed'\n),\nfirst_second AS (\n    SELECT user_id,\n           MAX(CASE WHEN order_num = 1 THEN order_day END) AS first_order,\n           MAX(CASE WHEN order_num = 2 THEN order_day END) AS second_order\n    FROM user_order_sequence\n    GROUP BY user_id\n)\nSELECT u.acquisition_channel,\n       COUNT(DISTINCT fs.user_id) AS users_with_1plus_orders,\n       COUNT(DISTINCT CASE WHEN fs.second_order IS NOT NULL THEN fs.user_id END) AS users_reordered,\n       ROUND(AVG(CASE WHEN fs.second_order IS NOT NULL\n           THEN (fs.second_order - fs.first_order) END), 1) AS avg_days_to_reorder\nFROM first_second fs\nJOIN users u ON fs.user_id = u.user_id\nGROUP BY u.acquisition_channel\nORDER BY avg_days_to_reorder ASC;",
+    "required_concepts": [
+      "cte",
+      "row_number",
+      "case_when",
+      "date_arithmetic"
+    ],
+    "enforce_concepts": true,
+    "explanation": "ROW_NUMBER() assigns sequence positions within each user's order history. The second CTE pivots order_num=1 and order_num=2 into separate columns using MAX(CASE WHEN). Users with only one order get second_order = NULL. avg_days_to_reorder uses CASE WHEN inside AVG to exclude non-reorderers from the average \u2014 AVG automatically ignores NULLs, so CASE WHEN returning NULL for those users handles the exclusion.",
+    "hints": [
+      "ROW_NUMBER() per user gives order sequence \u2014 then pivot order_num=1 and order_num=2 into columns using MAX(CASE WHEN).",
+      "CASE WHEN inside AVG returns NULL for users with no second order \u2014 AVG ignores NULLs, so only reorderers contribute to the average."
+    ],
+    "concepts": [
+      "COHORT RETENTION",
+      "CTE PIPELINE",
+      "WINDOW FUNCTIONS"
+    ],
+    "companies": []
+  },
+  {
+    "id": 13076,
+    "order": 75,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Category product diversity: active rate and price range",
+    "description": "The catalogue team wants a comprehensive diversity snapshot per product category. Write a query that returns `category_name`, `total_products`, `brand_count` (distinct brands within the category), `active_products` (products with is_active = true), `avg_price` (rounded to 2 dp), `min_price` (rounded to 2 dp), `max_price` (rounded to 2 dp), `price_range` (max_price - min_price, rounded to 2 dp), and `active_pct` (active_products / total_products \u00d7 100, rounded to 1 dp). Order by `total_products` descending.",
+    "difficulty": "hard",
+    "schema": {
+      "categories": [
+        "category_id",
+        "category_name"
+      ],
+      "products": [
+        "product_id",
+        "product_name",
+        "category_id",
+        "brand",
+        "price",
+        "is_active"
+      ]
+    },
+    "dataset_files": [
+      "categories.csv",
+      "products.csv"
+    ],
+    "expected_query": "SELECT c.category_name,\n       COUNT(p.product_id) AS total_products,\n       COUNT(DISTINCT p.brand) AS brand_count,\n       COUNT(CASE WHEN p.is_active = true THEN 1 END) AS active_products,\n       ROUND(AVG(p.price), 2) AS avg_price,\n       ROUND(MIN(p.price), 2) AS min_price,\n       ROUND(MAX(p.price), 2) AS max_price,\n       ROUND(MAX(p.price) - MIN(p.price), 2) AS price_range,\n       ROUND(COUNT(CASE WHEN p.is_active = true THEN 1 END) * 100.0 / COUNT(p.product_id), 1) AS active_pct\nFROM categories c\nJOIN products p ON c.category_id = p.category_id\nGROUP BY c.category_name\nORDER BY total_products DESC",
+    "solution_query": "SELECT c.category_name,\n       COUNT(p.product_id) AS total_products,\n       COUNT(DISTINCT p.brand) AS brand_count,\n       COUNT(CASE WHEN p.is_active = true THEN 1 END) AS active_products,\n       ROUND(AVG(p.price), 2) AS avg_price,\n       ROUND(MIN(p.price), 2) AS min_price,\n       ROUND(MAX(p.price), 2) AS max_price,\n       ROUND(MAX(p.price) - MIN(p.price), 2) AS price_range,\n       ROUND(COUNT(CASE WHEN p.is_active = true THEN 1 END) * 100.0 / COUNT(p.product_id), 1) AS active_pct\nFROM categories c\nJOIN products p ON c.category_id = p.category_id\nGROUP BY c.category_name\nORDER BY total_products DESC;",
+    "required_concepts": [
+      "join",
+      "group_by",
+      "case_when",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Single GROUP BY aggregation across multiple metric types: COUNT(DISTINCT brand) for diversity, COUNT(CASE WHEN is_active) for active inventory, MIN/MAX for price range. price_range = MAX - MIN directly in the SELECT avoids a self-join. active_pct divides by COUNT(product_id) (total products, including inactive) so the denominator is consistent with total_products.",
+    "hints": [
+      "COUNT(CASE WHEN is_active = true THEN 1 END) counts active products \u2014 COUNT(*) would count all.",
+      "price_range = MAX(price) - MIN(price) in a single SELECT \u2014 you don't need a subquery to compute both max and min."
+    ],
+    "concepts": [
+      "GROUPED AGGREGATION",
+      "MULTI-TABLE ENTITY LINKING",
+      "CONDITIONAL LOGIC & CASE"
+    ],
+    "companies": []
   }
 ]
