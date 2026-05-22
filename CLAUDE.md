@@ -91,7 +91,7 @@ A data interview practice platform covering nine tracks. Users write SQL or Pyth
 
 **Modes per track:**
 - **Challenge mode** — plan-aware unlock rules, persistent progress, 856 practice questions across 9 tracks
-- **Mock mode** — 302 additional mock-only questions (Pro/Elite), never shown in practice catalog
+- **Mock mode** — 314 additional mock-only questions (Pro/Elite), never shown in practice catalog
 - **Sample mode** — 36 sandbox questions across SQL/Python/Pandas/PySpark (3 per track+difficulty), no progress recorded, no login required. Data Engineering, Data Modeling, Statistics, ML Fundamentals, and Experimentation samples are auto-sliced from the first 3 practice questions per difficulty (no dedicated sample IDs).
 
 **Tracks:**
