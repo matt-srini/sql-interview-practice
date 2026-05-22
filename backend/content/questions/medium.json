@@ -3769,5 +3769,463 @@
       "PRE-AGGREGATION FILTERING"
     ],
     "companies": []
+  },
+  {
+    "id": 12085,
+    "order": 85,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Duplicate first names by department",
+    "description": "HR wants to understand naming patterns. Write a query that extracts the first name from `employee_name` (everything before the first space) and returns `department_name`, `first_name`, and `name_count` (number of employees with that first name in the department). Include only department-first_name combinations where `name_count > 1`. Order by `department_name` ascending, then `name_count` descending.",
+    "difficulty": "medium",
+    "schema": {
+      "employees": [
+        "employee_id",
+        "employee_name",
+        "department_id"
+      ],
+      "departments": [
+        "department_id",
+        "department_name"
+      ]
+    },
+    "dataset_files": [
+      "departments.csv",
+      "employees.csv"
+    ],
+    "expected_query": "SELECT d.department_name, split_part(e.employee_name, ' ', 1) AS first_name,\n       COUNT(*) AS name_count\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nGROUP BY d.department_name, first_name\nHAVING COUNT(*) > 1\nORDER BY d.department_name, name_count DESC",
+    "solution_query": "SELECT d.department_name, split_part(e.employee_name, ' ', 1) AS first_name,\n       COUNT(*) AS name_count\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nGROUP BY d.department_name, first_name\nHAVING COUNT(*) > 1\nORDER BY d.department_name, name_count DESC;",
+    "required_concepts": [
+      "string_functions",
+      "join",
+      "group_by",
+      "having"
+    ],
+    "enforce_concepts": true,
+    "explanation": "split_part(employee_name, ' ', 1) extracts the first token when splitting on a space \u2014 the first name. GROUP BY department and first_name creates per-department name buckets. HAVING COUNT(*) > 1 keeps only names shared by multiple employees in the same department. This pattern surfaces naming collisions that might cause ambiguity in directory systems.",
+    "hints": [
+      "split_part(employee_name, ' ', 1) extracts the first name \u2014 it splits on space and returns the first token (1-indexed in DuckDB).",
+      "HAVING COUNT(*) > 1 filters after grouping \u2014 it can't go in WHERE because it depends on the aggregate."
+    ],
+    "concepts": [
+      "STRING PARSING & PATTERN MATCHING",
+      "GROUPED AGGREGATION",
+      "POST-AGGREGATION FILTERING"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12086,
+    "order": 86,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Support ticket resolution and open rate by country",
+    "description": "The support operations manager wants a country-level summary. Write a query that returns `country`, `total_tickets`, `resolved` (count where status = 'resolved'), `open` (count where status != 'resolved'), `avg_resolution_hours` (average of `resolution_hours` for resolved tickets only, treating NULL values as 0 with COALESCE, rounded to 1 dp), and `open_rate_pct` (open / total \u00d7 100, rounded to 1 dp). Order by `open_rate_pct` descending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "country"
+      ],
+      "support_tickets": [
+        "ticket_id",
+        "user_id",
+        "status",
+        "resolution_hours"
+      ]
+    },
+    "dataset_files": [
+      "support_tickets.csv",
+      "users.csv"
+    ],
+    "expected_query": "SELECT u.country,\n       COUNT(t.ticket_id) AS total_tickets,\n       COUNT(CASE WHEN t.status = 'resolved' THEN 1 END) AS resolved,\n       COUNT(CASE WHEN t.status != 'resolved' THEN 1 END) AS open,\n       ROUND(COALESCE(AVG(CASE WHEN t.status = 'resolved' THEN t.resolution_hours END), 0), 1) AS avg_resolution_hours,\n       ROUND(100.0 * COUNT(CASE WHEN t.status != 'resolved' THEN 1 END) / COUNT(t.ticket_id), 1) AS open_rate_pct\nFROM users u\nJOIN support_tickets t ON u.user_id = t.user_id\nGROUP BY u.country\nORDER BY open_rate_pct DESC",
+    "solution_query": "SELECT u.country,\n       COUNT(t.ticket_id) AS total_tickets,\n       COUNT(CASE WHEN t.status = 'resolved' THEN 1 END) AS resolved,\n       COUNT(CASE WHEN t.status != 'resolved' THEN 1 END) AS open,\n       ROUND(COALESCE(AVG(CASE WHEN t.status = 'resolved' THEN t.resolution_hours END), 0), 1) AS avg_resolution_hours,\n       ROUND(100.0 * COUNT(CASE WHEN t.status != 'resolved' THEN 1 END) / COUNT(t.ticket_id), 1) AS open_rate_pct\nFROM users u\nJOIN support_tickets t ON u.user_id = t.user_id\nGROUP BY u.country\nORDER BY open_rate_pct DESC;",
+    "required_concepts": [
+      "join",
+      "group_by",
+      "case_when",
+      "coalesce"
+    ],
+    "enforce_concepts": true,
+    "explanation": "COALESCE wraps AVG(CASE WHEN status='resolved' THEN resolution_hours END) to return 0 when a country has only open tickets (AVG of NULL = NULL). The CASE inside AVG scopes the average to resolved tickets only \u2014 unresolved tickets with NULL resolution_hours are excluded from the average automatically. open_rate_pct = open / total (all tickets, not resolved ones) measures the fraction still outstanding.",
+    "hints": [
+      "CASE inside AVG limits the average to resolved tickets \u2014 open tickets (which have NULL resolution_hours) are excluded by AVG's NULL handling.",
+      "COALESCE handles the edge case where a country has zero resolved tickets \u2014 their AVG would otherwise be NULL."
+    ],
+    "concepts": [
+      "NULL HANDLING & COALESCE",
+      "CONDITIONAL LOGIC & CASE",
+      "GROUPED AGGREGATION"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12087,
+    "order": 87,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Users whose Q4 2024 spend exceeded Q3 2024 spend",
+    "description": "The growth team wants to identify users who increased their spending in Q4 2024 compared to Q3 2024. Write a query that returns `user_id`, `name`, `q3_spend` (completed order net_amount in Jul\u2013Sep 2024, rounded to 2 dp), `q4_spend` (completed order net_amount in Oct\u2013Dec 2024, rounded to 2 dp), and `spend_growth` (q4_spend - q3_spend, rounded to 2 dp). Include only users who had spend in BOTH quarters AND whose q4_spend strictly exceeds q3_spend. Order by `spend_growth` descending. Limit to 20 rows.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "name"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv",
+      "users.csv"
+    ],
+    "expected_query": "WITH quarterly AS (\n    SELECT u.user_id, u.name,\n           SUM(CASE\n               WHEN strftime(CAST(o.order_date AS DATE), '%Y-%m') IN ('2024-07','2024-08','2024-09')\n               THEN o.net_amount ELSE 0 END) AS q3_spend,\n           SUM(CASE\n               WHEN strftime(CAST(o.order_date AS DATE), '%Y-%m') IN ('2024-10','2024-11','2024-12')\n               THEN o.net_amount ELSE 0 END) AS q4_spend\n    FROM users u\n    JOIN orders o ON u.user_id = o.user_id\n    WHERE o.status = 'completed'\n      AND strftime(CAST(o.order_date AS DATE), '%Y') = '2024'\n    GROUP BY u.user_id, u.name\n)\nSELECT user_id, name,\n       ROUND(q3_spend, 2) AS q3_spend,\n       ROUND(q4_spend, 2) AS q4_spend,\n       ROUND(q4_spend - q3_spend, 2) AS spend_growth\nFROM quarterly\nWHERE q3_spend > 0 AND q4_spend > q3_spend\nORDER BY spend_growth DESC\nLIMIT 20",
+    "solution_query": "WITH quarterly AS (\n    SELECT u.user_id, u.name,\n           SUM(CASE\n               WHEN strftime(CAST(o.order_date AS DATE), '%Y-%m') IN ('2024-07','2024-08','2024-09')\n               THEN o.net_amount ELSE 0 END) AS q3_spend,\n           SUM(CASE\n               WHEN strftime(CAST(o.order_date AS DATE), '%Y-%m') IN ('2024-10','2024-11','2024-12')\n               THEN o.net_amount ELSE 0 END) AS q4_spend\n    FROM users u\n    JOIN orders o ON u.user_id = o.user_id\n    WHERE o.status = 'completed'\n      AND strftime(CAST(o.order_date AS DATE), '%Y') = '2024'\n    GROUP BY u.user_id, u.name\n)\nSELECT user_id, name,\n       ROUND(q3_spend, 2) AS q3_spend,\n       ROUND(q4_spend, 2) AS q4_spend,\n       ROUND(q4_spend - q3_spend, 2) AS spend_growth\nFROM quarterly\nWHERE q3_spend > 0 AND q4_spend > q3_spend\nORDER BY spend_growth DESC\nLIMIT 20;",
+    "required_concepts": [
+      "cte",
+      "case_when",
+      "join",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "CASE WHEN inside SUM pivots the two quarters into columns: Q3 and Q4 amounts. WHERE in the outer query filters to users with nonzero Q3 spend (ensuring 'both quarters' condition) and where Q4 exceeded Q3. Checking q3_spend > 0 is sufficient \u2014 if a user had Q4 spend but no Q3 spend, they're excluded by this condition. The alternative of two separate CTEs joined on user_id would also work.",
+    "hints": [
+      "Pivot Q3 and Q4 spend into separate columns using SUM(CASE WHEN month IN (...)) within one GROUP BY.",
+      "Filter q3_spend > 0 in the outer WHERE to ensure the user was active in both quarters \u2014 users with only Q4 spend would pass q4_spend > q3_spend (comparing non-zero to 0)."
+    ],
+    "concepts": [
+      "SELF-COMPARISON & RECURSION",
+      "CONDITIONAL LOGIC & CASE",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12088,
+    "order": 88,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Category revenue rank within each brand",
+    "description": "The merchandising team wants to see how each product category ranks within each brand's completed order revenue. Write a query that returns `brand`, `category_name`, `revenue` (sum of line_amount for completed orders, rounded to 2 dp), and `cat_rank_in_brand` (DENSE_RANK within brand by revenue descending, 1 = top category). Order by `brand` ascending, then `cat_rank_in_brand` ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "order_items": [
+        "order_item_id",
+        "order_id",
+        "product_id",
+        "line_amount"
+      ],
+      "orders": [
+        "order_id",
+        "status"
+      ],
+      "products": [
+        "product_id",
+        "brand",
+        "category_id"
+      ],
+      "categories": [
+        "category_id",
+        "category_name"
+      ]
+    },
+    "dataset_files": [
+      "categories.csv",
+      "order_items.csv",
+      "orders.csv",
+      "products.csv"
+    ],
+    "expected_query": "WITH brand_cat_revenue AS (\n    SELECT p.brand, c.category_name,\n           ROUND(SUM(oi.line_amount), 2) AS revenue\n    FROM order_items oi\n    JOIN orders o ON oi.order_id = o.order_id\n    JOIN products p ON oi.product_id = p.product_id\n    JOIN categories c ON p.category_id = c.category_id\n    WHERE o.status = 'completed'\n    GROUP BY p.brand, c.category_name\n)\nSELECT brand, category_name, revenue,\n       DENSE_RANK() OVER (PARTITION BY brand ORDER BY revenue DESC) AS cat_rank_in_brand\nFROM brand_cat_revenue\nORDER BY brand, cat_rank_in_brand",
+    "solution_query": "WITH brand_cat_revenue AS (\n    SELECT p.brand, c.category_name,\n           ROUND(SUM(oi.line_amount), 2) AS revenue\n    FROM order_items oi\n    JOIN orders o ON oi.order_id = o.order_id\n    JOIN products p ON oi.product_id = p.product_id\n    JOIN categories c ON p.category_id = c.category_id\n    WHERE o.status = 'completed'\n    GROUP BY p.brand, c.category_name\n)\nSELECT brand, category_name, revenue,\n       DENSE_RANK() OVER (PARTITION BY brand ORDER BY revenue DESC) AS cat_rank_in_brand\nFROM brand_cat_revenue\nORDER BY brand, cat_rank_in_brand;",
+    "required_concepts": [
+      "cte",
+      "window_function",
+      "dense_rank",
+      "join"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The CTE aggregates brand-category revenue using a 4-table join. The outer query applies DENSE_RANK() OVER (PARTITION BY brand ORDER BY revenue DESC) \u2014 this restarts the rank counter for each brand. The ORDER BY in the final SELECT orders for readability: show each brand's categories from highest to lowest revenue.",
+    "hints": [
+      "PARTITION BY brand in DENSE_RANK resets the rank counter for each brand \u2014 without it, all categories would be ranked globally.",
+      "Build the brand-category revenue in a CTE first; you can't use window functions on the same level as GROUP BY in a single SELECT."
+    ],
+    "concepts": [
+      "RANKING & TOP-N PER GROUP",
+      "WINDOW FUNCTIONS",
+      "MULTI-TABLE ENTITY LINKING"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12089,
+    "order": 89,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Sessions with no purchase event by country",
+    "description": "The product team wants to quantify lost sessions \u2014 sessions that never resulted in a purchase event. Write a query that returns `country`, `sessions_no_purchase` (sessions where session_id does NOT appear in events with event_name = 'purchase'), and `users` (distinct users who had such sessions). Order by `sessions_no_purchase` descending.",
+    "difficulty": "medium",
+    "schema": {
+      "sessions": [
+        "session_id",
+        "user_id"
+      ],
+      "users": [
+        "user_id",
+        "country"
+      ],
+      "events": [
+        "event_id",
+        "session_id",
+        "event_name"
+      ]
+    },
+    "dataset_files": [
+      "events.csv",
+      "sessions.csv",
+      "users.csv"
+    ],
+    "expected_query": "SELECT u.country,\n       COUNT(DISTINCT s.session_id) AS sessions_no_purchase,\n       COUNT(DISTINCT s.user_id) AS users\nFROM sessions s\nJOIN users u ON s.user_id = u.user_id\nWHERE s.session_id NOT IN (\n    SELECT DISTINCT session_id FROM events WHERE event_name = 'purchase'\n)\nGROUP BY u.country\nORDER BY sessions_no_purchase DESC",
+    "solution_query": "SELECT u.country,\n       COUNT(DISTINCT s.session_id) AS sessions_no_purchase,\n       COUNT(DISTINCT s.user_id) AS users\nFROM sessions s\nJOIN users u ON s.user_id = u.user_id\nWHERE s.session_id NOT IN (\n    SELECT DISTINCT session_id FROM events WHERE event_name = 'purchase'\n)\nGROUP BY u.country\nORDER BY sessions_no_purchase DESC;",
+    "required_concepts": [
+      "not_in",
+      "subquery",
+      "join",
+      "group_by"
+    ],
+    "enforce_concepts": true,
+    "explanation": "NOT IN (SELECT session_id FROM events WHERE event_name = 'purchase') excludes sessions that had a purchase event. The remaining sessions \u2014 never resulting in a purchase \u2014 are grouped by country. This is a set difference applied at the session level, then aggregated geographically. DISTINCT in the subquery reduces its size and is defensive against duplicates.",
+    "hints": [
+      "NOT IN (SELECT session_id FROM events WHERE event_name = 'purchase') filters to sessions without any purchase event.",
+      "JOIN to users after the NOT IN filter to get country \u2014 the filter applies to sessions before the join aggregates."
+    ],
+    "concepts": [
+      "SET OPERATIONS & COMPARISON",
+      "SUBQUERY PATTERNS",
+      "GROUPED AGGREGATION"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12090,
+    "order": 90,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Employee salary distribution by region",
+    "description": "HR wants to understand compensation spread across regions. Write a query that returns `region`, `band_low` (employees with salary < 60,000), `band_mid` (salary between 60,000 and 80,000 inclusive), `band_high` (salary > 80,000), and `avg_salary` (rounded to 2 dp). Order by `avg_salary` descending.",
+    "difficulty": "medium",
+    "schema": {
+      "employees": [
+        "employee_id",
+        "salary",
+        "department_id"
+      ],
+      "departments": [
+        "department_id",
+        "region"
+      ]
+    },
+    "dataset_files": [
+      "departments.csv",
+      "employees.csv"
+    ],
+    "expected_query": "SELECT d.region,\n       COUNT(CASE WHEN e.salary < 60000 THEN 1 END) AS band_low,\n       COUNT(CASE WHEN e.salary BETWEEN 60000 AND 80000 THEN 1 END) AS band_mid,\n       COUNT(CASE WHEN e.salary > 80000 THEN 1 END) AS band_high,\n       ROUND(AVG(e.salary), 2) AS avg_salary\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nGROUP BY d.region\nORDER BY avg_salary DESC",
+    "solution_query": "SELECT d.region,\n       COUNT(CASE WHEN e.salary < 60000 THEN 1 END) AS band_low,\n       COUNT(CASE WHEN e.salary BETWEEN 60000 AND 80000 THEN 1 END) AS band_mid,\n       COUNT(CASE WHEN e.salary > 80000 THEN 1 END) AS band_high,\n       ROUND(AVG(e.salary), 2) AS avg_salary\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nGROUP BY d.region\nORDER BY avg_salary DESC;",
+    "required_concepts": [
+      "join",
+      "group_by",
+      "case_when",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Three CASE WHEN conditions inside COUNT create the three salary bands in one pass. BETWEEN 60000 AND 80000 is inclusive on both ends. Joining employees to departments provides the region. This pattern \u2014 conditional counts in a single GROUP BY \u2014 is more efficient than three separate queries and easier to read than CASE inside HAVING.",
+    "hints": [
+      "Three separate CASE WHEN expressions inside COUNT count band membership independently \u2014 one pass, three buckets.",
+      "BETWEEN in SQL is inclusive on both ends \u2014 BETWEEN 60000 AND 80000 includes exactly 60000 and 80000."
+    ],
+    "concepts": [
+      "CONDITIONAL LOGIC & CASE",
+      "GROUPED AGGREGATION",
+      "MULTI-TABLE ENTITY LINKING"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12091,
+    "order": 91,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Monthly new user signups with cumulative total and share",
+    "description": "The growth team tracks signup momentum. Write a query that returns `signup_month` (YYYY-MM from `signup_date`), `new_users` (users who signed up that month), `cumulative_users` (running total of all users up to and including that month), and `share_of_total_pct` (new_users / all-time total signups \u00d7 100, rounded to 1 dp). Order by `signup_month` ascending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "signup_date"
+      ]
+    },
+    "dataset_files": [
+      "users.csv"
+    ],
+    "expected_query": "WITH monthly_signups AS (\n    SELECT strftime(signup_date, '%Y-%m') AS signup_month,\n           COUNT(DISTINCT user_id) AS new_users\n    FROM users\n    GROUP BY signup_month\n)\nSELECT signup_month,\n       new_users,\n       SUM(new_users) OVER (ORDER BY signup_month) AS cumulative_users,\n       ROUND(new_users * 100.0 / SUM(new_users) OVER (), 1) AS share_of_total_pct\nFROM monthly_signups\nORDER BY signup_month",
+    "solution_query": "WITH monthly_signups AS (\n    SELECT strftime(signup_date, '%Y-%m') AS signup_month,\n           COUNT(DISTINCT user_id) AS new_users\n    FROM users\n    GROUP BY signup_month\n)\nSELECT signup_month,\n       new_users,\n       SUM(new_users) OVER (ORDER BY signup_month) AS cumulative_users,\n       ROUND(new_users * 100.0 / SUM(new_users) OVER (), 1) AS share_of_total_pct\nFROM monthly_signups\nORDER BY signup_month;",
+    "required_concepts": [
+      "cte",
+      "window_function",
+      "group_by",
+      "date_functions"
+    ],
+    "enforce_concepts": true,
+    "explanation": "Two window functions in one SELECT: SUM() OVER (ORDER BY signup_month) produces a running total (cumulative users); SUM() OVER () with no ORDER BY and no frame spec computes the grand total (same value on every row), used as the denominator for share_of_total_pct. These two window specs co-exist in the same query \u2014 each window is independent.",
+    "hints": [
+      "SUM OVER (ORDER BY month) gives a running total; SUM OVER () with no ORDER BY gives the grand total \u2014 use both in the same SELECT.",
+      "The grand total denominator (SUM OVER ()) is the same value on every row \u2014 dividing monthly new_users by it gives each month's share."
+    ],
+    "concepts": [
+      "RUNNING TOTAL & MOVING WINDOW",
+      "WINDOW FUNCTIONS",
+      "TIME-SERIES BUCKETING & ARITHMETIC"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12092,
+    "order": 92,
+    "mock_only": true,
+    "framing": "scenario",
+    "title": "Payment chargeback rate and amount by method",
+    "description": "The risk team monitors chargebacks closely. Write a query on `payments` that returns `payment_method`, `total_payments`, `chargebacks` (count where status = 'chargeback'), `chargeback_rate_pct` (chargebacks / total \u00d7 100, rounded to 2 dp), and `chargeback_amount` (sum of `amount` for chargeback rows, rounded to 2 dp). Order by `chargeback_rate_pct` descending.",
+    "difficulty": "medium",
+    "schema": {
+      "payments": [
+        "payment_id",
+        "payment_method",
+        "amount",
+        "status"
+      ]
+    },
+    "dataset_files": [
+      "payments.csv"
+    ],
+    "expected_query": "SELECT payment_method,\n       COUNT(*) AS total_payments,\n       COUNT(CASE WHEN status = 'chargeback' THEN 1 END) AS chargebacks,\n       ROUND(COUNT(CASE WHEN status = 'chargeback' THEN 1 END) * 100.0 / COUNT(*), 2) AS chargeback_rate_pct,\n       ROUND(SUM(CASE WHEN status = 'chargeback' THEN amount ELSE 0 END), 2) AS chargeback_amount\nFROM payments\nGROUP BY payment_method\nORDER BY chargeback_rate_pct DESC",
+    "solution_query": "SELECT payment_method,\n       COUNT(*) AS total_payments,\n       COUNT(CASE WHEN status = 'chargeback' THEN 1 END) AS chargebacks,\n       ROUND(COUNT(CASE WHEN status = 'chargeback' THEN 1 END) * 100.0 / COUNT(*), 2) AS chargeback_rate_pct,\n       ROUND(SUM(CASE WHEN status = 'chargeback' THEN amount ELSE 0 END), 2) AS chargeback_amount\nFROM payments\nGROUP BY payment_method\nORDER BY chargeback_rate_pct DESC;",
+    "required_concepts": [
+      "group_by",
+      "case_when",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "COUNT(*) counts all payment rows per method. COUNT(CASE WHEN status='chargeback') isolates chargebacks. SUM(CASE WHEN status='chargeback' THEN amount ELSE 0 END) sums chargeback amounts \u2014 using ELSE 0 ensures non-chargeback rows contribute 0, not NULL. The rate uses COUNT(*) as denominator (all payment attempts for that method, regardless of outcome).",
+    "hints": [
+      "Use CASE WHEN inside both COUNT and SUM to isolate chargebacks in a single GROUP BY pass.",
+      "SUM(CASE WHEN ... THEN amount ELSE 0 END) avoids NULL \u2014 ELSE 0 means non-chargeback rows don't disappear from the sum."
+    ],
+    "concepts": [
+      "DATA QUALITY SKEPTICISM",
+      "CONDITIONAL LOGIC & CASE",
+      "GROUPED AGGREGATION"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12093,
+    "order": 93,
+    "mock_only": true,
+    "framing": "scenario",
+    "follow_ups": [
+      12094
+    ],
+    "title": "Completed order volume and revenue by country and plan tier",
+    "description": "The commercial team wants a segment heatmap of order volume and revenue. Write a query that returns `country`, `plan_tier`, `total_orders` (distinct completed orders), `active_users` (distinct users who placed at least one completed order), and `revenue` (sum of `net_amount` for completed orders, rounded to 2 dp). Include only country-plan combinations with at least 5 completed orders. Order by `revenue` descending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "country",
+        "plan_tier"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv",
+      "users.csv"
+    ],
+    "expected_query": "SELECT u.country, u.plan_tier,\n       COUNT(DISTINCT o.order_id) AS total_orders,\n       COUNT(DISTINCT o.user_id) AS active_users,\n       ROUND(SUM(o.net_amount), 2) AS revenue\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nWHERE o.status = 'completed'\nGROUP BY u.country, u.plan_tier\nHAVING COUNT(DISTINCT o.order_id) >= 5\nORDER BY revenue DESC",
+    "solution_query": "SELECT u.country, u.plan_tier,\n       COUNT(DISTINCT o.order_id) AS total_orders,\n       COUNT(DISTINCT o.user_id) AS active_users,\n       ROUND(SUM(o.net_amount), 2) AS revenue\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nWHERE o.status = 'completed'\nGROUP BY u.country, u.plan_tier\nHAVING COUNT(DISTINCT o.order_id) >= 5\nORDER BY revenue DESC;",
+    "required_concepts": [
+      "join",
+      "group_by",
+      "having",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "GROUP BY two dimensions (country + plan_tier) produces the cross-tabulation. HAVING COUNT(DISTINCT order_id) >= 5 removes thin segments \u2014 segments with fewer than 5 orders produce unreliable averages. Distinct counts for both orders and users are correct here: one user can place multiple orders; one order belongs to one user but COUNT(DISTINCT user_id) ensures a shared order wouldn't be double-counted.",
+    "hints": [
+      "GROUP BY both country and plan_tier to get the cross-segment view \u2014 every unique combination becomes one row.",
+      "HAVING COUNT(DISTINCT order_id) >= 5 filters after aggregation, keeping only statistically meaningful segments."
+    ],
+    "concepts": [
+      "GROUPED AGGREGATION",
+      "MULTI-TABLE ENTITY LINKING",
+      "POST-AGGREGATION FILTERING"
+    ],
+    "companies": []
+  },
+  {
+    "id": 12094,
+    "order": 94,
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 12093,
+    "follow_up_dimension": "ambiguity_pivot",
+    "title": "Above-average segments with benchmark comparison",
+    "description": "After reviewing the country-plan heatmap, the analyst asks: 'Which segments are actually above average revenue? Show me the benchmark so I can defend the threshold.' Write a query that returns all country-plan segments with at least 5 completed orders AND whose revenue strictly exceeds the average revenue across all qualifying segments. Return `country`, `plan_tier`, `total_orders`, `revenue`, and `avg_segment_revenue` (the average revenue across all qualifying segments, rounded to 2 dp). Order by `revenue` descending.",
+    "difficulty": "medium",
+    "schema": {
+      "users": [
+        "user_id",
+        "country",
+        "plan_tier"
+      ],
+      "orders": [
+        "order_id",
+        "user_id",
+        "status",
+        "net_amount"
+      ]
+    },
+    "dataset_files": [
+      "orders.csv",
+      "users.csv"
+    ],
+    "expected_query": "WITH segment_revenue AS (\n    SELECT u.country, u.plan_tier,\n           COUNT(DISTINCT o.order_id) AS total_orders,\n           ROUND(SUM(o.net_amount), 2) AS revenue\n    FROM users u\n    JOIN orders o ON u.user_id = o.user_id\n    WHERE o.status = 'completed'\n    GROUP BY u.country, u.plan_tier\n    HAVING COUNT(DISTINCT o.order_id) >= 5\n)\nSELECT country, plan_tier, total_orders, revenue,\n       ROUND(AVG(revenue) OVER (), 2) AS avg_segment_revenue\nFROM segment_revenue\nWHERE revenue > (SELECT AVG(revenue) FROM segment_revenue)\nORDER BY revenue DESC",
+    "solution_query": "WITH segment_revenue AS (\n    SELECT u.country, u.plan_tier,\n           COUNT(DISTINCT o.order_id) AS total_orders,\n           ROUND(SUM(o.net_amount), 2) AS revenue\n    FROM users u\n    JOIN orders o ON u.user_id = o.user_id\n    WHERE o.status = 'completed'\n    GROUP BY u.country, u.plan_tier\n    HAVING COUNT(DISTINCT o.order_id) >= 5\n)\nSELECT country, plan_tier, total_orders, revenue,\n       ROUND(AVG(revenue) OVER (), 2) AS avg_segment_revenue\nFROM segment_revenue\nWHERE revenue > (SELECT AVG(revenue) FROM segment_revenue)\nORDER BY revenue DESC;",
+    "required_concepts": [
+      "cte",
+      "subquery",
+      "window_function",
+      "aggregate"
+    ],
+    "enforce_concepts": true,
+    "explanation": "The CTE captures the parent query's result. The outer query filters to above-average segments using a scalar subquery. AVG(revenue) OVER () (no partition, no order) attaches the grand average to every row \u2014 making it visible in the output alongside each segment's own revenue. Showing the benchmark in the output lets analysts validate the cutoff without running a second query.",
+    "hints": [
+      "Use a scalar subquery in WHERE to filter: WHERE revenue > (SELECT AVG(revenue) FROM the_cte).",
+      "AVG(revenue) OVER () with no window spec computes the overall average and attaches it to every output row \u2014 useful for showing the benchmark."
+    ],
+    "concepts": [
+      "SUBQUERY PATTERNS",
+      "WINDOW FUNCTIONS",
+      "METRIC RECONCILIATION"
+    ],
+    "companies": []
   }
 ]
