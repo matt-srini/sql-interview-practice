@@ -323,7 +323,7 @@ After Phase 1 docs are committed, spin up dev preview, screenshot landing/worksp
 - [x] Written memo at `docs/phases/2026-05-color-review.md` — recommend KEEP, no token change
 - [x] Two adjacent observations flagged for future separate pass (workspace topbar; Pro 8% accent already correct)
 
-### Phase 2 — Content alignment 🟢 SQL complete (passed re-audit after remediation); 🟢 Python steps 1–6 complete; steps 7–8 pending; other tracks pending
+### Phase 2 — Content alignment 🟢 SQL complete (passed re-audit after remediation); 🟢 Python complete (steps 1–8 done, 102 mock-only authored, python.md reconciled); other tracks pending
 This is the first phase a fresh Sonnet session should be able to execute end-to-end from the committed docs alone. Read this file for the full brief.
 
 **Suggested execution order** (each item unblocks or de-risks the next):
