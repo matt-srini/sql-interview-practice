@@ -22,10 +22,9 @@
     "explanation": "The WHERE clause filters rows before they are returned. Only orders where the status column equals the string 'completed' pass the filter. String comparisons are case-sensitive in most databases, so the value must match exactly. The status column is included in the schema because it is used in the WHERE clause even though it does not appear in the SELECT list. ORDER BY order_id ASC produces a deterministic result.",
     "hints": [
       "Decide which rows qualify before you project columns or worry about the final ordering.",
-      "String comparisons are case-sensitive — match the exact value in the data"
+      "String comparisons are case-sensitive \u2014 match the exact value in the data"
     ],
     "concepts": [
-      "COLUMN PROJECTION",
       "CONDITIONAL ROW FILTERING",
       "DETERMINISTIC RESULT ORDERING"
     ],
@@ -59,7 +58,6 @@
       "String values in WHERE clauses must be wrapped in single quotes"
     ],
     "concepts": [
-      "COLUMN PROJECTION",
       "CONDITIONAL ROW FILTERING",
       "DETERMINISTIC RESULT ORDERING"
     ],
@@ -89,10 +87,9 @@
     "explanation": "WHERE salary > 80000 is a numeric comparison filter. Only employees whose salary value is strictly greater than 80000 are included. Numeric comparisons do not require quotes around the value. ORDER BY salary DESC places the highest earners at the top of the result.",
     "hints": [
       "Decide which rows qualify before you project columns or worry about the final ordering.",
-      "Descending order on a numeric column surfaces the largest values first — here the direction follows naturally from 'high salary'."
+      "Descending order on a numeric column surfaces the largest values first \u2014 here the direction follows naturally from 'high salary'."
     ],
     "concepts": [
-      "COLUMN PROJECTION",
       "NUMERIC COMPARISON FILTER",
       "DESCENDING RESULT ORDERING"
     ],
@@ -122,10 +119,9 @@
     "explanation": "WHERE hire_date IS NOT NULL filters out rows that do not have a known hire date before sorting begins. After that filter, ORDER BY hire_date ASC sorts the remaining employees from the earliest hire date to the most recent. This keeps the result focused on employees whose tenure can be evaluated and makes the final row order deterministic.",
     "hints": [
       "Decide which rows qualify before you project columns or worry about the final ordering.",
-      "Date columns sort chronologically — ASC means earliest first"
+      "Date columns sort chronologically \u2014 ASC means earliest first"
     ],
     "concepts": [
-      "COLUMN PROJECTION",
       "NULL AWARENESS",
       "ASCENDING RESULT ORDERING"
     ],
@@ -211,13 +207,12 @@
     ],
     "expected_query": "SELECT MIN(resolution_hours) AS min_resolution_hours\nFROM support_tickets\nWHERE status = 'resolved'",
     "solution_query": "SELECT MIN(resolution_hours) AS min_resolution_hours\nFROM support_tickets\nWHERE status = 'resolved';",
-    "explanation": "WHERE status = 'resolved' filters the table to only closed tickets before MIN runs. MIN(resolution_hours) returns the smallest resolution time among those rows — the ticket that was resolved fastest. Filtering first ensures we do not include NULL or irrelevant resolution_hours from tickets that are not yet resolved.",
+    "explanation": "WHERE status = 'resolved' filters the table to only closed tickets before MIN runs. MIN(resolution_hours) returns the smallest resolution time among those rows \u2014 the ticket that was resolved fastest. Filtering first ensures we do not include NULL or irrelevant resolution_hours from tickets that are not yet resolved.",
     "hints": [
       "Collapse the qualifying rows into a single summary value rather than returning row-level detail.",
       "MIN() returns the smallest value in a column"
     ],
     "concepts": [
-      "COLUMN PROJECTION",
       "LOWEST-VALUE IDENTIFICATION",
       "CONDITIONAL ROW FILTERING"
     ],
@@ -243,16 +238,14 @@
     ],
     "expected_query": "SELECT status, COUNT(order_id) AS order_count\nFROM orders\nGROUP BY status\nORDER BY order_count DESC",
     "solution_query": "SELECT status, COUNT(order_id) AS order_count\nFROM orders\nGROUP BY status\nORDER BY order_count DESC;",
-    "explanation": "GROUP BY status groups all order rows that share the same status value into a single group. COUNT(order_id) counts the rows in each group. Every non-aggregated column in the SELECT list must appear in the GROUP BY clause — here that is status. ORDER BY order_count DESC lists the most common statuses first.",
+    "explanation": "GROUP BY status groups all order rows that share the same status value into a single group. COUNT(order_id) counts the rows in each group. Every non-aggregated column in the SELECT list must appear in the GROUP BY clause \u2014 here that is status. ORDER BY order_count DESC lists the most common statuses first.",
     "hints": [
       "Collapse the data to the business grain named in the result before you calculate the summary values.",
-      "Once you have a count per group, the sort order should put the most frequent category at the top — think about which direction achieves that."
+      "Once you have a count per group, the sort order should put the most frequent category at the top \u2014 think about which direction achieves that."
     ],
     "concepts": [
-      "COLUMN PROJECTION",
       "GROUPED AGGREGATION",
-      "ROW COUNT AGGREGATION",
-      "DETERMINISTIC RESULT ORDERING"
+      "ROW COUNT AGGREGATION"
     ],
     "companies": [
       "Amazon",
@@ -282,10 +275,8 @@
       "SUM(net_amount) totals spending per group"
     ],
     "concepts": [
-      "COLUMN PROJECTION",
       "GROUPED AGGREGATION",
-      "VALUE AGGREGATION",
-      "DETERMINISTIC RESULT ORDERING"
+      "VALUE AGGREGATION"
     ],
     "companies": [
       "Amazon",
@@ -312,14 +303,12 @@
     "explanation": "GROUP BY issue_type creates one aggregate group per issue type, and COUNT(ticket_id) measures how many tickets fall into each group. HAVING COUNT(ticket_id) > 1 then filters those aggregated groups after the counts have been calculated. This is different from WHERE, which filters individual rows before aggregation happens. ORDER BY ticket_count DESC shows the larger issue categories first.",
     "hints": [
       "Reduce the data to the requested segment first, then keep only the segments that clear the summary threshold.",
-      "The threshold here applies to each group's total, not to individual rows — think about where in the query a group-level condition belongs versus a row-level one."
+      "The threshold here applies to each group's total, not to individual rows \u2014 think about where in the query a group-level condition belongs versus a row-level one."
     ],
     "concepts": [
-      "COLUMN PROJECTION",
       "GROUPED AGGREGATION",
       "ROW COUNT AGGREGATION",
-      "POST-AGGREGATION FILTERING",
-      "DETERMINISTIC RESULT ORDERING"
+      "POST-AGGREGATION FILTERING"
     ],
     "companies": [
       "Zendesk",
@@ -348,17 +337,15 @@
     ],
     "expected_query": "SELECT u.user_id, u.name, COUNT(o.order_id) AS order_count\nFROM users u\nLEFT JOIN orders o ON u.user_id = o.user_id\nGROUP BY u.user_id, u.name\nORDER BY u.user_id",
     "solution_query": "SELECT u.user_id, u.name, COUNT(o.order_id) AS order_count\nFROM users u\nLEFT JOIN orders o ON u.user_id = o.user_id\nGROUP BY u.user_id, u.name\nORDER BY u.user_id;",
-    "explanation": "A LEFT JOIN keeps every row from the users table (the left side) even if there is no matching row in orders. COUNT(o.order_id) counts non-NULL order_id values per group — users with no orders will have NULL for o.order_id, so COUNT returns 0 for them, not NULL. GROUP BY u.user_id, u.name is required because u.name is a non-aggregated column in the SELECT list. ORDER BY u.user_id gives a deterministic result.",
+    "explanation": "A LEFT JOIN keeps every row from the users table (the left side) even if there is no matching row in orders. COUNT(o.order_id) counts non-NULL order_id values per group \u2014 users with no orders will have NULL for o.order_id, so COUNT returns 0 for them, not NULL. GROUP BY u.user_id, u.name is required because u.name is a non-aggregated column in the SELECT list. ORDER BY u.user_id gives a deterministic result.",
     "hints": [
       "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
       "COUNT(o.order_id) returns 0 for users with no orders because NULL values are not counted by COUNT"
     ],
     "concepts": [
-      "COLUMN PROJECTION",
       "OPTIONAL ENTITY PRESERVATION",
       "ROW COUNT AGGREGATION",
-      "GROUPED AGGREGATION",
-      "DETERMINISTIC RESULT ORDERING"
+      "GROUPED AGGREGATION"
     ],
     "companies": [
       "Amazon",
@@ -392,10 +379,9 @@
     "explanation": "An INNER JOIN (written as JOIN) links each employee row to its department using the shared foreign key department_id. Only employees that have a matching department_id in the departments table are returned. Table aliases (e, d) keep column references short and unambiguous when querying multiple tables. ORDER BY e.employee_id produces a deterministic result.",
     "hints": [
       "Combine the sources that hold the needed attributes before you filter or shape the final result.",
-      "When pulling columns from two tables, the query needs a way to distinguish which table each column comes from — short labels for each table prevent ambiguity."
+      "When pulling columns from two tables, the query needs a way to distinguish which table each column comes from \u2014 short labels for each table prevent ambiguity."
     ],
     "concepts": [
-      "COLUMN PROJECTION",
       "REQUIRED ENTITY MATCHING",
       "DETERMINISTIC RESULT ORDERING"
     ],
@@ -422,16 +408,14 @@
     ],
     "expected_query": "SELECT product_id, product_name, price\nFROM products\nWHERE price BETWEEN 100 AND 500\nORDER BY price",
     "solution_query": "SELECT product_id, product_name, price\nFROM products\nWHERE price BETWEEN 100 AND 500\nORDER BY price;",
-    "explanation": "BETWEEN 100 AND 500 is a range filter that is inclusive on both ends — it is equivalent to WHERE price >= 100 AND price <= 500. This syntax is more readable than writing two separate conditions. ORDER BY price ASC arranges results from cheapest to most expensive within the range.",
+    "explanation": "BETWEEN 100 AND 500 is a range filter that is inclusive on both ends \u2014 it is equivalent to WHERE price >= 100 AND price <= 500. This syntax is more readable than writing two separate conditions. ORDER BY price ASC arranges results from cheapest to most expensive within the range.",
     "hints": [
       "Decide which rows qualify before you project columns or worry about the final ordering.",
       "BETWEEN is equivalent to >= lower AND <= upper"
     ],
     "concepts": [
-      "COLUMN PROJECTION",
       "CONDITIONAL ROW FILTERING",
-      "RANGE FILTERING",
-      "DETERMINISTIC RESULT ORDERING"
+      "RANGE FILTERING"
     ],
     "companies": [
       "Amazon",
@@ -462,9 +446,7 @@
       "Compare signup_date to date string literals in 'YYYY-MM-DD' format"
     ],
     "concepts": [
-      "COLUMN PROJECTION",
       "CONDITIONAL ROW FILTERING",
-      "DETERMINISTIC RESULT ORDERING",
       "DATE-BASED FILTERING"
     ],
     "companies": [
@@ -535,8 +517,7 @@
     ],
     "concepts": [
       "CONDITIONAL ROW FILTERING",
-      "SET MEMBERSHIP FILTERING",
-      "DETERMINISTIC RESULT ORDERING"
+      "SET MEMBERSHIP FILTERING"
     ],
     "tags": [
       "easy",
@@ -807,7 +788,7 @@
     "explanation": "Filtering with WHERE before GROUP BY is the correct pattern for pre-aggregation filtering. `COUNT(*)` counts all rows that pass the filter per group. The dual ORDER BY (count DESC, country ASC) produces a deterministic result when two countries share the same user count.",
     "hints": [
       "Filter the data to the relevant subset first, then collapse it to the business grain and calculate the summary values.",
-      "When multiple groups have the same count, a secondary order column makes the output deterministic — pick a column that uniquely distinguishes the remaining groups."
+      "When multiple groups have the same count, a secondary order column makes the output deterministic \u2014 pick a column that uniquely distinguishes the remaining groups."
     ],
     "concepts": [
       "PRE-AGGREGATION FILTERING",
@@ -843,7 +824,7 @@
       "coalesce"
     ],
     "enforce_concepts": true,
-    "explanation": "COALESCE(discount_amount, 0) replaces NULL values with 0 so the subtraction never produces NULL. Without COALESCE, any row where discount_amount IS NULL would yield NULL for final_amount — a silent bug that propagates through downstream aggregations. This pattern (null-safe arithmetic) is ubiquitous in financial reporting queries.",
+    "explanation": "COALESCE(discount_amount, 0) replaces NULL values with 0 so the subtraction never produces NULL. Without COALESCE, any row where discount_amount IS NULL would yield NULL for final_amount \u2014 a silent bug that propagates through downstream aggregations. This pattern (null-safe arithmetic) is ubiquitous in financial reporting queries.",
     "hints": [
       "Focus on which column defines the ranking and what direction the result should follow.",
       "COALESCE returns its first non-NULL argument, so COALESCE(discount_amount, 0) returns 0 when discount is missing"
@@ -885,7 +866,7 @@
     "explanation": "STRFTIME('%Y-%m', order_date) truncates each date to its year-month string. Grouping on this string produces one row per calendar month. Sorting the 'YYYY-MM' string lexicographically gives correct chronological order because ISO format is zero-padded. This is the foundational pattern for time-series aggregations in analytics.",
     "hints": [
       "Collapse the data to the business grain named in the result before you calculate the summary values.",
-      "A date truncated to year-month format works as both a grouping key and a sort key — string comparison order aligns with chronological order for this format."
+      "A date truncated to year-month format works as both a grouping key and a sort key \u2014 string comparison order aligns with chronological order for this format."
     ],
     "concepts": [
       "DATE BUCKET GROUPING",
@@ -926,7 +907,7 @@
     "explanation": "Using `>= '2024-01-01' AND < '2025-01-01'` is the portable, precise way to filter a full calendar year. It works correctly regardless of whether dates include time components, and avoids functions like YEAR() that can prevent index use in production databases. Prefer this half-open interval pattern over BETWEEN or YEAR() extraction.",
     "hints": [
       "Filter to the qualifying rows before you project columns or worry about the final ordering.",
-      "Descending order on a date column surfaces the most recent entries first — useful when 'latest' is the natural reading direction for the result."
+      "Descending order on a date column surfaces the most recent entries first \u2014 useful when 'latest' is the natural reading direction for the result."
     ],
     "concepts": [
       "HALF-OPEN DATE INTERVAL",
@@ -970,8 +951,7 @@
     ],
     "concepts": [
       "IN CLAUSE FILTERING",
-      "SET MEMBERSHIP TEST",
-      "DETERMINISTIC RESULT ORDERING"
+      "SET MEMBERSHIP TEST"
     ],
     "companies": [
       "Google",
@@ -998,7 +978,7 @@
     "solution_query": "SELECT MAX(net_amount) AS max_order,\n       MIN(net_amount) AS min_order\nFROM orders;",
     "required_concepts": [],
     "enforce_concepts": false,
-    "explanation": "Multiple aggregate functions can be computed in a single SELECT without a GROUP BY — the entire table acts as one group. MAX and MIN scan all rows and return the extreme values. Naming output columns with AS makes results self-documenting. This pattern is foundational for summary statistics queries.",
+    "explanation": "Multiple aggregate functions can be computed in a single SELECT without a GROUP BY \u2014 the entire table acts as one group. MAX and MIN scan all rows and return the extreme values. Naming output columns with AS makes results self-documenting. This pattern is foundational for summary statistics queries.",
     "hints": [
       "Collapse the qualifying rows into a single summary value rather than returning row-level detail.",
       "No GROUP BY is needed when aggregating over the entire table"
@@ -1077,10 +1057,10 @@
       "order_by"
     ],
     "enforce_concepts": true,
-    "explanation": "Combining IS NOT NULL with a comparison operator (`> 0`) requires both conditions with AND. The IS NOT NULL check is needed because `NULL > 0` evaluates to NULL (not true), which would silently exclude those rows anyway — but being explicit is a best practice that makes intent clear. This combined pattern is common in any query that filters on an optional numeric field.",
+    "explanation": "Combining IS NOT NULL with a comparison operator (`> 0`) requires both conditions with AND. The IS NOT NULL check is needed because `NULL > 0` evaluates to NULL (not true), which would silently exclude those rows anyway \u2014 but being explicit is a best practice that makes intent clear. This combined pattern is common in any query that filters on an optional numeric field.",
     "hints": [
       "Filter to the qualifying rows before you project columns or worry about the final ordering.",
-      "When a column can be NULL, a numeric comparison silently fails for NULL rows — think about what separate condition handles NULLs explicitly."
+      "When a column can be NULL, a numeric comparison silently fails for NULL rows \u2014 think about what separate condition handles NULLs explicitly."
     ],
     "concepts": [
       "NULL CHECK COMBINED WITH COMPARISON",
@@ -1116,7 +1096,7 @@
       "order_by"
     ],
     "enforce_concepts": true,
-    "explanation": "A CTE (Common Table Expression) defined with `WITH name AS (...)` creates a named temporary result set that lives only for the duration of the query. The CTE is defined first, then referenced in the main SELECT just like a table. CTEs make complex queries readable by naming intermediate steps — they are fundamental to writing maintainable SQL at any level. Here the CTE computes monthly counts, and the outer query retrieves and sorts them.",
+    "explanation": "A CTE (Common Table Expression) defined with `WITH name AS (...)` creates a named temporary result set that lives only for the duration of the query. The CTE is defined first, then referenced in the main SELECT just like a table. CTEs make complex queries readable by naming intermediate steps \u2014 they are fundamental to writing maintainable SQL at any level. Here the CTE computes monthly counts, and the outer query retrieves and sorts them.",
     "hints": [
       "Break the problem into stages so the reusable intermediate result exists before the final filter or comparison.",
       "Reference the CTE name in the outer SELECT like a table; grouping by the extracted date part and ordering by it ensures chronological output."
@@ -1156,10 +1136,10 @@
       "order_by"
     ],
     "enforce_concepts": true,
-    "explanation": "Multi-column GROUP BY produces one row per unique combination of the grouped columns — here, one row per (priority, status) pair. This is the standard approach for cross-tabulating two categorical dimensions before pivoting. The result is effectively a raw pivot table in long format, which is the input for most BI tools and dashboards.",
+    "explanation": "Multi-column GROUP BY produces one row per unique combination of the grouped columns \u2014 here, one row per (priority, status) pair. This is the standard approach for cross-tabulating two categorical dimensions before pivoting. The result is effectively a raw pivot table in long format, which is the input for most BI tools and dashboards.",
     "hints": [
       "Collapse the data to the business grain named in the result before you calculate the summary values.",
-      "When grouping by two columns, each unique combination produces one output row — ordering by both keeps the most important dimension as the primary sort axis."
+      "When grouping by two columns, each unique combination produces one output row \u2014 ordering by both keeps the most important dimension as the primary sort axis."
     ],
     "concepts": [
       "MULTI-COLUMN GROUPING",
@@ -1177,7 +1157,7 @@
     "order": 33,
     "title": "Normalize acquisition channel names",
     "difficulty": "easy",
-    "description": "The `acquisition_channel` column in `users` can have inconsistent casing and leading/trailing whitespace — the same channel may appear as `'organic'`, `' Organic'`, or `'ORGANIC'`. Write a query that normalizes each value by trimming whitespace and uppercasing, then counts users per normalized channel. Return `channel` and `user_count`, ordered by `user_count` descending.",
+    "description": "The `acquisition_channel` column in `users` can have inconsistent casing and leading/trailing whitespace \u2014 the same channel may appear as `'organic'`, `' Organic'`, or `'ORGANIC'`. Write a query that normalizes each value by trimming whitespace and uppercasing, then counts users per normalized channel. Return `channel` and `user_count`, ordered by `user_count` descending.",
     "dataset_files": [
       "users.csv"
     ],
@@ -1206,7 +1186,7 @@
     "solution_query": "SELECT UPPER(TRIM(acquisition_channel)) AS channel,\n       COUNT(*) AS user_count\nFROM users\nGROUP BY UPPER(TRIM(acquisition_channel))\nORDER BY user_count DESC;",
     "hints": [
       "Two functions applied in sequence can collapse variant spellings of the same label into one group.",
-      "UPPER() and TRIM() must appear consistently in both SELECT and GROUP BY — or alias the expression in a CTE and group by the alias."
+      "UPPER() and TRIM() must appear consistently in both SELECT and GROUP BY \u2014 or alias the expression in a CTE and group by the alias."
     ],
     "explanation": "TRIM() removes leading and trailing whitespace; UPPER() folds case. Together they normalize free-text categorical values before grouping. The pair must appear in both the SELECT and GROUP BY because SQL evaluates GROUP BY before SELECT aliases are visible. This is the standard ETL pattern for deduplicate-before-aggregate when source data comes from user input or multiple systems with inconsistent formatting."
   },
@@ -1215,7 +1195,7 @@
     "order": 34,
     "title": "Extract email domains",
     "difficulty": "easy",
-    "description": "Write a query that returns `user_id`, `email`, and `domain` — the portion of each email address after the `@` character. Order by `user_id` ascending.",
+    "description": "Write a query that returns `user_id`, `email`, and `domain` \u2014 the portion of each email address after the `@` character. Order by `user_id` ascending.",
     "dataset_files": [
       "users.csv"
     ],
@@ -1289,7 +1269,7 @@
     "solution_query": "SELECT e.employee_id, e.employee_name,\n       CONCAT(e.employee_name, ' (', COALESCE(d.department_name, 'Unknown'), ')') AS label\nFROM employees e\nLEFT JOIN departments d ON e.department_id = d.department_id\nORDER BY e.employee_id;",
     "hints": [
       "A LEFT JOIN keeps all employees including those with no matching department row.",
-      "COALESCE returns the first non-NULL argument — use it to substitute a fallback string before it reaches CONCAT."
+      "COALESCE returns the first non-NULL argument \u2014 use it to substitute a fallback string before it reaches CONCAT."
     ],
     "explanation": "CONCAT() joins strings left to right; each literal like ' (' must be a separate argument. COALESCE(d.department_name, 'Unknown') substitutes 'Unknown' when the LEFT JOIN finds no department, preventing the label from being corrupted by NULL. Using the `||` operator instead of CONCAT in many databases would propagate NULL silently, so COALESCE is the portable, defensive pattern. This construct is common in display-layer queries and reporting pipelines."
   },
@@ -1298,7 +1278,7 @@
     "order": 36,
     "title": "Days since user signup",
     "difficulty": "easy",
-    "description": "Write a query that returns `user_id`, `name`, `signup_date`, and `days_since_signup` — the number of full days between each user's `signup_date` and today. Only include active users (`is_active = true`). Order by `days_since_signup` descending.",
+    "description": "Write a query that returns `user_id`, `name`, `signup_date`, and `days_since_signup` \u2014 the number of full days between each user's `signup_date` and today. Only include active users (`is_active = true`). Order by `days_since_signup` descending.",
     "dataset_files": [
       "users.csv"
     ],
@@ -1328,10 +1308,10 @@
     "expected_query": "SELECT user_id, name, signup_date,\n       (CURRENT_DATE - signup_date)::INT AS days_since_signup\nFROM users\nWHERE is_active = true\nORDER BY days_since_signup DESC",
     "solution_query": "SELECT user_id, name, signup_date,\n       (CURRENT_DATE - signup_date)::INT AS days_since_signup\nFROM users\nWHERE is_active = true\nORDER BY days_since_signup DESC;",
     "hints": [
-      "Subtracting a date from CURRENT_DATE gives an interval or integer depending on the database — cast to INT to get a plain day count.",
+      "Subtracting a date from CURRENT_DATE gives an interval or integer depending on the database \u2014 cast to INT to get a plain day count.",
       "Filter to active users before computing the metric."
     ],
-    "explanation": "CURRENT_DATE returns today's date as a DATE value. Subtracting two DATE values in DuckDB yields an interval; casting with ::INT gives a plain day count. This pattern — age = CURRENT_DATE − date_column — appears everywhere: churn models, SLA monitors, cohort analyses, and subscription expiry checks. Results will differ each day you run the query, which is expected behavior for a live tenure column."
+    "explanation": "CURRENT_DATE returns today's date as a DATE value. Subtracting two DATE values in DuckDB yields an interval; casting with ::INT gives a plain day count. This pattern \u2014 age = CURRENT_DATE \u2212 date_column \u2014 appears everywhere: churn models, SLA monitors, cohort analyses, and subscription expiry checks. Results will differ each day you run the query, which is expected behavior for a live tenure column."
   },
   {
     "id": 11037,
@@ -1366,9 +1346,9 @@
     "expected_query": "SELECT DATE_TRUNC('month', signup_date) AS signup_month,\n       COUNT(*) AS signup_count\nFROM users\nGROUP BY DATE_TRUNC('month', signup_date)\nORDER BY signup_month",
     "solution_query": "SELECT DATE_TRUNC('month', signup_date) AS signup_month,\n       COUNT(*) AS signup_count\nFROM users\nGROUP BY DATE_TRUNC('month', signup_date)\nORDER BY signup_month;",
     "hints": [
-      "DATE_TRUNC('month', col) snaps any date to the first day of its month — all dates in the same month become equal, so GROUP BY collapses them into one row.",
+      "DATE_TRUNC('month', col) snaps any date to the first day of its month \u2014 all dates in the same month become equal, so GROUP BY collapses them into one row.",
       "Group by the same truncated expression used in SELECT."
     ],
-    "explanation": "DATE_TRUNC('month', date) truncates to the first of the month (e.g., 2023-03-15 → 2023-03-01). Unlike STRFTIME('%Y-%m', date), DATE_TRUNC preserves a proper DATE type that sorts correctly and can be fed into downstream date arithmetic. This is the canonical pattern for time-series bucketing in analytics SQL — use DATE_TRUNC when you need a proper date; use STRFTIME when you need a formatted string for display."
+    "explanation": "DATE_TRUNC('month', date) truncates to the first of the month (e.g., 2023-03-15 \u2192 2023-03-01). Unlike STRFTIME('%Y-%m', date), DATE_TRUNC preserves a proper DATE type that sorts correctly and can be fed into downstream date arithmetic. This is the canonical pattern for time-series bucketing in analytics SQL \u2014 use DATE_TRUNC when you need a proper date; use STRFTIME when you need a formatted string for display."
   }
 ]

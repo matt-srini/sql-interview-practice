@@ -36,8 +36,7 @@
     ],
     "concepts": [
       "REQUIRED ENTITY MATCHING",
-      "CONDITIONAL ROW FILTERING",
-      "DETERMINISTIC RESULT ORDERING"
+      "CONDITIONAL ROW FILTERING"
     ],
     "complexity_hint": "O(n) scan with early filter pushdown. The two WHERE conditions reduce the result before sorting.",
     "companies": [
@@ -81,8 +80,7 @@
     "concepts": [
       "REQUIRED ENTITY MATCHING",
       "DEDUPLICATED RESULT SHAPING",
-      "CONDITIONAL ROW FILTERING",
-      "DETERMINISTIC RESULT ORDERING"
+      "CONDITIONAL ROW FILTERING"
     ],
     "companies": [
       "Amazon",
@@ -119,13 +117,12 @@
     ],
     "concepts": [
       "OPTIONAL ENTITY PRESERVATION",
-      "CONDITIONAL ROW FILTERING",
-      "DETERMINISTIC RESULT ORDERING"
+      "CONDITIONAL ROW FILTERING"
     ],
-    "complexity_hint": "LEFT JOIN anti-pattern: keep rows from the left table that have no match on the right. Can also be written with NOT IN or NOT EXISTS — LEFT JOIN + IS NULL is typically most performant.",
+    "complexity_hint": "LEFT JOIN anti-pattern: keep rows from the left table that have no match on the right. Can also be written with NOT IN or NOT EXISTS \u2014 LEFT JOIN + IS NULL is typically most performant.",
     "alternative_solution": {
       "query": "SELECT d.department_id, d.department_name, d.region\nFROM departments d\nWHERE d.department_id NOT IN (\n  SELECT department_id FROM employees\n)\nORDER BY d.department_id ASC",
-      "explanation": "This alternative uses a NOT IN subquery instead of LEFT JOIN + IS NULL. Both produce identical results here, but NOT IN can silently return no rows if the subquery produces any NULLs — use LEFT JOIN + IS NULL in production for safety."
+      "explanation": "This alternative uses a NOT IN subquery instead of LEFT JOIN + IS NULL. Both produce identical results here, but NOT IN can silently return no rows if the subquery produces any NULLs \u2014 use LEFT JOIN + IS NULL in production for safety."
     },
     "companies": [
       "Google",
@@ -169,8 +166,7 @@
     "concepts": [
       "REQUIRED ENTITY MATCHING",
       "GROUPED AGGREGATION",
-      "VALUE AGGREGATION",
-      "DETERMINISTIC RESULT ORDERING"
+      "VALUE AGGREGATION"
     ],
     "complexity_hint": "O(n log n) due to GROUP BY sort. Filtering with WHERE before aggregation is the key to keeping this efficient.",
     "companies": [
@@ -216,8 +212,7 @@
       "REQUIRED ENTITY MATCHING",
       "GROUPED AGGREGATION",
       "AVERAGE-BASED BENCHMARKING",
-      "POST-AGGREGATION FILTERING",
-      "DETERMINISTIC RESULT ORDERING"
+      "POST-AGGREGATION FILTERING"
     ],
     "companies": [
       "Airbnb",
@@ -265,8 +260,7 @@
       "REQUIRED ENTITY MATCHING",
       "GROUPED AGGREGATION",
       "DISTINCT PAYMENT-METHOD COUNTING",
-      "POST-AGGREGATION FILTERING",
-      "DETERMINISTIC RESULT ORDERING"
+      "POST-AGGREGATION FILTERING"
     ],
     "companies": [
       "Stripe"
@@ -305,8 +299,7 @@
       "CONDITIONAL ROW FILTERING",
       "GROUPED AGGREGATION",
       "AVERAGE-BASED BENCHMARKING",
-      "POST-AGGREGATION FILTERING",
-      "DETERMINISTIC RESULT ORDERING"
+      "POST-AGGREGATION FILTERING"
     ],
     "companies": [
       "Zendesk",
@@ -338,8 +331,7 @@
     "concepts": [
       "RULE-BASED CLASSIFICATION",
       "GROUPED AGGREGATION",
-      "ROW COUNT AGGREGATION",
-      "DETERMINISTIC RESULT ORDERING"
+      "ROW COUNT AGGREGATION"
     ],
     "companies": [
       "Amazon",
@@ -378,8 +370,7 @@
       "RULE-BASED CLASSIFICATION",
       "REQUIRED ENTITY MATCHING",
       "GROUPED AGGREGATION",
-      "ROW COUNT AGGREGATION",
-      "DETERMINISTIC RESULT ORDERING"
+      "ROW COUNT AGGREGATION"
     ],
     "companies": [
       "Google",
@@ -425,8 +416,7 @@
     "concepts": [
       "NESTED FILTER LOGIC",
       "REQUIRED ENTITY MATCHING",
-      "CONDITIONAL ROW FILTERING",
-      "DETERMINISTIC RESULT ORDERING"
+      "CONDITIONAL ROW FILTERING"
     ],
     "companies": [
       "Stripe",
@@ -477,8 +467,7 @@
     "concepts": [
       "MULTI-TABLE ENTITY LINKING",
       "DISTINCT ENTITY COUNTING",
-      "GROUPED AGGREGATION",
-      "DETERMINISTIC RESULT ORDERING"
+      "GROUPED AGGREGATION"
     ],
     "companies": [
       "Stripe",
@@ -627,7 +616,6 @@
     "concepts": [
       "ROW-LEVEL SELF-COMPARISON",
       "MULTI-TABLE ENTITY LINKING",
-      "DETERMINISTIC RESULT ORDERING",
       "CORRELATED SUBQUERY"
     ],
     "companies": [
@@ -675,7 +663,6 @@
       "ANTI-JOIN PATTERN",
       "NESTED FILTER LOGIC",
       "CONDITIONAL ROW FILTERING",
-      "DETERMINISTIC RESULT ORDERING",
       "CORRELATED SUBQUERY",
       "EXISTS PATTERN"
     ],
@@ -728,8 +715,7 @@
     "concepts": [
       "NESTED FILTER LOGIC",
       "POST-AGGREGATION FILTERING",
-      "MULTI-TABLE ENTITY LINKING",
-      "GROUPED AGGREGATION"
+      "MULTI-TABLE ENTITY LINKING"
     ],
     "companies": [
       "Amazon"
@@ -1246,7 +1232,6 @@
     "concepts": [
       "ROW-LEVEL SELF-COMPARISON",
       "OPTIONAL ENTITY PRESERVATION",
-      "GROUPED AGGREGATION",
       "POST-AGGREGATION FILTERING",
       "CORRELATED SUBQUERY"
     ],
@@ -1300,7 +1285,6 @@
       "ANTI-JOIN PATTERN",
       "NESTED FILTER LOGIC",
       "MULTI-TABLE ENTITY LINKING",
-      "GROUPED AGGREGATION",
       "POST-AGGREGATION FILTERING",
       "CORRELATED SUBQUERY",
       "EXISTS PATTERN"
@@ -1382,10 +1366,10 @@
       "order_by"
     ],
     "enforce_concepts": true,
-    "explanation": "A CTE first aggregates revenue per quarter. The quarter label is built by concatenating the year (STRFTIME('%Y')), '-Q', and the quarter number derived from the month. In the outer query, LAG(total_revenue) OVER (ORDER BY quarter) fetches the previous row's revenue — because quarters sort lexicographically in 'YYYY-QN' format, this gives the correct prior quarter. Subtracting gives qoq_change; the first row has no prior, so LAG returns NULL.",
+    "explanation": "A CTE first aggregates revenue per quarter. The quarter label is built by concatenating the year (STRFTIME('%Y')), '-Q', and the quarter number derived from the month. In the outer query, LAG(total_revenue) OVER (ORDER BY quarter) fetches the previous row's revenue \u2014 because quarters sort lexicographically in 'YYYY-QN' format, this gives the correct prior quarter. Subtracting gives qoq_change; the first row has no prior, so LAG returns NULL.",
     "hints": [
       "Create row-to-row context within each entity first; the final filter or comparison happens after that derived state exists.",
-      "LAG(col) OVER (ORDER BY quarter) gives you the previous row's value — subtract it from the current row to get the change"
+      "LAG(col) OVER (ORDER BY quarter) gives you the previous row's value \u2014 subtract it from the current row to get the change"
     ],
     "concepts": [
       "PERIOD-OVER-PERIOD COMPARISON",
@@ -1475,10 +1459,10 @@
       "order_by"
     ],
     "enforce_concepts": true,
-    "explanation": "The JOIN direction matters: LEFT JOIN from departments to employees preserves all department rows even when no employees exist. COUNT(e.employee_id) counts only non-NULL employee IDs — for departments with no employees, this returns 0 (not 1 or NULL). Using COUNT(*) instead would incorrectly count 1 for empty departments because the LEFT JOIN produces a row with NULLs. Grouping by department_id ensures uniqueness even if two departments share the same name.",
+    "explanation": "The JOIN direction matters: LEFT JOIN from departments to employees preserves all department rows even when no employees exist. COUNT(e.employee_id) counts only non-NULL employee IDs \u2014 for departments with no employees, this returns 0 (not 1 or NULL). Using COUNT(*) instead would incorrectly count 1 for empty departments because the LEFT JOIN produces a row with NULLs. Grouping by department_id ensures uniqueness even if two departments share the same name.",
     "hints": [
       "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
-      "COUNT(e.employee_id) counts non-null values — returns 0 for departments with no employees, unlike COUNT(*)"
+      "COUNT(e.employee_id) counts non-null values \u2014 returns 0 for departments with no employees, unlike COUNT(*)"
     ],
     "concepts": [
       "LEFT JOIN DIRECTION",
@@ -1524,10 +1508,10 @@
       "order_by"
     ],
     "enforce_concepts": true,
-    "explanation": "WHERE filters rows before aggregation (only completed orders contribute). GROUP BY produces one row per (country, plan_tier) combination. HAVING filters groups after aggregation — it's the only way to filter on aggregate values like SUM. Using WHERE SUM(...) > 5000 would be a syntax error. The distinction between WHERE (row-level filter) and HAVING (group-level filter) is one of the most commonly tested SQL concepts.",
+    "explanation": "WHERE filters rows before aggregation (only completed orders contribute). GROUP BY produces one row per (country, plan_tier) combination. HAVING filters groups after aggregation \u2014 it's the only way to filter on aggregate values like SUM. Using WHERE SUM(...) > 5000 would be a syntax error. The distinction between WHERE (row-level filter) and HAVING (group-level filter) is one of the most commonly tested SQL concepts.",
     "hints": [
       "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
-      "HAVING filters on the result of the aggregation — WHERE SUM(...) > 5000 is a syntax error"
+      "HAVING filters on the result of the aggregation \u2014 WHERE SUM(...) > 5000 is a syntax error"
     ],
     "concepts": [
       "PRE VS POST AGGREGATION FILTERING",
@@ -1575,8 +1559,8 @@
     "enforce_concepts": true,
     "explanation": "JOIN links users to their orders. WHERE filters to completed orders only. GROUP BY acquisition_channel produces one row per channel. COUNT(DISTINCT user_id) prevents double-counting buyers who placed multiple orders. ROUND(SUM(...), 2) normalises currency output.",
     "hints": [
-      "Think about which table holds the channel attribute and which holds the revenue — combine them, then aggregate.",
-      "COUNT(DISTINCT user_id) — not COUNT(order_id) — gives the number of unique buyers per channel."
+      "Think about which table holds the channel attribute and which holds the revenue \u2014 combine them, then aggregate.",
+      "COUNT(DISTINCT user_id) \u2014 not COUNT(order_id) \u2014 gives the number of unique buyers per channel."
     ],
     "concepts": [
       "ACQUISITION CHANNEL ANALYSIS",
@@ -1613,7 +1597,7 @@
     "enforce_concepts": true,
     "explanation": "WHERE status = 'resolved' ensures we only average over completed tickets. GROUP BY priority produces four rows. AVG(resolution_hours) computes the mean resolution time. ORDER BY avg_resolution_hours DESC surfaces the most-delayed priority first.",
     "hints": [
-      "Filter to resolved tickets before aggregating — unresolved tickets have no meaningful resolution_hours.",
+      "Filter to resolved tickets before aggregating \u2014 unresolved tickets have no meaningful resolution_hours.",
       "ORDER BY the computed alias to rank priorities by average delay."
     ],
     "concepts": [
@@ -1654,13 +1638,12 @@
       "limit"
     ],
     "enforce_concepts": true,
-    "explanation": "JOIN links order_items to products. COUNT(DISTINCT order_id) counts unique orders containing each product — a product appearing twice in one order counts once. SUM(line_amount) totals revenue. LIMIT 10 trims to the top products after ORDER BY.",
+    "explanation": "JOIN links order_items to products. COUNT(DISTINCT order_id) counts unique orders containing each product \u2014 a product appearing twice in one order counts once. SUM(line_amount) totals revenue. LIMIT 10 trims to the top products after ORDER BY.",
     "hints": [
-      "One product can appear in the same order multiple times — think carefully about what 'order frequency' really means here.",
+      "One product can appear in the same order multiple times \u2014 think carefully about what 'order frequency' really means here.",
       "Use LIMIT after ORDER BY to get only the top 10."
     ],
     "concepts": [
-      "PRODUCT FREQUENCY ANALYSIS",
       "DISTINCT COUNT",
       "TOP-N QUERY"
     ],
@@ -1702,12 +1685,11 @@
     "explanation": "A CTE computes total_spend per user. The outer WHERE filters against a scalar subquery that reads AVG(total_spend) from the same CTE. This two-pass approach is necessary because you cannot reference an aggregate result in a WHERE clause on the same query level.",
     "hints": [
       "Compute total spend per user in a CTE, then filter in the outer query.",
-      "The subquery AVG(total_spend) references the CTE — define the CTE first, then use it in the subquery."
+      "The subquery AVG(total_spend) references the CTE \u2014 define the CTE first, then use it in the subquery."
     ],
     "concepts": [
       "SUBQUERY FILTER",
-      "CTE REUSE",
-      "SPEND ANALYSIS"
+      "CTE REUSE"
     ],
     "companies": []
   },
@@ -1758,7 +1740,7 @@
     "order": 40,
     "mock_only": true,
     "title": "Payment failure rate by method",
-    "description": "For each payment method, compute the number of successful (`paid`) payments, the number of `failed` payments, and the failure rate as a percentage. Return `payment_method`, `paid_count`, `failed_count`, and `failure_rate_pct` (rounded to 1 decimal place, calculated as failed count / total count × 100), ordered by `failure_rate_pct` descending.",
+    "description": "For each payment method, compute the number of successful (`paid`) payments, the number of `failed` payments, and the failure rate as a percentage. Return `payment_method`, `paid_count`, `failed_count`, and `failure_rate_pct` (rounded to 1 decimal place, calculated as failed count / total count \u00d7 100), ordered by `failure_rate_pct` descending.",
     "difficulty": "medium",
     "schema": {
       "payments": [
@@ -1867,7 +1849,6 @@
       "CROSS JOIN with the single-row total CTE makes grand_total available in every result row."
     ],
     "concepts": [
-      "REVENUE SHARE",
       "CROSS JOIN WITH SCALAR",
       "MULTI-CTE PATTERN"
     ],
@@ -1879,7 +1860,7 @@
     "mock_only": true,
     "type": "reverse",
     "follow_up_id": 12053,
-    "title": "Write the query — payment method revenue summary",
+    "title": "Write the query \u2014 payment method revenue summary",
     "description": "Write a SQL query that produces the result table shown below. The result summarises completed (`paid`) payments: for each payment method, return the count of paid transactions and the total amount collected, ordered by total amount descending.",
     "difficulty": "medium",
     "schema": {
@@ -1926,7 +1907,7 @@
     "explanation": "Filter to status = 'paid' before aggregating. GROUP BY payment_method produces one row per method. COUNT(*) counts transactions; SUM(amount) totals collected revenue. The column names in the result table tell you exactly what aliases to use.",
     "hints": [
       "Filter to only paid transactions before grouping.",
-      "Read the result column names carefully — they tell you what to compute and what alias to give each output column."
+      "Read the result column names carefully \u2014 they tell you what to compute and what alias to give each output column."
     ],
     "concepts": [
       "PAYMENTS AGGREGATION",
@@ -1939,7 +1920,7 @@
     "order": 44,
     "mock_only": true,
     "type": "reverse",
-    "title": "Write the query — department headcount and average pay",
+    "title": "Write the query \u2014 department headcount and average pay",
     "description": "Write a SQL query that produces the result table shown below. The result shows the top 5 departments by headcount, with each department's average salary.",
     "difficulty": "medium",
     "schema": {
@@ -1993,10 +1974,10 @@
       "limit"
     ],
     "enforce_concepts": true,
-    "explanation": "JOIN connects departments to employees. GROUP BY department aggregates headcount and average salary. The result has 5 rows — LIMIT 5 after ORDER BY headcount DESC returns the largest departments only.",
+    "explanation": "JOIN connects departments to employees. GROUP BY department aggregates headcount and average salary. The result has 5 rows \u2014 LIMIT 5 after ORDER BY headcount DESC returns the largest departments only.",
     "hints": [
-      "The headcount and salary live in one table; the department name lives in another — combine them before aggregating.",
-      "The result has only 5 rows — LIMIT 5 after ORDER BY."
+      "The headcount and salary live in one table; the department name lives in another \u2014 combine them before aggregating.",
+      "The result has only 5 rows \u2014 LIMIT 5 after ORDER BY."
     ],
     "concepts": [
       "HR HEADCOUNT ANALYSIS",
@@ -2009,7 +1990,7 @@
     "order": 45,
     "mock_only": true,
     "type": "reverse",
-    "title": "Write the query — top 5 countries by completed revenue",
+    "title": "Write the query \u2014 top 5 countries by completed revenue",
     "description": "Write a SQL query that produces the result table shown below. The result shows the top 5 countries ranked by total 'completed'-order revenue, along with the number of distinct buyers from each country.",
     "difficulty": "medium",
     "schema": {
@@ -2067,7 +2048,7 @@
     "explanation": "JOIN links users to orders. WHERE filters to completed orders. GROUP BY country aggregates revenue and distinct buyers. COUNT(DISTINCT user_id) avoids inflating buyer count for multi-order users. LIMIT 5 after ORDER BY revenue DESC returns the top 5 countries.",
     "hints": [
       "Filter to completed orders before grouping.",
-      "The result has 5 rows — LIMIT 5 after ORDER BY revenue DESC."
+      "The result has 5 rows \u2014 LIMIT 5 after ORDER BY revenue DESC."
     ],
     "concepts": [
       "GEO REVENUE ANALYSIS",
@@ -2080,7 +2061,7 @@
     "order": 46,
     "mock_only": true,
     "type": "reverse",
-    "title": "Write the query — resolved ticket priority analysis",
+    "title": "Write the query \u2014 resolved ticket priority analysis",
     "description": "Write a SQL query that produces the result table shown below. The result shows the count of 'resolved' support tickets and the average resolution time for each priority level, ordered by average resolution time descending.",
     "difficulty": "medium",
     "schema": {
@@ -2127,7 +2108,7 @@
     "explanation": "WHERE status = 'resolved' filters to completed tickets. GROUP BY priority creates four groups. AVG(resolution_hours) averaged over each group gives mean resolution time. ROUND to 1dp matches the result format. ORDER BY avg_hours DESC surfaces the slowest priority first.",
     "hints": [
       "Filter to resolved tickets first.",
-      "Read the column names in the result table — they tell you both what to compute and the alias to use."
+      "Read the column names in the result table \u2014 they tell you both what to compute and the alias to use."
     ],
     "concepts": [
       "SUPPORT TICKET ANALYSIS",
@@ -2140,7 +2121,7 @@
     "order": 47,
     "mock_only": true,
     "type": "debug",
-    "title": "Fix the query — missing GROUP BY column",
+    "title": "Fix the query \u2014 missing GROUP BY column",
     "description": "The query below should return total 'completed'-order revenue broken down by both `country` and `plan_tier`. It fails with an error. Find and fix the bug.",
     "difficulty": "medium",
     "schema": {
@@ -2169,7 +2150,7 @@
       "join"
     ],
     "enforce_concepts": true,
-    "explanation": "Every non-aggregated column in SELECT must appear in GROUP BY. Here `plan_tier` is selected but missing from GROUP BY — fix by adding `u.plan_tier` to the GROUP BY clause. This is one of the most commonly tested SQL concepts.",
+    "explanation": "Every non-aggregated column in SELECT must appear in GROUP BY. Here `plan_tier` is selected but missing from GROUP BY \u2014 fix by adding `u.plan_tier` to the GROUP BY clause. This is one of the most commonly tested SQL concepts.",
     "hints": [
       "Every non-aggregated column in the SELECT list must also appear in the aggregation clause.",
       "The error message tells you exactly which column is missing."
@@ -2185,7 +2166,7 @@
     "order": 48,
     "mock_only": true,
     "type": "debug",
-    "title": "Fix the query — wrong table alias in WHERE",
+    "title": "Fix the query \u2014 wrong table alias in WHERE",
     "description": "The query below should return each department's headcount and average salary for employees where country = 'US' only. It fails with an error. Find and fix the bug.",
     "difficulty": "medium",
     "schema": {
@@ -2214,9 +2195,9 @@
       "where"
     ],
     "enforce_concepts": true,
-    "explanation": "The FROM clause aliases `employees` as `e`. All column references to that table must use `e.column`. The WHERE clause incorrectly references `emp.country` — an alias that was never defined. Fix: change `emp.country` to `e.country`.",
+    "explanation": "The FROM clause aliases `employees` as `e`. All column references to that table must use `e.column`. The WHERE clause incorrectly references `emp.country` \u2014 an alias that was never defined. Fix: change `emp.country` to `e.country`.",
     "hints": [
-      "The error says 'Referenced table emp not found' — check your FROM aliases.",
+      "The error says 'Referenced table emp not found' \u2014 check your FROM aliases.",
       "If you aliased the table as `e`, every reference must use `e.`, not `emp.` or the full table name."
     ],
     "concepts": [
@@ -2230,7 +2211,7 @@
     "order": 49,
     "mock_only": true,
     "type": "debug",
-    "title": "Fix the query — wrong CTE column reference",
+    "title": "Fix the query \u2014 wrong CTE column reference",
     "description": "The query below uses a CTE to compute revenue per acquisition channel and then selects from it. It fails with an error. Find and fix the bug.",
     "difficulty": "medium",
     "schema": {
@@ -2259,10 +2240,10 @@
       "group_by"
     ],
     "enforce_concepts": true,
-    "explanation": "A CTE exposes the exact column names defined inside it. The CTE defines `acquisition_channel`, but the outer SELECT references `channel` — a name that doesn't exist. Fix: use `acquisition_channel` in the outer SELECT. The error's 'Candidate bindings' hint tells you the correct column name.",
+    "explanation": "A CTE exposes the exact column names defined inside it. The CTE defines `acquisition_channel`, but the outer SELECT references `channel` \u2014 a name that doesn't exist. Fix: use `acquisition_channel` in the outer SELECT. The error's 'Candidate bindings' hint tells you the correct column name.",
     "hints": [
-      "CTEs expose exactly the column names defined in their inner SELECT — you can't abbreviate them.",
-      "The error message shows 'Candidate bindings: acquisition_channel' — use that exact name."
+      "CTEs expose exactly the column names defined in their inner SELECT \u2014 you can't abbreviate them.",
+      "The error message shows 'Candidate bindings: acquisition_channel' \u2014 use that exact name."
     ],
     "concepts": [
       "CTE COLUMN REFERENCES",
@@ -2303,10 +2284,10 @@
       "date_functions"
     ],
     "enforce_concepts": true,
-    "explanation": "strftime(order_date, '%Y-%m') extracts the year-month string for grouping. GROUP BY includes both acquisition_channel and the computed month alias. HAVING filters after aggregation — only channel+month combos with > 50 000 revenue appear. ORDER BY month ASC sorts chronologically; secondary total_revenue DESC ranks channels within each month.",
+    "explanation": "strftime(order_date, '%Y-%m') extracts the year-month string for grouping. GROUP BY includes both acquisition_channel and the computed month alias. HAVING filters after aggregation \u2014 only channel+month combos with > 50 000 revenue appear. ORDER BY month ASC sorts chronologically; secondary total_revenue DESC ranks channels within each month.",
     "hints": [
       "Use strftime to extract the year-month string from order_date.",
-      "HAVING filters on aggregate results — WHERE can't reference SUM(net_amount)."
+      "HAVING filters on aggregate results \u2014 WHERE can't reference SUM(net_amount)."
     ],
     "concepts": [
       "DATE TRUNCATION",
@@ -2349,7 +2330,7 @@
     "enforce_concepts": true,
     "explanation": "user_spend CTE aggregates per-user metrics. percentile CTE uses PERCENTILE_CONT(0.80) WITHIN GROUP to compute the 80th-percentile threshold. CROSS JOIN with the single-row percentile CTE makes p80 available in WHERE. CASE WHEN evaluates loyalty thresholds in descending order (most exclusive first).",
     "hints": [
-      "Computing a percentile threshold requires a special ordered-set aggregate function — think about which SQL function handles percentiles.",
+      "Computing a percentile threshold requires a special ordered-set aggregate function \u2014 think about which SQL function handles percentiles.",
       "CROSS JOIN the single-row percentile CTE to make p80 available in the WHERE filter."
     ],
     "concepts": [
@@ -2365,7 +2346,7 @@
     "order": 52,
     "mock_only": true,
     "title": "Category revenue ranking with parent and gap",
-    "description": "For each product category compute `total_revenue` (rounded to 2 dp), `revenue_rank` (1 = highest, using `RANK()`), `parent_category`, and `revenue_vs_top` — how far each category's revenue is below the top category (positive number, rounded to 2 dp). Order by `revenue_rank` ascending.",
+    "description": "For each product category compute `total_revenue` (rounded to 2 dp), `revenue_rank` (1 = highest, using `RANK()`), `parent_category`, and `revenue_vs_top` \u2014 how far each category's revenue is below the top category (positive number, rounded to 2 dp). Order by `revenue_rank` ascending.",
     "difficulty": "medium",
     "schema": {
       "order_items": [
@@ -2395,15 +2376,14 @@
       "join"
     ],
     "enforce_concepts": true,
-    "explanation": "The CTE computes per-category revenue. RANK() OVER (ORDER BY total_revenue DESC) assigns global rank. MAX(total_revenue) OVER () — with no PARTITION BY — returns the single highest revenue across all rows, enabling the gap calculation. A second JOIN to categories fetches parent_category, which wasn't needed during aggregation.",
+    "explanation": "The CTE computes per-category revenue. RANK() OVER (ORDER BY total_revenue DESC) assigns global rank. MAX(total_revenue) OVER () \u2014 with no PARTITION BY \u2014 returns the single highest revenue across all rows, enabling the gap calculation. A second JOIN to categories fetches parent_category, which wasn't needed during aggregation.",
     "hints": [
       "Assign each category a position in the global revenue ranking before computing the gap to the top.",
-      "MAX(...) OVER () with no PARTITION BY returns the maximum across all result rows — use it to compute the gap to the top."
+      "MAX(...) OVER () with no PARTITION BY returns the maximum across all result rows \u2014 use it to compute the gap to the top."
     ],
     "concepts": [
       "WINDOW RANK",
-      "GLOBAL WINDOW MAX",
-      "CATEGORY ANALYSIS"
+      "GLOBAL WINDOW MAX"
     ],
     "companies": []
   },
@@ -2438,15 +2418,14 @@
       "case_when"
     ],
     "enforce_concepts": true,
-    "explanation": "RANK() OVER (ORDER BY AVG(e.salary) DESC) applies a window function to the aggregated value — valid after GROUP BY. The scalar subquery (SELECT AVG(salary) FROM employees) computes the company-wide average and is used inside CASE WHEN for the above_avg_count. GROUP BY must include department_id to ensure unique grouping.",
+    "explanation": "RANK() OVER (ORDER BY AVG(e.salary) DESC) applies a window function to the aggregated value \u2014 valid after GROUP BY. The scalar subquery (SELECT AVG(salary) FROM employees) computes the company-wide average and is used inside CASE WHEN for the above_avg_count. GROUP BY must include department_id to ensure unique grouping.",
     "hints": [
       "A position/ordering function can be applied to the per-department averages that aggregation produces.",
       "Use a scalar subquery to compute the company-wide average salary inside CASE WHEN."
     ],
     "concepts": [
       "WINDOW RANK ON AGGREGATES",
-      "SCALAR SUBQUERY IN CASE",
-      "HR SALARY ANALYSIS"
+      "SCALAR SUBQUERY IN CASE"
     ],
     "companies": []
   },
@@ -2483,9 +2462,9 @@
     "solution_query": "SELECT DISTINCT event_name,\n       INITCAP(REGEXP_REPLACE(event_name, '_', ' ', 'g')) AS display_name\nFROM events\nORDER BY event_name;",
     "hints": [
       "REGEXP_REPLACE(string, pattern, replacement, flags) with flag 'g' replaces every match, not just the first.",
-      "INITCAP capitalizes the first letter of each word — wrap REGEXP_REPLACE with it to title-case the result."
+      "INITCAP capitalizes the first letter of each word \u2014 wrap REGEXP_REPLACE with it to title-case the result."
     ],
-    "explanation": "REGEXP_REPLACE(str, '_', ' ', 'g') replaces every underscore globally (the 'g' flag). INITCAP then capitalizes the first letter of each space-separated word, converting snake_case to Title Case. This pipeline — regex → case function — is standard for producing human-readable labels from machine-formatted identifiers in dashboards and reports. Without the 'g' flag, only the first underscore is replaced."
+    "explanation": "REGEXP_REPLACE(str, '_', ' ', 'g') replaces every underscore globally (the 'g' flag). INITCAP then capitalizes the first letter of each space-separated word, converting snake_case to Title Case. This pipeline \u2014 regex \u2192 case function \u2014 is standard for producing human-readable labels from machine-formatted identifiers in dashboards and reports. Without the 'g' flag, only the first underscore is replaced."
   },
   {
     "id": 12055,
@@ -2529,16 +2508,16 @@
     "solution_query": "SELECT c.category_name,\n       STRING_AGG(p.product_name, ', ' ORDER BY p.product_name) AS product_list\nFROM categories c\nJOIN products p ON c.category_id = p.category_id\nWHERE p.is_active = true\nGROUP BY c.category_name\nORDER BY c.category_name;",
     "hints": [
       "STRING_AGG(value, separator) collapses multiple rows into one delimited string within a group.",
-      "STRING_AGG accepts an ORDER BY clause inside the function call — ORDER BY inside the aggregate controls the order of the concatenated values, not the output row order."
+      "STRING_AGG accepts an ORDER BY clause inside the function call \u2014 ORDER BY inside the aggregate controls the order of the concatenated values, not the output row order."
     ],
-    "explanation": "STRING_AGG(expr, sep ORDER BY sort_expr) concatenates values within each group in the specified order. The ORDER BY inside the function is evaluated before aggregation and is independent of the query's outer ORDER BY. This is distinct from GROUP_CONCAT (MySQL) which uses a different syntax. ARRAY_AGG is a related function that produces an array instead of a flat string — use ARRAY_AGG when downstream processing needs to index or iterate individual elements."
+    "explanation": "STRING_AGG(expr, sep ORDER BY sort_expr) concatenates values within each group in the specified order. The ORDER BY inside the function is evaluated before aggregation and is independent of the query's outer ORDER BY. This is distinct from GROUP_CONCAT (MySQL) which uses a different syntax. ARRAY_AGG is a related function that produces an array instead of a flat string \u2014 use ARRAY_AGG when downstream processing needs to index or iterate individual elements."
   },
   {
     "id": 12056,
     "order": 56,
     "title": "Flag users approaching renewal",
     "difficulty": "medium",
-    "description": "Write a query that returns `user_id`, `name`, `signup_date`, `renewal_due` (the date exactly 365 days after signup), and `renews_soon` — a boolean that is `true` when `renewal_due` falls within the next 90 days from today. Order by `renewal_due` ascending.",
+    "description": "Write a query that returns `user_id`, `name`, `signup_date`, `renewal_due` (the date exactly 365 days after signup), and `renews_soon` \u2014 a boolean that is `true` when `renewal_due` falls within the next 90 days from today. Order by `renewal_due` ascending.",
     "dataset_files": [
       "users.csv"
     ],
@@ -2568,16 +2547,16 @@
     "solution_query": "SELECT user_id, name, signup_date,\n       signup_date + INTERVAL '365 days' AS renewal_due,\n       (signup_date + INTERVAL '365 days')\n           BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '90 days' AS renews_soon\nFROM users\nORDER BY renewal_due;",
     "hints": [
       "Add an INTERVAL literal to a date column to compute a future date.",
-      "BETWEEN works on dates — compare the derived renewal date against a range from today to today plus 90 days."
+      "BETWEEN works on dates \u2014 compare the derived renewal date against a range from today to today plus 90 days."
     ],
-    "explanation": "DATE + INTERVAL 'N days' adds a fixed duration. Note that INTERVAL '1 year' accounts for leap years while INTERVAL '365 days' always adds exactly 365 calendar days — the difference matters near Feb 29. BETWEEN on dates is inclusive on both ends. This pattern — derived date + windowed flag — is the building block of renewal reminder systems, SLA breach alerts, and subscription lifecycle automation."
+    "explanation": "DATE + INTERVAL 'N days' adds a fixed duration. Note that INTERVAL '1 year' accounts for leap years while INTERVAL '365 days' always adds exactly 365 calendar days \u2014 the difference matters near Feb 29. BETWEEN on dates is inclusive on both ends. This pattern \u2014 derived date + windowed flag \u2014 is the building block of renewal reminder systems, SLA breach alerts, and subscription lifecycle automation."
   },
   {
     "id": 12057,
     "order": 57,
     "title": "Convert event timestamps to Pacific time",
     "difficulty": "medium",
-    "description": "Event timestamps in the `events` table are stored in UTC. Write a query that returns `event_id`, `event_name`, the original `event_time` (UTC), and `event_time_pt` — the timestamp converted to US Pacific time (`America/Los_Angeles`). Return the 20 earliest events by `event_time`.",
+    "description": "Event timestamps in the `events` table are stored in UTC. Write a query that returns `event_id`, `event_name`, the original `event_time` (UTC), and `event_time_pt` \u2014 the timestamp converted to US Pacific time (`America/Los_Angeles`). Return the 20 earliest events by `event_time`.",
     "dataset_files": [
       "events.csv"
     ],
@@ -2608,7 +2587,7 @@
     "solution_query": "SELECT event_id, event_name, event_time,\n       event_time AT TIME ZONE 'UTC' AT TIME ZONE 'America/Los_Angeles' AS event_time_pt\nFROM events\nORDER BY event_time\nLIMIT 20;",
     "hints": [
       "AT TIME ZONE applied twice converts a naive timestamp: the first application declares the source timezone; the second specifies the target.",
-      "Use an IANA timezone name like 'America/Los_Angeles' rather than a fixed offset — it handles daylight saving transitions automatically."
+      "Use an IANA timezone name like 'America/Los_Angeles' rather than a fixed offset \u2014 it handles daylight saving transitions automatically."
     ],
     "explanation": "event_time AT TIME ZONE 'UTC' marks the TIMESTAMP as UTC-aware (TIMESTAMPTZ). The second AT TIME ZONE 'America/Los_Angeles' then converts it to Pacific time. Using IANA names instead of offsets like '-08:00' means the conversion auto-adjusts for daylight saving. This two-step pattern is standard when event data is stored in UTC (as it should be) but business reports require local time. Note: the result type is TIMESTAMPTZ, which may render differently depending on the client session timezone."
   },
@@ -2648,10 +2627,10 @@
     "expected_query": "SELECT user_id FROM orders\nUNION\nSELECT user_id FROM support_tickets\nORDER BY user_id",
     "solution_query": "SELECT user_id FROM orders\nUNION\nSELECT user_id FROM support_tickets\nORDER BY user_id;",
     "hints": [
-      "UNION combines two result sets and removes duplicate rows — UNION ALL keeps duplicates.",
+      "UNION combines two result sets and removes duplicate rows \u2014 UNION ALL keeps duplicates.",
       "Both SELECT statements must produce the same number of columns with compatible types."
     ],
-    "explanation": "UNION merges two result sets and applies DISTINCT across the combined rows. A user who both ordered and raised a ticket appears once. UNION ALL skips deduplication and is faster when duplicates are impossible or wanted. The key interview question is 'when would you choose UNION ALL?' — answer: when you know no duplicates exist, or when you intentionally want to count occurrences across sources. ORDER BY at the end applies to the final merged result."
+    "explanation": "UNION merges two result sets and applies DISTINCT across the combined rows. A user who both ordered and raised a ticket appears once. UNION ALL skips deduplication and is faster when duplicates are impossible or wanted. The key interview question is 'when would you choose UNION ALL?' \u2014 answer: when you know no duplicates exist, or when you intentionally want to count occurrences across sources. ORDER BY at the end applies to the final merged result."
   },
   {
     "id": 12059,
@@ -2689,10 +2668,10 @@
     "expected_query": "SELECT user_id FROM orders\nINTERSECT\nSELECT user_id FROM support_tickets\nORDER BY user_id",
     "solution_query": "SELECT user_id FROM orders\nINTERSECT\nSELECT user_id FROM support_tickets\nORDER BY user_id;",
     "hints": [
-      "INTERSECT returns only rows present in both result sets — the SQL equivalent of a mathematical set intersection.",
+      "INTERSECT returns only rows present in both result sets \u2014 the SQL equivalent of a mathematical set intersection.",
       "The equivalent JOIN would be: SELECT DISTINCT o.user_id FROM orders o JOIN support_tickets t ON o.user_id = t.user_id."
     ],
-    "explanation": "INTERSECT returns rows that appear in both SELECT results after deduplication. It requires both sides to have the same shape, so it cannot carry additional columns from either table — use a JOIN when you need attributes from both sides. The JOIN equivalent (DISTINCT + INNER JOIN) is more verbose but more flexible. INTERSECT is clearest when you only need the key column(s) and want readable intent-revealing SQL."
+    "explanation": "INTERSECT returns rows that appear in both SELECT results after deduplication. It requires both sides to have the same shape, so it cannot carry additional columns from either table \u2014 use a JOIN when you need attributes from both sides. The JOIN equivalent (DISTINCT + INNER JOIN) is more verbose but more flexible. INTERSECT is clearest when you only need the key column(s) and want readable intent-revealing SQL."
   },
   {
     "id": 12060,
@@ -2733,7 +2712,7 @@
       "EXCEPT returns rows from the left result set that have no matching row in the right.",
       "Compare with the LEFT JOIN / IS NULL pattern: SELECT DISTINCT o.user_id FROM orders o LEFT JOIN support_tickets t ON o.user_id = t.user_id WHERE t.user_id IS NULL."
     ],
-    "explanation": "EXCEPT (MINUS in Oracle) returns the set difference: rows in the first query not present in the second. Unlike NOT IN with a subquery, EXCEPT handles NULLs correctly — NULL rows in the right side do not silently exclude all results. The LEFT JOIN / IS NULL approach is equivalent and more portable; NOT EXISTS is also equivalent and NULL-safe. EXCEPT is the most concise when the shapes match and you only need the key."
+    "explanation": "EXCEPT (MINUS in Oracle) returns the set difference: rows in the first query not present in the second. Unlike NOT IN with a subquery, EXCEPT handles NULLs correctly \u2014 NULL rows in the right side do not silently exclude all results. The LEFT JOIN / IS NULL approach is equivalent and more portable; NOT EXISTS is also equivalent and NULL-safe. EXCEPT is the most concise when the shapes match and you only need the key."
   },
   {
     "id": 12061,
@@ -2785,10 +2764,10 @@
     "expected_query": "SELECT COALESCE(c.category_name, 'ALL') AS category_name,\n       COALESCE(o.status, 'ALL') AS status,\n       ROUND(SUM(oi.line_amount), 2) AS revenue\nFROM orders o\nJOIN order_items oi ON o.order_id = oi.order_id\nJOIN products p ON oi.product_id = p.product_id\nJOIN categories c ON p.category_id = c.category_id\nGROUP BY ROLLUP(c.category_name, o.status)\nORDER BY category_name, status",
     "solution_query": "SELECT COALESCE(c.category_name, 'ALL') AS category_name,\n       COALESCE(o.status, 'ALL') AS status,\n       ROUND(SUM(oi.line_amount), 2) AS revenue\nFROM orders o\nJOIN order_items oi ON o.order_id = oi.order_id\nJOIN products p ON oi.product_id = p.product_id\nJOIN categories c ON p.category_id = c.category_id\nGROUP BY ROLLUP(c.category_name, o.status)\nORDER BY category_name, status;",
     "hints": [
-      "GROUP BY ROLLUP(a, b) generates three aggregation levels: (a, b), (a, NULL), and (NULL, NULL) — the NULLs are structural markers for subtotal and grand-total rows.",
+      "GROUP BY ROLLUP(a, b) generates three aggregation levels: (a, b), (a, NULL), and (NULL, NULL) \u2014 the NULLs are structural markers for subtotal and grand-total rows.",
       "COALESCE(col, 'ALL') replaces the structural NULLs inserted by ROLLUP with a readable label."
     ],
-    "explanation": "ROLLUP(a, b) is shorthand for three GROUP BY levels: detail (a, b), subtotal per a (a, NULL), and grand total (NULL, NULL). This is more efficient than three separate queries with UNION ALL. The NULLs are positional markers — they mean 'all values of this dimension' — so COALESCE makes them human-readable. The GROUPING() function can distinguish rollup NULLs from real NULLs in the data when needed. ROLLUP is the standard building block for financial summaries and hierarchical reports."
+    "explanation": "ROLLUP(a, b) is shorthand for three GROUP BY levels: detail (a, b), subtotal per a (a, NULL), and grand total (NULL, NULL). This is more efficient than three separate queries with UNION ALL. The NULLs are positional markers \u2014 they mean 'all values of this dimension' \u2014 so COALESCE makes them human-readable. The GROUPING() function can distinguish rollup NULLs from real NULLs in the data when needed. ROLLUP is the standard building block for financial summaries and hierarchical reports."
   },
   {
     "id": 12062,
@@ -2824,7 +2803,7 @@
     "expected_query": "SELECT status,\n       COUNT(*) AS total_orders,\n       COUNT(*) FILTER(WHERE payment_status = 'paid') AS paid_count,\n       COUNT(*) FILTER(WHERE payment_status = 'pending') AS pending_count,\n       COUNT(*) FILTER(WHERE payment_status = 'failed') AS failed_count\nFROM orders\nGROUP BY status\nORDER BY status",
     "solution_query": "SELECT status,\n       COUNT(*) AS total_orders,\n       COUNT(*) FILTER(WHERE payment_status = 'paid') AS paid_count,\n       COUNT(*) FILTER(WHERE payment_status = 'pending') AS pending_count,\n       COUNT(*) FILTER(WHERE payment_status = 'failed') AS failed_count\nFROM orders\nGROUP BY status\nORDER BY status;",
     "hints": [
-      "A FILTER clause after an aggregate function restricts which rows contribute to that specific aggregate — only matching rows are counted.",
+      "A FILTER clause after an aggregate function restricts which rows contribute to that specific aggregate \u2014 only matching rows are counted.",
       "FILTER(WHERE condition) is cleaner than COUNT(CASE WHEN condition THEN 1 END) and expresses the same intent."
     ],
     "explanation": "FILTER(WHERE condition) is a SQL standard clause (supported in PostgreSQL, DuckDB, SQLite, and newer databases) that restricts the rows fed into that specific aggregate without affecting others in the same SELECT. It is equivalent to COUNT(CASE WHEN payment_status = 'paid' THEN 1 END) but more readable and composable. In databases that don't support FILTER (MySQL pre-8.0.20), CASE WHEN is the fallback. Knowing FILTER signals awareness of modern SQL features in interviews."
@@ -2861,10 +2840,10 @@
     "expected_query": "WITH RECURSIVE month_spine AS (\n    SELECT DATE '2023-01-01' AS month_start\n    UNION ALL\n    SELECT (month_start + INTERVAL '1 month')::DATE\n    FROM month_spine\n    WHERE month_start < DATE '2025-12-01'\n)\nSELECT s.month_start,\n       COUNT(o.order_date) AS order_count\nFROM month_spine s\nLEFT JOIN orders o\n    ON DATE_TRUNC('month', o.order_date)::DATE = s.month_start\nGROUP BY s.month_start\nORDER BY s.month_start",
     "solution_query": "WITH RECURSIVE month_spine AS (\n    SELECT DATE '2023-01-01' AS month_start\n    UNION ALL\n    SELECT (month_start + INTERVAL '1 month')::DATE\n    FROM month_spine\n    WHERE month_start < DATE '2025-12-01'\n)\nSELECT s.month_start,\n       COUNT(o.order_date) AS order_count\nFROM month_spine s\nLEFT JOIN orders o\n    ON DATE_TRUNC('month', o.order_date)::DATE = s.month_start\nGROUP BY s.month_start\nORDER BY s.month_start;",
     "hints": [
-      "A recursive CTE has two parts: an anchor (the starting row) and a recursive member that references the CTE name itself — separated by UNION ALL.",
-      "The WHERE clause in the recursive member is the termination condition — when it evaluates to false, recursion stops."
+      "A recursive CTE has two parts: an anchor (the starting row) and a recursive member that references the CTE name itself \u2014 separated by UNION ALL.",
+      "The WHERE clause in the recursive member is the termination condition \u2014 when it evaluates to false, recursion stops."
     ],
-    "explanation": "WITH RECURSIVE declares a recursive CTE. The anchor produces the first row (2023-01-01). The recursive member unions with new rows derived from the previous iteration — adding one month each time. Casting to ::DATE normalizes the INTERVAL result back to DATE. The WHERE month_start < DATE '2025-12-01' prevents infinite recursion by stopping before generating 2026-01. Date spines are critical in analytics: joining fact tables to a complete calendar ensures time-series charts show gaps instead of silently skipping months with no events."
+    "explanation": "WITH RECURSIVE declares a recursive CTE. The anchor produces the first row (2023-01-01). The recursive member unions with new rows derived from the previous iteration \u2014 adding one month each time. Casting to ::DATE normalizes the INTERVAL result back to DATE. The WHERE month_start < DATE '2025-12-01' prevents infinite recursion by stopping before generating 2026-01. Date spines are critical in analytics: joining fact tables to a complete calendar ensures time-series charts show gaps instead of silently skipping months with no events."
   },
   {
     "id": 12064,
@@ -2902,7 +2881,7 @@
     "solution_query": "WITH keyed AS (\n    SELECT user_id,\n           CONCAT(country, ':', plan_tier, ':', user_id::TEXT) AS composite_key\n    FROM users\n)\nSELECT user_id, composite_key,\n       SPLIT_PART(composite_key, ':', 1) AS extracted_country,\n       SPLIT_PART(composite_key, ':', 2) AS extracted_tier,\n       SPLIT_PART(composite_key, ':', 3)::INT AS extracted_id\nFROM keyed\nORDER BY user_id;",
     "hints": [
       "Build the composite key in a CTE so you can reference it by alias in the outer SELECT instead of repeating the expression.",
-      "SPLIT_PART(string, delimiter, n) returns the nth segment (1-indexed) — parse each position with a separate call."
+      "SPLIT_PART(string, delimiter, n) returns the nth segment (1-indexed) \u2014 parse each position with a separate call."
     ],
     "explanation": "SPLIT_PART(string, delimiter, n) extracts the nth segment after splitting on the delimiter. Using a CTE avoids repeating the CONCAT expression for each SPLIT_PART call. Casting the third segment to INT with ::INT validates that the user_id portion is numeric. This build-then-parse pattern is common in pipeline debugging: you construct the key as it would be built upstream, then parse it as a downstream consumer would, to verify both directions are consistent."
   }
