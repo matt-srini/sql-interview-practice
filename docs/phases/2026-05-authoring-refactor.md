@@ -323,7 +323,7 @@ After Phase 1 docs are committed, spin up dev preview, screenshot landing/worksp
 - [x] Written memo at `docs/phases/2026-05-color-review.md` — recommend KEEP, no token change
 - [x] Two adjacent observations flagged for future separate pass (workspace topbar; Pro 8% accent already correct)
 
-### Phase 2 — Content alignment 🟢 SQL complete (passed re-audit after remediation); other tracks pending
+### Phase 2 — Content alignment 🟢 SQL complete (passed re-audit after remediation); 🟢 Python steps 1–6 complete; steps 7–8 pending; other tracks pending
 This is the first phase a fresh Sonnet session should be able to execute end-to-end from the committed docs alone. Read this file for the full brief.
 
 **Suggested execution order** (each item unblocks or de-risks the next):
@@ -449,7 +449,15 @@ This is the complete, decided plan for the Python track. Execute it in this orde
 
 **7. Doc nits:** the taxonomy ⚡ callout and per-track ⚡ caveats do not apply to Python (no ⚡ families) — confirm Python is not swept up when the SQL/Pandas/PySpark ⚡ caveats are refined. `docs/tracks/python.md` line ~73 "16 canonical families" is **correct** (registry has 16) — no count fix needed.
 
-**Execution order (Python):** (1) confirm shared `concept_families.py` loader + `validate_content.py` from SQL Phase 2 are in place; (2) expand Python match-patterns + fix the `ORDER-FIRST REASONING` taxonomy bug; (3) remap/de-noise practice tags (KEEP-CORE retag, strip noise, stdlib retag) — batch-commit, run loader; (4) deprecate the puzzle/trivia set + KEEP-REFRAME re-authoring via the agent — batch-commit, run loader; (5) add complexity-enforcing hidden tests to hard + sensitive medium; (6) backfill ~12–18 data-grounded practice Qs; (7) drop/replace mock clones, then author mock-only to ~90–120 with `debug`/`scenario` formats and chains; (8) python.md reconciliation + doc nits in the same commits as the content they describe.
+**Execution order (Python):**
+- ✅ (1) confirm shared `concept_families.py` loader + `validate_content.py` from SQL Phase 2 are in place
+- ✅ (2) expand Python match-patterns + fix the `ORDER-FIRST REASONING` taxonomy bug
+- ✅ (3) remap/de-noise practice tags (KEEP-CORE retag, strip noise, stdlib retag) — committed
+- ✅ (4) deprecate the puzzle/trivia set + KEEP-REFRAME re-authoring via the agent — committed
+- ✅ (5) add complexity-enforcing hidden tests to hard + sensitive medium — committed
+- ✅ (6) backfill data-grounded practice Qs — 20 new questions added (5 easy 21037–21041, 10 medium 22041–22050, 5 hard 23033–23037); practice total 60 → **80** (33 easy / 29 medium / 18 hard); learning paths repaired (dynamic-programming, graph-and-tree-patterns, stacks-and-queues paths updated to use live IDs); 389 tests pass
+- ⏳ (7) drop/replace mock clones, then author mock-only to ~90–120 with `debug`/`scenario` formats and chains
+- ⏳ (8) python.md reconciliation + doc nits in the same commits as the content they describe
 
 ### Phase 3 — Interview Loop full stack ⏸ pending (depends on Phase 2 content)
 

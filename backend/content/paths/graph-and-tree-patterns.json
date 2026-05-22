@@ -4,12 +4,12 @@
   "description": "Strengthen traversal fluency across BFS, DFS, topological order, shortest path, and union-find connected-component reasoning.",
   "topic": "python",
   "questions": [
-    22029,
+    22042,
     23006,
-    23013,
     23014,
     23021,
-    23022
+    23022,
+    23034
   ],
   "tier": "pro",
   "role": "advanced",

@@ -2121,5 +2121,392 @@
       "SLIDING WINDOW",
       "STACK & MONOTONIC STRUCTURES"
     ]
+  },
+  {
+    "id": 21037,
+    "order": 37,
+    "topic": "python",
+    "difficulty": "easy",
+    "title": "Event Type Frequency Counter",
+    "description": "A monitoring system emits events tagged with a type string. Given a list `events` of event type strings, return a dictionary mapping each distinct event type to the number of times it appears.\n\n```\nsolve(['INFO','WARN','INFO','ERROR','INFO'])  # → {'INFO':3,'WARN':1,'ERROR':1}\nsolve(['A','B','A'])  # → {'A':2,'B':1}\nsolve([])  # → {}\n```",
+    "starter_code": "def solve(events: list) -> dict:\n    # Your code here\n    pass",
+    "expected_code": "def solve(events):\n    counts = {}\n    for e in events:\n        counts[e] = counts.get(e, 0) + 1\n    return counts",
+    "solution_code": "def solve(events):\n    counts = {}\n    for e in events:\n        counts[e] = counts.get(e, 0) + 1\n    return counts",
+    "explanation": "One pass over the event list, incrementing a counter for each event type. dict.get(key, 0) returns the existing count or 0 if the key is new, then +1. Time O(n), space O(d) where d is the number of distinct event types. Equivalent to collections.Counter(events) — but writing the loop explicitly is clearer about the invariant being maintained.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            "INFO",
+            "WARN",
+            "INFO",
+            "ERROR",
+            "INFO"
+          ]
+        ],
+        "expected": {
+          "INFO": 3,
+          "WARN": 1,
+          "ERROR": 1
+        }
+      },
+      {
+        "input": [
+          [
+            "A",
+            "B",
+            "A"
+          ]
+        ],
+        "expected": {
+          "A": 2,
+          "B": 1
+        }
+      },
+      {
+        "input": [
+          []
+        ],
+        "expected": {}
+      },
+      {
+        "input": [
+          [
+            "ERR",
+            "ERR",
+            "ERR"
+          ]
+        ],
+        "expected": {
+          "ERR": 3
+        }
+      },
+      {
+        "input": [
+          [
+            "A",
+            "B",
+            "C",
+            "A",
+            "B",
+            "A"
+          ]
+        ],
+        "expected": {
+          "A": 3,
+          "B": 2,
+          "C": 1
+        }
+      }
+    ],
+    "public_test_cases": 2,
+    "hints": [
+      "Use a dictionary to track counts. For each event, look up its current count (defaulting to 0) and increment.",
+      "dict.get(key, 0) gives the current count or 0 if the key doesn't exist yet."
+    ],
+    "concepts": [
+      "HASH-MAP STATE"
+    ]
+  },
+  {
+    "id": 21038,
+    "order": 38,
+    "topic": "python",
+    "difficulty": "easy",
+    "title": "First Sensor Reading Above Threshold",
+    "description": "A pipeline monitors a sensor stream. Given a list `readings` of numeric values (in arrival order) and a `threshold`, return the index of the first reading that **strictly exceeds** the threshold. Return `-1` if no reading does.\n\n```\nsolve([1.2, 3.5, 2.1, 4.0], 3.0)  # → 1  (readings[1]=3.5 > 3.0)\nsolve([1.0, 2.0, 3.0], 3.0)       # → -1  (3.0 is not strictly greater)\nsolve([], 0.0)                     # → -1\n```",
+    "starter_code": "def solve(readings: list, threshold: float) -> int:\n    # Your code here\n    pass",
+    "expected_code": "def solve(readings, threshold):\n    for i, r in enumerate(readings):\n        if r > threshold:\n            return i\n    return -1",
+    "solution_code": "def solve(readings, threshold):\n    for i, r in enumerate(readings):\n        if r > threshold:\n            return i\n    return -1",
+    "explanation": "Linear scan with early exit: return the index of the first reading that exceeds the threshold without scanning the rest. Time O(n) worst case (no reading exceeds) or O(1) best case (first reading exceeds). Space O(1). This is the standard 'find first satisfying condition' scan used in alert systems, anomaly detectors, and SLA breach monitors.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            1.2,
+            3.5,
+            2.1,
+            4.0
+          ],
+          3.0
+        ],
+        "expected": 1
+      },
+      {
+        "input": [
+          [
+            1.0,
+            2.0,
+            3.0
+          ],
+          3.0
+        ],
+        "expected": -1
+      },
+      {
+        "input": [
+          [],
+          0.0
+        ],
+        "expected": -1
+      },
+      {
+        "input": [
+          [
+            5.0
+          ],
+          3.0
+        ],
+        "expected": 0
+      },
+      {
+        "input": [
+          [
+            1.0,
+            1.0,
+            1.0,
+            10.0
+          ],
+          9.9
+        ],
+        "expected": 3
+      }
+    ],
+    "public_test_cases": 2,
+    "hints": [
+      "Scan from left to right. The moment you find a reading that strictly exceeds the threshold, return its index immediately.",
+      "If you reach the end without finding one, return -1."
+    ],
+    "concepts": [
+      "INDEXED SEQUENCE REASONING"
+    ]
+  },
+  {
+    "id": 21039,
+    "order": 39,
+    "topic": "python",
+    "difficulty": "easy",
+    "title": "Config File Parser",
+    "description": "A configuration file stores settings as lines in `key = value` format. Given a list of such `lines` (stripped of comments and blank lines), return a dictionary mapping each key to its value. Both key and value are stripped of leading/trailing whitespace. Ignore lines that do not contain `=`.\n\n```\nsolve(['host = localhost', 'port = 5432', 'db = metrics'])  # → {'host':'localhost','port':'5432','db':'metrics'}\nsolve(['debug = true', 'bad_line', 'timeout = 30'])         # → {'debug':'true','timeout':'30'}\n```",
+    "starter_code": "def solve(lines: list) -> dict:\n    # Your code here\n    pass",
+    "expected_code": "def solve(lines):\n    config = {}\n    for line in lines:\n        if '=' not in line:\n            continue\n        key, _, value = line.partition('=')\n        config[key.strip()] = value.strip()\n    return config",
+    "solution_code": "def solve(lines):\n    config = {}\n    for line in lines:\n        if '=' not in line:\n            continue\n        key, _, value = line.partition('=')\n        config[key.strip()] = value.strip()\n    return config",
+    "explanation": "str.partition('=') splits on the FIRST '=' and returns (before, sep, after) — useful when values may contain '=' (e.g., connection strings). strip() removes surrounding whitespace. Lines without '=' are skipped. Time O(n * L) where L is average line length, space O(n). This parse-with-partition pattern appears in config loaders, HTTP header parsers, and query-string decoders.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            "host = localhost",
+            "port = 5432",
+            "db = metrics"
+          ]
+        ],
+        "expected": {
+          "host": "localhost",
+          "port": "5432",
+          "db": "metrics"
+        }
+      },
+      {
+        "input": [
+          [
+            "debug = true",
+            "bad_line",
+            "timeout = 30"
+          ]
+        ],
+        "expected": {
+          "debug": "true",
+          "timeout": "30"
+        }
+      },
+      {
+        "input": [
+          []
+        ],
+        "expected": {}
+      },
+      {
+        "input": [
+          [
+            "key=value"
+          ]
+        ],
+        "expected": {
+          "key": "value"
+        }
+      },
+      {
+        "input": [
+          [
+            "url = jdbc:pg://host:5432/db"
+          ]
+        ],
+        "expected": {
+          "url": "jdbc:pg://host:5432/db"
+        }
+      }
+    ],
+    "public_test_cases": 2,
+    "hints": [
+      "str.partition('=') splits on the first '=' only — safer than split('=') when values might contain '='.",
+      "Use strip() on both key and value to remove whitespace, and skip lines that have no '=' at all."
+    ],
+    "concepts": [
+      "STRING PATTERN REASONING",
+      "LIST & COLLECTION TRANSFORMATION"
+    ]
+  },
+  {
+    "id": 21040,
+    "order": 40,
+    "topic": "python",
+    "difficulty": "easy",
+    "title": "Detect Duplicate Import IDs",
+    "description": "A data import job reads a batch of records. Given a list `record_ids` (strings or integers), return `True` if any ID appears more than once — indicating a duplicate that should be rejected — and `False` if all IDs are unique.\n\n```\nsolve(['r1', 'r2', 'r3', 'r2'])  # → True  (r2 appears twice)\nsolve(['r1', 'r2', 'r3'])        # → False\nsolve([])                         # → False\n```",
+    "starter_code": "def solve(record_ids: list) -> bool:\n    # O(n) — no sorting needed\n    pass",
+    "expected_code": "def solve(record_ids):\n    return len(record_ids) != len(set(record_ids))",
+    "solution_code": "def solve(record_ids):\n    return len(record_ids) != len(set(record_ids))",
+    "explanation": "Convert the list to a set (which discards duplicates) and compare its length to the original list. If any duplicates exist, the set will be smaller. One-liner: O(n) time, O(n) space. Alternative: early-exit scan (`seen = set(); for r in record_ids: if r in seen: return True; seen.add(r)`) avoids materializing the full set when the first duplicate is early in large batches.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            "r1",
+            "r2",
+            "r3",
+            "r2"
+          ]
+        ],
+        "expected": true
+      },
+      {
+        "input": [
+          [
+            "r1",
+            "r2",
+            "r3"
+          ]
+        ],
+        "expected": false
+      },
+      {
+        "input": [
+          []
+        ],
+        "expected": false
+      },
+      {
+        "input": [
+          [
+            42,
+            43,
+            42
+          ]
+        ],
+        "expected": true
+      },
+      {
+        "input": [
+          [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        ],
+        "expected": false
+      },
+      {
+        "input": [
+          [
+            "x"
+          ]
+        ],
+        "expected": false
+      }
+    ],
+    "public_test_cases": 2,
+    "hints": [
+      "A set holds only unique elements. If the set of IDs is smaller than the original list, there are duplicates.",
+      "len(ids) != len(set(ids)) is all you need."
+    ],
+    "concepts": [
+      "HASH-MAP STATE"
+    ]
+  },
+  {
+    "id": 21041,
+    "order": 41,
+    "topic": "python",
+    "difficulty": "easy",
+    "title": "Cumulative Spend Alert",
+    "description": "An expense monitor fires an alert when a user's running total first exceeds a budget. Given a list `transactions` of non-negative amounts (in order) and a `budget`, return the index at which the running total **first exceeds** the budget. Return `-1` if the total never exceeds it.\n\n```\nsolve([10, 20, 30, 15], 50)  # → 2  (10+20+30=60 > 50 at index 2)\nsolve([5, 5, 5], 100)        # → -1\nsolve([101], 100)            # → 0\n```",
+    "starter_code": "def solve(transactions: list, budget: float) -> int:\n    # Your code here\n    pass",
+    "expected_code": "def solve(transactions, budget):\n    total = 0\n    for i, amount in enumerate(transactions):\n        total += amount\n        if total > budget:\n            return i\n    return -1",
+    "solution_code": "def solve(transactions, budget):\n    total = 0\n    for i, amount in enumerate(transactions):\n        total += amount\n        if total > budget:\n            return i\n    return -1",
+    "explanation": "Maintain a running total, incrementing it with each transaction. As soon as the total exceeds the budget threshold, return the current index. This is an online (streaming) computation with early exit — it works on arbitrarily long transaction streams without needing to buffer them. Time O(n), space O(1). The same pattern applies to cumulative-metric monitors, SLA-breach detectors, and spend-cap alerting.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            10,
+            20,
+            30,
+            15
+          ],
+          50
+        ],
+        "expected": 2
+      },
+      {
+        "input": [
+          [
+            5,
+            5,
+            5
+          ],
+          100
+        ],
+        "expected": -1
+      },
+      {
+        "input": [
+          [
+            101
+          ],
+          100
+        ],
+        "expected": 0
+      },
+      {
+        "input": [
+          [],
+          0
+        ],
+        "expected": -1
+      },
+      {
+        "input": [
+          [
+            10,
+            10,
+            10,
+            10
+          ],
+          39
+        ],
+        "expected": 3
+      }
+    ],
+    "public_test_cases": 2,
+    "hints": [
+      "Maintain a running total. After each transaction, check whether it has exceeded the budget — if so, return the current index.",
+      "If you exhaust the list without exceeding the budget, return -1."
+    ],
+    "concepts": [
+      "INDEXED SEQUENCE REASONING"
+    ]
   }
 ]

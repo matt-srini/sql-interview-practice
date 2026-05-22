@@ -4,13 +4,11 @@
   "description": "Progress from recurrence intuition to classic DP tables and optimization, covering 1D and 2D patterns used in coding interviews.",
   "topic": "python",
   "questions": [
-    21005,
-    22022,
     22023,
     22025,
     23004,
-    23005,
-    23008
+    23012,
+    23033
   ],
   "tier": "pro",
   "role": "advanced",
