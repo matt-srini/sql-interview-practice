@@ -1,353 +1,842 @@
 """
 Concept family definitions shared by mock question selection and dashboard insights.
 
-CONCEPT_FAMILIES maps each track to a dict of {family_name: [keyword_fragments]}.
-A raw question concept tag belongs to a family when any of its keywords appears
-as a case-insensitive substring of the tag.
+This file is a faithful implementation of docs/concept-taxonomy.md.  Whenever the
+taxonomy doc changes, update this file to match — the two must stay in sync.
 
-Used in two places:
-  - routers/mock.py  : focus-mode question pool filtering
-  - routers/insights.py : weakest-concept and readiness-score accumulation
+CONCEPT_FAMILIES maps each track slug to a dict of {family_name: [match_patterns]}.
+
+Resolution algorithm (mirrors the taxonomy doc):
+  1. Exact match — tag appears verbatim in any family's match_patterns list.
+  2. Substring match — tag contains any pattern (case-insensitive).  The FIRST
+     family whose pattern matches wins (order within the dict is significant).
+  3. Blocklist — tag matches any entry in CONCEPT_BLOCKLISTS[track] → error.
+  4. No match → error; author must remap the tag.
+
+MOCK_ONLY_REALISM_FAMILIES lists the SQL (and Pandas/PySpark) families that are
+assessment lenses, not curriculum concepts.  Validated by validate_content.py:
+  - May appear only in mock_only questions, never practice.
+  - May never be a question's sole concept tag (must co-occur with ≥1 practice-
+    grounded family).
+  - Exempt from the practice-grounding prerequisite.
 """
 
 from __future__ import annotations
 
-CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
+# ---------------------------------------------------------------------------
+# Mock-only realism families (assessment lenses, not curriculum concepts).
+# Used by validate_content.py to enforce the co-tag rule.
+# ---------------------------------------------------------------------------
+
+MOCK_ONLY_REALISM_FAMILIES: dict[str, set[str]] = {
     "sql": {
-        # WINDOW FUNCTIONS must come before AGGREGATION so that tags like
-        # "POST-AGGREGATION WINDOWING" resolve to the window family (more specific).
+        "METRIC INTERPRETATION & DENOMINATOR CHOICE",
+        "OUTPUT SANITY VALIDATION",
+        "PERFORMANCE-AWARE ANALYTICS",
+    },
+    "python-data": {
+        "METRIC INTERPRETATION & DENOMINATOR CHOICE",
+        "OUTPUT SANITY VALIDATION",
+        "PERFORMANCE-AWARE ANALYTICS",
+        "MEMORY & VECTORIZATION REASONING",
+    },
+    "pyspark": {
+        "OUTPUT SANITY VALIDATION",
+    },
+}
+
+# ---------------------------------------------------------------------------
+# Concept family registries, one dict per track.
+# Within each track dict, ORDER MATTERS: the first family whose pattern appears
+# as a case-insensitive substring of the concept tag wins.
+#
+# Naming convention: family names match docs/concept-taxonomy.md exactly.
+# ---------------------------------------------------------------------------
+
+CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
+
+    # -----------------------------------------------------------------------
+    # SQL — 26 canonical families (docs/concept-taxonomy.md § SQL)
+    # -----------------------------------------------------------------------
+    "sql": {
+        # --- Running totals / moving windows (before WINDOW FUNCTIONS so
+        #     "RUNNING TOTAL" tags don't fall through to the generic window family) ---
+        "RUNNING TOTAL & MOVING WINDOW": [
+            "RUNNING TOTAL",        # RUNNING TOTAL THRESHOLD DETECTION, RUNNING TOTAL
+            "CUMULATIVE",           # CUMULATIVE CONTRIBUTION, CUMULATIVE SUM
+            "MOVING AVERAGE",
+            "MOVING WINDOW",
+            "RUNNING SHARE",        # RUNNING SHARE THRESHOLD
+            "THRESHOLD-CROSSING",   # FIRST THRESHOLD-CROSSING ROW, THRESHOLD-CROSSING INCLUSION
+        ],
+
+        # --- Ranking / top-N / deduplication (before WINDOW FUNCTIONS so
+        #     RANK-containing tags resolve here, not to the generic family) ---
+        "RANKING & TOP-N PER GROUP": [
+            "PARTITIONED WINNER",   # PARTITIONED WINNER SELECTION
+            "PARTITIONED RANK",     # PARTITIONED RANK FILTERING
+            "TOP-N",                # TOP-N PER GROUP, TOP-N QUERY
+            "TOP-K",                # (Pandas cross-track alignment)
+            "LATEST STATE",         # LATEST STATE DERIVATION
+            "DETERMINISTIC TIE",    # DETERMINISTIC TIE-BREAKING
+            "MANUAL TOP-N",         # MANUAL TOP-N RANKING
+            "LEADERBOARD",          # CHANNEL-LEVEL LEADERBOARD
+            "QUALIFY",              # QUALIFY (DuckDB window filter clause)
+            "LATEST-ROW DEDUP",     # LATEST-ROW DEDUPLICATION
+            "PREFERENCE SHIFT",     # CATEGORY PREFERENCE SHIFT
+            "RANK",                 # WINDOW RANK, PARTITIONED RANK, WINDOW RANK WITH PARTITION
+                                    # — kept last within group so PARTITIONED RANK wins over RANK
+        ],
+
+        # --- Generic window functions (after RUNNING TOTAL and RANKING) ---
         "WINDOW FUNCTIONS": [
-            "WINDOW",               # WINDOW RANK, WINDOW RUNNING TOTAL, etc.
+            "ROWS VS RANGE",        # ROWS vs RANGE FRAME SEMANTICS, WINDOW FRAME DIVERGENCE
+            "ROWS VS RANGE FRAME",
+            "LAG WINDOW",           # LAG WINDOW FUNCTION
+            "LEAD",                 # LEAD window function
             "WINDOWING",            # POST-AGGREGATION WINDOWING, CROSS-GRAIN WINDOWING
-            "RUNNING TOTAL",        # RUNNING TOTAL, WINDOW RUNNING TOTAL
-            "CUMULATIVE",
-            "ROWS VS RANGE",
-            "LAG WINDOW",
+            "WINDOW",               # catch-all: WINDOW RANK, GLOBAL WINDOW MAX, WINDOW FILTER
+            "PROPORTIONAL CONTRIBUTION",  # PROPORTIONAL CONTRIBUTION ANALYSIS (revenue share via window)
+            "PERSONAL BASELINE",    # PERSONAL BASELINE COMPARISON
+            "PERCENTILE",           # PERCENTILE FUNCTION, PERCENTILE_CONT
+            "FORWARD WINDOW",       # FORWARD WINDOW QUALIFICATION
+            "PEAK PERIOD",          # PEAK PERIOD IDENTIFICATION
+            "POST-PEAK",            # POST-PEAK DECLINE ANALYSIS
         ],
-        "AGGREGATION": [
-            "AGGREG",               # …AGGREGATION, GROUPED AGGREGATION, etc.
-            "ORDERED-SET AGGR",
-        ],
-        "JOINS": [
-            "JOIN",                 # LEFT JOIN, ANTI-JOIN, DATE-RANGE JOIN, etc.
-        ],
-        "SUBQUERY PATTERNS": [
-            "SUBQUERY",             # SUBQUERY FILTER, SCALAR SUBQUERY IN CASE
-            "CORRELATED",
-            "NESTED FILTER",        # NESTED FILTER LOGIC (subquery-equivalent patterns)
-        ],
-        "CTES": [
-            "CTE",                  # CTE PIPELINE, CTE REUSE, MULTI-CTE, etc.
-        ],
-        "DATE FUNCTIONS": [
-            "DATE",                 # DATE EXTRACTION, DATE COMPARISON, etc.
-            "TIME-",                # TIME-SERIES, TIME-WINDOW, TIME-SLICE, etc.
-            "STRFTIME",
-            "TEMPORAL",
-            "MONTHLY",
-            "QUARTER",
-            "PERIOD-OVER-PERIOD",
-        ],
-        "GROUP BY": [
-            "GROUP BY",             # GROUP BY RULES, MULTI-COLUMN GROUP BY
-            "GROUPED ",             # GROUPED AGGREGATION (trailing space avoids false matches)
-            "HAVING",               # HAVING ON COUNT, HAVING THRESHOLD, HAVING VS WHERE
-            "MULTI-AGGREGATE",
-        ],
-        "FILTERING": [
-            "FILTER",               # CONDITIONAL FILTERING, PRE-AGGREGATION FILTER, etc.
-            "WHERE CLAUSE",
-            "IN CLAUSE",
-            "RANGE FILTER",
-        ],
+
+        # --- Cohort retention ---
         "COHORT RETENTION": [
             "COHORT",               # COHORT ANALYSIS, MULTI-DIMENSION COHORT
             "RETENTION",            # RETENTION BY MONTH OFFSET
-            "REACTIVATION",
+            "REACTIVATION",         # REACTIVATION DETECTION
         ],
+
+        # --- Funnel analysis ---
         "FUNNEL ANALYSIS": [
-            "FUNNEL",               # CONVERSION FUNNEL, ACQUISITION FUNNEL, etc.
+            "FUNNEL",               # CONVERSION FUNNEL, FUNNEL ORDER ENFORCEMENT, ACQUISITION FUNNEL
+            "CONVERSION FUNNEL",
+            "DROP-OFF",             # CHANNEL-LEVEL DROP-OFF
         ],
-        "RANKING": [
-            "RANK",                 # WINDOW RANK, PARTITIONED RANK, MANUAL TOP-N RANKING
-            "TOP-N",                # TOP-N PER GROUP, TOP-N QUERY
+
+        # --- Sessionization / gap-and-island / state machines ---
+        "SESSIONIZATION": [
+            "SESSIONIZATION",       # exact
+            "INACTIVITY GAP",       # INACTIVITY GAP DETECTION
+            "DERIVED GROUP IDENT",  # DERIVED GROUP IDENTIFIERS
+            "SEQUENTIAL EVENT",     # SEQUENTIAL EVENT PATTERN
+            "USER-PRODUCT JOURNEY", # USER-PRODUCT JOURNEY MODELING
+            "STATE TRANSITION",     # STATE TRANSITION DETECTION
+            "EVENT-LEVEL TO SESSION", # EVENT-LEVEL TO SESSION-LEVEL AGGREGATION
+            "TIME-BOUNDED CHAIN",   # TIME-BOUNDED CHAIN VALIDATION
+            "GAP DETECTION",        # GAP DETECTION
+            "RECOVERY WINDOW",      # RECOVERY WINDOW ANALYSIS
+            "GAP",                  # general gap patterns (after more specific above)
+            "ISLAND",
+            "ANOMALY DETECTION",    # detecting sequential anomaly patterns
         ],
-        "SELF JOIN": [
+
+        # --- CTE pipelines ---
+        "CTE PIPELINE": [
+            "CTE",                  # CTE PIPELINE, MULTI-CTE PIPELINE, CTE REUSE, CTE FILTER
+            "RECURSIVE",            # RECURSIVE CTE
+            "STAGED QUERY",         # STAGED QUERY DECOMPOSITION
+            "MULTI-STAGE",          # MULTI-STAGE METRIC FILTERING
+        ],
+
+        # --- Subquery patterns ---
+        "SUBQUERY PATTERNS": [
+            "SUBQUERY",             # CORRELATED SUBQUERY, SUBQUERY FILTER, SCALAR SUBQUERY IN CASE
+            "CORRELATED",           # CORRELATED SUBQUERY, CORRELATED FROM CLAUSE
+            "NESTED FILTER",        # NESTED FILTER LOGIC
+            "EXISTS PATTERN",       # EXISTS PATTERN
+            "SCALAR SUBQUERY",      # SCALAR SUBQUERY IN CASE
+            "LATERAL",              # LATERAL JOIN, CORRELATED FROM CLAUSE
+            "CROSS JOIN",           # CROSS JOIN WITH SCALAR
+            "BEHAVIORAL EXCLUSION", # BEHAVIORAL EXCLUSION (correlated-subquery anti-join pattern)
+            "BEHAVIORAL",           # broader behavioral patterns via subquery
+            "FIRST-TO-LATER",       # FIRST-TO-LATER EVENT COMPARISON
+            "TABLE ALIAS",          # TABLE ALIASES (alias scope in SQL clauses)
+            "ALIASING RULES",       # ALIASING RULES
+        ],
+
+        # --- Self-comparison / recursion ---
+        "SELF-COMPARISON & RECURSION": [
             "SELF-COMPAR",          # ROW-LEVEL SELF-COMPARISON, SELF-COMPARISON RANK EMULATION
             "ROW-LEVEL SELF",
-            "ROW-TO-ROW",
+            "ROW-TO-ROW",           # ROW-TO-ROW COMPARISON
+            "HIERARCHY",            # recursive hierarchy traversal
         ],
-        "SET OPERATIONS": [
-            "SET MEMBER",           # SET MEMBERSHIP FILTERING / TEST
-            "SET DIFFER",           # BEHAVIORAL SET DIFFERENCE
-            "ANTI-JOIN",            # ANTI-JOIN PATTERN
-            "CROSS-SOURCE",
+
+        # --- Multi-table entity linking ---
+        "MULTI-TABLE ENTITY LINKING": [
+            "MULTI-TABLE",          # MULTI-TABLE ENTITY LINKING
+            "ENTITY LINKING",
+            "REQUIRED ENTITY MATCHING",
+            "OPTIONAL ENTITY PRESERVATION",
+            "LEFT JOIN DIRECTION",  # LEFT JOIN DIRECTION
+            "FULL OUTER",           # FULL OUTER JOIN RECONCILIATION
+            "ANTI-JOIN",            # ANTI-JOIN PATTERN, NULL-SAFE ANTI-JOIN
+            "JOIN AGGREG",          # JOIN AGGREGATE (join + aggregate pattern)
+            "LEFT JOIN AGGREG",     # LEFT JOIN AGGREGATE
+            "DATE-RANGE JOIN",      # DATE-RANGE JOIN (join on date interval)
+            "LEFT JOIN FOR OPTIONAL", # LEFT JOIN FOR OPTIONAL MATCH
+            "TABLE NAME ERROR",     # TABLE NAME ERRORS (debug: wrong table reference)
+            "CATALOG ERROR",        # CATALOG ERROR (wrong table name)
         ],
-        "CASE WHEN": [
+
+        # --- Set operations ---
+        "SET OPERATIONS & COMPARISON": [
+            "UNION",                # UNION SET OPERATION
+            "INTERSECT",            # INTERSECT SET OPERATION, SHARED SET MEMBERSHIP
+            "EXCEPT",               # EXCEPT SET OPERATION
+            "SET DIFFER",           # BEHAVIORAL SET DIFFERENCE, SET DIFFERENCE
+            "CROSS-SOURCE",         # CROSS-SOURCE MEMBERSHIP TESTS, CROSS-SOURCE RECONCILIATION
+            "SET CONSOLIDATION",    # SET CONSOLIDATION (per brief)
+            "JOIN EQUIVALENCE",     # JOIN EQUIVALENCE (per brief)
+            "SHARED SET",           # SHARED SET MEMBERSHIP
+            "BEHAVIORAL SET",       # BEHAVIORAL SET DIFFERENCE
+        ],
+
+        # --- Post-aggregation filtering (HAVING) ---
+        "POST-AGGREGATION FILTERING": [
+            "POST-AGGREGATION FILTER",  # POST-AGGREGATION FILTERING (exact), POST-AGGREGATION FILTER
+            "HAVING",               # HAVING THRESHOLD, HAVING ON COUNT, HAVING VS WHERE
+            "GROUP SIZE",           # GROUP SIZE COMPARISON (HAVING COUNT > N)
+            "AVERAGE-BASED BENCH",  # AVERAGE-BASED BENCHMARKING (filter groups above average)
+            "MULTI-STAGE METRIC FILTER",  # MULTI-STAGE METRIC FILTERING
+        ],
+
+        # --- Pre-aggregation filtering (WHERE) ---
+        "PRE-AGGREGATION FILTERING": [
+            "PRE-AGGREGATION FILTER",   # PRE-AGGREGATION FILTERING (exact)
+            "PRE VS POST AGGREGATION",  # PRE VS POST AGGREGATION FILTERING
+            "CONDITIONAL ROW FILTER",   # CONDITIONAL ROW FILTERING
+            "RANGE FILTER",             # RANGE FILTERING
+            "WHERE CLAUSE",             # WHERE CLAUSE
+            "IN CLAUSE",                # IN CLAUSE FILTERING
+            "SET MEMBERSHIP FILTER",    # SET MEMBERSHIP FILTERING → IN-clause pattern
+            "SET MEMBERSHIP TEST",      # SET MEMBERSHIP TEST → IN-clause pattern
+            "NUMERIC COMPARISON FILTER",# NUMERIC COMPARISON FILTER
+            "MULTI-CONDITION FILTER",   # MULTI-CONDITION FILTERING
+            "KNOWN-VALUE FILTER",       # KNOWN-VALUE FILTERING
+            "OPTIONAL FIELD FILTER",    # OPTIONAL FIELD FILTERING
+            "COMBINED AND",             # COMBINED AND CONDITIONS
+            "CONDITIONAL FILTER",       # CONDITIONAL FILTERING
+            "FILTERED GROUP",           # FILTERED GROUP BY
+        ],
+
+        # --- Grouped aggregation ---
+        "GROUPED AGGREGATION": [
+            "AGGREG",               # GROUPED AGGREGATION, CONDITIONAL AGGREGATION, VALUE AGGREGATION
+                                    # CROSS-DIMENSIONAL AGGREGATION, MULTI-DIMENSION AGGREGATION etc.
+            "ORDERED-SET AGGR",     # ORDERED-SET AGGREGATE
+            "GROUP BY RULES",       # GROUP BY RULES
+            "MULTI-COLUMN GROUP BY",# MULTI-COLUMN GROUP BY
+            "MULTI-COLUMN GROUPING",# MULTI-COLUMN GROUPING
+            "ROW COUNT AGGREG",     # ROW COUNT AGGREGATION (matches AGGREG too, redundant but safe)
+            "EXTREMUM IDENTIF",     # EXTREMUM IDENTIFICATION (MAX/MIN single-column)
+            "LOWEST-VALUE IDENTIF", # LOWEST-VALUE IDENTIFICATION
+            "MULTI-METRIC SUMMAR",  # MULTI-METRIC SUMMARIZATION
+            "TABLE-WIDE SUMMARY",   # TABLE-WIDE SUMMARY (scalar aggregate)
+            "DISTRIBUTION ANAL",    # DISTRIBUTION ANALYSIS
+            "MULTI-COLUMN SEGMENT", # MULTI-COLUMN SEGMENT AGGREGATION
+            "GROUPING SETS",        # GROUPING SETS (per brief)
+            "ARRAY_AGG",            # ARRAY_AGG (per brief)
+            "ORDERED NESTED",       # ORDERED NESTED STRUCTURES
+            "ROLLUP",               # ROLLUP SUBTOTALS (per brief)
+            "GRAND TOTAL",          # GRAND TOTAL
+            "COUNT NON-NULL",       # COUNT NON-NULL vs COUNT STAR
+            "ORDER BY WITHIN",      # ORDER BY WITHIN AGGREGATE
+            "SESSION ANAL",         # SESSION ANALYSIS (domain: count sessions by type)
+            "ENGAGEMENT METRIC",    # ENGAGEMENT METRICS
+            "REVENUE SHARE",        # REVENUE SHARE, REVENUE SHARE PER GROUP
+            "FAILURE RATE",         # FAILURE RATE CALCULATION
+            "SALARY ANAL",          # SALARY ANALYSIS
+            "SALARY DISTRIBUT",     # SALARY DISTRIBUTION
+            "SALARY BAND",          # SALARY BAND ANALYSIS (CASE WHEN banding)
+            "SPEND ANAL",           # SPEND ANALYSIS
+            "SUPPORT SLA",          # SUPPORT SLA ANALYSIS
+            "SUPPORT ANAL",         # SUPPORT ANALYSIS
+            "SUPPORT TICKET ANAL",  # SUPPORT TICKET ANALYSIS
+            "PAYMENTS ANAL",        # PAYMENTS ANALYSIS
+            "PAYMENT FAILURE ANAL", # PAYMENT FAILURE ANALYSIS
+            "PAYMENT TREND",        # PAYMENT TREND ANALYSIS
+            "PRODUCT FREQUENCY",    # PRODUCT FREQUENCY ANALYSIS
+            "CATEGORY ANAL",        # CATEGORY ANALYSIS
+            "ACQUISITION CHANNEL ANAL", # ACQUISITION CHANNEL ANALYSIS
+            "GEO REVENUE ANAL",     # GEO REVENUE ANALYSIS (per brief)
+            "HR HEADCOUNT",         # HR HEADCOUNT ANALYSIS
+            "HR ANAL",              # HR ANALYTICS, HR SALARY ANALYSIS
+            "COMPOSITE SCORING",    # COMPOSITE SCORING FORMULA
+            "MULTI-DIMENSIONAL",    # MULTI-DIMENSIONAL SUMMARY
+            "FILTER CLAUSE",        # FILTER CLAUSE (SQL aggregate FILTER keyword)
+        ],
+
+        # --- Conditional logic / CASE WHEN ---
+        "CONDITIONAL LOGIC & CASE": [
             "CASE WHEN",            # CASE WHEN LADDER
             "RULE-BASED",           # RULE-BASED CLASSIFICATION
-            "CONDITIONAL FLAG",
-            "CATEGORICAL SEGM",
-            "PRIORITY-BASED",
+            "CONDITIONAL FLAG",     # CONDITIONAL FLAG AGGREGATION
+            "CATEGORICAL SEGM",     # CATEGORICAL SEGMENTATION
+            "PRIORITY-BASED",       # PRIORITY-BASED SEGMENTATION, PRECEDENCE-BASED CLASSIFICATION
+            "PRECEDENCE-BASED",
+            "TIERING",              # LOYALTY TIERING
+            "LOYALTY TIER",         # LOYALTY TIERING
         ],
-        "STRING FUNCTIONS": [
+
+        # --- NULL handling ---
+        "NULL HANDLING & COALESCE": [
+            "COALESCE",             # COALESCE DEFAULT SUBSTITUTION, COALESCE NULL BRIDGING
+            "ZERO-COUNT",           # ZERO-COUNT PRESERVATION
+            "NULL AWARE",           # NULL AWARENESS
+            "NULL STATE",           # NULL STATE FILTERING
+            "NULL-SAFE",            # NULL-SAFE ARITHMETIC, NULL-SAFE ANTI-JOIN
+            "NULL HANDLING",        # NULL HANDLING IN CONCAT
+            "NULL CHECK",           # NULL CHECK COMBINED WITH COMPARISON
+            "IS NOT NULL",
+            "IS NULL",
+            "NULL",                 # broad catch (after more specific patterns above)
+        ],
+
+        # --- Time-series / date ---
+        "TIME-SERIES BUCKETING & ARITHMETIC": [
+            "DATE",                 # DATE ARITHMETIC, DATE TRUNCATION, DATE BUCKET GROUPING, etc.
+            "TIME-",                # TIME-SERIES AGGREGATION, TIME-WINDOW COMPARISON, TIME-SLICE
+            "STRFTIME",             # STRFTIME FORMATTING
+            "TEMPORAL",             # TEMPORAL JOIN LOGIC
+            "MONTHLY",              # MONTHLY TREND, MONTHLY ENTITY COUNTING
+            "QUARTER",              # QUARTER DERIVATION
+            "PERIOD-OVER-PERIOD",   # PERIOD-OVER-PERIOD COMPARISON
+            "CALENDAR SPINE",       # CALENDAR SPINE
+            "BEFORE-AND-AFTER",     # BEFORE-AND-AFTER COMPARISON
+            "INTERVAL ADDITION",    # INTERVAL ADDITION (per brief)
+            "AT TIME ZONE",         # AT TIME ZONE (per brief)
+            "TIMEZONE",             # TIMEZONE HANDLING
+            "UTC CONVERS",          # UTC CONVERSION
+            "TENURE",               # TENURE CALCULATION (per brief)
+            "SUBSCRIPTION EXPIRY",  # SUBSCRIPTION EXPIRY
+            "SEQUENCE GENERATION",  # SEQUENCE GENERATION (per brief)
+            "GENERATE_SERIES",      # GENERATE_SERIES (per brief)
+            "RECENCY COMP",         # RECENCY COMPARISON
+            "LATEST-DATE",          # LATEST-DATE REFERENCE LOGIC
+            "TREND ANAL",           # PAYMENT TREND ANALYSIS, etc. (domain time-series)
+        ],
+
+        # --- Deduplication ---
+        "DEDUPLICATION LOGIC": [
+            "DEDUP",                # DEDUPLICATION, DEDUPLICATED RESULT SHAPING, etc.
+            "DISTINCT ENTITY",      # DISTINCT ENTITY COUNTING
+            "DISTINCT PAYMENT-METHOD",  # DISTINCT PAYMENT-METHOD COUNTING
+            "DISTINCT COUNT",       # DISTINCT COUNT
+            "LATEST-ROW DEDUP",     # LATEST-ROW DEDUPLICATION
+        ],
+
+        # --- String parsing ---
+        "STRING PARSING & PATTERN MATCHING": [
+            "SPLIT_PART",           # SPLIT_PART
+            "SUBSTRING",            # SUBSTRING EXTRACTION
             "PATTERN-BASED",        # PATTERN-BASED FILTERING
-            "STRFTIME",
-            "STRING",
+            "STRING",               # STRING TRIMMING, STRING CONCATENATION, DELIMITED STRING PARSING
+            "REGEX",                # REGEX REPLACEMENT
+            "TEXT NORMALI",         # TEXT NORMALIZATION
+            "INITCAP",              # INITCAP TITLE CASE
+            "EMAIL PARS",           # EMAIL PARSING
+            "CHANNEL STANDARD",     # CHANNEL STANDARDIZATION
+            "NORMALIZATION",        # CASE-INSENSITIVE NORMALIZATION
+            "EMPLOYEE LABEL",       # EMPLOYEE LABELING (string output shaping)
+            "LIKE",
+            "ILIKE",
+        ],
+
+        # --- Result shaping & ordering ---
+        "RESULT SHAPING & ORDERING": [
+            "RESULT ORDERING",      # DETERMINISTIC RESULT ORDERING (incidental → will be stripped
+                                    #   but must still resolve until stripped)
+            "COLUMN PROJECTION",    # COLUMN PROJECTION (incidental → will be stripped)
+            "DETERMINISTIC RESULT", # DETERMINISTIC RESULT ORDERING
+            "OUTPUT SCHEMA",        # OUTPUT SCHEMA SHAPING
+            "MULTI-COLUMN ORDER",   # MULTI-COLUMN ORDERING
+            "DESCENDING RESULT",    # DESCENDING RESULT ORDERING
+            "ASCENDING RESULT",     # ASCENDING RESULT ORDERING
+            "LONG-FORMAT",          # LONG-FORMAT CROSS-TAB
+            "COMPOSITE KEY",        # COMPOSITE KEY DESIGN
+            "DERIVED FIELD",        # DERIVED FIELD CREATION
+            "ORDER-FIRST",
+            "COLUMN NAME ERROR",    # COLUMN NAME ERRORS (debug: wrong column reference)
+        ],
+
+        # ---- ⚡ New families (practice-grounded) ----
+
+        "DATA QUALITY SKEPTICISM": [
+            "DUPLICATE DETECTION",  # (canonical member tag)
+            "ORPHAN RECORD",        # ORPHAN RECORD CHECK
+            "ROW COUNT RECONCIL",   # ROW COUNT RECONCILIATION
+            "NULL ANOMALY",         # NULL ANOMALY INSPECTION
+            "DATA QUALITY GATE",    # (canonical member tag)
+            "DATA QUALITY CLASS",   # DATA QUALITY CLASSIFICATION → re-tags to this family
+            "DATA QUALITY",         # broad catch (after more specific above)
+            "NOISY DATA",           # NOISY DATA RESOLUTION (Q13019)
+            "CONTRADICTION",        # CONTRADICTION DETECTION (Q13023)
+            "MISSING-EVIDENCE",     # MISSING-EVIDENCE HANDLING (Q13023)
+            "ATTRIBUTION CONFLICT", # ATTRIBUTION CONFLICT RESOLUTION (conflicting signals)
+            "ANOMALY",              # catch remaining anomaly patterns
+        ],
+
+        "DOUBLE-COUNTING DETECTION": [
+            "FAN-OUT",              # FAN-OUT DETECTION, JOIN FAN-OUT
+            "JOIN MULTIPLICATION",  # JOIN MULTIPLICATION
+            "GRAIN MISMATCH",       # GRAIN MISMATCH
+            "INFLATED METRIC",      # INFLATED METRIC DEBUG
+        ],
+
+        "METRIC RECONCILIATION": [
+            "RECONCILIATION",       # METRIC RECONCILIATION, CROSS-SOURCE RECONCILIATION, etc.
+            "MISMATCH AUDIT",
+            "MISMATCH INVESTIGATION",
+            "SOURCE OF TRUTH",
+            "AUDIT",
+        ],
+
+        # ---- ⚡ Mock-only realism families (assessment lenses) ----
+        # These may appear only in mock_only questions, never in practice,
+        # and must co-occur with ≥1 practice-grounded family.
+
+        "METRIC INTERPRETATION & DENOMINATOR CHOICE": [
+            "ACTIVE-USER DEFINITION",
+            "REVENUE BASIS CHOICE",
+            "DENOMINATOR SELECTION",
+            "DENOMINATOR",
+            "RATE BASE NORMALI",    # RATE BASE NORMALIZATION
+            "AMBIGUOUS METRIC",
+            "KPI INTERPRETATION",
+            "METRIC INTERPRETATION",
+            "REVENUE SHARE CHOICE",
+        ],
+
+        "OUTPUT SANITY VALIDATION": [
+            "SANITY",               # OUTPUT SANITY VALIDATION, ROW COUNT SANITY
+            "OUTPUT VALIDATION",
+            "ROW COUNT CHECK",
+            "PLAUSIBILITY CHECK",
+            "OUTPUT SANITY",
+            "NULL COVERAGE SANITY",
+        ],
+
+        "PERFORMANCE-AWARE ANALYTICS": [
+            "PERFORMANCE-AWARE",
+            "SCAN REDUCTION",
+            "CARDINALITY REDUCTION",
+            "PRE-AGGREGATION STRATEGY",
+            "REPEATED COMPUTATION ELIMINATION",
+            "EFFICIENT ALTERNATIVE",
+            "EFFICIENT APPROACH",
+            "COST-AWARE",
         ],
     },
+
+    # -----------------------------------------------------------------------
+    # Python — 16 canonical families (docs/concept-taxonomy.md § Python)
+    # -----------------------------------------------------------------------
     "python": {
-        "SORTING": [
-            "SORT",                 # IN-PLACE SORT, ORDER-PRESERVING
-            "K-WAY MERGE",
-        ],
-        "BINARY SEARCH": [
-            "BINARY SEARCH",        # BINARY SEARCH, BINARY SEARCH TREE
-            "PEAK FINDING",
-        ],
-        "HASH MAPS": [
-            "HASH MAP",             # HASH MAP, HASH MAP COUNTING, HASH MAP GROUPING
-            "HASH SET",
-            "HASH-BASED",
-            "FREQUENCY COUNT",      # FREQUENCY COUNTING, FREQUENCY TRACKING
-            "FREQUENCY-BASED",
-            "COUNTER",
-        ],
-        "TWO POINTERS": [
-            "TWO POINTER",          # TWO POINTERS, TWO-POINTER SWEEP
-            "TWO-POINTER",
-            "BOUNDARY POINTER",
-        ],
         "SLIDING WINDOW": [
-            "SLIDING WINDOW",       # SLIDING WINDOW MAXIMUM
+            "SLIDING WINDOW",
             "FIXED WINDOW",
             "MINIMUM WINDOW",
         ],
-        "RECURSION": [
-            "RECURSION",            # BASE CASE HANDLING
-            "RECURSIVE",
-            "BACKTRACKING",
-            "FIBONACCI",
+        "TWO POINTERS": [
+            "TWO POINTER",
+            "TWO-POINTER",
+            "BOUNDARY POINTER",
         ],
-        "DYNAMIC PROGRAMMING": [
-            "DYNAMIC PROGRAMMING",
-            "BOTTOM-UP DP",
-            "DP TABLE",
-            "MEMOIZATION",
-            "GRID DP",
-            "COIN CHANGE",
-            "KADANE",
+        "HASH-MAP STATE": [
+            "HASH MAP",
+            "HASH-BASED",
+            "FREQUENCY COUNT",
+            "FREQUENCY-BASED",
+            "MEMBERSHIP-BASED",
         ],
-        "GRAPHS": [
-            "GRAPH",                # DIRECTED GRAPH, GRAPH CONNECTIVITY
-            "BFS",
-            "DFS",
-            "SHORTEST PATH",
-            "TOPOLOGICAL",
-            "DISJOINT-SET",
-            "WEIGHTED GRAPH",
+        "BINARY SEARCH": [
+            "BINARY SEARCH",
+            "PEAK FINDING",
         ],
-        "TREES": [
-            "TREE",                 # BINARY SEARCH TREE, TREE CENTER, LEAF TRIMMING
-            "TRIE",
-            "PREORDER",
+        "INDEXED SEQUENCE REASONING": [
+            "INDEXED SEQUENCE",
+            "LINEAR STATE UPDATE",
+            "LINEAR SCAN",
+            "SUBARRAY",
+            "PREFIX SUM",
         ],
-        "LINKED LISTS": [
-            "LINKED LIST",          # DOUBLY LINKED LIST
+        "STRING PATTERN REASONING": [
+            "STRING PATTERN",
+            "STRING MANIPULATION",
+            "ORDER-FIRST REASONING",
+            "STRING",
         ],
-        "HEAPS": [
-            "HEAP",                 # MIN-HEAP, TWO HEAPS
+        "STACK & MONOTONIC STRUCTURES": [
+            "STACK",
+            "MONOTONIC",
+        ],
+        "HEAP & PRIORITY QUEUE": [
+            "HEAP",
             "PRIORITY QUEUE",
             "K-WAY MERGE",
             "MEDIAN TRACKING",
         ],
-        "STACK / QUEUE": [
-            "STACK",                # MONOTONIC STACK
-            "QUEUE",                # MONOTONIC QUEUE
-            "MONOTONIC",
+        "GREEDY CHOICE": [
+            "GREEDY",
+            "INTERVAL SCHEDULING",
         ],
-        "BIT MANIPULATION": [
-            "BIT MANIPULATION",
+        "DYNAMIC PROGRAMMING (1D)": [
+            "DYNAMIC PROGRAMMING",
+            "1D DP",
+            "MEMOIZATION",
+            "KADANE",
+            "COIN CHANGE",
+        ],
+        "DYNAMIC PROGRAMMING (2D)": [
+            "2D DP",
+            "MATRIX DP",
+            "MATRIX",
+        ],
+        "GRAPH TRAVERSAL (BFS / DFS)": [
+            "BFS",
+            "DFS",
+            "GRAPH",
+            "TOPOLOGICAL",
+            "DISJOINT-SET",
+            "SHORTEST PATH",
+            "WEIGHTED GRAPH",
+        ],
+        "BACKTRACKING & COMBINATORIAL SEARCH": [
+            "BACKTRACKING",
+            "COMBINATORICS",
+            "RECURSION",
+        ],
+        "IN-PLACE TRANSFORMATION & SPACE OPTIMIZATION": [
+            "IN-PLACE",
+            "SPACE",
+        ],
+        "MODULAR ARITHMETIC & NUMBER THEORY": [
+            "MODULAR",
+            "NUMBER THEORY",
             "XOR",
             "POWER-OF-TWO",
+            "BIT MANIPULATION",
+        ],
+        "LIST & COLLECTION TRANSFORMATION": [
+            "LIST MANIPULATION",
+            "LIST",
+            "COLLECTIONS",
         ],
     },
+
+    # -----------------------------------------------------------------------
+    # Pandas — 21 canonical families (docs/concept-taxonomy.md § Pandas)
+    # -----------------------------------------------------------------------
     "python-data": {
-        "GROUPBY": [
-            "GROUPBY",              # GROUPBY AGG, MULTI-KEY GROUPBY, etc.
-            "GROUP BY",
-        ],
-        "MERGING": [
-            "MERGE",                # MERGE KEY, MULTI-DATAFRAME JOIN
-            "JOIN",                 # INNER JOIN, LEFT JOIN, THREE-WAY JOIN
-            "CONCAT",               # DATAFRAME CONCATENATION
-        ],
-        "PIVOTING": [
-            "PIVOT",                # DATA PIVOTING
-            "CROSSTAB",
-            "CONTINGENCY",          # CONTINGENCY TABLE CONSTRUCTION
-            "WIDE-FORM",
-        ],
-        "FILTERING": [
-            "FILTER",               # BOOLEAN FILTER, FILTERING AGGREGATED RESULTS
-            "BOOLEAN MASK",
-            "BOOLEAN INDEXING",
-            "QUERY FILTER",
-            "NULL-BASED ROW FILTER",
-        ],
-        "AGGREGATION": [
-            "AGGREGATION",          # GROUPBY AGGREGATION, CONDITIONAL AGGREGATION, etc.
-            " AGG",                 # NAMED AGG, LAMBDA IN AGG (leading space avoids partial matches)
-            "AGGREG",
-        ],
-        "WINDOW FUNCTIONS": [
-            "WINDOW",               # WINDOW FUNCTIONS, WINDOW JOIN, WINDOW-LIKE, etc.
-            "ROLLING",              # ROLLING WINDOW, MOVING AVERAGE
+        "WINDOW & ROLLING OPERATIONS": [
+            "ROLLING",
+            "EXPANDING",
+            "RESAMPLE",
             "CUMSUM",
             "RUNNING TOTAL",
         ],
-        "RESHAPING": [
-            "RESHAPE",
+        "RANKING & TOP-N PER GROUP": [
+            "RANK",
+            "TOP-K",
+            "TOP-N",
+            "NLARGEST",
+            "DETERMINISTIC TIE",
+        ],
+        "GROUPED AGGREGATION": [
+            "GROUPED AGGREGATION",
+            "GROUPBY AGGREGATION",
+            "AGGREGATION",
+            " AGG",
+            "AGGREG",
+            "NAMED AGGREG",
+        ],
+        "MULTI-DATAFRAME ENTITY LINKING": [
+            "MULTI-DATAFRAME",
+            "MULTI-TABLE JOIN",
+            "ENTITY LINKING",
+            "MERGE",
+        ],
+        "RESHAPING & PIVOT": [
+            "WIDE-FORM RESHAPING",
+            "PIVOT",
+            "MELT",
+            "STACK",
             "UNSTACK",
-            "STACK ",               # trailing space avoids matching MULTI-STEP
-            "WIDE-FORM",
         ],
-        "TIME SERIES": [
-            "TIME SERIES",
-            "DATETIME",             # DATETIME ARITHMETIC, DATETIME COMPONENT EXTRACTION
-            "PERIOD",               # PERIOD ARITHMETIC, PERIOD-OVER-PERIOD
+        "MISSING VALUE STRATEGY": [
+            "MISSING-VALUE",
+            "MISSING VALUES",
+            "IMPUTATION",
+            "FILLNA",
+        ],
+        "DATETIME OPERATIONS": [
+            "DATETIME",
             "TIMEDELTA",
-            "DATE",                 # DATE ARITHMETIC, DATE COMPARISON, etc.
-            "MONTHLY",
+            "TIME SERIES",
+            "DATE FORMATTING",
         ],
-        "STRING METHODS": [
-            "STRING",               # VECTORIZED STRING TRANSFORMATION, etc.
-            "SUBSTRING",
-            "DELIMITER",
+        "DEDUPLICATION LOGIC": [
+            "DEDUP",
+            "DISTINCT",
+            "UNIQUE",
+            "VALUE_COUNTS",
+            "DISTINCT COUNTING",
         ],
-        "APPLY/MAP": [
-            "APPLY",                # APPLY FOR CLASSIFICATION, etc.
-            "LAMBDA",               # LAMBDA AGGREGATION, LAMBDA IN AGG
-            " MAP",                 # leading space avoids matching HASH MAP etc.
+        "BOOLEAN INDEXING & FILTERING": [
+            "BOOLEAN INDEXING",
+            "NULL-BASED ROW FILTERING",
+            "QUERY FILTER",
         ],
-        "COHORT ANALYSIS": [
-            "COHORT",               # COHORT ANALYSIS
-            "RETENTION",            # RETENTION ANALYSIS
-            "CHURN",
+        "COLUMN SELECTION & PROJECTION": [
+            "COLUMN SELECTION",
+            "DERIVED COLUMNS",
+            ".ASSIGN",
         ],
-        "MULTI-INDEX": [
-            "MULTIINDEX",
-            "MULTI-INDEX",          # MULTI-INDEX CROSS-SECTION LOOKUP
-            "HIERARCHICAL",         # HIERARCHICAL INDEXING
+        "METHOD CHAINING & PIPELINE STYLE": [
+            "METHOD CHAINING",
+            "PIPE",
+            "CHAIN",
+        ],
+        "CATEGORICAL & BINNING": [
+            "BUCKETING",
+            "CUT",
+            "QCUT",
+            "CATEGORICAL",
+            "BINNING",
+        ],
+        "TRANSFORM VS AGGREGATE": [
+            "TRANSFORM",
+        ],
+        "OUTPUT SHAPE & ORDERING": [
+            "OUTPUT SCHEMA",
+            "RESULT ORDERING",
+            "DETERMINISTIC",
+            "RESET_INDEX",
+        ],
+        "DEBUG PANDAS": [
+            "DEBUG",
+            "KEYERROR",
+        ],
+        # ⚡ new families
+        "MEMORY & VECTORIZATION REASONING": [
+            "VECTORIZATION OVER APPLY",
+            "DTYPE MEMORY CHOICE",
+            "CHUNK READING",
+            "APPLY VS TRANSFORM TRADEOFF",
+            "VECTORIZ",
+            "MEMORY",
+        ],
+        "METRIC INTERPRETATION & DENOMINATOR CHOICE": [
+            "ACTIVE-USER DEFINITION",
+            "DENOMINATOR",
+            "RATE BASE",
+            "AMBIGUOUS METRIC",
+            "METRIC INTERPRETATION",
+            "KPI INTERPRETATION",
+        ],
+        "DATA QUALITY SKEPTICISM": [
+            "DATA QUALITY",
+            "DUPLICATE DETECTION",
+            "ORPHAN",
+            "NULL ANOMALY",
+            "DTYPE ANOMALY",
+            "ROW COUNT SANITY",
+        ],
+        "DOUBLE-COUNTING DETECTION": [
+            "FAN-OUT",
+            "JOIN MULTIPLICATION",
+            "MERGE MULTIPLICATION",
+            "GRAIN MISMATCH",
+            "INFLATED METRIC",
+        ],
+        "OUTPUT SANITY VALIDATION": [
+            "SANITY",
+            "OUTPUT VALIDATION",
+            "ROW COUNT CHECK",
+            "SHAPE ASSERTION",
+            "DTYPE ASSERTION",
+            "PLAUSIBILITY CHECK",
+        ],
+        "PERFORMANCE-AWARE ANALYTICS": [
+            "PERFORMANCE-AWARE",
+            "SCAN REDUCTION",
+            "CARDINALITY REDUCTION",
+            "PRE-AGGREGATION STRATEGY",
+            "EFFICIENT ALTERNATIVE",
+            "EFFICIENT APPROACH",
+            "COST-AWARE",
         ],
     },
+
+    # -----------------------------------------------------------------------
+    # PySpark — 21 canonical families (docs/concept-taxonomy.md § PySpark)
+    # -----------------------------------------------------------------------
     "pyspark": {
-        "DATAFRAME API": [
-            "DATAFRAME",            # DATAFRAME API, DATAFRAME IMMUTABILITY, etc.
-            "COLUMN EXPRESSION",
-            "WITHCOLUMN",
-        ],
-        "GROUPBY": [
-            "GROUPBY",              # GROUPSTATETIMEOUT, GROUPBYKEY
-            "GROUPED",
-        ],
-        "JOINS": [
-            "JOIN",                 # BROADCAST JOIN, SKEW JOIN, JOIN STRATEGY, etc.
-        ],
-        "WINDOW FUNCTIONS": [
-            "WINDOW FRAME",         # WINDOW FRAME SEMANTICS
-            "WINDOW FUNCTION",      # WINDOW FUNCTIONS
-            "ROWSBETWEEN",
-            "ROWS VS RANGE",
-            "RANK",                 # RANK, DENSE_RANK, ROW_NUMBER, TIE HANDLING
-            "DENSE_RANK",
-            "ROW_NUMBER",
-        ],
-        "UDFS": [
-            "UDF",                  # UDF, UDF NULL HANDLING, PYTHON UDF OVERHEAD, PANDAS UDF
-        ],
-        "PARTITIONING": [
-            "PARTITION",            # PARTITIONING, PARTITION PRUNING, PARTITION SIZING, etc.
-            "COALESCE",             # SHUFFLE COALESCING / PARTITION COALESCING
-        ],
-        "AGGREGATION": [
-            "AGGREGATION",          # DISTRIBUTED AGGREGATION, CUMULATIVE AGGREGATION, etc.
-            "HASHAGGREGATE",
-        ],
-        "STREAMING": [
-            "STREAMING",            # STRUCTURED STREAMING, STREAMING CHECKPOINT, etc.
-            "STREAM-",              # STREAM-STREAM JOIN
-            "MICRO-BATCH",
-            "WATERMARK",
-            "FOREACHBATCH",
-            "STATEFUL AGGREG",      # STATEFUL AGGREGATION, STATEFUL AGGREGATION SCALING
-            "MAPGROUPSWITHSTATE",
-        ],
-        "CACHING": [
-            "CACHING",
-            "CACHE",                # CHECKPOINT (avoided — too broad), CACHE specific
-            "PERSIST",              # PERSIST, PERSISTENCE LIFECYCLE
-            "STORAGE LEVEL",        # STORAGE LEVEL SELECTION
-        ],
-        "BROADCAST JOIN": [
-            "BROADCAST",            # BROADCAST JOIN, BROADCAST VARIABLE, etc.
-        ],
-        "SHUFFLE & PERFORMANCE": [
-            "SHUFFLE",              # shuffle, shuffle optimization, WIDE-AGGREGATION SHUFFLE, etc.
-            "PERFORMANCE",          # performance, performance tuning, performance bottleneck
-            "EXCHANGE",             # Exchange operator in explain plan
-            "REDUCEBYKEY",
-            "GROUPBYKEY",
-        ],
-        "CATALYST & QUERY PLANNING": [
-            "CATALYST",             # Catalyst optimizer (8 questions)
-            "LAZY EVAL",            # lazy evaluation (5 questions)
-            "LAZY ",                # lazy evaluation catch with trailing space
-            "PREDICATE PUSH",       # predicate pushdown (4 questions)
-            "LOGICAL PLAN",
-            "PHYSICAL PLAN",
-            "QUERY PLAN",           # query planning, query plan optimization
-            "EXPLAIN",              # explain, explain plan
-            "TRANSFORMATIONS VS",   # transformations vs actions (3 questions)
+        "EXECUTION MODEL REASONING": [
+            "LAZY EVALUATION",
+            "LAZY EVAL",
+            "LAZY ",
+            "EXECUTION MODEL",
+            "DAG",
+            "TRANSFORMATIONS VS",
             "NARROW VS WIDE",
             "NARROW TRANSFORMATION",
             "WIDE TRANSFORMATION",
+            "LINEAGE",
+            "STAGE",
+        ],
+        "NARROW VS WIDE TRANSFORMATIONS": [
+            "WIDE-AGGREGATION SHUFFLE",
+            "SHUFFLE BOUNDARY",
+        ],
+        "SHUFFLE REASONING": [
+            "SHUFFLE",
+        ],
+        "JOIN STRATEGY SELECTION": [
+            "BROADCAST JOIN",
+            "JOIN OPTIMIZATION",
+            "AUTOBROADCAST",
+            "BROADCAST",
+            "SORT-MERGE",
+            "JOIN",
+        ],
+        "PARTITIONING STRATEGY": [
+            "PARTITIONING",
+            "PARTITION SHAPE",
+            "PARTITION PRUNING",
+            "COALESCE",
+            "REPARTITION",
+            "DYNAMIC PARTITION PRUNING",
+        ],
+        "DATA SKEW & MITIGATION": [
+            "DATA SKEW",
+            "SKEW",
+            "SALTING",
+            "HOT KEY",
+            "IMBALANCE",
+        ],
+        "ADAPTIVE QUERY EXECUTION": [
+            "AQE",
+            "ADAPTIVE QUERY",
+            "ADAPTIVE",
+            "RUNTIME PLAN",
+            "RUNTIME JOIN",
+        ],
+        "CATALYST OPTIMIZER": [
+            "CATALYST",
+            "OPTIMIZER",
+            "LOGICAL PLAN",
+            "PHYSICAL PLAN",
+            "PREDICATE PUSH",
+            "PROJECTION PUSHDOWN",
+            "QUERY PLAN",
+            "EXPLAIN",
         ],
         "MEMORY MANAGEMENT": [
-            "MEMORY",               # driver memory, executor memory, memory management, memory pressure
-            "OOM",                  # OutOfMemoryError, driver OOM
+            "MEMORY",
+            "OOM",
+            "OUTOFMEMORYERROR",
             "OFF-HEAP",
-            "GC",                   # GC pressure, JVM GC
-            "HEAP",
-            "SPILL",                # spill to disk, DISK SPILL
-            "SERIALIZATION",        # serialization cost, Kryo serialization
+            "GC",
+            "SPILL",
+            "SERIALIZATION",
+            "DRIVER-SIDE MATERIALIZATION",
         ],
-        "DATA SKEW": [
-            "SKEW",                 # data skew (4), skew join (2), SKEW DIAGNOSIS
-            "SALTING",              # salting (2), key salting (1)
-            "HOT KEY",
-            "IMBALANCE",            # partition imbalance, shuffle partition imbalance
+        "CACHING & PERSISTENCE": [
+            "CACHING",
+            "CACHE",
+            "PERSIST",
+            "STORAGE LEVEL",
         ],
-        "DELTA LAKE": [
-            "DELTA",                # Delta Lake (3), DELTA LAKE MERGE, DELTA LAKE WRITE, etc.
+        "SCHEMA & TYPE HANDLING": [
+            "SCHEMA",
+            "INFERSCHEMA",
+            "STRUCTTYPE",
+            "TYPE COERCION",
         ],
-        "AQE": [
-            "AQE",                  # AQE (4 questions)
-            "ADAPTIVE QUERY",       # adaptive query execution (2 questions)
-            "ADAPTIVE",             # Adaptive Query Execution
-            "RUNTIME PLAN",         # runtime plan rewriting
-            "RUNTIME JOIN",         # RUNTIME JOIN STRATEGY SWITCHING
+        "FILE FORMATS & READERS": [
+            "PARQUET",
+            "CSV READING",
+            "FILE FORMAT",
+            "COLUMNAR",
+        ],
+        "UDF & PYTHON BOUNDARY": [
+            "UDF",
+            "PANDAS UDF",
+        ],
+        "STRUCTURED STREAMING": [
+            "STRUCTURED STREAMING",
+            "STREAMING",
+            "STREAM-",
+            "MICRO-BATCH",
+            "WATERMARK",
+            "FOREACHBATCH",
+            "STATEFUL AGGREG",
+            "MAPGROUPSWITHSTATE",
+        ],
+        "DELTA LAKE OPERATIONS": [
+            "DELTA",
+        ],
+        "FAULT TOLERANCE & RECOVERY": [
+            "FAULT TOLERANCE",
+            "FAULT",
+            "SPECULATIVE EXECUTION",
+            "RECOVERY",
+        ],
+        "DEBUG SPARK ERRORS": [
+            "ANALYSISEXCEPTION",
+            "DEBUG",
+            "EXCEPTION",
+        ],
+        "PERFORMANCE TUNING & TRADE-OFFS": [
+            "PERFORMANCE",
+            "PERFORMANCE TUNING",
+            "TUNING",
+        ],
+        # ⚡ new families
+        "DATA QUALITY SKEPTICISM": [
+            "DATA QUALITY",
+            "LATE EVENT",
+            "LATE-EVENT",
+            "DUPLICATE EVENT",
+            "NULL KEY",
+            "SCHEMA DRIFT INSPECTION",
+            "DIRTY INPUT",
+        ],
+        "DOUBLE-COUNTING DETECTION": [
+            "FAN-OUT",
+            "JOIN MULTIPLICATION",
+            "GRAIN MISMATCH",
+            "INFLATED OUTPUT",
+        ],
+        "OUTPUT SANITY VALIDATION": [
+            "SANITY",
+            "OUTPUT VALIDATION",
+            "ROW COUNT CHECK",
+            "SCHEMA ASSERTION",
+            "PLAUSIBILITY CHECK",
         ],
     },
+
+    # -----------------------------------------------------------------------
+    # Data Engineering — 21 canonical families
+    # -----------------------------------------------------------------------
     "data-engineering": {
         "ETL VS ELT": [
             "ETL VS ELT",
+            "ETL",
+            "ELT",
             "EXTRACT",
-            "TRANSFORM",
             "LOAD ORDER",
         ],
         "IDEMPOTENCY": [
-            "IDEMPOTEN",          # IDEMPOTENCY, IDEMPOTENT WRITE, etc.
+            "IDEMPOTEN",
             "DUPLICATE PREVENTION",
             "SAFE RERUN",
         ],
@@ -357,8 +846,8 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "PARTITION RERUN",
         ],
         "ORCHESTRATION": [
-            "ORCHESTRAT",         # ORCHESTRATION, ORCHESTRATION DESIGN, etc.
-            "DAG",                # DAG EXECUTION, DAG DEPENDENCY
+            "ORCHESTRAT",
+            "DAG",
             "DEPENDENCY",
             "RETRY",
         ],
@@ -375,6 +864,7 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "FORWARD COMPAT",
             "BREAKING CHANGE",
             "DATA CONTRACT",
+            "SCHEMA REGISTRY",
         ],
         "BATCH VS STREAMING": [
             "BATCH VS STREAM",
@@ -382,9 +872,10 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "REAL-TIME",
             "LATENCY TRADEOFF",
             "STREAM PROCESSING",
+            "STREAMING ARCHITECTURE",
         ],
         "WATERMARKING": [
-            "WATERMARK",          # WATERMARKING, WATERMARK CHOICE, etc.
+            "WATERMARK",
             "LATE DATA",
             "ALLOWED LATENESS",
             "EVENT TIME",
@@ -397,7 +888,7 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "DEDUP",
         ],
         "PARTITIONING & PRUNING": [
-            "PARTITION",          # PARTITIONING, PARTITION PRUNING, etc.
+            "PARTITION",
             "PREDICATE PUSHDOWN",
             "DATA SKEW",
         ],
@@ -410,8 +901,15 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "COMPACTION",
             "SMALL FILE",
         ],
+        "STORAGE ARCHITECTURE": [
+            "STORAGE ARCHITECTURE",
+            "DATA LAKE",
+            "DATA WAREHOUSE",
+            "LAKEHOUSE",
+            "OLAP",
+        ],
         "CDC & INGESTION": [
-            "CDC",                # CDC & INGESTION, LOG-BASED CDC
+            "CDC",
             "CHANGE CAPTURE",
             "INGESTION",
             "LOG-BASED",
@@ -423,6 +921,9 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "FRESHNESS CHECK",
             "NULL CHECK",
         ],
+        "DATA CONTRACT": [
+            "DATA CONTRACT",
+        ],
         "LINEAGE & OBSERVABILITY": [
             "LINEAGE",
             "OBSERVABILITY",
@@ -431,58 +932,612 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "ALERTING",
         ],
         "SCD OPERATIONS": [
-            "SCD",                # SCD TYPE 2, SCD OPERATIONS, etc.
+            "SCD",
             "SLOWLY CHANGING",
             "EFFECTIVE DATE",
             "SURROGATE KEY",
         ],
-        "STORAGE ARCHITECTURE": [
-            "STORAGE ARCHITECTURE",
-            "DATA LAKE",
-            "DATA WAREHOUSE",
-            "LAKEHOUSE",
-            "OLAP",
-        ],
         "COST OPTIMIZATION": [
-            "COST OPTIM",         # COST OPTIMIZATION, COST-AWARE
+            "COST OPTIM",
             "COMPUTE VS STORAGE",
             "SCAN COST",
             "STORAGE TIER",
+            "CLOUD COST",
+            "BIGQUERY COST",
+            "SNOWFLAKE COST",
+            "WAREHOUSE COST",
         ],
         "INCIDENT RESPONSE": [
             "INCIDENT RESPONSE",
+            "INCIDENT",
             "ROOT CAUSE",
             "REPLAY",
             "REMEDIATION",
             "CASCADING FAILURE",
+            "PIPELINE RESILIENCE",
+        ],
+        "BACKPRESSURE": [
+            "BACKPRESSURE",
+            "KAFKA CONSUMER LAG",
+        ],
+        "DATA GOVERNANCE": [
+            "GOVERNANCE",
+            "GDPR",
+            "CRYPTO SHREDDING",
+            "IMMUTABLE STORAGE",
+        ],
+    },
+
+    # -----------------------------------------------------------------------
+    # Data Modeling — 22 canonical families
+    # -----------------------------------------------------------------------
+    "data-modeling": {
+        "DIMENSIONAL MODELING": [
+            "DIMENSIONAL MODELING",
+            "STAR SCHEMA",
+            "SNOWFLAKE SCHEMA",
+        ],
+        "FACT TABLE DESIGN": [
+            "FACT TABLE",
+            "FACT TYPE",
+            "TRANSACTION FACT",
+            "ACCUMULATING SNAPSHOT",
+            "PERIODIC SNAPSHOT",
+        ],
+        "DIMENSION DESIGN": [
+            "DIMENSION DESIGN",
+            "CONFORMED",
+            "DEGENERATE",
+            "JUNK DIMENSION",
+            "ROLE-PLAYING",
+        ],
+        "GRAIN DEFINITION": [
+            "GRAIN",
+        ],
+        "SCD STRUCTURE": [
+            "SCD",
+            "SLOWLY CHANGING",
+            "TYPE 1",
+            "TYPE 2",
+            "TYPE 3",
+            "TYPE 4",
+            "TYPE 6",
+        ],
+        "SURROGATE VS NATURAL KEYS": [
+            "SURROGATE",
+            "NATURAL KEY",
+            "KEY STRATEGY",
+        ],
+        "NORMALIZATION": [
+            "NORMALIZATION",
+            "1NF",
+            "2NF",
+            "3NF",
+            "BCNF",
+        ],
+        "DENORMALIZATION TRADEOFF": [
+            "DENORMALIZATION",
+        ],
+        "BRIDGE & MANY-TO-MANY": [
+            "BRIDGE",
+            "MANY-TO-MANY",
+            "MULTI-VALUED DIMENSION",
+            "WEIGHTING FACTOR",
+        ],
+        "SCHEMA FROM REQUIREMENTS": [
+            "SCHEMA FROM REQUIREMENTS",
+            "REQUIREMENTS GATHERING",
+        ],
+        "REFERENTIAL INTEGRITY": [
+            "REFERENTIAL INTEGRITY",
+            "FOREIGN KEY",
+            "ORPHAN",
+            "CASCADE",
+        ],
+        "AGGREGATE & SUMMARY DESIGN": [
+            "AGGREGATE",
+            "SUMMARY DESIGN",
+            "PRE-AGGREGATION",
+            "CUBE",
+        ],
+        "BI-TEMPORAL MODELING": [
+            "BI-TEMPORAL",
+            "TRANSACTION TIME",
+            "VALID TIME",
+            "AS-OF",
+        ],
+        "DATA VAULT": [
+            "DATA VAULT",
+            "HUB",
+            "LINK",
+            "SATELLITE",
+        ],
+        "SEMANTIC LAYER & METRIC GOVERNANCE": [
+            "SEMANTIC LAYER",
+            "METRIC GOVERNANCE",
+            "METRIC DEFINITION",
+            "SINGLE SOURCE OF TRUTH",
+        ],
+        "SCHEMA EVOLUTION": [
+            "SCHEMA EVOLUTION",
+        ],
+        "WIDE VS NARROW": [
+            "WIDE VS NARROW",
+            "OBT (ONE BIG TABLE)",
+            "ONE BIG TABLE",
+        ],
+        "DBT MODELING": [
+            "DBT MODELING",
+            "DBT",
+        ],
+        "CONFORMED DIMENSIONS": [
+            "CONFORMED DIMENSION",
+            "MASTER DATA",
+        ],
+        "HIERARCHIES & MULTI-PATH": [
+            "HIERARCHIES",
+            "MULTI-VALUED",
+            "CROSS-HIERARCHY",
+            "MULTIPLE HIERARCHIES",
+        ],
+        "ADDITIVE VS NON-ADDITIVE": [
+            "ADDITIVE",
+            "NON-ADDITIVE",
+            "SEMI-ADDITIVE",
+        ],
+        "DOUBLE-COUNTING & FAN-OUT": [
+            "DOUBLE-COUNTING",
+            "FAN-OUT",
+            "ROW MULTIPLICATION",
+            "FACT-TO-FACT JOIN",
+        ],
+    },
+
+    # -----------------------------------------------------------------------
+    # Statistics — 12 canonical families (lowercase canonical for this track)
+    # -----------------------------------------------------------------------
+    "statistics": {
+        "descriptive statistics": [
+            "descriptive statistics",
+            "measures of central tendency",
+            "outliers",
+            "variance",
+            "standard deviation",
+        ],
+        "probability & combinatorics": [
+            "probability",
+            "combinatorics",
+            "combinations",
+            "permutations",
+            "expected value",
+            "bayes",
+            "conditional probability",
+            "independence",
+        ],
+        "distributions": [
+            "distribution",
+            "bernoulli",
+            "poisson",
+            "binomial",
+            "normal",
+            "t-distribution",
+            "chi-squared",
+            "z-score",
+        ],
+        "sampling & central limit theorem": [
+            "sampling",
+            "central limit theorem",
+            "CLT",
+            "standard error",
+            "law of large numbers",
+            "sample size",
+        ],
+        "confidence intervals & estimation": [
+            "confidence interval",
+            "parameter estimation",
+            "bootstrap",
+            "resampling",
+            "MLE",
+            "maximum likelihood",
+        ],
+        "hypothesis testing": [
+            "hypothesis testing",
+            "p-value",
+            "null hypothesis",
+            "t-test",
+            "z-test",
+            "chi-squared test",
+            "ANOVA",
+        ],
+        "errors & power": [
+            "type i",
+            "type ii",
+            "statistical power",
+            "effect size",
+            "power analysis",
+        ],
+        "multiple testing & correction": [
+            "multiple comparisons",
+            "multiple testing",
+            "bonferroni",
+            "FDR",
+        ],
+        "bayesian inference": [
+            "bayesian",
+            "prior",
+            "posterior",
+            "bayes factor",
+        ],
+        "correlation, regression & causality": [
+            "correlation",
+            "regression",
+            "confounding",
+            "simpson",
+            "causal inference",
+            "collider",
+            "selection bias",
+            "observational",
+            "odds ratio",
+        ],
+        "experimental design (within stats)": [
+            "experimental design",
+            "a/b testing",
+            "randomization",
+        ],
+        "variance decomposition & ANOVA": [
+            "variance decomposition",
+            "anova",
+            "f-statistic",
+        ],
+    },
+
+    # -----------------------------------------------------------------------
+    # ML Fundamentals — 29 canonical families
+    # -----------------------------------------------------------------------
+    "ml-fundamentals": {
+        "BIAS-VARIANCE TRADEOFF": [
+            "BIAS-VARIANCE",
+            "BIAS",
+            "VARIANCE",
+        ],
+        "OVERFITTING DIAGNOSIS": [
+            "OVERFITTING",
+            "UNDERFITTING",
+            "TRAINING ACCURACY GAP",
+        ],
+        "REGULARIZATION EFFECT": [
+            "REGULARIZATION",
+            "L1",
+            "L2",
+            "DROPOUT",
+            "EARLY STOPPING",
+        ],
+        "CROSS-VALIDATION DESIGN": [
+            "CROSS-VALIDATION",
+            "K-FOLD",
+            "STRATIFIED",
+            "TIME-SERIES CV",
+            "NESTED CV",
+        ],
+        "DATA SPLITTING STRATEGY": [
+            "DATA SPLITTING",
+            "TRAIN/VAL/TEST",
+            "HOLDOUT",
+            "TEMPORAL SPLIT",
+        ],
+        "DATA LEAKAGE DETECTION": [
+            "DATA LEAKAGE",
+            "LEAKAGE",
+            "TARGET LEAKAGE",
+            "TRAIN-TEST CONTAMINATION",
+        ],
+        "CLASSIFICATION METRICS": [
+            "CLASSIFICATION METRICS",
+            "PRECISION",
+            "RECALL",
+            "F1",
+            "AUC",
+            "ROC",
+            "PR CURVE",
+        ],
+        "REGRESSION METRICS": [
+            "REGRESSION METRICS",
+            "RMSE",
+            "MAE",
+            "MAPE",
+            "R²",
+            "R2",
+        ],
+        "CLASS IMBALANCE HANDLING": [
+            "CLASS IMBALANCE",
+            "SMOTE",
+            "CLASS WEIGHTING",
+            "RESAMPLING",
+        ],
+        "FEATURE SCALING NECESSITY": [
+            "FEATURE SCALING",
+            "STANDARDIZATION",
+            "NORMALIZATION",
+        ],
+        "FEATURE SELECTION STRATEGY": [
+            "FEATURE SELECTION",
+            "FILTER",
+            "WRAPPER",
+            "EMBEDDED",
+        ],
+        "FEATURE IMPORTANCE INTERPRETATION": [
+            "FEATURE IMPORTANCE",
+            "PERMUTATION IMPORTANCE",
+            "SHAP",
+        ],
+        "DIMENSIONALITY REDUCTION": [
+            "DIMENSIONALITY REDUCTION",
+            "PCA",
+            "T-SNE",
+            "UMAP",
+        ],
+        "MISSING DATA STRATEGY": [
+            "MISSING DATA",
+            "IMPUTATION",
+            "MISSINGNESS AS SIGNAL",
+        ],
+        "ENSEMBLE STRATEGY": [
+            "ENSEMBLE",
+            "BAGGING",
+            "BOOSTING",
+            "STACKING",
+        ],
+        "BOOSTING MECHANICS": [
+            "GRADIENT BOOSTING",
+            "XGBOOST",
+            "LIGHTGBM",
+            "CATBOOST",
+        ],
+        "MODEL CALIBRATION": [
+            "CALIBRATION",
+            "PLATT SCALING",
+            "ISOTONIC REGRESSION",
+            "RELIABILITY DIAGRAM",
+        ],
+        "SUPERVISED VS UNSUPERVISED": [
+            "SUPERVISED",
+            "UNSUPERVISED",
+            "SEMI-SUPERVISED",
+            "SELF-SUPERVISED",
+        ],
+        "CLUSTERING EVALUATION": [
+            "CLUSTERING",
+            "SILHOUETTE",
+            "INERTIA",
+            "DAVIES-BOULDIN",
+        ],
+        "NEURAL NETWORK DESIGN": [
+            "NEURAL NETWORK",
+            "ARCHITECTURE",
+            "DEPTH VS WIDTH",
+            "ACTIVATION",
+        ],
+        "GRADIENT DESCENT BEHAVIOR": [
+            "GRADIENT DESCENT",
+            "SGD",
+            "ADAM",
+            "LEARNING RATE",
+            "MOMENTUM",
+        ],
+        "GRADIENT PATHOLOGY": [
+            "GRADIENT PATHOLOGY",
+            "VANISHING GRADIENT",
+            "EXPLODING GRADIENT",
+            "DEAD RELU",
+        ],
+        "LOSS FUNCTION SELECTION": [
+            "LOSS FUNCTION",
+            "CROSS-ENTROPY",
+            "MSE",
+            "HUBER",
+            "FOCAL LOSS",
+        ],
+        "HYPERPARAMETER SENSITIVITY": [
+            "HYPERPARAMETER",
+            "TUNING",
+            "GRID SEARCH",
+            "RANDOM SEARCH",
+            "BAYESIAN OPTIMIZATION",
+        ],
+        "TRANSFER LEARNING STRATEGY": [
+            "TRANSFER LEARNING",
+            "PRETRAINED",
+            "FINE-TUNING",
+            "FROZEN LAYERS",
+        ],
+        "MODEL MONITORING": [
+            "MODEL MONITORING",
+            "DRIFT",
+            "CONCEPT DRIFT",
+            "DATA DRIFT",
+            "FEATURE DRIFT",
+        ],
+        "TRAINING-SERVING SKEW": [
+            "TRAINING-SERVING SKEW",
+            "TRAIN-SERVE",
+            "FEATURE PARITY",
+        ],
+        "DEPLOYMENT CONSTRAINTS": [
+            "DEPLOYMENT",
+            "LATENCY",
+            "BATCH VS ONLINE",
+            "EDGE",
+        ],
+        "INTERPRETABILITY TRADEOFF": [
+            "INTERPRETABILITY",
+            "EXPLAINABILITY",
+            "BLACK BOX",
+            "GLASS BOX",
+        ],
+    },
+
+    # -----------------------------------------------------------------------
+    # Experimentation — 22 canonical families
+    # -----------------------------------------------------------------------
+    "experimentation": {
+        "EXPERIMENT DESIGN": [
+            "EXPERIMENT DESIGN",
+            "EXPERIMENTAL DESIGN",
+            "RANDOMIZATION",
+            "TREATMENT ASSIGNMENT",
+            "BLOCKING",
+        ],
+        "HYPOTHESIS FORMULATION": [
+            "HYPOTHESIS FORMULATION",
+            "HYPOTHESIS",
+            "NULL",
+            "ALTERNATIVE",
+        ],
+        "METRIC SELECTION": [
+            "METRIC SELECTION",
+            "OEC",
+            "NORTH STAR METRIC",
+            "GUARDRAIL METRIC",
+            "PROXY METRIC",
+        ],
+        "A/B TEST MECHANICS": [
+            "A/B TEST MECHANICS",
+            "TREATMENT",
+            "CONTROL",
+            "RANDOMIZATION UNIT",
+        ],
+        "STATISTICAL SIGNIFICANCE": [
+            "STATISTICAL SIGNIFICANCE",
+            "P-VALUE",
+            "CONFIDENCE LEVEL",
+        ],
+        "STATISTICAL POWER": [
+            "STATISTICAL POWER",
+            "MDE",
+            "MINIMUM DETECTABLE EFFECT",
+            "POWER CALC",
+        ],
+        "TYPE I AND TYPE II ERRORS": [
+            "TYPE I",
+            "TYPE II",
+            "FALSE POSITIVE",
+            "FALSE NEGATIVE",
+        ],
+        "EXPERIMENT DURATION": [
+            "EXPERIMENT DURATION",
+            "SAMPLE SIZE CALC",
+            "PEEKING",
+        ],
+        "CONFIDENCE INTERVALS": [
+            "CONFIDENCE INTERVAL",
+            "CI",
+            "BOOTSTRAP INTERVAL",
+        ],
+        "SAMPLE RATIO MISMATCH": [
+            "SAMPLE RATIO MISMATCH",
+            "SRM",
+            "TRAFFIC IMBALANCE",
+        ],
+        "VARIANCE REDUCTION": [
+            "VARIANCE REDUCTION",
+            "CUPED",
+            "STRATIFICATION",
+            "REGRESSION ADJUSTMENT",
+        ],
+        "NOVELTY EFFECTS": [
+            "NOVELTY EFFECT",
+            "PRIMACY EFFECT",
+            "TEMPORAL EFFECT",
+        ],
+        "NETWORK EFFECTS": [
+            "NETWORK EFFECT",
+            "INTERFERENCE",
+            "SUTVA VIOLATION",
+            "PEER EFFECT",
+        ],
+        "SEGMENTATION ANALYSIS": [
+            "SEGMENTATION ANALYSIS",
+            "HETEROGENEOUS TREATMENT EFFECTS",
+            "SUBGROUP",
+        ],
+        "MULTIPLE TESTING": [
+            "MULTIPLE TESTING",
+            "BONFERRONI",
+            "FDR",
+        ],
+        "HOLDOUT GROUPS": [
+            "HOLDOUT GROUPS",
+            "LONG-TERM HOLDOUT",
+        ],
+        "SWITCHBACK EXPERIMENTS": [
+            "SWITCHBACK",
+            "TIME-BASED RANDOMIZATION",
+        ],
+        "MULTI-ARMED BANDIT": [
+            "MULTI-ARMED BANDIT",
+            "THOMPSON SAMPLING",
+            "EPSILON-GREEDY",
+        ],
+        "BAYESIAN EXPERIMENTATION": [
+            "BAYESIAN EXPERIMENTATION",
+            "BAYESIAN A/B",
+            "POSTERIOR PROBABILITY",
+        ],
+        "QUASI-EXPERIMENTAL METHODS": [
+            "QUASI-EXPERIMENTAL",
+            "DIFF-IN-DIFF",
+            "REGRESSION DISCONTINUITY",
+            "SYNTHETIC CONTROL",
+        ],
+        "CAUSAL INFERENCE": [
+            "CAUSAL INFERENCE",
+            "INSTRUMENTAL VARIABLES",
+            "PROPENSITY SCORING",
+            "POTENTIAL OUTCOMES",
+        ],
+        "SAMPLE SIZE BASICS": [
+            "SAMPLE SIZE BASICS",
+            "POWER VS SAMPLE SIZE",
         ],
     },
 }
 
 
-def resolve_to_family(concept: str, track: str) -> str:
-    """Map a raw ALL-CAPS concept tag to its family name for the given track.
+# ---------------------------------------------------------------------------
+# Resolution functions (unchanged API; internals now use the taxonomy dict)
+# ---------------------------------------------------------------------------
 
-    Returns the family name (e.g. "WINDOW FUNCTIONS") if a keyword match is
-    found, otherwise returns the concept unchanged.  Matching is
-    case-insensitive so mixed-case tags in the wild are handled safely.
+def resolve_to_family(concept: str, track: str) -> str:
+    """Map a raw concept tag to its canonical family name for the given track.
+
+    Tries exact then substring matching (case-insensitive) in family-registry
+    order.  Returns the family name on match; returns the uppercased concept
+    unchanged when no family is found (the validator will flag the miss).
     """
     concept_upper = concept.upper()
-    for family_name, keywords in CONCEPT_FAMILIES.get(track, {}).items():
-        if any(kw.upper() in concept_upper for kw in keywords):
-            return family_name
-    return concept_upper  # normalise to upper even when no family found
+    for family_name, patterns in CONCEPT_FAMILIES.get(track, {}).items():
+        for pattern in patterns:
+            if pattern.upper() in concept_upper:
+                return family_name
+    return concept_upper
 
 
 def concept_matches_focus(question_concept: str, focus_concept: str, q_track: str) -> bool:
-    """Check whether a question concept tag matches a user-selected focus concept.
+    """Return True if *question_concept* belongs to the same family as *focus_concept*.
 
-    Uses CONCEPT_FAMILIES for family-aware keyword matching, falling back to
-    bidirectional substring matching for concepts not in the table.
+    Resolves both tags to their canonical families and compares.  Falls back to
+    case-insensitive bidirectional substring matching when either tag has no
+    registered family (e.g. a user-supplied free-text focus from an older session).
     """
+    qc_family = resolve_to_family(question_concept, q_track)
+    fc_family = resolve_to_family(focus_concept, q_track)
+
+    # Both resolved to a known family — compare family names
+    families = CONCEPT_FAMILIES.get(q_track, {})
+    if qc_family in families and fc_family in families:
+        return qc_family == fc_family
+
+    # Fallback: bidirectional substring (handles unknown focus strings)
     qc_upper = question_concept.upper()
     fc_upper = focus_concept.upper()
-    keywords = CONCEPT_FAMILIES.get(q_track, {}).get(fc_upper)
-    if keywords:
-        return any(kw.upper() in qc_upper for kw in keywords)
     return fc_upper in qc_upper or qc_upper in fc_upper
