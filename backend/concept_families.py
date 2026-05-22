@@ -447,17 +447,34 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "TWO POINTER",
             "TWO-POINTER",
             "BOUNDARY POINTER",
+            "THREE-WAY PARTITION",      # 3-bucket sweep (e.g. Dutch National Flag reframed)
+            "TWO-POINTER SWEEP",
         ],
         "HASH-MAP STATE": [
             "HASH MAP",
+            "HASH TABLE",
+            "HASH SET",                 # set used for membership / dedup
             "HASH-BASED",
             "FREQUENCY COUNT",
             "FREQUENCY-BASED",
+            "FREQUENCY",                # catches `character frequency`, `frequency tracking`
             "MEMBERSHIP-BASED",
+            "BIJECTION",                # bijective key-value mapping
+            "COMPLEMENT SEARCH",        # find complement / two-sum pattern
+            "SET-BASED LOOKUP",
+            "COUNTER",                  # Python Counter class
+            "GROUPING BY KEY",
+            "GROUPING",                 # group-by-key hashing
+            "LRU",                      # LRU cache uses hash map + ordered structure
+            "CACHE",                    # per brief: cache/lru → HASH-MAP STATE
+            "BOYER-MOORE",              # Boyer-Moore majority/voting → heavy-hitter detection
+            "CANDIDATE TRACKING",       # candidate-tracking variant of majority-vote
+            "MAJORITY ELEMENT",
         ],
         "BINARY SEARCH": [
             "BINARY SEARCH",
             "PEAK FINDING",
+            "PATIENCE SORTING",         # LIS via binary search / patience sort
         ],
         "INDEXED SEQUENCE REASONING": [
             "INDEXED SEQUENCE",
@@ -465,26 +482,54 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "LINEAR SCAN",
             "SUBARRAY",
             "PREFIX SUM",
+            "PREFIX PRODUCT",           # prefix-product array pattern
+            "RUNNING MAXIMUM",          # running max/min scan
+            "CYCLIC SHIFT",             # rotate/shift by index arithmetic
+            "CIRCULAR ARRAY",           # circular subarray problems
         ],
         "STRING PATTERN REASONING": [
             "STRING PATTERN",
             "STRING MANIPULATION",
-            "ORDER-FIRST REASONING",
+            # ORDER-FIRST REASONING removed — that tag was a sort-then-process tag
+            # mis-filed here; it is stripped as incidental on questions that use it.
             "STRING",
+            "ANAGRAM",                  # anagram detection / grouping (per taxonomy)
+            "PALINDROME",               # palindrome / symmetric string
+            "RUN-LENGTH",               # run-length encoding
+            "STRING ENCODING",
+            "COMPRESSION",              # string/data compression
+            "TRIE",                     # prefix trie (for prefix routing / autocomplete)
+            "PREFIX TREE",
+            "TOKENIZ",                  # tokenization / text segmentation
+            "SEGMENTAT",
+            "CIPHER",                   # character-level cipher
+            "ENCODING",                 # broad encoding / transformation
+            "NORMALIZ",                 # normalization / canonicalization of strings
+            "CANONICAL",
         ],
         "STACK & MONOTONIC STRUCTURES": [
             "STACK",
             "MONOTONIC",
+            "RPN",                      # Reverse Polish Notation / postfix evaluation
+            "EXPRESSION",               # expression evaluation (e.g. rule engine)
         ],
         "HEAP & PRIORITY QUEUE": [
             "HEAP",
             "PRIORITY QUEUE",
             "K-WAY MERGE",
             "MEDIAN TRACKING",
+            "MEDIAN",                   # streaming median
+            "TWO HEAPS",                # two-heap trick for streaming median
+            "FREQUENCY-BASED SCHEDUL",  # task-scheduler heap pattern
+            "IDLE SLOT",                # idle-slot calculation
         ],
         "GREEDY CHOICE": [
             "GREEDY",
             "INTERVAL SCHEDULING",
+            "INTERVAL",                 # catches `interval problems`, `interval merge`
+            "COOLDOWN",                 # greedy cooldown / task-scheduler pattern
+            "SCHEDULING",
+            "GREEDY ALGORITHM",
         ],
         "DYNAMIC PROGRAMMING (1D)": [
             "DYNAMIC PROGRAMMING",
@@ -492,11 +537,22 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "MEMOIZATION",
             "KADANE",
             "COIN CHANGE",
+            "LIS",                      # Longest Increasing Subsequence (DP formulation)
+            "FIBONACCI",                # Fibonacci-recurrence DP
+            "BOTTOM-UP",                # bottom-up tabulation
+            "KNAPSACK",                 # knapsack DP (0/1 and unbounded)
+            "WORD BREAK",               # text-segmentation DP
         ],
         "DYNAMIC PROGRAMMING (2D)": [
             "2D DP",
             "MATRIX DP",
             "MATRIX",
+            "GRID DP",                  # grid path / island DP
+            "LCS",                      # Longest Common Subsequence
+            "2D DP TABLE",
+            "GRID PATH",
+            "LONGEST COMMON",
+            "EDIT DISTANCE",            # sequence alignment / fuzzy dedup DP
         ],
         "GRAPH TRAVERSAL (BFS / DFS)": [
             "BFS",
@@ -506,15 +562,37 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "DISJOINT-SET",
             "SHORTEST PATH",
             "WEIGHTED GRAPH",
+            "CONNECTED-COMPONENT",      # component discovery (Union-Find / BFS)
+            "UNION-FIND",               # Union-Find / disjoint-set data structure
+            "UNION-BY-RANK",
+            "PATH-COMPRESSION",         # path compression in Union-Find
+            "DEPENDENCY RESOLUT",       # pipeline DAG / dependency resolution
+            "DIRECTED GRAPH",
+            "DIJKSTRA",                 # Dijkstra's shortest path
+            "MIN-COST PATH",
+            "PRIORITY-ORDERED FRONTIER",
+            "DISTANCE MAP",             # distance map maintenance in graph search
+            "GREEDY SHORTEST",          # greedy shortest-path expansion
+            "REACHABILITY",             # reachability / connectivity queries
+            "LEAF TRIMMING",            # leaf-trimming BFS (e.g. min-height trees)
+            "TREE CENTER",
         ],
         "BACKTRACKING & COMBINATORIAL SEARCH": [
             "BACKTRACKING",
             "COMBINATORICS",
             "RECURSION",
+            "SERIALIZATION",            # tree/graph serialization (structural recursion)
+            "PREORDER",                 # preorder / postorder traversal
+            "BST",                      # binary search tree operations
+            "VISITED STATE",            # visited-set tracking in search
         ],
         "IN-PLACE TRANSFORMATION & SPACE OPTIMIZATION": [
             "IN-PLACE",
             "SPACE",
+            "REVERSAL TRICK",           # reverse-array-in-sections trick
+            "IN-PLACE REVERSAL",
+            "SEQUENCE BLOCK",           # reverse blocks / partition in place
+            "POINTER MANIPULATION",     # pointer-rearrangement (linked structures)
         ],
         "MODULAR ARITHMETIC & NUMBER THEORY": [
             "MODULAR",
@@ -522,11 +600,22 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "XOR",
             "POWER-OF-TWO",
             "BIT MANIPULATION",
+            "BIT",                      # per brief: `bit`/`xor` → MODULAR ARITHMETIC
+            "TRIAL DIVISION",           # primality via trial division
+            "SUM FORMULA",              # Gauss sum / closed-form formula
+            "NUMERIC",                  # numeric property checks
         ],
         "LIST & COLLECTION TRANSFORMATION": [
             "LIST MANIPULATION",
             "LIST",
             "COLLECTIONS",
+            "DEFAULTDICT",              # defaultdict grouping
+            "DEQUE",                    # deque-based window / queue
+            "CHUNKED ITERATION",        # chunk / batch iteration
+            "BATCH PROCESSING",
+            "FILTER AND SORT",          # filter + sort pipeline
+            "ORDER-PRESERVING",         # order-preserving dedup / filter
+            "INTERSECTION",             # set intersection / common elements
         ],
     },
 

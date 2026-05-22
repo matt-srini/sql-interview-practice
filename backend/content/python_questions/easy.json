@@ -75,9 +75,8 @@
       "For each amount, compute the complement needed to reach the target, then check if that complement has already been seen."
     ],
     "concepts": [
-      "hash-based lookup",
-      "complement search",
-      "indexed sequence reasoning"
+      "HASH-MAP STATE",
+      "INDEXED SEQUENCE REASONING"
     ]
   },
   {
@@ -129,9 +128,8 @@
       "After cleaning the string, compare it to its reverse — a string that reads the same both ways is a palindrome."
     ],
     "concepts": [
-      "string normalisation",
-      "symmetric comparison",
-      "two-pass string processing"
+      "STRING PATTERN REASONING",
+      "TWO POINTERS"
     ]
   },
   {
@@ -205,9 +203,8 @@
       "Build the output list by iterating through each ID from 1 to n and applying the labeling rules in the correct priority order."
     ],
     "concepts": [
-      "modular arithmetic",
-      "conditional classification",
-      "sequential list construction"
+      "MODULAR ARITHMETIC & NUMBER THEORY",
+      "LIST & COLLECTION TRANSFORMATION"
     ]
   },
   {
@@ -259,63 +256,8 @@
       "Iterate through each character and check whether it belongs to the set of vowel characters, incrementing a counter when it does."
     ],
     "concepts": [
-      "character frequency",
-      "string scanning",
-      "case normalisation"
-    ]
-  },
-  {
-    "id": 21005,
-    "order": 5,
-    "topic": "python",
-    "difficulty": "easy",
-    "title": "Growth Sequence Generator",
-    "description": "A forecasting model uses a sequence where each period's value equals the sum of the two previous periods. Given an integer `n`, return the `n`-th value in this sequence (0-indexed), starting: 0, 1, 1, 2, 3, 5, 8, 13, …\n\n```\nsolve(0)   # → 0\nsolve(6)   # → 8\nsolve(10)  # → 55\n```",
-    "starter_code": "def solve(n: int) -> int:\n    # Your code here\n    pass",
-    "expected_code": "def solve(n):\n    if n <= 1:\n        return n\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b",
-    "solution_code": "def solve(n):\n    if n <= 1:\n        return n\n    a, b = 0, 1\n    for _ in range(2, n + 1):\n        a, b = b, a + b\n    return b",
-    "explanation": "Use an iterative approach with two variables tracking consecutive Fibonacci numbers. This is O(n) time and O(1) space, avoiding the exponential cost of naive recursion.",
-    "test_cases": [
-      {
-        "input": [
-          0
-        ],
-        "expected": 0
-      },
-      {
-        "input": [
-          1
-        ],
-        "expected": 1
-      },
-      {
-        "input": [
-          6
-        ],
-        "expected": 8
-      },
-      {
-        "input": [
-          9
-        ],
-        "expected": 34
-      },
-      {
-        "input": [
-          10
-        ],
-        "expected": 55
-      }
-    ],
-    "public_test_cases": 3,
-    "hints": [
-      "Handle the two starting values explicitly, then derive each subsequent value from the two most recent ones.",
-      "Track only the two most recent values as you step forward — this avoids recomputing earlier values and keeps memory constant."
-    ],
-    "concepts": [
-      "sequential state update",
-      "running accumulation",
-      "base case handling"
+      "HASH-MAP STATE",
+      "STRING PATTERN REASONING"
     ]
   },
   {
@@ -372,9 +314,8 @@
       "Strip whitespace and normalise case before comparing so that formatting differences don't affect the result."
     ],
     "concepts": [
-      "frequency-based equality",
-      "string normalisation",
-      "character counting"
+      "HASH-MAP STATE",
+      "STRING PATTERN REASONING"
     ]
   },
   {
@@ -468,9 +409,8 @@
       "Iterate through the list and only add an element to the result if it has not been seen before."
     ],
     "concepts": [
-      "membership-based deduplication",
-      "order-preserving filtering",
-      "set-based lookup"
+      "HASH-MAP STATE",
+      "LIST & COLLECTION TRANSFORMATION"
     ]
   },
   {
@@ -535,111 +475,7 @@
       "Update your running maximum each time you encounter a value that exceeds it."
     ],
     "concepts": [
-      "linear scan",
-      "running maximum",
-      "indexed sequence reasoning"
-    ]
-  },
-  {
-    "id": 21009,
-    "order": 9,
-    "topic": "python",
-    "difficulty": "easy",
-    "title": "Reverse Field Value",
-    "description": "A data transformation pipeline reverses certain string fields as part of a format conversion step. Given a string `s`, return it reversed. Implement this without using Python's built-in slice reversal (`s[::-1]`) or `reversed()`.\n\n```\nsolve('pipeline')  # → 'enilepip'\nsolve('ETL')       # → 'LTE'\n```",
-    "starter_code": "def solve(s: str) -> str:\n    # Do not use s[::-1] or reversed()\n    pass",
-    "expected_code": "def solve(s):\n    result = []\n    for i in range(len(s) - 1, -1, -1):\n        result.append(s[i])\n    return ''.join(result)",
-    "solution_code": "def solve(s):\n    result = []\n    for i in range(len(s) - 1, -1, -1):\n        result.append(s[i])\n    return ''.join(result)",
-    "explanation": "Iterate from the last index down to 0 (using `range(len(s)-1, -1, -1)`), collecting characters into a list, then join. This demonstrates explicit index manipulation without relying on Python's slicing shortcut.",
-    "test_cases": [
-      {
-        "input": [
-          "hello"
-        ],
-        "expected": "olleh"
-      },
-      {
-        "input": [
-          "Python"
-        ],
-        "expected": "nohtyP"
-      },
-      {
-        "input": [
-          "a"
-        ],
-        "expected": "a"
-      },
-      {
-        "input": [
-          ""
-        ],
-        "expected": ""
-      },
-      {
-        "input": [
-          "abcde"
-        ],
-        "expected": "edcba"
-      }
-    ],
-    "public_test_cases": 2,
-    "hints": [
-      "Work backwards from the last character to the first, building the reversed string one character at a time.",
-      "Count backwards from the last index to 0, appending each character to a result string as you go."
-    ],
-    "concepts": [
-      "string traversal",
-      "in-place reversal logic",
-      "indexed sequence reasoning"
-    ]
-  },
-  {
-    "id": 21010,
-    "order": 10,
-    "topic": "python",
-    "difficulty": "easy",
-    "title": "Permutation Counter",
-    "description": "Experiment planning tools compute the number of ways to arrange `n` distinct items — this is `n!` (n factorial). Given a non-negative integer `n`, return `n!` iteratively.\n\n```\nsolve(0)   # → 1\nsolve(5)   # → 120\nsolve(10)  # → 3628800\n```",
-    "starter_code": "def solve(n: int) -> int:\n    # Implement iteratively (no recursion)\n    pass",
-    "expected_code": "def solve(n):\n    result = 1\n    for i in range(2, n + 1):\n        result *= i\n    return result",
-    "solution_code": "def solve(n):\n    result = 1\n    for i in range(2, n + 1):\n        result *= i\n    return result",
-    "explanation": "Initialize the result to 1 (the identity element for multiplication), then multiply by each integer from 2 to n. Starting from 2 avoids a redundant multiplication by 1. 0! = 1 by convention, handled naturally since the loop doesn't execute.",
-    "test_cases": [
-      {
-        "input": [
-          0
-        ],
-        "expected": 1
-      },
-      {
-        "input": [
-          1
-        ],
-        "expected": 1
-      },
-      {
-        "input": [
-          5
-        ],
-        "expected": 120
-      },
-      {
-        "input": [
-          10
-        ],
-        "expected": 3628800
-      }
-    ],
-    "public_test_cases": 2,
-    "hints": [
-      "0! = 1 by convention — handle this base case before the loop.",
-      "Accumulate the product by multiplying each integer from 2 to n into a running total, starting that total at 1."
-    ],
-    "concepts": [
-      "iterative accumulation",
-      "sequential multiplication",
-      "base case handling"
+      "INDEXED SEQUENCE REASONING"
     ]
   },
   {
@@ -697,8 +533,8 @@
       "A dictionary mapping each closing bracket to its opener keeps the match check clean."
     ],
     "concepts": [
-      "stack",
-      "string manipulation"
+      "STACK & MONOTONIC STRUCTURES",
+      "STRING PATTERN REASONING"
     ]
   },
   {
@@ -777,7 +613,7 @@
       "If `nums[mid]` is less than the target, the answer must be in the right half — move `lo` up."
     ],
     "concepts": [
-      "binary search",
+      "BINARY SEARCH",
       "INDEXED SEQUENCE REASONING"
     ]
   },
@@ -842,123 +678,8 @@
       "Increment the counter each time you encounter the target value."
     ],
     "concepts": [
-      "INDEXED SEQUENCE REASONING",
-      "LINEAR STATE UPDATE",
-      "linear scan"
-    ]
-  },
-  {
-    "id": 21014,
-    "order": 14,
-    "topic": "python",
-    "difficulty": "easy",
-    "title": "Sum of Digits",
-    "description": "A checksum is computed as the sum of the digits of a transaction ID. Given an integer `n`, return the sum of its digits. Treat negative integers as their absolute value.\n\n```\nsolve(123)   # → 6\nsolve(-456)  # → 15\nsolve(0)     # → 0\nsolve(100)   # → 1\n```",
-    "starter_code": "def solve(n: int) -> int:\n    # Your code here\n    pass",
-    "expected_code": "def solve(n):\n    return sum(int(d) for d in str(abs(n)))",
-    "solution_code": "def solve(n):\n    return sum(int(d) for d in str(abs(n)))",
-    "explanation": "Convert the absolute value to a string so you can iterate over each character digit, convert each back to int, and sum them. This is the simplest approach and avoids repeated modulo/floor-division arithmetic.",
-    "test_cases": [
-      {
-        "input": [
-          123
-        ],
-        "expected": 6
-      },
-      {
-        "input": [
-          -456
-        ],
-        "expected": 15
-      },
-      {
-        "input": [
-          0
-        ],
-        "expected": 0
-      },
-      {
-        "input": [
-          9
-        ],
-        "expected": 9
-      },
-      {
-        "input": [
-          100
-        ],
-        "expected": 1
-      }
-    ],
-    "public_test_cases": 2,
-    "hints": [
-      "Convert the number to a string to iterate over its digits easily.",
-      "Use abs() to handle negative numbers before converting."
-    ],
-    "concepts": [
-      "string manipulation",
-      "arithmetic",
-      "LINEAR STATE UPDATE"
-    ]
-  },
-  {
-    "id": 21015,
-    "order": 15,
-    "topic": "python",
-    "difficulty": "easy",
-    "title": "Is Prime",
-    "description": "A sharding system requires a prime number of shards for optimal hash distribution. Given a candidate integer `n`, return `True` if it is prime, `False` otherwise.\n\n```\nsolve(2)   # → True\nsolve(9)   # → False\nsolve(1)   # → False\nsolve(17)  # → True\n```",
-    "starter_code": "def solve(n: int) -> bool:\n    # Your code here\n    pass",
-    "expected_code": "def solve(n):\n    if n < 2:\n        return False\n    i = 2\n    while i * i <= n:\n        if n % i == 0:\n            return False\n        i += 1\n    return True",
-    "solution_code": "def solve(n):\n    if n < 2:\n        return False\n    i = 2\n    while i * i <= n:\n        if n % i == 0:\n            return False\n        i += 1\n    return True",
-    "explanation": "Numbers less than 2 are not prime. For larger numbers, check all potential factors up to the square root — if n has a factor larger than its square root, it must also have one smaller than it, so you never need to go further.",
-    "test_cases": [
-      {
-        "input": [
-          2
-        ],
-        "expected": true
-      },
-      {
-        "input": [
-          9
-        ],
-        "expected": false
-      },
-      {
-        "input": [
-          1
-        ],
-        "expected": false
-      },
-      {
-        "input": [
-          17
-        ],
-        "expected": true
-      },
-      {
-        "input": [
-          4
-        ],
-        "expected": false
-      },
-      {
-        "input": [
-          97
-        ],
-        "expected": true
-      }
-    ],
-    "public_test_cases": 2,
-    "hints": [
-      "Any number less than 2 is not prime.",
-      "You only need to check divisors up to the square root of n."
-    ],
-    "concepts": [
-      "trial division",
-      "linear scan",
-      "mathematical filtering"
+      "HASH-MAP STATE",
+      "INDEXED SEQUENCE REASONING"
     ]
   },
   {
@@ -1045,8 +766,7 @@
     ],
     "concepts": [
       "INDEXED SEQUENCE REASONING",
-      "LINEAR STATE UPDATE",
-      "list manipulation"
+      "LIST & COLLECTION TRANSFORMATION"
     ]
   },
   {
@@ -1128,9 +848,8 @@
       "Concatenate lst[k:] + lst[:k] to perform the rotation in one step."
     ],
     "concepts": [
-      "cyclic shift",
-      "modular arithmetic",
-      "indexed sequence reasoning"
+      "INDEXED SEQUENCE REASONING",
+      "IN-PLACE TRANSFORMATION & SPACE OPTIMIZATION"
     ]
   },
   {
@@ -1219,69 +938,8 @@
       "After the loop, at least one list will still have elements; append them all to the result."
     ],
     "concepts": [
-      "two pointers",
-      "INDEXED SEQUENCE REASONING",
-      "ORDER-FIRST REASONING"
-    ]
-  },
-  {
-    "id": 21019,
-    "order": 19,
-    "topic": "python",
-    "difficulty": "easy",
-    "title": "Check Power of 2",
-    "description": "A cache system uses power-of-2 bucket counts for efficient hash distribution. Given an integer `n`, return `True` if it is a positive power of 2. Use a loop that divides by 2 — do not use bit operations.\n\n```\nsolve(1)    # → True\nsolve(16)   # → True\nsolve(6)    # → False\nsolve(0)    # → False\nsolve(-4)   # → False\n```",
-    "starter_code": "def solve(n: int) -> bool:\n    # Use a loop — no bit operations allowed\n    pass",
-    "expected_code": "def solve(n):\n    if n <= 0:\n        return False\n    while n > 1:\n        if n % 2 != 0:\n            return False\n        n //= 2\n    return True",
-    "solution_code": "def solve(n):\n    if n <= 0:\n        return False\n    while n > 1:\n        if n % 2 != 0:\n            return False\n        n //= 2\n    return True",
-    "explanation": "Reject non-positive numbers immediately. Then keep dividing by 2: if at any step the number is odd (and not 1), it is not a power of 2. If you reach 1, it is a power of 2.",
-    "test_cases": [
-      {
-        "input": [
-          1
-        ],
-        "expected": true
-      },
-      {
-        "input": [
-          2
-        ],
-        "expected": true
-      },
-      {
-        "input": [
-          16
-        ],
-        "expected": true
-      },
-      {
-        "input": [
-          6
-        ],
-        "expected": false
-      },
-      {
-        "input": [
-          0
-        ],
-        "expected": false
-      },
-      {
-        "input": [
-          -4
-        ],
-        "expected": false
-      }
-    ],
-    "public_test_cases": 2,
-    "hints": [
-      "Return False immediately for any non-positive number.",
-      "Keep dividing by 2; if you ever get an odd number greater than 1, it is not a power of 2."
-    ],
-    "concepts": [
-      "power-of-two detection",
-      "iterative halving",
-      "boundary check"
+      "TWO POINTERS",
+      "INDEXED SEQUENCE REASONING"
     ]
   },
   {
@@ -1333,9 +991,8 @@
       "Make a second pass to find the first character whose count is exactly 1."
     ],
     "concepts": [
-      "hash map",
-      "string manipulation",
-      "LINEAR STATE UPDATE"
+      "HASH-MAP STATE",
+      "STRING PATTERN REASONING"
     ]
   },
   {
@@ -1387,68 +1044,8 @@
       "When the character changes (or you reach the end), append char + count to your result."
     ],
     "concepts": [
-      "string manipulation",
-      "LINEAR STATE UPDATE",
-      "run-length encoding"
-    ]
-  },
-  {
-    "id": 21022,
-    "order": 22,
-    "topic": "python",
-    "difficulty": "easy",
-    "title": "Caesar Cipher",
-    "description": "Encode alert messages by shifting each letter `k` positions forward in the alphabet, wrapping `z` back to `a` (and `Z` back to `A`). Non-letter characters are left unchanged.\n\n```\nsolve('abc', 1)     # → 'bcd'\nsolve('xyz', 3)     # → 'abc'\nsolve('Hello!', 13) # → 'Uryyb!'\nsolve('abc', 0)     # → 'abc'\n```",
-    "starter_code": "def solve(s: str, k: int) -> str:\n    # Your code here\n    pass",
-    "expected_code": "def solve(s, k):\n    result = []\n    for c in s:\n        if c.isalpha():\n            base = ord('A') if c.isupper() else ord('a')\n            result.append(chr((ord(c) - base + k) % 26 + base))\n        else:\n            result.append(c)\n    return ''.join(result)",
-    "solution_code": "def solve(s, k):\n    result = []\n    for c in s:\n        if c.isalpha():\n            base = ord('A') if c.isupper() else ord('a')\n            result.append(chr((ord(c) - base + k) % 26 + base))\n        else:\n            result.append(c)\n    return ''.join(result)",
-    "explanation": "For each letter, subtract the base ASCII value (`ord('a')` or `ord('A')`) to get a 0-based index, add k, take modulo 26 for wrapping, then add the base back. Non-letters pass through unchanged.",
-    "test_cases": [
-      {
-        "input": [
-          "abc",
-          1
-        ],
-        "expected": "bcd"
-      },
-      {
-        "input": [
-          "xyz",
-          3
-        ],
-        "expected": "abc"
-      },
-      {
-        "input": [
-          "Hello!",
-          13
-        ],
-        "expected": "Uryyb!"
-      },
-      {
-        "input": [
-          "abc",
-          0
-        ],
-        "expected": "abc"
-      },
-      {
-        "input": [
-          "ABC",
-          1
-        ],
-        "expected": "BCD"
-      }
-    ],
-    "public_test_cases": 2,
-    "hints": [
-      "Use ord() and chr() to convert between characters and their ASCII codes.",
-      "Subtract the base ('a' or 'A'), add k, take % 26, then add the base back."
-    ],
-    "concepts": [
-      "character encoding",
-      "character transformation",
-      "modular arithmetic"
+      "STRING PATTERN REASONING",
+      "INDEXED SEQUENCE REASONING"
     ]
   },
   {
@@ -1510,9 +1107,8 @@
       "Subtract the actual sum of the list from the expected sum to find the missing number."
     ],
     "concepts": [
-      "math",
-      "INDEXED SEQUENCE REASONING",
-      "sum formula"
+      "HASH-MAP STATE",
+      "INDEXED SEQUENCE REASONING"
     ]
   },
   {
@@ -1569,8 +1165,8 @@
       "For each other string, keep trimming one character from the end of the prefix until it matches."
     ],
     "concepts": [
-      "string manipulation",
-      "LINEAR STATE UPDATE"
+      "STRING PATTERN REASONING",
+      "INDEXED SEQUENCE REASONING"
     ]
   },
   {
@@ -1644,8 +1240,7 @@
     ],
     "concepts": [
       "INDEXED SEQUENCE REASONING",
-      "LINEAR STATE UPDATE",
-      "list manipulation"
+      "LIST & COLLECTION TRANSFORMATION"
     ]
   },
   {
@@ -1744,68 +1339,7 @@
     ],
     "concepts": [
       "INDEXED SEQUENCE REASONING",
-      "slicing",
-      "list manipulation"
-    ]
-  },
-  {
-    "id": 21027,
-    "order": 27,
-    "topic": "python",
-    "difficulty": "easy",
-    "title": "Is Palindrome Number",
-    "description": "Validate a numeric transaction reference by checking if it reads the same forwards and backwards. Given an integer `n`, return `True` if it is a palindrome. **Do not convert the integer to a string — use arithmetic only.**\n\n```\nsolve(121)   # → True\nsolve(123)   # → False\nsolve(-121)  # → False\nsolve(0)     # → True\n```",
-    "starter_code": "def solve(n: int) -> bool:\n    # Do not convert to string — use arithmetic only\n    pass",
-    "expected_code": "def solve(n):\n    if n < 0:\n        return False\n    original = n\n    reversed_n = 0\n    while n > 0:\n        reversed_n = reversed_n * 10 + n % 10\n        n //= 10\n    return original == reversed_n",
-    "solution_code": "def solve(n):\n    if n < 0:\n        return False\n    original = n\n    reversed_n = 0\n    while n > 0:\n        reversed_n = reversed_n * 10 + n % 10\n        n //= 10\n    return original == reversed_n",
-    "explanation": "Negative numbers are never palindromes. For non-negative numbers, extract digits using `% 10` and build the reversed number by multiplying the running result by 10 before adding each digit. Compare with the original at the end.",
-    "test_cases": [
-      {
-        "input": [
-          121
-        ],
-        "expected": true
-      },
-      {
-        "input": [
-          123
-        ],
-        "expected": false
-      },
-      {
-        "input": [
-          -121
-        ],
-        "expected": false
-      },
-      {
-        "input": [
-          0
-        ],
-        "expected": true
-      },
-      {
-        "input": [
-          11
-        ],
-        "expected": true
-      },
-      {
-        "input": [
-          10
-        ],
-        "expected": false
-      }
-    ],
-    "public_test_cases": 2,
-    "hints": [
-      "Negative numbers are never palindromes — return False immediately.",
-      "Reverse the digits using n % 10 to extract the last digit and n //= 10 to remove it."
-    ],
-    "concepts": [
-      "digit-by-digit reversal",
-      "iterative arithmetic",
-      "numeric palindrome check"
+      "LIST & COLLECTION TRANSFORMATION"
     ]
   },
   {
@@ -1895,9 +1429,8 @@
       "Use a nested list comprehension iterating over columns in the outer loop and rows in the inner loop."
     ],
     "concepts": [
-      "matrix transposition",
-      "row-column swap",
-      "nested iteration"
+      "LIST & COLLECTION TRANSFORMATION",
+      "INDEXED SEQUENCE REASONING"
     ]
   },
   {
@@ -1970,8 +1503,7 @@
       "After sorting the unique values, the second largest is at index -2."
     ],
     "concepts": [
-      "MEMBERSHIP-BASED DEDUPLICATION",
-      "ORDER-FIRST REASONING",
+      "HASH-MAP STATE",
       "INDEXED SEQUENCE REASONING"
     ]
   },
@@ -2053,9 +1585,8 @@
       "Use the & operator (set intersection) to find common elements, then sort the result."
     ],
     "concepts": [
-      "MEMBERSHIP-BASED DEDUPLICATION",
-      "INDEXED SEQUENCE REASONING",
-      "intersection"
+      "HASH-MAP STATE",
+      "INDEXED SEQUENCE REASONING"
     ]
   },
   {
@@ -2071,23 +1602,73 @@
     "explanation": "`csv.DictReader` treats the first row as the header and yields each subsequent row as an `OrderedDict` (Python 3.7+: regular dict) with column names as keys and cell values as strings. Wrapping in `list(...)` or iterating with a list comprehension gives you a plain list of dicts. All values are strings — cast them explicitly if you need numbers.",
     "test_cases": [
       {
-        "input": [["name,age", "Alice,30", "Bob,25"]],
-        "expected": [{"name": "Alice", "age": "30"}, {"name": "Bob", "age": "25"}]
+        "input": [
+          [
+            "name,age",
+            "Alice,30",
+            "Bob,25"
+          ]
+        ],
+        "expected": [
+          {
+            "name": "Alice",
+            "age": "30"
+          },
+          {
+            "name": "Bob",
+            "age": "25"
+          }
+        ]
       },
       {
-        "input": [["id,value", "1,100"]],
-        "expected": [{"id": "1", "value": "100"}]
+        "input": [
+          [
+            "id,value",
+            "1,100"
+          ]
+        ],
+        "expected": [
+          {
+            "id": "1",
+            "value": "100"
+          }
+        ]
       },
       {
-        "input": [["x"]],
+        "input": [
+          [
+            "x"
+          ]
+        ],
         "expected": []
       },
       {
-        "input": [["a,b,c", "1,2,3", "4,5,6"]],
-        "expected": [{"a": "1", "b": "2", "c": "3"}, {"a": "4", "b": "5", "c": "6"}]
+        "input": [
+          [
+            "a,b,c",
+            "1,2,3",
+            "4,5,6"
+          ]
+        ],
+        "expected": [
+          {
+            "a": "1",
+            "b": "2",
+            "c": "3"
+          },
+          {
+            "a": "4",
+            "b": "5",
+            "c": "6"
+          }
+        ]
       },
       {
-        "input": [["col"]],
+        "input": [
+          [
+            "col"
+          ]
+        ],
         "expected": []
       }
     ],
@@ -2097,9 +1678,8 @@
       "All values come out as strings — use a list comprehension and `dict(row)` to get plain dicts."
     ],
     "concepts": [
-      "csv.DictReader",
-      "CSV PARSING",
-      "stdlib io"
+      "STRING PATTERN REASONING",
+      "LIST & COLLECTION TRANSFORMATION"
     ]
   },
   {
@@ -2115,20 +1695,40 @@
     "explanation": "`json.loads(s)` deserialises a JSON string into a Python object — a dict if the top-level value is `{}`, a list if it is `[]`, and so on. After parsing, access keys just like any dict. This is the stdlib counterpart to `json.dumps`, which serialises Python objects back to JSON strings.",
     "test_cases": [
       {
-        "input": ["{\"level\": \"ERROR\", \"message\": \"disk full\", \"ts\": \"2023-01-01\"}"],
-        "expected": ["ERROR", "disk full"]
+        "input": [
+          "{\"level\": \"ERROR\", \"message\": \"disk full\", \"ts\": \"2023-01-01\"}"
+        ],
+        "expected": [
+          "ERROR",
+          "disk full"
+        ]
       },
       {
-        "input": ["{\"level\": \"INFO\", \"message\": \"started\"}"],
-        "expected": ["INFO", "started"]
+        "input": [
+          "{\"level\": \"INFO\", \"message\": \"started\"}"
+        ],
+        "expected": [
+          "INFO",
+          "started"
+        ]
       },
       {
-        "input": ["{\"level\": \"WARNING\", \"message\": \"high memory\", \"code\": 42}"],
-        "expected": ["WARNING", "high memory"]
+        "input": [
+          "{\"level\": \"WARNING\", \"message\": \"high memory\", \"code\": 42}"
+        ],
+        "expected": [
+          "WARNING",
+          "high memory"
+        ]
       },
       {
-        "input": ["{\"level\": \"CRITICAL\", \"message\": \"oom\", \"user\": \"system\"}"],
-        "expected": ["CRITICAL", "oom"]
+        "input": [
+          "{\"level\": \"CRITICAL\", \"message\": \"oom\", \"user\": \"system\"}"
+        ],
+        "expected": [
+          "CRITICAL",
+          "oom"
+        ]
       }
     ],
     "public_test_cases": 2,
@@ -2137,9 +1737,8 @@
       "Access the parsed dict with square brackets just like any Python dict: `d['key']`."
     ],
     "concepts": [
-      "json.loads",
-      "JSON PARSING",
-      "stdlib io"
+      "STRING PATTERN REASONING",
+      "HASH-MAP STATE"
     ]
   },
   {
@@ -2155,23 +1754,51 @@
     "explanation": "`datetime.strptime(s, fmt)` parses a string into a `datetime` object using the given format. `%m` is zero-padded month, `%d` is zero-padded day, `%Y` is four-digit year. Once parsed, `datetime` objects are comparable with `<`, `>`, `max()`, and `min()`. `strftime(fmt)` serialises a `datetime` back to a string in a different format.",
     "test_cases": [
       {
-        "input": [["12/25/2022", "01/15/2023", "06/30/2021"]],
+        "input": [
+          [
+            "12/25/2022",
+            "01/15/2023",
+            "06/30/2021"
+          ]
+        ],
         "expected": "2023-01-15"
       },
       {
-        "input": [["03/01/2020"]],
+        "input": [
+          [
+            "03/01/2020"
+          ]
+        ],
         "expected": "2020-03-01"
       },
       {
-        "input": [["12/31/2023", "01/01/2024", "06/15/2023"]],
+        "input": [
+          [
+            "12/31/2023",
+            "01/01/2024",
+            "06/15/2023"
+          ]
+        ],
         "expected": "2024-01-01"
       },
       {
-        "input": [["02/28/2022", "02/29/2024", "03/01/2022"]],
+        "input": [
+          [
+            "02/28/2022",
+            "02/29/2024",
+            "03/01/2022"
+          ]
+        ],
         "expected": "2024-02-29"
       },
       {
-        "input": [["01/01/2000", "12/31/1999", "06/15/2000"]],
+        "input": [
+          [
+            "01/01/2000",
+            "12/31/1999",
+            "06/15/2000"
+          ]
+        ],
         "expected": "2000-06-15"
       }
     ],
@@ -2181,9 +1808,8 @@
       "Once parsed to `datetime` objects, use `max(parsed)` to find the most recent."
     ],
     "concepts": [
-      "datetime.strptime",
-      "DATETIME PARSING AND FORMATTING",
-      "stdlib datetime"
+      "STRING PATTERN REASONING",
+      "INDEXED SEQUENCE REASONING"
     ]
   },
   {
@@ -2199,23 +1825,64 @@
     "explanation": "Build a frequency dict in a single pass using `dict.get(key, 0) + 1`. Filter keys where the count exceeds 1, then sort for a deterministic output. An alternative is two-set tracking: add each element to a `seen` set; if it's already there, add it to a `dupes` set. Both approaches are O(n) time and space.",
     "test_cases": [
       {
-        "input": [[1, 2, 3, 2, 4, 1]],
-        "expected": [1, 2]
+        "input": [
+          [
+            1,
+            2,
+            3,
+            2,
+            4,
+            1
+          ]
+        ],
+        "expected": [
+          1,
+          2
+        ]
       },
       {
-        "input": [[5, 5, 5]],
-        "expected": [5]
+        "input": [
+          [
+            5,
+            5,
+            5
+          ]
+        ],
+        "expected": [
+          5
+        ]
       },
       {
-        "input": [[1, 2, 3]],
+        "input": [
+          [
+            1,
+            2,
+            3
+          ]
+        ],
         "expected": []
       },
       {
-        "input": [["a", "b", "a", "c", "b"]],
-        "expected": ["a", "b"]
+        "input": [
+          [
+            "a",
+            "b",
+            "a",
+            "c",
+            "b"
+          ]
+        ],
+        "expected": [
+          "a",
+          "b"
+        ]
       },
       {
-        "input": [[1]],
+        "input": [
+          [
+            1
+          ]
+        ],
         "expected": []
       }
     ],
@@ -2225,9 +1892,8 @@
       "Filter for keys where the count > 1, then sort the result."
     ],
     "concepts": [
-      "FREQUENCY COUNTING",
-      "dict.get default",
-      "duplicate detection"
+      "HASH-MAP STATE",
+      "INDEXED SEQUENCE REASONING"
     ]
   },
   {
@@ -2243,20 +1909,96 @@
     "explanation": "`defaultdict(list)` automatically initialises a new key with an empty list on first access, removing the need for an `if key not in d` guard. The factory function (`list`, `int`, `set`, etc.) determines the default. Converting back to a plain `dict` at the end prevents accidental auto-creation of new keys downstream.",
     "test_cases": [
       {
-        "input": [[["fruits", "apple"], ["vegs", "carrot"], ["fruits", "banana"], ["vegs", "spinach"]]],
-        "expected": {"fruits": ["apple", "banana"], "vegs": ["carrot", "spinach"]}
+        "input": [
+          [
+            [
+              "fruits",
+              "apple"
+            ],
+            [
+              "vegs",
+              "carrot"
+            ],
+            [
+              "fruits",
+              "banana"
+            ],
+            [
+              "vegs",
+              "spinach"
+            ]
+          ]
+        ],
+        "expected": {
+          "fruits": [
+            "apple",
+            "banana"
+          ],
+          "vegs": [
+            "carrot",
+            "spinach"
+          ]
+        }
       },
       {
-        "input": [[["a", 1], ["b", 2], ["a", 3]]],
-        "expected": {"a": [1, 3], "b": [2]}
+        "input": [
+          [
+            [
+              "a",
+              1
+            ],
+            [
+              "b",
+              2
+            ],
+            [
+              "a",
+              3
+            ]
+          ]
+        ],
+        "expected": {
+          "a": [
+            1,
+            3
+          ],
+          "b": [
+            2
+          ]
+        }
       },
       {
-        "input": [[[]]],
+        "input": [
+          [
+            []
+          ]
+        ],
         "expected": {}
       },
       {
-        "input": [[["x", "m"], ["x", "a"], ["x", "z"]]],
-        "expected": {"x": ["a", "m", "z"]}
+        "input": [
+          [
+            [
+              "x",
+              "m"
+            ],
+            [
+              "x",
+              "a"
+            ],
+            [
+              "x",
+              "z"
+            ]
+          ]
+        ],
+        "expected": {
+          "x": [
+            "a",
+            "m",
+            "z"
+          ]
+        }
       }
     ],
     "public_test_cases": 2,
@@ -2265,9 +2007,8 @@
       "Sort each group's values at the end for a deterministic output."
     ],
     "concepts": [
-      "defaultdict",
-      "GROUPING BY KEY",
-      "collections"
+      "HASH-MAP STATE",
+      "LIST & COLLECTION TRANSFORMATION"
     ]
   },
   {
@@ -2283,24 +2024,92 @@
     "explanation": "The deque stores indices of elements in decreasing value order. Before adding index `i`, remove from the back any indices whose values are smaller than `nums[i]` — they can never be the window maximum while `i` is in the window. Remove from the front any index that has slid out of the window (`< i - k + 1`). The front of the deque always holds the index of the current window's maximum. This gives O(n) overall — each index is added and removed at most once.",
     "test_cases": [
       {
-        "input": [[1, 3, -1, -3, 5, 3, 6, 7], 3],
-        "expected": [3, 3, 5, 5, 6, 7]
+        "input": [
+          [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          3
+        ],
+        "expected": [
+          3,
+          3,
+          5,
+          5,
+          6,
+          7
+        ]
       },
       {
-        "input": [[1], 1],
-        "expected": [1]
+        "input": [
+          [
+            1
+          ],
+          1
+        ],
+        "expected": [
+          1
+        ]
       },
       {
-        "input": [[4, 3, 2, 1], 2],
-        "expected": [4, 3, 2]
+        "input": [
+          [
+            4,
+            3,
+            2,
+            1
+          ],
+          2
+        ],
+        "expected": [
+          4,
+          3,
+          2
+        ]
       },
       {
-        "input": [[1, 2, 3, 4], 2],
-        "expected": [2, 3, 4]
+        "input": [
+          [
+            1,
+            2,
+            3,
+            4
+          ],
+          2
+        ],
+        "expected": [
+          2,
+          3,
+          4
+        ]
       },
       {
-        "input": [[2, 1, 5, 3, 6, 4, 8, 7], 4],
-        "expected": [5, 6, 6, 8, 8]
+        "input": [
+          [
+            2,
+            1,
+            5,
+            3,
+            6,
+            4,
+            8,
+            7
+          ],
+          4
+        ],
+        "expected": [
+          5,
+          6,
+          6,
+          8,
+          8
+        ]
       }
     ],
     "public_test_cases": 2,
@@ -2309,143 +2118,8 @@
       "Pop from the back when `nums[dq[-1]] < nums[i]` — a smaller element behind a larger one can never be a window max."
     ],
     "concepts": [
-      "deque",
       "SLIDING WINDOW",
-      "MONOTONIC DEQUE",
-      "collections"
-    ]
-  },
-  {
-    "id": 21037,
-    "order": 37,
-    "topic": "python",
-    "difficulty": "easy",
-    "title": "Sum of Squares of Odd Numbers",
-    "description": "Without building an intermediate list, compute the sum of squares of all odd numbers in `nums` using a generator expression.\n\n```\nsolve([1, 2, 3, 4, 5])   # → 35   (1² + 3² + 5² = 35)\nsolve([2, 4, 6])          # → 0\nsolve([7])                # → 49\nsolve([])                 # → 0\n```",
-    "starter_code": "def solve(nums: list) -> int:\n    # Use a generator expression — no intermediate list\n    pass",
-    "expected_code": "def solve(nums):\n    return sum(n * n for n in nums if n % 2 != 0)",
-    "solution_code": "def solve(nums):\n    return sum(n * n for n in nums if n % 2 != 0)",
-    "explanation": "A generator expression `(expr for x in iterable if condition)` is like a list comprehension but yields values one at a time instead of building a list in memory. `sum(gen)` consumes the generator directly. This matters at scale: summing squares over a million numbers with a generator uses O(1) extra memory; a list comprehension would allocate O(n) memory first.",
-    "test_cases": [
-      {
-        "input": [[1, 2, 3, 4, 5]],
-        "expected": 35
-      },
-      {
-        "input": [[2, 4, 6]],
-        "expected": 0
-      },
-      {
-        "input": [[7]],
-        "expected": 49
-      },
-      {
-        "input": [[]],
-        "expected": 0
-      },
-      {
-        "input": [[-3, -2, 1, 4]],
-        "expected": 10
-      },
-      {
-        "input": [[1, 3, 5, 7]],
-        "expected": 84
-      }
-    ],
-    "public_test_cases": 2,
-    "hints": [
-      "A generator expression `(expr for x in seq if cond)` inside `sum()` avoids building a list.",
-      "Check for odd with `n % 2 != 0` — this handles negative numbers correctly too."
-    ],
-    "concepts": [
-      "generator expression",
-      "LAZY EVALUATION",
-      "sum with generator"
-    ]
-  },
-  {
-    "id": 21038,
-    "order": 38,
-    "topic": "python",
-    "difficulty": "easy",
-    "title": "Pair Lists with zip_longest",
-    "description": "Given two lists `a` and `b` and a fill value `fill`, pair them element-by-element. If one list is shorter, pad it with `fill`. Return a list of `[x, y]` pairs using `itertools.zip_longest`.\n\n```\nsolve([1, 2, 3], [4, 5], -1)    # → [[1, 4], [2, 5], [3, -1]]\nsolve([1], [2, 3, 4], 0)        # → [[1, 2], [0, 3], [0, 4]]\nsolve([], [], None)             # → []\n```",
-    "starter_code": "from itertools import zip_longest\n\ndef solve(a: list, b: list, fill) -> list:\n    # Pair the lists, padding the shorter one with fill\n    pass",
-    "expected_code": "from itertools import zip_longest\n\ndef solve(a, b, fill):\n    return [list(pair) for pair in zip_longest(a, b, fillvalue=fill)]",
-    "solution_code": "from itertools import zip_longest\n\ndef solve(a, b, fill):\n    return [list(pair) for pair in zip_longest(a, b, fillvalue=fill)]",
-    "explanation": "`itertools.zip_longest` works like `zip` but continues until the longest iterable is exhausted, filling shorter iterables with the `fillvalue`. Plain `zip` stops at the shortest iterable and silently drops trailing elements. Use `zip_longest` whenever truncation would be a bug — for example, when pairing two data streams that should always be the same length.",
-    "test_cases": [
-      {
-        "input": [[1, 2, 3], [4, 5], -1],
-        "expected": [[1, 4], [2, 5], [3, -1]]
-      },
-      {
-        "input": [[1], [2, 3, 4], 0],
-        "expected": [[1, 2], [0, 3], [0, 4]]
-      },
-      {
-        "input": [[], [], null],
-        "expected": []
-      },
-      {
-        "input": [["a", "b"], ["x", "y", "z"], "?"],
-        "expected": [["a", "x"], ["b", "y"], ["?", "z"]]
-      },
-      {
-        "input": [[1, 2], [3, 4], 0],
-        "expected": [[1, 3], [2, 4]]
-      }
-    ],
-    "public_test_cases": 2,
-    "hints": [
-      "`zip_longest(a, b, fillvalue=fill)` pads the shorter list with `fill` instead of stopping early.",
-      "Wrap each tuple in `list(...)` to return `[x, y]` pairs instead of `(x, y)` tuples."
-    ],
-    "concepts": [
-      "zip_longest",
-      "ITERTOOLS",
-      "PARALLEL ITERATION"
-    ]
-  },
-  {
-    "id": 21039,
-    "order": 39,
-    "topic": "python",
-    "difficulty": "easy",
-    "title": "Sort Players with namedtuple",
-    "description": "Given a list of dicts `records`, each with keys `name` and `score`, create a `namedtuple` called `Player` with fields `name` and `score`. Build a list of `Player` instances and return them sorted by `score` descending. Return a list of `[name, score]` pairs extracted via attribute access.\n\n```\nsolve([{'name': 'Alice', 'score': 95}, {'name': 'Bob', 'score': 87}])\n# → [['Alice', 95], ['Bob', 87]]\n```",
-    "starter_code": "from collections import namedtuple\n\ndef solve(records: list) -> list:\n    # Create Player namedtuple, sort by score desc, return [name, score] pairs\n    pass",
-    "expected_code": "from collections import namedtuple\n\ndef solve(records):\n    Player = namedtuple('Player', ['name', 'score'])\n    players = [Player(name=r['name'], score=r['score']) for r in records]\n    players.sort(key=lambda p: p.score, reverse=True)\n    return [[p.name, p.score] for p in players]",
-    "solution_code": "from collections import namedtuple\n\ndef solve(records):\n    Player = namedtuple('Player', ['name', 'score'])\n    players = [Player(name=r['name'], score=r['score']) for r in records]\n    players.sort(key=lambda p: p.score, reverse=True)\n    return [[p.name, p.score] for p in players]",
-    "explanation": "`namedtuple` creates a lightweight, immutable tuple subclass with named fields. Access fields by attribute (`p.name`, `p.score`) rather than by index — much more readable than `p[0]`. Unlike a plain dict, namedtuples are immutable and hashable. They're useful for structured data without the overhead of a full class.",
-    "test_cases": [
-      {
-        "input": [[{"name": "Alice", "score": 95}, {"name": "Bob", "score": 87}]],
-        "expected": [["Alice", 95], ["Bob", 87]]
-      },
-      {
-        "input": [[{"name": "X", "score": 50}]],
-        "expected": [["X", 50]]
-      },
-      {
-        "input": [[{"name": "A", "score": 30}, {"name": "B", "score": 70}, {"name": "C", "score": 50}]],
-        "expected": [["B", 70], ["C", 50], ["A", 30]]
-      },
-      {
-        "input": [[]],
-        "expected": []
-      }
-    ],
-    "public_test_cases": 2,
-    "hints": [
-      "`namedtuple('Player', ['name', 'score'])` creates a tuple subclass with `.name` and `.score` attributes.",
-      "After sorting, extract `[p.name, p.score]` from each instance to return a plain serialisable format."
-    ],
-    "concepts": [
-      "namedtuple",
-      "STRUCTURED DATA",
-      "collections",
-      "attribute access"
+      "STACK & MONOTONIC STRUCTURES"
     ]
   }
 ]

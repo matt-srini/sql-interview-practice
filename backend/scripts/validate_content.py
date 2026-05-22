@@ -286,9 +286,9 @@ def _validate_mock_fields() -> None:
                         f"{track} {qid} {title}: result_preview must have ≤8 rows for UI fit"
                     )
 
-            # type: "debug" requires debug_error and starter_code/starter_query (SQL and Pandas only)
+            # type: "debug" requires debug_error and starter_code/starter_query (SQL, Pandas, Python)
             # Note: PySpark uses "debug" type differently (MCQ-style), no debug_error needed there
-            if q.get("type") == "debug" and track in ("sql", "python-data"):
+            if q.get("type") == "debug" and track in ("sql", "python-data", "python"):
                 if not str(q.get("debug_error", "") or "").strip():
                     errors.append(
                         f"{track} {qid} {title}: type=debug requires non-empty debug_error string"
@@ -312,8 +312,8 @@ def _validate_mock_fields() -> None:
 
 _TAXONOMY_VALIDATED_TRACKS: frozenset[str] = frozenset({
     "sql",
+    "python",   # Python Phase 2: registry complete, all practice/mock tags validated
     # Add a track here once its concept_families.py registry is fully populated.
-    # Phase 2 covers SQL only; other tracks will be added in their own phases.
 })
 
 

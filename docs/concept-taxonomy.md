@@ -378,8 +378,9 @@ The following tags are **forbidden** as `concepts` values — they are mechanic 
 
 #### `STRING PATTERN REASONING`
 **What it tests:** character-level state machines, palindrome checking, anagram detection, KMP-style scanning, parsing tokens.
-**Match patterns:** `STRING PATTERN`, `string manipulation`, `STRING`
-**Example existing tags:** STRING PATTERN REASONING (6), string manipulation (7), ORDER-FIRST REASONING (7)
+**Match patterns:** `STRING PATTERN`, `string manipulation`, `STRING`, `anagram`, `palindrome`, `run-length`, `trie`, `prefix tree`, `tokeniz`, `segmentat`, `encoding`, `normaliz`, `canonical`
+**Example existing tags:** STRING PATTERN REASONING (6), string manipulation (7)
+**Note:** `ORDER-FIRST REASONING` was previously listed here in error — it is a sort-then-process tag used on two-pointer/merge/heap questions and belongs to no STRING family. Strip as incidental wherever it appears.
 
 #### `STACK & MONOTONIC STRUCTURES`
 **What it tests:** LIFO ordering, balanced-bracket patterns, monotonic stack for next-greater/next-smaller, expression evaluation.
