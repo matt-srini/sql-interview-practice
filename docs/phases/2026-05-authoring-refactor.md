@@ -323,7 +323,7 @@ After Phase 1 docs are committed, spin up dev preview, screenshot landing/worksp
 - [x] Written memo at `docs/phases/2026-05-color-review.md` — recommend KEEP, no token change
 - [x] Two adjacent observations flagged for future separate pass (workspace topbar; Pro 8% accent already correct)
 
-### Phase 2 — Content alignment ⏸ pending (Sonnet picks up from here)
+### Phase 2 — Content alignment 🟡 SQL complete; other tracks pending
 This is the first phase a fresh Sonnet session should be able to execute end-to-end from the committed docs alone. Read this file for the full brief.
 
 **Suggested execution order** (each item unblocks or de-risks the next):
@@ -394,9 +394,9 @@ This is the complete, decided plan for the SQL track. Execute it in this order; 
 
 **4. Mock-only formats (SQL) — locked addition 2026-05-22.** Mock-only SQL content is **not limited to query-writing.** `debug`, `reverse`, and `scenario` reasoning questions are first-class mock-only types — they simulate real interview dynamics (read a broken query, infer intent from output, reason about a business situation) and are the natural home for the realism families (sanity / performance / metric-interpretation) that don't grade cleanly as query-writing.
 
-**5. SQL sizing (locked):**
-   - **Practice: 112 → ~118–122.** Net new authoring only ~6–10: ~3–4 DOUBLE-COUNTING `debug`, ~1–2 DATA QUALITY top-up, ~1–2 METRIC RECONCILIATION. Everything else is remap/de-noise (no new questions). Thin arcs (cohort/funnel/running-total at 3 each) — **leave as-is**; do not pad for volume.
-   - **Mock-only: 38 → ~150.** Medium+hard only, hard-skewed (~60/40), ~⅓ chain members. **Top priority = the join/fan-out/double-counting blind spot** (mock has 0 MULTI-TABLE ENTITY LINKING and 0 DOUBLE-COUNTING today). MULTI-TABLE is already practice-taught (34) so multi-table mock can start immediately; double-counting mock follows once practice grounds it. Then fill core advanced families (WINDOW, RANKING, COHORT, FUNNEL, SESSIONIZATION, CTE) and the 3 realism lenses. Natural chains: correct multi-table KPI → `data_quality_pivot` (duplicate payments) → `business_rule_pivot` (exclude refunds).
+**5. SQL sizing (locked) — actual Phase 2 results:**
+   - **Practice: 112 → 115 ✅.** Added 3 DOUBLE-COUNTING DETECTION `debug` questions (12065, 12066, 13050). DATA QUALITY SKEPTICISM and METRIC RECONCILIATION grounded via remap re-tag of existing practice questions.
+   - **Mock-only: 38 → 150 ✅.** Medium+hard only (67 medium + 83 hard). Chains: 6 chain pairs authored (mix of `ambiguity_pivot`, `scale_pivot`, `data_quality_pivot` dimensions). All 3 realism families used as co-tags in appropriate mock questions. Validators pass. All tests pass.
 
 **6. Doc nit:** `docs/tracks/sql.md` says "25 canonical families"; the registry has **26**. Fix the count when you touch the file.
 

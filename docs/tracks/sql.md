@@ -80,7 +80,7 @@ Curriculum arc placement is enforced by the `order` field. **Order is not file-a
 
 Full registry: [`docs/concept-taxonomy.md` → SQL section](../concept-taxonomy.md#sql--concept-families).
 
-25 canonical families. Every `concepts` tag in every SQL question must map to one via the resolution algorithm in the taxonomy doc. The SQL blocklist forbids mechanic-name tags (`JOIN`, `GROUP BY`, `WINDOW FUNCTION`, etc.) — describe the *reasoning* the construct enables.
+26 canonical families. Every `concepts` tag in every SQL question must map to one via the resolution algorithm in the taxonomy doc. The SQL blocklist forbids mechanic-name tags (`JOIN`, `GROUP BY`, `WINDOW FUNCTION`, etc.) — describe the *reasoning* the construct enables.
 
 Six families are new in the 2026-05 refactor, surfacing reasoning patterns the bank had only implicit. The first three are SQL-specific; the last three are shared with the Pandas track (and partially with PySpark) — same reasoning skill, transferable across executable analytics tracks:
 
@@ -91,7 +91,19 @@ Six families are new in the 2026-05 refactor, surfacing reasoning patterns the b
 - **`OUTPUT SANITY VALIDATION`** — self-checking your own analytical output before declaring done; the discipline that separates senior practitioners from junior ones
 - **`PERFORMANCE-AWARE ANALYTICS`** — choosing the more efficient analytical approach (scan reduction, pre-aggregation, cardinality control) without sacrificing correctness; distinct from engine-optimisation trivia
 
-**These six families currently have no question coverage** — the bank exercised this reasoning only implicitly and never tagged it. They are *practice-curriculum targets*, not mock material. Under the mock-only rule (no unseen concepts), they must be **established in practice first** — via the Phase 2 remap (re-tagging existing questions whose reasoning already fits) and new practice authoring — *before* any mock-only content recombines them. Until a family is taught in practice for this track, mock-only must not lean on it.
+**Phase 2 (2026-05) status of these six families:**
+
+Three are now **practice-covered** — the bank has tagged existing questions whose reasoning already fits, and new practice questions were authored:
+- `DOUBLE-COUNTING DETECTION` — 3 practice questions (12065, 12066, 13050)
+- `DATA QUALITY SKEPTICISM` — 4 practice questions (re-tagged from existing hard questions + 2 original)
+- `METRIC RECONCILIATION` — 1 practice question (12032 — full-outer-join reconciliation)
+
+Three are **mock-only realism lenses** — they appear only on `mock_only: true` questions where they co-occur with ≥1 practice-grounded family. They must never appear as a question's sole concept tag:
+- `METRIC INTERPRETATION & DENOMINATOR CHOICE`
+- `OUTPUT SANITY VALIDATION`
+- `PERFORMANCE-AWARE ANALYTICS`
+
+This three-way split is enforced by `_validate_mock_only_realism()` in `backend/scripts/validate_content.py`.
 
 ## Authoring allocation matrix
 
