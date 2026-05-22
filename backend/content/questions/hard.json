@@ -756,7 +756,7 @@
     "concepts": [
       "LATEST STATE DERIVATION",
       "PRECEDENCE-BASED CLASSIFICATION",
-      "NOISY DATA RESOLUTION"
+      "DATA QUALITY SKEPTICISM"
     ],
     "companies": [
       "Stripe",
@@ -1604,7 +1604,6 @@
       "The result shows only 8 months for display — your query should return all 12 months in 2024."
     ],
     "concepts": [
-      "REVERSE SQL",
       "MONTHLY TREND",
       "DATE EXTRACTION"
     ],
@@ -1686,7 +1685,6 @@
       "COUNT(DISTINCT CASE WHEN ...) counts unique converted users — without DISTINCT a multi-order user would be over-counted."
     ],
     "concepts": [
-      "REVERSE SQL",
       "ACQUISITION FUNNEL",
       "LEFT JOIN AGGREGATE"
     ],
@@ -1786,7 +1784,6 @@
       "Filter on revenue_rank <= 2 in the outer WHERE after defining the CTE."
     ],
     "concepts": [
-      "REVERSE SQL",
       "WINDOW RANK WITH PARTITION",
       "TOP-N PER GROUP"
     ],
@@ -1868,7 +1865,6 @@
       "The result has 5 rows — LIMIT 5 after ORDER BY avg_salary DESC."
     ],
     "concepts": [
-      "REVERSE SQL",
       "HAVING THRESHOLD",
       "SALARY BAND ANALYSIS"
     ],
@@ -1909,7 +1905,6 @@
     ],
     "concepts": [
       "WINDOW FUNCTION PARTITION",
-      "DEBUG SQL",
       "COLUMN NAME ERRORS"
     ],
     "companies": []
@@ -1953,8 +1948,7 @@
     ],
     "concepts": [
       "CTE COLUMN CONSISTENCY",
-      "WINDOW RANK",
-      "DEBUG SQL"
+      "WINDOW RANK"
     ],
     "companies": []
   },
@@ -2004,7 +1998,6 @@
     ],
     "concepts": [
       "TABLE NAME ERRORS",
-      "DEBUG SQL",
       "CATALOG ERROR"
     ],
     "companies": []

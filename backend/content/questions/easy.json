@@ -612,7 +612,7 @@
     ],
     "concepts": [
       "CONDITIONAL ROW FILTERING",
-      "OR"
+      "PRE-AGGREGATION FILTERING"
     ],
     "tags": [
       "easy",
@@ -652,7 +652,7 @@
     "concepts": [
       "CONDITIONAL ROW FILTERING",
       "MULTI-CONDITION FILTERING",
-      "OR"
+      "PRE-AGGREGATION FILTERING"
     ],
     "tags": [
       "easy",
@@ -765,7 +765,7 @@
       "After filtering, group by status and sum the amount column"
     ],
     "concepts": [
-      "OR",
+      "PRE-AGGREGATION FILTERING",
       "GROUPED AGGREGATION",
       "VALUE AGGREGATION"
     ],

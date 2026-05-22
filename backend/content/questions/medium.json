@@ -1437,7 +1437,7 @@
     "concepts": [
       "FULL OUTER JOIN RECONCILIATION",
       "COALESCE NULL BRIDGING",
-      "DATA QUALITY CLASSIFICATION"
+      "METRIC RECONCILIATION"
     ],
     "companies": [
       "Stripe",
@@ -1929,7 +1929,6 @@
       "Read the result column names carefully — they tell you what to compute and what alias to give each output column."
     ],
     "concepts": [
-      "REVERSE SQL",
       "PAYMENTS AGGREGATION",
       "FILTERED GROUP BY"
     ],
@@ -2000,7 +1999,6 @@
       "The result has only 5 rows — LIMIT 5 after ORDER BY."
     ],
     "concepts": [
-      "REVERSE SQL",
       "HR HEADCOUNT ANALYSIS",
       "TOP-N QUERY"
     ],
@@ -2072,7 +2070,6 @@
       "The result has 5 rows — LIMIT 5 after ORDER BY revenue DESC."
     ],
     "concepts": [
-      "REVERSE SQL",
       "GEO REVENUE ANALYSIS",
       "DISTINCT COUNT"
     ],
@@ -2133,7 +2130,6 @@
       "Read the column names in the result table — they tell you both what to compute and the alias to use."
     ],
     "concepts": [
-      "REVERSE SQL",
       "SUPPORT TICKET ANALYSIS",
       "AVG AGGREGATION"
     ],
@@ -2180,7 +2176,6 @@
     ],
     "concepts": [
       "GROUP BY RULES",
-      "DEBUG SQL",
       "MULTI-COLUMN GROUP BY"
     ],
     "companies": []
@@ -2226,7 +2221,6 @@
     ],
     "concepts": [
       "TABLE ALIASES",
-      "DEBUG SQL",
       "WHERE CLAUSE"
     ],
     "companies": []
@@ -2272,7 +2266,6 @@
     ],
     "concepts": [
       "CTE COLUMN REFERENCES",
-      "DEBUG SQL",
       "ALIASING RULES"
     ],
     "companies": []
