@@ -365,6 +365,16 @@ Some `⚡` families are not curriculum *concepts* — they are assessment *lense
 
 The validator (item 3) must enforce the `mock_only` flag and the co-tag rule. This class applies across tracks; per-track assignment of which ⚡ families are realism vs practice-grounded lives in each track's execution brief.
 
+**Now codified in durable docs (2026-05-22):** the realism-family class + never-sole-tag co-tag rule live in `docs/content-authoring.md` (mock-only contract) and `.github/agents/question-authoring.agent.md` (mock-only contract + final checklist); machine-enforced via `MOCK_ONLY_REALISM_FAMILIES` in `backend/concept_families.py` + `_validate_mock_only_realism()` in `validate_content.py`. The de-noise rule ("tag the distinguishing technique, not incidental mechanics") is in `content-authoring.md` concept-tag contract + the agent. SQL coverage/sizing targets are in `docs/tracks/sql.md`. These no longer depend on this tracker surviving.
+
+### Durable-doc hygiene — MUST complete before this tracker is deleted
+
+This tracker self-deletes when Phase 3 ships; any rule that lives only here is lost. Before deletion, verify the migration is complete and **strip the transitional scaffolding from the durable docs**:
+
+1. **Strip ⚡ migration framing from `docs/concept-taxonomy.md`.** Once a track's Phase 2 is complete, its gap families are normal registered families — remove that track's `⚡ *real-world gap*` markers, the "currently zero coverage" / "Phase 2 (SQL) status" / "establish in practice first" / "mock content will lean here" notes, and the top-of-file ⚡ callout. A populated family's entry should read like every other family (name, what it tests, match patterns, member tags). **The only durable residue is the `mock_only` realism designation** (which stays).
+2. **Confirm per-track durable homing** before deleting: realism designations (taxonomy + `concept_families.py`), sizing/coverage targets (each `docs/tracks/<track>.md`), and any track-specific contract rule are in authoritative docs — not only here.
+3. **Per-track:** do the ⚡ strip for a track as the final step of that track's Phase 2 execution (you can't drop "zero coverage" until coverage exists). Add this as the closing item of every track's execution brief.
+
 ### SQL Phase 2 execution brief (locked 2026-05-22) — self-contained for a fresh Sonnet session
 
 This is the complete, decided plan for the SQL track. Execute it in this order; do not relitigate.

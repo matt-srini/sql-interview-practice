@@ -123,6 +123,14 @@ This is the contract that prevents ad-hoc "practice or mock?" decisions during a
 
 **Practice teaches, mock-only stress-tests transfer.** The difference is framing, realism, and ambiguity — *not* new concepts. A mock-only question recombines previously-learned SQL reasoning in a business scenario the practice bank doesn't explore (fresh KPI, time window, relationship, stakeholder pressure, dirty data). It must **not** clone the framing of an existing practice question, and it must **not** introduce a concept family the practice curriculum hasn't already taught at that difficulty or lower. If a mock would need an untaught concept, author the practice question first.
 
+## Coverage & sizing targets
+
+These are the durable *targets* (what the bank ought to look like). For live counts (what it *is* right now) see the "Question bank current state" table in [`docs/content-authoring.md`](../content-authoring.md) and the content footprint in `CLAUDE.md`. **Targets are provisional — revisit against real Pro/Elite usage data.**
+
+- **Practice: lean.** Roughly one teaching arc per family per applicable tier — grow only to (a) ground a gradable gap family or (b) fix a genuine arc break. Do **not** pad practice for volume; that fights the curriculum philosophy. Tier balance stays easy → medium → hard heavy enough to teach progression (no thin hard tier).
+- **Mock-only: sized for the power-user runway.** A serious candidate works most of practice, then does heavy mock for an interview months out; chains are consumed once ever, so inventory must (a) exceed peak multi-month consumption and (b) **span every interview-relevant medium/hard family** — order ~150–180 mock-only questions. Medium + hard only (easy is practice-only), **hard-skewed (~60/40)**, with **~⅓ of questions as chain members** (parents + follow-ups feeding Interview Loop).
+- **Mock distribution is weighted by interview importance, not spread evenly.** Core interview-defining families (window functions, ranking, cohort, funnel, sessionization, double-counting, multi-table fan-out, CTE pipelines) carry the most mock weight; supporting families (set ops, reconciliation, the realism lenses) carry less. The blind spot to watch: joins / fan-out / double-counting.
+
 ## Anti-patterns specific to SQL
 
 - **One-liner whose only challenge is knowing a function name** — `SELECT AVG(salary) FROM employees`. Reject.

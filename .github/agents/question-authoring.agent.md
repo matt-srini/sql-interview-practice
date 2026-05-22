@@ -162,6 +162,7 @@ Anti-patterns: H1 reading like the first line of the solution; pasting code / me
   - All MCQ tracks: tool / library names alone (`Airflow`, `Snowflake`, `scikit-learn`, `Optimizely`)
 - No onboarding / meta tags (`CTE INTRODUCTION`, `WITH CLAUSE SYNTAX`).
 - No near-duplicate tags (`JOIN` + `INNER JOIN` — both blocked).
+- **Tag the *distinguishing* technique, not incidental mechanics.** Foundational families almost every question touches (result ordering, column projection, basic grouping, simple iteration) are concepts only when they are the *primary* reasoning. Don't bolt one onto an advanced question because the construct appears — tag what makes it hard.
 
 **Quick test:** *"If a user saw this tag in a weak-spot insight, would it teach them what kind of thinking to improve?"* If no, rewrite.
 
@@ -179,6 +180,7 @@ Summary:
 - **Allocate IDs at the top of the difficulty range, after the last practice question. Never at easy** — easy is practice-only; mock-only is medium/hard only.
 - **No unseen concepts.** Every concept family a mock-only question tests must already appear in the practice bank for that track at that difficulty or lower. Mock-only adds no new families.
 - **Anti-duplication rule.** A mock-only question must not clone an existing practice question's framing. Recombine the same learned concepts in a fresh business scenario (different KPI, time window, relationship, stakeholder pressure, dirty-data condition). If a mock would require a concept the curriculum skipped, author the practice question first.
+- **Mock-only realism families (the one exception to "no new families").** Families that are assessment *lenses* over a known concept (per track in `docs/concept-taxonomy.md`; machine-readable `MOCK_ONLY_REALISM_FAMILIES` in `backend/concept_families.py`) may appear **only** on `mock_only` questions, may **never** be the sole concept tag (must co-occur with ≥1 practice-grounded family), and are exempt from practice-grounding. `_validate_mock_only_realism()` enforces this. SQL: METRIC INTERPRETATION & DENOMINATOR CHOICE, OUTPUT SANITY VALIDATION, PERFORMANCE-AWARE ANALYTICS.
 - **Chain authoring rules:**
   - Parent (`follow_ups: [child_id, ...]`) and each child (`mock_only: true`, `parent_id`, `follow_up_dimension`) live in the same difficulty file
   - Chain length 2–4 (parent + 1–3 follow-ups)
@@ -251,6 +253,6 @@ Track-specific runtime checks live in each track doc's "Verification before comm
 - [ ] No invented columns / tables; schema matches CSV headers; DuckDB syntax (SQL); pandas-idiomatic (Pandas)
 - [ ] Hints follow the ladder; first hint does not leak the answer term
 - [ ] Concept tags map to registered families per track; none blocklisted; 2–4 tags
-- [ ] If `mock_only`: no unseen concept families (every family already taught in practice at that difficulty or lower); recombines learned concepts in a fresh business scenario, not a clone of a practice question's framing; chain rules satisfied (dimensions, atomicity, length, ordering); reverse / debug / scenario rules satisfied
+- [ ] If `mock_only`: no unseen concept families (every family already taught in practice at that difficulty or lower); recombines learned concepts in a fresh business scenario, not a clone of a practice question's framing; any mock-only realism family co-occurs with ≥1 practice-grounded family (never sole tag); chain rules satisfied (dimensions, atomicity, length, ordering); reverse / debug / scenario rules satisfied
 - [ ] Verification commands above pass clean
 - [ ] Output is valid JSON only (improvements: JSON + a short change-rationale list after it)
