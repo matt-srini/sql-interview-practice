@@ -2884,5 +2884,97 @@
       "SPLIT_PART(string, delimiter, n) returns the nth segment (1-indexed) \u2014 parse each position with a separate call."
     ],
     "explanation": "SPLIT_PART(string, delimiter, n) extracts the nth segment after splitting on the delimiter. Using a CTE avoids repeating the CONCAT expression for each SPLIT_PART call. Casting the third segment to INT with ::INT validates that the user_id portion is numeric. This build-then-parse pattern is common in pipeline debugging: you construct the key as it would be built upstream, then parse it as a downstream consumer would, to verify both directions are consistent."
+  },
+  {
+    "id": 12065,
+    "order": 65,
+    "title": "Category revenue from order line items",
+    "difficulty": "medium",
+    "description": "For completed orders, compute gross revenue by product category. Revenue must come from the individual order line amounts \u2014 not from the order-level total, which would be inflated if you join through the items table. Output columns: category_name, category_revenue. Order by category_revenue descending.",
+    "dataset_files": [
+      "order_items.csv",
+      "products.csv",
+      "categories.csv",
+      "orders.csv"
+    ],
+    "schema": {
+      "order_items": [
+        "order_item_id",
+        "order_id",
+        "product_id",
+        "quantity",
+        "unit_price",
+        "line_amount"
+      ],
+      "products": [
+        "product_id",
+        "product_name",
+        "category_id"
+      ],
+      "categories": [
+        "category_id",
+        "category_name"
+      ],
+      "orders": [
+        "order_id",
+        "status"
+      ]
+    },
+    "expected_query": "SELECT c.category_name, SUM(oi.line_amount) AS category_revenue\nFROM order_items oi\nJOIN products p ON oi.product_id = p.product_id\nJOIN categories c ON p.category_id = c.category_id\nJOIN orders o ON oi.order_id = o.order_id\nWHERE o.status = 'completed'\nGROUP BY c.category_name\nORDER BY category_revenue DESC",
+    "solution_query": "SELECT c.category_name,\n       SUM(oi.line_amount) AS category_revenue\nFROM order_items oi\nJOIN products p ON oi.product_id = p.product_id\nJOIN categories c ON p.category_id = c.category_id\nJOIN orders o ON oi.order_id = o.order_id\nWHERE o.status = 'completed'\nGROUP BY c.category_name\nORDER BY category_revenue DESC;",
+    "explanation": "The correct grain for revenue here is the order item: each row in order_items represents one product sold at a specific price and quantity, and line_amount captures that contribution exactly. If you instead join to order_items for filtering but then aggregate o.net_amount, you count each order's revenue once per item row \u2014 inflating totals by the average items-per-order (roughly 3\u00d7). Anchoring SUM on oi.line_amount keeps the aggregation at the item grain and avoids fan-out entirely.",
+    "hints": [
+      "Use order_items as your revenue source \u2014 each row already contains the correct dollar amount for that product in that order.",
+      "Join through products and categories to label each line item, but keep order_items as the driving table so the SUM stays at item grain."
+    ],
+    "concepts": [
+      "DOUBLE-COUNTING DETECTION",
+      "MULTI-TABLE ENTITY LINKING",
+      "GROUPED AGGREGATION"
+    ],
+    "companies": [
+      "Amazon",
+      "Shopify"
+    ]
+  },
+  {
+    "id": 12066,
+    "order": 66,
+    "title": "Distinct buyers per payment method",
+    "difficulty": "medium",
+    "description": "For each payment method, count the number of distinct users who completed at least one 'paid' payment. An order can have multiple payment records (retries, chargebacks) \u2014 count each user only once per method regardless of how many payment rows they have. Output columns: payment_method, unique_buyers. Order by unique_buyers descending.",
+    "dataset_files": [
+      "payments.csv",
+      "orders.csv"
+    ],
+    "schema": {
+      "payments": [
+        "payment_id",
+        "order_id",
+        "payment_method",
+        "status"
+      ],
+      "orders": [
+        "order_id",
+        "user_id"
+      ]
+    },
+    "expected_query": "SELECT p.payment_method, COUNT(DISTINCT o.user_id) AS unique_buyers\nFROM payments p\nJOIN orders o ON p.order_id = o.order_id\nWHERE p.status = 'paid'\nGROUP BY p.payment_method\nORDER BY unique_buyers DESC",
+    "solution_query": "SELECT p.payment_method,\n       COUNT(DISTINCT o.user_id) AS unique_buyers\nFROM payments p\nJOIN orders o ON p.order_id = o.order_id\nWHERE p.status = 'paid'\nGROUP BY p.payment_method\nORDER BY unique_buyers DESC;",
+    "explanation": "Joining payments to orders produces one row per payment per order. A user who retried payment (failed first, paid second) contributes two rows for the same payment method \u2014 COUNT(user_id) would count them twice. COUNT(DISTINCT user_id) collapses all payment rows for the same user in the same method group to one, giving the correct buyer count. The fan-out is real: card has 2,234 payment rows but only 383 distinct buyers.",
+    "hints": [
+      "Think about what happens when a user's first card attempt fails and they retry \u2014 two rows appear in payments for the same order.",
+      "After the join, each user can appear multiple times per payment method; use COUNT(DISTINCT) to collapse duplicates to one."
+    ],
+    "concepts": [
+      "DOUBLE-COUNTING DETECTION",
+      "DEDUPLICATION LOGIC",
+      "MULTI-TABLE ENTITY LINKING"
+    ],
+    "companies": [
+      "Stripe",
+      "PayPal",
+      "Square"
+    ]
   }
 ]

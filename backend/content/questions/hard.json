@@ -2281,5 +2281,47 @@
       "EXTRACT(ISODOW FROM date) returns ISO day of week: Monday = 1, Sunday = 7 \u2014 so >= 6 selects Saturday (6) and Sunday (7)."
     ],
     "explanation": "GENERATE_SERIES(start, stop, interval) is DuckDB's table-valued function for producing dense sequences. The column it produces is named 'generate_series', which you cast to ::DATE to get a proper date. Unlike a recursive CTE, GENERATE_SERIES is a single function call with no recursion limit concerns. The spine \u2192 LEFT JOIN \u2192 COALESCE pattern guarantees every day in the range has a row, making downstream time-series charts gap-free. EXTRACT(ISODOW ...) uses the ISO standard where Monday = 1 and Sunday = 7, so Saturday = 6 and Sunday = 7 means >= 6 correctly identifies weekends."
+  },
+  {
+    "id": 13050,
+    "order": 45,
+    "title": "Per-user revenue and purchase events without fan-out",
+    "difficulty": "hard",
+    "description": "For each user with at least one completed order, report their total completed-order revenue alongside the number of purchase events they logged. The two metrics must be computed independently \u2014 joining orders directly to events would multiply every order against every event for that user, inflating both counts. Output columns: user_id, total_revenue, purchase_events. Order by total_revenue descending, user_id ascending; limit to the top 10.",
+    "dataset_files": [
+      "orders.csv",
+      "events.csv"
+    ],
+    "schema": {
+      "orders": [
+        "order_id",
+        "user_id",
+        "status",
+        "net_amount"
+      ],
+      "events": [
+        "event_id",
+        "user_id",
+        "event_name"
+      ]
+    },
+    "expected_query": "WITH user_revenue AS (\n    SELECT user_id, SUM(net_amount) AS total_revenue\n    FROM orders\n    WHERE status = 'completed'\n    GROUP BY user_id\n),\nuser_purchases AS (\n    SELECT user_id, COUNT(*) AS purchase_events\n    FROM events\n    WHERE event_name = 'purchase'\n    GROUP BY user_id\n)\nSELECT ur.user_id, ur.total_revenue, COALESCE(up.purchase_events, 0) AS purchase_events\nFROM user_revenue ur\nLEFT JOIN user_purchases up ON ur.user_id = up.user_id\nORDER BY ur.total_revenue DESC, ur.user_id ASC\nLIMIT 10",
+    "solution_query": "WITH user_revenue AS (\n  SELECT user_id,\n         SUM(net_amount) AS total_revenue\n  FROM orders\n  WHERE status = 'completed'\n  GROUP BY user_id\n),\nuser_purchases AS (\n  SELECT user_id,\n         COUNT(*) AS purchase_events\n  FROM events\n  WHERE event_name = 'purchase'\n  GROUP BY user_id\n)\nSELECT ur.user_id,\n       ur.total_revenue,\n       COALESCE(up.purchase_events, 0) AS purchase_events\nFROM user_revenue ur\nLEFT JOIN user_purchases up ON ur.user_id = up.user_id\nORDER BY ur.total_revenue DESC, ur.user_id ASC\nLIMIT 10;",
+    "explanation": "Joining orders to events directly before aggregating creates a cross between every order row and every event row for the same user. With ~85 events per user on average, this inflates net_amount roughly 85\u00d7 for each user. The correct architecture is two independent CTEs \u2014 one that aggregates revenue at the user grain, one that aggregates event counts at the user grain \u2014 then a LEFT JOIN on user_id to combine them. The LEFT JOIN preserves users who have revenue but zero purchase events; COALESCE handles the NULL that arises when no matching event row exists.",
+    "hints": [
+      "Compute each metric in a separate CTE before combining \u2014 the moment you join orders to events in a single FROM clause, every order fans out against every event for that user.",
+      "Pre-aggregate both CTEs to the user grain, then join them on user_id; the result is one row per user with both metrics correct.",
+      "LEFT JOIN the purchases CTE so users with no purchase events still appear; use COALESCE to substitute 0 for the NULL purchase_events."
+    ],
+    "concepts": [
+      "DOUBLE-COUNTING DETECTION",
+      "CTE PIPELINE",
+      "MULTI-TABLE ENTITY LINKING"
+    ],
+    "companies": [
+      "Meta",
+      "Airbnb",
+      "Spotify"
+    ]
   }
 ]
