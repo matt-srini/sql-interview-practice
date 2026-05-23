@@ -103,8 +103,6 @@
       "Think of the Driver as the coordinator or orchestrator — it plans the work. Executors are the workers that execute it."
     ],
     "concepts": [
-      "driver",
-      "executor",
       "cluster architecture",
       "task scheduling"
     ],

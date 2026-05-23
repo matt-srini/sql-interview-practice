@@ -1132,8 +1132,7 @@
     ],
     "concepts": [
       "OUTPUT SANITY VALIDATION",
-      "DATA SKEW & MITIGATION",
-      "COLLECTION & ARRAY OPERATIONS"
+      "DATA SKEW & MITIGATION"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },

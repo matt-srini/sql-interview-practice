@@ -835,9 +835,6 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
     },
 
     # -----------------------------------------------------------------------
-    # PySpark — 21 canonical families (docs/concept-taxonomy.md § PySpark)
-    # -----------------------------------------------------------------------
-    # -----------------------------------------------------------------------
     # PySpark — 23 canonical families (docs/concept-taxonomy.md § PySpark)
     # Phase 2 (2026-05): expanded match-patterns (~184 incidences resolved),
     # two new families (WINDOW FUNCTIONS & FRAMES, COLLECTION & ARRAY
@@ -901,7 +898,6 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "NARROW VS WIDE",
             "NARROW TRANSFORMATION",
             "WIDE TRANSFORMATION",
-            "WIDE-AGGREGATION SHUFFLE",
             "SHUFFLE BOUNDARY",
         ],
 

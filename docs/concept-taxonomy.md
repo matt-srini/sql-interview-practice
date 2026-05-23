@@ -620,7 +620,7 @@ The following tags are **forbidden** as `concepts` values — they are mechanic 
 
 #### `NARROW VS WIDE TRANSFORMATIONS`
 **What it tests:** which operations require shuffles, which stay within partition, why this matters for performance.
-**Match patterns:** `narrow vs wide`, `NARROW TRANSFORMATION`, `WIDE TRANSFORMATION`, `WIDE-AGGREGATION SHUFFLE`, `shuffle boundary`
+**Match patterns:** `narrow vs wide`, `NARROW TRANSFORMATION`, `WIDE TRANSFORMATION`, `shuffle boundary`
 **Precision note:** `shuffle` (bare) resolves to SHUFFLE REASONING only, not here. `narrow vs wide` (bare) resolves here only, not to EXECUTION MODEL REASONING.
 
 #### `SHUFFLE REASONING`
@@ -654,7 +654,7 @@ The following tags are **forbidden** as `concepts` values — they are mechanic 
 
 #### `CACHING & PERSISTENCE`
 **What it tests:** `cache()` vs `persist()` with explicit storage level, when caching helps vs hurts, `unpersist()` discipline.
-**Match patterns:** `cache`, `persist`, `unpersist`, `STORAGE LEVEL`
+**Match patterns:** `caching`, `cache`, `persist`, `unpersist`, `STORAGE LEVEL`
 
 #### `SCHEMA & TYPE HANDLING`
 **What it tests:** `inferSchema` tradeoffs, explicit `StructType`, schema evolution, type coercion gotchas, null semantics (Python None vs Spark null), column resolution.
