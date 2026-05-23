@@ -359,6 +359,10 @@ A path declares **both**:
 
 A path's pattern is usually one slug (a focused mastery walk); some paths legitimately span two patterns (e.g., `groupby-and-joins` declares both). `focus_concepts[]` is usually 2–5 family names — enough to cover the included questions without being a catch-all.
 
+**Pattern slug convention:** kebab-case, lowercase, ASCII-only, ≤40 chars. Multi-word slugs use hyphens (`window-functions`, `cohort-and-retention`, `missing-data-and-preprocessing-hygiene`). Register every slug in `backend/path_patterns.py` for its track before using it on a path.
+
+**Planned evolution to 1:1 mapping:** the current `patterns[]` array is a transitional shape. The committed direction is a **1 pattern → 1 path** model in which each question carries a single `pattern` tag and path `questions[]` is auto-derived from the catalog. Migration tracked in [`docs/phases/learning-paths-tracker.md`](./phases/learning-paths-tracker.md) §B (B1–B7). Until that lands, paths may declare multiple patterns when the content genuinely spans them.
+
 #### Path schema
 
 | Field | Required | Notes |
@@ -392,7 +396,7 @@ Role has no unlock semantics. Roles are used for sort order on TrackHub, the "St
 1. **Schema completeness.** All required fields present; slug unique; matches filename.
 2. **Singleton starter.** Exactly one `role=starter` per track. No upper bound on `intermediate` or `advanced`.
 3. **Pattern registry.** Every `patterns[]` entry resolves in `path_patterns.py` for the path's track.
-4. **Focus-concept registry.** Every `focus_concepts[]` entry resolves to a registered family in `concept_families.py` (only enforced for tracks listed in `_TAXONOMY_VALIDATED_TRACKS` — others: presence check until their registry is complete).
+4. **Focus-concept registry.** Every `focus_concepts[]` entry resolves to a registered family in `concept_families.py` (only enforced for tracks listed in `_TAXONOMY_VALIDATED_TRACKS` in `backend/scripts/validate_content.py` — currently `{sql, python}`; others get a presence-only check). **When a track joins the validated set, the path validator immediately enforces this rule strictly for it** — coordinate the concept-family registry completion + paths re-check in the same PR.
 5. **Question-tag alignment.** Every question in `questions[]` carries at least one concept tag that resolves to the same family as at least one of the path's `focus_concepts[]`. This is the mechanical guarantee that the path drills what it claims.
 6. **Prerequisite DAG.** Every `recommended_after[]` slug exists in the same track; the resulting graph is acyclic.
 

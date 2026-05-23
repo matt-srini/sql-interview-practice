@@ -24,6 +24,44 @@ Path count: 42 → 46.
 
 ---
 
+## Decisions captured (durable record, not work items)
+
+These are choices made during the 2026-05 refactor or the 2026-05-23 design pass. Future sessions should treat them as locked unless explicitly re-opened.
+
+**D-1. One authoring agent, not two.** Path authoring is rare enough that we extend `.github/agents/question-authoring.agent.md` with a path-applicability step (B7) rather than create a parallel `path-authoring.agent.md`. Easier to enforce mandatory invocation when there's one entry point for all content work.
+
+**D-2. Auto-broadening was a Band-Aid.** Rule 5 of the new validator (every path question carries a tag in same family as one path focus_concept) surfaced 58 misalignments during the 2026-05 PR. Rather than block the PR on per-question re-tagging (which requires the question-authoring agent and is deferred per user direction), we broadened 22 paths' `focus_concepts[]` so existing questions matched. **The resulting `focus_concepts[]` on those 22 paths is noisier than honest** (some now have 7–11 entries; healthy is 2–5). Do not treat them as canonical. The real fix is the B3 1:1 mapping pass, which re-asks "what is this question's primary pattern?" and naturally cleans up which questions belong in which path.
+
+Paths most affected by the Band-Aid (most-broadened focus_concepts):
+- `variance-reduction-and-behavioral-effects` (+7) — also flagged for splitting in E1
+- `experiment-design-and-power` (+3)
+- `ml-model-evaluation` (+3)
+- `causal-inference-and-advanced-experimentation` (+2)
+- `dataframe-fundamentals` (+2)
+- `experimentation-starter` (+2)
+- `pipeline-fundamentals` (+2)
+- `practical-data-python` (+2 — but with caveat E2)
+- `spark-core-concepts` (+2)
+- `window-functions-mastery` (+2)
+
+**D-3. `level` field is purely cosmetic post-refactor.** No unlock effect, no pricing effect, no mock effect. It drives only:
+- TrackHub sort order (`foundational → intermediate → advanced`)
+- "Start here" pill on the singleton `foundational` path
+- Schema.org `educationalLevel` metadata on path detail pages
+- Concept→path recommendation tie-breaker (foundational wins when multiple paths cover the same concept)
+
+This makes Open Question #1 (does `level` still earn its place once the DAG is honored?) a real conversation. The DAG could subsume tie-breaker + sort; the "Start here" pill needs *some* way to identify the entry point, but that could be a separate boolean.
+
+**D-4. `tier` (`free` / `pro`) on paths is visibility-only.** Does NOT gate the questions inside (those follow practice unlock thresholds regardless of path tier). A pro path's questions are accessible to a free user who has unlocked them via threshold; they just don't see the path itself in the listing.
+
+**D-5. Pattern slug naming convention.** Kebab-case, lowercase, ASCII-only. Multi-word patterns use hyphens (e.g., `window-functions`, `cohort-and-retention`, `missing-data-and-preprocessing-hygiene`). Slugs ≤ 40 chars. Registered in `backend/path_patterns.py`.
+
+**D-6. Taxonomy validation status by track.** The path validator's rule 4 (every `focus_concept` resolves to a registered concept family in `concept_families.py`) only fires for tracks listed in `_TAXONOMY_VALIDATED_TRACKS` in `backend/scripts/validate_content.py`. Currently: `{"sql", "python"}`. Other tracks get a presence-only check until their per-track concept-family registry is complete. **When a track joins the validated set, the path validator immediately enforces rule 4 strictly for it** — coordinate the registry completion + paths re-check in the same PR.
+
+**D-7. Curriculum-spine signal: Data Engineering is the most under-served track.** Current 3 paths vs proposed 8 canonical patterns = 60%+ growth on top of just having been doubled in the 2026-05 PR. Likely indicates DE deserves prioritised content authoring (more practice questions to fill out the proposed patterns) before B3 mapping happens. Other notable gaps: Statistics (3→8, 167% growth) and ML Fundamentals (5→11, 120% growth). SQL/Python/Pandas/PySpark are closer to their canonical sets.
+
+---
+
 ## Phase 2 — Open work, prioritised
 
 ### A. Schema and naming
@@ -69,8 +107,25 @@ After B3, audit each pattern's question count and apply this triage:
 
 This protects against shipping a `Bayesian Methods`-style path with 4 questions just because the pattern is in the registry.
 
-**B5. Auto-derive `path.questions[]` from question tags**
-Path JSON drops manual `questions[]`. Loader scans the track catalog for matching `pattern` and populates ordered by difficulty + ID. Validator enforces 1:1 (every question with `pattern == X` appears in exactly one path; the path for X).
+**B5. Auto-derive `path.questions[]` from question tags + collapse `patterns[]` to singular `pattern`**
+
+Two coupled schema changes in this step:
+- Path JSON's `patterns: [...]` array becomes singular `pattern: "..."` (one pattern per path; 1:1 model means multi-pattern paths no longer make sense — split them).
+- Path JSON drops manual `questions[]`. Loader scans the track catalog for matching `pattern` and populates ordered by difficulty + ID. Validator enforces 1:1 (every question with `pattern == X` appears in exactly one path; the path for X).
+
+Paths currently declaring multiple patterns will need splitting in B1's canonical-set decision:
+- `groupby-and-joins` (python-data): `["groupby", "joins"]` → split into 2 paths.
+- `sql-advanced-patterns` (sql): `["set-operations", "recursive-ctes", "grouping-extensions"]` → split into 3 paths (already in canonical proposal).
+- `sql-string-and-date` (sql): `["string-functions", "date-functions"]` → split into 2 paths (already in canonical proposal).
+- `pipeline-fundamentals` (data-engineering): `["etl-elt", "orchestration"]` → split into 2 paths (already in canonical proposal).
+- `pipeline-evolution` (data-engineering): `["schema-evolution", "delivery-semantics", "backfill-design"]` → split into 3 paths (already in canonical proposal).
+- `schema-design-basics` (data-modeling): `["star-snowflake", "fact-table-design", "scd"]` → split into 3 paths (already in canonical proposal).
+- `dimensional-modeling-deep-dive` (data-modeling): `["scd", "bridge-tables", "grain-definition"]` → split (note: `scd` would now collide with schema-design-basics' `scd` after that split — resolve by treating SCD as a single pattern spanning easy → hard, not a depth-tier split). Likely outcome: `bridge-tables` + `grain-definition` become their own paths; SCD content from both current paths merges into one `scd` path.
+- `ml-starter`, `ml-model-evaluation`, `ml-advanced-methods`, `ml-production` (ml-fundamentals): each declares 2+ patterns → all need splitting (already in canonical proposal).
+- `stats-for-analysts` (statistics): `["descriptive-stats", "distributions"]` → split into 2 (already in canonical proposal).
+- `experimentation-starter`, `experiment-design-and-power`, `variance-reduction-and-behavioral-effects` (experimentation): multi-pattern → split (already in canonical proposal).
+
+**This collapse is the structural change**, not just B1. The canonical pattern set already anticipates the 1:1 outcome.
 
 **B6. Doc the strategy in `docs/content-authoring.md §Paths`**
 Add a "Pattern registry and 1:1 mapping" subsection covering the curriculum-spine framing, the analytical-wins tie-breaker, the lean-path triage thresholds, and the lifecycle (new question → choose pattern → goes in path).
