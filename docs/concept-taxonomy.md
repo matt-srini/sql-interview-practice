@@ -376,6 +376,11 @@ The following tags are **forbidden** as `concepts` values — they are mechanic 
 **Match patterns:** `INDEXED SEQUENCE`, `LINEAR STATE UPDATE`, `linear scan`, `subarray`, `prefix sum`
 **Example existing tags:** INDEXED SEQUENCE REASONING (19), LINEAR STATE UPDATE (7), linear scan (4), subarray (5), prefix sum (2)
 
+#### `STREAMING / ONLINE REDUCTION`
+**What it tests:** single-pass scan over an unbounded stream with **bounded auxiliary state** — see one element, commit state, no rewind. Tests whether the candidate can pick a reduction that stays correct under memory and look-back constraints. Distinct from `SLIDING WINDOW` (bounded-window expand/contract over a known input) and `INDEXED SEQUENCE REASONING` (random-access where the *index meaning* matters). Captures online statistics (running mean / variance / median via two heaps), Misra-Gries / space-budget heavy hitters, online prefix-sum / Kadane variants, gap-based sessionization in one pass, CDC last-write-wins dedup, online run-length encoding. This is the contemporary data-infra primitive (Kafka consumers, Flink/Beam reductions, monitoring-stack online quantiles).
+**Match patterns:** `streaming`, `online`, `running median`, `running mean`, `running stat`, `accumulator`, `single-pass`, `bounded state`, `misra-gries`, `space-budget`, `online dedup`, `sequence processing with accumulators`
+**Example existing tags:** sequence processing with accumulators (15)
+
 #### `STRING PATTERN REASONING`
 **What it tests:** character-level state machines, palindrome checking, anagram detection, KMP-style scanning, parsing tokens.
 **Match patterns:** `STRING PATTERN`, `string manipulation`, `STRING`, `anagram`, `palindrome`, `run-length`, `trie`, `prefix tree`, `tokeniz`, `segmentat`, `encoding`, `normaliz`, `canonical`
@@ -408,27 +413,19 @@ The following tags are **forbidden** as `concepts` values — they are mechanic 
 **Example existing tags:** matrix (4)
 
 #### `GRAPH TRAVERSAL (BFS / DFS)`
-**What it tests:** picking BFS vs DFS by problem shape, visited-set discipline, level-by-level vs depth-first reasoning, cycle detection, unweighted shortest path, island / connectivity scanning, dependency / topological ordering.
-**Match patterns:** `BFS`, `DFS`, `graph`, `GRAPH`, `topological`, `dependency resolut`, `shortest path`, `cycle detection`, `island`
-**Example existing tags:** BFS (4), graph (4), topological sort (3), cycle detection, island count
+**What it tests:** picking BFS vs DFS by problem shape, visited-set discipline, level-by-level vs depth-first reasoning, cycle detection by colour-marking, unweighted reachability. Topological sort via Kahn's algorithm stays here (BFS-flavoured topo). For weighted shortest paths see `WEIGHTED SHORTEST PATH`; for connectivity / equivalence-class problems with incremental merges see `UNION-FIND & DISJOINT SET`.
+**Match patterns:** `BFS`, `DFS`, `unweighted graph`, `level order`, `cycle detection`, `topological sort`, `kahn`, `reachability`, `directed graph`
+**Example existing tags:** BFS (4), graph (4), topological sort (3)
 
 #### `UNION-FIND & DISJOINT SET`
-**What it tests:** disjoint-set data structure, path compression, union-by-rank, connected-component detection, Kruskal MST, record linkage / entity resolution via component grouping.
-**Data-work analogue:** entity deduplication (record linkage = component grouping); Kruskal MST for minimum-cost data network.
-**Match patterns:** `union-find`, `disjoint set`, `disjoint-set`, `connected component`, `path compression`, `kruskal`, `record linkage`
-**Example existing tags:** UNION-FIND & DISJOINT SET, KRUSKAL, CONNECTED COMPONENT
+**What it tests:** equivalence-class reasoning under incremental merges — record linkage, connected components, Kruskal's MST, "are these two entities the same group yet?" patterns. Tests path-compression / union-by-rank discipline and recognising when a problem is *really* disjoint-set rather than graph traversal (incremental merges, retrieval of representatives, not a single traversal). Data analogue: entity resolution / fuzzy dedup grouping; clustering on a similarity graph; pipeline-component reachability after incremental edge additions.
+**Match patterns:** `union find`, `union-find`, `disjoint set`, `disjoint-set`, `connected component`, `kruskal`, `path compression`, `union by rank`, `dsu`
+**Example existing tags:** disjoint-set maintenance, connected-component discovery, path-compression optimization, union-by-rank heuristic
 
 #### `WEIGHTED SHORTEST PATH`
-**What it tests:** Dijkstra's algorithm, weighted DAG critical path, priority-queue-ordered frontier expansion, distance map maintenance.
-**Data-work analogue:** critical-path / latency analysis over pipeline DAG; minimum-cost routing.
-**Match patterns:** `dijkstra`, `weighted graph`, `weighted shortest`, `min-cost path`, `critical path`, `bellman-ford`, `a-star`
-**Example existing tags:** WEIGHTED SHORTEST PATH, DIJKSTRA, CRITICAL PATH
-
-#### `STREAMING / ONLINE REDUCTION`
-**What it tests:** single-pass scans over a stream with bounded auxiliary state; running stats (mean, variance, min/max); Misra-Gries heavy-hitter approximation; online dedup; reservoir sampling; exponential weighted moving averages.
-**Data-work analogue:** event-stream processing where you cannot load all data; heavy-hitter / hot-key detection; rolling metric aggregation at scale.
-**Match patterns:** `streaming`, `online reduction`, `online dedup`, `misra-gries`, `running stats`, `running average`, `running mean`, `welford`, `reservoir`, `single-pass scan`
-**Example existing tags:** STREAMING / ONLINE REDUCTION, MISRA-GRIES, RUNNING STATS
+**What it tests:** shortest / minimum-cost path in a weighted graph — Dijkstra with min-heap, weighted DAG critical-path via topological order + edge relaxation, A* when an admissible heuristic exists. Tests whether the candidate recognises that BFS is insufficient under non-uniform edge weights and reaches for the right relaxation pattern with a priority-ordered frontier. Data analogue: pipeline critical-path / latency analysis; lowest-cost route in a cost-annotated DAG; SLA reasoning across a service mesh.
+**Match patterns:** `dijkstra`, `weighted graph`, `weighted shortest path`, `critical path`, `min cost path`, `min-cost path relaxation`, `priority-ordered frontier`, `distance map`, `a*`, `astar`
+**Example existing tags:** min-cost path relaxation, priority-ordered frontier, distance map maintenance, weighted graph traversal
 
 #### `BACKTRACKING & COMBINATORIAL SEARCH`
 **What it tests:** systematic exploration of a solution tree, pruning, restoring state, permutations / combinations / subsets.

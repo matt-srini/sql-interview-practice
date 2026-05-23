@@ -487,6 +487,33 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "CYCLIC SHIFT",             # rotate/shift by index arithmetic
             "CIRCULAR ARRAY",           # circular subarray problems
         ],
+        # STREAMING / ONLINE REDUCTION: single-pass scan over an unbounded stream with bounded auxiliary
+        # state. Distinct from SLIDING WINDOW (bounded-window expand/contract) and INDEXED SEQUENCE
+        # REASONING (random-access where index meaning matters). Must come BEFORE STRING PATTERN
+        # REASONING to prevent "ACCUMULATOR" etc. falling to a generic match.
+        "STREAMING / ONLINE REDUCTION": [
+            "STREAMING / ONLINE REDUCTION",  # explicit self-match
+            "STREAMING",                     # streaming / online processing
+            "ONLINE",                        # online reduction / online dedup
+            "RUNNING MEDIAN",                # running median (two-heap pattern)
+            "RUNNING MEAN",                  # running mean / online average
+            "RUNNING STAT",                  # running statistics (mean, variance, etc.)
+            "RUNNING AVERAGE",
+            "RUNNING VARIANCE",
+            "ACCUMULATOR",                   # accumulator / bounded-state pattern
+            "SINGLE-PASS",                   # single-pass bounded-state reduction
+            "SINGLE-PASS SCAN",
+            "BOUNDED STATE",                 # bounded auxiliary state
+            "BOUNDED AUXILIARY",
+            "MISRA-GRIES",                   # Misra-Gries heavy-hitter / space-budget approx
+            "SPACE-BUDGET",                  # space-budget heavy-hitter (Misra-Gries variant)
+            "ONLINE DEDUP",                  # online dedup / CDC last-write-wins
+            "SEQUENCE PROCESSING WITH ACCUMULATORS",  # legacy non-canonical tag → routes here
+            "ONLINE REDUCTION",
+            "WELFORD",                       # Welford one-pass variance
+            "RESERVOIR SAMPLING",            # reservoir / random sampling over stream
+            "EXPONENTIAL DECAY",             # exponential weighted moving average
+        ],
         "STRING PATTERN REASONING": [
             "STRING PATTERN",
             "STRING MANIPULATION",
@@ -558,23 +585,24 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "KNAPSACK",                 # knapsack DP (0/1 and unbounded)
             "WORD BREAK",               # text-segmentation DP
         ],
+        # GRAPH TRAVERSAL (BFS / DFS): picking BFS vs DFS by problem shape, visited-set discipline,
+        # cycle detection, unweighted reachability, topological sort (Kahn's). Does NOT cover
+        # weighted shortest path (→ WEIGHTED SHORTEST PATH) or equivalence-class merge problems
+        # (→ UNION-FIND & DISJOINT SET).
         "GRAPH TRAVERSAL (BFS / DFS)": [
             "GRAPH TRAVERSAL (BFS",     # explicit self-match prefix
             "BFS",
             "DFS",
-            "GRAPH",
-            "TOPOLOGICAL",
-            "DEPENDENCY RESOLUT",       # pipeline DAG / dependency resolution
-            "DIRECTED GRAPH",
-            "REACHABILITY",             # reachability / connectivity queries
-            "LEAF TRIMMING",            # leaf-trimming BFS (e.g. min-height trees)
-            "TREE CENTER",
-            # NOTE: 'SHORTEST PATH' removed — unweighted BFS shortest-path questions should
-            # use 'BFS' or 'GRAPH' as their tag; weighted shortest path → WEIGHTED SHORTEST PATH family.
-            "CYCLE DETECTION",          # DFS-based cycle detection
-            "ISLAND",                   # island / connected-region BFS/DFS
+            "UNWEIGHTED GRAPH",         # unweighted graph traversal
+            "LEVEL ORDER",              # level-by-level BFS traversal
+            "CYCLE DETECTION",          # DFS three-colour cycle detection
+            "TOPOLOGICAL SORT",         # topological sort (Kahn's BFS or DFS)
+            "KAHN",                     # Kahn's algorithm for topological sort
+            "REACHABILITY",             # reachability / unweighted connectivity
+            "DIRECTED GRAPH",           # directed graph traversal
         ],
         "UNION-FIND & DISJOINT SET": [
+            "UNION-FIND & DISJOINT SET",  # explicit self-match
             "UNION-FIND",               # Union-Find / disjoint-set data structure
             "UNION FIND",
             "DISJOINT-SET",
@@ -587,6 +615,7 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "CONNECTED COMPONENT",
             "KRUSKAL",                  # Kruskal MST algorithm uses Union-Find
             "RECORD LINKAGE",           # entity resolution → Union-Find in practice
+            "DSU",                      # Disjoint Set Union (alternative abbreviation)
         ],
         "WEIGHTED SHORTEST PATH": [
             "WEIGHTED SHORTEST PATH",   # explicit self-match
@@ -595,27 +624,16 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "WEIGHTED GRAPH",
             "SHORTEST PATH",            # any shortest-path algorithm (weighted context)
             "MIN-COST PATH",
+            "MIN COST PATH",            # unhyphenated variant
+            "MIN-COST PATH RELAXATION", # edge relaxation pattern (Dijkstra/Bellman)
             "PRIORITY-ORDERED FRONTIER",
             "DISTANCE MAP",             # distance map in weighted graph search
             "GREEDY SHORTEST",          # greedy shortest-path expansion
             "BELLMAN-FORD",             # Bellman-Ford relaxation
             "A-STAR",                   # A* heuristic search
+            "ASTAR",                    # alternate spelling (no hyphen)
+            "A*",                       # symbolic form of A*
             "CRITICAL PATH",            # critical path method (weighted DAG DP)
-        ],
-        "STREAMING / ONLINE REDUCTION": [
-            "STREAMING",                # streaming / online processing
-            "ONLINE REDUCTION",
-            "ONLINE DEDUP",
-            "MISRA-GRIES",              # Misra-Gries heavy hitter / space-budget approx
-            "RUNNING STATS",            # running mean / variance / min / max
-            "RUNNING AVERAGE",
-            "RUNNING MEAN",
-            "RUNNING VARIANCE",
-            "EXPONENTIAL DECAY",        # exponential weighted moving average
-            "WELFORD",                  # Welford one-pass variance
-            "RESERVOIR SAMPLING",       # reservoir / random sampling over stream
-            "SINGLE-PASS SCAN",         # bounded-state single-pass reduction
-            "BOUNDED AUXILIARY",        # bounded auxiliary state
         ],
         "BACKTRACKING & COMBINATORIAL SEARCH": [
             "BACKTRACKING",
