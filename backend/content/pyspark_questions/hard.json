@@ -3217,5 +3217,140 @@
       "PERFORMANCE TUNING & TRADE-OFFS",
       "DEBUG SPARK ERRORS"
     ]
+  },
+  {
+    "id": 43113,
+    "order": 113,
+    "topic": "pyspark",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "AQE Skew Join: Classifying a Partition and Counting Sub-Tasks",
+    "description": "AQE is enabled with: `spark.sql.adaptive.skewJoin.enabled=true`, `spark.sql.adaptive.advisoryPartitionSizeInBytes=64MB`, `spark.sql.adaptive.skewJoin.skewedPartitionFactor=5`, `spark.sql.adaptive.skewJoin.skewedPartitionThresholdInBytes=256MB`. A join's probe-side shuffle has 200 partitions; **median** partition size is 100 MB. Partition 17 is 2 GB. Is partition 17 classified as skewed, and approximately how many map-side sub-tasks does AQE create for it?",
+    "options": [
+      "Partition 17 IS skewed (2 GB > 5 x 100 MB = 500 MB AND > 256 MB). AQE creates ceil(2048 MB / 64 MB) = **32 sub-tasks**, each reading a ~64 MB slice of partition 17.",
+      "Partition 17 IS skewed (same criteria). AQE creates **5 sub-tasks** (equal to `skewedPartitionFactor`), evenly splitting the 2 GB into five 400 MB pieces.",
+      "Partition 17 IS skewed. AQE creates **1 sub-task** but allocates 4x the normal executor memory for it via resource profiles. Speculative execution handles stragglers.",
+      "Partition 17 is NOT skewed: AQE compares against the mean, not the median. Mean = (199 x 100 + 2048) / 200 = 109.7 MB; 5 x 109.7 = 549 MB < 2048 MB. Actually still skewed, but AQE uses a harmonic mean that dilutes the outlier below the threshold."
+    ],
+    "correct_option": 0,
+    "explanation": "AQE classifies a partition as skewed when BOTH conditions hold:\n1. Size > `skewedPartitionFactor` x **median** partition size: 2 GB > 5 x 100 MB = 500 MB ✓\n2. Size > `skewedPartitionThresholdInBytes`: 2 GB > 256 MB ✓\n\nPartition 17 satisfies both -> **classified as skewed**.\n\nThe sub-task count is determined by `advisoryPartitionSizeInBytes` (not by `skewedPartitionFactor`): `ceil(2048 MB / 64 MB) = 32 sub-tasks`. Each sub-task reads a ~64 MB slice of the skewed partition and joins it against the full build-side (replicated broadcast or partition split). `skewedPartitionFactor` is used only as a detection multiplier against the median, not to determine split granularity.\n\nOption 1 is wrong: `skewedPartitionFactor` is the detection threshold, not the sub-task count.\n\nOption 2 is wrong: AQE splits skewed partitions into multiple physical sub-tasks; it does not use resource profiles or speculative execution for skew handling.\n\nOption 3 is wrong: AQE uses the **median** partition size as the baseline, not the mean or harmonic mean. Using the median prevents the skewed partition from inflating the baseline and masking itself.",
+    "hints": [
+      "What two conditions must both be true for AQE to classify a partition as skewed?",
+      "Which config determines sub-task count for a skewed partition -- `skewedPartitionFactor` or `advisoryPartitionSizeInBytes`?"
+    ],
+    "concepts": [
+      "ADAPTIVE QUERY EXECUTION",
+      "DATA SKEW & MITIGATION",
+      "PARTITIONING STRATEGY"
+    ]
+  },
+  {
+    "id": 43114,
+    "order": 114,
+    "topic": "pyspark",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Structured Streaming Watermark: Fate of an Event 2.5 Hours Past the Watermark",
+    "description": "A streaming query uses a 1-hour watermark and `append` output mode:\n```python\nstream.withWatermark('event_ts', '1 hour') \\\n    .groupBy(F.window('event_ts', '1 hour')) \\\n    .agg(F.count().alias('cnt')) \\\n    .writeStream.outputMode('append').start()\n```\nThe current watermark is `2024-01-15 10:00`. An event arrives with `event_ts = 2024-01-15 07:30` (2.5 hours before the watermark). What happens?",
+    "options": [
+      "The event is **silently dropped**. Its window (07:00-08:00) ends at 08:00, which is before the watermark (10:00). State for windows ending before the watermark is finalised and evicted in `append` mode. The watermark does not change: max(observed event_ts) - 1 hour = remains at 10:00 (07:30 < previous max).",
+      "The event is **processed**: Spark re-opens the 07:00-08:00 window state from the checkpoint, increments the count, and emits the corrected result at the next trigger.",
+      "The watermark **rolls back**: new watermark = max(07:30, previous) - 1 hour = 06:30, re-opening the 07:00-08:00 window for late updates.",
+      "The event is held in a **late-data buffer** for one additional trigger cycle, then incorporated into the window count if the state is still in memory, or dropped otherwise."
+    ],
+    "correct_option": 0,
+    "explanation": "Two independent behaviours:\n\n**Watermark update**: the watermark is max(observed event_ts) - delay. The new event has event_ts = 07:30. Since 07:30 < the current max observed event_ts (which produced the 10:00 watermark), the max does not increase -> watermark stays at **10:00**. Watermarks are monotonically non-decreasing; a late event cannot lower them.\n\n**State eligibility**: the event belongs to window 07:00-08:00. In `append` mode, Spark emits a window's result and evicts its state once the watermark advances past the window end time. Watermark 10:00 > window end 08:00 -> the 07:00-08:00 state was already evicted and its result was already emitted. The late event has nowhere to go -> **silently dropped**.\n\nOption 1 is wrong: Spark does not re-open evicted window state from the checkpoint for late events. Doing so would break the bounded-memory guarantee of watermark-based streaming.\n\nOption 2 is wrong: watermarks are monotonically non-decreasing. A late event_ts cannot lower the watermark.\n\nOption 3 is wrong: Structured Streaming has no late-data buffer beyond the watermark threshold. Once state is evicted, the event is dropped without buffering or error.",
+    "hints": [
+      "Can the watermark decrease when a late event arrives? Is it max(all observed event_ts) - delay, or something else?",
+      "In `append` mode, when is window state evicted? Has the 07:00-08:00 window been evicted by the time the watermark is at 10:00?"
+    ],
+    "concepts": [
+      "STRUCTURED STREAMING",
+      "FAULT TOLERANCE & RECOVERY",
+      "DATA QUALITY SKEPTICISM"
+    ]
+  },
+  {
+    "id": 43115,
+    "order": 115,
+    "topic": "pyspark",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Delta VACUUM and Time Travel: When Historical Versions Become Inaccessible",
+    "description": "A Delta table is vacuumed weekly: `VACUUM events RETAIN 7 DAYS`. A compliance team needs to read the table as it was 30 days ago via `spark.read.format('delta').option('versionAsOf', version_30_days_ago).load(path)`. What happens, and what is the root cause?",
+    "options": [
+      "The read **succeeds**. Delta's transaction log retains all historical version metadata indefinitely. VACUUM only removes unreferenced Parquet data files; transaction log entries and version history are never deleted by VACUUM.",
+      "The read **fails** (typically AnalysisException or FileNotFoundException). VACUUM deletes the Parquet data files referenced by versions older than the 7-day retention window. The transaction log still records what version 30 days ago should contain, but the underlying Parquet files it references are gone -- Spark cannot open them.",
+      "The read **partially succeeds**: rows in Parquet files newer than 7 days are returned; rows in older files are silently omitted. Delta reconciles available files with the historical schema.",
+      "The read **fails at VACUUM time**: Delta writes a tombstone to the transaction log during VACUUM marking old versions as inaccessible, blocking time-travel at the API level before any files are deleted."
+    ],
+    "correct_option": 1,
+    "explanation": "Delta's architecture separates two things:\n1. **Transaction log** (`_delta_log/`) -- records every commit, schema change, and file add/remove event. NOT deleted by `VACUUM`. The log retains the full version history (subject to `logRetentionDuration`, default 30 days separately from file retention).\n2. **Parquet data files** -- the actual row data on disk. `VACUUM` deletes files no longer referenced by any live version within the retention window (7 days here).\n\nWhen reading version 30 days ago:\n1. Delta reads the transaction log to identify the Parquet files that composed the table at that version. (Transaction log is intact.) ✓\n2. Spark tries to open those Parquet files. They have been deleted by VACUUM. ✗\n\nResult: the read fails. The error is typically a `FileNotFoundException` from the storage layer, or Delta may surface it as an `AnalysisException` with a message about historical files being unavailable.\n\n**Prevention**: use `RETAIN 30 DAYS` (or longer) in VACUUM if 30-day time travel is required.\n\nOption 0 is wrong: while the transaction log survives VACUUM, the Parquet files it references do not. Reading historical versions requires both the log (for metadata) and the files (for data).\n\nOption 2 is wrong: Delta does not perform partial reads mixing available and missing file sets. It reads the entire file set for the target version or fails.\n\nOption 3 is wrong: VACUUM does not write tombstones to block API-level time travel; it physically deletes the Parquet files.",
+    "hints": [
+      "VACUUM deletes Parquet data files. Does it also delete the Delta transaction log?",
+      "Time travel reads the Parquet files referenced in the transaction log for the target version. What happens when those files have been physically deleted?"
+    ],
+    "concepts": [
+      "DELTA LAKE & DATA LAKE FORMATS",
+      "FAULT TOLERANCE & RECOVERY",
+      "DATA QUALITY SKEPTICISM"
+    ]
+  },
+  {
+    "id": 43116,
+    "order": 116,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "nullable=False in StructField: Is It a Runtime Constraint or an Optimizer Hint?",
+    "description": "A schema declares `amount` as non-nullable. The CSV file has one data row where `amount = 'abc'` (unparseable as DOUBLE):\n```python\nschema = StructType([\n    StructField('id', LongType(), nullable=False),\n    StructField('amount', DoubleType(), nullable=False)\n])\ndf = spark.read.schema(schema).csv('/data/payments.csv', header=True)\ndf.show()\n```\nWhat does `df.show()` output, and does Spark enforce `nullable=False` at runtime?",
+    "options": [
+      "`df.show()` raises `AnalysisException` -- Spark enforces `nullable=False` at read time; 'abc' cannot be cast to DoubleType for a non-nullable field, causing an immediate exception.",
+      "`df.show()` outputs `(1, null)`. Spark's CSV reader uses PERMISSIVE mode by default: unparseable values are silently set to null, even when StructField declares `nullable=False`. The nullable flag is an optimizer hint, NOT a runtime constraint. `df.schema` still shows `nullable=False` for amount.",
+      "`df.show()` outputs `(1, 0.0)`. Spark substitutes the zero value for the declared type when parsing fails and `nullable=False` is set, preventing null storage.",
+      "`df.show()` outputs `(1, NaN)`. Unparseable doubles default to IEEE 754 NaN in PERMISSIVE mode; NaN is considered a valid (non-null) DOUBLE value consistent with `nullable=False`."
+    ],
+    "correct_option": 1,
+    "explanation": "`nullable=False` in `StructField` is a **schema annotation** that hints to the Catalyst optimizer that the column should not contain null, enabling certain optimisations. It is **not enforced at runtime** by the CSV reader.\n\nSpark's default CSV parsing mode is **PERMISSIVE**: when a value cannot be cast to the target type ('abc' -> DoubleType fails), `null` is stored in the output, regardless of the nullable declaration.\n\nThe result: `df.show()` outputs `(1, null)`. `df.schema.fields[1].nullable` is still `False` -- the schema definition is unchanged -- but the actual stored value is `null`. This silent mismatch can produce unexpected results in downstream aggregations or joins that assume non-nullable semantics.\n\nTo enforce non-nullability at parse time, configure the CSV reader mode:\n- `DROPMALFORMED`: drops the entire malformed row silently.\n- `FAILFAST`: raises an exception immediately on the first parse failure.\n\nOption 0 is wrong: Spark does not enforce `nullable=False` as a runtime constraint. It is a Catalyst optimizer hint only.\n\nOption 2 is wrong: there is no default-value substitution for type parsing failures in PERMISSIVE mode.\n\nOption 3 is wrong: unparseable doubles produce `null`, not NaN. NaN arises from arithmetic operations (e.g., 0.0/0.0), not from failed string-to-double parsing.",
+    "hints": [
+      "Is `nullable=False` in StructField enforced at runtime by the CSV reader, or is it an optimizer hint?",
+      "What does Spark's default (PERMISSIVE) CSV parsing mode do when a value can't be cast to the target type?"
+    ],
+    "concepts": [
+      "SCHEMA & TYPE HANDLING",
+      "FILE FORMATS & READERS",
+      "OUTPUT SANITY VALIDATION"
+    ]
+  },
+  {
+    "id": 43117,
+    "order": 117,
+    "topic": "pyspark",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Salting Bug: rand() Re-Evaluated Without Cache Causes Join Mismatch and Missing Data",
+    "description": "A team implements salting to handle a skewed groupBy, then recovers the original key via a join:\n```python\ndf_salted = df.withColumn('salt', (F.rand() * 10).cast('int').cast('string'))\ndf_salted = df_salted.withColumn(\n    'key_salted', F.concat('key', F.lit('_'), 'salt'))\n\npartial = df_salted.groupBy('key_salted') \\\n    .agg(F.sum('amount').alias('partial_sum'))\n\nresult = partial.join(\n    df_salted.select('key_salted', 'key').distinct(),\n    'key_salted'\n).groupBy('key').agg(F.sum('partial_sum').alias('total_sum'))\n\nresult.show()\n```\nIn production, `total_sum` for some keys is significantly lower than expected. No errors are raised. What causes the missing data?",
+    "options": [
+      "`df_salted` is not cached. When `partial` is computed, `df_salted` is evaluated with random salt values S1. When the join's right side (`df_salted.select(...).distinct()`) is evaluated, `df_salted` is re-executed from scratch with fresh random values S2. The same source rows now have different `key_salted` values in each execution. Partial sums keyed by S1 values find no matching `key_salted` in the S2 right side -- those sums are silently dropped.",
+      "`(F.rand() * 10).cast('int')` produces values 0-10 (11 distinct values) due to IEEE 754 rounding: rand() can return exactly 1.0, producing 10 after multiplication. Some key_salted buckets receive rows from two different salt groups, causing the join to double-count partial sums.",
+      "The `.distinct()` call in the join's right side triggers a re-shuffle. Re-shuffling re-evaluates the `key_salted` column using a new random seed, producing salt values different from those used to build `partial`.",
+      "`F.concat` is non-deterministic when the salt column is IntegerType; the JVM's `int.toString()` uses locale-specific formatting on some cluster nodes, producing salt strings with trailing spaces that prevent join matches."
+    ],
+    "correct_option": 0,
+    "explanation": "`F.rand()` is **non-deterministic**: each physical execution of a plan containing `rand()` produces fresh random values. `df_salted` contains `rand()` and is **not cached**, so every time Spark executes its plan, new values are generated.\n\nIn this query, `df_salted`'s plan is executed **twice**:\n1. When computing `partial = df_salted.groupBy('key_salted').agg(...)`: random seed S1 assigns salt values (e.g., row 'user1' gets salt '3' -> `key_salted = 'user1_3'`).\n2. When computing the join right side `df_salted.select('key_salted', 'key').distinct()`: plan re-executes with fresh seed S2 (e.g., same row 'user1' gets salt '7' -> `key_salted = 'user1_7'`).\n\nThe join on `key_salted` tries to match 'user1_3' (from S1) with right-side values from S2. 'user1_3' does not exist in S2 -> no join match -> partial sum for 'user1_3' is lost. Total_sum is lower than expected.\n\n**Fix**: `df_salted = df_salted.cache()` immediately after adding the salt columns. Caching materialises `rand()` once (using seed S1) and reuses those values for both the groupBy and the join.\n\nOption 1 is wrong: `(rand() * 10).cast('int')` produces values 0-9, not 0-10. `rand()` returns values in [0, 1), so `rand() * 10` is in [0, 10). Integer truncation gives 0-9. `rand()` cannot return exactly 1.0.\n\nOption 2 is wrong: `.distinct()` triggers a dedup shuffle but does not re-evaluate `rand()`. The re-evaluation happens because `df_salted` itself is not cached -- the plan re-executes from the source, not from the shuffle output.\n\nOption 3 is wrong: Spark's JVM integer-to-string conversion is locale-independent and does not produce trailing spaces.",
+    "hints": [
+      "Is `F.rand()` deterministic? What happens each time a DataFrame plan containing rand() is physically executed?",
+      "How many times is `df_salted` physically evaluated in this query? What would caching it do?"
+    ],
+    "concepts": [
+      "DATA SKEW & MITIGATION",
+      "LAZY EVALUATION & LINEAGE",
+      "DATA QUALITY SKEPTICISM"
+    ]
   }
 ]

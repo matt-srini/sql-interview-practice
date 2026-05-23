@@ -3279,5 +3279,113 @@
       "JOIN STRATEGY SELECTION",
       "OUTPUT SANITY VALIDATION"
     ]
+  },
+  {
+    "id": 42117,
+    "order": 117,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "explode on Null and Empty Arrays: How Many Rows Survive?",
+    "description": "```python\ndf = spark.createDataFrame([\n    (1, ['a', 'b']),\n    (2, None),\n    (3, []),\n], ['id', 'tags'])\n\nresult = df.select('id', F.explode('tags').alias('tag'))\nresult.show()\n```\nHow many rows does `result` contain, and which source rows are dropped?",
+    "options": [
+      "4 rows — id=1 produces 2 rows (a, b); id=2 (null array) produces 1 row with tag=null; id=3 (empty array) produces 1 row with tag=''.",
+      "2 rows — `F.explode()` drops rows where the array is null OR empty. id=2 (null) and id=3 (empty []) are both eliminated. Only id=1's two elements survive: tag='a' and tag='b'.",
+      "3 rows — id=1 produces 2 rows; id=2's null array produces 1 row with tag=null; id=3's empty array produces 0 rows.",
+      "5 rows — id=1 produces 2 rows; id=2 produces 1 null row; id=3 produces 2 rows (one for the open bracket, one for the close bracket of the empty array)."
+    ],
+    "correct_option": 1,
+    "explanation": "`F.explode()` generates one output row per array element. For **null arrays** (id=2), there are no elements, so the row is dropped. For **empty arrays** (id=3, `[]`), there are zero elements, so the row is also dropped. Both null and empty array rows disappear from the output.\n\nOnly id=1 has elements ('a' and 'b'), producing 2 rows. Total: **2 rows**.\n\nThis surprises engineers who expect null-array rows to be preserved. Use `F.explode_outer()` to preserve null/empty rows with a null element:\n- `explode_outer(null)` produces 1 row, tag=null\n- `explode_outer([])` produces 1 row, tag=null\n\nOption 0 is wrong: `explode(null)` drops the row entirely; it does not produce a null-tagged row.\n\nOption 2 is partially right about id=3 (empty -> 0 rows) but wrong about id=2 (null -> also dropped, not 1 row with null).",
+    "hints": [
+      "What does `F.explode` do when the array column is null? What about when it is an empty array `[]`?",
+      "How does `F.explode_outer` differ from `F.explode` for null or empty inputs?"
+    ],
+    "concepts": [
+      "COLLECTION & ARRAY OPERATIONS",
+      "OUTPUT SANITY VALIDATION",
+      "DATA QUALITY SKEPTICISM"
+    ]
+  },
+  {
+    "id": 42118,
+    "order": 118,
+    "topic": "pyspark",
+    "type": "optimization",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Pandas UDF Arrow Batch Size: Which Config Controls Records per IPC Batch?",
+    "description": "A pandas UDF applies a trained model to each Arrow IPC batch. With default Spark settings, batches are small (1,000 rows each), causing excessive Python-JVM serialization overhead. The team wants larger batches to amortize the overhead. Which config should they tune?",
+    "options": [
+      "`spark.sql.execution.arrow.maxRecordsPerBatch` controls the maximum number of rows packed into each Arrow IPC batch sent to/from pandas UDFs. Increasing it reduces round-trip count but raises peak memory per task.",
+      "`spark.sql.shuffle.partitions` controls how many partitions the DataFrame has; fewer partitions means more rows per task and therefore larger effective batches per UDF call.",
+      "`spark.executor.cores` controls task concurrency per executor; reducing cores increases rows per task and therefore the effective batch size seen per pandas UDF call.",
+      "`spark.python.worker.reuse=true` avoids relaunching the Python process per task, which also enlarges the effective batch size seen per process lifecycle."
+    ],
+    "correct_option": 0,
+    "explanation": "`spark.sql.execution.arrow.maxRecordsPerBatch` (default 10,000) is the direct control for the number of rows serialised into each Arrow IPC batch before it crosses the JVM-Python boundary. Increasing it to, say, 50,000 means the pandas UDF receives larger DataFrames per call, amortising the serialisation cost across more rows.\n\nTrade-off: larger batches reduce serialisation overhead but increase peak memory per task. Each task holds `maxRecordsPerBatch` rows as a pandas DataFrame in the Python worker simultaneously.\n\nOption 1 is wrong: `shuffle.partitions` affects partition count, which is orthogonal to the Arrow IPC batch size within a pandas UDF invocation. A task that handles one large partition still sends data in Arrow batches of `maxRecordsPerBatch`.\n\nOption 2 is wrong: executor cores control task concurrency, not per-task row count.\n\nOption 3 is wrong: `worker.reuse` avoids Python process startup overhead and is a real optimisation for model inference, but it does not change the Arrow batch size. It is a complementary optimisation, not the primary lever for batch size.",
+    "hints": [
+      "Which Spark config specifically controls how many rows are serialised into each Arrow IPC batch for pandas UDFs?",
+      "What is the trade-off when you increase this batch size?"
+    ],
+    "concepts": [
+      "UDF & PYTHON BOUNDARY",
+      "MEMORY MANAGEMENT",
+      "PERFORMANCE TUNING & TRADE-OFFS"
+    ]
+  },
+  {
+    "id": 42119,
+    "order": 119,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Shuffle Stage Count: repartition Before groupBy vs coalesce After",
+    "description": "Two engineers propose ways to produce a 10-partition grouped result:\n```python\n# Approach A\nresult_a = df.repartition(10).groupBy('key').count()\n\n# Approach B\nresult_b = df.groupBy('key').count().coalesce(10)\n```\nHow many shuffle stages does each approach trigger, and which is more efficient?",
+    "options": [
+      "Both trigger 1 shuffle: Catalyst fuses `repartition` with the subsequent `groupBy` shuffle in Approach A; `coalesce` in Approach B is a no-op when the result already has fewer than 10 partitions.",
+      "Approach A triggers 2 shuffles (repartition shuffle + groupBy shuffle). Approach B triggers 1 shuffle (groupBy only; coalesce is a narrow transformation with no network data transfer). Approach B is more efficient.",
+      "Approach A triggers 1 shuffle (repartition). Approach B triggers 2 shuffles (groupBy + coalesce internal sort-merge). Approach A is more efficient.",
+      "Both trigger 2 shuffles. `coalesce` in Approach B internally performs a reduce-side merge equivalent to a shuffle to ensure consistent partition boundaries."
+    ],
+    "correct_option": 1,
+    "explanation": "**Approach A** (`repartition(10)` then `groupBy`): `repartition(10)` is a wide transformation that triggers **Shuffle 1**, redistributing all rows into 10 partitions. `groupBy('key').count()` then triggers **Shuffle 2**, a hash aggregate on `key`. Total: **2 shuffles**.\n\n**Approach B** (`groupBy` then `coalesce(10)`): `groupBy('key').count()` triggers the only shuffle. `coalesce(10)` is a **narrow transformation** that merges existing partitions without network data transfer. Total: **1 shuffle**.\n\nApproach B is almost always preferable. The one case where Approach A can help: if the pre-groupBy data is severely skewed, an upfront `repartition` on the key can rebalance before the groupBy, reducing OOM risk at the cost of an extra shuffle.\n\nOption 0 is wrong: Catalyst does not fuse `repartition` with `groupBy`; they are separate stages.\n\nOption 3 is wrong: `coalesce` does not perform a shuffle. It is explicitly defined as a narrow transformation in Spark. `repartition` triggers a shuffle; `coalesce` does not.",
+    "hints": [
+      "`repartition` is a wide transformation (shuffle). Is `coalesce` narrow or wide?",
+      "How many shuffle stages does `df.repartition(10).groupBy('key').count()` trigger?"
+    ],
+    "concepts": [
+      "SHUFFLE REASONING",
+      "NARROW VS WIDE TRANSFORMATIONS",
+      "PERFORMANCE TUNING & TRADE-OFFS"
+    ]
+  },
+  {
+    "id": 42120,
+    "order": 120,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "RANGE BETWEEN vs ROWS BETWEEN: Output Difference With Tied ORDER BY Values",
+    "description": "```python\ndata = [(1, 'X', 10), (2, 'X', 10), (3, 'X', 20)]\ndf = spark.createDataFrame(data, ['id', 'grp', 'val'])\n\nw_rows = Window.partitionBy('grp').orderBy('val') \\\n    .rowsBetween(Window.unboundedPreceding, Window.currentRow)\nw_range = Window.partitionBy('grp').orderBy('val') \\\n    .rangeBetween(Window.unboundedPreceding, Window.currentRow)\n\nresult = df.withColumn('s_rows', F.sum('val').over(w_rows)) \\\n           .withColumn('s_range', F.sum('val').over(w_range))\nresult.show()\n```\nFor the row with id=1 (val=10, physically first in the partition), what are `s_rows` and `s_range`?",
+    "options": [
+      "s_rows=10, s_range=10 — both frame types treat ties identically; CURRENT_ROW in both modes includes exactly the current physical row.",
+      "s_rows=10, s_range=20 — ROWS BETWEEN is positional: id=1 is physically first, so only its val=10 is included. RANGE BETWEEN is value-based: it includes ALL rows where val <= 10, including id=2 (also val=10), so sum=10+10=20.",
+      "s_rows=20, s_range=10 — ROWS BETWEEN accumulates all preceding rows plus all ties; RANGE BETWEEN is exact-value-only and includes just the current row's exact value.",
+      "s_rows=10, s_range=40 — RANGE BETWEEN includes all rows where val is anywhere in the range from unbounded preceding to the current value, pulling in val=20 rows as well."
+    ],
+    "correct_option": 1,
+    "explanation": "**ROWS BETWEEN** is strictly **positional**. `rowsBetween(UNBOUNDED_PRECEDING, CURRENT_ROW)` includes all physical rows up to and including the current row's position in the ordered sequence. For id=1 (the first physical row in the partition ordered by val), only id=1 is in the frame. `s_rows = 10`.\n\n**RANGE BETWEEN** is **value-based**. `rangeBetween(UNBOUNDED_PRECEDING, CURRENT_ROW)` includes all rows where the ORDER BY column falls in the range [min_value, current_row_value]. Current row's val=10, so the range is [min, 10]. Both id=1 (val=10) and id=2 (val=10) satisfy val <= 10 and are included in the frame. `s_range = 10 + 10 = 20`.\n\nThe critical difference: RANGE includes all **peers** (rows with the same ORDER BY value as the current row), while ROWS includes only the current physical row.\n\nFor id=2 (also val=10, physically second): `s_rows = 10 + 10 = 20` (positional: id=1 and id=2). `s_range = 20` (same value-based range as id=1).\n\nFor id=3 (val=20): both windows include all rows (10+10+20=40).\n\nOption 0 is wrong: ties cause RANGE and ROWS to diverge for intermediate rows. RANGE includes all peers; ROWS does not.\n\nOption 2 is wrong: ROWS BETWEEN does not include tie rows beyond the current physical position.",
+    "hints": [
+      "ROWS BETWEEN uses physical position; RANGE BETWEEN uses ORDER BY column values. How does id=2 (also val=10) affect each window frame for id=1?",
+      "Does RANGE BETWEEN include all rows with the same ORDER BY value as the current row?"
+    ],
+    "concepts": [
+      "WINDOW FUNCTIONS & FRAMES",
+      "OUTPUT SANITY VALIDATION",
+      "EXECUTION MODEL REASONING"
+    ]
   }
 ]
