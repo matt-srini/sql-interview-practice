@@ -333,6 +333,69 @@ Mock-only add-on bank: **190 questions** (Pro/Elite only). Samples: **36 total**
 
 ### Learning paths (curated sequences)
 
-42 paths total across 9 tracks. Per-track distribution and authoring constraints (slug / title / topic / questions / tier / role / focus_concepts / outcomes / recommended_after) are in [`docs/track-onboarding.md`](./track-onboarding.md). Path files live in `backend/content/paths/`.
+**This subsection is the canonical source of truth for learning-path semantics.** Other docs (`CLAUDE.md`, `docs/track-onboarding.md`, `docs/backend.md`, `docs/architecture.md`, `docs/frontend.md`) link here and must not restate the rules below.
 
-Every track has exactly one `starter` and one `intermediate` path used by unlock shortcuts. Completing a Starter path unlocks all medium for that track; completing the Intermediate path unlocks the full hard cap. Either acts as an express-lane alternative to threshold grinding.
+46 paths total across 9 tracks. Path files live in `backend/content/paths/`. Per-track pattern registry lives in `backend/path_patterns.py`.
+
+#### What a learning path is
+
+A learning path is a **curated 5–9 question walk through a pattern**, drawing entirely from the existing practice catalog. Paths sit *on top of* practice; they do not introduce new questions and do not bypass the practice-track unlock thresholds. A user who completes a path's question via the path or directly from practice gets the same `solved` state, and the same unlock-threshold counters advance either way.
+
+Paths are not comprehensive. Most questions in the catalog are never in any path. That is intentional — paths are for guided mastery of a specific pattern, not for cataloguing everything that touches the pattern.
+
+#### Patterns vs concepts — two distinct axes
+
+Datathink uses two registered taxonomies that look similar but answer different questions:
+
+| Axis | What it captures | Where it lives | Used by |
+|---|---|---|---|
+| **Concept family** | The *reasoning* a question exercises (e.g., `TEMPORAL REASONING`, `CARDINALITY REASONING`, `GROUPED AGGREGATION`) | `backend/concept_families.py` per-track registry | Question tags, dashboard weak-spot detection, mock `focus_concepts` filter |
+| **Pattern** | The *practitioner skill* a path masters (e.g., `window-functions`, `scd`, `causal-inference`) | `backend/path_patterns.py` per-track registry | Path metadata, "what you'll learn" UI, future Practice→Path→Mock loop |
+
+A path declares **both**:
+
+- `patterns[]` — what subject matter the practitioner picks up
+- `focus_concepts[]` — what reasoning families the path strengthens (used by dashboard insights to recommend this path when a user shows weakness in a matching family)
+
+A path's pattern is usually one slug (a focused mastery walk); some paths legitimately span two patterns (e.g., `groupby-and-joins` declares both). `focus_concepts[]` is usually 2–5 family names — enough to cover the included questions without being a catch-all.
+
+#### Path schema
+
+| Field | Required | Notes |
+|---|---|---|
+| `slug` | ✓ | Unique, hyphenated. URL: `/learn/<topic>/<slug>` |
+| `title` | ✓ | ≤50 chars, user-facing |
+| `description` | ✓ | 1–2 sentences |
+| `topic` | ✓ | Must match a track slug |
+| `tier` | ✓ | `free` or `pro` — controls **path-listing visibility only** (the questions inside follow practice unlock thresholds regardless) |
+| `role` | ✓ | `starter` \| `intermediate` \| `advanced` — defined below |
+| `patterns` | ✓ | Non-empty array; every entry must resolve in `path_patterns.py` for the track |
+| `focus_concepts` | ✓ | Non-empty array; every entry must resolve to a registered family in `concept_families.py` for taxonomy-validated tracks (others: presence check only until registries are complete) |
+| `questions` | ✓ | Ordered array of catalog question IDs (easy → hard within the pattern). Every ID must exist in the track catalog. Every question must carry at least one concept tag in the same family as one of the path's `focus_concepts[]` (mechanical guarantee that the path drills what it claims). |
+| `outcomes` | ✓ | 1–2 sentences starting with "You'll…" describing capability gained |
+| `recommended_after` | ✓ | Prerequisite path slugs (same track). Empty array `[]` for starter paths. The resulting graph must be acyclic. |
+
+#### Role definition
+
+**Role describes where the path sits in the track's pattern arc — not the difficulty mix of its questions.** Difficulty mix is whatever the catalog naturally supports for the patterns the path drills.
+
+- **`starter`** — Covers the foundational patterns of the track: the building blocks every other path assumes. **Exactly one per track** (validator-enforced). UX promise: every track has one obvious entry point ("Start here").
+- **`intermediate`** — Mid-tier patterns sitting on top of the foundational layer. **One or more per track.** When a track has parallel mid-tier clusters (e.g. data-modeling: normalization vs dimensional), each gets its own intermediate path — they are not forced to compete for a singleton slot.
+- **`advanced`** — Advanced patterns assuming both foundations and some mid-tier exposure. **Zero or more per track.**
+
+Role has no unlock semantics. Roles are used for sort order on TrackHub, the "Start here" pill on the singleton starter, and Schema.org metadata. **Path completion does not unlock any practice questions** — unlocks follow the standard practice thresholds (see `docs/backend.md` for the unlock-state computation).
+
+#### Validator integrity rules
+
+`backend/scripts/validate_content.py::_validate_paths` enforces:
+
+1. **Schema completeness.** All required fields present; slug unique; matches filename.
+2. **Singleton starter.** Exactly one `role=starter` per track. No upper bound on `intermediate` or `advanced`.
+3. **Pattern registry.** Every `patterns[]` entry resolves in `path_patterns.py` for the path's track.
+4. **Focus-concept registry.** Every `focus_concepts[]` entry resolves to a registered family in `concept_families.py` (only enforced for tracks listed in `_TAXONOMY_VALIDATED_TRACKS` — others: presence check until their registry is complete).
+5. **Question-tag alignment.** Every question in `questions[]` carries at least one concept tag that resolves to the same family as at least one of the path's `focus_concepts[]`. This is the mechanical guarantee that the path drills what it claims.
+6. **Prerequisite DAG.** Every `recommended_after[]` slug exists in the same track; the resulting graph is acyclic.
+
+#### What this section explicitly rejects (historical)
+
+The platform previously had a "path-completion unlock shortcut" mechanic (completing a starter path unlocked all medium; completing intermediate unlocked the hard cap). **That mechanic was removed.** If you find a doc still describing it, that doc is stale — fix it and link here. The current model is: practice thresholds gate question unlocking; paths are curated walks that respect those gates.

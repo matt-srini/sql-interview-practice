@@ -128,27 +128,21 @@ Also define **first-hint leak patterns** — regex patterns for answer-revealing
 
 ### 1.7 Learning paths
 
-Every track requires exactly **2 free shortcut paths** and at least **1 pro path**. For tracks with 80+ practice questions and 25+ concept tags, 2 pro paths is recommended. The 2 free paths are a platform contract — they define the unlock shortcut system:
+**Canonical reference: [`docs/content-authoring.md`](./content-authoring.md) §Paths.** That section defines the path model (patterns vs concepts), the role enum, the schema, and the validator integrity rules. This subsection only summarises the per-track minimums for onboarding.
 
-- `starter` path (free): completing it unlocks **all medium questions** immediately, bypassing the solve-count threshold
-- `intermediate` path (free): completing it unlocks the **full hard cap** immediately
+Every track requires:
 
-Additional pro paths cover advanced concept clusters. For each path, define:
+- Exactly **one `starter` path** (validator-enforced; UX entry point — gets the "Start here" pill on TrackHub).
+- At least **one `intermediate` path** (covers a mid-tier pattern cluster). Multiple intermediates allowed when a track has parallel mid-tier clusters.
+- At least **one `advanced` path** for tracks with 80+ practice questions. Tracks below that may launch with starter + intermediate only and add advanced paths as the catalog grows.
 
-| Field | Required | Notes |
-|---|---|---|
-| `slug` | ✓ | Unique, hyphenated. Used in URL: `/learn/<topic>/<slug>` |
-| `title` | ✓ | ≤50 chars, shown in UI |
-| `description` | ✓ | 1–2 sentences, shown in path card |
-| `topic` | ✓ | Must match the track slug |
-| `tier` | ✓ | `free` or `pro` |
-| `role` | ✓ | `starter`, `intermediate`, or `advanced` |
-| `questions` | ✓ | Ordered array of question IDs. All IDs must exist in the track catalog. |
-| `focus_concepts` | ✓ | 2–4 semantic concept tags. Must match the track's concept family style. Used by insights engine to route users from weak concepts to paths. |
-| `outcomes` | ✓ | 1–2 sentences starting with "You'll…" describing capability gained. |
-| `recommended_after` | ✓ | Prerequisite path slugs. Empty array `[]` for starter. |
+Each path:
 
-Starter and intermediate paths should be in the concept progression sweet spot — not so easy they feel patronising, not so hard they require prior exposure to hard-tier concepts.
+- Declares one or more `patterns[]` slugs from `backend/path_patterns.py` (register new pattern slugs there if no existing pattern fits).
+- Declares `focus_concepts[]` resolving to the track's concept-family registry (so dashboard insights can recommend the path from a weak concept).
+- Lists 5–9 catalog question IDs in `questions[]`, ordered easy → hard within the pattern.
+
+Paths do not unlock anything — question unlocking is threshold-only (see `docs/backend.md` for the unlock-state computation). Path completion just marks every question solved, same as practice.
 
 ---
 
@@ -449,8 +443,8 @@ Run every item before pushing the launch commit.
 - [ ] `/api/sample/<slug>/hard` returns a sample question
 - [ ] `/api/mock/access` returns correct `can_start` / `block_reason` for the new track
 - [ ] Unlock logic works: Free user sees easy unlocked, medium/hard locked at start
-- [ ] Starter path completion unlocks all medium
-- [ ] Intermediate path completion unlocks hard cap
+- [ ] At least one `starter` path exists for the new track (validator-enforced)
+- [ ] Every path declares `patterns[]` from `backend/path_patterns.py` and `focus_concepts[]` that resolve to a track concept family
 
 ### Frontend
 - [ ] Track appears in the Tracks Index (section 06) with correct question count

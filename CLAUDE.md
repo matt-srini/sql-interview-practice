@@ -144,7 +144,7 @@ Mock-only questions (`mock_only: true`) live in the same JSON files as practice 
 See [docs/content-authoring.md](docs/content-authoring.md) for the full mock-only authoring spec.
 
 - **Sample questions:** SQL/Python/Pandas/PySpark: 3 per track × 3 difficulties = 36 total. Data Engineering, Data Modeling, Statistics, ML Fundamentals, and Experimentation samples are auto-sliced from the first 3 practice questions per difficulty (no dedicated IDs).
-- **Learning paths:** 42 total — SQL: 9, Python: 6, Pandas: 5, PySpark: 5, Data Engineering: 2, Data Modeling: 4, Statistics: 3, ML Fundamentals: 4, Experimentation: 4 (each track has exactly one `starter` and one `intermediate` free shortcut path; additional paths are advanced, mixed free/pro)
+- **Learning paths:** 46 total — SQL: 9, Python: 6, Pandas: 5, PySpark: 5, Data Engineering: 3, Data Modeling: 5, Statistics: 3, ML Fundamentals: 5, Experimentation: 5. Each track has exactly one `starter` path (UX entry point); intermediate and advanced are uncapped. Paths are curated 5–9 question walks through a *pattern* (practitioner skill — see `docs/content-authoring.md` §Paths). Paths do not unlock anything; unlocks follow the standard practice thresholds.
 - Every question has `hints` (currently 1–3 entries across the bank; new content should target the active hint ladder) and `concepts` (semantic pattern tags surfaced as pills)
 - SQL questions have a `companies` field (`["Meta", "Stripe", ...]`) used for the company filter in SidebarNav
 - SQL schemas validated against committed CSV headers at catalog load time
@@ -367,7 +367,7 @@ Single global stylesheet: `frontend/src/App.css`. No CSS framework, no CSS modul
 
 Locked MCQ questions return 200 with `locked: true` and no `options` or `correct_option` (stem visible; options and explanation hidden). Submitting a locked MCQ returns 403.
 
-**Learning path shortcuts:** completing the Starter path for a track → all medium unlocked immediately; completing the Intermediate path → full hard cap unlocked. Either acts as an express-lane alternative to threshold grinding.
+**Learning paths and unlocks:** Paths are curated walks through the practice catalog and **do not unlock questions**. A user who solves a path question gets the same `solved` state and threshold advancement as solving from practice directly. See `docs/content-authoring.md` §Paths for the canonical path model (patterns, roles, validator integrity rules).
 
 **Mock modes (canonical, post-2026-05 refactor):** `benchmark` (fixed-shape track readiness signal), `short_drill` (2 questions, 30 min — fast calibration), `custom_drill` (1–5 Q, 10–90 min — user-tuned to competency). Long-form drill (`60min`, 3-Q) is being retired; `custom_drill` covers that range. Mixed track remains drill-only. Legacy `60min` sessions in history are read-only.
 

@@ -46,13 +46,13 @@ Hints are progressive. The platform reveals them one at a time after you submit.
 
 ## Unlock system
 
-Free users get all easy questions and unlock medium and hard in batches as they solve more of the curriculum. Thresholds differ by modality, and learning-path completion can shortcut medium or hard unlocks for a track.
+Free users get all easy questions and unlock medium and hard in batches as they solve more of the curriculum. Thresholds differ by modality (code vs MCQ tracks).
 
 Pro unlocks all practice difficulties across all tracks. Elite keeps full catalog access and adds the premium mock and dashboard layers.
 
 ## Learning paths
 
-Learning paths are curated sequences layered on top of the main practice bank. They are not a separate curriculum. They help users move through the bank in role-relevant orders and also act as unlock shortcuts.
+Learning paths are curated 5–9 question walks layered on top of the practice bank. They are not a separate curriculum and they do not shortcut unlocks. Each path masters one *pattern* (a practitioner skill like "Window Functions" or "Causal Inference") by walking through existing practice questions easy → hard within that pattern.
 
 ## Mock sessions
 

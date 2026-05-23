@@ -267,9 +267,9 @@ Notes:
 
 Paths are defined as JSON files in `backend/content/paths/`. The `path_loader.py` module reads them at startup. Each path record has `slug`, `title`, `description`, `topic`, and `questions[]` (ordered list of question IDs). The `/api/paths/{slug}` response enriches each question entry with its catalog metadata and the user's current state.
 
-Current footprint: **42 paths total** (SQL 9, Python 6, Pandas 5, PySpark 5, Data Engineering 2, Data Modeling 4, Statistics 3, ML Fundamentals 4, Experimentation 4). Path records also include `tier` (`free`/`pro`) and `role` (`starter`/`intermediate`/`advanced`) for access and unlock-shortcut semantics, plus `focus_concepts` (2–4 semantic concept tags), `outcomes` (one-sentence learning objective), and `recommended_after` (prerequisite path slugs).
+Current footprint: **46 paths total** (SQL 9, Python 6, Pandas 5, PySpark 5, Data Engineering 3, Data Modeling 5, Statistics 3, ML Fundamentals 5, Experimentation 5). Path records also include `tier` (`free`/`pro` — controls path-listing visibility only), `role` (`starter`/`intermediate`/`advanced` — UX badge, see canonical definition in [`docs/content-authoring.md`](./content-authoring.md) §Paths), `patterns[]` (practitioner-skill slugs from `backend/path_patterns.py`), `focus_concepts[]` (concept-family tags used by insights), `outcomes`, and `recommended_after[]` (prerequisite path slugs forming a DAG).
 
-The `GET /api/dashboard/insights` endpoint uses `focus_concepts` to attach `recommended_path_slug` and `recommended_path_title` to each entry in `weakest_concepts`, routing users from a diagnosed weak area directly to the most relevant accessible path. Starter paths take priority over intermediate, which take priority over advanced in that matching.
+The `GET /api/dashboard/insights` endpoint uses `focus_concepts` to attach `recommended_path_slug` and `recommended_path_title` to each entry in `weakest_concepts`, routing users from a diagnosed weak area directly to the most relevant accessible path. Matching is **family-aware**: both the weak concept and the path's `focus_concepts` are resolved to their canonical concept family before comparison (same resolver Mock's `focus_concepts` filter uses). Starter paths take priority over intermediate, which take priority over advanced.
 
 ---
 
@@ -364,7 +364,7 @@ Files: `db.py`, `progress.py`, `unlock.py`
 - Medium: 10 easy → 3 · 17 easy → 8 · 25 easy → all
 - Hard: 12 medium → 5 *(cap = 5)*
 
-**Learning path shortcuts:** `compute_unlock_state` accepts `path_state: dict`. `starter_done=True` → all medium unlocked (bypasses threshold grinding). `intermediate_done=True` → full hard cap unlocked. The router fetches path completion state from `GET /api/paths` and passes it in.
+**Learning paths and unlocks:** Paths do **not** influence unlock state. `compute_unlock_state` is threshold-only. A user solving a question via the path UI gets the same `solved` mark and the same threshold-counter advancement as solving from practice directly. See [`docs/content-authoring.md`](./content-authoring.md) §Paths for the canonical model.
 
 **Mock daily limits** (enforced in `compute_mock_access`):
 - Free: 1 medium mock/day, unlimited easy; **hard mocks are plan-locked** (Pro required)

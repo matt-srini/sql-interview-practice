@@ -123,7 +123,7 @@ Pure policy function in `backend/unlock.py`. Signature: `compute_unlock_state(pl
 
 Locked MCQ questions return 200 with `locked: true` and no `options` / `correct_option` (stem always visible). Submitting a locked MCQ returns 403.
 
-**Learning path shortcuts (`path_state`):** `starter_done=True` → all medium unlocked immediately (same ceiling as hitting the top threshold). `intermediate_done=True` → full hard cap unlocked. Either flag is an express-lane alternative to threshold grinding, giving learning-path completers a meaningful reward.
+**Learning paths and unlocks:** Paths are curated walks through the practice catalog and do not influence unlock state — `compute_unlock_state` is threshold-only. A user who solves a question via the path UI gets the same `solved` mark and threshold advancement as solving via practice. See [`docs/content-authoring.md`](./content-authoring.md) §Paths for the canonical path model.
 
 Solved questions remain solved permanently regardless of plan changes or threshold reversals.
 
