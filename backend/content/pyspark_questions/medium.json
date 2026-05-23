@@ -2167,5 +2167,561 @@
       "FILE FORMATS & READERS",
       "FAULT TOLERANCE & RECOVERY"
     ]
+  },
+  {
+    "id": 42077,
+    "order": 77,
+    "topic": "pyspark",
+    "type": "debug",
+    "difficulty": "medium",
+    "mock_only": true,
+    "follow_ups": [
+      42078,
+      42079
+    ],
+    "title": "Output Has 8,000 Small Parquet Files \u2014 What Caused It?",
+    "description": "A daily pipeline writes a 20 GB aggregation result to S3 as Parquet. After yesterday's run the output directory contains 8,000 files averaging 2.5 MB each. The pipeline has `spark.sql.shuffle.partitions=200` and the aggregation uses `groupBy('region', 'date').agg(...)`. The team expects ~200 output files. What most likely caused the 8,000-file explosion?",
+    "options": [
+      "The groupBy produced 200 shuffle partitions, but each partition was written as 40 separate files because Spark's default Parquet row-group size is 512 KB and the partition size exceeded it.",
+      "An upstream `repartition(8000)` or `.repartition('region', 'date')` call earlier in the pipeline set the in-memory partition count to 8,000 before the write; Spark writes one file per task, so 8,000 tasks produce 8,000 files.",
+      "S3's eventual consistency caused 40 write retries per partition; each retry appended a new file rather than overwriting, multiplying the output by 40.",
+      "The Parquet writer splits partitions at 2.5 MB boundaries by default; a 200-partition result of 20 GB is automatically split into 8,000 files to stay under this threshold."
+    ],
+    "correct_option": 1,
+    "explanation": "Spark writes one output file per task (per in-memory partition at write time). If an upstream `repartition(8000)` \u2014 possibly left over from a performance experiment or auto-applied by an AQE coalesce in reverse \u2014 set the partition count to 8,000 before the write, Spark launches 8,000 write tasks and produces 8,000 files. This is the most common real-world cause of small-file explosions: a repartition or AQE coalesce happening upstream of the write step, disconnected from `spark.sql.shuffle.partitions`.\n\nOption 0 is wrong: Parquet row-group size controls the internal structure of a file, not how many files are written. A single Parquet file can contain multiple row groups; the writer does not split a partition into multiple files based on row-group size.\n\nOption 2 is wrong: S3 write retries produce failed-upload cleanup, not duplicate committed files. Modern S3 multipart uploads use atomic commit patterns; retries do not append new files to the output directory.\n\nOption 3 is wrong: Spark does not automatically split partitions at a byte boundary when writing. The file size is determined by the partition size, not a configurable threshold (unless using Delta Lake's auto-optimize feature).",
+    "hints": [
+      "Spark writes one file per in-memory partition at write time. What determines how many in-memory partitions exist at the write step?",
+      "`spark.sql.shuffle.partitions=200` only controls shuffle partitions from groupBy/join. What can set the partition count to a different value before the write?"
+    ],
+    "concepts": [
+      "PARTITIONING STRATEGY",
+      "FILE FORMATS & READERS",
+      "PERFORMANCE TUNING & TRADE-OFFS"
+    ]
+  },
+  {
+    "id": 42078,
+    "order": 78,
+    "topic": "pyspark",
+    "type": "optimization",
+    "difficulty": "medium",
+    "mock_only": true,
+    "parent_id": 42077,
+    "follow_up_dimension": "performance_pivot",
+    "title": "Fixing Small Files: coalesce vs repartition Before Write",
+    "description": "The team confirms there's an upstream `repartition(8000)` causing the small-file explosion. They need to reduce output to ~50 files (20 GB \u00f7 ~400 MB per file). Two proposals: (A) replace `repartition(8000)` with `coalesce(50)` just before the write; (B) replace `repartition(8000)` with `repartition(50)` just before the write. Which is better, and why?",
+    "options": [
+      "Option A (coalesce) is better: it avoids a full shuffle by merging existing partitions; the 8,000 partitions are reduced to 50 without moving data across the network. Output will be 50 well-balanced files.",
+      "Option B (repartition) is better: it performs a full shuffle to evenly distribute rows across 50 partitions, guaranteeing each output file is ~400 MB. Option A's coalesce produces uneven files because it merges adjacent partitions without redistributing data.",
+      "Both are equivalent: coalesce and repartition both reduce the partition count and produce the same number of output files; the only difference is repartition takes slightly longer.",
+      "Option A (coalesce) is better only if the upstream repartition(8000) produced evenly sized partitions; if the 8,000 partitions are skewed (some large, some tiny), coalesce produces uneven files. For a groupBy-aggregation result, partitions are likely skewed \u2014 use repartition(50)."
+    ],
+    "correct_option": 3,
+    "explanation": "Both options achieve the goal (50 files), but the quality of the output differs. `coalesce(50)` merges adjacent partitions without shuffling data: it collapses every 160 of the 8,000 partitions into one output file. If the upstream partitions are uneven in size (likely, since the groupBy aggregation concentrates rows in partitions by key hash, and some keys may have many more rows), the merged files will also be uneven.\n\n`repartition(50)` performs a full shuffle, distributing rows uniformly via round-robin (or hash) across 50 partitions. Output files are balanced to ~400 MB each. The cost: one full shuffle.\n\nFor a groupBy result where key distributions can be skewed (e.g., some regions have far more events than others), `repartition(50)` produces better-balanced files at the cost of a shuffle. For uniformly distributed data, `coalesce(50)` is cheaper.\n\nOption 0 is wrong: it claims coalesce produces 'well-balanced files' without accounting for upstream skew.\n\nOption 1 is partially right about repartition's balance guarantee but overstates the problem with coalesce \u2014 coalesce works well when upstream partitions are uniform.\n\nOption 2 is wrong: coalesce and repartition are not equivalent; coalesce does not shuffle data and produces potentially skewed files.",
+    "hints": [
+      "coalesce merges adjacent partitions; repartition shuffles data uniformly. Which one guarantees balanced output file sizes?",
+      "A groupBy result might have uneven partition sizes \u2014 some keys have many rows, others few. How does that affect a coalesce merge?"
+    ],
+    "concepts": [
+      "PARTITIONING STRATEGY",
+      "SHUFFLE REASONING",
+      "FILE FORMATS & READERS"
+    ]
+  },
+  {
+    "id": 42079,
+    "order": 79,
+    "topic": "pyspark",
+    "type": "conceptual",
+    "difficulty": "medium",
+    "mock_only": true,
+    "parent_id": 42077,
+    "follow_up_dimension": "scale_pivot",
+    "title": "At 10\u00d7 Data Volume: Does repartition(50) Still Give 50 Files?",
+    "description": "After applying `repartition(50)` before the write, the team ships the fix. At 10\u00d7 data volume (200 GB aggregation result), the output should still be 50 files (each ~4 GB). The team's data lake reader (Spark, `maxPartitionBytes=128MB`) later reads the 50 files for a downstream query. What concern does the larger file size introduce?",
+    "options": [
+      "Parquet files above 2 GB cannot be read by Spark; the downstream query will fail with a FileTooLargeException on the 4 GB output files.",
+      "Spark's reader splits large Parquet files into multiple input splits at `maxPartitionBytes=128MB` boundaries; a 4 GB file produces ~32 read tasks \u2014 so the downstream query gets good parallelism, but the write side now has only 50 write tasks (low write parallelism). A higher repartition count balances both.",
+      "4 GB Parquet files cannot be split because Parquet uses a columnar footer that must be read in full; downstream parallelism is capped at 50 tasks regardless of `maxPartitionBytes`, potentially bottlenecking large downstream joins.",
+      "Reading 4 GB Parquet files requires each executor task to allocate a 4 GB read buffer; with 4 cores per executor and 16 GB heap, the downstream query immediately OOMs."
+    ],
+    "correct_option": 1,
+    "explanation": "Spark's `FileInputFormat` splits large Parquet files into chunks at roughly `maxPartitionBytes` (default 128 MB) boundaries. A 4 GB file is split into ~32 read tasks. This is good for downstream parallelism (the reader gets many tasks even from a small number of files), but it means the write side \u2014 with only 50 tasks \u2014 has relatively low write parallelism at 200 GB scale.\n\nFor writing 200 GB at ~128 MB per partition, `repartition(1600)` would be a better write-side partition count (producing 1,600 files of ~128 MB each \u2014 balanced for both write parallelism and downstream reads without relying on Spark's file splitting).\n\nOption 0 is wrong: Spark can read Parquet files larger than 2 GB. There is no file-size limit for Parquet reads in PySpark.\n\nOption 2 is partially right that Parquet is not row-splittable at arbitrary byte offsets (unlike text files), but Spark CAN split Parquet files at row-group boundaries. Parquet files are split at row-group boundaries during reads, and a typical Parquet row group is 128 MB \u2014 so a 4 GB file with 32 row groups is split into 32 read tasks.\n\nOption 3 is wrong: Spark reads Parquet column-by-column via the vectorized reader; it does not load the entire file into a 4 GB buffer. Column pruning means only relevant columns are read.",
+    "hints": [
+      "How does Spark split large Parquet files during reads? What is the unit of Parquet splitting?",
+      "With 50 files at 4 GB each, how many tasks does the downstream reader launch? Is that more or fewer than the write side?"
+    ],
+    "concepts": [
+      "FILE FORMATS & READERS",
+      "PARTITIONING STRATEGY",
+      "PERFORMANCE TUNING & TRADE-OFFS"
+    ]
+  },
+  {
+    "id": 42080,
+    "order": 80,
+    "topic": "pyspark",
+    "type": "debug",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "AnalysisException: Resolved Attribute Missing After DataFrame Filter",
+    "description": "```python\ndf = spark.createDataFrame([(1, 'a'), (2, 'b')], ['id', 'value'])\nfiltered = df.filter(df['id'] > 1)\nnew_df = spark.createDataFrame([(1, 'c'), (3, 'd')], ['id', 'value'])\nresult = new_df.join(filtered, new_df['id'] == filtered['id'])\nresult.select(filtered['value']).show()\n```\nThis raises `AnalysisException: Resolved attribute(s) ... missing from ...`. Why?",
+    "options": [
+      "The `filtered` DataFrame is derived from `df`; after the join, its columns are renamed internally and `filtered['value']` no longer refers to a valid column in `result`'s plan.",
+      "`filtered['value']` is ambiguous because both `new_df` and `filtered` have a column named `value`; use `result['value']` or rename one side before the join.",
+      "The `filter` operation creates a new DataFrame with a different internal ID; column references from the pre-filter DataFrame (`df['id']`) conflict with the post-filter reference (`filtered['id']`), corrupting the query plan.",
+      "The join with an explicit column expression (`new_df['id'] == filtered['id']`) creates two separate `id` columns in the result; selecting `filtered['value']` requires Spark to trace the column lineage back through the join, which fails after result is materialised."
+    ],
+    "correct_option": 0,
+    "explanation": "When you reference a column using a DataFrame object (`filtered['value']`), Spark resolves it against `filtered`'s query plan. After a join, the result DataFrame's plan incorporates both input plans, but the reference `filtered['value']` is associated with `filtered`'s ExprId \u2014 an internal identifier from before the join. In complex query plans (especially after filter + join), Spark may fail to match this ExprId to the joined result's output attributes, raising the 'resolved attribute missing' error.\n\nThe fix: reference columns by name (`result.select('value')`) or, if disambiguation is needed, alias one side's columns before joining: `filtered.withColumnRenamed('value', 'filtered_value')` then `result.select('filtered_value')`.\n\nOption 1 is partially right that both sides have a `value` column (making it ambiguous to reference by name without qualification), but the actual error is about ExprId resolution failure, not ambiguity per se. The recommended fix is still to alias and reference by name.\n\nOption 2 is wrong: `filter` creates a new DataFrame but columns are correctly derived from the parent plan. The pre-filter vs post-filter reference issue described here is not the actual cause.\n\nOption 3 is wrong: Spark traces column lineage through joins correctly at plan level; materialisation doesn't break this. The issue is the cross-DataFrame column reference pattern, not materialisation.",
+    "hints": [
+      "What does `filtered['value']` resolve to \u2014 a column name or an internal expression ID tied to the `filtered` DataFrame's plan?",
+      "After a join, which DataFrame object should you reference columns from to avoid ExprId resolution issues?"
+    ],
+    "concepts": [
+      "DEBUG SPARK ERRORS",
+      "SCHEMA & TYPE HANDLING",
+      "EXECUTION MODEL REASONING"
+    ]
+  },
+  {
+    "id": 42081,
+    "order": 81,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Window Function: ROWS BETWEEN vs RANGE BETWEEN on Duplicate Timestamps",
+    "description": "```python\ndf = spark.createDataFrame([\n    ('A', 1, 100), ('A', 1, 200), ('A', 2, 150), ('A', 3, 50)\n], ['user', 'ts', 'amount'])\n\nw_rows = Window.partitionBy('user').orderBy('ts').rowsBetween(Window.unboundedPreceding, Window.currentRow)\nw_range = Window.partitionBy('user').orderBy('ts').rangeBetween(Window.unboundedPreceding, Window.currentRow)\n\nresult = df.withColumn('row_sum', F.sum('amount').over(w_rows)) \\\n           .withColumn('range_sum', F.sum('amount').over(w_range))\nresult.orderBy('ts', 'amount').show()\n```\nFor the two rows where `ts=1` (amounts 100 and 200), what are their `row_sum` and `range_sum` values?",
+    "options": [
+      "Both rows: row_sum=100/200 (cumulative by physical row), range_sum=300/300 (all rows with ts\u22641 included for both). ROWS uses physical position; RANGE uses the ts value and includes all peers.",
+      "Both rows: row_sum=300/300 (duplicate ts treated as a peer group in ROWS too), range_sum=300/300. ROWS and RANGE are equivalent when ORDER BY has ties.",
+      "Both rows: row_sum=100/200, range_sum=100/200. RANGE uses the ts value but treats each row independently, giving the same result as ROWS for this case.",
+      "First row (amount=100): row_sum=100, range_sum=100. Second row (amount=200): row_sum=300, range_sum=300. Both frames include only one row at ts=1 because Spark resolves ties by amount order."
+    ],
+    "correct_option": 0,
+    "explanation": "**ROWS BETWEEN** counts physical rows: `UNBOUNDED PRECEDING TO CURRENT ROW` includes exactly the rows from the first row in the partition up to and including the physical current row, regardless of ORDER BY value.\n- Row 1 (ts=1, amount=100): includes row 1 only \u2192 row_sum=100\n- Row 2 (ts=1, amount=200): includes rows 1-2 \u2192 row_sum=300\n\n**RANGE BETWEEN** uses the ORDER BY column's value: `UNBOUNDED PRECEDING TO CURRENT ROW` includes all rows where `ts <= current_ts`. Both rows at ts=1 have the same ts value, so CURRENT ROW means 'all rows with ts=1'.\n- Row 1 (ts=1): RANGE includes all rows where ts \u2264 1 \u2192 both ts=1 rows \u2192 range_sum=300\n- Row 2 (ts=1): same RANGE \u2192 range_sum=300\n\nOption 1 is wrong: ROWS does NOT treat duplicate ts as peer groups \u2014 ROWS is strictly positional and processes one physical row at a time.\n\nOption 2 is wrong: RANGE is value-based and explicitly includes all peers with the same ORDER BY value.\n\nOption 3 is wrong: Spark does not 'resolve ties by amount order' for RANGE frame boundaries. The RANGE frame boundary depends only on the ORDER BY column (ts), not on secondary columns.",
+    "hints": [
+      "ROWS BETWEEN is positional (physical row number). RANGE BETWEEN is value-based (ORDER BY column value). Do both rows at ts=1 get the same RANGE frame?",
+      "For the ROWS frame, does the 'current row' include its peers at the same ts value?"
+    ],
+    "concepts": [
+      "WINDOW FUNCTIONS & FRAMES",
+      "OUTPUT SANITY VALIDATION",
+      "SCHEMA & TYPE HANDLING"
+    ]
+  },
+  {
+    "id": 42082,
+    "order": 82,
+    "topic": "pyspark",
+    "type": "debug",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "UDF Returns None for All Rows After a Left Join",
+    "description": "```python\n@F.udf('double')\ndef safe_ratio(a, b):\n    if b == 0:\n        return None\n    return a / b\n\nresult = left_df.join(right_df, 'key', 'left') \\\n    .withColumn('ratio', safe_ratio(F.col('numerator'), F.col('denominator')))\n```\n`right_df` has `numerator` and `denominator`. For rows in `left_df` with no match in `right_df`, `numerator` and `denominator` are null after the left join. What does `ratio` contain for those non-matching rows, and why?",
+    "options": [
+      "ratio=None \u2014 the UDF receives Python `None` for `a` and `b`; the `if b == 0` check fails because `None == 0` is `False` in Python, so the function executes `a / b` \u2192 `None / None` \u2192 raises TypeError, which PySpark catches and returns None.",
+      "ratio=None \u2014 PySpark short-circuits UDF calls for null inputs when the UDF is not decorated with `@F.udf(..., useArrow=False)`; null inputs skip the UDF body and return None directly.",
+      "ratio=None \u2014 PySpark passes Python `None` for null columns to the UDF; `None / None` inside the UDF raises TypeError at the Python level, which PySpark silently converts to null in the output column.",
+      "ratio=None \u2014 PySpark passes `None` for null inputs; `b == 0` evaluates to `False` (since `None != 0`), so the code reaches `return a / b` which is `None / None`; Python raises `TypeError: unsupported operand type(s)`, silently converted to null."
+    ],
+    "correct_option": 0,
+    "explanation": "After a left join with no right-side match, `numerator` and `denominator` are null. PySpark passes Python `None` to the UDF for null column values.\n\nInside `safe_ratio`: `b = None`. The check `if b == 0` evaluates to `False` (because `None == 0` is `False` in Python, not an error). The function then executes `return a / b` \u2192 `None / None`. In Python, dividing by `None` raises `TypeError: unsupported operand type(s) for /: 'NoneType' and 'NoneType'`. PySpark catches this TypeError at the UDF boundary and converts it to a null in the output column.\n\nAll four options predict the same result (ratio=None) but differ in mechanism. Option 0 correctly traces: None received \u2192 `b == 0` is False \u2192 `a / b` raises TypeError \u2192 null output.\n\nThe key lesson: `if b == 0` does NOT catch the null case \u2014 you need `if b is None or b == 0: return None`.\n\nOptions 1 is wrong about Arrow-based short-circuiting \u2014 PySpark does not short-circuit UDF execution for nulls (unlike SQL functions which can be null-safe). The UDF body always runs for every row.\n\nOptions 2 and 3 both reach the correct mechanism (TypeError \u2192 null) but have slightly different descriptions of the `b == 0` check behaviour; option 0 is the most precise.",
+    "hints": [
+      "What does `None == 0` evaluate to in Python? Does this expression raise an error or return a value?",
+      "If `b == 0` is False when b is None, what code path does the UDF take next?"
+    ],
+    "concepts": [
+      "UDF & PYTHON BOUNDARY",
+      "DATA QUALITY SKEPTICISM",
+      "DEBUG SPARK ERRORS"
+    ]
+  },
+  {
+    "id": 42083,
+    "order": 83,
+    "topic": "pyspark",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Delta Time Travel: Reading Last Night's Snapshot for Audit",
+    "description": "An audit requirement asks you to reproduce yesterday's output by reading the Delta table as it was at 11:59 PM last night. The table has had 3 OPTIMIZE runs and 2 MERGE operations since midnight. You write:\n```python\ndf = spark.read.format('delta') \\\n    .option('timestampAsOf', '2025-01-14 23:59:59') \\\n    .load('/delta/transactions')\n```\nA teammate warns: 'VACUUM was run this morning with `RETAIN 0 HOURS` \u2014 time travel won't work.' Is the teammate right?",
+    "options": [
+      "Partially right \u2014 time travel will work for versions committed before VACUUM, but VACUUM with RETAIN 0 HOURS deletes all files not referenced by the current version, making yesterday's snapshot unreachable if any of its Parquet files were replaced by OPTIMIZE/MERGE and are no longer in the current version.",
+      "Wrong \u2014 Delta time travel uses the transaction log (JSON files in _delta_log/), not the Parquet data files. VACUUM only deletes unreferenced Parquet files; the transaction log is never deleted by VACUUM, so time travel always works.",
+      "Right \u2014 `VACUUM RETAIN 0 HOURS` deletes all Parquet files older than 0 hours (i.e. all files not referenced by the current version); yesterday's snapshot's data files are now deleted, so the time-travel read raises `FileNotFoundException`.",
+      "Wrong \u2014 Delta automatically retains all data files written in the last 7 days regardless of the VACUUM retention setting; `RETAIN 0 HOURS` is overridden by this safety guard."
+    ],
+    "correct_option": 2,
+    "explanation": "The teammate is right. `VACUUM RETAIN 0 HOURS` aggressively deletes all Parquet data files not referenced by the **current** version of the Delta table. Yesterday's snapshot referenced specific Parquet files (the ones written before midnight). After OPTIMIZE and MERGE operations since midnight, those original files were replaced by new compacted/merged files. VACUUM then deleted the old unreferenced files.\n\nWhen you attempt time travel to 23:59:59 yesterday, Delta reads the transaction log to determine which files that version referenced \u2014 but those physical Parquet files no longer exist on disk. The read raises `FileNotFoundException` (or similar IO error).\n\nOption 0 is wrong in its framing ('partially right'). It correctly identifies the mechanism but understates the impact: time travel does NOT work if the referenced files were deleted, regardless of transaction log availability.\n\nOption 1 is wrong: the transaction log records which files were referenced, but time-travel reads need the **physical files** to exist. A valid log entry pointing to a deleted file cannot materialise the data.\n\nOption 3 is wrong: Delta does have a default safety threshold (`delta.deletedFileRetentionDuration` defaults to 7 days), but `VACUUM RETAIN 0 HOURS` explicitly overrides this. Delta warns but does allow it when forced \u2014 and when run, it deletes the files.",
+    "hints": [
+      "Delta time travel reads the transaction log to find which files a historical version referenced. What happens if those files were deleted by VACUUM?",
+      "What does VACUUM RETAIN 0 HOURS actually delete? Are the deleted files the same ones yesterday's snapshot pointed to?"
+    ],
+    "concepts": [
+      "DELTA LAKE & DATA LAKE FORMATS",
+      "DATA QUALITY SKEPTICISM",
+      "DEBUG SPARK ERRORS"
+    ]
+  },
+  {
+    "id": 42084,
+    "order": 84,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "collect_list + groupBy: Are Results Ordered?",
+    "description": "```python\ndf = spark.createDataFrame([\n    ('A', 3, 'x'), ('A', 1, 'y'), ('A', 2, 'z'),\n    ('B', 2, 'p'), ('B', 1, 'q'),\n], ['group', 'ts', 'val'])\n\nresult = df.groupBy('group').agg(F.collect_list('val').alias('vals'))\nresult.show(truncate=False)\n```\nFor group='A', what is the value of `vals`?",
+    "options": [
+      "['x', 'y', 'z'] \u2014 `collect_list` returns values in the order they appear in the input DataFrame, which is the creation order: row 1 first.",
+      "['y', 'z', 'x'] or any order \u2014 `collect_list` within a `groupBy` aggregation collects values in non-deterministic (shuffle-dependent) order. The result is not guaranteed to be in creation order, ts order, or any predictable order.",
+      "['y', 'z', 'x'] \u2014 PySpark sorts items within `collect_list` by the first column in the DataFrame schema ('group' then 'ts'); for group 'A', values are ordered by ts ascending: ts=1 \u2192 'y', ts=2 \u2192 'z', ts=3 \u2192 'x'.",
+      "['x', 'y', 'z'] \u2014 Spark preserves the physical partition order when collecting values in a groupBy; since the DataFrame was created in this order, collect_list respects it."
+    ],
+    "correct_option": 1,
+    "explanation": "`F.collect_list` within a `groupBy` aggregation collects elements in the order they are processed by the shuffle reducer. This order depends on how rows are partitioned across tasks (which executor processes which partition, in what sequence), making the result **non-deterministic**.\n\nThe result for group='A' could be `['x', 'y', 'z']`, `['y', 'z', 'x']`, or any permutation. The creation order of the DataFrame is not guaranteed to be preserved through a shuffle.\n\nFix for ordered lists: use `F.collect_list` combined with sorting: `F.collect_list(F.struct('ts', 'val')).over(window)` and extract, or sort before collecting: `df.orderBy('ts').groupBy('group').agg(F.collect_list('val'))`. Note: even `orderBy` before `groupBy` only preserves order within a partition \u2014 globally, a sort before groupBy does not guarantee order within `collect_list` across a shuffle.\n\nThe correct approach is: `F.array_sort(F.collect_list(F.struct('ts', 'val')))` then map to values.\n\nOption 0 is wrong: 'creation order' is not preserved through a groupBy shuffle.\n\nOption 2 is wrong: `collect_list` does not sort by schema columns internally.\n\nOption 3 is wrong: Spark does not preserve physical partition order through a groupBy shuffle.",
+    "hints": [
+      "A groupBy triggers a shuffle. Does Spark guarantee the order in which rows arrive at the reducer during a shuffle?",
+      "If you need collect_list to preserve a specific order, what must you do explicitly?"
+    ],
+    "concepts": [
+      "COLLECTION & ARRAY OPERATIONS",
+      "SHUFFLE REASONING",
+      "OUTPUT SANITY VALIDATION"
+    ]
+  },
+  {
+    "id": 42085,
+    "order": 85,
+    "topic": "pyspark",
+    "type": "optimization",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Structured Streaming: Which Output Mode for a Count per Window?",
+    "description": "A team builds a streaming dashboard: `events_stream.groupBy(F.window('event_ts', '1 hour'), 'region').count()`. They want the dashboard to show updated counts as new events arrive within the hour, not just final counts after the hour closes. They also use a Delta sink. Which output mode is correct, and what sink requirement does it impose?",
+    "options": [
+      "Append mode \u2014 emit the count only once per window after the watermark passes; the Delta sink appends a new row per window with the final count, requiring no upsert logic.",
+      "Update mode \u2014 emit the updated count for each window on every micro-batch that contains new events; the Delta sink receives multiple writes for the same (window, region) key and must use MERGE/upsert to maintain one row per window with the latest count.",
+      "Complete mode \u2014 emit the full result table (all windows, all regions) on every micro-batch; the Delta sink overwrites the entire table on each batch, so no upsert logic is needed but the sink is rewritten fully every micro-batch.",
+      "Update mode \u2014 emit the updated count for each changed window; the Delta sink automatically handles duplicate keys via Delta's ACID guarantees, requiring no explicit upsert configuration."
+    ],
+    "correct_option": 1,
+    "explanation": "To show updated counts as events arrive (not just final closed-window counts), use `update` mode. Update mode emits a row for every (window, region) combination that received new events in the current micro-batch, with the current running count. This means the same (window, region) key is written multiple times as the hour progresses.\n\nThe Delta sink must handle this by upserting (MERGE) on the (window, region) key \u2014 or by configuring the sink to overwrite matching keys. Without upsert, multiple rows for the same window appear in the table.\n\nOption 0 is wrong: append mode only emits results after the watermark passes a window's end time. This would delay counts by at least (window_size + watermark_delay), which defeats the live-dashboard purpose.\n\nOption 2 is not wrong about complete mode's behaviour, but complete mode rewrites the **entire** result table every micro-batch \u2014 for a streaming aggregation with many historical windows, this is extremely expensive and not recommended for large-scale streaming.\n\nOption 3 is wrong: Delta ACID guarantees provide atomicity and isolation for individual transactions, but Delta does not automatically deduplicate rows written by a streaming sink. 'Delta handles duplicate keys' is incorrect \u2014 you must configure MERGE explicitly or use the Delta streaming sink with checkpointing and `outputMode('update')` correctly, which still requires upsert semantics at the table level.",
+    "hints": [
+      "Which output mode emits partial (in-progress) window counts, not just final counts after the window closes?",
+      "If the same (window, region) key is written multiple times with updated counts, what must the sink do to avoid duplicate rows?"
+    ],
+    "concepts": [
+      "STRUCTURED STREAMING",
+      "DELTA LAKE & DATA LAKE FORMATS",
+      "OUTPUT SANITY VALIDATION"
+    ]
+  },
+  {
+    "id": 42086,
+    "order": 86,
+    "topic": "pyspark",
+    "type": "debug",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Catalyst Cannot Push Predicate Through a Python UDF",
+    "description": "A pipeline reads a large Parquet table, applies a Python UDF to compute a derived column, then filters on the derived column:\n```python\n@F.udf('boolean')\ndef is_high_value(amount):\n    return amount > 1000\n\nresult = df.withColumn('is_high', is_high_value('amount')) \\\n           .filter('is_high == True')\nresult.explain()\n```\n`explain()` shows that the full table scan happens before the filter. Why can't Catalyst push the filter down?",
+    "options": [
+      "Catalyst cannot push a filter through a Python UDF because UDFs are opaque to the optimizer \u2014 Catalyst cannot introspect the UDF's logic to determine whether rewriting `filter(is_high_value(amount))` as `filter(amount > 1000)` is safe or equivalent.",
+      "Catalyst cannot push a filter down through a Parquet scan when the filter involves a boolean column; only filters on string or numeric columns support predicate pushdown.",
+      "Catalyst attempted pushdown but the Parquet row-group statistics for the `is_high` column are missing (the column was computed, not stored); it falls back to a full scan.",
+      "Catalyst can push the filter down but only if `useArrow=True` is set on the UDF; without Arrow, the filter remains above the scan."
+    ],
+    "correct_option": 0,
+    "explanation": "Python UDFs are black boxes to the Catalyst optimizer. Catalyst cannot see inside the UDF body to determine that `is_high_value(amount)` is equivalent to `amount > 1000`. Because it cannot safely rewrite the UDF expression as a pushdown predicate, it must evaluate the UDF on every row first (after reading from Parquet) and then apply the filter.\n\nThis is a fundamental limitation: the optimization opportunity (`amount > 1000` can be pushed into the Parquet reader as a row-group filter) is lost because the equivalent logic is hidden inside a UDF.\n\nFix: replace the UDF with a native Spark expression: `df.filter(F.col('amount') > 1000).withColumn('is_high', F.lit(True))` \u2014 or compute `is_high` as `F.when(F.col('amount') > 1000, True).otherwise(False)`. Native expressions are transparent to Catalyst and support predicate pushdown.\n\nOption 1 is wrong: Catalyst does push boolean column filters; the limitation is specific to UDF opacity, not column type.\n\nOption 2 is wrong: the `is_high` column is derived (not stored in Parquet), so there are no Parquet statistics for it \u2014 but this is a consequence of the UDF, not the cause of the missed pushdown. The issue is that Catalyst cannot push the `is_high == True` filter below the UDF evaluation.\n\nOption 3 is wrong: Arrow-based UDFs (pandas UDFs) are also opaque to Catalyst. Arrow improves serialisation efficiency but does not enable predicate pushdown.",
+    "hints": [
+      "Catalyst optimises query plans by introspecting expressions. What can it see inside a Python UDF?",
+      "If Catalyst can't see `amount > 1000` inside the UDF, can it push that condition into the Parquet scan?"
+    ],
+    "concepts": [
+      "CATALYST OPTIMIZER",
+      "UDF & PYTHON BOUNDARY",
+      "PERFORMANCE TUNING & TRADE-OFFS"
+    ]
+  },
+  {
+    "id": 42087,
+    "order": 87,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Duplicate Rows After a Self-Join on Non-Unique Key",
+    "description": "```python\ndf = spark.createDataFrame([\n    (1, 'Alice', 'Engineering'),\n    (1, 'Alice', 'Marketing'),   # user_id=1 appears twice\n    (2, 'Bob', 'Engineering'),\n], ['user_id', 'name', 'dept'])\n\nresult = df.alias('a').join(\n    df.alias('b'),\n    F.col('a.user_id') == F.col('b.user_id'),\n    'inner'\n).select('a.user_id', 'a.name', 'a.dept', 'b.dept')\nresult.count()\n```\nWhat does `result.count()` return?",
+    "options": [
+      "3 \u2014 the self-join matches each row to itself; 3 input rows produce 3 output rows.",
+      "5 \u2014 user_id=1 appears twice on both sides: 2\u00d72=4 join result rows; user_id=2 appears once on both sides: 1\u00d71=1 row; 4+1=5.",
+      "4 \u2014 user_id=1 produces 2 rows on the left and 2 on the right (4 combinations); user_id=2 produces 1 row. Total=5. But one self-cross is eliminated by Spark's join deduplication.",
+      "6 \u2014 user_id=1 has 2 rows on each side \u2192 2\u00d72=4; user_id=2 has 1\u00d71=1; but the second alias 'b' also includes Bob, who matches himself \u2192 1 extra. 4+1+1=6."
+    ],
+    "correct_option": 1,
+    "explanation": "An inner self-join on `user_id` creates a cross product for each distinct `user_id` value across both sides:\n\n- user_id=1: left side has 2 rows (Alice/Engineering, Alice/Marketing); right side has 2 rows (same). Cross product: 2\u00d72=4 rows.\n- user_id=2: left side has 1 row (Bob/Engineering); right side has 1 row (same). Cross product: 1\u00d71=1 row.\n\nTotal: 4+1=**5 rows**.\n\nThis is the fan-out (double-counting) trap: a self-join on a non-unique key multiplies rows. The user who sees '3 rows in, 3 rows out' expects the join to match each row to itself, but an inner join matches every left row against every right row with the same key value \u2014 producing a Cartesian product within each key group.\n\nOption 0 is wrong: a self-join on a non-unique key does not produce one output row per input row.\n\nOption 2 is wrong: Spark does not deduplicate join results. All cross-product combinations are returned.\n\nOption 3 is wrong: the arithmetic is incorrect. 2\u00d72=4 for user_id=1; 1\u00d71=1 for user_id=2; total=5, not 6.",
+    "hints": [
+      "An inner join on user_id matches every row on the left with every row on the right that has the same user_id. For user_id=1 with 2 rows on each side, how many combinations result?",
+      "Does Spark deduplicate join results that appear to be self-matches?"
+    ],
+    "concepts": [
+      "DOUBLE-COUNTING DETECTION",
+      "JOIN STRATEGY SELECTION",
+      "OUTPUT SANITY VALIDATION"
+    ]
+  },
+  {
+    "id": 42088,
+    "order": 88,
+    "topic": "pyspark",
+    "type": "conceptual",
+    "difficulty": "medium",
+    "mock_only": true,
+    "follow_ups": [
+      42089,
+      42090
+    ],
+    "title": "Structured Streaming: What Does 'Exactly-Once' Actually Guarantee?",
+    "description": "A team claims their Structured Streaming pipeline provides 'exactly-once' delivery of events from Kafka to Delta Lake. A colleague challenges: 'Exactly-once only applies to the processing, not necessarily the output \u2014 you can still get duplicate rows in Delta if your sink isn't idempotent.' Which position is most accurate?",
+    "options": [
+      "The first team is right: Structured Streaming's built-in checkpoint mechanism guarantees that each Kafka record is reflected in the Delta sink exactly once, regardless of failures and retries.",
+      "The colleague is right: Structured Streaming guarantees exactly-once *processing semantics* (each record is processed exactly once in the computation graph), but this does not prevent duplicate rows in the Delta sink if the sink write is not idempotent \u2014 a failed micro-batch that partially wrote to Delta before crashing will leave partial results that are re-written on retry.",
+      "Both are wrong: Structured Streaming provides at-most-once semantics by default; exactly-once requires enabling `spark.sql.streaming.checkpointLocation` and a transactional sink.",
+      "The colleague is wrong: Delta Lake's ACID transactions provide idempotency \u2014 a retried micro-batch that writes the same data is automatically de-duplicated by Delta's transaction log."
+    ],
+    "correct_option": 1,
+    "explanation": "Structured Streaming with checkpointing provides **exactly-once processing semantics** in the computation: the same Kafka record is never aggregated or processed twice. However, 'exactly-once' at the *output* level requires that the sink also supports idempotent or transactional writes.\n\nFor Delta Lake: Structured Streaming's Delta sink uses transactional commits (each micro-batch is an atomic Delta transaction). If a micro-batch's write is committed before a crash, it will not be re-written on retry (the checkpoint records it as committed). If the write failed before commit, the retry writes the same data \u2014 and Delta's ACID transaction either succeeds cleanly or fails cleanly, preventing partial commits.\n\nSo in practice: Structured Streaming + Delta Lake *does* provide end-to-end exactly-once semantics, but this is because Delta's atomic commit mechanism provides sink-level idempotency. A non-idempotent sink (e.g., appending to a plain S3 file) would not have this guarantee.\n\nOption 0 is wrong as an unconditional statement: exactly-once at the sink depends on the sink's transactional properties.\n\nOption 2 is wrong: Structured Streaming provides at-least-once by default (checkpoint resumes from last committed offset); with idempotent sinks it achieves exactly-once.\n\nOption 3 is partially right (Delta does provide idempotency for Structured Streaming writes via transaction logging) but is not the correct characterisation of the overall guarantee.",
+    "hints": [
+      "Exactly-once processing means computations don't run twice. Exactly-once delivery means the sink doesn't receive duplicates. Are these the same thing?",
+      "What does Delta Lake's atomic commit do when a micro-batch is retried after a partial failure?"
+    ],
+    "concepts": [
+      "STRUCTURED STREAMING",
+      "FAULT TOLERANCE & RECOVERY",
+      "DELTA LAKE & DATA LAKE FORMATS"
+    ]
+  },
+  {
+    "id": 42089,
+    "order": 89,
+    "topic": "pyspark",
+    "type": "debug",
+    "difficulty": "medium",
+    "mock_only": true,
+    "parent_id": 42088,
+    "follow_up_dimension": "quality_pivot",
+    "title": "Streaming Pipeline Produces Duplicate Rows in Delta After a Kafka Rebalance",
+    "description": "Three days after launch, the Delta sink has 2\u20133% duplicate event_ids. Investigation shows: Kafka consumer group rebalanced twice in the past week (Kafka partition reassignment). The checkpoint files are intact and show the expected committed offsets. The Spark version is 3.2 and `foreachBatch` is used as the sink, writing with `df.write.format('delta').mode('append').save(path)`. Root cause?",
+    "options": [
+      "Kafka consumer rebalances cause Structured Streaming to re-read records from the last committed offset; since the checkpoint is intact, no records are re-read \u2014 the duplicates are caused by a separate issue.",
+      "Using `foreachBatch` with `df.write.format('delta').mode('append')` is not idempotent: if the `foreachBatch` function runs but the Spark job crashes before the streaming checkpoint is updated, the next run re-executes the same batch and appends the same rows again. The fix is to write with Delta's idempotent `foreachBatch` using the batch_id as a deduplication key.",
+      "Kafka rebalances cause the Structured Streaming source to restart from `earliest` offsets, ignoring the checkpoint; all records from the beginning of the Kafka topic are re-processed.",
+      "The duplicate rows are caused by Spark's speculative execution running multiple copies of the foreachBatch function concurrently; disable speculative execution to prevent duplicate writes."
+    ],
+    "correct_option": 1,
+    "explanation": "Using `foreachBatch` with an append write breaks Structured Streaming's exactly-once guarantee. The streaming engine commits micro-batch offsets to the checkpoint *after* the `foreachBatch` function completes. If the function's Delta write succeeds but the process crashes before the checkpoint commit is written, the next run sees the batch as uncommitted and re-executes it \u2014 appending the same rows to Delta again.\n\nThe fix: use the `batch_id` parameter passed to `foreachBatch` as an idempotency key. Before writing, check if a Delta table already has a commit with that `batch_id` (using Delta's `txnAppId` + `txnVersion` options), and skip if already committed. This is exactly the pattern Databricks documents for idempotent `foreachBatch` sinks.\n\nAlternately, use the built-in `writeStream.format('delta')` without `foreachBatch` \u2014 it handles idempotency internally.\n\nOption 0 is wrong: the rebalance itself is not the root cause with an intact checkpoint (checkpointing handles rebalances). But the duplicates are real \u2014 caused by the `foreachBatch` idempotency gap.\n\nOption 2 is wrong: Structured Streaming uses the checkpoint to resume from the last committed offset, not from `earliest`. Rebalances trigger a consumer group reassignment but Spark's checkpoint tracks offsets independently of consumer group state.\n\nOption 3 is wrong: speculative execution runs duplicate tasks for Spark stages, but `foreachBatch` is called at the streaming framework level (not at the task level) and is not affected by speculative execution.",
+    "hints": [
+      "The checkpoint is committed *after* the foreachBatch function completes. What happens if the job crashes after the Delta write but before the checkpoint commit?",
+      "What makes a foreachBatch sink idempotent \u2014 how do you detect a retried batch?"
+    ],
+    "concepts": [
+      "STRUCTURED STREAMING",
+      "FAULT TOLERANCE & RECOVERY",
+      "DELTA LAKE & DATA LAKE FORMATS"
+    ]
+  },
+  {
+    "id": 42090,
+    "order": 90,
+    "topic": "pyspark",
+    "type": "optimization",
+    "difficulty": "medium",
+    "mock_only": true,
+    "parent_id": 42088,
+    "follow_up_dimension": "performance_pivot",
+    "title": "Structured Streaming Trigger Interval: Latency vs Throughput Trade-Off",
+    "description": "The streaming pipeline (Kafka \u2192 Delta) currently uses `.trigger(processingTime='30 seconds')`. Peak Kafka throughput is 50K events/second. The team wants to reduce end-to-end latency to under 5 seconds. They propose: (A) change to `.trigger(processingTime='1 second')`, (B) change to `.trigger(continuous='1 second')`. Which is safer and why?",
+    "options": [
+      "Option A (processingTime='1 second') is safer: it keeps the micro-batch model with its exactly-once guarantees and Delta atomic commits; reducing the trigger interval lowers latency at the cost of more frequent (smaller) Delta transactions.",
+      "Option B (continuous='1 second') is safer: continuous processing mode uses lower-latency epoch-based commits instead of micro-batches; it achieves sub-second latency and retains exactly-once guarantees for Delta sinks.",
+      "Both are equivalent: `processingTime='1 second'` and `continuous='1 second'` produce the same throughput and latency; the difference is only internal scheduling.",
+      "Option A is safer for correctness; Option B provides lower latency but may produce duplicate rows in Delta when continuous processing epochs overlap \u2014 use B only if duplicates are acceptable."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A (`processingTime='1 second'`) is the safer choice. It remains in the standard micro-batch model where Structured Streaming's exactly-once guarantees and Delta Lake's atomic commit are fully supported. At 1-second intervals, each micro-batch processes ~50K events, commits atomically to Delta, and advances the checkpoint \u2014 providing ~1-second latency.\n\nOption B (continuous processing mode) is an experimental feature in Spark 3.x that lowers latency to milliseconds using an epoch-based model. However:\n1. It has limited operator support (no stateful operations, no aggregations) \u2014 a pipeline with `groupBy` or `withWatermark` cannot use continuous mode.\n2. Its exactly-once guarantees for sink integrations (especially Delta) are not as well-established as the micro-batch model.\n3. It was marked experimental in Spark 3.x and has limited production adoption.\n\nFor most production Delta streaming pipelines, micro-batch at 1-5 seconds is the recommended latency target.\n\nOption 1 is wrong about continuous mode: it does not retain 'exactly-once guarantees for Delta sinks' to the same degree as micro-batch, and it does not support all Structured Streaming operators.\n\nOption 2 is wrong: `processingTime='1s'` and `continuous='1s'` are fundamentally different execution models.\n\nOption 3 is wrong: duplicate rows from continuous processing are not a documented characteristic; the limitations are about operator support and experimental status.",
+    "hints": [
+      "Continuous processing mode in Spark 3.x has operator restrictions. Does the team's pipeline use any stateful operations (groupBy, withWatermark)?",
+      "Which trigger model has the more established production track record for exactly-once Delta writes?"
+    ],
+    "concepts": [
+      "STRUCTURED STREAMING",
+      "PERFORMANCE TUNING & TRADE-OFFS",
+      "FAULT TOLERANCE & RECOVERY"
+    ]
+  },
+  {
+    "id": 42091,
+    "order": 91,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "pivot + fill: What Happens to Missing Category Columns?",
+    "description": "```python\ndf = spark.createDataFrame([\n    ('A', 'cat1', 10), ('A', 'cat2', 20),\n    ('B', 'cat1', 30),  # B has no cat2 row\n], ['group', 'category', 'value'])\n\nresult = df.groupBy('group').pivot('category').sum('value').fillna(0)\nresult.show()\n```\nWhat does `result.show()` output?",
+    "options": [
+      "group=A: cat1=10, cat2=20; group=B: cat1=30, cat2=null. `fillna(0)` does not apply to pivot-generated columns because they are created after the fillna call.",
+      "group=A: cat1=10, cat2=20; group=B: cat1=30, cat2=0. `pivot` creates a column for each distinct category value; missing combinations produce null, which `fillna(0)` replaces with 0.",
+      "group=A: cat1=10, cat2=20; group=B: cat1=30, cat2=0. But `pivot` fails if `fillna` is chained directly \u2014 use `.na.fill(0)` instead.",
+      "group=A: cat1=10.0, cat2=20.0; group=B: cat1=30.0, cat2=0.0. `pivot` with `sum` always produces DoubleType columns; 0 becomes 0.0."
+    ],
+    "correct_option": 1,
+    "explanation": "`pivot` generates one column per distinct value in the pivot column (`category`). For group='B' which has no `cat2` row, the `sum('value')` for (B, cat2) produces `null`. Chaining `.fillna(0)` replaces null numeric values with 0.\n\nResult:\n- group=A: cat1=10, cat2=20\n- group=B: cat1=30, cat2=0\n\nOption 0 is wrong: `.fillna(0)` does apply to pivot-generated columns. The chain `pivot().sum().fillna(0)` is valid PySpark syntax and fills nulls in all numeric columns including pivoted ones.\n\nOption 2 is wrong: `.fillna(0)` and `.na.fill(0)` are equivalent in PySpark \u2014 `fillna` is an alias for `DataFrame.na.fill`. Chaining `fillna` directly after `pivot().sum()` is valid.\n\nOption 3 is wrong about data types: `pivot` with `sum('value')` preserves the column type of `value`. Since `value` is LongType (integer literals create LongType in createDataFrame), the pivoted columns are LongType \u2014 not DoubleType. The values are 10, 20, 30, 0 (LongType), not 10.0, 20.0, etc.",
+    "hints": [
+      "For group='B' which has no 'cat2' row, what value does `pivot().sum('value')` produce for the cat2 column?",
+      "Does `.fillna(0)` apply to pivot-generated columns?"
+    ],
+    "concepts": [
+      "COLLECTION & ARRAY OPERATIONS",
+      "SCHEMA & TYPE HANDLING",
+      "OUTPUT SANITY VALIDATION"
+    ]
+  },
+  {
+    "id": 42092,
+    "order": 92,
+    "topic": "pyspark",
+    "type": "debug",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Schema Inference on Evolving JSON Source: Silent Field Loss",
+    "description": "A pipeline reads a directory of JSON files using `spark.read.json(path)`. The directory contains files from January (schema: `{id, name, amount}`) and files from February (schema: `{id, name, amount, currency}`). Schema inference is set to the default (infer from a sample). After running, the `currency` column is missing from all February rows even though the files contain it. Why?",
+    "options": [
+      "Spark's JSON schema inference samples the first file found in the directory; if that file is from January (no `currency`), the inferred schema lacks `currency` and the February rows' `currency` field is silently dropped during parsing.",
+      "JSON schema inference merges schemas from all files; since `currency` is absent in January files, it is inferred as nullable and filled with null \u2014 it should be present, not missing. The actual cause is that the JSON files have a case mismatch (`Currency` vs `currency`).",
+      "Spark's JSON reader requires explicit schema when reading evolving JSON; without a schema, it defaults to `StringType` for all columns and the nested `currency` field is converted to a JSON string, appearing to be missing.",
+      "The `currency` field is present but typed as `NullType` in the inferred schema because most files lack it; Spark drops `NullType` columns before returning the DataFrame."
+    ],
+    "correct_option": 0,
+    "explanation": "By default, `spark.read.json(path)` infers schema by sampling a subset of files (or the first file, depending on the implementation and version). If the sampled files don't include the `currency` field (because sampled files are all from January), the inferred schema does not include `currency`. When Spark then reads the February files with this inferred schema, the `currency` field is silently ignored \u2014 it's not in the schema, so the parser discards it.\n\nFix options:\n1. Provide an explicit schema that includes `currency` as a nullable field.\n2. Enable schema merging: `spark.read.option('mergeSchema', 'true').json(path)` \u2014 though this is more relevant for Parquet/Delta. For JSON, `samplingRatio=1.0` ensures all files are sampled.\n3. Use `spark.read.option('samplingRatio', '1.0').json(path)` to force full-file sampling (expensive but complete).\n\nOption 1 is partially right but overstates 'first file'. Schema inference samples a fraction of files, and if those samples don't include February files, the result is the same.\n\nOption 2 is wrong: JSON schema inference for Spark JSON reads does not merge schemas across files by default the same way Delta does. The behaviour without explicit `mergeSchema` option is to infer from the sample.\n\nOption 3 is wrong: Spark does not drop NullType columns; and the currency field is fully populated in February files, not null.",
+    "hints": [
+      "Spark infers JSON schema from a sample of the input files. What happens to fields that appear in unsampled files?",
+      "If the inferred schema doesn't include `currency`, what does Spark do when it encounters that field while parsing a February file?"
+    ],
+    "concepts": [
+      "SCHEMA & TYPE HANDLING",
+      "DATA QUALITY SKEPTICISM",
+      "FILE FORMATS & READERS"
+    ]
+  },
+  {
+    "id": 42093,
+    "order": 93,
+    "topic": "pyspark",
+    "type": "optimization",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Broadcast Join Threshold: When Not to Broadcast",
+    "description": "A pipeline joins `orders` (5 TB) with `products` (400 MB). The team sets `spark.sql.autoBroadcastJoinThreshold=500mb` so `products` is automatically broadcast. In production, 10% of executor tasks fail with OOM errors during the join. Cluster: 50 executors \u00d7 8 cores \u00d7 16 GB heap per executor. What is the most likely root cause?",
+    "options": [
+      "The 400 MB products table is serialised and sent to every executor; each executor stores one copy (400 MB). With 8 cores per executor, 8 tasks run concurrently, each accessing the same 400 MB broadcast \u2014 no per-task memory overhead beyond the single shared copy.",
+      "The 400 MB broadcast estimate is based on compressed Parquet size; the in-memory deserialized representation is 3\u20135\u00d7 larger (1.2\u20132 GB per executor). With 8 concurrent tasks each holding a reference to the 2 GB broadcast object plus their 5 TB-share partitions, the 16 GB heap is exhausted.",
+      "Spark sends the 400 MB table to all 50 executors simultaneously, saturating the driver's network bandwidth and causing task timeouts that manifest as OOM-like errors.",
+      "The OOM is caused by the orders table's shuffle partitions being too large; the broadcast join does not perform a shuffle for orders and each task receives the entire orders partition plus the 400 MB broadcast \u2014 reduce `spark.sql.shuffle.partitions` to split orders partitions smaller."
+    ],
+    "correct_option": 1,
+    "explanation": "The 400 MB figure is based on compressed Parquet on-disk size. When deserialised into JVM heap objects (strings, nested structs, etc.), the in-memory footprint can be 3\u20135\u00d7 larger \u2014 1.2 to 2 GB. This broadcast object is shared across all tasks on an executor (one copy per executor), but the heap pressure from the broadcast object competes with:\n- The per-task working memory (probe-side partition processing)\n- JVM overhead, Kryo/Java serialisation buffers\n- GC headroom (typically 30% of heap reserved)\n\nWith 16 GB heap, ~5 GB for GC headroom, ~2 GB for the broadcast table, and 8 concurrent tasks each holding probe-side data, the available heap per task can be too small for large orders partitions.\n\nFix: lower the broadcast threshold back below 400 MB (e.g., 100 MB) so Spark uses a sort-merge join instead; sort-merge joins spill to disk and are more memory-efficient for large tables.\n\nOption 0 is wrong about 'no per-task memory overhead': the broadcast table IS a shared object, but each concurrent task still accesses it from the heap, and heap pressure is cumulative across all tasks on the executor.\n\nOption 2 is wrong: driver network bandwidth saturation would cause timeouts, not OOM. Driver \u2192 executor broadcast is pipelined and generally efficient.\n\nOption 3 is wrong: broadcast join for orders does not shuffle orders \u2014 that's the point. But the partition size for orders tasks is determined by the pre-join partitioning (not `shuffle.partitions`), and reducing `shuffle.partitions` would only affect the shuffle that follows, not the join input size.",
+    "hints": [
+      "The broadcast table size is measured in Parquet bytes. What is the relationship between compressed Parquet size and in-memory JVM object size?",
+      "A broadcast object is shared across all tasks on an executor, but each concurrent task still uses executor heap. What competes with the broadcast table for the 16 GB heap?"
+    ],
+    "concepts": [
+      "JOIN STRATEGY SELECTION",
+      "MEMORY MANAGEMENT",
+      "PERFORMANCE TUNING & TRADE-OFFS"
+    ]
+  },
+  {
+    "id": 42094,
+    "order": 94,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "How Many Spark Jobs Does This Snippet Trigger?",
+    "description": "```python\ndf = spark.read.parquet('/data/events')  # large table\nagg = df.groupBy('region').agg(F.count().alias('cnt'))\nagg.cache()\nagg.count()          # line A\nagg.show()           # line B\nprint(agg.count())   # line C\n```\nHow many Spark jobs are triggered by lines A, B, and C combined?",
+    "options": [
+      "1 job \u2014 `cache()` pre-materialises the DataFrame; lines A, B, and C all read from cache without triggering new jobs.",
+      "3 jobs \u2014 each action (count, show, count) triggers one job regardless of caching.",
+      "2 jobs \u2014 line A triggers one job to compute and cache `agg`; lines B and C read from the cache and each triggers one additional (lightweight cache-read) job. Total: 1 + 1 + 1 = 3 \u2014 wait, that's 3.",
+      "3 jobs \u2014 `cache()` is lazy; it does not compute the DataFrame until the first action. Line A computes and caches (1 job). Lines B and C read from the cache \u2014 but each action still triggers a Spark job to read the cached data and execute the action. Total: 3 jobs."
+    ],
+    "correct_option": 3,
+    "explanation": "`cache()` in PySpark is lazy: calling `agg.cache()` registers the DataFrame for caching but does not compute anything. The first action that evaluates `agg` triggers computation AND caches the result. Subsequent actions read from the in-memory cache but still trigger Spark jobs \u2014 a job is needed to distribute the reading of cached partitions across executors and perform the action (count, show, etc.).\n\n- Line A (`agg.count()`): first evaluation \u2192 computes groupBy, caches result, counts rows. **1 job**.\n- Line B (`agg.show()`): reads from cache, retrieves rows to display. **1 job** (a cache-read job is still a Spark job).\n- Line C (`print(agg.count())`): reads from cache, counts rows. **1 job**.\n\nTotal: **3 jobs**.\n\nOption 0 is wrong: `cache()` does not pre-materialise the DataFrame. It is lazy.\n\nOption 1 is correct \u2014 3 jobs \u2014 but describes it as '3 jobs regardless of caching' which is misleading. With caching, jobs B and C are faster (reading from memory) but still occur.\n\nOption 2 self-corrects mid-answer, revealing it reaches 3 \u2014 the correct answer \u2014 but is formatted as a distractor.\n\nOption 3 correctly explains the lazy evaluation of `cache()` and why each action triggers a job.",
+    "hints": [
+      "Is `cache()` lazy or eager in PySpark? When is the DataFrame actually computed and stored?",
+      "Does reading from a cached DataFrame still trigger a Spark job, or does it bypass the job scheduler?"
+    ],
+    "concepts": [
+      "CACHING & PERSISTENCE",
+      "EXECUTION MODEL REASONING",
+      "LAZY EVALUATION & LINEAGE"
+    ]
+  },
+  {
+    "id": 42095,
+    "order": 95,
+    "topic": "pyspark",
+    "type": "debug",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Schema Mismatch When Appending to Existing Parquet Directory",
+    "description": "A weekly pipeline appends new data to an existing Parquet directory using `df.write.mode('append').parquet(path)`. Last week's schema had `(id LONG, name STRING, amount DOUBLE)`. This week's `df` has `(id LONG, name STRING, amount FLOAT)` \u2014 `amount` changed from DOUBLE to FLOAT due to an upstream schema change. The write succeeds. A downstream job reading the full directory with `spark.read.parquet(path)` fails with:\n```\norg.apache.spark.sql.AnalysisException: Failed to merge fields 'amount' and 'amount'.\nFailed to merge incompatible data types DoubleType and FloatType\n```\nRoot cause and fix?",
+    "options": [
+      "The Parquet writer detected the schema mismatch and wrote the new files with DOUBLE (upcast from FLOAT); the reader fails because it cannot distinguish which files used FLOAT. Fix: always provide an explicit schema at read time.",
+      "Parquet is a schema-on-write format: the write succeeded because each file is self-describing. The read fails because the reader infers a merged schema across files and cannot automatically unify DOUBLE (old files) and FLOAT (new files). Fix: cast `amount` to DOUBLE before writing this week's data, then re-run.",
+      "The append write should have failed but Spark's `mode('append')` silently ignores schema mismatches; the resulting directory has corrupt files. Fix: use `mergeSchema=True` at write time to force schema reconciliation.",
+      "FLOAT and DOUBLE are binary-compatible in Parquet's type system; the error is caused by the Parquet footer metadata version mismatch between old and new files. Fix: run a REWRITE operation to standardise footer versions."
+    ],
+    "correct_option": 1,
+    "explanation": "Parquet is schema-on-write: each file embeds its own schema in a footer. The week-1 files record `amount` as DOUBLE; the week-2 files record `amount` as FLOAT. Both writes succeed independently because each file is self-consistent.\n\nThe read fails at schema inference time: `spark.read.parquet(path)` reads all files and attempts to merge their schemas. DOUBLE and FLOAT are distinct Parquet types and Spark's schema merger cannot automatically promote or unify them \u2014 it raises `Failed to merge incompatible data types`.\n\nFix: cast `amount` to DOUBLE in the new `df` before writing: `df.withColumn('amount', F.col('amount').cast('double'))`. Alternatively, provide an explicit schema at read time that specifies `amount` as DOUBLE and casts all files accordingly.\n\nOption 0 is wrong: the Parquet writer does not automatically upcast FLOAT to DOUBLE. It writes exactly what the DataFrame schema specifies.\n\nOption 2 is wrong: `mode('append')` does not perform schema validation against existing files \u2014 it writes the new data as-is. This is the expected behaviour. `mergeSchema=True` is a read-side option, not a write-side option, and does not apply to plain Parquet writes.\n\nOption 3 is wrong: FLOAT (32-bit) and DOUBLE (64-bit) are distinct Parquet primitive types and are not binary-compatible. Footer version is unrelated.",
+    "hints": [
+      "Each Parquet file stores its schema in its footer. Do all files in a directory need to have the same schema?",
+      "When Spark reads a directory of Parquet files, what does it do with schemas from different files? Can it merge DOUBLE and FLOAT automatically?"
+    ],
+    "concepts": [
+      "SCHEMA & TYPE HANDLING",
+      "FILE FORMATS & READERS",
+      "DEBUG SPARK ERRORS"
+    ]
+  },
+  {
+    "id": 42096,
+    "order": 96,
+    "topic": "pyspark",
+    "type": "scenario",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Choosing Between persist(MEMORY_AND_DISK) and cache()",
+    "description": "A pipeline computes an expensive feature-engineering DataFrame (`features`, 50 GB after computation) that is used 4 times in the same Spark application. The cluster has 100 GB total executor memory. A data engineer uses `features.cache()`. During the third reuse, two executors OOM and their tasks are recomputed from scratch (re-running the full feature engineering pipeline). What change would prevent the recomputation?",
+    "options": [
+      "Switch from `cache()` to `features.persist(StorageLevel.MEMORY_AND_DISK)`: if the 50 GB exceeds available executor memory, `MEMORY_AND_DISK` spills partition data to local disk rather than evicting it. Reuses read from disk instead of recomputing from the source.",
+      "Switch from `cache()` to `features.persist(StorageLevel.DISK_ONLY)`: storing on disk is faster than recomputing and uses no executor memory, eliminating the OOM entirely.",
+      "Switch from `cache()` to `features.persist(StorageLevel.MEMORY_ONLY_SER)`: serialised in-memory storage is 2\u20135\u00d7 more compact than the default deserialised format, reducing memory footprint from 50 GB to 10\u201325 GB and preventing OOM.",
+      "Increase `spark.memory.fraction` from 0.6 to 0.9: this allocates 90% of executor heap to Spark's unified memory, giving cache more headroom and preventing eviction of `features` partitions."
+    ],
+    "correct_option": 0,
+    "explanation": "`cache()` is equivalent to `persist(StorageLevel.MEMORY_ONLY)`. When the cached data exceeds available executor memory, Spark evicts (drops) cache partitions using LRU. The next time those partitions are needed, Spark recomputes them from scratch using the full lineage \u2014 re-running the expensive feature engineering pipeline.\n\n`persist(StorageLevel.MEMORY_AND_DISK)` spills evicted partitions to local executor disk instead of dropping them. Subsequent reuses read from disk (slower than memory but far faster than full recomputation). This directly solves the recomputation problem.\n\nOption 1 is wrong: `DISK_ONLY` writes all partitions to disk (no memory use), which avoids OOM but causes disk I/O for every access \u2014 slower than memory for the first 2 accesses. It does eliminate recomputation, making it a valid alternative, but MEMORY_AND_DISK is better for repeated in-order access.\n\nOption 2 is partially right: `MEMORY_ONLY_SER` does reduce memory footprint but adds CPU overhead for deserialisation. If 50 GB compresses to 10\u201325 GB and that fits in 100 GB cluster memory (with headroom for concurrent tasks), it prevents OOM. However, if the workload is CPU-bound, serialisation overhead is costly \u2014 and if the data is highly compressible, this is worth trying.\n\nOption 3 is risky: increasing `spark.memory.fraction` to 0.9 leaves only 10% of heap for task execution overhead (JVM objects, stacks, etc.), often causing more OOMs than it prevents. This is an advanced tuning option with diminishing returns and higher risk.",
+    "hints": [
+      "`cache()` is MEMORY_ONLY: what happens to partitions that don't fit in memory \u2014 are they spilled or dropped?",
+      "What does MEMORY_AND_DISK do differently when a partition can't fit in memory?"
+    ],
+    "concepts": [
+      "CACHING & PERSISTENCE",
+      "MEMORY MANAGEMENT",
+      "PERFORMANCE TUNING & TRADE-OFFS"
+    ]
   }
 ]

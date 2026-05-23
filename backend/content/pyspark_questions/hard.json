@@ -2089,5 +2089,569 @@
       "SCHEMA & TYPE HANDLING",
       "DATA QUALITY SKEPTICISM"
     ]
+  },
+  {
+    "id": 43073,
+    "order": 73,
+    "topic": "pyspark",
+    "type": "optimization",
+    "difficulty": "hard",
+    "mock_only": true,
+    "follow_ups": [
+      43074,
+      43075
+    ],
+    "title": "Pandas UDF Batch Size vs Partition Size: Memory Budget at Scale",
+    "description": "A `@pandas_udf` applies a 500 MB scikit-learn model to each row of a `features` DataFrame (1 TB, 50 M rows, 200 FLOAT32 columns). Config: `spark.sql.execution.arrow.maxRecordsPerBatch=10000`. Executors: 32 GB heap, 8 cores. The job OOMs on 20% of tasks. Memory profiling shows three concurrent peaks per task: (1) JVM input partition buffer, (2) Arrow IPC transfer buffer, (3) Python pandas DataFrame. Which config change most directly reduces peak memory?",
+    "options": [
+      "Reduce `maxRecordsPerBatch` from 10000 to 1000: this shrinks peaks (2) and (3) by 10\u00d7 at the cost of more Arrow round-trips.",
+      "Increase executor heap from 32 GB to 64 GB: this directly addresses the OOM without changing the memory model.",
+      "Switch from `@pandas_udf` to a scalar `@F.udf`: scalar UDFs process one row at a time, eliminating batch buffer peaks (2) and (3).",
+      "Repartition `features` to 50000 partitions before the UDF: smaller partitions reduce peak (1) but peaks (2) and (3) remain bounded by `maxRecordsPerBatch`."
+    ],
+    "correct_option": 0,
+    "explanation": "`maxRecordsPerBatch` directly controls the size of the Arrow IPC transfer buffer (peak 2) and the resulting pandas DataFrame in Python memory (peak 3). At 10000 rows \u00d7 200 FLOAT32 columns, each batch is ~8 MB \u2014 manageable in isolation. But the UDF also holds the 500 MB model plus task execution overhead. Reducing to 1000 rows per batch drops peaks (2) and (3) to ~0.8 MB each, significantly reducing concurrent memory pressure per task. The trade-off is more Arrow round-trips, but for a CPU-heavy model scoring workload, Arrow serialisation overhead is negligible compared to inference time.\n\nOption 1 (more heap) masks the problem; at larger scale or with a bigger model, OOM recurs. It does not address the root cause.\n\nOption 2 is dangerous: a scalar UDF loads the 500 MB model once per row (unless memoised), which is catastrophically slow. The batch model of `@pandas_udf` is necessary to amortise model loading cost.\n\nOption 3 reduces peak (1) (JVM partition buffer) by creating more, smaller partitions. But peaks (2) and (3) are controlled by `maxRecordsPerBatch`, not partition size \u2014 smaller partitions don't shrink the per-batch buffer.",
+    "hints": [
+      "`maxRecordsPerBatch` controls how many rows are in each Arrow IPC transfer. What does that control about the pandas DataFrame size in Python?",
+      "All three peaks exist simultaneously per task. Which config directly shrinks two of the three peaks?"
+    ],
+    "concepts": [
+      "UDF & PYTHON BOUNDARY",
+      "MEMORY MANAGEMENT",
+      "PERFORMANCE TUNING & TRADE-OFFS"
+    ]
+  },
+  {
+    "id": 43074,
+    "order": 74,
+    "topic": "pyspark",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 43073,
+    "follow_up_dimension": "scale_pivot",
+    "title": "pandas UDF at 10\u00d7 Scale: Model Reload Becomes the Bottleneck",
+    "description": "After reducing `maxRecordsPerBatch` to 1000, the OOM is fixed at 1 TB. At 10\u00d7 scale (10 TB, 500 M rows), task time doubles. Profiling shows 90% of time is model loading: the 500 MB scikit-learn model is loaded from S3 inside the UDF on every batch call (the model path is a Python closure variable). How should this be fixed?",
+    "options": [
+      "Increase `maxRecordsPerBatch` to 100000 to amortise model load cost across more rows per batch, reducing total S3 reads from 500K to 5K.",
+      "Use `spark.sparkContext.broadcast(model)` to serialise the model to each executor once; executors deserialise it from the broadcast variable instead of reading from S3.",
+      "Use `mapPartitions` with a partition-level initialisation block: load the model once at the start of each partition's iterator, then apply it to all rows within that partition without reloading per batch.",
+      "Cache the `features` DataFrame before the UDF; the cache eliminates repeated feature reads that are triggering extra model loads per partition."
+    ],
+    "correct_option": 2,
+    "explanation": "The model is loaded once per batch (every 1000 rows). At 500 M rows with 1000 rows/batch: 500,000 S3 model loads \u00d7 500 MB each \u2014 catastrophically expensive.\n\n`mapPartitions` runs a Python iterator function once per partition. Structure:\n```python\ndef score_partition(rows):\n    model = load_model_from_s3(path)  # once per partition\n    for batch in make_batches(rows, size=1000):\n        yield from model.predict(batch)\ndf.rdd.mapPartitions(score_partition)\n```\nThe model loads once per partition. With 5,000 partitions (at 100K rows each for 500 M rows), total S3 loads drop from 500,000 to 5,000 \u2014 a 100\u00d7 reduction.\n\nOption 0 is wrong: larger batches reduce batch count but reintroduce the OOM problem (larger Arrow buffers). The root cause (per-batch model loading) is unchanged \u2014 you'd load the model 5K times instead of 500K.\n\nOption 1 is unreliable: large scikit-learn models often contain C extensions, file handles, or thread-local state that doesn't survive pickling for broadcast. The 500 MB broadcast object also persists in all executor heaps indefinitely.\n\nOption 3 is wrong: caching the `features` DataFrame has nothing to do with model loading. The model is loaded from S3 separately from the input data.",
+    "hints": [
+      "The model is loaded on every batch call. How many batches are there for 500 M rows at 1000 rows/batch? How many S3 reads is that?",
+      "`mapPartitions` provides one Python function call per partition. Where in that function do you put the model load?"
+    ],
+    "concepts": [
+      "UDF & PYTHON BOUNDARY",
+      "PERFORMANCE TUNING & TRADE-OFFS",
+      "EXECUTION MODEL REASONING"
+    ]
+  },
+  {
+    "id": 43075,
+    "order": 75,
+    "topic": "pyspark",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 43073,
+    "follow_up_dimension": "correctness_pivot",
+    "title": "Mutable Closure in pandas UDF: Why Is the Accumulator Always Empty?",
+    "description": "A data scientist adds prediction logging to the UDF using a driver-side list:\n```python\naccumulated = []\n\n@F.pandas_udf('double')\ndef scoring_udf(features: pd.Series) -> pd.Series:\n    scores = model.predict(features)\n    accumulated.append(scores.tolist())\n    return pd.Series(scores)\n\ndf.withColumn('score', scoring_udf('feature_vec')).count()\nprint(len(accumulated))  # prints 0\n```\nWhy is `accumulated` always empty after the job completes?",
+    "options": [
+      "PySpark UDFs are lazy transformations; `accumulated` is not populated until the DataFrame is collected with `.collect()`. After `.collect()`, the list contains all batch predictions.",
+      "The `@pandas_udf` decorator registers the function with Spark's Python serialiser, which captures `accumulated` by value (as an empty list) at decoration time; subsequent mutations on executors affect the serialised copy, not the original.",
+      "PySpark UDF functions execute on executor processes. The `accumulated` closure variable in the UDF is the executor's local copy; mutations never propagate back to the driver process. The driver's `accumulated` remains empty throughout.",
+      "PySpark automatically resets mutable closure variables between micro-batches to prevent state accumulation on long-running streaming jobs; in batch mode, use `spark.range(1).foreach` instead."
+    ],
+    "correct_option": 2,
+    "explanation": "PySpark UDFs (including `@pandas_udf`) execute on **executor** processes, not on the driver. When PySpark serialises the UDF closure and ships it to executors, each executor receives its own copy of `accumulated` (a new empty list in the executor's process heap). Calls to `accumulated.append()` within the UDF modify this executor-local copy. When the task completes, the executor's local list is discarded.\n\nThe driver's `accumulated` list is never touched. After all executor tasks complete, the driver's list is still empty.\n\nFix: use a `SparkContext` Accumulator for additive state that flows from executors to the driver. For complex data (full predictions), write to a side-effect sink (database, object storage) from within the UDF.\n\nOption 0 is wrong: `.count()` is an action that triggers full evaluation. The 'lazy vs eager' distinction is irrelevant here \u2014 the issue is executor vs driver process isolation.\n\nOption 1 correctly identifies closure serialisation as part of the mechanism, but the 'by value at decoration time' framing is imprecise. The core issue is executor vs driver isolation, not decoration-time capture.\n\nOption 3 is fabricated: PySpark does not reset mutable closure variables between batches. There is no such mechanism.",
+    "hints": [
+      "PySpark UDFs run on executor processes. Which process does `accumulated.append()` modify?",
+      "If the executor modifies its own copy of `accumulated`, what is the state of the driver's `accumulated` when the job finishes?"
+    ],
+    "concepts": [
+      "UDF & PYTHON BOUNDARY",
+      "EXECUTION MODEL REASONING",
+      "DEBUG SPARK ERRORS"
+    ]
+  },
+  {
+    "id": 43076,
+    "order": 76,
+    "topic": "pyspark",
+    "type": "optimization",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "repartitionByRange vs repartition for Range-Scan Parquet Writes",
+    "description": "A 500 GB `events` DataFrame is written to Parquet for downstream queries that always filter by `event_ts` in ranges (e.g., `WHERE event_ts BETWEEN '2025-01-01' AND '2025-01-07'`). Two options: (A) `df.repartition(500, 'event_ts')` then write; (B) `df.repartitionByRange(500, 'event_ts')` then write. Which produces better downstream file-skipping, and why?",
+    "options": [
+      "Option A (hash repartition) is better: even distribution across 500 partitions ensures uniformly sized files, which downstream readers prefer for parallelism. Range scans are equally fast because Spark reads all 500 files regardless of partitioning strategy.",
+      "Option B (range repartition) is better: it assigns contiguous `event_ts` ranges to each partition. Each file's min/max statistics cover a narrow timestamp interval; a filter `event_ts BETWEEN date1 AND date2` skips all files whose interval doesn't overlap the query range.",
+      "Both are equivalent: Parquet's internal row-group sorting provides the same file-skipping benefit regardless of whether the partition strategy was hash-based or range-based.",
+      "Option A is better for write performance (balanced tasks); Option B is better for reads. The optimal choice depends on whether the pipeline is write-heavy or read-heavy."
+    ],
+    "correct_option": 1,
+    "explanation": "`repartitionByRange(500, 'event_ts')` assigns contiguous timestamp ranges to partitions \u2014 equivalent to sorting by event_ts and splitting into 500 even-sized chunks. Each Parquet file contains rows from a narrow, non-overlapping timestamp interval. Parquet's per-file column statistics (min/max for `event_ts`) accurately reflect this narrow range.\n\nFor a query `WHERE event_ts BETWEEN '2025-01-01' AND '2025-01-07'`, Spark checks each file's `event_ts` min/max: files entirely outside the date range are skipped. With range-partitioned files covering a full year, a 7-day query reads ~7/365 \u2248 2% of files \u2014 a 50\u00d7 scan reduction.\n\n`repartition(500, 'event_ts')` uses hash partitioning: a hash function maps each `event_ts` to a partition number. Rows with timestamps across the full year are mixed in each partition. Each Parquet file's `event_ts` min/max spans the full time range \u2192 no files can be skipped for any range query.\n\nOption 0 is wrong: range scans are NOT equally fast under hash partitioning. All 500 files are scanned regardless of the query's date range.\n\nOption 2 is wrong: Parquet's internal row-group sorting (within a file) helps skip row groups within a file, but if the file itself spans the full timestamp range, the file cannot be skipped at the file level.\n\nOption 3 is wrong: the choice is not a read vs write trade-off in terms of 'equally valid'. For any range-scan workload, range repartitioning is unambiguously better for reads and only marginally slower to write (one extra sort).",
+    "hints": [
+      "Parquet file skipping uses per-file min/max statistics. What must be true about the timestamp range within each file for file-level skipping to work?",
+      "Does hash partitioning guarantee contiguous timestamp ranges per file?"
+    ],
+    "concepts": [
+      "PARTITIONING STRATEGY",
+      "FILE FORMATS & READERS",
+      "PERFORMANCE TUNING & TRADE-OFFS"
+    ]
+  },
+  {
+    "id": 43077,
+    "order": 77,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "AQE Partition Coalescing: How Many Partitions After a groupBy on 1 GB?",
+    "description": "A groupBy on a 1 GB DataFrame uses `spark.sql.shuffle.partitions=2000`. AQE is enabled with `coalescePartitions.enabled=true` and `advisoryPartitionSizeInBytes=128MB`. After the groupBy shuffle, approximately how many output partitions does AQE produce?",
+    "options": [
+      "2000 \u2014 AQE coalescing applies only to join shuffle stages, not to groupBy aggregation shuffles.",
+      "8 \u2014 1 GB \u00f7 128 MB per coalesced partition \u2248 8 partitions; AQE merges the 2000 shuffle partitions (avg 512 KB each) into ~8 merged partitions targeting 128 MB each.",
+      "1000 \u2014 AQE halves the partition count when input size is below half the initial partition count \u00d7 advisory size.",
+      "2000 \u2014 AQE coalescing statistics are captured after the reduce phase completes; coalescing cannot retroactively merge already-written shuffle partitions."
+    ],
+    "correct_option": 1,
+    "explanation": "AQE's partition coalescing runs after the map stage writes shuffle data and before the reduce stage begins. It reads the actual shuffle write statistics (bytes per partition) and coalesces consecutive small partitions together until the merged size approaches `advisoryPartitionSizeInBytes=128MB`.\n\nFor a 1 GB dataset with 2000 shuffle partitions: average partition = 1 GB / 2000 = 512 KB. AQE merges consecutive partitions: 128 MB / 512 KB \u2248 256 partitions per group. 2000 / 256 \u2248 8 merged partitions. AQE produces approximately **8 partitions**.\n\nOption 0 is wrong: AQE coalescing applies to ALL shuffle stages including groupBy aggregations, not just join shuffles.\n\nOption 2 is wrong: AQE's coalescing algorithm is based on the advisory size target, not a halving rule.\n\nOption 3 is wrong: AQE coalescing operates by rewriting the reduce-stage's partition plan before the reduce tasks start \u2014 it does not need to merge already-written shuffle files. The shuffle map outputs remain at 2000 parts on disk; AQE changes how the reduce tasks read them (each reduce task reads multiple map output parts).",
+    "hints": [
+      "AQE targets `advisoryPartitionSizeInBytes=128MB` per coalesced partition. Given 1 GB total and 2000 partitions at 512 KB average, how many 128 MB groups fit?",
+      "Does AQE coalescing apply to groupBy shuffles, or only to join shuffles?"
+    ],
+    "concepts": [
+      "ADAPTIVE QUERY EXECUTION",
+      "SHUFFLE REASONING",
+      "PARTITIONING STRATEGY"
+    ]
+  },
+  {
+    "id": 43078,
+    "order": 78,
+    "topic": "pyspark",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Salted Join Drops Rows: Floating-Point Salt Overflow",
+    "description": "A team salts a skewed join on `user_id` (hot key: 'bot', 40% of rows):\n```python\nevents_salted = events\n    .withColumn('salt', (F.rand() * 10).cast('int'))\n    .withColumn('uid_s', F.concat_ws('_', 'user_id', F.col('salt').cast('string')))\n\nusers_salted = users\n    .withColumn('salt', F.explode(F.array([F.lit(i) for i in range(10)])))\n    .withColumn('uid_s', F.concat_ws('_', 'user_id', F.col('salt').cast('string')))\n\nresult = events_salted.join(users_salted, 'uid_s', 'inner').drop('salt', 'uid_s')\nresult.count()  # ~10% fewer rows than expected\n```\nWhat causes the row loss?",
+    "options": [
+      "`F.rand()` produces values in [0.0, 1.0); after multiplying by 10 and casting to int, all values are in 0\u20139. The users explode creates copies for range(10) = 0\u20139. No mismatch exists; the row loss is from null `user_id` values in events that produce `uid_s='null_N'` \u2014 no matching user has null user_id.",
+      "`F.rand() * 10` can produce `10.0` in floating-point arithmetic due to IEEE 754 rounding near the upper bound; `cast('int')` of `10.0` yields salt=10, which has no matching entry in users_salted (only salts 0\u20139 were exploded). Events with salt=10 are dropped by the inner join.",
+      "`concat_ws('_', 'user_id', F.col('salt').cast('string'))` silently produces different string representations of integers on different executors due to locale settings \u2014 '10' vs '10.0' \u2014 causing mismatched join keys.",
+      "`F.explode(F.array([F.lit(i) for i in range(10)]))` produces 10 rows per user but with IntegerType salt; `events_salted.salt` is cast to IntegerType as well \u2014 these types match. The 10% loss is because `rand()` is re-evaluated during the join's plan replanning, producing different salt values than the withColumn step."
+    ],
+    "correct_option": 1,
+    "explanation": "`F.rand()` returns values in the range [0.0, 1.0). Multiplied by 10, the theoretical maximum is just below 10.0. However, due to IEEE 754 double-precision floating-point representation and PySpark's internal arithmetic, `rand() * 10` can produce values that round up to exactly `10.0` (or more precisely, the double representation of the value nearest to 10). `cast('int')` truncates toward zero \u2014 `10.0.cast('int') = 10`.\n\nThe `users_salted` explode generates copies for salt values `range(10)` = 0, 1, ..., 9. Salt=10 is not in this list. Events rows that receive salt=10 find no matching user row and are dropped by the inner join. Since ~10% of all rows get salt=10 (approximate 1/10 probability \u00d7 floating-point edge cases), about 10% of rows are lost \u2014 exactly the observed loss.\n\nFix: use modular arithmetic to wrap the salt: `(F.rand() * 10).cast('int') % 10` \u2014 this maps any value including 10 back into 0\u20139.\n\nOption 0 is partially valid as a second concern (null user_ids would also cause drops) but doesn't explain a consistent ~10% loss pattern. The floating-point overflow is the primary cause.\n\nOption 2 is wrong: `concat_ws` uses Java's `Integer.toString()` which is locale-independent and produces consistent string representations.\n\nOption 3 is wrong: `rand()` is evaluated once during the `withColumn` step and materialised as a column in the DataFrame's plan. It is not re-evaluated during join replanning \u2014 Spark's plan stability prevents this.",
+    "hints": [
+      "`F.rand()` returns values in [0.0, 1.0). Can `F.rand() * 10` ever produce exactly 10.0 in IEEE 754 arithmetic?",
+      "The users explode generates salt values 0\u20139. What happens to an events row with salt=10 in an inner join?"
+    ],
+    "concepts": [
+      "DATA SKEW & MITIGATION",
+      "SCHEMA & TYPE HANDLING",
+      "DEBUG SPARK ERRORS"
+    ]
+  },
+  {
+    "id": 43079,
+    "order": 79,
+    "topic": "pyspark",
+    "type": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Predicate Pushdown on Nested Struct Columns: What Catalyst Can See",
+    "description": "A pipeline reads a Parquet table where `metadata` is a `StructType` with fields `category STRING` and `priority INT`. A query filters: `df.filter(F.col('metadata.category') == 'Electronics')`. A colleague claims Catalyst cannot push this predicate into the Parquet reader because it's a nested column \u2014 so all rows are read and filtered post-scan. Is the colleague right?",
+    "options": [
+      "The colleague is right \u2014 Catalyst's predicate pushdown only applies to top-level (non-nested) columns; filtering on `metadata.category` requires reading the full `metadata` struct for every row.",
+      "The colleague is wrong \u2014 Parquet stores struct fields as separate column chunks, each with independent min/max statistics. Catalyst can push an equality predicate on `metadata.category` into the Parquet row-group reader, enabling row-group skipping based on `category` statistics.",
+      "The colleague is partially right \u2014 Catalyst pushes the predicate to Parquet only if `metadata.category` is explicitly declared as a top-level column alias; nested access via dot notation prevents pushdown.",
+      "The colleague is wrong, but for a different reason \u2014 Parquet does not store statistics for string columns by default; the predicate pushes to the file level (skipping files) but not to the row-group level within a file."
+    ],
+    "correct_option": 1,
+    "explanation": "Parquet's columnar format stores nested struct fields as separate column chunks with their own encoding and statistics. `metadata.category` is stored as the column path `metadata.category` in the Parquet file, with per-row-group min/max statistics for that specific nested field.\n\nCatalyst's predicate pushdown is aware of nested column paths and can push equality predicates (`metadata.category = 'Electronics'`) into the Parquet reader as a row-group filter. The Parquet reader evaluates this against the `metadata.category` column's row-group min/max statistics and skips row groups where `'Electronics'` falls outside the [min, max] range.\n\nThis is different from:\n- Array element access by index (`metadata.tags[0]`): Parquet does not store statistics for individual array elements; cannot be pushed down.\n- Map value access by key (`metadata.properties['key']`): similarly, cannot be pushed down.\n- `get_json_object` or UDF results: opaque to Catalyst, no pushdown.\n\nOption 0 is wrong: Catalyst does support predicate pushdown on struct fields.\n\nOption 2 is wrong: dot notation for nested struct access is exactly how Catalyst represents nested column paths in the logical plan, and pushdown works with it.\n\nOption 3 is partially right that Parquet string column statistics are only approximate (min/max on strings may be truncated), but the pushdown mechanism does work for string columns \u2014 it may be less effective for long strings than for numeric types.",
+    "hints": [
+      "How does Parquet physically store fields within a StructType \u2014 as a single blob or as separate column chunks?",
+      "If Parquet stores `metadata.category` as its own column chunk with min/max statistics, can Catalyst use those statistics for row-group skipping?"
+    ],
+    "concepts": [
+      "CATALYST OPTIMIZER",
+      "SCHEMA & TYPE HANDLING",
+      "FILE FORMATS & READERS"
+    ]
+  },
+  {
+    "id": 43080,
+    "order": 80,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "mock_only": true,
+    "follow_ups": [
+      43081,
+      43082
+    ],
+    "title": "explode on Arrays with Null Elements and Null Arrays: Row Count",
+    "description": "```python\ndf = spark.createDataFrame([\n    (1, [10, None, 30]),   # array with a null element\n    (2, None),             # null array\n    (3, []),               # empty array\n    (4, [40, 50]),\n], ['id', 'vals'])\n\nresult = df.withColumn('val', F.explode('vals'))\nresult.show()\n```\nHow many rows does `result` contain, and what happens to rows 2 and 3?",
+    "options": [
+      "6 rows \u2014 row 1 explodes to 3 rows (10, null, 30); row 2 (null array) explodes to 1 row with val=null; row 3 (empty array) explodes to 1 row with val=null; row 4 explodes to 2 rows.",
+      "5 rows \u2014 row 1 explodes to 3 rows (10, null, 30); row 2 (null array) is dropped; row 3 (empty array) is dropped; row 4 explodes to 2 rows.",
+      "5 rows \u2014 row 1 explodes to 3 rows (10, null, 30); row 2 (null array) explodes to 1 row with val=null; row 3 (empty array) is dropped; row 4 explodes to 2 rows.",
+      "4 rows \u2014 `F.explode` drops rows 1's null element, row 2, and row 3; only non-null, non-empty arrays are exploded."
+    ],
+    "correct_option": 1,
+    "explanation": "`F.explode` behaviour:\n- **Null elements in an array**: each element is emitted as a separate row, including null elements. Row 1 \u2192 3 rows: (1, 10), (1, null), (1, 30).\n- **Null array (row 2)**: `F.explode` drops the row entirely. A null array has no elements to explode; the row does not appear in the output.\n- **Empty array (row 3)**: `F.explode` also drops the row. An empty array has zero elements; zero rows are emitted.\n- **Normal array (row 4)**: 2 elements \u2192 2 rows.\n\nTotal: 3 + 0 + 0 + 2 = **5 rows**.\n\nTo preserve rows with null or empty arrays, use `F.explode_outer`: it emits one row with val=null for null arrays and one row with val=null for empty arrays.\n\nOption 0 is wrong: both null arrays and empty arrays produce 0 rows with `F.explode`, not 1 row each.\n\nOption 2 is wrong: a null array is also dropped by `F.explode`, not emitted as a null row.\n\nOption 3 is wrong: null elements WITHIN an array are emitted (row 1's null element appears in the output). Only null and empty ARRAYS (the top-level column) are dropped.",
+    "hints": [
+      "What is the difference between a null element inside an array and a null array (the column itself being null)?",
+      "What does `F.explode` do with a null array column? With an empty array? With an array that contains null elements?"
+    ],
+    "concepts": [
+      "COLLECTION & ARRAY OPERATIONS",
+      "OUTPUT SANITY VALIDATION",
+      "SCHEMA & TYPE HANDLING"
+    ]
+  },
+  {
+    "id": 43081,
+    "order": 81,
+    "topic": "pyspark",
+    "type": "optimization",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 43080,
+    "follow_up_dimension": "scale_pivot",
+    "title": "explode on a Highly Skewed Array Column: Fan-Out and Partition Skew",
+    "description": "A pipeline explodes an `event_tags` array column on a 1 TB `sessions` DataFrame. Most sessions have 2\u20135 tags, but 0.1% of sessions (bot sessions) have 50,000 tags each. After explode, Stage 7 (downstream groupBy on `tag`) has one task running for 8 hours while the rest finish in 2 minutes. The team considers: (A) salt the groupBy key after explode; (B) filter out bot sessions before explode; (C) use `F.explode_outer` instead of `F.explode`. Which is the most targeted fix for the downstream skew?",
+    "options": [
+      "Option C \u2014 `F.explode_outer` preserves null and empty arrays as single null rows, distributing the bot sessions' load more evenly across partitions than `F.explode`.",
+      "Option B \u2014 filtering out bot sessions before `explode` eliminates the source of skew (the 50,000-element arrays) before they are expanded. The downstream groupBy no longer has a single key dominating one partition.",
+      "Option A \u2014 salting the groupBy key distributes the hot tag values across multiple partitions, fixing the downstream shuffle skew regardless of how many tags the bot sessions contributed.",
+      "Option B is correct for eliminating bot skew, but if bot session tags must be counted, use Option A (salt the groupBy) after including bot sessions \u2014 Option B silently drops valid data."
+    ],
+    "correct_option": 3,
+    "explanation": "The root cause has two layers: (1) the explode fan-out amplifies bot sessions from 0.1% of input rows to a much larger fraction of exploded rows (50,000 tags each \u2192 potentially 50M bot rows in the exploded result); (2) those bot tags likely concentrate on common tag values, creating hot keys in the downstream groupBy.\n\nOption B (filter before explode) eliminates the fan-out from bot sessions, preventing the downstream skew. But if bot tags are needed for the count, filtering silently drops valid business data. Option A (salt groupBy) correctly handles the downstream shuffle skew for any groupBy key, including bot-contributed hot tags, without dropping data.\n\nThe most complete answer is Option D: use filtering IF bot sessions are legitimately excluded from the analysis, OR use salting if bot tags must be counted. The question asks for the 'most targeted fix' \u2014 the answer accounts for data correctness.\n\nOption C is wrong: `F.explode_outer` only affects how null/empty arrays are handled \u2014 it doesn't change the 50,000-tag bot rows at all. Bot sessions are not null/empty.\n\nOption B alone is wrong if bot data is required \u2014 it's only correct for data exclusion use cases.\n\nOption A alone is valid but doesn't address the root cause (fan-out amplification); it only treats the downstream symptom.",
+    "hints": [
+      "Option C helps with null/empty arrays \u2014 do bot sessions have null or empty tag arrays?",
+      "If the 50,000-tag bot sessions produce valid tag data that must be counted, is filtering them out before explode the right fix?"
+    ],
+    "concepts": [
+      "COLLECTION & ARRAY OPERATIONS",
+      "DATA SKEW & MITIGATION",
+      "DOUBLE-COUNTING DETECTION"
+    ]
+  },
+  {
+    "id": 43082,
+    "order": 82,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 43080,
+    "follow_up_dimension": "correctness_pivot",
+    "title": "explode_outer vs explode: When the Row Count Matters for a LEFT JOIN",
+    "description": "A reporting pipeline needs a count of sessions per tag, **including sessions with no tags** (they should appear as `tag=null, session_count=1`). The pipeline uses:\n```python\nexploded = sessions.withColumn('tag', F.explode('tags'))  # sessions without tags dropped\nresult = exploded.groupBy('tag').agg(F.countDistinct('session_id').alias('session_count'))\n```\nThe report is missing sessions with no tags. A fix is proposed: replace `F.explode` with `F.explode_outer`. After this fix, what does `result` show for `tag=null`?",
+    "options": [
+      "`tag=null, session_count=<count of sessions with null or empty tags>` \u2014 `explode_outer` emits one row with tag=null for null/empty arrays; the groupBy counts distinct session_ids for these rows.",
+      "`tag=null` does not appear in `result` \u2014 `groupBy` on `tag` drops null keys by default; null tags are excluded from the grouped result.",
+      "`tag=null, session_count=1` \u2014 `explode_outer` produces exactly one null-tag row per session with no tags; each session contributes one null row, so each session is counted once.",
+      "`tag=null` does not appear \u2014 `F.countDistinct` always excludes null values from the distinct count, producing 0 for null-tagged sessions, and Spark drops groups with 0 count."
+    ],
+    "correct_option": 0,
+    "explanation": "`F.explode_outer` emits one row with `tag=null` for each session whose `tags` column is null or empty. If there are 500 sessions with no tags, the exploded DataFrame has 500 rows with `tag=null` (one per session).\n\n`groupBy('tag')` groups all 500 null-tag rows together (null is treated as a group key \u2014 PySpark's groupBy does include null as a distinct group key, unlike SQL's `GROUP BY` in some databases). `countDistinct('session_id')` counts the distinct session_ids in this group \u2014 if each session has a unique session_id, this equals 500.\n\nSo `result` shows `tag=null, session_count=500` (assuming 500 sessions with no tags, each with a unique session_id).\n\nOption 1 is wrong: PySpark's `groupBy` does NOT drop null keys by default. Null values are treated as a valid group, like any other key value.\n\nOption 2 is wrong: If there are 500 sessions with no tags and each contributes one null-tag row, `countDistinct('session_id')` returns 500, not 1. Option 2 would only be correct if there was exactly 1 session with no tags.\n\nOption 3 is partially right that `countDistinct` excludes null values from the count \u2014 but it's counting `session_id`, not `tag`. The `session_id` values for null-tag sessions are non-null (the session exists, just has no tags). So `countDistinct('session_id')` counts those session_ids correctly.",
+    "hints": [
+      "Does PySpark's `groupBy` include null as a valid group key, or does it drop null-key rows?",
+      "`F.countDistinct('session_id')` counts distinct session_id values. Are the session_ids for null-tag sessions themselves null?"
+    ],
+    "concepts": [
+      "COLLECTION & ARRAY OPERATIONS",
+      "SCHEMA & TYPE HANDLING",
+      "OUTPUT SANITY VALIDATION"
+    ]
+  },
+  {
+    "id": 43083,
+    "order": 83,
+    "topic": "pyspark",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Skew-Aware Broadcast: When AQE Converts SMJ to BHJ and Breaks Skew Handling",
+    "description": "A join between `events` (2 TB, hot key: `user_id='bot'` at 35%) and `user_profiles` (50 GB) uses sort-merge join. AQE is enabled with skew-join handling and `autoBroadcastJoinThreshold=10MB`. At runtime, AQE's statistics show `user_profiles` (after applying a `WHERE is_active=true` filter that was pushed down) is actually 7 MB \u2014 below the threshold. AQE converts the join to a broadcast hash join. Stage 9 then OOMs on 3 executors. Root cause?",
+    "options": [
+      "AQE's 7 MB estimate is based on compressed shuffle bytes; decompressed in-memory the broadcast object is 50\u2013100 MB per executor. Combined with 35% of the probe side being hot-key rows processed concurrently, the executor heap is exhausted.",
+      "AQE's broadcast conversion suppressed the skew-join optimisation that was planned for the SMJ. In a BHJ, the probe side (events) is processed locally per partition without shuffle splitting. The hot-key bot partitions \u2014 which would have been split by skew-join in the SMJ plan \u2014 are instead processed as single large tasks. The OOM is caused by large probe-side partitions holding the hot key's rows in memory.",
+      "The 7 MB user_profiles broadcast is too large for the driver to hold and replicate to 200 executors simultaneously; the driver OOM triggers cascading executor failures that appear as executor OOM.",
+      "The BHJ requires each executor to hold a full copy of user_profiles in memory; at 7 MB broadcast this is trivial \u2014 the OOM is caused by unrelated garbage collection pressure from the probe-side processing."
+    ],
+    "correct_option": 1,
+    "explanation": "AQE's skew-join optimisation applies to **sort-merge join** stages: it detects skewed shuffle partitions and splits them, running multiple smaller sub-tasks for the hot key. When AQE converts the join to a **broadcast hash join** (BHJ), the skew-join plan is discarded \u2014 BHJ does not use shuffle partitions for the probe side.\n\nIn the BHJ, `events` partitions are processed locally on each executor (no probe-side shuffle). The hot-key partition for `user_id='bot'` (35% of 2 TB = 700 GB worth of rows) is distributed across executors by the events DataFrame's existing partition layout. If the events partitions are already skewed by bot concentration (which they often are after a groupBy or filter), some executors receive very large probe-side partitions. Without skew-join splitting, these large partitions OOM the executor.\n\nOption 0 is plausible (broadcast decompression overhead) but is a secondary factor. The primary cause is probe-side skew without skew-join mitigation.\n\nOption 2 is wrong: broadcasting 7 MB to 200 executors is trivial network-wise; the driver does not OOM from this.\n\nOption 3 describes a generic GC pressure explanation without identifying the real root cause (probe-side hot-key partition without skew-join splitting).",
+    "hints": [
+      "AQE's skew-join optimisation applies to which join type \u2014 BHJ or SMJ?",
+      "When AQE converts the SMJ to BHJ, what happens to the planned skew-join partition splitting for the probe side?"
+    ],
+    "concepts": [
+      "ADAPTIVE QUERY EXECUTION",
+      "JOIN STRATEGY SELECTION",
+      "DATA SKEW & MITIGATION"
+    ]
+  },
+  {
+    "id": 43084,
+    "order": 84,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Window NTILE vs PERCENT_RANK with Ties: Output for Equal Values",
+    "description": "```python\ndf = spark.createDataFrame([\n    ('A', 100), ('B', 100), ('C', 80), ('D', 80), ('E', 60)\n], ['name', 'score'])\n\nw = Window.orderBy(F.desc('score'))\nresult = df.withColumn('tile', F.ntile(2).over(w)) \\\n           .withColumn('prank', F.percent_rank().over(w))\nresult.orderBy('name').show()\n```\nFor the two rows with score=80 (C and D), what are their `tile` and `prank` values?",
+    "options": [
+      "Both: tile=1, prank=0.5. NTILE(2) assigns the first 2\u20133 rows (of 5) to tile 1; both C and D are in tile 1 because their score is 80. PERCENT_RANK for the 3rd row (score=80) is (3-1)/(5-1)=0.5.",
+      "C: tile=1, prank=0.5; D: tile=2, prank=0.5. NTILE(2) divides 5 rows into 2 groups: group 1 gets 3 rows (ceiling(5/2)), group 2 gets 2 rows. The physical order within tied scores determines group assignment; C and D may split across tiles. Both get prank=0.5 because they share the same rank position.",
+      "Both: tile=2, prank=0.75. NTILE assigns the bottom group to scores below the median (80 < 100 is mid-range; with 2 tiles both C and D go to tile 2). PERCENT_RANK=(3rd rank position)/(5-1)=0.75.",
+      "Both: tile=1, prank=0.5. NTILE(2) assigns the top 3 rows to tile 1 (ceiling of 5/2=3); since C and D both score 80, both are in the same tile determined by their consistent rank position."
+    ],
+    "correct_option": 1,
+    "explanation": "**NTILE(2)** distributes 5 rows into 2 groups: group 1 gets `ceiling(5/2)=3` rows, group 2 gets 2 rows. NTILE assigns groups based on physical row position within the window order. For tied scores (C and D both score 80), their relative order within the tie is non-deterministic (depends on execution). One of {C, D} is assigned to tile 1 (the 3rd slot) and the other to tile 2 (the 4th slot). They CAN be in different tiles.\n\n**PERCENT_RANK** formula: `(rank - 1) / (total_rows - 1)`. A and B both score 100 \u2192 rank=1. C and D both score 80 \u2192 rank=3 (two rows precede them). E scores 60 \u2192 rank=5. PERCENT_RANK for C and D: `(3-1)/(5-1) = 0.5`. Both C and D get `prank=0.5`.\n\nOption 0 has the correct prank (0.5) but incorrect tile: it claims both C and D are in tile=1, ignoring NTILE's physical-position-based splitting of ties.\n\nOption 2 is wrong: NTILE does not use score values for assignment \u2014 it uses physical position after ordering. C and D's prank is 0.5, not 0.75.\n\nOption 3 is wrong about tile: NTILE splits 5 rows into [3, 2], and since C and D are at positions 3 and 4 in the ordered window, one goes to tile 1 (position 3 \u2264 3) and one to tile 2 (position 4 > 3). They may not both be in tile 1.",
+    "hints": [
+      "NTILE(2) assigns the top ceil(n/2) rows to tile 1. With 5 rows, that's 3 rows. Positions 1, 2, 3 \u2192 tile 1; positions 4, 5 \u2192 tile 2. Where are C and D positioned?",
+      "PERCENT_RANK uses the SQL RANK value (which counts from the first tied row, not physical position). What is RANK for C and D with score=80?"
+    ],
+    "concepts": [
+      "WINDOW FUNCTIONS & FRAMES",
+      "OUTPUT SANITY VALIDATION",
+      "SCHEMA & TYPE HANDLING"
+    ]
+  },
+  {
+    "id": 43085,
+    "order": 85,
+    "topic": "pyspark",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Watermark and Multi-Stream Join: Late Data Handling Across Streams",
+    "description": "A Structured Streaming job joins `clickstream` (watermark: 5 min) with `impressions` (watermark: 10 min) on `ad_id` and `user_id` within a 2-minute event-time window. The overall join watermark is determined by Spark's multi-stream watermark policy. An ad impression arrives 8 minutes late. Will this impression be joined correctly, and why?",
+    "options": [
+      "Yes \u2014 the `impressions` stream has a 10-minute watermark; events up to 10 minutes late are included. The join watermark is the maximum of the two stream watermarks (10 min), so 8-minute-late impressions are within tolerance.",
+      "No \u2014 the global join watermark for a multi-stream join is the **minimum** of the two stream watermarks by default (5 min, from `clickstream`). An impression arriving 8 minutes late exceeds the global 5-minute watermark; it is dropped from state before the join can complete.",
+      "Yes \u2014 the `impressions` stream's individual watermark (10 min) governs the state retention for impressions-side rows. Spark maintains impression state for 10 minutes, so an 8-minute-late impression is still in state and joins correctly.",
+      "No \u2014 multi-stream joins require matching watermarks on both sides; since `clickstream` (5 min) and `impressions` (10 min) have different watermarks, Spark falls back to a full state join with no expiry, and no late events are ever dropped."
+    ],
+    "correct_option": 1,
+    "explanation": "For a **multi-stream join** in Structured Streaming, Spark uses the **minimum watermark** across all joined streams as the global watermark for state cleanup. This is the conservative choice to ensure correctness: state is only evicted after ALL joined streams have advanced their watermark past the state's event time.\n\nWith `clickstream` watermark = 5 min and `impressions` watermark = 10 min, the global join watermark = min(5, 10) = **5 minutes**. The system considers a time window 'closed' (safe to evict state) only after both streams' watermarks have passed that window. Since clickstream advances more aggressively (5 min), the global state cleanup is gated by the slower-advancing (by watermark delay) stream.\n\nAn impression arriving 8 minutes late: if clickstream's watermark has already advanced to t, then clickstream's state has cleared records older than t-5min. The impression at t-8min is older than the clickstream state retention cutoff, so the matching clickstream events may already have been evicted. The impression finds no match and is dropped (or emitted as a left-side-only result depending on join type).\n\nOption 0 is wrong: the join watermark is NOT the maximum of the two streams \u2014 it's the minimum.\n\nOption 2 is wrong: individual stream watermarks don't govern the join state independently. The global join watermark (minimum) controls state retention for both sides.\n\nOption 3 is wrong: Spark does not fall back to a full-state join when watermarks differ. The minimum-watermark policy always applies.",
+    "hints": [
+      "For a multi-stream join, is the global watermark the minimum or maximum of the individual stream watermarks?",
+      "With clickstream at 5 min and impressions at 10 min, what is the global join watermark? Does 8-minute-late fall within it?"
+    ],
+    "concepts": [
+      "STRUCTURED STREAMING",
+      "DATA QUALITY SKEPTICISM",
+      "EXECUTION MODEL REASONING"
+    ]
+  },
+  {
+    "id": 43086,
+    "order": 86,
+    "topic": "pyspark",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Catalyst Silently Skipping a Filter After withColumn Overwrites a Column",
+    "description": "```python\ndf = spark.read.parquet('/data/events')\ndf2 = df.withColumn('event_ts', F.to_timestamp('event_ts'))\nresult = df2.filter(F.col('event_ts') > F.lit('2025-01-01').cast('timestamp'))\nresult.explain()\n```\n`explain()` shows the filter IS applied in the physical plan, but the job reads ALL Parquet files without skipping any \u2014 even though `event_ts` has per-file statistics. Why does Catalyst fail to push down the filter?",
+    "options": [
+      "Catalyst pushes the filter on the NEW `event_ts` (TimestampType) into the scan, but the Parquet files store `event_ts` as StringType. The Parquet reader cannot compare a timestamp filter against string statistics, so the pushdown is attempted but the statistics check always passes (no files skipped).",
+      "Catalyst cannot push a filter through a `withColumn` that overwrites a column; the new `event_ts` expression (`to_timestamp(event_ts)`) creates a derived column, and Catalyst does not infer that a filter on the derived column implies a filter on the source column.",
+      "The `F.lit('2025-01-01').cast('timestamp')` creates a non-deterministic expression that Catalyst cannot fold into a constant at plan time; filters with non-constant right-hand sides are not pushed into Parquet scans.",
+      "Parquet predicate pushdown is disabled by default for timestamp columns because Parquet's `INT64 TIMESTAMP` encoding is timezone-dependent; Catalyst avoids pushdown for safety."
+    ],
+    "correct_option": 0,
+    "explanation": "The Parquet files store `event_ts` as a StringType column (the original data type). When `withColumn('event_ts', F.to_timestamp('event_ts'))` converts it, the resulting column in the logical plan is a `to_timestamp` expression applied to the raw string column.\n\nCatalyst attempts predicate pushdown on `event_ts > 2025-01-01T00:00:00`. But the Parquet file's column statistics for `event_ts` are string statistics \u2014 min/max values like `'2024-12-31'` and `'2025-01-15'` as strings. The filter predicate is expressed as a TimestampType comparison, which cannot be directly evaluated against StringType column statistics. The Parquet reader cannot determine file skipping eligibility, so it reads all files.\n\nFix: either (a) store `event_ts` as TimestampType in Parquet from the start, or (b) filter on the raw string column before the conversion: `df.filter(F.col('event_ts') >= '2025-01-01').withColumn('event_ts', F.to_timestamp('event_ts'))`.\n\nOption 1 is wrong: Catalyst CAN push filters through `withColumn` that overwrites a column \u2014 it understands that `to_timestamp('event_ts')` is a deterministic function of the source column and can derive that a filter on the result implies a filter on the source. However, this derivation across type conversion is not always applied.\n\nOption 2 is wrong: `F.lit('2025-01-01').cast('timestamp')` is a constant expression (determined at plan time); Catalyst folds this into a literal timestamp value.\n\nOption 3 is wrong: Parquet predicate pushdown does work for timestamp columns when the Parquet encoding matches the filter type.",
+    "hints": [
+      "The Parquet file stores `event_ts` as StringType. The filter is on a TimestampType derived column. What type are the Parquet column statistics for `event_ts`?",
+      "Can a TimestampType filter be evaluated against StringType min/max statistics in the Parquet reader?"
+    ],
+    "concepts": [
+      "CATALYST OPTIMIZER",
+      "SCHEMA & TYPE HANDLING",
+      "FILE FORMATS & READERS"
+    ]
+  },
+  {
+    "id": 43087,
+    "order": 87,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "mock_only": true,
+    "follow_ups": [
+      43088,
+      43089
+    ],
+    "title": "Window LAG with Default on Partition Boundary: What Is Returned?",
+    "description": "```python\ndf = spark.createDataFrame([\n    ('A', 1, 100), ('A', 2, 200), ('A', 3, 150),\n    ('B', 1, 50),  ('B', 2, 80),\n], ['user', 'ts', 'amount'])\n\nw = Window.partitionBy('user').orderBy('ts')\nresult = df.withColumn('prev_amount', F.lag('amount', 1, -1).over(w))\nresult.orderBy('user', 'ts').show()\n```\nWhat are the `prev_amount` values for rows (A, ts=1) and (B, ts=1)?",
+    "options": [
+      "(A, ts=1): prev_amount=null. (B, ts=1): prev_amount=null. The default value -1 is ignored when there is no previous row; null is always returned for the first row in a partition.",
+      "(A, ts=1): prev_amount=-1. (B, ts=1): prev_amount=-1. The third argument to `lag` is the default value; it is returned when there is no row at the requested offset within the same partition.",
+      "(A, ts=1): prev_amount=-1. (B, ts=1): prev_amount=150 (the last amount from partition 'A'). `lag` with offset=1 looks back 1 row globally (across partitions) when no row exists in the current partition.",
+      "(A, ts=1): prev_amount=0. (B, ts=1): prev_amount=0. PySpark's `lag` returns 0 for IntegerType columns when the offset row is out of bounds, not the specified default."
+    ],
+    "correct_option": 1,
+    "explanation": "`F.lag(column, offset, default)`: returns the value of `column` from `offset` rows before the current row within the same partition, ordered by the window's ORDER BY. If no such row exists (i.e., the current row is at the beginning of its partition and offset=1 would go out of bounds), the `default` value is returned.\n\n- (A, ts=1): first row in partition 'A'; lag offset=1 \u2192 no previous row \u2192 default=-1. `prev_amount=-1`.\n- (B, ts=1): first row in partition 'B'; lag offset=1 \u2192 no previous row \u2192 default=-1. `prev_amount=-1`.\n\n`lag` is strictly partition-aware: it never crosses partition boundaries. (B, ts=1) does not look back into partition 'A'.\n\nOption 0 is wrong: the third argument to `lag` IS used when there is no row at the offset. null is returned only when no default is specified.\n\nOption 2 is wrong: `lag` never crosses partition boundaries. The window's `partitionBy('user')` enforces this \u2014 (B, ts=1) cannot access partition 'A' rows.\n\nOption 3 is wrong: PySpark's `lag` returns the specified default value (not 0) for out-of-bounds offsets when a default is provided. Type coercion to 0 does not occur.",
+    "hints": [
+      "The third argument to `F.lag` is the default value. When is it returned?",
+      "Does `lag` with `partitionBy('user')` ever look across partition boundaries to find a previous row?"
+    ],
+    "concepts": [
+      "WINDOW FUNCTIONS & FRAMES",
+      "OUTPUT SANITY VALIDATION",
+      "SCHEMA & TYPE HANDLING"
+    ]
+  },
+  {
+    "id": 43088,
+    "order": 88,
+    "topic": "pyspark",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 43087,
+    "follow_up_dimension": "performance_pivot",
+    "title": "Window Function on 500 M Rows: Which Partition Strategy Avoids OOM?",
+    "description": "The LAG window is applied to a 500 M row `clickstream` DataFrame partitioned by `user_id` (10 M distinct users, avg 50 events each; max 500K events for top users). Executors: 32 GB heap, 8 cores. The job OOMs on 5% of tasks. Which approach most effectively prevents the OOM without changing executor resources?",
+    "options": [
+      "Add a secondary sort key to the window: `Window.partitionBy('user_id').orderBy('ts', 'event_id')`. Sorting by two columns reduces per-partition memory usage.",
+      "Repartition the DataFrame by `user_id` with a high partition count (e.g., 50000) before the window computation. This reduces per-partition row count and thus per-task memory pressure, at the cost of more tasks.",
+      "Replace the window LAG with a self-join: `df.alias('a').join(df.alias('b'), (col('a.user_id') == col('b.user_id')) & (col('a.ts') == col('b.ts') + 1), 'left')`. Self-joins are more memory-efficient than window functions for large partitions.",
+      "Use `spark.sql.execution.window.rowsBetweenPartitions=true` to allow Spark to split large window partitions across multiple tasks."
+    ],
+    "correct_option": 1,
+    "explanation": "Window functions with `partitionBy` require that all rows for a given `user_id` are co-located on the same executor task. For a user with 500K events \u00d7 (say) 50 bytes/row = 25 MB, this is manageable. But if the wide schema makes rows larger (e.g., 500 bytes \u2192 250 MB for the top user's partition), and 8 concurrent tasks on one executor each process a large-user partition, the combined heap pressure OOMs the executor.\n\nRepartitioning with a higher partition count reduces the chance that multiple large-user partitions land on the same executor simultaneously. It doesn't change the per-user partition size (a user's data must still all be in one partition), but spreading across more tasks reduces co-location of large partitions. This is a pragmatic fix for this memory pressure pattern.\n\nOption 0 is wrong: adding a secondary sort key does not reduce per-partition row count. The same rows still accumulate in memory; more sort columns increase sort overhead.\n\nOption 2 is wrong: a self-join on `ts == ts + 1` requires matching consecutive integer timestamps \u2014 this only works for perfectly sequential integer timestamps with no gaps. Even if the join condition is correct, join-based approaches require shuffles and can be more memory-intensive.\n\nOption 3 is wrong: `spark.sql.execution.window.rowsBetweenPartitions=true` is not a valid PySpark configuration. Window partitions cannot be split across tasks (it would violate window semantics).",
+    "hints": [
+      "Window functions require all rows for a partition key to be in one task. Repartitioning changes how many partitions there are, not the partition key grouping. How does a higher partition count affect which partitions land on the same executor simultaneously?",
+      "Adding a secondary sort key doesn't reduce the number of rows in each partition. What does repartitioning to 50000 change about memory pressure?"
+    ],
+    "concepts": [
+      "WINDOW FUNCTIONS & FRAMES",
+      "MEMORY MANAGEMENT",
+      "PARTITIONING STRATEGY"
+    ]
+  },
+  {
+    "id": 43089,
+    "order": 89,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 43087,
+    "follow_up_dimension": "correctness_pivot",
+    "title": "Window LAG Used in a groupBy Aggregation: Non-Determinism Risk",
+    "description": "```python\ndf = spark.createDataFrame([\n    ('A', 1, 100), ('A', 1, 200),  # ts=1 appears twice for user A\n    ('A', 2, 150),\n], ['user', 'ts', 'amount'])\n\nw = Window.partitionBy('user').orderBy('ts')\nresult = df.withColumn('prev', F.lag('amount', 1).over(w)) \\\n           .groupBy('user').agg(F.sum('prev').alias('total_prev'))\nresult.show()\n```\nFor user='A', what is `total_prev`, and why might the result vary between runs?",
+    "options": [
+      "total_prev=100 always \u2014 the two rows with ts=1 are ordered deterministically (creation order); lag returns null for the first, 100 for the second. groupBy sums: null+100+? for ts=2's lag.",
+      "total_prev varies between runs \u2014 when two rows share the same ORDER BY value (ts=1), their relative order within the window is non-deterministic. The lag value for ts=2 row depends on which ts=1 row was physically last. total_prev could be 100+150_lag or 200+150_lag.",
+      "total_prev=300 always \u2014 lag for ts=2 returns the last ts=1 row's amount (200); sum of non-null lags: null + null + 200 = 200. Wait, that's not 300.",
+      "total_prev=200 always \u2014 lag returns null for the first row of each distinct ts value; with ts=1 having two rows, both get null lag; ts=2's lag returns the last ts=1 value (deterministically 200 as the later row). Sum: null+null+200=200."
+    ],
+    "correct_option": 1,
+    "explanation": "When two rows share the same ORDER BY column value (`ts=1`), their relative order within the window partition is non-deterministic \u2014 it depends on executor task scheduling, data partition layout, and sort implementation details. `F.lag('amount', 1)` for the row at ts=1 position 2 returns the amount of the row at ts=1 position 1, which could be either 100 or 200 depending on which was physically ordered first.\n\nFor ts=2's lag: it returns the amount of the last row at ts=1 position \u2014 which is either 100 or 200 (whichever of the two ts=1 rows was assigned position 2).\n\nThe `total_prev` aggregation sums all non-null lag values. With the two ts=1 rows having non-deterministic order:\n- If ts=1 rows are ordered [100, 200]: lags = [null, 100, 200]. Sum = 300.\n- If ts=1 rows are ordered [200, 100]: lags = [null, 200, 100]. Sum = 300.\n\nWait \u2014 in both cases the sum is 300. The total_prev is actually deterministic at 300 (null + first_lag + second_lag = first_lag + second_lag = 100+200 regardless of order). But the individual lag values are non-deterministic.\n\nOption 1 correctly identifies the non-determinism risk for individual rows, even if the summed total happens to be invariant here. In general, non-determinism in window functions with tied ORDER BY values is a real production risk.\n\nOption 0 is wrong: creation order is not guaranteed to be preserved through a window computation.\n\nOptions 2 and 3 have arithmetic errors.",
+    "hints": [
+      "When two rows have the same ts=1 value, what determines which one is 'first' in the window? Is this deterministic?",
+      "Even if the per-row lag values vary, does the sum of all lag values also vary? Work through both possible orderings."
+    ],
+    "concepts": [
+      "WINDOW FUNCTIONS & FRAMES",
+      "DATA QUALITY SKEPTICISM",
+      "OUTPUT SANITY VALIDATION"
+    ]
+  },
+  {
+    "id": 43090,
+    "order": 90,
+    "topic": "pyspark",
+    "type": "optimization",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Fault Tolerance Cost: Lineage Depth and Recomputation at Scale",
+    "description": "A pipeline chains 12 transformations (all narrow) on a 500 GB DataFrame before a wide groupBy, then chains 8 more narrow transformations on the result. No intermediate checkpointing. An executor failure in Stage 6 (post-groupBy narrow transformations) requires Spark to recompute lost partitions. What is the recomputation scope, and what is the most targeted fix to limit it?",
+    "options": [
+      "Stage 6 recomputes only the lost partitions' transformations from Stage 5's shuffle output (which survived as shuffle data on other executors). Only the 8 post-groupBy narrow transformations are re-executed for the lost partitions.",
+      "Stage 6 failure triggers full re-execution of all 20 transformations (12 pre-groupBy + 8 post-groupBy) for the lost partitions because Spark's lineage traces back to the original source without caching the groupBy output.",
+      "Stage 6 failure triggers recomputation starting from the last shuffle boundary (the groupBy in Stage 5). Spark re-executes the groupBy reduce phase for affected partitions, plus the 8 post-groupBy narrow transformations. The 12 pre-groupBy transformations are not re-executed because their shuffle output (map side) is persisted on surviving executors.",
+      "Stage 6 failure triggers full re-execution including source re-read because Spark does not persist shuffle output on surviving executors \u2014 only the driver's DAG metadata is preserved, not intermediate data."
+    ],
+    "correct_option": 2,
+    "explanation": "Spark's fault tolerance model for RDD/DataFrame transformations:\n\n1. **Narrow transformations** within a stage: if an executor fails, the lost partitions' narrow transformations are re-executed FROM the last stage boundary (shuffle output).\n2. **Shuffle output (map side)**: Spark **does** persist shuffle map outputs on executors (in local disk shuffle files). Surviving executors' shuffle map output for the groupBy is still available on disk.\n3. **Recomputation scope**: Stage 6 needs the groupBy's output for the lost partitions. The groupBy's shuffle map outputs (produced in Stage 5 by the pre-groupBy transformations) are available on the surviving executors. Spark re-executes the **reduce phase** of the groupBy for the affected partitions (using the surviving map outputs), then re-runs the 8 post-groupBy narrow transformations.\n\nIf the executor that failed also held some of the groupBy **map** outputs, those map outputs must be recomputed \u2014 which means re-running the 12 pre-groupBy narrow transformations for those specific partitions.\n\nFix: checkpoint after the groupBy (`groupByResult.checkpoint()`) so Stage 6 failures recompute only the 8 post-groupBy transformations, never touching the expensive pre-groupBy 12-step chain.\n\nOption 0 is wrong: shuffle data IS persisted on executors, so Stage 5's shuffle output may be available \u2014 but if the failed executor also held map outputs, those must be recomputed.\n\nOption 1 is wrong: not all 20 transformations are always recomputed. Surviving executors' shuffle map outputs are available.\n\nOption 3 is wrong: Spark DOES persist shuffle output to executor local disk during map execution.",
+    "hints": [
+      "Shuffle map outputs are written to executor local disk. Are they available to the surviving executors after a single executor failure?",
+      "If the failed executor held both map outputs AND the task failure, what must be recomputed? What if only the reduce task failed?"
+    ],
+    "concepts": [
+      "FAULT TOLERANCE & RECOVERY",
+      "LAZY EVALUATION & LINEAGE",
+      "PERFORMANCE TUNING & TRADE-OFFS"
+    ]
+  },
+  {
+    "id": 43091,
+    "order": 91,
+    "topic": "pyspark",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Schema Merge on Delta Read Returns Unexpected Nulls After Column Rename",
+    "description": "A Delta table was initially created with column `order_amount DOUBLE`. After a business rename, a new write was made with column `amount DOUBLE` (the old column was dropped and a new one added \u2014 not a schema rename operation). The table has both old files (order_amount) and new files (amount). A reader runs `spark.read.format('delta').load(path)` and gets a DataFrame with BOTH `order_amount` and `amount` columns \u2014 old rows have `order_amount` populated and `amount=null`; new rows have `amount` populated and `order_amount=null`. Why, and how should this be fixed?",
+    "options": [
+      "Delta schema evolution treats adding a new column and dropping an old column as two separate schema operations; the table's unified schema includes both columns, with null-fill for whichever is absent in each file's schema. Fix: rename the column using `ALTER TABLE RENAME COLUMN` to maintain a single lineage.",
+      "The Delta transaction log records both column additions and deletions as schema changes, but schema merging across files produces a union schema (all columns ever written); reading produces null for absent columns. Fix: run a REWRITE OPTIMIZE to standardise all files to the current schema.",
+      "The read uses Parquet schema merging (not Delta schema evolution), which always produces the union of all file schemas. Fix: specify an explicit schema at read time: `spark.read.format('delta').schema(expected_schema).load(path)`.",
+      "The null values are caused by a Delta metadata inconsistency \u2014 the transaction log records `amount` as a new column but the DROP of `order_amount` was not committed. Fix: run `FSCK REPAIR TABLE` to reconcile the metadata."
+    ],
+    "correct_option": 0,
+    "explanation": "When you drop a column and add a new column with a different name (instead of renaming), Delta's schema evolution treats them as two independent operations: ADD COLUMN `amount` and DROP COLUMN `order_amount`. The Delta table's **unified schema** (the current schema as recorded in the transaction log) evolves to contain only `amount`.\n\nHowever, the **physical Parquet files** written before the rename still have `order_amount` in their schema. When Delta reads the table, it applies the current unified schema to all files. Old files that have `order_amount` but not `amount` are read with `amount=null` (the new column is missing \u2192 filled with null). New files that have `amount` but not `order_amount` are read with `order_amount=null` (the dropped column is absent \u2192 also filled with null for backward compatibility if Delta still includes it).\n\nActually, if Delta correctly dropped the column, the unified schema should only have `amount` \u2014 not `order_amount`. Old files' `order_amount` data would be read as if the column doesn't exist (ignored). The described behaviour (BOTH columns visible) suggests the drop wasn't committed cleanly or the reader is merging schemas across old and new files in a non-Delta path.\n\nThe fix is to use `ALTER TABLE RENAME COLUMN order_amount TO amount` \u2014 a proper column rename that maintains schema lineage and avoids the union-schema issue.\n\nOption 1 is close but REWRITE OPTIMIZE rewrites file content but does not fix the logical schema issue without a proper RENAME.\n\nOption 2 is wrong: Delta reads use the transaction log schema, not raw Parquet schema merging.\n\nOption 3 is wrong: FSCK REPAIR TABLE is for partition metadata repair, not schema reconciliation.",
+    "hints": [
+      "Dropping a column and adding a new column is different from renaming. What does Delta's unified schema contain after a drop + add?",
+      "Old Parquet files still have `order_amount`. When Delta reads them with a schema that only has `amount`, what value does `order_amount` get?"
+    ],
+    "concepts": [
+      "DELTA LAKE & DATA LAKE FORMATS",
+      "SCHEMA & TYPE HANDLING",
+      "DATA QUALITY SKEPTICISM"
+    ]
+  },
+  {
+    "id": 43092,
+    "order": 92,
+    "topic": "pyspark",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Choosing Between Delta MERGE and INSERT OVERWRITE for Nightly Upserts",
+    "description": "A nightly job upserts 1% of rows in a 10 TB Delta table (updates to existing rows + inserts of new rows). Option A: `MERGE INTO target USING source ON target.id = source.id WHEN MATCHED THEN UPDATE ... WHEN NOT MATCHED THEN INSERT ...`. Option B: overwrite the affected date partition: `source.write.format('delta').mode('overwrite').option('replaceWhere', 'event_date=current_date()').save(path)`. Both correctly handle updates and inserts. Which is operationally better, and why?",
+    "options": [
+      "Option A (MERGE) is better: it minimises the number of files rewritten (only files containing matched rows are modified). For 1% of rows matching, MERGE rewrites far fewer files than overwriting an entire date partition.",
+      "Option B (INSERT OVERWRITE with replaceWhere) is better: it atomically replaces the entire date partition in a single write operation, which is simpler and more predictable in terms of file count. MERGE may rewrite more files than replaceWhere when the matched rows are spread across many files.",
+      "Option A is better for correctness (handles row-level updates without touching unmatched rows in the same partition); Option B is simpler for operations but requires pre-joining the full date partition from source and target to avoid data loss.",
+      "Both are correct; the choice depends on how many files the 1% of matching rows spans. If all matching rows are in 10% of files, MERGE rewrites 10% (better). If matching rows are uniformly spread across all files, MERGE rewrites 100% of files (same as replaceWhere). For uniformly distributed updates, replaceWhere is simpler."
+    ],
+    "correct_option": 3,
+    "explanation": "Delta MERGE's file-rewriting behaviour: MERGE identifies which files MIGHT contain matching rows (using file-level statistics for the join column `id`). It rewrites only those files. If the 1% of updated rows are concentrated in a small number of files (e.g., recent inserts are often in recently written files), MERGE rewrites fewer files than overwriting the full partition.\n\nHowever, if `id` values are uniformly distributed across all files (a common pattern for natural IDs), MERGE must rewrite ALL files (every file might contain a matching `id`). In this case, MERGE is no more efficient than `replaceWhere` on the partition \u2014 and MERGE has additional overhead (scanning source against each target file's statistics).\n\n`INSERT OVERWRITE` with `replaceWhere='event_date=current_date()'` rewrites only the affected partition's files, atomically replacing them with the merged result. This is simpler (one operation) and predictable.\n\nThe correct answer is nuanced: the right choice depends on the distribution of updated rows across files. Neither MERGE nor replaceWhere is always better \u2014 the choice is data-distribution-dependent.\n\nOption 0 is wrong as an unconditional claim: MERGE minimises rewrites only when matched rows are clustered in few files, which requires Z-ordering or partitioning on the join key.\n\nOption 1 is wrong as an unconditional claim: replaceWhere requires that the source contains the FULL partition's data (or you lose unmatched rows in the overwritten partition). For 1% updates, you must first read today's partition from target, merge with source, then overwrite \u2014 this is more complex, not simpler.\n\nOption 2 correctly identifies the correctness aspect but is not the most accurate characterisation of the operational trade-off.",
+    "hints": [
+      "MERGE rewrites files that might contain matching rows. If matching rows are distributed uniformly across all target files, how many files does MERGE rewrite?",
+      "For replaceWhere to correctly handle updates, what data must the source contain for the overwritten partition?"
+    ],
+    "concepts": [
+      "DELTA LAKE & DATA LAKE FORMATS",
+      "PERFORMANCE TUNING & TRADE-OFFS",
+      "PARTITIONING STRATEGY"
+    ]
   }
 ]
