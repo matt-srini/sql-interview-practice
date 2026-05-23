@@ -1251,6 +1251,8 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
         ],
 
         "DOUBLE-COUNTING DETECTION": [
+            "DOUBLE-COUNTING",    # self-resolving
+            "DOUBLE COUNTING",
             "FAN-OUT",
             "JOIN MULTIPLICATION",
             "GRAIN MISMATCH",
@@ -1293,6 +1295,7 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
 
         # Array ops: explode, collect_list/set, pivot, lateral view -----------
         "COLLECTION & ARRAY OPERATIONS": [
+            "ARRAY OPERATION",    # self-resolving: family name contains this substring
             "EXPLODE",
             "COLLECT_LIST",
             "COLLECT_SET",

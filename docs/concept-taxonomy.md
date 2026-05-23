@@ -698,7 +698,7 @@ The following tags are **forbidden** as `concepts` values — they are mechanic 
 
 #### `DOUBLE-COUNTING DETECTION` ⚡ *real-world gap — practice-grounded in PySpark (Phase 2)*
 **What it tests:** spotting fan-out from one-to-many joins in PySpark, same conceptual failure mode as SQL — but the PySpark angle adds the operational consequence: a fan-out join in Spark not only inflates the output but also amplifies shuffle volume and can tip the job into OOM. The reasoning is therefore *both* correctness and runtime impact.
-**Match patterns:** `FAN-OUT`, `JOIN MULTIPLICATION`, `GRAIN MISMATCH`, `INFLATED OUTPUT`
+**Match patterns:** `DOUBLE-COUNTING`, `DOUBLE COUNTING`, `FAN-OUT`, `JOIN MULTIPLICATION`, `GRAIN MISMATCH`, `INFLATED OUTPUT`
 **Member tags (canonical):** `FAN-OUT DETECTION`, `JOIN MULTIPLICATION`, `GRAIN MISMATCH`, `INFLATED OUTPUT DEBUG`, `DOUBLE-COUNTING DETECTION`
 **Cross-track alignment:** parallel to SQL and Pandas.
 **Practice grounding:** new `debug` / `predict_output` questions authored in Phase 2 (medium + hard). True content gap prior to Phase 2.
@@ -718,7 +718,7 @@ The following tags are **forbidden** as `concepts` values — they are mechanic 
 
 #### `COLLECTION & ARRAY OPERATIONS` *(new — Phase 2)*
 **What it tests:** `explode` / `explode_outer`, `collect_list` / `collect_set`, array-column transformations, `pivot`, lateral-view semantics, null-vs-empty-array distinction, row preservation across explode.
-**Match patterns:** `explode`, `collect_list`, `collect_set`, `collect list`, `collect set`, `array column`, `array ordering`, `outer lateral view`, `pivot`, `null vs empty array`, `row preservation`, `wide DataFrame`
+**Match patterns:** `array operation` *(self-resolving)*, `explode`, `collect_list`, `collect_set`, `collect list`, `collect set`, `array column`, `array ordering`, `outer lateral view`, `pivot`, `null vs empty array`, `row preservation`, `wide DataFrame`
 **Why new:** existing mock questions 42040, 42050, and 43028 tested explode / pivot without practice grounding. Phase 2 adds practice questions to establish the family.
 
 **Note on PySpark scope of cross-track families:** `METRIC INTERPRETATION & DENOMINATOR CHOICE` is intentionally NOT added to PySpark — PySpark questions test Spark execution reasoning, not business-metric interpretation. `PERFORMANCE-AWARE ANALYTICS` is also not added: PySpark already has 7 native performance-focused families (`SHUFFLE REASONING`, `JOIN STRATEGY SELECTION`, `DATA SKEW & MITIGATION`, `MEMORY MANAGEMENT`, `ADAPTIVE QUERY EXECUTION`, `CATALYST OPTIMIZER`, `PERFORMANCE TUNING & TRADE-OFFS`).
