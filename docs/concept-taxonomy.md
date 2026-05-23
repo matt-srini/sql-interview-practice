@@ -610,119 +610,120 @@ The following tags are **forbidden** as `concepts` values — they are mechanic 
 
 **Modality:** Code-adjacent reasoning. No execution. MCQ / predict-output / debug / scenario / optimization.
 **Reasoning archetype:** Reason about Spark's execution model — what code triggers a shuffle, when broadcast wins, where memory goes, what AQE rewrites — without running the job.
-**Current tag inventory:** 493 unique tags / 623 occurrences — **worst fragmentation in the bank**. Many existing tags are mechanic names (`shuffle`, `Catalyst optimizer`, `broadcast join`) that should be blocklisted or moved into the family-level vocabulary.
+**Current tag inventory:** Phase 2 (2026-05) consolidated 493 unique tags / 623 occurrences to 23 canonical families via match-pattern expansion, blocklist enforcement, and agent-based retags. Target: UNRESOLVED = 0. Two new families added (`WINDOW FUNCTIONS & FRAMES`, `COLLECTION & ARRAY OPERATIONS`) to cover previously ungrounded mock content.
 
 ### Family registry
 
 #### `EXECUTION MODEL REASONING`
-**What it tests:** transformation-vs-action distinction, lazy evaluation, DAG construction, stage / task / job semantics.
-**Match patterns:** `lazy evaluation`, `EXECUTION MODEL`, `DAG`, `transformations vs actions`, `stage`, `lineage`
-**Example existing tags:** lazy evaluation (5), transformations vs actions (3), DAG (3)
+**What it tests:** transformation-vs-action distinction, lazy evaluation, DAG construction, stage / task / job semantics, RDD vs DataFrame API, session lifecycle, iterative algorithm lineage explosion.
+**Match patterns:** `lazy evaluation`, `EXECUTION MODEL`, `DAG`, `transformations vs actions`, `stage`, `lineage`, `RDD`, `DataFrame API`, `Dataset vs`, `immutability`, `job execution`, `cluster architecture`, `distributed system`, `SparkSession`, `getOrCreate`, `session lifecycle`, `idempotent factory`, `Spark SQL catalog`, `session-scoped`, `SPARK EXECUTION HIERARCHY`, `task scheduling`, `Tungsten`, `execution engine`, `recomputation`, `checkpoint`, `iterative algorithm`, `lineage explosion`, `DAG complexity`, `DAG depth`, `F.expr`, `SQL expression`, `actions`, `return values`
 
 #### `NARROW VS WIDE TRANSFORMATIONS`
 **What it tests:** which operations require shuffles, which stay within partition, why this matters for performance.
-**Match patterns:** `narrow vs wide`, `WIDE-AGGREGATION SHUFFLE`, `shuffle boundary`
-**Example existing tags:** WIDE-AGGREGATION SHUFFLE (4), narrow vs wide
+**Match patterns:** `narrow vs wide`, `NARROW TRANSFORMATION`, `WIDE TRANSFORMATION`, `WIDE-AGGREGATION SHUFFLE`, `shuffle boundary`
+**Precision note:** `shuffle` (bare) resolves to SHUFFLE REASONING only, not here. `narrow vs wide` (bare) resolves here only, not to EXECUTION MODEL REASONING.
 
 #### `SHUFFLE REASONING`
-**What it tests:** identifying shuffle triggers, shuffle cost in I/O, `spark.sql.shuffle.partitions` tuning, shuffle elimination strategies.
-**Match patterns:** `shuffle`, `SHUFFLE`
-**Example existing tags:** shuffle (7), shuffle elimination (2), shuffle optimization (2)
+**What it tests:** identifying shuffle triggers, shuffle cost in I/O, `spark.sql.shuffle.partitions` tuning, shuffle elimination strategies, `reduceByKey` vs `groupByKey`, global sort.
+**Match patterns:** `shuffle`, `reduceByKey`, `groupByKey`, `map-side combine`, `co-location`, `sortWithinPartitions`, `global sort`, `orderBy`, `shuffle partition imbalance`
+**Precision note:** `shuffle` resolves here only; `narrow vs wide` resolves to NARROW VS WIDE TRANSFORMATIONS only.
 
 #### `JOIN STRATEGY SELECTION`
-**What it tests:** broadcast vs sort-merge vs shuffle-hash decision, `autoBroadcastJoinThreshold`, when to force broadcast.
-**Match patterns:** `broadcast join`, `JOIN`, `join optimization`, `autoBroadcast`, `BROADCAST`, `sort-merge`
-**Example existing tags:** broadcast join (4), join optimization (4), autoBroadcastJoinThreshold (2)
+**What it tests:** broadcast vs sort-merge vs shuffle-hash decision, `autoBroadcastJoinThreshold`, when to force broadcast, Cartesian product costs.
+**Match patterns:** `broadcast join`, `JOIN`, `join optimization`, `autoBroadcast`, `BROADCAST`, `sort-merge`, `Cartesian product`, `small table optimization`, `hint override`, `build-side replication`
 
 #### `PARTITIONING STRATEGY`
-**What it tests:** partition count selection, `repartition` vs `coalesce` vs `partitionBy` on write, partition pruning, dynamic partition pruning.
-**Match patterns:** `partitioning`, `PARTITION SHAPE`, `partition pruning`, `coalesce`, `repartition`, `dynamic partition pruning`
-**Example existing tags:** partitioning (3), PARTITION SHAPE CONTROL (3), partition pruning (3), dynamic partition pruning (3), coalesce (2)
+**What it tests:** partition count selection, `repartition` vs `coalesce` vs `partitionBy` on write, partition pruning, dynamic partition pruning, write directory layout.
+**Match patterns:** `partitioning`, `PARTITION SHAPE`, `partition pruning`, `coalesce`, `repartition`, `dynamic partition pruning`, `partitions`, `partitionBy`, `partition sizing`, `partition count`, `partition splitting`, `directory structure`, `block size`, `data distribution`, `DPP`, `scan-time pruning`, `partition scan strategy`, `partition key alignment`, `downstream parallelism`, `output parallelism`, `partitioned write`, `advisoryPartitionSize`, `partition-level transfer`, `partition vs file-level`
 
 #### `DATA SKEW & MITIGATION`
 **What it tests:** detecting skew, salting strategies, AQE skew-join optimization, custom partitioner approaches.
-**Match patterns:** `data skew`, `SKEW`, `salting`, `skew join`
-**Example existing tags:** data skew (4), salting (2)
+**Match patterns:** `data skew`, `SKEW`, `salting`, `hot key`, `imbalance`, `partition imbalance`
 
 #### `ADAPTIVE QUERY EXECUTION`
-**What it tests:** what AQE rewrites at runtime, partition coalescing post-shuffle, sort-merge-to-broadcast conversion, skew handling.
-**Match patterns:** `AQE`, `adaptive query execution`, `runtime rewrite`
-**Example existing tags:** AQE (4), adaptive query execution (2)
+**What it tests:** what AQE rewrites at runtime, partition coalescing post-shuffle, sort-merge-to-broadcast conversion, skew handling, runtime partition restructuring.
+**Match patterns:** `AQE`, `adaptive query execution`, `runtime rewrite`, `runtime plan`, `runtime join`, `runtime partition restructuring`, `runtime optimization`
 
 #### `CATALYST OPTIMIZER`
-**What it tests:** what the optimizer does for free (predicate pushdown, projection pushdown), logical vs physical plans, when optimizer cannot help.
-**Match patterns:** `Catalyst`, `CATALYST`, `optimizer`, `logical plan`, `physical plan`, `predicate pushdown`, `projection pushdown`
-**Example existing tags:** Catalyst optimizer (8), predicate pushdown (4), logical plan (2), physical plan (2)
+**What it tests:** what the optimizer does for free (predicate pushdown, projection pushdown), logical vs physical plans, when optimizer cannot help, column pruning, file-level statistics for pruning.
+**Match patterns:** `Catalyst`, `optimizer`, `logical plan`, `physical plan`, `predicate pushdown`, `projection pushdown`, `query plan`, `explain`, `execution plan`, `query optimization`, `analysis phase`, `pipeline optimization`, `Exchange operator`, `HashAggregate`, `column pruning`, `data skipping`, `data-skipping pruning`, `file-level statistics`, `per-file min`, `row group pruning`, `I/O optimization`, `I-O reduction`, `column-statistics filtering`, `execution plan equivalence`, `predicate pushdown in merge`
 
 #### `MEMORY MANAGEMENT`
-**What it tests:** driver vs executor memory, OOM debugging, when `collect()` kills the driver, `cache`/`persist` storage levels.
-**Match patterns:** `memory`, `OOM`, `OutOfMemoryError`, `DRIVER-SIDE MATERIALIZATION`, `driver memory`, `executor memory`
-**Example existing tags:** driver memory (4), executor memory (3), OutOfMemoryError (2), DRIVER-SIDE MATERIALIZATION RISK (3)
+**What it tests:** driver vs executor memory, OOM debugging, when `collect()` kills the driver, GC pressure, spill to disk, `toPandas` driver materialization, Arrow serialisation overhead.
+**Match patterns:** `memory`, `OOM`, `OutOfMemoryError`, `off-heap`, `GC`, `spill`, `serialization`, `DRIVER-SIDE MATERIALIZATION`, `garbage collection`, `JVM GC`, `JVM object`, `disk spill`, `toPandas`, `data collection anti`, `collect() anti`, `cluster-side aggregation`, `distributed aggregation`, `materialisation`, `materialization`, `YARN`, `Apache Arrow`, `arrow serial`
 
 #### `CACHING & PERSISTENCE`
 **What it tests:** `cache()` vs `persist()` with explicit storage level, when caching helps vs hurts, `unpersist()` discipline.
 **Match patterns:** `cache`, `persist`, `unpersist`, `STORAGE LEVEL`
-**Example existing tags:** persist (3)
 
 #### `SCHEMA & TYPE HANDLING`
-**What it tests:** `inferSchema` tradeoffs, explicit `StructType`, schema evolution in Parquet, type coercion gotchas, CSV vs Parquet differences.
-**Match patterns:** `schema`, `SCHEMA`, `inferSchema`, `StructType`, `type coercion`
-**Example existing tags:** schema (3), inferSchema (3), schema inference (2), StructType (2)
+**What it tests:** `inferSchema` tradeoffs, explicit `StructType`, schema evolution, type coercion gotchas, null semantics (Python None vs Spark null), column resolution.
+**Match patterns:** `schema`, `inferSchema`, `StructType`, `type coercion`, `StringType`, `LongType`, `DoubleType`, `IntegerType`, `type inference`, `type promotion`, `type contract`, `type safety`, `returnType`, `aggregation output types`, `nullable vs non-nullable`, `null propagation`, `silent null production`, `null production`, `cast null-on-failure`, `permissive nullability`, `conservative nullability`, `computed column nullability`, `column reference qualification`, `column resolution`, `unionByName`, `positional matching`, `column renaming`, `Python None vs`, `NDJSON`, `JSON parsing`
 
 #### `FILE FORMATS & READERS`
 **What it tests:** Parquet vs CSV vs JSON tradeoffs, column projection benefits in columnar formats, file-size sweet spots.
-**Match patterns:** `Parquet`, `CSV reading`, `JSON`, `FILE FORMAT`, `columnar`
-**Example existing tags:** Parquet (3), CSV reading (3)
+**Match patterns:** `Parquet`, `CSV reading`, `FILE FORMAT`, `columnar`
 
 #### `UDF & PYTHON BOUNDARY`
-**What it tests:** UDF performance cost, pandas-UDF (vectorized) vs regular UDF memory model, serialization overhead.
-**Match patterns:** `UDF`, `pandas UDF`, `serialization`
-**Example existing tags:** UDF (3), serialization (2)
+**What it tests:** UDF performance cost, pandas-UDF (vectorized) vs regular UDF memory model, JVM–Python boundary, `mapPartitions` initialization overhead.
+**Match patterns:** `UDF`, `pandas UDF`, `vectorised execution`, `vectorized execution`, `JVM-Python`, `mapPartitions`, `initialization overhead`, `accumulator`, `Python UDF`
 
 #### `STRUCTURED STREAMING`
-**What it tests:** output modes (append / update / complete), watermarks, late-data handling, stateful streaming.
-**Match patterns:** `structured streaming`, `STREAMING`, `watermark`, `output mode`
-**Example existing tags:** structured streaming (4)
+**What it tests:** output modes (append / update / complete), watermarks, late-data handling, stateful streaming, `foreachBatch` semantics, Kafka integration.
+**Match patterns:** `structured streaming`, `STREAMING`, `stream-`, `micro-batch`, `watermark`, `foreachBatch`, `stateful aggreg`, `mapGroupsWithState`, `foreach`, `unbounded table`, `continuous processing`, `late data`, `late-data`, `GroupStateTimeout`, `state expiration`, `state management`, `Kafka`, `event-time vs processing-time`, `event time vs processing time`, `update mode`, `append mode`, `LATE-DATA DISCARD RULES`, `APPEND-MODE EMISSION RULES`, `EVENT-TIME GUARANTEE BOUNDARIES`, `custom sinks`, `streaming window`, `watermark column mismatch`, `stateful aggregation scaling`, `output mode`, `late data drop`, `late data handling`, `event-time latency`, `append mode window emission`, `Kafka consumer offset`
 
 #### `DELTA LAKE OPERATIONS`
-**What it tests:** MERGE semantics, time travel, schema evolution, Z-ordering vs partitioning, ACID guarantees.
-**Match patterns:** `Delta Lake`, `DELTA`, `MERGE`, `Z-order`, `time travel`
-**Example existing tags:** Delta Lake (3)
+**What it tests:** MERGE semantics, time travel (`versionAsOf`), schema evolution, Z-ordering vs partitioning, ACID guarantees, CDC pipeline design.
+**Match patterns:** `Delta Lake`, `DELTA`, `MERGE INTO`, `DELTA MERGE`, `versionAsOf`, `transaction log`, `ACID TABLE MUTATION`, `matched vs unmatched`, `incremental table reconciliation`, `immutable file rewrite`, `table maintenance`, `CDC pipeline`, `CDC batch`, `upsert correctness`, `merge-condition logic`, `merge cardinality`, `SQL MERGE`, `Z-order clustering`, `Z-ordering`, `Z-order`, `delta streaming`, `incremental write clustering`, `OPTIMIZE ZORDER`, `time travel`
+**Precision note:** bare `MERGE` is intentionally **not** a match pattern — it false-positives on `sort-merge join` tags. Use `MERGE INTO` or `DELTA MERGE` as concept tag values.
 
 #### `FAULT TOLERANCE & RECOVERY`
-**What it tests:** lineage-based recovery, speculative execution, straggler tasks, what survives a worker death.
-**Match patterns:** `fault tolerance`, `FAULT`, `lineage`, `speculative execution`, `recovery`
-**Example existing tags:** fault tolerance (3)
+**What it tests:** lineage-based recovery, speculative execution, straggler tasks, at-least-once vs exactly-once sink semantics, idempotent sink design.
+**Match patterns:** `fault tolerance`, `FAULT`, `speculative execution`, `recovery`, `straggler task`, `straggler`, `spark.speculation`, `idempotent sink`, `sink idempotency`, `at-least-once write`, `at-least-once semantics`, `foreachBatch at-least`, `exactly-once`, `task output commit`, `partial write on`, `external side effect`, `failure-safe`
 
 #### `DEBUG SPARK ERRORS`
-**What it tests:** reading `AnalysisException` for schema/column issues, `OutOfMemoryError` for skew/driver issues, common stack-trace interpretation.
-**Match patterns:** `AnalysisException`, `DEBUG`, `debug`, `Exception`
-**Example existing tags:** AnalysisException (5), debug (3)
+**What it tests:** reading `AnalysisException` for schema/column issues, `OutOfMemoryError` for skew/driver issues, `TypeError` for Python boundary mismatches, common stack-trace interpretation.
+**Match patterns:** `AnalysisException`, `DEBUG`, `debug`, `Exception`, `TypeError`
 
 #### `PERFORMANCE TUNING & TRADE-OFFS`
-**What it tests:** general performance reasoning — which configs to tune in what order, when to add hardware vs change code.
-**Match patterns:** `performance`, `PERFORMANCE TUNING`, `tuning`
-**Example existing tags:** performance (4), performance tuning (2)
+**What it tests:** general performance reasoning — which configs to tune in what order, when to add hardware vs change code, small-file problem, cloud storage metadata cost.
+**Match patterns:** `performance`, `PERFORMANCE TUNING`, `tuning`, `spark.serializer`, `task overhead`, `small file problem`, `cloud storage metadata`, `production pattern`, `large data`, `anti-pattern avoidance`, `external merge-sort`, `false positives`, `probabilistic`
 
-#### `DATA QUALITY SKEPTICISM` ⚡ *real-world gap*
-**What it tests:** PySpark surface of the cross-track family — recognising suspect data before processing it: late-arriving events that should have been watermarked, schema drift the read silently absorbed, NULL-key explosion on joins, duplicate event-IDs from at-least-once upstreams. The PySpark question-shape is usually `predict_output` ("what does this code do when the input has X dirty rows?") or `debug` ("the output looks wrong because the input was dirty in this specific way — diagnose").
-**Match patterns:** `DATA QUALITY`, `LATE EVENT`, `DUPLICATE EVENT`, `NULL KEY`, `SCHEMA DRIFT INSPECTION`, `DIRTY INPUT`
+#### `DATA QUALITY SKEPTICISM` ⚡ *real-world gap — practice-grounded in PySpark (Phase 2)*
+**What it tests:** PySpark surface of the cross-track family — recognising suspect data before processing it: late-arriving events that should have been watermarked, schema drift the read silently absorbed, NULL-key explosion on joins, duplicate event-IDs from at-least-once upstreams, non-deterministic deduplication with `dropDuplicates`. The PySpark question-shape is usually `predict_output` ("what does this code do when the input has X dirty rows?") or `debug` ("the output looks wrong because the input was dirty in this specific way — diagnose").
+**Match patterns:** `DATA QUALITY`, `LATE EVENT`, `DUPLICATE EVENT`, `NULL KEY`, `DIRTY INPUT`, `dropDuplicate`, `non-determinism`, `non-determin`, `deduplication`, `dedup`, `source dedup`, `null handling`, `production vs dev data`, `NaN-to-null`
 **Member tags (canonical):** `DATA QUALITY SKEPTICISM`, `LATE-EVENT HANDLING`, `DUPLICATE EVENT COLLAPSE`, `NULL KEY DETECTION`, `DIRTY INPUT REASONING`
 **Cross-track alignment:** parallel to the SQL and Pandas families of the same name.
+**Practice grounding:** DATA QUALITY SKEPTICISM is practice-grounded in PySpark (not mock-only realism). MCQ format makes this reasoning gradeable as `predict_output` / `debug`.
 
-#### `DOUBLE-COUNTING DETECTION` ⚡ *real-world gap*
-**What it tests:** spotting fan-out from one-to-many joins in PySpark, same conceptual failure mode as SQL — but the PySpark angle adds the operational consequence: a fan-out join in Spark not only inflates the output but also amplifies shuffle volume and can tip the job into OOM. The reasoning here is therefore *both* correctness and runtime impact.
+#### `DOUBLE-COUNTING DETECTION` ⚡ *real-world gap — practice-grounded in PySpark (Phase 2)*
+**What it tests:** spotting fan-out from one-to-many joins in PySpark, same conceptual failure mode as SQL — but the PySpark angle adds the operational consequence: a fan-out join in Spark not only inflates the output but also amplifies shuffle volume and can tip the job into OOM. The reasoning is therefore *both* correctness and runtime impact.
 **Match patterns:** `FAN-OUT`, `JOIN MULTIPLICATION`, `GRAIN MISMATCH`, `INFLATED OUTPUT`
-**Member tags (canonical):** `FAN-OUT DETECTION`, `JOIN MULTIPLICATION`, `GRAIN MISMATCH`, `INFLATED OUTPUT DEBUG`
+**Member tags (canonical):** `FAN-OUT DETECTION`, `JOIN MULTIPLICATION`, `GRAIN MISMATCH`, `INFLATED OUTPUT DEBUG`, `DOUBLE-COUNTING DETECTION`
 **Cross-track alignment:** parallel to SQL and Pandas.
+**Practice grounding:** new `debug` / `predict_output` questions authored in Phase 2 (medium + hard). True content gap prior to Phase 2.
 
-#### `OUTPUT SANITY VALIDATION` ⚡ *real-world gap*
-**What it tests:** PySpark-specific self-check reasoning — `.count()` plausibility on the output DataFrame, `.printSchema()` shape verification after a transform, row-count assertions before writes, distribution-shape spot-checks via `describe()`. Surface for "did you verify your own pipeline before declaring it production-ready?"
-**Match patterns:** `SANITY`, `OUTPUT VALIDATION`, `ROW COUNT CHECK`, `SCHEMA ASSERTION`, `PLAUSIBILITY CHECK`
+#### `OUTPUT SANITY VALIDATION` ⚡ *real-world gap — practice-grounded in PySpark (Phase 2)*
+**What it tests:** PySpark-specific self-check reasoning — `.count()` plausibility on the output DataFrame, `.printSchema()` shape verification after a transform, row-count assertions before writes, `count()` vs `countDistinct()` confusion, `len()` vs `count()` driver-vs-executor anti-pattern.
+**Match patterns:** `SANITY`, `OUTPUT VALIDATION`, `ROW COUNT CHECK`, `SCHEMA ASSERTION`, `PLAUSIBILITY CHECK`, `count vs countDistinct`, `len() vs count`, `Spark UI diagnosis`, `SPARK UI TASK METRICS`, `FULL TABLE SCAN DIAGNOSIS`
 **Member tags (canonical):** `OUTPUT SANITY VALIDATION`, `ROW COUNT ASSERTION`, `SCHEMA SHAPE CHECK`, `RESULT PLAUSIBILITY CHECK`
 **Cross-track alignment:** parallel to SQL and Pandas.
+**Practice grounding:** existing practice questions retagged in Phase 2. No mock-only realism class for PySpark (MCQ format makes this gradeable as `predict_output` / `debug`).
 
-**Note on PySpark scope of cross-track families:** `METRIC INTERPRETATION & DENOMINATOR CHOICE` is intentionally NOT added to PySpark. PySpark questions test reasoning about Spark execution (which is what the existing 18 families cover), not business-metric interpretation — even when PySpark is the implementation, the metric-interpretation reasoning happens upstream of the code. Similarly, `PERFORMANCE-AWARE ANALYTICS` is not added as a separate family: PySpark already has multiple performance-focused families (`SHUFFLE REASONING`, `JOIN STRATEGY SELECTION`, `DATA SKEW & MITIGATION`, `MEMORY MANAGEMENT`, `ADAPTIVE QUERY EXECUTION`, `CATALYST OPTIMIZER`, `PERFORMANCE TUNING & TRADE-OFFS`) and adding a generic-cost family would overlap them rather than fill a gap.
+#### `WINDOW FUNCTIONS & FRAMES` *(new — Phase 2)*
+**What it tests:** ranking functions (`RANK` / `DENSE_RANK` / `ROW_NUMBER`), window-frame semantics (`ROWS BETWEEN` / `RANGE BETWEEN`), `rowsBetween` / `rangeBetween` API, cumulative / running aggregations via windows, tie handling in `ORDER BY` within a window, `partitionBy` / `orderBy` semantics in window context.
+**Match patterns:** `window function`, `window frame`, `rowsBetween`, `rangeBetween`, `ROWS vs RANGE`, `DENSE_RANK`, `ROW_NUMBER`, `cumulative aggregation`, `running aggregation`, `ties handling`, `tie handling`, `RANK`
+**Cross-track alignment:** SQL `WINDOW FUNCTIONS`, Pandas `WINDOW & ROLLING` (executable-track reusability principle).
+**Why new:** existing mock questions 42041 and 43029 tested window-frame semantics without practice grounding. Phase 2 adds practice questions to establish the family.
+
+#### `COLLECTION & ARRAY OPERATIONS` *(new — Phase 2)*
+**What it tests:** `explode` / `explode_outer`, `collect_list` / `collect_set`, array-column transformations, `pivot`, lateral-view semantics, null-vs-empty-array distinction, row preservation across explode.
+**Match patterns:** `explode`, `collect_list`, `collect_set`, `collect list`, `collect set`, `array column`, `array ordering`, `outer lateral view`, `pivot`, `null vs empty array`, `row preservation`, `wide DataFrame`
+**Why new:** existing mock questions 42040, 42050, and 43028 tested explode / pivot without practice grounding. Phase 2 adds practice questions to establish the family.
+
+**Note on PySpark scope of cross-track families:** `METRIC INTERPRETATION & DENOMINATOR CHOICE` is intentionally NOT added to PySpark — PySpark questions test Spark execution reasoning, not business-metric interpretation. `PERFORMANCE-AWARE ANALYTICS` is also not added: PySpark already has 7 native performance-focused families (`SHUFFLE REASONING`, `JOIN STRATEGY SELECTION`, `DATA SKEW & MITIGATION`, `MEMORY MANAGEMENT`, `ADAPTIVE QUERY EXECUTION`, `CATALYST OPTIMIZER`, `PERFORMANCE TUNING & TRADE-OFFS`).
+
+**No mock-only realism families for PySpark.** All three ⚡ families (`DATA QUALITY SKEPTICISM`, `DOUBLE-COUNTING DETECTION`, `OUTPUT SANITY VALIDATION`) are practice-grounded because PySpark is MCQ-only — sanity-check and validation reasoning grades cleanly as `predict_output` or `debug` MCQ. The SQL rationale (executable queries don't grade sanity-check reasoning) does not transfer.
 
 ### PySpark blocklist
 
@@ -734,6 +735,11 @@ The following tags are **forbidden** as `concepts` values — they are mechanic 
 | `RDD` | `EXECUTION MODEL REASONING` |
 | `parallelism` | `PARTITIONING STRATEGY` |
 | `executor`, `driver` (alone) | `MEMORY MANAGEMENT` (the reasoning, not the entity name) |
+| `alias` | `SCHEMA & TYPE HANDLING` (column renaming reasoning) or strip as incidental |
+| `withColumnRenamed` | `SCHEMA & TYPE HANDLING` |
+| `col() function` | strip as incidental (mechanic name, not reasoning family) |
+| `show`, `limit`, `head` | `MEMORY MANAGEMENT` (driver materialisation anti-pattern) or strip |
+| `Row objects` | `SCHEMA & TYPE HANDLING` or strip as incidental |
 
 ---
 

@@ -40,9 +40,14 @@ MOCK_ONLY_REALISM_FAMILIES: dict[str, set[str]] = {
         "PERFORMANCE-AWARE ANALYTICS",
         "MEMORY & VECTORIZATION REASONING",
     },
-    "pyspark": {
-        "OUTPUT SANITY VALIDATION",
-    },
+    # PySpark: NO mock-only realism families. All 3 ⚡ families
+    # (DATA QUALITY SKEPTICISM, DOUBLE-COUNTING DETECTION, OUTPUT SANITY VALIDATION)
+    # are practice-grounded because PySpark is MCQ-only — sanity-check / validation
+    # reasoning grades cleanly as predict_output or debug MCQ. The SQL rationale
+    # for designating those families mock-only-realism (they don't grade as
+    # query-writing) does not transfer. See docs/tracks/pyspark.md and the
+    # PySpark Phase 2 decision log.
+    "pyspark": set(),
     # Python: NO realism families by design. Python's families are pure
     # algorithmic patterns; the candidate "lens" (complexity & memory) is
     # practice-gradable via the harness (O(n²) times out / load-everything
@@ -832,27 +837,88 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
     # -----------------------------------------------------------------------
     # PySpark — 21 canonical families (docs/concept-taxonomy.md § PySpark)
     # -----------------------------------------------------------------------
+    # -----------------------------------------------------------------------
+    # PySpark — 23 canonical families (docs/concept-taxonomy.md § PySpark)
+    # Phase 2 (2026-05): expanded match-patterns (~184 incidences resolved),
+    # two new families (WINDOW FUNCTIONS & FRAMES, COLLECTION & ARRAY
+    # OPERATIONS), and all ⚡ families now practice-grounded.
+    # NOTE: ORDER MATTERS. More-specific families must precede families with
+    # broader patterns (e.g. NARROW VS WIDE before SHUFFLE, DELTA LAKE before
+    # catch-all families, STRUCTURED STREAMING before MEMORY for some tags).
+    # -----------------------------------------------------------------------
     "pyspark": {
+
+        # --- Execution model: lazy eval, DAG, lineage, RDD vs DataFrame ------
+        # Keep BEFORE NARROW VS WIDE so that LINEAGE / STAGE tags resolve here.
+        # NARROW VS WIDE and related patterns intentionally removed (Phase 2)
+        # — they now live exclusively in NARROW VS WIDE TRANSFORMATIONS.
         "EXECUTION MODEL REASONING": [
             "LAZY EVALUATION",
             "LAZY EVAL",
-            "LAZY ",
+            "LAZY ",          # catch "lazy evaluation" even without the word
             "EXECUTION MODEL",
             "DAG",
             "TRANSFORMATIONS VS",
+            "LINEAGE",
+            "STAGE",
+            # Phase 2 expansions
+            "RDD",            # RDD API, RDD vs DataFrame, RDD-based
+            "DATAFRAME API",
+            "DATASET VS",
+            "IMMUTABILITY",
+            "JOB EXECUTION",
+            "CLUSTER ARCHITECTURE",
+            "DISTRIBUTED SYSTEM",
+            "SPARKSESSION",
+            "GETORCREATE",
+            "SESSION LIFECYCLE",
+            "IDEMPOTENT FACTORY",
+            "SPARK SQL CATALOG",
+            "SESSION-SCOPED",
+            "SPARK EXECUTION HIERARCHY",
+            "TASK SCHEDULING",
+            "TUNGSTEN",
+            "EXECUTION ENGINE",
+            "RECOMPUTATION",
+            "CHECKPOINT",
+            "ITERATIVE ALGORITHM",
+            "LINEAGE EXPLOSION",
+            "DAG COMPLEXITY",
+            "DAG DEPTH",
+            "F.EXPR",
+            "SQL EXPRESSION",
+            "ACTIONS",
+            "RETURN VALUES",
+        ],
+
+        # --- Narrow vs wide: which operations cross partition boundaries -----
+        # NARROW VS WIDE patterns moved here from EXECUTION MODEL REASONING.
+        # SHUFFLE REASONING keeps bare SHUFFLE for shuffle-specific questions.
+        "NARROW VS WIDE TRANSFORMATIONS": [
             "NARROW VS WIDE",
             "NARROW TRANSFORMATION",
             "WIDE TRANSFORMATION",
-            "LINEAGE",
-            "STAGE",
-        ],
-        "NARROW VS WIDE TRANSFORMATIONS": [
             "WIDE-AGGREGATION SHUFFLE",
             "SHUFFLE BOUNDARY",
         ],
+
+        # --- Shuffle triggers, elimination, sort-by-key ----------------------
+        # "shuffle" is ONLY in SHUFFLE REASONING; "narrow vs wide" is ONLY in
+        # NARROW VS WIDE TRANSFORMATIONS (Phase 2 precision fix).
         "SHUFFLE REASONING": [
             "SHUFFLE",
+            # Phase 2 expansions
+            "REDUCEBYKEY",
+            "GROUPBYKEY",
+            "MAP-SIDE COMBINE",
+            "CO-LOCATION",
+            "SORTWITHPARTITIONS",
+            "GLOBAL SORT",
+            "ORDERBY",
+            "SHUFFLE PARTITION IMBALANCE",
         ],
+
+        # --- Join strategy: broadcast, sort-merge, skew join -----------------
         "JOIN STRATEGY SELECTION": [
             "BROADCAST JOIN",
             "JOIN OPTIMIZATION",
@@ -860,7 +926,14 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "BROADCAST",
             "SORT-MERGE",
             "JOIN",
+            # Phase 2 expansions
+            "CARTESIAN PRODUCT",
+            "SMALL TABLE OPTIMIZATION",
+            "HINT OVERRIDE",
+            "BUILD-SIDE REPLICATION",
         ],
+
+        # --- Partitioning: count, layout, pruning, write strategy ------------
         "PARTITIONING STRATEGY": [
             "PARTITIONING",
             "PARTITION SHAPE",
@@ -868,21 +941,51 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "COALESCE",
             "REPARTITION",
             "DYNAMIC PARTITION PRUNING",
+            # Phase 2 expansions
+            "PARTITIONS",
+            "PARTITIONBY",
+            "PARTITION SIZING",
+            "PARTITION COUNT",
+            "PARTITION SPLITTING",
+            "DIRECTORY STRUCTURE",
+            "BLOCK SIZE",
+            "DATA DISTRIBUTION",
+            "DPP",
+            "SCAN-TIME PRUNING",
+            "PARTITION SCAN STRATEGY",
+            "PARTITION KEY ALIGNMENT",
+            "DOWNSTREAM PARALLELISM",
+            "OUTPUT PARALLELISM",
+            "PARTITIONED WRITE",
+            "ADVISORYPARTITION",
+            "PARTITION-LEVEL TRANSFER",
+            "PARTITION VS FILE-LEVEL",
         ],
+
+        # --- Data skew: detection, salting, hot keys -------------------------
         "DATA SKEW & MITIGATION": [
             "DATA SKEW",
             "SKEW",
             "SALTING",
             "HOT KEY",
             "IMBALANCE",
+            # Phase 2 expansions
+            "PARTITION IMBALANCE",
         ],
+
+        # --- AQE: runtime rewrites, skew splitting, partition coalescing -----
         "ADAPTIVE QUERY EXECUTION": [
             "AQE",
             "ADAPTIVE QUERY",
             "ADAPTIVE",
             "RUNTIME PLAN",
             "RUNTIME JOIN",
+            # Phase 2 expansions
+            "RUNTIME PARTITION RESTRUCTURING",
+            "RUNTIME OPTIMIZATION",
         ],
+
+        # --- Catalyst: plan analysis, predicate pushdown, file pruning -------
         "CATALYST OPTIMIZER": [
             "CATALYST",
             "OPTIMIZER",
@@ -892,7 +995,28 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "PROJECTION PUSHDOWN",
             "QUERY PLAN",
             "EXPLAIN",
+            # Phase 2 expansions
+            "EXECUTION PLAN",
+            "QUERY OPTIMIZATION",
+            "ANALYSIS PHASE",
+            "PIPELINE OPTIMIZATION",
+            "EXCHANGE OPERATOR",
+            "HASHAGGR",
+            "COLUMN PRUNING",
+            "DATA SKIPPING",
+            "DATA-SKIPPING PRUNING",
+            "FILE-LEVEL STATISTICS",
+            "PER-FILE MIN",
+            "ROW GROUP PRUNING",
+            "I/O OPTIMIZATION",
+            "I-O REDUCTION",
+            "COLUMN-STATISTICS FILTERING",
+            "EXECUTION PLAN EQUIVALENCE",
+            "PREDICATE PUSHDOWN IN MERGE",
         ],
+
+        # --- Memory: driver vs executor, OOM, GC, spill, Arrow ---------------
+        # Apache Arrow serialisation maps here (also fits UDF; MEMORY is first).
         "MEMORY MANAGEMENT": [
             "MEMORY",
             "OOM",
@@ -902,29 +1026,89 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "SPILL",
             "SERIALIZATION",
             "DRIVER-SIDE MATERIALIZATION",
+            # Phase 2 expansions
+            "GARBAGE COLLECTION",
+            "JVM GC",
+            "JVM OBJECT",
+            "DISK SPILL",
+            "TOPANDAS",
+            "DATA COLLECTION ANTI",
+            "COLLECT() ANTI",
+            "CLUSTER-SIDE AGGREGATION",
+            "DISTRIBUTED AGGREGATION",
+            "MATERIALISATION",
+            "MATERIALIZATION",
+            "YARN",
+            "APACHE ARROW",
+            "ARROW SERIAL",
         ],
+
+        # --- Caching: persist storage levels, unpersist discipline -----------
         "CACHING & PERSISTENCE": [
             "CACHING",
             "CACHE",
             "PERSIST",
             "STORAGE LEVEL",
         ],
+
+        # --- Schema & types: inference, coercion, null semantics -------------
         "SCHEMA & TYPE HANDLING": [
             "SCHEMA",
             "INFERSCHEMA",
             "STRUCTTYPE",
             "TYPE COERCION",
+            # Phase 2 expansions
+            "STRINGTYPE",
+            "LONGTYPE",
+            "DOUBLETYPE",
+            "INTEGERTYPE",
+            "TYPE INFERENCE",
+            "TYPE PROMOTION",
+            "TYPE CONTRACT",
+            "TYPE SAFETY",
+            "RETURNTYPE",
+            "AGGREGATION OUTPUT TYPES",
+            "NULLABLE VS NON-NULLABLE",
+            "NULL PROPAGATION",
+            "SILENT NULL PRODUCTION",
+            "NULL PRODUCTION",
+            "CAST NULL-ON-FAILURE",
+            "PERMISSIVE NULLABILITY",
+            "CONSERVATIVE NULLABILITY",
+            "COMPUTED COLUMN NULLABILITY",
+            "COLUMN REFERENCE QUALIFICATION",
+            "COLUMN RESOLUTION",
+            "UNIONBYNAME",
+            "POSITIONAL MATCHING",
+            "COLUMN RENAMING",
+            "PYTHON NONE VS",
+            "NDJSON",
+            "JSON PARSING",
         ],
+
+        # --- File formats: Parquet, CSV, JSON, columnar benefits -------------
         "FILE FORMATS & READERS": [
             "PARQUET",
             "CSV READING",
             "FILE FORMAT",
             "COLUMNAR",
         ],
+
+        # --- UDF & Python boundary: vectorized UDFs, Arrow, mapPartitions ----
         "UDF & PYTHON BOUNDARY": [
             "UDF",
             "PANDAS UDF",
+            # Phase 2 expansions
+            "VECTORISED EXECUTION",
+            "VECTORIZED EXECUTION",
+            "JVM-PYTHON",
+            "MAPPARTITIONS",
+            "INITIALIZATION OVERHEAD",
+            "ACCUMULATOR",
+            "PYTHON UDF",
         ],
+
+        # --- Structured Streaming: output modes, watermarks, stateful --------
         "STRUCTURED STREAMING": [
             "STRUCTURED STREAMING",
             "STREAMING",
@@ -934,49 +1118,195 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "FOREACHBATCH",
             "STATEFUL AGGREG",
             "MAPGROUPSWITHSTATE",
+            # Phase 2 expansions
+            "FOREACH",
+            "UNBOUNDED TABLE",
+            "CONTINUOUS PROCESSING",
+            "LATE DATA",
+            "LATE-DATA",
+            "GROUPSTATETIMEOUT",
+            "STATE EXPIRATION",
+            "STATE MANAGEMENT",
+            "KAFKA",
+            "EVENT-TIME VS PROCESSING-TIME",
+            "EVENT TIME VS PROCESSING TIME",
+            "EVENT-TIME VS PROCESSING TIME",
+            "UPDATE MODE",
+            "APPEND MODE",
+            "LATE-DATA DISCARD RULES",
+            "APPEND-MODE EMISSION RULES",
+            "EVENT-TIME GUARANTEE BOUNDARIES",
+            "CUSTOM SINKS",
+            "STREAMING WINDOW",
+            "WATERMARK COLUMN MISMATCH",
+            "STATEFUL AGGREGATION SCALING",
+            "OUTPUT MODE",
+            "LATE DATA DROP",
+            "LATE DATA HANDLING",
+            "EVENT-TIME LATENCY",
+            "APPEND MODE WINDOW EMISSION",
+            "KAFKA CONSUMER OFFSET",
         ],
+
+        # --- Delta Lake: MERGE, time travel, schema evolution, Z-order -------
+        # Bare MERGE intentionally excluded — false-positives on sort-merge
+        # join tags. Use MERGE INTO / DELTA MERGE patterns instead.
         "DELTA LAKE OPERATIONS": [
+            "DELTA LAKE",
             "DELTA",
+            "MERGE INTO",
+            "DELTA MERGE",
+            # Phase 2 expansions
+            "VERSIONASOF",
+            "TRANSACTION LOG",
+            "ACID TABLE MUTATION",
+            "MATCHED VS UNMATCHED",
+            "INCREMENTAL TABLE RECONCILIATION",
+            "IMMUTABLE FILE REWRITE",
+            "TABLE MAINTENANCE",
+            "CDC PIPELINE",
+            "CDC BATCH",
+            "UPSERT CORRECTNESS",
+            "MERGE-CONDITION LOGIC",
+            "MERGE CARDINALITY",
+            "SQL MERGE",
+            "Z-ORDER CLUSTERING",
+            "Z-ORDERING",
+            "Z-ORDER",
+            "DELTA STREAMING",
+            "INCREMENTAL WRITE CLUSTERING",
+            "OPTIMIZE ZORDER",
+            "TIME TRAVEL",
         ],
+
+        # --- Fault tolerance: lineage recovery, speculation, exactly-once ----
         "FAULT TOLERANCE & RECOVERY": [
             "FAULT TOLERANCE",
             "FAULT",
             "SPECULATIVE EXECUTION",
             "RECOVERY",
+            # Phase 2 expansions
+            "STRAGGLER TASK",
+            "STRAGGLER",
+            "SPARK.SPECULATION",
+            "IDEMPOTENT SINK",
+            "SINK IDEMPOTENCY",
+            "AT-LEAST-ONCE WRITE",
+            "AT-LEAST-ONCE SEMANTICS",
+            "FOREACHBATCH AT-LEAST",
+            "EXACTLY-ONCE",
+            "TASK OUTPUT COMMIT",
+            "PARTIAL WRITE ON",
+            "EXTERNAL SIDE EFFECT",
+            "FAILURE-SAFE",
         ],
+
+        # --- Debug Spark errors: AnalysisException, TypeError, stack traces --
         "DEBUG SPARK ERRORS": [
             "ANALYSISEXCEPTION",
             "DEBUG",
             "EXCEPTION",
+            "TYPEERROR",
         ],
+
+        # --- Performance tuning: config, small files, cloud metadata --------
         "PERFORMANCE TUNING & TRADE-OFFS": [
             "PERFORMANCE",
             "PERFORMANCE TUNING",
             "TUNING",
+            # Phase 2 expansions
+            "SPARK.SERIALIZER",
+            "TASK OVERHEAD",
+            "SMALL FILE PROBLEM",
+            "CLOUD STORAGE METADATA",
+            "PRODUCTION PATTERN",
+            "LARGE DATA",
+            "ANTI-PATTERN AVOIDANCE",
+            "EXTERNAL MERGE-SORT",
+            "FALSE POSITIVES",
+            "PROBABILISTIC",
         ],
-        # ⚡ new families
+
+        # ⚡ practice-grounded families — established via remap + new authoring
+        # in Phase 2. All three are practice-grounded for PySpark (no mock-only
+        # realism class; MCQ format makes sanity/validation reasoning gradeable).
+
         "DATA QUALITY SKEPTICISM": [
             "DATA QUALITY",
             "LATE EVENT",
             "LATE-EVENT",
             "DUPLICATE EVENT",
             "NULL KEY",
-            "SCHEMA DRIFT INSPECTION",
             "DIRTY INPUT",
+            # Phase 2 remap targets (retag into this family via agent)
+            "DROPDUPLICATE",
+            "NON-DETERMINISM",
+            "NON-DETERMIN",
+            "DEDUPLICATION",
+            "DEDUP",
+            "SOURCE DEDUP",
+            "NULL HANDLING",
+            "PRODUCTION VS DEV DATA",
+            "NAN-TO-NULL",
         ],
+
         "DOUBLE-COUNTING DETECTION": [
             "FAN-OUT",
             "JOIN MULTIPLICATION",
             "GRAIN MISMATCH",
             "INFLATED OUTPUT",
         ],
+
         "OUTPUT SANITY VALIDATION": [
             "SANITY",
             "OUTPUT VALIDATION",
             "ROW COUNT CHECK",
             "SCHEMA ASSERTION",
             "PLAUSIBILITY CHECK",
+            # Phase 2 remap targets
+            "COUNT VS COUNTDISTINCT",
+            "LEN() VS COUNT",
+            "SPARK UI DIAGNOSIS",
+            "SPARK UI TASK METRICS",
+            "FULL TABLE SCAN DIAGNOSIS",
         ],
+
+        # --- New families added in Phase 2 ------------------------------------
+
+        # Window functions: ranking, frames (ROWS vs RANGE), cumulative -------
+        # Note: RANK pattern is safe here because JOIN STRATEGY SELECTION
+        # (which precedes this in the dict) uses SORT-MERGE not bare RANK.
+        "WINDOW FUNCTIONS & FRAMES": [
+            "WINDOW FUNCTION",
+            "WINDOW FRAME",
+            "ROWSBETWEEN",
+            "RANGEBETWEEN",
+            "ROWS VS RANGE",
+            "DENSE_RANK",
+            "ROW_NUMBER",
+            "CUMULATIVE AGGREGATION",
+            "RUNNING AGGREGATION",
+            "TIES HANDLING",
+            "TIE HANDLING",
+            "RANK",
+        ],
+
+        # Array ops: explode, collect_list/set, pivot, lateral view -----------
+        "COLLECTION & ARRAY OPERATIONS": [
+            "EXPLODE",
+            "COLLECT_LIST",
+            "COLLECT_SET",
+            "COLLECT LIST",
+            "COLLECT SET",
+            "ARRAY COLUMN",
+            "ARRAY ORDERING",
+            "OUTER LATERAL VIEW",
+            "PIVOT",
+            "NULL VS EMPTY ARRAY",
+            "ROW PRESERVATION",
+            "WIDE DATAFRAME",
+        ],
+
     },
 
     # -----------------------------------------------------------------------

@@ -17,7 +17,8 @@ This is a **code-adjacent reasoning** track. We don't execute Spark — we test 
 Question subtypes:
 - **`predict_output`** — given a PySpark snippet, predict what it returns, what schema it produces, what error it raises
 - **`debug`** — given broken code or an error message, identify the root cause and the correct fix
-- **`mcq`** — conceptual understanding *anchored in a concrete real-world scenario* (not abstract trivia)
+- **`conceptual`** — conceptual understanding *anchored in a concrete real-world scenario* (not abstract trivia)
+- **`scenario`** — scenario-anchored question requiring multi-concept application in a realistic production setting
 - **`optimization`** — given a job description and a bottleneck, choose the best strategy
 
 **Easy tier must mix types.** Pure-recall `mcq` is rejected at easy — use `predict_output` or `debug` to force mental execution tracing.
@@ -38,8 +39,8 @@ Samples in `backend/content/pyspark_questions/sample/` use `4XS` 3-digit IDs.
 
 | Tier | Reasoning depth | Subtypes | Topics |
 |---|---|---|---|
-| **Easy** | Single concept, one unambiguous correct answer. Mental execution tracing. | `predict_output` or `debug` preferred; `mcq` only if scenario-anchored | Transformation-vs-action, narrow-vs-wide, basic schema, `collect()` driver implications, common `AnalysisException` patterns |
-| **Medium** | Trade-off reasoning. Two approaches both plausible but differ in meaningful ways. | All subtypes | Partitioning, shuffle triggers, `repartition` vs `coalesce`, broadcast join conditions, PySpark window-function API, Delta MERGE / time travel / schema evolution, Structured Streaming output modes |
+| **Easy** | Single concept, one unambiguous correct answer. Mental execution tracing. | `predict_output` or `debug` preferred; `conceptual` only if scenario-anchored | Transformation-vs-action, narrow-vs-wide, basic schema, `collect()` driver implications, common `AnalysisException` patterns |
+| **Medium** | Trade-off reasoning. Two approaches both plausible but differ in meaningful ways. | All subtypes | Partitioning, shuffle triggers, `repartition` vs `coalesce`, broadcast join conditions, PySpark window-function API and frames (`rowsBetween` / ROWS vs RANGE), `explode` and `collect_list`/`pivot`, Delta Lake MERGE / schema evolution / time travel, Structured Streaming output modes |
 | **Hard** | Multi-factor trade-off under production constraints. **All 4 distractors plausible** to a candidate who partially understands. | All subtypes | AQE (partition coalescing, broadcast conversion, skew-join), dynamic partition pruning, salting, pandas UDF memory model, Z-ordering vs partitioning, watermark behaviour with late data, speculative execution |
 
 If a hard question's distractors are not all plausible — if a competent practitioner immediately eliminates two — the question is medium dressed as hard.
@@ -51,7 +52,7 @@ Difficulty controls reasoning depth, never licenses default-value or API-signatu
 | Tier | Representative scenarios |
 |---|---|
 | **Easy** | Predict the output of a `filter`/`select`/`withColumn` chain · trace lazy vs eager evaluation · spot the `AnalysisException` cause · narrow-vs-wide classification on a real snippet. Mental execution tracing, scenario-anchored. |
-| **Medium** | "This job shuffles three times — why?" · `repartition` vs `coalesce` for a given write · broadcast-join eligibility for a given size · Delta MERGE / schema-evolution behaviour. Two defensible options, one better. |
+| **Medium** | "This job shuffles three times — why?" · `repartition` vs `coalesce` for a given write · broadcast-join eligibility for a given size · window frame with `rowsBetween` vs `rangeBetween` · `explode` producing unexpected row counts · Delta MERGE / schema-evolution behaviour. Two defensible options, one better. |
 | **Hard** | AQE skew-join coalescing under a real DAG · salting a hot key · pandas-UDF memory model vs regular UDF · watermark behaviour with late data · Z-ordering vs partition pruning trade-off. Production-grade multi-factor trade-off, all distractors plausible. |
 
 ## Concept arc (early → late)
@@ -59,14 +60,14 @@ Difficulty controls reasoning depth, never licenses default-value or API-signatu
 | Tier | Progression |
 |---|---|
 | Easy | Transformation vs action (lazy evaluation) → narrow vs wide → DataFrame schema basics → `predict_output` on `filter`/`select`/`withColumn` → UDF basics → `collect()`/`show()` driver implications → common `AnalysisException` debug patterns |
-| Medium | Partitioning and partition count → shuffle triggers → `repartition` vs `coalesce` → broadcast join conditions → PySpark window function API → Delta Lake MERGE / schema evolution / time travel → Structured Streaming output modes |
-| Hard | AQE partition coalescing and broadcast conversion → dynamic partition pruning → skew join detection and salting → pandas UDF memory model vs regular UDF → Z-ordering vs partition pruning trade-offs → watermark behaviour with late data → speculative execution and straggler tasks |
+| Medium | Partitioning and partition count → shuffle triggers → `repartition` vs `coalesce` → broadcast join conditions → PySpark window function API and frames (`rowsBetween` / ROWS vs RANGE, cumulative aggregation, tie-handling) → `explode` / `collect_list` / `pivot` for collection and array columns → Delta Lake MERGE / schema evolution / time travel → Structured Streaming output modes |
+| Hard | AQE partition coalescing and broadcast conversion → dynamic partition pruning → skew join detection and salting → pandas UDF memory model vs regular UDF → Z-ordering vs partition pruning trade-offs → watermark behaviour with late data → speculative execution and straggler tasks → complex `explode`+pivot patterns and array-column gotchas |
 
 ## Concept families
 
 Full registry: [`docs/concept-taxonomy.md` → PySpark section](../concept-taxonomy.md#pyspark--concept-families).
 
-21 canonical families. **PySpark had the worst tag fragmentation in the bank** (493 unique tags / 623 occurrences before consolidation) — many existing tags were mechanic names like `shuffle`, `Catalyst optimizer`, `broadcast join` written lowercase. The new registry forces these into reasoning families: `SHUFFLE REASONING`, `CATALYST OPTIMIZER`, `JOIN STRATEGY SELECTION`. The mechanic terms remain as match patterns *within* families, not as tag values.
+23 canonical families. **PySpark had the worst tag fragmentation in the bank** (493 unique tags / 623 occurrences before consolidation) — many existing tags were mechanic names like `shuffle`, `Catalyst optimizer`, `broadcast join` written lowercase. The new registry forces these into reasoning families: `SHUFFLE REASONING`, `CATALYST OPTIMIZER`, `JOIN STRATEGY SELECTION`. The mechanic terms remain as match patterns *within* families, not as tag values.
 
 Three families are shared with the SQL and Pandas tracks under identical names (the executable-track reusability principle):
 
