@@ -21146,7 +21146,7 @@
     "starter_code": "def solve(jobs: list) -> int:\n    # Your code here\n    pass",
     "expected_code": "def solve(jobs):\n    import heapq\n    if not jobs: return 0\n    jobs = sorted(jobs)\n    heap = []\n    for start, end in jobs:\n        if heap and heap[0] <= start:\n            heapq.heapreplace(heap, end)\n        else:\n            heapq.heappush(heap, end)\n    return len(heap)",
     "solution_code": "def solve(jobs):\n    import heapq\n    if not jobs: return 0\n    jobs = sorted(jobs)\n    heap = []\n    for start, end in jobs:\n        if heap and heap[0] <= start:\n            heapq.heapreplace(heap, end)\n        else:\n            heapq.heappush(heap, end)\n    return len(heap)",
-    "explanation": "Sort jobs by start time. Maintain a min-heap of worker end times. For each job, if the earliest-finishing worker is free (its end ≤ new job's start), reuse that worker (heapreplace updates its end time). Otherwise allocate a new worker (heappush). The heap size at the end equals the peak concurrent job count — the minimum number of workers needed. Time O(n log n), space O(n). This is the meeting-rooms II problem, directly applicable to compute resource allocation: how many parallel Spark executors / Airflow slots / database connections are needed to service a given job schedule.\n\nHidden test (n=50k random intervals) via generator spec; naive O(n²) scan times out at ~37s; reference heap O(n log n) completes in <0.1s.",
+    "explanation": "Sort jobs by start time. Maintain a min-heap of worker end times. For each job, if the earliest-finishing worker is free (its end ≤ new job's start), reuse that worker (heapreplace updates its end time). Otherwise allocate a new worker. The heap size at the end is the minimum parallel-worker count needed. This is the meeting-rooms II problem, directly applicable to compute resource allocation: how many parallel Spark executors / data-pipeline workers are needed to process a job schedule without starvation?\n\nHidden test (n=50k pairs) via generator spec; naive O(n²) linear scan of all workers (instead of heap) times out at >13s; reference heap O(n log n) completes in <0.02s.",
     "test_cases": [
       {
         "input": [
@@ -42341,7 +42341,7 @@
     "starter_code": "import heapq\n\ndef solve(file_sizes: list) -> int:\n    # Your code here\n    pass",
     "expected_code": "import heapq\n\ndef solve(file_sizes):\n    if len(file_sizes) <= 1:\n        return 0\n    heap = list(file_sizes)\n    heapq.heapify(heap)\n    total = 0\n    while len(heap) > 1:\n        a = heapq.heappop(heap)\n        b = heapq.heappop(heap)\n        cost = a + b\n        total += cost\n        heapq.heappush(heap, cost)\n    return total",
     "solution_code": "import heapq\n\ndef solve(file_sizes):\n    if len(file_sizes) <= 1:\n        return 0\n    heap = list(file_sizes)\n    heapq.heapify(heap)\n    total = 0\n    while len(heap) > 1:\n        a = heapq.heappop(heap)\n        b = heapq.heappop(heap)\n        cost = a + b\n        total += cost\n        heapq.heappush(heap, cost)\n    return total",
-    "explanation": "This is the Huffman merge / optimal file merge problem. Greedy proof: merging the two smallest files first minimises the weighted total because each file's size contributes once per merge level it participates in — the deeper in the merge tree, the more costly. A min-heap makes each step O(log n), total O(n log n). Used directly in LSM-tree compaction strategies (RocksDB, Cassandra), Parquet file merge planning, and external sort merge-phase scheduling. One file: cost 0 (no merges needed).\n\nHidden test (n=10k) via generator spec; naive O(n²) linear-min times out, reference heapq O(n log n) completes in <1s.",
+    "explanation": "This is the Huffman merge / optimal file merge problem. Greedy proof: merging the two smallest files first minimises the weighted total because each file's size contributes once per merge level it participates in. Using a min-heap gives O(n log n). One file: cost 0 (no merges needed).\n\nHidden test (n=40k) via generator spec; naive O(n²) linear-min (find minimum by scanning, remove, repeat) times out at >11s; reference min-heap O(n log n) completes in <0.02s.",
     "test_cases": [
       {
         "input": [
@@ -42386,7 +42386,7 @@
         "input": [
           {
             "gen": "random_ints",
-            "n": 10000,
+            "n": 40000,
             "seed": 42,
             "low": 1,
             "high": 10000
@@ -48112,7 +48112,7 @@
     "starter_code": "def solve(arr: list) -> int:\n    # O(n log n) required. Use a modified merge sort.\n    pass",
     "expected_code": "def solve(arr):\n    def merge_count(arr):\n        if len(arr) <= 1: return arr[:], 0\n        mid = len(arr) // 2\n        left, lc = merge_count(arr[:mid])\n        right, rc = merge_count(arr[mid:])\n        merged, inversions = [], lc + rc\n        i = j = 0\n        while i < len(left) and j < len(right):\n            if left[i] <= right[j]:\n                merged.append(left[i]); i += 1\n            else:\n                merged.append(right[j])\n                inversions += len(left) - i\n                j += 1\n        merged.extend(left[i:])\n        merged.extend(right[j:])\n        return merged, inversions\n    _, count = merge_count(arr)\n    return count",
     "solution_code": "def solve(arr):\n    def merge_count(arr):\n        if len(arr) <= 1: return arr[:], 0\n        mid = len(arr) // 2\n        left, lc = merge_count(arr[:mid])\n        right, rc = merge_count(arr[mid:])\n        merged, inversions = [], lc + rc\n        i = j = 0\n        while i < len(left) and j < len(right):\n            if left[i] <= right[j]:\n                merged.append(left[i]); i += 1\n            else:\n                merged.append(right[j])\n                inversions += len(left) - i\n                j += 1\n        merged.extend(left[i:])\n        merged.extend(right[j:])\n        return merged, inversions\n    _, count = merge_count(arr)\n    return count",
-    "explanation": "During the merge step: when `right[j] < left[i]`, every element from `left[i:]` forms an inversion with `right[j]` — so add `len(left) - i` inversions. This counts all cross-inversions in O(n) per merge level, giving O(n log n) total. Base case: a single element has 0 inversions. The divide-and-conquer counts left-half inversions, right-half inversions, and cross inversions in the merge. Inversion count is a measure of 'sortedness': 0 means perfectly sorted, n*(n-1)/2 means completely reversed. Used in ranking quality analysis, A/B test rank correlation, and data drift detection.\n\nHidden test (n=20k) via generator spec; naive O(n²) nested loops time out at ~10s; reference merge-sort O(n log n) completes in <0.1s.",
+    "explanation": "During the merge step: when `right[j] < left[i]`, every element from `left[i:]` forms an inversion with `right[j]` — so add `len(left) - i` inversions. This counts all cross-inversions in O(n) per merge level, giving O(n log n) total. Base case: a single element has 0 inversions. The divide-and-conquer mirrors merge sort exactly — the inversion count is a side-product of the merge pass.\n\nHidden test (n=50k) via generator spec; naive O(n²) double-loop counting times out at >26s; reference merge-sort O(n log n) completes in <0.06s.",
     "test_cases": [
       {
         "input": [
@@ -48158,7 +48158,7 @@
         "input": [
           {
             "gen": "random_ints",
-            "n": 20000,
+            "n": 50000,
             "seed": 42,
             "low": 0,
             "high": 20000
