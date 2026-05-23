@@ -416,11 +416,15 @@ def _validate_mock_only_realism() -> None:
         raise ValueError(f"Mock-only realism family validation failed:\n{joined}")
 
 
+_DIFFICULTY_ORDER = {"easy": 0, "medium": 1, "hard": 2}
+
+
 def _validate_chain_integrity() -> None:
     """Validate follow-up chain structure.
 
     Rules (from authoring agent):
-    - follow_ups[] on a parent must all exist in the same track file
+    - follow_ups[] on a parent must all exist in the SAME TRACK (may be a harder difficulty)
+    - Child difficulty must be >= parent difficulty (no down-difficulty chains)
     - Each child listed in follow_ups must have mock_only=true
     - Each child must have parent_id matching the parent's id
     - Each child must have a follow_up_dimension
@@ -431,6 +435,19 @@ def _validate_chain_integrity() -> None:
     """
     errors: list[str] = []
 
+    # Build a full cross-difficulty lookup: {track: {id: (question, difficulty)}}
+    track_all_questions: dict[str, dict[int, tuple[dict, str]]] = {}
+    for track, file_path in _iter_question_files():
+        difficulty = file_path.stem
+        with file_path.open("r", encoding="utf-8") as handle:
+            questions = json.load(handle)
+        if track not in track_all_questions:
+            track_all_questions[track] = {}
+        for q in questions:
+            qid = int(q.get("id", 0))
+            if qid:
+                track_all_questions[track][qid] = (q, difficulty)
+
     all_children_seen: dict[str, set[int]] = {}  # track -> set of child IDs
 
     for track, file_path in _iter_question_files():
@@ -438,10 +455,10 @@ def _validate_chain_integrity() -> None:
         with file_path.open("r", encoding="utf-8") as handle:
             questions = json.load(handle)
 
-        q_by_id: dict[int, dict] = {int(q["id"]): q for q in questions if "id" in q}
-
         if track not in all_children_seen:
             all_children_seen[track] = set()
+
+        track_lookup = track_all_questions.get(track, {})
 
         for q in questions:
             qid = int(q.get("id", 0))
@@ -468,14 +485,21 @@ def _validate_chain_integrity() -> None:
                         )
                     all_children_seen[track].add(child_id)
 
-                    if child_id not in q_by_id:
+                    if child_id not in track_lookup:
                         errors.append(
-                            f"{track} {qid} {title}: follow_ups child {child_id} not found in same difficulty file"
+                            f"{track} {qid} {title}: follow_ups child {child_id} not found in any difficulty file for track"
                         )
                         continue
 
-                    child = q_by_id[child_id]
+                    child, child_diff = track_lookup[child_id]
                     c_title = child.get("title", "<untitled>")
+
+                    # Child difficulty must be >= parent difficulty
+                    if _DIFFICULTY_ORDER.get(child_diff, 0) < _DIFFICULTY_ORDER.get(difficulty, 0):
+                        errors.append(
+                            f"{track} {qid} {title}: chain child {child_id} is at {child_diff!r} "
+                            f"difficulty (parent is {difficulty!r}) — child must be same or harder"
+                        )
 
                     if not child.get("mock_only", False):
                         errors.append(

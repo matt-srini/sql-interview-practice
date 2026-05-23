@@ -408,9 +408,27 @@ The following tags are **forbidden** as `concepts` values — they are mechanic 
 **Example existing tags:** matrix (4)
 
 #### `GRAPH TRAVERSAL (BFS / DFS)`
-**What it tests:** picking BFS vs DFS by problem shape, visited-set discipline, level-by-level vs depth-first reasoning, cycle detection.
-**Match patterns:** `BFS`, `DFS`, `graph`, `GRAPH`, `topological sort`
-**Example existing tags:** BFS (4), graph (4), topological sort (3)
+**What it tests:** picking BFS vs DFS by problem shape, visited-set discipline, level-by-level vs depth-first reasoning, cycle detection, unweighted shortest path, island / connectivity scanning, dependency / topological ordering.
+**Match patterns:** `BFS`, `DFS`, `graph`, `GRAPH`, `topological`, `dependency resolut`, `shortest path`, `cycle detection`, `island`
+**Example existing tags:** BFS (4), graph (4), topological sort (3), cycle detection, island count
+
+#### `UNION-FIND & DISJOINT SET`
+**What it tests:** disjoint-set data structure, path compression, union-by-rank, connected-component detection, Kruskal MST, record linkage / entity resolution via component grouping.
+**Data-work analogue:** entity deduplication (record linkage = component grouping); Kruskal MST for minimum-cost data network.
+**Match patterns:** `union-find`, `disjoint set`, `disjoint-set`, `connected component`, `path compression`, `kruskal`, `record linkage`
+**Example existing tags:** UNION-FIND & DISJOINT SET, KRUSKAL, CONNECTED COMPONENT
+
+#### `WEIGHTED SHORTEST PATH`
+**What it tests:** Dijkstra's algorithm, weighted DAG critical path, priority-queue-ordered frontier expansion, distance map maintenance.
+**Data-work analogue:** critical-path / latency analysis over pipeline DAG; minimum-cost routing.
+**Match patterns:** `dijkstra`, `weighted graph`, `weighted shortest`, `min-cost path`, `critical path`, `bellman-ford`, `a-star`
+**Example existing tags:** WEIGHTED SHORTEST PATH, DIJKSTRA, CRITICAL PATH
+
+#### `STREAMING / ONLINE REDUCTION`
+**What it tests:** single-pass scans over a stream with bounded auxiliary state; running stats (mean, variance, min/max); Misra-Gries heavy-hitter approximation; online dedup; reservoir sampling; exponential weighted moving averages.
+**Data-work analogue:** event-stream processing where you cannot load all data; heavy-hitter / hot-key detection; rolling metric aggregation at scale.
+**Match patterns:** `streaming`, `online reduction`, `online dedup`, `misra-gries`, `running stats`, `running average`, `running mean`, `welford`, `reservoir`, `single-pass scan`
+**Example existing tags:** STREAMING / ONLINE REDUCTION, MISRA-GRIES, RUNNING STATS
 
 #### `BACKTRACKING & COMBINATORIAL SEARCH`
 **What it tests:** systematic exploration of a solution tree, pruning, restoring state, permutations / combinations / subsets.

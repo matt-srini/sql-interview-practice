@@ -531,19 +531,10 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "SCHEDULING",
             "GREEDY ALGORITHM",
         ],
-        "DYNAMIC PROGRAMMING (1D)": [
-            "DYNAMIC PROGRAMMING",
-            "1D DP",
-            "MEMOIZATION",
-            "KADANE",
-            "COIN CHANGE",
-            "LIS",                      # Longest Increasing Subsequence (DP formulation)
-            "FIBONACCI",                # Fibonacci-recurrence DP
-            "BOTTOM-UP",                # bottom-up tabulation
-            "KNAPSACK",                 # knapsack DP (0/1 and unbounded)
-            "WORD BREAK",               # text-segmentation DP
-        ],
+        # DYNAMIC PROGRAMMING (2D) must be checked BEFORE (1D) — the (1D) family's
+        # "DYNAMIC PROGRAMMING" substring would otherwise catch "(2D)" tags first.
         "DYNAMIC PROGRAMMING (2D)": [
+            "DYNAMIC PROGRAMMING (2D)", # explicit self-match — must be in patterns
             "2D DP",
             "MATRIX DP",
             "MATRIX",
@@ -554,28 +545,77 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "LONGEST COMMON",
             "EDIT DISTANCE",            # sequence alignment / fuzzy dedup DP
         ],
+        "DYNAMIC PROGRAMMING (1D)": [
+            "DYNAMIC PROGRAMMING (1D)", # explicit self-match (avoids ambiguity with (2D) above)
+            "DYNAMIC PROGRAMMING",
+            "1D DP",
+            "MEMOIZATION",
+            "KADANE",
+            "COIN CHANGE",
+            "LONGEST INCREASING SUBSEQUENCE",  # was 'LIS' — renamed to prevent false match with 'LIST...'
+            "FIBONACCI",                # Fibonacci-recurrence DP
+            "BOTTOM-UP",                # bottom-up tabulation
+            "KNAPSACK",                 # knapsack DP (0/1 and unbounded)
+            "WORD BREAK",               # text-segmentation DP
+        ],
         "GRAPH TRAVERSAL (BFS / DFS)": [
+            "GRAPH TRAVERSAL (BFS",     # explicit self-match prefix
             "BFS",
             "DFS",
             "GRAPH",
             "TOPOLOGICAL",
-            "DISJOINT-SET",
-            "SHORTEST PATH",
-            "WEIGHTED GRAPH",
-            "CONNECTED-COMPONENT",      # component discovery (Union-Find / BFS)
-            "UNION-FIND",               # Union-Find / disjoint-set data structure
-            "UNION-BY-RANK",
-            "PATH-COMPRESSION",         # path compression in Union-Find
             "DEPENDENCY RESOLUT",       # pipeline DAG / dependency resolution
             "DIRECTED GRAPH",
-            "DIJKSTRA",                 # Dijkstra's shortest path
-            "MIN-COST PATH",
-            "PRIORITY-ORDERED FRONTIER",
-            "DISTANCE MAP",             # distance map maintenance in graph search
-            "GREEDY SHORTEST",          # greedy shortest-path expansion
             "REACHABILITY",             # reachability / connectivity queries
             "LEAF TRIMMING",            # leaf-trimming BFS (e.g. min-height trees)
             "TREE CENTER",
+            # NOTE: 'SHORTEST PATH' removed — unweighted BFS shortest-path questions should
+            # use 'BFS' or 'GRAPH' as their tag; weighted shortest path → WEIGHTED SHORTEST PATH family.
+            "CYCLE DETECTION",          # DFS-based cycle detection
+            "ISLAND",                   # island / connected-region BFS/DFS
+        ],
+        "UNION-FIND & DISJOINT SET": [
+            "UNION-FIND",               # Union-Find / disjoint-set data structure
+            "UNION FIND",
+            "DISJOINT-SET",
+            "DISJOINT SET",
+            "UNION-BY-RANK",
+            "UNION BY RANK",
+            "PATH-COMPRESSION",         # path compression in Union-Find
+            "PATH COMPRESSION",
+            "CONNECTED-COMPONENT",      # component discovery via Union-Find
+            "CONNECTED COMPONENT",
+            "KRUSKAL",                  # Kruskal MST algorithm uses Union-Find
+            "RECORD LINKAGE",           # entity resolution → Union-Find in practice
+        ],
+        "WEIGHTED SHORTEST PATH": [
+            "WEIGHTED SHORTEST PATH",   # explicit self-match
+            "WEIGHTED SHORTEST",
+            "DIJKSTRA",                 # Dijkstra's shortest path (weighted)
+            "WEIGHTED GRAPH",
+            "SHORTEST PATH",            # any shortest-path algorithm (weighted context)
+            "MIN-COST PATH",
+            "PRIORITY-ORDERED FRONTIER",
+            "DISTANCE MAP",             # distance map in weighted graph search
+            "GREEDY SHORTEST",          # greedy shortest-path expansion
+            "BELLMAN-FORD",             # Bellman-Ford relaxation
+            "A-STAR",                   # A* heuristic search
+            "CRITICAL PATH",            # critical path method (weighted DAG DP)
+        ],
+        "STREAMING / ONLINE REDUCTION": [
+            "STREAMING",                # streaming / online processing
+            "ONLINE REDUCTION",
+            "ONLINE DEDUP",
+            "MISRA-GRIES",              # Misra-Gries heavy hitter / space-budget approx
+            "RUNNING STATS",            # running mean / variance / min / max
+            "RUNNING AVERAGE",
+            "RUNNING MEAN",
+            "RUNNING VARIANCE",
+            "EXPONENTIAL DECAY",        # exponential weighted moving average
+            "WELFORD",                  # Welford one-pass variance
+            "RESERVOIR SAMPLING",       # reservoir / random sampling over stream
+            "SINGLE-PASS SCAN",         # bounded-state single-pass reduction
+            "BOUNDED AUXILIARY",        # bounded auxiliary state
         ],
         "BACKTRACKING & COMBINATORIAL SEARCH": [
             "BACKTRACKING",
@@ -606,6 +646,7 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "NUMERIC",                  # numeric property checks
         ],
         "LIST & COLLECTION TRANSFORMATION": [
+            "LIST & COLLECTION TRANSFORMATION",  # explicit self-match
             "LIST MANIPULATION",
             "LIST",
             "COLLECTIONS",

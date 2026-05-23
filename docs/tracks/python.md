@@ -52,8 +52,6 @@ If a question's hardness comes from "you have to remember to handle the empty ca
 
 **Deprioritized — out unless a genuine data analogue is articulable:** permutation/subset/N-queens backtracking, grid-path DP (unique-paths style), bit-manipulation tricks, number-theory/math puzzles, regex-matching DP, linked-list pointer gymnastics, and standalone matrix-simulation (spiral, Sudoku). The Difficulty-vocabulary and Concept-arc tables retain the *named patterns* (2-D DP, Trie, articulation, KMP/Aho-Corasick) because each has the analogue listed above — but their puzzle realisations are not authored here.
 
-**Geometric-framing note:** Questions using geometric language ("water trapped", "histogram bars") are only authored when the underlying algorithm earns its place on data-work merit — two-pointer capacity reasoning or monotonic-stack partition sizing — with the engineering use case stated explicitly in the description. The geometry is incidental scaffolding, not the lesson. *Purely* visual puzzles (spiral matrix traversal, unique grid paths) have no data analogue and remain blocked.
-
 > **No mock-only realism family for Python.** Unlike SQL/Pandas/PySpark, Python has no business-judgment assessment lens. The candidate lens — complexity & memory-aware reasoning — is *practice-gradable* here (the executable harness times out O(n²) solutions and OOMs load-everything approaches on large inputs — see Verification), so it is taught and graded in practice, not deferred to mock. In mock chains it is exercised via the `performance_pivot` follow-up dimension, not a concept tag.
 
 ### Representative tasks per tier
@@ -72,13 +70,13 @@ Difficulty controls reasoning depth, never licenses puzzle trivia. Even easy que
 |---|---|
 | Easy | Linear scan + counters → hash-map membership / frequency → indexed-sequence reasoning → string parsing basics → list/collection transforms → simple greedy |
 | Medium | Sliding window over event streams (fixed + variable) → two pointers on sorted data → binary search (incl. parametric — min capacity/rate) → heap top-K (heavy hitters) → 1D DP (sequence segmentation / tokenization) → BFS/DFS over dependency or event graphs |
-| Hard | graph algorithms with a pipeline analogue (topological sort → DAG/lineage ordering; Union-Find → record linkage; Dijkstra → critical-path/latency) → 2D DP as sequence diff/alignment (edit distance for fuzzy dedup) → Trie (key-prefix routing / autocomplete) / Aho-Corasick (multi-pattern log scanning) → system-design DS (LRU, median heap, sliding-window max) → advanced state representations |
+| Hard | graph algorithms with a pipeline analogue (topological sort → DAG/lineage ordering; `UNION-FIND & DISJOINT SET` → record linkage; `WEIGHTED SHORTEST PATH` / Dijkstra → critical-path/latency) → 2D DP as sequence diff/alignment (edit distance for fuzzy dedup) → Trie (key-prefix routing / autocomplete) / Aho-Corasick (multi-pattern log scanning) → system-design DS (LRU, `STREAMING / ONLINE REDUCTION`: median heap, sliding-window max, Misra-Gries) → advanced state representations |
 
 ## Concept families
 
 Full registry: [`docs/concept-taxonomy.md` → Python section](../concept-taxonomy.md#python--concept-families).
 
-16 canonical families covering algorithmic patterns. The blocklist rejects `for loop`, `if/else`, `function`, library names alone (`heapq`, `bisect`) — describe the *pattern*, not the syntactic mechanism.
+19 canonical families covering algorithmic patterns. The blocklist rejects `for loop`, `if/else`, `function`, library names alone (`heapq`, `bisect`) — describe the *pattern*, not the syntactic mechanism.
 
 ## Authoring allocation matrix
 
@@ -87,8 +85,8 @@ Full registry: [`docs/concept-taxonomy.md` → Python section](../concept-taxono
 | **Practice easy** | `easy.json` no `mock_only` | One named pattern, clean, < 50 LOC reference solution |
 | **Practice medium** | `medium.json` no `mock_only` | One named pattern in non-obvious application |
 | **Practice hard** | `hard.json` no `mock_only` | Pattern + data-structure choice + complexity defense |
-| **Mock-only medium** | `medium.json` with `mock_only: true` | Real-world framing (event stream, dedupe a feed, build a session map) instead of abstract array problems. Any of the 16 concept families is eligible; the framing — not the pattern — differentiates mock from practice. |
-| **Mock-only hard** | `hard.json` with `mock_only: true` | System-design-flavoured or multi-step decomposition. Priority families: `HEAP & PRIORITY PATTERNS`, `GRAPH TRAVERSAL STRATEGY`, `RECURSION & MEMOIZATION`, `SLIDING WINDOW REASONING` (streaming anomaly detection, window median). |
+| **Mock-only medium** | `medium.json` with `mock_only: true` | Real-world framing (event stream, dedupe a feed, build a session map) instead of abstract array problems. Any of the 19 concept families is eligible; the framing — not the pattern — differentiates mock from practice. |
+| **Mock-only hard** | `hard.json` with `mock_only: true` | System-design-flavoured or multi-step decomposition. Priority families: `HEAP & PRIORITY QUEUE`, `GRAPH TRAVERSAL (BFS / DFS)`, `UNION-FIND & DISJOINT SET`, `WEIGHTED SHORTEST PATH`, `DYNAMIC PROGRAMMING (1D)`, `STREAMING / ONLINE REDUCTION` (streaming anomaly detection, window median). |
 | **Mock-only chain** | Parent + 1–3 follow-ups, all `mock_only: true` | Natural pivots: scale (10⁸ input), business rule (now ignore X), data quality (handle Nones), edge case (empty input), performance (O(n²) → O(n log n)). Chains travel as atomic units in sessions — never split. |
 
 **Easy mock-only: never.** Easy is practice-only.

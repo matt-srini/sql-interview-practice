@@ -15,7 +15,7 @@ When working in this codebase, think simultaneously from multiple vantage points
 
 - **User-behaviour expert** — Users are under pressure (job search, timed practice). Friction costs them confidence. Low-friction flows (anonymous-first identity, in-place registration, persistent progress) are intentional product choices, not oversights. When suggesting changes, consider: how does a first-time visitor experience this? How does a returning user with 40 solves experience it? What happens when a user hits a locked question or an empty state?
 
-- **Curriculum designer** — The 841 practice questions have intentional difficulty progressions, real-world datasets with deliberate edge cases, and semantic concept tags. Changes to unlock rules, question ordering, or content must preserve the learning arc. Don't make hard questions trivially accessible or easy questions feel insulting.
+- **Curriculum designer** — The 840 practice questions have intentional difficulty progressions, real-world datasets with deliberate edge cases, and semantic concept tags. Changes to unlock rules, question ordering, or content must preserve the learning arc. Don't make hard questions trivially accessible or easy questions feel insulting.
 
 - **Product-minded operator** — Three subscription tiers (Free / Pro / Elite) are the revenue model. The unlock gates are not arbitrary; they create upgrade motivation without being punitive. Rate limiting, error shapes (`{ error, request_id }`), and idempotent webhooks exist for real operational reasons. Changes to these areas need business-level reasoning, not just technical correctness.
 
@@ -96,7 +96,7 @@ A data interview practice platform covering nine tracks. Users write SQL or Pyth
 
 **Tracks:**
 - **SQL** — 115 practice (37 easy / 47 medium / 31 hard) + 162 mock-only, DuckDB execution, realistic relational datasets
-- **Python** — 80 practice (33 easy / 29 medium / 18 hard) + 102 mock-only, data-professional algorithms (sessionization, hash join, DAG cycle detection, critical path, rate limiting, backpressure, edit distance), test-case evaluation
+- **Python** — 79 practice (33 easy / 29 medium / 17 hard) + 100 mock-only, data-professional algorithms (sessionization, hash join, DAG cycle detection, critical path, rate limiting, edit distance, streaming anomaly detection), test-case evaluation
 - **Pandas** — 86 practice (27 easy / 36 medium / 23 hard) + 26 mock-only, pandas-specific data manipulation, DataFrame comparison
 - **PySpark** — 116 practice (41 easy / 39 medium / 36 hard) + 21 mock-only, MCQ / predict-output / debug / scenario formats
 - **Data Engineering** — 91 practice (30 easy / 35 medium / 26 hard) + 14 mock-only, MCQ / scenario / debug, no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
@@ -129,7 +129,7 @@ Mock-only questions (`mock_only: true`) live in the same JSON files as practice 
 | Track | Easy (practice + mock) | Medium (practice + mock) | Hard (practice + mock) | Format | Location |
 |---|---|---|---|---|---|
 | SQL | 37 + 0 | 47 + 73 | 31 + 89 | SQL query via DuckDB | `backend/content/questions/` |
-| Python | 33 + 0 | 29 + 50 | 18 + 52 | Algorithm function, test cases | `backend/content/python_questions/` |
+| Python | 33 + 0 | 29 + 50 | 17 + 50 | Algorithm function, test cases | `backend/content/python_questions/` |
 | Pandas | 27 + 0 | 36 + 12 | 23 + 14 | DataFrame function, output comparison | `backend/content/python_data_questions/` |
 | PySpark | 41 + 0 | 39 + 11 | 36 + 10 | MCQ / predict-output / debug / scenario | `backend/content/pyspark_questions/` |
 | Data Engineering | 30 + 0 | 35 + 6 | 26 + 8 | MCQ / scenario / debug | `backend/content/data_engineering_questions/` |
@@ -138,8 +138,8 @@ Mock-only questions (`mock_only: true`) live in the same JSON files as practice 
 | ML Fundamentals | 30 + 0 | 38 + 12 | 28 + 13 | MCQ / scenario / predict-output / debug | `backend/content/ml_fundamentals_questions/` |
 | Experimentation | 30 + 0 | 32 + 12 | 22 + 13 | MCQ / scenario / predict-output / debug | `backend/content/experimentation_questions/` |
 
-**Practice totals:** SQL 115 · Python 80 · Pandas 86 · PySpark 116 · Data Engineering 91 · Data Modeling 76 · Statistics 97 · ML Fundamentals 96 · Experimentation 84 = **841 practice questions**  
-**Mock-only totals:** SQL 162 · Python 102 · Pandas 26 · PySpark 21 · Statistics 8 · ML Fundamentals 25 · Experimentation 25 · Data Modeling 13 · Data Engineering 14 = **396 mock-only questions** (Pro/Elite only)
+**Practice totals:** SQL 115 · Python 79 · Pandas 86 · PySpark 116 · Data Engineering 91 · Data Modeling 76 · Statistics 97 · ML Fundamentals 96 · Experimentation 84 = **840 practice questions**  
+**Mock-only totals:** SQL 162 · Python 100 · Pandas 26 · PySpark 21 · Statistics 8 · ML Fundamentals 25 · Experimentation 25 · Data Modeling 13 · Data Engineering 14 = **394 mock-only questions** (Pro/Elite only)
 
 See [docs/content-authoring.md](docs/content-authoring.md) for the full mock-only authoring spec.
 
