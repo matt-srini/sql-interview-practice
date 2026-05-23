@@ -869,6 +869,9 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "JOB EXECUTION",
             "CLUSTER ARCHITECTURE",
             "DISTRIBUTED SYSTEM",
+            "DRIVER",       # role of the Spark driver process
+            "EXECUTOR",     # role of Spark executor processes
+            "SPARK SQL",    # Spark SQL API usage (bare, without CATALOG suffix)
             "SPARKSESSION",
             "GETORCREATE",
             "SESSION LIFECYCLE",
@@ -1028,6 +1031,7 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "DRIVER-SIDE MATERIALIZATION",
             # Phase 2 expansions
             "GARBAGE COLLECTION",
+            "JVM",          # bare JVM reference (serialization overhead, heap)
             "JVM GC",
             "JVM OBJECT",
             "DISK SPILL",
@@ -1062,6 +1066,7 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "LONGTYPE",
             "DOUBLETYPE",
             "INTEGERTYPE",
+            "IEEE 754",     # IEEE 754 floating-point edge cases (NaN, inf, negative zero)
             "TYPE INFERENCE",
             "TYPE PROMOTION",
             "TYPE CONTRACT",
@@ -1106,6 +1111,8 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "INITIALIZATION OVERHEAD",
             "ACCUMULATOR",
             "PYTHON UDF",
+            "PANDAS MIGRATION",   # pandas-style patterns that fail or differ in PySpark
+            "NP.LOG",             # NumPy edge cases (inf, NaN) in pandas UDFs
         ],
 
         # --- Structured Streaming: output modes, watermarks, stateful --------
@@ -1207,6 +1214,7 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "DEBUG",
             "EXCEPTION",
             "TYPEERROR",
+            "ERROR HANDLING",    # error-handling reasoning in PySpark context
         ],
 
         # --- Performance tuning: config, small files, cloud metadata --------
@@ -1268,6 +1276,8 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             # Phase 2 remap targets
             "COUNT VS COUNTDISTINCT",
             "LEN() VS COUNT",
+            "SPARK UI",              # Spark UI (bare — stage view, task metrics, skew diagnosis)
+            "TASK METRICS",          # Spark task-level metrics (duration, shuffle read/write, spill)
             "SPARK UI DIAGNOSIS",
             "SPARK UI TASK METRICS",
             "FULL TABLE SCAN DIAGNOSIS",

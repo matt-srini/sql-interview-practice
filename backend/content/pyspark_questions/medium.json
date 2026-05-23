@@ -24,7 +24,7 @@
       "AnalysisException",
       "column resolution",
       "query analysis phase",
-      "error handling"
+      "DEBUG SPARK ERRORS"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -526,11 +526,9 @@
       "Use `.explain()` on a SQL query and the equivalent DataFrame expression — they often produce identical physical plans"
     ],
     "concepts": [
-      "Spark SQL",
-      "DataFrame API",
-      "Catalyst optimizer",
-      "query performance",
-      "execution plan equivalence"
+      "EXECUTION MODEL REASONING",
+      "CATALYST OPTIMIZER",
+      "PERFORMANCE TUNING & TRADE-OFFS"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -647,7 +645,6 @@
     ],
     "concepts": [
       "mapPartitions",
-      "map",
       "initialization overhead",
       "UDF optimization",
       "RDD API"
@@ -676,11 +673,9 @@
       "Also check the 'Input Size / Records' column in the task table — the skewed task will have far more input than its peers"
     ],
     "concepts": [
-      "data skew",
-      "Spark UI",
-      "task metrics",
-      "stage detail",
-      "join performance"
+      "DATA SKEW & MITIGATION",
+      "OUTPUT SANITY VALIDATION",
+      "JOIN STRATEGY SELECTION"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },

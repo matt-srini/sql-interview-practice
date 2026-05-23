@@ -161,10 +161,9 @@
       "The fix always involves capturing the return value: df = df.withColumn(...)"
     ],
     "concepts": [
-      "COLUMN-EXPRESSION TRANSFORMATION",
-      "DataFrame immutability",
-      "pandas migration traps",
-      "TypeError"
+      "EXECUTION MODEL REASONING",
+      "UDF & PYTHON BOUNDARY",
+      "DEBUG SPARK ERRORS"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -306,7 +305,6 @@
     ],
     "concepts": [
       "partitions",
-      "parallelism",
       "block size",
       "data distribution"
     ],
@@ -334,8 +332,7 @@
     ],
     "concepts": [
       "actions",
-      "count",
-      "show",
+      "OUTPUT SANITY VALIDATION",
       "return values"
     ],
     "interaction_mode": "code_adjacent_reasoning"
@@ -361,10 +358,8 @@
       "Check the PySpark API — sometimes two method names do exactly the same thing"
     ],
     "concepts": [
-      "orderBy",
-      "sort",
-      "global sort",
-      "shuffle"
+      "SHUFFLE REASONING",
+      "NARROW VS WIDE TRANSFORMATIONS"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -389,10 +384,8 @@
       "withColumnRenamed returns a new DataFrame — what exactly changes about it?"
     ],
     "concepts": [
-      "withColumnRenamed",
-      "column names",
-      "immutability",
-      "schema"
+      "SCHEMA & TYPE HANDLING",
+      "immutability"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -473,10 +466,8 @@
       "Think about what 'overwrite' literally means — and remember there are four write modes: error, append, overwrite, ignore"
     ],
     "concepts": [
-      "write modes",
-      "overwrite",
-      "parquet",
-      "output management"
+      "FILE FORMATS & READERS",
+      "FAULT TOLERANCE & RECOVERY"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -501,11 +492,9 @@
       "The data type of a when/otherwise expression comes from its return values, not from the boolean condition"
     ],
     "concepts": [
-      "when",
-      "otherwise",
-      "conditional expressions",
       "type inference",
-      "StringType"
+      "StringType",
+      "CATALYST OPTIMIZER"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -530,11 +519,9 @@
       "Consider what happens at the boundary between the JVM (where Spark runs) and the Python process"
     ],
     "concepts": [
-      "UDF",
-      "serialization",
-      "JVM",
-      "Catalyst optimizer",
-      "performance"
+      "UDF & PYTHON BOUNDARY",
+      "PERFORMANCE TUNING & TRADE-OFFS",
+      "MEMORY MANAGEMENT"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -561,10 +548,8 @@
       "Compare this to database type coercion: SQL also produces NULL (not an error) for an invalid CAST on most engines"
     ],
     "concepts": [
-      "COLUMN-EXPRESSION TRANSFORMATION",
-      "cast null-on-failure",
-      "type coercion semantics",
-      "null production"
+      "SCHEMA & TYPE HANDLING",
+      "DATA QUALITY SKEPTICISM"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -589,7 +574,6 @@
       "Think about how SQL UNION works — does it match by column name or by position?"
     ],
     "concepts": [
-      "union",
       "unionByName",
       "positional matching",
       "schema alignment"
@@ -645,7 +629,6 @@
       "int literals in lit() map to IntegerType; contrast with count() aggregates which always produce LongType"
     ],
     "concepts": [
-      "literal column",
       "nullable vs non-nullable",
       "IntegerType inference",
       "schema analysis"
@@ -673,10 +656,8 @@
       "An alias replaces the column name in the output — how many columns does a select with one expression produce?"
     ],
     "concepts": [
-      "alias",
-      "column renaming",
-      "select",
-      "Column expressions"
+      "SCHEMA & TYPE HANDLING",
+      "CATALYST OPTIMIZER"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -704,7 +685,7 @@
     ],
     "concepts": [
       "schema inspection",
-      "side-effect methods",
+      "OUTPUT SANITY VALIDATION",
       "StructType",
       "return values"
     ],
@@ -790,11 +771,8 @@
       "One of these gives you a DataFrame to continue transforming; the other gives you Python objects right now"
     ],
     "concepts": [
-      "limit",
-      "head",
       "transformations vs actions",
-      "DRIVER-SIDE MATERIALIZATION RISK",
-      "Row objects"
+      "DRIVER-SIDE MATERIALIZATION RISK"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -877,11 +855,8 @@
       "Spark generates a column name from the expression string when no `.alias()` is provided — what does the expression look like as a string?"
     ],
     "concepts": [
-      "column naming",
-      "auto-generated names",
-      "alias",
-      "col() function",
-      "predict output"
+      "SCHEMA & TYPE HANDLING",
+      "CATALYST OPTIMIZER"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -1020,8 +995,7 @@
       "RECOMPUTATION TRADE-OFF",
       "lazy evaluation",
       "materialization timing",
-      "persist",
-      "predict output"
+      "persist"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -1160,8 +1134,7 @@
     ],
     "concepts": [
       "Dataset vs DataFrame",
-      "type safety",
-      "Python PySpark API"
+      "type safety"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   }

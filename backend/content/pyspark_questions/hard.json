@@ -558,11 +558,8 @@
       "Mutable semantics are implemented by rewriting immutable data files, so tiny row changes can still trigger large file rewrites."
     ],
     "concepts": [
-      "DELTA LAKE WRITE AMPLIFICATION",
-      "IMMUTABLE FILE REWRITE COST",
-      "TABLE MAINTENANCE TRADE-OFFS",
-      "UPDATE-PATH PERFORMANCE",
-      "STORAGE LAYOUT OPTIMIZATION"
+      "DELTA LAKE OPERATIONS",
+      "PERFORMANCE TUNING & TRADE-OFFS"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -1222,11 +1219,9 @@
       "log(0) in IEEE 754 arithmetic is −∞, not an error and not null. Does Spark treat −∞ as a special value for DoubleType columns?"
     ],
     "concepts": [
-      "pandas UDF null-to-NaN conversion",
-      "NaN-to-null return semantics",
-      "IEEE 754 negative infinity preservation",
-      "nullable column handling in UDFs",
-      "np.log edge cases"
+      "UDF & PYTHON BOUNDARY",
+      "SCHEMA & TYPE HANDLING",
+      "DATA QUALITY SKEPTICISM"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
