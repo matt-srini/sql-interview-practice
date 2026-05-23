@@ -18,7 +18,8 @@
   ],
   "focus_concepts": [
     "GRAPH TRAVERSAL (BFS / DFS)",
-    "CYCLE DETECTION"
+    "CYCLE DETECTION",
+    "WEIGHTED SHORTEST PATH"
   ],
   "outcomes": "You'll handle BFS, DFS, topological sort, and connected-components problems that appear in data engineering and system design interviews.",
   "recommended_after": [
