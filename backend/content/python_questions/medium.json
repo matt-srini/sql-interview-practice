@@ -8840,7 +8840,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use DFS with a recursion stack (a second set). A back-edge — an edge to a node already in the current DFS path — signals a cycle.",
+      "Model pipeline stages as nodes with directed edges for dependencies, then use DFS to detect cycles — a cycle exists when DFS encounters a node that's already on the current active traversal path.",
       "Track two sets: `visited` (ever seen) and `rec_stack` (currently on the DFS call stack). When leaving a node, remove it from `rec_stack`."
     ],
     "concepts": [
@@ -9522,7 +9522,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Count each label's occurrences (Counter or a dict). Then filter: keep only labels where the count is strictly greater than `len(labels) / 3`.",
+      "Count how often each category appears in a single pass, then filter: keep only categories whose count exceeds one-third of the total.",
       "Return the results in sorted order for determinism. At most two categories can appear more than n/3 times — you don't need to handle a long list of dominants."
     ],
     "concepts": [
@@ -16191,7 +16191,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Build a dict mapping each user_id in table_b to a list of its events. Then for each row in table_a, look up its user_id and emit one output triple per matching row in table_b.",
+      "Build a hash map from one side of the join (keyed on the join column), then probe it for each row from the other side — this is the hash-join pattern that avoids a nested O(n×m) scan.",
       "This is the hash join algorithm: build phase (index table_b) + probe phase (scan table_a). It runs in O(|A|+|B|) time, unlike a nested-loop join which is O(|A|×|B|)."
     ],
     "concepts": [
@@ -16510,7 +16510,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use a deque to store the timestamps of allowed requests. Before each new request, remove entries from the front of the deque that fall outside the current window.",
+      "A sliding window tracks the count of requests in the most recent `window_size` seconds — only events within that window count against the rate limit.",
       "The window for request at time `t` is `(t - window_size, t]`. An entry at time `t_old` is outside when `t_old <= t - window_size`."
     ],
     "concepts": [
@@ -16757,7 +16757,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Build a dict mapping each event id to the event with the latest timestamp seen so far. For each new event, update the dict entry only if the new event's timestamp is strictly greater.",
+      "A hash map keyed by event ID lets you resolve duplicates in a single pass — keep only the record with the latest timestamp for each ID.",
       "After the pass, sort the dict values by timestamp to get deterministic ordering."
     ],
     "concepts": [
@@ -20354,7 +20354,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Sort intervals by start and queries by value. Use a min-heap (keyed on interval size) to track intervals that have started. For each query, add newly eligible intervals to the heap, evict those that end before the query, then the heap top is your answer.",
+      "Process queries in sorted order and maintain a priority structure of candidate intervals that have already started — the minimum-size active covering interval is accessible in O(log n).",
       "Process queries in sorted order but track original indices to reconstruct the result in query order."
     ],
     "concepts": [
@@ -22454,7 +22454,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Compute a fingerprint for each log line: extract only the key names (before '=') from each token, sort them, and use the result as a dict key to group lines together.",
+      "Two log lines belong to the same event class if they share the same keys — a canonical fingerprint of that sorted key list can serve as the grouping key in a hash map.",
       "frozenset of key names works as a dict key. Use a defaultdict(list) to collect lines per fingerprint."
     ],
     "concepts": [
@@ -23473,7 +23473,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use a deque to track events in the window and a Counter to track frequencies. On each event, add it then evict expired events from the front of the deque, decrementing their counts.",
+      "Maintain a frequency map over a sliding time window — as events enter and expire, update counts and derive the current top-N at each step.",
       "After eviction, sort the frequency dict entries by (-count, type_name) to get top-N with alphabetical tie-breaking."
     ],
     "concepts": [
@@ -28685,7 +28685,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use a min-heap of size k. Push each job; if the heap grows beyond k, pop the smallest. At the end, the heap holds the k largest.",
+      "A bounded priority structure of size k efficiently tracks the k largest values seen so far — when a new element exceeds the current minimum held, it replaces it.",
       "heapq.heapreplace(heap, new_item) atomically pops the smallest and pushes new_item — use it when the heap is already at capacity and the new item beats the current minimum."
     ],
     "concepts": [
@@ -31054,7 +31054,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "The deque holds indices (not values). The front of the deque always holds the index of the current window maximum.",
+      "A monotonic sliding-window structure tracks the window maximum by storing indices in non-increasing value order — any index that falls outside the window boundary must be evicted from the front before reporting.",
       "After appending to the deque, add: `while dq[0] < i - k + 1: dq.popleft()`. This evicts indices that have slid out of the window before you read `dq[0]`."
     ],
     "concepts": [
@@ -31775,7 +31775,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use a `defaultdict(set)`. For each event, compute `bucket = ev[ts_col] // window` and do `buckets[bucket].add(ev[key_col])`. A set naturally deduplicates.",
+      "Partition timestamps into fixed-width buckets using integer division, then count distinct users per bucket with a unique-element accumulator — each bucket accumulates unique IDs independently.",
       "Return `{b: len(s) for b, s in sorted(buckets.items())}`. Sort by bucket so output order is deterministic."
     ],
     "concepts": [
@@ -33317,7 +33317,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use a min-heap of size N. Push `(latency, endpoint)`. When a new request's latency exceeds the heap minimum, use `heapreplace` to swap out the smallest.",
+      "A bounded priority structure of size N maintains the N highest-latency endpoints seen so far — when a new measurement beats the current held minimum, it replaces it.",
       "The heap stores tuples `(latency, endpoint)` — the latency is first so Python's heap comparison works correctly. Convert back to `(endpoint, latency)` for the output sort."
     ],
     "concepts": [
@@ -40307,7 +40307,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use `deque([(start_row, start_col, 0)])`. Mark cells visited before enqueuing (not when dequeuing) to avoid processing the same cell multiple times.",
+      "Model the grid as a graph where adjacent passable cells are connected by edges — BFS explores cells layer by layer, so the first time it reaches the destination is the shortest path.",
       "BFS guarantees the shortest path in an unweighted graph. When you first dequeue the destination, that distance is optimal — return immediately."
     ],
     "concepts": [
@@ -41622,7 +41622,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Define a nested function `depth(emp)` that checks a `memo` dict first. If not memoized: look up `hierarchy[emp]` — if None (or missing), depth is 0; otherwise depth = `depth(manager) + 1`. Store result in `memo` before returning.",
+      "The depth of any employee is 1 + depth(their manager) — this is a recursive definition that terminates at root employees (no manager). Memoize computed depths to avoid recomputing shared subtrees.",
       "Base cases: an employee with `manager=None` is a root (depth 0). A manager not present in the hierarchy is treated as an external root — also depth 0 for the direct report's manager lookup."
     ],
     "concepts": [
@@ -41929,7 +41929,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use a stack of *indices* (not values). For each new element at index `i`: pop indices from the stack while `heights[stack[-1]] < heights[i]`, setting `result[popped_index] = heights[i]`.",
+      "A monotonic index structure efficiently answers 'next greater element' queries — elements awaiting their answer are held in last-in-first-out order, and each arriving element resolves any pending entries it is strictly greater than.",
       "Initialize `result = [-1] * len(heights)`. Any index still in the stack at the end has no next-greater element — -1 is already correct."
     ],
     "concepts": [
@@ -42127,7 +42127,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Initialize the heap with `(first_element, list_index, element_index)` for each non-empty list. Each heap pop gives the current global minimum.",
+      "K-way merge keeps one 'frontier' entry per list in a priority structure — each pop yields the globally smallest remaining element, and the next element from that same list is pushed in.",
       "After popping `(val, li, idx)`, check if `sorted_lists[li]` has a next element at `idx+1`. If so, push `(sorted_lists[li][idx+1], li, idx+1)` to the heap."
     ],
     "concepts": [
@@ -42293,7 +42293,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use a `seen = {}` dict. For each `(j, n)` in `enumerate(nums)`: compute `complement = target - n`. If `complement in seen`, return `(seen[complement], j)`. Otherwise store `seen[n] = j`.",
+      "For each element, check whether its complement (target − element) has already been seen — a hash map storing value → first index makes this a single linear scan.",
       "Store the index AFTER checking (not before): this ensures you don't use the current element as its own complement. For `nums=[3,3], target=6`: when processing the second 3, `seen` already has `3→0`, so you return `(0,1)` correctly."
     ],
     "concepts": [
@@ -42986,7 +42986,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use three states: WHITE (unvisited), GRAY (on current DFS stack), BLACK (fully done). If you encounter a GRAY neighbor, you've found a back edge → cycle detected.",
+      "During DFS, track three states per node: unvisited, currently on the active traversal path, and fully processed — encountering an 'active' node during traversal means a cycle exists.",
       "After fully exploring a node's neighbors, color it BLACK. This distinguishes 'finished' nodes from 'in-progress' nodes — cross edges (to BLACK nodes) don't indicate cycles in directed graphs."
     ],
     "concepts": [
@@ -44900,7 +44900,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Maintain `candidate = None, count = 0`. For each element: if `count == 0`, set `candidate = x`. Then `count += 1` if `x == candidate` else `count -= 1`. After the loop, `candidate` is the potential majority.",
+      "A streaming majority-vote algorithm maintains a single candidate and a counter — matching elements increment the count, non-matching elements cancel it, and the final surviving candidate is the majority.",
       "Always verify: check `stream.count(candidate) > len(stream) // 2`. The algorithm finds a candidate but doesn't guarantee it's actually the majority — the verification step is required."
     ],
     "concepts": [

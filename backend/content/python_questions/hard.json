@@ -21128,7 +21128,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use BFS topological sort (Kahn's algorithm). Maintain an `earliest_start` dict initialised to 0. When processing a node, propagate its finish time to each dependent: `earliest_start[dep] = max(earliest_start[dep], earliest_start[node] + duration[node])`.",
+      "The critical path is the longest weighted path through the DAG — process tasks in topological order and propagate the earliest possible finish time forward to each task's successors.",
       "A node enters the queue only when its in-degree drops to 0 — meaning all its prerequisites have been processed and its `earliest_start` is final. The answer is the maximum finish time across all tasks."
     ],
     "concepts": [
@@ -21259,7 +21259,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Sort jobs by start time. Use a min-heap to track when each worker next becomes free. For each job, if the earliest-free worker finishes at or before the job's start, reuse it; otherwise add a new worker.",
+      "Sort jobs by start time and greedily assign each to the earliest-finishing available worker — a priority structure on worker finish times identifies that worker in O(log n) per job.",
       "The heap size at any point equals the number of workers currently allocated. At the end it equals the minimum workers needed overall."
     ],
     "concepts": [
@@ -36748,7 +36748,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use a min-heap initialized with the first event from each stream. Include the stream index in the heap key to break timestamp ties: (timestamp, stream_idx, position, data).",
+      "K-way merge keeps one frontier entry per stream in a priority structure — each pop yields the globally earliest timestamped event, and the next event from that stream is pushed in.",
       "Each pop yields the globally next event. Immediately push the next event from the same stream (if one exists). The heap always holds at most K elements."
     ],
     "concepts": [
@@ -38986,7 +38986,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use a deque for the window and a Counter for frequencies. On each event: add to window, increment count, then evict expired events from the front (decrement their counts, remove zero-entries).",
+      "Maintain a sliding window of active events and a frequency map — as events expire, decrement their counts; derive top-K from the current frequency state at each step.",
       "Sort the current Counter items by (-count, label) to rank by frequency descending with alphabetical tie-breaking. Take the first k."
     ],
     "concepts": [
@@ -39096,7 +39096,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Iterate through records and build a dict keyed by id. Update the entry whenever the new record's timestamp is >= the stored one (not just strictly greater — to get last-write-wins on ties).",
+      "A hash map keyed by entity ID accumulates the best record seen so far — 'best' is the record with the highest timestamp, using source priority as a tiebreaker.",
       "Sort the final dict values by (ts, id) for deterministic output when timestamps tie."
     ],
     "concepts": [
@@ -40142,7 +40142,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use a min-heap of (current_load, worker_index). Each job, pop the least-loaded worker (heappop), record the assignment, push back with updated load (heappush).",
+      "Always assign the next job to the least-loaded worker — a priority structure keyed by (total load, worker index) identifies that worker in O(log n) per assignment.",
       "Python tuples compare lexicographically — `(load, worker_index)` gives you the tie-break by worker index for free."
     ],
     "concepts": [
@@ -42222,7 +42222,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Maintain a dict with at most `k-1` entries. When a new item doesn't fit, subtract 1 from every counter and remove zeroes (a single dict comprehension). This is the Misra-Gries summary step.",
+      "Misra-Gries is a streaming heavy-hitter algorithm: maintain a bounded counter table — when the table is full and a new item arrives, decrement all counts by 1 and evict any that reach zero.",
       "The summary can produce false positives. Do a second pass over the original stream to get exact counts for each surviving candidate, then filter by `count > len(stream) // k`."
     ],
     "concepts": [
@@ -42322,7 +42322,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "After popping node `u` from the heap, loop over `adj[u]`. The fix is two lines: decrement `in_degree[v]`, then check `if in_degree[v] == 0: heapq.heappush(queue, v)`.",
+      "Kahn's topological sort works by decrementing in-degrees as nodes are processed — a node whose in-degree reaches 0 becomes ready. Trace through the code to find where the in-degree decrement step is missing.",
       "Cycle detection is free: if the output list is shorter than `n` nodes, some nodes could never reach in-degree 0 because of a cycle."
     ],
     "concepts": [
@@ -42399,7 +42399,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use a min-heap. Each iteration: pop the two smallest files, compute their merge cost (sum), add to total, push the merged file back. Repeat until one file remains.",
+      "The Huffman greedy insight: merging the two smallest files first minimises total I/O cost because each file's size is charged once per merge level it participates in — a priority structure retrieves the two smallest in O(log n).",
       "The greedy strategy is optimal: always merge the two smallest because files that are merged early get 'used' in fewer subsequent merges."
     ],
     "concepts": [
@@ -42667,7 +42667,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Maintain a `best` dict keyed by `id`. For each new record, replace if `rec['ts'] > best[id]['ts']`, or if timestamps are equal and the new record's source has higher priority.",
+      "A hash map keyed by entity ID accumulates the best record seen so far — 'best' is determined by timestamp descending, then source priority ascending when timestamps tie.",
       "Use `source_priority.get(rec['source'], 0)` to handle sources not in the priority dict (default priority 0)."
     ],
     "concepts": [
@@ -58814,7 +58814,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "First pass: build `session_cats = defaultdict(set)`. For each `(session_id, category)`, do `session_cats[session_id].add(category)`. This deduplicates within sessions automatically.",
+      "Two-pass approach: first collect (session_id, category) pairs into per-session sets to deduplicate within sessions, then count each category's distinct-session occurrences and take the top K.",
       "Second pass: for each session's category set, increment a `cat_counts[cat]` counter. Then sort `cat_counts.items()` by `(-count, name)` and return the first k names."
     ],
     "concepts": [
@@ -59916,7 +59916,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Replace BFS's deque with a min-heap. Initialise `dist[sr][sc] = grid[sr][sc]` and push `(grid[sr][sc], sr, sc)`. For each neighbor, the tentative distance is `current_dist + grid[nr][nc]`.",
+      "This is a weighted shortest-path problem on a grid — Dijkstra's algorithm finds the minimum-cost path by always expanding the cell with the smallest accumulated cost seen so far.",
       "Add a stale-check: `if d > dist[r][c]: continue` — when you pop a cell, skip it if you've already found a shorter path to it. This is Dijkstra's lazy-deletion pattern."
     ],
     "concepts": [
@@ -62910,7 +62910,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use a stack of `(start_index, height)` in non-decreasing height order. When a bar shorter than the stack top arrives, pop the top and compute area `height × (current_index - start_index)`. The current bar inherits the popped bar's `start_index`.",
+      "A monotonic index structure in non-decreasing height order tracks candidate rectangles — when a shorter bar arrives, it closes taller pending rectangles and their maximum possible widths can be computed.",
       "After iterating all bars, flush the stack: each remaining entry `(idx, ht)` can extend to the right edge, so area = `ht × (len(heights) - idx)`."
     ],
     "concepts": [
@@ -64954,7 +64954,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use a 1D DP array `dp` of size `n+1`. Initialize `dp[j] = j` (cost to build word2[:j] from empty string). For each row `i`, save `prev = dp[0]`, set `dp[0] = i`, then scan j=1..n: if chars match, `dp[j] = prev`; else `dp[j] = 1 + min(prev, dp[j], dp[j-1])`.",
+      "Edit distance is a 2D DP problem: dp[i][j] = minimum edits to transform s1[:i] into s2[:j]. Each cell depends on its left, top, and diagonal neighbors — track only the current and previous rows to save space.",
       "Three operations at each cell: `prev` = substitute (diagonal), `dp[j]` before update = delete from word1 (from row above), `dp[j-1]` = insert into word1 (from left). Save `dp[j]` into `prev` before updating it."
     ],
     "concepts": [
@@ -65052,7 +65052,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use the same K-way merge heap as before: `(value, list_index, element_index)`. Add an early-exit condition: `while heap and len(result) < k`. Stop as soon as you have k elements.",
+      "K-way merge with early exit — maintain a priority frontier across K sorted partitions, popping and advancing into the corresponding partition until exactly k elements have been extracted.",
       "The heap never grows beyond K entries. After collecting K elements, stop — you don't need to drain the rest of the heap. This is the key performance difference from the full K-way merge."
     ],
     "concepts": [
@@ -66121,7 +66121,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "For each unvisited `'1'` cell, call `dfs(r, c)` and increment count. In `dfs`: if out of bounds or cell is `'0'`, return. Set `grid[r][c] = '0'` (mark visited), then recurse on all 4 neighbors.",
+      "Treat active cells as graph nodes with edges to their four neighbours — each connected component (island) is discovered by BFS or DFS from any unvisited active cell.",
       "Mutating the grid to `'0'` avoids a separate `visited` set and prevents revisiting. For very large grids, convert the DFS to iterative BFS (deque) to avoid Python's recursion limit."
     ],
     "concepts": [
@@ -78695,7 +78695,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Convert `word_dict` to a set for O(1) lookup. Define `can_break(start)` = can `s[start:]` be segmented. Base: `can_break(len(s)) = True`. Use `@lru_cache(None)` to memoize.",
+      "Define a DP state: can_break(i) = can s[i:] be segmented using the word list. Recursively try every word that matches as a prefix at position i — memoize results to avoid recomputation.",
       "For each `end in range(start+1, len(s)+1)`: if `s[start:end] in word_set and can_break(end)`, return True immediately. If no split works, return False."
     ],
     "concepts": [
@@ -80056,7 +80056,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use a max-heap of remaining task counts (negate for Python's min-heap). Each time tick: pop the highest-count task, execute it, put it in a cooldown deque with `(available_time = time + n, remaining_count - 1)`. If the heap is empty, the time step is idle.",
+      "At each time step, greedily execute the task type with the most remaining count that is not in cooldown — a priority structure efficiently identifies that highest-count task.",
       "Check the cooldown deque each tick: if `cooldown_queue[0][0] == current_time`, move it back to the heap. The loop runs until both heap and cooldown queue are empty."
     ],
     "concepts": [

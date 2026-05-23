@@ -1675,7 +1675,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "`csv.DictReader(lines)` uses the first line as the header and yields each subsequent line as a dict.",
+      "The first row defines the column names — treat each subsequent row as a key-value record with those names as keys.",
       "All values come out as strings — use a list comprehension and `dict(row)` to get plain dicts."
     ],
     "concepts": [
@@ -1734,7 +1734,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "`json.loads(s)` converts a JSON string into a Python dict (or list, depending on the root structure).",
+      "A JSON string encodes a structured record — the standard library can parse it directly into a native Python mapping, after which field access is just key lookup.",
       "Access the parsed dict with square brackets just like any Python dict: `d['key']`."
     ],
     "concepts": [
@@ -1889,7 +1889,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Build a frequency dict with `counts[n] = counts.get(n, 0) + 1` as you iterate.",
+      "A frequency map lets you count occurrences in a single pass — anything with count > 1 is a duplicate.",
       "Filter for keys where the count > 1, then sort the result."
     ],
     "concepts": [
@@ -2115,7 +2115,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Store indices in the deque, not values. The front of the deque is the index of the current window maximum.",
+      "A monotonic sliding-window structure (decreasing from front to back) finds the window maximum in O(1) per step — the element at the front always holds the current maximum.",
       "Pop from the back when `nums[dq[-1]] < nums[i]` — a smaller element behind a larger one can never be a window max."
     ],
     "concepts": [
@@ -2202,7 +2202,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Use a dictionary to track counts. For each event, look up its current count (defaulting to 0) and increment.",
+      "A hash map counting occurrences of each event type gives you the frequency distribution in a single linear pass.",
       "dict.get(key, 0) gives the current count or 0 if the key doesn't exist yet."
     ],
     "concepts": [
@@ -2432,7 +2432,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "A set holds only unique elements. If the set of IDs is smaller than the original list, there are duplicates.",
+      "When the count of unique elements is smaller than the total count, duplicates must exist — the right data structure computes both in O(n).",
       "len(ids) != len(set(ids)) is all you need."
     ],
     "concepts": [
