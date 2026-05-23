@@ -93,6 +93,16 @@ Full registry: [`docs/concept-taxonomy.md` → Python section](../concept-taxono
 
 **Practice teaches, mock-only stress-tests transfer.** The difference is framing and realism, not new patterns. A mock-only question recombines patterns the practice bank already teaches at that difficulty (or lower) under fresh, production-realistic framing — it must not clone an existing practice question and must not introduce an algorithmic pattern the curriculum never taught. If a mock would need an untaught pattern, author the practice question first.
 
+## Coverage & sizing targets
+
+These are the durable *targets* (what the bank ought to look like). For live counts (what it *is* right now) see the "Question bank current state" table in [`docs/content-authoring.md`](../content-authoring.md) and the content footprint in `CLAUDE.md`. **Targets are provisional — revisit against real Pro/Elite usage data.**
+
+- **No mock-only realism family.** Python's families are pure algorithmic patterns; the candidate "lens" (complexity & memory) is **practice-gradable** via the executable harness (O(n²) times out / load-everything OOMs on sized hidden inputs) and is carried in mock by the `performance_pivot` chain dimension, never a concept tag. Empty Python set in `MOCK_ONLY_REALISM_FAMILIES` (`backend/concept_families.py`) makes this explicit.
+- **Practice: lean, fully data-grounded.** Target ~80–85, with NO LeetCode-puzzle questions (deprecated set: spiral / Sudoku / rain-water / parentheses / regex DP / linked-list reversal / math-trivia / library-API trivia). One teaching arc per family per applicable tier; grow only to fix a genuine arc break, never to pad volume. Tier balance ~⅖ easy / ⅖ medium / ⅕ hard is healthy for the algorithmic curriculum.
+- **Mock-only: ~90–120, hard-skewed.** Python has a finite 16-then-19-family pattern space and reskinning algorithms produces hollow clones, so the target is smaller than SQL's ~150. **~55/45 medium/hard**, **~⅓ chain members.** Natural Python chain pivots: `performance_pivot` (O(n²) → O(n log n)), `scale_pivot` (10⁸ input → now stream it), `edge_case_pivot` (empty / single / None), `data_quality_pivot` (None / dirty values in the feed). Priority families for mock: streaming windows, heavy hitters (heap top-K + Misra-Gries), sessionization, interval / uptime merging, pipeline DAG ordering, in-memory join / dedup, k-way merge of sorted streams, streaming median.
+- **The bar for every mock-only question: recombination, not reskin.** A mock title that's a known practice problem with a thin business veneer is a clone, not a recombination; drop or genuinely re-author. The headline quality risk for this track is "harder named LeetCode pattern" sneaking in via mock framing.
+- **Complexity enforcement is a graded property of practice.** All hard practice questions (+ complexity-sensitive medium) carry hidden generator-spec `test_cases` sized so the intended asymptotics is the only thing that survives the 5 s / 512 MB harness. See the Generator-spec schema in the Verification section.
+
 ## Anti-patterns specific to Python
 
 - **Pure LeetCode trivia** — questions where the only difficulty is recognising an obscure named algorithm with no real-world analogue. Reject.

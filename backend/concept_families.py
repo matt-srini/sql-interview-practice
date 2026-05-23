@@ -43,6 +43,13 @@ MOCK_ONLY_REALISM_FAMILIES: dict[str, set[str]] = {
     "pyspark": {
         "OUTPUT SANITY VALIDATION",
     },
+    # Python: NO realism families by design. Python's families are pure
+    # algorithmic patterns; the candidate "lens" (complexity & memory) is
+    # practice-gradable via the harness (O(n²) times out / load-everything
+    # OOMs on sized hidden inputs) and surfaces in mock as the
+    # `performance_pivot` chain dimension, not a concept tag.
+    # See docs/tracks/python.md and the Python Phase 2 decision log.
+    "python": set(),
 }
 
 # ---------------------------------------------------------------------------
@@ -435,7 +442,7 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
     },
 
     # -----------------------------------------------------------------------
-    # Python — 16 canonical families (docs/concept-taxonomy.md § Python)
+    # Python — 19 canonical families (docs/concept-taxonomy.md § Python)
     # -----------------------------------------------------------------------
     "python": {
         "SLIDING WINDOW": [
