@@ -144,27 +144,83 @@ Required:
 ## Verification before commit
 
 ```bash
-# 1. Reference solution passes all test cases
+# 1. Loader + schema validation (catches ID conflicts, missing fields, taxonomy drift)
 cd backend && ../.venv/bin/python -c "
-import json
-q = json.load(open('content/python_questions/medium.json'))[INDEX]
-exec(q['expected_code'])
-for tc in q['test_cases']:
-    assert solve(*tc['input']) == tc['expected'], tc
-print('All test cases pass')
+from python_questions import get_all_questions, get_mock_questions_by_difficulty
+qs = get_all_questions()
+mqs = [q for qs2 in get_mock_questions_by_difficulty().values() for q in qs2]
+print(f'Loaded {len(qs)} practice + {len(mqs)} mock questions')
 "
 
-# 2. Complexity ENFORCED, not eyeballed
-# Hard (and complexity-sensitive medium) questions MUST include large hidden test_cases
-# sized so a brute-force / O(n²) solution times out (5 s) — and, where memory is the
-# lesson, so a load-everything approach trips the 512 MB RLIMIT while a streaming/
-# generator solution passes. The reference solution must clear them comfortably.
-# Keep public_test_cases small/illustrative; the enforcing inputs are hidden.
-# Defend the time/space claim in `explanation`.
+# 2. Resolver — ZERO unresolved concept tags
+cd backend && ../.venv/bin/python -c "
+from python_questions import get_all_questions, get_mock_questions_by_difficulty
+from concept_families import resolve_to_family, CONCEPT_FAMILIES
+fams = set(CONCEPT_FAMILIES['python'].keys())
+all_qs = get_all_questions() + [q for qs in get_mock_questions_by_difficulty().values() for q in qs]
+unresolved = [(q['id'],t) for q in all_qs for t in q.get('concepts',[]) if resolve_to_family(t,'python') not in fams]
+assert not unresolved, f'Unresolved tags: {unresolved}'
+print('Resolver: UNRESOLVED=0')
+"
 
-# 3. Full content validation
-python scripts/validate_content.py
-
-# 4. Python evaluator tests
+# 3. Python evaluator tests (TestGeneratorExpansion 7-case suite + property tests)
 cd backend && ../.venv/bin/python -m pytest tests/test_python_evaluator.py -q
+
+# 4. File-size gate: du -sh backend/content/python_questions/ must be ≤ 5 MB
+#    Generator specs keep large hidden tests as compact JSON dicts — never as
+#    literal arrays. See generator schema below.
+
+# 5. Complexity gate (for generator-spec questions)
+#    After authoring a hidden test with {"compute":"reference"}, spot-check that
+#    a naïve O(n²) approach times out and the reference completes in <1s:
+cd backend && ../.venv/bin/python -c "
+import time, json
+from python_evaluator import _expand_arg
+q = json.load(open('content/python_questions/hard.json'))[INDEX]
+tc = q['test_cases'][-1]  # last tc is the generator hidden test
+expanded = [_expand_arg(a) for a in tc['input']]
+ns = {}; exec(q['expected_code'], ns)
+t0 = time.time(); ns['solve'](*expanded); t = time.time()-t0
+print(f'Reference: {t:.3f}s (must be <1s)')
+"
 ```
+
+## Generator-spec schema for hidden test cases
+
+Hidden test cases use generator specs instead of literal large arrays.
+The expansion happens in the trusted evaluator process; the sandbox harness
+receives only expanded literal values.
+
+```json
+{
+  "input": [
+    {"gen": "random_ints", "n": 100000, "seed": 42, "low": 0, "high": 9999,
+     "distribution": "zipf"},
+    5
+  ],
+  "expected": {"compute": "reference"}
+}
+```
+
+**Six generators** (all in `backend/python_evaluator.py`, all seeded for determinism):
+
+| Generator | Key params | Use case |
+|---|---|---|
+| `random_ints` | `n, seed, low, high, distribution` | Most algorithm inputs; `distribution` ∈ `uniform` (default) / `low_cardinality` / `high_cardinality` / `zipf` |
+| `random_floats` | `n, seed, low, high` | Float-based problems |
+| `random_strings` | `n, seed, alphabet, min_len, max_len` | String algorithm inputs |
+| `sorted_ints` | `n, seed, low, high, unique=False` | Two-pointer / binary-search inputs; `unique=True` raises if n > range |
+| `random_pairs` | `n, seed, key_space, value_low, value_high` | Interval / join inputs; returns `[[k,v],…]` |
+| `random_graph` | `n_nodes, n_edges, seed, weighted, directed, dag` | Graph algorithm inputs; `dag=True` → all edges have u < v |
+
+**Invariants enforced by `_expand_test_case`:**
+- Any generator-spec input → `expected` MUST be `{"compute": "reference"}`
+- `{"compute": "reference"}` → at least one input arg must be a generator spec
+- Public test cases (`public_test_cases`) are always all-literal; generators are hidden-only
+
+**Sizing for complexity bite (5-second sandbox timeout):**
+- Sliding window O(nk): `n ≥ 500 000` with `k ≥ 2 000` bites C-level `max(slice)` naive
+- O(n²) algorithms (LIS DP, inversion count, two-sum nested loops): `n ≥ 20 000` for reliable bite
+- Top-K frequency count via `list.count()`: `n ≥ 100 000` with zipf distribution bites
+- LCS hash-set approach O(n): no bite path; use correctness test only
+- Sorting-based O(n log n): no bite path versus reference; skip generator or use correctness test
