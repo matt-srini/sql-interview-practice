@@ -1486,5 +1486,154 @@
       "wide DataFrame"
     ],
     "interaction_mode": "code_adjacent_reasoning"
+  },
+  {
+    "id": 42051,
+    "order": 51,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "medium",
+    "title": "One-to-Many Join: Predicting the Output Row Count",
+    "description": "You have two DataFrames:\n\n```python\norders = spark.createDataFrame([\n    (1, 'alice'), (2, 'bob'), (3, 'carol'),\n    (4, 'alice'), (5, 'bob'),\n], ['order_id', 'user'])\n# order_id is unique — 5 rows\n\norder_items = spark.createDataFrame([\n    (1, 'widget'), (1, 'gadget'),\n    (2, 'widget'), (2, 'widget'), (2, 'gizmo'),\n    (3, 'gadget'),\n    (4, 'widget'),\n    (5, 'gadget'), (5, 'gizmo'), (5, 'widget'),\n], ['order_id', 'product'])\n# 10 rows; multiple items per order\n\nresult = orders.join(order_items, on='order_id', how='inner')\nprint(result.count())\n```\n\nWhat does `result.count()` print?",
+    "options": [
+      "5 — inner join deduplicates to the unique side; since order_id is unique in orders, the result has one row per order.",
+      "10 — each order_item row finds exactly one matching order row; the result has one row per item, producing one output row per item.",
+      "50 — inner join can produce up to M×N combinations; 5 orders × 10 items = 50.",
+      "Indeterminate — PySpark's optimizer may drop rows during shuffle, so the count is execution-plan-dependent."
+    ],
+    "correct_option": 1,
+    "explanation": "An inner join emits one row per matching pair. Since `order_id` is unique in `orders`, each of the 10 `order_items` rows finds exactly one matching order row — resulting in 10 output rows.\n\n**Option 0** is the classic double-counting misconception: inner join does NOT deduplicate the result to the left DataFrame's grain. This confusion causes production bugs where aggregations (e.g. `sum('revenue')`) are computed over an inflated result, silently overstating totals.\n\n**Option 2** would require a Cartesian/cross join (no join key). With an equi-join on `order_id`, no cross-product occurs — only matching pairs are emitted.\n\n**Option 3** is false: join output count is deterministic and does not depend on execution plan choices.",
+    "hints": [
+      "Which table has a unique join key and which has a non-unique one? That asymmetry determines the output grain.",
+      "An inner join emits one output row per matching pair. Count the matching pairs: how many (order, item) pairs share the same order_id?"
+    ],
+    "concepts": [
+      "DOUBLE-COUNTING DETECTION",
+      "JOIN STRATEGY SELECTION"
+    ]
+  },
+  {
+    "id": 42052,
+    "order": 52,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "medium",
+    "title": "ROWS vs RANGE: Running Sum with Tied Salary Values",
+    "description": "```python\nfrom pyspark.sql import Window\nfrom pyspark.sql.functions import sum as spark_sum\n\ndf = spark.createDataFrame([\n    ('eng', 90), ('eng', 100), ('eng', 100), ('eng', 120),\n], ['dept', 'salary'])\n\nw_rows = (Window.partitionBy('dept').orderBy('salary')\n               .rowsBetween(Window.unboundedPreceding, 0))\nw_range = (Window.partitionBy('dept').orderBy('salary')\n                .rangeBetween(Window.unboundedPreceding, 0))\n\ndf.select(\n    'salary',\n    spark_sum('salary').over(w_rows).alias('rows_sum'),\n    spark_sum('salary').over(w_range).alias('range_sum'),\n).show()\n```\n\nFor the **first** row where `salary = 100` (sorted position 2), what are `rows_sum` and `range_sum`?",
+    "options": [
+      "rows_sum = 100, range_sum = 100 — both windows end at the current row, so only this one salary-100 row is included in each.",
+      "rows_sum = 190, range_sum = 290 — ROWS frames by physical position (rows 1–2: 90+100=190); RANGE frames by value (all salaries ≤ 100: 90+100+100=290).",
+      "rows_sum = 290, range_sum = 190 — RANGE uses physical position and ROWS uses value range.",
+      "rows_sum = 290, range_sum = 290 — both include all tied salary-100 rows because UNBOUNDED PRECEDING extends the frame to capture all ties."
+    ],
+    "correct_option": 1,
+    "explanation": "`rowsBetween(UNBOUNDED_PRECEDING, 0)` frames by **physical row position**. At sorted position 2 (the first salary=100), the frame contains rows at positions 1 and 2: salaries [90, 100] → rows_sum = 190.\n\n`rangeBetween(UNBOUNDED_PRECEDING, 0)` frames by **value range**: all rows whose ORDER BY value is ≤ the current row's value (100). That includes salaries 90, 100, and 100 (positions 1, 2, 3) → range_sum = 290.\n\n**Option 0** is wrong: `UNBOUNDED_PRECEDING` reaches back to the first row in the partition; the frame is not limited to just the current row.\n\n**Option 2** inverts the semantics: ROWS is position-based and RANGE is value-based — not the other way around.\n\n**Option 3** is wrong for ROWS: `rowsBetween` counts physical positions; the second salary=100 (position 3) is excluded because position 3 > current position 2.",
+    "hints": [
+      "ROWS BETWEEN counts physical row positions; RANGE BETWEEN compares column values. Which approach includes more rows when two rows share the same salary?",
+      "For the first salary=100 row at physical position 2: ROWS includes positions 1–2 (two rows). How many rows does RANGE [−∞, 100] include by value?"
+    ],
+    "concepts": [
+      "WINDOW FUNCTIONS & FRAMES",
+      "SCHEMA & TYPE HANDLING"
+    ]
+  },
+  {
+    "id": 42053,
+    "order": 53,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "medium",
+    "title": "explode() Silently Drops Empty and Null Arrays",
+    "description": "```python\ndf = spark.createDataFrame([\n    (1, ['spark', 'pyspark', 'delta']),\n    (2, []),\n    (3, None),\n    (4, ['kafka']),\n], ['id', 'tags'])\n\nresult = df.select('id', explode('tags').alias('tag'))\nprint(result.count())\n```\n\nWhat does `result.count()` print?",
+    "options": [
+      "4 — one row per original row, regardless of whether the array is empty or null.",
+      "6 — 3 elements from row 1, 1 null from row 2 (empty array), 1 null from row 3 (null array), 1 element from row 4.",
+      "4 — 3 elements from row 1 plus 1 element from row 4; rows 2 and 3 are dropped entirely by explode().",
+      "A NullPointerException is raised because row 3 contains a null array column."
+    ],
+    "correct_option": 2,
+    "explanation": "`explode()` emits one output row per element in the array. Rows with 3 elements produce 3 output rows; rows with 1 element produce 1. Total from rows 1 and 4: 3 + 1 = **4**.\n\nThe critical behaviour: `explode()` **drops** rows whose array is empty (`[]`) or null — it emits **zero** output rows for both. This is the key difference from `explode_outer()`, which preserves these rows by emitting a single row with a null element value.\n\n**Option 0** assumes explode preserves the original row count — it does not.\n\n**Option 1** (6 rows) confuses `explode()` with `explode_outer()`. The outer variant emits null-element rows for empty/null arrays; the non-outer variant silently drops them.\n\n**Option 3** is wrong: `explode()` on a null array column does not raise an exception — it silently produces no rows for that input row.",
+    "hints": [
+      "What does explode() do with a row whose array is [] (empty)? Is the behaviour different for null?",
+      "There is a variant called explode_outer() — what extra rows does it emit compared to explode()? That difference reveals what regular explode() is silently omitting."
+    ],
+    "concepts": [
+      "COLLECTION & ARRAY OPERATIONS",
+      "DATA QUALITY SKEPTICISM"
+    ]
+  },
+  {
+    "id": 42054,
+    "order": 54,
+    "topic": "pyspark",
+    "type": "debug",
+    "difficulty": "medium",
+    "title": "Debug: Revenue Sum Double-Counts After a One-to-Many Join",
+    "description": "A data engineer computes daily revenue by joining `orders` (one row per order, `order_id` unique) with `promotions` (one row per promotion applied to an order — an order can have multiple promotions). They then sum revenue:\n\n```python\n# orders: order_id (unique), revenue, order_date\n# promotions: order_id (non-unique), promo_code, discount\n\ndaily_revenue = (\n    orders\n    .join(promotions, on='order_id', how='left')\n    .groupBy('order_date')\n    .agg(sum('revenue').alias('total_revenue'))\n)\n```\n\nWhat is the bug, and which fix is correct?",
+    "options": [
+      "The join should be inner, not left — left join produces null revenue rows that inflate the sum by including orders with no matching promotions.",
+      "total_revenue is over-counted: each order fans out once per promotion row, so an order with 3 promotions contributes its full revenue 3 times. Fix: aggregate revenue on the orders side before joining, or use countDistinct('order_id') as denominator.",
+      "groupBy should include order_id to avoid collapsing multi-promotion orders into a single date bucket with an incorrect sum.",
+      "sum('revenue') should be sum('discount') — the revenue field is in the promotions table, not orders, so the column reference is wrong."
+    ],
+    "correct_option": 1,
+    "explanation": "The left join fans each order out once per matching promotion. An order with 3 promotions becomes 3 rows in the joined result, each carrying the full order `revenue`. Summing `revenue` after the fan-out counts that order's revenue 3 times.\n\n**Correct fixes:** (a) compute the orders-side daily revenue before joining — `orders.groupBy('order_date').agg(sum('revenue'))` — and join promotion metadata separately; or (b) deduplicate on `order_id` before joining with `orders.dropDuplicates(['order_id'])`.\n\n**Option 0** is wrong: switching to inner join removes unmatched orders from the result but does not fix the fan-out inflation for orders that *do* have promotions.\n\n**Option 2** is wrong: adding `order_id` to `groupBy` would produce one row per (date, order) pair — it moves the problem, it doesn't fix it.\n\n**Option 3** is wrong: `revenue` is correctly in `orders`; the column reference is valid.",
+    "hints": [
+      "The join key order_id is unique in orders but not in promotions. What does the left join's output grain look like — is it still one row per order?",
+      "After the fan-out, how many times does a single order's revenue appear in the joined DataFrame before the groupBy aggregates it?"
+    ],
+    "concepts": [
+      "DOUBLE-COUNTING DETECTION",
+      "JOIN STRATEGY SELECTION"
+    ]
+  },
+  {
+    "id": 42055,
+    "order": 55,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "medium",
+    "title": "RANK vs DENSE_RANK vs ROW_NUMBER with Salary Ties",
+    "description": "```python\nfrom pyspark.sql import Window\nfrom pyspark.sql.functions import rank, dense_rank, row_number\n\ndf = spark.createDataFrame([\n    ('eng', 'alice', 100),\n    ('eng', 'bob',   100),\n    ('eng', 'carol', 150),\n    ('eng', 'dan',   200),\n], ['dept', 'name', 'salary'])\n\nw = Window.partitionBy('dept').orderBy('salary')\n\ndf.withColumn('rnk', rank().over(w)) \\\n  .withColumn('drnk', dense_rank().over(w)) \\\n  .withColumn('rn', row_number().over(w)) \\\n  .show()\n```\n\nWhat values does **carol** (salary=150) receive for `rnk`, `drnk`, and `rn`?",
+    "options": [
+      "rnk=2, drnk=2, rn=2 — carol follows alice and bob (tied at position 1); all three functions yield 2 for the next distinct value.",
+      "rnk=3, drnk=2, rn=3 — rank() skips position 2 (consumed by the tie at rank 1); dense_rank() does not skip; row_number() assigns a unique sequential integer.",
+      "rnk=3, drnk=3, rn=3 — rank() and dense_rank() behave identically; only row_number() produces unique values.",
+      "rnk=2, drnk=2, rn=3 — rank() and dense_rank() both give 2 for the first non-tied value; row_number() continues its sequential count."
+    ],
+    "correct_option": 1,
+    "explanation": "Alice and Bob are tied at salary=100, so both receive `rank=1` and `dense_rank=1`. `row_number()` breaks the tie arbitrarily (either 1 or 2).\n\nFor carol (salary=150, the third distinct salary level):\n- **rank()** skips the position(s) consumed by the tie: positions 1 and 2 were both occupied by the tie → carol receives rank=3.\n- **dense_rank()** never skips positions: it increments for each distinct ORDER BY value → carol is the 2nd distinct value → dense_rank=2.\n- **row_number()** assigns a unique sequential integer regardless of ties → carol is physically the 3rd (or 4th) sorted row → rn=3.\n\n**Option 0** is wrong: rank() skips position 2 because two rows share rank 1.\n\n**Option 2** is wrong: rank() and dense_rank() differ precisely when there are ties — their post-tie values diverge.\n\n**Option 3** is wrong: rank() gives 3 (skips), not 2.",
+    "hints": [
+      "Alice and bob both receive rank=1. How many positions does that tie consume? What rank does the next distinct salary receive under rank() versus dense_rank()?",
+      "dense_rank() counts distinct ORDER BY values, not physical rows. How many distinct salary levels precede carol's 150?"
+    ],
+    "concepts": [
+      "WINDOW FUNCTIONS & FRAMES"
+    ]
+  },
+  {
+    "id": 42056,
+    "order": 56,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "medium",
+    "title": "collect_list: Is the Element Order Deterministic?",
+    "description": "```python\nfrom pyspark.sql.functions import collect_list\n\ndf = spark.createDataFrame([\n    ('alice', 'spark'),\n    ('alice', 'delta'),\n    ('alice', 'kafka'),\n], ['user', 'skill'])\n\nresult = df.groupBy('user').agg(collect_list('skill').alias('skills'))\nresult.select('skills').show(truncate=False)\n```\n\nWhich statement correctly describes the output?",
+    "options": [
+      "Always ['spark', 'delta', 'kafka'] — collect_list preserves the DataFrame's row insertion order.",
+      "Always ['delta', 'kafka', 'spark'] — collect_list sorts elements lexicographically before collecting.",
+      "Non-deterministic — collect_list does not guarantee element order; results depend on partition assignment and executor scheduling.",
+      "An AnalysisException is raised — collect_list requires the DataFrame to be sorted before the groupBy."
+    ],
+    "correct_option": 2,
+    "explanation": "`collect_list` does **not** guarantee element order. The output array's ordering depends on which partition holds which rows and on executor task scheduling — both vary across runs and cluster configurations.\n\nTo get a guaranteed order, sort the DataFrame before collecting (`.orderBy('skill')` before `groupBy`), or post-process with `array_sort(collect_list('skill'))` for lexicographic order.\n\n**Option 0** is wrong: Spark DataFrames have no preserved insertion order — partitioning and shuffles reorder rows freely.\n\n**Option 1** is wrong: `collect_list` is *not* `collect_set`; it performs no sorting. Even `collect_set` does not guarantee order.\n\n**Option 3** is wrong: `collect_list` works on any DataFrame without a pre-sort requirement. Sorting before the aggregation influences element order in the output array, but it is not mandatory.",
+    "hints": [
+      "Spark distributes rows across partitions and schedules tasks independently. Is there any mechanism that guarantees rows arrive at the collect_list aggregation in a specific order?",
+      "collect_list combines elements from potentially different partitions. Does Spark document any ordering guarantee for the merge?"
+    ],
+    "concepts": [
+      "COLLECTION & ARRAY OPERATIONS",
+      "DATA QUALITY SKEPTICISM"
+    ]
   }
 ]

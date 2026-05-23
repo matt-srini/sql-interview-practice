@@ -1376,5 +1376,158 @@
       "total RAM vs per-task memory fallacy"
     ],
     "interaction_mode": "code_adjacent_reasoning"
+  },
+  {
+    "id": 43047,
+    "order": 47,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "title": "Many-to-Many Join Fan-Out: Row Count and OOM Risk",
+    "description": "A pipeline joins two non-unique tables:\n\n```python\n# user_events: 2M rows\n#   user_id has ~200K distinct values (avg 10 rows per user)\n#   event_id is unique\n\n# user_labels: 600K rows\n#   user_id has ~200K distinct values (avg 3 labels per user)\n#   label_id is unique\n\nresult = user_events.join(user_labels, on='user_id', how='inner')\nresult.count()\n```\n\nAssuming all 200K `user_id` values appear in both tables, what does `result.count()` return — and what is the primary production risk?",
+    "options": [
+      "2M — left table grain is preserved in all joins; the right table only filters which rows survive.",
+      "600K — the smaller table drives the output cardinality in an inner join.",
+      "~2.6M — Spark deduplicates on the join key, limiting output to a value between the two input sizes.",
+      "~6M — the join emits one row per matching (event, label) pair per user: 10 events × 3 labels = 30 rows per user × 200K users. The shuffle intermediate materialises all rows for each user_id in a single partition, amplifying data volume and risking executor OOM."
+    ],
+    "correct_option": 3,
+    "explanation": "When `user_id` is non-unique on **both** sides, the join is many-to-many. Spark emits the Cartesian product of matching rows within each join key group: 10 event rows × 3 label rows = 30 output rows per user_id × 200K users = **6M output rows**.\n\nThe critical production risk: during the shuffle, all `user_events` rows AND all `user_labels` rows for the same `user_id` must be co-located in one partition. The intermediate data per partition scales as O(M×N) per key, not O(M+N). This multiplicative growth can cause executor OOM or catastrophic disk spill even when each individual table fits comfortably in memory.\n\n**Option 0** is the most common misconception: left-grain preservation only holds for left-semi joins or aggregations, not plain inner/left joins.\n\n**Option 1** is wrong: inner join cardinality is not bounded by either input; it equals the number of matching pairs.\n\n**Option 2** is wrong: joins never deduplicate output. Deduplication requires an explicit `dropDuplicates()` or `distinct()` call.",
+    "hints": [
+      "user_id appears in avg 10 rows in user_events and avg 3 rows in user_labels. How many output rows does a single user_id produce — is it additive (10+3) or multiplicative (10×3)?",
+      "The output is multiplicative. Now consider what happens in the shuffle: all user_events and user_labels rows for a hot user_id must land in the same executor partition simultaneously. What is the memory implication?"
+    ],
+    "concepts": [
+      "DOUBLE-COUNTING DETECTION",
+      "JOIN STRATEGY SELECTION",
+      "MEMORY MANAGEMENT"
+    ]
+  },
+  {
+    "id": 43048,
+    "order": 48,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "title": "rangeBetween with Numeric Interval: Which Rows Enter the Frame?",
+    "description": "```python\nfrom pyspark.sql import Window\nfrom pyspark.sql.functions import avg\n\ndf = spark.createDataFrame([\n    ('eng', 80), ('eng', 100), ('eng', 100), ('eng', 130), ('eng', 160),\n], ['dept', 'score'])\n\nw = Window.partitionBy('dept').orderBy('score').rangeBetween(-30, 30)\n\ndf.withColumn('avg_nearby', avg('score').over(w)).show()\n```\n\nFor the rows where `score = 100` (either occurrence), what is `avg_nearby`?",
+    "options": [
+      "100.0 — the frame [score-30, score+30] = [70, 130] is centred on 100; only rows with score exactly 100 fall at the midpoint and are included.",
+      "102.5 — the frame [70, 130] includes scores {80, 100, 100, 130} (all within [70, 130] inclusive); avg = (80+100+100+130)/4 = 102.5.",
+      "96.67 — the frame [70, 130] includes {80, 100, 100} (130 is excluded because rangeBetween uses a half-open interval, closed at the lower end only).",
+      "110.0 — the frame [70, 130] includes {100, 100, 130} (80 is excluded because it falls outside the symmetric ±30 band from 100)."
+    ],
+    "correct_option": 1,
+    "explanation": "`rangeBetween(-30, 30)` on `score=100` defines the value interval [100−30, 100+30] = **[70, 130]**, with **both endpoints inclusive**.\n\nRows with scores in [70, 130]: 80 ✓ (≥70), 100 ✓, 100 ✓, 130 ✓ (≤130). Score 160 is excluded (>130). Four rows are in the frame.\n\navg = (80 + 100 + 100 + 130) / 4 = 410 / 4 = **102.5**.\n\nBecause `rangeBetween` is value-based, both score=100 rows see the **same** frame and receive the same `avg_nearby`.\n\n**Option 0** is wrong: score=80 satisfies 80 ≥ 70, so it is included. The frame is not limited to the midpoint value.\n\n**Option 2** is wrong: `rangeBetween` uses **closed** intervals on both ends; score=130 satisfies 130 ≤ 130 and is included.\n\n**Option 3** is wrong: score=80 satisfies 80 ≥ 70; it is within the [70, 130] band. The frame lower boundary is inclusive.",
+    "hints": [
+      "rangeBetween(-30, 30) translates to the value interval [score−30, score+30]. For score=100, the interval is [70, 130]. Which of the five scores — 80, 100, 100, 130, 160 — fall inside this interval?",
+      "Are the interval endpoints inclusive or exclusive? Verify the boundary scores 80 and 130 individually."
+    ],
+    "concepts": [
+      "WINDOW FUNCTIONS & FRAMES"
+    ]
+  },
+  {
+    "id": 43049,
+    "order": 49,
+    "topic": "pyspark",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "title": "pivot() Missing Values: Null Propagation Through Arithmetic",
+    "description": "```python\nfrom pyspark.sql.functions import col\n\ndf = spark.createDataFrame([\n    ('alice', 'q1', 100), ('alice', 'q2', 200), ('alice', 'q3', 150),\n    ('bob',   'q1', 120), ('bob',   'q3', 180),   # bob has no q2\n    ('carol', 'q2',  90), ('carol', 'q3', 210),   # carol has no q1\n], ['user', 'quarter', 'revenue'])\n\npivoted = df.groupBy('user').pivot('quarter', ['q1', 'q2', 'q3']).sum('revenue')\n\nresult = pivoted \\\n    .withColumn('h1_revenue', col('q1') + col('q2')) \\\n    .withColumn('total',      col('q1') + col('q2') + col('q3'))\n\nresult.select('user', 'h1_revenue', 'total').show()\n```\n\nWhat are `h1_revenue` and `total` for user **bob**?",
+    "options": [
+      "h1_revenue=120, total=300 — pivot fills missing combinations with 0; arithmetic on 0 proceeds normally.",
+      "h1_revenue=null, total=null — pivot fills missing combinations with null, and null propagates through all arithmetic: null+anything=null.",
+      "h1_revenue=null, total=300 — the h1 partial sum is null, but Spark falls back to summing only non-null addends for the total.",
+      "An AnalysisException is raised — col('q1') + col('q2') fails at plan analysis when either column contains null values."
+    ],
+    "correct_option": 1,
+    "explanation": "`pivot()` fills missing (user, quarter) combinations with **null**, not 0. Bob has no q2 entry → bob's `q2` column is null after pivot.\n\nSpark arithmetic propagates null: `null + anything = null`. Therefore:\n- `h1_revenue = col('q1') + col('q2') = 120 + null = null`\n- `total = col('q1') + col('q2') + col('q3') = null + 180 = null`\n\nBoth columns are null for bob, despite q1=120 and q3=180 being non-null — the single null in q2 poisons the entire arithmetic chain.\n\n**Option 0** is the classic error: pivot does NOT default to 0. Developers expecting zero-fill must explicitly call `.fillna(0)` on the pivoted DataFrame, or use `coalesce(col('q2'), lit(0))`.\n\n**Option 2** is wrong: there is no partial-null fallback. Null propagation is total in standard arithmetic; Spark follows SQL semantics here.\n\n**Option 3** is wrong: arithmetic on nullable columns does not raise an AnalysisException — it silently returns null, which is precisely the production risk this question highlights.",
+    "hints": [
+      "What value does pivot() assign to a (user, quarter) combination that has no corresponding rows in the source data? Is it 0 or something else?",
+      "In Spark SQL, what is the result of any arithmetic expression that includes a null operand? Does that result change if other operands are non-null?"
+    ],
+    "concepts": [
+      "COLLECTION & ARRAY OPERATIONS",
+      "SCHEMA & TYPE HANDLING",
+      "DATA QUALITY SKEPTICISM"
+    ]
+  },
+  {
+    "id": 43050,
+    "order": 50,
+    "topic": "pyspark",
+    "type": "optimization",
+    "difficulty": "hard",
+    "title": "Fan-Out Inflation in a CTR Pipeline: Finding the Correct Fix",
+    "description": "A pipeline computes per-campaign click-through rate (CTR). `impressions` has one row per impression (`impression_id` unique). `clicks` has one row per click (`click_id` unique). A single impression can generate multiple clicks.\n\n```python\nresult = (\n    impressions\n    .join(clicks, on='impression_id', how='left')\n    .groupBy('campaign_id')\n    .agg(\n        count('impression_id').alias('total_impressions'),\n        count('click_id').alias('total_clicks'),\n        (count('click_id') / count('impression_id')).alias('ctr'),\n    )\n)\n```\n\nWhich statement correctly describes the bug and the fix?",
+    "options": [
+      "Nothing is wrong — the left join preserves the impressions grain because impression_id is unique in impressions, so count('impression_id') correctly counts distinct impressions.",
+      "total_impressions is over-counted: each impression with k clicks fans out to k rows, so count('impression_id') counts click rows, not impressions. Fix: use countDistinct('impression_id') as the denominator, or compute impression counts before joining.",
+      "total_clicks is over-counted: the left join includes impressions with no clicks, and null click_id rows inflate count('click_id') because count() does not skip nulls.",
+      "Both counts are equally wrong: the left join produces a Cartesian product between impressions and clicks, inflating both counts by the same factor and keeping CTR correct."
+    ],
+    "correct_option": 1,
+    "explanation": "Each impression with k clicks fans out to k rows in the joined result. `count('impression_id')` counts every joined row — an impression with 3 clicks is counted 3 times → `total_impressions` is over-stated → CTR denominator is inflated → CTR is under-stated.\n\n`count('click_id')` is correct: it counts non-null click_id values, which equals the total click count (left-join unmatched impressions have null click_id, which count() skips).\n\n**Fixes:** (a) `countDistinct('impression_id')` as the denominator; or (b) pre-aggregate impressions counts before joining: `impressions.groupBy('campaign_id').count()` then join the click summary.\n\n**Option 0** is the core misconception: left join does NOT preserve grain when the right side has multiple matches per key. 'Left join preserves grain' is only true for left-semi joins.\n\n**Option 2** is wrong: `count('click_id')` skips nulls by SQL semantics. Unmatched impression rows (null click_id) are not counted — the click count is correct.\n\n**Option 3** is wrong: this is not a Cartesian product. Impressions are joined to clicks on impression_id; clicks multiply impressions but impressions do not multiply clicks.",
+    "hints": [
+      "An impression with 3 clicks produces 3 rows in the left-joined result, each carrying the same impression_id. How many times does count('impression_id') count that impression?",
+      "count('click_id') skips null values. Left-join unmatched rows have null click_id. Does that make the click count correct or inflated?"
+    ],
+    "concepts": [
+      "DOUBLE-COUNTING DETECTION",
+      "OUTPUT SANITY VALIDATION",
+      "JOIN STRATEGY SELECTION"
+    ]
+  },
+  {
+    "id": 43051,
+    "order": 51,
+    "topic": "pyspark",
+    "type": "debug",
+    "difficulty": "hard",
+    "title": "Debug: rangeBetween on Integer Dates Fails with Data Gaps",
+    "description": "An engineer wants a 3-day trailing sum of revenue (today plus the 2 most recent prior days), partitioned by region. The `day` column is stored as Unix day integers (e.g. 19000 = 2022-01-25).\n\n```python\nfrom pyspark.sql import Window\nfrom pyspark.sql.functions import sum as spark_sum\n\nw = (Window.partitionBy('region').orderBy('day')\n           .rangeBetween(-2, 0))\n\ndf.withColumn('trailing_3d_revenue', spark_sum('revenue').over(w))\n```\n\nIn testing on consecutive days (19000, 19001, 19002) the output is correct. In production, data sometimes has date gaps (e.g. 19000, 19005, 19010). The trailing sum for day 19010 unexpectedly contains only that single day's revenue, not the preceding 2 days. What is the root cause and correct fix?",
+    "options": [
+      "The partitionBy on 'region' is incorrect — it splits the window at region boundaries, which prevents the rolling sum from spanning consecutive days correctly.",
+      "rangeBetween(-2, 0) uses the ORDER BY column's numeric value as the frame boundary. On day=19010, the frame covers days in the value range [19008, 19010], which contains no other rows when the preceding days are 19000 and 19005. Fix: use rowsBetween(-2, 0) to include the 2 preceding physical rows regardless of their day values.",
+      "rangeBetween(-2, 0) defines a 2-row lookback, identical to rowsBetween(-2, 0). The bug is that the day column must be cast to DateType before window functions can use it correctly.",
+      "The window needs an explicit orderBy('day', 'region') to prevent Spark from reordering rows arbitrarily within the partition."
+    ],
+    "correct_option": 1,
+    "explanation": "`rangeBetween(-2, 0)` interprets the boundaries as **numeric offsets on the ORDER BY column value**, not as a count of preceding rows. For day=19010, the frame is the value range [19010−2, 19010+0] = **[19008, 19010]**. Since no rows have day values in [19008, 19009], only the day=19010 row itself is included — the '3-day window' contains exactly 1 row.\n\nThe test on consecutive days passed because rangeBetween(-2, 0) on sequential integers happens to match the 2 preceding physical rows. The bug is invisible until data has gaps.\n\n**Fix:** `rowsBetween(-2, 0)` includes the 2 preceding physical rows regardless of their day values — which is the intended '3-day lookback' semantics.\n\n**Option 0** is wrong: `partitionBy('region')` is correct; it scopes the window per region. It does not cause the rolling-sum failure.\n\n**Option 2** is wrong: `rangeBetween` and `rowsBetween` have fundamentally different semantics — `rangeBetween` is value-based, `rowsBetween` is position-based. Casting to DateType does not change this.\n\n**Option 3** is wrong: ordering by multiple columns is not the issue; the ORDER BY is already correct.",
+    "hints": [
+      "rangeBetween uses numeric arithmetic on the ORDER BY column value. For day=19010 and rangeBetween(-2, 0), what is the value interval [19010+(-2), 19010+0]? Which of the data rows — 19000, 19005, 19010 — fall inside it?",
+      "rowsBetween counts physical row positions, not column value differences. Which frame type gives a stable '2 preceding rows' window regardless of gaps between day values?"
+    ],
+    "concepts": [
+      "WINDOW FUNCTIONS & FRAMES",
+      "DATA QUALITY SKEPTICISM"
+    ]
+  },
+  {
+    "id": 43052,
+    "order": 52,
+    "topic": "pyspark",
+    "type": "optimization",
+    "difficulty": "hard",
+    "title": "explode vs explode_outer: Which Preserves All Users in the Pipeline?",
+    "description": "A pipeline enriches user tags with reference metadata, then counts processed users as a completeness check:\n\n```python\n# users: user_id, tags (ArrayType — can be null or [])  \n# tag_metadata: tag, category, priority\n\n# Option A\nresult_a = (\n    users.select('user_id', explode('tags').alias('tag'))\n    .join(tag_metadata, on='tag', how='inner')\n)\n\n# Option B\nresult_b = (\n    users.select('user_id', explode_outer('tags').alias('tag'))\n    .join(tag_metadata, on='tag', how='left')\n)\n\n# Downstream: count distinct users processed\nresult.groupBy('user_id').count()\n```\n\nA downstream `groupBy('user_id').count()` is used to verify completeness. Which statement is correct?",
+    "options": [
+      "Option A is preferable — inner join with explode is the most efficient pattern; it guarantees every output tag has a metadata match and keeps the result clean.",
+      "Both options produce the same user_id count downstream — explode vs explode_outer only changes the number of rows per user, not which users appear.",
+      "Option A silently drops users with null or empty tags from the downstream count, because explode() emits no rows for null/empty arrays. Option B preserves them via explode_outer() and a left join. If the completeness check must include all users, Option B is correct.",
+      "Option B is correct only when all tags are guaranteed to have matching metadata — otherwise, the left join emits null metadata rows that corrupt category and priority columns."
+    ],
+    "correct_option": 2,
+    "explanation": "`explode()` emits zero output rows for null or empty arrays — users with no tags entirely disappear from `result_a`. They are invisible to the downstream `groupBy('user_id').count()`, so the completeness check silently under-counts processed users.\n\n`explode_outer()` emits one row with `tag=null` for null/empty arrays. The subsequent left join on `tag=null` finds no match in `tag_metadata` — the user's category and priority columns are null, but the user's `user_id` row is still present. The completeness count is correct.\n\n**Option 0** is wrong on both claims: 'inner join guarantees metadata match' only for tags *that have metadata entries* — unmatched tags are silently dropped. 'Most efficient' is irrelevant if correctness requires preserving all users.\n\n**Option 1** is wrong: whether a user has 0 tags determines whether they appear in `result_a` at all. explode() and explode_outer() produce different user sets for tag-less users.\n\n**Option 3** is wrong about Option B's scope: a left join handles unmatched tags by producing null metadata columns — it does not corrupt the result. The concern about 'only when all tags match' applies to inner join (Option A), not left join.",
+    "hints": [
+      "A user with tags=[] (empty array): how many rows does explode() emit for them? How many does explode_outer() emit?",
+      "After explode(), a tag-less user contributes 0 rows to the pipeline. What does that mean for their appearance in the downstream groupBy('user_id').count()?"
+    ],
+    "concepts": [
+      "COLLECTION & ARRAY OPERATIONS",
+      "DATA QUALITY SKEPTICISM",
+      "JOIN STRATEGY SELECTION"
+    ]
   }
 ]
