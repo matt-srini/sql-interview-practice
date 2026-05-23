@@ -1,0 +1,32 @@
+{
+  "slug": "lineage-and-observability",
+  "title": "Lineage & Pipeline Observability",
+  "description": "Build the muscle every on-call data engineer needs: trace data through pipelines, detect freshness regressions, distinguish pipeline failures from data-quality failures, and run incident response without flying blind.",
+  "topic": "data-engineering",
+  "questions": [
+    51030,
+    52003,
+    52010,
+    52016,
+    52026,
+    52027,
+    53006,
+    53008
+  ],
+  "tier": "free",
+  "role": "intermediate",
+  "patterns": [
+    "data-lineage",
+    "pipeline-observability"
+  ],
+  "focus_concepts": [
+    "LINEAGE & OBSERVABILITY",
+    "SCHEDULING & SLAS",
+    "DATA QUALITY",
+    "INCIDENT RESPONSE"
+  ],
+  "outcomes": "You'll trace a metric back to its source tables, distinguish pipeline failures from data-quality failures, design freshness and SLA monitoring that catches silent regressions, and triage cascading pipeline incidents under production pressure.",
+  "recommended_after": [
+    "pipeline-fundamentals"
+  ]
+}

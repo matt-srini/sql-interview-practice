@@ -1,0 +1,29 @@
+{
+  "slug": "missing-data-and-preprocessing-hygiene",
+  "title": "Missing Data & Preprocessing Hygiene",
+  "description": "Master the discipline that quietly decides whether your model evaluation is honest: handle missing data without inducing bias, order preprocessing so the train/test split stays uncontaminated, and recognise the leakage patterns that inflate every benchmark.",
+  "topic": "ml-fundamentals",
+  "questions": [
+    81007,
+    81025,
+    82024,
+    82025,
+    82048,
+    82050,
+    83011
+  ],
+  "tier": "free",
+  "role": "intermediate",
+  "patterns": [
+    "missing-data"
+  ],
+  "focus_concepts": [
+    "MISSING DATA STRATEGY",
+    "DATA LEAKAGE DETECTION",
+    "DATA SPLITTING STRATEGY"
+  ],
+  "outcomes": "You'll distinguish MCAR, MAR, and MNAR missingness, choose an imputation strategy that does not bias inference, order preprocessing so the test set stays untouched, and spot the leakage patterns (feature selection, dimensionality reduction, imputation) that quietly invalidate evaluation.",
+  "recommended_after": [
+    "ml-starter"
+  ]
+}

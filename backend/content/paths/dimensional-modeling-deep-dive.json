@@ -3,10 +3,31 @@
   "title": "Dimensional Modeling Deep Dive",
   "description": "Master the harder modeling decisions: choosing the right grain under ambiguity, SCD Type 2 vs 3 tradeoffs, bridge table design, conformed vs role-playing dimensions, wide vs normalized models, and schema design from complex business requirements.",
   "topic": "data-modeling",
-  "questions": [62001, 62002, 62004, 62010, 62017, 62021],
+  "questions": [
+    62001,
+    62002,
+    62004,
+    62010,
+    62017,
+    62021
+  ],
   "tier": "pro",
   "role": "intermediate",
-  "focus_concepts": ["GRAIN DEFINITION", "SCD STRUCTURE", "BRIDGE & MANY-TO-MANY", "DIMENSION DESIGN", "WIDE VS NARROW", "SCHEMA FROM REQUIREMENTS"],
+  "patterns": [
+    "scd",
+    "bridge-tables",
+    "grain-definition"
+  ],
+  "focus_concepts": [
+    "GRAIN DEFINITION",
+    "SCD STRUCTURE",
+    "BRIDGE & MANY-TO-MANY",
+    "DIMENSION DESIGN",
+    "WIDE VS NARROW",
+    "SCHEMA FROM REQUIREMENTS"
+  ],
   "outcomes": "You'll reason confidently about grain declaration under competing reporting needs, choose between SCD types for real scenarios, model many-to-many relationships with bridge tables, distinguish conformed from role-playing dimensions, and decide when a wide table beats a star schema.",
-  "recommended_after": ["schema-design-basics"]
+  "recommended_after": [
+    "schema-design-basics"
+  ]
 }

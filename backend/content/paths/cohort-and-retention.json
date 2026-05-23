@@ -13,10 +13,14 @@
   ],
   "tier": "pro",
   "role": "advanced",
+  "patterns": [
+    "cohort-analysis"
+  ],
   "focus_concepts": [
     "COHORT RETENTION ANALYSIS",
     "STATE TRANSITION DETECTION",
-    "PERIOD-OVER-PERIOD COMPARISON"
+    "PERIOD-OVER-PERIOD COMPARISON",
+    "ANTI-JOIN PATTERN"
   ],
   "outcomes": "You'll analyze user cohorts, compute retention rates, and track lifecycle patterns using real product datasets.",
   "recommended_after": [

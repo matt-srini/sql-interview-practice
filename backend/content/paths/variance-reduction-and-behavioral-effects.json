@@ -3,10 +3,38 @@
   "title": "Variance Reduction & Behavioral Effects",
   "description": "Tackle the pitfalls that distort real experiment results: apply CUPED to shrink confidence intervals without collecting more data, detect novelty and primacy effects that inflate short-term lifts, diagnose network interference when users interact with each other, and run subgroup analyses without inflating false positive rates.",
   "topic": "experimentation",
-  "questions": [92014, 92016, 92018, 92020, 92022, 92024, 93007, 93009, 93011, 93013],
+  "questions": [
+    92014,
+    92016,
+    92018,
+    92020,
+    92022,
+    92024,
+    93007,
+    93009,
+    93011,
+    93013
+  ],
   "tier": "pro",
   "role": "advanced",
-  "focus_concepts": ["VARIANCE REDUCTION", "NOVELTY EFFECTS", "NETWORK EFFECTS", "SEGMENTATION ANALYSIS"],
+  "patterns": [
+    "variance-reduction"
+  ],
+  "focus_concepts": [
+    "VARIANCE REDUCTION",
+    "NOVELTY EFFECTS",
+    "NETWORK EFFECTS",
+    "SEGMENTATION ANALYSIS",
+    "HOLDOUT GROUPS",
+    "SAMPLE RATIO MISMATCH",
+    "MULTIPLE TESTING",
+    "CAUSAL INFERENCE",
+    "EXPERIMENT DURATION",
+    "EXPERIMENT DESIGN",
+    "MULTI-ARMED BANDIT"
+  ],
   "outcomes": "You'll apply CUPED using a pre-experiment covariate and explain when the technique is invalid, distinguish novelty effects from genuine long-term treatment effects and prescribe a remedy, identify SUTVA violations in social or marketplace experiments and choose between cluster randomization and holdout-based measurement, and conduct subgroup analyses without inflating the family-wise error rate.",
-  "recommended_after": ["experiment-design-and-power"]
+  "recommended_after": [
+    "experiment-design-and-power"
+  ]
 }

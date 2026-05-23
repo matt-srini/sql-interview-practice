@@ -3,10 +3,28 @@
   "title": "Schema Design Basics",
   "description": "Build the foundational mental model for data warehouse design: star vs snowflake schemas, fact table types, surrogate keys, grain definition, SCD Type 1 vs 2, and the OLAP vs OLTP distinction.",
   "topic": "data-modeling",
-  "questions": [61001, 61007, 61010, 61013, 61016, 61020],
+  "questions": [
+    61001,
+    61007,
+    61010,
+    61013,
+    61016,
+    61020
+  ],
   "tier": "free",
   "role": "starter",
-  "focus_concepts": ["DIMENSIONAL MODELING", "FACT TABLE DESIGN", "SURROGATE VS NATURAL KEYS", "SCD STRUCTURE", "GRAIN DEFINITION"],
+  "patterns": [
+    "star-snowflake",
+    "fact-table-design",
+    "scd"
+  ],
+  "focus_concepts": [
+    "DIMENSIONAL MODELING",
+    "FACT TABLE DESIGN",
+    "SURROGATE VS NATURAL KEYS",
+    "SCD STRUCTURE",
+    "GRAIN DEFINITION"
+  ],
   "outcomes": "You'll distinguish star from snowflake schemas, identify the right fact table type for a scenario, explain surrogate vs natural keys, choose between SCD Type 1 and 2, and declare a correct grain.",
   "recommended_after": []
 }

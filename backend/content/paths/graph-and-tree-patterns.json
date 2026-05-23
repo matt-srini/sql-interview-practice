@@ -13,10 +13,12 @@
   ],
   "tier": "pro",
   "role": "advanced",
+  "patterns": [
+    "graph-traversal"
+  ],
   "focus_concepts": [
-    "GRAPH TRAVERSAL STRATEGY",
-    "CYCLE DETECTION",
-    "TOPOLOGICAL DEPENDENCY ORDERING"
+    "GRAPH TRAVERSAL (BFS / DFS)",
+    "CYCLE DETECTION"
   ],
   "outcomes": "You'll handle BFS, DFS, topological sort, and connected-components problems that appear in data engineering and system design interviews.",
   "recommended_after": [

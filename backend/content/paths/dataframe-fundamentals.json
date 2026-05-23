@@ -14,11 +14,16 @@
   ],
   "tier": "free",
   "role": "starter",
+  "patterns": [
+    "dataframe-basics"
+  ],
   "focus_concepts": [
     "BOOLEAN INDEXING",
     "NULL-BASED ROW FILTERING",
-    "OUTPUT SCHEMA SHAPING"
+    "OUTPUT SCHEMA SHAPING",
+    "MISSING-VALUE IMPUTATION",
+    "SettingWithCopyWarning"
   ],
-  "outcomes": "You'll get fluent with the everyday pandas toolkit — selection, filtering, null handling, derived columns, and sorting.",
+  "outcomes": "You'll get fluent with the everyday pandas toolkit \u2014 selection, filtering, null handling, derived columns, and sorting.",
   "recommended_after": []
 }

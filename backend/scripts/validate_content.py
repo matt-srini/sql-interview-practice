@@ -531,20 +531,54 @@ def _validate_chain_integrity() -> None:
 
 
 def _validate_paths(paths: list[dict], catalogs_by_topic: dict[str, dict[str, list[dict]]]) -> None:
+    """Content-integrity rules for learning paths.
+
+    See ``docs/content-authoring.md`` §Paths for the canonical definition of
+    each rule and the reasoning behind it.
+
+    Rules:
+      1. Required schema fields present; slug unique; file matches slug.
+      2. ``role`` in {starter, intermediate, advanced}; exactly one ``starter``
+         per track (UX promise: every track has one obvious entry point).
+         No upper bound on intermediate or advanced.
+      3. ``patterns[]`` non-empty; each entry resolves to the track's registry
+         in ``path_patterns.py``.
+      4. ``focus_concepts[]`` non-empty; each entry resolves to a registered
+         family in ``concept_families.py`` for the track (same rule the
+         question validator already applies).
+      5. Every question in ``questions[]`` carries at least one concept tag
+         that resolves to the same family as at least one of the path's
+         ``focus_concepts[]`` — mechanical guarantee that the path actually
+         drills what it claims.
+      6. ``recommended_after[]`` references real path slugs in the same track;
+         the resulting graph is acyclic.
+    """
+    from concept_families import CONCEPT_FAMILIES, resolve_to_family, concept_matches_focus
+    from path_patterns import PATH_PATTERNS
+
     valid_topics = {t.slug for t in TRACKS}
     valid_tiers = {"free", "pro"}
     valid_roles = {"starter", "intermediate", "advanced"}
 
-    required_fields = {"slug", "title", "description", "topic", "questions", "tier", "role"}
+    required_fields = {
+        "slug", "title", "description", "topic", "questions",
+        "tier", "role", "patterns", "focus_concepts",
+    }
 
     path_files = {p.stem for p in (BACKEND_ROOT / "content" / "paths").glob("*.json")}
     slugs = set()
-    role_counts = {topic: {"starter": 0, "intermediate": 0} for topic in valid_topics}
+    starter_counts: dict[str, int] = {topic: 0 for topic in valid_topics}
 
-    ids_by_topic = {
-        topic: {int(q["id"]) for diff in grouped.values() for q in diff}
-        for topic, grouped in catalogs_by_topic.items()
-    }
+    # Build question lookup by topic for tag inspection (rule 5).
+    questions_by_id: dict[str, dict[int, dict]] = {}
+    for topic, grouped in catalogs_by_topic.items():
+        questions_by_id[topic] = {
+            int(q["id"]): q for diff in grouped.values() for q in diff
+        }
+    ids_by_topic = {topic: set(lookup.keys()) for topic, lookup in questions_by_id.items()}
+
+    # Pass 1: per-path field validation (rules 1–5).
+    paths_by_topic: dict[str, dict[str, dict]] = {topic: {} for topic in valid_topics}
 
     for path in paths:
         missing = required_fields - set(path.keys())
@@ -570,6 +604,39 @@ def _validate_paths(paths: list[dict], catalogs_by_topic: dict[str, dict[str, li
         if role not in valid_roles:
             raise ValueError(f"Invalid role for path {slug}: {role}")
 
+        # Rule 3: patterns
+        patterns = path["patterns"]
+        if not isinstance(patterns, list) or not patterns:
+            raise ValueError(f"Path {slug} has empty or invalid patterns[]")
+        track_patterns = PATH_PATTERNS.get(topic, {})
+        for pat in patterns:
+            if pat not in track_patterns:
+                raise ValueError(
+                    f"Path {slug}: pattern '{pat}' not in registry for track '{topic}'. "
+                    f"Register it in backend/path_patterns.py or use an existing slug. "
+                    f"Available: {sorted(track_patterns.keys())}"
+                )
+
+        # Rule 4: focus_concepts resolve to track's concept families.
+        # Only enforced for taxonomy-validated tracks (mirrors the
+        # question-concept validator's _TAXONOMY_VALIDATED_TRACKS gate).
+        # Other tracks: presence check only — full resolution is enforced
+        # once their concept-family registry is complete.
+        focus_concepts = path["focus_concepts"]
+        if not isinstance(focus_concepts, list) or not focus_concepts:
+            raise ValueError(f"Path {slug} has empty or invalid focus_concepts[]")
+        if topic in _TAXONOMY_VALIDATED_TRACKS:
+            track_families = CONCEPT_FAMILIES.get(topic, {})
+            for fc in focus_concepts:
+                resolved = resolve_to_family(fc, topic)
+                if resolved not in track_families:
+                    raise ValueError(
+                        f"Path {slug}: focus_concept '{fc}' does not resolve to a registered "
+                        f"family for track '{topic}' (resolved to '{resolved}'). "
+                        f"Use a concept that maps to one of: {sorted(track_families.keys())}"
+                    )
+
+        # Rule 1 (continued): question IDs valid
         questions = [int(qid) for qid in path["questions"]]
         if not questions:
             raise ValueError(f"Path {slug} has no questions")
@@ -580,14 +647,67 @@ def _validate_paths(paths: list[dict], catalogs_by_topic: dict[str, dict[str, li
         if unknown:
             raise ValueError(f"Path {slug} references unknown question IDs for topic {topic}: {unknown}")
 
-        if role in ("starter", "intermediate"):
-            role_counts[topic][role] += 1
+        # Rule 5: every question carries a tag in same family as one focus_concept
+        for qid in questions:
+            q = questions_by_id[topic][qid]
+            q_concepts = q.get("concepts", []) or []
+            match = False
+            for qc in q_concepts:
+                for fc in focus_concepts:
+                    if concept_matches_focus(qc, fc, topic):
+                        match = True
+                        break
+                if match:
+                    break
+            if not match:
+                raise ValueError(
+                    f"Path {slug}: question {qid} ('{q.get('title', '<untitled>')}') has no concept tag "
+                    f"that resolves to the same family as any of the path's focus_concepts. "
+                    f"Question concepts: {q_concepts}. Path focus_concepts: {focus_concepts}"
+                )
 
+        # Rule 2 (continued): track starter count
+        if role == "starter":
+            starter_counts[topic] += 1
+
+        paths_by_topic[topic][slug] = path
+
+    # Rule 2: exactly one starter per track
     for topic in valid_topics:
-        if role_counts[topic]["starter"] != 1:
-            raise ValueError(f"Topic {topic} must have exactly one starter path")
-        if role_counts[topic]["intermediate"] != 1:
-            raise ValueError(f"Topic {topic} must have exactly one intermediate path")
+        if starter_counts[topic] != 1:
+            raise ValueError(
+                f"Topic {topic} must have exactly one starter path (found {starter_counts[topic]})"
+            )
+
+    # Rule 6: recommended_after references + acyclic
+    for topic, topic_paths in paths_by_topic.items():
+        for slug, path in topic_paths.items():
+            prereqs = path.get("recommended_after", []) or []
+            for prereq in prereqs:
+                if prereq not in topic_paths:
+                    raise ValueError(
+                        f"Path {slug}: recommended_after references '{prereq}' which is not a path in track '{topic}'"
+                    )
+        # DFS cycle detection per track
+        visiting: set[str] = set()
+        visited: set[str] = set()
+
+        def _dfs(node: str, stack: list[str]) -> None:
+            if node in visiting:
+                cycle = " → ".join(stack[stack.index(node):] + [node])
+                raise ValueError(f"Path cycle in track {topic}: {cycle}")
+            if node in visited:
+                return
+            visiting.add(node)
+            stack.append(node)
+            for prereq in topic_paths[node].get("recommended_after", []) or []:
+                _dfs(prereq, stack)
+            stack.pop()
+            visiting.remove(node)
+            visited.add(node)
+
+        for slug in topic_paths:
+            _dfs(slug, [])
 
 
 def _load_json_file(path: Path) -> None:

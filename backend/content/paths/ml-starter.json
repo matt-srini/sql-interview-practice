@@ -3,10 +3,33 @@
   "title": "ML Fundamentals Starter",
   "description": "Build core ML intuition from scratch: supervised vs unsupervised learning, the bias-variance tradeoff, how to split data correctly for evaluation, recognizing overfitting and underfitting, why feature scaling matters, and how gradient descent optimizes a loss function.",
   "topic": "ml-fundamentals",
-  "questions": [81001, 81005, 81007, 81010, 81013, 81019, 81025, 81027],
+  "questions": [
+    81001,
+    81005,
+    81007,
+    81010,
+    81013,
+    81019,
+    81025,
+    81027
+  ],
   "tier": "free",
   "role": "starter",
-  "focus_concepts": ["SUPERVISED VS UNSUPERVISED", "BIAS-VARIANCE TRADEOFF", "DATA SPLITTING STRATEGY", "OVERFITTING DIAGNOSIS", "FEATURE SCALING NECESSITY", "CLASSIFICATION METRICS", "GRADIENT DESCENT BEHAVIOR", "LOSS FUNCTION SELECTION"],
+  "patterns": [
+    "supervised-unsupervised",
+    "bias-variance"
+  ],
+  "focus_concepts": [
+    "SUPERVISED VS UNSUPERVISED",
+    "BIAS-VARIANCE TRADEOFF",
+    "DATA SPLITTING STRATEGY",
+    "OVERFITTING DIAGNOSIS",
+    "FEATURE SCALING NECESSITY",
+    "CLASSIFICATION METRICS",
+    "GRADIENT DESCENT BEHAVIOR",
+    "LOSS FUNCTION SELECTION",
+    "CROSS-VALIDATION DESIGN"
+  ],
   "outcomes": "You'll distinguish supervised, unsupervised, and semi-supervised learning, explain the bias-variance tradeoff and where models fail, correctly structure a train/validation/test split, recognize overfitting and underfitting from training curves, identify which algorithms require feature scaling, and describe how gradient descent minimizes a loss function.",
   "recommended_after": []
 }

@@ -1,7 +1,7 @@
 {
   "slug": "sliding-window-patterns",
   "title": "Sliding Window & Two Pointers",
-  "description": "Master the two-pointer and sliding window techniques — palindrome detection, dynamic window maximums, and classic hard substring problems.",
+  "description": "Master the two-pointer and sliding window techniques \u2014 palindrome detection, dynamic window maximums, and classic hard substring problems.",
   "topic": "python",
   "questions": [
     21002,
@@ -11,12 +11,15 @@
   ],
   "tier": "free",
   "role": "intermediate",
+  "patterns": [
+    "sliding-window"
+  ],
   "focus_concepts": [
     "SLIDING WINDOW OPTIMIZATION",
     "TWO-POINTER REDUCTION",
     "MONOTONIC WINDOW MAINTENANCE"
   ],
-  "outcomes": "You'll solve substring and subarray problems by maintaining a moving window instead of re-scanning, cutting O(n²) to O(n).",
+  "outcomes": "You'll solve substring and subarray problems by maintaining a moving window instead of re-scanning, cutting O(n\u00b2) to O(n).",
   "recommended_after": [
     "arrays-and-hashing"
   ]

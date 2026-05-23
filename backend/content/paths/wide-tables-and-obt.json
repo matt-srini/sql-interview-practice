@@ -1,0 +1,31 @@
+{
+  "slug": "wide-tables-and-obt",
+  "title": "Wide Tables & One-Big-Table Design",
+  "description": "Master the recurring practitioner choice between a normalised star schema and a wide one-big-table (OBT) model. Learn when denormalisation pays for itself, where it bites, and how BI tools and ML feature pipelines change the trade-off.",
+  "topic": "data-modeling",
+  "questions": [
+    61018,
+    61019,
+    61021,
+    62015,
+    62017,
+    62018,
+    63004,
+    63019
+  ],
+  "tier": "free",
+  "role": "intermediate",
+  "patterns": [
+    "wide-tables"
+  ],
+  "focus_concepts": [
+    "DENORMALIZATION TRADEOFF",
+    "WIDE VS NARROW",
+    "STORAGE ARCHITECTURE TRADEOFFS",
+    "SCHEMA FROM REQUIREMENTS"
+  ],
+  "outcomes": "You'll decide when an OBT outperforms a star schema, name the cost of denormalisation in update-heavy systems, design wide-table models for BI and ML feature stores, and recognise the scalability limits at which OBTs break down.",
+  "recommended_after": [
+    "schema-design-basics"
+  ]
+}

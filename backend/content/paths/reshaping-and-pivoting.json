@@ -12,6 +12,9 @@
   ],
   "tier": "pro",
   "role": "advanced",
+  "patterns": [
+    "reshape-and-pivot"
+  ],
   "focus_concepts": [
     "WIDE-FORM RESHAPING",
     "CROSS-TABULATION",

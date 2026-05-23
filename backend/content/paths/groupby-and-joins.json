@@ -13,6 +13,10 @@
   ],
   "tier": "free",
   "role": "intermediate",
+  "patterns": [
+    "groupby",
+    "joins"
+  ],
   "focus_concepts": [
     "GROUPED AGGREGATION",
     "MULTI-DATAFRAME ENTITY LINKING",

@@ -14,6 +14,9 @@
   ],
   "tier": "free",
   "role": "starter",
+  "patterns": [
+    "aggregation"
+  ],
   "focus_concepts": [
     "GROUPED AGGREGATION",
     "POST-AGGREGATION FILTERING",

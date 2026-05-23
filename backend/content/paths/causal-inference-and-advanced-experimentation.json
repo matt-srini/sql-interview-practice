@@ -3,10 +3,35 @@
   "title": "Causal Inference & Advanced Experimentation",
   "description": "Master the techniques that go beyond standard A/B tests: choose between difference-in-differences, regression discontinuity, and instrumental variables when randomization is impossible, design switchback and geo experiments for marketplace settings with spillover, decide when a multi-armed bandit beats a fixed allocation test, and reason about Bayesian sequential testing without inflating false positive rates.",
   "topic": "experimentation",
-  "questions": [93001, 93002, 93003, 93004, 93005, 93006, 93008, 93010, 93014, 93015],
+  "questions": [
+    93001,
+    93002,
+    93003,
+    93004,
+    93005,
+    93006,
+    93008,
+    93010,
+    93014,
+    93015
+  ],
   "tier": "pro",
   "role": "advanced",
-  "focus_concepts": ["CAUSAL INFERENCE", "SWITCHBACK EXPERIMENTS", "BAYESIAN EXPERIMENTATION", "MULTI-ARMED BANDIT", "QUASI-EXPERIMENTAL METHODS", "HOLDOUT GROUPS"],
+  "patterns": [
+    "causal-inference"
+  ],
+  "focus_concepts": [
+    "CAUSAL INFERENCE",
+    "SWITCHBACK EXPERIMENTS",
+    "BAYESIAN EXPERIMENTATION",
+    "MULTI-ARMED BANDIT",
+    "QUASI-EXPERIMENTAL METHODS",
+    "HOLDOUT GROUPS",
+    "NETWORK EFFECTS",
+    "VARIANCE REDUCTION"
+  ],
   "outcomes": "You'll choose between DiD, RDD, and IV based on the structure of the data-generating process, design a switchback experiment with an appropriate carryover washout period, explain why a multi-armed bandit minimises regret but inflates false positive risk compared to a fixed A/B test, apply Bayesian sequential testing without the optional stopping problem, and construct a long-term holdout to measure cannibalization from a launched feature.",
-  "recommended_after": ["variance-reduction-and-behavioral-effects"]
+  "recommended_after": [
+    "variance-reduction-and-behavioral-effects"
+  ]
 }

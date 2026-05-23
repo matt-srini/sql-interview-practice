@@ -3,10 +3,28 @@
   "title": "Pipeline Fundamentals",
   "description": "Build the mental model every data engineer needs: ETL vs ELT, idempotency, DAG-based orchestration, batch vs streaming, partitioning, and SCD basics.",
   "topic": "data-engineering",
-  "questions": [51001, 51004, 51007, 51010, 51013, 51016],
+  "questions": [
+    51001,
+    51004,
+    51007,
+    51010,
+    51013,
+    51016
+  ],
   "tier": "free",
   "role": "starter",
-  "focus_concepts": ["ETL VS ELT", "IDEMPOTENCY", "ORCHESTRATION", "BATCH VS STREAMING"],
+  "patterns": [
+    "etl-elt",
+    "orchestration"
+  ],
+  "focus_concepts": [
+    "ETL VS ELT",
+    "IDEMPOTENCY",
+    "ORCHESTRATION",
+    "BATCH VS STREAMING",
+    "PARTITIONING & PRUNING",
+    "SCD OPERATIONS"
+  ],
   "outcomes": "You will be able to explain the ETL/ELT distinction, design idempotent jobs, describe DAG execution, and choose between batch and streaming for common scenarios.",
   "recommended_after": []
 }

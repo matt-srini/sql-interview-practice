@@ -15,10 +15,14 @@
   ],
   "tier": "free",
   "role": "advanced",
+  "patterns": [
+    "query-optimization"
+  ],
   "focus_concepts": [
     "CATALYST OPTIMIZER REASONING",
     "ADAPTIVE QUERY EXECUTION",
-    "PHYSICAL PLAN INTERPRETATION"
+    "PHYSICAL PLAN INTERPRETATION",
+    "DYNAMIC PARTITION PRUNING"
   ],
   "outcomes": "You'll read Spark query plans, understand Catalyst optimizer decisions, and know when to push hints or disable AQE.",
   "recommended_after": [

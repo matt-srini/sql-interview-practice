@@ -13,6 +13,9 @@
   ],
   "tier": "pro",
   "role": "advanced",
+  "patterns": [
+    "subqueries"
+  ],
   "focus_concepts": [
     "NESTED FILTER LOGIC",
     "ANTI-JOIN PATTERNS",

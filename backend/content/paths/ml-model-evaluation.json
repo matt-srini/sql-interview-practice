@@ -1,12 +1,38 @@
 {
   "slug": "ml-model-evaluation",
   "title": "Model Evaluation & Validation",
-  "description": "Go beyond accuracy: choose the right metrics for classification and regression tasks, design cross-validation correctly for different data types, understand AUC-ROC and model calibration, and avoid the evaluation pitfalls — leakage from preprocessing, shuffled time-series splits, and SMOTE applied before splitting — that inflate validation scores.",
+  "description": "Go beyond accuracy: choose the right metrics for classification and regression tasks, design cross-validation correctly for different data types, understand AUC-ROC and model calibration, and avoid the evaluation pitfalls \u2014 leakage from preprocessing, shuffled time-series splits, and SMOTE applied before splitting \u2014 that inflate validation scores.",
   "topic": "ml-fundamentals",
-  "questions": [81019, 81022, 81016, 82008, 82018, 82019, 82020, 82032, 82034, 83013],
+  "questions": [
+    81019,
+    81022,
+    81016,
+    82008,
+    82018,
+    82019,
+    82020,
+    82032,
+    82034,
+    83013
+  ],
   "tier": "free",
   "role": "intermediate",
-  "focus_concepts": ["CLASSIFICATION METRICS", "REGRESSION METRICS", "CROSS-VALIDATION DESIGN", "MODEL CALIBRATION", "DATA LEAKAGE DETECTION"],
+  "patterns": [
+    "cross-validation",
+    "metrics"
+  ],
+  "focus_concepts": [
+    "CLASSIFICATION METRICS",
+    "REGRESSION METRICS",
+    "CROSS-VALIDATION DESIGN",
+    "MODEL CALIBRATION",
+    "DATA LEAKAGE DETECTION",
+    "REGULARIZATION EFFECT",
+    "GRADIENT DESCENT BEHAVIOR",
+    "BOOSTING MECHANICS"
+  ],
   "outcomes": "You'll select the right classification and regression metric for a given business context, design a cross-validation strategy for IID and time-series data, explain what AUC-ROC measures and why it is threshold-agnostic, interpret a calibration curve and apply Platt scaling or isotonic regression to fix miscalibration, and identify preprocessing leakage from PCA, StandardScaler, and SMOTE applied before splitting.",
-  "recommended_after": ["ml-starter"]
+  "recommended_after": [
+    "ml-starter"
+  ]
 }

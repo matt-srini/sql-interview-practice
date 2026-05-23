@@ -3,10 +3,30 @@
   "title": "dbt & Modern Analytics Modeling",
   "description": "Learn how production analytics models are structured with dbt: staging, intermediate, and mart layers, when to materialise as a view vs table vs incremental model, how to handle late-arriving events and backfill requirements, and when a wide one-big-table beats a normalised star schema for BI tools and ML feature stores.",
   "topic": "data-modeling",
-  "questions": [61022, 62006, 62007, 62008, 62017, 62018, 63004, 63009, 63018, 63019],
+  "questions": [
+    61022,
+    62006,
+    62007,
+    62008,
+    62017,
+    62018,
+    63004,
+    63009,
+    63018,
+    63019
+  ],
   "tier": "pro",
   "role": "advanced",
-  "focus_concepts": ["DBT MODELING", "WIDE VS NARROW", "STORAGE ARCHITECTURE TRADEOFFS"],
+  "patterns": [
+    "dbt-modeling"
+  ],
+  "focus_concepts": [
+    "DBT MODELING",
+    "WIDE VS NARROW",
+    "STORAGE ARCHITECTURE TRADEOFFS"
+  ],
   "outcomes": "You'll design a dbt project layer structure from staging through marts, choose between view, table, and incremental materializations based on query patterns and freshness requirements, select an incremental merge strategy for late-arriving event data with backfill constraints, and decide when a wide one-big-table outperforms a normalized star schema for BI tools or ML feature generation.",
-  "recommended_after": ["dimensional-modeling-deep-dive"]
+  "recommended_after": [
+    "dimensional-modeling-deep-dive"
+  ]
 }

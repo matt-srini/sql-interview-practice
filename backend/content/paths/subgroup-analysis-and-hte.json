@@ -1,0 +1,28 @@
+{
+  "slug": "subgroup-analysis-and-hte",
+  "title": "Subgroup Analysis & Heterogeneous Treatment Effects",
+  "description": "Heterogeneous effects, Simpson's paradox, and segment-level multiple comparisons are where ambitious experiment analyses go wrong. Build the discipline to detect real subgroup effects without fooling yourself.",
+  "topic": "experimentation",
+  "questions": [
+    91020,
+    92008,
+    92015,
+    92017,
+    93016,
+    93019
+  ],
+  "tier": "free",
+  "role": "intermediate",
+  "patterns": [
+    "subgroup-analysis"
+  ],
+  "focus_concepts": [
+    "SEGMENTATION ANALYSIS",
+    "MULTIPLE TESTING",
+    "NOVELTY EFFECTS"
+  ],
+  "outcomes": "You'll run honest segment analyses without inflating false positives, recognise Simpson's paradox in real experiment outputs, separate novelty effects from genuine heterogeneous treatment effects, and analyse spillover-prone geo experiments correctly.",
+  "recommended_after": [
+    "experiment-design-and-power"
+  ]
+}

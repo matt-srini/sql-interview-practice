@@ -23,9 +23,17 @@ _TOPIC_MODULES = {t.slug: t.catalog_module for t in TRACKS}
 _CACHE_TTL_SECONDS = 60
 _insights_cache: dict[str, dict[str, Any]] = {}
 
-# Maps (track, concept) → (slug, title, tier) for the highest-priority matching path.
-# Starter paths take precedence over intermediate, which take precedence over advanced,
-# so the recommendation points to the most foundational accessible path first.
+# Maps (track, concept-family) → (slug, title, tier) for the highest-priority
+# matching path.  Starter paths take precedence over intermediate, which take
+# precedence over advanced — recommendations point to the most foundational
+# accessible path first.
+#
+# Family-aware (post-2026-05 paths refactor): each path's focus_concepts are
+# resolved to their canonical family at index-build time, and weak-concept
+# lookups resolve the candidate tag to family before matching.  This mirrors
+# how Mock's focus_concepts filter works in concept_matches_focus(), so a tag
+# variation like "GROUPED AGGREGATION" vs "GROUP BY AGGREGATION" still finds
+# the right path as long as both resolve to the same family.
 def _build_concept_path_index() -> dict[tuple[str, str], tuple[str, str, str]]:
     role_order = {"starter": 0, "intermediate": 1, "advanced": 2}
     paths = sorted(
@@ -37,13 +45,22 @@ def _build_concept_path_index() -> dict[tuple[str, str], tuple[str, str, str]]:
         track = path["topic"]
         tier = path.get("tier", "pro")
         for concept in path.get("focus_concepts", []):
-            key = (track, concept)
+            family = resolve_to_family(concept, track)
+            key = (track, family)
             if key not in index:
                 index[key] = (path["slug"], path["title"], tier)
     return index
 
 
 _CONCEPT_PATH_INDEX = _build_concept_path_index()
+
+
+def _path_for_concept(track: str, concept: str) -> tuple[str, str, str] | None:
+    """Family-aware concept→path lookup.  Resolves the concept tag to its
+    canonical family before indexing, so insights matching is consistent with
+    Mock's concept_matches_focus() resolver."""
+    family = resolve_to_family(concept, track)
+    return _CONCEPT_PATH_INDEX.get((track, family))
 
 
 def _build_concepts_lookup() -> dict[str, dict[int, list[str]]]:
@@ -282,8 +299,8 @@ async def get_dashboard_insights(
         # Coaching summary
         entry["summary"] = _concept_summary(accuracy)
 
-        # Recommended path
-        lookup = _CONCEPT_PATH_INDEX.get((track, concept))
+        # Recommended path (family-aware)
+        lookup = _path_for_concept(track, concept)
         if lookup:
             slug, title, tier = lookup
             if tier == "free" or effective_plan in ("pro", "elite"):
@@ -514,7 +531,7 @@ def build_study_plan(
             worst = track_concepts[0]
             concept = worst["concept"]
             track_label = _TRACK_LABELS.get(lowest_track, lowest_track)
-            path_info = _CONCEPT_PATH_INDEX.get((lowest_track, concept))
+            path_info = _path_for_concept(lowest_track, concept)
             if path_info:
                 slug, path_title, _ = path_info
                 _add(
@@ -542,7 +559,7 @@ def build_study_plan(
         concept = item["concept"]
         track_label = _TRACK_LABELS.get(track, track)
         accuracy_pct = round(item["accuracy_pct"] * 100)
-        path_info = _CONCEPT_PATH_INDEX.get((track, concept))
+        path_info = _path_for_concept(track, concept)
         if path_info:
             slug, path_title, _ = path_info
             _add(
@@ -835,7 +852,7 @@ def build_session_debrief(
         top = weak[0]
         concept_name = top["concept"]
         track = top["track"]
-        path_lookup = _CONCEPT_PATH_INDEX.get((track, concept_name))
+        path_lookup = _path_for_concept(track, concept_name)
         if path_lookup:
             slug, title, _tier = path_lookup
             priority_path_slug = slug

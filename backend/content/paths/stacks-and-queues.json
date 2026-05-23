@@ -11,9 +11,11 @@
   ],
   "tier": "free",
   "role": "advanced",
+  "patterns": [
+    "stacks-and-queues"
+  ],
   "focus_concepts": [
     "MONOTONIC STACK REASONING",
-    "BRACKET VALIDATION PATTERN",
     "GREEDY SEQUENCE PROCESSING"
   ],
   "outcomes": "You'll solve bracket matching, histogram, and next-greater-element problems using stack and deque patterns.",

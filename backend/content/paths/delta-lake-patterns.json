@@ -14,12 +14,16 @@
   ],
   "tier": "pro",
   "role": "advanced",
+  "patterns": [
+    "delta-lake"
+  ],
   "focus_concepts": [
     "ACID TRANSACTION MANAGEMENT",
     "SNAPSHOT ISOLATION",
-    "PARTITION PRUNING STRATEGY"
+    "PARTITION PRUNING STRATEGY",
+    "DELTA LAKE UPSERT SEMANTICS"
   ],
-  "outcomes": "You'll apply Delta Lake patterns — ACID writes, time travel, and optimized partitioning — to production data lake scenarios.",
+  "outcomes": "You'll apply Delta Lake patterns \u2014 ACID writes, time travel, and optimized partitioning \u2014 to production data lake scenarios.",
   "recommended_after": [
     "spark-performance"
   ]

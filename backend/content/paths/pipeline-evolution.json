@@ -1,0 +1,31 @@
+{
+  "slug": "pipeline-evolution",
+  "title": "Pipeline Evolution & Delivery Trade-offs",
+  "description": "Tackle the trade-offs every production data pipeline accumulates as it grows: schema evolution under live consumers, streaming watermark choices, exactly-once semantics, idempotent backfills, and storage-format selection.",
+  "topic": "data-engineering",
+  "questions": [
+    52001,
+    52007,
+    52012,
+    52018,
+    52022
+  ],
+  "tier": "pro",
+  "role": "intermediate",
+  "patterns": [
+    "schema-evolution",
+    "delivery-semantics",
+    "backfill-design"
+  ],
+  "focus_concepts": [
+    "SCHEMA EVOLUTION",
+    "WATERMARKING",
+    "DELIVERY SEMANTICS",
+    "BACKFILL DESIGN",
+    "STORAGE LAYOUT & FILE FORMATS"
+  ],
+  "outcomes": "You will reason about schema-registry compatibility under live consumers, choose streaming watermarks that bound state correctly, design producer-side exactly-once delivery, build idempotent partition-aware backfills, and select between columnar and row-oriented storage formats with clear trade-offs.",
+  "recommended_after": [
+    "pipeline-fundamentals"
+  ]
+}

@@ -3,10 +3,35 @@
   "title": "Advanced ML Methods",
   "description": "Tackle the hardest ML interview topics: vanishing and exploding gradients in deep networks, stacking ensemble mechanics and boosting failure modes under noisy labels, PCA and dimensionality reduction tradeoffs, transfer learning strategy for small datasets, and L1 vs L2 regularization for correlated features. Scenario-heavy questions that test deep reasoning, not surface recall.",
   "topic": "ml-fundamentals",
-  "questions": [82003, 82005, 82009, 82013, 82026, 83002, 83003, 83010, 83014, 83021],
+  "questions": [
+    82003,
+    82005,
+    82009,
+    82013,
+    82026,
+    83002,
+    83003,
+    83010,
+    83014,
+    83021
+  ],
   "tier": "pro",
   "role": "advanced",
-  "focus_concepts": ["ENSEMBLE STRATEGY", "GRADIENT PATHOLOGY", "DIMENSIONALITY REDUCTION", "REGULARIZATION EFFECT", "TRANSFER LEARNING STRATEGY", "BOOSTING MECHANICS", "HYPERPARAMETER SENSITIVITY"],
+  "patterns": [
+    "regularization",
+    "ensembles"
+  ],
+  "focus_concepts": [
+    "ENSEMBLE STRATEGY",
+    "GRADIENT PATHOLOGY",
+    "DIMENSIONALITY REDUCTION",
+    "REGULARIZATION EFFECT",
+    "TRANSFER LEARNING STRATEGY",
+    "BOOSTING MECHANICS",
+    "HYPERPARAMETER SENSITIVITY"
+  ],
   "outcomes": "You'll explain why sigmoid activations cause vanishing gradients and how batch normalization + ReLU solves it, describe how stacking meta-learners can overfit and how out-of-fold predictions prevent it, explain why AdaBoost fails under label noise while random forests are robust, apply partial fine-tuning for small domain datasets using pretrained networks, and select between L1 and L2 regularization based on the correlation structure of features.",
-  "recommended_after": ["ml-model-evaluation"]
+  "recommended_after": [
+    "ml-model-evaluation"
+  ]
 }

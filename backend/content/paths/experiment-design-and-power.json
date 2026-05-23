@@ -3,10 +3,35 @@
   "title": "Experiment Design & Power",
   "description": "Go beyond basic significance: calculate how many users you need before launching, understand the consequences of underpowered tests, diagnose a sample ratio mismatch, decide when your experiment has run long enough, and apply multiple testing corrections when you track more than one metric.",
   "topic": "experimentation",
-  "questions": [91022, 91024, 91026, 91028, 91030, 92001, 92004, 92007, 92010, 92013],
+  "questions": [
+    91022,
+    91024,
+    91026,
+    91028,
+    91030,
+    92001,
+    92004,
+    92007,
+    92010,
+    92013
+  ],
   "tier": "free",
   "role": "intermediate",
-  "focus_concepts": ["STATISTICAL POWER", "SAMPLE SIZE BASICS", "SAMPLE RATIO MISMATCH", "EXPERIMENT DURATION", "MULTIPLE TESTING"],
+  "patterns": [
+    "power-analysis"
+  ],
+  "focus_concepts": [
+    "STATISTICAL POWER",
+    "SAMPLE SIZE BASICS",
+    "SAMPLE RATIO MISMATCH",
+    "EXPERIMENT DURATION",
+    "MULTIPLE TESTING",
+    "HOLDOUT GROUPS",
+    "STATISTICAL SIGNIFICANCE",
+    "BAYESIAN EXPERIMENTATION"
+  ],
   "outcomes": "You'll compute a minimum sample size from effect size, alpha, and power inputs, explain what an underpowered test risks, identify a sample ratio mismatch from assignment logs and trace its likely causes, decide when novelty inflation means an experiment needs to run longer, and apply Bonferroni or Benjamini-Hochberg correction for multi-metric tests.",
-  "recommended_after": ["experimentation-starter"]
+  "recommended_after": [
+    "experimentation-starter"
+  ]
 }

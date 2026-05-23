@@ -13,12 +13,15 @@
   ],
   "tier": "pro",
   "role": "advanced",
+  "patterns": [
+    "period-over-period"
+  ],
   "focus_concepts": [
     "PERIOD-OVER-PERIOD COMPARISON",
     "DATE BUCKET GROUPING",
     "TIME-SERIES AGGREGATION"
   ],
-  "outcomes": "You'll compare metrics across time periods — week-over-week, month-over-month — using SQL window functions and date bucketing.",
+  "outcomes": "You'll compare metrics across time periods \u2014 week-over-week, month-over-month \u2014 using SQL window functions and date bucketing.",
   "recommended_after": [
     "window-functions-mastery"
   ]
