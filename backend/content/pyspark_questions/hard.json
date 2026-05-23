@@ -827,10 +827,8 @@
       "Think about the two ways an array column can produce no output rows with plain `explode`: (a) the column value is null, (b) the array exists but is empty. Does `explode_outer` treat both the same way?"
     ],
     "concepts": [
-      "explode_outer semantics",
-      "null vs empty array",
-      "outer lateral view",
-      "row preservation"
+      "COLLECTION & ARRAY OPERATIONS",
+      "DATA QUALITY SKEPTICISM"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -857,10 +855,8 @@
       "With 3 employees all earning 5000: under RANGE, each employee's window includes all three (because all have salary ≤ 5000 = current salary). Under ROWS, each employee's window extends only to their own physical position. What does the running sum look like in each case?"
     ],
     "concepts": [
-      "window frame semantics",
-      "ROWS vs RANGE",
-      "tie handling",
-      "running aggregation"
+      "WINDOW FUNCTIONS & FRAMES",
+      "DATA QUALITY SKEPTICISM"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },

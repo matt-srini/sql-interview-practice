@@ -1181,9 +1181,8 @@
       "If preserving null rows matters for your pipeline, there is a variant of `explode` specifically designed to keep them. What might that function be called?"
     ],
     "concepts": [
-      "explode semantics",
-      "null handling",
-      "array column transformation"
+      "COLLECTION & ARRAY OPERATIONS",
+      "DATA QUALITY SKEPTICISM"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -1210,9 +1209,7 @@
       "With `orderBy` applied, rows within the window are sorted before aggregation. The window frame moves forward one physical row at a time, adding each new salary to the running total."
     ],
     "concepts": [
-      "window function frame",
-      "cumulative aggregation",
-      "rowsBetween semantics"
+      "WINDOW FUNCTIONS & FRAMES"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -1479,11 +1476,9 @@
       "The OOM is on the driver, not the executors. What operation runs exclusively on the driver just before Stage 3 starts?"
     ],
     "concepts": [
-      "pivot",
-      "dynamic schema",
-      "driver OOM",
-      "schema inference cost",
-      "wide DataFrame"
+      "COLLECTION & ARRAY OPERATIONS",
+      "MEMORY MANAGEMENT",
+      "SCHEMA & TYPE HANDLING"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
