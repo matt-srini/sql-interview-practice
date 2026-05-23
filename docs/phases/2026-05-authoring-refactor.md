@@ -323,7 +323,7 @@ After Phase 1 docs are committed, spin up dev preview, screenshot landing/worksp
 - [x] Written memo at `docs/phases/2026-05-color-review.md` — recommend KEEP, no token change
 - [x] Two adjacent observations flagged for future separate pass (workspace topbar; Pro 8% accent already correct)
 
-### Phase 2 — Content alignment 🟢 SQL complete (passed re-audit after remediation); 🟢 Python COMPLETE 2026-05-23 (commits cd30279, d75fee6, de0d298, 1bddfac) — taxonomy 16→19 families, retag 75 mock Qs, delete 23037/23044/23068, fix chain validator, revert python.md regressions, generator library + expansion layer, 47 oversized test cases converted/removed (98 MB → 2.5 MB); all A1–A6 acceptance criteria PASS; other tracks pending
+### Phase 2 — Content alignment 🟢 SQL complete (passed re-audit after remediation); 🟢 Python COMPLETE 2026-05-23 (commits cd30279, d75fee6, de0d298, 1bddfac) — taxonomy 16→19 families, retag 75 mock Qs, delete 23037/23044/23068, fix chain validator, revert python.md regressions, generator library + expansion layer, 47 oversized test cases converted/removed (98 MB → 2.5 MB); all A1–A6 acceptance criteria PASS; 🟢 PySpark COMPLETE 2026-05-24 (commits c194d32, e213b54, 035f8f2, 054fb77, e8875ec, a554dcd, 99bb06f, 08dcc93) — taxonomy 21→23 families, 277→940 resolved tags / 0 unresolved, 42 over-tags stripped, 12 new practice Qs, 5 mock-only Qs retagged, 129 new mock-only Qs (21→150 total), footprint 116→128 practice; other tracks pending
 This is the first phase a fresh Sonnet session should be able to execute end-to-end from the committed docs alone. Read this file for the full brief.
 
 **Suggested execution order** (each item unblocks or de-risks the next):

@@ -10,7 +10,7 @@
 
 If a family fails either test, it doesn't belong here. We are **not** building a textbook curriculum. We are surfacing the reasoning patterns serious practitioners and serious interviewers care about.
 
-> **⚡ gap families — Phase 2 status.** Families marked `⚡ *real-world gap*` were added by the 2026-05 refactor to surface reasoning the bank previously had only *implicitly*. **SQL Phase 2 complete:** `DOUBLE-COUNTING DETECTION`, `DATA QUALITY SKEPTICISM`, and `METRIC RECONCILIATION` now have practice coverage; `METRIC INTERPRETATION & DENOMINATOR CHOICE`, `OUTPUT SANITY VALIDATION`, and `PERFORMANCE-AWARE ANALYTICS` are established as **mock-only realism lenses** (appear only on `mock_only: true` questions, always co-occurring with ≥1 practice-grounded family; enforced by `_validate_mock_only_realism()`). **Python Phase 2 complete:** Python has **no ⚡/realism families by design** — Python's families are pure algorithmic patterns, and the candidate "lens" (complexity & memory) is **practice-gradable** via the executable harness (`O(n²)` times out, `load-everything` OOMs on the sized hidden inputs) and surfaces in mock as the `performance_pivot` chain dimension, not as a concept tag. For Pandas / PySpark / other tracks, ⚡ families remain practice-curriculum targets until each track's Phase 2 lands — do not use them in mock-only content until the practice bank for that track teaches them.
+> **⚡ gap families — Phase 2 status.** Families marked `⚡ *real-world gap*` were added by the 2026-05 refactor to surface reasoning the bank previously had only *implicitly*. **SQL Phase 2 complete:** `DOUBLE-COUNTING DETECTION`, `DATA QUALITY SKEPTICISM`, and `METRIC RECONCILIATION` now have practice coverage; `METRIC INTERPRETATION & DENOMINATOR CHOICE`, `OUTPUT SANITY VALIDATION`, and `PERFORMANCE-AWARE ANALYTICS` are established as **mock-only realism lenses** (appear only on `mock_only: true` questions, always co-occurring with ≥1 practice-grounded family; enforced by `_validate_mock_only_realism()`). **Python Phase 2 complete:** Python has **no ⚡/realism families by design** — Python's families are pure algorithmic patterns, and the candidate "lens" (complexity & memory) is **practice-gradable** via the executable harness (`O(n²)` times out, `load-everything` OOMs on the sized hidden inputs) and surfaces in mock as the `performance_pivot` chain dimension, not as a concept tag. **PySpark Phase 2 complete:** `DATA QUALITY SKEPTICISM`, `DOUBLE-COUNTING DETECTION`, and `OUTPUT SANITY VALIDATION` are practice-grounded (new practice questions authored; all three ⚡ markers removed from PySpark section). PySpark has no mock-only realism families — MCQ format makes all three reasoning lenses gradeable as `predict_output` / `debug`. For Pandas / other tracks, ⚡ families remain practice-curriculum targets until each track's Phase 2 lands — do not use them in mock-only content until the practice bank for that track teaches them.
 
 ---
 
@@ -689,21 +689,21 @@ The following tags are **forbidden** as `concepts` values — they are mechanic 
 **What it tests:** general performance reasoning — which configs to tune in what order, when to add hardware vs change code, small-file problem, cloud storage metadata cost.
 **Match patterns:** `performance`, `PERFORMANCE TUNING`, `tuning`, `spark.serializer`, `task overhead`, `small file problem`, `cloud storage metadata`, `production pattern`, `large data`, `anti-pattern avoidance`, `external merge-sort`, `false positives`, `probabilistic`
 
-#### `DATA QUALITY SKEPTICISM` ⚡ *real-world gap — practice-grounded in PySpark (Phase 2)*
+#### `DATA QUALITY SKEPTICISM` *(practice-grounded — Phase 2)*
 **What it tests:** PySpark surface of the cross-track family — recognising suspect data before processing it: late-arriving events that should have been watermarked, schema drift the read silently absorbed, NULL-key explosion on joins, duplicate event-IDs from at-least-once upstreams, non-deterministic deduplication with `dropDuplicates`. The PySpark question-shape is usually `predict_output` ("what does this code do when the input has X dirty rows?") or `debug` ("the output looks wrong because the input was dirty in this specific way — diagnose").
 **Match patterns:** `DATA QUALITY`, `LATE EVENT`, `DUPLICATE EVENT`, `NULL KEY`, `DIRTY INPUT`, `dropDuplicate`, `non-determinism`, `non-determin`, `deduplication`, `dedup`, `source dedup`, `null handling`, `production vs dev data`, `NaN-to-null`
 **Member tags (canonical):** `DATA QUALITY SKEPTICISM`, `LATE-EVENT HANDLING`, `DUPLICATE EVENT COLLAPSE`, `NULL KEY DETECTION`, `DIRTY INPUT REASONING`
 **Cross-track alignment:** parallel to the SQL and Pandas families of the same name.
 **Practice grounding:** DATA QUALITY SKEPTICISM is practice-grounded in PySpark (not mock-only realism). MCQ format makes this reasoning gradeable as `predict_output` / `debug`.
 
-#### `DOUBLE-COUNTING DETECTION` ⚡ *real-world gap — practice-grounded in PySpark (Phase 2)*
+#### `DOUBLE-COUNTING DETECTION` *(practice-grounded — Phase 2)*
 **What it tests:** spotting fan-out from one-to-many joins in PySpark, same conceptual failure mode as SQL — but the PySpark angle adds the operational consequence: a fan-out join in Spark not only inflates the output but also amplifies shuffle volume and can tip the job into OOM. The reasoning is therefore *both* correctness and runtime impact.
 **Match patterns:** `DOUBLE-COUNTING`, `DOUBLE COUNTING`, `FAN-OUT`, `JOIN MULTIPLICATION`, `GRAIN MISMATCH`, `INFLATED OUTPUT`
 **Member tags (canonical):** `FAN-OUT DETECTION`, `JOIN MULTIPLICATION`, `GRAIN MISMATCH`, `INFLATED OUTPUT DEBUG`, `DOUBLE-COUNTING DETECTION`
 **Cross-track alignment:** parallel to SQL and Pandas.
 **Practice grounding:** new `debug` / `predict_output` questions authored in Phase 2 (medium + hard). True content gap prior to Phase 2.
 
-#### `OUTPUT SANITY VALIDATION` ⚡ *real-world gap — practice-grounded in PySpark (Phase 2)*
+#### `OUTPUT SANITY VALIDATION` *(practice-grounded — Phase 2)*
 **What it tests:** PySpark-specific self-check reasoning — `.count()` plausibility on the output DataFrame, `.printSchema()` shape verification after a transform, row-count assertions before writes, `count()` vs `countDistinct()` confusion, `len()` vs `count()` driver-vs-executor anti-pattern.
 **Match patterns:** `SANITY`, `OUTPUT VALIDATION`, `ROW COUNT CHECK`, `SCHEMA ASSERTION`, `PLAUSIBILITY CHECK`, `count vs countDistinct`, `len() vs count`, `Spark UI diagnosis`, `SPARK UI TASK METRICS`, `FULL TABLE SCAN DIAGNOSIS`
 **Member tags (canonical):** `OUTPUT SANITY VALIDATION`, `ROW COUNT ASSERTION`, `SCHEMA SHAPE CHECK`, `RESULT PLAUSIBILITY CHECK`
