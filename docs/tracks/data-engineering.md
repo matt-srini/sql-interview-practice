@@ -63,6 +63,27 @@ Full registry: [`docs/concept-taxonomy.md` → Data Engineering section](../conc
 
 21 families. **This track had the cleanest pre-existing tag discipline in the bank** (41 unique tags, top 20 cover 95% of usage) — the registry mostly formalises what authors were already doing.
 
+## Coverage & sizing targets
+
+**Phase 2 complete (2026-05-24).** 96 new mock-only questions authored and committed.
+
+| Difficulty | Practice | Mock-only | Total |
+|---|---|---|---|
+| Easy | 30 | 0 | 30 |
+| Medium | 35 | 50 | 85 |
+| Hard | 26 | 60 | 86 |
+| **Total** | **91** | **110** | **201** |
+
+**Ratio:** 110 / 91 = **1.21×** (within the 1.20× ± 5pp target band locked at Stage A).
+
+**Mock-only chain inventory:** 16 chains total — 8 medium (52042–52056, 3 members each plus standalones) + 8 hard (53035–53054, 2–3 members each). 7 follow-up dimensions covered: `scale_pivot`, `business_rule`, `data_quality`, `edge_case`, `performance`, `ambiguity`, `stakeholder`.
+
+**Type distribution (mock-only):**
+- Medium (50 total): scenario 28, debug 12, conceptual 10
+- Hard (60 total): scenario 36, debug 15, conceptual 9
+
+**No mock-only realism families.** All 21 DE concept families are practice-grounded and directly gradeable as MCQ. `MOCK_ONLY_REALISM_FAMILIES["data-engineering"] = set()` enforced in `concept_families.py`. Track is in `_TAXONOMY_VALIDATED_TRACKS` in `validate_content.py`.
+
 ## Authoring allocation matrix
 
 | Question kind | Where | When |

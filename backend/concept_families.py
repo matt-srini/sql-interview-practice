@@ -57,6 +57,14 @@ MOCK_ONLY_REALISM_FAMILIES: dict[str, set[str]] = {
     # `performance_pivot` chain dimension, not a concept tag.
     # See docs/tracks/python.md and the Python Phase 2 decision log.
     "python": set(),
+    # Data Engineering: NO realism families by design. DE is constructed
+    # reasoning (MCQ-only, no code execution). All 21 concept families are
+    # directly gradeable as scenario / debug / conceptual MCQ — the "assessment
+    # lens" rationale that designates SQL/Pandas families as mock-only realism
+    # (they can't grade as query-writing) does not apply here. Every DE family
+    # appears in practice questions and is re-combined under fresh framing in
+    # mock. See docs/tracks/data-engineering.md and the DE Phase 2 decision log.
+    "data-engineering": set(),
 }
 
 # ---------------------------------------------------------------------------
