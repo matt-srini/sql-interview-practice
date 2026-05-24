@@ -1420,7 +1420,8 @@
       "Are the interval endpoints inclusive or exclusive? Verify the boundary scores 80 and 130 individually."
     ],
     "concepts": [
-      "WINDOW FUNCTIONS & FRAMES"
+      "WINDOW FUNCTIONS & FRAMES",
+      "SCHEMA & TYPE HANDLING"
     ]
   },
   {
@@ -1594,7 +1595,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "parent_id": 43053,
-    "follow_up_dimension": "correctness_pivot",
+    "follow_up_dimension": "business_rule_pivot",
     "title": "Salted groupBy for count_distinct: Will the Output Be Correct?",
     "description": "After fixing the skew, a colleague extends the pipeline to also compute distinct session counts per user:\n\n```python\ndf = events.withColumn('salt', (F.rand() * 50).cast('int'))\nstep1 = df.groupBy('user_id', 'salt').agg(\n    F.count_distinct('session_id').alias('distinct_sessions')\n)\nresult = step1.groupBy('user_id').agg(\n    F.sum('distinct_sessions').alias('total_sessions')\n)\n```\n\n`events` has 500 M rows across 8 M users. A single user may have multiple events per session. The colleague claims `total_sessions` will match `events.groupBy('user_id').agg(F.count_distinct('session_id'))`. Is this correct, and why?",
     "options": [
@@ -1762,7 +1763,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "parent_id": 43060,
-    "follow_up_dimension": "correctness_pivot",
+    "follow_up_dimension": "business_rule_pivot",
     "title": "MERGE with NOT MATCHED BY SOURCE: What Happens to Historical Rows?",
     "description": "After fixing the Z-order, the team extends the MERGE to implement a full sync (delete target rows absent from today's source):\n```sql\nMERGE INTO silver.orders AS target\nUSING daily_orders AS source\nON target.order_id = source.order_id\nWHEN MATCHED THEN UPDATE SET *\nWHEN NOT MATCHED BY TARGET THEN INSERT *\nWHEN NOT MATCHED BY SOURCE THEN DELETE\n```\nIn dev (target = last 7 days, source = today's orders): runs correctly. In production (target = 3 years of orders, source = today's orders, ~0.1% of total rows): what does the production run do?",
     "options": [
@@ -1791,7 +1792,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "parent_id": 43060,
-    "follow_up_dimension": "production_pivot",
+    "follow_up_dimension": "stakeholder_pivot",
     "title": "Concurrent Delta MERGEs Failing with ConcurrentModificationException",
     "description": "After scoping the MERGE correctly (adding `target.order_date = source.order_date` to both the ON clause and a WHERE filter), the team runs two MERGEs in parallel for independent date partitions (region A: order_date = '2025-01-15', region B: order_date = '2025-01-15'). Both jobs target the same Delta table. One consistently fails with `io.delta.exceptions.ConcurrentModificationException`. The table is not partitioned. Which fix most directly resolves the concurrency conflict?",
     "options": [
@@ -1959,7 +1960,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "parent_id": 43067,
-    "follow_up_dimension": "fault_pivot",
+    "follow_up_dimension": "edge_case_pivot",
     "title": "Streaming Job Restart: Which Micro-Batches Are Reprocessed?",
     "description": "The streaming job (watermark + append mode) crashes at micro-batch 47 after writing micro-batches 1–46 to the sink. The checkpoint directory is on HDFS and intact. The Kafka source has `startingOffsets='latest'` in the stream reader config. After restart, which data is reprocessed?",
     "options": [
@@ -1988,7 +1989,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "parent_id": 43067,
-    "follow_up_dimension": "correctness_pivot",
+    "follow_up_dimension": "business_rule_pivot",
     "title": "Switching Streaming Output Mode from Append to Update: Side Effects",
     "description": "To see partial window results as they arrive (not just after the window's watermark passes), the team switches `outputMode('append')` to `outputMode('update')`. The sink is a Delta table. Which trade-off is most accurately described?",
     "options": [
@@ -2158,7 +2159,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "parent_id": 43073,
-    "follow_up_dimension": "correctness_pivot",
+    "follow_up_dimension": "business_rule_pivot",
     "title": "Mutable Closure in pandas UDF: Why Is the Accumulator Always Empty?",
     "description": "A data scientist adds prediction logging to the UDF using a driver-side list:\n```python\naccumulated = []\n\n@F.pandas_udf('double')\ndef scoring_udf(features: pd.Series) -> pd.Series:\n    scores = model.predict(features)\n    accumulated.append(scores.tolist())\n    return pd.Series(scores)\n\ndf.withColumn('score', scoring_udf('feature_vec')).count()\nprint(len(accumulated))  # prints 0\n```\nWhy is `accumulated` always empty after the job completes?",
     "options": [
@@ -2355,7 +2356,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "parent_id": 43080,
-    "follow_up_dimension": "correctness_pivot",
+    "follow_up_dimension": "business_rule_pivot",
     "title": "explode_outer vs explode: When the Row Count Matters for a LEFT JOIN",
     "description": "A reporting pipeline needs a count of sessions per tag, **including sessions with no tags** (they should appear as `tag=null, session_count=1`). The pipeline uses:\n```python\nexploded = sessions.withColumn('tag', F.explode('tags'))  # sessions without tags dropped\nresult = exploded.groupBy('tag').agg(F.countDistinct('session_id').alias('session_count'))\n```\nThe report is missing sessions with no tags. A fix is proposed: replace `F.explode` with `F.explode_outer`. After this fix, what does `result` show for `tag=null`?",
     "options": [
@@ -2552,7 +2553,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "parent_id": 43087,
-    "follow_up_dimension": "correctness_pivot",
+    "follow_up_dimension": "data_quality_pivot",
     "title": "Window LAG Used in a groupBy Aggregation: Non-Determinism Risk",
     "description": "```python\ndf = spark.createDataFrame([\n    ('A', 1, 100), ('A', 1, 200),  # ts=1 appears twice for user A\n    ('A', 2, 150),\n], ['user', 'ts', 'amount'])\n\nw = Window.partitionBy('user').orderBy('ts')\nresult = df.withColumn('prev', F.lag('amount', 1).over(w)) \\\n           .groupBy('user').agg(F.sum('prev').alias('total_prev'))\nresult.show()\n```\nFor user='A', what is `total_prev`, and why might the result vary between runs?",
     "options": [
@@ -2693,7 +2694,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "parent_id": 43093,
-    "follow_up_dimension": "correctness_pivot",
+    "follow_up_dimension": "business_rule_pivot",
     "title": "Delta Time Travel After Type Change: What Schema Does the Historical Version Use?",
     "description": "After the `score` column was widened from INT to DOUBLE (at version 15), a compliance team needs to read the table as it was at version 10 (before the type change):\n```python\ndf_v10 = spark.read.format('delta').option('versionAsOf', 10).load('/delta/events')\ndf_v10.printSchema()\n```\nWhat does `printSchema()` show for `score`, and are the values correct?",
     "options": [
@@ -2722,7 +2723,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "parent_id": 43093,
-    "follow_up_dimension": "production_pivot",
+    "follow_up_dimension": "edge_case_pivot",
     "title": "Delta ACID: What Happens When Two Writers Conflict on the Same Column Change?",
     "description": "Two concurrent processes both attempt `ALTER TABLE events ALTER COLUMN score TYPE DOUBLE` simultaneously on the same Delta table. Process A commits first (version 15). Process B then tries to commit the same change. What does Process B experience?",
     "options": [
@@ -2919,7 +2920,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "parent_id": 43100,
-    "follow_up_dimension": "production_pivot",
+    "follow_up_dimension": "edge_case_pivot",
     "title": "DPP Disabled by AQE: When Optimisations Conflict",
     "description": "The team enables both DPP (`dynamicPartitionPruning.enabled=true`) and AQE (`spark.sql.adaptive.enabled=true`). In production, DPP is visible in `explain()` (Extended) but the Spark UI shows fact_sales partitions are NOT being skipped — all 1095 date partitions are scanned. AQE is active. What is the most likely interaction causing DPP to be ineffective?",
     "options": [
@@ -3087,7 +3088,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "parent_id": 43107,
-    "follow_up_dimension": "correctness_pivot",
+    "follow_up_dimension": "business_rule_pivot",
     "title": "Fixing the Revenue Double-Count: Choosing the Right Aggregation Strategy",
     "description": "The team needs to fix the revenue double-counting from the previous pipeline (where o1's revenue was counted twice due to 2 coupons). Two proposals:\n(A) `orders.join(coupons.groupBy('order_id').agg(F.count('coupon_id').alias('n_coupons')), 'order_id').join(campaigns, ...).withColumn('revenue_share', F.col('revenue') / F.col('n_coupons'))`\n(B) `orders.join(coupons, 'order_id').join(campaigns, 'coupon_id').dropDuplicates(['order_id', 'campaign_id']).groupBy('campaign_id').agg(F.sum('revenue'))`\nWhich correctly attributes revenue to Camp_A?",
     "options": [

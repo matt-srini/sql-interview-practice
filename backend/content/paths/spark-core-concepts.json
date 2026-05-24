@@ -21,7 +21,8 @@
     "DAG EXECUTION FLOW",
     "TRANSFORMATION VS ACTION CLASSIFICATION",
     "RDD VS DATAFRAME",
-    "driver"
+    "driver",
+    "NARROW VS WIDE TRANSFORMATIONS"
   ],
   "outcomes": "You'll internalize Spark's execution model \u2014 lazy evaluation, the DAG, wide vs narrow transformations \u2014 and reason about what triggers a job.",
   "recommended_after": []

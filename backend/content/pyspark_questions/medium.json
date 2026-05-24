@@ -1209,7 +1209,8 @@
       "With `orderBy` applied, rows within the window are sorted before aggregation. The window frame moves forward one physical row at a time, adding each new salary to the running total."
     ],
     "concepts": [
-      "WINDOW FUNCTIONS & FRAMES"
+      "WINDOW FUNCTIONS & FRAMES",
+      "PARTITIONING STRATEGY"
     ],
     "interaction_mode": "code_adjacent_reasoning"
   },
@@ -1603,7 +1604,8 @@
       "dense_rank() counts distinct ORDER BY values, not physical rows. How many distinct salary levels precede carol's 150?"
     ],
     "concepts": [
-      "WINDOW FUNCTIONS & FRAMES"
+      "WINDOW FUNCTIONS & FRAMES",
+      "OUTPUT SANITY VALIDATION"
     ]
   },
   {
@@ -1697,7 +1699,7 @@
     "difficulty": "medium",
     "mock_only": true,
     "parent_id": 42057,
-    "follow_up_dimension": "quality_pivot",
+    "follow_up_dimension": "data_quality_pivot",
     "title": "After the Broadcast Fix: Output Count Is 3% Lower Than Yesterday",
     "description": "After applying the broadcast hint, the job finishes in 6 min. But the downstream data quality check flags it: yesterday's output had 1.24 M rows; today's has 1.20 M — a 3.2% drop. The campaign_metadata table was recently updated to remove deprecated campaigns. No other code changed.",
     "options": [
@@ -1938,7 +1940,7 @@
     "difficulty": "medium",
     "mock_only": true,
     "parent_id": 42067,
-    "follow_up_dimension": "correctness_pivot",
+    "follow_up_dimension": "edge_case_pivot",
     "title": "After Moving cache() to enriched: Does Adding a Filter Hit the Cache?",
     "description": "The engineer fixes the cache placement: `enriched.cache()`. Subsequent actions `count1` and `count2` both run fast from the cache. Then they add a new action:\n\n```python\nhigh_volume = enriched.filter(col('event_count') > 1000).count()\n```\n\nWill this action hit the `enriched` cache?",
     "options": [
@@ -2512,7 +2514,7 @@
     "difficulty": "medium",
     "mock_only": true,
     "parent_id": 42088,
-    "follow_up_dimension": "quality_pivot",
+    "follow_up_dimension": "data_quality_pivot",
     "title": "Streaming Pipeline Produces Duplicate Rows in Delta After a Kafka Rebalance",
     "description": "Three days after launch, the Delta sink has 2–3% duplicate event_ids. Investigation shows: Kafka consumer group rebalanced twice in the past week (Kafka partition reassignment). The checkpoint files are intact and show the expected committed offsets. The Spark version is 3.2 and `foreachBatch` is used as the sink, writing with `df.write.format('delta').mode('append').save(path)`. Root cause?",
     "options": [
@@ -2792,7 +2794,7 @@
     "difficulty": "medium",
     "mock_only": true,
     "parent_id": 42097,
-    "follow_up_dimension": "fault_pivot",
+    "follow_up_dimension": "edge_case_pivot",
     "title": "Lineage Recomputation After an Executor Failure Mid-Cache",
     "description": "The pipeline uses `filtered.cache()` and both writes complete successfully in dev. In production (50-executor cluster), an executor fails mid-job during the first write while populating the cache. The second write then reads `filtered` from cache. What happens to the partitions that were on the failed executor?",
     "options": [
@@ -3097,7 +3099,7 @@
     "difficulty": "medium",
     "mock_only": true,
     "parent_id": 42108,
-    "follow_up_dimension": "correctness_pivot",
+    "follow_up_dimension": "edge_case_pivot",
     "title": "sortWithinPartitions Before groupBy: Does Order Affect Aggregation?",
     "description": "```python\ndf = spark.createDataFrame([\n    ('A', 3, 100), ('A', 1, 200), ('A', 2, 150),\n    ('B', 2, 50),  ('B', 1, 80),\n], ['user', 'ts', 'amount'])\n\nresult = df.sortWithinPartitions('ts') \\\n           .groupBy('user') \\\n           .agg(F.first('amount').alias('first_amount'))\nresult.show()\n```\nA developer expects `first_amount` to be the amount from the earliest `ts` for each user (user A → ts=1 → 200, user B → ts=1 → 80). Will this work correctly?",
     "options": [
