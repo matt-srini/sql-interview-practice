@@ -1181,5 +1181,347 @@
       "LINEAGE & OBSERVABILITY",
       "DATA GOVERNANCE"
     ]
+  },
+  {
+    "id": 53045,
+    "order": 45,
+    "title": "Streaming Pipeline Drops Late Events Because Out-of-Orderness Tolerance Is Zero",
+    "difficulty": "hard",
+    "type": "debug",
+    "mock_only": true,
+    "follow_ups": [
+      53046,
+      53047
+    ],
+    "scenario_context": "A Flink streaming pipeline aggregates click events into 1-hour tumbling windows and writes results to a data warehouse. The pipeline uses AssignerWithMonotonousTimestamps (zero delay tolerance) to get the fastest possible window completion. Production data shows that 3\u20138% of events arrive 2\u201315 minutes late due to mobile clients with unstable connectivity. These late events are silently dropped \u2014 the window has already closed and results have been written.",
+    "description": "What is the correct fix and what trade-off must the team explicitly accept?",
+    "options": [
+      "Configure a bounded-out-of-orderness tolerance of 15 minutes \u2014 windows close 15 minutes after the end of each hour, but events arriving up to 15 minutes late are correctly assigned to their original event-time window. The trade-off is 15 minutes of additional latency for every window.",
+      "Switch from tumbling to sliding windows with a 1-hour size and 15-minute slide \u2014 sliding windows re-process recent data at each interval, inherently capturing events that arrive between slides without requiring any tolerance configuration.",
+      "Add a late-event side-output that captures all events arriving after the window closes and replay them in a daily batch job that patches the affected window results.",
+      "Increase pipeline parallelism to reduce consumer lag \u2014 the apparent late arrivals are actually on-time events delayed by under-provisioned processing threads rather than genuine mobile latency."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: a bounded-out-of-orderness tolerance of 15 minutes delays window closure by 15 minutes, allowing events arriving up to 15 minutes late to land in the correct event-time window. The explicit trade-off is 15 minutes of additional latency for all windows \u2014 the team must accept that each hour's results are finalized 15 minutes after the hour ends, not immediately. Option B (sliding windows) does not fix the problem: sliding windows change how events are assigned to windows, not when late events are accepted. An event arriving 10 minutes after the zero-tolerance window closes is still dropped regardless of window shape. Option C (side-output + daily patch job) creates eventual consistency problems for downstream consumers who read results between the streaming write and the batch correction; it is a workaround, not a fix. Option D (parallelism) addresses throughput bottlenecks, not event-time lateness caused by mobile connectivity instability.",
+    "hints": [
+      "The pipeline closes windows the moment its internal clock advances past the window boundary. What parameter controls how long the pipeline waits before declaring a window complete?",
+      "The late arrivals are a known, bounded delay of up to 15 minutes. What is the direct configuration lever for tolerating a bounded delay of that size?"
+    ],
+    "concepts": [
+      "WATERMARKING",
+      "BATCH VS STREAMING",
+      "SCHEDULING & SLAS"
+    ]
+  },
+  {
+    "id": 53046,
+    "order": 46,
+    "title": "Same Streaming Pipeline: Throughput Scales From 10K to 10M Events Per Second",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "parent_id": 53045,
+    "follow_up_dimension": "scale_pivot",
+    "description": "The 15-minute tolerance fix from the previous scenario is deployed and works at 10,000 events/sec. Six months later, throughput has scaled to 10 million events/sec. The platform team reports that the RocksDB state backend now consumes 2.4 TB of disk and checkpoint times have grown from 30 seconds to 18 minutes \u2014 approaching the checkpoint interval. What is the highest-leverage architectural change?",
+    "options": [
+      "Reduce the out-of-orderness tolerance from 15 minutes to 2 minutes \u2014 a shorter window of in-flight state reduces what must be maintained and checkpointed, directly shrinking the state backend footprint.",
+      "Switch from RocksDB state backend to in-memory (heap) state \u2014 in-memory state avoids disk I/O for state access and eliminates checkpoint serialization overhead, keeping checkpoint times under 30 seconds.",
+      "Introduce local pre-aggregation (a combiner step) before the global shuffle \u2014 events are partially aggregated per-task-local-state before being sent to the global keyed state, reducing the number of RocksDB state entries by 10\u2013100x.",
+      "Increase the checkpoint interval from the current setting to 30 minutes \u2014 spacing checkpoints further apart reduces overhead while maintaining recovery capability during the 18-minute checkpoint runtime."
+    ],
+    "correct_option": 2,
+    "explanation": "At 10M events/sec, state explosion is the root cause: each event creates or updates a RocksDB entry per window per key. Option C (local pre-aggregation) is the highest-leverage fix \u2014 aggregating events locally within each task before routing to the global keyed state reduces the state write volume by 10\u2013100x. This is the canonical technique for scaling streaming aggregation: instead of 10M state updates per second flowing into RocksDB, you write a fraction as many pre-aggregated partials. Option A (reduce tolerance) trades correctness for performance \u2014 it drops more late events, which is not an acceptable engineering trade-off. Option B (heap state) is backwards: at 2.4 TB of state, switching to heap immediately OOM-kills the JVM; RocksDB exists because heap state cannot scale to this size. Option D (extend checkpoint interval) reduces checkpoint frequency but does not reduce state size \u2014 the root cause \u2014 and risks losing 18+ minutes of work on failure.",
+    "hints": [
+      "At 10M events/sec, the state backend grows because each event updates a state entry. What technique reduces the number of state entries written before reaching the global shuffle boundary?",
+      "Which option reduces the volume of state that must be maintained, rather than changing when or how state is persisted?"
+    ],
+    "concepts": [
+      "WATERMARKING",
+      "BATCH VS STREAMING",
+      "COST OPTIMIZATION"
+    ]
+  },
+  {
+    "id": 53047,
+    "order": 47,
+    "title": "IoT Source Clock Drifts Up to 5 Minutes \u2014 Is the Tolerance Still Reliable?",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "mock_only": true,
+    "parent_id": 53045,
+    "follow_up_dimension": "edge_case",
+    "description": "The streaming pipeline from the previous scenario uses a 15-minute out-of-orderness tolerance based on observed mobile client delays. A new upstream source is added: IoT sensors whose device clocks drift up to \u00b15 minutes from NTP time. Some sensor events arrive with timestamps 5 minutes in the future relative to the pipeline's processing time. What is the correct handling strategy, and what is the failure mode if it is not addressed?",
+    "options": [
+      "Cap incoming event timestamps at processing time on ingestion \u2014 events with future timestamps are impossible and must be clock errors; capping them prevents incorrect window assignments without changing any tolerance configuration.",
+      "A +5-minute clock drift causes affected events to be assigned to a future event-time window rather than the window in which they physically occurred; the fix is server-side timestamp validation and correction at ingestion using a reliable server clock instead of trusting device timestamps.",
+      "The 15-minute out-of-orderness tolerance already accommodates \u00b15 minutes of drift in both directions \u2014 events with future timestamps appear early relative to the tolerance's expectation and are included in the correct window without any changes.",
+      "Future-timestamped events advance the pipeline's internal clock faster than real time, causing it to prematurely close in-progress windows and drop legitimate events that are still in flight \u2014 increasing the tolerance to 20 minutes absorbs the drift."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B identifies the correct failure mode: a sensor with a +5-minute clock drift writes timestamps 5 minutes ahead of real time. In event-time processing, window assignment is based on the event's timestamp \u2014 an event that physically occurred at 2:58 PM but carries a 3:03 PM timestamp is assigned to the 3:00\u20134:00 PM window rather than the 2:00\u20133:00 PM window. Out-of-orderness tolerance handles events that arrive late (past-timestamped relative to expected progress); it does not protect against events with future timestamps \u2014 those are a separate failure mode. The fix is server-side timestamp correction at ingestion. Option A (cap at processing time) destroys event-time semantics: every event's timestamp is overwritten with when it arrived at the pipeline, making event-time windowing meaningless. Option C is wrong: the 15-minute tolerance handles late arrivals, not future-timestamped arrivals \u2014 these are distinct failure modes. Option D mischaracterizes how tolerance works; it does not advance the pipeline's internal clock proportional to event timestamps in a way that prematurely closes windows.",
+    "hints": [
+      "Out-of-orderness tolerance handles events that arrive later than expected. What happens to events that carry a timestamp ahead of real time \u2014 are they late, or are they something different?",
+      "If a sensor has a +5-minute clock drift and an event physically occurs at 2:58 PM, which hour window does the pipeline assign it to?"
+    ],
+    "concepts": [
+      "WATERMARKING",
+      "DATA QUALITY",
+      "BATCH VS STREAMING"
+    ]
+  },
+  {
+    "id": 53048,
+    "order": 48,
+    "title": "Upstream MySQL Adds NOT NULL Column Without Notifying the Data Team",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "follow_ups": [
+      53049,
+      53050
+    ],
+    "scenario_context": "A Debezium CDC pipeline reads from a MySQL operational database and writes to a Snowflake warehouse. The application team adds a new NOT NULL column (risk_score DECIMAL(5,2) NOT NULL DEFAULT 0.0) to the transactions table without notifying the data team. Debezium picks up the schema change in its history topic. The Snowflake target table has a fixed schema; the new column arrives in CDC events but the pipeline's INSERT statement does not include it. For 3 days, risk_score values are silently omitted from the warehouse.",
+    "description": "What is the root cause of the silent 3-day gap, and what architectural change prevents this class of failure?",
+    "options": [
+      "The root cause is Debezium's schema.history mode: it tracks schema changes internally but does not propagate them to the sink. Switching to schema.registry mode with FORWARD compatibility would push schema changes to Snowflake automatically, keeping target schema in sync.",
+      "The root cause is the absence of a schema contract between the application team and the data team: the producer changed the schema without a review gate. A schema registry with FORWARD or FULL compatibility enforcement would require the change to be registered \u2014 and the pipeline team notified \u2014 before it goes live.",
+      "The root cause is Snowflake's fixed schema: a dynamic schema using VARIANT columns would have absorbed the new column without any pipeline changes or silent data loss.",
+      "The root cause is the 3-day detection delay. A data quality check that monitors column-count divergence between the source schema and the target table on every pipeline run would have alerted within one run."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B identifies the structural root cause: there was no schema contract or review gate between the upstream producer (application team) and the downstream consumer (data pipeline). The producer changed the schema freely; the pipeline was never notified. A schema registry with FORWARD compatibility allows new columns to be added (new producers, old consumers are still compatible) but requires the change to be registered and reviewed before the producer deploys, triggering a pipeline team notification and target schema update. Option A mischaracterizes Debezium modes: the issue is not which Debezium mode is in use \u2014 it is the absence of an upstream enforcement mechanism. Changing Debezium's schema tracking mode does not add a producer review gate. Option C (VARIANT column) sacrifices column-level type safety and query performance for flexibility; it is a workaround, not a structural fix, and still silently drops type enforcement. Option D (monitoring alert) is detective \u2014 3 days of data loss still occurred before detection. It is a valuable addition but does not prevent the structural failure.",
+    "hints": [
+      "The pipeline was never informed that a new column was added. What mechanism, sitting upstream of the pipeline, could enforce a notification gate before schema changes reach production?",
+      "Which option addresses the root cause \u2014 no contract between producer and consumer \u2014 rather than detecting or working around the symptom?"
+    ],
+    "concepts": [
+      "CDC & INGESTION",
+      "DATA CONTRACT",
+      "SCHEMA EVOLUTION"
+    ]
+  },
+  {
+    "id": 53049,
+    "order": 49,
+    "title": "GDPR Right-to-Erasure Applies \u2014 The New Column Contains Personal Data",
+    "difficulty": "hard",
+    "type": "debug",
+    "mock_only": true,
+    "parent_id": 53048,
+    "follow_up_dimension": "business_rule",
+    "description": "The schema registry fix from the previous scenario is deployed. Legal review determines that risk_score is a derived personal attribute covered by GDPR right-to-erasure. When a user exercises erasure rights, risk_score values must be removed from the Snowflake warehouse for that user. The warehouse table is append-only (INSERT-only CDC, no physical deletes). What is the most correct design change?",
+    "options": [
+      "Move risk_score to a separate PII table keyed by user_id and transaction_id; GDPR erasure deletes rows from that table, and the main transactions table retains the transaction record with a NULL risk_score reference.",
+      "Switch the Snowflake target table from INSERT-only to a MERGE-based mutable design; GDPR erasure becomes a standard UPDATE that sets risk_score = NULL for affected user_ids without disrupting the transaction record.",
+      "Apply cryptographic erasure: encrypt risk_score values with a per-user key stored in an external KMS; GDPR erasure deletes the user's key from KMS, rendering their risk_score values permanently unreadable without touching the warehouse rows.",
+      "Maintain a deleted_users exclusion table; all downstream queries JOIN EXCLUDE against it to suppress erased users' data \u2014 the risk_score values remain stored but are never surfaced in query results."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C (cryptographic erasure) is the most defensible answer for an append-only warehouse under GDPR: encrypting risk_score with a per-user key and deleting that key renders the data effectively erased without modifying the append-only table. This pattern is accepted as satisfying GDPR right-to-erasure in many jurisdictions when physical deletion is technically infeasible due to immutable storage. Option A (separate PII table) relocates the erasure problem rather than solving it \u2014 it still requires physical deletion from a second table, and it adds referential complexity for all downstream queries that need risk_score. Option B (MERGE-based mutable design) is architecturally valid but changes the entire CDC ingestion pattern \u2014 a significant trade-off for what is fundamentally an erasure requirement; it also makes the warehouse no longer append-only, which affects audit trail integrity. Option D (exclusion JOIN) does not constitute GDPR erasure: the data remains physically present in the warehouse, and it requires every downstream query to apply the exclusion filter, creating ongoing maintenance and compliance audit risk.",
+    "hints": [
+      "The table is append-only \u2014 rows cannot be physically deleted. What pattern makes data effectively inaccessible to any reader without removing it from the storage layer?",
+      "Which option satisfies erasure requirements without modifying the append-only table structure or requiring downstream queries to add a filter?"
+    ],
+    "concepts": [
+      "DATA GOVERNANCE",
+      "CDC & INGESTION",
+      "DATA CONTRACT"
+    ]
+  },
+  {
+    "id": 53050,
+    "order": 50,
+    "title": "Schema Change Ran Undetected for 3 Days \u2014 How Do You Recover the Missing Column Values?",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "parent_id": 53048,
+    "follow_up_dimension": "data_quality",
+    "description": "The schema registry fix is in place. For the 3 days before the fix, risk_score values were present in CDC events but silently dropped by the pipeline's INSERT statement. The Snowflake transactions table has rows for those 3 days with NULL risk_scores. The Debezium connector retained 7 days of CDC event history in Kafka. What is the most reliable recovery approach?",
+    "options": [
+      "Re-read the 3 days of CDC events from Kafka, extract only the risk_score values, and issue UPDATE statements against matching rows in Snowflake using each event's primary key \u2014 filling the NULLs without touching any other column.",
+      "Truncate the 3 affected days' partitions from Snowflake and re-run the full CDC pipeline for those days from Kafka \u2014 the idempotent sink handles any re-insertion of already-present rows.",
+      "Query the source MySQL database directly for the 3-day window and extract current risk_score values alongside primary keys; use this as the authoritative source rather than CDC replay since MySQL is the ground truth.",
+      "Accept the NULL risk_scores as an unrecoverable gap \u2014 CDC event logs are intended for forward-only consumption, and re-reading historical Kafka offsets introduces ordering risks for downstream consumers still catching up."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is the most targeted and reliable recovery: the Kafka CDC events contain the missing risk_score values (the Debezium connector captured them; the pipeline's INSERT simply ignored the column). Re-reading those 3 days of events to extract and UPDATE only the risk_score column is a surgical fix \u2014 it uses the authoritative captured record to fill the gap without disturbing any other column data. An idempotent UPDATE (SET risk_score = value WHERE id = key AND risk_score IS NULL) handles any re-delivery safely. Option B (truncate + full re-run) is riskier: it deletes all columns for 3 days' worth of rows and re-inserts from CDC, which is more disruptive and risks overwriting any corrections applied to other columns in those rows. Option C (query MySQL directly) reflects current state, not historical state: MySQL returns whatever risk_score is true today, not what it was during the 3-day gap; if risk_scores were updated since, the recovered values are wrong. Option D is incorrect: Kafka supports multi-consumer replay and reading historical offsets is a standard, safe operation; there is no inherent ordering risk when reading from a specific offset range.",
+    "hints": [
+      "The Kafka CDC events captured the risk_score values at the time \u2014 they were just ignored by the pipeline's INSERT. Which recovery approach uses those captured values surgically without touching other columns?",
+      "Which option fills only the NULL risk_scores without re-inserting or overwriting the other columns that were correctly loaded?"
+    ],
+    "concepts": [
+      "CDC & INGESTION",
+      "DATA QUALITY",
+      "LINEAGE & OBSERVABILITY"
+    ]
+  },
+  {
+    "id": 53051,
+    "order": 51,
+    "title": "Streaming Sink Writes 2,880 Tiny Parquet Files Per Day \u2014 Why and What Is the Trade-Off?",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "mock_only": true,
+    "follow_ups": [
+      53052
+    ],
+    "description": "A Flink streaming pipeline writes Parquet files to S3 every 30 seconds, producing approximately 2,880 files per day per partition (each file ~200 KB). Athena query p99 times have grown from 4 seconds to 47 seconds over 3 months as file count accumulated. A data engineer proposes hourly compaction: micro-files are written every 30 seconds and merged into a single hourly Parquet file at the end of each hour. What is the fundamental trade-off the team must explicitly decide on?",
+    "options": [
+      "Compaction reduces per-file metadata overhead (fewer LIST API calls, less per-file open cost) but introduces a compaction window during which queries may observe either micro-files or the compacted file \u2014 query results can be inconsistent mid-compaction.",
+      "Compaction improves Athena query performance by reducing file-open overhead but delays data visibility: events written at the start of an hour are not available in their final compacted form until the compaction job runs at hour-end, trading query speed for data freshness.",
+      "Compaction trades write throughput for read throughput: the streaming pipeline must pause writes during the compaction window to avoid reading partially-written micro-files into the merge job.",
+      "The compaction trade-off is cost-only: the merge job adds compute cost, but query performance improves proportionally with no correctness or latency impact for downstream consumers."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B correctly identifies the core trade-off: compaction improves query performance (fewer, larger files reduce LIST API overhead and per-file open cost for Athena) but at the cost of data freshness. An event written at minute 0 of an hour is not available in its final compacted form until the compaction job runs at minute 60. This is the fundamental streaming-to-serving boundary trade-off: the team must decide whether sub-minute freshness (with slow queries) or 1-hour-delayed freshness (with fast queries) better serves their use case. Option A (mid-compaction inconsistency) is a real operational concern but is solvable with atomic file replacement (write to a temp prefix, rename atomically); it is not the fundamental trade-off. Option C is wrong: compaction reads from S3 and writes to a separate output path; the streaming pipeline continues writing new micro-files to a different prefix and does not need to pause. Option D is wrong: end-to-end data freshness for compacted queries degrades to hourly, which may violate downstream SLAs \u2014 this is a significant impact beyond compute cost.",
+    "hints": [
+      "Compaction merges many small files into fewer large files, making Athena queries faster. What does hourly compaction change about when a consumer can query the most recent data?",
+      "Which option names both the performance improvement and the latency cost the team must explicitly choose to accept?"
+    ],
+    "concepts": [
+      "STORAGE LAYOUT & FILE FORMATS",
+      "BATCH VS STREAMING",
+      "COST OPTIMIZATION"
+    ]
+  },
+  {
+    "id": 53052,
+    "order": 52,
+    "title": "Hourly Compaction Job Now Takes 6 Hours \u2014 Downstream Queries Are Blocked",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "parent_id": 53051,
+    "follow_up_dimension": "performance",
+    "description": "The hourly compaction approach from the previous scenario was deployed successfully. Over 4 months, data volume grew 20x. The compaction job now takes 6 hours to run \u2014 well past the 1-hour window it was designed for. Downstream Athena consumers either query the slow micro-files or wait for compaction to finish and get stale data. What is the highest-leverage fix with the least architectural disruption?",
+    "options": [
+      "Scale up the compaction Spark cluster (more memory, more executors) \u2014 the 6-hour runtime is caused by insufficient compute resources, not a design flaw in the compaction approach itself.",
+      "Switch from hourly to daily compaction: running the merge job once per day reduces the frequency of the bottleneck and gives the existing compute budget more time to process the larger volume.",
+      "Increase the streaming pipeline's write interval from 30 seconds to 15 minutes \u2014 fewer, larger micro-files per hour reduces the number of files the compaction job must read and merge, directly reducing runtime without any architectural change.",
+      "Replace the compaction job with Apache Iceberg or Delta Lake's merge-on-read capability: micro-files are tracked in table metadata, and Athena reads them as a single logical table without requiring a physical merge job."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is the highest-leverage immediate fix with the least disruption: the compaction job's runtime is dominated by the number of files it must open, read, and merge \u2014 not the total data volume. Increasing the micro-batch write interval from 30 seconds to 15 minutes reduces files per hour from 120 to 4, a 30x reduction in file count that directly reduces compaction time proportionally. This requires no architectural change \u2014 same pipeline, same compaction job, same serving layer. Option A (more compute) is a cost escalation that does not address the root cause; at 20x volume it requires roughly 20x compute, which is not proportional improvement. Option B (daily compaction) degrades downstream freshness to 24 hours \u2014 likely violating the freshness SLA \u2014 and makes the latency problem worse, not better. Option D (Iceberg merge-on-read) is the right long-term direction but involves a significant stack migration; Option C delivers a 30x improvement without changing the architecture.",
+    "hints": [
+      "The compaction job must open and merge every micro-file produced in the hour. What directly controls how many micro-files are produced per hour?",
+      "Which option reduces the number of files that must be merged each run, rather than changing when they are merged or how the merge is executed?"
+    ],
+    "concepts": [
+      "STORAGE LAYOUT & FILE FORMATS",
+      "BATCH VS STREAMING",
+      "COST OPTIMIZATION"
+    ]
+  },
+  {
+    "id": 53053,
+    "order": 53,
+    "title": "Pipeline B Depends on Pipeline A With No Formal SLA \u2014 A Is Late Today",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "follow_ups": [
+      53054
+    ],
+    "scenario_context": "Pipeline A ingests raw transaction data and writes to the transactions_raw table by 6 AM daily. Pipeline B reads from transactions_raw and produces revenue_summary for the BI team by 7 AM. There is no documented SLA between the two teams. Pipeline B has a hardcoded 6 AM start time and waits zero minutes for Pipeline A. Today, Pipeline A runs 45 minutes late due to an upstream API outage. Pipeline B started at 6 AM, read a 55%-complete transactions_raw table, and produced a revenue_summary with 23% missing data. The BI team's 7 AM report is wrong.",
+    "description": "What is the root cause and the correct architectural fix for this cross-pipeline dependency?",
+    "options": [
+      "The root cause is Pipeline B's time-triggered start: it assumes Pipeline A always finishes before 6 AM. The fix is an event-driven trigger \u2014 Pipeline B waits for Pipeline A's completion signal (a success file, an ExternalTaskSensor, or a DAG dependency) before starting, regardless of clock time.",
+      "The root cause is Pipeline A's reliability: it should never miss its 6 AM completion. The fix is adding retry logic, SLA alerting, and on-call escalation to Pipeline A; Pipeline B's 6 AM start is correct once A's reliability is improved.",
+      "The root cause is the shared transactions_raw table: both pipelines use it without a handoff contract. The fix is a staging table that Pipeline A writes to, with a completeness check that promotes it to production only when the write is fully verified.",
+      "The root cause is missing cross-pipeline observability: neither team has monitoring that detects when B reads from an incomplete A output. A shared data quality dashboard would allow the BI team to see completeness before consuming revenue_summary."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A addresses the structural root cause: Pipeline B is time-triggered, which implicitly assumes Pipeline A always finishes before 6 AM \u2014 a fragile assumption that breaks whenever A is delayed. The fix is event-driven triggering: Pipeline B starts when Pipeline A signals completion, not at a fixed clock time. This makes the dependency explicit in the orchestration layer and is resilient to any delay duration. Option B (improve Pipeline A reliability) is a real goal but does not fix the design flaw \u2014 even a highly reliable Pipeline A will occasionally be late, and Pipeline B must handle that gracefully without producing wrong output. Option C (staging table + promotion check) is a different form of the same event-driven pattern (the completeness check serves as the completion signal) but is more complex and still requires Pipeline B to be triggered by the data state, not the clock. Option D (monitoring dashboard) is detective; it does not prevent the incorrect revenue_summary from being produced and consumed by the BI team.",
+    "hints": [
+      "Pipeline B starts at 6 AM regardless of whether Pipeline A has finished. What orchestration pattern replaces fixed-clock triggering with data-availability triggering?",
+      "Which fix ensures Pipeline B cannot start before Pipeline A completes, without hardcoding any timing assumption?"
+    ],
+    "concepts": [
+      "ORCHESTRATION",
+      "SCHEDULING & SLAS",
+      "DATA CONTRACT"
+    ]
+  },
+  {
+    "id": 53054,
+    "order": 54,
+    "title": "Pipeline B Timed Out and Started Anyway \u2014 Partial Data Now in Revenue Summary",
+    "difficulty": "hard",
+    "type": "debug",
+    "mock_only": true,
+    "parent_id": 53053,
+    "follow_up_dimension": "ambiguity",
+    "description": "The event-driven trigger fix from the previous scenario is deployed. A new policy is added: Pipeline B waits for Pipeline A's completion signal with a 90-minute timeout, then starts anyway to avoid missing the BI team's 7 AM SLA. Today, Pipeline A's upstream API outage lasted 2 hours. Pipeline B timed out after 90 minutes and produced a revenue_summary from a 62%-complete transactions_raw table. The BI report went out with incorrect numbers. What is the correct resolution to this design ambiguity?",
+    "options": [
+      "Extend the timeout to 3 hours \u2014 historical outage data shows Pipeline A has always recovered within 3 hours; a longer wait prevents the BI team from ever receiving partial data.",
+      "When the timeout fires, Pipeline B should produce the revenue_summary with an explicit data_completeness annotation (e.g., '62% complete as of 6:31 AM \u2014 final report expected by 9 AM'); the BI team receives a labeled partial result and can decide how to act on it.",
+      "Remove the timeout entirely \u2014 Pipeline B should only run when Pipeline A signals completion, with no fallback. Missing the BI 7 AM SLA is acceptable as a consequence of upstream failure, and the orchestration system notifies the BI team.",
+      "When the timeout fires, Pipeline B should produce no output and immediately page the on-call engineer \u2014 a silent wrong revenue_summary is worse than no report, and a human must authorize any numbers that go to Finance."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is the most defensible answer for an ambiguous SLA under degraded conditions: produce the partial result with an explicit completeness signal rather than either delivering a silently-wrong number or blocking indefinitely. The BI team receives a timestamped, labeled report ('62% complete') that they can act on \u2014 they may know from business context which transactions are missing and whether the partial data covers the most critical revenue streams. This is the standard degraded-mode pattern: known quality + explicit label beats unknown quality with no label. Option A (extend timeout to 3 hours) is a guess that will be wrong again in a future outage; timeout values based on historical averages always have a tail. Option C (no timeout, no output) is too rigid for a case where a quantified partial dataset is often more useful than silence \u2014 especially when the BI team can assess business impact from partial data. Option D (page on-call, produce nothing) treats a predictable degraded-mode scenario as a production incident; on-call escalation is appropriate for unexpected failures, not for a timeout that fired as designed.",
+    "hints": [
+      "The timeout forced a choice between a wrong-but-on-time report and no report at all. Is there a third option that delivers something useful while clearly signaling the quality limitation?",
+      "Which option lets the BI team decide how to act on partial data rather than having the pipeline make that decision unilaterally?"
+    ],
+    "concepts": [
+      "ORCHESTRATION",
+      "DATA QUALITY",
+      "SCHEDULING & SLAS"
+    ]
+  },
+  {
+    "id": 53055,
+    "order": 55,
+    "title": "Append-Only vs. Mutable Tables for Clickstream Events \u2014 When Does the Choice Matter?",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A team is designing a warehouse schema for user clickstream events. Events arrive continuously, are never updated in the source system, and are queried by analytics for 90-day window aggregations. The architect proposes append-only Parquet via Apache Iceberg. A senior engineer argues: 'We will need mutable rows as soon as GDPR erasure, late-event corrections, or schema changes arrive.' Which response is most accurate?",
+    "options": [
+      "Append-only is the correct default for immutable event data. GDPR erasure is addressed by cryptographic erasure (per-user key deletion), late-event corrections by compensating events (an append that cancels and replaces the original), and schema changes by Iceberg schema evolution. Row-level mutability is not required for any of these.",
+      "The senior engineer is correct: GDPR erasure and late-event corrections fundamentally require row-level mutability. Append-only architectures cannot satisfy these requirements without a separate mutable override layer, which introduces consistency complexity that outweighs any append-only benefit.",
+      "The choice between append-only and mutable depends entirely on query recency: mutable tables are better for queries over recent data (last 7 days) to avoid duplicate handling; append-only with query-time deduplication is appropriate for longer historical windows (90 days).",
+      "Append-only and mutable tables are equivalent in modern table formats like Iceberg and Delta Lake because both support row-level deletes via metadata files; the architectural distinction has no meaningful performance or correctness implication."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct and reflects mature event-sourcing design. Append-only is the right default for immutable business facts like clickstream events, and each of the senior engineer's concerns has a well-established append-only solution: GDPR erasure \u2192 cryptographic erasure (encrypt per-user, delete the encryption key); late-event corrections \u2192 compensating events (append a correction record referencing the original event_id, then aggregate with correction semantics at query time); schema changes \u2192 table format schema evolution (Iceberg adds and drops columns without physical rewrites). Row-level mutability is not required for any of these use cases. Option B overstates the requirement: compensating events and cryptographic erasure are production-grade patterns used at scale; they do not require a mutable override layer. Option C is incorrect: the append-only vs. mutable decision is not primarily driven by query recency \u2014 it is driven by whether the underlying facts are immutable and what the operational requirements are. Option D is partially true (Iceberg and Delta Lake support row-level operations) but performance and design implications of frequent row-level deletes differ materially from append-only in high-throughput scenarios.",
+    "hints": [
+      "The senior engineer raises three concerns: GDPR erasure, late-event corrections, and schema changes. Does each of these strictly require the ability to update or delete an existing row in the warehouse?",
+      "Which option addresses all three concerns without introducing row-level mutability into the table design?"
+    ],
+    "concepts": [
+      "STORAGE LAYOUT & FILE FORMATS",
+      "DATA GOVERNANCE",
+      "SCHEMA EVOLUTION"
+    ]
+  },
+  {
+    "id": 53056,
+    "order": 56,
+    "title": "6-Month Gap in a CDC Pipeline \u2014 Choosing a Recovery Strategy",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A Debezium CDC pipeline from Oracle to Snowflake was silently failing for 6 months due to a misconfigured Kafka consumer group that stopped committing offsets. Kafka's retention is 7 days \u2014 the 6-month event history is gone from Kafka. Oracle's archived redo logs are retained for 14 days. The Snowflake warehouse has all data through 6 months ago and must be brought current.",
+    "description": "What is the most reliable strategy for recovering the 6-month gap?",
+    "options": [
+      "Re-read Oracle's archived redo logs for the available 14-day window to recover recent changes; for the 4.5-month gap between what Snowflake has and what the redo logs cover, export a full current-state snapshot of the affected Oracle tables and apply it to Snowflake \u2014 acknowledging explicitly that months 1\u20134.5 reflect current Oracle state, not historical change events.",
+      "Configure a new Debezium connector with initial.load.source=true to capture a full current-state snapshot of Oracle; overwrite Snowflake with this snapshot and resume forward-only CDC from the current position \u2014 accepting the loss of all 6 months of historical change records.",
+      "Use Oracle LogMiner to extract the full 6-month redo log history \u2014 Oracle retains all archived redo logs indefinitely by default in ARCHIVELOG mode; process these as a sequential CDC stream and apply them to Snowflake in timestamp order.",
+      "Engage the Oracle DBA team to restore the database from a 6-month-old backup, extract a full data snapshot, then restore Oracle to current state \u2014 this reconstructs the missing historical change data for Snowflake without requiring Kafka."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is the most pragmatic and technically honest recovery given the constraints: the 14-day redo log covers recent changes, and a current-state snapshot covers the older gap with an explicitly acknowledged limitation (months 1\u20134.5 reflect current Oracle state, not the historical change record). This is the standard recovery posture when change history is partially available: use what you have, document what you cannot reconstruct. Option B (full current-state snapshot + fresh CDC start) is simpler but loses all historical change records for the 6-month window \u2014 the warehouse would have current-state rows but no audit trail, which may violate compliance or analytical requirements. Option C is incorrect: Oracle does not retain archived redo logs indefinitely by default. Even in ARCHIVELOG mode, Oracle purges archived logs based on site-configured retention policies (commonly 7\u201330 days) or when a RMAN backup is taken. Claiming indefinite retention is a false assumption that would lead to a failed recovery plan. Option D (restore Oracle from backup) requires planned downtime for the OLTP system, involves full DBA engagement, and poses significant operational risk \u2014 it is rarely sanctioned for a secondary data warehouse recovery.",
+    "hints": [
+      "The Kafka events are gone. Where else in the data stack might change history still exist, and for how long is it retained?",
+      "Given only 14 days of redo log and a 6-month gap, which recovery approach is most honest about what can and cannot be reconstructed?"
+    ],
+    "concepts": [
+      "CDC & INGESTION",
+      "LINEAGE & OBSERVABILITY",
+      "INCIDENT RESPONSE"
+    ]
   }
 ]
