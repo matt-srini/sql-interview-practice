@@ -1331,5 +1331,283 @@
       "BATCH VS STREAMING",
       "SCHEDULING & SLAS"
     ]
+  },
+  {
+    "id": 52052,
+    "order": 52,
+    "title": "Double-Run Produces Duplicate Fact Rows Overnight",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "follow_ups": [
+      52053
+    ],
+    "scenario_context": "A batch pipeline runs nightly at 2:00 AM, reading from S3 (daily event files partitioned by event_date) and writing to a Snowflake fact table using INSERT statements. The orchestrator marks the job as failed due to a network timeout at 2:47 AM and immediately retries. Both runs complete successfully. At 8:00 AM the analyst reports yesterday's event count is exactly double the expected value. Logs confirm both runs read the same S3 input files.",
+    "description": "What is the correct idempotency fix, and which approach avoids introducing new failure modes?",
+    "options": [
+      "Replace the INSERT-based write with a partition-replace write: DELETE the target partition (WHERE event_date = yesterday) then INSERT new rows, wrapped in a transaction. This makes the write idempotent — any number of retries produces the same fact table. MERGE ON event_id also works if events have a stable unique key.",
+      "Add a pipeline-level lock row in Postgres: before each run, write a lock for the target date; if a lock row already exists when a retry starts, skip the run entirely. This prevents double execution at the orchestrator level.",
+      "Switch to event-driven micro-batch with exactly-once delivery via SQS deduplication IDs — this prevents any S3 file from being processed more than once, regardless of orchestrator retries.",
+      "Use Snowflake's COPY INTO command instead of INSERT; COPY INTO is idempotent by default because Snowflake tracks file load history and skips already-loaded files."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A fixes idempotency at the write level, which is where the failure manifests. Partition-replace (DELETE + INSERT in a transaction, or CREATE OR REPLACE TABLE for the partition) makes the write safe to retry any number of times — the result is always exactly the data from the most recent run. MERGE ON event_id is equally correct if a stable unique key exists per event. Option B (lock table) prevents concurrent double-execution but not sequential retries: the first run may have partially written before the network timeout; if the lock row was not committed before the timeout (or the lock was rolled back), the retry proceeds and appends again. Option C is architecturally correct but is a system replacement, not a targeted fix. Option D is a genuine solution if the pipeline exclusively uses COPY INTO — Snowflake does track file load history and skips already-loaded files — but requires migrating away from INSERT.",
+    "hints": [
+      "INSERT appends rows unconditionally. What write operation produces the same final table state regardless of how many times it runs?",
+      "A DELETE + INSERT transaction on the target partition ensures that even if the pipeline ran 10 times, the table always contains exactly one copy of yesterday's events — as long as both operations succeed or fail together."
+    ],
+    "concepts": [
+      "IDEMPOTENCY",
+      "BACKFILL DESIGN",
+      "DELIVERY SEMANTICS"
+    ]
+  },
+  {
+    "id": 52053,
+    "order": 53,
+    "title": "MRR Alert Fires at 7:15 AM After Duplicate Data Propagates Downstream",
+    "difficulty": "medium",
+    "type": "debug",
+    "mock_only": true,
+    "parent_id": 52052,
+    "follow_up_dimension": "edge_case",
+    "description": "At 7:15 AM an automated alert fires: 'Monthly Recurring Revenue is +38% above expected baseline.' The overnight double-run duplicated yesterday's fact-table partition before it was detected. The partition has since been corrected (dropped and re-loaded). However, 4 downstream dbt incremental models (revenue_summary, mrr_trend, customer_ltv, cohort_retention) still reflect the incorrect doubled data. The scheduled dbt DAG runs at 9:00 AM. It is now 7:30 AM.",
+    "options": [
+      "Run a targeted dbt full-refresh rebuild of only the 4 affected models immediately, before the 9:00 AM run: `dbt run --select revenue_summary mrr_trend customer_ltv cohort_retention --full-refresh`. Validate against the corrected fact table before BI consumers refresh. Do not wait for the 9:00 AM run — executives and dashboards are reading wrong MRR from 7:00 AM onward.",
+      "Wait for the 9:00 AM scheduled dbt run — incremental models check for new rows based on updated_at and will automatically correct all 4 models when they detect the re-loaded fact partition. No manual intervention is needed.",
+      "Mark the revenue dashboard as 'data refresh in progress' and alert stakeholders to ignore MRR numbers until the 9:00 AM run completes. Manual dbt runs outside the scheduled window risk consistency issues.",
+      "Drop and recreate all 4 downstream tables from scratch using `dbt run --full-refresh` on the entire DAG — this is the safest approach because it eliminates any risk of residual incorrect rows from incremental logic."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct for a time-sensitive situation where BI consumers are actively reading doubled MRR from 7:00 AM. The targeted --full-refresh on only the 4 affected models corrects the data before the executive dashboard refresh. Option B is wrong: dbt incremental models detect rows where updated_at > last_run_timestamp. The fact partition was dropped and re-loaded — all rows have fresh updated_at values. The incremental model will APPEND those re-loaded rows on top of the already-doubled rows already in the downstream models, tripling the count instead of correcting it. A full-refresh is required to reset the model. Option C delays correction for 90 minutes during active executive use. Option D (--full-refresh on the entire DAG) is functionally equivalent to A but wasteful — it would rebuild all models including those that were not affected, taking much longer than targeting only the 4 impacted models.",
+    "hints": [
+      "Incremental dbt models add rows where updated_at is newer than the last run. If the fact partition was dropped and re-loaded, would an incremental model treat those fresh rows as 'already processed' or 'new data to append'?",
+      "The downstream models still contain the doubled data. A --full-refresh rebuilds the model from scratch against the corrected source — an incremental run cannot remove rows that are already in the model."
+    ],
+    "concepts": [
+      "INCIDENT RESPONSE",
+      "LINEAGE & OBSERVABILITY",
+      "ORCHESTRATION",
+      "DATA QUALITY"
+    ]
+  },
+  {
+    "id": 52054,
+    "order": 54,
+    "title": "Query Scanning 200 GB/Day Despite Event-Date Filters",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "follow_ups": [
+      52055,
+      52056
+    ],
+    "scenario_context": "A data analyst team runs ~80 queries/day against a 3.2 TB events table in BigQuery. The table was created 4 years ago with no partitioning. On-demand billing: $5/TB scanned; average cost: $200/day. Roughly 90% of analyst queries filter on `event_date` (a DATE column in the schema), yet all queries scan the full 3.2 TB table. A DBA proposes creating a new partitioned table (PARTITION BY event_date) and migrating all data.",
+    "description": "Why does the analyst's WHERE clause on event_date fail to prune the scan, and what is the correct migration strategy?",
+    "options": [
+      "The table has no partitioning — a WHERE clause on event_date is a SQL row filter evaluated after a full scan, not a partition prune. Partitioning must be declared at table creation time and cannot be added retroactively in BigQuery. Migration: CREATE a new table with PARTITION BY event_date, INSERT SELECT all historical data (one-time cost), redirect query traffic, then drop the old table after a validation window.",
+      "The WHERE clause on event_date does prune the scan, but event_date is a derived column computed at runtime from a TIMESTAMP — BigQuery cannot use derived columns for partition elimination. Fix: add event_date as a materialized physical column and rebuild the table.",
+      "Partition pruning is working but ineffective at this scale — all queries use BETWEEN range predicates, which BigQuery cannot use for partition elimination. Rewrite queries to use equality predicates (WHERE event_date = '...') to enable pruning.",
+      "Partitioning is applied but ineffective because the table is only 3.2 TB — at this scale, BigQuery's columnar storage makes full-table scans faster than partition lookups. Partitioning helps only above ~10 TB."
+    ],
+    "correct_option": 0,
+    "explanation": "The fundamental issue: BigQuery cannot add partitioning to an existing table after creation. A WHERE clause on event_date filters rows during execution but cannot skip partitions that don't exist — there are no partitions to prune. Option A describes the correct migration path: create a new partitioned table, migrate data, then redirect traffic. Option B confuses partitioning with column materialization — BigQuery supports PARTITION BY DATE(event_timestamp) as a pseudo-column partitioning expression; that is not the issue here, since the column event_date already exists and the problem is the absence of any partitioning declaration. Option C is factually wrong — BigQuery DOES prune partitions with BETWEEN range predicates on partitioned columns; the issue is the table has no partitions. Option D is also wrong — BigQuery on-demand billing charges by bytes scanned, and partition pruning reduces bytes scanned at any table size.",
+    "hints": [
+      "A WHERE clause evaluates after data is read into the execution engine. Partition pruning happens before data is read — it skips entire partitions whose values don't match the filter. For pruning to work, what must already exist in the table definition?",
+      "BigQuery partitioning cannot be added to an existing table retroactively. What is the lowest-disruption way to migrate 3.2 TB of query traffic from an unpartitioned table to a new partitioned one?"
+    ],
+    "concepts": [
+      "PARTITIONING & PRUNING",
+      "COST OPTIMIZATION",
+      "BACKFILL DESIGN"
+    ]
+  },
+  {
+    "id": 52055,
+    "order": 55,
+    "title": "Three Data Quality Checks Fail After Partition Table Migration",
+    "difficulty": "medium",
+    "type": "debug",
+    "mock_only": true,
+    "parent_id": 52054,
+    "follow_up_dimension": "data_quality",
+    "description": "After migrating 3.2 TB to the new partitioned table and redirecting analyst traffic, a post-migration data quality suite flags three failures: (1) total row count in the partitioned table is 2.1% lower than the original, (2) a NOT NULL check on user_id now fails — 0.3% of rows have NULL user_id in the partitioned table but not the original, (3) the maximum event_date in the partitioned table is 3 days older than in the original. All three checks were passing before migration.",
+    "options": [
+      "Each failure has a distinct root cause tied to the INSERT SELECT migration: (1) rows inserted to the original during the multi-hour migration window were not captured — supplement with a CDC catch-up or re-run the migration as a one-shot atomic snapshot; (2) an inadvertent WHERE user_id IS NOT NULL clause in the INSERT SELECT silently excluded NULL rows; (3) a date-range predicate in the INSERT SELECT excluded the last 3 days of data, or a partition expiry setting trimmed recent partitions. Diff the two tables partition-by-partition before cutting over.",
+      "All three failures are expected artifacts of BigQuery partition table enforcement — partitioned tables apply stricter constraints than unpartitioned ones, including automatic NOT NULL enforcement on partition columns and implicit data expiry for the most recent partitions.",
+      "The data quality suite is comparing the new partitioned table against a pre-migration snapshot of the original. New data written to the original during the migration explains the row count gap. Re-run the suite against a fresh snapshot of the original rather than the migration snapshot.",
+      "A row count difference of <5% is within acceptable migration tolerance for a 3.2 TB table; only the max event_date gap warrants immediate investigation since it may indicate missing recent data affecting SLAs."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A correctly diagnoses all three failures as migration artifacts with distinct root causes: (1) rows written to the source during the multi-hour INSERT SELECT were missed — a classic migration timing race that requires either an atomic snapshot or a CDC catch-up for writes after the snapshot was taken; (2) a filter clause (likely user_id IS NOT NULL) silently excluded null-user rows during the INSERT SELECT; (3) a date range predicate or partition expiry cut off the 3 most recent days. Option B is incorrect — BigQuery does NOT enforce NOT NULL on partition columns; NULL-partitioned rows are valid and land in the special __NULL__ partition, they are not filtered out. Option C deflects from the real issue: the partitioned table would still have fewer rows than a fresh comparison of the original — the timing race is real regardless of when the comparison runs. Option D's '5% tolerance' framing is dangerous: 2.1% of 3.2 TB is ~67 M rows, and the max event_date gap could mean 3 days of data silently missing from downstream SLAs.",
+    "hints": [
+      "An INSERT SELECT takes hours on a 3.2 TB table. If writes continue to the source table during that time, what happens to those new rows in the destination?",
+      "Try to explain each of the three failures independently before assuming a single root cause — row count gap (timing), NULL rows (filter clause), max date (date range). Each has a different fix."
+    ],
+    "concepts": [
+      "DATA QUALITY",
+      "LINEAGE & OBSERVABILITY",
+      "BACKFILL DESIGN"
+    ]
+  },
+  {
+    "id": 52056,
+    "order": 56,
+    "title": "Streaming Writes Create 138 K Files/Day, Killing Query Planning Speed",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "parent_id": 52054,
+    "follow_up_dimension": "edge_case",
+    "description": "Six months after the BigQuery migration, the company moves events to a data lake on GCS (Parquet format). A streaming micro-batch pipeline generates one Parquet file per Kafka partition per 30-second window. With 48 Kafka partitions, this produces 5,760 files/hour and 138,240 files/day. BigQuery External Tables querying the GCS path now take 5–8 seconds to plan (before any data is read) as the metadata catalog enumerates all 138 K+ files.",
+    "options": [
+      "The problem is the small-file explosion: 138 K files/day creates metadata enumeration overhead that dwarfs actual query execution. Fix: periodic compaction merges small Parquet files into analytics-friendly sizes (128 MB–1 GB). Table formats like Apache Iceberg, Delta Lake, or Apache Hudi provide built-in compaction with transaction logs for atomic multi-file writes and concurrent reads. Alternatively, increase the micro-batch window from 30 seconds to 5–10 minutes to produce fewer, larger files.",
+      "The query planning latency is caused by BigQuery's External Table metadata cache not being warm — run BQ UPDATE --refresh_metadata to force BigQuery to re-scan and cache the GCS file listing; subsequent queries will plan in <1 second.",
+      "Reduce the number of Kafka partitions from 48 to 4, decreasing the file write rate from 138 K/day to 11,520/day; at that file count, query planning time returns to <1 second without changing the streaming architecture.",
+      "Switch from GCS External Tables to BigQuery Managed Tables via a daily bq load import; managed tables store metadata internally and do not suffer from external file enumeration overhead."
+    ],
+    "correct_option": 0,
+    "explanation": "The small-file problem is a fundamental consequence of high-frequency streaming writes to immutable file storage. Option A is correct: file compaction merges small files into analytics-friendly sizes, reducing file count by 100–1,000× without changing streaming frequency. Modern table formats (Iceberg, Delta Lake) are the industry standard because they support compaction concurrent with ongoing reads and add transaction semantics. Option B: BigQuery External Tables do not have a persistent metadata cache for GCS file listings — enumeration happens at query time. Option C (reduce Kafka partitions) would reduce streaming parallelism and only reduce the problem by ~12×, not the 100×+ needed for acceptable planning latency. Option D (managed tables) solves the planning problem but creates a daily batch dependency that loses streaming freshness; it also incurs significant ongoing storage cost for continuously ingested TBs.",
+    "hints": [
+      "File enumeration time scales with the number of files, not the volume of data in them. How many files does your pipeline create per day, and what does a query engine have to do before it reads any data from a directory with 138 K files?",
+      "The solution to small-file explosion in a data lake is not to slow down streaming — it is to run a periodic compaction job that merges small files into larger ones. Which modern table formats make this safe to do while reads are ongoing?"
+    ],
+    "concepts": [
+      "STORAGE LAYOUT & FILE FORMATS",
+      "BATCH VS STREAMING",
+      "COST OPTIMIZATION"
+    ]
+  },
+  {
+    "id": 52057,
+    "order": 57,
+    "title": "SCD Type 2 Backfill: Which Historical Version Do You Use?",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A team maintains a customer dimension table using SCD Type 2 (a new row is inserted for each change, with effective_from and effective_to dates). A source system bug incorrectly set `region` for customers who signed up during a 3-week window last year. The bug has been fixed in the source, but the data warehouse still contains the wrong region values for those customers during that window. A backfill must restore correct region values without affecting records outside the affected window.",
+    "options": [
+      "Close the existing incorrect SCD Type 2 rows that cover the affected window (set their effective_to to the window start date), then insert new rows with the corrected region values and the original effective_from / effective_to dates of the affected window. This preserves the rest of the dimension history and avoids touching records outside the window.",
+      "Re-run the full SCD Type 2 dimension load for the affected customers from the beginning of their history; this overwrites all historical rows and guarantees that the corrected source values propagate correctly through the entire dimension timeline.",
+      "Use a SQL UPDATE to change the region column in place for all rows within the affected date range — SCD Type 2 rows can be updated if only a single attribute is corrected and the effective dates are not changed.",
+      "Insert a new SCD Type 2 row with the corrected region value dated from today, and set the previous row's effective_to to today; this forwards the correct region to all future queries without rewriting historical data."
+    ],
+    "correct_option": 0,
+    "explanation": "SCD Type 2 backfills require surgical row management within the affected window. Option A is correct: expire the incorrect rows at the window boundary, then insert corrected rows that exactly span the original affected period (same effective_from and effective_to). This leaves all rows outside the window completely untouched. Option B (full re-load from history) is destructive — it overwrites correct historical records that were never affected by the bug. Option C (UPDATE in place) violates SCD Type 2's immutability principle: SCD Type 2 rows are historical records, not mutable facts. An in-place UPDATE breaks audit trails and would cause inconsistencies for any system that versioned the data based on effective dates. Option D (insert from today) is incorrect for a backfill: it applies a correction going forward, not to the affected historical window where the wrong values were recorded.",
+    "hints": [
+      "Historical dimension rows represent facts that were true at a specific point in time — they are not updated in place. How do you introduce a corrected version of a record for a specific date window without touching records before or after that window?",
+      "Think of a backfill as: (1) closing the wrong version at the window boundary, (2) opening a correct version for the same window. The effective dates of the corrected rows must match the original affected period exactly."
+    ],
+    "concepts": [
+      "SCD OPERATIONS",
+      "BACKFILL DESIGN",
+      "DATA QUALITY"
+    ]
+  },
+  {
+    "id": 52058,
+    "order": 58,
+    "title": "Upstream Schema Drift Detected Two Weeks Late",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A downstream pipeline consumes a daily CSV export from an upstream team. Two weeks ago, the upstream team silently renamed a column from `order_value` to `order_amount` without notifying downstream consumers. Your pipeline continued to run without errors — the renamed column was read as NULL (the CSV reader used column names, not positions) — and NULL values propagated into the revenue_fact table. The issue was discovered during a quarterly business review when revenue figures appeared 12% lower than expected.",
+    "description": "What detection mechanism would have caught this drift within 24 hours, and what contract should be established to prevent recurrence?",
+    "options": [
+      "Add a schema fingerprint check as the first step of the ingestion pipeline: read the CSV header, compute a hash of the column names in canonical order, and compare against the last known hash. A mismatch raises an immediate alert before any rows are processed. Complement this with a data contract (agreed schema + change-notification process) requiring upstream to communicate breaking changes at least 2 business days in advance.",
+      "Switch from CSV to Avro or Protobuf with a schema registry enforcing BACKWARD compatibility — renaming a field would be rejected at the schema registry level before any data is emitted, preventing the drift from ever reaching downstream.",
+      "Add a NOT NULL constraint on `order_value` in the destination table — any insert with a NULL value in that column would fail immediately, surfacing the ingestion error on the first run after the rename.",
+      "Implement a daily row-count alert that fires if today's row count differs by more than 5% from a 7-day rolling average — the revenue impact of NULL substitution would likely show up as an anomalous aggregate, not a row count change, so the alert would catch the issue indirectly."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A catches schema drift at the ingestion boundary — the earliest possible detection point — before any bad data writes to the warehouse. A column-name hash detects renaming (which changes the hash) without requiring schema negotiation infrastructure. Pairing detection with a data contract turns a technical alert into an organizational process: upstream must notify before breaking changes. Option B is architecturally sound but requires the upstream team to adopt Avro/Protobuf and a shared schema registry — a significant change for a team currently exporting CSV. Option C (NOT NULL constraint) would have worked for this specific case but is too narrow: other schema changes (wrong column type, extra columns, reordered columns) would pass the constraint. Option D (row count alert) is the weakest control: NULL substitution preserves row counts — only aggregates change. A 5% row count threshold would not fire for a column rename that produces all-NULL values.",
+    "hints": [
+      "Schema drift is a structural change, not a data change. What check, run before any rows are written, would detect that the incoming schema differs from the expected schema?",
+      "Detection alone is not enough — what process change prevents the upstream team from making breaking schema changes without warning? Think about what agreement would need to exist between the two teams."
+    ],
+    "concepts": [
+      "DATA CONTRACT",
+      "LINEAGE & OBSERVABILITY",
+      "DATA QUALITY"
+    ]
+  },
+  {
+    "id": 52059,
+    "order": 59,
+    "title": "DAG Retry Sent Duplicate Email Campaigns to 50K Users",
+    "difficulty": "medium",
+    "type": "debug",
+    "mock_only": true,
+    "description": "A marketing pipeline reads a user segment from the warehouse, writes it to a campaign queue, and then triggers an email-send API. The orchestrator retried the pipeline at 3:14 AM after a false-positive timeout (the first run completed successfully). Both runs called the email-send API. 50,000 users received duplicate emails. Post-incident investigation shows the email-send step has no deduplication logic — each API call sends regardless of prior sends.",
+    "options": [
+      "Add idempotency to the email-send step: before calling the API, check whether a campaign_send_id (a deterministic hash of campaign_id + segment_id + run_date) has already been recorded as 'sent' in a side table. If the record exists, skip the API call. This makes the entire pipeline safe to retry any number of times.",
+      "Disable orchestrator retries for the marketing pipeline — email delivery is a non-idempotent side-effect, and retries are inherently dangerous for steps that call external APIs. Any failure must require manual operator review before re-execution.",
+      "Rate-limit the email-send API to one call per user per campaign per day at the API layer; duplicate calls would be rejected, preventing duplicate sends regardless of how many times the pipeline retries.",
+      "Add a dry-run flag to the pipeline that, on orchestrator retries, sends to a test-mailbox subset instead of the full segment, allowing operators to confirm correctness before triggering a full resend."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A fixes the root cause: the email-send step is not idempotent. A campaign_send_id that is deterministically computed and checked before each API call makes the step safe to retry — the second execution detects that the campaign was already sent and skips the API call. This is the general solution pattern: any pipeline step that calls an external API must record state before calling and check that state before retrying. Option B (disable retries) is an operational over-reaction — retries are a fundamental reliability mechanism and should not be removed. The fix is to make the step idempotent, not to remove the retry. Option C (rate-limit at the API layer) is a useful defense-in-depth control but cannot be assumed — many email APIs do not provide this guarantee. Option D (dry-run on retry) adds manual intervention to every retry, which defeats the purpose of automated recovery and creates operational bottlenecks.",
+    "hints": [
+      "The pipeline failed because calling the email API twice produced two sends. What state could you record before the first API call that would allow a second execution to detect 'already sent' and skip?",
+      "Idempotency for external API calls requires a 'check before act' pattern: record intent in a durable store, check that record at the start of each run, and skip the API call if the record already exists."
+    ],
+    "concepts": [
+      "IDEMPOTENCY",
+      "ORCHESTRATION",
+      "INCIDENT RESPONSE"
+    ]
+  },
+  {
+    "id": 52060,
+    "order": 60,
+    "title": "Consumer Lag at 6 Hours: Kafka Retention Window at Risk",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A streaming pipeline consumes from a Kafka topic with a 24-hour retention window. At 2:00 PM, the on-call engineer observes that the consumer group lag has grown to 6 hours over the past 90 minutes. At the current rate of lag growth, the consumer will fall outside the retention window in approximately 18 hours. The topic receives ~2 M events/hour. The consumer is a single-threaded Python process.",
+    "description": "What is the correct immediate action, and what is the sustainable long-term fix?",
+    "options": [
+      "Immediate: increase consumer parallelism by adding consumer instances to the consumer group (each instance owns a subset of Kafka partitions), restoring throughput close to the production rate and halting lag growth. This works because the Kafka topic has multiple partitions. Long-term: right-size the consumer fleet based on peak throughput, add lag monitoring with alert thresholds well below the retention window (e.g., alert at 2-hour lag, page at 4-hour lag), and evaluate whether the retention window is sufficient for the expected max-lag scenario.",
+      "Immediate: extend the Kafka topic retention window from 24 hours to 72 hours so the consumer has more time to catch up. Long-term: profile the consumer to identify the bottleneck and optimize the single-threaded processing logic.",
+      "Immediate: reset the consumer group offset to the latest offset (skip unprocessed messages) to immediately eliminate the lag. Long-term: add a dead-letter topic to route any future overflow events that cannot be processed in time.",
+      "Immediate: pause all upstream producers to prevent further lag growth, giving the consumer time to catch up. Long-term: introduce a Kafka Streams application to pre-aggregate events before they reach the consumer, reducing the per-event processing load."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A addresses the root cause (insufficient consumer throughput) with the fastest, lowest-risk intervention (add consumer instances to the consumer group). Kafka's partition-based parallelism makes this the standard horizontal scaling lever — adding consumers up to the partition count increases throughput linearly. The long-term fix includes lag alerting well before the retention window closes. Option B (extend retention) is not an immediate fix — it buys time but does not reduce lag. Option C (reset to latest) is destructive: skipping unprocessed messages means those events are permanently lost, which is unacceptable for a revenue-affecting pipeline. Option D (pause producers) is operationally drastic and only delays the problem — the upstream data still needs to be processed eventually, and pausing producers affects other downstream consumers of the same topic.",
+    "hints": [
+      "The consumer is single-threaded and falling behind. What does Kafka's partition-based design let you do to increase throughput without changing the consumer's processing logic?",
+      "Alert thresholds should leave enough runway to intervene before the retention window closes. If the retention is 24 hours and the alert fires at 2 hours of lag, how much time do you have to respond before messages are lost?"
+    ],
+    "concepts": [
+      "BACKPRESSURE",
+      "BATCH VS STREAMING",
+      "SCHEDULING & SLAS"
+    ]
+  },
+  {
+    "id": 52061,
+    "order": 61,
+    "title": "ETL vs ELT: Migrating Spark Transforms to Snowflake",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A company currently runs a $22,000/month Spark cluster that reads raw data from S3 and produces cleaned, transformed outputs loaded into Snowflake. A senior engineer proposes eliminating the Spark cluster and performing all transformations inside Snowflake using SQL (ELT), loading raw data directly into Snowflake staging tables. The product team asks which approach is better for their use case: large-scale joins, string parsing of nested JSON, and daily aggregations for 500 GB/day of new data.",
+    "options": [
+      "ELT (transform in Snowflake) is a strong fit for this use case. Large-scale joins and daily aggregations are exactly what Snowflake's query engine is optimized for; Snowflake's FLATTEN and PARSE_JSON functions handle nested JSON natively. Eliminating the Spark cluster removes a complex operational dependency. The trade-off: Snowflake credit costs replace EC2 costs — validate that the credit consumption for the daily transform workload is less than $22 K/month before committing.",
+      "ETL (transform in Spark) is always preferable for data at this scale because Spark's distributed memory model handles complex transformations more efficiently than Snowflake's SQL engine, which is optimized for analytical reads, not iterative row-level transformations.",
+      "The choice between ETL and ELT is purely a cost decision at this scale; both approaches produce identical results and have equivalent operational complexity. Calculate monthly credit costs for Snowflake vs. EC2 costs for Spark and pick the cheaper option.",
+      "The company should adopt a hybrid approach: keep Spark for JSON parsing (which SQL engines handle poorly) and move only joins and aggregations to Snowflake. This minimizes risk while reducing Spark cluster cost by ~50%."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A correctly identifies that Snowflake is well-suited for this specific workload: SQL joins, aggregations, and native JSON parsing (FLATTEN, PARSE_JSON, LATERAL FLATTEN) are first-class capabilities. ELT is the modern default when the destination warehouse can handle transformations efficiently — it reduces operational complexity by eliminating a separate compute layer. The key caveat is cost validation: Snowflake credits are not free, and a $22 K/month Spark cluster does not automatically become cheaper when replaced with Snowflake compute. Option B overstates Spark's advantage: Snowflake's SQL engine is highly optimized for the described workload (joins, aggregations) and is NOT limited to analytical reads. Option C understates the operational complexity difference: eliminating Spark removes a cluster provisioning, tuning, and monitoring burden that ELT avoids. Option D's hybrid approach (keep Spark for JSON) is unnecessary — Snowflake's JSON handling is production-grade.",
+    "hints": [
+      "ELT loads raw data first and transforms it inside the warehouse. Does Snowflake have native capabilities to handle the three stated workloads: large-scale joins, nested JSON parsing, and daily aggregations?",
+      "The current Spark cluster costs $22 K/month. Before committing to ELT, what calculation validates that Snowflake transforms are actually cheaper?"
+    ],
+    "concepts": [
+      "ETL VS ELT",
+      "COST OPTIMIZATION",
+      "STORAGE ARCHITECTURE"
+    ]
   }
 ]
