@@ -111,6 +111,15 @@ Blocklist rejects method-name tags (`groupby`, `merge`, `pivot_table`, `apply`).
 
 **Practice teaches, mock-only stress-tests transfer.** The difference is framing, realism, and dirty-data conditions — not new operations. A mock-only question recombines pandas reasoning the practice bank already teaches at that difficulty (or lower) in a fresh business scenario; it must not clone an existing practice question and must not debut a concept family the curriculum never taught. If a mock would need an untaught concept, author the practice question first.
 
+## Coverage & sizing targets
+
+These are the durable *targets* (what the bank ought to look like). For live counts (what it *is* right now) see the "Question bank current state" table in [`docs/content-authoring.md`](../content-authoring.md) and the content footprint in `CLAUDE.md`. **Targets are provisional — revisit against real Pro/Elite usage data.**
+
+- **Practice: lean (~85–95 questions, ~⅓ easy / ~⅖ medium / ~¼ hard).** Roughly one teaching arc per family per applicable tier. Grow only to (a) ground a new gradable family or (b) fix a genuine arc break. Do **not** pad practice for volume — that fights the curriculum philosophy. The hard tier is intentionally smaller: multi-step pipelines are sparse by design.
+- **Mock-only: ~110, medium + hard only, ~50:60 m:h skew.** That ratio (1:1.2) mirrors the SQL track. The inventory multiple over practice is ~1.2×; a healthy band is 1.0×–1.5×. Easy is practice-only — never. **~⅓ of mock questions should be chain members** (parents + follow-ups feeding Interview Loop).
+- **Realism vs. practice-grounded split.** `MEMORY & VECTORIZATION REASONING` is practice-grounded and Pandas-native — gradable via `assert_frame_equal` dtype mismatches, anchored by real practice questions. The three mock-only realism families (`METRIC INTERPRETATION & DENOMINATOR CHOICE`, `OUTPUT SANITY VALIDATION`, `PERFORMANCE-AWARE ANALYTICS`) must **co-occur with ≥ 1 practice-grounded family** on every question that uses them.
+- **Quality risk: SQL-in-Python clones.** Any question whose reference solution is idiomatic SQL transliterated into pandas (`groupby + merge + rename` where a single `pivot_table` would do) must be dropped, not padded. The track's purpose is teaching pandas as a tool with its own grammar; volume built on SQL-shaped problems actively harms the curriculum.
+
 ## Anti-patterns specific to Pandas
 
 - **SQL-in-Python solutions** — using groupby+merge+rename when the idiomatic pandas would be a single `pivot_table`. The track is *teaching* pandas, not punishing the candidate for not knowing it.

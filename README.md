@@ -19,16 +19,16 @@ A data interview practice platform covering nine tracks. Users write SQL or Pyth
 
 | Track | Easy | Medium | Hard | Practice total | Mock-only (Pro/Elite) |
 |---|---|---|---|---|---|
-| SQL | 37 | 45 | 30 | **112** | 38 (0 easy, 19 med, 19 hard) |
-| Python | 39 | 32 | 24 | **95** | 20 (0 easy, 8 med, 12 hard) |
-| Pandas | 27 | 36 | 23 | **86** | 26 (0 easy, 12 med, 14 hard) |
-| PySpark | 41 | 39 | 26 | **106** | 21 (0 easy, 11 med, 10 hard) |
-| Data Engineering | 30 | 33 | 23 | **86** | 1 |
-| Data Modeling | 25 | 28 | 23 | **76** | 1 |
+| SQL | 37 | 47 | 31 | **115** | 162 (0 easy, 73 med, 89 hard) |
+| Python | 33 | 29 | 17 | **79** | 100 (0 easy, 50 med, 50 hard) |
+| Pandas | 28 | 40 | 24 | **92** | 110 (0 easy, 50 med, 60 hard) |
+| PySpark | 41 | 45 | 42 | **128** | 150 (0 easy, 75 med, 75 hard) |
+| Data Engineering | 30 | 35 | 26 | **91** | 14 (0 easy, 6 med, 8 hard) |
+| Data Modeling | 25 | 28 | 23 | **76** | 13 (0 easy, 6 med, 7 hard) |
 | Statistics | 31 | 41 | 25 | **97** | 8 |
-| ML Fundamentals | 30 | 35 | 25 | **90** | 25 |
-| Experimentation | 30 | 30 | 20 | **80** | 25 |
-| **Total** | **290** | **319** | **219** | **828** | **165** |
+| ML Fundamentals | 30 | 38 | 28 | **96** | 25 |
+| Experimentation | 30 | 32 | 22 | **84** | 25 |
+| **Total** | **285** | **335** | **238** | **858** | **607** |
 
 Mock-only questions share the same TXNNN ID scheme, allocated at the top of each difficulty range. They never appear in the practice catalog.
 
