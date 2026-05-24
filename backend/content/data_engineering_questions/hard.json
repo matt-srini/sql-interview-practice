@@ -1817,5 +1817,299 @@
       "LINEAGE & OBSERVABILITY",
       "DATA QUALITY"
     ]
+  },
+  {
+    "id": 53068,
+    "order": 68,
+    "title": "One Common Table Feeds 12 Downstream Transforms \u2014 Gets Updated Mid-Day",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A data platform has a central daily_events table loaded by 7 AM. Twelve downstream transform jobs run throughout the day (9 AM\u20134 PM) and all read from daily_events. The upstream team introduces a mid-day enrichment refresh at 12 PM that appends late-arriving events. Three downstream jobs that had not yet run by 12 PM will see the enriched table. Nine jobs that completed at 9\u201311 AM saw only the original data. The BI team reports that results from the 9 early jobs do not match results from the 3 late jobs.",
+    "description": "What is the root cause of the inconsistency and what is the correct architectural fix?",
+    "options": [
+      "Freeze daily_events at the start of each batch window \u2014 the upstream enrichment job must not write to daily_events while any downstream job could run; a hard processing-time freeze window solves the consistency issue.",
+      "Use table snapshots or version pinning in each downstream job (e.g., Iceberg time-travel, Delta Lake version pinning) \u2014 all 12 jobs read from the same point-in-time snapshot of daily_events regardless of when during the day they execute.",
+      "Schedule all 12 downstream jobs before 12 PM \u2014 running jobs early enough to avoid the enrichment window eliminates the inconsistency without any architectural change.",
+      "Each downstream job should compare daily_events row count against a reference count recorded at job start; if the count has changed, the job aborts and re-runs \u2014 this detects mid-run updates."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is the architecturally correct fix: time-travel or version pinning ensures all 12 downstream jobs read from the same logical snapshot of daily_events regardless of when they execute during the day. All jobs see data as it existed at 7 AM, eliminating the split caused by mid-day enrichment. This is the primary use case for versioned table formats like Iceberg and Delta Lake. Option A (freeze window) adds operational complexity and fragility \u2014 you must enforce that the upstream team never writes during a 7-hour window, which breaks whenever a job is delayed or the enrichment schedule shifts. Option C (schedule all before 12 PM) is a scheduling hack that breaks whenever any job runs late or the enrichment moves earlier. Option D (count-check + abort) is a detection mechanism, not a prevention mechanism \u2014 it adds latency, requires manual re-runs, and does not guarantee all jobs will ultimately see the same data.",
+    "hints": [
+      "Nine jobs read from daily_events before the enrichment and three read after. What data platform feature ensures all 12 jobs read from the same point-in-time state of the table?",
+      "Which option makes each job's input independent of when during the day it actually executes?"
+    ],
+    "concepts": [
+      "BATCH VS STREAMING",
+      "STORAGE ARCHITECTURE",
+      "ORCHESTRATION"
+    ]
+  },
+  {
+    "id": 53069,
+    "order": 69,
+    "title": "API Ingestion Pipeline Silently Drops Records After Retry Exhaustion",
+    "difficulty": "hard",
+    "type": "debug",
+    "mock_only": true,
+    "scenario_context": "A pipeline ingests customer records from a third-party REST API that enforces a 1,000 requests/minute rate limit (HTTP 429 on violation). The ingestion code retries on 429 up to 3 times with a 1-second delay, then logs a WARNING and advances to the next page. During a bulk load of 500,000 records, the data quality team finds 12,400 records missing from the warehouse \u2014 approximately 2.5%.",
+    "description": "What is the root cause and the correct fix?",
+    "options": [
+      "The root cause is insufficient retry count: 3 retries with 1-second delay is not enough to wait out the API's rate limit window. The fix is increasing retries to 10 with exponential backoff up to 60 seconds.",
+      "The root cause is the WARNING-and-continue behavior after retry exhaustion: when all 3 retries fail, the pipeline silently skips those records. The fix is treating retry exhaustion as a fatal error \u2014 raise an exception and halt, or write failed page offsets to a dead-letter queue \u2014 never skip records silently.",
+      "The root cause is the 1-second retry delay not allowing the 60-second rate limit window to reset. The fix is a 60-second sleep after each 429 response before retrying.",
+      "The root cause is concurrent request threads hitting the rate limit simultaneously. The fix is single-threaded sequential pagination to stay under the 1,000 requests/minute ceiling."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is the root cause: after 3 retries all fail, the code logs a WARNING and advances to the next page \u2014 permanently discarding the records from the failed page. The 12,400 missing records are from pages whose retries were exhausted and silently skipped. Silent data loss in an ingestion pipeline is a correctness failure disguised as resilience. The correct behavior is to treat retry exhaustion as a fatal error: either halt the job (requiring a re-run from the failed offset) or route the failed page offsets to a dead-letter queue for visibility and separate processing. Option A (more retries) may reduce the failure rate but does not fix the fundamental problem: if all retries fail, the code still silently skips records. Option C (60-second sleep per retry) improves backoff behavior but does not address the skip-on-failure behavior. Option D (single-threaded pagination) improves rate limit compliance but also does not fix the skip-on-failure behavior.",
+    "hints": [
+      "After all 3 retries fail, the pipeline logs a warning and moves to the next API page. What happened to the records on the page that could not be fetched?",
+      "Which fix treats permanent retry failure as a correctness violation rather than a recoverable warning that the pipeline can move past?"
+    ],
+    "concepts": [
+      "DATA QUALITY",
+      "INCIDENT RESPONSE",
+      "LINEAGE & OBSERVABILITY"
+    ]
+  },
+  {
+    "id": 53070,
+    "order": 70,
+    "title": "Delta Lake vs. Apache Iceberg for a Multi-Engine, Multi-Cloud Data Lake",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "description": "A data team is building a data lake with four hard requirements: (1) queries from both Databricks (primary compute) and AWS Athena (BI team) against the same tables, (2) row-level deletes for GDPR erasure, (3) schema evolution as upstream producers add columns, (4) time-travel queries for audit. The team must choose between Delta Lake and Apache Iceberg. Which is the more defensible choice?",
+    "options": [
+      "Delta Lake: native Databricks integration gives optimal performance for the primary compute, schema enforcement is automatic, and GDPR row-level deletes are supported via MERGE. Athena can query Delta tables via an AWS connector.",
+      "Apache Iceberg: the open specification is natively supported by Databricks, Athena, Snowflake, Spark, Flink, and all major cloud catalogs without vendor-specific connectors or format lock-in. All four requirements are first-class Iceberg features.",
+      "Either format satisfies all four requirements; the decision should be driven by team familiarity \u2014 Delta Lake if the team is primarily Databricks-based, Iceberg if the team runs a multi-engine environment.",
+      "Neither format is appropriate for multi-cloud: both require a vendor's proprietary metadata service. Parquet on S3 with a Glue catalog is the correct choice for cloud-agnostic portability."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is the more defensible choice for the stated requirements. Apache Iceberg's open specification is natively supported by Databricks, AWS Athena, Snowflake, Spark, Flink, and all major cloud catalogs \u2014 no vendor-specific connectors or format bridges are required. Row-level deletes (via copy-on-write or merge-on-read), schema evolution (add/rename/drop columns), and time-travel are all first-class Iceberg native features. Option A (Delta Lake) technically satisfies the requirements but introduces a risk: Athena queries Delta tables via an AWS-maintained connector that may lag the Delta protocol versioning; for a multi-engine lake where Athena is a primary consumer, Iceberg's native Athena support is architecturally superior. Option C is partially correct (both formats work) but understates the multi-engine portability advantage of Iceberg when Athena is a stated hard requirement. Option D is incorrect: both Delta Lake and Iceberg are cloud-agnostic open formats that run on any S3-compatible object store without a proprietary metadata service.",
+    "hints": [
+      "The team needs both Databricks and Athena to query the same tables natively. Which table format has first-class native engine support on both without requiring a vendor-specific connector?",
+      "Which option satisfies all four stated requirements as native, first-class features of the format specification rather than through connectors or workarounds?"
+    ],
+    "concepts": [
+      "STORAGE LAYOUT & FILE FORMATS",
+      "STORAGE ARCHITECTURE",
+      "DATA GOVERNANCE"
+    ]
+  },
+  {
+    "id": 53071,
+    "order": 71,
+    "title": "Snowflake Virtual Warehouse Running 24/7 for a Nightly 2-Hour Workload \u2014 Cost Optimization",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A data team runs nightly Snowflake transformations that take 45 minutes on an X-Large warehouse. A cost review reveals the warehouse runs 24/7 (auto-suspend disabled) despite being active only 2\u20133 hours per night. Monthly credits cost $18,000. The team proposes enabling auto-suspend after 1 minute of inactivity. A risk is raised: auto-suspend introduces a 20\u201330 second cold-start latency each time the warehouse is resumed.",
+    "description": "What is the most defensible warehouse configuration for this use case?",
+    "options": [
+      "Enable auto-suspend with a 1-minute timeout. The 20\u201330 second cold-start is negligible relative to a 45-minute nightly pipeline run and acceptable for a batch workload that runs 2\u20133 hours total. The cost savings are approximately 90%.",
+      "Keep auto-suspend disabled but right-size from X-Large to Small: a Small warehouse handles the load at lower cost, and round-the-clock availability avoids cold-start latency.",
+      "Enable auto-suspend with a 10-minute timeout as a compromise: a warm buffer after each task reduces cold-start frequency when queries run in rapid sequence during the pipeline.",
+      "Replace the nightly batch pipeline with a streaming pipeline that keeps the warehouse active during peak hours, avoiding the suspend/resume cycle entirely."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is the most defensible choice: a 1-minute auto-suspend timeout eliminates ~90% of Snowflake credit consumption for a workload that is active only 2\u20133 hours per night. The 20\u201330 second cold-start latency is negligible relative to a 45-minute pipeline \u2014 it represents under 0.05% of total runtime and is fully acceptable for a scheduled nightly batch. Option C (10-minute timeout) is a common but poorly-calibrated compromise for a batch workload: the warehouse stays warm for 10 minutes after each task, burning credits during inter-task pauses in a pipeline that has its own scheduling delays. Option B (keep running, right-size to Small) still burns 24/7 credits at a reduced rate \u2014 it partially addresses cost but does not solve the root problem (paying for compute during 21+ hours of inactivity). A right-sized Small with auto-suspend would be better than Option B alone but is not offered. Option D (switch to streaming) is an architectural overhaul unrelated to the cost problem and would likely increase both complexity and cost.",
+    "hints": [
+      "The warehouse is active 2\u20133 hours per night but runs 24/7. What is the simplest configuration change that aligns Snowflake credit consumption with actual usage?",
+      "How does a 20\u201330 second cold-start latency compare to a 45-minute nightly pipeline run?"
+    ],
+    "concepts": [
+      "COST OPTIMIZATION",
+      "SCHEDULING & SLAS",
+      "STORAGE ARCHITECTURE"
+    ]
+  },
+  {
+    "id": 53072,
+    "order": 72,
+    "title": "Partition Pruning Fails When WHERE Clause Wraps the Partition Column in a Function",
+    "difficulty": "hard",
+    "type": "debug",
+    "mock_only": true,
+    "scenario_context": "A Hive table is partitioned by event_date (string, format 'YYYY-MM-DD'). A query filtering on a date range runs 47 minutes: SELECT * FROM events WHERE DATE_FORMAT(event_date, '%Y-%m') = '2024-03'. The equivalent query WHERE event_date BETWEEN '2024-03-01' AND '2024-03-31' runs in 3 minutes. Both queries return the same rows.",
+    "description": "What is the root cause, and what is the general principle for writing partition predicates?",
+    "options": [
+      "The root cause is the DATE_FORMAT() function: wrapping the partition column in any function prevents the query optimizer from performing partition pruning. The optimizer cannot statically determine which partition values satisfy a function applied to the column and must scan all partitions. Partition predicates must always filter directly on the partition column's values.",
+      "The root cause is the string partition column type: partition pruning only works correctly for DATE or TIMESTAMP column types. Changing event_date from STRING to DATE would allow DATE_FORMAT() to be pushed down and pruned.",
+      "The root cause is Hive's optimizer limitations: modern engines (Spark SQL, Trino) can optimize DATE_FORMAT() filters with partition pruning. Migrating to Spark SQL resolves the issue without changing the partition schema.",
+      "The root cause is the specific format string '%Y-%m': month-level aggregation matches multiple partition values, so the optimizer cannot prune. Using DATE_FORMAT(event_date, '%Y-%m-%d') = '2024-03-01' would allow pruning to a single partition."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct and captures the general principle: any function applied to a partition column in a WHERE clause prevents partition pruning. The query optimizer evaluates partition pruning statically by matching the filter predicate directly against known partition values. When the partition column is wrapped in a function \u2014 DATE_FORMAT(), CAST(), YEAR(), UPPER(), or any other \u2014 the optimizer cannot determine at compile time which partition values will satisfy the function expression and must open all partitions and evaluate the function row by row. The fix is always to write date range filters directly on the partition column: WHERE event_date BETWEEN '2024-03-01' AND '2024-03-31'. Option B is incorrect: string partition columns support pruning as long as the predicate directly compares the column value; the column type is not the issue. Option C is partially true (some engines optimize through certain functions) but is unreliable and not a substitute for correct predicate design. Option D confuses the aggregation level with the pruning failure \u2014 any function wrapper prevents pruning regardless of whether the format string matches one or many partitions.",
+    "hints": [
+      "The query wraps event_date in DATE_FORMAT() before comparing it. What does the optimizer need to see in a WHERE clause to determine which partitions to skip without scanning them?",
+      "What is the general rule about applying transformation functions to partition columns in filter predicates?"
+    ],
+    "concepts": [
+      "PARTITIONING & PRUNING",
+      "COST OPTIMIZATION",
+      "DATA QUALITY"
+    ]
+  },
+  {
+    "id": 53073,
+    "order": 73,
+    "title": "Adding a NOT NULL Column With a DEFAULT to a 500M-Row Postgres 14 Table in Production",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "description": "A backend team needs to add a risk_tier column (VARCHAR(10) NOT NULL DEFAULT 'standard') to a 500-million-row Postgres 14 transactions table receiving 3,000 writes/second in production. A junior engineer proposes: ALTER TABLE transactions ADD COLUMN risk_tier VARCHAR(10) NOT NULL DEFAULT 'standard'. A senior engineer warns this could cause a production outage. Who is correct?",
+    "options": [
+      "The senior engineer is wrong. In Postgres 11+, adding a NOT NULL column with a constant, non-volatile DEFAULT is a metadata-only operation \u2014 the default value is stored in the system catalog and applied to existing rows at read time without rewriting the table. The ACCESS EXCLUSIVE lock is held only briefly for the metadata change and is safe during business hours.",
+      "The senior engineer is correct. ALTER TABLE acquires an ACCESS EXCLUSIVE lock for the full duration of backfilling the DEFAULT value into all 500M existing rows. On a busy table, this lock blocks all reads and writes for the duration \u2014 potentially minutes to hours \u2014 causing a production outage.",
+      "Both are partially correct. The column addition itself is fast, but the NOT NULL constraint validation requires a full table scan under ACCESS EXCLUSIVE lock. The safe pattern is: ADD COLUMN nullable, batch-fill, then ADD CONSTRAINT NOT NULL VALIDATE CONSTRAINT.",
+      "The senior engineer is correct for Postgres 13 and earlier, but Postgres 14 introduced parallel table rewrites for ALTER TABLE. With enough max_parallel_workers, the backfill completes in seconds even on a 500M-row table."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: since Postgres 11, adding a column with a constant (non-volatile) DEFAULT \u2014 a literal value, not a function like NOW() \u2014 is a metadata-only operation. Postgres stores the default value in pg_attribute and applies it to existing rows at read time without writing to the heap. The ACCESS EXCLUSIVE lock is held only for the brief metadata update, making this operation safe during business hours on a busy table. Option B describes pre-Postgres-11 behavior, where all DDL changes involving new NOT NULL columns required a full table rewrite under exclusive lock. This is a common misconception held by engineers trained on older Postgres versions or other databases. Option C (separate NOT VALID + VALIDATE) is the correct pattern for adding a NOT NULL constraint to a column that already exists with nullable values \u2014 it is not needed here because we are adding a new column with a DEFAULT, which Postgres 11+ handles without a constraint validation scan. Option D is incorrect: Postgres does not have parallel table rewrites for ALTER TABLE in version 14; the change described in Option A (metadata-only default) is the correct mechanism, not parallel rewrites.",
+    "hints": [
+      "In Postgres 11 and later, what happens at the storage level when ALTER TABLE adds a column with a constant DEFAULT value \u2014 does Postgres write the default to every existing row on disk?",
+      "What type of lock does this ALTER TABLE hold, and for how long does it hold it in Postgres 14 when the DEFAULT is a literal constant?"
+    ],
+    "concepts": [
+      "SCHEMA EVOLUTION",
+      "DATA QUALITY",
+      "STORAGE ARCHITECTURE"
+    ]
+  },
+  {
+    "id": 53074,
+    "order": 74,
+    "title": "Pull-Based vs. Push-Based Ingestion at 50,000 Events Per Second \u2014 When Does the Choice Matter?",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A data team is designing ingestion for a high-volume clickstream feed: 50,000 events/second from a web application. Two options are proposed: (A) pull-based \u2014 a Kafka consumer group polls the Kafka topic; (B) push-based \u2014 the web application posts events directly to the ingestion service via HTTP. A senior engineer argues push is always better for real-time streams because the producer controls timing. Which response is most accurate?",
+    "options": [
+      "Push-based ingestion is always preferred for real-time streams: the producer controls when data is sent, which minimizes latency from event generation to ingestion. Pull-based polling introduces delay equal to the polling interval.",
+      "Pull-based ingestion via Kafka consumer is preferred at high volume: consumers apply natural backpressure by controlling their own poll rate, are decoupled from producer throughput spikes, and benefit from Kafka's durable buffering. The producer writes at its own pace; consumers read when ready.",
+      "The choice does not meaningfully affect latency at 50,000 events/second \u2014 both architectures deliver equivalent freshness at this throughput, so the decision should be driven by team familiarity.",
+      "Pull is preferred when the producer is an external third-party (webhooks are unreliable at scale); push is preferred when the producer is an internal system where HTTP reliability can be guaranteed."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B captures the key architectural advantage of pull-based ingestion at high volume. Kafka consumer groups use pull semantics: consumers request data at their own controlled rate, providing natural backpressure. At 50,000 events/second, a slow consumer simply accumulates a lag in the Kafka queue rather than overwhelming itself \u2014 Kafka absorbs the spike. Push-based HTTP at this volume requires the producer to handle HTTP failures, retries, and backpressure coordination at the application layer, significantly complicating the web application. Option A overstates the latency advantage: a Kafka consumer polling at sub-second intervals has comparable latency to a direct HTTP push endpoint, but with far better resilience and decoupling. Option C is incorrect: the architectures differ significantly in backpressure handling, durability, and consumer group management \u2014 they are not equivalent. Option D is a reasonable heuristic for low-volume use cases but does not capture the primary driver at high volume, which is the backpressure and decoupling properties, not the producer's internal vs. external origin.",
+    "hints": [
+      "At 50,000 events/second, what happens to a push-based HTTP endpoint if the consumer is temporarily slow to process? How does Kafka-based pull ingestion handle the same situation?",
+      "Which architecture lets the consumer control the rate at which it reads data, rather than having the producer decide when to deliver?"
+    ],
+    "concepts": [
+      "BATCH VS STREAMING",
+      "BACKPRESSURE",
+      "DATA QUALITY"
+    ]
+  },
+  {
+    "id": 53075,
+    "order": 75,
+    "title": "CDC Consumer Silently Drops Rows When Upstream Schema Change Causes Deserialization Errors",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A Debezium CDC pipeline streams changes from PostgreSQL to Snowflake via Kafka. The source team drops a column (last_modified_by) and adds a replacement column (updated_at TIMESTAMP) without notifying the data team. The pipeline's Kafka consumer uses a fixed Avro schema. After the schema change, events fail deserialization. The consumer catches the ValueError in a broad try-except, logs it at DEBUG level, and skips those rows. The Snowflake table has a data gap starting from the schema change.",
+    "description": "What is the root cause and what design fix prevents silent data loss from schema changes?",
+    "options": [
+      "The root cause is the silent exception handler: catching deserialization errors at DEBUG level makes schema-incompatible events invisible. The fix is routing deserialization failures to a dead-letter queue and alerting on any DLQ events so the team is notified immediately when schema incompatibilities occur.",
+      "The root cause is Debezium's schema history mode not propagating DDL changes to downstream consumers. Switching to schema registry mode with FORWARD compatibility would push the updated Avro schema to the consumer automatically.",
+      "The root cause is the simultaneous drop-and-add column pattern: dropping a non-nullable column while adding a replacement in one DDL statement produces an intermediate schema state incompatible with both old and new consumer schemas. The fix is a multi-step migration: add the new column, migrate data, then drop the old column.",
+      "The root cause is the Avro schema's strict field enforcement. Switching to a schemaless format like JSON removes the deserialization dependency on a fixed schema and prevents this class of failure."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A identifies the structural root cause: the exception handler that catches deserialization errors and logs at DEBUG is the failure mode. Even when a schema change is the proximate cause, silently skipping rows creates invisible data loss \u2014 the team has no awareness that events are being dropped. The correct pattern is routing failed events to a dead-letter queue: every DLQ event is an explicit signal requiring investigation. Option B (schema registry with FORWARD compatibility) is a valuable upstream improvement that would prevent the producer from making incompatible changes without a review gate, but it does not fix the existing silent-skip behavior \u2014 until the consumer schema is updated, failed events will still occur. The DLQ ensures those failures are visible. Option C (multi-step column migration) is good producer-side hygiene but does not eliminate the possibility of schema changes affecting the consumer; schema evolution will happen, and the consumer must surface failures visibly. Option D (schemaless JSON) trades type safety for format flexibility without addressing the underlying problem \u2014 deserialization-equivalent failures will occur with JSON too (missing required keys, wrong value types), and those will be silently swallowed by the same exception handler.",
+    "hints": [
+      "The consumer catches a deserialization error, logs at DEBUG, and continues to the next message. What is the state of the Snowflake warehouse for the rows whose events triggered those errors?",
+      "Which fix ensures that every failed deserialization is visible and actionable rather than silently discarded?"
+    ],
+    "concepts": [
+      "CDC & INGESTION",
+      "DATA CONTRACT",
+      "LINEAGE & OBSERVABILITY"
+    ]
+  },
+  {
+    "id": 53076,
+    "order": 76,
+    "title": "Producer Switches Date Format From ISO 8601 to Human-Readable \u2014 Consumer Sets NULLs Silently",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A pipeline consumes JSON events from Kafka. The producer is supposed to emit timestamps in ISO 8601 format: event_time: '2024-03-15T14:30:00Z'. After a routine producer refactor, event_time is emitted as: 'March 15, 2024 at 2:30 PM'. The consumer parses event_time with Python's datetime.fromisoformat() \u2014 which raises ValueError for the new format. The consumer catches ValueError, sets event_time to NULL, and continues. Three days of warehouse data have NULL event_times.",
+    "description": "What is the root cause and what architectural fix prevents this class of producer-side contract violation from recurring?",
+    "options": [
+      "The root cause is the datetime.fromisoformat() parser not supporting human-readable formats. The fix is replacing it with a more permissive parser like dateutil.parser.parse() that handles multiple datetime formats.",
+      "The root cause is the absence of a data contract between producer and consumer: the producer changed the timestamp format without notification and without any upstream validation. The fix is a schema registry or contract test that validates event_time against the ISO 8601 format before events enter the Kafka topic.",
+      "The root cause is the silent NULL-on-failure handling: setting event_time to NULL instead of raising an error masks the format change as data quality noise. The fix is treating parse failures as fatal errors that halt the pipeline and alert immediately.",
+      "The root cause is using Python's standard library datetime module instead of a more robust third-party parser. Adopting Apache Arrow's timestamp parsing, which handles both ISO 8601 and human-readable formats, prevents this class of failure."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is the structural root cause: there is no data contract between the producer and consumer. In a mature pipeline, the producer cannot silently change a field's format \u2014 a schema registry or contract test would catch the format violation at the producer's CI/CD stage before any events enter the Kafka topic, preventing the issue entirely. Option C (silent NULL handling) is a real contributing factor that amplified the impact (NULLs instead of a visible error), but making the consumer noisier addresses the symptom rather than the root cause \u2014 even if the consumer had raised an error immediately, 3 days of data loss would still occur. The fix that prevents recurrence is the contract enforcement layer (B). Option A (permissive parser) is an anti-pattern for a financial-grade pipeline: accepting multiple date formats silently hides future contract violations rather than enforcing the agreed format. Option D has the same problem as Option A \u2014 the goal is to enforce the contract, not to be permissive about format drift.",
+    "hints": [
+      "The producer changed the timestamp format without telling the consumer. What mechanism, if it had been in place, would have detected this format violation before any events reached the Kafka topic?",
+      "Which fix prevents the producer from unilaterally changing the data contract, rather than making the consumer more tolerant of violations?"
+    ],
+    "concepts": [
+      "DATA CONTRACT",
+      "SCHEMA EVOLUTION",
+      "LINEAGE & OBSERVABILITY"
+    ]
+  },
+  {
+    "id": 53077,
+    "order": 77,
+    "title": "Spark Job Writes 50,000 Small Parquet Files \u2014 Parallelism Set Too High",
+    "difficulty": "hard",
+    "type": "debug",
+    "mock_only": true,
+    "scenario_context": "A Spark transformation job processes 10 GB of daily clickstream data and writes output to S3 as Parquet. The job is configured with spark.default.parallelism=50000. The output contains 50,000 files averaging 200 KB each. Downstream Athena queries over this data take 4 minutes instead of the expected 20 seconds. The team confirms the slowdown is from file-open and metadata overhead, not from scan volume.",
+    "description": "What is the root cause and the correct fix?",
+    "options": [
+      "The root cause is S3's LIST API overhead: Athena must enumerate 50,000 object keys before reading any data. Enabling S3 Inventory pre-generates file listings that Athena can use instead of real-time LIST calls.",
+      "The root cause is the excessive parallelism setting: with 50,000 tasks writing 10 GB, each task produces a 200 KB file \u2014 far below the optimal 128\u2013512 MB range for Parquet. The fix is coalescing to a partition count that produces right-sized files before the write (e.g., coalesce(100) for approximately 100 MB files).",
+      "The root cause is Parquet's per-file footer overhead: each Parquet file requires a footer read for schema and statistics, which dominates for small files. Switching to ORC or Avro eliminates the per-file footer cost.",
+      "The root cause is S3 eventual consistency: 50,000 files written in parallel may not all be immediately visible to Athena. A 30-second delay between the Spark write and the Athena query resolves the visibility issue."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is the root cause: spark.default.parallelism=50000 creates 50,000 output tasks, each writing one Parquet file. At 10 GB / 50,000 files, each file is 200 KB \u2014 well below the optimal 128\u2013512 MB range. Athena must open each Parquet file independently, reading the file footer for schema and column statistics. At 50,000 files, this per-file overhead dominates query time. The fix is coalescing the final RDD or DataFrame to a partition count that produces appropriately-sized files: coalesce(100) yields approximately 100 MB files, reducing file count 500x. Option A (S3 Inventory) reduces LIST API calls but not per-file open and footer-read overhead, which is the actual bottleneck. Option C (switch format) does not address the root cause \u2014 ORC and Avro have similar per-file overhead; the small-file problem exists regardless of format. Option D is based on a misconception: AWS S3 has provided strong read-after-write consistency for object PUT operations since December 2020; the delay is unnecessary and does not address the file-open overhead.",
+    "hints": [
+      "With 50,000 tasks writing 10 GB, each output file is 200 KB. What is the target Parquet file size for efficient Athena queries, and how far off is 200 KB?",
+      "Which fix directly reduces the number of output files rather than changing how Athena reads them?"
+    ],
+    "concepts": [
+      "STORAGE LAYOUT & FILE FORMATS",
+      "COST OPTIMIZATION",
+      "PARTITIONING & PRUNING"
+    ]
+  },
+  {
+    "id": 53078,
+    "order": 78,
+    "title": "Late Data Handling for Revenue Pipeline \u2014 Tolerance Window vs. Scheduled Reprocessing",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A streaming revenue pipeline aggregates transaction events into hourly windows and writes to a revenue_summary table for financial reporting. The source has a known late-event distribution: 99% arrive within 10 minutes, 99.9% within 2 hours, and 0.1% may arrive up to 24 hours late. Two strategies are proposed: (A) 2-hour tolerance \u2014 delay window closure by 2 hours to capture 99.9% of events in the initial write; (B) 10-minute tolerance + daily reprocessing \u2014 close windows quickly, then re-run affected windows nightly to incorporate remaining late events.",
+    "description": "Which strategy is more defensible for a financial reporting pipeline, and why?",
+    "options": [
+      "Strategy A (2-hour tolerance) is more defensible: financial reports require correct totals, and capturing 99.9% of events in the initial write avoids the reconciliation complexity and audit trail challenges of a reprocessing job.",
+      "Strategy B (10-minute tolerance + daily reprocessing) is more defensible: closing windows quickly gives the finance team near-real-time hourly figures for operational use, and the daily reprocessing job ensures final financial correctness.",
+      "Neither strategy is appropriate for financial reporting, which requires zero late-event tolerance. Events arriving after 10 minutes must be excluded, documented, and reconciled with the source system monthly.",
+      "The correct choice is SLA-dependent and cannot be determined without knowing the downstream requirement: if the finance team needs each hour's revenue within 15 minutes of the hour end, Strategy A (2-hour window) is disqualifying; if they can wait 2+ hours per reporting cycle, Strategy A's simplicity may be preferable."
+    ],
+    "correct_option": 3,
+    "explanation": "Option D is the most defensible answer: the correct choice between Strategy A and Strategy B is entirely SLA-dependent. If the finance team's SLA requires hourly revenue figures within 15 minutes of the hour end, a 2-hour closure delay (Strategy A) is disqualifying \u2014 the team waits 2 hours for each result. Strategy B (10-minute + reprocessing) serves a tight SLA with a known correction discipline. Conversely, if the finance team's SLA allows 3+ hours per reporting cycle, Strategy A's simplicity (no reprocessing job to maintain, no reconciliation window) may be preferable. Option A overstates the case for Strategy A without acknowledging its latency impact. Option B overstates the case for Strategy B without acknowledging that for a team comfortable with 2-hour latency, eliminating a daily reprocessing job's operational complexity is a real benefit. Option C is wrong: excluding 0.1% of late events from a financial pipeline is not standard practice when those events are capturable \u2014 the choice of how to capture them (tolerance vs. reprocessing) depends on operational requirements.",
+    "hints": [
+      "Strategy A delivers correct data after a 2-hour delay. Strategy B delivers fast but potentially incomplete data corrected daily. Which business requirement determines which trade-off is acceptable?",
+      "Without knowing the downstream SLA, can you determine which strategy is correct? What single piece of information would make the choice clear?"
+    ],
+    "concepts": [
+      "WATERMARKING",
+      "BATCH VS STREAMING",
+      "SCHEDULING & SLAS"
+    ]
   }
 ]
