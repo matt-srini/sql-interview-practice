@@ -33,7 +33,7 @@ You think from five perspectives simultaneously. Every recommendation must satis
 | SQL | 95 (32 easy / 34 medium / 29 hard) | DuckDB execution, realistic relational datasets |
 | Python | 83 (30 easy / 29 medium / 24 hard) | Algorithms and data structures, test-case evaluation |
 | Pandas | 82 (29 easy / 30 medium / 23 hard) | DataFrame manipulation, output comparison |
-| PySpark | 90 (38 easy / 30 medium / 22 hard) | MCQ / predict-output / debug formats |
+| PySpark | 90 (38 easy / 30 medium / 22 hard) | conceptual / predict_output / debug / scenario / optimization (MCQ response) |
 
 **Modes:**
 - **Challenge mode** — plan-aware unlock rules, persistent progress, 350 questions across 4 tracks
