@@ -72,7 +72,7 @@ Difficulty controls reasoning depth, never licenses method-recall drills. Even e
 
 Full registry: [`docs/concept-taxonomy.md` → Pandas section](../concept-taxonomy.md#pandas--concept-families).
 
-21 families. Six are new in the 2026-05 refactor. The first is Pandas-native; the other five are shared with the SQL track (same reasoning, same names — explicit cross-track alignment per the executable-track reusability principle):
+21 families. Six were added in the 2026-05 refactor. The first is Pandas-native; the other five are shared with the SQL track (same reasoning, same names — explicit cross-track alignment per the executable-track reusability principle):
 
 - **`MEMORY & VECTORIZATION REASONING`** (Pandas-native) — vectorize over `apply(lambda)`, dtype-driven memory choices, chunk-reading large files. No direct SQL analogue.
 - **`METRIC INTERPRETATION & DENOMINATOR CHOICE`** (shared with SQL) — picking and defending a metric definition under ambiguous business framing
@@ -83,7 +83,16 @@ Full registry: [`docs/concept-taxonomy.md` → Pandas section](../concept-taxono
 
 Two existing families renamed to align with SQL: `DEDUPLICATION & DISTINCT COUNTING` → `DEDUPLICATION LOGIC`, and `RANKING & TOP-K` → `RANKING & TOP-N PER GROUP`. Existing tags resolve unchanged through preserved match patterns.
 
-**These six families currently have no question coverage** — they surface reasoning the bank only had implicitly. They are *practice-curriculum targets*, not mock material. Under the mock-only rule (no unseen concepts), establish them in **practice first** (Phase 2 remap of fitting existing questions + new practice authoring) before any mock-only content recombines them.
+**Phase 2 (2026-05) classification — all six families locked:**
+
+| Family | Class | Rationale |
+|---|---|---|
+| `MEMORY & VECTORIZATION REASONING` | **practice-grounded** | Gradable via `assert_frame_equal` (dtype mismatches caught); 33021 anchors it. Phase 2 adds 32049 (medium) and 33038 (hard). |
+| `DATA QUALITY SKEPTICISM` | **practice-grounded** | Debug-format questions grade cleanly (merge fan-out, grain mismatch). Phase 2 adds 32050. |
+| `DOUBLE-COUNTING DETECTION` | **practice-grounded** | "Why does this merge inflate my user count?" is a gradable debugging exercise. Phase 2 adds 32051. |
+| `METRIC INTERPRETATION & DENOMINATOR CHOICE` | **mock-only realism** | Choice of denominator is a judgment call, not a scorable output diff. Co-tag rule enforced. |
+| `OUTPUT SANITY VALIDATION` | **mock-only realism** | Self-checking inside a solve function is not graded by `assert_frame_equal`. Co-tag rule enforced. |
+| `PERFORMANCE-AWARE ANALYTICS` | **mock-only realism** | "Should you filter before joining?" is analytical-cost reasoning — not a scorable output. Co-tag rule enforced. |
 
 Blocklist rejects method-name tags (`groupby`, `merge`, `pivot_table`, `apply`). Describe the *reasoning*.
 

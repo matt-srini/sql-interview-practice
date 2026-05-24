@@ -34,11 +34,13 @@ MOCK_ONLY_REALISM_FAMILIES: dict[str, set[str]] = {
         "OUTPUT SANITY VALIDATION",
         "PERFORMANCE-AWARE ANALYTICS",
     },
+    # Pandas Phase 2 (2026-05-24): MEMORY & VECTORIZATION REASONING is
+    # practice-grounded (gradable via assert_frame_equal dtype checks; 33021
+    # anchors it). Only the three judgment-lens families are mock-only realism.
     "python-data": {
         "METRIC INTERPRETATION & DENOMINATOR CHOICE",
         "OUTPUT SANITY VALIDATION",
         "PERFORMANCE-AWARE ANALYTICS",
-        "MEMORY & VECTORIZATION REASONING",
     },
     # PySpark: NO mock-only realism families. All 3 ⚡ families
     # (DATA QUALITY SKEPTICISM, DOUBLE-COUNTING DETECTION, OUTPUT SANITY VALIDATION)
@@ -783,12 +785,21 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "DEBUG",
             "KEYERROR",
         ],
-        # ⚡ new families
+        # Practice-grounded (Phase 2 2026-05-24) — 33021 anchor + 32049/33038 extensions
         "MEMORY & VECTORIZATION REASONING": [
             "VECTORIZATION OVER APPLY",
             "DTYPE MEMORY CHOICE",
             "CHUNK READING",
             "APPLY VS TRANSFORM TRADEOFF",
+            # Phase 2 match-pattern expansion: resolves 33021 tags without question edits
+            "MEMORY FOOTPRINT OPTIMIZATION",
+            "DTYPE DOWNSIZING",
+            "CATEGORICAL ENCODING",
+            "MEMORY USAGE AUDITING",
+            "LOSSLESS TYPE CONVERSION",
+            "INT32 DOWNCAST",
+            "ASTYPE CATEGORY",
+            "DEEP=TRUE",
             "VECTORIZ",
             "MEMORY",
         ],

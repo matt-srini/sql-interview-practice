@@ -10,7 +10,7 @@
 
 If a family fails either test, it doesn't belong here. We are **not** building a textbook curriculum. We are surfacing the reasoning patterns serious practitioners and serious interviewers care about.
 
-> **⚡ gap families — Phase 2 status.** Families marked `⚡ *real-world gap*` were added by the 2026-05 refactor to surface reasoning the bank previously had only *implicitly*. **SQL Phase 2 complete:** `DOUBLE-COUNTING DETECTION`, `DATA QUALITY SKEPTICISM`, and `METRIC RECONCILIATION` now have practice coverage; `METRIC INTERPRETATION & DENOMINATOR CHOICE`, `OUTPUT SANITY VALIDATION`, and `PERFORMANCE-AWARE ANALYTICS` are established as **mock-only realism lenses** (appear only on `mock_only: true` questions, always co-occurring with ≥1 practice-grounded family; enforced by `_validate_mock_only_realism()`). **Python Phase 2 complete:** Python has **no ⚡/realism families by design** — Python's families are pure algorithmic patterns, and the candidate "lens" (complexity & memory) is **practice-gradable** via the executable harness (`O(n²)` times out, `load-everything` OOMs on the sized hidden inputs) and surfaces in mock as the `performance_pivot` chain dimension, not as a concept tag. **PySpark Phase 2 complete:** `DATA QUALITY SKEPTICISM`, `DOUBLE-COUNTING DETECTION`, and `OUTPUT SANITY VALIDATION` are practice-grounded (new practice questions authored; all three ⚡ markers removed from PySpark section). PySpark has no mock-only realism families — MCQ format makes all three reasoning lenses gradeable as `predict_output` / `debug`. For Pandas / other tracks, ⚡ families remain practice-curriculum targets until each track's Phase 2 lands — do not use them in mock-only content until the practice bank for that track teaches them.
+> **⚡ gap families — Phase 2 status.** Families marked `⚡ *real-world gap*` were added by the 2026-05 refactor to surface reasoning the bank previously had only *implicitly*. **SQL Phase 2 complete:** `DOUBLE-COUNTING DETECTION`, `DATA QUALITY SKEPTICISM`, and `METRIC RECONCILIATION` now have practice coverage; `METRIC INTERPRETATION & DENOMINATOR CHOICE`, `OUTPUT SANITY VALIDATION`, and `PERFORMANCE-AWARE ANALYTICS` are established as **mock-only realism lenses** (appear only on `mock_only: true` questions, always co-occurring with ≥1 practice-grounded family; enforced by `_validate_mock_only_realism()`). **Python Phase 2 complete:** Python has **no ⚡/realism families by design** — Python's families are pure algorithmic patterns, and the candidate "lens" (complexity & memory) is **practice-gradable** via the executable harness (`O(n²)` times out, `load-everything` OOMs on the sized hidden inputs) and surfaces in mock as the `performance_pivot` chain dimension, not as a concept tag. **PySpark Phase 2 complete:** `DATA QUALITY SKEPTICISM`, `DOUBLE-COUNTING DETECTION`, and `OUTPUT SANITY VALIDATION` are practice-grounded (new practice questions authored; all three ⚡ markers removed from PySpark section). PySpark has no mock-only realism families — MCQ format makes all three reasoning lenses gradeable as `predict_output` / `debug`. **Pandas Phase 2 in progress (2026-05-24):** six ⚡ families classified: `MEMORY & VECTORIZATION REASONING`, `DATA QUALITY SKEPTICISM`, `DOUBLE-COUNTING DETECTION` → practice-grounded; `METRIC INTERPRETATION & DENOMINATOR CHOICE`, `OUTPUT SANITY VALIDATION`, `PERFORMANCE-AWARE ANALYTICS` → mock-only realism. Match-pattern expansion applied (33021 now resolves). See Pandas section below for classification table. For other tracks (Data Engineering, Data Modeling, Statistics, ML Fundamentals, Experimentation), ⚡ families remain practice-curriculum targets until each track's Phase 2 lands.
 
 ---
 
@@ -548,44 +548,47 @@ The following tags are **forbidden** as `concepts` values — they are mechanic 
 **Match patterns:** `OUTPUT SCHEMA`, `RESULT ORDERING`, `DETERMINISTIC`, `reset_index`
 **Example existing tags:** DETERMINISTIC RESULT ORDERING (18), OUTPUT SCHEMA SHAPING (8)
 
-#### `MEMORY & VECTORIZATION REASONING` ⚡ *new family — real-world gap*
+#### `MEMORY & VECTORIZATION REASONING` *(practice-grounded — Phase 2)*
 **What it tests:** when `apply(lambda)` is fine vs when it's a 10× slowdown, picking dtypes for memory, chunking large reads, recognising the row-wise vs column-wise antipattern.
-**Member tags:** `VECTORIZATION OVER APPLY`, `DTYPE MEMORY CHOICE`, `CHUNK READING`, `APPLY VS TRANSFORM TRADEOFF`
-**Why this is new:** real practitioners hit memory and speed problems constantly with pandas; the bank has questions that *teach* vectorization implicitly but never tags it as a family. Mock content should test this directly.
+**Match patterns:** `VECTORIZATION OVER APPLY`, `DTYPE MEMORY CHOICE`, `CHUNK READING`, `APPLY VS TRANSFORM TRADEOFF`, `MEMORY FOOTPRINT OPTIMIZATION`, `DTYPE DOWNSIZING`, `CATEGORICAL ENCODING`, `MEMORY USAGE AUDITING`, `LOSSLESS TYPE CONVERSION`, `int32 downcast`, `astype category`, `deep=True`, `VECTORIZ`, `MEMORY`
+**Practice grounding:** 33021 ("Memory optimization with dtype conversion") anchors this family; vectorized-vs-apply + dtype-choice reasoning is gradable via `assert_frame_equal` (dtype mismatches are caught). Additional practice questions authored in Phase 2 (32049, 33038) extend coverage to medium difficulty and the vectorize-over-apply specific pattern.
 
 #### `DEBUG PANDAS`
 **Match patterns:** `debug`, `DEBUG`, `KeyError`
 **Example existing tags:** debug (5), KeyError (3)
 
-#### `METRIC INTERPRETATION & DENOMINATOR CHOICE` ⚡ *real-world gap*
+#### `METRIC INTERPRETATION & DENOMINATOR CHOICE` *(mock-only realism — Phase 2)*
+**Designation:** mock-only realism family. May appear **only** on `mock_only: true` questions; must co-occur with ≥1 practice-grounded family; enforced by `_validate_mock_only_realism()`.
 **What it tests:** same as the SQL family of the same name — picking the right metric definition under ambiguous business framing, choosing the right denominator for rates / ratios, recognising when "active user" / "revenue" / "session" has multiple defensible definitions, defending the call.
 **Typical question shape:** Mock-only ambiguity-pivot framings where the description deliberately leaves the metric definition open and the answer hinges on what the candidate picks.
 **Match patterns:** `ACTIVE-USER DEFINITION`, `DENOMINATOR`, `RATE BASE`, `AMBIGUOUS METRIC`, `METRIC INTERPRETATION`, `KPI INTERPRETATION`
 **Member tags (canonical):** `METRIC INTERPRETATION`, `DENOMINATOR SELECTION`, `RATE BASE NORMALIZATION`, `AMBIGUOUS KPI DEFINITION`, `BUSINESS RULE DISAMBIGUATION`
 **Cross-track alignment:** parallel to the SQL family. The same business-reasoning skill applies regardless of the language used to compute it.
 
-#### `DATA QUALITY SKEPTICISM` ⚡ *real-world gap*
+#### `DATA QUALITY SKEPTICISM` *(practice-grounded — Phase 2)*
 **What it tests:** same reasoning as the SQL family — noticing duplicates that shouldn't be there, finding orphan records, recognising suspicious NULLs, validating row counts against source-of-truth, anti-join reconciliation as a debugging tool. The pandas surface adds dtype-anomaly detection (object column where numeric expected, NaT vs NaN vs None).
 **Typical question shape:** Mock-only debug or scenario questions where the input DataFrame is dirty by design and the candidate must catch and address it before answering.
 **Match patterns:** `DATA QUALITY`, `DUPLICATE DETECTION`, `ORPHAN`, `NULL ANOMALY`, `DTYPE ANOMALY`, `ROW COUNT SANITY`
 **Member tags (canonical):** `DATA QUALITY SKEPTICISM`, `DUPLICATE DETECTION`, `ORPHAN RECORD CHECK`, `NULL ANOMALY INSPECTION`, `DTYPE ANOMALY DETECTION`
 **Cross-track alignment:** parallel to SQL. Real practitioners spend 30–50% of their time on data quality regardless of the tool.
 
-#### `DOUBLE-COUNTING DETECTION` ⚡ *real-world gap*
+#### `DOUBLE-COUNTING DETECTION` *(practice-grounded — Phase 2)*
 **What it tests:** same as SQL — spotting fan-out from one-to-many merges, recognising inflated metrics from merging facts to facts, choosing aggregation grain to prevent multiplication. Pandas-specific failure mode: `merge(how='left')` that silently inflates rows when right side has duplicates on the join key.
 **Typical question shape:** Mock-only debug questions where a pandas pipeline "looks right" but returns inflated numbers because of a merge mistake.
 **Match patterns:** `FAN-OUT`, `JOIN MULTIPLICATION`, `MERGE MULTIPLICATION`, `GRAIN MISMATCH`, `INFLATED METRIC`
 **Member tags (canonical):** `FAN-OUT DETECTION`, `MERGE MULTIPLICATION`, `GRAIN MISMATCH`, `INFLATED METRIC DEBUG`
 **Cross-track alignment:** parallel to SQL.
 
-#### `OUTPUT SANITY VALIDATION` ⚡ *real-world gap*
+#### `OUTPUT SANITY VALIDATION` *(mock-only realism — Phase 2)*
+**Designation:** mock-only realism family. May appear **only** on `mock_only: true` questions; must co-occur with ≥1 practice-grounded family; enforced by `_validate_mock_only_realism()`.
 **What it tests:** same as the SQL family — self-checking your own pipeline's output before declaring done. Pandas-specific angle includes verifying `.reset_index(drop=True)` discipline, dtype assertions, shape assertions (no rows lost / no rows gained unexpectedly).
 **Typical question shape:** Mock-only scenarios where the pipeline produces an answer that *looks* correct but fails a sanity check the candidate should have run.
 **Match patterns:** `SANITY`, `OUTPUT VALIDATION`, `ROW COUNT CHECK`, `SHAPE ASSERTION`, `DTYPE ASSERTION`, `PLAUSIBILITY CHECK`
 **Member tags (canonical):** `OUTPUT SANITY VALIDATION`, `RESULT PLAUSIBILITY CHECK`, `SHAPE ASSERTION`, `DTYPE SANITY`
 **Cross-track alignment:** parallel to SQL.
 
-#### `PERFORMANCE-AWARE ANALYTICS` ⚡ *real-world gap*
+#### `PERFORMANCE-AWARE ANALYTICS` *(mock-only realism — Phase 2)*
+**Designation:** mock-only realism family. May appear **only** on `mock_only: true` questions; must co-occur with ≥1 practice-grounded family; enforced by `_validate_mock_only_realism()`.
 **What it tests:** choosing the more efficient pandas approach without sacrificing correctness — vectorize over `apply(lambda)`, pick the right dtype for memory, chunk large reads instead of loading everything, recognise the row-wise antipattern. **This is question-level performance reasoning, distinct from the `performance_pivot` chain dimension and from the existing `MEMORY & VECTORIZATION REASONING` family** (which focuses on the vectorize-vs-apply choice specifically; this family is the broader analytical-cost family that includes pre-aggregation, query pushdown, and scan-reduction reasoning).
 **Typical question shape:** "This pipeline finishes in 40 minutes on 10M rows — get it under 5 minutes without changing the output." Or: "Two approaches give the same answer — which scales better?"
 **Match patterns:** `PERFORMANCE-AWARE`, `SCAN REDUCTION`, `CARDINALITY REDUCTION`, `PRE-AGGREGATION STRATEGY`, `EFFICIENT APPROACH`, `COST-AWARE`
@@ -602,8 +605,8 @@ The following tags are **forbidden** as `concepts` values — they are mechanic 
 | `fillna`, `dropna` | `MISSING VALUE STRATEGY` |
 | `dt`, `to_datetime` | `DATETIME OPERATIONS` |
 | `rolling`, `resample` | `WINDOW & ROLLING OPERATIONS` |
-| `rank`, `nlargest`, `nsmallest` | `RANKING & TOP-K` |
-| `drop_duplicates`, `nunique`, `value_counts` | `DEDUPLICATION & DISTINCT COUNTING` |
+| `rank`, `nlargest`, `nsmallest` | `RANKING & TOP-N PER GROUP` |
+| `drop_duplicates`, `nunique`, `value_counts` | `DEDUPLICATION LOGIC` |
 | `loc`, `iloc`, `query` | `BOOLEAN INDEXING & FILTERING` or `COLUMN SELECTION & PROJECTION` |
 | `apply`, `apply(lambda)` | `MEMORY & VECTORIZATION REASONING` (or the underlying pattern) |
 | `concat`, `append` | the entity-link or reshape family |
