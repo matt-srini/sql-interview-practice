@@ -30,9 +30,9 @@
       "Use `.dropna(subset=['email'])` to remove rows where only email is null"
     ],
     "concepts": [
-      "column selection",
-      "NULL-BASED ROW FILTERING",
-      "missing values"
+      "COLUMN SELECTION & PROJECTION",
+      "BOOLEAN INDEXING & FILTERING",
+      "MISSING VALUE STRATEGY"
     ]
   },
   {
@@ -63,12 +63,11 @@
     "explanation": "`groupby('status').size()` counts rows per group. Using `as_index=False` keeps `status` as a column rather than the index. `.rename(columns={'size': 'count'})` gives the count column its required name. Finally, sorting by `count` descending puts the most common statuses first.",
     "hints": [
       "Reduce the frame to the requested grain and count how many records fall into each bucket.",
-      "The result of `.groupby().size()` has the groupby key as the index by default — decide whether you want it as a column instead."
+      "The result of `.groupby().size()` has the groupby key as the index by default \u2014 decide whether you want it as a column instead."
     ],
     "concepts": [
       "GROUPED AGGREGATION",
-      "DETERMINISTIC RESULT ORDERING",
-      "OUTPUT SCHEMA SHAPING"
+      "OUTPUT SHAPE & ORDERING"
     ]
   },
   {
@@ -97,14 +96,13 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_employees):\n    mean_salary = df_employees['salary'].mean()\n    result = df_employees.copy()\n    result['salary'] = result['salary'].fillna(mean_salary)\n    return result",
     "explanation": "`.mean()` on a Series automatically skips NaN values, giving the mean of non-null salaries. `.fillna(value)` replaces NaN entries with that value. Working on a `.copy()` of the DataFrame avoids mutating the original.",
     "hints": [
-      "Compute the mean with `df_employees['salary'].mean()` — pandas skips NaN automatically",
+      "Compute the mean with `df_employees['salary'].mean()` \u2014 pandas skips NaN automatically",
       "Use `.fillna(mean_salary)` to replace null values in the salary column"
     ],
     "concepts": [
-      "MISSING-VALUE IMPUTATION",
-      "mean",
-      "missing values",
-      "SAFE FRAME TRANSFORMATION"
+      "MISSING VALUE STRATEGY",
+      "GROUPED AGGREGATION",
+      "METHOD CHAINING & PIPELINE STYLE"
     ]
   },
   {
@@ -113,7 +111,7 @@
     "topic": "python_data",
     "difficulty": "easy",
     "title": "Extract Email Domain",
-    "description": "You have a DataFrame `df_users` loaded from the users dataset.\n\n**Columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `is_active`\n\nSome rows have null `email`. First drop those rows, then add a new column `email_domain` that contains the domain part of the email address (everything after the `@` symbol — e.g. `'gmail.com'` from `'user@gmail.com'`). Return the full DataFrame with the new column.",
+    "description": "You have a DataFrame `df_users` loaded from the users dataset.\n\n**Columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `is_active`\n\nSome rows have null `email`. First drop those rows, then add a new column `email_domain` that contains the domain part of the email address (everything after the `@` symbol \u2014 e.g. `'gmail.com'` from `'user@gmail.com'`). Return the full DataFrame with the new column.",
     "dataframes": {
       "df_users": "users.csv"
     },
@@ -138,10 +136,8 @@
       "Split the string at the `@` separator; the domain is the element after it."
     ],
     "concepts": [
-      "VECTORIZED STRING TRANSFORMATION",
-      "DELIMITER-BASED STRING EXTRACTION",
-      "NULL-BASED ROW FILTERING",
-      "COLUMN DERIVATION"
+      "BOOLEAN INDEXING & FILTERING",
+      "COLUMN SELECTION & PROJECTION"
     ]
   },
   {
@@ -175,8 +171,7 @@
       "Decide whether the groupby key should appear as the DataFrame index or as a plain column in the output."
     ],
     "concepts": [
-      "GROUPED AGGREGATION",
-      "NUMERIC COLUMN AGGREGATION"
+      "GROUPED AGGREGATION"
     ]
   },
   {
@@ -203,15 +198,14 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_products):\n    # Remove duplicate product_id rows (keep first), return sorted by product_id\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_products):\n    return df_products.drop_duplicates(subset=['product_id'], keep='first').sort_values('product_id').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_products):\n    return df_products.drop_duplicates(subset=['product_id'], keep='first').sort_values('product_id').reset_index(drop=True)",
-    "explanation": "`.drop_duplicates(subset=['product_id'], keep='first')` scans the DataFrame and removes any row whose `product_id` has already appeared, retaining the first occurrence. Without `subset`, pandas would compare all columns simultaneously — specifying the key column(s) is more precise.",
+    "explanation": "`.drop_duplicates(subset=['product_id'], keep='first')` scans the DataFrame and removes any row whose `product_id` has already appeared, retaining the first occurrence. Without `subset`, pandas would compare all columns simultaneously \u2014 specifying the key column(s) is more precise.",
     "hints": [
       "Define what makes two rows equivalent, then keep one representative for each repeated entity.",
       "The default `keep='first'` retains the first occurrence of each duplicate"
     ],
     "concepts": [
-      "EXACT DUPLICATE ELIMINATION",
-      "deduplication",
-      "DETERMINISTIC RESULT ORDERING"
+      "DEDUPLICATION LOGIC",
+      "OUTPUT SHAPE & ORDERING"
     ]
   },
   {
@@ -244,8 +238,8 @@
       "Return the full DataFrame after the label changes; no filtering or aggregation is required."
     ],
     "concepts": [
-      "OUTPUT SCHEMA SHAPING",
-      "column manipulation"
+      "OUTPUT SHAPE & ORDERING",
+      "COLUMN SELECTION & PROJECTION"
     ]
   },
   {
@@ -268,7 +262,7 @@
         "line_amount"
       ]
     },
-    "starter_code": "import pandas as pd\n\ndef solve(df_order_items):\n    # Return top 5 products by total quantity ordered\n    # Columns: product_id, total_quantity — sorted by total_quantity descending\n    pass",
+    "starter_code": "import pandas as pd\n\ndef solve(df_order_items):\n    # Return top 5 products by total quantity ordered\n    # Columns: product_id, total_quantity \u2014 sorted by total_quantity descending\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_order_items):\n    result = df_order_items.groupby('product_id', as_index=False)['quantity'].sum().rename(columns={'quantity': 'total_quantity'})\n    return result.sort_values('total_quantity', ascending=False).head(5).reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_order_items):\n    result = df_order_items.groupby('product_id', as_index=False)['quantity'].sum().rename(columns={'quantity': 'total_quantity'})\n    return result.sort_values('total_quantity', ascending=False).head(5).reset_index(drop=True)",
     "explanation": "`groupby('product_id')['quantity'].sum()` totals up the ordered quantity per product. After renaming the aggregated column to `total_quantity`, sorting descending and calling `.head(5)` limits the result to the five best-selling products.",
@@ -278,9 +272,8 @@
     ],
     "concepts": [
       "GROUPED AGGREGATION",
-      "NUMERIC COLUMN AGGREGATION",
-      "DETERMINISTIC RESULT ORDERING",
-      "TOP-K RESULT EXTRACTION"
+      "OUTPUT SHAPE & ORDERING",
+      "RANKING & TOP-N PER GROUP"
     ]
   },
   {
@@ -304,7 +297,7 @@
         "country"
       ]
     },
-    "starter_code": "import pandas as pd\n\ndef solve(df_employees):\n    # Return employees with salary > 60000\n    # Columns: employee_id, employee_name, salary — sorted by salary descending\n    pass",
+    "starter_code": "import pandas as pd\n\ndef solve(df_employees):\n    # Return employees with salary > 60000\n    # Columns: employee_id, employee_name, salary \u2014 sorted by salary descending\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_employees):\n    result = df_employees[df_employees['salary'] > 60000][['employee_id', 'employee_name', 'salary']]\n    return result.sort_values('salary', ascending=False).reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_employees):\n    result = df_employees[df_employees['salary'] > 60000][['employee_id', 'employee_name', 'salary']]\n    return result.sort_values('salary', ascending=False).reset_index(drop=True)",
     "explanation": "Boolean indexing filters to rows where `salary > 60000`. Column selection with `[['employee_id', 'employee_name', 'salary']]` trims to the required columns. Sorting by `salary` descending shows the highest earners first.",
@@ -313,9 +306,9 @@
       "Then select the three required columns and sort descending"
     ],
     "concepts": [
-      "boolean indexing",
-      "column selection",
-      "DETERMINISTIC RESULT ORDERING"
+      "BOOLEAN INDEXING & FILTERING",
+      "COLUMN SELECTION & PROJECTION",
+      "OUTPUT SHAPE & ORDERING"
     ]
   },
   {
@@ -349,10 +342,8 @@
       "Once the column is a proper datetime type, you can extract the year as a numeric value and use it as a filter."
     ],
     "concepts": [
-      "datetime",
-      "DATETIME COMPONENT EXTRACTION",
-      "boolean indexing",
-      "DATETIME TYPE PARSING"
+      "DATETIME OPERATIONS",
+      "BOOLEAN INDEXING & FILTERING"
     ]
   },
   {
@@ -387,10 +378,7 @@
     ],
     "concepts": [
       "GROUPED AGGREGATION",
-      "mean",
-      "DECIMAL PRECISION ROUNDING",
-      "OUTPUT SCHEMA SHAPING",
-      "DETERMINISTIC RESULT ORDERING"
+      "OUTPUT SHAPE & ORDERING"
     ]
   },
   {
@@ -418,16 +406,15 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Return each user's most recent order: user_id, order_id, order_date\n    # Hint: use groupby + idxmax on order_date\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_date'] = pd.to_datetime(df['order_date'])\n    idx = df.groupby('user_id')['order_date'].idxmax()\n    result = df.loc[idx, ['user_id', 'order_id', 'order_date']]\n    return result.sort_values('user_id').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_date'] = pd.to_datetime(df['order_date'])\n    idx = df.groupby('user_id')['order_date'].idxmax()\n    result = df.loc[idx, ['user_id', 'order_id', 'order_date']]\n    return result.sort_values('user_id').reset_index(drop=True)",
-    "explanation": "`groupby('user_id')['order_date'].idxmax()` returns the index label of the row with the maximum `order_date` for each user. `df.loc[idx]` then selects those rows from the original DataFrame, giving one row per user — the most recent order.",
+    "explanation": "`groupby('user_id')['order_date'].idxmax()` returns the index label of the row with the maximum `order_date` for each user. `df.loc[idx]` then selects those rows from the original DataFrame, giving one row per user \u2014 the most recent order.",
     "hints": [
       "Identify the winning row position inside each group, then pull those full rows back from the original frame.",
       "Once you have the row positions of the winners, select those full rows from the original frame."
     ],
     "concepts": [
       "GROUPED AGGREGATION",
-      "ARGMAX ROW LOOKUP",
-      "INDEX-BASED ROW SELECTION",
-      "DATETIME TYPE PARSING"
+      "RANKING & TOP-N PER GROUP",
+      "BOOLEAN INDEXING & FILTERING"
     ]
   },
   {
@@ -461,9 +448,7 @@
     ],
     "concepts": [
       "GROUPED AGGREGATION",
-      "ROW COUNT AGGREGATION",
-      "OUTPUT SCHEMA SHAPING",
-      "DETERMINISTIC RESULT ORDERING"
+      "OUTPUT SHAPE & ORDERING"
     ]
   },
   {
@@ -497,9 +482,7 @@
     ],
     "concepts": [
       "GROUPED AGGREGATION",
-      "ROW COUNT AGGREGATION",
-      "OUTPUT SCHEMA SHAPING",
-      "DETERMINISTIC RESULT ORDERING"
+      "OUTPUT SHAPE & ORDERING"
     ]
   },
   {
@@ -532,10 +515,7 @@
     ],
     "concepts": [
       "GROUPED AGGREGATION",
-      "NUMERIC COLUMN AGGREGATION",
-      "DECIMAL PRECISION ROUNDING",
-      "OUTPUT SCHEMA SHAPING",
-      "DETERMINISTIC RESULT ORDERING"
+      "OUTPUT SHAPE & ORDERING"
     ]
   },
   {
@@ -560,19 +540,17 @@
         "payment_status"
       ]
     },
-    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Return orders where net_amount is null or zero\n    # Columns: order_id, user_id, order_date, net_amount — sorted by order_id\n    pass",
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Return orders where net_amount is null or zero\n    # Columns: order_id, user_id, order_date, net_amount \u2014 sorted by order_id\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    mask = df_orders['net_amount'].isna() | (df_orders['net_amount'] == 0)\n    result = df_orders[mask][['order_id', 'user_id', 'order_date', 'net_amount']]\n    return result.sort_values('order_id').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    mask = df_orders['net_amount'].isna() | (df_orders['net_amount'] == 0)\n    result = df_orders[mask][['order_id', 'user_id', 'order_date', 'net_amount']]\n    return result.sort_values('order_id').reset_index(drop=True)",
     "explanation": "`.isna()` produces a boolean Series that is True for null values. The `|` operator combines it with a zero-value check using OR logic. Wrapping in parentheses ensures correct operator precedence. The resulting mask filters rows that meet either condition.",
     "hints": [
       "Build a boolean condition that catches rows where the column is absent and rows where it equals zero, then combine them.",
-      "Null detection and zero detection are separate checks — use the OR operator to match either condition."
+      "Null detection and zero detection are separate checks \u2014 use the OR operator to match either condition."
     ],
     "concepts": [
-      "NULL VALUE DETECTION",
-      "boolean operators",
-      "filtering",
-      "missing values"
+      "BOOLEAN INDEXING & FILTERING",
+      "MISSING VALUE STRATEGY"
     ]
   },
   {
@@ -606,10 +584,8 @@
       "Store the result in a new column called `order_day`"
     ],
     "concepts": [
-      "datetime",
-      "DATETIME COMPONENT EXTRACTION",
-      "derived columns",
-      "DATETIME TYPE PARSING"
+      "DATETIME OPERATIONS",
+      "COLUMN SELECTION & PROJECTION"
     ]
   },
   {
@@ -634,7 +610,7 @@
         "is_active"
       ]
     },
-    "starter_code": "import pandas as pd\n\ndef solve(df_users):\n    # Return users who signed up after 2022-12-31\n    # Columns: user_id, name, email, signup_date — sorted by signup_date ascending\n    pass",
+    "starter_code": "import pandas as pd\n\ndef solve(df_users):\n    # Return users who signed up after 2022-12-31\n    # Columns: user_id, name, email, signup_date \u2014 sorted by signup_date ascending\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_users):\n    df = df_users.copy()\n    df['signup_date'] = pd.to_datetime(df['signup_date'])\n    result = df[df['signup_date'] > '2022-12-31'][['user_id', 'name', 'email', 'signup_date']]\n    return result.sort_values('signup_date').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_users):\n    df = df_users.copy()\n    df['signup_date'] = pd.to_datetime(df['signup_date'])\n    result = df[df['signup_date'] > '2022-12-31'][['user_id', 'name', 'email', 'signup_date']]\n    return result.sort_values('signup_date').reset_index(drop=True)",
     "explanation": "After parsing `signup_date` with `pd.to_datetime()`, pandas allows direct string comparisons like `> '2022-12-31'` because it auto-converts the string to a Timestamp for comparison. This is concise and readable.",
@@ -643,10 +619,8 @@
       "You can compare a datetime column directly to a date string: `df['signup_date'] > '2022-12-31'`"
     ],
     "concepts": [
-      "datetime",
-      "DATETIME TYPE PARSING",
-      "boolean indexing",
-      "date comparison"
+      "DATETIME OPERATIONS",
+      "BOOLEAN INDEXING & FILTERING"
     ]
   },
   {
@@ -674,16 +648,14 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_users):\n    # Compute days_since_signup and bin into tenure_group\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_users):\n    df = df_users.copy()\n    df['signup_date'] = pd.to_datetime(df['signup_date'])\n    ref = pd.to_datetime('2025-01-01')\n    df['days_since_signup'] = (ref - df['signup_date']).dt.days\n    df['tenure_group'] = pd.cut(\n        df['days_since_signup'],\n        bins=[0, 90, 365, 730, float('inf')],\n        labels=['new', 'recent', 'established', 'veteran']\n    )\n    return df[['user_id', 'plan_tier', 'days_since_signup', 'tenure_group']].sort_values('user_id').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_users):\n    df = df_users.copy()\n    df['signup_date'] = pd.to_datetime(df['signup_date'])\n    ref = pd.to_datetime('2025-01-01')\n    df['days_since_signup'] = (ref - df['signup_date']).dt.days\n    df['tenure_group'] = pd.cut(\n        df['days_since_signup'],\n        bins=[0, 90, 365, 730, float('inf')],\n        labels=['new', 'recent', 'established', 'veteran']\n    )\n    return df[['user_id', 'plan_tier', 'days_since_signup', 'tenure_group']].sort_values('user_id').reset_index(drop=True)",
-    "explanation": "Subtracting two datetime Series returns a Timedelta Series; `.dt.days` extracts the integer day count. `pd.cut()` bins a numeric Series into labeled intervals — `bins` defines the bin edges (left-exclusive by default), `labels` names each bin. The result is a Categorical Series. This is the standard pattern for converting continuous metrics into discrete segments for cohort analysis.",
+    "explanation": "Subtracting two datetime Series returns a Timedelta Series; `.dt.days` extracts the integer day count. `pd.cut()` bins a numeric Series into labeled intervals \u2014 `bins` defines the bin edges (left-exclusive by default), `labels` names each bin. The result is a Categorical Series. This is the standard pattern for converting continuous metrics into discrete segments for cohort analysis.",
     "hints": [
       "Normalize the date values into a true time representation before extracting calendar pieces or measuring intervals.",
-      "`pd.cut(series, bins=[...], labels=[...])` assigns each value to a named bin — bin edges define the boundaries"
+      "`pd.cut(series, bins=[...], labels=[...])` assigns each value to a named bin \u2014 bin edges define the boundaries"
     ],
     "concepts": [
-      "VALUE BUCKETING",
-      "datetime arithmetic",
-      "ORDERED CATEGORICAL BINNING",
-      "tenure segmentation"
+      "CATEGORICAL & BINNING",
+      "DATETIME OPERATIONS"
     ]
   },
   {
@@ -717,10 +689,8 @@
       "Group by the categorical column with `observed=True` to avoid deprecated-behavior warnings"
     ],
     "concepts": [
-      "VALUE BUCKETING",
-      "ORDERED CATEGORICAL BINNING",
-      "GROUPED AGGREGATION",
-      "value distribution"
+      "CATEGORICAL & BINNING",
+      "GROUPED AGGREGATION"
     ]
   },
   {
@@ -747,17 +717,13 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_support_tickets):\n    # Filter tickets where issue_type contains 'billing' (case-insensitive)\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_support_tickets):\n    mask = df_support_tickets['issue_type'].str.contains('billing', case=False, na=False)\n    result = df_support_tickets[mask][['ticket_id', 'user_id', 'issue_type', 'status', 'priority']]\n    return result.sort_values('ticket_id').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_support_tickets):\n    mask = df_support_tickets['issue_type'].str.contains('billing', case=False, na=False)\n    result = df_support_tickets[mask][['ticket_id', 'user_id', 'issue_type', 'status', 'priority']]\n    return result.sort_values('ticket_id').reset_index(drop=True)",
-    "explanation": "`str.contains(pattern, case=False)` does a case-insensitive substring search, returning a boolean Series. `na=False` ensures NaN values map to False instead of NaN (which would fail boolean indexing). This is the pandas equivalent of SQL `WHERE LOWER(issue_type) LIKE '%billing%'` and is vectorized — no loops needed.",
+    "explanation": "`str.contains(pattern, case=False)` does a case-insensitive substring search, returning a boolean Series. `na=False` ensures NaN values map to False instead of NaN (which would fail boolean indexing). This is the pandas equivalent of SQL `WHERE LOWER(issue_type) LIKE '%billing%'` and is vectorized \u2014 no loops needed.",
     "hints": [
       "Apply the same text parsing or matching rule to the whole column instead of looping row by row.",
       "Set `na=False` so that any NaN in issue_type is treated as non-matching rather than raising an error"
     ],
     "concepts": [
-      "SUBSTRING PATTERN MATCHING",
-      "case-insensitive search",
-      "boolean mask",
-      "VECTORIZED STRING TRANSFORMATION",
-      "substring filter"
+      "BOOLEAN INDEXING & FILTERING"
     ]
   },
   {
@@ -785,15 +751,14 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Extract year from order_date, aggregate per year\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_date'] = pd.to_datetime(df['order_date'])\n    df['year'] = df['order_date'].dt.year\n    result = df.groupby('year', as_index=False).agg(\n        total_revenue=('net_amount', 'sum'),\n        order_count=('order_id', 'count')\n    )\n    result['total_revenue'] = result['total_revenue'].round(2)\n    return result.sort_values('year').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_date'] = pd.to_datetime(df['order_date'])\n    df['year'] = df['order_date'].dt.year\n    result = df.groupby('year', as_index=False).agg(\n        total_revenue=('net_amount', 'sum'),\n        order_count=('order_id', 'count')\n    )\n    result['total_revenue'] = result['total_revenue'].round(2)\n    return result.sort_values('year').reset_index(drop=True)",
-    "explanation": "`pd.to_datetime()` converts the string column to datetime. `.dt.year` extracts the integer year. The named aggregation syntax `agg(col_name=('source_col', 'func'))` produces cleanly named output columns in a single call — cleaner than chaining `.rename()` after plain `.agg()`. This is the preferred modern pattern since pandas 0.25.",
+    "explanation": "`pd.to_datetime()` converts the string column to datetime. `.dt.year` extracts the integer year. The named aggregation syntax `agg(col_name=('source_col', 'func'))` produces cleanly named output columns in a single call \u2014 cleaner than chaining `.rename()` after plain `.agg()`. This is the preferred modern pattern since pandas 0.25.",
     "hints": [
       "Normalize the date values into a true time representation before extracting calendar pieces or measuring intervals.",
       "Named aggregation syntax: `groupby(...).agg(new_name=('source_col', 'func'))` produces named output columns directly"
     ],
     "concepts": [
-      "DATETIME COMPONENT EXTRACTION",
-      "NAMED AGGREGATION",
-      "datetime"
+      "DATETIME OPERATIONS",
+      "GROUPED AGGREGATION"
     ]
   },
   {
@@ -818,19 +783,17 @@
         "payment_status"
       ]
     },
-    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Add needs_review column using .loc — True where payment_status == 'failed'\n    pass",
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Add needs_review column using .loc \u2014 True where payment_status == 'failed'\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['needs_review'] = False\n    df.loc[df['payment_status'] == 'failed', 'needs_review'] = True\n    return df.sort_values('order_id').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['needs_review'] = False\n    df.loc[df['payment_status'] == 'failed', 'needs_review'] = True\n    return df.sort_values('order_id').reset_index(drop=True)",
-    "explanation": "Always call `.copy()` before mutating a slice to avoid `SettingWithCopyWarning`. Initialise `needs_review` to `False` for all rows, then use `.loc[mask, col] = value` to flip it to `True` for matching rows. Chained indexing like `df[mask]['col'] = val` silently modifies a copy — `.loc` is the correct, safe way to set values on a filtered subset.",
+    "explanation": "Always call `.copy()` before mutating a slice to avoid `SettingWithCopyWarning`. Initialise `needs_review` to `False` for all rows, then use `.loc[mask, col] = value` to flip it to `True` for matching rows. Chained indexing like `df[mask]['col'] = val` silently modifies a copy \u2014 `.loc` is the correct, safe way to set values on a filtered subset.",
     "hints": [
       "Call `.copy()` first so you own the DataFrame, then initialise `needs_review` to `False` before using `.loc` to set `True` for the matching rows.",
       "`.loc[boolean_mask, 'column_name'] = value` is the safe pattern for conditional assignment."
     ],
     "concepts": [
-      "SettingWithCopyWarning",
-      ".loc CONDITIONAL ASSIGNMENT",
-      "boolean mask",
-      "SAFE IN-PLACE UPDATE"
+      "DEBUG PANDAS",
+      "BOOLEAN INDEXING & FILTERING"
     ]
   },
   {
@@ -853,19 +816,18 @@
         "product_id"
       ]
     },
-    "starter_code": "import pandas as pd\n\ndef solve(df_events):\n    # Drop rows where product_id is null — use subset to avoid dropping rows with other nulls\n    pass",
+    "starter_code": "import pandas as pd\n\ndef solve(df_events):\n    # Drop rows where product_id is null \u2014 use subset to avoid dropping rows with other nulls\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_events):\n    result = df_events.dropna(subset=['product_id'])\n    return result[['event_id', 'user_id', 'event_name', 'product_id']].sort_values('event_id').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_events):\n    result = df_events.dropna(subset=['product_id'])\n    return result[['event_id', 'user_id', 'event_name', 'product_id']].sort_values('event_id').reset_index(drop=True)",
-    "explanation": "`.dropna()` with no arguments removes any row with at least one null across all columns — too broad. `.dropna(subset=['product_id'])` removes only rows where `product_id` is null, leaving all other null values in place. This is the precise tool for column-specific null filtering.",
+    "explanation": "`.dropna()` with no arguments removes any row with at least one null across all columns \u2014 too broad. `.dropna(subset=['product_id'])` removes only rows where `product_id` is null, leaving all other null values in place. This is the precise tool for column-specific null filtering.",
     "hints": [
-      "Plain `.dropna()` removes rows with *any* null — pass `subset=['column']` to target a specific column.",
+      "Plain `.dropna()` removes rows with *any* null \u2014 pass `subset=['column']` to target a specific column.",
       "After filtering, select only the required columns and sort by `event_id`."
     ],
     "concepts": [
-      "NULL-BASED ROW FILTERING",
-      "dropna subset",
-      "missing values",
-      "column selection"
+      "BOOLEAN INDEXING & FILTERING",
+      "MISSING VALUE STRATEGY",
+      "COLUMN SELECTION & PROJECTION"
     ]
   },
   {
@@ -899,10 +861,7 @@
       "`.ffill()` replaces each null with the last non-null value seen above it in the column."
     ],
     "concepts": [
-      "FORWARD FILL",
-      "ffill bfill",
-      "missing value imputation",
-      "sorting before fill"
+      "MISSING VALUE STRATEGY"
     ]
   },
   {
@@ -925,18 +884,16 @@
         "product_id"
       ]
     },
-    "starter_code": "import pandas as pd\n\ndef solve(df_events):\n    # Count events per product_id — include the null group\n    pass",
+    "starter_code": "import pandas as pd\n\ndef solve(df_events):\n    # Count events per product_id \u2014 include the null group\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_events):\n    result = (\n        df_events\n        .groupby('product_id', dropna=False, as_index=False)\n        .size()\n        .rename(columns={'size': 'event_count'})\n    )\n    return result.sort_values('event_count', ascending=False).reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_events):\n    result = (\n        df_events\n        .groupby('product_id', dropna=False, as_index=False)\n        .size()\n        .rename(columns={'size': 'event_count'})\n    )\n    return result.sort_values('event_count', ascending=False).reset_index(drop=True)",
-    "explanation": "By default `groupby` silently drops NaN keys. Passing `dropna=False` keeps null keys as a separate group — the same behaviour as SQL `GROUP BY` which includes NULL rows. `as_index=False` returns `product_id` as a regular column instead of the index, keeping the output as a flat DataFrame.",
+    "explanation": "By default `groupby` silently drops NaN keys. Passing `dropna=False` keeps null keys as a separate group \u2014 the same behaviour as SQL `GROUP BY` which includes NULL rows. `as_index=False` returns `product_id` as a regular column instead of the index, keeping the output as a flat DataFrame.",
     "hints": [
-      "By default groupby silently excludes null keys — pass `dropna=False` to retain them.",
+      "By default groupby silently excludes null keys \u2014 pass `dropna=False` to retain them.",
       "`as_index=False` keeps the group key as a regular column rather than promoting it to the index."
     ],
     "concepts": [
-      "groupby dropna=False",
-      "NULL GROUP PRESERVATION",
-      "as_index=False",
+      "MISSING VALUE STRATEGY",
       "GROUPED AGGREGATION"
     ]
   },
@@ -962,7 +919,7 @@
         "payment_status"
       ]
     },
-    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Average net_amount per status — use as_index=False and named aggregation\n    pass",
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Average net_amount per status \u2014 use as_index=False and named aggregation\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    result = df_orders.groupby('status', as_index=False).agg(\n        avg_net_amount=('net_amount', 'mean')\n    )\n    result['avg_net_amount'] = result['avg_net_amount'].round(2)\n    return result.sort_values('status').reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    result = df_orders.groupby('status', as_index=False).agg(\n        avg_net_amount=('net_amount', 'mean')\n    )\n    result['avg_net_amount'] = result['avg_net_amount'].round(2)\n    return result.sort_values('status').reset_index(drop=True)",
     "explanation": "`groupby('status', as_index=False)` keeps `status` as a regular column in the output. Named aggregation syntax `agg(output_col=('source_col', 'func'))` names the result column directly, avoiding a separate `.rename()` call. This is the modern pandas pattern for clean, readable groupby aggregations since pandas 0.25.",
@@ -971,10 +928,7 @@
       "Named aggregation: `agg(output_col=('source_col', 'func'))` sets the output column name in one step."
     ],
     "concepts": [
-      "as_index=False",
-      "NAMED AGGREGATION",
-      "GROUPED AGGREGATION",
-      "groupby"
+      "GROUPED AGGREGATION"
     ]
   }
 ]

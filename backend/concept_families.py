@@ -730,8 +730,11 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "MELT",
             "STACK",
             "UNSTACK",
+            "UNNEST",               # explode / unnesting list columns
+            "CONTINGENCY",          # contingency table construction
         ],
         "MISSING VALUE STRATEGY": [
+            "MISSING VALUE STRAT",   # self-resolving: canonical family name contains this
             "MISSING-VALUE",
             "MISSING VALUES",
             "IMPUTATION",
@@ -776,6 +779,7 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "TRANSFORM",
         ],
         "OUTPUT SHAPE & ORDERING": [
+            "OUTPUT SHAPE",          # self-resolving: canonical family name contains this
             "OUTPUT SCHEMA",
             "RESULT ORDERING",
             "DETERMINISTIC",
@@ -820,6 +824,7 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "ROW COUNT SANITY",
         ],
         "DOUBLE-COUNTING DETECTION": [
+            "DOUBLE-COUNTING",       # self-resolving: canonical family name contains this
             "FAN-OUT",
             "JOIN MULTIPLICATION",
             "MERGE MULTIPLICATION",

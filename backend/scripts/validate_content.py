@@ -312,7 +312,8 @@ def _validate_mock_fields() -> None:
 
 _TAXONOMY_VALIDATED_TRACKS: frozenset[str] = frozenset({
     "sql",
-    "python",   # Python Phase 2: registry complete, all practice/mock tags validated
+    "python",         # Python Phase 2: registry complete, all practice/mock tags validated
+    "python-data",    # Pandas Phase 2: registry complete, all 112 practice tags validated
     # Add a track here once its concept_families.py registry is fully populated.
 })
 
