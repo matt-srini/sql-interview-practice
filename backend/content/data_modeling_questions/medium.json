@@ -927,5 +927,270 @@
       "FACT TABLE DESIGN",
       "DIMENSIONAL MODELING"
     ]
+  },
+  {
+    "id": 62037,
+    "order": 36,
+    "title": "Schema from Requirements: Naming the Fact Grain When Stakeholder Briefs Conflict",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A subscription software company receives a stakeholder brief: 'We need analytics so Marketing can track acquisition campaigns by channel, and Finance can track monthly recurring revenue by product plan.' Marketing needs event-level data (one row per acquisition event) because their attribution model runs on individual events. Finance needs periodic snapshot data (one row per customer \u00d7 product \u00d7 month) because MRR is a balance metric computed at month-end. The data team must decide whether to build one fact table or two.",
+    "description": "What is the correct design decision, and why does a single fact table fail to satisfy both stakeholders without sacrificing precision for one of them?",
+    "options": [
+      "Build two separate facts: `fact_acquisition` at the acquisition-event level for Marketing and `fact_mrr_snapshot` at the customer \u00d7 product \u00d7 month level for Finance. An event-level fact and a periodic-snapshot fact have fundamentally different semantics; one table cannot serve both without losing either per-event attribution or the zero-activity period coverage Finance requires.",
+      "Use the acquisition-event level for a single fact table; add a month-end MRR column computed at load time so Finance can filter by month. Both stakeholders access one table, eliminating the need to maintain two separate facts.",
+      "Use the customer \u00d7 product \u00d7 month level for a single fact table; store acquisition event counts as a measure so Marketing can sum events per month. The periodic level is richer because it captures months with zero acquisitions.",
+      "Ask Marketing and Finance to align on a single level of detail before building; if they cannot agree, defer the project. Designing a fact table before agreement is reached is a governance violation."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. Transaction facts (event-level) and periodic snapshot facts (period-level) are different fact table types with different semantics. An event-level fact records something that happened; a periodic snapshot records state at the end of a period. A single table cannot satisfy both. Event-level MRR computation misses customers with active subscriptions but no acquisition events in a given month (subscription renewals without new-acquisition signals) \u2014 Finance's MRR would be understated. Period-level acquisition analysis loses individual event detail \u2014 Marketing cannot run per-event attribution models from a monthly aggregate. The correct design: two facts joined by conformed dimensions (dim_customer, dim_product, dim_date). Option B (add MRR column to event table) forces Finance to aggregate from events, missing zero-event active periods \u2014 incorrect MRR. Option C (period table with event counts) destroys per-event detail Marketing needs for attribution. Option D misframes the problem: two valid requirements that correspond to two standard fact table types is not a governance breakdown requiring stakeholder consensus \u2014 it is standard dimensional modeling practice.",
+    "hints": [
+      "Marketing's attribution model runs on individual acquisition events; Finance's MRR is a balance metric measured at month-end. Are these two computational requirements compatible with a single level of detail without losing precision for one stakeholder?",
+      "A periodic snapshot fact includes one row for every period, even periods with zero activity. An event-level fact records only what happened. Which stakeholder's computation requires which type, and why?"
+    ],
+    "concepts": [
+      "SCHEMA FROM REQUIREMENTS",
+      "GRAIN DEFINITION",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 62038,
+    "order": 37,
+    "title": "Bridge Tables: Resolving a Many-to-Many Between Orders and Promotions",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "An e-commerce company runs multi-promotional campaigns: a single order can have multiple promotions applied (SUMMER10, LOYALTY5, NEWUSER20), and a single promotion applies to thousands of orders. The BI team needs to report: (1) revenue attributed to each promotion and (2) cross-promotion overlap (orders where two specific promotions coexisted). The current schema stores all applied promotion codes in a pipe-delimited varchar column `promo_codes` on the fact_orders table.",
+    "description": "What is the correct dimensional design, and what specific analytical question does the pipe-delimited approach make impossible to answer in standard SQL?",
+    "options": [
+      "Replace the pipe-delimited column with a `bridge_order_promotion` table (order_key, promotion_key, weight) \u2014 one row per order-promotion combination. Revenue attribution multiplies order revenue by weight per promotion row. Cross-promotion overlap is answered with a self-join on the bridge keyed by order_key. The bridge dissolves the many-to-many without repeating full revenue per promotion row.",
+      "Add up to five separate `promo_1_key` through `promo_5_key` foreign key columns to the fact table, each joining `dim_promotion` independently. This handles up to five simultaneous promotions per order without a separate bridge table.",
+      "Create a `fact_promotion_events` table with one row per promotion-order pair, storing the order's full revenue on each row. BI tools sum revenue grouped by promotion for attribution. The original fact_orders table retains the pipe-delimited column for backward compatibility.",
+      "Expand `dim_promotion` to include one row per unique combination of promotions that appear together on an order. Each fact row joins to its exact promotion-bundle row using a composite key."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. A bridge table stores one row per order-promotion pair with a weight column (e.g., 0.5 for two promotions equally weighted) so revenue is allocated across promotions without duplication. The pipe-delimited column fails on two counts: (1) SQL cannot GROUP BY individual promotion codes inside a delimited string using standard joins \u2014 revenue attribution requires string parsing that is not portable across BI tools; (2) cross-promotion overlap (`WHERE both SUMMER10 and LOYALTY5 applied`) cannot be expressed as a relational predicate on a varchar column. Option B (five key columns) breaks when a sixth promotion is added (schema change required), treats promotion slots as ordered positions with semantic meaning they lack, and produces NULLs for unused slots that must be coalesced in every query. Option C (separate fact with full revenue per row) double-counts: summing revenue across promotions gives N\u00d7 for N-promotion orders. The weight column in the bridge prevents this double-count by design. Option D (combination dimension) explodes exponentially \u2014 with 10 active promotions and up to 5 per order, new combinations force new dimension rows and any change to the promotion catalog requires rebuilding the dimension.",
+    "hints": [
+      "Can SQL's GROUP BY clause extract individual promotion codes from a pipe-delimited string without string-splitting functions? What does that limitation mean for building a promotion revenue report in a standard BI tool?",
+      "If a `fact_promotion_events` table stores the full order revenue on each promotion row and an order has two promotions, what is the sum of revenue across all rows for that order compared to the actual order revenue?"
+    ],
+    "concepts": [
+      "BRIDGE & MANY-TO-MANY",
+      "FACT TABLE DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 62039,
+    "order": 38,
+    "title": "Denormalization Trade-offs: Flattening a Snowflake into a Star for a BI Workload",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A dimensional model has a snowflaked product hierarchy: fact_sales \u2192 dim_product (product_key, subcategory_key) \u2192 dim_subcategory (subcategory_key, category_key) \u2192 dim_category (category_key, category_name). BI analysts complain that every drill-down query requires two intermediate joins, which slows BI tool query generation. The team debates flattening the snowflake into a single `dim_product` with subcategory_name and category_name inline. What is the correct trade-off analysis?",
+    "options": [
+      "Flatten to a star: inline subcategory_name and category_name into `dim_product`. Query complexity drops from three joins to one and BI tool query generation simplifies. The cost is update anomalies: renaming a category requires updating all dim_product rows in that category, not just one dim_category row. This cost is acceptable when categories change rarely and an ETL manages updates consistently.",
+      "Keep the snowflake: normalization eliminates update anomalies and storage is more efficient in columnar warehouses because repeated category names compress better in a separate lookup table than duplicated across thousands of product rows.",
+      "Flatten to a star but enforce referential integrity via application-level ETL constraints: verify all rows sharing category_name have the same category_key before load. This gives query simplicity while maintaining the update-consistency guarantee of normalization.",
+      "Neither approach is correct; the proper solution is an OBT (one big table) embedding fact measures alongside all dimension attributes, which eliminates all joins and maximizes query performance beyond what star or snowflake schemas achieve."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A correctly identifies the trade-off. Flattening a snowflake into a star reduces query complexity (fewer joins) and typically improves query performance for BI workloads because modern columnar engines optimize wide dimension reads better than multi-hop normalized joins generated by BI tools. The explicit cost is update anomaly risk: when a category is renamed, all dim_product rows in that category must be updated instead of one dim_category row. This is acceptable when (1) category names change infrequently (quarterly product catalog updates, not daily), and (2) the ETL handles updates via SCD Type 1 overwrite or controlled backfill. Option B overstates the columnar compression advantage: a category_name column in a 100K-row dimension will compress well regardless of normalization. The join cost in BI engines \u2014 especially tools generating live SQL \u2014 often exceeds the marginal storage difference. Option C (ETL-enforced constraints) provides an integrity guarantee only if the ETL never makes a mistake, which is not a structural guarantee. It also adds ETL complexity without eliminating the physical update anomaly risk. Option D (OBT) is appropriate for single-table ML feature extraction or Presto-style full-table scans but abandons shared dimension reusability \u2014 every new fact that needs the product hierarchy must re-embed all product attributes, scaling the update anomaly problem by the number of facts.",
+    "hints": [
+      "If 500 products share the 'Electronics' category and you rename that category, how many rows must be updated in a normalized three-table snowflake versus a denormalized single dimension table?",
+      "When is the update anomaly cost from denormalization acceptable? Consider how often category names change versus how often BI tools join through the product hierarchy to produce dashboards."
+    ],
+    "concepts": [
+      "DENORMALIZATION TRADEOFF",
+      "DIMENSIONAL MODELING",
+      "WIDE VS NARROW"
+    ]
+  },
+  {
+    "id": 62040,
+    "order": 39,
+    "title": "Data Vault Basics: Mapping a Kimball Customer Dimension to Vault Constructs",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A team migrating from a Kimball star schema to a Data Vault 2.0 integration layer must map their existing `dim_customer` SCD Type 2 table to Data Vault constructs. The dimension currently has: customer_sk (system-generated surrogate), customer_id (natural key from the CRM), customer_email (natural key from the marketing system), customer_name, customer_tier, effective_from, effective_to. The team asks which Data Vault constructs replace the Kimball dimension and how each field maps.",
+    "description": "What is the correct Data Vault mapping for `dim_customer`, and what advantage does separating CRM attributes from marketing attributes into distinct Satellites provide?",
+    "options": [
+      "A Hub stores the CRM business key (customer_id); a Satellite for the CRM source holds customer_name and customer_tier with load_date and record_source; a second Satellite for the marketing source holds customer_email with its own load_date and record_source. Separating Satellites by source means a schema change in the marketing feed does not require modifying the CRM Satellite or the Hub.",
+      "A Hub stores both business keys (customer_id and customer_email) as a composite key. A single Satellite stores all descriptive attributes with load_date for historization. The composite key guarantees uniqueness across both source systems without a separate integration step.",
+      "A Hub stores the surrogate key (customer_sk) as the business key because it uniquely identifies the customer across all systems. Satellites store the natural keys alongside descriptive attributes. Surrogate keys are more stable than natural keys because they never change when source systems are updated.",
+      "The entire Kimball dimension maps to a Hub-Satellite pair where the Hub holds customer_id and the Satellite holds all remaining fields including effective_from and effective_to. The Data Vault retains the SCD logic inline to preserve the existing historization design."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. In Data Vault: a Hub stores one business key per business concept (the natural key that exists in the source system); Satellites store descriptive attributes with load_date and record_source for historization. When customer attributes come from two separate source systems (CRM, marketing), best practice is to put each source's attributes into a separate Satellite keyed by hub_hash_key + load_date. The benefit: a schema change in the marketing system's customer feed (new column added, column renamed) modifies only that Satellite \u2014 the CRM Satellite and the Hub remain unchanged, preserving integration stability. Option B is wrong: Hubs store one business key per business concept, not a composite of two systems' keys. If the marketing system later stops using email as a primary identifier, the composite Hub definition breaks. Option C is critically wrong: Hubs must store business keys (natural keys from source systems), never system-generated surrogate keys. Surrogate keys have no business meaning and cannot be used to integrate records across multiple source systems. Option D is wrong for two reasons: (1) `effective_from / effective_to` is Kimball valid-time logic; Data Vault uses `load_date` (database transaction time), which is different; mixing them creates bi-temporal ambiguity; (2) flattening all sources into one Satellite re-creates the source-coupling problem that Data Vault's multi-Satellite design is intended to prevent.",
+    "hints": [
+      "Which part of a raw vault stores a business concept's natural identifier, and which part stores its descriptive attributes? What distinguishes a natural key from a system-generated surrogate?",
+      "If both CRM and marketing attributes are stored in a single Satellite and the marketing team adds a new column to their customer export, what must be changed in the raw vault to incorporate the new column?"
+    ],
+    "concepts": [
+      "DATA VAULT",
+      "DIMENSIONAL MODELING",
+      "SURROGATE VS NATURAL KEYS"
+    ]
+  },
+  {
+    "id": 62041,
+    "order": 40,
+    "title": "Additive vs Semi-Additive vs Non-Additive: Classifying Measures by Aggregation Behavior",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A retail analytics fact table has four measures: (1) units_sold \u2014 number of units sold per transaction; (2) inventory_on_hand \u2014 stock level at end of day; (3) gross_margin_pct \u2014 (revenue \u2212 cost) / revenue for the transaction; (4) discount_amount \u2014 the dollar discount applied to the transaction. Which classification is correct, and what does each classification imply about how a BI tool can safely aggregate the measure?",
+    "options": [
+      "units_sold and discount_amount are fully additive \u2014 summing across all dimensions including date produces a correct total. inventory_on_hand is semi-additive \u2014 summing across locations on a given day is valid, but summing across dates double-counts stock held on multiple days. gross_margin_pct is non-additive \u2014 it is a ratio that must be recomputed from underlying revenue and cost components, not summed.",
+      "All four measures are fully additive because the fact table records one row per transaction and summing transaction-level rows always produces a correct total regardless of which dimension the aggregation crosses.",
+      "inventory_on_hand and gross_margin_pct are both non-additive because neither represents a count or amount tied to a discrete event. units_sold and discount_amount are additive because they are unit or monetary values attached to a transaction.",
+      "gross_margin_pct is semi-additive because it varies by product and day but is constant across date-only aggregations; inventory_on_hand is additive because summing stock across warehouses gives correct total company inventory."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is the correct classification. Fully additive measures (units_sold, discount_amount) make mathematical sense when summed across any combination of dimensions \u2014 units sold in January plus units sold in February equals units sold in Q1. Semi-additive measures (inventory_on_hand) make sense summed across some dimensions (warehouse A on-hand plus warehouse B on-hand equals total company on-hand on a given day) but not across time (Monday on-hand plus Tuesday on-hand does not equal weekly on-hand \u2014 it double-counts stock held on both days). Semi-additive measures typically appear in periodic snapshot facts and require special time-dimension aggregation logic: LAST_VALUE, AVG, or MAX over the date axis, not SUM. Non-additive measures (gross_margin_pct) are ratios: summing percentages across rows produces a meaningless number. The correct aggregate is computed from the underlying additive components: SUM(revenue \u2212 cost) / SUM(revenue). Option B is wrong: inventory_on_hand in a daily snapshot fact is semi-additive even when the table has one row per snapshot per day \u2014 the issue is the semantics of summing across time, not the table structure. Option C is wrong: gross_margin_pct is non-additive (not semi-additive) and inventory_on_hand is semi-additive (not non-additive). Option D is wrong: gross_margin_pct is a ratio and is non-additive \u2014 no dimension combination makes SUM(gross_margin_pct) a correct metric.",
+    "hints": [
+      "If today's warehouse holds 500 units and tomorrow holds 480 units, does 500 + 480 = 980 represent a meaningful inventory count? What does that tell you about summing inventory across the date dimension?",
+      "What SQL aggregate function gives the correct month-end inventory for a daily snapshot fact \u2014 SUM, AVG, or LAST_VALUE? What does that choice tell you about the measure's additivity?"
+    ],
+    "concepts": [
+      "ADDITIVE VS NON-ADDITIVE",
+      "FACT TABLE DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 62042,
+    "order": 41,
+    "title": "Debug: Inflated Revenue When a Fact Joins a Many-Row Dimension",
+    "difficulty": "medium",
+    "type": "debug",
+    "mock_only": true,
+    "description": "An analyst queries January revenue with this SQL: `SELECT SUM(f.revenue) FROM fact_orders f JOIN dim_promotion p ON f.order_key = p.order_key WHERE f.order_month = '2024-01'`. The result is $4.2M but Finance confirms the correct total is $2.1M. Investigation shows `dim_promotion` stores one row per promotion applied per order, and 60% of January orders had exactly two promotions applied. What is the root cause and the correct fix?",
+    "options": [
+      "Root cause: `dim_promotion` is at the order-promotion level (one row per promotion per order), while `fact_orders` is at the order level (one row per order). The join multiplies each order's revenue by the number of promotions applied \u2014 orders with two promotions are counted twice. Fix: pre-aggregate `dim_promotion` to one row per order before joining, or redesign it as a bridge table with weights to distribute revenue across promotions.",
+      "Root cause: the WHERE clause `order_month = '2024-01'` excludes orders that span two months. Fix: change the filter to `order_month BETWEEN '2024-01' AND '2024-02'` and divide the revenue by 2 for orders that span the boundary.",
+      "Root cause: `fact_orders` contains duplicate order rows from an ETL bug. Fix: change SUM(f.revenue) to SUM(DISTINCT f.revenue) to collapse duplicate revenue values in the aggregation.",
+      "Root cause: `dim_promotion` joins on `order_key` but the fact table uses `order_id` internally; the key mismatch creates a Cartesian product. Fix: alias both columns to a shared name before joining."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. The fact table has one row per order; `dim_promotion` has one row per order-promotion combination. When fact_orders (order-level) joins to dim_promotion (order-promotion-level) on order_key, each order row is matched to as many promotion rows as it has promotions applied. For 60% of orders with exactly two promotions, each order's revenue is summed twice. This is the classic fan-out problem: a fact table joined to a dimension at a finer grain multiplies the fact row by the join cardinality. The fix is to either (1) pre-aggregate dim_promotion to one row per order with `SELECT DISTINCT order_key FROM dim_promotion` for revenue queries, or (2) redesign dim_promotion as a bridge table with a weight column (0.5 for two promotions) that sums to 1 per order so weighted revenue across promotions equals the original order revenue. Option B is wrong: the WHERE clause filter does not cause row multiplication; the inflated total is exactly 2\u00d7, which matches the 60% of orders each contributing 2 revenue rows. Option C is wrong: SUM(DISTINCT f.revenue) removes rows with the same revenue amount, not duplicate joins \u2014 it would incorrectly collapse different orders that happen to have the same revenue value. Option D is wrong: the problem statement uses `order_key` consistently; a key mismatch of this type would produce a Cartesian product of millions of rows, not a clean 2\u00d7 inflation.",
+    "hints": [
+      "If `dim_promotion` has one row per promotion per order and an order has two promotions, how many times does that order appear in the result of `fact_orders JOIN dim_promotion ON order_key`?",
+      "The total is exactly 2\u00d7 the correct amount. Is this consistent with a Cartesian product (which would be much larger), a date-filter error, or each order's revenue being counted twice due to a join cardinality mismatch?"
+    ],
+    "concepts": [
+      "DOUBLE-COUNTING & FAN-OUT",
+      "GRAIN DEFINITION",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 62043,
+    "order": 42,
+    "title": "Schema from Requirements: Designing a Fact Table for a Multi-Dimension Brief",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A stakeholder brief states: 'We need to analyze total sales revenue by customer, product, sales region, promotion, and date \u2014 and we need the ability to drill from quarterly revenue down to individual order lines.' The brief implies two analysis levels: executive dashboards aggregate to the order-header level (one row per order), while operations reports require line-item detail (one row per product per order). The team debates whether to build one fact table or two.",
+    "description": "What is the correct level-of-detail decision and fact table structure, and why does trying to satisfy both analysis levels with a single fact table fail?",
+    "options": [
+      "Build `fact_order_lines` at the order-line level (one row per product per order) with customer_key, product_key, region_key, promotion_key, date_key, line_revenue, and line_quantity. Executive dashboards aggregate line-level revenue with SUM \u2014 no precision is lost rolling up from fine to coarse. A separate order-header fact duplicates data and creates two sources of truth for the same revenue.",
+      "Build two separate facts: `fact_orders` at the order-header level for executive dashboards and `fact_order_lines` at the order-line level for operations. Each stakeholder queries only the appropriate fact; keeping levels separate prevents accidental double-counting when dashboards mix order-level and line-level metrics.",
+      "Build `fact_orders` at the order-header level and add an array or JSON column containing all line items inline. Executive dashboards query header columns; operations expand the array for line-level detail without a separate fact table.",
+      "Build one fact at the order-header level. For line-item detail, create a database view that unnests a summary column into pseudo-line rows. The view gives the appearance of line-level detail without storing one row per product per order."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: build at the finest level of detail required. Aggregate functions (SUM, COUNT) roll up correctly from fine to coarse \u2014 order-line revenue sums to order revenue, which sums to quarterly revenue. Information loss goes only one direction: a coarser-level fact cannot be disaggregated to finer detail. Since the brief explicitly requires order-line drill-down, the order-line level must be the physical fact level. Executive dashboards wanting order-level revenue simply apply GROUP BY order_key. This is the 'build at the finest level' principle in dimensional modeling. Option B (two separate facts) creates two revenue sources of truth: if `fact_orders.total_revenue` ever diverges from `SUM(fact_order_lines.line_revenue) GROUP BY order_key`, inconsistent reports appear. Separate facts for the same business process are justified only when the levels represent genuinely different business events (a purchase event vs. a return event). Option C (JSON array column) is incompatible with standard SQL GROUP BY, window functions, and BI tool query generation \u2014 most BI tools cannot filter or aggregate inside a JSON array without custom parsing. Option D (view over header fact) is circular: order-line detail cannot be recovered from an order-header total; the view would have to fabricate line data, not reconstruct it.",
+    "hints": [
+      "If you have line-level revenue for each product on an order, can you always compute the order-header total? If you only have the order-header total, can you recover individual product revenues? What does this asymmetry suggest about which level to physically store?",
+      "Executive dashboards that need quarterly totals from line-level data use which SQL function? Is any accuracy lost in that aggregation compared to storing the totals directly?"
+    ],
+    "concepts": [
+      "SCHEMA FROM REQUIREMENTS",
+      "GRAIN DEFINITION",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 62044,
+    "order": 43,
+    "title": "Normalization vs Star Schema: Choosing the Right Design for a Reporting Data Mart",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A data warehouse team chooses between a Third Normal Form (3NF) design and a Kimball star schema for a reporting data mart. The system will support: (1) 10 OLTP applications writing concurrent product updates, (2) executive dashboards generated by a BI tool via SQL, and (3) 50M new rows added to the main fact table daily. Which trade-off analysis correctly reflects when each design is appropriate?",
+    "options": [
+      "3NF minimizes update anomalies and storage for write-heavy workloads \u2014 correct for the 10 OLTP applications that need write consistency. A star schema denormalizes dimensions for query simplicity \u2014 correct for read-heavy BI dashboards where multi-table joins slow BI tool SQL generation. The standard pattern is a 3NF integration layer for operational writes and a star schema presentation layer for reporting.",
+      "3NF is always preferable; dashboards requiring simple queries should use materialized views over the 3NF tables rather than maintaining a separate denormalized reporting layer. Materialized views eliminate the performance gap without the update anomaly risk of denormalization.",
+      "A star schema is always preferable for any data warehouse scenario because columnar storage engines handle wide denormalized tables better than narrow normalized tables; nightly ETL rebuilds eliminate the update anomaly risk during the daily load window.",
+      "3NF and star schema have identical query performance in modern columnar warehouses because query optimizers automatically flatten join trees during execution planning; the choice is a governance preference with no runtime impact."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. The 3NF vs star schema question is about access pattern, not universal superiority. 3NF is optimized for write consistency: it eliminates update anomalies by storing each attribute exactly once, making concurrent OLTP writes correct and efficient. Star schema is optimized for read simplicity: dimension attributes are denormalized into a small number of wide tables so BI tools generate simple 2-table joins (fact + one dimension) rather than 8-table normalized joins. The standard enterprise architecture separates these concerns: a 3NF integration layer for operational writes and a star schema presentation layer for BI. Option B (always 3NF + materialized views) is defensible for some architectures but 'always' is wrong. Maintaining materialized views over a 3NF model with 50M daily rows requires complex incremental refresh logic that frequently underperforms a purpose-built dimensional mart. Option C (always star schema) fails for write-heavy OLTP applications: denormalized dimensions require updating all affected rows when an attribute changes \u2014 expensive and error-prone under 10 concurrent writers. Option D is empirically wrong: query optimizer join flattening has practical limits. Complex 8-way normalized joins consistently underperform equivalent 2-way star joins in production BI workloads across BigQuery, Redshift, and Snowflake.",
+    "hints": [
+      "Reading a product hierarchy for a BI dashboard and updating a product attribute written by 10 concurrent applications are fundamentally different access patterns. Which design serves reads better, and which serves concurrent writes better?",
+      "If 50M daily rows reference a product attribute that is stored denormalized across the fact and dimension, how many rows must be updated when that attribute changes? How does this compare to updating one row in a normalized lookup table?"
+    ],
+    "concepts": [
+      "NORMALIZATION",
+      "DIMENSION DESIGN",
+      "REFERENTIAL INTEGRITY"
+    ]
+  },
+  {
+    "id": 62045,
+    "order": 44,
+    "title": "Debug: Revenue Double-Count from a Role-Playing Dimension Join",
+    "difficulty": "medium",
+    "type": "debug",
+    "mock_only": true,
+    "description": "A BI analyst queries sales revenue by shipping region and billing region simultaneously: `SELECT ship.region_name AS ship_region, bill.region_name AS bill_region, SUM(f.revenue) FROM fact_sales f JOIN dim_geography ship ON f.ship_geo_key = ship.geo_key JOIN dim_geography bill ON f.bill_geo_key = bill.geo_key GROUP BY ship.region_name, bill.region_name`. The result shows $8.4M total revenue, but Finance confirms the correct total is $4.2M. What is the root cause?",
+    "options": [
+      "The join is not the root cause. A role-playing join where the same dimension is aliased twice does not multiply rows when each fact row has exactly one ship_geo_key and one bill_geo_key \u2014 each key matches exactly one dimension row. The 2\u00d7 inflation indicates duplicate rows in `fact_sales`. The analyst should verify with `SELECT COUNT(*), COUNT(DISTINCT sale_id) FROM fact_sales`.",
+      "Root cause: a fan-out from an incorrect join \u2014 `fact_sales` has a many-to-many relationship with `dim_geography` because one region serves as both shipping and billing for different orders. Fix: add a filter `WHERE ship.geo_key != bill.geo_key` to exclude intra-region orders.",
+      "Root cause: SUM is applied before the GROUP BY, causing revenue to be counted once per region combination before being summed at the group level. Fix: use a subquery that SUM(revenue) per sale_id first, then join to geography aliases in the outer query.",
+      "Root cause: the two joins to `dim_geography` create a Cartesian product because the query engine cannot distinguish the two aliases of the same physical table. Fix: create two physical copies of `dim_geography` \u2014 one named `dim_shipping_geo` and one `dim_billing_geo` \u2014 and join each separately."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. A role-playing dimension join \u2014 where the same physical table is aliased twice under different names \u2014 does not produce row multiplication as long as each alias join key is unique per fact row. Each `fact_sales` row has exactly one `ship_geo_key` and one `bill_geo_key`; the two joins each match exactly one row from `dim_geography`, leaving the total row count unchanged. If the total revenue is exactly 2\u00d7, the root cause is duplicate sale rows in `fact_sales` \u2014 likely from an ETL load issue. Validating with `COUNT(*) vs COUNT(DISTINCT sale_id)` will confirm. Option B mischaracterizes role-playing joins: two join paths to the same physical dimension on different FK columns do not create a many-to-many relationship. Each FK is a single value; each join matches exactly one dimension row. The `WHERE ship.geo_key != bill.geo_key` filter would merely exclude orders where shipping and billing geographies are the same, not fix any double-counting. Option C misunderstands SQL semantics: SUM is always an aggregate applied after GROUP BY evaluation; this is not a mechanism that causes duplication. Option D is wrong: SQL query engines correctly handle multiple aliases of the same physical table \u2014 this is the standard role-playing dimension pattern and does not require physical copies of the dimension.",
+    "hints": [
+      "If each row in `fact_sales` has exactly one ship_geo_key and one bill_geo_key, and each key matches exactly one row in `dim_geography`, how many times does each fact row appear after both joins are evaluated?",
+      "Total revenue is exactly 2\u00d7 the correct amount. Is a 2\u00d7 inflation consistent with a join Cartesian product (which would be much larger), or with a simpler explanation like each sale row appearing twice in the source table?"
+    ],
+    "concepts": [
+      "DOUBLE-COUNTING & FAN-OUT",
+      "FACT TABLE DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 62046,
+    "order": 45,
+    "title": "dbt Modeling Layers: Staging, Intermediate, and Mart Responsibilities for a Kimball Mart",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A data team adopts dbt to build a Kimball-style dimensional mart for sales analytics. Their source is a Postgres OLTP database with tables: orders, order_items, customers, products, and regions. The delivery target is: dim_customer, dim_product, dim_geography, and fact_sales for a BI layer. A new data engineer asks how to assign work across staging (stg_), intermediate (int_), and mart (mart_) layers.",
+    "description": "Which layer assignment correctly reflects the responsibility of each dbt modeling layer for this Kimball mart?",
+    "options": [
+      "Staging (stg_orders, stg_customers, etc.): one-to-one with source tables \u2014 rename columns, cast types, deduplicate. No business logic, no cross-source joins. Intermediate (int_orders_with_items, int_customers_enriched): multi-source joins and business logic (compute LTV, join order header to lines). Mart (dim_customer, fact_sales): final dimensional shape with surrogate key generation, SCD logic, and declared level of detail. BI tools query only mart models.",
+      "Staging models handle all transformations from source to final dimensional shape in a single pass; intermediate and mart layers are optional for small teams and add unnecessary pipeline complexity. A single-layer approach reduces failure surface and accelerates delivery.",
+      "Intermediate models are the source-of-truth layer for all business logic; staging and mart models are formatting wrappers. Mart models should be thin views over intermediate models with no additional transformation beyond column renaming.",
+      "Mart models should include raw source columns alongside transformed columns so BI users can inspect original values and see where overrides were applied. Staging handles only type casting; intermediate is used only for multi-source unions."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A correctly describes the three-layer dbt pattern for Kimball work. Staging: one model per source table, light transformation only (rename, cast, dedup) \u2014 creates a stable, auditable interface over source systems with no business logic. Intermediate: where cross-source joins and business logic live (join order headers to lines, compute customer LTV, classify by tier) \u2014 pre-joined surfaces that the mart layer consumes cleanly. Mart: the dimensional output \u2014 surrogate key generation, SCD effective date logic, and the final column contract that BI tools see. This separation allows teams to change intermediate business logic without rebuilding staging, and to swap a source system (update staging) without rewriting business logic in the intermediate layer. Option B (all in staging) collapses when source systems change: any source modification forces a rebuild of all transformation logic embedded in one model. It also prevents reuse \u2014 the same enrichment must be duplicated if needed by two mart models. Option C (intermediate as SoT, mart as thin view) misplaces key responsibilities: surrogate key generation and SCD logic are dimensional modeling decisions that belong in the mart layer, not in intermediate models that may be reused across multiple marts with different SCD requirements. Option D (raw source columns in mart) exposes source volatility directly to BI consumers \u2014 if a source column is renamed, all downstream BI workbooks referencing the raw column break.",
+    "hints": [
+      "If a staging model's output columns are queried directly by BI tools and a source system renames a column, which layer must be updated and how far does the change propagate?",
+      "Surrogate key generation and SCD date logic transform source data into a dimensional model artifact. Which layer \u2014 staging, intermediate, or mart \u2014 is the right home for this transformation, and why not earlier layers?"
+    ],
+    "concepts": [
+      "DBT MODELING",
+      "DIMENSIONAL MODELING",
+      "SCHEMA EVOLUTION"
+    ]
   }
 ]
