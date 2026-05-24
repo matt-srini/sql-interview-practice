@@ -1008,6 +1008,9 @@
       "query filter",
       "multi-key sort",
       "monthly trend"
+    ],
+    "follow_ups": [
+      33039
     ]
   },
   {
@@ -1112,6 +1115,9 @@
       "left join",
       "boolean flag",
       "cohort analysis"
+    ],
+    "follow_ups": [
+      33030
     ]
   },
   {
@@ -1150,6 +1156,9 @@
       "date extraction",
       "running total",
       "payment trend"
+    ],
+    "follow_ups": [
+      33031
     ]
   },
   {
@@ -1199,6 +1208,9 @@
       "RANKING & TOP-N PER GROUP",
       "CATEGORICAL & BINNING",
       "GROUPED AGGREGATION"
+    ],
+    "follow_ups": [
+      33032
     ]
   },
   {
@@ -1295,7 +1307,9 @@
       "left join flag",
       "NaN as indicator",
       "conversion enrichment"
-    ]
+    ],
+    "parent_id": 33026,
+    "follow_up_dimension": "business_rule_pivot"
   },
   {
     "id": 33031,
@@ -1332,7 +1346,9 @@
       "month-over-month",
       "window-like pandas",
       "payment trend"
-    ]
+    ],
+    "parent_id": 33027,
+    "follow_up_dimension": "business_rule_pivot"
   },
   {
     "id": 33032,
@@ -1380,7 +1396,9 @@
       "CATEGORICAL & BINNING",
       "GROUPED AGGREGATION",
       "MULTI-DATAFRAME ENTITY LINKING"
-    ]
+    ],
+    "parent_id": 33028,
+    "follow_up_dimension": "business_rule_pivot"
   },
   {
     "id": 33033,
@@ -1620,6 +1638,57 @@
       "diff",
       "monthly trend",
       "time series"
+    ]
+  },
+  {
+    "id": 33039,
+    "order": 39,
+    "topic": "python_data",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 33024,
+    "follow_up_dimension": "business_rule_pivot",
+    "framing": "scenario",
+    "title": "Month-over-month revenue change per acquisition channel",
+    "description": "Your manager follows up: 'Great breakdown. Now show me how each channel's revenue is trending month-over-month — so I can see which channels are accelerating or decelerating.'\n\nUsing the same DataFrames as before (`df_orders`, `df_users`), compute the monthly revenue per acquisition channel for all completed orders, then add a `mom_revenue_change` column showing the revenue difference from the previous month for that channel. For the first month of each channel there is no prior month — `mom_revenue_change` should be `NaN`.\n\nReturn columns: `acquisition_channel`, `month` (YYYY-MM), `total_revenue` (rounded to 2 dp), `mom_revenue_change` (float, rounded to 2 dp). Sort by `month` ascending, then `total_revenue` descending. Include all channel-month combinations (no revenue threshold filter).",
+    "dataframes": {
+      "df_orders": "orders.csv",
+      "df_users": "users.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ],
+      "df_users": [
+        "user_id",
+        "name",
+        "email",
+        "signup_date",
+        "country",
+        "acquisition_channel",
+        "plan_tier",
+        "is_active"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    # Compute monthly revenue per channel, then add MoM change using grouped diff\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['month'] = pd.to_datetime(completed['order_date']).dt.to_period('M').astype(str)\n    merged = completed.merge(df_users[['user_id', 'acquisition_channel']], on='user_id')\n    monthly = (\n        merged.groupby(['acquisition_channel', 'month'])\n        .agg(total_revenue=('net_amount', 'sum'), order_count=('order_id', 'count'))\n        .reset_index()\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values(['acquisition_channel', 'month'])\n        .reset_index(drop=True)\n    )\n    monthly['mom_revenue_change'] = (\n        monthly.groupby('acquisition_channel')['total_revenue']\n        .diff()\n        .round(2)\n    )\n    result = (\n        monthly[['acquisition_channel', 'month', 'total_revenue', 'mom_revenue_change']]\n        .sort_values(['month', 'total_revenue'], ascending=[True, False])\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['month'] = pd.to_datetime(completed['order_date']).dt.to_period('M').astype(str)\n    merged = completed.merge(df_users[['user_id', 'acquisition_channel']], on='user_id')\n    monthly = (\n        merged.groupby(['acquisition_channel', 'month'])\n        .agg(total_revenue=('net_amount', 'sum'), order_count=('order_id', 'count'))\n        .reset_index()\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values(['acquisition_channel', 'month'])\n        .reset_index(drop=True)\n    )\n    monthly['mom_revenue_change'] = (\n        monthly.groupby('acquisition_channel')['total_revenue']\n        .diff()\n        .round(2)\n    )\n    result = (\n        monthly[['acquisition_channel', 'month', 'total_revenue', 'mom_revenue_change']]\n        .sort_values(['month', 'total_revenue'], ascending=[True, False])\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "Sort by channel + month before calling `.diff()` — `diff()` computes the difference between consecutive rows, so the sort order determines what 'previous month' means. Grouping the diff by channel via `.groupby('acquisition_channel')['total_revenue'].diff()` ensures the first month of each channel produces NaN (no prior month within that group) rather than computing a cross-channel difference. The `.round(2)` after `.diff()` handles floating-point noise from the subtraction.",
+    "hints": [
+      "Sort by channel and month before applying `.diff()` — the difference is computed between consecutive rows in order.",
+      "Use `.groupby('acquisition_channel')['total_revenue'].diff()` so the first row of each channel group is NaN, not a cross-channel difference."
+    ],
+    "concepts": [
+      "WINDOW & ROLLING OPERATIONS",
+      "DATETIME OPERATIONS",
+      "GROUPED AGGREGATION"
     ]
   }
 ]
