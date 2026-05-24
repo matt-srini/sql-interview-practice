@@ -1899,5 +1899,178 @@
       "GROUPED AGGREGATION",
       "METHOD CHAINING & PIPELINE STYLE"
     ]
+  },
+  {
+    "id": 32049,
+    "order": 49,
+    "topic": "python_data",
+    "difficulty": "medium",
+    "title": "Memory-optimised channel revenue summary",
+    "description": "You have DataFrames `df_orders` and `df_users`.\n\nBefore computing any aggregation, **downcast low-cardinality string columns to `category` dtype** to reduce memory footprint:\n- In `df_orders`: cast `status` and `payment_status` to `category`\n- In `df_users`: cast `acquisition_channel` and `plan_tier` to `category`\n\nThen join the two tables on `user_id` and return a channel-level summary with columns:\n`acquisition_channel` (category), `order_count` (int64), `total_revenue` (float64, rounded to 2 dp)\n\nSort by `acquisition_channel` ascending.",
+    "dataframes": {
+      "df_orders": "orders.csv",
+      "df_users": "users.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ],
+      "df_users": [
+        "user_id",
+        "name",
+        "email",
+        "signup_date",
+        "country",
+        "acquisition_channel",
+        "plan_tier",
+        "is_active"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    # Downcast low-cardinality columns, then summarise\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    df_orders = df_orders.copy()\n    df_users = df_users.copy()\n    for col in ['status', 'payment_status']:\n        df_orders[col] = df_orders[col].astype('category')\n    for col in ['acquisition_channel', 'plan_tier']:\n        df_users[col] = df_users[col].astype('category')\n    merged = df_orders.merge(df_users[['user_id', 'acquisition_channel']], on='user_id')\n    result = (\n        merged.groupby('acquisition_channel', as_index=False, observed=True)\n        .agg(order_count=('order_id', 'count'), total_revenue=('net_amount', 'sum'))\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('acquisition_channel')\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    df_orders = df_orders.copy()\n    df_users = df_users.copy()\n    for col in ['status', 'payment_status']:\n        df_orders[col] = df_orders[col].astype('category')\n    for col in ['acquisition_channel', 'plan_tier']:\n        df_users[col] = df_users[col].astype('category')\n    merged = df_orders.merge(df_users[['user_id', 'acquisition_channel']], on='user_id')\n    result = (\n        merged.groupby('acquisition_channel', as_index=False, observed=True)\n        .agg(order_count=('order_id', 'count'), total_revenue=('net_amount', 'sum'))\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('acquisition_channel')\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "Casting low-cardinality string columns to `category` dtype can cut memory use by 60\u201390% for repeated strings. The pattern is especially valuable before a merge that would broadcast the strings into a larger DataFrame. `observed=True` in `groupby` suppresses the FutureWarning about unobserved category combinations and is required in pandas 2.x when grouping on a category column. The grader checks output dtypes, so the `acquisition_channel` column in the result must be `category`.",
+    "hints": [
+      "Call `.astype('category')` on each low-cardinality column before the merge.",
+      "Pass `observed=True` to `groupby` when the grouping key is a category dtype \u2014 otherwise pandas warns about unobserved combinations."
+    ],
+    "concepts": [
+      "MEMORY & VECTORIZATION REASONING",
+      "GROUPED AGGREGATION",
+      "MULTI-DATAFRAME ENTITY LINKING"
+    ]
+  },
+  {
+    "id": 32050,
+    "order": 50,
+    "topic": "python_data",
+    "difficulty": "medium",
+    "title": "Fix inflated user revenue from payment fan-out",
+    "description": "A data engineer wrote the following function to compute total revenue per user by joining orders with payments:\n\n```python\ndef buggy_revenue(df_orders, df_payments):\n    merged = df_orders.merge(df_payments, on='order_id')\n    return (\n        merged.groupby('user_id')['amount']\n        .sum()\n        .reset_index()\n        .rename(columns={'amount': 'total_revenue'})\n    )\n```\n\n**The bug:** `df_payments` can contain multiple rows per `order_id` (e.g. a failed attempt followed by a successful payment). The unconstrained merge fans out: every order row is duplicated for each payment row, inflating `total_revenue`.\n\n**Fix the function.** Use only `paid` payments and deduplicate to one payment per order (keep the first). Return columns `user_id` (int64) and `total_revenue` (float64, rounded to 2 dp), sorted by `user_id` ascending.",
+    "dataframes": {
+      "df_orders": "orders.csv",
+      "df_payments": "payments.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ],
+      "df_payments": [
+        "payment_id",
+        "order_id",
+        "payment_date",
+        "payment_method",
+        "amount",
+        "status"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders, df_payments):\n    # Fix the fan-out and compute correct per-user revenue\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders, df_payments):\n    paid = (\n        df_payments[df_payments['status'] == 'paid'][['order_id', 'amount']]\n        .drop_duplicates(subset='order_id')\n    )\n    merged = df_orders[['order_id', 'user_id']].merge(paid, on='order_id')\n    result = (\n        merged.groupby('user_id', as_index=False)\n        .agg(total_revenue=('amount', 'sum'))\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('user_id')\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_payments):\n    paid = (\n        df_payments[df_payments['status'] == 'paid'][['order_id', 'amount']]\n        .drop_duplicates(subset='order_id')\n    )\n    merged = df_orders[['order_id', 'user_id']].merge(paid, on='order_id')\n    result = (\n        merged.groupby('user_id', as_index=False)\n        .agg(total_revenue=('amount', 'sum'))\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('user_id')\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "The root cause is that `df_payments` has one row per payment *attempt*, not one per order. An unconstrained merge fans out: an order with 2 payment rows becomes 2 merged rows, and summing `amount` counts that order's payment twice. The fix has two parts: (1) filter to `status == 'paid'` rows only, and (2) `drop_duplicates(subset='order_id')` to handle the rare case of multiple paid records per order. Filtering the column list before the merge (using only `order_id` and `amount`) also avoids accidental name collisions.",
+    "hints": [
+      "First filter `df_payments` to `status == 'paid'` rows, then check whether any `order_id` still appears more than once.",
+      "Use `drop_duplicates(subset='order_id')` on the filtered payments before merging."
+    ],
+    "concepts": [
+      "DATA QUALITY SKEPTICISM",
+      "MULTI-DATAFRAME ENTITY LINKING",
+      "GROUPED AGGREGATION"
+    ]
+  },
+  {
+    "id": 32051,
+    "order": 51,
+    "topic": "python_data",
+    "difficulty": "medium",
+    "title": "Fix double-counted revenue after order-items join",
+    "description": "A colleague wrote this function to compute total revenue per user by joining orders with order items:\n\n```python\ndef buggy_revenue(df_orders, df_order_items):\n    merged = df_orders.merge(df_order_items, on='order_id')\n    return (\n        merged.groupby('user_id')['net_amount']\n        .sum()\n        .reset_index()\n        .rename(columns={'net_amount': 'total_revenue'})\n    )\n```\n\n**The bug:** `df_order_items` contains one row per line item. When you merge, each order's `net_amount` is repeated once per line item in that order. Summing `net_amount` after the join multiplies each order's revenue by its item count.\n\n**Fix the function.** Use `line_amount` from `df_order_items` (the actual per-item revenue) instead. Return columns `user_id` (int64) and `total_item_revenue` (float64, rounded to 2 dp), sorted by `user_id` ascending.",
+    "dataframes": {
+      "df_orders": "orders.csv",
+      "df_order_items": "order_items.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ],
+      "df_order_items": [
+        "order_item_id",
+        "order_id",
+        "product_id",
+        "quantity",
+        "unit_price",
+        "line_amount"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders, df_order_items):\n    # Fix the grain mismatch and return correct per-user item revenue\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders, df_order_items):\n    merged = df_orders[['order_id', 'user_id']].merge(\n        df_order_items[['order_id', 'line_amount']], on='order_id'\n    )\n    result = (\n        merged.groupby('user_id', as_index=False)\n        .agg(total_item_revenue=('line_amount', 'sum'))\n        .assign(total_item_revenue=lambda x: x['total_item_revenue'].round(2))\n        .sort_values('user_id')\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_order_items):\n    merged = df_orders[['order_id', 'user_id']].merge(\n        df_order_items[['order_id', 'line_amount']], on='order_id'\n    )\n    result = (\n        merged.groupby('user_id', as_index=False)\n        .agg(total_item_revenue=('line_amount', 'sum'))\n        .assign(total_item_revenue=lambda x: x['total_item_revenue'].round(2))\n        .sort_values('user_id')\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "The bug is a **grain mismatch**: `df_orders` is at order grain (one row per order) but `df_order_items` is at item grain (one row per line item). After the join, `net_amount` \u2014 an order-level column \u2014 is repeated for every item in that order. Summing it over-counts by the number of items per order. The correct column to sum is `line_amount` from `df_order_items`, which is already at item grain. Pre-selecting only the needed columns before the merge also avoids accidental column overlap.",
+    "hints": [
+      "Check the grain of each DataFrame before joining: `df_order_items` has one row per line item, not per order.",
+      "After the merge, `net_amount` is repeated per item \u2014 sum `line_amount` instead."
+    ],
+    "concepts": [
+      "DOUBLE-COUNTING DETECTION",
+      "MULTI-DATAFRAME ENTITY LINKING",
+      "GROUPED AGGREGATION"
+    ]
+  },
+  {
+    "id": 32052,
+    "order": 52,
+    "topic": "python_data",
+    "difficulty": "medium",
+    "title": "Fix cumulative revenue running total (sort before cumsum)",
+    "description": "A colleague wrote the following function to produce a running total of completed-order revenue over time:\n\n```python\ndef buggy_running_total(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['cumulative_revenue'] = completed['net_amount'].cumsum()  # bug here\n    return (\n        completed.assign(order_date=lambda x: pd.to_datetime(x['order_date']).dt.strftime('%Y-%m-%d'))\n        .sort_values('order_date')\n        [['order_date', 'net_amount', 'cumulative_revenue']]\n        .reset_index(drop=True)\n    )\n```\n\n**The bug:** `cumsum()` is applied before `sort_values`, so the running total accumulates in arbitrary (CSV load) order. Sorting *after* cumsum produces a visually sorted table but with incorrect cumulative values.\n\n**Fix the function.** Sort by `order_date` ascending **before** computing cumsum. Return columns `order_date` (string `YYYY-MM-DD`), `net_amount` (float64), `cumulative_revenue` (float64, rounded to 2 dp).",
+    "dataframes": {
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Fix: sort before cumsum\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = (\n        df_orders[df_orders['status'] == 'completed']\n        .assign(order_date=lambda x: pd.to_datetime(x['order_date']))\n        .sort_values('order_date')\n        .reset_index(drop=True)\n    )\n    completed['cumulative_revenue'] = completed['net_amount'].cumsum().round(2)\n    result = (\n        completed\n        .assign(order_date=lambda x: x['order_date'].dt.strftime('%Y-%m-%d'))\n        [['order_date', 'net_amount', 'cumulative_revenue']]\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = (\n        df_orders[df_orders['status'] == 'completed']\n        .assign(order_date=lambda x: pd.to_datetime(x['order_date']))\n        .sort_values('order_date')\n        .reset_index(drop=True)\n    )\n    completed['cumulative_revenue'] = completed['net_amount'].cumsum().round(2)\n    result = (\n        completed\n        .assign(order_date=lambda x: x['order_date'].dt.strftime('%Y-%m-%d'))\n        [['order_date', 'net_amount', 'cumulative_revenue']]\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "`cumsum()` produces a running total in the *current row order*. Calling it before `sort_values` accumulates in arbitrary CSV-load order; then sorting reshuffles those wrong totals. The fix is simple but the bug is silent \u2014 the output looks plausible but is incorrect. Always sort by the ordering key before any order-sensitive operation (`cumsum`, `diff`, `shift`, `expanding`).",
+    "hints": [
+      "Trace the order of operations: sort first, then cumsum \u2014 not the other way around.",
+      "Parse `order_date` to datetime so sort_values sorts chronologically, not lexicographically."
+    ],
+    "concepts": [
+      "DEBUG PANDAS",
+      "WINDOW & ROLLING OPERATIONS",
+      "DATETIME OPERATIONS"
+    ]
   }
 ]

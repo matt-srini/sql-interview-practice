@@ -930,5 +930,38 @@
     "concepts": [
       "GROUPED AGGREGATION"
     ]
+  },
+  {
+    "id": 31028,
+    "order": 28,
+    "topic": "python_data",
+    "difficulty": "easy",
+    "title": "Sessions by channel group",
+    "description": "You have a DataFrame `df_sessions` loaded from the sessions dataset.\n\n**Columns:** `session_id`, `user_id`, `session_start`, `device_type`, `traffic_source`, `country`\n\nThe `traffic_source` column contains values like `paid_search`, `paid_social`, `organic`, `direct`, `referral`, `email`. Some sources are compound (separated by `_`); others are single words.\n\nCreate a `channel_group` column that takes only the **prefix before the first underscore** (or the whole value if there is no underscore). Then count the number of sessions per `channel_group`. Return a DataFrame with columns `channel_group` and `session_count`, sorted by `session_count` descending.",
+    "dataframes": {
+      "df_sessions": "sessions.csv"
+    },
+    "schema": {
+      "df_sessions": [
+        "session_id",
+        "user_id",
+        "session_start",
+        "device_type",
+        "traffic_source",
+        "country"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_sessions):\n    # Your code here\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_sessions):\n    df_sessions = df_sessions.copy()\n    df_sessions['channel_group'] = df_sessions['traffic_source'].str.split('_').str[0]\n    result = (\n        df_sessions.groupby('channel_group', as_index=False)\n        .agg(session_count=('session_id', 'count'))\n        .sort_values('session_count', ascending=False)\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_sessions):\n    df_sessions = df_sessions.copy()\n    df_sessions['channel_group'] = df_sessions['traffic_source'].str.split('_').str[0]\n    result = (\n        df_sessions.groupby('channel_group', as_index=False)\n        .agg(session_count=('session_id', 'count'))\n        .sort_values('session_count', ascending=False)\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "`.str.split('_')` splits each value into a list on underscores; `.str[0]` takes the first element. This normalises `paid_search` and `paid_social` into the same `paid` group in one vectorized call. The groupby + named aggregation counts sessions per group; descending sort surfaces the largest channel first.",
+    "hints": [
+      "Use `.str.split('_').str[0]` to extract the prefix before the first underscore.",
+      "A named aggregation \u2014 `agg(session_count=('session_id', 'count'))` \u2014 gives the output column its final name in one step."
+    ],
+    "concepts": [
+      "COLUMN SELECTION & PROJECTION",
+      "GROUPED AGGREGATION"
+    ]
   }
 ]

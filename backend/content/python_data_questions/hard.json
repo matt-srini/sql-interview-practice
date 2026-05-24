@@ -1601,5 +1601,41 @@
       "DATETIME OPERATIONS",
       "GROUPED AGGREGATION"
     ]
+  },
+  {
+    "id": 33038,
+    "order": 38,
+    "topic": "python_data",
+    "difficulty": "hard",
+    "title": "Vectorize discount classification (replace apply with np.select)",
+    "description": "An analyst wrote the following function that classifies each order by discount depth and computes summary statistics per class:\n\n```python\nimport pandas as pd\n\ndef slow_classify(df_orders):\n    def classify(row):\n        pct = row['discount_amount'] / row['gross_amount']\n        if row['discount_amount'] == 0:\n            return 'no_discount'\n        elif pct <= 0.05:\n            return 'low'\n        elif pct <= 0.10:\n            return 'medium'\n        else:\n            return 'high'\n    df_orders = df_orders.copy()\n    df_orders['discount_class'] = df_orders.apply(classify, axis=1)\n    return (\n        df_orders.groupby('discount_class', as_index=False)\n        .agg(order_count=('order_id', 'count'), avg_net_amount=('net_amount', 'mean'))\n        .assign(avg_net_amount=lambda x: x['avg_net_amount'].round(2))\n        .sort_values('discount_class')\n        .reset_index(drop=True)\n    )\n```\n\n**Rewrite this function** so that the discount classification uses `np.select` (vectorized) instead of `apply(axis=1)`. The result must be identical to the original. Return columns: `discount_class` (str), `order_count` (int64), `avg_net_amount` (float64, rounded to 2 dp), sorted by `discount_class` ascending.",
+    "dataframes": {
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
+    "starter_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_orders):\n    # Replace apply(axis=1) with np.select\n    pass",
+    "expected_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_orders):\n    df_orders = df_orders.copy()\n    pct = df_orders['discount_amount'] / df_orders['gross_amount']\n    conditions = [\n        df_orders['discount_amount'] == 0,\n        pct <= 0.05,\n        pct <= 0.10,\n    ]\n    choices = ['no_discount', 'low', 'medium']\n    df_orders['discount_class'] = np.select(conditions, choices, default='high')\n    result = (\n        df_orders.groupby('discount_class', as_index=False)\n        .agg(order_count=('order_id', 'count'), avg_net_amount=('net_amount', 'mean'))\n        .assign(avg_net_amount=lambda x: x['avg_net_amount'].round(2))\n        .sort_values('discount_class')\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_orders):\n    df_orders = df_orders.copy()\n    pct = df_orders['discount_amount'] / df_orders['gross_amount']\n    conditions = [\n        df_orders['discount_amount'] == 0,\n        pct <= 0.05,\n        pct <= 0.10,\n    ]\n    choices = ['no_discount', 'low', 'medium']\n    df_orders['discount_class'] = np.select(conditions, choices, default='high')\n    result = (\n        df_orders.groupby('discount_class', as_index=False)\n        .agg(order_count=('order_id', 'count'), avg_net_amount=('net_amount', 'mean'))\n        .assign(avg_net_amount=lambda x: x['avg_net_amount'].round(2))\n        .sort_values('discount_class')\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "`apply(axis=1)` calls the Python function once per row \u2014 on 4 200 rows this is fast, but on 100 million rows it would take minutes. `np.select` evaluates boolean arrays over the entire column at once using NumPy's C-level vectorised operations. The conditions are evaluated in order; the first matching condition wins (matching `apply`'s if/elif semantics). The `default` argument handles the fallback case (`'high'`). The pattern `conditions / choices / default` is the canonical replacement for multi-branch row-wise `apply`.",
+    "hints": [
+      "Compute `pct = discount_amount / gross_amount` as a vectorised Series first.",
+      "`np.select(conditions, choices, default=...)` evaluates each condition array left-to-right and picks the first True \u2014 mirrors if/elif logic."
+    ],
+    "concepts": [
+      "MEMORY & VECTORIZATION REASONING",
+      "CATEGORICAL & BINNING",
+      "GROUPED AGGREGATION"
+    ]
   }
 ]
