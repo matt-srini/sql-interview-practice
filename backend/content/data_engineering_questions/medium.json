@@ -14,10 +14,10 @@
       "Consumers should be updated first to use `customer_id`, then the schema can be pushed to the registry; this order of operations satisfies BACKWARD compatibility"
     ],
     "correct_option": 0,
-    "explanation": "BACKWARD compatibility means old consumers (using the previous schema) can read new data. Renaming `user_id` to `customer_id` removes the field under the old name \u2014 existing consumers fail because they look for `user_id` and find nothing. The safe migration is additive: add `customer_id` as a new optional field (keeping `user_id`), migrate all consumers to read `customer_id`, then remove `user_id` in a final breaking-change release with a version bump. Option B is wrong \u2014 field names are part of the schema contract in Avro. Option C is incorrect \u2014 FULL compatibility still prohibits field renames. Option D reverses the correct deployment order but doesn't address the schema structure problem.",
+    "explanation": "BACKWARD compatibility means old consumers (using the previous schema) can read new data. Renaming `user_id` to `customer_id` removes the field under the old name — existing consumers fail because they look for `user_id` and find nothing. The safe migration is additive: add `customer_id` as a new optional field (keeping `user_id`), migrate all consumers to read `customer_id`, then remove `user_id` in a final breaking-change release with a version bump. Option B is wrong — field names are part of the schema contract in Avro. Option C is incorrect — FULL compatibility still prohibits field renames. Option D reverses the correct deployment order but doesn't address the schema structure problem.",
     "hints": [
       "Think about what 'removing' a field means for a consumer that still references it by the old name.",
-      "A safe migration strategy adds new structure first, shifts consumers, then removes the old structure \u2014 never the other way around."
+      "A safe migration strategy adds new structure first, shifts consumers, then removes the old structure — never the other way around."
     ],
     "concepts": [
       "SCHEMA EVOLUTION",
@@ -32,13 +32,13 @@
     "type": "conceptual",
     "description": "A team enforces FORWARD compatibility on their event schema. A new producer adds a required field `payment_method` with no default value. Old consumers receive events with this new field. What happens?",
     "options": [
-      "Old consumers that don't know about `payment_method` may fail or discard the field \u2014 forward compatibility requires that new fields are optional with defaults so old readers can safely ignore them",
+      "Old consumers that don't know about `payment_method` may fail or discard the field — forward compatibility requires that new fields are optional with defaults so old readers can safely ignore them",
       "Forward compatibility guarantees old consumers handle any new fields transparently, so no consumer changes are needed",
       "The producer should be rejected by the schema registry because adding required fields always violates forward compatibility",
       "Old consumers will automatically deserialize `payment_method` as NULL, preserving all other fields without errors"
     ],
     "correct_option": 0,
-    "explanation": "Forward compatibility means new readers (consumers) can read old data \u2014 but it does NOT mean old readers can read new data. When a producer adds a required field, old consumers that lack the deserialization logic for that field may crash or drop it depending on the framework. The fix is to make new fields optional with default values, so old readers can safely ignore them. Option B confuses backward and forward compatibility. Option C is incorrect \u2014 forward compatibility allows adding fields if they have defaults. Option D assumes automatic NULL handling, which depends on the serialization format and consumer implementation.",
+    "explanation": "Forward compatibility means new readers (consumers) can read old data — but it does NOT mean old readers can read new data. When a producer adds a required field, old consumers that lack the deserialization logic for that field may crash or drop it depending on the framework. The fix is to make new fields optional with default values, so old readers can safely ignore them. Option B confuses backward and forward compatibility. Option C is incorrect — forward compatibility allows adding fields if they have defaults. Option D assumes automatic NULL handling, which depends on the serialization format and consumer implementation.",
     "hints": [
       "Recall which direction 'forward' refers to: is it about old readers or new readers handling the other side's data?",
       "A required field with no default is dangerous because consumers that don't know about it have no fallback value to use."
@@ -63,7 +63,7 @@
       "Switch to schema-on-read so the pipeline accepts any upstream format and applies transformations dynamically at query time"
     ],
     "correct_option": 0,
-    "explanation": "A data contract is a formal, machine-readable agreement between the producer (application team) and consumer (data engineering team) that specifies schema, types, nullability, and SLA. Combined with automated validation tests on every run, any drift is caught immediately with clear error messages rather than silently producing NULLs. Option B (Slack announcement) is informal and doesn't prevent the failure. Option C (schema cache) masks problems and delays discovery. Option D (schema-on-read) doesn't prevent silent failures \u2014 NULL values would still propagate if a column is renamed.",
+    "explanation": "A data contract is a formal, machine-readable agreement between the producer (application team) and consumer (data engineering team) that specifies schema, types, nullability, and SLA. Combined with automated validation tests on every run, any drift is caught immediately with clear error messages rather than silently producing NULLs. Option B (Slack announcement) is informal and doesn't prevent the failure. Option C (schema cache) masks problems and delays discovery. Option D (schema-on-read) doesn't prevent silent failures — NULL values would still propagate if a column is renamed.",
     "hints": [
       "Think about what mechanism makes the agreement between teams explicit and machine-enforceable rather than relying on human communication.",
       "Detecting a contract violation at pipeline trigger time stops bad data immediately; detecting it at dashboard review time means damage has already propagated."
@@ -82,16 +82,16 @@
     "type": "conceptual",
     "description": "A team is building a real-time recommendation system. Events must be processed within 500 milliseconds of arriving to update user affinity scores. They are deciding between micro-batch (10-second trigger intervals) and native event-by-event streaming. Which should they choose, and why?",
     "options": [
-      "Native event-by-event streaming \u2014 micro-batch with 10-second intervals introduces at least 10 seconds of latency, violating the 500ms SLA",
-      "Micro-batch \u2014 it delivers lower latency than native streaming because small batches can be processed more efficiently with vectorized operations",
+      "Native event-by-event streaming — micro-batch with 10-second intervals introduces at least 10 seconds of latency, violating the 500ms SLA",
+      "Micro-batch — it delivers lower latency than native streaming because small batches can be processed more efficiently with vectorized operations",
       "Either approach works because both can meet sub-second SLAs when the cluster has enough compute capacity",
-      "Micro-batch \u2014 native streaming has higher operational overhead and should only be used when latency requirements are below 100 milliseconds"
+      "Micro-batch — native streaming has higher operational overhead and should only be used when latency requirements are below 100 milliseconds"
     ],
     "correct_option": 0,
-    "explanation": "A 10-second micro-batch interval means an event arriving at t=0 is not processed until t=10s at the earliest \u2014 far beyond the 500ms SLA. Native streaming processes each event (or very small windows) as it arrives, achieving sub-second latency. Option B is wrong: micro-batch latency is bounded below by the trigger interval. Option C is incorrect \u2014 micro-batch latency is structurally bounded by the interval, not by compute. Option D reverses the trade-off: native streaming is used precisely for sub-second requirements.",
+    "explanation": "A 10-second micro-batch interval means an event arriving at t=0 is not processed until t=10s at the earliest — far beyond the 500ms SLA. Native streaming processes each event (or very small windows) as it arrives, achieving sub-second latency. Option B is wrong: micro-batch latency is bounded below by the trigger interval. Option C is incorrect — micro-batch latency is structurally bounded by the interval, not by compute. Option D reverses the trade-off: native streaming is used precisely for sub-second requirements.",
     "hints": [
       "Consider the minimum possible latency for a micro-batch system: an event arriving just after a batch trigger must wait for the next trigger interval to elapse.",
-      "The trigger interval sets a hard lower bound on latency \u2014 no amount of additional compute can shrink latency below the batch window size."
+      "The trigger interval sets a hard lower bound on latency — no amount of additional compute can shrink latency below the batch window size."
     ],
     "concepts": [
       "BATCH VS STREAMING",
@@ -106,13 +106,13 @@
     "type": "conceptual",
     "description": "A streaming pipeline computes user session windows that close after 30 minutes of inactivity. An e-commerce user adds items to their cart, then goes idle for 45 minutes, then checks out. How many sessions does this create, and why?",
     "options": [
-      "Two sessions \u2014 the 30-minute inactivity gap exceeds the session timeout, so the cart-addition events form one session and the checkout event forms a new session",
-      "One session \u2014 the checkout event falls within the same calendar hour as the cart events, so they are grouped together",
-      "One session \u2014 streaming frameworks extend the session window whenever a new event arrives from the same user, regardless of gap",
-      "Three sessions \u2014 each distinct event type (add-to-cart, idle, checkout) constitutes its own session in an inactivity-based window"
+      "Two sessions — the 30-minute inactivity gap exceeds the session timeout, so the cart-addition events form one session and the checkout event forms a new session",
+      "One session — the checkout event falls within the same calendar hour as the cart events, so they are grouped together",
+      "One session — streaming frameworks extend the session window whenever a new event arrives from the same user, regardless of gap",
+      "Three sessions — each distinct event type (add-to-cart, idle, checkout) constitutes its own session in an inactivity-based window"
     ],
     "correct_option": 0,
-    "explanation": "Session windows group events separated by less than the gap duration (here, 30 minutes). The 45-minute idle period exceeds the 30-minute timeout, so the window closes after the last cart event. The checkout event 45 minutes later opens a new session. Option B is wrong \u2014 session windows are defined by inactivity, not calendar time. Option C is wrong \u2014 session windows explicitly close after the gap threshold is exceeded; a new event reopens a new session. Option D is wrong \u2014 idle periods between events don't create their own sessions.",
+    "explanation": "Session windows group events separated by less than the gap duration (here, 30 minutes). The 45-minute idle period exceeds the 30-minute timeout, so the window closes after the last cart event. The checkout event 45 minutes later opens a new session. Option B is wrong — session windows are defined by inactivity, not calendar time. Option C is wrong — session windows explicitly close after the gap threshold is exceeded; a new event reopens a new session. Option D is wrong — idle periods between events don't create their own sessions.",
     "hints": [
       "Think about what 'inactivity gap' means as a closing condition for a session: what happens to the current session when no events arrive for longer than the gap?",
       "Session windows are event-driven: a gap longer than the timeout closes the current window; the next event starts a fresh window."
@@ -137,7 +137,7 @@
       "Kappa eliminates the serving layer by pushing results directly to application databases, simplifying the query path"
     ],
     "correct_option": 0,
-    "explanation": "Kappa architecture removes the separate batch layer entirely. A single streaming system processes live data and can replay historical events from a log (like a message broker with long retention) to recompute history. This eliminates the dual-codebase maintenance problem but requires the streaming system to be capable of high-throughput historical replay \u2014 which can be expensive and operationally complex. Option B describes a different micro-batch hybrid, not Kappa. Option C is incorrect \u2014 Kappa merges the codebases, not synchronizes them. Option D is incorrect about Kappa's architectural changes.",
+    "explanation": "Kappa architecture removes the separate batch layer entirely. A single streaming system processes live data and can replay historical events from a log (like a message broker with long retention) to recompute history. This eliminates the dual-codebase maintenance problem but requires the streaming system to be capable of high-throughput historical replay — which can be expensive and operationally complex. Option B describes a different micro-batch hybrid, not Kappa. Option C is incorrect — Kappa merges the codebases, not synchronizes them. Option D is incorrect about Kappa's architectural changes.",
     "hints": [
       "Think about what the 'Lambda' in the name represents architecturally (two paths) and what 'Kappa' does to that two-path structure.",
       "The key question is whether your streaming system can serve as both the real-time and historical processing engine simultaneously."
@@ -154,7 +154,7 @@
     "difficulty": "medium",
     "type": "scenario",
     "scenario_context": "A streaming pipeline processes clickstream events and computes 5-minute session counts. Event timestamps can arrive late due to mobile network delays. The current watermark is set to 2 minutes.",
-    "description": "The team is seeing incomplete session counts because events regularly arrive 8\u201310 minutes late. They want to capture 95% of late events without unbounded state growth. What should they change?",
+    "description": "The team is seeing incomplete session counts because events regularly arrive 8–10 minutes late. They want to capture 95% of late events without unbounded state growth. What should they change?",
     "options": [
       "Increase the watermark to 15 minutes to safely cover the 95th-percentile lateness while accepting higher state store memory usage",
       "Decrease the watermark to 30 seconds to reduce state store size and rely on downstream correction jobs",
@@ -162,7 +162,7 @@
       "Disable watermarking entirely so all late events are always included regardless of arrival time"
     ],
     "correct_option": 0,
-    "explanation": "The watermark defines how long the engine retains state for a window after the window's end time. Increasing it to 15 minutes captures late events up to 15 minutes after the window closes, covering the observed 95th-percentile delay. The trade-off is higher state store memory. Option B makes lateness worse. Option C is wrong \u2014 processing time ignores event time entirely, losing session semantics. Option D would cause unbounded state growth, which is operationally unsustainable.",
+    "explanation": "The watermark defines how long the engine retains state for a window after the window's end time. Increasing it to 15 minutes captures late events up to 15 minutes after the window closes, covering the observed 95th-percentile delay. The trade-off is higher state store memory. Option B makes lateness worse. Option C is wrong — processing time ignores event time entirely, losing session semantics. Option D would cause unbounded state growth, which is operationally unsustainable.",
     "hints": [
       "Consider what determines how long a streaming engine keeps state for a window open after its theoretical close time.",
       "A longer allowed delay means more state is retained in memory; the right setting balances coverage against resource use."
@@ -179,7 +179,7 @@
     "title": "Event Time vs Processing Time",
     "difficulty": "medium",
     "type": "conceptual",
-    "description": "A mobile app batches events locally and uploads them when connectivity is restored \u2014 sometimes hours later. A streaming job uses processing time for its hourly aggregation windows. What problem does this create?",
+    "description": "A mobile app batches events locally and uploads them when connectivity is restored — sometimes hours later. A streaming job uses processing time for its hourly aggregation windows. What problem does this create?",
     "options": [
       "Events that occurred at 2 PM are processed at 8 PM and assigned to the 8 PM window, making the 2 PM window incomplete and the 8 PM window inflated",
       "Processing time windows are always accurate because they reflect when computation actually occurred, which is the correct semantic for mobile apps",
@@ -187,9 +187,9 @@
       "The pipeline should use ingestion time, which automatically corrects for mobile upload delays by snapping events to the batch upload timestamp"
     ],
     "correct_option": 0,
-    "explanation": "Processing time uses the wall-clock time when the event arrives at the processing engine. A 2 PM event uploaded at 8 PM is stamped at 8 PM, corrupting both windows. Event time uses the timestamp embedded in the event (when it was generated on the device), allowing correct assignment to the 2 PM window with appropriate watermarking for late arrivals. Option B is wrong \u2014 processing time is incorrect for this use case. Option C is wrong \u2014 event time specifically solves this problem. Option D is wrong \u2014 ingestion time stamps events at arrival, not generation, causing the same problem.",
+    "explanation": "Processing time uses the wall-clock time when the event arrives at the processing engine. A 2 PM event uploaded at 8 PM is stamped at 8 PM, corrupting both windows. Event time uses the timestamp embedded in the event (when it was generated on the device), allowing correct assignment to the 2 PM window with appropriate watermarking for late arrivals. Option B is wrong — processing time is incorrect for this use case. Option C is wrong — event time specifically solves this problem. Option D is wrong — ingestion time stamps events at arrival, not generation, causing the same problem.",
     "hints": [
-      "Think about the three timestamps in a streaming system: when the event occurred, when it arrived at the broker, and when the processor received it \u2014 which one reflects the user's actual activity?",
+      "Think about the three timestamps in a streaming system: when the event occurred, when it arrived at the broker, and when the processor received it — which one reflects the user's actual activity?",
       "For mobile devices with intermittent connectivity, the time stamped on the device is the only reliable indicator of when the event actually happened."
     ],
     "concepts": [
@@ -203,18 +203,18 @@
     "title": "Watermark and Window Completeness",
     "difficulty": "medium",
     "type": "conceptual",
-    "description": "A streaming job uses a 10-minute tumbling window with a 5-minute watermark. An event with event_time = 10:05 AM arrives at processing_time = 10:22 AM. The watermark at 10:22 AM is at 10:17 AM. Is the event included in the 10:00\u201310:10 window?",
+    "description": "A streaming job uses a 10-minute tumbling window with a 5-minute watermark. An event with event_time = 10:05 AM arrives at processing_time = 10:22 AM. The watermark at 10:22 AM is at 10:17 AM. Is the event included in the 10:00–10:10 window?",
     "options": [
-      "No \u2014 the watermark at 10:17 AM has already passed the window's end time (10:10 AM), so the 10:00\u201310:10 window is already closed and the event is dropped as late",
-      "Yes \u2014 the event's event_time (10:05 AM) falls within the 10:00\u201310:10 window, so it is always included regardless of watermark",
-      "Yes \u2014 the watermark only closes windows after it exceeds the window end by more than the watermark delay (5 minutes), so the window is still open until 10:22 AM",
-      "No \u2014 the event arrived after 10:10 AM processing time, which is all that matters for window assignment"
+      "No — the watermark at 10:17 AM has already passed the window's end time (10:10 AM), so the 10:00–10:10 window is already closed and the event is dropped as late",
+      "Yes — the event's event_time (10:05 AM) falls within the 10:00–10:10 window, so it is always included regardless of watermark",
+      "Yes — the watermark only closes windows after it exceeds the window end by more than the watermark delay (5 minutes), so the window is still open until 10:22 AM",
+      "No — the event arrived after 10:10 AM processing time, which is all that matters for window assignment"
     ],
     "correct_option": 0,
-    "explanation": "A window closes when the watermark advances past the window's end time. The 10:00\u201310:10 window closes when the watermark reaches 10:10 AM. With a 5-minute watermark, the engine waits until processing_time ~10:15 AM to advance the watermark past 10:10 AM. By 10:22 AM, the watermark is at 10:17 AM, which is past the window's end (10:10 AM), so the window has already closed. The late-arriving event is dropped. Option B ignores the watermark mechanism. Option C misreads the watermark semantics. Option D is wrong \u2014 event time, not processing time, determines window assignment.",
+    "explanation": "A window closes when the watermark advances past the window's end time. The 10:00–10:10 window closes when the watermark reaches 10:10 AM. With a 5-minute watermark, the engine waits until processing_time ~10:15 AM to advance the watermark past 10:10 AM. By 10:22 AM, the watermark is at 10:17 AM, which is past the window's end (10:10 AM), so the window has already closed. The late-arriving event is dropped. Option B ignores the watermark mechanism. Option C misreads the watermark semantics. Option D is wrong — event time, not processing time, determines window assignment.",
     "hints": [
-      "Consider when the 10:00\u201310:10 window closes: the engine must be confident no more events in that range can arrive. What determines that confidence level?",
-      "Once the allowed latency threshold has been exceeded for a window's end time, that window's result is emitted and state is discarded \u2014 events arriving after that point are dropped."
+      "Consider when the 10:00–10:10 window closes: the engine must be confident no more events in that range can arrive. What determines that confidence level?",
+      "Once the allowed latency threshold has been exceeded for a window's end time, that window's result is emitted and state is discarded — events arriving after that point are dropped."
     ],
     "concepts": [
       "WATERMARKING",
@@ -236,7 +236,7 @@
       "Request the API provider to implement a schema registry; until then, accept all changes and fix downstream queries manually when they break"
     ],
     "correct_option": 0,
-    "explanation": "Automated schema comparison (stored baseline vs. inferred schema at ingest time) catches both type changes and removals immediately, before they propagate to transformations. Alerting on type changes and halting prevents silent corruption. Allowing new optional fields with logging balances strictness with forward compatibility. Option B is insufficient \u2014 type changes in optional fields can propagate silently and cause subtle errors downstream. Option C defers type errors to transformations, where they produce silent NULLs or cast failures that are harder to diagnose. Option D has no protective mechanism and relies on after-the-fact manual repair.",
+    "explanation": "Automated schema comparison (stored baseline vs. inferred schema at ingest time) catches both type changes and removals immediately, before they propagate to transformations. Alerting on type changes and halting prevents silent corruption. Allowing new optional fields with logging balances strictness with forward compatibility. Option B is insufficient — type changes in optional fields can propagate silently and cause subtle errors downstream. Option C defers type errors to transformations, where they produce silent NULLs or cast failures that are harder to diagnose. Option D has no protective mechanism and relies on after-the-fact manual repair.",
     "hints": [
       "Think about where in the pipeline you gain the most leverage: catching a type change at entry versus discovering its effects in a downstream report.",
       "A stored reference schema gives you a concrete baseline to compare against; without it, you have no way to know what 'normal' looks like."
@@ -261,10 +261,10 @@
       "A foreign key constraint that ensures each loaded row references a valid entry in a parent dimension table"
     ],
     "correct_option": 0,
-    "explanation": "A row count anomaly check compares today's loaded count against historical baselines (e.g., rolling average) and raises an alert when the deviation is statistically abnormal. Loading 12 rows instead of ~1 million is a 99.999% drop \u2014 a clear anomaly. Schema validation (Option B) only checks column structure, not row volume. Uniqueness constraints (Option C) prevent duplicates but don't detect volume drops. Foreign key checks (Option D) validate referential integrity, not completeness of the loaded batch.",
+    "explanation": "A row count anomaly check compares today's loaded count against historical baselines (e.g., rolling average) and raises an alert when the deviation is statistically abnormal. Loading 12 rows instead of ~1 million is a 99.999% drop — a clear anomaly. Schema validation (Option B) only checks column structure, not row volume. Uniqueness constraints (Option C) prevent duplicates but don't detect volume drops. Foreign key checks (Option D) validate referential integrity, not completeness of the loaded batch.",
     "hints": [
       "Think about what category of data quality check monitors volume rather than individual row structure.",
-      "A sudden drop from millions of rows to a handful is a completeness signal \u2014 the pipeline didn't fail, but the data is almost entirely missing."
+      "A sudden drop from millions of rows to a handful is a completeness signal — the pipeline didn't fail, but the data is almost entirely missing."
     ],
     "concepts": [
       "DATA QUALITY",
@@ -329,7 +329,7 @@
     "scenario_context": "A data pipeline processes 50 regional sales files every morning. Currently, a single sequential task downloads and processes each file one by one. The pipeline takes 4 hours. Business users need results by 6 AM but the pipeline starts at 2 AM.",
     "description": "Which orchestration pattern reduces wall-clock time most effectively for this workload?",
     "options": [
-      "Fan-out parallelism: spawn 50 parallel tasks (one per file), each completing independently, then a single fan-in task aggregates results \u2014 reduces wall-clock time to roughly the duration of the slowest single file plus aggregation",
+      "Fan-out parallelism: spawn 50 parallel tasks (one per file), each completing independently, then a single fan-in task aggregates results — reduces wall-clock time to roughly the duration of the slowest single file plus aggregation",
       "Chunked batching: group files into 5 batches of 10 and process each batch sequentially, reducing time by 5x compared to individual sequential processing",
       "Dynamic task mapping with a global lock: process all 50 files concurrently but acquire a database lock before each write to prevent conflicts",
       "Increase the compute resources of the single sequential task until it runs fast enough to meet the 6 AM deadline"
@@ -338,7 +338,7 @@
     "explanation": "Fan-out parallelism is the correct pattern: each file is an independent unit of work with no cross-file dependencies, making true parallel execution possible. The total wall-clock time becomes approximately max(individual file times) + aggregation time, rather than sum(all file times). This is the maximum possible speedup. Option B (batching into groups of 10) still processes sequentially within each group and reduces time by at most 10x, not the full 50x. Option C introduces a global lock that serializes the most expensive step (writing), negating the parallelism benefit. Option D (vertical scaling) has physical limits and cannot match the 50x parallelism gain.",
     "hints": [
       "Think about the relationship between the files: do they share state, depend on each other, or can each be processed in complete isolation?",
-      "When tasks are fully independent, parallel execution shrinks wall-clock time toward the duration of the single slowest task \u2014 very different from sequential sum."
+      "When tasks are fully independent, parallel execution shrinks wall-clock time toward the duration of the single slowest task — very different from sequential sum."
     ],
     "concepts": [
       "ORCHESTRATION",
@@ -359,10 +359,10 @@
       "A time-based dependency with a 95th-percentile buffer: schedule the downstream to start 3.5 hours after the upstream's typical start time"
     ],
     "correct_option": 0,
-    "explanation": "An event-driven trigger (file sensor or equivalent) responds to the actual state change \u2014 the marker file appearing \u2014 and starts the downstream pipeline immediately. This minimizes latency regardless of whether the upstream finishes in 30 minutes or 3 hours. Option B (fixed 4-hour delay) wastes time when upstream finishes early and fails when upstream takes longer than expected. Option C (manual trigger) is error-prone and creates human bottlenecks. Option D (95th-percentile buffer) is better than fixed scheduling but still wastes time when upstream is fast and fails on the rare slow run.",
+    "explanation": "An event-driven trigger (file sensor or equivalent) responds to the actual state change — the marker file appearing — and starts the downstream pipeline immediately. This minimizes latency regardless of whether the upstream finishes in 30 minutes or 3 hours. Option B (fixed 4-hour delay) wastes time when upstream finishes early and fails when upstream takes longer than expected. Option C (manual trigger) is error-prone and creates human bottlenecks. Option D (95th-percentile buffer) is better than fixed scheduling but still wastes time when upstream is fast and fails on the rare slow run.",
     "hints": [
       "Think about the core problem with time-based triggers when the dependency duration is variable: what happens when upstream finishes 2.5 hours before the scheduled trigger?",
-      "An event-driven trigger acts the moment its condition is true, not at a predetermined time \u2014 this directly solves the variable-duration problem."
+      "An event-driven trigger acts the moment its condition is true, not at a predetermined time — this directly solves the variable-duration problem."
     ],
     "concepts": [
       "ORCHESTRATION",
@@ -378,7 +378,7 @@
     "scenario_context": "A daily pipeline that produces the revenue report has an SLA of 7 AM. Over the past two weeks, the pipeline has breached its SLA on 6 out of 14 days. The pipeline starts at 5 AM. Investigation shows that on breach days, a JOIN between two tables takes 45 minutes instead of the usual 10 minutes.",
     "description": "The SLA breach is a symptom. Which root cause analysis approach correctly identifies what to investigate?",
     "options": [
-      "Profile the JOIN operation on breach days vs normal days \u2014 look for data volume spikes, skewed key distribution, or missing statistics that cause a suboptimal query plan",
+      "Profile the JOIN operation on breach days vs normal days — look for data volume spikes, skewed key distribution, or missing statistics that cause a suboptimal query plan",
       "Move the pipeline start time from 5 AM to 3 AM to add a 2-hour buffer before the 7 AM SLA",
       "Increase the number of parallel workers for the JOIN step to 10x to ensure it always completes within the time budget",
       "Switch the SLA from 7 AM to 9 AM to reflect the realistic p95 completion time and avoid frequent breaches"
@@ -386,7 +386,7 @@
     "correct_option": 0,
     "explanation": "The symptom is the SLA breach; the root cause is the 4-5x JOIN slowdown on specific days. Profiling the JOIN on breach days vs normal days is the correct diagnostic approach: data volume spikes (e.g., end-of-month batch loads), key skew, or stale query planner statistics are common causes of dramatic and intermittent slowdowns. Option B (earlier start) masks the problem without fixing it. Option C (more workers) may help for some causes but is a guess without diagnosis. Option D (change the SLA) avoids fixing the underlying problem.",
     "hints": [
-      "The key signal is that the slowdown is intermittent \u2014 it happens on some days and not others. What about those specific days might be different?",
+      "The key signal is that the slowdown is intermittent — it happens on some days and not others. What about those specific days might be different?",
       "The answer lies in understanding what changed between fast days and slow days: volume, distribution of keys, or available statistics."
     ],
     "concepts": [
@@ -402,7 +402,7 @@
     "type": "conceptual",
     "description": "A pipeline has an end-to-end SLA of 60 minutes. It has three sequential stages: ingestion (10 min), transformation (35 min), and serving (10 min). The total is 55 minutes, giving only a 5-minute SLA buffer. How should the team improve resilience against occasional stage overruns?",
     "options": [
-      "Set stage-level SLOs (e.g., ingestion \u226412 min, transformation \u226438 min, serving \u226410 min) with automated alerts when any stage exceeds its budget, enabling early intervention before end-to-end SLA is breached",
+      "Set stage-level SLOs (e.g., ingestion ≤12 min, transformation ≤38 min, serving ≤10 min) with automated alerts when any stage exceeds its budget, enabling early intervention before end-to-end SLA is breached",
       "Add a 15-minute sleep step between ingestion and transformation to create a buffer for slow ingestion days",
       "Reduce the end-to-end SLA from 60 minutes to 45 minutes to force the team to optimize each stage",
       "Merge the three stages into a single monolithic job so the scheduler overhead between stages is eliminated"
@@ -411,7 +411,7 @@
     "explanation": "Stage-level SLOs give the team early warning: if transformation hits 42 minutes (over its 38-minute budget), the alert fires while there's still time to intervene or scale resources before the 60-minute SLA is breached. This is proactive SLA management. Option B (sleep step) wastes time and reduces the actual buffer. Option C (tighten the SLA) creates pressure but doesn't add operational resilience. Option D (monolithic job) removes stage isolation, making debugging harder and providing no early warning capability.",
     "hints": [
       "Think about what operational tool gives you advance notice that the end-to-end SLA is at risk, before it actually breaches.",
-      "Stage-level targets that sum to less than the total SLA create a buffer \u2014 when a stage exceeds its budget, you know you're on track to miss the SLA."
+      "Stage-level targets that sum to less than the total SLA create a buffer — when a stage exceeds its budget, you know you're on track to miss the SLA."
     ],
     "concepts": [
       "SCHEDULING & SLAS",
@@ -432,10 +432,10 @@
       "Skip the backfill and process only from today forward, accepting the 5-day gap as historical data loss"
     ],
     "correct_option": 0,
-    "explanation": "Sequential, validated backfills are safer than parallel execution, especially after a bug fix. Running one day at a time allows the team to verify each partition is correct before proceeding \u2014 if the fix was incomplete or there are edge cases, the damage is limited to one partition rather than all five simultaneously. Option B (parallel) is faster but risks compounding errors across all 5 days simultaneously. Option C (extrapolation) is not appropriate for factual historical data. Option D (skip) is only acceptable if the data has no business value.",
+    "explanation": "Sequential, validated backfills are safer than parallel execution, especially after a bug fix. Running one day at a time allows the team to verify each partition is correct before proceeding — if the fix was incomplete or there are edge cases, the damage is limited to one partition rather than all five simultaneously. Option B (parallel) is faster but risks compounding errors across all 5 days simultaneously. Option C (extrapolation) is not appropriate for factual historical data. Option D (skip) is only acceptable if the data has no business value.",
     "hints": [
-      "Think about what happens if the fix is incomplete and you ran all 5 days in parallel \u2014 how do you recover if the output is wrong for all of them?",
-      "A sequential approach with validation gates limits the blast radius: a problem in day 2 is caught before days 3\u20135 are processed."
+      "Think about what happens if the fix is incomplete and you ran all 5 days in parallel — how do you recover if the output is wrong for all of them?",
+      "A sequential approach with validation gates limits the blast radius: a problem in day 2 is caught before days 3–5 are processed."
     ],
     "concepts": [
       "BACKFILL DESIGN",
@@ -457,7 +457,7 @@
       "Require manual deletion of existing `report_date` rows before triggering a backfill to ensure clean state"
     ],
     "correct_option": 0,
-    "explanation": "A DELETE-then-INSERT or MERGE (UPSERT) keyed on `report_date` makes the job idempotent: running it for the same date multiple times always produces the same final state \u2014 one set of correct rows for that date. Option B (run_timestamp filtering) works for consumers but doesn't fix the underlying data model \u2014 stale rows accumulate and queries become more complex. Option C removes the semantic key, making the data harder to query. Option D (manual cleanup) is error-prone and doesn't scale for large backfills.",
+    "explanation": "A DELETE-then-INSERT or MERGE (UPSERT) keyed on `report_date` makes the job idempotent: running it for the same date multiple times always produces the same final state — one set of correct rows for that date. Option B (run_timestamp filtering) works for consumers but doesn't fix the underlying data model — stale rows accumulate and queries become more complex. Option C removes the semantic key, making the data harder to query. Option D (manual cleanup) is error-prone and doesn't scale for large backfills.",
     "hints": [
       "Think about what operation would guarantee that after running the job for a specific date, exactly one version of that date's data exists in the table.",
       "The pattern that achieves this replaces existing data for a partition rather than adding to it."
@@ -482,7 +482,7 @@
       "Predicate pushdown applies only to the first partition column; the engine must read all `region = 'US'` partitions regardless of `event_date`"
     ],
     "correct_option": 0,
-    "explanation": "Columnar and partitioned storage formats (Parquet, ORC, Iceberg) support predicate pushdown for both equality and range filters. The query engine evaluates both conditions against partition metadata, skipping partitions where `region != 'US'` OR `event_date < '2024-01-01'`. Both predicates are applied before any data is read. Option B is incorrect \u2014 range filters are commonly supported for predicate pushdown. Option C is incorrect \u2014 composite partition keys work efficiently. Option D is incorrect \u2014 modern engines apply pushdown to all partition columns.",
+    "explanation": "Columnar and partitioned storage formats (Parquet, ORC, Iceberg) support predicate pushdown for both equality and range filters. The query engine evaluates both conditions against partition metadata, skipping partitions where `region != 'US'` OR `event_date < '2024-01-01'`. Both predicates are applied before any data is read. Option B is incorrect — range filters are commonly supported for predicate pushdown. Option C is incorrect — composite partition keys work efficiently. Option D is incorrect — modern engines apply pushdown to all partition columns.",
     "hints": [
       "Think about what 'pushdown' means: the filter logic moves closer to the storage layer rather than being applied after data is loaded into memory.",
       "Modern table formats store partition metadata separately from data files, allowing the engine to evaluate filters without opening any data files."
@@ -501,7 +501,7 @@
     "scenario_context": "A distributed join processes orders partitioned by `customer_id`. The top 0.1% of customers (enterprise accounts) generate 60% of all orders. During the join, a few worker nodes are overloaded while most are idle.",
     "description": "This is a data skew problem. Which technique most effectively addresses it?",
     "options": [
-      "Salting the skewed keys: append a random integer suffix (e.g., 0\u20139) to enterprise customer IDs before partitioning, then aggregate the salted partitions in a second step \u2014 this distributes the hot key's data across multiple workers",
+      "Salting the skewed keys: append a random integer suffix (e.g., 0–9) to enterprise customer IDs before partitioning, then aggregate the salted partitions in a second step — this distributes the hot key's data across multiple workers",
       "Repartition the orders table by `order_date` instead of `customer_id` before the join to avoid skewed key distribution",
       "Filter out enterprise customers before the join and process them in a separate sequential pipeline to prevent overloading the distributed workers",
       "Increase the memory allocation for the overloaded worker nodes so they can handle the disproportionate data volume"
@@ -531,7 +531,7 @@
       "CSV for analytics (human-readable and universally compatible) and Parquet for streaming (better compression than Avro)"
     ],
     "correct_option": 0,
-    "explanation": "Parquet is columnar: analytics queries that read 2\u20133 columns from a 100-column table read only those columns' byte ranges, skipping the rest. Avro is row-oriented: each record is stored together, making full-record serialization (as needed in streaming producers/consumers) fast and compact. Using each format where it excels is the correct choice. Option B is wrong \u2014 Avro is a poor choice for columnar analytics. Option C is wrong \u2014 Parquet's columnar layout is inefficient for full-record streaming access. Option D is wrong \u2014 CSV is never suitable for high-throughput analytics.",
+    "explanation": "Parquet is columnar: analytics queries that read 2–3 columns from a 100-column table read only those columns' byte ranges, skipping the rest. Avro is row-oriented: each record is stored together, making full-record serialization (as needed in streaming producers/consumers) fast and compact. Using each format where it excels is the correct choice. Option B is wrong — Avro is a poor choice for columnar analytics. Option C is wrong — Parquet's columnar layout is inefficient for full-record streaming access. Option D is wrong — CSV is never suitable for high-throughput analytics.",
     "hints": [
       "Think about the access pattern for each use case: analytics reads a few columns across many rows; streaming reads all columns of individual records.",
       "The physical storage layout determines I/O efficiency: adjacent columns benefit aggregate queries; adjacent rows benefit record-at-a-time processing."
@@ -550,13 +550,13 @@
     "scenario_context": "A streaming pipeline writes Parquet files to a data lake every 30 seconds, producing 2,880 files per day for a single table partition. After one month, the partition contains 86,400 tiny files. Queries on this table have degraded from 10 seconds to 4 minutes.",
     "description": "The team wants to fix query performance without changing the streaming ingestion frequency. What is the correct approach?",
     "options": [
-      "Schedule a periodic compaction job that merges small files into larger target sizes (e.g., 128\u2013512 MB each), reducing file count while preserving data \u2014 run compaction asynchronously so streaming ingestion is not blocked",
+      "Schedule a periodic compaction job that merges small files into larger target sizes (e.g., 128–512 MB each), reducing file count while preserving data — run compaction asynchronously so streaming ingestion is not blocked",
       "Increase the streaming trigger interval to 1 hour to produce fewer, larger files and avoid the small-file problem entirely",
       "Enable delta compression in the streaming framework so each new file stores only the difference from the previous file, reducing file count",
       "Switch from Parquet to CSV for the data lake table, which handles many small files more efficiently due to its simpler format"
     ],
     "correct_option": 0,
-    "explanation": "Compaction is the standard solution: a background job reads many small files and rewrites them as fewer large files without changing the data. This restores sequential read performance and reduces file system metadata overhead. Modern table formats (Iceberg, Delta Lake) support transactional compaction that doesn't interrupt live queries. Option B (increasing streaming interval) changes the ingestion SLA, which may be unacceptable. Option C (delta compression) is a different concept and doesn't reduce file count. Option D is wrong \u2014 CSV has no advantage for many small files.",
+    "explanation": "Compaction is the standard solution: a background job reads many small files and rewrites them as fewer large files without changing the data. This restores sequential read performance and reduces file system metadata overhead. Modern table formats (Iceberg, Delta Lake) support transactional compaction that doesn't interrupt live queries. Option B (increasing streaming interval) changes the ingestion SLA, which may be unacceptable. Option C (delta compression) is a different concept and doesn't reduce file count. Option D is wrong — CSV has no advantage for many small files.",
     "hints": [
       "Think about the two ways to reduce file count: change how data is written (affects ingestion) or periodically merge existing files (affects only storage).",
       "An asynchronous merge operation that doesn't affect the ingestion path satisfies both the streaming frequency requirement and the query performance requirement."
@@ -582,7 +582,7 @@
     "correct_option": 0,
     "explanation": "Production-grade CDC tools capture DDL events (ALTER TABLE) from the transaction log alongside DML events. When a schema change is detected, the tool propagates the ALTER to the target and continues streaming. For a NOT NULL column with a default, historical rows receive the default value, while new events include the actual column value. Option B (restart from beginning) is expensive and unnecessary. Option C (manual pause) is operationally fragile. Option D (drop and recreate) is the most disruptive option and causes full data unavailability.",
     "hints": [
-      "Think about what types of events a CDC tool reads from a transaction log \u2014 it's not only row-level changes; structural changes are also logged.",
+      "Think about what types of events a CDC tool reads from a transaction log — it's not only row-level changes; structural changes are also logged.",
       "A good CDC system handles schema changes as first-class events, propagating them to the target automatically."
     ],
     "concepts": [
@@ -599,12 +599,12 @@
     "description": "A team sets up CDC on a production database table with 500 million existing rows. They need to get all current data into the warehouse first, then switch to capturing incremental changes. What is the correct sequencing?",
     "options": [
       "Record the current log offset before the initial full load begins; after the full load completes, replay CDC events from that offset to catch changes that occurred during the load",
-      "Complete the full initial load, then enable CDC \u2014 any changes that occurred during the load will be picked up by the first CDC run using a timestamp filter",
+      "Complete the full initial load, then enable CDC — any changes that occurred during the load will be picked up by the first CDC run using a timestamp filter",
       "Enable CDC first, wait for it to catch up to the current log position, then perform the initial load from a database snapshot",
       "Perform the initial load and CDC ingestion simultaneously; use a deduplication step to merge overlapping records"
     ],
     "correct_option": 0,
-    "explanation": "The correct sequence is: (1) record the current log position (offset/LSN), (2) perform the full snapshot load while the source continues to change, (3) after the snapshot completes, replay CDC events from the saved offset forward. This ensures no changes are lost during the (potentially hours-long) snapshot load. Option B is incorrect \u2014 enabling CDC after the load means changes during the load are lost. Option C is impractical \u2014 the log grows continuously. Option D creates unresolvable conflicts between snapshot and CDC data for rows modified during the load.",
+    "explanation": "The correct sequence is: (1) record the current log position (offset/LSN), (2) perform the full snapshot load while the source continues to change, (3) after the snapshot completes, replay CDC events from the saved offset forward. This ensures no changes are lost during the (potentially hours-long) snapshot load. Option B is incorrect — enabling CDC after the load means changes during the load are lost. Option C is impractical — the log grows continuously. Option D creates unresolvable conflicts between snapshot and CDC data for rows modified during the load.",
     "hints": [
       "Think about what happens to the transaction log during a multi-hour full load: the log keeps growing. How do you ensure you capture changes that occurred while the load was running?",
       "The key insight is that you must record your position in the log before the snapshot, so you know where to start replaying after the snapshot completes."
@@ -622,16 +622,16 @@
     "type": "conceptual",
     "description": "A compliance team asks: 'Which source columns contribute to the `revenue_usd` column in the executive dashboard?' This requires tracing data through 12 transformation steps. What type of lineage is needed?",
     "options": [
-      "Column-level lineage \u2014 tracks how each individual output column is derived from specific source columns through transformations",
-      "Table-level lineage \u2014 identifies which source tables contribute to the dashboard table without tracking individual column origins",
-      "Row-level lineage \u2014 traces each individual row back to its source record in the origin table",
-      "Job-level lineage \u2014 records which pipeline jobs wrote to the dashboard table and when"
+      "Column-level lineage — tracks how each individual output column is derived from specific source columns through transformations",
+      "Table-level lineage — identifies which source tables contribute to the dashboard table without tracking individual column origins",
+      "Row-level lineage — traces each individual row back to its source record in the origin table",
+      "Job-level lineage — records which pipeline jobs wrote to the dashboard table and when"
     ],
     "correct_option": 0,
     "explanation": "Column-level lineage (also called field-level lineage) traces the derivation of each output column through all intermediate transformations back to its source columns. For compliance, knowing which tables fed the dashboard (table-level) is insufficient; you need to know exactly which source fields were used and how they were combined to produce `revenue_usd`. Table-level lineage (Option B) is too coarse. Row-level lineage (Option C) is for auditing specific records, not column derivation. Job-level lineage (Option D) only shows when jobs ran.",
     "hints": [
       "Think about the granularity of the question: the compliance team wants to know about one specific column's origins, not about the table as a whole.",
-      "Transformations like SUM(price * quantity) derive a column from two source columns \u2014 tracking that derivation at the field level answers the compliance question."
+      "Transformations like SUM(price * quantity) derive a column from two source columns — tracking that derivation at the field level answers the compliance question."
     ],
     "concepts": [
       "LINEAGE & OBSERVABILITY",
@@ -647,13 +647,13 @@
     "scenario_context": "A data team maintains 40 pipelines feeding 200 downstream tables. Last month, three SLA breaches went undetected for over 6 hours because no one noticed the dashboard was stale. The team has no centralized monitoring for pipeline completion or data freshness.",
     "description": "Which observability setup provides the strongest early warning for future SLA breaches?",
     "options": [
-      "Implement table-level freshness monitoring that checks the MAX(updated_at) timestamp against expected SLA thresholds, and send alerts when a table hasn't been updated within its expected window \u2014 integrate with an on-call rotation for SLA-critical tables",
+      "Implement table-level freshness monitoring that checks the MAX(updated_at) timestamp against expected SLA thresholds, and send alerts when a table hasn't been updated within its expected window — integrate with an on-call rotation for SLA-critical tables",
       "Add logging to each pipeline that prints 'Pipeline complete' to stdout, then manually grep logs when users report stale data",
       "Require all pipeline owners to send a Slack message when their pipeline completes, and create a shared checklist for the on-call team to verify",
       "Build a custom web dashboard that displays the last-run time for each pipeline; have the on-call team check it every 30 minutes"
     ],
     "correct_option": 0,
-    "explanation": "Automated freshness monitoring with threshold-based alerting is the only solution that provides early, automatic detection without human polling. Checking MAX(updated_at) per table against SLA windows catches freshness violations immediately after they occur and routes alerts to the on-call team. Options B, C, and D all require human intervention to detect the problem \u2014 they are reactive, not proactive, and require someone to already suspect a problem before looking.",
+    "explanation": "Automated freshness monitoring with threshold-based alerting is the only solution that provides early, automatic detection without human polling. Checking MAX(updated_at) per table against SLA windows catches freshness violations immediately after they occur and routes alerts to the on-call team. Options B, C, and D all require human intervention to detect the problem — they are reactive, not proactive, and require someone to already suspect a problem before looking.",
     "hints": [
       "Think about whether the detection mechanism requires a human to initiate a check, or whether it fires automatically when a threshold is exceeded.",
       "Six-hour detection gaps happen when monitoring is polling-based and human-initiated; automated threshold alerting closes that gap to minutes."
@@ -671,7 +671,7 @@
     "type": "conceptual",
     "description": "A data team spends 70% of their cloud budget on query compute. Most queries filter on `event_date` and aggregate `revenue`. The table stores 3 years of history with 500 billion rows in CSV format. Which change has the largest cost-reduction impact?",
     "options": [
-      "Convert to columnar Parquet with Snappy compression and partition by `event_date` \u2014 this combines column pruning, compression, and partition pruning to reduce bytes scanned by 90%+",
+      "Convert to columnar Parquet with Snappy compression and partition by `event_date` — this combines column pruning, compression, and partition pruning to reduce bytes scanned by 90%+",
       "Move the table to cold storage (e.g., archive tier) to reduce storage costs, and restore it on demand when queries are needed",
       "Add a materialized view with pre-aggregated daily totals so analysts query the summary rather than raw data",
       "Increase the warehouse's concurrency capacity so more queries run in parallel, reducing per-query wait time and overall cost"
@@ -697,16 +697,16 @@
     "scenario_context": "A company stores 5 years of clickstream data in a high-performance lakehouse. Storage costs are $50,000/month. Analysis shows that 95% of queries access data from the last 90 days; data older than 1 year is queried fewer than 5 times per month.",
     "description": "Which storage tiering strategy reduces cost while maintaining acceptable query performance for the access patterns described?",
     "options": [
-      "Keep the last 90 days in hot storage, move 90 days\u20131 year data to warm (infrequent access) storage, and archive data older than 1 year to cold storage \u2014 accept higher latency for rare historical queries",
+      "Keep the last 90 days in hot storage, move 90 days–1 year data to warm (infrequent access) storage, and archive data older than 1 year to cold storage — accept higher latency for rare historical queries",
       "Delete all data older than 90 days to eliminate the cost of storing rarely accessed historical data",
       "Move all 5 years of data to cold archive storage and restore on demand, since the team can tolerate delays for any query",
-      "Keep the last year in hot storage for simplicity, even though 75% of it is rarely queried \u2014 the operational complexity of tiering is not worth the savings"
+      "Keep the last year in hot storage for simplicity, even though 75% of it is rarely queried — the operational complexity of tiering is not worth the savings"
     ],
     "correct_option": 0,
     "explanation": "Tiered storage aligns storage cost with access frequency: hot storage (fast, expensive) for frequently queried data; warm storage (cheaper, slightly slower) for moderately accessed data; cold/archive (cheapest, slowest restore) for rarely accessed historical data. The 90-day hot window covers 95% of queries at high performance. Data between 90 days and 1 year is occasionally queried and benefits from warm storage. Archives older than 1 year are so rarely accessed that cold storage latency is acceptable. Option B (delete data) destroys historical value. Option C (cold for everything) makes common queries unacceptably slow. Option D overspends significantly.",
     "hints": [
       "Think about matching storage cost to query frequency: what fraction of queries would be affected by slower retrieval, and is that trade-off acceptable for each tier?",
-      "The majority of queries hit recent data \u2014 aligning the hot tier to cover those queries preserves performance where it matters and saves cost where it doesn't."
+      "The majority of queries hit recent data — aligning the hot tier to cover those queries preserves performance where it matters and saves cost where it doesn't."
     ],
     "concepts": [
       "COST OPTIMIZATION",
@@ -727,9 +727,9 @@
       "Check all three layers simultaneously to save time, then triangulate where the discrepancy first appears"
     ],
     "correct_option": 0,
-    "explanation": "Debugging a wrong metric requires systematic backward tracing starting closest to where the symptom appears. The mart layer is where the metric is computed \u2014 if the formula and JOIN logic look correct, move to staging to check for data quality issues (nulls, type errors, deduplication failures), then to raw if staging also looks clean. This approach narrows the problem efficiently. Option B (start at raw) is inefficient; most logic errors live in the mart. Option C (start at staging) skips the most likely culprit (mart business logic). Option D (simultaneous) is impractical without clear signals and leads to confusion.",
+    "explanation": "Debugging a wrong metric requires systematic backward tracing starting closest to where the symptom appears. The mart layer is where the metric is computed — if the formula and JOIN logic look correct, move to staging to check for data quality issues (nulls, type errors, deduplication failures), then to raw if staging also looks clean. This approach narrows the problem efficiently. Option B (start at raw) is inefficient; most logic errors live in the mart. Option C (start at staging) skips the most likely culprit (mart business logic). Option D (simultaneous) is impractical without clear signals and leads to confusion.",
     "hints": [
-      "Think about where business logic lives and where most logic errors are introduced \u2014 the layer closest to the output or the layer closest to the source?",
+      "Think about where business logic lives and where most logic errors are introduced — the layer closest to the output or the layer closest to the source?",
       "A systematic debugging approach starts closest to where the symptom appears and works backward toward the source only if needed."
     ],
     "concepts": [
@@ -747,22 +747,22 @@
     "scenario_context": "A real-time enrichment pipeline reads from a Kafka topic (producer rate: 50,000 messages/sec), calls an external enrichment API per message, and writes to a second Kafka topic. Over the past hour the consumer lag has grown from 10K to 4.2M messages. Enrichment API latency is stable at 12ms per call. The consumer group has 8 pods, each processing messages sequentially.",
     "description": "What is the root cause of the growing lag, and what is the most effective first remediation step?",
     "options": [
-      "The consumer throughput (8 pods \u00d7 1 call/12ms \u2248 667 msg/sec) is far below the producer rate (50,000 msg/sec) \u2014 this is backpressure; the most effective fix is to increase consumer parallelism (more pods or async batched API calls) to raise throughput above the producer rate",
-      "The growing lag is caused by the Kafka topic having too few partitions \u2014 Kafka limits one consumer per partition, so adding more pods beyond the partition count has no effect; the fix is to increase the partition count to match the desired pod count",
+      "The consumer throughput (8 pods × 1 call/12ms ≈ 667 msg/sec) is far below the producer rate (50,000 msg/sec) — this is backpressure; the most effective fix is to increase consumer parallelism (more pods or async batched API calls) to raise throughput above the producer rate",
+      "The growing lag is caused by the Kafka topic having too few partitions — Kafka limits one consumer per partition, so adding more pods beyond the partition count has no effect; the fix is to increase the partition count to match the desired pod count",
       "The enrichment API is the bottleneck because 12ms per call is too slow; the correct fix is to cache API responses in Redis so repeated lookups return in under 1ms and the consumer can catch up",
-      "The consumer lag is a monitoring artifact \u2014 Kafka resets consumer offsets when lag exceeds a threshold; the actual processing is healthy and the lag will self-correct once the consumer group rebalances"
+      "The consumer lag is a monitoring artifact — Kafka resets consumer offsets when lag exceeds a threshold; the actual processing is healthy and the lag will self-correct once the consumer group rebalances"
     ],
     "correct_option": 0,
-    "explanation": "Backpressure occurs when the consumer's processing throughput is lower than the producer's write rate, causing the queue (Kafka consumer lag) to grow unboundedly. Here: 8 pods \u00d7 (1000ms / 12ms) \u2248 667 messages/sec capacity vs 50,000 messages/sec produced \u2014 a 75\u00d7 gap. The primary fix is to increase parallelism: add more consumer pods (requires enough Kafka partitions to support them) and/or switch from sequential to async/batched API calls. With 50 concurrent async calls per pod at 12ms each, a single pod achieves ~4,100 msg/sec; 12 such pods \u2248 50,000 msg/sec.\n\nOption B is partially correct as a prerequisite (partition count does cap parallelism) but it is the second step, not the root cause diagnosis. The root cause is the throughput math, not partition count alone.\n\nOption C (caching) helps only if a large fraction of enrichment calls are repeated lookups for the same key. Nothing in the scenario indicates repeated keys \u2014 treating it as the primary fix is speculative.\n\nOption D is false \u2014 Kafka consumer lag is a real metric and does not self-correct without intervention.",
+    "explanation": "Backpressure occurs when the consumer's processing throughput is lower than the producer's write rate, causing the queue (Kafka consumer lag) to grow unboundedly. Here: 8 pods × (1000ms / 12ms) ≈ 667 messages/sec capacity vs 50,000 messages/sec produced — a 75× gap. The primary fix is to increase parallelism: add more consumer pods (requires enough Kafka partitions to support them) and/or switch from sequential to async/batched API calls. With 50 concurrent async calls per pod at 12ms each, a single pod achieves ~4,100 msg/sec; 12 such pods ≈ 50,000 msg/sec.\n\nOption B is partially correct as a prerequisite (partition count does cap parallelism) but it is the second step, not the root cause diagnosis. The root cause is the throughput math, not partition count alone.\n\nOption C (caching) helps only if a large fraction of enrichment calls are repeated lookups for the same key. Nothing in the scenario indicates repeated keys — treating it as the primary fix is speculative.\n\nOption D is false — Kafka consumer lag is a real metric and does not self-correct without intervention.",
     "hints": [
-      "Calculate the maximum throughput achievable with the current setup (pods \u00d7 messages per second per pod) and compare it to the producer rate.",
+      "Calculate the maximum throughput achievable with the current setup (pods × messages per second per pod) and compare it to the producer rate.",
       "Backpressure means the consumer cannot keep up with the producer. The solution always involves increasing consumer throughput, reducing the work per message, or slowing the producer."
     ],
     "concepts": [
       "BACKPRESSURE",
       "STREAMING ARCHITECTURE",
       "KAFKA CONSUMER LAG",
-      "PARALLELISM"
+      "DELIVERY SEMANTICS"
     ]
   },
   {
@@ -773,16 +773,16 @@
     "type": "conceptual",
     "description": "A data platform stores Parquet files in S3 and uses Spark for batch processing. The legal team requires GDPR-compliant erasure within 72 hours of a deletion request, but the raw Parquet files are immutable and cannot be retroactively modified. Which approach satisfies the erasure requirement without physically rewriting historical Parquet files?",
     "options": [
-      "Crypto shredding: encrypt each user's PII fields with a per-user key stored in a KMS; on erasure request, delete the user's key from the KMS \u2014 the encrypted data in Parquet becomes permanently unreadable without rewriting any files",
-      "Pseudonymization: replace user PII with a deterministic hash at ingest time; on erasure request, delete the hash mapping from the lookup table \u2014 the hash in Parquet is irreversible without the mapping",
-      "Data masking: apply column-level masking policies in the query engine (e.g., Apache Ranger) so that deleted users' PII is replaced with NULL at read time \u2014 physical data is unchanged but logically erased",
+      "Crypto shredding: encrypt each user's PII fields with a per-user key stored in a KMS; on erasure request, delete the user's key from the KMS — the encrypted data in Parquet becomes permanently unreadable without rewriting any files",
+      "Pseudonymization: replace user PII with a deterministic hash at ingest time; on erasure request, delete the hash mapping from the lookup table — the hash in Parquet is irreversible without the mapping",
+      "Data masking: apply column-level masking policies in the query engine (e.g., Apache Ranger) so that deleted users' PII is replaced with NULL at read time — physical data is unchanged but logically erased",
       "Partition-level deletion: partition Parquet files by user_id so each user's data lands in its own partition directory; on erasure request, delete the S3 prefix for that user"
     ],
     "correct_option": 0,
-    "explanation": "Crypto shredding (cryptographic erasure) is the standard technique for GDPR erasure in immutable storage systems. Each user's sensitive columns are encrypted with a unique key managed in a KMS (AWS KMS, HashiCorp Vault, etc.). When a deletion request arrives, the key is deleted from the KMS. Without the key, the ciphertext in Parquet files is computationally indistinguishable from random data and cannot be decrypted \u2014 GDPR considers this equivalent to erasure. No Parquet files need to be rewritten.\n\nOption B (pseudonymization) is not sufficient. GDPR considers pseudonymous data still personal if re-identification is possible. Deleting the mapping table removes the easy lookup path, but if the original data space is small enough to brute-force, the hash can be reversed.\n\nOption C (query-layer masking) is access control, not erasure. The physical PII still exists in the Parquet files; it is merely hidden at read time. A user with direct S3 access could still read it. This does not satisfy GDPR's right to erasure.\n\nOption D (partition-level deletion by user_id) physically deletes data but requires partitioning by user_id \u2014 impractical for analytical fact tables because it creates millions of tiny partitions and breaks date-range query efficiency.",
+    "explanation": "Crypto shredding (cryptographic erasure) is the standard technique for GDPR erasure in immutable storage systems. Each user's sensitive columns are encrypted with a unique key managed in a KMS (AWS KMS, HashiCorp Vault, etc.). When a deletion request arrives, the key is deleted from the KMS. Without the key, the ciphertext in Parquet files is computationally indistinguishable from random data and cannot be decrypted — GDPR considers this equivalent to erasure. No Parquet files need to be rewritten.\n\nOption B (pseudonymization) is not sufficient. GDPR considers pseudonymous data still personal if re-identification is possible. Deleting the mapping table removes the easy lookup path, but if the original data space is small enough to brute-force, the hash can be reversed.\n\nOption C (query-layer masking) is access control, not erasure. The physical PII still exists in the Parquet files; it is merely hidden at read time. A user with direct S3 access could still read it. This does not satisfy GDPR's right to erasure.\n\nOption D (partition-level deletion by user_id) physically deletes data but requires partitioning by user_id — impractical for analytical fact tables because it creates millions of tiny partitions and breaks date-range query efficiency.",
     "hints": [
       "GDPR's right to erasure requires that data can no longer be accessed or reconstructed. What happens to encrypted data when its decryption key is destroyed?",
-      "Masking and pseudonymization hide data from readers but don't remove it from storage. Crypto shredding is different \u2014 why?"
+      "Masking and pseudonymization hide data from readers but don't remove it from storage. Crypto shredding is different — why?"
     ],
     "concepts": [
       "CRYPTO SHREDDING",
@@ -799,13 +799,13 @@
     "type": "conceptual",
     "description": "A data platform team wants to formalize data contracts between producer and consumer teams. Which mechanism most effectively prevents breaking schema changes from reaching downstream consumers in a continuous deployment environment?",
     "options": [
-      "Store schema definitions as versioned files in a schema registry; add a CI step that runs a backward/forward compatibility check on every producer PR \u2014 fail the build if the change breaks any registered consumer schema",
+      "Store schema definitions as versioned files in a schema registry; add a CI step that runs a backward/forward compatibility check on every producer PR — fail the build if the change breaks any registered consumer schema",
       "Require producer teams to post a Slack message in #data-contracts at least 24 hours before deploying a schema change, so consumers have time to update their code",
       "Use strong typing in the producer's application code (e.g., Avro or Protobuf classes); if the producer compiles without errors, the schema is compatible with all consumers",
       "Run a nightly batch job that compares the current live schema of each topic against a snapshot taken 24 hours earlier; alert the on-call engineer if any columns were removed or renamed"
     ],
     "correct_option": 0,
-    "explanation": "A schema registry with CI-enforced compatibility checks is the industry-standard operationalization of data contracts. Key properties: (1) schemas are version-controlled and discoverable; (2) compatibility rules (backward, forward, full) are machine-enforced, not dependent on human communication; (3) the check runs at PR time, before deployment \u2014 breaking changes are blocked at the source rather than detected after consumers fail. Tools like Confluent Schema Registry, AWS Glue Schema Registry, or a Git-hosted JSON Schema repo with a compatibility CLI all implement this pattern.\n\nOption B (Slack notification) is informal and not enforceable \u2014 it depends on producers remembering to post and consumers reading it in time. It doesn't prevent accidental breaking changes.\n\nOption C (producer compilation) checks the producer's own types, not consumer compatibility. A producer can rename a field in a way that compiles cleanly on its side but breaks every downstream consumer that expects the old name.\n\nOption D (nightly diff) detects breaking changes after the fact \u2014 potentially 23+ hours after deployment. At that point, downstream consumers have already been failing for nearly a day.",
+    "explanation": "A schema registry with CI-enforced compatibility checks is the industry-standard operationalization of data contracts. Key properties: (1) schemas are version-controlled and discoverable; (2) compatibility rules (backward, forward, full) are machine-enforced, not dependent on human communication; (3) the check runs at PR time, before deployment — breaking changes are blocked at the source rather than detected after consumers fail. Tools like Confluent Schema Registry, AWS Glue Schema Registry, or a Git-hosted JSON Schema repo with a compatibility CLI all implement this pattern.\n\nOption B (Slack notification) is informal and not enforceable — it depends on producers remembering to post and consumers reading it in time. It doesn't prevent accidental breaking changes.\n\nOption C (producer compilation) checks the producer's own types, not consumer compatibility. A producer can rename a field in a way that compiles cleanly on its side but breaks every downstream consumer that expects the old name.\n\nOption D (nightly diff) detects breaking changes after the fact — potentially 23+ hours after deployment. At that point, downstream consumers have already been failing for nearly a day.",
     "hints": [
       "The goal is to prevent breaking changes from being deployed, not just to detect them after the fact. Which option blocks the change at the source?",
       "Human coordination (Slack, email) is not a contract. A contract is machine-enforced."
@@ -813,7 +813,6 @@
     "concepts": [
       "DATA CONTRACT",
       "SCHEMA REGISTRY",
-      "CI/CD",
       "BACKWARD COMPATIBILITY",
       "SCHEMA EVOLUTION"
     ]
