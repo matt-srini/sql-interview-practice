@@ -893,5 +893,63 @@
       "DIMENSION DESIGN",
       "DIMENSIONAL MODELING"
     ]
+  },
+  {
+    "id": 63034,
+    "order": 34,
+    "title": "M1 Follow-up: Procedure-Grain Fact at 200M Rows \u2014 Aggregate Fact Design Under Scale",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "parent_id": 62047,
+    "follow_up_dimension": "scale_pivot",
+    "scenario_context": "Following M1: the hospital system expands to 50 hospitals, growing `fact_procedures` to 200M rows per year. Executive dashboards \u2014 which only need unique patient counts and total revenue by department and quarter \u2014 now take 4\u20138 minutes. The data engineering team evaluates: (A) add a visit-level aggregate fact alongside the procedure fact, (B) replace `fact_procedures` with a pre-aggregated monthly rollup and archive the granular data, (C) partition `fact_procedures` by hospital and route dashboard queries to hospital-specific partitions.",
+    "description": "Which strategy addresses the performance problem at 200M rows without sacrificing the procedure-level flexibility the clinical analytics team requires?",
+    "options": [
+      "Add `fact_visit_summary` at the visit level (total_revenue, unique patient_key) refreshed nightly alongside `fact_procedures`. Executive dashboards query fact_visit_summary; clinical analysts who need procedure-type breakdown continue querying fact_procedures. Both facts share conformed dimensions and are produced by the same ETL pipeline, preventing metric divergence.",
+      "Replace `fact_procedures` with a monthly rollup table (one row per department \u00d7 month with pre-aggregated unique patient count and total revenue) and archive the granular data to cold storage. Executive dashboards become instant; procedure-level queries access the archive only for audits.",
+      "Partition `fact_procedures` by hospital_key and year. Dashboard queries filter on hospital subsets, reducing each scan to 1/50 of the full table. No structural change to the fact is needed; partitioning is a transparent optimization.",
+      "Add a database-level materialized view with pre-aggregated unique patient counts and total revenue by department and quarter over `fact_procedures`. Redirect the BI tool to the materialized view; procedure-level detail remains in the base fact."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct: the aggregate fact pattern (also called aggregate navigator in Kimball) places a pre-aggregated fact alongside the granular fact. The visit-level aggregate (fact_visit_summary) is small and fast for executive queries; the procedure-level fact remains available for clinical analytics. Both facts share conformed dimensions and are produced by the same ETL, so department and revenue definitions cannot diverge. BI tools that support aggregate awareness route dashboard queries to fact_visit_summary automatically. Option B (replace + archive) destroys analytical access to procedure-level data for all non-audit purposes. Archiving 200M rows to cold storage means any procedure-type revenue breakdown, clinical quality study, or readmission analysis requires expensive cold-storage retrieval \u2014 abandoning the analytical investment made in the procedure-level design. Option C (hospital partitions) reduces scan size when filtering by hospital, but a dashboard that aggregates all 50 hospitals still touches all 50 partitions. Partitioning is a storage strategy, not an aggregation optimizer; it does not eliminate the 200M-row aggregation cost for company-wide dashboard queries. Option D (materialized view) is operationally viable but has limitations: materialized view refresh lag may produce stale dashboards; engine-specific syntax creates lock-in; and the view lacks the lineage transparency of an explicitly documented aggregate fact with its own tests and documentation.",
+    "hints": [
+      "A dashboard that aggregates all 50 hospitals' patient counts and revenue by quarter is doing fundamentally different work from a clinical analyst examining procedure codes. Does serving both from one 200M-row table make sense, or does each need a purpose-built surface?",
+      "If an aggregate fact and the granular fact are built from the same ETL pipeline and share the same conformed dimensions, what ensures that a quarterly revenue number from the aggregate fact matches the same query against the granular fact?"
+    ],
+    "concepts": [
+      "GRAIN DEFINITION",
+      "AGGREGATE & SUMMARY DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63035,
+    "order": 35,
+    "title": "M1 Follow-up: Deduplicating Source Procedure Rows Without Losing Legitimate Repeats",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "parent_id": 62047,
+    "follow_up_dimension": "data_quality_pivot",
+    "scenario_context": "Following M1: the hospital's operational system has a known ETL bug \u2014 under high load, a procedure is occasionally inserted twice into the source (same patient, visit, procedure code, amount, and timestamp). The ETL team detects this in 0.3% of procedure records across the 200M-row fact. However, some patients legitimately receive the same procedure twice in one visit (bilateral knee injections, two blood draws). The team evaluates: (A) SELECT DISTINCT on the full natural key set in staging, (B) unique constraint on (patient_key, visit_key, procedure_code), (C) flag-and-keep both rows with an is_suspect boolean.",
+    "description": "Which strategy correctly eliminates system-bug duplicates without discarding legitimate repeated procedures, and why do the other two fail on either false positives or false negatives?",
+    "options": [
+      "SELECT DISTINCT on the full natural key (patient_id, visit_id, procedure_code, procedure_timestamp, amount) in staging. True system-bug duplicates are identical on every column including timestamp and amount; legitimate repeated procedures differ on at least one column (different timestamp, different line item amount). Full-column dedup eliminates bug duplicates without touching legitimate repeats.",
+      "Add a unique constraint on (patient_key, visit_key, procedure_code). Any second row with the same three-value combination is rejected at load time and logged. This eliminates both exact duplicates and billing errors while producing an audit trail of all discarded rows.",
+      "Keep both rows and set is_suspect = TRUE on the duplicate. Analysts who need accurate procedure counts filter WHERE NOT is_suspect. The flag preserves an audit trail for the source system team to investigate and never discards data from the fact.",
+      "Apply a deduplication window: for any (patient_id, visit_id, procedure_code) combination, retain only the first occurrence within a 24-hour window. This handles both exact duplicates and near-duplicates where timestamps differ by seconds due to system clock skew."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. The system bug produces truly identical rows on every column \u2014 same patient, visit, code, timestamp, and amount. SELECT DISTINCT on the full natural key set removes exactly these rows. Legitimate repeated procedures (bilateral injections, two blood draws) differ on at least one column: they have different procedure line IDs, different timestamps (performed minutes apart), or different amounts (left vs right knee may have different billing codes). Full-column dedup is surgical \u2014 it eliminates only the impossible-in-reality exact replicas. Option B (unique constraint on three columns) is too broad: it rejects a patient who legitimately receives the same procedure type twice in one visit (bilateral injection = two rows with the same patient_key, visit_key, and procedure_code but different timestamps and amounts). This creates false negatives \u2014 real clinical events discarded from the fact. Option C (flag-and-keep) pollutes the fact with known-bad data and forces every downstream analyst to apply the filter WHERE NOT is_suspect. If any consumer forgets the filter \u2014 a new team member, an ad hoc query, a third-party BI tool \u2014 their procedure counts and revenue totals are wrong by 0.3%. The correct design is clean facts, not flagged facts. Option D (24-hour window by code) creates the same false negative problem as Option B: a patient receiving two bilateral injections in one visit, 30 minutes apart, shares the same (patient, visit, code) and falls within the 24-hour window. The first occurrence is kept; the second is discarded incorrectly.",
+    "hints": [
+      "A bilateral knee injection for a patient produces two procedure rows \u2014 same patient, same visit, same procedure code \u2014 but with different timestamps (left knee at 10:00, right knee at 10:45) and possibly different amounts. How does a unique constraint on (patient_key, visit_key, procedure_code) treat these two rows?",
+      "A system-bug duplicate has the same patient, visit, code, timestamp, and amount as the original. A legitimate repeated procedure has the same patient, visit, and code, but a different timestamp and possibly a different amount. Which deduplication key distinguishes the two cases correctly?"
+    ],
+    "concepts": [
+      "GRAIN DEFINITION",
+      "SCHEMA EVOLUTION",
+      "DIMENSIONAL MODELING"
+    ]
   }
 ]

@@ -1192,5 +1192,173 @@
       "DIMENSIONAL MODELING",
       "SCHEMA EVOLUTION"
     ]
+  },
+  {
+    "id": 62047,
+    "order": 46,
+    "title": "Grain Selection: Procedure vs Visit Level for a Hospital Analytics Fact",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "follow_ups": [
+      62048,
+      63034,
+      63035
+    ],
+    "scenario_context": "A hospital analytics team is designing a fact table for two requirements: (1) 'How many unique patients visited each department in Q3?' and (2) 'What was the total revenue from those visits?' The source operational system creates one row per patient per visit per procedure \u2014 a patient visiting cardiology for an EKG and a stress test generates two procedure rows under one visit. The team debates grain: procedure-level (one fact row per procedure per visit) vs visit-level (one fact row per visit).",
+    "description": "Which level of detail correctly satisfies both requirements, and what does the wrong choice make impossible to answer later?",
+    "options": [
+      "Use the procedure-level detail (one fact row per procedure per visit). Revenue per visit is summed from procedure rows; unique patient counts use COUNT(DISTINCT patient_key). Both requirements are answerable without information loss because procedure is the finest level available in the source and roll-up to visit or quarter is lossless.",
+      "Use the visit-level detail (one fact row per visit) and store total visit revenue as a pre-aggregated measure. Unique patient counts are a direct COUNT(patient_key). The procedure level is too fine for analytics \u2014 analysts need visit-level summaries, not procedure-level transactions.",
+      "Build two separate facts: `fact_visits` at the visit level for patient counts and `fact_procedures` at the procedure level for revenue detail. Executive dashboards query fact_visits; revenue drilldown queries fact_procedures. Keeping levels separate prevents COUNT(DISTINCT) queries that are slow at scale.",
+      "Use the visit-level fact and add a procedures JSON array column containing all procedure codes and amounts per visit. Revenue is computed by expanding the array; unique patient counts remain simple COUNTs."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. Building the fact at the finest available level preserves all analytical flexibility. Revenue sums from procedure rows; unique patient counts use COUNT(DISTINCT patient_key). Roll-up to visit, department, or quarter is always lossless via GROUP BY. Option B (visit-level with pre-aggregated revenue) breaks the moment the team needs revenue by procedure type (EKG, stress test, blood panel) \u2014 that detail cannot be reconstructed from a visit-level total. Pre-aggregated measures cannot be disaggregated. Option C (two separate facts) creates two sources of truth for revenue: if fact_visits.total_revenue ever diverges from SUM(fact_procedures.procedure_revenue) GROUP BY visit_key, reports conflict. Two facts for the same business process (a patient visit) are justified only when the levels represent genuinely different business events. Option D (JSON array on visit-level fact) is incompatible with standard SQL GROUP BY and BI tool query generation; most analytical engines cannot aggregate inside a JSON array without custom parsing logic, and the visit-level fact still cannot answer procedure-type revenue questions.",
+    "hints": [
+      "If you store facts at the visit level and a report later asks for revenue by procedure type (EKG, stress test, blood draw), can you answer from a fact that only stores total visit revenue? What precision is permanently lost?",
+      "COUNT(DISTINCT patient_key) is standard SQL. At what row count does it typically become a performance bottleneck \u2014 thousands of visits, or hundreds of millions? Does the procedure level create that scale problem for a single hospital?"
+    ],
+    "concepts": [
+      "GRAIN DEFINITION",
+      "SCHEMA FROM REQUIREMENTS",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 62048,
+    "order": 47,
+    "title": "M1 Follow-up: Tracking Readmissions When the Business Rule Adds a New Event Relationship",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "parent_id": 62047,
+    "follow_up_dimension": "business_rule_pivot",
+    "scenario_context": "Following M1: the hospital analytics team has built `fact_procedures` at the procedure-per-visit level. The clinical quality team adds a new requirement: 'Flag any patient who returns to the same department within 30 days of a prior visit as a readmission.' This requires linking two visits for the same patient and department. The team debates whether to add a readmission flag to `fact_procedures` or redesign the structure.",
+    "description": "How does the readmission requirement change the fact design, and what is the minimum structural change that satisfies the requirement without creating a new source of truth for visit revenue?",
+    "options": [
+      "Add a boolean `is_readmission` flag and a `prior_visit_key` foreign key to `fact_procedures`, populated at ETL time by checking each patient's prior visit history per department within a 30-day window. This is the minimum structural change: it adds derived attributes to the existing fact without altering its level of detail or creating a second revenue source.",
+      "Redesign the fact to the visit-pair level (one row per patient per consecutive visit pair) to explicitly model the readmission relationship as a first-class fact row with first_visit_key, readmission_visit_key, and days_between. This is the correct relational design for an event-to-event relationship.",
+      "Create a separate `fact_readmissions` table containing one row per readmission visit with patient_key, department_key, prior_visit_key, and days_since_prior. The original `fact_procedures` is unchanged; the readmission fact is joined when readmission metrics are needed.",
+      "Store a `readmission_count` on `dim_patient`, updated nightly. Reports filter `fact_procedures` for patients with dim_patient.readmission_count > 0. This avoids changing the fact table schema."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct as the minimum structural change. Adding `is_readmission` and `prior_visit_key` at ETL time follows the derived attribute pattern: the ETL computes the flag from existing visit history and embeds it on the fact row. This enables readmission cohort filtering (WHERE is_readmission = TRUE) and drill-through to the prior visit (JOIN on prior_visit_key) without changing the fact's level of detail. Option B (visit-pair level) is a more principled design for dedicated readmission analysis, but it is not the minimum change \u2014 it requires a new fact table, a new level of detail, and a new ETL pipeline. If readmission is a secondary requirement layered on top of primary procedure analytics, Option A is the correct incremental evolution. Option C (separate readmission fact) creates two analytical surfaces for a property of an existing event. For a boolean attribute of a visit, an embedded flag on the existing fact is simpler and keeps the revenue source of truth unified. Option D (counter on dim_patient) violates the principle that derived metrics belong on facts, not dimensions. A dimension attribute should describe the customer's stable characteristics \u2014 a rolling 30-day behavioral metric is a transient fact property, not a stable customer attribute.",
+    "hints": [
+      "Adding a boolean flag and a foreign key to an existing fact table changes its column count but not its row count or level of detail. What type of schema evolution is this \u2014 backwards-compatible or breaking?",
+      "If you create a separate readmission fact table, an analyst querying 'revenue from readmission visits' now needs to join two facts. What operational burden does this create compared to a flag on the existing fact?"
+    ],
+    "concepts": [
+      "GRAIN DEFINITION",
+      "SCHEMA FROM REQUIREMENTS",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 62049,
+    "order": 48,
+    "title": "Hierarchies: Mid-Year Product Reclassification in a Year-Spanning Revenue Report",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A retailer's product hierarchy has Category (Electronics, Apparel) and Department (Consumer, Enterprise). In March, the product 'Tablet Pro X' is reclassified from Consumer to Enterprise while remaining in Electronics. The analytics team produces an annual revenue report by department. Under the current dim_product design, the Tablet Pro X shows all 12 months of revenue under Enterprise \u2014 including January and February when it was classified as Consumer. The difference is material: $240K is incorrectly attributed to Enterprise instead of Consumer for Q1.",
+    "description": "What is the root cause of the reporting error, and what design change correctly reflects department membership at the time of each transaction?",
+    "options": [
+      "Root cause: dim_product uses a Type 1 design that overwrites the department attribute on reclassification. Fix: apply SCD Type 2 to the department attribute on dim_product (effective_from / effective_to dates). fact_sales joins to the dimension row valid at the time of the transaction: pre-reclassification sales join to the Consumer row, post-reclassification sales join to the Enterprise row.",
+      "Root cause: the fact_sales table lacks a department_key column. Fix: add department_key directly to each fact row at load time, snapshotting the department at the time of the transaction and avoiding any dependence on how dim_product tracks historical department values.",
+      "Root cause: the product hierarchy has two levels above the product, which creates reclassification ambiguity. Fix: flatten category and department into a single classification code on dim_product to eliminate mid-year reclassification misattribution.",
+      "Root cause: the report spans the reclassification date. Fix: produce two sub-reports \u2014 one for January\u2013February and one for March\u2013December \u2014 and sum the department totals in the presentation layer. No schema change is required."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. The root cause is SCD Type 1 on dim_product: when the Tablet Pro X is reclassified in March, the existing dimension row is overwritten with department = Enterprise. All historical fact rows that previously joined to the Consumer row now resolve to Enterprise because the pointer (product_sk) is unchanged but the dimension row it points to has been updated. SCD Type 2 on the department attribute creates a new dimension row in March (new product_sk, effective_from = March 1, department = Enterprise), leaving the original row intact (effective_to = February 28, department = Consumer). fact_sales rows from January and February carry the old product_sk and join to the Consumer row; March and later carry the new product_sk and join to the Enterprise row. Option B (add department_key to fact) is a partial fix but creates a different problem: now the department classification is duplicated between fact and dimension. Any future department hierarchy change must update both the fact and dimension, increasing ETL complexity. The canonical solution keeps classification on the slowly-changing dimension. Option C (flatten hierarchy) does not solve the reclassification problem \u2014 a single classification code that changes mid-year has the same SCD challenge regardless of how many hierarchy levels exist. Option D (two sub-reports) is a manual workaround that fails with multiple reclassifications per year and cannot support ad hoc time-range queries.",
+    "hints": [
+      "When a dimension attribute is overwritten on update and a fact row joins to the dimension using the stored dimension key, whose classification does the fact row now reflect \u2014 the classification at transaction time or the most recent classification?",
+      "Inserting a new dimension row when an attribute changes keeps the old row intact. What must fact rows from before the change reference for the historical classification to survive the update?"
+    ],
+    "concepts": [
+      "HIERARCHIES & MULTI-PATH",
+      "DIMENSION DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 62050,
+    "order": 49,
+    "title": "Surrogate vs Natural Keys: Why Dimensional Models Use Generated Keys Even When Source IDs Are Stable",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A dimensional model team debates whether to use the source system's customer UUID (stable since 2018) as the dimension's primary key, or to generate an integer surrogate key. The source team argues: 'Our UUIDs are globally unique and never reused \u2014 there is no technical reason for an extra key.' What is the strongest justification for a generated key even when the source natural key is stable?",
+    "options": [
+      "A generated key decouples the dimension from the source key scheme: if two source systems are merged and both use separate UUID spaces for the same business entity, the dimension can assign one unified key per canonical customer without requiring source UUIDs to match. SCD Type 2 also requires distinct keys: two dimension rows for the same customer at different time periods must have different keys so fact rows can point to the correct historical version.",
+      "Generated integer keys join faster than UUIDs because integer comparison requires fewer CPU cycles and integer columns compress better in columnar storage than 36-character strings. The performance benefit at scale justifies the additional ETL step.",
+      "Source natural keys are never truly stable \u2014 the UUID scheme could change in a future system re-platform. A generated key is insurance against future key instability, even if the source has been stable for six years.",
+      "Generated keys are a required Kimball compliance rule: any dimensional model that uses natural keys as dimension primary keys is non-compliant with the methodology regardless of source system key stability."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A gives the strongest justification with two concrete technical reasons. (1) Source system isolation: if two CRM systems are merged, each with separate UUID spaces for the same physical customer, the dimensional model assigns one generated key per canonical customer. All historical facts from both systems point to the unified key without requiring any source UUID to match or any fact-row updates. (2) SCD Type 2: when a customer's tier changes from Silver to Gold, two dimension rows exist with the same UUID but different generated keys. Fact rows before the change point to the pre-change generated key (Silver); fact rows after point to the post-change generated key (Gold). Without distinct generated keys, SCD Type 2 cannot function \u2014 the natural key alone cannot distinguish historical versions. Option B (performance) is partially valid but secondary: modern columnar engines handle UUID joins efficiently; performance is a benefit, not the primary justification. Option C (future instability) is speculative and weaker than Option A's concrete present-day cases. Option D is wrong: Kimball recommends generated keys for specific technical reasons \u2014 it is not a compliance rule for its own sake. A model that uses natural keys where technically appropriate is not 'non-compliant.'",
+    "hints": [
+      "A company merges two CRM systems that assign different UUIDs to the same physical customer. How does the dimensional model unify 'Jane Smith' from both systems into one customer identity for cross-system revenue reporting?",
+      "SCD Type 2 creates two rows for the same customer when an attribute changes. If both rows share the same UUID as their primary key, how does a fact row from before the change reference the pre-change attribute values rather than the post-change values?"
+    ],
+    "concepts": [
+      "SURROGATE VS NATURAL KEYS",
+      "DIMENSION DESIGN",
+      "REFERENTIAL INTEGRITY"
+    ]
+  },
+  {
+    "id": 62051,
+    "order": 50,
+    "title": "Pre-Aggregated Summary Tables: When They Help and When They Introduce Calculation Errors",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A retail analytics team pre-builds a monthly summary table `agg_monthly_sales` (one row per product \u00d7 month) with columns: total_units, total_revenue, avg_selling_price (= total_revenue / total_units computed at month-end). A new analyst uses this table to compute annual revenue per product as SUM(total_revenue) and annual average selling price as SUM(avg_selling_price). Revenue totals match Finance's source reports exactly, but average selling price is wrong by up to 40% for some products.",
+    "description": "What is the root cause of the average selling price error, and what is the correct computation from the monthly summary table?",
+    "options": [
+      "avg_selling_price is non-additive: it is a ratio (total_revenue / total_units) pre-computed per month. SUM(avg_selling_price) produces a simple sum of monthly ratios \u2014 not a weighted average \u2014 which is wrong when monthly unit volumes differ. The correct annual average selling price is SUM(total_revenue) / SUM(total_units), recomputed from the underlying additive components.",
+      "avg_selling_price is semi-additive: it can be averaged across months but not summed. The correct computation is AVG(avg_selling_price) across months, which weights all months equally and produces the correct annual average.",
+      "The summary table is the wrong data source for annual averages; the analyst must query the underlying transaction-level fact table and compute AVG(selling_price) directly, since pre-aggregated ratios always lose the precision needed for annual metrics.",
+      "avg_selling_price should be stored as a cumulative running total in `agg_monthly_sales` rather than a monthly average. SUM() across the cumulative column would then produce the correct annual figure."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. avg_selling_price is non-additive: it is a ratio pre-computed within each month. SUM of ratios is not the ratio of sums. Consider a product with 1000 units at avg $10 in January and 10 units at avg $100 in February: the correct annual average is (10000 + 1000) / (1010) = $10.89. SUM(10, 100) = $110 \u2014 wrong by nearly 10\u00d7. AVG(10, 100) = $55 \u2014 still wrong because it weights the low-volume February equally with the high-volume January. The correct computation from the summary table is SUM(total_revenue) / SUM(total_units) = 11000 / 1010 = $10.89, using the additive components that were preserved in the summary table. Option B (AVG) is wrong: AVG weights each month equally regardless of unit volume, producing an unweighted average that is incorrect when monthly volumes differ significantly. Option C (use transaction-level fact) is correct in principle but impractical \u2014 it defeats the purpose of the pre-aggregated table. The summary table already contains the additive components (total_units, total_revenue) needed to reconstruct a correct weighted average. Option D (cumulative storage) is not meaningful: storing a running cumulative ratio destroys the ability to compute any sub-annual or partial-period metric from the summary table.",
+    "hints": [
+      "A product sells 1000 units in January at avg $10 and 10 units in February at avg $100. SUM(10, 100) = $110 and AVG(10, 100) = $55 as annual averages. What is the correct annual average \u2014 and which computation with the columns available in the summary table produces it?",
+      "total_revenue and total_units are fully additive measures in the summary table. Is avg_selling_price = total_revenue / total_units additive in the same way? What happens mathematically when you sum or average pre-computed ratios instead of recomputing the ratio from sums?"
+    ],
+    "concepts": [
+      "AGGREGATE & SUMMARY DESIGN",
+      "ADDITIVE VS NON-ADDITIVE",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 62052,
+    "order": 51,
+    "title": "Debug: Orphaned Fact Rows After a Dimension Cleanup Deletes Referenced Rows",
+    "difficulty": "medium",
+    "type": "debug",
+    "mock_only": true,
+    "scenario_context": "A data team 'cleans up' `dim_product` by deleting rows for any product discontinued before 2023. After the deletion, a revenue report shows $3.2M total, but the pre-cleanup total was $4.8M. The missing $1.6M represents sales from 2020\u20132022 that referenced products now deleted from the dimension. Analysts can no longer break down the $1.6M by product or category because those dimension rows no longer exist.",
+    "description": "What went wrong and what is the correct pattern for handling inactive or discontinued entities in a dimensional model?",
+    "options": [
+      "Root cause: the dimension deletion orphaned historical fact rows \u2014 their product_sk now has no matching dimension row, so the revenue from those rows is excluded from any JOIN-based revenue query. Fix: never delete dimension rows that have referencing fact rows; instead, mark discontinued products with an `is_active = FALSE` flag. Historical revenue queries include all rows; current-state filters add `WHERE is_active = TRUE`.",
+      "Root cause: the fact table lacks a foreign key constraint between fact_sales.product_sk and dim_product.product_sk. Fix: add an enforced foreign key constraint so the database engine prevents dimension row deletions that would orphan fact rows, raising an integrity error before any deletion completes.",
+      "Root cause: discontinued products should have been moved to a `dim_product_archive` table before deletion. Fix: rebuild dim_product_archive from the deleted rows (if possible from backup), and modify all revenue queries to UNION dim_product and dim_product_archive in the dimension join.",
+      "Root cause: the fact table stores product_sk (surrogate key) instead of product_id (natural key). Fix: migrate fact_sales to use product_id so the join survives dimension row deletions \u2014 if the product is later re-inserted with the same natural key, fact rows automatically rejoin."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. In a dimensional model, dimension rows should never be deleted while fact rows reference them. Every historical transaction must remain analytically addressable, including transactions from products that are now discontinued. The correct pattern is to mark inactive entities with a flag (is_active, is_discontinued, status = 'inactive') via SCD Type 1 overwrite. This gives two capabilities simultaneously: historical reports include all rows (no WHERE filter on is_active); current-state dashboards add WHERE is_active = TRUE to show only active products. Option B (foreign key constraint) is a valid database-level safeguard but not available in most analytical data warehouses (BigQuery, Snowflake, Redshift do not enforce referential integrity). The correct primary remedy is the ETL practice of never deleting referenced dimension rows. Option C (archive table + UNION) creates two dimension surfaces for the same business concept, requiring all consumers to modify their JOIN logic. This is high operational overhead for a problem solved by a single boolean flag. Option D (natural key in fact) would prevent orphaning from deletions only if products are re-inserted with the same natural key \u2014 but it undermines SCD Type 2 (which requires different surrogate keys for different historical versions) and exposes facts to source system key changes.",
+    "hints": [
+      "A 2021 fact row references a product discontinued in 2022 via its dimension key. After the dimension row is deleted, what does a SQL JOIN between fact_sales and dim_product return for that 2021 row?",
+      "An is_active flag on the dimension achieves two things simultaneously that deletion prevents: it excludes the product from current-state queries while still allowing historical revenue queries to resolve the join. Why does deletion prevent both?"
+    ],
+    "concepts": [
+      "REFERENTIAL INTEGRITY",
+      "DIMENSION DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
   }
 ]
