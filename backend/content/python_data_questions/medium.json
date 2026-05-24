@@ -2072,5 +2072,264 @@
       "WINDOW & ROLLING OPERATIONS",
       "DATETIME OPERATIONS"
     ]
+  },
+  {
+    "id": 32053,
+    "order": 53,
+    "topic": "python_data",
+    "difficulty": "medium",
+    "mock_only": true,
+    "framing": "scenario",
+    "follow_ups": [
+      32054,
+      32055
+    ],
+    "title": "Department headcount and average salary",
+    "description": "The HR analytics team needs a per-department summary.\n\n**Note:** A previous attempt used `.transform('mean')` on the salary column inside a `groupby.agg()` block, which silently broadcast each employee's group mean back onto every row instead of collapsing to one row per department. The output looked superficially plausible but was wrong.\n\nWrite the **correct** function. Using `df_employees` and `df_departments`, compute per-department `headcount` (number of employees) and `avg_salary` (mean salary, rounded to 2 dp). Return columns `department_name`, `headcount`, `avg_salary` sorted by `department_name` ascending.\n\n*Datasets:* `df_employees` (employee_id, employee_name, email, salary, department_id, hire_date, country), `df_departments` (department_id, department_name, region).",
+    "dataframes": {
+      "df_employees": "employees.csv",
+      "df_departments": "departments.csv"
+    },
+    "schema": {
+      "df_employees": [
+        "employee_id",
+        "employee_name",
+        "email",
+        "salary",
+        "department_id",
+        "hire_date",
+        "country"
+      ],
+      "df_departments": [
+        "department_id",
+        "department_name",
+        "region"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    merged = df_employees.merge(df_departments[['department_id','department_name']], on='department_id')\n    result = (\n        merged.groupby('department_name', as_index=False)\n        .agg(headcount=('employee_id','count'), avg_salary=('salary','mean'))\n        .assign(avg_salary=lambda x: x['avg_salary'].round(2))\n        .sort_values('department_name')\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    merged = df_employees.merge(df_departments[['department_id','department_name']], on='department_id')\n    result = (\n        merged.groupby('department_name', as_index=False)\n        .agg(headcount=('employee_id','count'), avg_salary=('salary','mean'))\n        .assign(avg_salary=lambda x: x['avg_salary'].round(2))\n        .sort_values('department_name')\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "The bug: `.transform('mean')` broadcasts the per-group mean back to every row (preserving row count) rather than collapsing each group to a single summary row. The result has as many rows as the original DataFrame, not one per department. The correct operation is `.agg('mean')` (or named aggregation `avg_salary=('salary','mean')`), which produces exactly one row per group.",
+    "hints": [
+      "Use `.agg()` not `.transform()` \u2014 transform broadcasts back to original shape, agg collapses to one row per group.",
+      "Named aggregation in a single `.agg()` call is cleaner: `agg(headcount=('employee_id','count'), avg_salary=('salary','mean'))`."
+    ],
+    "concepts": [
+      "TRANSFORM VS AGGREGATE",
+      "MULTI-DATAFRAME ENTITY LINKING",
+      "GROUPED AGGREGATION"
+    ]
+  },
+  {
+    "id": 32054,
+    "order": 54,
+    "topic": "python_data",
+    "difficulty": "medium",
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 32053,
+    "follow_up_dimension": "data_quality_pivot",
+    "title": "Departments with zero headcount (data quality check)",
+    "description": "**Follow-up to Q32053.** The fixed aggregation only returns departments that have at least one employee. The HR team asks: *are there any departments that have been created but have no employees yet?*\n\nRewrite the function so the result includes **all departments**, including those with zero employees. Use a left join from `df_departments` to `df_employees`. Return columns `department_name` and `headcount` (0 for departments with no employees), sorted by `department_name`.",
+    "dataframes": {
+      "df_employees": "employees.csv",
+      "df_departments": "departments.csv"
+    },
+    "schema": {
+      "df_employees": [
+        "employee_id",
+        "employee_name",
+        "email",
+        "salary",
+        "department_id",
+        "hire_date",
+        "country"
+      ],
+      "df_departments": [
+        "department_id",
+        "department_name",
+        "region"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    merged = df_departments[['department_id','department_name']].merge(\n        df_employees[['employee_id','department_id']], on='department_id', how='left'\n    )\n    result = (\n        merged.groupby('department_name', as_index=False)\n        .agg(headcount=('employee_id', lambda x: x.notna().sum()))\n        .sort_values('department_name')\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    merged = df_departments[['department_id','department_name']].merge(\n        df_employees[['employee_id','department_id']], on='department_id', how='left'\n    )\n    result = (\n        merged.groupby('department_name', as_index=False)\n        .agg(headcount=('employee_id', lambda x: x.notna().sum()))\n        .sort_values('department_name')\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "The direction of the join matters: start from `df_departments` (the dimension table) and left-join employees. This preserves all departments even when there are no matching employees. After the join, `employee_id` is NaN for unmatched departments \u2014 use `x.notna().sum()` instead of `count()` (which skips NaN automatically) to make the zero-headcount departments explicit.",
+    "hints": [
+      "Start the merge from `df_departments` (the left table) to preserve all departments.",
+      "After a left join, unmatched rows have NaN in the joined columns. Use `x.notna().sum()` to count non-null employee IDs."
+    ],
+    "concepts": [
+      "MULTI-DATAFRAME ENTITY LINKING",
+      "DATA QUALITY SKEPTICISM",
+      "GROUPED AGGREGATION"
+    ]
+  },
+  {
+    "id": 32055,
+    "order": 55,
+    "topic": "python_data",
+    "difficulty": "medium",
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 32053,
+    "follow_up_dimension": "business_rule_pivot",
+    "title": "Exclude high-salary contractors from department averages",
+    "description": "**Follow-up to Q32053.** HR defines 'contractors' as employees with `salary > 150 000`. Finance requests that contractors be excluded from department headcount and average salary figures (they are accounted for separately).\n\nUpdate the function from Q32053 to exclude contractors. Still return **all departments** (including those with zero remaining employees after exclusion). Return columns `department_name`, `headcount`, `avg_salary` (NaN for departments with no qualifying employees). Sort by `department_name`.",
+    "dataframes": {
+      "df_employees": "employees.csv",
+      "df_departments": "departments.csv"
+    },
+    "schema": {
+      "df_employees": [
+        "employee_id",
+        "employee_name",
+        "email",
+        "salary",
+        "department_id",
+        "hire_date",
+        "country"
+      ],
+      "df_departments": [
+        "department_id",
+        "department_name",
+        "region"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    regular = df_employees[df_employees['salary'] <= 150000].copy()\n    merged = df_departments[['department_id','department_name']].merge(\n        regular[['employee_id','department_id','salary']], on='department_id', how='left'\n    )\n    result = (\n        merged.groupby('department_name', as_index=False)\n        .agg(\n            headcount=('employee_id', lambda x: x.notna().sum()),\n            avg_salary=('salary','mean')\n        )\n        .assign(avg_salary=lambda x: x['avg_salary'].round(2))\n        .sort_values('department_name')\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    regular = df_employees[df_employees['salary'] <= 150000].copy()\n    merged = df_departments[['department_id','department_name']].merge(\n        regular[['employee_id','department_id','salary']], on='department_id', how='left'\n    )\n    result = (\n        merged.groupby('department_name', as_index=False)\n        .agg(\n            headcount=('employee_id', lambda x: x.notna().sum()),\n            avg_salary=('salary','mean')\n        )\n        .assign(avg_salary=lambda x: x['avg_salary'].round(2))\n        .sort_values('department_name')\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "Filter out contractors before the merge so they don't contribute to headcount or average. The left join from departments preserves all departments (including those with zero remaining employees after filtering). For departments with no qualifying employees, `avg_salary` is NaN \u2014 this is expected behaviour and is left as-is rather than filled with 0 (a 0 average would be misleading).",
+    "hints": [
+      "Filter employees to salary <= 150000 *before* the merge.",
+      "Keep the left-join from departments (from the previous question) so zero-headcount departments still appear."
+    ],
+    "concepts": [
+      "BOOLEAN INDEXING & FILTERING",
+      "MULTI-DATAFRAME ENTITY LINKING",
+      "GROUPED AGGREGATION"
+    ]
+  },
+  {
+    "id": 32056,
+    "order": 56,
+    "topic": "python_data",
+    "difficulty": "medium",
+    "mock_only": true,
+    "framing": "scenario",
+    "follow_ups": [
+      32057,
+      32058
+    ],
+    "title": "Monthly completed-order revenue with running total",
+    "description": "The finance team wants a month-by-month revenue tracker for **completed** orders, with a running total.\n\nUsing `df_orders`, filter to `status == 'completed'`, bucket by `YYYY-MM` month, compute `monthly_revenue` (sum of `net_amount`, rounded to 2 dp) and `cumulative_revenue` (running total, rounded to 2 dp). Sort by `month` ascending. Return columns: `month`, `monthly_revenue`, `cumulative_revenue`.",
+    "dataframes": {
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].assign(\n        month=lambda x: pd.to_datetime(x['order_date']).dt.strftime('%Y-%m')\n    )\n    monthly = (\n        completed.groupby('month', as_index=False)\n        .agg(monthly_revenue=('net_amount','sum'))\n        .sort_values('month')\n    )\n    monthly['cumulative_revenue'] = monthly['monthly_revenue'].cumsum().round(2)\n    monthly['monthly_revenue'] = monthly['monthly_revenue'].round(2)\n    return monthly.reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].assign(\n        month=lambda x: pd.to_datetime(x['order_date']).dt.strftime('%Y-%m')\n    )\n    monthly = (\n        completed.groupby('month', as_index=False)\n        .agg(monthly_revenue=('net_amount','sum'))\n        .sort_values('month')\n    )\n    monthly['cumulative_revenue'] = monthly['monthly_revenue'].cumsum().round(2)\n    monthly['monthly_revenue'] = monthly['monthly_revenue'].round(2)\n    return monthly.reset_index(drop=True)",
+    "explanation": "Key ordering constraint: `.sort_values('month')` must come **before** `.cumsum()`. Sorting after cumsum produces a visually sorted table but with incorrect running totals. Rounding `monthly_revenue` after computing `cumsum` avoids rounding error propagation in the cumulative column.",
+    "hints": [
+      "Sort by month before computing cumsum \u2014 order matters for running totals.",
+      "Use `dt.strftime('%Y-%m')` to convert datetime to a sortable YYYY-MM string."
+    ],
+    "concepts": [
+      "WINDOW & ROLLING OPERATIONS",
+      "DATETIME OPERATIONS",
+      "GROUPED AGGREGATION"
+    ]
+  },
+  {
+    "id": 32057,
+    "order": 57,
+    "topic": "python_data",
+    "difficulty": "medium",
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 32056,
+    "follow_up_dimension": "data_quality_pivot",
+    "title": "Flag months with elevated pending-payment orders",
+    "description": "**Follow-up to Q32056.** While reviewing the monthly revenue tracker, the team notices some orders have `payment_status = 'pending'`. These represent revenue that may not materialise.\n\nFor each calendar month (across all order statuses), compute: `total_orders` (count of all orders), `pending_count` (orders where `payment_status == 'pending'`), and `pending_pct` (pending as a percentage of total, rounded to 2 dp). Return only months where `pending_count > 0`, sorted by `month` ascending.",
+    "dataframes": {
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.assign(month=lambda x: pd.to_datetime(x['order_date']).dt.strftime('%Y-%m'))\n    result = (\n        df.groupby('month', as_index=False)\n        .agg(\n            total_orders=('order_id','count'),\n            pending_count=('payment_status', lambda x: (x == 'pending').sum())\n        )\n        .assign(pending_pct=lambda x: (x['pending_count'] / x['total_orders'] * 100).round(2))\n        .query('pending_count > 0')\n        .sort_values('month')\n        .reset_index(drop=True)\n    )\n    return result",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.assign(month=lambda x: pd.to_datetime(x['order_date']).dt.strftime('%Y-%m'))\n    result = (\n        df.groupby('month', as_index=False)\n        .agg(\n            total_orders=('order_id','count'),\n            pending_count=('payment_status', lambda x: (x == 'pending').sum())\n        )\n        .assign(pending_pct=lambda x: (x['pending_count'] / x['total_orders'] * 100).round(2))\n        .query('pending_count > 0')\n        .sort_values('month')\n        .reset_index(drop=True)\n    )\n    return result",
+    "explanation": "The conditional count `(x == 'pending').sum()` inside a lambda aggregation is a concise way to count rows matching a condition within each group \u2014 equivalent to a HAVING-clause filter post-aggregation in SQL. Using `.query('pending_count > 0')` after the aggregation is cleaner than filtering before, since the aggregation itself defines the column.",
+    "hints": [
+      "Use a lambda inside `.agg()` to count rows matching a condition: `lambda x: (x == 'pending').sum()`.",
+      "Filter the result with `.query('pending_count > 0')` after aggregation rather than before."
+    ],
+    "concepts": [
+      "DATA QUALITY SKEPTICISM",
+      "GROUPED AGGREGATION",
+      "DATETIME OPERATIONS"
+    ]
+  },
+  {
+    "id": 32058,
+    "order": 58,
+    "topic": "python_data",
+    "difficulty": "medium",
+    "mock_only": true,
+    "framing": "scenario",
+    "parent_id": 32056,
+    "follow_up_dimension": "business_rule_pivot",
+    "title": "Monthly revenue excluding refunded orders",
+    "description": "**Follow-up to Q32056.** Finance updates the revenue definition: **exclude orders with `payment_status = 'refunded'`** from the monthly revenue and cumulative total (refunded orders represent returned revenue).\n\nUpdate the monthly tracker: filter to `status == 'completed'` AND `payment_status != 'refunded'`. Return the same columns as Q32056 \u2014 `month`, `monthly_revenue`, `cumulative_revenue` \u2014 both rounded to 2 dp, sorted by `month` ascending.",
+    "dataframes": {
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    eligible = df_orders[\n        (df_orders['status'] == 'completed') &\n        (df_orders['payment_status'] != 'refunded')\n    ].assign(month=lambda x: pd.to_datetime(x['order_date']).dt.strftime('%Y-%m'))\n    monthly = (\n        eligible.groupby('month', as_index=False)\n        .agg(monthly_revenue=('net_amount','sum'))\n        .sort_values('month')\n    )\n    monthly['cumulative_revenue'] = monthly['monthly_revenue'].cumsum().round(2)\n    monthly['monthly_revenue'] = monthly['monthly_revenue'].round(2)\n    return monthly.reset_index(drop=True)",
+    "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    eligible = df_orders[\n        (df_orders['status'] == 'completed') &\n        (df_orders['payment_status'] != 'refunded')\n    ].assign(month=lambda x: pd.to_datetime(x['order_date']).dt.strftime('%Y-%m'))\n    monthly = (\n        eligible.groupby('month', as_index=False)\n        .agg(monthly_revenue=('net_amount','sum'))\n        .sort_values('month')\n    )\n    monthly['cumulative_revenue'] = monthly['monthly_revenue'].cumsum().round(2)\n    monthly['monthly_revenue'] = monthly['monthly_revenue'].round(2)\n    return monthly.reset_index(drop=True)",
+    "explanation": "The key change is combining two filter conditions with `&` before the groupby. Pre-filtering is cleaner and more efficient than filtering after aggregation when the condition applies to individual rows. Note: `status == 'completed'` and `payment_status != 'refunded'` are independent attributes \u2014 both are needed as separate conditions.",
+    "hints": [
+      "Combine both conditions in a single boolean filter: `(status == 'completed') & (payment_status != 'refunded')`.",
+      "Apply the filter before groupby, not after."
+    ],
+    "concepts": [
+      "BOOLEAN INDEXING & FILTERING",
+      "WINDOW & ROLLING OPERATIONS",
+      "GROUPED AGGREGATION"
+    ]
   }
 ]
