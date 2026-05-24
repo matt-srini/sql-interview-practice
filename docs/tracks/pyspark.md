@@ -77,7 +77,7 @@ Three families are shared with the SQL and Pandas tracks under identical names (
 
 Two cross-track families are **intentionally not** added to PySpark: `METRIC INTERPRETATION & DENOMINATOR CHOICE` (PySpark tests Spark execution reasoning, not business-metric interpretation) and `PERFORMANCE-AWARE ANALYTICS` (PySpark already has 6+ performance-focused families covering this space). See the taxonomy doc's PySpark section for the rationale.
 
-**These three shared families currently have no question coverage** — they surface reasoning the bank only had implicitly. They are *practice-curriculum targets*, not mock material. Under the mock-only rule (no unseen concepts), establish them in **practice first** (Phase 2 remap + new practice authoring) before any mock-only content recombines them.
+All three are now **practice-grounded** in PySpark — `DATA QUALITY SKEPTICISM` (16 practice / 30 mock), `DOUBLE-COUNTING DETECTION` (4 / 10), `OUTPUT SANITY VALIDATION` (13 / 34). PySpark has **no mock-only realism family** by design — because PySpark is MCQ-only, sanity-check / validation reasoning grades cleanly as `predict_output` / `debug`, so these three lenses are taught and graded in practice (not deferred to mock as in SQL). `MOCK_ONLY_REALISM_FAMILIES["pyspark"] = set()` in `backend/concept_families.py` makes this explicit.
 
 ## Authoring allocation matrix
 
@@ -93,6 +93,17 @@ Two cross-track families are **intentionally not** added to PySpark: `METRIC INT
 **Easy mock-only: never.** Easy is practice-only.
 
 **Practice teaches, mock-only stress-tests transfer.** The difference is framing and realism, not new execution concepts. A mock-only question recombines Spark-execution reasoning the practice bank already teaches at that difficulty (or lower), anchored in a fresh failure mode or production scenario; it must not clone an existing practice question and must not introduce a concept family the curriculum never taught. If a mock would need an untaught concept, author the practice question first.
+
+## Coverage & sizing targets
+
+These are the durable *targets* (what the bank ought to look like). For live counts (what it *is* right now) see the "Question bank current state" table in [`docs/content-authoring.md`](../content-authoring.md) and the content footprint in `CLAUDE.md`. **Targets are provisional — revisit against real Pro/Elite usage data.**
+
+- **No mock-only realism family.** PySpark is MCQ-only, so sanity-check / output-validation / data-quality reasoning grades cleanly as `predict_output` or `debug` MCQ. All 3 ⚡ families are practice-grounded; the SQL realism-class rationale does not transfer. The empty `MOCK_ONLY_REALISM_FAMILIES["pyspark"]` set (`backend/concept_families.py`) makes this explicit.
+- **Practice: lean, scenario-anchored.** Target ~125–135, with **easy scenario-anchored** (no default-value or API-signature recall — track-doc anti-pattern). All 23 families covered in practice. Tier balance roughly ⅓ each is healthy for the execution-reasoning curriculum.
+- **Mock-only: ~150, hard-skewed in principle (~60/40), accepted final at ~50/50.** PySpark's all-4-distractors-plausible bar on hard MCQ is the authoring bottleneck — relaxing it to pad the hard ratio would erode quality, so 50/50 is the accepted floor (see deviation row in the tracker decision log). Medium + hard only (easy is practice-only). **~⅓ chain members** feeding Interview Loop. Format mix favors interview-realism formats: ~30% `predict_output`, ~25–30% `debug`, ~15–20% `optimization`, ~13% `scenario`, ~5% scenario-anchored `conceptual` (away from pure-recall conceptual; pre-Phase-2 was 43% conceptual).
+- **Mock distribution weighted by interview importance.** High-priority families: `SHUFFLE REASONING`, `JOIN STRATEGY SELECTION` + `DATA SKEW & MITIGATION`, `ADAPTIVE QUERY EXECUTION`, `STRUCTURED STREAMING` (especially late-data / watermarks), `DELTA LAKE OPERATIONS`, `MEMORY MANAGEMENT` + OOM forensics, `PERFORMANCE TUNING & TRADE-OFFS`. Secondary: `WINDOW FUNCTIONS & FRAMES`, `COLLECTION & ARRAY OPERATIONS`, `UDF & PYTHON BOUNDARY`. Natural chain pivots: `performance_pivot` (eliminate shuffle X), `scale_pivot` (cluster size cut in half), `data_quality_pivot` (late/dirty events), `business_rule_pivot` (now exactly-once required).
+- **The bar for every mock-only question: recombination, not reskin.** A mock question that's a practice scenario with cosmetic changes is a clone; recombine the same execution concept under a fresh production-incident framing (`scenario_context` is the right vehicle — see Q43031, Q42050, Q43043 for the gold standard).
+- **Distractor quality is a first-class axis.** Hard distractors must ALL be plausible expert positions; if a competent practitioner eliminates any option in <5s, the question is medium dressed as hard (track-doc rule).
 
 ## Anti-patterns specific to PySpark
 
