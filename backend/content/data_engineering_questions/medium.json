@@ -1036,5 +1036,300 @@
       "PARTITIONING & PRUNING",
       "CLOUD COST MODELING"
     ]
+  },
+  {
+    "id": 52042,
+    "order": 42,
+    "title": "Overnight Double-Fire: Diagnosing Duplicate Event Processing",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "follow_ups": [
+      52043,
+      52044
+    ],
+    "scenario_context": "Your overnight pipeline reads from a Kafka topic (at-least-once delivery) and writes processed events to a Snowflake fact table using INSERT statements. At 8:47 AM an analyst reports yesterday's event count is 1.83 million instead of the expected 920 thousand. Orchestrator logs show two complete runs: 2:00 AM (normal) and a 3:14 AM retry triggered by a false-positive timeout alert. Both runs show status SUCCESS.",
+    "description": "What is the most likely root cause of the duplication, and what is the immediate remediation?",
+    "options": [
+      "The pipeline lacks idempotency at the write step: the 3:14 AM retry consumed events from the last committed Kafka offset and appended them to the fact table rather than overwriting the partition. Remediation: truncate yesterday's partition, re-run once, and add a dedup guard (MERGE on event_id) or switch to partition-replace semantics.",
+      "The Kafka consumer group offset was reset by the orchestrator retry to the beginning of the topic, causing all events to replay from earliest — remove the auto.offset.reset=earliest configuration setting.",
+      "Both pipeline instances ran in parallel (2:00 AM and 3:14 AM active simultaneously), causing a race condition at the sink — add a distributed lock before the Snowflake write step.",
+      "The 3:14 AM run consumed a separate Kafka partition that was not seen by the 2:00 AM run, meaning events exist twice at the source level — deduplicate at the Kafka consumer before writing."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A identifies the core issue: at-least-once Kafka delivery combined with an append-only INSERT sink guarantees duplicates on any retry. The 3:14 AM run consumed from the previously committed offset (no reset occurred), re-processed all events from that point, and appended them as new rows. Partition-replace or MERGE semantics make the write idempotent — re-running any number of times produces the same fact table. Option B misidentifies the behavior: a false-positive timeout retry does not reset the consumer group offset to earliest; offset resets require explicit configuration changes. Option C (parallel runs) is ruled out by the sequential timestamps in the logs. Option D would require duplicate events to exist independently in the Kafka topic, which the scenario does not describe.",
+    "hints": [
+      "Think about what property a production pipeline must have so that an orchestrator retry produces the same outcome as the first run — and whether INSERT satisfies that property.",
+      "The write step appended rows rather than replacing them. Which sink operation makes a pipeline safe to retry regardless of how many times the producer fires?"
+    ],
+    "concepts": [
+      "INCIDENT RESPONSE",
+      "BACKFILL DESIGN",
+      "DELIVERY SEMANTICS",
+      "IDEMPOTENCY"
+    ]
+  },
+  {
+    "id": 52043,
+    "order": 43,
+    "title": "Idempotency Under 5× Concurrent Producers",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "parent_id": 52042,
+    "follow_up_dimension": "scale_pivot",
+    "scenario_context": "You fixed the overnight double-fire by switching to partition-replace semantics (DELETE + INSERT in a transaction). A month later the company onboards 4 additional regional Kafka clusters; the pipeline now ingests from 5 clusters simultaneously, each producing ~900 K events/day to the same Snowflake fact table partition. During a regional network partition, 2 of the 5 producers replay their last hour of events. The fact table shows 1.9 million events for yesterday instead of the expected 4.5 million.",
+    "description": "Why is idempotency failing now even though partition-replace worked before, and what must change?",
+    "options": [
+      "Partition-replace is only idempotent when a single writer exclusively owns a partition. With 5 concurrent writers each issuing DELETE + INSERT on the same partition, the last writer's DELETE removes all other writers' valid data — the result depends on execution order. The fix is event-level deduplication: MERGE on (event_id, region_id) so re-processed events from replaying producers are skipped, not lost.",
+      "The 5 Kafka consumer groups are sharing the same group ID, causing events to be split across consumers rather than each consumer receiving all events for its region — assign a unique group ID per regional pipeline to restore correct partitioning.",
+      "Partition-replace semantics are correct, but the 2 replaying producers sent events with timestamps outside yesterday's partition window, landing them in today's partition — add an event_date filter to both the DELETE and INSERT steps.",
+      "The network partition caused Kafka offset commits to fail for the 2 affected producers, so they replayed from the earliest available offset rather than the last hour — implement exactly-once offset management at the source level."
+    ],
+    "correct_option": 0,
+    "explanation": "Partition-replace assumes one authoritative writer per partition at a time. When 5 writers each execute DELETE + INSERT on the same partition, the DELETE step of writer N removes all rows that writers 1..N-1 just wrote — the partition contains only the last writer's data. The scenario shows 1.9 M rows instead of 4.5 M, consistent with one writer's data surviving. MERGE on (event_id, region_id) is idempotent regardless of concurrent writers or replay count: each event has exactly one correct row and duplicates are skipped. Option B (shared group ID) would cause events to be round-robined, producing gaps not duplicates. Option C (timestamp window) would explain missing recent events but not the 1.9 M total. Option D (offset commit failure) is ruled out: the scenario says the producers replay their 'last hour,' not from earliest.",
+    "hints": [
+      "Partition-replace assumes a single authoritative writer. What happens to that assumption when five writers each issue a DELETE on the same partition before their own INSERT completes?",
+      "Event-level deduplication on a globally unique key is idempotent regardless of how many writers replay — unlike partition-replace, which requires exclusive write ownership to be safe."
+    ],
+    "concepts": [
+      "IDEMPOTENCY",
+      "DELIVERY SEMANTICS",
+      "BACKPRESSURE",
+      "INCIDENT RESPONSE"
+    ]
+  },
+  {
+    "id": 52044,
+    "order": 44,
+    "title": "Silent Dedup Failure: event_id Collision Across Regions",
+    "difficulty": "medium",
+    "type": "debug",
+    "mock_only": true,
+    "parent_id": 52042,
+    "follow_up_dimension": "data_quality",
+    "description": "After adding event-level deduplication with MERGE ON event_id, the pipeline runs cleanly for 8 weeks. A data quality check then flags a 0.4% event count discrepancy across two regional pipelines. Investigation reveals that event_ids are generated as SHA-256(user_id || event_type || event_minute_epoch) — not globally unique identifiers. Two users in different regions can trigger the same event_type in the same minute, producing an identical event_id for distinct events. The MERGE deduplication silently drops the second occurrence.",
+    "options": [
+      "The event_id generation function is not globally unique — it guarantees uniqueness only within a single region for a given minute. The MERGE key must incorporate a region identifier (e.g., MERGE ON (event_id, region_id)) or the hash must include a region-scoped seed. The data quality check must also validate per-region event counts, not only the global total.",
+      "Switch from MERGE to a ROW_NUMBER() OVER (PARTITION BY event_id ORDER BY processed_at) = 1 deduplication window function; it will preserve the first-seen event and surface the collision as a visible duplicate row rather than silently dropping a valid event.",
+      "Disable event-level deduplication and rely on partition-replace semantics exclusively; event_id hashing is inherently fragile for multi-region deployments and the added complexity does not justify its unreliable uniqueness guarantees.",
+      "The 0.4% discrepancy is within acceptable noise for a distributed multi-region system; update the data quality check to use a ±1% tolerance band instead of exact counts."
+    ],
+    "correct_option": 0,
+    "explanation": "The root failure is that the key generation function is not globally unique — two distinct events can produce the same event_id. Option A correctly fixes the problem at the source: include a region identifier in either the MERGE key or the hash input so that cross-region collisions become distinguishable. Option B describes a valid alternative dedup mechanism but does not fix the key collision — if two distinct events share the same event_id, any dedup logic that uses event_id alone will drop one. The fix must be at the key-generation level, not the dedup-logic level. Option C abandons deduplication entirely, reintroducing the original at-least-once duplicate problem. Option D's 'acceptable noise' framing is a governance failure: 0.4% of 4.5 M events/day is ~18 K silently dropped real-world events.",
+    "hints": [
+      "Deduplication is only as reliable as the uniqueness of its key. What assumptions does SHA-256(user_id || event_type || event_minute) make, and do those hold across regions?",
+      "If two distinct events can produce the same dedup key, any dedup logic — MERGE, ROW_NUMBER, or SET — will silently drop one. The fix must be at the key, not the dedup logic."
+    ],
+    "concepts": [
+      "DATA QUALITY",
+      "LINEAGE & OBSERVABILITY",
+      "IDEMPOTENCY",
+      "INCIDENT RESPONSE"
+    ]
+  },
+  {
+    "id": 52045,
+    "order": 45,
+    "title": "Required Field Addition Breaks 3 of 8 Consumer Teams",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "follow_ups": [
+      52046
+    ],
+    "scenario_context": "A payment platform publishes transaction events to a central Kafka topic. The upstream team adds a required Avro field `payment_currency` (no default) and registers the new schema version with FORWARD compatibility. On deploy, 3 of 8 consumer teams start failing with deserialization errors; the other 5 continue normally. Review shows the 3 failing consumers use an older Avro client library.",
+    "description": "Which factor explains why 5 consumers are unaffected, and what is the correct remediation for the 3 failing consumers?",
+    "options": [
+      "FORWARD compatibility only guarantees that new-schema readers can read old data — not that old readers can read new data. Older Avro clients may not handle unknown required fields gracefully. The correct remediation: (1) change `payment_currency` to optional with a sentinel default; (2) re-register the schema as BACKWARD compatible; (3) upgrade all consumers before removing the default. The 5 working consumers happen to use a client version with lenient unknown-field handling.",
+      "The 5 unaffected consumers have already been updated to the new schema and can deserialize `payment_currency`; the 3 failing teams must immediately update their schema stubs to include the new field before message backlog grows further.",
+      "Switch the schema registry compatibility mode from FORWARD to NONE, allowing schema versions to be registered without compatibility checks; each team can then negotiate independently which versions to support.",
+      "The 3 failing consumers should pin to the old schema version using the schema registry's version parameter; Kafka will automatically serve them events encoded under the old schema for deserialization."
+    ],
+    "correct_option": 0,
+    "explanation": "FORWARD compatibility means new readers can read old data — it makes no guarantee about old readers consuming new data. Adding a required field with no default means old Avro clients that encounter the field may crash or fail field resolution. The 5 working consumers use a client with lenient resolution (unknown fields ignored or handled gracefully). Option A correctly addresses the root cause by making the field optional with a default, which satisfies BACKWARD compatibility and protects all consumers regardless of client version. Option B is wrong: the failing consumers can't simply 'update their schema stubs' without also updating client code that handles the new field. Option C removes compatibility guarantees entirely, a recipe for silent data corruption. Option D misunderstands schema registry pinning: the consumer still receives events encoded with the new schema; the client-side schema version only controls decoding, and the required field will still cause failure.",
+    "hints": [
+      "FORWARD compatibility protects new readers consuming old data. Which compatibility direction protects old readers consuming brand-new events?",
+      "Making a new field optional with a default is the universal safety net in schema evolution — it satisfies both compatibility directions and protects consumers of any client version."
+    ],
+    "concepts": [
+      "SCHEMA EVOLUTION",
+      "DATA CONTRACT",
+      "DELIVERY SEMANTICS"
+    ]
+  },
+  {
+    "id": 52046,
+    "order": 46,
+    "title": "GDPR Right-to-Erasure When the Deleted Field Is a Partition Key",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "mock_only": true,
+    "parent_id": 52045,
+    "follow_up_dimension": "business_rule",
+    "description": "After fixing the schema, the data team discovers that `payment_currency` was used as a Parquet partition key in the data lake for the past 6 months. A GDPR right-to-erasure request arrives: a user's payment records must be deleted. Because `payment_currency` is a partition key, most partitions contain at least some records for every user. Full erasure requires reading every partition, filtering out the user's records, and rewriting all partitions. The governance team proposes a 'deleted flag' side table instead of physical removal.",
+    "options": [
+      "A deleted-flag side table satisfies GDPR erasure only if every downstream system — dashboards, ML training jobs, APIs — guarantees it excludes flagged records from all outputs. This is an indefinite enforcement burden. The defensible approach is crypto-shredding: encrypt each user's PII fields with a per-user key stored in a secrets vault, then destroy the key at erasure time. This makes records cryptographically inaccessible without rewriting Parquet files, satisfying erasure semantics while preserving partition structure.",
+      "The deleted-flag approach fully satisfies GDPR because the regulation only requires that data is not accessible to end users, not that it is physically deleted from storage — the flag ensures BI dashboards and APIs exclude deleted records, which meets the erasure standard.",
+      "The correct long-term fix is to change the partition key from `payment_currency` to `user_id`, so each user's records are isolated in a single partition and future erasures require dropping only that partition.",
+      "Store all PII in a separate erasable metadata table while keeping aggregated facts in Parquet; the one-time full partition rewrite is unavoidable for current data but future records are structured to avoid PII in partition keys."
+    ],
+    "correct_option": 0,
+    "explanation": "GDPR Article 17 requires personal data to be 'erased without undue delay.' A deleted-flag approach creates a compliance grey area: PII physically persists and must be excluded by every downstream consumer indefinitely. Regulators increasingly treat 'physically present and queryable' as 'not erased.' Crypto-shredding is the industry-standard solution to the immutable-storage vs. erasure-requirement tension: encrypt PII fields with per-user keys, store keys in a secrets vault, and key deletion is the legally defensible erasure event — no Parquet files need to be rewritten. Option B overstates what a flag accomplishes: physical persistence is the legal issue, not UI-level access. Option C addresses future erasures cheaply but doesn't solve the 6 months of existing data with PII embedded in partition keys. Option D splits PII correctly going forward but still doesn't address the existing data.",
+    "hints": [
+      "GDPR erasure means the data must be effectively inaccessible, not just filtered out of dashboards. What happens if a downstream ML team trains directly on raw Parquet, bypassing your deleted-flag filter?",
+      "Crypto-shredding decouples Parquet immutability from data recoverability — destroying the per-user encryption key at erasure time makes the records cryptographically inaccessible without rewriting a single file."
+    ],
+    "concepts": [
+      "DATA GOVERNANCE",
+      "SCHEMA EVOLUTION",
+      "STORAGE LAYOUT & FILE FORMATS"
+    ]
+  },
+  {
+    "id": 52047,
+    "order": 47,
+    "title": "Nightly dbt DAG Misses SLA: Step Shows SUCCESS but Downstream Table Is Empty",
+    "difficulty": "medium",
+    "type": "debug",
+    "mock_only": true,
+    "follow_ups": [
+      52048,
+      52049
+    ],
+    "description": "Your nightly dbt orchestration DAG finishes at 5:47 AM within the 6:00 AM SLA window. Step 7 ('transform_revenue_fact') shows SUCCESS in the orchestrator UI. The BI dashboard reports zero rows for today's revenue fact. Logs for step 7 show: 'Run complete: 0 models modified.' The dbt process returned exit code 0. No alerts fired.",
+    "options": [
+      "dbt returns exit code 0 if it compiles and executes without a SQL error, regardless of whether any rows were written. The upstream source model was likely empty due to a silent upstream pipeline failure. The orchestrator checks only the exit code. Fix: add dbt post-hook tests (not_null + expect_row_count_to_be_at_least) and configure the orchestrator to treat test failures as step failures.",
+      "The dbt step ran against an isolated CI/CD ephemeral schema instead of the production schema; dbt wrote to the wrong target and returned no errors — check the --target flag in the orchestrator's dbt invocation.",
+      "Step 7 ran successfully but a later cleanup step (e.g., a partition compaction job) truncated the revenue_fact table after step 7 completed — review all DAG steps that reference the revenue_fact table as a write target.",
+      "The dbt model is configured as incremental and found no rows satisfying the incremental filter (WHERE updated_at > last_run_timestamp) because the last_run_timestamp metadata was corrupted — delete the dbt state file and run with --full-refresh."
+    ],
+    "correct_option": 0,
+    "explanation": "The key signal is '0 models modified' combined with exit code 0. dbt does not validate that a model produced meaningful output — it validates compilation and SQL execution. If the upstream source is empty (a silent upstream failure), dbt runs a valid SQL SELECT that returns zero rows, writes nothing, and exits successfully. Option A correctly identifies the fix: post-run dbt tests that validate row counts, treated as hard failures by the orchestrator. Option B (wrong schema) would appear in dbt logs as a different target path and is ruled out by the '0 models modified' message — that message is specific to successful runs on the correct target. Option C (later truncation) would mean the table was populated after step 7 and empty after the cleanup step — zero rows from the start rules this out. Option D (incremental filter) would show log output describing the filter clause, not '0 models modified.'",
+    "hints": [
+      "dbt reports SUCCESS based on exit code 0, not on whether rows were written. What could make a valid SQL transformation execute successfully while writing zero rows to the target?",
+      "What additional check, run as a post-hook after the dbt step, would surface an empty output as a hard failure before the SLA window closes?"
+    ],
+    "concepts": [
+      "LINEAGE & OBSERVABILITY",
+      "ORCHESTRATION",
+      "DATA QUALITY",
+      "SCHEDULING & SLAS"
+    ]
+  },
+  {
+    "id": 52048,
+    "order": 48,
+    "title": "Post-Fix Cost Spike: $14k Snowflake Bill From Row-Count Test Scans",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "parent_id": 52047,
+    "follow_up_dimension": "performance",
+    "scenario_context": "After adding dbt post-hook tests (not_null and expect_row_count_to_be_at_least) on the revenue_fact table, the upstream data gap is now caught within the SLA window. However, the next week's Snowflake bill includes a $14,000 spike. The new dbt tests run a SELECT COUNT(*) on the full 4.7-billion-row revenue_fact table every night as a post-hook — one full-table scan per test, with 3 tests configured.",
+    "description": "How should the dbt test strategy be redesigned to maintain detection quality while eliminating unnecessary full-table scan cost?",
+    "options": [
+      "Restrict the row-count tests to the latest partition only (e.g., WHERE event_date = CURRENT_DATE - 1) rather than scanning the full table. A COUNT(*) on a single day's partition (~13 M rows) costs <0.01% of a full-table scan. Alternatively, write pipeline row-count metadata to a side table at write time and test against that O(1) lookup instead of querying the fact table itself.",
+      "Switch the tests from 'error' to 'warn' severity so that an empty-table condition generates a warning email rather than a hard failure — this eliminates the scan-heavy test entirely while preserving notification.",
+      "Move the row-count check from a nightly post-hook to a separate monitoring DAG that runs weekly rather than nightly; daily validation is unnecessary overhead for a table with predictable daily growth.",
+      "Reduce the Snowflake warehouse size from XL to S for the test step only, which lowers the credit burn per scan; a full-table COUNT(*) requires scanning all rows and cannot be further optimized."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A addresses the root issue: the test scans 4.7 billion rows when it only needs to confirm yesterday's partition is non-empty. A partition-scoped test costs 99%+ less. A metadata-table approach (pipeline writes a row_count side table at write time; the test reads one row) eliminates the scan entirely — O(1) instead of O(rows). Option B demotes the test from a hard failure to a warning, undoing the fix that solved the original SLA breach. Option C reduces detection from daily to weekly — the original breach was a nightly failure that weekly monitoring would miss. Option D (smaller warehouse, same scan) reduces cost proportionally with size but still scans 4.7 B rows; the premise that COUNT(*) must visit all rows is true for non-partitioned tables but the fix is to restrict to the relevant partition, not to shrink compute.",
+    "hints": [
+      "The test scans 4.7 billion rows every night. Ask: does the test need to read historical data to confirm that yesterday's load ran correctly?",
+      "A partition-scoped COUNT(*) gives you the same detection signal as a full-table scan, at a fraction of the cost — what is the date boundary for yesterday's partition?"
+    ],
+    "concepts": [
+      "COST OPTIMIZATION",
+      "SCHEDULING & SLAS",
+      "LINEAGE & OBSERVABILITY"
+    ]
+  },
+  {
+    "id": 52049,
+    "order": 49,
+    "title": "What Does 'Real-Time' Mean for the Revenue Dashboard SLA?",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "mock_only": true,
+    "parent_id": 52047,
+    "follow_up_dimension": "ambiguity",
+    "description": "After the SLA breach, the product manager requests that the revenue dashboard switch from nightly batch to 'real-time.' The data engineering team needs to clarify what 'real-time' means before committing to an architecture change. Four interpretations are on the table: (A) sub-second query latency on the dashboard, (B) event-time freshness within 15 minutes of the event occurring, (C) processing-time window closed within 5 minutes of batch job completion, (D) data available to BI within 1 business hour of the event.",
+    "options": [
+      "'Real-time' in BI contexts almost always means low data-freshness lag, not sub-second query latency. The disambiguating question is: 'What is the maximum acceptable delay between a payment occurring and its appearance in the dashboard?' Interpretations B and D are both plausible depending on the use case (fraud response vs. daily reporting); the answer determines whether a streaming pipeline or an accelerated hourly batch is the right solution.",
+      "'Real-time' requires sub-second query latency (interpretation A); anything slower is batch. The team should build a Kafka → Flink → materialized-view pipeline and replace the current dbt batch entirely.",
+      "'Real-time' means interpretation C: run the current batch every 5 minutes instead of nightly. No architectural change is needed — only a schedule configuration change in the orchestrator.",
+      "The four interpretations are operationally equivalent in practice; the choice should be driven by engineering cost, not by clarifying the business requirement. Select the cheapest option."
+    ],
+    "correct_option": 0,
+    "explanation": "'Real-time' is one of the most overloaded terms in data engineering. Option A correctly identifies that the stakeholder likely means data freshness (how recent is the data?) rather than query speed (how fast does SELECT return?). The disambiguating question forces specificity: a 1-minute freshness SLA demands streaming architecture; a 1-hour freshness SLA can be served by an accelerated micro-batch. Without that answer, any architectural commitment is premature. Option B assumes the most expensive interpretation without asking. Option C converts a nightly batch to a 5-minute cycle, which is operationally expensive and fragile, and doesn't address the actual ambiguity — it just picks one interpretation without validation. Option D is an engineering anti-pattern: the architecture must match the business requirement, not the other way around.",
+    "hints": [
+      "Two axes matter to a stakeholder: data freshness (how recent is the data?) and query speed (how fast does the page load?). Which axis matters most for a morning revenue review dashboard?",
+      "Ask the stakeholder to complete this sentence: 'If a payment happened at 3 PM yesterday, I need to see it in the dashboard by ___.' That answer tells you the SLA you're designing for."
+    ],
+    "concepts": [
+      "BATCH VS STREAMING",
+      "SCHEDULING & SLAS",
+      "ORCHESTRATION"
+    ]
+  },
+  {
+    "id": 52050,
+    "order": 50,
+    "title": "At-Least-Once Order Status: Choosing a Design for 3-Second Freshness",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "follow_ups": [
+      52051
+    ],
+    "scenario_context": "A logistics company processes order-status updates (picked, packed, shipped, delivered) from a Kafka topic with at-least-once delivery. A product requirement states: 'Order status must appear on the customer app within 3 seconds of the event.' Three designs are under evaluation: (1) Kafka → Flink streaming → Redis cache → API read-through; (2) Kafka → Lambda trigger → DynamoDB → API read-through; (3) Kafka → micro-batch Spark (30-second windows) → Postgres → API read-through.",
+    "description": "Which design reliably satisfies the 3-second freshness requirement under at-least-once delivery, and why does the delivery semantic matter for this choice?",
+    "options": [
+      "Only design 1 (Kafka → Flink → Redis) reliably achieves sub-3-second freshness. Flink processes events as they arrive with no fixed window delay. At-least-once delivery can cause status regressions (e.g., a duplicate 'shipped' event overwrites a subsequent 'delivered' status) — Flink's stateful keyed processing prevents this by deduplicating on order_id within the streaming path. Design 2 has Lambda cold-start latency that can exceed 3 seconds under spiky load. Design 3 structurally cannot meet a 3-second SLA with a 30-second batch window.",
+      "Design 2 (Lambda → DynamoDB) is optimal because DynamoDB's single-digit millisecond reads outperform Redis under high concurrency, and Lambda auto-scaling eliminates cluster management. Cold starts average <1 second and affect only the first invocation per instance.",
+      "Design 3 (micro-batch Spark) is acceptable because the 3-second requirement applies to the average latency across all events, not to individual ones; switching to 5-second windows reduces average latency to <3 seconds.",
+      "The at-least-once delivery semantic is irrelevant to the latency choice — it only affects data integrity (deduplication) and should be handled separately from the architecture decision."
+    ],
+    "correct_option": 0,
+    "explanation": "Design 1 is the only architecture that delivers sub-3-second event-time freshness reliably. Flink processes each event as it arrives with no fixed window delay, and Redis serves reads in microseconds. The delivery semantic matters for this question because at-least-once can cause status regressions: if a 'delivered' event is replayed after the consumer has already processed a later 'returned' event, an incorrect overwrite can set status backward. Flink's stateful processing on order_id prevents this. Option B understates Lambda cold starts: under traffic spikes common in logistics pipelines (e.g., morning delivery window), P99 cold-start latency regularly exceeds 3 seconds. Option C misunderstands SLAs — a 3-second requirement is a per-event ceiling, not an average. Option D incorrectly separates delivery semantics from latency: the at-least-once replay risk affects which streaming pattern (stateful, stateless) is safe to deploy.",
+    "hints": [
+      "A 30-second batch window cannot produce sub-3-second freshness for individual events — the math doesn't work. Which of the three designs has zero fixed window delay?",
+      "At-least-once delivery means some events will be processed more than once. If order status is a linear progression (picked→packed→shipped→delivered), what breaks if a 'shipped' event replays after a 'delivered' event has already been applied?"
+    ],
+    "concepts": [
+      "BATCH VS STREAMING",
+      "DELIVERY SEMANTICS",
+      "BACKPRESSURE"
+    ]
+  },
+  {
+    "id": 52051,
+    "order": 51,
+    "title": "Late Order Events: What Does 'Real-Time' Mean When Delivery Signals Arrive 30 Minutes Late?",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "mock_only": true,
+    "parent_id": 52050,
+    "follow_up_dimension": "ambiguity",
+    "description": "After deploying the Flink streaming design, a new edge case surfaces: 2% of order-status events arrive 15–40 minutes late due to intermittent mobile connectivity in rural delivery zones. The customer app shows stale status for these orders. The product team asks: 'Can we just wait for late events and update the dashboard retroactively?' Four proposals emerge: (A) set a Flink watermark of 40 minutes and hold all windows until then; (B) show the last known status immediately and apply a correction when the late event arrives; (C) exclude rural deliveries from the 3-second SLA as out-of-scope; (D) show a 'status pending' UI state for any event older than 3 seconds.",
+    "options": [
+      "Proposal B is correct. A 40-minute watermark (proposal A) would hold ALL events — not just the 2% late ones — for 40 minutes before emitting any output, destroying the 3-second SLA for the 98% of on-time events. Proposal C ignores a real customer impact. Proposal D adds user-visible complexity. The right design: use a short watermark (e.g., 10 seconds) to emit promptly for on-time events, and route late arrivals through a side output that applies corrections to the current dashboard state. This is a designed property of streaming systems, not a failure.",
+      "Proposal A (40-minute watermark) is correct — Flink watermarks are specifically designed for late data, and a 40-minute watermark ensures all events within the connectivity SLA are processed before any window closes. The 3-second freshness SLA was aspirational for rural-connected devices.",
+      "Proposal C is correct — the 3-second SLA was defined for the standard delivery network. Rural mobile connectivity is an external constraint outside the pipeline's control; document the SLA boundary clearly and exclude edge cases.",
+      "Proposal D (status pending UI) is the best operational compromise: it communicates uncertainty to the customer without making architectural changes to the pipeline, and it resolves automatically when the late event arrives."
+    ],
+    "correct_option": 0,
+    "explanation": "The critical insight: watermark depth affects ALL events in a Flink window, not just the late ones. A 40-minute watermark means no window closes until the watermark passes — every event waits 40 minutes before its result is emitted. For a 3-second freshness SLA on 98% of events, this is catastrophic. The correct design uses two paths: a short watermark (10 seconds) for the main on-time stream, and a Flink side output for late arrivals that applies correction events to the live dashboard state. Option B (watermark + rural exclusion) restates Proposal A with a softer justification — the fundamental watermark mechanics are wrong regardless. Option C creates a two-tier customer experience with no SLA for rural users. Option D (pending state) avoids the core design problem and requires indefinite 'pending' display for rural users who may never receive their event within a predictable window.",
+    "hints": [
+      "Setting a 40-minute delay affects ALL events passing through the pipeline, not just the 2% that arrive late. What does that imply for the 98% of on-time events that need sub-3-second freshness?",
+      "Streaming systems handle late data with two separate mechanisms: a hold-until threshold for the main stream, and a side channel for arrivals that miss that threshold. Which mechanism lets you serve the majority quickly while still correcting the minority?"
+    ],
+    "concepts": [
+      "WATERMARKING",
+      "BATCH VS STREAMING",
+      "SCHEDULING & SLAS"
+    ]
   }
 ]
