@@ -1096,5 +1096,212 @@
       "DIMENSION DESIGN",
       "SCHEMA EVOLUTION"
     ]
+  },
+  {
+    "id": 63041,
+    "order": 41,
+    "title": "Align mismatched fact-table grains to compute net margin across booking and activity facts",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "follow_ups": [
+      63042,
+      63043
+    ],
+    "scenario_context": "A hotel analytics team has two fact tables: fact_booking (grain: one row per booking, carries booking_revenue) and fact_guest_activity (grain: one row per activity event per booking, carries activity_cost). One booking can generate 1\u20138 activity rows (spa, dining, parking, \u2026). The team wants a 'net margin per booking' report defined as (booking_revenue \u2212 SUM(activity_cost)) / booking_revenue per booking.",
+    "description": "What is the correct approach to produce this report without double-counting booking_revenue?",
+    "options": [
+      "JOIN fact_booking to fact_guest_activity on booking_id, then GROUP BY booking_id \u2014 SQL's GROUP BY aggregates the mismatched rows to the correct booking-level result automatically.",
+      "Aggregate fact_guest_activity to booking-level total activity cost first (subquery or CTE), then join that aggregated result to fact_booking on booking_id \u2014 never join raw mismatched-grain facts directly.",
+      "Add a degenerate dimension booking_id to fact_guest_activity so both facts share a booking key, then use that key to join at the correct grain.",
+      "Pre-compute total_activity_cost at load time and add it as a column to fact_booking \u2014 grain mismatches at query time indicate a modeling defect that should be resolved in the ETL layer."
+    ],
+    "correct_option": 1,
+    "explanation": "The canonical rule for mismatched fact grains is: aggregate the more granular fact to the target grain before joining. Joining fact_booking (one row per booking) directly to fact_guest_activity (many rows per booking) fans out booking_revenue once per activity row before GROUP BY \u2014 the aggregation happens after the replication, not before. Option 1 is correct. Option 0 is wrong: GROUP BY aggregates AFTER the join result set is formed; if booking_revenue = $500 and there are 6 activity rows, the join produces 6 rows each carrying $500, and SUM(booking_revenue) = $3 000 before the GROUP BY even fires. Option 2 is wrong: a degenerate dimension is simply booking_id stored on fact_guest_activity \u2014 it is already there as the join key; calling it a 'degenerate dimension' does not resolve the grain mismatch in the join. Option 3 is a real technique but treats every query pattern as an ETL problem: pre-materializing prevents ad-hoc grain changes, couples activity data to the booking load, and requires re-loading booking data whenever activity costs are corrected.",
+    "hints": [
+      "When a query joins two fact tables at different granularities on the same key, what happens to the more coarse-grained fact's column values before the GROUP BY aggregation step?",
+      "If booking_revenue = $500 and the booking has 6 activity rows, how many times does $500 appear in the join result set before any GROUP BY is applied?"
+    ],
+    "concepts": [
+      "GRAIN DEFINITION",
+      "FACT TABLE DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63042,
+    "order": 42,
+    "title": "Re-evaluate the booking-activity grain alignment when activity rows include negative credit entries",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "parent_id": 63041,
+    "follow_up_dimension": "business_rule_pivot",
+    "scenario_context": "The same hotel analytics team now learns that fact_guest_activity also contains credit rows (activity_cost < 0) representing refunds and comp adjustments issued by the front desk. A credit row for a booking is added at the time of the refund, not at check-out, meaning a single booking can accumulate credits across multiple calendar days after the stay ends.",
+    "description": "How does the presence of negative credit rows in fact_guest_activity affect the aggregate-before-join approach from the parent scenario?",
+    "options": [
+      "The approach is unchanged \u2014 SUM(activity_cost) naturally handles signed values; the grain alignment rule applies regardless of row sign, and credits reduce the total activity cost correctly.",
+      "Credits must be stored in a separate fact_credit table; mixing positive charges and negative credits in the same fact table violates additive-measure semantics and will produce incorrect SUMs.",
+      "The aggregation must switch from SUM to ABS(SUM) to prevent credits from making total activity cost negative in bookings with heavy comps.",
+      "Credits introduce a date-dimension mismatch: since credits land on a different day than the stay, the booking-level aggregation must be filtered to exclude post-checkout rows before joining."
+    ],
+    "correct_option": 0,
+    "explanation": "SUM() is indifferent to sign \u2014 SUM(activity_cost) over a mix of positive charges and negative credits correctly produces net activity cost per booking. The aggregate-before-join pattern is unchanged. Option 0 is correct. Option 1 is wrong: storing refunds in a separate table is a design choice, not a requirement \u2014 signed additive measures are a standard pattern in dimensional modeling; the signed SUM is well-defined and accurate. Option 2 is wrong: ABS(SUM) would discard the offset that credits provide \u2014 if a booking has $500 in charges and $200 in credits, ABS(SUM) = $300 is the correct answer and SUM naturally produces that; ABS is never the right aggregation for net cost. Option 3 is wrong: the cross-day timing of credits is a reporting-period consideration (which date filter do you apply to credits?), not a reason to exclude them from the booking-level aggregation; the booking_id foreign key on each credit row correctly attributes it to the right booking regardless of the credit's calendar date.",
+    "hints": [
+      "If activity_cost can be negative (credit) as well as positive (charge), does SUM(activity_cost) still produce the correct net total when aggregated to booking level?",
+      "The aggregate-before-join approach works because it collapses many-to-one rows before the join. Does a row's sign (positive or negative) change how many rows are produced in the join?"
+    ],
+    "concepts": [
+      "GRAIN DEFINITION",
+      "ADDITIVE VS NON-ADDITIVE",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63043,
+    "order": 43,
+    "title": "Adapt the booking-activity grain alignment when Finance requests the same report at property level",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "mock_only": true,
+    "parent_id": 63041,
+    "follow_up_dimension": "stakeholder_pivot",
+    "description": "Finance requests a version of the net margin report at a different grain: net margin per hotel property (not per booking). They also want to exclude bookings where the guest canceled within 24 hours of check-in (no-shows carry zero activity cost but distort average margins). How should the grain alignment approach be modified?",
+    "options": [
+      "Apply the 24-hour cancellation filter to fact_guest_activity, aggregate to property level, then join to fact_booking aggregated at the same property level \u2014 two independent property-level aggregations joined at the property dimension.",
+      "Apply the 24-hour cancellation filter and the property-level aggregation simultaneously to both facts in a single subquery before joining \u2014 combining filters and grain changes in one step is equivalent to doing them separately.",
+      "The approach is unchanged: aggregate fact_guest_activity to booking level first, join to fact_booking, filter out cancellations in the WHERE clause, then GROUP BY property_id in the outer query.",
+      "Join fact_booking to fact_guest_activity at booking level, apply the cancellation filter, then re-aggregate to property level in a separate CTE \u2014 the re-aggregation eliminates the double-count introduced by the initial booking-level join."
+    ],
+    "correct_option": 2,
+    "explanation": "The grain alignment strategy is: aggregate the more granular fact (fact_guest_activity) to the target comparison grain (booking level), join to fact_booking, apply the cancellation filter, then aggregate the joined result to the final reporting grain (property level). Option 2 is correct \u2014 the booking-level aggregation-before-join principle still holds; you add a WHERE filter after joining (to exclude cancellations) and a final GROUP BY property_id on top. Option 0 is wrong: aggregating each fact independently to property level before joining produces the right row count, but it prevents you from applying the per-booking cancellation filter \u2014 once both facts are at property level, you cannot distinguish which bookings were canceled. Option 1 is wrong: the order of operations matters; combining a filter and a grain change in a single subquery on fact_guest_activity could exclude activity rows for non-canceled bookings if the filter references fact_booking columns that are not yet in scope. Option 3 describes the fan-out problem: joining at booking level without the prior aggregation step still fans out booking_revenue per activity row; the subsequent re-aggregation to property level does not undo the replication introduced by the join.",
+    "hints": [
+      "When Finance requests property-level net margins instead of booking-level net margins, does the aggregation of fact_guest_activity happen at the same aggregation level as in the booking-level report, or does the target level change?",
+      "The 24-hour cancellation filter must be applied at booking level to correctly exclude no-show bookings. Can this filter still be applied after the booking-level join and before the final property-level GROUP BY?"
+    ],
+    "concepts": [
+      "GRAIN DEFINITION",
+      "FACT TABLE DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63044,
+    "order": 44,
+    "title": "Govern a conformed customer dimension across two companies with conflicting customer definitions after an acquisition",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "follow_ups": [
+      63045,
+      63046,
+      63047
+    ],
+    "scenario_context": "Company A (brick-and-mortar retail) defines a customer as anyone who has completed a purchase in the last 12 months. Company B (e-commerce, recently acquired) defines a customer as anyone who has created an account, regardless of purchase history. The executive team wants a unified 'customer lifetime value' dashboard covering both companies, and the BI team must build a conformed customer dimension.",
+    "description": "What is the correct architectural approach for conforming the customer dimension across both definitions?",
+    "options": [
+      "Use Company A's purchase-based definition for the conformed dimension \u2014 it is more conservative and less likely to inflate reported customer counts.",
+      "Use Company B's account-based definition \u2014 it is broader and ensures no potential lifetime-value candidate is excluded from the unified view.",
+      "Convene a cross-functional governance process to agree on a single canonical customer definition, encode that definition in the conformed dimension's business logic, and expose source_system and original_customer_status as diagnostic attributes alongside the canonical flag.",
+      "Build two separate customer dimensions (one per company) and join them on email address at reporting time \u2014 this avoids imposing one company's definition on the other."
+    ],
+    "correct_option": 2,
+    "explanation": "Conformed dimension governance requires stakeholder agreement on a single canonical definition before the technical implementation can proceed. Neither company's definition is inherently 'right' \u2014 the choice is a business decision that determines which entities appear in LTV calculations and how the metric is interpreted by Finance and Marketing. Option 2 is correct: encoding the agreed definition in the conformed dimension (with source diagnostic attributes) makes the business rule transparent, auditable, and consistent across all downstream marts. Option 0 is wrong: selecting Company A's definition unilaterally excludes Company B account holders who have not yet purchased \u2014 this undercounts the combined customer base and makes LTV comparisons between companies unfair. Option 1 has the symmetric problem: including all Company B accounts inflates the denominator for Company A's LTV metric, and Company A's data model likely has no analog for non-purchasing account holders at all. Option 3 is wrong: email-based joins at reporting time are fragile (multiple emails per person, format mismatches), invisible to governance, not version-controlled, and produce inconsistent counts depending on which BI tool executes the join \u2014 the anti-pattern of leaking conformed-dimension logic into the reporting layer.",
+    "hints": [
+      "Company A's definition excludes non-purchasing account holders; Company B's includes them. Can a single LTV dashboard use both definitions simultaneously without agreeing on which entities count as 'customers'?",
+      "Conformed dimensions require that the same dimension row means the same thing to every fact table and every team. Whose definition of 'customer' should be encoded in the dimension, and who makes that call?"
+    ],
+    "concepts": [
+      "CONFORMED DIMENSIONS",
+      "DIMENSION DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63045,
+    "order": 45,
+    "title": "Adapt the conformed customer dimension design when the merged customer base grows 10\u00d7 post-acquisition",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "parent_id": 63044,
+    "follow_up_dimension": "scale_pivot",
+    "scenario_context": "Eighteen months after the acquisition, full migration is complete. The conformed customer dimension has grown from 5 million rows to 52 million rows. Weekly SCD Type 2 updates are taking 4+ hours because high-churn attributes (email_opt_in_status, engagement_segment, preferred_channel) change for ~8% of the customer base every week, generating 4 million new dimension rows per run.",
+    "description": "Which dimensional modeling technique best addresses the SCD Type 2 performance problem without losing historical tracking of the high-churn attributes?",
+    "options": [
+      "Switch to SCD Type 1 for all attributes \u2014 overwriting is much faster than inserting new rows, and most analytics queries only need current customer state.",
+      "Partition the conformed dimension by effective_from date to speed up range queries, and add a clustered index on customer_key to reduce the Type 2 insert cost.",
+      "Extract the high-churn attributes into a mini-dimension (a small, frequently-updated dimension table with its own surrogate key referenced from the fact table), keeping the main customer dimension for stable attributes only.",
+      "Pre-aggregate the customer dimension to a weekly snapshot grain \u2014 instead of row-per-change, store one row per customer per week capturing end-of-week attribute state."
+    ],
+    "correct_option": 2,
+    "explanation": "A mini-dimension separates rapidly-changing attributes (email_opt_in_status, engagement_segment, preferred_channel) into a small, independently-versioned table. The main customer dimension handles stable attributes (name, join_date, lifecycle_stage) and changes infrequently. Fact tables carry foreign keys to both the main customer dimension and the current mini-dimension key. This limits the 4-million-row weekly SCD Type 2 churn to the mini-dimension while keeping the main dimension stable. Option 2 is correct. Option 0 is wrong: switching to SCD Type 1 satisfies the performance requirement but destroys the historical tracking that was specified as a business requirement \u2014 losing 18 months of attribute history on a 52-million-customer dimension is a significant information loss. Option 1 is wrong: partitioning and indexing can improve read performance for range queries but do not reduce the write amplification of 4 million new rows per week \u2014 the root cause is the volume of SCD Type 2 inserts, not the query plan. Option 3 is wrong: a weekly snapshot captures state at a specific point in time but loses intra-week changes and requires significantly more storage (52 rows per customer per year instead of one row per actual change); it also misaligns with fact tables that record events at daily or transaction granularity.",
+    "hints": [
+      "When 8% of 52 million customer records update their email preference or engagement segment every week, is the performance bottleneck in how analysts read the dimension or in the volume of new rows that must be written during each weekly refresh?",
+      "If the high-churn attributes (email_opt_in, engagement_segment) are separated from stable attributes, how does this reduce the row-insert volume of the main customer dimension?"
+    ],
+    "concepts": [
+      "DIMENSION DESIGN",
+      "SCD STRUCTURE",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63046,
+    "order": 46,
+    "title": "Handle a 15% cross-company customer overlap where identity resolution is incomplete and noisy",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "parent_id": 63044,
+    "follow_up_dimension": "data_quality_pivot",
+    "scenario_context": "Post-migration analysis reveals that approximately 15% of Company B's account holders also exist in Company A's customer table, but they used different email addresses (work email in Company A, personal email in Company B). No single deterministic matching rule correctly links all cross-company duplicates \u2014 name + zip code alone links 60% correctly, while the remaining 40% have moved, have common names, or have partial address data.",
+    "description": "What is the correct data modeling approach for handling this partial, noisy identity resolution in the conformed customer dimension?",
+    "options": [
+      "Block unification until identity resolution is 100% complete \u2014 publishing a conformed dimension with known duplicates undermines the 'single version of truth' contract.",
+      "Use deterministic matching only (same email = same customer) and mark the remaining 15% overlap as separate customer rows \u2014 accept the known duplicate rate as a data quality caveat.",
+      "Apply probabilistic entity matching (weighted score across name, address, purchase overlap), add a match_confidence_score to the mapping table, and expose an is_merged flag on the conformed dimension so downstream teams can filter on confidence threshold per use case.",
+      "Merge all 15% overlap records automatically using Company A's customer_id as the canonical identifier \u2014 Company A is the acquiring company and its master data should take precedence."
+    ],
+    "correct_option": 2,
+    "explanation": "When deterministic matching is insufficient, the standard MDM (Master Data Management) approach is probabilistic entity resolution: assign a match confidence score, surface it transparently, and let each downstream use case apply its own threshold (e.g., LTV analysis might accept 70%+ matches; legal/compliance may require 95%+). Option 2 is correct \u2014 it ships a usable conformed dimension while being honest about uncertainty. Option 0 is wrong: blocking until 100% resolution prevents the business from using the merged data at all; in practice, 100% identity resolution across two independent systems is rarely achievable, and waiting for it indefinitely stalls the value of the acquisition. Option 1 is wrong: publishing known duplicates as separate rows makes the conformed dimension double-count those customers in every LTV and cohort metric \u2014 the known error is baked into the canonical model without any mechanism to filter or correct it downstream. Option 3 is wrong: auto-merging records based on system of record precedence without probabilistic validation will incorrectly merge distinct customers who happen to share a name or location \u2014 Company A's authority over its own records does not extend to correctly resolving ambiguous cross-company identity.",
+    "hints": [
+      "When identity resolution across two systems is incomplete and noisy, can a deterministic matching rule capture all true duplicates \u2014 and what happens to the unmatched 40% overlap if it is ignored?",
+      "A match_confidence_score on the mapping table lets each downstream team choose its own threshold. What business value does this flexibility provide compared to publishing a single merged-or-not binary?"
+    ],
+    "concepts": [
+      "CONFORMED DIMENSIONS",
+      "REFERENTIAL INTEGRITY",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63047,
+    "order": 47,
+    "title": "Debug a referential integrity failure in a conformed customer dimension after a GDPR right-to-erasure request",
+    "difficulty": "hard",
+    "type": "debug",
+    "mock_only": true,
+    "parent_id": 63044,
+    "follow_up_dimension": "ambiguity_pivot",
+    "scenario_context": "A Company B customer exercises their GDPR right to erasure. The data team physically deletes the customer's row from the conformed customer dimension table. Historical fact rows in fact_purchase and fact_activity retain the deleted customer's dimension key as a foreign key. Analysts now report broken LTV queries: LEFT JOINs to the dimension return NULLs for affected historical rows, and dashboards show inflated 'unidentified customer' counts.",
+    "description": "What is the correct modeling fix to support GDPR right-to-erasure while preserving historical fact integrity?",
+    "options": [
+      "Retain the dimension row but replace all personally identifiable attributes (name, email, address) with NULL or a generic placeholder value, and add an is_erased boolean flag \u2014 the row remains as a referential anchor for historical facts without exposing PII.",
+      "Physically delete the dimension row and update all historical fact foreign keys to point to a shared 'unknown customer' surrogate row \u2014 this preserves referential integrity while honoring the erasure.",
+      "Physically delete both the dimension row and all associated historical fact rows \u2014 GDPR right to erasure legally requires complete removal of all personal data from all systems.",
+      "Move the erased customer to a separate gdpr_erased_customers table and update fact foreign keys to the new table's key \u2014 facts point to the erasure archive instead of the active dimension."
+    ],
+    "correct_option": 0,
+    "explanation": "The GDPR tombstone pattern \u2014 retaining the dimension row with PII nulled out and an is_erased flag \u2014 satisfies erasure requirements (no PII is accessible or retrievable) while preserving referential integrity for historical fact rows. Analysts can filter is_erased = false for current analysis and is_erased = true rows appear as anonymous in historical queries without breaking JOINs. Option 0 is correct. Option 1 is wrong: reassigning fact foreign keys to a generic 'unknown customer' surrogate permanently and irreversibly corrupts the historical record \u2014 it is not possible to distinguish which 'unknown customer' rows originated from erased customers versus genuinely anonymous records, and LTV / cohort analytics become unreliable. Option 2 is wrong: GDPR right to erasure applies specifically to personally identifiable information, not to derived business facts \u2014 regulators generally permit retention of anonymized analytical data; physically deleting fact rows destroys the historical sales record the business relies on for regulatory financial reporting. Option 3 is wrong: creating a separate erasure archive table still requires updating all fact foreign keys (expensive, error-prone) and creates a second dimension table that must be joined for any query touching erased customers \u2014 it adds operational complexity without the referential clarity of the tombstone approach.",
+    "hints": [
+      "After a GDPR erasure physically deletes a customer dimension row, historical fact rows still hold that customer's identifier as a foreign key. What happens when an analyst runs a JOIN between the fact table and the customer dimension for those rows?",
+      "GDPR right to erasure requires that personal data cannot be identified or retrieved \u2014 does this require deleting the row entirely, or is nulling out all PII columns on a retained row sufficient?"
+    ],
+    "concepts": [
+      "CONFORMED DIMENSIONS",
+      "REFERENTIAL INTEGRITY",
+      "SCHEMA EVOLUTION"
+    ]
   }
 ]
