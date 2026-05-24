@@ -1268,7 +1268,7 @@
     "expected_query": "SELECT e.employee_id, e.employee_name,\n       CONCAT(e.employee_name, ' (', COALESCE(d.department_name, 'Unknown'), ')') AS label\nFROM employees e\nLEFT JOIN departments d ON e.department_id = d.department_id\nORDER BY e.employee_id",
     "solution_query": "SELECT e.employee_id, e.employee_name,\n       CONCAT(e.employee_name, ' (', COALESCE(d.department_name, 'Unknown'), ')') AS label\nFROM employees e\nLEFT JOIN departments d ON e.department_id = d.department_id\nORDER BY e.employee_id;",
     "hints": [
-      "A LEFT JOIN keeps all employees including those with no matching department row.",
+      "When your query must include every row from the primary table \u2014 even when no corresponding row exists in the other table \u2014 what SQL operation achieves this, and what value fills the columns that have no match?",
       "COALESCE returns the first non-NULL argument \u2014 use it to substitute a fallback string before it reaches CONCAT."
     ],
     "explanation": "CONCAT() joins strings left to right; each literal like ' (' must be a separate argument. COALESCE(d.department_name, 'Unknown') substitutes 'Unknown' when the LEFT JOIN finds no department, preventing the label from being corrupted by NULL. Using the `||` operator instead of CONCAT in many databases would propagate NULL silently, so COALESCE is the portable, defensive pattern. This construct is common in display-layer queries and reporting pipelines."
@@ -1346,7 +1346,7 @@
     "expected_query": "SELECT DATE_TRUNC('month', signup_date) AS signup_month,\n       COUNT(*) AS signup_count\nFROM users\nGROUP BY DATE_TRUNC('month', signup_date)\nORDER BY signup_month",
     "solution_query": "SELECT DATE_TRUNC('month', signup_date) AS signup_month,\n       COUNT(*) AS signup_count\nFROM users\nGROUP BY DATE_TRUNC('month', signup_date)\nORDER BY signup_month;",
     "hints": [
-      "DATE_TRUNC('month', col) snaps any date to the first day of its month \u2014 all dates in the same month become equal, so GROUP BY collapses them into one row.",
+      "How would you assign every date within the same calendar month to a single bucket so that multiple rows in the same month can be collapsed into one aggregate row?",
       "Group by the same truncated expression used in SELECT."
     ],
     "explanation": "DATE_TRUNC('month', date) truncates to the first of the month (e.g., 2023-03-15 \u2192 2023-03-01). Unlike STRFTIME('%Y-%m', date), DATE_TRUNC preserves a proper DATE type that sorts correctly and can be fed into downstream date arithmetic. This is the canonical pattern for time-series bucketing in analytics SQL \u2014 use DATE_TRUNC when you need a proper date; use STRFTIME when you need a formatted string for display."

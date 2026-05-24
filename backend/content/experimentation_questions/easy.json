@@ -43,7 +43,8 @@
       "Which metric captures the end outcome the team actually cares about, rather than an intermediate behavior?"
     ],
     "concepts": [
-      "METRIC SELECTION"
+      "METRIC SELECTION",
+      "EXPERIMENT DESIGN"
     ]
   },
   {
@@ -66,7 +67,8 @@
       "The null hypothesis always represents the baseline assumption of 'no change'."
     ],
     "concepts": [
-      "HYPOTHESIS FORMULATION"
+      "HYPOTHESIS FORMULATION",
+      "STATISTICAL SIGNIFICANCE"
     ]
   },
   {
@@ -89,7 +91,8 @@
       "The p-value is calculated assuming the null hypothesis is true \u2014 it is a conditional probability."
     ],
     "concepts": [
-      "STATISTICAL SIGNIFICANCE"
+      "STATISTICAL SIGNIFICANCE",
+      "TYPE I AND TYPE II ERRORS"
     ]
   },
   {
@@ -112,7 +115,8 @@
       "Consider which error involves acting on a result that turns out not to be real."
     ],
     "concepts": [
-      "TYPE I AND TYPE II ERRORS"
+      "TYPE I AND TYPE II ERRORS",
+      "STATISTICAL POWER"
     ]
   },
   {
@@ -159,7 +163,8 @@
       "Power is about your ability to detect something that is genuinely there."
     ],
     "concepts": [
-      "STATISTICAL POWER"
+      "STATISTICAL POWER",
+      "SAMPLE SIZE BASICS"
     ]
   },
   {
@@ -182,7 +187,8 @@
       "Think about how hard it is to distinguish a tiny difference from random noise."
     ],
     "concepts": [
-      "SAMPLE SIZE BASICS"
+      "SAMPLE SIZE BASICS",
+      "EXPERIMENT DURATION"
     ]
   },
   {
@@ -205,7 +211,8 @@
       "Think about whether a single computed interval can have a probability \u2014 or whether probability applies to the long-run process of constructing such intervals."
     ],
     "concepts": [
-      "CONFIDENCE INTERVALS"
+      "CONFIDENCE INTERVALS",
+      "STATISTICAL SIGNIFICANCE"
     ]
   },
   {
@@ -276,7 +283,8 @@
       "If each test has a 5% false positive rate, think about expected false positives across 20 independent tests."
     ],
     "concepts": [
-      "MULTIPLE TESTING"
+      "MULTIPLE TESTING",
+      "TYPE I AND TYPE II ERRORS"
     ]
   },
   {
@@ -347,7 +355,8 @@
       "Choose the metric most directly affected by what the experiment actually changes."
     ],
     "concepts": [
-      "METRIC SELECTION"
+      "METRIC SELECTION",
+      "VARIANCE REDUCTION"
     ]
   },
   {
@@ -706,7 +715,8 @@
       "Think about what each framework treats as the random variable \u2014 the data or the parameter."
     ],
     "concepts": [
-      "BAYESIAN EXPERIMENTATION"
+      "BAYESIAN EXPERIMENTATION",
+      "HYPOTHESIS FORMULATION"
     ]
   }
 ]

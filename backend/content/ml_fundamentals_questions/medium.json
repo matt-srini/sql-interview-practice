@@ -41,7 +41,7 @@
     "correct_option": 0,
     "explanation": "The pattern \u2014 very low training loss with validation loss that drops then rises \u2014 is classic overfitting driven by high variance. The model is memorising the training set. The primary cause is that 10,000 images is insufficient for the model's capacity to generalise.\n\nMore data is the most direct and effective solution to high-variance overfitting. Additional training data gives the model more diverse patterns to learn from, making memorisation less effective. With 5\u00d7 more data, the model is forced to learn generalisable features rather than specific examples.\n\nOption B is wrong: training longer will worsen overfitting, not fix it. The validation loss is already rising \u2014 more epochs will drive it higher.\n\nOption C (regularisation) is a reasonable intervention and would partially help, but it is a secondary remedy. For a model that is genuinely data-hungry, regularisation imposes an artificial constraint rather than addressing the fundamental lack of training signal.\n\nOption D (shallower architecture) can help by reducing memorisation capacity, but risks underfitting if the task genuinely requires deep features. More data is preferable to reducing capacity when the task complexity is high.",
     "hints": [
-      "The validation loss rises after an initial drop \u2014 this is the classic overfitting trajectory. What does a model need most when it has memorised training data?",
+      "The validation loss rises after an initial drop \u2014 held-out performance degrades as training performance improves. What has the model started doing with additional capacity, and which intervention addresses that directly?",
       "Distinguish between reducing the model's capacity (architectural change), constraining it (regularisation), and giving it more signal to learn from (data). Which gets to the root cause of variance?"
     ],
     "concepts": [
@@ -145,7 +145,8 @@
       "Class weights change what the model optimises for, without touching the input data. SMOTE changes the data itself. Which introduces more assumptions?"
     ],
     "concepts": [
-      "CLASS IMBALANCE HANDLING"
+      "CLASS IMBALANCE HANDLING",
+      "CLASSIFICATION METRICS"
     ]
   },
   {
@@ -219,7 +220,8 @@
       "Discarding 55% of the variance in the features does not mean discarding 55% of the predictive signal \u2014 but it does mean taking that risk. What does the 91% retention number suggest?"
     ],
     "concepts": [
-      "DIMENSIONALITY REDUCTION"
+      "DIMENSIONALITY REDUCTION",
+      "FEATURE SELECTION STRATEGY"
     ]
   },
   {
@@ -268,7 +270,8 @@
       "Permutation importance tests a counterfactual: 'what if this feature contained no signal?' If shuffling it barely hurts, what does that tell you about whether the model genuinely needed that feature?"
     ],
     "concepts": [
-      "FEATURE IMPORTANCE INTERPRETATION"
+      "FEATURE IMPORTANCE INTERPRETATION",
+      "ENSEMBLE STRATEGY"
     ]
   },
   {
@@ -343,7 +346,8 @@
       "When five features are correlated, L1 tends to 'pick one and discard the rest'. Why is that a problem here, and which regularisation handles correlated features by distributing weight?"
     ],
     "concepts": [
-      "REGULARIZATION EFFECT"
+      "REGULARIZATION EFFECT",
+      "FEATURE SELECTION STRATEGY"
     ]
   },
   {
@@ -392,7 +396,8 @@
       "When \u03c3(z) \u2248 1, what is \u03c3(z) \u00d7 (1 - \u03c3(z))? This is the gradient of the sigmoid \u2014 how does it affect weight updates?"
     ],
     "concepts": [
-      "BOOSTING MECHANICS"
+      "BOOSTING MECHANICS",
+      "GRADIENT DESCENT BEHAVIOR"
     ]
   },
   {
@@ -512,11 +517,12 @@
     "correct_option": 1,
     "explanation": "Platt scaling is a standard post-hoc calibration method. You take the model's raw output scores (which are not well-calibrated probabilities) and train a logistic regression model to map them to calibrated probabilities. The logistic regression is trained on a held-out calibration set (separate from training and test) so that the mapping is not influenced by the original model's training data.\n\nThe process: (1) Generate scores for the calibration set using the original model. (2) Train logistic regression: P(y=1) = \u03c3(a \u00d7 score + b) where a and b are learned from the calibration set. (3) At inference, pass the model's score through this learned sigmoid to get a calibrated probability.\n\nOption A is wrong: changing the loss function requires retraining the model from scratch, and logistic loss does not guarantee perfect calibration in gradient boosted trees \u2014 trees are generally less well-calibrated than logistic regression even with logistic loss, because the ensemble structure can produce extreme probability estimates.\n\nOption C is wrong: gradient boosted trees are actually known to be poorly calibrated by default, especially when using tree-based (not logistic) loss. The question confirms the model is miscalibrated.\n\nOption D is wrong: temperature scaling divides logits by a constant to soften the distribution, and is a valid calibration approach for neural networks. However, for gradient boosted tree scores with a bimodal distribution, visual inspection is not reliable, and the method would need systematic optimisation on a calibration set \u2014 not just visual adjustment.",
     "hints": [
-      "Calibration is a post-processing step \u2014 you do not need to change the model. You need a way to transform the model's output scores to match observed probabilities. What kind of function maps any input to a probability between 0 and 1?",
+      "Adjusting predicted probabilities to match observed frequencies is a post-processing step \u2014 the model weights don't change. What mathematical transformation maps any raw score to a probability between 0 and 1?",
       "Why must the calibration set be separate from both training and test sets? Think about what bias would be introduced if you calibrated on the training set."
     ],
     "concepts": [
-      "MODEL CALIBRATION"
+      "MODEL CALIBRATION",
+      "CLASSIFICATION METRICS"
     ]
   },
   {
@@ -540,7 +546,8 @@
       "Model-agnostic means the feature selection does not depend on which model you will use downstream. Which approach evaluates features without fitting any model at all?"
     ],
     "concepts": [
-      "FEATURE SELECTION STRATEGY"
+      "FEATURE SELECTION STRATEGY",
+      "OVERFITTING DIAGNOSIS"
     ]
   },
   {
@@ -589,7 +596,8 @@
       "MAR is the sweet spot for imputation: the missingness is systematic enough to be modelled (using observed variables) but does not depend on the unobserved value in a way that makes imputation impossible."
     ],
     "concepts": [
-      "MISSING DATA STRATEGY"
+      "MISSING DATA STRATEGY",
+      "DATA LEAKAGE DETECTION"
     ]
   },
   {
@@ -688,7 +696,8 @@
       "Two points in the same class (both in the inner circle) are close to each other. Two points in different classes (inner vs outer ring) are far apart. What does the RBF similarity function output for these two pairs?"
     ],
     "concepts": [
-      "FEATURE SCALING NECESSITY"
+      "FEATURE SCALING NECESSITY",
+      "DIMENSIONALITY REDUCTION"
     ]
   },
   {
@@ -737,7 +746,8 @@
       "What are you actually trying to measure when selecting k? WCSS is one proxy, but it always decreases with k. What other signals can help you determine the right number of clusters?"
     ],
     "concepts": [
-      "CLUSTERING EVALUATION"
+      "CLUSTERING EVALUATION",
+      "HYPERPARAMETER SENSITIVITY"
     ]
   },
   {
@@ -761,7 +771,8 @@
       "Look at Cluster 4 in isolation: if the average score is negative, how many points within that cluster are likely closer to another cluster? Is this a well-defined cluster?"
     ],
     "concepts": [
-      "CLUSTERING EVALUATION"
+      "CLUSTERING EVALUATION",
+      "SUPERVISED VS UNSUPERVISED"
     ]
   },
   {
@@ -1184,19 +1195,19 @@
     "type": "scenario",
     "difficulty": "medium",
     "title": "Missing Value Imputation Before Split: Why Preprocessing Order Invalidates Evaluation",
-    "scenario_context": "A data scientist preprocesses 100,000 credit default rows. The feature annual_income has 15% missing values. They compute the mean from all 100,000 rows (μ = $63,400) and fill missing values with μ. They then perform an 80/20 train/test split and train a logistic regression. Test AUC is 0.821. In production six months later, AUC is 0.793. A colleague suggests the pipeline has a structural flaw.",
+    "scenario_context": "A data scientist preprocesses 100,000 credit default rows. The feature annual_income has 15% missing values. They compute the mean from all 100,000 rows (\u03bc = $63,400) and fill missing values with \u03bc. They then perform an 80/20 train/test split and train a logistic regression. Test AUC is 0.821. In production six months later, AUC is 0.793. A colleague suggests the pipeline has a structural flaw.",
     "description": "What is the structural flaw, and what is the correct preprocessing pipeline?",
     "options": [
-      "Computing the imputation mean from all 100,000 rows before the train/test split incorporates the income distribution of the 20,000 test rows into the imputed values used during training; the global mean encodes test set information, making the test AUC optimistic; the correct pipeline is: (1) split first, (2) compute the mean from the 80,000 training rows only, (3) apply that training mean to impute missing values in both train and test sets — matching the production setup where no future rows exist at training time",
+      "Computing the imputation mean from all 100,000 rows before the train/test split incorporates the income distribution of the 20,000 test rows into the imputed values used during training; the global mean encodes test set information, making the test AUC optimistic; the correct pipeline is: (1) split first, (2) compute the mean from the 80,000 training rows only, (3) apply that training mean to impute missing values in both train and test sets \u2014 matching the production setup where no future rows exist at training time",
       "Mean imputation is the wrong strategy for a skewed financial feature; using median imputation instead of mean would close the gap between test and production AUC because median is resistant to high-income outliers that inflate the imputed value and introduce bias",
       "The preprocessing is correct; global statistics computed from the full dataset produce more accurate imputation than train-only statistics, and this accuracy improvement outweighs any information leakage; the 0.028 AUC gap is within normal evaluation variance for a 20,000-row test set",
       "The flaw is applying imputation before feature scaling; mean imputation before StandardScaler causes the imputed value to fall outside the normalized range, introducing a systematic bias for rows with imputed income values that degrades production performance"
     ],
     "correct_option": 0,
-    "explanation": "Option A is correct. Computing any preprocessing statistic from the full dataset before splitting is a form of pipeline leakage. The global mean of $63,400 is influenced by the income distribution of all 100,000 rows, including the 20,000 test rows. In production, future applicants arrive after training — their income distributions cannot influence the imputation statistic used during model training. The pipeline must simulate this: fit all preprocessing (imputers, scalers, encoders) on training data only, then apply the fitted transformations to both train and test sets. Using a global mean gives the test set evaluation a small advantage it will not have in production, explaining the 0.028 AUC gap.\n\nOption B is a question of imputation quality, not pipeline validity. Mean vs median imputation produces different imputed values for skewed distributions but does not address the leakage created by fitting the statistic on the full dataset. Switching to median with the same flawed pipeline order would still produce an optimistic test AUC.\n\nOption C is wrong. For model evaluation, the goal is not the most accurate imputation mean — it is an unbiased estimate of production performance. A more accurate global mean that incorporates test data does not improve production performance; it only inflates the apparent test AUC. The argument that global statistics are 'better' applies to estimating population parameters, not to building valid evaluation pipelines.\n\nOption D is wrong. The order of imputation relative to scaling does not affect whether the imputed value falls within the normalized range — StandardScaler normalizes all values including imputed ones. Imputation before scaling is standard practice and is not a source of the described bias.",
+    "explanation": "Option A is correct. Computing any preprocessing statistic from the full dataset before splitting is a form of pipeline leakage. The global mean of $63,400 is influenced by the income distribution of all 100,000 rows, including the 20,000 test rows. In production, future applicants arrive after training \u2014 their income distributions cannot influence the imputation statistic used during model training. The pipeline must simulate this: fit all preprocessing (imputers, scalers, encoders) on training data only, then apply the fitted transformations to both train and test sets. Using a global mean gives the test set evaluation a small advantage it will not have in production, explaining the 0.028 AUC gap.\n\nOption B is a question of imputation quality, not pipeline validity. Mean vs median imputation produces different imputed values for skewed distributions but does not address the leakage created by fitting the statistic on the full dataset. Switching to median with the same flawed pipeline order would still produce an optimistic test AUC.\n\nOption C is wrong. For model evaluation, the goal is not the most accurate imputation mean \u2014 it is an unbiased estimate of production performance. A more accurate global mean that incorporates test data does not improve production performance; it only inflates the apparent test AUC. The argument that global statistics are 'better' applies to estimating population parameters, not to building valid evaluation pipelines.\n\nOption D is wrong. The order of imputation relative to scaling does not affect whether the imputed value falls within the normalized range \u2014 StandardScaler normalizes all values including imputed ones. Imputation before scaling is standard practice and is not a source of the described bias.",
     "hints": [
       "The imputation mean is computed using income values from all 100,000 rows, including the 20,000 test rows. In production, when a new applicant arrives for scoring, do you have access to that applicant's income when computing the mean used to fill their missing value?",
-      "Any preprocessing statistic fit using test set rows — even non-target statistics like a feature mean — gives the model a small advantage on test evaluation that disappears in production. What single change to the step ordering prevents this?"
+      "Any preprocessing statistic fit using test set rows \u2014 even non-target statistics like a feature mean \u2014 gives the model a small advantage on test evaluation that disappears in production. What single change to the step ordering prevents this?"
     ],
     "concepts": [
       "MISSING DATA STRATEGY",
@@ -1213,13 +1224,13 @@
     "scenario_context": "A data scientist segments 500,000 e-commerce customers for targeted marketing using k-means. Running k = 2 through 10, the elbow method (inertia plot) shows the most pronounced inflection at k = 4. The silhouette score peaks at k = 2 and decreases monotonically from k = 3 onward, reaching 0.31 at k = 4. The analyst must choose k for a campaign that applies a distinct promotional strategy to each segment.",
     "description": "How should the analyst reconcile the disagreement between the two metrics, and what additional step should inform the final choice?",
     "options": [
-      "The silhouette score indicates k = 2 produces the most geometrically coherent, well-separated clusters; the elbow at k = 4 indicates that four segments provide substantially more within-cluster compactness than two at moderate additional cost; the correct path is to profile each candidate k — examine the purchasing behavior, average order value, and category preferences of each segment — and choose the k whose segments are distinct enough to support genuinely different promotional strategies; this is a business-utility judgment that neither metric alone can resolve",
+      "The silhouette score indicates k = 2 produces the most geometrically coherent, well-separated clusters; the elbow at k = 4 indicates that four segments provide substantially more within-cluster compactness than two at moderate additional cost; the correct path is to profile each candidate k \u2014 examine the purchasing behavior, average order value, and category preferences of each segment \u2014 and choose the k whose segments are distinct enough to support genuinely different promotional strategies; this is a business-utility judgment that neither metric alone can resolve",
       "The silhouette score is the mathematically rigorous cluster quality measure; the elbow method is only a visual heuristic with no formal statistical basis; the analyst must choose k = 2 because it maximizes the silhouette score, and any deviation from the statistically optimal k introduces unnecessary model complexity",
       "The disagreement indicates that features have not been standardized; k-means distance calculations are dominated by high-magnitude features, and normalizing all features to unit variance before clustering will align the two metrics to agree on the same optimal k",
       "When elbow and silhouette metrics disagree, the correct procedure is to switch to a model-based algorithm (e.g., Gaussian Mixture Models) that provides a log-likelihood or BIC criterion for selecting the number of components, which is more principled than either heuristic"
     ],
     "correct_option": 0,
-    "explanation": "Option A is correct. The two metrics measure different things: the silhouette score measures geometric separation (how much more similar each point is to its own cluster than to the nearest other cluster), while the elbow method measures inertia reduction (diminishing returns from adding clusters). A silhouette score peak at k = 2 means two clusters have the crispest geometric boundaries, but 'crispest boundaries' is not the same as 'most useful for targeted marketing.' Four segments may have lower silhouette scores because their boundaries overlap in feature space, yet they may represent meaningfully distinct purchasing profiles that support four different campaign strategies. The business-utility test — examining the actual behavioral profiles of segments at each k — is the decisive step that neither metric can replace.\n\nOption B overstates the silhouette score's authority for business applications. The silhouette score is a useful diagnostic for geometric cluster quality; it does not measure segment actionability. Requiring k = 2 solely on silhouette grounds ignores the marketing objective.\n\nOption C is a valid data preparation recommendation (feature scaling matters for k-means), but it is incorrect to assume normalization will align the two metrics. Normalization changes the feature space and therefore changes both inertia and silhouette values. Two metrics can and frequently do disagree even on well-scaled data, because they measure genuinely different aspects of cluster structure.\n\nOption D is unwarranted. GMMs have their own hyperparameter (number of components) and their own model selection criteria (BIC, AIC) — they do not eliminate the problem of choosing the number of clusters; they reframe it. More importantly, changing the algorithm is not required when two diagnostics for k-means disagree; the disagreement calls for business-context validation, not an algorithm switch.",
+    "explanation": "Option A is correct. The two metrics measure different things: the silhouette score measures geometric separation (how much more similar each point is to its own cluster than to the nearest other cluster), while the elbow method measures inertia reduction (diminishing returns from adding clusters). A silhouette score peak at k = 2 means two clusters have the crispest geometric boundaries, but 'crispest boundaries' is not the same as 'most useful for targeted marketing.' Four segments may have lower silhouette scores because their boundaries overlap in feature space, yet they may represent meaningfully distinct purchasing profiles that support four different campaign strategies. The business-utility test \u2014 examining the actual behavioral profiles of segments at each k \u2014 is the decisive step that neither metric can replace.\n\nOption B overstates the silhouette score's authority for business applications. The silhouette score is a useful diagnostic for geometric cluster quality; it does not measure segment actionability. Requiring k = 2 solely on silhouette grounds ignores the marketing objective.\n\nOption C is a valid data preparation recommendation (feature scaling matters for k-means), but it is incorrect to assume normalization will align the two metrics. Normalization changes the feature space and therefore changes both inertia and silhouette values. Two metrics can and frequently do disagree even on well-scaled data, because they measure genuinely different aspects of cluster structure.\n\nOption D is unwarranted. GMMs have their own hyperparameter (number of components) and their own model selection criteria (BIC, AIC) \u2014 they do not eliminate the problem of choosing the number of clusters; they reframe it. More importantly, changing the algorithm is not required when two diagnostics for k-means disagree; the disagreement calls for business-context validation, not an algorithm switch.",
     "hints": [
       "The silhouette score measures how well-separated clusters are geometrically in feature space. In marketing segmentation, is the most geometrically separated clustering necessarily the most actionable one for targeting campaigns?",
       "At k = 2 you have the cleanest cluster boundaries. At k = 4 you have four finer-grained segments with lower silhouette. What specific information about the segments would help you determine which k better supports four distinct promotional strategies?"
@@ -1245,10 +1256,10 @@
       "The bug is using Pearson correlation for feature selection: corrwith only detects linear relationships, so features with strong non-linear but weak linear correlations are excluded; this causes the model to overfit on the linearly selected features and underfit on non-linear patterns that are predictive in production"
     ],
     "correct_option": 0,
-    "explanation": "Option A is correct. Feature selection by correlation computes each feature's correlation with the target variable using all rows — including the 10,000 test rows. The top 20 features are chosen because they correlate with the full dataset's churn signal, which includes the test set's specific label pattern. When the model is then evaluated on that test set, it uses a feature set that was selected partly because of those rows' churn labels. No label value is directly fed into the model, but the selected feature set itself was biased toward features that match the test set's pattern. In production, feature selection will have been computed from training data only, so this indirect advantage vanishes. Fix: split first, then fit all preprocessing — including feature selection — on the training set only.\n\nOption B is wrong. RandomForestClassifier's bootstrap sampling is an internal technique for constructing each tree. The out-of-bag error is a separate internal estimate, not the test AUC from model.score. The external test set is held out entirely from training; internal bootstrap mechanics do not cause test set leakage.\n\nOption C is wrong. 10,000 test rows produces a highly stable AUC estimate — the standard error of AUC at this sample size is approximately 0.003 to 0.005. A 0.13-point gap between test and production AUC is more than 20 standard errors away from what sampling variance alone could explain.\n\nOption D addresses a model-quality concern that does not explain the evaluation gap. Whether Pearson or mutual information is used for feature selection, the same leakage problem exists if selection is done on the full dataset before splitting. Switching to mutual information would still produce an inflated test AUC if the pipeline order is wrong.",
+    "explanation": "Option A is correct. Feature selection by correlation computes each feature's correlation with the target variable using all rows \u2014 including the 10,000 test rows. The top 20 features are chosen because they correlate with the full dataset's churn signal, which includes the test set's specific label pattern. When the model is then evaluated on that test set, it uses a feature set that was selected partly because of those rows' churn labels. No label value is directly fed into the model, but the selected feature set itself was biased toward features that match the test set's pattern. In production, feature selection will have been computed from training data only, so this indirect advantage vanishes. Fix: split first, then fit all preprocessing \u2014 including feature selection \u2014 on the training set only.\n\nOption B is wrong. RandomForestClassifier's bootstrap sampling is an internal technique for constructing each tree. The out-of-bag error is a separate internal estimate, not the test AUC from model.score. The external test set is held out entirely from training; internal bootstrap mechanics do not cause test set leakage.\n\nOption C is wrong. 10,000 test rows produces a highly stable AUC estimate \u2014 the standard error of AUC at this sample size is approximately 0.003 to 0.005. A 0.13-point gap between test and production AUC is more than 20 standard errors away from what sampling variance alone could explain.\n\nOption D addresses a model-quality concern that does not explain the evaluation gap. Whether Pearson or mutual information is used for feature selection, the same leakage problem exists if selection is done on the full dataset before splitting. Switching to mutual information would still produce an inflated test AUC if the pipeline order is wrong.",
     "hints": [
       "corrwith computes the correlation between each feature and the churn target using all 50,000 rows. This means the churn labels of the 10,000 test rows are used when deciding which features to include. Would those same labels be available in a production feature selection pipeline?",
-      "Any preprocessing step that incorporates test set target information — directly or through a statistic that includes test labels — gives the model an advantage on test evaluation that vanishes in production. What change to the step ordering prevents this?"
+      "Any preprocessing step that incorporates test set target information \u2014 directly or through a statistic that includes test labels \u2014 gives the model an advantage on test evaluation that vanishes in production. What change to the step ordering prevents this?"
     ],
     "concepts": [
       "FEATURE SELECTION STRATEGY",

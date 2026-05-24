@@ -307,7 +307,8 @@
       "Divide each product's revenue by the scalar total and multiply by 100 for the percentage"
     ],
     "concepts": [
-      "GROUPED AGGREGATION"
+      "GROUPED AGGREGATION",
+      "TRANSFORM VS AGGREGATE"
     ]
   },
   {
@@ -464,7 +465,8 @@
       "Wrap scalar values in lists when building the result: `pd.DataFrame({'col': [value]})`"
     ],
     "concepts": [
-      "GROUPED AGGREGATION"
+      "GROUPED AGGREGATION",
+      "BOOLEAN INDEXING & FILTERING"
     ]
   },
   {
@@ -1119,7 +1121,8 @@
       "Use `as_index=False` in `groupby()` so the group key stays as a regular column instead of becoming the index"
     ],
     "concepts": [
-      "GROUPED AGGREGATION"
+      "GROUPED AGGREGATION",
+      "METHOD CHAINING & PIPELINE STYLE"
     ]
   },
   {
@@ -1336,7 +1339,8 @@
       "Compute the rate from the intermediate total column, then drop it before returning."
     ],
     "concepts": [
-      "GROUPED AGGREGATION"
+      "GROUPED AGGREGATION",
+      "BOOLEAN INDEXING & FILTERING"
     ]
   },
   {
@@ -1420,7 +1424,7 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    merged = df_employees.merge(\n        df_departments[['department_id', 'department_name']], on='department_id'\n    )\n    merged['dept_median_salary'] = merged.groupby('department_name')['salary'].transform('median')\n    merged['above_median'] = merged['salary'] > merged['dept_median_salary']\n    result = (\n        merged.groupby('department_name')\n        .agg(\n            median_salary=('dept_median_salary', 'first'),\n            above_median_count=('above_median', 'sum')\n        )\n        .reset_index()\n        .assign(median_salary=lambda x: x['median_salary'].round(2))\n        .sort_values('department_name')\n        .reset_index(drop=True)\n    )\n    return result",
     "explanation": "`groupby.transform(\"median\")` broadcasts the per-department median salary back to each employee row, preserving row count \u2014 this is the key distinction from `.agg()` which collapses rows. Once every employee row has its department median, a simple boolean comparison (`salary > dept_median_salary`) flags each employee. The final `.agg()` then summarises at department level. Using `.first()` on `dept_median_salary` during aggregation is idiomatic because every row in the group holds the same broadcast value.",
     "hints": [
-      "Use `groupby.transform(\"median\")` \u2014 unlike `agg`, transform returns a Series the same length as the input, broadcasting the group value to every row.",
+      "Per-group operations fall into two families: those that collapse to one row per group, and those that broadcast back to every original row. Which type do you need for a 'how does this row compare to its group's median?' question?",
       "After broadcasting, a simple boolean comparison flags each employee. Then `groupby.agg(sum=...)` collapses to department-level counts."
     ],
     "concepts": [
@@ -1724,7 +1728,8 @@
       "`s.combine_first(other)` fills NaN positions in `s` with corresponding values from `other` at the same index label."
     ],
     "concepts": [
-      "MISSING VALUE STRATEGY"
+      "MISSING VALUE STRATEGY",
+      "MULTI-DATAFRAME ENTITY LINKING"
     ]
   },
   {
@@ -1826,7 +1831,8 @@
       "After conversion, `.dt.hour` extracts the integer hour in that timezone's local time."
     ],
     "concepts": [
-      "DATETIME OPERATIONS"
+      "DATETIME OPERATIONS",
+      "COLUMN SELECTION & PROJECTION"
     ]
   },
   {
@@ -1855,7 +1861,7 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_order_items):\n    grouped = (\n        df_order_items\n        .groupby('order_id')['product_id']\n        .apply(sorted)\n        .reset_index(name='product_ids')\n    )\n    multi = grouped[grouped['product_ids'].apply(len) >= 2].copy()\n    exploded = multi.explode('product_ids').rename(columns={'product_ids': 'product_id'})\n    exploded['product_id'] = exploded['product_id'].astype(int)\n    return exploded.sort_values(['order_id', 'product_id']).reset_index(drop=True)",
     "explanation": "`.explode(col)` normalises a column of lists into one row per element, duplicating all other columns. This is the inverse of `groupby + apply(list)`. The pattern appears whenever data arrives nested (JSON arrays, comma-separated strings after `.str.split()`) and needs to be flattened into a relational form for downstream joins or analysis. The `apply(sorted)` before exploding guarantees deterministic row ordering.",
     "hints": [
-      "After `groupby + apply(sorted)`, each row holds a sorted list. Filter for `len >= 2` before exploding.",
+      "When a collection value is stored in a single cell, what operation expands it so each element occupies its own row? And when does filtering *before* that expansion matter vs. filtering after?",
       "`.explode('col')` turns each list element into its own row, repeating the other columns."
     ],
     "concepts": [
@@ -1938,7 +1944,7 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    df_orders = df_orders.copy()\n    df_users = df_users.copy()\n    for col in ['status', 'payment_status']:\n        df_orders[col] = df_orders[col].astype('category')\n    for col in ['acquisition_channel', 'plan_tier']:\n        df_users[col] = df_users[col].astype('category')\n    merged = df_orders.merge(df_users[['user_id', 'acquisition_channel']], on='user_id')\n    result = (\n        merged.groupby('acquisition_channel', as_index=False, observed=True)\n        .agg(order_count=('order_id', 'count'), total_revenue=('net_amount', 'sum'))\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('acquisition_channel')\n        .reset_index(drop=True)\n    )\n    return result",
     "explanation": "Casting low-cardinality string columns to `category` dtype can cut memory use by 60\u201390% for repeated strings. The pattern is especially valuable before a merge that would broadcast the strings into a larger DataFrame. `observed=True` in `groupby` suppresses the FutureWarning about unobserved category combinations and is required in pandas 2.x when grouping on a category column. The grader checks output dtypes, so the `acquisition_channel` column in the result must be `category`.",
     "hints": [
-      "Call `.astype('category')` on each low-cardinality column before the merge.",
+      "Which column types have a small, fixed set of possible values \u2014 and what data type stores categorical values far more efficiently than object/string?",
       "Pass `observed=True` to `groupby` when the grouping key is a category dtype \u2014 otherwise pandas warns about unobserved combinations."
     ],
     "concepts": [
@@ -2064,7 +2070,7 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = (\n        df_orders[df_orders['status'] == 'completed']\n        .assign(order_date=lambda x: pd.to_datetime(x['order_date']))\n        .sort_values('order_date')\n        .reset_index(drop=True)\n    )\n    completed['cumulative_revenue'] = completed['net_amount'].cumsum().round(2)\n    result = (\n        completed\n        .assign(order_date=lambda x: x['order_date'].dt.strftime('%Y-%m-%d'))\n        [['order_date', 'net_amount', 'cumulative_revenue']]\n        .reset_index(drop=True)\n    )\n    return result",
     "explanation": "`cumsum()` produces a running total in the *current row order*. Calling it before `sort_values` accumulates in arbitrary CSV-load order; then sorting reshuffles those wrong totals. The fix is simple but the bug is silent \u2014 the output looks plausible but is incorrect. Always sort by the ordering key before any order-sensitive operation (`cumsum`, `diff`, `shift`, `expanding`).",
     "hints": [
-      "Trace the order of operations: sort first, then cumsum \u2014 not the other way around.",
+      "Running totals accumulate in the order rows appear. If the dates aren't sorted, what does the cumulative sum actually measure? Think about what you must do before computing it.",
       "Parse `order_date` to datetime so sort_values sorts chronologically, not lexicographically."
     ],
     "concepts": [
@@ -2111,7 +2117,7 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    merged = df_employees.merge(df_departments[['department_id','department_name']], on='department_id')\n    result = (\n        merged.groupby('department_name', as_index=False)\n        .agg(headcount=('employee_id','count'), avg_salary=('salary','mean'))\n        .assign(avg_salary=lambda x: x['avg_salary'].round(2))\n        .sort_values('department_name')\n        .reset_index(drop=True)\n    )\n    return result",
     "explanation": "The bug: `.transform('mean')` broadcasts the per-group mean back to every row (preserving row count) rather than collapsing each group to a single summary row. The result has as many rows as the original DataFrame, not one per department. The correct operation is `.agg('mean')` (or named aggregation `avg_salary=('salary','mean')`), which produces exactly one row per group.",
     "hints": [
-      "Use `.agg()` not `.transform()` \u2014 transform broadcasts back to original shape, agg collapses to one row per group.",
+      "When you want one summary row per group, which aggregation mode collapses to that? And how is it different from the mode that gives every row a group-level value?",
       "Named aggregation in a single `.agg()` call is cleaner: `agg(headcount=('employee_id','count'), avg_salary=('salary','mean'))`."
     ],
     "concepts": [
@@ -2156,7 +2162,7 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    merged = df_departments[['department_id','department_name']].merge(\n        df_employees[['employee_id','department_id']], on='department_id', how='left'\n    )\n    result = (\n        merged.groupby('department_name', as_index=False)\n        .agg(headcount=('employee_id', lambda x: x.notna().sum()))\n        .sort_values('department_name')\n        .reset_index(drop=True)\n    )\n    return result",
     "explanation": "The direction of the join matters: start from `df_departments` (the dimension table) and left-join employees. This preserves all departments even when there are no matching employees. After the join, `employee_id` is NaN for unmatched departments \u2014 use `x.notna().sum()` instead of `count()` (which skips NaN automatically) to make the zero-headcount departments explicit.",
     "hints": [
-      "Start the merge from `df_departments` (the left table) to preserve all departments.",
+      "You want to keep every department, even those with no matching employees. Which join direction \u2014 starting from departments or from employees \u2014 preserves all rows on the left?",
       "After a left join, unmatched rows have NaN in the joined columns. Use `x.notna().sum()` to count non-null employee IDs."
     ],
     "concepts": [
@@ -2201,7 +2207,7 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    regular = df_employees[df_employees['salary'] <= 150000].copy()\n    merged = df_departments[['department_id','department_name']].merge(\n        regular[['employee_id','department_id','salary']], on='department_id', how='left'\n    )\n    result = (\n        merged.groupby('department_name', as_index=False)\n        .agg(\n            headcount=('employee_id', lambda x: x.notna().sum()),\n            avg_salary=('salary','mean')\n        )\n        .assign(avg_salary=lambda x: x['avg_salary'].round(2))\n        .sort_values('department_name')\n        .reset_index(drop=True)\n    )\n    return result",
     "explanation": "Filter out contractors before the merge so they don't contribute to headcount or average. The left join from departments preserves all departments (including those with zero remaining employees after filtering). For departments with no qualifying employees, `avg_salary` is NaN \u2014 this is expected behaviour and is left as-is rather than filled with 0 (a 0 average would be misleading).",
     "hints": [
-      "Filter employees to salary <= 150000 *before* the merge.",
+      "Should you filter the data before or after joining? Think about which is cheaper and which avoids accidentally including rows you don't want in the aggregate.",
       "Keep the left-join from departments (from the previous question) so zero-headcount departments still appear."
     ],
     "concepts": [
@@ -2243,7 +2249,7 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].assign(\n        month=lambda x: pd.to_datetime(x['order_date']).dt.strftime('%Y-%m')\n    )\n    monthly = (\n        completed.groupby('month', as_index=False)\n        .agg(monthly_revenue=('net_amount','sum'))\n        .sort_values('month')\n    )\n    monthly['cumulative_revenue'] = monthly['monthly_revenue'].cumsum().round(2)\n    monthly['monthly_revenue'] = monthly['monthly_revenue'].round(2)\n    return monthly.reset_index(drop=True)",
     "explanation": "Key ordering constraint: `.sort_values('month')` must come **before** `.cumsum()`. Sorting after cumsum produces a visually sorted table but with incorrect running totals. Rounding `monthly_revenue` after computing `cumsum` avoids rounding error propagation in the cumulative column.",
     "hints": [
-      "Sort by month before computing cumsum \u2014 order matters for running totals.",
+      "A cumulative sum depends entirely on the order in which values are added. What must be true about the row order before you compute it \u2014 and where does that constraint go in the pipeline?",
       "Use `dt.strftime('%Y-%m')` to convert datetime to a sortable YYYY-MM string."
     ],
     "concepts": [

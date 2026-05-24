@@ -2103,7 +2103,7 @@
     "expected_query": "SELECT o.user_id,\n       ARRAY_AGG(DISTINCT p.product_name ORDER BY p.product_name) AS ordered_products\nFROM orders o\nJOIN order_items oi ON o.order_id = oi.order_id\nJOIN products p ON oi.product_id = p.product_id\nGROUP BY o.user_id\nORDER BY o.user_id",
     "solution_query": "SELECT o.user_id,\n       ARRAY_AGG(DISTINCT p.product_name ORDER BY p.product_name) AS ordered_products\nFROM orders o\nJOIN order_items oi ON o.order_id = oi.order_id\nJOIN products p ON oi.product_id = p.product_id\nGROUP BY o.user_id\nORDER BY o.user_id;",
     "hints": [
-      "ARRAY_AGG(DISTINCT expr ORDER BY expr) collects values into an array \u2014 DISTINCT deduplicates before ordering.",
+      "You need an ordered, deduplicated collection of values per group \u2014 all in a single cell. Which aggregate function builds an array from grouped values, and does it support ordering and deduplication?",
       "The ORDER BY inside ARRAY_AGG controls the order of elements within each array, not the order of rows in the output."
     ],
     "explanation": "ARRAY_AGG(expr) builds an array from grouped rows. Adding DISTINCT deduplicates, and ORDER BY inside the function sorts elements within each array. The resulting array type is compatible with JSON export, Spark/Pandas processing, and BI tools that can unnest arrays. ARRAY_AGG vs STRING_AGG is a common interview comparison: ARRAY_AGG preserves type and structure (elements are individually indexable); STRING_AGG produces a flat string (compact for display, lossy for processing). Use ARRAY_AGG when downstream code needs to iterate or index individual elements."
@@ -2143,7 +2143,7 @@
     "expected_query": "WITH RECURSIVE spine AS (\n    SELECT DATE_TRUNC('month', MIN(order_date))::DATE AS month\n    FROM orders\n    UNION ALL\n    SELECT (month + INTERVAL '1 month')::DATE\n    FROM spine\n    WHERE (month + INTERVAL '1 month')::DATE\n          <= (SELECT DATE_TRUNC('month', MAX(order_date))::DATE FROM orders)\n),\nmonthly_revenue AS (\n    SELECT DATE_TRUNC('month', order_date)::DATE AS month,\n           ROUND(SUM(net_amount), 2) AS revenue\n    FROM orders\n    GROUP BY DATE_TRUNC('month', order_date)::DATE\n)\nSELECT s.month,\n       COALESCE(m.revenue, 0.00) AS revenue,\n       m.revenue IS NOT NULL AS has_orders\nFROM spine s\nLEFT JOIN monthly_revenue m ON s.month = m.month\nORDER BY s.month",
     "solution_query": "WITH RECURSIVE spine AS (\n    SELECT DATE_TRUNC('month', MIN(order_date))::DATE AS month\n    FROM orders\n    UNION ALL\n    SELECT (month + INTERVAL '1 month')::DATE\n    FROM spine\n    WHERE (month + INTERVAL '1 month')::DATE\n          <= (SELECT DATE_TRUNC('month', MAX(order_date))::DATE FROM orders)\n),\nmonthly_revenue AS (\n    SELECT DATE_TRUNC('month', order_date)::DATE AS month,\n           ROUND(SUM(net_amount), 2) AS revenue\n    FROM orders\n    GROUP BY DATE_TRUNC('month', order_date)::DATE\n)\nSELECT s.month,\n       COALESCE(m.revenue, 0.00) AS revenue,\n       m.revenue IS NOT NULL AS has_orders\nFROM spine s\nLEFT JOIN monthly_revenue m ON s.month = m.month\nORDER BY s.month;",
     "hints": [
-      "Build the spine first: anchor at MIN(order_date) truncated to month; recurse by adding INTERVAL '1 month' until you reach MAX(order_date) truncated to month.",
+      "A date spine generates every expected period whether or not data exists. Which SQL construct lets you iterate from an anchor date forward in steps until you reach an end date?",
       "LEFT JOIN the spine to the monthly revenue CTE \u2014 months with no orders become NULL in the revenue column, which COALESCE turns to 0.",
       "Use a scalar subquery in the recursive member's WHERE clause to compare against the dynamically computed max date."
     ],
@@ -2236,7 +2236,7 @@
     "expected_query": "SELECT user_id, order_id, order_date, net_amount\nFROM orders\nQUALIFY ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY order_date DESC) = 1\nORDER BY user_id",
     "solution_query": "SELECT user_id, order_id, order_date, net_amount\nFROM orders\nQUALIFY ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY order_date DESC) = 1\nORDER BY user_id;",
     "hints": [
-      "QUALIFY filters rows after window functions are evaluated \u2014 it is to window functions what HAVING is to aggregate functions.",
+      "Window functions produce a column you can't filter on in the same clause as the data. What SQL keyword is designed specifically for filtering on computed window-function results?",
       "Without QUALIFY you would need a subquery or CTE: WITH r AS (SELECT *, ROW_NUMBER() OVER (...) AS rn FROM orders) SELECT ... FROM r WHERE rn = 1."
     ],
     "explanation": "QUALIFY is supported in DuckDB, Snowflake, BigQuery, and Teradata. It evaluates after window functions in SELECT, so you can filter directly on ROW_NUMBER(), RANK(), or any window expression without a subquery wrapper. The equivalent without QUALIFY is to wrap in a CTE and add WHERE rn = 1 \u2014 QUALIFY collapses this into one query level. It is a major ergonomic improvement for deduplication, latest-record, and top-N queries. Not available in PostgreSQL or MySQL \u2014 in those engines, use the CTE pattern."

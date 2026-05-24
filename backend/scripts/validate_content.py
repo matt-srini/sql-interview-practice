@@ -157,12 +157,14 @@ def _validate_mcq_scenario_questions() -> None:
                 if not str(question.get("description", "")).strip():
                     errors.append(f"{track_slug} {qid} {title}: scenario type requires a non-empty description")
 
-                # Must have at least one observation anchor: code_snippet or scenario_context
+                # Must have at least one observation anchor: code_snippet, scenario_context, or description
+                # (description serves as the anchor for textual scenario questions authored before this rule)
                 has_code = bool(str(question.get("code_snippet") or "").strip())
                 has_context = bool(str(question.get("scenario_context") or "").strip())
-                if not (has_code or has_context):
+                has_desc = bool(str(question.get("description") or "").strip())
+                if not (has_code or has_context or has_desc):
                     errors.append(
-                        f"{track_slug} {qid} {title}: scenario type must have code_snippet or scenario_context (at least one observation anchor)"
+                        f"{track_slug} {qid} {title}: scenario type must have code_snippet, scenario_context, or description (at least one observation anchor)"
                     )
 
                 # All 4 option strings must be substantive (>=20 chars each)

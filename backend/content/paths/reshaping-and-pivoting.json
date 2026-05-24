@@ -16,9 +16,9 @@
     "reshape-and-pivot"
   ],
   "focus_concepts": [
-    "WIDE-FORM RESHAPING",
-    "CROSS-TABULATION",
-    "MULTI-INDEX FLATTENING"
+    "RESHAPING & PIVOT",
+    "RESHAPING & PIVOT",
+    "RESHAPING & PIVOT"
   ],
   "outcomes": "You'll pivot, melt, stack, and unstack DataFrames to reshape data from long to wide form and back.",
   "recommended_after": [

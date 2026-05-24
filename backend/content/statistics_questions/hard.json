@@ -725,8 +725,7 @@
       "MAR",
       "MNAR",
       "missing data",
-      "data quality",
-      "observational study"
+      "data quality"
     ],
     "order": 27,
     "difficulty": "hard"
@@ -889,7 +888,7 @@
     "correct_option": 1,
     "explanation": "Option B is correct. The frequentist p-value answers a narrow question: how surprising is this data under the null hypothesis of zero effect? It does not answer the decision question: what is the probability that launching this feature produces a positive outcome? The 8 historical experiments provide genuine prior information \u2014 a 75% empirical base rate of positive effects is exactly what a Bayesian prior is designed to encode. Combining this prior with the current experiment's likelihood through Bayes' theorem yields a posterior distribution over the true effect. Even with p = 0.11, the posterior probability that the true lift is positive may be 80\u201385% given the strong historical base rate. This posterior probability directly answers the stakeholder's decision question. A phased rollout with monitoring is a rational response to posterior uncertainty rather than treating the decision as binary.\n\nOption A applies the frequentist decision rule mechanically and explicitly discards the historical context. The p < 0.05 convention is a useful tool for controlling Type I error rates across many independent experiments, but it treats the threshold as a binary gate and ignores informative prior knowledge. In a product environment with relevant historical experiments, this approach is unnecessarily conservative and misses available information.\n\nOption C conflates practical and statistical significance. A 9.7% relative lift is a meaningful effect size if real, but the current experiment's data alone do not establish whether it is real \u2014 that is what the statistical test assesses. Recommending a better-powered rerun is reasonable advice, but 'ignore the p-value' treats the data as irrelevant to the inference, which is incorrect. The p-value is informative about the strength of evidence even when a threshold decision rule is not the right framework.\n\nOption D is post-hoc p-hacking. Switching from a two-sided to a one-sided test after observing the direction of the effect inflates the Type I error rate for the experiment. One-sided tests must be pre-specified before data collection to be valid. Applying one retroactively to push p from 0.11 to 0.055 and treating it as a launch justification compounds this error with the mechanical threshold problem from Option A.",
     "hints": [
-      "The frequentist p-value answers 'how surprising is this data under the null?' The stakeholder is asking 'what is the probability this feature has a positive effect?' These are different questions. What statistical framework is designed to answer the second one?",
+      "A frequentist approach tells you how often data this extreme would appear under a specific null. The stakeholder wants to know the probability the feature is actually beneficial. These are different questions \u2014 which framework is designed to answer the second one directly?",
       "Six of eight past similar experiments showed positive lifts between 5\u201315%. Which option actually incorporates this historical base rate into the analysis rather than declaring it irrelevant?"
     ],
     "concepts": [

@@ -171,7 +171,8 @@
       "Decide whether the groupby key should appear as the DataFrame index or as a plain column in the output."
     ],
     "concepts": [
-      "GROUPED AGGREGATION"
+      "GROUPED AGGREGATION",
+      "COLUMN SELECTION & PROJECTION"
     ]
   },
   {
@@ -723,7 +724,8 @@
       "Set `na=False` so that any NaN in issue_type is treated as non-matching rather than raising an error"
     ],
     "concepts": [
-      "BOOLEAN INDEXING & FILTERING"
+      "BOOLEAN INDEXING & FILTERING",
+      "COLUMN SELECTION & PROJECTION"
     ]
   },
   {
@@ -821,7 +823,7 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_events):\n    result = df_events.dropna(subset=['product_id'])\n    return result[['event_id', 'user_id', 'event_name', 'product_id']].sort_values('event_id').reset_index(drop=True)",
     "explanation": "`.dropna()` with no arguments removes any row with at least one null across all columns \u2014 too broad. `.dropna(subset=['product_id'])` removes only rows where `product_id` is null, leaving all other null values in place. This is the precise tool for column-specific null filtering.",
     "hints": [
-      "Plain `.dropna()` removes rows with *any* null \u2014 pass `subset=['column']` to target a specific column.",
+      "Which rows have a null value in a *specific* column? Think about how you'd target a single column instead of dropping any row with any null.",
       "After filtering, select only the required columns and sort by `event_id`."
     ],
     "concepts": [
@@ -861,7 +863,8 @@
       "`.ffill()` replaces each null with the last non-null value seen above it in the column."
     ],
     "concepts": [
-      "MISSING VALUE STRATEGY"
+      "MISSING VALUE STRATEGY",
+      "COLUMN SELECTION & PROJECTION"
     ]
   },
   {
@@ -889,7 +892,7 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_events):\n    result = (\n        df_events\n        .groupby('product_id', dropna=False, as_index=False)\n        .size()\n        .rename(columns={'size': 'event_count'})\n    )\n    return result.sort_values('event_count', ascending=False).reset_index(drop=True)",
     "explanation": "By default `groupby` silently drops NaN keys. Passing `dropna=False` keeps null keys as a separate group \u2014 the same behaviour as SQL `GROUP BY` which includes NULL rows. `as_index=False` returns `product_id` as a regular column instead of the index, keeping the output as a flat DataFrame.",
     "hints": [
-      "By default groupby silently excludes null keys \u2014 pass `dropna=False` to retain them.",
+      "What happens to rows where the *grouping key* itself is null \u2014 are they silently dropped or kept? Check whether your aggregation includes or excludes null keys by default.",
       "`as_index=False` keeps the group key as a regular column rather than promoting it to the index."
     ],
     "concepts": [
@@ -928,7 +931,8 @@
       "Named aggregation: `agg(output_col=('source_col', 'func'))` sets the output column name in one step."
     ],
     "concepts": [
-      "GROUPED AGGREGATION"
+      "GROUPED AGGREGATION",
+      "COLUMN SELECTION & PROJECTION"
     ]
   },
   {
@@ -956,7 +960,7 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_sessions):\n    df_sessions = df_sessions.copy()\n    df_sessions['channel_group'] = df_sessions['traffic_source'].str.split('_').str[0]\n    result = (\n        df_sessions.groupby('channel_group', as_index=False)\n        .agg(session_count=('session_id', 'count'))\n        .sort_values('session_count', ascending=False)\n        .reset_index(drop=True)\n    )\n    return result",
     "explanation": "`.str.split('_')` splits each value into a list on underscores; `.str[0]` takes the first element. This normalises `paid_search` and `paid_social` into the same `paid` group in one vectorized call. The groupby + named aggregation counts sessions per group; descending sort surfaces the largest channel first.",
     "hints": [
-      "Use `.str.split('_').str[0]` to extract the prefix before the first underscore.",
+      "The traffic_source values follow a pattern: a prefix word, then a separator, then optional detail. Which string accessor lets you split on a separator and pick the first part?",
       "A named aggregation \u2014 `agg(session_count=('session_id', 'count'))` \u2014 gives the output column its final name in one step."
     ],
     "concepts": [

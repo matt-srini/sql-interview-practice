@@ -20,7 +20,8 @@
       "If there is no target variable \u2014 no column a human has labelled \u2014 the only option is to find structure the data itself reveals."
     ],
     "concepts": [
-      "SUPERVISED VS UNSUPERVISED"
+      "SUPERVISED VS UNSUPERVISED",
+      "DATA SPLITTING STRATEGY"
     ]
   },
   {
@@ -44,7 +45,8 @@
       "If a human has explicitly assigned a label to each training example, you have the defining ingredient of supervised learning."
     ],
     "concepts": [
-      "SUPERVISED VS UNSUPERVISED"
+      "SUPERVISED VS UNSUPERVISED",
+      "CLASS IMBALANCE HANDLING"
     ]
   },
   {
@@ -68,7 +70,8 @@
       "A model that performs well on data it trained on but poorly on data it has not seen has memorised rather than learned."
     ],
     "concepts": [
-      "OVERFITTING DIAGNOSIS"
+      "OVERFITTING DIAGNOSIS",
+      "BIAS-VARIANCE TRADEOFF"
     ]
   },
   {
@@ -117,7 +120,8 @@
       "A small gap between training and validation error is desirable. But the absolute level of error on both also matters."
     ],
     "concepts": [
-      "BIAS-VARIANCE TRADEOFF"
+      "BIAS-VARIANCE TRADEOFF",
+      "OVERFITTING DIAGNOSIS"
     ]
   },
   {
@@ -141,7 +145,8 @@
       "The test set provides an unbiased estimate only if no decisions \u2014 including which model to deploy \u2014 were made based on test set performance."
     ],
     "concepts": [
-      "DATA SPLITTING STRATEGY"
+      "DATA SPLITTING STRATEGY",
+      "OVERFITTING DIAGNOSIS"
     ]
   },
   {
@@ -190,7 +195,8 @@
       "For distance-based algorithms, ask: if one feature is 100,000\u00d7 larger, what happens to its contribution to the distance calculation?"
     ],
     "concepts": [
-      "FEATURE SCALING NECESSITY"
+      "FEATURE SCALING NECESSITY",
+      "GRADIENT DESCENT BEHAVIOR"
     ]
   },
   {
@@ -214,7 +220,8 @@
       "Standardisation uses distributional statistics (mean, std dev) rather than extremes (min, max), making it more resistant to values far from the bulk of the data."
     ],
     "concepts": [
-      "FEATURE SCALING NECESSITY"
+      "FEATURE SCALING NECESSITY",
+      "DATA SPLITTING STRATEGY"
     ]
   },
   {
@@ -238,7 +245,8 @@
       "Think of cross-validation as averaging k performance estimates instead of relying on one \u2014 what property of averages is being exploited?"
     ],
     "concepts": [
-      "CROSS-VALIDATION DESIGN"
+      "CROSS-VALIDATION DESIGN",
+      "DATA SPLITTING STRATEGY"
     ]
   },
   {
@@ -262,7 +270,8 @@
       "Recall measures: of all actual positives, how many did the model find? Precision measures: of all flagged positives, how many were real?"
     ],
     "concepts": [
-      "CLASSIFICATION METRICS"
+      "CLASSIFICATION METRICS",
+      "CLASS IMBALANCE HANDLING"
     ]
   },
   {
@@ -286,7 +295,8 @@
       "AUC measures the probability that a randomly chosen positive is ranked higher than a randomly chosen negative. What does AUC = 0.50 imply about that probability?"
     ],
     "concepts": [
-      "CLASSIFICATION METRICS"
+      "CLASSIFICATION METRICS",
+      "MODEL CALIBRATION"
     ]
   },
   {
@@ -310,7 +320,8 @@
       "If outliers are not representative of the problem you care about, you want a loss function that does not let them dominate the gradient signal."
     ],
     "concepts": [
-      "LOSS FUNCTION SELECTION"
+      "LOSS FUNCTION SELECTION",
+      "REGRESSION METRICS"
     ]
   },
   {
@@ -334,7 +345,8 @@
       "When one of five classes must be the predicted answer (not multiple simultaneously), the loss should enforce that the model's output sums to 1."
     ],
     "concepts": [
-      "LOSS FUNCTION SELECTION"
+      "LOSS FUNCTION SELECTION",
+      "CLASSIFICATION METRICS"
     ]
   },
   {
@@ -358,7 +370,8 @@
       "The key question is whether they rank features differently \u2014 not whether they produce the same numbers."
     ],
     "concepts": [
-      "SUPERVISED VS UNSUPERVISED"
+      "SUPERVISED VS UNSUPERVISED",
+      "FEATURE IMPORTANCE INTERPRETATION"
     ]
   },
   {
@@ -382,7 +395,8 @@
       "Think of gradient descent as walking downhill. What happens if your steps are too large for the steepness of the terrain?"
     ],
     "concepts": [
-      "GRADIENT DESCENT BEHAVIOR"
+      "GRADIENT DESCENT BEHAVIOR",
+      "HYPERPARAMETER SENSITIVITY"
     ]
   },
   {
@@ -402,7 +416,7 @@
     "correct_option": 3,
     "explanation": "When both training and validation loss are flat and approximately equal \u2014 especially at a value that is still high \u2014 this indicates the model has hit a capacity ceiling, not that it has converged to an optimal solution. The model is underfitting: it lacks the expressive power or the right features to reduce loss further.\n\nThe appropriate responses are to increase model complexity (more layers, more features, less regularisation) or to examine feature quality. Simply waiting for more epochs will not help if the gradient signal is gone.\n\nOption A is wrong: stopping is correct only if the model is performing at an acceptable level. If loss = 1.1 is far from your target, stopping wastes the opportunity to improve the model.\n\nOption B is wrong: a flat training loss does not mean a local minimum. If the model were stuck in a sharp local minimum, increasing the learning rate might help it escape \u2014 but flat parallel losses with both values still high is the underfitting pattern, not a local minimum.\n\nOption C is wrong: evaluating on the test set should be the final step after all model decisions are made. Using the test set because 'validation is flat' risks leaking test information into model selection decisions.",
     "hints": [
-      "When training and validation losses are nearly identical and both flat, the gap (overfitting signal) is not the issue \u2014 the absolute level is. What does it mean if the model can't push loss lower even on training data?",
+      "When training and validation losses are nearly identical and both flat, the gap (the variance signal) is not the issue \u2014 the absolute level is. What does it mean when a model can't push loss lower even on its own training examples?",
       "A model that has truly converged to the best it can do given its capacity is exhibiting underfitting if that best is still far from ideal."
     ],
     "concepts": [
@@ -431,7 +445,8 @@
       "Think about the geometric interpretation: L1's diamond-shaped constraint region has corners that coincide with the axes, encouraging sparse solutions."
     ],
     "concepts": [
-      "REGULARIZATION EFFECT"
+      "REGULARIZATION EFFECT",
+      "FEATURE SELECTION STRATEGY"
     ]
   },
   {
@@ -451,7 +466,7 @@
     "correct_option": 1,
     "explanation": "The 25-point gap between training (99.2%) and validation (74.1%) accuracy is a clear overfitting signature. The model has memorised the training data. Increasing max_depth makes the model more complex and more capable of memorisation \u2014 this will almost certainly make overfitting worse, pushing training accuracy toward 100% while further degrading validation performance.\n\nThe correct remedies are to constrain model complexity: shallower trees (lower max_depth), require more samples per leaf (higher min_samples_leaf), increase regularisation (higher lambda/alpha), add early stopping based on validation performance, or increase the number of trees while reducing individual tree depth.\n\nOption A is wrong: more complexity is exactly what an overfitting model does not need. Deeper trees will find more spurious patterns in the training data.\n\nOption C is wrong: underfitting produces similarly poor performance on both training and validation sets. 74.1% validation accuracy with 99.2% training accuracy is not underfitting \u2014 it is the exact opposite.\n\nOption D is wrong: reducing training accuracy does not 'pull' validation accuracy upward as a mechanical consequence. Regularisation works by constraining what the model can memorise, not by deliberately degrading training performance.",
     "hints": [
-      "Before choosing a remedy, correctly diagnose the problem. Is this a case of too little complexity (underfitting) or too much (overfitting)?",
+      "Before choosing a remedy, correctly diagnose whether the model has too little capacity to capture the signal, or too much capacity and has memorised noise. Which picture does this learning curve paint?",
       "The training-validation gap tells you the direction of the problem. Once you know whether you have underfitting or overfitting, the remedy is the opposite of what caused it."
     ],
     "concepts": [
@@ -480,7 +495,8 @@
       "Model parameters live inside the trained model and are used at prediction time. Hyperparameters govern the training process and are no longer needed once training is done."
     ],
     "concepts": [
-      "SUPERVISED VS UNSUPERVISED"
+      "SUPERVISED VS UNSUPERVISED",
+      "HYPERPARAMETER SENSITIVITY"
     ]
   },
   {
@@ -504,7 +520,8 @@
       "Think about what the fraud detection system's actual job is: catching fraud. What is the model's performance at that specific task?"
     ],
     "concepts": [
-      "CLASSIFICATION METRICS"
+      "CLASSIFICATION METRICS",
+      "CLASS IMBALANCE HANDLING"
     ]
   },
   {
@@ -528,7 +545,8 @@
       "Stratification solves a representativeness problem: each fold should look like a miniature version of the full dataset in terms of class distribution."
     ],
     "concepts": [
-      "CROSS-VALIDATION DESIGN"
+      "CROSS-VALIDATION DESIGN",
+      "CLASS IMBALANCE HANDLING"
     ]
   },
   {
@@ -552,7 +570,8 @@
       "MAE and MSE can rank models differently when one model has smaller average errors but occasional large ones. Identify which model fits that profile."
     ],
     "concepts": [
-      "REGRESSION METRICS"
+      "REGRESSION METRICS",
+      "LOSS FUNCTION SELECTION"
     ]
   },
   {
@@ -576,7 +595,8 @@
       "High-bias and high-variance models produce different shapes of learning curves. In the high-bias case, what happens to the gap between training and validation as data increases?"
     ],
     "concepts": [
-      "BIAS-VARIANCE TRADEOFF"
+      "BIAS-VARIANCE TRADEOFF",
+      "OVERFITTING DIAGNOSIS"
     ]
   },
   {
@@ -625,7 +645,8 @@
       "The model's knowledge is encoded in the values that were adjusted by the optimiser during training to minimise the loss."
     ],
     "concepts": [
-      "SUPERVISED VS UNSUPERVISED"
+      "SUPERVISED VS UNSUPERVISED",
+      "HYPERPARAMETER SENSITIVITY"
     ]
   },
   {
@@ -649,7 +670,8 @@
       "The same reasoning that makes KNN sensitive to scale applies to any algorithm that uses distances between data points."
     ],
     "concepts": [
-      "FEATURE SCALING NECESSITY"
+      "FEATURE SCALING NECESSITY",
+      "GRADIENT DESCENT BEHAVIOR"
     ]
   },
   {
@@ -698,7 +720,8 @@
       "The harmonic mean is chosen over the arithmetic mean specifically because it penalises large gaps between precision and recall \u2014 a model that is great on one but terrible on the other gets a low F1."
     ],
     "concepts": [
-      "CLASSIFICATION METRICS"
+      "CLASSIFICATION METRICS",
+      "CLASS IMBALANCE HANDLING"
     ]
   },
   {

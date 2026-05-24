@@ -817,7 +817,7 @@
     "correct_option": 2,
     "explanation": "Each time you peek at the data and test for significance, you take an additional chance of observing p < 0.05 purely by chance. The probability of ever seeing a false positive grows with the number of peeks \u2014 simulations show that peeking at every new observation and stopping when p < 0.05 inflates the true Type I error rate to over 20% even with \u03b1 = 0.05. Sequential testing methods (e.g., alpha spending, SPRT) are designed to control the Type I error rate across multiple looks at the data.",
     "hints": [
-      "Imagine tossing a fair coin and computing p-value for 'is this coin fair?' after every flip. If you keep flipping long enough, will you eventually see a run that looks significant?",
+      "Imagine you could stop an experiment at any moment that looks significant, then restart. If the null were true, how often would you eventually see a 'significant' result just by continuing long enough?",
       "The 5% threshold applies to a single test on a pre-specified sample. What happens to family-wise error rate when you run multiple tests?"
     ],
     "concepts": [
