@@ -367,6 +367,20 @@ The validator (item 3) must enforce the `mock_only` flag and the co-tag rule. Th
 
 **Now codified in durable docs (2026-05-22):** the realism-family class + never-sole-tag co-tag rule live in `docs/content-authoring.md` (mock-only contract) and `.github/agents/question-authoring.agent.md` (mock-only contract + final checklist); machine-enforced via `MOCK_ONLY_REALISM_FAMILIES` in `backend/concept_families.py` + `_validate_mock_only_realism()` in `validate_content.py`. The de-noise rule ("tag the distinguishing technique, not incidental mechanics") is in `content-authoring.md` concept-tag contract + the agent. SQL coverage/sizing targets are in `docs/tracks/sql.md`. These no longer depend on this tracker surviving.
 
+### Cross-track decision: mock-only sizing band semantics (locked 2026-05-24)
+
+Previously, the sizing contract said "mock-only count between 1.0× and 1.5× the practice count" — a band, but ambiguous about whether a track audit locks a single target inside that band, or whether the executor is free to land anywhere in 1.0×–1.5×. In practice every audit (SQL, Python, PySpark, Pandas, DE) locked a single target ratio at Stage A and then authored to it as a rigid integer, which created two latent failure modes: (a) padding with near-clones to hit the exact integer when the anti-duplication ceiling started binding, and (b) an executor self-declaring a "quality victory" by stopping short with no escalation.
+
+The locked semantics, applying to all track audits running 2026-05-24 onward (Data Modeling, Statistics, ML Fundamentals, Experimentation):
+
+- **Stage A locks one target ratio** inside 1.0×–1.5× per track, defended in the audit brief.
+- **Acceptable landing band:** `target ± ~5pp` — the executor authors to the band, not the integer.
+- **Operational floor: 1.10×.** Stopping below this requires escalation back to a Stage A pushback (distinct from the existing 1.0× contract floor, which governs the Stage A target lock; the 1.10× operational floor governs execution).
+- **Operational ceiling:** `target + ~5pp` — exceeding requires escalation (anti-clone discipline).
+- **Quality > integer.** If the anti-duplication rule binds before the band's lower bound, stop and document in the closeout commit — do not pad.
+
+**Now codified in durable docs (2026-05-24):** in `docs/content-authoring.md` § Power-user runway sizing benchmark (band semantics block, with the Pandas precedent row added to the precedent table) and `.github/agents/question-authoring.agent.md` (mock-only contract bullet + final checklist). Closed tracks (SQL, Python, PySpark, Pandas, Data Engineering) keep their locked targets; the precedent table records landed ratios, not retrofitted targets. No machine enforcement — this is a contract for the Stage A planner and the authoring executor, not a per-question validator rule.
+
 ### Durable-doc hygiene — MUST complete before this tracker is deleted
 
 This tracker self-deletes when Phase 3 ships; any rule that lives only here is lost. Before deletion, verify the migration is complete and **strip the transitional scaffolding from the durable docs**:
