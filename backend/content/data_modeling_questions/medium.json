@@ -1360,5 +1360,171 @@
       "DIMENSION DESIGN",
       "DIMENSIONAL MODELING"
     ]
+  },
+  {
+    "id": 62053,
+    "order": 52,
+    "title": "Periodic Snapshot Facts: Why Account Balances Cannot Be Summed Across Days",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "follow_ups": [
+      62054,
+      63036
+    ],
+    "scenario_context": "A bank's analytics team needs to report account balance trends. The source system produces one row per transaction. The team debates: (A) a transaction-level fact where balance is computed as a running SUM of transactions, or (B) a daily periodic snapshot with each account's end-of-day balance. The VP of Analytics requires: 'I need to answer, on any given day, the total balance held across all accounts \u2014 instantly, not via a multi-minute window function scan.'",
+    "description": "Which fact design correctly supports the VP's query requirement, and why does the transaction-level approach fail for this specific query pattern?",
+    "options": [
+      "Use a daily periodic snapshot (one row per account \u00d7 day) with end-of-day balance as a stored measure. The VP's query is `SELECT SUM(balance) WHERE snapshot_date = target_date` \u2014 a simple aggregate on a single partition with no window function. Balance is additive across accounts on a given day but semi-additive across days: summing balances across 30 days would count each account's balance 30 times.",
+      "Use a transaction-level fact with each deposit and withdrawal. Compute balance via a window function: `SUM(amount) OVER (PARTITION BY account_key ORDER BY transaction_date ROWS UNBOUNDED PRECEDING)`. This gives balance at any point in time and is more analytically flexible than a periodic snapshot.",
+      "Use a transaction-level fact and a separate balance ledger table updated nightly. The transaction fact handles transaction analytics; the ledger handles balance queries. Two separate tables serve two analytical needs without compromise.",
+      "Both designs are equivalent for the VP's query. A transaction-level fact with a window function computes balance as accurately as a periodic snapshot; the choice is purely about storage cost."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. The VP's question \u2014 'total balance on a given day' \u2014 is a point-in-time state query, not an event aggregation. A daily periodic snapshot stores each account's end-of-day balance explicitly; the query is a simple SUM on a single date's rows. The critical property to understand: balance is semi-additive \u2014 it can be summed across accounts on a given day (warehouse A balance + warehouse B balance = total balance on that day) but not across time (Monday balance + Tuesday balance would count assets held on both days twice). Option B (transaction-level window function) requires a full unbounded window scan for every balance query \u2014 expensive at scale. BI tools also cannot generate `ROWS UNBOUNDED PRECEDING` syntax from visual query builders; analysts must write raw SQL. Option C (transaction fact + separate ledger) introduces two revenue sources of truth for balance: if the nightly ledger job fails, the ledger and the transaction-computed balance diverge. Option D is empirically wrong: window functions on hundreds of millions of transaction rows are significantly more expensive than a pre-materialized periodic snapshot.",
+    "hints": [
+      "The VP wants 'total balance on a given day' \u2014 is this a question about events that happened (deposits, withdrawals) or about state at a point in time (what was the balance on that date)? Which fact type is built for point-in-time state?",
+      "If daily balance is stored in a snapshot, SUM(balance) on a single snapshot_date gives today's total balance. What does SUM(balance) across all snapshot_dates in a month give \u2014 and why is that the wrong answer for 'total balance on March 15'?"
+    ],
+    "concepts": [
+      "ADDITIVE VS NON-ADDITIVE",
+      "FACT TABLE DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 62054,
+    "order": 53,
+    "title": "M2 Follow-up: Computing Quarter-End Balance From a Daily Snapshot When the Business Rule Changes",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "parent_id": 62053,
+    "follow_up_dimension": "business_rule_pivot",
+    "scenario_context": "Following M2: the bank's `fact_balance_snapshot` stores one row per account per day with end-of-day balance. The VP of Finance now requires 'quarter-end balance' \u2014 the total balance across all accounts as of the last business day of each quarter \u2014 for a regulatory filing. The current daily snapshot covers 5 years of daily data.",
+    "description": "Can the daily snapshot satisfy this new requirement without a schema change, and what is the correct aggregation?",
+    "options": [
+      "Yes \u2014 query the daily snapshot filtered to the last business day of each quarter (identifiable via a date dimension with is_quarter_end and is_business_day flags). `SELECT SUM(balance) WHERE snapshot_date = quarter_end_date` produces the correct quarter-end total balance. No schema change is needed; the daily snapshot already contains every quarter-end day's snapshot as a subset of its daily rows.",
+      "No \u2014 the daily snapshot must be redesigned as a quarterly snapshot (one row per account per quarter). A daily snapshot wastes storage for quarterly reporting and computing balance from daily rows incorrectly applies daily additivity to a quarterly aggregate.",
+      "Yes \u2014 compute quarterly balance as `AVG(balance) WHERE quarter = target_quarter` for each account, then sum. Averaging the daily balance across the quarter gives the correct 'representative' balance the VP intends by 'quarter-end.'",
+      "No \u2014 the query planner cannot determine the last business day of a quarter from the snapshot alone without a calendar table. A quarterly snapshot fact must be added alongside the daily snapshot to make quarter-end queries self-contained."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. The daily snapshot contains every calendar day, including the last business day of each quarter. The query `SELECT SUM(balance) FROM fact_balance_snapshot WHERE snapshot_date = [last business day of Q]` is semantically identical to the VP's requirement. A date dimension with is_quarter_end = TRUE and is_business_day = TRUE flags makes identifying the target date a simple join \u2014 this is standard practice in any dimensional model with a dim_date table. No schema change is needed; the daily snapshot is a superset of any coarser-period snapshot. Option B (redesign as quarterly) is unnecessary over-engineering: discarding the daily snapshot would prevent any daily, weekly, or intra-quarter balance analysis. The VP's new requirement adds a query pattern, not a new data requirement. Option C (AVG) is semantically wrong: 'quarter-end balance' is a point-in-time value, not an average. AVG(daily_balance) is average daily balance \u2014 a valid metric for interest calculations, but not what the VP asked for. Option D is wrong: identifying the last business day of a quarter is solved by a date dimension join, not by adding a new physical fact table. The requirement to answer a quarter-end query does not require storing a separate quarterly snapshot when the daily snapshot already contains the target date.",
+    "hints": [
+      "The last business day of Q1 is a specific calendar date. If the daily snapshot has a row for that date for every account, what SQL expression retrieves the total balance across all accounts on exactly that date?",
+      "'Quarter-end balance' is a point-in-time balance value. Is this the same metric as 'average daily balance for the quarter'? Which SQL aggregate captures a point-in-time value from a set of daily snapshot rows?"
+    ],
+    "concepts": [
+      "ADDITIVE VS NON-ADDITIVE",
+      "FACT TABLE DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 62055,
+    "order": 54,
+    "title": "Distinct-Count Metrics in Summary Tables: Why They Cannot Be Summed Across Time",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A SaaS analytics team pre-builds a daily summary `agg_daily_active_users` (one row per product \u00d7 day) with a `daily_active_users` column computed as COUNT(DISTINCT user_id). A product manager asks for monthly active users (MAU) \u2014 unique users active at any point in a month. A new analyst computes MAU as `SUM(daily_active_users) WHERE month = target_month`. The result is 5\u20138\u00d7 the known MAU figure from the BI team.",
+    "description": "What is the root cause of the over-count, and what is the correct approach for computing MAU from the available data?",
+    "options": [
+      "COUNT(DISTINCT user_id) is non-additive across time: a user active on 20 days in a month is counted once in each day's COUNT(DISTINCT), so SUM across 30 days counts that user 20 times but MAU should count them once. Correct MAU requires either a transaction-level COUNT(DISTINCT user_id) over the month or a dedicated monthly pre-aggregated table.",
+      "SUM(daily_active_users) is correct for MAU when users can be active on multiple days; the result represents total user-days, not unique users. The BI team's lower number undercounts users who were active on multiple days.",
+      "The daily summary double-counts users active in both the morning and evening on a given day. The fix is to compute daily_active_users with a session-deduplicated COUNT rather than a raw COUNT(DISTINCT user_id).",
+      "MAU from the daily summary is MAX(daily_active_users) across the month \u2014 the peak unique user count on any single day, which represents the month's maximum unique user engagement."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. COUNT(DISTINCT user_id) is a non-additive measure across the time dimension because the same user entity is counted on each day they are active. A user active on 20 days contributes 1 to each day's COUNT(DISTINCT) but should contribute 1 to the monthly MAU. SUM(daily_active_users) gives total user-days \u2014 a distinct metric from unique monthly users. The correct computation for MAU is COUNT(DISTINCT user_id) over all activity records in the target month from the transaction-level fact, or a pre-computed monthly snapshot that runs the distinct count at aggregation time from the granular data. Option B confuses user-days (total engagement volume) with monthly active users (unique user count) \u2014 these are different metrics with different meanings. The analyst's number is wrong; the BI team's is correct. Option C is incorrect: COUNT(DISTINCT user_id) already handles multiple events per user per day \u2014 it counts each unique user exactly once per day regardless of event frequency. Option D (MAX) gives the peak single-day count, not the count of unique users across the month. A month with 2000 unique users but a single-day peak of 800 would show 800 \u2014 a significant undercount.",
+    "hints": [
+      "If User A is active on 20 days in January, how many times does User A contribute to SUM(daily_active_users) across those 20 days? How many times should User A appear in January's count of unique monthly active users?",
+      "COUNT(DISTINCT user_id) on a single day counts each user once. Is the monthly COUNT(DISTINCT user_id) equal to the sum of 31 daily COUNT(DISTINCT) values? Under what condition would the two be equal, and does that condition hold for most real products?"
+    ],
+    "concepts": [
+      "AGGREGATE & SUMMARY DESIGN",
+      "ADDITIVE VS NON-ADDITIVE",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 62056,
+    "order": 55,
+    "title": "Data Vault Schema Evolution: Adding Attributes from a New Source Without Polluting Existing Satellites",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A Data Vault raw vault has `hub_customer` and a single satellite `sat_customer_crm` (customer_name, customer_tier from the CRM). A marketing platform is onboarded and provides additional customer attributes: preferred_channel, campaign_group, opt_in_email. The team debates: (A) add the three new columns to `sat_customer_crm` with NULL when marketing data is unavailable, or (B) create a new `sat_customer_marketing` containing only the marketing attributes. Which is correct and why?",
+    "options": [
+      "Create `sat_customer_marketing` (customer_hash_key, load_date, record_source, preferred_channel, campaign_group, opt_in_email). Each satellite should be loaded from exactly one record source; mixing CRM and marketing attributes in one satellite couples two ETL pipelines into one table, so a marketing platform schema change forces a rebuild of the CRM satellite.",
+      "Add the three marketing columns to `sat_customer_crm` with nullable values. When marketing data is unavailable, columns stay NULL. This avoids proliferating narrow satellites and keeps all customer attributes together for simpler downstream joins.",
+      "Create a bridge table between the CRM satellite and a new marketing satellite to store cross-source customer attributes. The bridge resolves the many-to-one relationship between a customer and their marketing profile.",
+      "Add the marketing attributes to `hub_customer` as additional business key columns since preferred_channel and campaign_group are customer-identifying attributes used by the marketing team as their primary reference."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. The foundational satellite design rule is one satellite per record source. Each satellite's record_source column tracks which system provided the data; each satellite's load_date records when that system's load occurred. Mixing CRM and marketing attributes in one satellite creates two problems: (1) a load failure in the marketing ETL pipeline could delay CRM attribute loads that share the satellite's processing; (2) a schema change in the marketing platform (new column added) requires modifying sat_customer_crm, which is conceptually owned by the CRM team and may require their ETL to change. Separate satellites provide source isolation: marketing failures affect only sat_customer_marketing; the CRM satellite continues unaffected. Option B violates source isolation: NULLs in marketing columns create ambiguity \u2014 does NULL mean 'customer not in marketing system' or 'marketing ETL failed this run'? Separate satellites resolve the ambiguity by the presence or absence of the satellite row itself. Option C (bridge table) is the correct construct for Hub-to-Hub relationships, not for adding attributes from a second source to an existing business entity. A marketing attribute is a property of the customer entity, not a relationship between two entities. Option D is wrong: hub_customer stores business keys \u2014 natural identifiers used to uniquely identify a customer. preferred_channel is a marketing attribute, not an identifier; adding it to the Hub redefines what 'customer' means as a business key.",
+    "hints": [
+      "The record_source column in a satellite records which system provided the data for each row. If CRM and marketing attributes share a satellite, what does record_source contain when a row has both CRM and marketing data populated simultaneously?",
+      "If the marketing platform changes its schema and adds a new customer segment column, which physical satellite table must be altered in each design \u2014 a shared satellite or a dedicated one? Which change is lower operational risk for the CRM team?"
+    ],
+    "concepts": [
+      "DATA VAULT",
+      "SCHEMA EVOLUTION",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 62057,
+    "order": 56,
+    "title": "Debug: Historical Report Labels Change After a Dimension Attribute Is Overwritten",
+    "difficulty": "medium",
+    "type": "debug",
+    "mock_only": true,
+    "description": "An analyst runs a monthly revenue report in October showing $2.4M under product tier 'Premium.' In November, after the ETL team renames the product tier from 'Premium' to 'Premium Plus' in `dim_product`, the October report now shows $2.4M under 'Premium Plus' \u2014 the revenue is correct but the label is wrong. The analyst confirms: no fact data changed, only the dimension row. What is the root cause and the correct fix?",
+    "options": [
+      "Root cause: `dim_product` uses SCD Type 1 \u2014 the tier attribute is overwritten in place on rename. Historical fact rows still join to the same product_sk, which now resolves to 'Premium Plus.' The October label changed because the dimension row it references changed. Fix: use SCD Type 2 for tier \u2014 insert a new dimension row on rename (tier = 'Premium Plus', new effective_from) and retain the old row (tier = 'Premium', old effective_to), so historical fact rows continue to reference the pre-rename version.",
+      "Root cause: the fact table stores product_name as a VARCHAR column copied from the source rather than a foreign key to dim_product. Fix: replace the VARCHAR tier column in the fact with a product_sk foreign key. Fact rows would then join to the dimension rather than storing the label directly.",
+      "Root cause: the ETL team renamed the tier in the source operational system, which propagated to dim_product. Fix: block all dimension attribute changes from propagating to the warehouse once a value has been published; dimension attributes should be immutable after initial load.",
+      "Root cause: the BI tool caches the October report using stale dimension join values from before the rename. Fix: clear the BI tool's report cache after any dimension update to force a fresh join to current dimension attribute values."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. SCD Type 1 overwrites dimension attributes in place \u2014 it is explicitly designed so that a dimension update changes what all historical fact rows resolve to. The product_sk in historical October fact rows is unchanged, but the row it points to now says 'Premium Plus.' This is not a bug in SCD Type 1 \u2014 it is its intended behavior: 'always show current state.' If the requirement is 'show the tier name that was in effect at the time of the transaction,' SCD Type 2 is required. With SCD Type 2, renaming the tier creates a new product_sk row (tier = 'Premium Plus', effective_from = rename date); the old row (tier = 'Premium') retains its effective_to and is still referenced by October fact rows that carry the old product_sk. Option B is wrong: the fact table already stores product_sk as a foreign key \u2014 that is exactly the mechanism by which the renamed dimension attribute propagates to historical reports. The issue is the SCD strategy, not the key design. Option C (immutable dimensions) is operationally impossible for attributes that legitimately need correction or rebranding. The correct design decision is choosing the SCD type based on the business requirement. Option D (cache clearing) is wrong: the change is not a caching artifact. After clearing the cache, the October report would still show 'Premium Plus' because the dimension join returns the current, post-rename attribute value.",
+    "hints": [
+      "When a dimension attribute is overwritten in place and a fact row joins to that dimension using a stored dimension key, whose attribute value does the fact row now reflect \u2014 the value at the time of the transaction, or the current value?",
+      "Which SCD type preserves historical attribute values by inserting a new dimension row for each attribute change, while retaining the old row with a bounded validity window?"
+    ],
+    "concepts": [
+      "SCD STRUCTURE",
+      "DIMENSION DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 62058,
+    "order": 57,
+    "title": "Multiple Hierarchies: When Finance and Operations Define Product Categories Differently",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A manufacturing company has two product hierarchy paths for the same SKUs: (1) Finance hierarchy \u2014 SKU \u2192 cost_center \u2192 business_unit; (2) Operations hierarchy \u2014 SKU \u2192 assembly_line \u2192 plant. The same Widget X belongs to cost_center 'R&D' in Finance and to assembly_line 'Line A, Plant 1' in Operations. Both Finance and Operations analysts query the same `fact_production` table and need to group revenue by their respective hierarchy paths.",
+    "description": "What is the correct design for a product dimension that must serve two independent, non-overlapping hierarchy paths, and what does each alternative imply for query complexity or governance?",
+    "options": [
+      "Add both hierarchy paths to a single `dim_product` row: cost_center_key, business_unit_key (Finance path) alongside assembly_line_key, plant_key (Operations path). A single product_sk is shared across both paths; fact_production joins once to dim_product regardless of which hierarchy is being navigated. Finance queries group by cost_center_key; Operations queries group by assembly_line_key.",
+      "Create two separate dimension tables: `dim_product_finance` (SKU + Finance hierarchy) and `dim_product_operations` (SKU + Operations hierarchy). Finance analysts join fact_production to dim_product_finance; Operations analysts join to dim_product_operations. Each dimension is maintained by the owning team.",
+      "Normalize the hierarchy into separate lookup tables: `dim_cost_center` and `dim_assembly_line`, each with a foreign key to a shared `dim_product_core` that stores SKU-level attributes. Reports traverse the relevant lookup for each hierarchy via an additional join.",
+      "Add only the Finance hierarchy to `dim_product` since Finance owns the chart of accounts and defines the authoritative product classification. Operations analysts must map their assembly lines to Finance cost centers before querying fact_production."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct for a shared product dimension with two independent hierarchy paths. Both paths are attributes on the same dimension row, tied to the same product_sk. fact_production makes a single join to dim_product regardless of which hierarchy is navigated. Finance queries use `GROUP BY cost_center_key` and Operations queries use `GROUP BY assembly_line_key` \u2014 the same fact, the same join, different grouping columns. The paths are independent and non-overlapping: Widget X's R&D cost center and Line A plant are valid simultaneously without conflict. Option B (two separate dimensions) creates two physical representations of the same business entity. A joint Finance+Operations revenue review would require joining fact_production to two different dimension tables to obtain both hierarchy paths simultaneously, and the product_sk values across the two tables may differ, making cross-hierarchy joins awkward. Option C (normalized lookup tables) is a snowflake pattern that adds join hops: Finance queries need fact \u2192 dim_product_core \u2192 dim_cost_center (two hops) while Operations queries need fact \u2192 dim_product_core \u2192 dim_assembly_line. For BI tools generating SQL automatically, extra joins increase query complexity and latency. Option D (Finance hierarchy only) privileges one business domain's classification without justification and forces Operations to reclassify their products using Finance cost centers \u2014 distorting Operations analytics when the two hierarchies don't map cleanly.",
+    "hints": [
+      "If both hierarchy paths are stored on the same dimension row, how many dimension table joins does a Finance analyst's query require, and how many does an Operations analyst's query require? How does this compare to two separate dimension tables?",
+      "Widget X's Finance classification (cost_center = R&D) and Operations classification (assembly_line = Line A) are independent facts about the same product. Is there any logical conflict between storing both on the same product dimension row simultaneously?"
+    ],
+    "concepts": [
+      "HIERARCHIES & MULTI-PATH",
+      "DIMENSION DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
   }
 ]

@@ -951,5 +951,34 @@
       "SCHEMA EVOLUTION",
       "DIMENSIONAL MODELING"
     ]
+  },
+  {
+    "id": 63036,
+    "order": 36,
+    "title": "M2 Follow-up: Arbitrary-Date Balance Query at 500M Rows \u2014 Pre-Aggregation vs Partitioning",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "parent_id": 62053,
+    "follow_up_dimension": "performance_pivot",
+    "scenario_context": "Following M2: the bank's `fact_balance_snapshot` has grown to 500M rows (10M accounts \u00d7 50 days of history). A regulatory requirement demands: 'Total balance across all accounts on any arbitrary past date \u2014 response under 5 seconds.' Full-table scans take 45\u2013120 seconds. The team evaluates: (A) a pre-aggregated daily total table (`fact_daily_balance_total` \u2014 one row per date, total_balance), (B) partitioning `fact_balance_snapshot` by snapshot_date to reduce per-query scan size, (C) a running balance ledger with current account balances updated nightly.",
+    "description": "Which strategy definitively satisfies the 5-second SLA for arbitrary-date balance queries while preserving account-level access for other analytical needs?",
+    "options": [
+      "Add `fact_daily_balance_total` (one row per date, pre-aggregated total_balance across all accounts), refreshed nightly from `fact_balance_snapshot` by the same ETL pipeline. The arbitrary-date query becomes a single-row point lookup: `SELECT total_balance WHERE snapshot_date = target_date` \u2014 sub-second regardless of account count. The account-level snapshot is retained for per-account analytics.",
+      "Partition `fact_balance_snapshot` by snapshot_date. An arbitrary-date query scans only one partition (~10M rows instead of 500M). Partition pruning reduces the scan from 500M to ~10M rows \u2014 fast enough to meet the 5-second SLA without a separate aggregate table.",
+      "Maintain a running balance ledger (one row per account, current balance only), updated nightly. The arbitrary-date query joins the ledger to the snapshot to reconstruct historical totals for any past date.",
+      "Add a columnar index on snapshot_date and balance to `fact_balance_snapshot`. An index-assisted scan for a single date retrieves only the balance column across all accounts for that date, reducing I/O to the minimum needed for a SUM."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. Pre-aggregating the daily total into a one-row-per-date table collapses 500M rows to ~365 rows per year for the specific query pattern. The response time for `SELECT total_balance WHERE snapshot_date = target_date` is sub-second \u2014 a single-row lookup against a tiny table, with no scan of the 500M-row account-level fact. Both tables are maintained by the same ETL pipeline, ensuring the daily total is always consistent with account-level detail. Option B (date partitioning) is a partial improvement but insufficient. Each date partition has 10M rows (10M accounts). A SUM(balance) across 10M rows with disk I/O still takes 3\u201315 seconds depending on cluster resources \u2014 the SLA is not reliably met. Partitioning reduces scan size but does not eliminate the aggregation computation. Option C (running ledger) does not retain historical state. The ledger holds current balances only; computing an arbitrary past date's total balance requires scanning the full snapshot fact from that date \u2014 which is exactly the performance problem being solved. The ledger is useful for 'current balance' queries, not 'balance as of past date' queries. Option D (columnar index) is not a standard optimization in analytical data warehouses like BigQuery or Snowflake that use columnar storage natively. Even with an index, a SUM across 10M account rows for a single date still requires reading the entire balance column for that partition \u2014 the I/O is not meaningfully reduced beyond what date partitioning already provides.",
+    "hints": [
+      "A query for total balance on March 15 requires SUMming balance across all 10M accounts for that date. If a separate table already stores that daily total as a single row, what is the query plan \u2014 a 10M-row SUM, or a one-row point lookup?",
+      "Partition pruning reduces the rows the query engine reads from 500M to ~10M for a single date. But once the correct partition is identified, what computation must still happen across all 10M account rows in that partition to produce the daily total balance?"
+    ],
+    "concepts": [
+      "ADDITIVE VS NON-ADDITIVE",
+      "AGGREGATE & SUMMARY DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
   }
 ]
