@@ -980,5 +980,121 @@
       "AGGREGATE & SUMMARY DESIGN",
       "DIMENSIONAL MODELING"
     ]
+  },
+  {
+    "id": 63037,
+    "order": 37,
+    "title": "M3 Follow-up: Cancellation and Re-Enrollment \u2014 Separating Revenue from Active Enrollment Count",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "parent_id": 62059,
+    "follow_up_dimension": "edge_case_pivot",
+    "scenario_context": "Following M3: student S enrolled in course C (enrollment_1, $150 fee, status='active'), cancelled (enrollment_1 updated to status='cancelled'), then re-enrolled (enrollment_2, $150 fee, status='active'). fact_enrollment now has two rows for the same student-course pair. The analytics team needs: (1) COUNT(DISTINCT student_key) per course = 1 (same student), (2) SUM(revenue) per course = $300 (two payments collected, neither refunded). The current query `SELECT course_key, COUNT(DISTINCT student_key), SUM(revenue) FROM fact_enrollment WHERE status='active' GROUP BY course_key` gives count=1 but revenue=$150 \u2014 the cancelled enrollment's payment is excluded.",
+    "description": "What fact design correctly captures both the unique student count and the total revenue paid, given that cancelled enrollments can generate real, non-refunded payments?",
+    "options": [
+      "Add an `is_revenue_recognized` boolean column to fact_enrollment \u2014 TRUE when payment was collected regardless of current enrollment status. Revenue queries: SUM(revenue) WHERE is_revenue_recognized = TRUE; active student counts: COUNT(DISTINCT student_key) WHERE status = 'active'. The two business questions use different filter columns; neither filter can answer both correctly.",
+      "Set revenue = -$150 on the cancelled enrollment row. SUM(revenue) across all rows gives the net collected revenue: $150 (active) + (-$150 cancelled) + $150 (re-enrollment) = $150. This correctly nets out the cancellation against the re-enrollment.",
+      "Split fact_enrollment into two tables: fact_enrollment_current (one row per student-course pair, active enrollment only) and fact_enrollment_revenue (all enrollment events). Active counts query fact_enrollment_current; revenue queries fact_enrollment_revenue.",
+      "Use a bridge table bridge_student_course (student_key, course_key, cumulative_revenue) updated when a payment is collected. Revenue per course = SUM(cumulative_revenue); unique students per course = COUNT(rows). Cancellations update the cumulative_revenue column, not insert new rows."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A correctly separates two logically distinct business attributes: enrollment activity status (is the student currently enrolled?) and payment recognition (was payment collected?). The cancelled enrollment has status='cancelled' (excluded from active count) but is_revenue_recognized=TRUE (included in revenue because $150 was collected and not refunded). The re-enrollment also has is_revenue_recognized=TRUE and status='active'. Total revenue = $150 + $150 = $300; unique active students = 1. Option B (negative revenue for cancellation) assumes the cancellation was refunded \u2014 but the problem specifies neither payment was refunded. Applying -$150 to a non-refunded cancellation understates revenue by $150. This design conflates 'cancellation event' with 'refund event.' Option C (two tables) achieves the separation but at higher operational cost: a flag on a single fact table is simpler than maintaining two separate tables for the same business process. Any join between current and historical enrollment data requires cross-table logic. Option D (bridge with cumulative revenue) loses individual enrollment event history. The bridge cannot distinguish the two $150 payments as separate events \u2014 it only tracks the running total per student-course pair.",
+    "hints": [
+      "The cancelled enrollment generated a $150 payment that was not refunded. The status column captures 'is the student currently active' but not 'was payment collected.' What column addition creates a filter that answers the revenue question independently of the active-enrollment filter?",
+      "The business has two independent questions: 'how many students are currently enrolled?' and 'how much revenue has this course generated?' If these two questions require different row filters, what does that tell you about whether a single status column can answer both?"
+    ],
+    "concepts": [
+      "BRIDGE & MANY-TO-MANY",
+      "FACT TABLE DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63038,
+    "order": 38,
+    "title": "M3 Follow-up: Revenue Attribution Across Co-Instructors with Unequal Teaching Shares",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "parent_id": 62059,
+    "follow_up_dimension": "ambiguity_pivot",
+    "scenario_context": "Following M3: the e-learning platform adds a requirement: attribute each course's enrollment revenue to its instructors. 'Introduction to Python' has 3 co-instructors: Alex (60% of content), Sam (30%), Taylor (10%). The team considers three approaches: (A) equal weight \u2014 33% each; (B) primary instructor attribution \u2014 first-listed instructor gets 100%; (C) a configurable weight column in a bridge_course_instructor table (course_key, instructor_key, revenue_weight) where weights sum to 1.0 per course.",
+    "description": "Which design correctly supports instructor-level revenue attribution when teaching shares vary by course and change over time, and what specific analytical failure does each alternative introduce?",
+    "options": [
+      "Create `bridge_course_instructor` (course_key, instructor_key, revenue_weight). Revenue per instructor = SUM(enrollment.revenue * bridge.revenue_weight) for their courses. Weights are stored in the bridge and updated per course without touching the fact or dimension. When a co-instructor is added or removed, only the bridge row is modified.",
+      "Add a `primary_instructor_key` foreign key to dim_course. Revenue attribution is 100% to the primary instructor. Co-instructors are stored in a lookup table used only for course catalog display, not for financial reporting.",
+      "Store instructor splits as a JSON array on dim_course: `instructor_splits: [{instructor_key: A, weight: 0.6}, ...]`. Revenue attribution queries parse the JSON and multiply revenue by each instructor's weight.",
+      "Use equal weight: divide course revenue by COUNT(instructor_key) FROM bridge_course_instructor per course. Equal weight is simpler to implement and explain to instructors, avoiding governance disputes about how to assign percentage shares."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. The configurable weight bridge is the canonical solution for weighted attribution when: (1) shares vary by course \u2014 equal weight and primary-gets-all are fixed algorithms that cannot represent varying shares; (2) shares change over time \u2014 a co-instructor added mid-year can be accommodated by inserting a new bridge row with a new effective date, without modifying the fact table or course dimension; (3) attribution must be auditable \u2014 the weight column is explicit and queryable. The revenue calculation (`enrollment.revenue * bridge.revenue_weight`) is standard SQL. Option B (primary instructor gets 100%) gives $0 revenue to Sam and Taylor who taught 40% of the content combined. Any financial system that shows instructors who taught content receiving no revenue attribution will produce governance disputes and incorrect compensation calculations. Option C (JSON on dimension) creates the same problems as pipe-delimited columns: SQL cannot natively GROUP BY instructor_key inside a JSON array; the weight parsing logic is non-portable across BI tools; and a schema change (adding a new weight field) requires modifying the JSON structure rather than a clean table ALTER. Option D (equal weight) is wrong when shares are explicitly defined and unequal. Claiming 'simpler to implement' justifies ignoring factual data about content contribution is not a valid data modeling argument.",
+    "hints": [
+      "If teaching shares vary by course and are explicitly defined (Alex 60%, Sam 30%, Taylor 10%), which of the three designs stores these exact percentages and allows them to vary independently per course?",
+      "A co-instructor joins the team mid-year and starts teaching 20% of a course's new content. Under each design, which physical table or column must be updated to reflect the new instructor's share, and which design minimizes the impact on other tables?"
+    ],
+    "concepts": [
+      "BRIDGE & MANY-TO-MANY",
+      "GRAIN DEFINITION",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63039,
+    "order": 39,
+    "title": "M4 Follow-up: Property Re-Listed After Repossession \u2014 Multi-Lifecycle SCD Type 2 Modeling",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "parent_id": 62060,
+    "follow_up_dimension": "edge_case_pivot",
+    "scenario_context": "Following M4: a property (P-441) goes through its first lifecycle: Available (Jan 1) \u2192 Under Contract (Mar 15) \u2192 Sold (Apr 30). Six months later, the bank repossesses it and re-lists it: Available (Oct 15) \u2192 Under Contract (Nov 20). The property_id in the source system remains P-441. The SCD Type 2 dimension now has 5 rows for P-441 with unique surrogate keys and non-overlapping effective date ranges.",
+    "description": "What does the multi-lifecycle dim_property structure enable and constrain analytically, and why is creating a new property_id for the re-listed property the wrong design choice?",
+    "options": [
+      "The 5-row SCD Type 2 structure handles multiple lifecycles correctly without schema change. Current status: WHERE effective_to IS NULL. Status on any past date: date-range filter on effective_from / effective_to. Cross-lifecycle analysis (e.g., 'how many times has P-441 been sold?'): COUNT(rows WHERE status = 'Sold') across all P-441 rows. Creating a new property_id for the re-listed property would prevent this cross-lifecycle analysis and fragment what is the same physical asset into two unrelated entities.",
+      "SCD Type 2 cannot correctly model a property that returns to Available after being Sold because the status sequence is logically contradictory \u2014 a sold property cannot re-enter the market without being a new legal entity. A new property_id should be created for the re-listed property to preserve logical integrity.",
+      "Add a `lifecycle_number` column to dim_property to distinguish rows from each sale cycle. All queries must always filter by the relevant lifecycle_number to prevent cross-lifecycle row mixing in aggregations. Without this column, COUNT(rows WHERE status = 'Sold') for P-441 would incorrectly sum across multiple sale events.",
+      "The 5-row structure is correct but requires adding a `is_current_lifecycle` boolean column to dim_property. Analytics that reference 'current' property state must filter `WHERE is_current_lifecycle = TRUE AND effective_to IS NULL` to exclude historical lifecycle rows from current-state queries."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. SCD Type 2 is designed to track attribute changes over time for any sequence, including re-entries to previous states. A repossessed property returning to Available is a valid business event; the same physical asset with the same tax parcel number and legal description should have the same property_id. The 5-row structure naturally supports: (1) current status (effective_to IS NULL); (2) historical status on any date (date-range filter); (3) cross-lifecycle analytics (COUNT sold events, total days on market across both cycles). Creating a new property_id for the re-listed property is the wrong design because: it fragments the same physical asset into two unrelated identities; a cross-lifecycle question like 'has this property sold before?' requires knowing both identities; and property-level long-term analytics (total appreciation, sale price comparison between cycles) become impossible. Option B incorrectly asserts that a property returning to Available is logically contradictory \u2014 this is a standard real estate scenario (foreclosure, estate sale, short sale reversal). Option C (lifecycle_number column) is an optional enhancement for disambiguation but not a requirement \u2014 date-range queries already correctly isolate each lifecycle without an explicit column. Imposing it as mandatory adds overhead with no analytical benefit that date-range joins don't already provide. Option D (is_current_lifecycle flag) is redundant \u2014 `effective_to IS NULL` already identifies the current active row without a separate flag.",
+    "hints": [
+      "If Property P-441 receives a new property_id when re-listed after repossession, how would an analyst answer 'how many times has this physical property sold in the last 10 years?' What data is now missing or split?",
+      "SCD Type 2 stores attribute history as additional rows with non-overlapping effective date ranges. Is there any effective date range overlap between the 5 rows for P-441 if each transition has a distinct date? What does non-overlapping date ranges enable for point-in-time queries?"
+    ],
+    "concepts": [
+      "SCD STRUCTURE",
+      "DIMENSION DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63040,
+    "order": 40,
+    "title": "M4 Follow-up: Backdated Status Corrections in SCD Type 2 \u2014 Safety and Limitations",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "parent_id": 62060,
+    "follow_up_dimension": "data_quality_pivot",
+    "scenario_context": "Following M4: the ETL receives a late update on November 15 \u2014 Property P-441 became Under Contract on October 15 (30 days ago). The current dim_property has P-441 as 'Available' with effective_from = September 1, effective_to = NULL. Fact rows from October (property viewings, inquiry events) all carry the 'Available' property_sk. The ETL team closes the Available row at October 15 and inserts a new Under Contract row effective October 15.",
+    "description": "Why is the backdated SCD Type 2 correction safe for October's existing fact rows, and what class of analytical system would it NOT satisfy \u2014 requiring bi-temporal modeling instead?",
+    "options": [
+      "Safe for October's fact rows: those rows carry the Available property_sk, which now joins to the 'Available' row with effective_to = October 15. An October 10 viewing fact row's join condition (`fact_date BETWEEN effective_from AND effective_to`) still returns the Available row \u2014 the row was valid on October 10. NOT safe for systems requiring report-time reproducibility: a report generated October 31 showing P-441 as 'Available' will now produce a different result if re-run after the correction. Bi-temporal modeling (tracking both business validity time and database transaction time) is required when both 'what was true in the world' and 'what did the system show at report time' must be preserved.",
+      "Not safe: closing the Available row at October 15 changes the effective_to date, which retroactively excludes all October fact rows from any query using `WHERE snapshot_date BETWEEN effective_from AND effective_to`. October viewings will no longer join to any valid dimension row.",
+      "Safe only if all October fact rows are reloaded with the corrected Under Contract property_sk for the period October 15\u201331. Fact rows from October 15\u201331 should have been loaded with the Under Contract property_sk; keeping the old Available property_sk means those rows incorrectly reflect Available status.",
+      "Backdated corrections should never be applied to SCD Type 2. Instead, apply the correction from the ETL load date (November 15) forward. Historical fact rows are locked once loaded; retroactive corrections require a formal data governance exception process."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct on both parts. Part 1 \u2014 safety for October's fact rows: an October 10 property viewing fact row carries the Available property_sk. After the correction, the Available row has effective_from = September 1, effective_to = October 15. The join condition `October 10 BETWEEN September 1 AND October 15` is TRUE \u2014 the fact row still correctly joins to the Available dimension row. The correction is semantically accurate: the property genuinely was Available until October 15, so viewing events on October 10 correctly attribute to the Available status. Part 2 \u2014 limitation for report reproducibility: if an October 31 report was generated and archived showing P-441 as Available, re-running the same query after the correction will show P-441 as Under Contract from October 15. The underlying facts are unchanged; the dimension row's effective date changed. This is the fundamental limitation of retroactive SCD correction: it changes what the system says about the past. Systems that require reproducible historical reports (regulatory filings, audit-frozen snapshots) need bi-temporal modeling: a second time axis (transaction time / system time) tracks when each dimension row was current in the database, independently of when the business fact was valid. Option B is wrong: the October 10 fact row's join condition evaluates `October 10 BETWEEN September 1 AND October 15`, which is TRUE. The row still joins correctly. Option C is wrong: October fact rows for viewings that occurred before October 15 should continue to attribute to Available status \u2014 the property was genuinely Available on those dates. Only viewings after October 15 would need correction if they were incorrectly loaded with the Available property_sk. Option D is a legitimate conservative policy but produces a known-incorrect history: keeping the property as Available from October 15 to November 15 in the dimension when it was Under Contract is a permanent data quality issue preserved in the warehouse.",
+    "hints": [
+      "An October 10 fact row carries the 'Available' property_sk. After closing the Available row at October 15, that row has effective_to = October 15. Does the condition `October 10 BETWEEN effective_from AND October 15` return TRUE or FALSE? What does that mean for whether the October 10 fact row still joins correctly?",
+      "An October 31 report was generated and archived showing P-441 as 'Available.' After the backdated correction, re-running the same query on November 16 will show P-441 as 'Under Contract from October 15.' No fact data changed \u2014 why did the report result change? What tracking mechanism would preserve both the original report's answer and the corrected answer simultaneously?"
+    ],
+    "concepts": [
+      "SCD STRUCTURE",
+      "DIMENSION DESIGN",
+      "SCHEMA EVOLUTION"
+    ]
   }
 ]

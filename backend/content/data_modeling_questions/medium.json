@@ -1526,5 +1526,147 @@
       "DIMENSION DESIGN",
       "DIMENSIONAL MODELING"
     ]
+  },
+  {
+    "id": 62059,
+    "order": 58,
+    "title": "Bridge Tables vs Enrollment Facts: Modeling Student-Course Many-to-Many with Revenue",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "mock_only": true,
+    "follow_ups": [
+      63037,
+      63038
+    ],
+    "description": "An e-learning platform needs to support: (1) unique student count per course, (2) unique course count per student, (3) total revenue per course. Students enroll in multiple courses; courses have thousands of students. Each enrollment has a fee. A junior analyst asks: 'Do we need a separate bridge table, or does fact_enrollment already handle the many-to-many?' What is the correct answer and why?",
+    "options": [
+      "fact_enrollment at the student \u00d7 course level IS the resolution of the many-to-many relationship. Each row stores student_key, course_key, enrollment_date_key, and revenue. Query (1): COUNT(DISTINCT student_key) GROUP BY course_key; Query (2): COUNT(DISTINCT course_key) GROUP BY student_key; Query (3): SUM(revenue) GROUP BY course_key. The fact table natively answers all three without a separate bridge table.",
+      "A separate bridge_student_course table is required alongside fact_enrollment. The bridge stores the relationship; fact_enrollment stores the event attributes. Revenue queries join fact_enrollment to the bridge using course_key to attribute revenue per student-course pair.",
+      "Store enrolled course_keys as a JSON array in dim_student. Unique students per course requires unnesting the JSON array across all student records. Revenue is stored in a separate fact_course_revenue table summed per course.",
+      "Use dim_course with an enrolled_student_count column updated nightly. Revenue is stored as cumulative_revenue on dim_course. This denormalized approach avoids both a bridge table and a fact table for simple reporting."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. When the enrollment event itself has business meaning (a date, a fee, a status), it is a fact \u2014 and a fact table at the student \u00d7 course level resolves the many-to-many relationship implicitly. No separate bridge table is needed because the fact table's structure already creates one row per student-course pair. COUNT(DISTINCT student_key) GROUP BY course_key correctly answers (1); COUNT(DISTINCT course_key) GROUP BY student_key correctly answers (2); SUM(revenue) GROUP BY course_key correctly answers (3). A bridge table is the right tool when you need to add a many-to-many relationship to a fact that already has a different grain \u2014 for example, if the existing fact was at the course level and you needed to add student attribution. Here, the enrollment fact IS the grain. Option B (fact + separate bridge) is redundant: the bridge stores information that the fact already provides. Option C (JSON array on dim_student) makes queries (1) and (2) require JSON unnesting \u2014 non-standard, slow, and not supported by most BI tools in GROUP BY. Option D (counts on dim_course) violates the principle that derived metrics belong on facts: embedding a student_count on a dimension makes the dimension stateful and hard to refresh correctly.",
+    "hints": [
+      "An enrollment event (student S in course C on date D, fee $F) has a date, an amount, and a business event record. Does this information belong in a dimension or in a fact? What determines which?",
+      "A fact table at the student \u00d7 course level has exactly one row per student-course pair. How does that structure differ from a bridge table \u2014 and in what scenario would you still need a separate bridge table alongside a fact?"
+    ],
+    "concepts": [
+      "BRIDGE & MANY-TO-MANY",
+      "FACT TABLE DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 62060,
+    "order": 59,
+    "title": "SCD Type 2 for Property Status: Supporting Current State, History, and Duration Simultaneously",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "follow_ups": [
+      62061,
+      63039,
+      63040
+    ],
+    "scenario_context": "A real estate platform tracks property status through Available \u2192 Under Contract \u2192 Sold transitions. The analytics team needs three simultaneous capabilities: (1) current status of all active properties, (2) complete status history for any property, (3) time spent in each status (days in Available before going Under Contract, etc.). The team debates between a status event fact table and a slowly-changing dimension approach.",
+    "description": "Which design correctly satisfies all three requirements with the simplest query patterns, and what does each alternative fail to provide?",
+    "options": [
+      "SCD Type 2 on `dim_property`: each status change inserts a new row with effective_from and effective_to dates. Current status: WHERE effective_to IS NULL. Full history: all rows for a property_id ORDER BY effective_from. Duration in each status: effective_to - effective_from (or CURRENT_DATE for the active row). All three requirements are met with date arithmetic on the dimension.",
+      "A separate `fact_status_changes` table (one row per status change event: property_id, old_status, new_status, change_date) with dim_property storing current status only via SCD Type 1. The event fact captures history; the dimension exposes current state. Separating history from current state is cleaner than mixing them in one dimension.",
+      "SCD Type 3 (current and previous status columns on dim_property: current_status, previous_status, last_change_date). Requirements (1) and (3) are met with simple column reads; history is partially available via the previous_status column.",
+      "A flag-based approach: add `is_available`, `is_under_contract`, `is_sold` boolean columns and an audit log. Current status is the TRUE column; history is in the audit log. Duration requires a join between the dimension and the audit log."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. SCD Type 2 stores one row per status period per property, which naturally provides all three capabilities with standard date arithmetic. Current status: the row WHERE effective_to IS NULL is the active row. Full history: all rows for property_id ordered by effective_from reconstruct the complete status timeline. Duration: effective_to - effective_from for each row gives the exact time spent in that status, with CURRENT_DATE - effective_from for the still-active row. Option B (event fact + Type 1 dim) is architecturally reasonable but requires a join between the event fact and the dimension for mixed queries (e.g., 'properties that spent more than 90 days Available before selling') \u2014 SCD Type 2 answers this from a single table. Option C (Type 3) stores only one previous value: a property that went Available \u2192 Under Contract \u2192 Available (deal fell through) \u2192 Under Contract \u2192 Sold would lose its earliest status history after two changes. Duration calculations for all historical periods are impossible. Option D (boolean flags + audit log) is operationally complex \u2014 three mutually exclusive booleans must always be consistent, and duration queries require joining to an external audit log rather than computing from dimension dates.",
+    "hints": [
+      "A dimension that inserts a new row each time an attribute changes stores an effective start date and end date per version. Given these two date columns, what SQL expression computes how many days a property spent in the 'Available' status for that specific period?",
+      "SCD Type 3 stores only the previous value alongside the current value. A property that goes from Available to Under Contract, then back to Available (deal fell through), then to Under Contract again has how many status changes? How many can Type 3 represent?"
+    ],
+    "concepts": [
+      "SCD STRUCTURE",
+      "DIMENSION DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 62061,
+    "order": 60,
+    "title": "M4 Follow-up: Computing Days-on-Market When the Business Rule Requires the Original Listing Date",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "mock_only": true,
+    "parent_id": 62060,
+    "follow_up_dimension": "business_rule_pivot",
+    "description": "Following M4: a property status dimension uses SCD Type 2 with effective_from / effective_to dates per status period. The marketing team adds a new requirement: 'For all currently Available properties, show days_on_market \u2014 the number of days since the property first became available.' Can CURRENT_DATE - effective_from on the current Available row always answer this question correctly, or does the business rule require an additional design element?",
+    "options": [
+      "No \u2014 CURRENT_DATE - effective_from on the active Available row gives days since the CURRENT Available period started, not days since the original listing. A property that went Available \u2192 Under Contract \u2192 Available again (deal fell through) has a second Available row whose effective_from is the re-listing date. If Marketing means 'days since first listed,' a separate `original_listing_date` column or a lookup to the first Available row is required.",
+      "Yes \u2014 CURRENT_DATE - effective_from on the current active row (WHERE status = 'Available' AND effective_to IS NULL) gives days since the listing became available. If the property re-entered Available status, the second Active row's effective_from is the relevant date for the current listing period, which is what Marketing means by days_on_market.",
+      "Yes \u2014 SCD Type 2 effective dates include all status periods. The earliest effective_from across all Available rows for a property_id gives the original listing date. days_on_market = CURRENT_DATE - MIN(effective_from) WHERE status = 'Available' is always correct.",
+      "No \u2014 days_on_market cannot be computed from the SCD dimension alone because effective_from records when the database row was created, not when the property was listed. A separate listing_date column stored in the source system is required."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. The answer depends on what the business rule means by 'days_on_market.' If Marketing means 'days since the current listing streak started' (how long has the property been continuously available in the current cycle), effective_from on the current Available row is the right date. If Marketing means 'days since the property first appeared on the market' (original listing date, ignoring any temporary removal and re-listing), the current Available row's effective_from is wrong for a property that went off-market and re-listed. A property that was originally listed March 1, went Under Contract April 1, came back Available May 1 has effective_from = May 1 on its current row. CURRENT_DATE - May 1 gives 'days in current Available period,' not 'days since original listing.' The correct design for 'days since first listing' requires either a dedicated original_listing_date column on the property or a query to MIN(effective_from WHERE status = 'Available') across all historical rows. Option B is correct for the 'current streak' interpretation but not for 'original listing.' Option C (MIN effective_from across all Available rows) would give the first listing date, but only if the property has never been relisted with a different property_id \u2014 and it would give wrong results if the property's first Available period had a different status definition. Option D is wrong: effective_from in SCD Type 2 records when the status period started (when the status changed), which IS the listing date for the first Available period \u2014 not when the database row was created.",
+    "hints": [
+      "A property is listed March 1 (Available), goes Under Contract April 1, and comes back Available May 1. The second 'Available' row has effective_from = May 1. Does 'days since first listing' equal CURRENT_DATE - May 1, or does it require a different date?",
+      "If the business requirement is 'days since the property first appeared on the market,' what date do you need, and is that date always stored on the current-period Available row in a standard SCD Type 2 design?"
+    ],
+    "concepts": [
+      "SCD STRUCTURE",
+      "DIMENSION DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 62062,
+    "order": 61,
+    "title": "Conformed Dimension Evolution: Coordinating a Breaking Change Across Three Consuming Facts",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A conformed `dim_customer` is consumed by three facts maintained by separate teams: fact_sales, fact_support_tickets, and fact_subscriptions. The data engineering team needs to deploy two changes: (1) rename `cust_tier` to `customer_tier` \u2014 a breaking change; (2) add a nullable `customer_segment` column \u2014 a non-breaking change. What rollout protocol minimizes disruption and prevents any team from having their pipeline broken without warning?",
+    "options": [
+      "Deploy the non-breaking change (add customer_segment) immediately without coordination \u2014 nullable additions are backwards-compatible. For the breaking change (rename cust_tier), add customer_tier as an alias column alongside cust_tier, notify all three teams with a 60-day migration window, and remove cust_tier only after all three teams confirm migration. The two changes ship independently at different cadences.",
+      "Deploy both changes simultaneously in a coordinated maintenance window during off-peak hours. All three fact teams must be available during the window to test their pipelines. Combining both changes reduces the total number of release cycles.",
+      "Delay both changes until all three teams have reviewed and approved the full schema change plan. Non-breaking changes can wait for the breaking-change approval process to prevent incremental version confusion.",
+      "Deploy the breaking change (rename) first to force all three teams to update immediately; add the non-breaking column after all teams have adapted. Shipping the breaking change first minimizes the time the deprecated column name persists in production."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. Non-breaking and breaking changes have different coordination requirements. A nullable column addition is backwards-compatible by definition: existing queries that use explicit column lists continue to work, and queries using SELECT * gain a new nullable column without errors. It can deploy immediately, without notifying the three fact teams. A column rename breaks any query or pipeline that references the old name. The correct protocol: add the new name as a coexisting alias (so both names work simultaneously), notify all three teams with a documented migration guide and a sunset timeline, and remove the old name only after all confirm migration. This lets teams migrate on their own schedules. Option B (single coordinated window for both) is wrong: the breaking change cannot be deployed until all three teams have already migrated \u2014 requiring advance preparation time (weeks, not hours). Forcing simultaneous migration across three independent teams in one window is high-risk. Option C (delay non-breaking change) is unnecessarily slow \u2014 holding a backwards-compatible change hostage to a breaking-change approval timeline adds no safety and delays value. Option D (breaking change first) breaks all three teams' pipelines simultaneously, with no migration window. It is the highest-disruption approach.",
+    "hints": [
+      "Adding a nullable column to a shared dimension does not change the name, type, or position of any existing column. What would an existing query that selects `col1, col2 FROM dim_customer` need to do differently after the nullable column is added \u2014 and does it need to change at all?",
+      "A 60-day deprecation window for the rename allows three teams to migrate at different speeds. What happens to a team's ETL pipeline if the old column name is removed before they have updated their query?"
+    ],
+    "concepts": [
+      "SCHEMA EVOLUTION",
+      "CONFORMED DIMENSIONS",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 62063,
+    "order": 62,
+    "title": "Debug: Revenue Double-Count When a Customer Tier Change Creates Multiple Dimension Rows",
+    "difficulty": "medium",
+    "type": "debug",
+    "mock_only": true,
+    "description": "An analyst runs: `SELECT c.customer_tier, SUM(f.revenue) FROM fact_sales f JOIN dim_customer c ON f.customer_id = c.customer_id WHERE f.sale_year = 2024 GROUP BY c.customer_tier`. Revenue is 12% higher than Finance's source report. Investigation reveals that dim_customer uses a multi-version design \u2014 multiple rows per customer_id when tier changes \u2014 and some 2024 customers changed tier mid-year. What is the root cause?",
+    "options": [
+      "Root cause: joining on customer_id (natural key) matches ALL dimension rows for a given customer \u2014 including both the pre-change and post-change tier rows. A January sale for a customer who changed tier in June appears in both Silver and Gold revenue totals. Fix: the fact table should store the dimension's surrogate key (valid at transaction time) and join on that instead of the natural key.",
+      "Root cause: the multi-version dimension has duplicate customer_id values, violating a uniqueness constraint that should prevent mid-year tier changes. Fix: add a UNIQUE constraint on customer_id to prevent multiple rows and force a single-row Type 1 overwrite.",
+      "Root cause: GROUP BY customer_tier is collapsing rows across all customers in each tier. Fix: add GROUP BY customer_id, customer_tier to separate each customer's revenue into its own group before summing.",
+      "Root cause: the WHERE clause `sale_year = 2024` does not filter the dimension join, so dimension rows from prior years are included. Fix: add `AND c.effective_from >= '2024-01-01'` to restrict the dimension to 2024-period rows only."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct. When fact_sales joins to dim_customer on customer_id (a natural key), each fact row matches every dimension row with the same customer_id. A customer who changed tier from Silver to Gold in June has two dimension rows \u2014 both with the same customer_id. A January fact row matches both rows: one for Silver (effective before June) and one for Gold (effective from June). The same sale is summed in both Silver and Gold revenue totals. The 12% inflation comes from customers with two or more tier periods in 2024. The correct design: fact_sales stores the surrogate key (customer_sk) valid at transaction load time. Each surrogate key is unique to exactly one dimension row \u2014 no multi-row match. Option B is wrong: a UNIQUE constraint on customer_id would make multi-version dimension designs impossible. Multiple rows per customer_id is exactly what this versioning design requires; the uniqueness is enforced at the (customer_id, effective_from) level. Option C is wrong: GROUP BY customer_id, customer_tier still produces duplicate revenue sums per customer \u2014 the underlying join still returns two rows for each sale from a tier-changing customer, regardless of the grouping level. Option D is wrong: restricting the dimension to effective_from >= 2024-01-01 would exclude pre-2024 tier assignments, causing some 2024 customers (those whose current tier started before 2024) to have no matching dimension row and disappear from the report entirely.",
+    "hints": [
+      "A customer who changed tier in June has two dimension rows with the same customer_id but different tier values and different effective date ranges. If a January sale joins on customer_id, how many dimension rows does it match \u2014 and how many times does that sale appear in the SUM(revenue) result?",
+      "If the fact table stored the dimension's unique per-version key instead of the natural key, how many dimension rows would a January sale match \u2014 the pre-June tier row, the post-June row, or both?"
+    ],
+    "concepts": [
+      "SCD STRUCTURE",
+      "FACT TABLE DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
   }
 ]
