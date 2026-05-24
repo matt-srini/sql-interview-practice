@@ -1523,5 +1523,299 @@
       "LINEAGE & OBSERVABILITY",
       "INCIDENT RESPONSE"
     ]
+  },
+  {
+    "id": 53057,
+    "order": 57,
+    "title": "Choosing Between BACKWARD and FULL Schema Registry Compatibility",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A Kafka topic is consumed by three types: (1) real-time dashboards always on the latest consumer version, (2) a nightly batch job that restarts weekly and may lag one schema version behind, (3) an audit archive consumer that reads from offset 0 and must deserialize every historical message ever written. The schema team proposes adding a new optional Avro field. Which compatibility mode is required?",
+    "options": [
+      "BACKWARD: new consumer schemas can always read data written by old producer schemas \u2014 dashboards and the batch job can upgrade when convenient, and old messages are still readable by new consumers.",
+      "FORWARD: old consumer schemas can read data written by new producer schemas \u2014 existing consumers that have not yet upgraded can still deserialize messages written under the new schema.",
+      "FULL: both BACKWARD and FORWARD simultaneously \u2014 the audit consumer requires BACKWARD (new consumer schema reads old messages) and the batch job requires FORWARD (old consumer schema reads new messages).",
+      "NONE: schema evolution enforcement is unnecessary for optional field additions \u2014 Avro resolves missing optional fields to their default values, so no compatibility policy is required."
+    ],
+    "correct_option": 2,
+    "explanation": "FULL compatibility is required because the use case simultaneously demands both directions. BACKWARD compatibility satisfies the audit consumer: a new consumer schema (updated with the new optional field) can read historical messages written before the field existed \u2014 missing fields resolve to Avro defaults. FORWARD compatibility satisfies the nightly batch job: an old consumer schema (without the new field) can read new messages written with the new field \u2014 old consumers ignore unknown fields. Neither BACKWARD alone (which does not protect the batch job running the old schema against new messages) nor FORWARD alone (which does not protect the audit consumer reading old messages) is sufficient. Option D is incorrect: while Avro's default resolution works mechanically, removing compatibility enforcement removes the safety guarantee for future schema changes \u2014 the next change may not be a simple optional field addition, and the discipline must be maintained.",
+    "hints": [
+      "The audit consumer reads every historical message ever written. Which compatibility direction ensures a new consumer schema can always read data written by old producer schemas?",
+      "The batch job may still run the old consumer schema when the producer deploys a new schema. Which compatibility direction ensures old consumer schemas can read new messages?"
+    ],
+    "concepts": [
+      "SCHEMA EVOLUTION",
+      "DATA CONTRACT",
+      "LINEAGE & OBSERVABILITY"
+    ]
+  },
+  {
+    "id": 53058,
+    "order": 58,
+    "title": "ETL Pipeline Silently Converts DECIMAL to FLOAT \u2014 Financial Data Loses Precision",
+    "difficulty": "hard",
+    "type": "debug",
+    "mock_only": true,
+    "scenario_context": "A PySpark ETL job reads transaction amounts from PostgreSQL (DECIMAL(18,2) columns representing currency) and writes to Snowflake. The transformation step casts amount to DoubleType() 'for performance.' The Snowflake target column is FLOAT(53). The data quality team finds that $47.23 in the source appears as $47.22999999999... in the warehouse, and a monthly reconciliation report shows a $312.47 discrepancy on $2.3M of transactions.",
+    "description": "What is the root cause and the correct fix?",
+    "options": [
+      "The root cause is the Snowflake FLOAT(53) column type: Snowflake's FLOAT uses IEEE 754 binary floating-point, which cannot represent most decimal fractions exactly. The fix is changing the Snowflake column to DECIMAL(18,2) or NUMBER(18,2).",
+      "The root cause is the PySpark DoubleType() cast: converting from an exact decimal to IEEE 754 binary floating-point introduces rounding errors. The fix is keeping the column as DecimalType(18,2) throughout the PySpark transformation chain and writing to a DECIMAL/NUMBER column in Snowflake.",
+      "The root cause is the PostgreSQL JDBC driver: DECIMAL(18,2) is transmitted as text in PostgreSQL's wire protocol, and the JDBC driver converts it to Double before PySpark sees it. The fix is a custom JDBC type mapping that forces DECIMAL to PySpark DecimalType.",
+      "The root cause is IEEE 754 binary floating-point, which is inherent to all modern CPUs. The fix is to store all amounts as integer cents throughout the pipeline and divide by 100 only at the reporting layer."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is the direct root cause: the PySpark transformation explicitly casts DECIMAL to DoubleType(). IEEE 754 double precision cannot represent most decimal fractions exactly \u2014 47.23 in binary is a repeating fraction, so it becomes 47.22999... when stored as a double. The JDBC driver typically maps PostgreSQL DECIMAL to PySpark DecimalType correctly when schema inference is used; the explicit cast in the Spark job overrides this correct mapping and introduces the precision loss. The fix is DecimalType(18,2) throughout the transformation chain and a DECIMAL/NUMBER target column in Snowflake. Option A (Snowflake FLOAT column) is a contributing factor \u2014 a DECIMAL target would reject or truncate a floated value \u2014 but the precision is already lost before the write; fixing only the target column does not restore the original value. Option C is incorrect: the PostgreSQL JDBC driver maps DECIMAL to DecimalType by default; the explicit cast in the job overrides this. Option D (integer cents) is a valid long-term pattern but is an architectural change, not a targeted fix for the identified root cause.",
+    "hints": [
+      "The transformation step explicitly casts the amount column to DoubleType(). What numeric representation is IEEE 754 double precision, and what happens to a value like 47.23 in that format?",
+      "Which fix preserves the original DECIMAL(18,2) precision from source to sink without any type conversion along the way?"
+    ],
+    "concepts": [
+      "DATA QUALITY",
+      "ETL VS ELT",
+      "LINEAGE & OBSERVABILITY"
+    ]
+  },
+  {
+    "id": 53059,
+    "order": 59,
+    "title": "SCD Type 2 Dimension Implemented Correctly \u2014 Historical Joins Still Return Wrong Address",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "description": "A data engineer implements a slowly-changing dimension for a customer table: UPDATEs set current_flag = 'N' and end_date on the prior row, then INSERTs the new row with current_flag = 'Y'. The dimension has multiple rows per customer, each representing a historical state. The data quality team finds that a transaction from 14 months ago is joining to the customer's most recent address rather than the address that was current at transaction time. What went wrong?",
+    "options": [
+      "The UPDATE on the prior row changes a column the fact table's JOIN filters on: if the fact table queries WHERE dim.current_flag = 'Y', all historical transactions now join to the current row \u2014 the dimension management is correct but the fact JOIN predicate is wrong.",
+      "The UPDATE to set current_flag and end_date violated the append-only contract for dimension rows: modifying a written row likely introduced an error in the prior row's end_date, corrupting the date-range join for historical queries.",
+      "The fact table stores customer_id (the natural key) instead of the dimension's surrogate key. A JOIN on customer_id retrieves whichever dimension row matches the current_flag or date-range filter \u2014 not the row that was current at transaction load time. Storing the surrogate key at fact-load time is the required fix.",
+      "The nightly dimension refresh uses TRUNCATE + INSERT rather than the UPDATE/INSERT pattern, so all historical rows are deleted each night. The single current row for each customer makes all historical joins return the same current address."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is the root cause: in a correct slowly-changing dimension design, the fact table must store the surrogate key (the specific dimension row that was current at the time of the transaction), not the natural key (customer_id). If the fact table stores customer_id, every historical JOIN retrieves whichever dimension row is flagged current or matches a date-range predicate evaluated at query time \u2014 not the dimension state at fact-load time. A 14-month-old transaction will always join to the current address because it was never linked to the correct historical surrogate key when it was first loaded. The UPDATE/INSERT dimension maintenance is correct in principle; the failure is in the fact table's foreign key design. Option A (wrong JOIN predicate) would return zero rows for historical transactions (no row has current_flag = 'Y' for the historical customer_id once it is updated), not wrong rows. Option B (UPDATE violated append-only) is a design philosophy concern, not the root cause here \u2014 the described UPDATE sets correct values and does not corrupt the date range if the logic is correct. Option D (TRUNCATE + INSERT) would produce the same symptom but is not consistent with the scenario description.",
+    "hints": [
+      "The dimension has multiple rows per customer, each representing a different historical state. When the fact table JOINs on customer_id alone, which dimension row does it retrieve?",
+      "What does the fact table need to store at transaction load time to guarantee that a JOIN 14 months later retrieves the dimension state that was current when the transaction occurred?"
+    ],
+    "concepts": [
+      "SCD OPERATIONS",
+      "LINEAGE & OBSERVABILITY",
+      "DATA QUALITY"
+    ]
+  },
+  {
+    "id": 53060,
+    "order": 60,
+    "title": "Partition Granularity for a Table Serving Both Hourly Dashboards and Monthly Finance Reports",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A fact table receives continuous writes from a streaming pipeline and is queried by two very different access patterns: (1) operational dashboards filter on the last 1\u201324 hours, (2) a monthly finance report scans 30 days grouped by cost_center. Hourly partitions optimize the dashboards but force the monthly report to open 720 partitions. Monthly partitions optimize finance but force dashboards to scan 30 days for a 1-hour view. Which partition design is most defensible?",
+    "options": [
+      "Partition by hour: dashboards read a single partition efficiently, and the monthly report opens 720 partitions \u2014 modern columnar stores handle many partition opens with minimal overhead relative to scan cost.",
+      "Partition by month: the finance report scans one partition efficiently; dashboards must accept a full-month scan, which can be optimized with a secondary columnar predicate on the hour column.",
+      "Partition by day with a secondary clustering or sort key on hour: daily partitions balance both patterns \u2014 dashboards prune to 1\u20132 day partitions and filter by hour via the clustering key, while the finance report opens 30 daily partitions instead of 720 hourly ones.",
+      "Maintain two materialized copies: an hourly-partitioned table for dashboards and a monthly-partitioned table for the finance report, with the streaming pipeline writing to both simultaneously."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C (daily partition + hour clustering key) is the canonical solution for mixed-granularity access patterns. Daily partitioning provides an efficient middle ground: dashboards prune to the current day's partition (or at most 2 for hour-boundary queries) and use the clustering key to further reduce scan within the partition; the monthly report opens 30 manageable daily partitions rather than 720 hourly ones. Option A (hourly partitions) is optimal for dashboards but creates 720 partition opens for the monthly report; at high data volumes, partition-open overhead and metadata scanning becomes the bottleneck for finance queries. Option B (monthly partitions) is optimal for finance but forces dashboards to scan an entire month's partition for a 1-hour view \u2014 unacceptable for time-sensitive operational monitoring. Option D (two materialized copies) avoids the trade-off but doubles storage cost, requires the pipeline to write atomically to two sinks, and introduces operational complexity; materialized copies are appropriate when the access patterns are so divergent that no single schema can serve both, not as the first design choice.",
+    "hints": [
+      "Hourly partitions create 720 opens for the monthly report. Monthly partitions require a full-month scan for the dashboard. What granularity sits between these two extremes and serves both access patterns acceptably?",
+      "A secondary ordering key within a partition reduces scan cost for a high-cardinality filter without adding new partitions. Which option uses this property to serve the dashboard's hour-level filter?"
+    ],
+    "concepts": [
+      "PARTITIONING & PRUNING",
+      "STORAGE ARCHITECTURE",
+      "COST OPTIMIZATION"
+    ]
+  },
+  {
+    "id": 53061,
+    "order": 61,
+    "title": "Hot Kafka Partition: One Partition Receives 85% of All Topic Traffic",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A Kafka topic with 12 partitions is keyed by user_id to preserve per-user event ordering. A single partition receives 85% of all messages. Investigation reveals that one user_id (a bot account) generates 40,000 events/minute while all other users average 12 events/minute. The consumer group has 12 consumer instances, one per partition; the consumer for the hot partition runs at 100% CPU with growing lag, while the other 11 idle.",
+    "description": "What is the most architecturally correct fix?",
+    "options": [
+      "Increase the topic to 120 partitions \u2014 with more partitions, the bot's user_id will hash to a different partition and the load will spread more evenly across consumers.",
+      "Identify bot accounts at the producer before publishing: route bot events to a separate high-throughput topic with independent consumer scaling, and route human events to the original topic \u2014 the hot partition is a data classification problem, not a partition count problem.",
+      "Switch the partition key from user_id to a composite key of (user_id, event_type): the additional cardinality distributes the bot's 40,000 events/minute across multiple partitions.",
+      "Implement consumer-side rate limiting on the hot partition: a token bucket limits processing to 5,000 events/minute and discards events above the threshold to protect the consumer's CPU."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B addresses the root cause: the hot partition is caused by a specific data classification (bot vs. human traffic), not by insufficient partition count or partition key cardinality. Routing bot events to a separately-scaled topic isolates the high-volume data type, allows independent consumer scaling, and preserves ordering semantics for human events on the original topic. Option A (more partitions) does not help: Kafka's consistent hashing maps a specific user_id to one partition regardless of partition count \u2014 the same bot's user_id hashes to the same relative partition, and that partition still receives 85% of traffic. Option C (composite key) breaks per-user event ordering (the same user's events now go to multiple partitions based on event_type) and is only effective if the bot generates roughly uniform traffic across event types \u2014 an unlikely assumption. Option D (discard on rate limit) is an anti-pattern: silently dropping events in a data pipeline is a correctness violation that must be a deliberate business decision, not a load management strategy.",
+    "hints": [
+      "Adding more partitions does not change where a specific user_id hashes \u2014 the bot's events land on the same relative partition regardless of topic size. What is the actual structural cause of the hot partition?",
+      "Which option separates the high-volume data type from normal-volume data at the source, rather than trying to redistribute the load within the existing topic?"
+    ],
+    "concepts": [
+      "PARTITIONING & PRUNING",
+      "BATCH VS STREAMING",
+      "COST OPTIMIZATION"
+    ]
+  },
+  {
+    "id": 53062,
+    "order": 62,
+    "title": "Multi-Step Spark Pipeline Has 3.2% Row Count Anomaly \u2014 Which Step Is the Source?",
+    "difficulty": "hard",
+    "type": "debug",
+    "mock_only": true,
+    "scenario_context": "A 6-step Spark pipeline processes clickstream data: (1) ingest from Kafka, (2) dedup by event_id, (3) join to user dimension, (4) sessionize, (5) enrich with campaign data, (6) write to Snowflake. Step 6 output shows a 3.2% row count anomaly compared to the source. No step logs a warning or error. Spot checks confirm steps 1\u20133 produce correct counts. The anomaly was not present in last week's run.",
+    "description": "What is the most structured approach to isolate which step introduced the anomaly?",
+    "options": [
+      "Re-run the full pipeline with enhanced logging at every step \u2014 if the anomaly is reproducible, the additional logs will identify the step where row count first diverges from the expected range.",
+      "Checkpoint intermediate DataFrames to durable storage after each step and compare row counts and key distributions at each stage \u2014 the first step where count deviates from the expected range is the introducing step.",
+      "Examine the git diff since last week's passing run and review the code change most likely to cause a 3.2% count change \u2014 the anomaly appeared after a code change, so the change is the root cause.",
+      "Start debugging from step 6 and work backwards \u2014 reviewing the write logic, then enrichment, then sessionization \u2014 because starting from the known-bad output is faster than scanning from input."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is the systematic, correct approach for lineage debugging in a multi-step pipeline: persist intermediate DataFrames after each step and compare row counts (and key distributions) at each boundary. The first step where count deviates is the introducing step. Since steps 1\u20133 are already verified clean via spot checks, only steps 4\u20136 need to be checkpointed. This approach is deterministic \u2014 it identifies the source in one forward pass without requiring speculative re-runs or code archaeology. Option A (enhanced logging on re-run) achieves a similar result but is less precise: ad-hoc logging may not capture the exact metrics needed, and a re-run introduces the risk that the anomaly is data-conditional and may not reproduce identically. Option C (git diff analysis) assumes the anomaly is caused by a code change, which is not necessarily true \u2014 it could be a data quality issue in this run's source data (upstream schema drift, new edge case) that triggers a latent bug. Option D (backwards from step 6) is less efficient than a forward pass: if the bug is in step 4, you diagnose steps 6 and 5 before reaching the source \u2014 checkpointing finds it in one pass.",
+    "hints": [
+      "Steps 1\u20133 are already verified clean. What is the most direct way to determine which of steps 4\u20136 first produces a count or distribution different from what was expected?",
+      "Which approach identifies the introducing step in a single forward pass without requiring multiple speculative re-runs or assumptions about root cause?"
+    ],
+    "concepts": [
+      "LINEAGE & OBSERVABILITY",
+      "INCIDENT RESPONSE",
+      "DATA QUALITY"
+    ]
+  },
+  {
+    "id": 53063,
+    "order": 63,
+    "title": "ETL Redacts PII Before Write vs. ELT Redacts PII in the Warehouse \u2014 Which Is More Defensible?",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A pipeline ingests customer records from PostgreSQL into Snowflake. Records contain Social Security Numbers that must be redacted (replaced with REDACTED) before any analyst can query them. Two designs are proposed: (A) ETL \u2014 redact SSNs in PySpark before writing to Snowflake, so raw SSNs never land in the warehouse. (B) ELT \u2014 load raw records including SSNs into a Snowflake landing zone, then redact via a SQL transform that runs before analyst access is granted.",
+    "description": "Which design is more defensible from a data governance perspective, and why?",
+    "options": [
+      "ETL is more defensible: SSNs are never written to Snowflake in any form \u2014 a Snowflake credential compromise, misconfigured role, or support access event exposes only redacted data. Minimum-necessary data exposure is the governing principle for high-sensitivity PII.",
+      "ELT is more defensible: Snowflake's column-level security and dynamic data masking policies give fine-grained, auditable control over which roles see raw vs. redacted data \u2014 more control than a PySpark transform that is difficult to audit and version.",
+      "Both designs are equally defensible; the choice should be driven by engineering convenience \u2014 Snowflake SQL transforms are faster to author and maintain than PySpark, so ELT is preferred on operational grounds.",
+      "ELT is more defensible only if the landing zone is in a separate Snowflake account with no analyst access; a single-account ELT where raw SSNs land in any schema accessible by the Snowflake role hierarchy is not defensible for SSN-class PII."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is more defensible from a strict data governance standpoint: if SSNs never land in Snowflake, they cannot be exposed by Snowflake credential compromise, misconfigured masking policies, role escalation bugs, or cloud vendor support access. The principle of minimum-necessary data exposure \u2014 not writing PII to a system unless that system is strictly necessary to hold it \u2014 is the governing principle for SSN-class data. Option B (ELT with column-level security) is a legitimate design but requires trusting Snowflake's policy enforcement as the sole control against SSN exposure: a misconfigured masking policy or role hierarchy gap directly exposes raw SSNs, and raw SSNs transit Snowflake infrastructure during the landing-to-transform window. Option C is incorrect: governance implications are not equal, and engineering convenience is not a defensible argument for SSN handling. Option D is partially correct \u2014 landing zone isolation does improve ELT security \u2014 but even in a separate account, raw SSNs land in cloud storage and transit the network. Minimum-exposure ETL (Option A) remains the stronger posture.",
+    "hints": [
+      "If Snowflake credentials were compromised, which design limits what the attacker can read to already-redacted data rather than raw SSNs?",
+      "Which design minimizes the number of systems and storage layers where raw SSNs physically exist at any point in the pipeline?"
+    ],
+    "concepts": [
+      "ETL VS ELT",
+      "DATA GOVERNANCE",
+      "STORAGE ARCHITECTURE"
+    ]
+  },
+  {
+    "id": 53064,
+    "order": 64,
+    "title": "Exactly-Once Claimed at Every Pipeline Hop \u2014 Duplicates Still Appear at the Final Sink",
+    "difficulty": "hard",
+    "type": "debug",
+    "mock_only": true,
+    "scenario_context": "A three-hop pipeline: Kafka \u2192 Flink (stateful aggregation, EOS) \u2192 Kafka \u2192 Spark (transform, EOS consumer) \u2192 Postgres (idempotent writes via INSERT ON CONFLICT DO NOTHING keyed on event_id). After a Flink checkpoint failure and recovery, the Postgres table has 0.4% duplicate rows despite each hop claiming exactly-once delivery.",
+    "description": "What is the most likely root cause of the 0.4% duplication despite end-to-end EOS claims?",
+    "options": [
+      "Flink EOS guarantees exactly-once from the Kafka source to the intermediate Kafka topic, but on checkpoint failure and recovery, Flink re-emits some messages that were already committed to the intermediate topic \u2014 the EOS guarantee breaks at checkpoint recovery boundaries.",
+      "The Postgres idempotent sink is keyed on an event_id generated by the Flink aggregation step. After Flink's recovery re-processes input events, aggregated output rows may be assigned different event_ids than in the first run \u2014 the ON CONFLICT check passes for what are logically duplicate rows.",
+      "Spark's EOS consumer reads some intermediate Kafka messages twice: once before the consumer group coordinator detected the Flink recovery event and once after partition rebalancing assigned them to a new executor.",
+      "Postgres ON CONFLICT DO NOTHING is non-deterministic under concurrent INSERT from multiple Spark executors \u2014 two executors can insert the same row simultaneously before the constraint check is evaluated, and both succeed."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is the most likely root cause: the Postgres idempotency guarantee is only as strong as the stability of the dedup key (event_id). If the Flink aggregation step generates event_ids using non-deterministic methods (UUID generation from an in-memory counter that resets on checkpoint recovery, or a timestamp-based UUID that differs between the original run and the recovery re-run), logically duplicate aggregated outputs receive different event_ids. The ON CONFLICT check passes \u2014 no conflict is detected \u2014 and duplicate rows are inserted. This is a dedup key stability failure, not an EOS failure. Option A describes a misconception: Flink EOS with Kafka transactions uses an atomic checkpoint-and-commit protocol \u2014 recovery rolls back uncommitted transactions and replays from the last checkpoint. Messages that were already committed in Kafka before the checkpoint will not be re-emitted; the EOS guarantee is maintained at the Kafka level. Option C is prevented by Spark's EOS consumer with isolation.level=read_committed. Option D is incorrect: Postgres evaluates ON CONFLICT with row-level locking, preventing concurrent duplicate inserts from both succeeding.",
+    "hints": [
+      "The Postgres sink uses ON CONFLICT DO NOTHING keyed on event_id. After Flink's checkpoint recovery re-processes the same input events, are the aggregation outputs guaranteed to produce the same event_id values as the first run?",
+      "Which root cause involves the dedup key being correct in design but non-deterministic in value across pipeline re-runs?"
+    ],
+    "concepts": [
+      "DELIVERY SEMANTICS",
+      "IDEMPOTENCY",
+      "LINEAGE & OBSERVABILITY"
+    ]
+  },
+  {
+    "id": 53065,
+    "order": 65,
+    "title": "Upstream DAG Task Fails Mid-Run \u2014 15 Downstream Tasks Are Already Running",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "An Airflow DAG has one upstream task (task_A) that partitions data and writes 15 output files, one per downstream task. task_A starts at 2 AM and normally completes by 2:30 AM. Today, task_A fails at 2:17 AM having written 9 of 15 output files. Airflow had already started all 15 downstream tasks at 2:05 AM when a file-existence sensor detected task_A's first file write \u2014 not a task-completion signal. Nine downstream tasks are processing valid files. Six are running but their input files do not exist and will eventually fail with FileNotFoundError.",
+    "description": "What is the correct immediate remediation, and what design change prevents this failure class?",
+    "options": [
+      "Let the 6 failing tasks fail naturally; re-run task_A after fixing the upstream issue; then clear and re-run only the 6 failed downstream tasks \u2014 Airflow's partial re-run capability handles this correctly.",
+      "Immediately cancel all 15 downstream tasks, fix task_A, re-run task_A to completion, then trigger all 15 downstream tasks \u2014 partial downstream output from the 9 successful tasks may conflict with task_A's re-run output.",
+      "Let the 9 successful downstream tasks complete and the 6 failing tasks fail naturally; then fix and re-run task_A; then clear and re-run only the 6 failed downstream tasks. The design fix is replacing the file-existence sensor with a task-completion dependency so downstream tasks only start after task_A signals SUCCESS.",
+      "Pause the entire DAG, fix task_A, re-run task_A, then resume the DAG from its beginning \u2014 a partial run mixing successful and failed tasks cannot be safely resumed from the middle."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct on both counts. For the immediate remediation: letting the 9 tasks with valid input complete preserves correct work \u2014 their output is based on valid data from task_A and does not need to be re-run. Letting the 6 tasks fail naturally preserves accurate Airflow task state (FAILED, not CANCELLED), making it straightforward to clear and re-run only those 6 once task_A is fixed. For the design fix: the root cause is a file-existence sensor (fires when any file appears) rather than a task-completion dependency (fires only when task_A reaches SUCCESS state). A task-completion dependency ensures all 15 output files exist before any downstream task starts, regardless of how long task_A takes. Option A is partially correct but does not address whether the 9 successful tasks produce output that will conflict with task_A's re-run output \u2014 if task_A re-runs and overwrites its output files, the 9 downstream tasks' output may need to be re-checked. Option B (cancel all 15) throws away valid, correct work unnecessarily. Option D (resume from beginning) would re-run the 9 already-successful tasks, wasting compute and potentially introducing inconsistencies.",
+    "hints": [
+      "The 9 downstream tasks that received valid input files completed successfully. Do they need to be re-run after task_A is fixed?",
+      "The sensor fired when task_A started writing files rather than when it finished. What type of dependency ensures downstream tasks wait until all upstream outputs exist?"
+    ],
+    "concepts": [
+      "ORCHESTRATION",
+      "INCIDENT RESPONSE",
+      "SCHEDULING & SLAS"
+    ]
+  },
+  {
+    "id": 53066,
+    "order": 66,
+    "title": "Cost Spike From an Over-Partitioned Kafka Topic \u2014 3,000 Partitions, 50 MB/s Throughput",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A Kafka topic was created with 3,000 partitions to maximize parallelism for a high-throughput pipeline. Three months later, broker CPU averages 85% with no increase in message volume. Cluster costs have increased 4x. Each broker hosts 250 partitions. The consumer group runs 3,000 consumer threads. Total message throughput is 50 MB/s \u2014 a load that 30 partitions could easily handle.",
+    "description": "What is the root cause of the cost spike, and what is the correct fix?",
+    "options": [
+      "The root cause is under-provisioned brokers: 250 partitions per broker exceeds Kafka's recommended ceiling of 100 partitions per broker. The fix is adding brokers to redistribute partition leadership until each broker holds fewer than 100 partitions.",
+      "The root cause is over-partitioning: Kafka's leader election, ISR management, replica fetch threads, and offset tracking overhead all scale linearly with partition count. At 3,000 partitions, 90%+ of broker CPU is partition-management overhead rather than message throughput. The fix is reducing partition count to match actual throughput requirements.",
+      "The root cause is consumer thread overhead: 3,000 consumer threads saturate broker connection pools and cause high context switching on the broker side. The fix is reducing consumer concurrency while keeping the 3,000 partitions.",
+      "The root cause is replication overhead: 3,000 partitions at replication factor 3 creates 9,000 replica-sync operations per replication cycle. The fix is reducing the replication factor from 3 to 1 for this topic to eliminate replica management cost."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: Kafka's per-partition overhead \u2014 leader election state, ISR (in-sync replica) tracking, replica fetch threads, offset commit log entries, and controller metadata \u2014 scales linearly with partition count. At 3,000 partitions and only 50 MB/s actual throughput, the message-processing load is trivial (30 partitions would suffice); nearly all broker CPU is consumed by partition-management work, not by moving messages. The correct fix is to reduce partition count to a number appropriate for the actual throughput. Option A (add brokers) redistributes partitions but does not reduce total partition-management overhead \u2014 each broker still manages the same aggregate number of partitions, just spread differently; overall cluster cost increases further. Option C (reduce consumer threads) reduces consumer-side load but not broker-side partition management, where the CPU actually is. Option D (reduce replication factor to 1) is a significant reliability regression \u2014 it eliminates fault tolerance entirely \u2014 and is not an appropriate trade-off for a cost optimization problem when the correct fix is simply reducing partition count.",
+    "hints": [
+      "The actual throughput is 50 MB/s \u2014 trivial for 30 partitions. What does Kafka do for each partition that consumes broker CPU regardless of how many messages pass through it?",
+      "Which fix addresses the root cause by reducing the total number of partitions the cluster must manage, rather than absorbing the overhead through more hardware or reduced reliability?"
+    ],
+    "concepts": [
+      "PARTITIONING & PRUNING",
+      "COST OPTIMIZATION",
+      "BATCH VS STREAMING"
+    ]
+  },
+  {
+    "id": 53067,
+    "order": 67,
+    "title": "Nightly Dimension Refresh Overwrites History \u2014 Historical Fact Joins Return Wrong Category",
+    "difficulty": "hard",
+    "type": "debug",
+    "mock_only": true,
+    "scenario_context": "A pipeline joins a click events fact table to a product_catalog dimension to enrich clicks with product_category. The product_catalog is refreshed nightly via full overwrite from a CMS. The product team moved 1,200 products from category 'Electronics' to 'Smart Home' in the CMS. The nightly refresh overwrote the product_catalog. Historical click events from the past 6 months that occurred when those products were categorized as 'Electronics' now join to 'Smart Home' \u2014 6 months of historical analytics are retroactively corrupted.",
+    "description": "What is the root cause and the most appropriate design fix?",
+    "options": [
+      "The root cause is the full-overwrite refresh pattern: overwriting the dimension deletes all prior category states. The fix is a SCD Type 1 design with a version column \u2014 each refresh creates a new version row, and fact table joins use the version that was current at click time.",
+      "The root cause is the absence of a surrogate key in the fact table: the fact table stores product_id (natural key) rather than a surrogate key pointing to the specific product_catalog row that was current at click load time. The fix is storing the dimension's surrogate key at fact-load time.",
+      "The root cause is the full-overwrite refresh pattern: it permanently destroys historical dimension states. The fix is an append-only, slowly-changing dimension design \u2014 each state change adds a new row with valid start and end dates, and fact table joins retrieve the row whose date range contains the click's event_time.",
+      "The root cause is the nightly refresh frequency: daily updates are too coarse and allow stale dimension data to linger. The fix is a streaming CDC pipeline that updates the product_catalog within seconds of any CMS change, reducing the staleness window to near-zero."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C identifies both the root cause and the correct design fix. The full-overwrite refresh permanently destroys historical dimension states: once overwritten, the prior category values are gone and all fact table joins retrieve the current (wrong) category. An append-only dimension with start_date/end_date per state change preserves every historical state; fact table joins retrieve the row whose date range contains the click's event_time, correctly returning 'Electronics' for a click from 3 months ago. Option A incorrectly describes SCD Type 1 (which also overwrites the current value \u2014 Type 1 is for 'current state only, no history') and uses 'version column' inaccurately. The historical preservation requires append-only rows with date ranges, which is Type 2 semantics. Option B (surrogate key in the fact table) is a necessary companion implementation detail once the historical dimension exists, but without the append-only dimension design (Option C), having a surrogate key in the fact table does not help \u2014 the correct historical row must first exist in the dimension. Option D (streaming CDC refresh) reduces staleness but does not solve the root cause: even a real-time dimension that overwrites current state still loses history when products are recategorized.",
+    "hints": [
+      "When the product_catalog is fully overwritten, what happens to the dimension row that represented a product's prior category?",
+      "What dimension design pattern preserves every historical category state as a separate row with date ranges, allowing a historical fact join to retrieve the correct state for any past timestamp?"
+    ],
+    "concepts": [
+      "SCD OPERATIONS",
+      "LINEAGE & OBSERVABILITY",
+      "DATA QUALITY"
+    ]
   }
 ]
