@@ -1609,5 +1609,324 @@
       "COST OPTIMIZATION",
       "STORAGE ARCHITECTURE"
     ]
+  },
+  {
+    "id": 52062,
+    "order": 62,
+    "title": "CDC Pipeline Breaks After Source MySQL Adds a NOT NULL Column",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A Change Data Capture pipeline uses Debezium to stream MySQL binlog events to Kafka and then to a data warehouse. The source team adds a new NOT NULL column `subscription_tier` with a default value of 'standard' directly via ALTER TABLE. The Debezium connector begins failing with deserialization errors on the Kafka consumer side, even though the DDL change was applied cleanly to MySQL.",
+    "description": "What is the most likely root cause of the connector failure, and how should the schema change workflow be modified to prevent recurrence?",
+    "options": [
+      "Debezium captures the DDL event from the binlog and emits a schema-change event to Kafka. If the downstream schema registry or consumer schema does not include the new column, deserialization fails because the consumer tries to read a field it has no schema definition for. The correct workflow: update the downstream consumer schema (add `subscription_tier` as optional or with default) before the DDL is applied to MySQL, then re-deploy the consumer, then apply the ALTER TABLE.",
+      "Debezium does not support NOT NULL columns with defaults — the column must be defined as nullable in MySQL before Debezium can stream it. Alter the column to be nullable first, then add the NOT NULL constraint after the consumer schema is updated.",
+      "The Debezium connector lost its binlog position due to the DDL event and needs to be restarted from the beginning of the binlog to re-sync the full table state. Set snapshot.mode=initial and restart the connector.",
+      "Kafka's schema registry is rejecting the new schema because adding a NOT NULL column violates BACKWARD compatibility — downgrade the column to have a default value and retry the schema registration."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A correctly describes the CDC schema-change problem: Debezium captures DDL events and emits updated schemas to Kafka (Avro with schema registry or JSON). If the downstream consumer's schema doesn't include the new column, deserialization fails when the consumer tries to decode a record that now has an extra field. The safe workflow is schema-first: update the consumer schema to accept the new column (as optional, with default) before the DDL is applied to the source. Option B is incorrect — Debezium handles NOT NULL columns with defaults natively; the issue is downstream consumer schema lag, not Debezium's column support. Option C (restart from beginning) is unnecessarily destructive for a schema change; Debezium has dedicated mechanisms for handling DDL events without full re-snapshot. Option D misattributes the failure to Kafka's schema registry rejecting a registration — the registry would reject only if explicitly configured for BACKWARD compatibility with a breaking change.",
+    "hints": [
+      "CDC captures both data changes and schema changes from the binlog. What happens to a consumer that receives a row encoded with a newer schema it has never seen?",
+      "Schema changes in a CDC pipeline require coordinating three systems: the source database, the connector schema, and the downstream consumer schema. Which must be updated first to keep the pipeline running?"
+    ],
+    "concepts": [
+      "CDC & INGESTION",
+      "SCHEMA EVOLUTION",
+      "DATA CONTRACT"
+    ]
+  },
+  {
+    "id": 52063,
+    "order": 63,
+    "title": "Daily Revenue Metric Is Wrong but No Alert Fired",
+    "difficulty": "medium",
+    "type": "debug",
+    "mock_only": true,
+    "description": "Your revenue_daily table aggregates order revenue by date. The business analyst reports that yesterday's revenue figure is $1.2 M lower than expected. Investigating: the pipeline logs show no errors, all DAG tasks completed with SUCCESS, and no data quality alerts fired. Examining the raw orders table, the expected order count is correct. However, a join to the payments table shows that 8,400 orders have a payment record with status = 'voided' — they are legitimately excluded from revenue. The same 8,400 orders appeared in last month's figures. The confusion: last month the voided filter was applied; this month it was inadvertently removed during a schema refactor.",
+    "options": [
+      "The data quality suite is checking row counts (do the expected number of rows exist?) but not value-level invariants (is the revenue figure within an expected range?). The correct fix: add a reconciliation check that compares the sum of revenue_daily against an independent control total from the payments table, filtered by status != 'voided'. This would catch the filter removal immediately. The pipeline logic also needs to have the filter restored.",
+      "The pipeline should add a NOT NULL constraint on the voided_at column in the payments table — voided payments always have a non-null voided_at timestamp. A NOT NULL violation during INSERT would surface the schema change as an error.",
+      "Enable dbt's source freshness check on the payments table — if the payments table has not been updated in the expected window, the freshness check fails and the DAG halts, surfacing the data staleness as an alert.",
+      "The fix is to add an explicit test that compares today's revenue aggregate against yesterday's with a ±10% tolerance band. A 12% drop would immediately fire the alert."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A correctly diagnoses the gap in the data quality strategy: the existing checks validate structure (row counts, NULLs) but not business-level value correctness (revenue total matches an independent control). A reconciliation check against a trusted control total would catch any filter addition or removal. Option B (NOT NULL constraint on voided_at) does not help — the voided payments were not missing; they were incorrectly included in the aggregate because the filter was removed. The payments table itself has valid data; the bug is in the aggregation query. Option C (freshness check) validates that data is recent, not that it is correct — the payments table was fresh and complete. Option D (±10% tolerance) could work as a fallback alert, but it does not identify the cause and would require manual investigation every time revenue changes by more than 10% due to legitimate business reasons (promotions, seasonality).",
+    "hints": [
+      "Every check that passed was a structural check: did the right number of rows arrive? Were there NULLs? What kind of check would have caught that the revenue calculation itself was using the wrong filter?",
+      "A reconciliation check compares two independent paths to the same value — the pipeline output and a control query that re-derives the expected value from raw data. Where would you add this check, and what control query would catch a missing 'voided' filter?"
+    ],
+    "concepts": [
+      "DATA QUALITY",
+      "LINEAGE & OBSERVABILITY",
+      "INCIDENT RESPONSE"
+    ]
+  },
+  {
+    "id": 52064,
+    "order": 64,
+    "title": "Hourly Aggregates Wrong Because Late Events Miss the Window",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A streaming pipeline computes hourly click counts per campaign. Events are produced by mobile apps that batch-send clicks every 10–15 minutes. Some users are in areas with intermittent connectivity, causing click batches to arrive 20–45 minutes after the event time. The hourly aggregation window closes at the top of each hour, and late clicks are systematically excluded, making campaign click counts ~8% lower than the source-of-truth reported by the mobile app backend.",
+    "description": "What is the correct streaming design to capture late events without making all events wait?",
+    "options": [
+      "Use event-time windowing with a watermark set to 45 minutes (the maximum observed lateness). At the end of each hour, the window does not close until the watermark passes — events that arrive within 45 minutes of their event time are included in the correct window. Publish only the final window result, not intermediate results, to avoid showing incomplete counts.",
+      "Switch to processing-time windowing: aggregate events as they arrive rather than by event time. This guarantees all events are counted in the window they are received, with zero late-event exclusion, and eliminates the need for watermarks entirely.",
+      "Add a reprocessing job that runs at T+60 minutes for each hour window, re-reading all events from the source and re-computing the aggregate including any late arrivals. Replace the streaming aggregate with the batch result.",
+      "Increase the hourly window to a 2-hour window so that late events arriving 45 minutes after the event time fall within the extended window and are naturally included."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is the standard streaming solution: event-time windowing with a watermark calibrated to the maximum observed lateness. The watermark delays window closure to allow late events to arrive and be correctly included. This preserves event-time semantics (clicks are counted in the hour they occurred, not the hour they arrived) while accommodating late mobile batches. Option B (processing-time windowing) solves the lateness problem but breaks event-time semantics — a click that happened at 2:58 PM but arrived at 3:10 PM would be counted in the 3 PM hour instead of the 2 PM hour, distorting per-hour campaign analytics. Option C (batch reprocessing) is correct in principle but adds 60-minute latency to every aggregate and is operationally complex (managing two computation paths for the same metric). Option D (2-hour window) changes the business metric — hourly click counts are no longer hourly if the window spans 2 hours.",
+    "hints": [
+      "Event-time windowing assigns events to the hour they occurred, not the hour they arrived. What mechanism allows a streaming window to stay open past the top of the hour, waiting for events that are known to arrive late?",
+      "The maximum observed batch latency is 45 minutes. If you set the delay threshold to match this maximum latency, which events would be included in the correct hourly window?"
+    ],
+    "concepts": [
+      "WATERMARKING",
+      "BATCH VS STREAMING",
+      "SCHEDULING & SLAS"
+    ]
+  },
+  {
+    "id": 52065,
+    "order": 65,
+    "title": "Why Exactly-Once Delivery Alone Does Not Prevent Duplicates in the Sink",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A data engineering team migrates their Kafka pipeline to use the Kafka transactional producer with exactly-once delivery semantics. After the migration, they discover duplicate rows in the destination Postgres database during a load test. An engineer argues 'we configured exactly-once — there should be no duplicates.' A second engineer says the duplicates are still possible. Who is correct, and why?",
+    "options": [
+      "The second engineer is correct. Kafka's exactly-once semantics guarantee that each message is written to Kafka exactly once and delivered to a consumer exactly once — but they make no guarantee about what happens after the consumer reads the message and writes to the sink. If the consumer crashes after writing to Postgres but before committing the Kafka offset, the next consumer run will re-read the message and write to Postgres again, producing a duplicate. The sink write must also be idempotent (e.g., INSERT ON CONFLICT DO NOTHING) to complete the exactly-once guarantee end-to-end.",
+      "The first engineer is correct. Kafka's exactly-once transactional producer and consumer guarantee that each message is processed exactly once end-to-end, including the write to the sink. Duplicates in Postgres indicate a Kafka configuration error — verify that isolation.level=read_committed is set on all consumers.",
+      "Both engineers are partially correct: Kafka exactly-once guarantees are best-effort, allowing up to 1% duplicate delivery under high load. The solution is to set the Kafka producer's max.in.flight.requests.per.connection to 1, which eliminates reordering and reduces duplicate delivery probability to near zero.",
+      "The second engineer is correct, but the root cause is that Postgres is not a transactional Kafka connector — exactly-once guarantees apply only to Kafka-to-Kafka pipelines (e.g., Kafka Streams). Writes to external databases always require at-least-once delivery with a separate deduplication layer."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A correctly describes the exactly-once boundary: Kafka's transactional semantics guarantee exactly-once delivery *within the Kafka ecosystem* (producer to broker to consumer). The guarantee does not extend to external sinks like Postgres, because the consumer must atomically commit both the Kafka offset and the Postgres write — if these two commits are not part of the same transaction, a crash between them breaks the exactly-once guarantee. The fix is to make the sink write idempotent (UPSERT / INSERT ON CONFLICT) or to use a two-phase commit between Kafka and Postgres. Option B is wrong: the guarantee does not cover external writes. Option C incorrectly describes exactly-once as 'best-effort' — it is a strong guarantee within Kafka, not probabilistic. Option D overstates the limitation: Kafka Streams can maintain exactly-once for Kafka-to-Kafka processing, but exactly-once to external sinks is achievable with idempotent sinks or two-phase commit.",
+    "hints": [
+      "Kafka's delivery guarantee covers the path from producer to broker to consumer offset commit. What happens to the data that the consumer writes to Postgres — is that covered by the same guarantee?",
+      "Two commits must happen atomically for an end-to-end guarantee: the Kafka offset commit and the sink write. If the consumer crashes between these two operations, what does the next consumer run do?"
+    ],
+    "concepts": [
+      "DELIVERY SEMANTICS",
+      "IDEMPOTENCY",
+      "INCIDENT RESPONSE"
+    ]
+  },
+  {
+    "id": 52066,
+    "order": 66,
+    "title": "Schema Registry BACKWARD Check Fails During Deployment",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A producer team is deploying a new version of their event schema. The schema registry is configured for BACKWARD compatibility. The new schema removes an optional field `referral_code` that was present in v3 but is no longer used. The schema registry rejects the new schema with: 'BACKWARD compatibility violation: field referral_code removed.' The deployment is blocked. The product team asks why removing an optional field is a violation.",
+    "description": "Why does removing an optional field violate BACKWARD compatibility, and what is the correct path forward?",
+    "options": [
+      "BACKWARD compatibility requires that consumers using the old schema (v3) can read data written with the new schema (v4). If v3 consumers expect `referral_code` to exist (even as optional), reading a v4 record that lacks the field may fail deserialization if the consumer's code explicitly accesses the field. The safe path: deprecate the field by keeping it in the schema with a clear alias or documentation marker for one release cycle, ensure all consumers no longer reference it, then remove it in v5. Alternatively, switch the registry to FULL_TRANSITIVE compatibility mode only after all consumers confirm they ignore the field.",
+      "The schema registry is misconfigured. BACKWARD compatibility explicitly allows removing optional fields because optional fields have no impact on consumers that ignore them. Submit a bug report to the schema registry team and override the check for this deployment.",
+      "BACKWARD compatibility violations can be bypassed by setting the producer's schema.compatibility.level to NONE for this specific version and reverting to BACKWARD for the next version. This is the standard procedure for removing deprecated fields.",
+      "The field should be changed from optional to required with a sentinel value (e.g., `referral_code: ''`) rather than removed. This satisfies BACKWARD compatibility because the field continues to exist and consumers can safely read its empty value."
+    ],
+    "correct_option": 0,
+    "explanation": "BACKWARD compatibility means old consumers (using v3 schema) can read data encoded with the new schema (v4). Removing a field, even an optional one, can break this guarantee if any old consumer's deserialization code explicitly accesses `referral_code` — the consumer may throw a field-not-found error. Avro's default behavior is to return null for missing optional fields, but not all frameworks implement this consistently. The safe path is to deprecate first: mark the field as deprecated in the schema documentation (or using a schema extension), confirm no consumers read it, then remove it in the next version. Option B is factually wrong — removing fields does violate BACKWARD compatibility in most schema systems. Option C (set to NONE) is an anti-pattern: bypassing compatibility checks in production is operationally risky and defeats the purpose of schema governance. Option D (empty sentinel) is a valid short-term workaround but has downstream implications: consumers that parse `referral_code` will now process empty strings instead of null, which may introduce bugs in downstream logic.",
+    "hints": [
+      "BACKWARD compatibility means old consumers can read new data. If v3 consumers expect a field to exist (even optionally), what happens when they read a v4 record where that field is missing?",
+      "The safe schema evolution pattern for field removal is: mark deprecated → confirm all consumers have stopped reading → remove. Why is confirming consumer behavior the critical step before removal?"
+    ],
+    "concepts": [
+      "SCHEMA EVOLUTION",
+      "DATA CONTRACT",
+      "LINEAGE & OBSERVABILITY"
+    ]
+  },
+  {
+    "id": 52067,
+    "order": 67,
+    "title": "Partition Pruning Not Working Despite PARTITION BY on Table",
+    "difficulty": "medium",
+    "type": "debug",
+    "mock_only": true,
+    "description": "A data team added PARTITION BY event_date to their Snowflake events table two months ago, expecting queries to prune to only matching date partitions. However, the query profile for `SELECT * FROM events WHERE DATE(event_timestamp) = '2024-06-15'` still shows a full table scan (100% of micro-partitions scanned). The table has been actively written to since partitioning was enabled.",
+    "options": [
+      "The WHERE clause uses DATE(event_timestamp), a function applied to the timestamp column, rather than filtering on the event_date partition column directly. Snowflake cannot apply partition pruning when the filter expression wraps the column in a function — it must compare the partition column directly. Rewrite the query to use `WHERE event_date = '2024-06-15'` to enable micro-partition pruning.",
+      "Snowflake's micro-partition pruning is triggered only after a full cluster key is defined. Without `CLUSTER BY (event_date)`, the PARTITION BY clause creates logical partitions but does not physically cluster micro-partitions by date, so all micro-partitions are scanned. Add a CLUSTER BY to enable effective pruning.",
+      "Partition pruning in Snowflake is only effective after a full reclustering operation (`ALTER TABLE events RECLUSTER`). The table was partitioned 2 months ago but has not been reclustered — run the recluster operation and the query profile will show micro-partition pruning.",
+      "The event_timestamp column's data type (TIMESTAMP_NTZ) does not support automatic pruning in Snowflake. Convert the column to TIMESTAMP_TZ (timezone-aware) and Snowflake's pruning algorithm will automatically align micro-partition boundaries with calendar dates."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A identifies the root cause: applying a function (DATE()) to the partition column in a WHERE clause prevents the query engine from using partition metadata for pruning. The engine cannot precompute which partitions satisfy `DATE(event_timestamp) = '2024-06-15'` without scanning all partitions and evaluating the function per row. Rewriting to `WHERE event_date = '2024-06-15'` allows the optimizer to directly compare the partition column value against micro-partition metadata. Option B confuses CLUSTER BY (Snowflake-specific physical clustering) with partitioning — in Snowflake, micro-partition pruning does not require CLUSTER BY; it works on any column with sufficient data distribution. Option C (recluster) is relevant for CLUSTER BY operations but is unrelated to why function wrapping breaks pruning. Option D is incorrect — Snowflake pruning works on both TIMESTAMP_NTZ and TIMESTAMP_TZ columns and the data type is not the issue.",
+    "hints": [
+      "The query filters on DATE(event_timestamp), not on event_date directly. The optimizer reads micro-partition metadata (min/max values per column) to decide which partitions to skip — can it use metadata for a computed expression?",
+      "Partition pruning requires the WHERE clause to compare the partitioned column directly. What one-word change to the query predicate would allow Snowflake to skip irrelevant micro-partitions?"
+    ],
+    "concepts": [
+      "PARTITIONING & PRUNING",
+      "COST OPTIMIZATION",
+      "LINEAGE & OBSERVABILITY"
+    ]
+  },
+  {
+    "id": 52068,
+    "order": 68,
+    "title": "Upstream Table Stops Updating: 4 Downstream DAGs Silently Succeed",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "At 1:30 AM, a source database migration paused updates to the `orders` table — no rows have been inserted since 1:30 AM. Four downstream orchestration DAGs read from `orders` as their first step and run nightly at 2:00 AM. All four DAGs complete successfully at 3:45 AM. At 9:00 AM, the analytics team finds that all four downstream tables show yesterday's data rather than today's.",
+    "description": "Why did the downstream DAGs not detect the stale source, and what is the correct detection strategy?",
+    "options": [
+      "The DAGs did not fail because they processed the orders table successfully — it simply had no new rows to process, which incremental pipelines treat as a valid (empty) run. The correct detection strategy: add a source freshness check as the first DAG step that fails the run if the max(updated_at) in the orders table is older than a configurable threshold (e.g., 30 minutes). This surfaces stale source data before any downstream computation proceeds.",
+      "The DAGs should add a row count check at the end of each run: if today's output has fewer rows than yesterday's output, fail the DAG. A row count drop would indicate that fewer orders were processed, alerting the team to the stale source.",
+      "Configure the source database migration to send a completion signal to the orchestrator — the 4 downstream DAGs should be triggered by a data-available event rather than a fixed schedule. No freshness check is needed if the orchestrator waits for the signal.",
+      "Add a data quality NOT NULL check on the order_date column in each downstream table — if the stale source produced rows, they would have today's order_date as NOT NULL, but if no rows were processed, the check would fail."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A identifies the root cause: incremental pipelines are designed to handle empty input gracefully (no new rows = no output = success). The 4 DAGs successfully processed 0 new orders and produced 0 new rows downstream — a perfectly valid execution from the orchestrator's perspective. A source freshness check is the correct control: it validates that the source has been updated within the expected window BEFORE any downstream computation, so staleness is caught immediately rather than silently propagated. Option B (row count comparison) is a reasonable alert but catches the problem too late — after the computation completes — and produces false positives on naturally slow order days. Option C (event-driven trigger) is architecturally correct for eliminating scheduling races but requires the migration system to emit events, which is a system integration change. Option D (NOT NULL on order_date) cannot detect a stale source — if 0 rows were processed, no rows exist to check; the NOT NULL constraint applies to rows that exist, not to the absence of rows.",
+    "hints": [
+      "Incremental pipelines treat 'no new rows in the source' as a valid, successful run. What check, placed before the first transformation step, would fail the pipeline if the source has not been updated recently?",
+      "A source freshness check validates that max(updated_at) > NOW() - interval. Where in the DAG should this check run, and what threshold would catch a source that stopped updating at 1:30 AM for a 2:00 AM job?"
+    ],
+    "concepts": [
+      "LINEAGE & OBSERVABILITY",
+      "ORCHESTRATION",
+      "DATA QUALITY",
+      "SCHEDULING & SLAS"
+    ]
+  },
+  {
+    "id": 52069,
+    "order": 69,
+    "title": "SCD Type 2 Records Duplicated After Reprocessing Without Deduplication",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A customer dimension is maintained as SCD Type 2 (inserts a new row per change, with effective_from and effective_to). An operator mistakenly re-ran last week's load job, which re-read the source change feed and inserted new SCD rows for every customer change that was processed last week. The customer dimension now has duplicate SCD periods: two rows with identical (customer_id, effective_from) combinations but different surrogate_keys, both with effective_to = '9999-12-31'.",
+    "description": "What is the correct strategy to restore the dimension without breaking downstream fact table foreign keys?",
+    "options": [
+      "Identify the duplicate SCD pairs using a query that finds rows with the same (customer_id, effective_from) and effective_to = '9999-12-31'. For each pair, retain the row with the original surrogate_key (the lower value, written during last week's load) and mark the duplicate row (the higher surrogate_key, written during the re-run) as expired by setting its effective_to to the re-run timestamp. Do not delete the duplicate rows — downstream fact rows may reference their surrogate_keys.",
+      "Delete all duplicate SCD rows (the rows introduced by the re-run) and re-run the load job with a deduplication guard that checks for existing (customer_id, effective_from) pairs before inserting. The fact table uses customer_id for joins, not surrogate_key, so deletions are safe.",
+      "Merge the duplicate rows into a single row by choosing the effective_from date from the original row and the most recent attribute values from the duplicate. This collapses the duplicates while preserving the correct current-state semantics.",
+      "Drop and rebuild the entire customer dimension from source history — this is the only way to guarantee a clean SCD state without residual duplicate rows or orphaned fact references."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A correctly handles the constraint that downstream fact rows may reference the duplicated surrogate keys. Deleting the duplicate rows would break referential integrity for any fact row that used the re-run surrogate key during the window between the re-run and the fix. Instead, the duplicate row should be expired (effective_to set to now) so that it is no longer 'current' — queries for the current customer attributes will find the correct original row, and historical fact rows that reference the duplicate surrogate key still resolve correctly. Option B (delete duplicates) risks orphaning fact rows that reference the duplicate surrogate_keys. Option C (merge rows) is not a valid SCD Type 2 operation — merged rows lose the audit trail of independent dimension changes and can corrupt the effective date timeline. Option D (full rebuild) is correct in principle but unnecessarily expensive and risky for a targeted fix.",
+    "hints": [
+      "Downstream fact rows contain foreign keys that reference the customer dimension's surrogate key. What happens to those fact rows if you delete the duplicate dimension rows they reference?",
+      "The goal is to make the original row the 'current' record and the duplicate row a 'closed historical record,' without breaking existing foreign key relationships. Which field on the duplicate row controls whether it is 'current' or 'historical'?"
+    ],
+    "concepts": [
+      "SCD OPERATIONS",
+      "LINEAGE & OBSERVABILITY",
+      "INCIDENT RESPONSE"
+    ]
+  },
+  {
+    "id": 52070,
+    "order": 70,
+    "title": "GDPR Right-to-Erasure vs Immutable Kafka Event Log",
+    "difficulty": "medium",
+    "type": "debug",
+    "mock_only": true,
+    "description": "A GDPR erasure request arrives for a customer whose email address and name appear in event payloads stored in an immutable Kafka topic with a 90-day retention window. Kafka topics are immutable by design — individual records cannot be deleted. The current pipeline stores PII directly in event fields (email, full_name). The compliance officer demands the data be 'erased' within the 72-hour GDPR window. The on-call engineer proposes compacting the topic with a tombstone record (null value for the user's key), but the events use a content-addressable key (event_id), not a user_id key.",
+    "options": [
+      "Kafka log compaction with tombstone records works only when messages are keyed by the entity to be erased (e.g., user_id). Because these events use event_id as the key, a tombstone on user_id has no effect. The correct immediate remediation: use Kafka's delete records API to drop all messages within the offset range containing this user's events (only available for non-compacted topics and time-bounded). Long-term prevention: encrypt PII fields with per-user keys at produce time and destroy the key at erasure; this makes existing records cryptographically inaccessible without Kafka-level deletion.",
+      "Kafka log compaction with a tombstone record (null payload) on the affected event_ids is the correct approach. Set the topic's cleanup.policy to compact, then produce a null-value record for each event_id associated with the erased user — Kafka will remove those records during the next compaction cycle.",
+      "The 90-day retention window is sufficient: the GDPR erasure obligation can be met by setting the Kafka topic retention to 0 for the next 72 hours, which purges all messages, then restoring the 90-day retention once the user's records are gone.",
+      "The platform should switch the Kafka topic to a consumer-side soft-delete model: maintain an erasure list in a separate topic that consumers check before processing each event, and exclude events associated with erased users from all downstream outputs. This meets GDPR erasure semantics without modifying the immutable topic."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A correctly identifies the mismatch: Kafka log compaction tombstones work by key — a null payload for a given key removes all prior records with that key during compaction. Because the events use event_id (not user_id) as the key, a tombstone on user_id does nothing. The delete records API (available for non-compacted topics) allows targeted offset-range deletion, which is the shortest path to GDPR compliance for this topic structure. The long-term fix is crypto-shredding: never store raw PII in immutable streams. Option B incorrectly describes tombstone behavior — tombstones compact records by their Kafka message KEY, not by payload content. You cannot tombstone all event_ids for a user with a single message. Option C (set retention to 0) purges ALL data from the topic, not just the affected user's records — this is disproportionate and would erase other users' data. Option D (consumer-side soft-delete) does not satisfy GDPR erasure — PII physically remains in the Kafka topic and is accessible to any consumer that reads the raw topic.",
+    "hints": [
+      "Kafka log compaction tombstones operate on the message KEY. If you want compaction to remove a record, the tombstone must use the same key as that record. What key does your topic use, and can you generate a valid tombstone for a user_id with this key scheme?",
+      "If tombstone compaction is not feasible given the key scheme, what Kafka API allows removing specific messages by offset range from a non-compacted topic?"
+    ],
+    "concepts": [
+      "DATA GOVERNANCE",
+      "STORAGE LAYOUT & FILE FORMATS",
+      "INCIDENT RESPONSE"
+    ]
+  },
+  {
+    "id": 52071,
+    "order": 71,
+    "title": "Missed 3 Days of Data: Safe Backfill Without Breaking Downstream Dependencies",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A nightly pipeline failed silently for 3 days due to a transient infrastructure issue that has since been resolved. The pipeline populates a daily sales_summary table that 6 downstream DAGs read at 7:00 AM each morning. The missing days must be backfilled. Running all 3 days' pipelines simultaneously would complete the backfill fastest, but could produce partial data states that downstream DAGs pick up mid-backfill. Running sequentially takes 3× longer but guarantees each day is complete before the next is processed.",
+    "description": "What is the safest backfill strategy that minimizes total recovery time while protecting downstream consumers?",
+    "options": [
+      "Run the 3 days in parallel but write each day's output to a staging table (sales_summary_staging_YYYY_MM_DD) rather than directly to sales_summary. Once all 3 days complete and are validated, swap each day's staging table into production in date order using a single atomic transaction (e.g., INSERT INTO sales_summary SELECT ... FROM all 3 staging tables). Downstream DAGs see either fully missing data or fully complete data — no partial states.",
+      "Run the 3 days sequentially in date order, committing each day to the production table before starting the next. This is the safest approach because it guarantees no partial state at the cost of 3× longer recovery time.",
+      "Run all 3 days in parallel and write directly to sales_summary. Downstream DAGs at 7:00 AM that read a partial day will self-correct on their next run when the full data is available — incremental models handle partial upstream states gracefully.",
+      "Pause all 6 downstream DAGs before starting the backfill, run all 3 days in parallel, validate, then re-enable the downstream DAGs after the backfill completes."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A combines the speed of parallel execution with the correctness guarantee of staging: downstream DAGs never see a partial day because the production table is only updated atomically once all 3 days are complete and validated. This is the optimal pattern for high-stakes backfills. Option B (sequential) is safe but suboptimal — it recovers 3× slower than parallel execution without any correctness benefit beyond protecting against partial states, which staging also prevents. Option C (parallel writes directly to production) risks downstream DAGs reading partial data for each day at their 7:00 AM run — incremental models do NOT automatically self-correct if they process and store partial aggregates from an in-progress backfill. Option D (pause downstream DAGs) is operationally disruptive and extends the data outage duration beyond the backfill window — pausing 6 DAGs means their stakeholders see stale data for the full backfill duration.",
+    "hints": [
+      "The risk of parallel backfilling is that downstream consumers might pick up data mid-write, seeing a partially complete day. What staging pattern prevents downstream DAGs from seeing incomplete state while still allowing parallel computation?",
+      "Staging + atomic swap gives you parallel speed and correctness — each day's output is fully computed before any of it appears in the production table. What is the minimum number of atomic operations needed to make all 3 days appear simultaneously?"
+    ],
+    "concepts": [
+      "BACKFILL DESIGN",
+      "ORCHESTRATION",
+      "SCHEDULING & SLAS"
+    ]
+  },
+  {
+    "id": 52072,
+    "order": 72,
+    "title": "Over-Partitioning Causes Performance Regression",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "Why does finer-grained partitioning hurt performance here, and what is the correct partitioning strategy?",
+    "options": [
+      "Over-partitioning creates too many small files (one file per partition per write batch). The overhead of opening, reading metadata for, and planning across 168 partitions (vs. 7 daily) exceeds the savings from scanning fewer bytes. Partition granularity should match the most common query filter, not the finest possible granularity. If 90% of queries filter on event_date, partition by event_date only. Use clustering keys or Z-ordering on event_hour within daily partitions if hourly pruning is needed without multiplying partition count.",
+      "The performance regression is caused by partition skew: some hours have many more events than others, causing some partitions to be much larger than the target file size. Re-partition using a hash on event_id to distribute data evenly across partitions.",
+      "Over-partitioning is not the cause — the 40% slowdown is due to the query planner not recognizing the composite partition key. Rewrite queries to always filter on both event_date AND event_hour; the planner will then prune correctly and the slowdown will disappear.",
+      "Reduce the number of hourly partitions by grouping events into 4-hour buckets (event_block = FLOOR(event_hour / 4)); this reduces partition count from 168 to 42 for a weekly scan while preserving sub-daily granularity."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A correctly identifies the over-partitioning problem: each partition has a file system cost (open, read metadata, validate) that accumulates per partition. Splitting by both date and hour multiplies partition count by 24 — a weekly query now touches 168 partitions instead of 7. If hourly queries are only a small fraction of workload, the extra partition overhead is never recouped. The correct strategy matches partition granularity to the dominant query filter. Clustering or Z-ordering can provide pruning within a coarser partition without multiplying file count. Option B (hash partitioning) distributes writes evenly but destroys date-based pruning entirely — date queries would scan all hash partitions. Option C (rewrite queries to filter on both dimensions) forces application-level changes and does not address the fundamental metadata overhead issue. Option D (4-hour buckets) reduces overhead by ~75% vs. hourly but is an ad-hoc compromise that trades correctness for a specific access pattern rather than addressing the design principle.",
+    "hints": [
+      "Each additional partition has a metadata cost: the query engine must open the file and read partition statistics before deciding whether to include it. How does this overhead change when you go from 7 daily partitions to 168 hourly partitions for a weekly query?",
+      "Partition granularity should match the most common query filter. If most queries filter by event_date (not event_hour), what is the right partition column?"
+    ],
+    "concepts": [
+      "PARTITIONING & PRUNING",
+      "STORAGE ARCHITECTURE",
+      "COST OPTIMIZATION"
+    ]
+  },
+  {
+    "id": 52073,
+    "order": 73,
+    "title": "Orchestration Retry Caused Duplicate External API Calls",
+    "difficulty": "medium",
+    "type": "debug",
+    "mock_only": true,
+    "description": "What design pattern would have prevented the double-update, and what is the immediate remediation?",
+    "options": [
+      "The API call should have used an idempotency key: a deterministic identifier (e.g., hash of customer_id + update_type + run_id) included as a request header. If the CRM supports idempotency keys, a duplicate call with the same key is a no-op. For CRMs that do not support idempotency keys natively, the pattern is: record the API call as 'in-progress' in a side table before calling, record 'completed' after; on retry, check the side table and skip if already completed. Immediate remediation: audit the affected customer records and reverse the duplicate increments.",
+      "Disable orchestrator retries for any pipeline step that calls an external API — retries on non-idempotent external calls are inherently unsafe. All API failures must require manual operator review.",
+      "Implement a circuit breaker pattern: if the API call fails, pause the pipeline for 60 minutes before retrying; this gives the CRM time to process and commit the original call before the retry is issued, eliminating the duplicate.",
+      "Switch from synchronous API calls to an asynchronous queue (e.g., SQS) between the pipeline and the CRM. The CRM worker dequeues and processes one update per message. Use SQS FIFO with deduplication IDs to prevent duplicate processing."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is the correct pattern: idempotency keys make the external call safe to retry. If the CRM supports them, the duplicate call is a server-side no-op. If not, the check-before-call pattern in a side table achieves the same result client-side. Both approaches require that the idempotency key is determined BEFORE the first call, not after — so that a retry uses the same key even after a crash. Immediate remediation requires manual audit because the damage (double increments) is already applied. Option B (disable retries) is operationally brittle — automatic retries are essential for pipeline reliability. The fix is to make the call idempotent, not to remove recovery. Option C (60-minute wait) does not guarantee the first call was not committed — a network timeout does not tell you whether the server processed the request; waiting 60 minutes and retrying can still produce a duplicate if the first call succeeded. Option D (async queue with dedup IDs) is a valid architectural pattern but is a system redesign, not a targeted fix for the existing synchronous call pattern.",
+    "hints": [
+      "A network timeout does not tell you whether the server processed the original request. The pipeline must assume the first call may or may not have succeeded. What property of the API call would make retrying safe in both cases?",
+      "An idempotency key gives the server the information it needs to detect a duplicate call and return the original result rather than processing the request again. What makes a good idempotency key for a customer attribute update?"
+    ],
+    "concepts": [
+      "IDEMPOTENCY",
+      "ORCHESTRATION",
+      "DELIVERY SEMANTICS"
+    ]
   }
 ]
