@@ -2111,5 +2111,217 @@
       "BATCH VS STREAMING",
       "SCHEDULING & SLAS"
     ]
+  },
+  {
+    "id": 53079,
+    "order": 79,
+    "title": "ETL vs. ELT for a Machine Learning Feature Store \u2014 Is One Always Better?",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "description": "A data team is building a feature store for a customer churn prediction model. Three features are needed: (1) 30-day rolling transaction count (expensive SQL window aggregation over millions of rows), (2) current account balance (trivial SELECT from one column), (3) fraud_score (a float delivered by a third-party API HTTP response \u2014 not available as a column in any table). The team debates ETL (pre-compute in Spark, write to feature store) vs. ELT (write raw data to the lake, compute features via SQL at query time). Which approach is most defensible?",
+    "options": [
+      "ELT is always preferred for ML feature stores: it preserves raw data, allows feature definitions to be updated retroactively, and leverages the data warehouse's query engine for computation \u2014 no Spark cluster is needed.",
+      "Neither ETL nor ELT applies to a feature store: feature stores require a dedicated serving layer with sub-millisecond read latency that neither batch ETL nor query-time ELT can provide.",
+      "ETL is more defensible for features 1 and 3: the 30-day rolling aggregation is expensive and should be pre-computed once; the fraud_score must be transformed from an HTTP API response, which cannot be expressed as a SQL query against raw data. ELT is adequate for feature 2. The correct choice is feature-dependent.",
+      "ELT is preferred for all three: a modern warehouse can compute the 30-day rolling count in under 100ms at query time, the balance is trivially available, and fraud_score can be stored as raw JSON and extracted with a SQL function."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is the most defensible answer: the ETL vs. ELT choice is feature-specific. Feature 1 (30-day rolling aggregation): expensive to compute at query time for every inference request \u2014 ETL pre-computes it once per batch and stores the result, eliminating repeated aggregation cost at serving time. Feature 3 (fraud_score from HTTP API): SQL ELT cannot produce this feature \u2014 it requires a Python or Spark transformation that calls an external API and stores the response. ELT against raw warehouse data cannot reach an external HTTP endpoint. Feature 2 (account balance): trivially available as a raw column \u2014 ELT is fine. Option A is incorrect: ELT cannot handle features derived from external API calls. Option B overstates the serving latency concern \u2014 batch ML inference (churn prediction runs hourly or daily) does not require sub-millisecond latency; that requirement is for online/real-time feature serving. Option D is incorrect: computing 30-day rolling window aggregations across millions of rows at query time for every inference request is expensive and creates latency or cost issues at ML inference scale.",
+    "hints": [
+      "Feature 3 (fraud_score) comes from a third-party HTTP API response. Can a SQL-only ELT pipeline compute this feature without an external transformation step?",
+      "Feature 1 (30-day rolling count) is computed over millions of rows. Which approach is cheaper: computing it once and storing the result, or recomputing it for every model inference request?"
+    ],
+    "concepts": [
+      "ETL VS ELT",
+      "STORAGE ARCHITECTURE",
+      "COST OPTIMIZATION"
+    ]
+  },
+  {
+    "id": 53080,
+    "order": 80,
+    "title": "Classifying Four Avro Schema Changes as Breaking or Non-Breaking",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "description": "A schema review committee must classify four proposed changes to an Avro schema: (1) adding an optional field with a default value, (2) renaming an existing field, (3) changing a field from nullable (union type with null) to required (non-nullable), (4) removing an optional field that has a default value. Which classification is correct?",
+    "options": [
+      "All four are non-breaking: Avro's schema resolution handles optional field additions, renames, nullability changes, and removals transparently at deserialization.",
+      "Only change 1 (add optional field) is non-breaking. Changes 2, 3, and 4 are breaking: renames change generated class attribute names, removing the null union drops null tolerance, and removing a field drops data consumers expect.",
+      "Changes 1 and 4 are non-breaking (adding or removing optional fields with defaults is safe). Changes 2 and 3 are breaking: renames change generated class attribute names in consumer code, and removing the null union breaks any producer or consumer sending null for that field.",
+      "Changes 1 and 2 are non-breaking: adding fields and renaming fields (via Avro aliases) are safe. Changes 3 and 4 are breaking: removing nullability breaks null-sending producers, and removing a field breaks consumers that depend on it."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is correct. Change 1 (add optional field with default): BACKWARD compatible \u2014 a new consumer schema reading old messages fills in the missing field with its default value. Non-breaking. Change 4 (remove optional field with default): FORWARD compatible \u2014 an old consumer schema reading new messages (which no longer include the field) simply does not see the field; its default applies. Non-breaking. Change 2 (rename a field): BREAKING \u2014 Avro schema resolution maps fields by name in the generated language class. Renaming user_id to customer_id changes the Python/Java attribute accessed by consumers; compiled consumer code using .user_id breaks. Avro does support aliases, but a rename without explicit alias management in the registry is breaking from the consumer code perspective. Change 3 (nullable \u2192 required, remove null union): BREAKING \u2014 any consumer or producer that sends or expects null for this field will fail deserialization or schema validation after the change. Option A is incorrect: Avro does not transparently handle renames or nullability changes. Option B overstates by classifying field removal (change 4) as breaking \u2014 for FORWARD compatibility, optional field removal with a default is non-breaking. Option D incorrectly classifies rename as non-breaking.",
+    "hints": [
+      "Avro schema resolution maps fields by field name, which becomes the attribute name in generated language classes. What happens to consumer code that accesses .user_id when the field is renamed to .customer_id?",
+      "If a producer currently sends null for a field, what happens when that field's type changes from nullable (union with null) to required (non-nullable)?"
+    ],
+    "concepts": [
+      "SCHEMA EVOLUTION",
+      "DATA CONTRACT",
+      "LINEAGE & OBSERVABILITY"
+    ]
+  },
+  {
+    "id": 53081,
+    "order": 81,
+    "title": "Producer Adds Required Field Without Consumer Coordination \u2014 Three Consumers Fail in Production",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A platform team operates a Kafka topic consumed by 8 downstream teams. Without consulting consumers, the platform team adds a new required JSON field (session_id, no default value) to the event schema. Three consumers that access session_id directly throw KeyError immediately after the change. Five consumers that do not access session_id are unaffected.",
+    "description": "What is the correct immediate remediation and what structural change prevents this class of violation?",
+    "options": [
+      "Hot-patch the 3 failing consumers to use .get('session_id', None) as a fallback \u2014 this unblocks them immediately. Structural fix: establish a consumer registry so the platform team knows which teams to notify before schema changes.",
+      "Roll back the producer schema change immediately \u2014 revert to emitting events without session_id. Then follow a breaking change protocol: publish the proposed schema to a schema registry with FULL compatibility enforcement, get consumer sign-off from all 8 teams, then coordinate a migration window.",
+      "The 3 failing consumers are at fault for not handling missing fields defensively \u2014 all JSON consumers should use .get() instead of direct key access. The platform team should document the new field and allow consumers to update on their own schedule.",
+      "Coordinate an emergency simultaneous deployment: deploy the 3 failing consumers with session_id support at the same moment as the producer, eliminating the window where the field is missing."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is the correct response: roll back the breaking change first, then follow the proper protocol. A rollback is the fastest path to stopping ongoing consumer failures and is the standard incident response for an uncoordinated breaking schema change. After stabilization, the correct path is schema registry enforcement with FULL compatibility \u2014 the platform team cannot deploy a breaking schema change without the registry blocking it and consumer sign-off being recorded. Option A (hot-patch) stops the bleeding for 3 consumers but accepts the broken state and leaves the structural cause unaddressed; it also does not fix the 5 consumers who may access session_id in future code changes. Option C incorrectly assigns fault to consumers: when a producer makes an uncoordinated breaking change, the producer is at fault \u2014 consumers are entitled to rely on the documented schema contract, and defensive coding is good practice but does not excuse a unilateral breaking change. Option D (simultaneous emergency deploy) is operationally risky: coordinating deployment across 8 consumer teams simultaneously is difficult, and any timing gap (even seconds) exposes consumers to the missing required field.",
+    "hints": [
+      "Three consumers are failing in production right now. What is the fastest action to stop the ongoing failures before addressing the structural root cause?",
+      "Which structural change makes it technically impossible for the platform team to deploy a required-field addition without all consumers being verified as compatible first?"
+    ],
+    "concepts": [
+      "DATA CONTRACT",
+      "SCHEMA EVOLUTION",
+      "INCIDENT RESPONSE"
+    ]
+  },
+  {
+    "id": 53082,
+    "order": 82,
+    "title": "CDC Pipeline Produces 3.7% Duplicate Rows After Rolling Deploy \u2014 Offset Reset to Earliest",
+    "difficulty": "hard",
+    "type": "debug",
+    "mock_only": true,
+    "scenario_context": "A Kafka CDC pipeline consumes from a topic with 5 partitions. Consumer offsets are committed synchronously after each message is processed and written to the warehouse. A rolling deploy restarts consumer pods one by one. After the deploy, the warehouse shows 3.7% duplicate rows in the last 2 hours. Investigation reveals the consumer group's committed offsets for partitions 2 and 4 reset to the earliest available offset during the deploy.",
+    "description": "What is the most likely root cause of the offset reset and how is it prevented?",
+    "options": [
+      "The root cause is synchronous offset commits being too slow: pods restart faster than offsets can be committed. In-flight messages with uncommitted offsets are re-delivered after restart. Fix: switch to asynchronous offset commits to reduce the commit latency window.",
+      "The root cause is auto.offset.reset=earliest: when the consumer group has no committed offset record for partitions 2 and 4 (e.g., those pods had not yet committed any offsets in the current session before they were restarted), Kafka falls back to earliest and replays the full partition history. Fix: set auto.offset.reset=latest and ensure all partitions commit initial offsets before a rolling deploy.",
+      "The root cause is the rolling deploy triggering rebalances: when pods restart, Kafka reassigns partitions to surviving pods. The reassigned pods start from a stale committed offset because the commit cycle was interrupted by the rebalance. Fix: use static group membership (group.instance.id) to prevent unnecessary rebalances.",
+      "The root cause is writing to the warehouse before committing the offset: a pod killed after writing but before committing causes re-delivery and a duplicate write. Fix: commit the offset before writing (pre-commit) to prevent re-delivery."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B most precisely explains the observed pattern \u2014 a reset to earliest for specific partitions (2 and 4 only, not all 5). This is characteristic of auto.offset.reset=earliest triggered when the consumer group has no committed offset record for those partitions. During a rolling deploy, if the pods owning partitions 2 and 4 are restarted before they ever committed an offset in the current session (e.g., they had just received those partitions from a recent rebalance and processed messages but not yet committed), Kafka finds no committed offset for those partitions and falls back to earliest \u2014 replaying the full partition history. The fix is setting auto.offset.reset=latest (for partitions with no committed offset, start at the current end rather than the beginning) and ensuring initial offsets are committed promptly after partition assignment. Option A (synchronous commits too slow) would cause re-delivery of recently processed messages, not a full reset to the earliest offset. Option C (static group membership) reduces rebalance frequency but does not address the auto.offset.reset behavior when offsets are absent. Option D (pre-commit) would introduce message loss (not duplicates) \u2014 it is the wrong trade-off direction.",
+    "hints": [
+      "Partitions 2 and 4 reset to the earliest offset \u2014 the beginning of the partition history, not just the most recent uncommitted messages. What Kafka setting causes this specific behavior when no committed offset is found for a partition?",
+      "When would a consumer group have no committed offset record for specific partitions during a rolling deploy?"
+    ],
+    "concepts": [
+      "CDC & INGESTION",
+      "DELIVERY SEMANTICS",
+      "INCIDENT RESPONSE"
+    ]
+  },
+  {
+    "id": 53083,
+    "order": 83,
+    "title": "Append-Only vs. Upsert for a Financial Fact Table That Receives Correction Events",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A financial pipeline receives two event types from the source system: (1) original transaction events and (2) correction events that update the amount on a prior transaction (approximately 0.5% of transactions receive a correction within 72 hours). The team must decide how the warehouse handles corrections: (A) append-only \u2014 insert both the original and correction events; aggregate with correction semantics at query time; (B) upsert \u2014 apply the correction as an UPDATE to the original row in the fact table, keeping only the latest amount.",
+    "description": "Which approach is more defensible for a financial fact table, and why?",
+    "options": [
+      "Upsert is more defensible: maintaining the latest correct amount in a single fact row simplifies BI queries \u2014 consumers need no knowledge of correction event semantics. The 0.5% correction rate is low enough that upsert overhead is negligible.",
+      "Append-only is more defensible: preserving both the original and the correction event provides a complete audit trail of every state change. Corrections are reconciled via window functions or event_type aggregation at query time. The design is immutable and requires no row-level updates.",
+      "The choice depends on the warehouse technology: upsert via MERGE is cost-efficient in Snowflake or BigQuery; append-only is the natural choice for an object store like S3 with Iceberg or Delta Lake.",
+      "Neither is appropriate for financial corrections: corrections should be written to a dedicated corrections table and joined to the fact table at reporting time, keeping the original fact table unmodified and the correction logic fully explicit."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is more defensible for a financial fact table governed by audit requirements. Append-only preserves every event that occurred \u2014 the original transaction and the correction \u2014 giving auditors a complete timeline of what amounts were recorded, when, and when corrections were applied. This is the event sourcing principle applied to financial data: facts are immutable; corrections are new facts, not overwrites. Upsert (Option A) permanently destroys the original event's amount \u2014 after an UPDATE, auditors cannot determine what the original amount was or when the correction was applied. For financial data subject to regulatory audit, this loss of historical state is a compliance risk. Option C (technology-dependent) frames the choice around operational convenience rather than governance requirements \u2014 the correct design for auditable financial data is append-only regardless of technology, and both Snowflake and Iceberg support append-only semantics. Option D (separate corrections table) is a valid variant of the append-only pattern used in some financial systems, but it adds join complexity without improving upon Option B's correctness or auditability properties.",
+    "hints": [
+      "If a correction is applied as an UPDATE to the original fact row, what information is permanently lost from the warehouse?",
+      "A financial auditor needs to reconstruct exactly what was recorded at each point in time, including the original amount before any corrections. Which design supports this?"
+    ],
+    "concepts": [
+      "STORAGE LAYOUT & FILE FORMATS",
+      "DATA GOVERNANCE",
+      "LINEAGE & OBSERVABILITY"
+    ]
+  },
+  {
+    "id": 53084,
+    "order": 84,
+    "title": "Multi-Region Synchronous Replication Causes SLA Breach \u2014 Switching to Async",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A platform team replicates a Postgres database (500 GB, 1,000 writes/second) from US-East-1 to EU-West-1 for GDPR data residency compliance using synchronous replication: every write is confirmed only after the EU replica acknowledges. Cross-region round-trip latency is 90ms, adding 90ms to every write. The write-path p95 latency SLA is 50ms. The SLA is breached. The team proposes switching to asynchronous replication.",
+    "description": "What is the correct trade-off analysis, and which design should the team choose?",
+    "options": [
+      "Switch to asynchronous replication: it removes the 90ms cross-region round-trip from the write path, resolving the SLA breach. The explicit trade-off is a potential data loss window \u2014 if the primary fails after a write is acknowledged locally but before the EU replica receives it, those writes are lost.",
+      "Keep synchronous replication and provision a higher-throughput database instance in both regions: faster hardware reduces the replication round-trip below 50ms, meeting the SLA without introducing any data loss risk.",
+      "Add a CDN layer in front of the write path: CDN edge nodes accept writes locally and replicate asynchronously to both regions, achieving sub-50ms write latency with synchronous durability semantics.",
+      "Replace synchronous replication with a Kafka-based CDC pipeline: CDC is inherently asynchronous, removes the 90ms write-path penalty, and provides at-least-once delivery guarantees that effectively match synchronous replication durability for financial data."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A correctly identifies the trade-off and the correct design: asynchronous replication removes the cross-region round-trip from the write path, restoring p95 latency below 50ms. The explicit cost is a potential data loss window of up to 90ms + processing time if the primary fails after acknowledging a write but before the EU replica receives it. This is the canonical synchronous-vs-asynchronous distributed systems trade-off, and the team must explicitly accept the data loss risk given the SLA requirement. Option B (faster hardware) is not possible: the 90ms cross-region round-trip is determined by the speed of light between US-East-1 and EU-West-1, not by database hardware. No hardware upgrade reduces a physical network latency constant. Option C (CDN for writes) is incorrect: CDNs are designed for read caching, not write durability. A write 'accepted' at a CDN edge with async replication to both regions provides neither synchronous durability nor strong consistency. Option D (Kafka CDC) removes write-path latency but does not provide synchronous durability: at-least-once delivery can still produce duplicate events, and Kafka CDC introduces additional complexity and a replication lag \u2014 it is not equivalent to synchronous replication.",
+    "hints": [
+      "The 90ms latency is the speed of light across the Atlantic \u2014 no hardware upgrade can reduce it. What is the only architectural change that removes this fixed network cost from the write path?",
+      "If the team accepts asynchronous replication, what is the worst-case data loss scenario if the primary region fails at exactly the wrong moment?"
+    ],
+    "concepts": [
+      "STORAGE ARCHITECTURE",
+      "COST OPTIMIZATION",
+      "SCHEDULING & SLAS"
+    ]
+  },
+  {
+    "id": 53085,
+    "order": 85,
+    "title": "Airflow vs. Event-Driven Triggers for 500+ DAGs at Scale \u2014 When Does Migrating Make Sense?",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "description": "A data platform team operates 500 Airflow DAGs. The Airflow scheduler is at 80% CPU and occasionally misses 1-minute schedule intervals. The team evaluates two options: (A) scale the Airflow scheduler \u2014 larger instance, more workers; (B) migrate high-volume DAGs to event-driven triggers \u2014 Kafka events trigger DAG runs instead of cron. A senior engineer argues event-driven is always better at scale. Which response is most accurate?",
+    "options": [
+      "The senior engineer is correct: Airflow's cron-based scheduler does not scale past a few hundred DAGs without degrading. Event-driven triggers are always superior for data pipelines at 500+ DAGs.",
+      "Airflow scheduling scales horizontally with additional schedulers \u2014 adding scheduler instances resolves the CPU bottleneck without any architectural change. Event-driven triggers are only necessary when pipelines must react to real-time events with sub-second latency.",
+      "The correct choice is DAG-type-dependent: DAGs that are data-triggered (start when upstream data is ready) benefit from event-driven patterns because they can start immediately when data arrives rather than polling on a cron interval. DAGs that are genuinely time-based (run at 3 AM regardless of data state) gain no benefit from event-driven patterns. Migrating all 500 DAGs indiscriminately adds operational complexity without benefit for the time-based subset.",
+      "At 500 DAGs, the root cause of scheduler CPU overload is DAG proliferation. The correct fix is consolidating multiple DAGs into fewer, larger DAGs \u2014 consolidation always resolves scheduler overhead better than architectural changes."
+    ],
+    "correct_option": 2,
+    "explanation": "Option C is the most nuanced and defensible answer. The scheduler CPU issue is real and needs addressing, but the correct solution depends on DAG type. Data-triggered DAGs (e.g., 'run when the transactions table is ready') benefit directly from event-driven patterns: they start immediately when upstream data signals readiness, reducing latency and eliminating wasted polls on a cron interval when data is not yet ready. Time-based DAGs (e.g., 'run at 3 AM daily regardless of data state') do not benefit from event-driven patterns \u2014 the trigger event for '3 AM daily' is the clock, which Airflow's scheduler already handles. Migrating time-based DAGs to Kafka-triggered runs adds topic management complexity with zero benefit. Option A overstates Airflow's scaling limitations: Airflow 2.x with a distributed scheduler and proper resource allocation supports hundreds to low thousands of DAGs. Option B overstates horizontal scaling \u2014 adding schedulers addresses the CPU symptom but not the root cause if many DAGs could be event-driven. Option D (consolidation) may be appropriate in specific cases but is not universally the correct fix \u2014 many workloads have legitimate reasons for separate DAGs.",
+    "hints": [
+      "Some of the 500 DAGs trigger when upstream data is ready; others trigger at a fixed time regardless of data state. Does the event-driven pattern benefit both types equally?",
+      "For a DAG scheduled to run at 3 AM daily regardless of data state, what benefit does replacing the Airflow cron trigger with a Kafka event trigger provide?"
+    ],
+    "concepts": [
+      "ORCHESTRATION",
+      "SCHEDULING & SLAS",
+      "COST OPTIMIZATION"
+    ]
+  },
+  {
+    "id": 53086,
+    "order": 86,
+    "title": "Data Lineage Tracing vs. Lineage Propagation \u2014 Different Capabilities or the Same?",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A data governance team is deploying a lineage system. The lead distinguishes two modes: (A) lineage tracing \u2014 given an output artifact (a dashboard metric or a warehouse column), traverse the lineage graph backwards to identify every source that contributed to it; (B) lineage propagation \u2014 when a source dataset changes (schema change, data quality alert, deletion), traverse forward and actively notify all downstream artifacts that depend on it. A junior engineer argues these are the same capability traversed in opposite directions. Which response is most accurate?",
+    "options": [
+      "They are the same capability in opposite directions: a lineage graph can be traversed backwards (tracing) or forwards (propagation). Any system that supports one direction implicitly supports the other with no additional implementation.",
+      "They are distinct operational modes: lineage tracing is a read-only, on-demand graph traversal; lineage propagation is an event-driven notification system that must be triggered by source change events and must deliver notifications to all registered downstream consumers. A lineage graph alone is insufficient for propagation \u2014 it also requires an event bus and a subscriber registry.",
+      "Lineage tracing is the governance use case (auditing, root-cause analysis); lineage propagation is a data catalog feature for impact analysis. They are separate products and should not be conflated in a single lineage system.",
+      "Lineage propagation is a superset of lineage tracing: any system capable of propagating changes forward must have a complete lineage graph, so implementing propagation automatically provides tracing as well."
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct: the two modes are distinct in operational requirements beyond graph traversal direction. Lineage tracing is a read-only query against a lineage graph \u2014 given an artifact, find its ancestors. This is point-in-time, on-demand, and passive: the graph is queried when a user or system requests it. Lineage propagation is active: it must detect that a source has changed (event detection), traverse the graph forward to find all downstream consumers, and deliver notifications or trigger actions (event bus, subscriber registry, delivery guarantees). A static lineage graph supports tracing but requires additional infrastructure \u2014 event bus, subscriber management, delivery confirmation \u2014 for propagation. Option A is incorrect: graph traversal direction is technically reversible, but the operational requirements for active notification delivery are fundamentally different from read-only graph traversal. Option C incorrectly partitions these as separate products \u2014 propagation depends on the same lineage graph used for tracing; they are complementary features of one system, not separate products. Option D is incorrect: propagation requires a complete lineage graph, but having a complete graph does not automatically provide a queryable tracing interface \u2014 the delivery and query systems are separate implementations.",
+    "hints": [
+      "Lineage tracing is triggered by a user asking 'where did this metric come from?' Lineage propagation is triggered by a source change event. Do these two operations require the same technical components?",
+      "What does lineage propagation require that a lineage tracing query does not \u2014 something that must run actively and continuously when source changes occur?"
+    ],
+    "concepts": [
+      "LINEAGE & OBSERVABILITY",
+      "DATA GOVERNANCE",
+      "DATA CONTRACT"
+    ]
   }
 ]
