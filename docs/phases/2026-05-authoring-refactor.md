@@ -562,6 +562,144 @@ The `DATA QUALITY SKEPTICISM` and `OUTPUT SANITY VALIDATION` families ground pre
    - Every easy question: confirm it is scenario-anchored, not a default-value or API-signature recall test. Track-doc anti-patterns are a hard reject, not a soft preference.
    - `code_snippet` is currently nullable but recommended for `predict_output` and `debug` (impossible to predict output without code). For `conceptual`, prefer including a snippet that anchors the reasoning even when not strictly necessary — moves the question away from pure recall.
 
+### Pandas Phase 2 execution brief (locked 2026-05-24) — self-contained for a fresh Sonnet session
+
+This is the complete, decided plan for the Pandas track. Execute it in this order; do not relitigate. **Build on — do not redo — the shared `concept_families.py` taxonomy loader and the `validate_content.py` chain/tag-resolution checks delivered by SQL Phase 2 and Python Phase 2.** Pandas adds no new track-agnostic infrastructure.
+
+**Track reality (verified 2026-05-24):** 112 questions = 86 practice (27 E / 36 M / 23 H) + 26 mock-only (0 E / 12 M / 14 H). Executable problem-solving: `def solve(df_...) → pd.DataFrame`, graded by `pd.testing.assert_frame_equal`. 5-second timeout, 512 MB RLIMIT_AS subprocess sandbox. All 26 mock-only are standalone (no `follow_ups[]` yet). **All 26 mock-only audited 2026-05-24**: 1 SQL clone to replace (32036), 2 need `expected_code` anti-pattern fixes (33028/33032), 1 needs practice grounding first (32047 — explode), 22 keep as-is. **Tag fragmentation**: 203 of ~338 total tag incidences unresolved (60%) — all 14 hard mock-only and 12 medium mock-only questions have mostly or entirely unresolved tags.
+
+**Governing lens:** `docs/tracks/pandas.md` is authoritative. Pandas trains *pandas-native reasoning* — when `transform` beats `agg`, when `resample` beats `groupby` + date logic, when a dtype choice saves 4 GB RAM. Questions that are equally elegant in SQL do not belong here. Anti-patterns that are hard rejects: SQL-in-Python solutions (groupby+merge+rename when `pivot_table` would do), `apply(lambda)` as reference solution when a vectorized path exists, MultiIndex for its own sake, method-signature memorization.
+
+**1. ⚡ / realism family classification (locked 2026-05-24):**
+
+| Family | Class | Rationale |
+|---|---|---|
+| `MEMORY & VECTORIZATION REASONING` | **practice-grounded** | Gradable: `assert_frame_equal` catches dtype mismatches; 33021 already grounds it with `astype('category')` + `int32` downcast. Framing around *dtype output correctness* sidesteps the vectorize-vs-apply timing problem. |
+| `DATA QUALITY SKEPTICISM` | **practice-grounded** | Matches SQL precedent; debug-format Pandas questions grade cleanly (merge fan-out, grain mismatch). |
+| `DOUBLE-COUNTING DETECTION` | **practice-grounded** | Matches SQL precedent; "why does this merge inflate my user count" is a gradable Pandas debugging exercise. |
+| `METRIC INTERPRETATION & DENOMINATOR CHOICE` | **mock-only realism** | Matches SQL precedent; choice of denominator is a judgment call, not a scorable output diff. |
+| `OUTPUT SANITY VALIDATION` | **mock-only realism** | Matches SQL precedent; self-checking inside a solve function is not graded by `assert_frame_equal`. |
+| `PERFORMANCE-AWARE ANALYTICS` | **mock-only realism** | Matches SQL precedent; "should you filter before joining?" is analytical-cost reasoning, not a scorable output. |
+
+**2. Taxonomy fixes — apply in same commit as the content they resolve:**
+
+   a. **`MEMORY & VECTORIZATION REASONING` match-pattern expansion:** Add to the family's `match_patterns` in `docs/concept-taxonomy.md`: `MEMORY FOOTPRINT OPTIMIZATION`, `DTYPE DOWNSIZING`, `CATEGORICAL ENCODING`, `MEMORY USAGE AUDITING`, `LOSSLESS TYPE CONVERSION`, `int32 downcast`, `astype category`, `deep=True`. Question 33021 uses these exact tags and currently mis-resolves because the patterns are missing. After this fix, 33021 resolves to the correct family with zero question-file edits.
+
+   b. **Stale blocklist entry:** Change `rank → RANKING & TOP-K` in the Pandas blocklist to `rank → RANKING & TOP-N PER GROUP`. The family was renamed in the 2026-05 refactor; the blocklist kept the old name.
+
+   c. **No new Pandas families needed.** The 21-family registry is complete. The ⚡ classification above changes realism flags only, not the count.
+
+   d. **Realism-flag designations in registry:** Add `realism_only: true` to the three mock-only-realism families (`METRIC INTERPRETATION & DENOMINATOR CHOICE`, `OUTPUT SANITY VALIDATION`, `PERFORMANCE-AWARE ANALYTICS`) in the Pandas taxonomy section, matching the SQL and Python Phase 2 pattern. The three practice-grounded families get no flag (practice-grounded is the default).
+
+**3. Remap / de-noise:**
+
+Systematic patterns to **strip entirely** (blocklist-blocked method names and domain-noun filler — all via agent, no hand-edits):
+- Method names: `pd.qcut`, `assign`, `apply`, `groupby apply list`, `explode`, `map`, `set_index`, `reset_index`, `combine_first`
+- Domain-noun filler: `revenue analysis`, `spend analysis`, `HR analytics`, `session analytics`, `acquisition channel`, `product frequency`, `monthly trend`, `payment trend`, `support analysis`, `churn analysis`, `salary analysis`
+- Unregistered family names: `CROSS-DATASET AGGREGATION` (no such family; map to `MULTI-TABLE JOINING` where applicable, else remove)
+
+**Casing normalization:** Normalize 16 lowercase easy-practice tags to their canonical UPPERCASE family names or remove if they describe method mechanics rather than reasoning: `datetime` → `DATETIME OPERATIONS`, `boolean indexing` → `BOOLEAN FILTERING`, `column selection` → remove (incidental mechanics), `groupby dropna handling` → remove (blocklisted method mechanic).
+
+**Resolution map for 203 unresolved tag incidences:**
+   1. Strip blocklist-blocked method names (~40 incidences)
+   2. Strip domain-noun filler (~80 incidences)
+   3. Consolidate sub-operation descriptors to parent family name — e.g. `dense rank`, `percentile rank` → `RANKING & TOP-N PER GROUP`; `forward fill` → `MISSING VALUE STRATEGY` (~30 incidences)
+   4. Normalize lowercase variants to UPPERCASE (~16 incidences)
+   5. Resolve via new match patterns from item 2a (~20 incidences — MEMORY & VECTORIZATION REASONING tags on 33021)
+   6. Genuine residuals (~17 incidences): surface for agent review per-question; do not force-fit
+
+**Tag cap: 3 per question maximum.** For 47 questions currently at 5+ tags: strip blocklist/filler first; then reduce to the 2–3 families most central to the *primary reasoning skill*. Incidental mechanics that happen to appear in the pipeline are not tags.
+
+**4. Quality fixes — apply in same commit as the content they correct:**
+
+Two mock-only hard questions use `apply(lambda)` for categorical tier assignment when `pd.cut` / `np.select` would be the idiomatic vectorized path. This violates the track doc anti-pattern rule (hard reject). Fix `expected_code` and `solution_code` in both:
+
+   - **33028** ("Top-spender loyalty tier segmentation"): replace `total_spend.apply(lambda v: 'Platinum' if v > 20000 else ('Gold' if v > 10000 else 'Silver'))` with `pd.cut(total_spend, bins=[-np.inf, 10000, 20000, np.inf], labels=['Silver', 'Gold', 'Platinum'])`.
+   - **33032** ("Loyalty tier breakdown by country"): same fix — identical `apply(lambda)` anti-pattern.
+
+Both questions are correct in their *output* — only `expected_code` and `solution_code` need updating to the vectorized form. The `explanation` and `hints` should also be updated to reference `pd.cut`.
+
+**5. Formalize 4 existing natural chains — link as parent + follow_ups (no content rewrites needed):**
+
+Four hard mock-only pairs share the same business scenario and already form natural follow-up questions. Add `follow_ups` array to each parent referencing the child's ID, and add `follow_up_dimension` to each child. These become the first 4 Pandas interview chains for Interview Loop.
+
+| Parent | Follow-up | `follow_up_dimension` |
+|---|---|---|
+| 33026 (30-day conversion rate by channel/country) | 33030 (extend with avg first-order value) | `business_rule_pivot` |
+| 33027 (cumulative paid revenue by method) | 33031 (add MoM change) | `business_rule_pivot` |
+| 33028 (loyalty tier segmentation) | 33032 (tier breakdown by country) | `business_rule_pivot` |
+| 33024 (monthly revenue by channel) | New hard mock (33039 — add MoM change per channel) | `business_rule_pivot` |
+
+For 33024→33039: 33039 extends 33024 by adding `mom_revenue_change` per acquisition_channel+month (grouped `.diff()` pattern, same datasets). Author 33039 during the mock-only authoring pass.
+
+**6. Practice additions (locked 2026-05-24) — 6 new questions → 92 total practice:**
+
+| ID | Difficulty | Family grounded | Format | Description |
+|---|---|---|---|---|
+| 31028 | Easy | `UNNESTING LIST COLUMNS` | Practice | Flatten a column of comma-separated product tags into one row per tag using `.str.split(' ', expand=False)` + `.explode()`. Grounds 32047. One-operation, accessor-first framing. |
+| 32049 | Medium | `MEMORY & VECTORIZATION REASONING` | Practice | Given an orders DataFrame, identify which columns benefit from `astype('category')` vs `int32`/`float32` downcast; return the optimized copy. Uses `memory_usage(deep=True)` before+after. Extends 33021 pattern to medium difficulty (single-table, no pipeline complexity). |
+| 32050 | Medium | `DATA QUALITY SKEPTICISM` | Debug | Fix code that produces inflated per-user revenue because a one-to-many merge (orders ⋈ order_items) was not recognized as a fan-out. Find the grain mismatch — pre-aggregate before joining, or group on the correct grain after joining. |
+| 32051 | Medium | `DOUBLE-COUNTING DETECTION` | Practice | Users appear twice in a cohort analysis because they signed up and placed their first order in the same calendar interval; aggregate at user-grain before the interval count to eliminate the double-count. |
+| 32052 | Medium | `DEBUG PANDAS` | Debug | Fix broken code that applies `.cumsum()` after a groupby but before `sort_values` — the running total accumulates in wrong order. One-line fix: move `sort_values` before `cumsum`. |
+| 33038 | Hard | `MEMORY & VECTORIZATION REASONING` | Practice | Rewrite a row-wise `df.apply(lambda row: ..., axis=1)` pipeline to use vectorized operations (boolean indexing + `np.where` + `.str.` accessor). `expected_code` must use the vectorized path — `apply(axis=1)` is explicitly the *wrong* answer to fix. |
+
+All IDs within their respective file ID ranges: easy 31001–31999, medium 32001–32999, hard 33001–33999.
+
+**7. Sizing (locked 2026-05-24) — ratio-based:**
+
+Practice target: 86 → **92** (6 new questions above).
+Mock-only ratio target: **1.20×** of 92 = **110 mock-only total** (within the 1.0–1.4× contract floor).
+Current mock-only: 26. **New mock-only to author: 85** (84 net new + 1 replacement for the SQL-clone 32036).
+
+| Tier | Current | Target | New to author |
+|---|---|---|---|
+| Medium mock-only | 12 (11 keep + 1 replace 32036) | 35 | +24 |
+| Hard mock-only | 14 | 75 | +61 |
+| **Total** | **26** | **110** | **+84 net** |
+
+Chain structure (~⅓ chain members from 110 = ~37 chain children, 10–13 chains total):
+- Formalize 4 existing chains (8 members) via item 5 — immediately in scope
+- Author 9 new chains at hard difficulty (avg ~3 follow-ups each = 27 chain children); total ~35 chain children ≈ ⅓ of 110
+- Chain follow-up dimensions: draw from 7-dimension taxonomy in `docs/concept-taxonomy.md`
+
+Prioritized chain topics for the 9 new hard chains:
+- Cohort retention → `scale_pivot` (50M rows: dtype optimization now required)
+- MoM revenue trend → `business_rule_pivot` (exclude returns)
+- Conversion funnel → `data_quality_pivot` (null order_dates in the event stream)
+- Session engagement per user → `performance_pivot` (apply-vs-vectorize refactor required)
+- RFM segmentation → `business_rule_pivot` (tier thresholds revised)
+- Event deduplication → `data_quality_pivot` (source sends duplicate events)
+- Product affinity pairs → `scale_pivot` (1M products: explode is too expensive, use merge-self instead)
+- Salary distribution per region → `business_rule_pivot` (exclude contractors)
+- Churn cohort analysis → `business_rule_pivot` (reactivated users should not count as churned)
+
+Family priority for standalone new mock additions:
+- **Medium standalones (+17 after 7 chained mediums):** GROUPED AGGREGATION with DATA QUALITY co-tag, DATETIME OPERATIONS with timezone edge, WINDOW & ROLLING, RESHAPING & PIVOTING, MISSING VALUE STRATEGY in realism scenarios
+- **Hard standalones (+43 after 18 hard chain members):** FEATURE ENGINEERING, RANKING & TOP-N PER GROUP, DEDUPLICATION LOGIC, TIME SERIES & RESAMPLING with gaps, MULTI-TABLE JOINING with ambiguous join type
+
+The SQL-in-pandas quality constraint governs *quality* per question, not the quantity ceiling. Every mock question must be pandas-idiomatic (test DISTINCT COUNT awareness, window-function equivalents, `.dt` accessor chaining, etc.) — do not author `SELECT ... GROUP BY ...` logic in Python clothes.
+
+**8. Doc nits to fix in same commits as the content they describe:**
+
+   a. `docs/tracks/pandas.md` line 86: replace "These six families currently have no question coverage" with the classification table from item 1 above (three practice-grounded, three mock-only-realism). Update any other "zero coverage" language for these families.
+
+   b. `docs/tracks/pandas.md`: change "21 families. Six are new in the 2026-05 refactor" to reflect the now-classified status — the six families have moved from ⚡ scaffolding to locked classifications.
+
+   c. `docs/concept-taxonomy.md` Pandas section: strip the "currently zero coverage" annotation from each of the 6 families once Phase 2 ships. The annotations were scaffolding; they become false after content is authored.
+
+   d. `CLAUDE.md` content footprint table: update Pandas mock-only count from `26` → `110` in the same commit as the final batch of mock-only questions.
+
+   e. `docs/content-authoring.md`: update Pandas mock-only count in the same commit.
+
+**9. Pandas-specific authoring emphasis (in addition to the universal agent's contract):**
+
+   - Every `expected_code` must be pandas-idiomatic, not SQL-transliterated. Test: if the same logic is more natural in SQL, the question does not belong in the Pandas track.
+   - `apply(lambda)` is a **hard reject** in `expected_code` whenever a vectorized path exists (`np.select`, `pd.cut`, `np.where`, boolean indexing, `.str.` / `.dt.` accessors). No exceptions.
+   - Every function must end with `.reset_index(drop=True)` unless the index *is* the result.
+   - Mock-only scenario framing: description should read like a real analyst request ("The growth team asks: '...'") rather than a pure technical exercise. Match the style of 33026/33028/33030 in the existing bank.
+   - Chain follow-up questions must use the same DataFrames and same business context as the parent. Pivot on exactly one dimension from the 7-dimension taxonomy. Do not introduce new datasets in a follow-up.
+   - Difficulty calibration guard: "Hard because the business scenario sounds complex" is explicitly rejected by the track doc. Hard means multi-step pandas pipeline with memory/dtype awareness or cohort/funnel structure. If the expected_code is a single `groupby().agg()`, it's medium regardless of the business framing.
+
 ### Phase 3 — Interview Loop full stack ⏸ pending (depends on Phase 2 content)
 
 **Phase 3 — Interview Loop full stack** ⏸ pending (depends on Phase 2 content)
@@ -618,6 +756,11 @@ This sizing is provisional. Re-evaluate against real Pro usage data once Phase 1
 | 2026-05-21 | Concept-taxonomy research grounds families in industry sources (StrataScratch, DataLemur, Glassdoor posts, canonical textbooks) but never lifts question content. Research validates exhaustiveness only; question authoring stays aligned to datathink's own philosophy and flow | User-specified discipline: "don't lift questions, only search for exhaustiveness" |
 | 2026-05-21 | Everything after Phase 1 must be implementable by Sonnet from the docs alone | Phase 1 deliverables must be detailed enough that subsequent phases need no design conversation — taxonomy precise, mock contract complete, track docs prescriptive |
 | 2026-05-21 | Cross-track family naming reusability scoped to executable analytics tracks (SQL / Pandas / PySpark) only; Python algorithmic patterns stay native | Original cross-track-portability decision was about all 9 tracks; this is a narrower refinement for the 3 tracks that genuinely share business-analytics reasoning patterns. Pushback by Claude accepted by user. |
+| 2026-05-24 | Pandas ⚡ family classification: MEMORY & VECTORIZATION REASONING + DATA QUALITY SKEPTICISM + DOUBLE-COUNTING DETECTION → practice-grounded; METRIC INTERPRETATION + OUTPUT SANITY VALIDATION + PERFORMANCE-AWARE ANALYTICS → mock-only realism | MEMORY & VECTORIZATION REASONING is gradable via dtype output correctness (assert_frame_equal catches dtype mismatches); 33021 already grounds it. DATA QUALITY and DOUBLE-COUNTING match SQL precedent (debug-format questions grade cleanly). The three mock-only realism families cannot produce a unique correct DataFrame — they're judgment framing only, same as SQL. |
+| 2026-05-24 | Pandas sizing: 26 mock-only → 110 (1.20× of 92 practice), hard-skewed, ~⅓ chain members | Ratio-based sizing matches the 1.0–1.4× contract floor established in content-authoring.md. SQL=1.41×, Python=1.27×, PySpark=1.17×. SQL-in-pandas quality risk constrains quality per question (1 SQL clone replaced: 32036), not the quantity ceiling. 1.20× midpoint of allowed range. |
+| 2026-05-24 | 4 existing hard mock-only pairs formalized as chains: 33026→33030, 33027→33031, 33028→33032, 33024→33039 | These pairs share the same business scenario and datasets; all four are `business_rule_pivot` follow-ups. No content rewrites needed — only follow_ups array linkage. |
+| 2026-05-24 | apply(lambda) in expected_code is a hard reject when vectorized path exists; 33028 and 33032 use apply(lambda) for tier assignment and must be fixed to pd.cut | Track doc anti-pattern rule ("apply(lambda) as reference when vectorized path exists"). Both questions produce correct output but teach the wrong idiom. Fix to pd.cut before Phase 2 ships. |
+| 2026-05-24 | DEBUG PANDAS designated practice-grounded; 1 medium debug practice question to be authored (32052) | Matches SQL/PySpark precedent: debug-format is explicitly in the medium concept arc. The 5 existing mock-only debug questions become legitimate recombinations once practice teaches the reasoning. |
 | 2026-05-21 | Closed 5 taxonomy gaps surfaced by self-audit against the concept-tag philosophy | Added OUTPUT SANITY VALIDATION + PERFORMANCE-AWARE ANALYTICS + METRIC RECONCILIATION to SQL. Added 5 parallel families to Pandas (the SQL ⚡ trio + sanity + performance). Added 3 to PySpark (data quality + double-counting + sanity; intentionally NOT metric-interpretation or performance which overlap PySpark-native families). Renamed Pandas DEDUPLICATION & DISTINCT COUNTING → DEDUPLICATION LOGIC and RANKING & TOP-K → RANKING & TOP-N PER GROUP to align with SQL. Existing tags continue resolving via preserved match patterns. |
 | 2026-05-22 | Mock-only basis = recombine learned concepts under fresh framing; retired the "≤15% reuse / 85% fresh families" cap | User-supplied authoring philosophy (SQL-anchored, applied to all 9 tracks). The old cap pushed mock-only toward concept families *not* in practice at that difficulty, which is incoherent with "practice teaches, mock evaluates transfer" — a mock can't fairly test transfer of reasoning the curriculum never taught. New rule: mock-only introduces no unseen concept family and must not clone a practice question's framing; it recombines learned concepts in a fresh business scenario (new KPI, time window, relationship, stakeholder pressure, dirty data). Differentiator is framing/realism/ambiguity, not concept novelty. Codified in content-authoring.md, the agent, concept-taxonomy.md (validation rule 7), all 9 track docs, mock.md, and track-onboarding.md. |
 | 2026-05-22 | Every difficulty tier maps to realistic business tasks, never textbook drills — added per-tier "allowed business scenarios" to all 9 track docs | Difficulty controls reasoning depth only; it never licenses toy/syntax-recall exercises. Construct lists bound the *tools*; the new scenario lists bound the *feel*. Both gate a question. SQL scenarios taken verbatim from the user's spec; the other 8 tracks translated to track-appropriate realistic tasks. |
