@@ -703,7 +703,8 @@
     ],
     "concepts": [
       "SEMANTIC LAYER",
-      "DIMENSIONAL MODELING"
+      "DIMENSIONAL MODELING",
+      "METRIC GOVERNANCE"
     ]
   },
   {
@@ -813,6 +814,84 @@
       "STORAGE ARCHITECTURE TRADEOFFS",
       "DIMENSIONAL MODELING",
       "SEMI-ADDITIVE FACTS"
+    ]
+  },
+  {
+    "id": 63031,
+    "order": 31,
+    "title": "Bi-Temporal Modeling: When SCD Type 2 Cannot Reconstruct System State",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A medical device company tracks device recall status using SCD Type 2. A status change from 'Active' to 'Under Review' was entered into the system on November 5th but was backdated to October 15th (the date the business decision was made). Regulatory auditors ask: 'What recall status did your system report for device D-441 on October 31st?' The current SCD Type 2 query for October 31st returns 'Under Review' (because the row has effective_from = October 15th). But the October monthly report sent to regulators on October 31st showed 'Active' \u2014 the 'Under Review' row hadn't been loaded yet.",
+    "description": "Your current SCD Type 2 gives the wrong answer to the auditor's question because a backdated correction changes what history looks like today versus what the system contained at the time of the report. Which design pattern makes this audit question answerable directly from the data warehouse?",
+    "options": [
+      "Add a second timestamp pair \u2014 sys_start and sys_end \u2014 to each SCD row, tracking when that row was current in the database independently of its effective_from/effective_to validity dates. A transaction-time query for 'what was in the system on October 31st' filters on `'2023-10-31' BETWEEN sys_start AND sys_end`, returning the 'Active' row that existed in the database before the November 5th load.",
+      "SCD Type 2 already answers this question: the 'Active' row has effective_from before October 31st, so the predicate WHERE effective_from <= '2023-10-31' AND effective_to > '2023-10-31' returns 'Active' \u2014 no design change is needed.",
+      "Add a date_loaded column to each SCD row. For the audit query, filter WHERE date_loaded <= '2023-10-31' AND effective_to > '2023-10-31' to find rows that were loaded before October 31st and still valid on that date.",
+      "Maintain a nightly snapshot of the full dimension table in a separate cold-storage schema. Audit queries read the snapshot for the relevant date rather than the live dimension, giving an exact replica of the system state on any past date."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is bi-temporal modeling. SCD Type 2's effective_from/effective_to axis records when a fact was true in business reality (valid time). After the November 5th load, the SCD table shows: 'Active' from a prior date to October 14th, 'Under Review' from October 15th to present. A valid-time query for October 31st returns 'Under Review' \u2014 which reflects the backdated business fact but NOT what the system actually contained on October 31st when the report was generated. The system-time axis (sys_start/sys_end) records when each row was current in the database. The 'Under Review' row has sys_start = November 5th. A transaction-time query for October 31st excludes it and returns the 'Active' row (sys_start before October 31st, sys_end = November 5th when it was superseded). Option B is wrong: after the backdated load, 'Under Review' has effective_from = October 15th \u2014 the valid-time predicate for October 31st returns 'Under Review', not 'Active'. The current SCD gives the wrong audit answer. Option C is incomplete: date_loaded captures when a row was inserted, not when an existing row's effective_to was modified. When the correction was applied, the 'Active' row's effective_to was changed to October 14th \u2014 this modification happened after October 31st, but date_loaded reflects the original insert time. The audit filter cannot reconstruct the pre-modification table state from create timestamps alone. Option D (nightly snapshots) works operationally but is expensive, imprecise for intraday queries, and depends on backup infrastructure rather than query logic.",
+    "hints": [
+      "After the November 5th backdated load, what does the valid-time predicate return for October 31st? Is that the answer the auditor needs?",
+      "Bi-temporal modeling has two independent time axes. Which axis tracks 'when was this row current in the database' independently of 'when was the business fact valid'?"
+    ],
+    "concepts": [
+      "BI-TEMPORAL MODELING",
+      "SCD STRUCTURE",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63032,
+    "order": 32,
+    "title": "Schema Evolution: Adding a Compliance Column to a Shared Dimension Under a Regulatory Deadline",
+    "difficulty": "hard",
+    "type": "scenario",
+    "scenario_context": "A healthcare analytics platform has a shared `dim_patient` dimension (6M rows) consumed by three domains: Clinical (treatment analytics, 9 downstream dbt models), Finance (claim billing, 5 downstream models), and Research (de-identified nightly export to an academic partner governed by a data-sharing agreement). The governance team must add a `consent_level` column (values: 'full', 'limited', 'research_only', 'none') tracking patient data-sharing consent. Three constraints apply simultaneously: (1) consent data must be backfilled from a legacy paper-consent system \u2014 85% coverage estimated over 3 months; (2) the Research export must begin filtering on consent_level within 30 days to meet a new regulatory requirement; (3) Clinical and Finance pipelines must not be disrupted during or after the migration.",
+    "description": "Which schema evolution strategy satisfies all three constraints simultaneously, and why does each alternative violate at least one?",
+    "options": [
+      "Add `consent_level` as NULL-allowed to `dim_patient` immediately; NULL = consent status pending backfill; deploy the Research export filter as `WHERE consent_level = 'research_only'` excluding NULLs by default (data-minimization default); Clinical and Finance are unaffected by a NULL-allowed column addition; backfill runs asynchronously over 3 months and the Research export population grows as records resolve.",
+      "Add `consent_level` as NOT NULL DEFAULT 'full' so the Research export can begin filtering within 30 days; the 15% of patients without backfill coverage default to 'full' consent; backfill corrects any inaccurate rows over 3 months; Clinical and Finance are unaffected by the column addition.",
+      "Block the Research export until the 3-month backfill reaches 100% coverage; add `consent_level` only after backfill completes; deploy all three domain changes simultaneously in a coordinated release window to guarantee a consistent view.",
+      "Create a separate `dim_patient_consent` table containing only patients with confirmed consent status; the Research export joins to it and excludes non-matching patients; Clinical and Finance continue using `dim_patient` unchanged; merge the consent table back into `dim_patient` after the backfill completes."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A satisfies all three constraints: (1) NULL-allowed column addition is backwards-compatible \u2014 Clinical and Finance models continue without modification; (2) the Research export filter `WHERE consent_level = 'research_only'` launches within 30 days, erring on the side of data minimization by excluding unknown-consent patients; (3) the backfill runs asynchronously and the export population grows as records resolve. This is the canonical approach to schema evolution under partial historical data availability. Option B fails on compliance: DEFAULT 'full' asserts full consent for 15% of patients whose status is unknown. 'full' consent means the patient has agreed to all data uses, including Research export. Defaulting to 'full' for unresolved patients could expose their data to the academic partner without authorization \u2014 a direct violation of healthcare consent regulations (HIPAA/GDPR). The correct default for unknown consent is absence of consent, not the broadest permission tier. Option C fails on the 30-day regulatory deadline: blocking the Research export for 3 months is not an option when a compliance date is fixed. Waiting for complete backfill before deploying defeats the incremental, non-disruptive principle of schema evolution. Option D adds complexity with no benefit over Option A: the outer join in the Research export achieves the same filtering as Option A's WHERE clause, but with a separate table to maintain and a 3-month merge operation that risks disrupting all three domains simultaneously \u2014 the opposite of a non-disruptive migration.",
+    "hints": [
+      "Constraint 2 requires the Research export to start filtering within 30 days. Which options are immediately disqualified by that deadline?",
+      "If DEFAULT 'full' is used and a patient's consent later resolves to 'none', what was the data-sharing status of their records during the 3-month window when their row incorrectly showed 'full'?"
+    ],
+    "concepts": [
+      "SCHEMA EVOLUTION",
+      "DIMENSION DESIGN",
+      "CONFORMED DIMENSIONS"
+    ]
+  },
+  {
+    "id": 63033,
+    "order": 33,
+    "title": "Schema Evolution Governance: Breaking-Change Strategy for a High-Fan-Out Shared Dimension",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "description": "A shared `dim_account` is consumed by 14 downstream assets across four business domains. The governance team evaluates three long-term strategies for handling breaking schema changes (column renames, type changes, removals) that occur 3\u20135 times per year: (A) Alias columns \u2014 add the new canonical name alongside the deprecated name, maintaining both indefinitely; (B) Versioned tables \u2014 publish `dim_account_v2` alongside `dim_account_v1`, deprecate v1 with a 90-day sunset; (C) Logical interface layer \u2014 a view or semantic API exposes the consumer-facing contract; breaking changes happen only in the physical table, with the interface remapping old names to new physical columns during a transition window. Which strategy scales best across a multi-year horizon with 3\u20135 breaking changes per year?",
+    "options": [
+      "Strategy A (alias columns): each breaking change adds the new canonical name while retaining the deprecated name indefinitely; consumers never face forced migration and the dimension remains backward-compatible at all times. This is the lowest-risk strategy for a high-fan-out dimension with slow-moving consumers like Tableau workbooks and R scripts.",
+      "Strategy B (versioned tables): each breaking change gets its own physical version with a 90-day migration window; physical isolation ensures v1 consumers are protected from v2 changes; this provides the cleanest breaking-change governance because each version is an independently maintained asset.",
+      "Strategy C (logical interface layer): the physical table evolves freely; the interface enforces the consumer-facing contract; breaking changes are absorbed as temporary remappings in the interface and removed after migration \u2014 the physical table and interface stay lean because migration logic is never permanent.",
+      "None of these strategies is correct for a dimension with 14 consumers. The right governance model is a no-breaking-changes policy: once a column is published on a shared dimension, only new nullable columns or new attribute values may be added; renames, type changes, and deletions are prohibited."
+    ],
+    "correct_option": 2,
+    "explanation": "Strategy C is correct for a high-fan-out dimension with frequent breaking changes. The interface layer absorbs each change as a temporary mapping that is removed after consumers migrate \u2014 keeping both the physical table and the interface lean over time. Strategy A (alias columns indefinitely) accumulates technical debt at the rate of the breaking-change frequency: 3\u20135 per year over 5 years produces 15\u201325 permanently maintained alias columns. With 14 consumers, aliases are never safely removed (someone always depends on the old name), and the dimension becomes a museum of deprecated column names. No analyst can tell which columns are canonical without reading documentation that itself drifts. Strategy B (versioned tables) fails because each version requires the same full operational rigor as the original: matching SCD logic, partitioning strategy, refresh cadences, and lineage tracking. With 14 consumers across 4 domains moving to v2 at different paces, both v1 and v2 must be fully maintained for the entire 90-day window \u2014 and in practice, some consumer never migrates. At 3\u20135 breaking changes per year, table proliferation becomes unsustainable. Strategy D overstates the constraint. Breaking changes \u2014 renames for correctness, type changes for precision, removals of deprecated attributes \u2014 are sometimes necessary. A blanket prohibition forces teams to maintain semantically incorrect columns indefinitely.",
+    "hints": [
+      "If Strategy A never removes deprecated column names (because some consumer always depends on the old name), what does `dim_account` look like after 5 years of 3\u20135 breaking changes per year?",
+      "With Strategy B and 14 consumers across 4 domains each migrating to v2 on different schedules, how many versions of `dim_account` might coexist at once, and who maintains SCD correctness for each?"
+    ],
+    "concepts": [
+      "SCHEMA EVOLUTION",
+      "DIMENSION DESIGN",
+      "DIMENSIONAL MODELING"
     ]
   }
 ]
