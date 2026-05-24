@@ -194,6 +194,7 @@ Summary:
   - **`framing: "scenario"`** — narrative business brief in `description` (≤3 sentences, grounded, not abstract)
   - **`type: "reverse"`** (SQL only) — user sees `result_preview`, writes the query
   - **`type: "debug"`** — `debug_error` is a real engine error string; starter has exactly one bug producing it; minimal fix is the `expected_*`
+- **Power-user runway sizing benchmark.** Mock-only inventory targets **1.0×–1.5× the practice count**, hard-skewed, with ~⅓ of mock-only as chain members. Established precedent: SQL 1.41×, Python 1.27×, PySpark 1.17×. A track sizing below 1.0× requires explicit track-specific justification recorded in the brief + decision log. "Lean" applies to practice; mock sizes to runway. See [`docs/content-authoring.md → Power-user runway sizing benchmark`](../../docs/content-authoring.md#power-user-runway-sizing-benchmark-mock-only-inventory).
 
 ---
 
@@ -253,6 +254,6 @@ Track-specific runtime checks live in each track doc's "Verification before comm
 - [ ] No invented columns / tables; schema matches CSV headers; DuckDB syntax (SQL); pandas-idiomatic (Pandas)
 - [ ] Hints follow the ladder; first hint does not leak the answer term
 - [ ] Concept tags map to registered families per track; none blocklisted; 2–4 tags
-- [ ] If `mock_only`: no unseen concept families (every family already taught in practice at that difficulty or lower); recombines learned concepts in a fresh business scenario, not a clone of a practice question's framing; any mock-only realism family co-occurs with ≥1 practice-grounded family (never sole tag); chain rules satisfied (dimensions, atomicity, length, ordering); reverse / debug / scenario rules satisfied
+- [ ] If `mock_only`: no unseen concept families (every family already taught in practice at that difficulty or lower); recombines learned concepts in a fresh business scenario, not a clone of a practice question's framing; any mock-only realism family co-occurs with ≥1 practice-grounded family (never sole tag); chain rules satisfied (dimensions, atomicity, length, ordering); reverse / debug / scenario rules satisfied; **track-level mock-only inventory tracks toward 1.0×–1.5× practice count per the sizing benchmark** (deviation requires recorded justification)
 - [ ] Verification commands above pass clean
 - [ ] Output is valid JSON only (improvements: JSON + a short change-rationale list after it)

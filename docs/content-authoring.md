@@ -264,6 +264,24 @@ The distinction is **framing, realism, ambiguity, and interview dynamics — not
   - `type: "reverse"` (SQL only) — user sees `result_preview`, writes the query
   - `type: "debug"` — `debug_error` is a real engine error string; starter has exactly one bug
 
+### Power-user runway sizing benchmark (mock-only inventory)
+
+Mock-only inventory must support a power user who completes most of practice and then does months of heavy mock prep — and because **chains are consumed once per user, ever** (`docs/features/mock.md` → atomicity), inventory must (a) exceed peak multi-month consumption and (b) span every interview-relevant medium/hard family. This rules out "lean mock" interpretations.
+
+**Per-track sizing target:** **mock-only count between 1.0× and 1.5× the practice count**, hard-skewed (~55/45 or 60/40 medium/hard), with **~⅓ of mock-only as chain members** (the Interview-Loop capacity floor — parents + follow-ups).
+
+**Established precedent** (these set the contract — diverging requires explicit, written, track-specific justification):
+
+| Track | Practice | Mock-only | Ratio | Notes |
+|---|---|---|---|---|
+| SQL | 115 | 162 | **1.41×** | executable analytics |
+| Python | 79 | 100 | **1.27×** | executable algorithms |
+| PySpark | 128 | 150 | **1.17×** | MCQ code-adjacent reasoning |
+
+A track audit proposing **< 1.0×** must record the track-specific reason in the brief and the decision log (e.g. interview-frequency data showing low demand, a finite pattern-space argument that more mock would only produce clones, etc.) — and the reason must survive critical pushback. *"Lean"* in this contract applies to **practice** (don't pad the curriculum with puzzles or low-value variants); **mock** sizes to the runway. A small mock pool is a power-user runway failure, not a virtue.
+
+**Composition discipline (orthogonal to count):** the anti-duplication rule (above) bounds *quality* — every mock-only question must recombine practice-taught reasoning under fresh framing, not clone an existing question. If the anti-duplication ceiling appears to bind below the 1.0× floor for a given track, the right response is **drop/replace the SQL-in-pandas-style clones already in the bank** and then re-author up to ratio — not abandon the runway target.
+
 ---
 
 ## Per-track JSON schemas
