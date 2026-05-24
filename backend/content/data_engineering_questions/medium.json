@@ -1928,5 +1928,323 @@
       "ORCHESTRATION",
       "DELIVERY SEMANTICS"
     ]
+  },
+  {
+    "id": 52074,
+    "order": 74,
+    "title": "3 AM Alert: Dedup Key Collision in Production Fact Table",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "At 3:07 AM an on-call alert fires: 'fact_events row count exceeds expected 120% threshold.' Investigation shows that a code change deployed yesterday updated the deduplication key from (user_id, event_type, event_timestamp) to (user_id, event_type) — removing the timestamp component. Events that occurred multiple times per user-event-type combination within the same session (e.g., a user clicking 'add to cart' 3 times) are now collapsed to one row each. The MERGE ON (user_id, event_type) is treating distinct events as duplicates.",
+    "description": "What is the immediate remediation, and what was the underlying design error?",
+    "options": [
+      "Immediate: roll back the pipeline code to the previous version that used (user_id, event_type, event_timestamp) as the dedup key, and re-process yesterday's data from the raw source to restore the lost event rows. Design error: the dedup key was changed without considering that multiple events with the same user_id and event_type are semantically distinct if their timestamps differ — the dedup key must uniquely identify each distinct real-world event, not just each user-event-type combination.",
+      "Immediate: remove all deduplication logic from the pipeline and append all events without deduplication — the row count alert threshold should be updated to reflect the true event volume. Design error: deduplication should never have been applied to event streams because events are inherently unique.",
+      "Immediate: add event_session_id to the dedup key ((user_id, event_type, event_session_id)) so that multiple events within a session are preserved while cross-session duplicates are still removed. Design error: the timestamp component was too granular — session scope is the right dedup boundary.",
+      "Immediate: revert the code change and run the pipeline with the original key. The alert threshold was misconfigured — the fact table should be allowed to grow beyond 120% of expected when genuine duplicate events are being correctly removed."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A correctly identifies both the immediate fix (code rollback + re-process from source) and the root design error: the dedup key was narrowed incorrectly. A dedup key for events must uniquely identify each distinct real-world event. Adding event_type without timestamp means any two events of the same type for the same user are treated as duplicates, collapsing valid repeated actions. The timestamp is essential to distinguish 'user added to cart 3 times' from 'event was delivered 3 times.' Option B (remove all dedup) goes too far — at-least-once delivery does produce genuine duplicates that must be handled. Option C (session-scoped key) assumes session boundaries are a correct dedup scope, but a user adding to cart 3 times within one session is 3 distinct events that should all be preserved. Option D misidentifies the alert threshold as misconfigured — the alert correctly detected an anomaly; the code change caused the anomaly.",
+    "hints": [
+      "A dedup key must uniquely identify each distinct real-world event. If the same user performs the same action multiple times, what field distinguishes the second occurrence from the first?",
+      "When narrowing a dedup key (removing a component), ask: can two semantically distinct events now produce the same key? If yes, the key is too narrow."
+    ],
+    "concepts": [
+      "DATA QUALITY",
+      "INCIDENT RESPONSE",
+      "IDEMPOTENCY"
+    ]
+  },
+  {
+    "id": 52075,
+    "order": 75,
+    "title": "Consumer Acknowledges Before Processing: Messages Lost Under Crash",
+    "difficulty": "medium",
+    "type": "debug",
+    "mock_only": true,
+    "description": "A Kafka consumer team is debugging message loss during pod restarts. Investigation reveals the consumer code calls consumer.commitSync() immediately after consumer.poll(), before any processing logic runs. During a pod crash that occurs mid-processing, the offsets are already committed — on restart, those messages are skipped. The team argues that committing early reduces re-processing overhead after restarts. The data shows ~0.3% message loss per deployment.",
+    "options": [
+      "Committing offsets before processing converts Kafka's at-least-once delivery into at-most-once: if the consumer crashes after committing but before processing, those messages are never retried. The correct pattern is commit-after-processing: commit offsets only after the message has been successfully written to the sink. This may cause some messages to be re-processed after a crash (at-least-once), but re-processing is recoverable if the sink is idempotent; message loss is not.",
+      "The team's approach is correct for pipelines where exactly-once processing is not required — committing early reduces duplicate processing at the cost of occasional loss. For a 0.3% loss rate, the operational trade-off is acceptable for non-critical streams.",
+      "Enable Kafka's auto-commit feature (enable.auto.commit=true) with a 5-second interval — this commits offsets automatically on a schedule, splitting the difference between processing speed and loss risk.",
+      "Switch to Kafka's transactional producer and consumer with isolation.level=read_committed — this guarantees that offsets are committed atomically with the downstream write, eliminating both message loss and reprocessing."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A correctly identifies the delivery semantic: commit-before-process gives at-most-once delivery (may lose messages); commit-after-process gives at-least-once delivery (may re-process but never loses). For data pipelines, re-processing a message is recoverable if the sink is idempotent — message loss is typically not recoverable. Option B normalizes the loss rate without recognizing that the semantic guarantee was incorrectly chosen. 0.3% loss may be acceptable for some use cases (non-critical metrics), but the team should make this choice deliberately, not as a side effect of optimization. Option C (auto-commit on schedule) creates a window between when the consumer commits and when processing completes — same semantic issue as manual early commit. Option D (transactional producer) requires both producer and consumer to participate in a Kafka transaction, which is a significant architectural change; it is not a targeted fix for a consumer-only commit ordering issue.",
+    "hints": [
+      "When a consumer commits an offset before the message has been processed, what happens to that message if the pod crashes between the commit and the write to the sink?",
+      "If the consumer crashes after committing the offset but before writing to the sink, what happens to those messages on restart? What if the order were reversed — crash after writing but before committing?"
+    ],
+    "concepts": [
+      "DELIVERY SEMANTICS",
+      "BACKPRESSURE",
+      "INCIDENT RESPONSE"
+    ]
+  },
+  {
+    "id": 52076,
+    "order": 76,
+    "title": "Switching from Micro-Batch Spark to Full Streaming to Cut Costs",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A company runs Spark Structured Streaming in micro-batch mode (trigger every 5 minutes) to process 800 GB/day of clickstream events. The Spark cluster runs 24/7 at $18,000/month. An architect proposes switching to a continuous streaming mode (trigger=Once disabled, using a true streaming engine) to eliminate the idle compute time between micro-batches and reduce cost. The current pipeline enriches events with user segment lookups from an S3 reference table.",
+    "description": "What cost and architecture trade-offs should the team evaluate before committing to continuous streaming?",
+    "options": [
+      "Continuous streaming eliminates fixed micro-batch scheduling overhead but does not reduce cluster cost proportionally — the cluster must still be running to process the continuous stream. Cost savings come from right-sizing the cluster for steady-state throughput rather than peak micro-batch burst capacity. The critical trade-off: the S3 user-segment lookup becomes a bottleneck in continuous mode (S3 reads per event vs. per batch); the lookup must be replaced with an in-memory broadcast join or a low-latency store (Redis) to maintain throughput. Validate that the enrichment latency and throughput match continuous mode requirements before switching.",
+      "Continuous streaming always reduces cost compared to micro-batch because the cluster never idles — Spark uses only the compute needed for the current event rate, and idle workers are automatically de-allocated. No trade-offs exist; the switch is straightforward.",
+      "Switching to continuous streaming mode is not possible for pipelines that include table lookups — lookups require a batch context that continuous streaming cannot provide. Keep the micro-batch trigger and reduce cost by shortening the trigger interval from 5 minutes to 1 minute.",
+      "The cost savings from continuous streaming are realized through reduced driver overhead — the driver spins up and down for each micro-batch, and continuous mode eliminates this. Continuous streaming is recommended whenever the pipeline's SLA is below 5 minutes."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A correctly frames the trade-off: continuous streaming does not magically reduce cluster cost by eliminating idle time — the cluster must be running continuously to process the stream. The actual cost benefit comes from right-sizing: a micro-batch cluster is provisioned for burst capacity during batch processing, while a continuous streaming cluster can run at a lower, steady-state size. The critical architectural concern is the S3 lookup: S3 calls made per event in continuous mode would be far more expensive and slower than a single batch broadcast join every 5 minutes. Option B is incorrect — continuous streaming does not auto-deallocate workers in most Spark deployments; it runs the same cluster 24/7 but at a different utilization pattern. Option C overstates the constraint — Spark Structured Streaming supports joins with reference data in continuous mode via broadcast; the challenge is latency and throughput, not impossibility. Option D's claim about driver overhead is minimal and not the primary cost driver.",
+    "hints": [
+      "A micro-batch cluster runs at peak capacity during processing and idles between batches. A continuous streaming cluster runs steadily at a lower rate. What cluster size would you need for each mode, and how do those costs compare?",
+      "The pipeline does an S3 lookup for user segments. In micro-batch mode, this lookup happens once per batch (5 minutes). In continuous mode, it happens once per event. What is the performance and cost implication of per-event S3 reads at 800 GB/day volume?"
+    ],
+    "concepts": [
+      "BATCH VS STREAMING",
+      "COST OPTIMIZATION",
+      "STORAGE ARCHITECTURE"
+    ]
+  },
+  {
+    "id": 52077,
+    "order": 77,
+    "title": "Event-Time vs Processing-Time for Hourly SLA Windows",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A streaming pipeline computes hourly revenue aggregates for a real-time dashboard. The operations team debates between two windowing approaches: (A) event-time windows keyed to the timestamp embedded in each event, with a 30-minute lateness tolerance; (B) processing-time windows keyed to when the Kafka consumer receives the event. The revenue team requires that 'the 3:00 PM aggregate reflects all revenue that occurred between 3:00 PM and 4:00 PM, regardless of when those events arrived in Kafka.'",
+    "options": [
+      "Event-time windowing (option A) is required. Processing-time windowing attributes an event to the hour it arrived, not the hour it occurred — a transaction that happened at 3:58 PM but arrived in Kafka at 4:03 PM would be counted in the 4 PM aggregate under processing-time, distorting the 3 PM revenue figure. Event-time windowing with a 30-minute lateness tolerance ensures that events arriving up to 30 minutes late are still attributed to the correct hour. The trade-off: the 3 PM aggregate is not finalized until 4:30 PM.",
+      "Processing-time windowing (option B) is preferable because it requires no watermark configuration and produces simpler, immediately available aggregates. For dashboards, users understand that revenue figures are slightly delayed and the distinction between event time and processing time is operationally irrelevant.",
+      "Both approaches produce equivalent results for a real-time dashboard because Kafka consumers typically process events within seconds of production, making event-time and processing-time nearly identical in practice.",
+      "The correct approach is to use both simultaneously: a processing-time window for the live dashboard (updated continuously) and an event-time batch recomputation for the finalized hourly figure (run at T+35 minutes). The live dashboard uses processing-time; the final figure uses event-time."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is correct and aligned with the stated requirement: revenue must be attributed to the hour the transaction occurred. Processing-time windowing violates this requirement by attributing late-arriving events to the wrong hour. The 30-minute lateness tolerance allows the hourly aggregate to include events that arrive up to 30 minutes after the hour boundary — at the cost of delayed finalization. The dashboard shows the aggregate as 'in progress' until the window closes. Option B accepts incorrect attribution as 'operationally irrelevant,' which contradicts the revenue team's explicit requirement. For financial metrics, hour-level accuracy is rarely optional. Option C is wrong empirically: the 800 GB/day scenario already demonstrates that mobile events arrive 20–45 minutes late — event time and processing time are NOT nearly identical in practice. Option D (dual approach) is architecturally valid but adds complexity; the single event-time streaming approach with proper watermarking already satisfies the requirement.",
+    "hints": [
+      "The requirement says '3:00 PM aggregate reflects all revenue between 3:00 PM and 4:00 PM.' A transaction at 3:58 PM arrives in Kafka at 4:03 PM. Which windowing approach puts it in the 3 PM bucket?",
+      "Event-time and processing-time diverge whenever events arrive late. How late can mobile app events realistically arrive? Does that affect which windowing approach is correct?"
+    ],
+    "concepts": [
+      "WATERMARKING",
+      "BATCH VS STREAMING",
+      "SCHEDULING & SLAS"
+    ]
+  },
+  {
+    "id": 52078,
+    "order": 78,
+    "title": "CDC Pipeline Diverges from Source After Database Failover",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A Debezium CDC pipeline streams changes from a MySQL primary database to a data warehouse. At 6:15 AM, the primary database fails and the DBA promotes the replica to primary within 4 minutes. The Debezium connector is configured to reconnect automatically. After reconnection, the pipeline resumes and shows no errors. At 11:00 AM, a data quality check finds that 320 rows are missing from the warehouse that exist in the new primary — these rows were written to the original primary during the 4-minute failover window but were never committed to the binlog before the crash.",
+    "description": "Why did the CDC pipeline not detect the gap, and what process should prevent this in the future?",
+    "options": [
+      "Debezium reads the binlog starting from the last committed offset before the failover. Transactions committed to the original primary but not yet replicated to the replica's binlog before the crash are permanently lost — they appear neither in the replica's binlog nor in Debezium's view. The pipeline reconnects successfully and appears healthy because it picks up from a valid point in the replica's binlog. Prevention: implement a post-failover reconciliation check that compares row counts (and ideally a row-level hash) between the warehouse and the new primary for the failover time window.",
+      "Debezium should be configured with snapshot.mode=always so that after any reconnection event, it re-snapshots the entire source table and replays all changes from the beginning — this guarantees no gaps regardless of failover behavior.",
+      "The 320 missing rows were written during a network partition, not a failover — Debezium would have detected a true failover. The root cause is a misconfigured replica lag threshold that allowed the replica to fall behind the primary by more than 4 minutes. Reduce max_allowed_lag on the replica.",
+      "Enable exactly-once delivery at the Debezium connector level using Kafka transactions — this guarantees that every row written to the primary is captured in Kafka exactly once, including rows written during failover windows."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A correctly identifies the gap: if a transaction committed to the primary but hadn't replicated to the replica's binlog before the crash, it simply does not exist in the CDC stream. Debezium reconnects to a valid binlog position on the new primary — the connector is healthy and reports no errors — but the gap in the data is silent. This is a known limitation of asynchronous replication: the replica may lag behind the primary at the moment of failover. Prevention requires a reconciliation step that verifies data completeness for the failover window, not connector health metrics. Option B (snapshot.mode=always) would re-snapshot the entire table on every reconnection, which is prohibitively expensive for large tables and still wouldn't recover the lost transactions (the snapshot reflects the replica's state at reconnect time, which also lacks the lost rows). Option C misidentifies the event type — the scenario explicitly describes a primary database failure and promotion. Option D: Debezium's exactly-once delivery applies to Kafka delivery semantics, not to capturing transactions from a database that was lost before replication completed.",
+    "hints": [
+      "Asynchronous database replication means the replica may be slightly behind the primary at any moment. If the primary crashes and 320 uncommitted rows haven't replicated yet, where do those rows end up?",
+      "Debezium reads the binlog and reports health based on whether it can connect and consume. What check would surface data gaps that are invisible to the connector health monitor?"
+    ],
+    "concepts": [
+      "CDC & INGESTION",
+      "LINEAGE & OBSERVABILITY",
+      "INCIDENT RESPONSE"
+    ]
+  },
+  {
+    "id": 52079,
+    "order": 79,
+    "title": "DAG Retry Sent Duplicate Campaign to Users Who Already Received It",
+    "difficulty": "medium",
+    "type": "debug",
+    "mock_only": true,
+    "description": "A daily pipeline reads the user eligibility table, writes a campaign_queue table, and then triggers a push notification API. After a database timeout at 11:47 PM, the orchestrator retried the full DAG from the beginning rather than from the failed step. The push notification step ran twice: once at 11:32 PM (completed) and again at 12:05 AM (retry run). 85,000 users received the push notification twice. The orchestrator is configured to retry the entire DAG, not individual tasks.",
+    "options": [
+      "The push notification step should check a sent_notifications log table before calling the API: if a record for (campaign_id, run_date, user_id) exists, skip the send. This makes the step idempotent and safe to retry at the DAG level. Additionally, configure the orchestrator to retry from the failed task (the database timeout step) rather than from the beginning of the DAG.",
+      "Disable full-DAG retries and require manual operator approval before any retry that includes the push notification step — external API calls are not recoverable and should never be automated.",
+      "Add a 24-hour cooldown period between runs of the push notification step, enforced at the orchestrator level — this prevents duplicate sends even if the DAG is retried multiple times within a day.",
+      "Switch the push notification step to use a message queue (e.g., SQS) with FIFO deduplication IDs — this moves deduplication responsibility to the queue and eliminates the need for a separate idempotency check in the pipeline."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A addresses both the immediate problem (the push notification step is not idempotent) and the orchestration configuration issue (full-DAG retries rather than task-level retries). The check-before-send pattern with a persistent log table is the standard approach for making external API calls safe to retry. The orchestrator configuration change reduces the blast radius of future failures — retrying only the failed task instead of the whole DAG means the notification step is not re-executed unless it actually failed. Option B (disable automated retries) is operationally brittle and creates a manual bottleneck for any pipeline that includes external calls. Option C (24-hour cooldown) is too blunt — it would prevent legitimate re-runs on the next day if the scheduled run fails and the cooldown hasn't expired. Option D (SQS FIFO deduplication) is a valid architectural approach for async notification systems but requires replacing the synchronous API call with an async queue integration — a significant architectural change.",
+    "hints": [
+      "The push notification step has already run successfully at 11:32 PM. When the DAG retries at 12:05 AM, the step has no memory of the first run. What persistent record, checked at the start of each run, would allow the step to detect 'already sent' and skip?",
+      "Two problems exist: the step is not idempotent, and the orchestrator retries the wrong scope. Fixing both independently makes the pipeline more robust — which fix is faster to deploy, and which has broader benefits?"
+    ],
+    "concepts": [
+      "IDEMPOTENCY",
+      "ORCHESTRATION",
+      "INCIDENT RESPONSE"
+    ]
+  },
+  {
+    "id": 52080,
+    "order": 80,
+    "title": "Silent Schema Drift in Upstream Feed Detected 2 Weeks Later",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A data engineering team ingests a daily JSON feed from a third-party vendor. Two weeks ago, the vendor added a new nested field `payment.details.installment_count` to the payload without notification. The team's JSON parser uses strict mode — unrecognized fields raise no error and are silently ignored. Two weeks later, the finance team notices installment payment revenue is understated by 11% because `installment_count` was never captured.",
+    "description": "What detection mechanism would have caught this within 24 hours, and what contract change prevents recurrence?",
+    "options": [
+      "Add a schema fingerprint or structural hash check to the ingestion pipeline: compute the set of top-level and nested keys in the first record of each daily feed, compare against the last known schema hash, and alert on any addition or removal. This detects new fields (vendor additions) and removed fields (vendor deprecations) within one pipeline run. Complement this with a formal data contract requiring the vendor to notify at least 5 business days before any schema change, with test payloads for validation.",
+      "Switch from strict JSON parsing to schema validation using JSON Schema with 'additionalProperties: false' — any payload with unrecognized fields will fail validation immediately, surfacing the new field as a parsing error within one run.",
+      "Configure the JSON parser to log a warning for any unrecognized fields at the DEBUG level — a weekly review of parser logs would catch new fields before they affect revenue metrics.",
+      "The fix is to enable 'additionalProperties' in the schema registry and automatically infer new columns from incoming data — the pipeline would dynamically add `installment_count` to the destination schema without manual intervention."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A provides early detection and process governance. The schema fingerprint detects structural changes (new/removed fields) immediately on the first run with changed data — before any silent ignoring happens. The data contract adds the organizational process that prevents recurrence: vendor must notify in advance, giving the team time to update parsers and destination schemas before the change is live. Option B (additionalProperties: false) would fail the entire daily load when any new field appears, causing an outage rather than a controlled alert. For a daily vendor feed, a hard failure without a known fix is worse than detecting the change and notifying. Option C (debug log review) requires a weekly human review — too slow for a 24-hour detection window. Option D (dynamic schema inference) is dangerous: automatically adding vendor-supplied fields to production destination schemas without review can introduce malformed data, incorrect types, or PII fields that were not intended to be persisted.",
+    "hints": [
+      "The parser silently ignored a new field without any error. What check, run before or during ingestion, would have detected that this feed's structure changed?",
+      "Detection solves today's problem. What agreement with the vendor prevents this from happening again? Think about who needs to be notified, when, and what artifact (test payload, schema diff) they should provide."
+    ],
+    "concepts": [
+      "DATA CONTRACT",
+      "LINEAGE & OBSERVABILITY",
+      "DATA QUALITY"
+    ]
+  },
+  {
+    "id": 52081,
+    "order": 81,
+    "title": "When Should a Consumer Apply Backpressure vs Drop Messages?",
+    "difficulty": "medium",
+    "type": "debug",
+    "mock_only": true,
+    "description": "Which approach is correct for this use case, and what does the analysis reveal about the downstream consumers?",
+    "options": [
+      "Option B (drop backlog) is appropriate only for the fraud detection path: a fraud model using 90-minute-old authorization data is already stale beyond usefulness. However, dropping messages for the reconciliation table is unacceptable — financial auditing requires every payment event. The correct architecture: separate these two consumers into independent consumer groups. The fraud consumer can use a shorter retention window and reset to latest when it falls behind; the reconciliation consumer must maintain offset commit discipline and never drop messages.",
+      "Option A (backpressure) is always correct for payment pipelines. Dropping payment events, even stale ones, creates unrecoverable data loss in a regulated industry and should be prohibited by policy for any consumer processing financial data.",
+      "Option B (drop and reset to latest) is correct for both consumers because a 90-minute lag in a real-time payment pipeline represents a system failure — the backlog will never be recovered in time to be useful. The financial auditing system must be designed to tolerate event loss and use alternative reconciliation sources.",
+      "The correct approach is to add more consumer instances to the consumer group, which will reduce the lag to below 5 minutes without dropping any messages or applying backpressure. Backpressure and dropping are both last-resort options that should only be considered after horizontal scaling fails."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A correctly identifies that the two downstream consumers have fundamentally different requirements: fraud detection tolerates staleness and message loss (a 90-minute-old fraud signal is useless); financial auditing cannot tolerate any message loss. The solution is not to choose between A and B globally — it is to design independent consumer paths with different delivery-semantic guarantees. This is a real-world pattern: fan out from the same Kafka topic to multiple consumer groups with different retention, lag tolerance, and recovery strategies. Option B (backpressure) is not realistic for Kafka — Kafka does not support consumer-driven backpressure to the producer natively. Option C endorses dropping messages from the financial reconciliation path, which would create an irrecoverable data gap in end-of-day auditing. Option D (add consumers) is correct as a general lag-reduction strategy but does not address the semantic difference between the two downstream systems.",
+    "hints": [
+      "The same Kafka topic feeds two consumers: one for real-time fraud detection (needs freshness) and one for financial reconciliation (needs completeness). Are these consumers allowed to have different strategies for handling lag?",
+      "In Kafka, different consumer groups on the same topic maintain independent offsets. What does this let you do for consumers with fundamentally different delivery-semantic requirements?"
+    ],
+    "concepts": [
+      "BACKPRESSURE",
+      "DELIVERY SEMANTICS",
+      "DATA GOVERNANCE"
+    ]
+  },
+  {
+    "id": 52082,
+    "order": 82,
+    "title": "Protobuf Field Deprecation Silently Breaks Downstream Consumer",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A producer team deprecates `product_sku` (field number 5) in their Protobuf schema by removing it from the .proto file. They correctly reserve the field number (reserved 5; reserved 'product_sku') to prevent reuse. The schema compiles cleanly. A downstream consumer that reads `product_sku` to compute inventory metrics stops receiving inventory data but reports no deserialization errors — the field silently deserializes as the zero value (empty string).",
+    "description": "Why did the consumer receive no error, and what should the producer's change-management process have included?",
+    "options": [
+      "Protobuf's design treats missing fields as zero/default values — a removed field deserializes to its type's default (empty string for string, 0 for int) rather than raising an error. This is by design for Protobuf's forward-compatibility model. The producer's change process should have: (1) sent a breaking-change notification to all consumers before removing the field; (2) required consumers to confirm they no longer read `product_sku`; (3) kept the field in the schema (marked deprecated) for at least one full release cycle before removing it.",
+      "Protobuf's field reservation prevents the field number from being reused but does not affect deserialization — reserved fields deserialize normally from old wire-format data. The consumer is seeing stale data from cached proto files, not zero values from the new schema.",
+      "The consumer should have added a NOT NULL assertion on `product_sku` after deserialization — an empty string would then raise a downstream validation error, surfacing the schema change immediately.",
+      "This is expected Protobuf behavior and is by design — producers should remove deprecated fields without consulting consumers. Consumers are responsible for implementing null-checks on all optional fields they depend on."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A correctly describes Protobuf's silent-failure mode: when a field is removed, data encoded without that field deserializes to the type's default value (empty string, 0, false) with no error. This is intentional for wire-format compatibility — old messages can be read by new consumers, and vice versa — but it means breaking changes fail silently on the consumer side. The correct producer process treats field removal as a breaking change: notify all consumers, require confirmation that they have stopped reading the field, then remove in a later version. Option B misunderstands reservation — `reserved` prevents field number reuse for new fields, not deserialization; cached proto files are not the issue. Option C (NOT NULL assertion) is a valid defensive measure consumers can add, but it should not be the primary safeguard against producer-side breaking changes. Option D endorses unilateral field removal, which is an anti-pattern in any shared schema ecosystem.",
+    "hints": [
+      "Protobuf's wire format does not distinguish 'this field was intentionally empty' from 'this field was removed from the schema.' What value does a missing Protobuf string field deserialize to?",
+      "Silently defaulting to zero values means consumers have no signal that a field was removed — no error, no warning. What process change at the producer side would have surfaced this before it caused a silent data gap?"
+    ],
+    "concepts": [
+      "SCHEMA EVOLUTION",
+      "DATA CONTRACT",
+      "LINEAGE & OBSERVABILITY"
+    ]
+  },
+  {
+    "id": 52083,
+    "order": 83,
+    "title": "SOC 2 Audit Requires Full Data Lineage for Every Revenue Record",
+    "difficulty": "medium",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A SOC 2 Type II audit requires the data engineering team to demonstrate that every row in the revenue_fact table can be traced to its source system, transformation steps, and the engineer who authored each pipeline stage. The current platform has no automated lineage tracking — transformations are documented manually in Confluence and pipeline code is in Git. The audit is in 6 weeks.",
+    "description": "What is the pragmatic minimum-viable lineage strategy for the 6-week window, and what is the longer-term recommendation?",
+    "options": [
+      "Pragmatic 6-week approach: instrument each pipeline step to write a lineage_audit record (source table, destination table, row count, run_id, author, timestamp) to a dedicated Postgres audit table before and after each transformation. For the audit, produce a lineage report showing the transformation chain for revenue_fact: source system → staging → transformed → fact. Longer-term: adopt a data catalog or lineage tool (e.g., dbt's exposures + lineage graph, Apache Atlas, or OpenLineage) that auto-generates lineage from pipeline metadata without manual documentation.",
+      "The fastest approach is to export the Git commit history for all pipeline code and present it as the lineage audit trail — commits show who changed what and when, which satisfies the 'transformation provenance' requirement without any pipeline instrumentation.",
+      "Pause the revenue_fact pipeline for the 6-week audit period and rebuild it from scratch with formal lineage tracking built in from the start — the audit will have complete lineage documentation, and the existing non-lineage-tracked data can be retroactively documented by manual inspection.",
+      "Engage a third-party data governance vendor to deploy a commercial lineage tool that automatically maps data flows by scanning SQL queries in the data warehouse. Most enterprise-grade tools can produce an audit-ready lineage map in 1–2 weeks."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A is the pragmatic path: a write-audit pattern (before/after per transformation step) produces a machine-readable lineage record that satisfies SOC 2 traceability requirements without requiring architectural replacement in 6 weeks. The lineage_audit table gives auditors a provable chain from source to fact. The longer-term recommendation moves toward automated lineage capture (OpenLineage, dbt exposures) that does not require manual maintenance. Option B (Git history) provides code provenance (who wrote the query) but not data provenance (which rows came from where and when) — auditors require data lineage, not code lineage. Option C (pause and rebuild) would create a 6-week revenue reporting gap — operationally and commercially unacceptable. Option D (third-party vendor) may work but 1–2 weeks for deployment and integration is optimistic for complex pipelines, and vendor-specific tools have ongoing licensing costs.",
+    "hints": [
+      "SOC 2 lineage traceability means: for any revenue row, you can show where it came from, what transformed it, and who is responsible. What is the minimum persistent record that proves this chain at each pipeline step?",
+      "The audit is in 6 weeks — what can you instrument in the existing pipeline without replacing it? What metadata would a lineage_audit table need to satisfy an auditor's traceability question?"
+    ],
+    "concepts": [
+      "LINEAGE & OBSERVABILITY",
+      "DATA GOVERNANCE",
+      "ORCHESTRATION"
+    ]
+  },
+  {
+    "id": 52084,
+    "order": 84,
+    "title": "Replay Is Safe in Theory — When Does It Go Wrong in Practice?",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A senior data engineer claims 'our pipeline is safe to replay at any time because we use partition-replace semantics.' A junior engineer asks: 'What could go wrong?' The senior engineer lists three scenarios: (A) the pipeline reads from a mutable source that has since changed; (B) a downstream consumer reads the partition mid-replace; (C) the pipeline triggers an external notification step that is not partition-replace aware. Which of the three scenarios represents a genuine idempotency failure?",
+    "options": [
+      "All three are genuine failures: (A) replaying against a changed source produces a different result than the original run — the output is deterministic for the replay but not equal to the original, violating the 'same result' guarantee; (B) a mid-replace read produces partial data if the DELETE and INSERT are not atomic from the reader's perspective; (C) the notification step is not idempotent — external side-effects are outside the partition-replace guarantee. Partition-replace idempotency applies only to the write step itself, not to source mutability or downstream side-effects.",
+      "Only scenario C is a genuine idempotency failure. Partition-replace handles scenarios A and B correctly: (A) partition-replace always produces a deterministic output for the input it receives, regardless of whether the source changed; (B) the atomicity of DELETE + INSERT prevents any mid-replace reads from returning partial data.",
+      "Only scenario B is a genuine failure — partial reads during replace are the only idempotency risk. Scenario A is not a problem because pipelines are expected to produce different outputs if their inputs change (that is correct behavior, not a failure). Scenario C is handled by marking the notification step as 'conditional on source change.'",
+      "None of the three scenarios represents an idempotency failure because idempotency is defined as 'running the same operation multiple times produces the same final state.' Partition-replace satisfies this definition for all three scenarios if the database transaction isolation level is set correctly."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A correctly identifies all three as genuine failures, but with important nuance. Scenario A: partition-replace is deterministic for a given run but if the source data has changed between the original run and the replay, the replayed output differs from the original — this is correct behavior for the new inputs, but means 'replay produces the original output' is NOT guaranteed when the source is mutable. Scenario B: partition-replace using DELETE + INSERT in a transaction is atomic from the write side, but a reader using a lower isolation level (READ UNCOMMITTED) or reading outside the transaction boundary can observe partial state — this depends on database isolation semantics. Scenario C: the notification step is definitively not covered by partition-replace — it is an external side-effect with its own idempotency requirements. Option B incorrectly dismisses A and B; specifically, scenario A IS a practical problem when pipelines are used to backfill historical data from sources that have since been corrected or updated.",
+    "hints": [
+      "Partition-replace guarantees that the write step produces the same output for the same inputs. Which of the three scenarios involves something other than the write step itself — something that partition-replace was never designed to cover?",
+      "If the source data has been corrected since the original run, replaying the pipeline produces a different (corrected) output. Is that a failure, correct behavior, or both, depending on the intent of the replay?"
+    ],
+    "concepts": [
+      "IDEMPOTENCY",
+      "INCIDENT RESPONSE",
+      "DATA QUALITY"
+    ]
+  },
+  {
+    "id": 52085,
+    "order": 85,
+    "title": "When to Use ETL vs ELT for a PII-Sensitive Financial Dataset",
+    "difficulty": "medium",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A financial services company must ingest raw transaction logs that contain PII (account numbers, SSNs) from an on-premises system to a cloud data warehouse. Compliance requires that PII be masked or tokenized before it touches any cloud storage. The data team is choosing between: (A) ETL — transform and mask PII in a secure on-premises processing layer, then load only masked data to the cloud; (B) ELT — load raw data (including PII) to cloud staging, then mask PII in the warehouse using cloud SQL transforms.",
+    "options": [
+      "ETL is required in this case. ELT loads raw PII to cloud staging tables — even temporarily — which violates the compliance requirement that PII must never touch cloud storage. On-premises processing can apply tokenization or masking before any data crosses the network boundary, satisfying the compliance constraint. The trade-off: on-premises compute must be maintained and scaled for transform workloads, and cloud warehouse performance advantages cannot be leveraged for the masking step.",
+      "ELT is preferable because cloud warehouses encrypt data at rest and in transit, which satisfies PII compliance requirements. The raw data in cloud staging is protected by encryption, and the masking transformation can be applied immediately after load using cloud-native SQL functions.",
+      "Both ETL and ELT satisfy the compliance requirement equally — the key control is role-based access on the cloud staging tables. Restrict access to raw PII in staging to only the masking job's service account, and all other users see only masked data after the transform.",
+      "Use a hybrid approach: load only hashed account identifiers to cloud staging (not raw PII) and store the hash-to-PII mapping on-premises. Cloud transforms operate on hashed identifiers, and PII lookups are served from the on-premises mapping table via a secure API."
+    ],
+    "correct_option": 0,
+    "explanation": "Option A correctly identifies that the compliance requirement ('PII must not touch cloud storage') rules out ELT. ELT places raw data including PII into cloud staging — even briefly — which violates the stated constraint regardless of encryption. Encryption protects data in transit and at rest, but the PII is still 'in the cloud' from a regulatory perspective. ETL applies masking before the data crosses the network boundary. Option B conflates 'encrypted' with 'compliant' — many PII regulations (GDPR, CCPA, banking regulations) require that certain data not be stored in specific environments at all, regardless of encryption. Option C (RBAC on staging) still allows raw PII to reside in cloud staging, violating the 'must never touch cloud storage' requirement. Option D (hash + on-premises mapping) is a clever architecture but is complex and introduces a runtime dependency (cloud jobs calling an on-premises API) that creates latency and availability risk.",
+    "hints": [
+      "The compliance requirement says PII must not touch cloud storage — not 'must be encrypted when it does.' Does ELT's raw-load-then-mask approach satisfy the constraint of never storing PII in the cloud, even temporarily?",
+      "ETL applies transformations before data leaves the trusted environment. What does that mean for where the masking step must run?"
+    ],
+    "concepts": [
+      "ETL VS ELT",
+      "DATA GOVERNANCE",
+      "STORAGE ARCHITECTURE"
+    ]
   }
 ]
