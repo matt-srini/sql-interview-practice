@@ -21,7 +21,7 @@ Question subtypes:
 - **`scenario`** — scenario-anchored question requiring multi-concept application in a realistic production setting
 - **`optimization`** — given a job description and a bottleneck, choose the best strategy
 
-**Easy tier must mix types.** Pure-recall `mcq` is rejected at easy — use `predict_output` or `debug` to force mental execution tracing.
+**Easy tier must mix types.** Pure-recall `conceptual` is rejected at easy — use `predict_output` or `debug` to force mental execution tracing.
 
 ## ID range (TXNNN scheme)
 
@@ -83,7 +83,7 @@ All three are now **practice-grounded** in PySpark — `DATA QUALITY SKEPTICISM`
 
 | Question kind | Where | When |
 |---|---|---|
-| Practice easy | `easy.json` no `mock_only` | Scenario-anchored single-concept question. Prefer `predict_output` / `debug` over `mcq`. |
+| Practice easy | `easy.json` no `mock_only` | Scenario-anchored single-concept question. Prefer `predict_output` / `debug` over `conceptual`. |
 | Practice medium | `medium.json` no `mock_only` | Trade-off question; two of four options are both defensible but one is better. |
 | Practice hard | `hard.json` no `mock_only` | Production-grade multi-factor trade-off. Every distractor plausible. |
 | Mock-only medium | `medium.json` with `mock_only: true` | Anchored in a real failure mode — "your job ran 4× longer last night, here's the DAG, what changed?" Heavy `DEBUG SPARK ERRORS`, `JOIN STRATEGY SELECTION`, `SHUFFLE REASONING`, `MEMORY MANAGEMENT`. |
@@ -109,7 +109,7 @@ These are the durable *targets* (what the bank ought to look like). For live cou
 
 - **Default-value memorization questions** — "what's `spark.sql.shuffle.partitions` by default?" Reject. The answer is unfindable without docs and the question tests no real skill.
 - **API-signature questions** — "what's the third argument to `DataFrame.withColumn`?" Reject.
-- **Pure-`mcq` recall at easy tier** — "what is a transformation?" Reject. Use `predict_output` or `debug` to make the candidate reason.
+- **Pure-`conceptual` recall at easy tier** — "what is a transformation?" Reject. Use `predict_output` or `debug` to make the candidate reason.
 - **Hard questions with one obvious right answer** — if a competent practitioner picks it immediately, the question isn't hard.
 - **Questions answerable from a single line of the official docs** — googleable; not the test.
 

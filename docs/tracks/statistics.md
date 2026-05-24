@@ -97,7 +97,7 @@ Same concept families apply to both subtypes. A `central limit theorem` question
   "id": 72018,
   "order": 11,
   "topic": "statistics",
-  "type": "mcq",
+  "type": "conceptual",
   "subtype": "conceptual",
   "difficulty": "medium",
   "title": "When does halving the sample size double the confidence interval width?",

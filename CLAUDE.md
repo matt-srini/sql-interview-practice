@@ -104,12 +104,12 @@ A data interview practice platform covering nine tracks. Users write SQL or Pyth
 - **SQL** — 115 practice (37 easy / 47 medium / 31 hard) + 162 mock-only, DuckDB execution, realistic relational datasets
 - **Python** — 79 practice (33 easy / 29 medium / 17 hard) + 100 mock-only, data-professional algorithms (sessionization, hash join, DAG cycle detection, critical path, rate limiting, edit distance, streaming anomaly detection), test-case evaluation
 - **Pandas** — 92 practice (28 easy / 40 medium / 24 hard) + 110 mock-only, pandas-specific data manipulation, DataFrame comparison
-- **PySpark** — 128 practice (41 easy / 45 medium / 42 hard) + 150 mock-only, MCQ / predict-output / debug / scenario formats
-- **Data Engineering** — 91 practice (30 easy / 35 medium / 26 hard) + 14 mock-only, MCQ / scenario / debug, no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
-- **Data Modeling** — 76 practice (25 easy / 28 medium / 23 hard) + 13 mock-only, MCQ / scenario, no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
-- **Statistics** — 97 practice (31 easy / 41 medium / 25 hard) + 8 mock-only, **dual-subtype**: each question is either `conceptual` (MCQ) or `numerical` (Python code execution); `eval_kind="mixed"`, `unlock_profile="code"`, `mixed_subtype=true`, `in_mixed_mock=false`
-- **ML Fundamentals** — 96 practice (30 easy / 38 medium / 28 hard) + 25 mock-only, MCQ / scenario / predict-output / debug, no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
-- **Experimentation** — 84 practice (30 easy / 32 medium / 22 hard) + 25 mock-only, MCQ / scenario / predict-output / debug, no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
+- **PySpark** — 128 practice (41 easy / 45 medium / 42 hard) + 150 mock-only, conceptual / predict_output / debug / scenario / optimization (MCQ response), no code execution
+- **Data Engineering** — 91 practice (30 easy / 35 medium / 26 hard) + 14 mock-only, conceptual / scenario / debug (MCQ response), no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
+- **Data Modeling** — 76 practice (25 easy / 28 medium / 23 hard) + 13 mock-only, conceptual / scenario (MCQ response), no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
+- **Statistics** — 97 practice (31 easy / 41 medium / 25 hard) + 8 mock-only, **dual-subtype**: each question is either `conceptual` (MCQ response) or `numerical` (Python code execution); `eval_kind="mixed"`, `unlock_profile="code"`, `mixed_subtype=true`, `in_mixed_mock=false`
+- **ML Fundamentals** — 96 practice (30 easy / 38 medium / 28 hard) + 25 mock-only, conceptual / scenario / predict_output / debug (MCQ response), no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
+- **Experimentation** — 84 practice (30 easy / 32 medium / 22 hard) + 25 mock-only, conceptual / scenario / predict_output / debug (MCQ response), no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
 
 ---
 
@@ -137,12 +137,12 @@ Mock-only questions (`mock_only: true`) live in the same JSON files as practice 
 | SQL | 37 + 0 | 47 + 73 | 31 + 89 | SQL query via DuckDB | `backend/content/questions/` |
 | Python | 33 + 0 | 29 + 50 | 17 + 50 | Algorithm function, test cases | `backend/content/python_questions/` |
 | Pandas | 28 + 0 | 40 + 50 | 24 + 60 | DataFrame function, output comparison | `backend/content/python_data_questions/` |
-| PySpark | 41 + 0 | 45 + 75 | 42 + 75 | MCQ / predict-output / debug / scenario | `backend/content/pyspark_questions/` |
-| Data Engineering | 30 + 0 | 35 + 6 | 26 + 8 | MCQ / scenario / debug | `backend/content/data_engineering_questions/` |
-| Data Modeling | 25 + 0 | 28 + 6 | 23 + 7 | MCQ / scenario | `backend/content/data_modeling_questions/` |
-| Statistics | 31 + 0 | 41 + 0 | 25 + 8 | conceptual MCQ + numerical Python | `backend/content/statistics_questions/` |
-| ML Fundamentals | 30 + 0 | 38 + 12 | 28 + 13 | MCQ / scenario / predict-output / debug | `backend/content/ml_fundamentals_questions/` |
-| Experimentation | 30 + 0 | 32 + 12 | 22 + 13 | MCQ / scenario / predict-output / debug | `backend/content/experimentation_questions/` |
+| PySpark | 41 + 0 | 45 + 75 | 42 + 75 | conceptual / predict_output / debug / scenario / optimization (MCQ) | `backend/content/pyspark_questions/` |
+| Data Engineering | 30 + 0 | 35 + 6 | 26 + 8 | conceptual / scenario / debug (MCQ) | `backend/content/data_engineering_questions/` |
+| Data Modeling | 25 + 0 | 28 + 6 | 23 + 7 | conceptual / scenario (MCQ) | `backend/content/data_modeling_questions/` |
+| Statistics | 31 + 0 | 41 + 0 | 25 + 8 | conceptual (MCQ) + numerical Python | `backend/content/statistics_questions/` |
+| ML Fundamentals | 30 + 0 | 38 + 12 | 28 + 13 | conceptual / scenario / predict_output / debug (MCQ) | `backend/content/ml_fundamentals_questions/` |
+| Experimentation | 30 + 0 | 32 + 12 | 22 + 13 | conceptual / scenario / predict_output / debug (MCQ) | `backend/content/experimentation_questions/` |
 
 **Practice totals:** SQL 115 · Python 79 · Pandas 92 · PySpark 128 · Data Engineering 91 · Data Modeling 76 · Statistics 97 · ML Fundamentals 96 · Experimentation 84 = **858 practice questions**  
 **Mock-only totals:** SQL 162 · Python 100 · Pandas 110 · PySpark 150 · Statistics 8 · ML Fundamentals 25 · Experimentation 25 · Data Modeling 13 · Data Engineering 14 = **607 mock-only questions** (Pro/Elite only)
@@ -188,8 +188,8 @@ sql-interview-practice/
 │   ├── data_engineering_questions.py # Data Engineering catalog loader
 │   ├── data_modeling_questions.py  # Data Modeling catalog loader
 │   ├── statistics_questions.py     # Statistics dual-subtype catalog loader (conceptual + numerical)
-│   ├── ml_fundamentals_questions.py # ML Fundamentals catalog loader (MCQ / scenario / predict-output / debug)
-│   ├── experimentation_questions.py # Experimentation catalog loader (MCQ / scenario / predict-output / debug)
+│   ├── ml_fundamentals_questions.py # ML Fundamentals catalog loader (conceptual / scenario / predict_output / debug, MCQ response)
+│   ├── experimentation_questions.py # Experimentation catalog loader (conceptual / scenario / predict_output / debug, MCQ response)
 │   ├── path_loader.py              # Learning path catalog loader (reads content/paths/*.json)
 │   ├── sql_guard.py                # Read-only SQL validation
 │   ├── python_guard.py             # AST-based Python code validator

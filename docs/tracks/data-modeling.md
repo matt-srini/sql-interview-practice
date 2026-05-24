@@ -10,10 +10,10 @@ A working data architect / analytics engineer / senior analyst gets paid to **an
 
 ## Modality
 
-**Constructed reasoning.** No execution. MCQ / scenario. 4 options.
+**Constructed reasoning.** No execution. Response: MCQ (4 options).
 
-Subtypes:
-- **`mcq`** — conceptual modeling decision
+Question types:
+- **`conceptual`** — modeling decision evaluated via single-best-answer MCQ
 - **`scenario`** — `scenario_context` carries the business / system situation; description asks for the design call
 
 ## ID range (TXNNN scheme)

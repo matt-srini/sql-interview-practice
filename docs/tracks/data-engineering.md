@@ -10,14 +10,14 @@ A working data engineer's job isn't to "write more efficient queries" — it's t
 
 ## Modality
 
-**Constructed reasoning.** No execution. MCQ / scenario / debug / predict_output. Every question is multiple-choice with exactly 4 options.
+**Constructed reasoning.** No execution. Response: MCQ (4 options).
 
-Subtypes:
-- **`mcq`** — conceptual with concrete scenario context
+Question types:
+- **`conceptual`** — conceptual systems reasoning with concrete scenario context, evaluated via single-best-answer MCQ
 - **`scenario`** — `scenario_context` field holds the situation; description asks for a decision
 - **`debug`** — broken pipeline design; identify what's wrong and what to fix
 
-The track does **not** have `predict_output` as a category currently (PySpark owns that for code-adjacent reasoning); DE questions describe pipeline behaviour in prose, not code.
+The track does **not** have `predict_output` as a category (PySpark owns that for code-adjacent reasoning); DE questions describe pipeline behaviour in prose, not code.
 
 ## ID range (TXNNN scheme)
 

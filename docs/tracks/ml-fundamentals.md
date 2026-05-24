@@ -10,10 +10,10 @@ A working ML practitioner ships models that survive production. That requires mo
 
 ## Modality
 
-**Constructed reasoning, with selected code-adjacent cases.** No execution. MCQ / scenario / predict_output / debug.
+**Constructed reasoning, with selected code-adjacent cases.** No execution. Response: MCQ.
 
-Subtypes:
-- **`mcq`** — conceptual question with concrete scenario context
+Question types:
+- **`conceptual`** — conceptual question with concrete scenario context, evaluated via single-best-answer MCQ
 - **`scenario`** — `scenario_context` carries the situation; description asks the decision
 - **`predict_output`** — for cases where reading a small code snippet drives the diagnosis (e.g. "what does this train/test split do?")
 - **`debug`** — broken ML pipeline; identify what's wrong

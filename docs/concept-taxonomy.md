@@ -617,7 +617,7 @@ The following tags are **forbidden** as `concepts` values — they are mechanic 
 
 ## PySpark — concept families
 
-**Modality:** Code-adjacent reasoning. No execution. MCQ / predict-output / debug / scenario / optimization.
+**Modality:** Code-adjacent reasoning. No execution. Question types: conceptual / predict_output / debug / scenario / optimization. Response: MCQ.
 **Reasoning archetype:** Reason about Spark's execution model — what code triggers a shuffle, when broadcast wins, where memory goes, what AQE rewrites — without running the job.
 **Current tag inventory:** Phase 2 (2026-05) consolidated 493 unique tags / 623 occurrences to 23 canonical families via match-pattern expansion, blocklist enforcement, and agent-based retags. Target: UNRESOLVED = 0. Two new families added (`WINDOW FUNCTIONS & FRAMES`, `COLLECTION & ARRAY OPERATIONS`) to cover previously ungrounded mock content.
 
@@ -833,7 +833,7 @@ Total / between / within variance, ANOVA mechanics, F-statistic interpretation.
 
 ## Data Engineering — concept families
 
-**Modality:** Constructed reasoning. No execution. MCQ / scenario / debug.
+**Modality:** Constructed reasoning. No execution. Question types: conceptual / scenario / debug. Response: MCQ.
 **Reasoning archetype:** System-level reasoning about pipelines, semantics, recovery, cost, and operational excellence.
 **Current tag inventory:** 41 unique tags / 276 occurrences — **already well-formed.** Top 20 tags cover ~95% of usage. This track's existing concept-family discipline is the model the others are catching up to.
 
@@ -877,7 +877,7 @@ Total / between / within variance, ANOVA mechanics, F-statistic interpretation.
 
 ## Data Modeling — concept families
 
-**Modality:** Constructed reasoning. No execution. MCQ / scenario.
+**Modality:** Constructed reasoning. No execution. Question types: conceptual / scenario. Response: MCQ.
 **Reasoning archetype:** Schema design under conflicting requirements, grain decisions, change-over-time tradeoffs.
 **Current tag inventory:** 44 unique tags / 268 occurrences — **already well-formed.**
 
@@ -919,7 +919,7 @@ Total / between / within variance, ANOVA mechanics, F-statistic interpretation.
 
 ## ML Fundamentals — concept families
 
-**Modality:** Constructed reasoning. No execution. MCQ / scenario / predict-output / debug.
+**Modality:** Constructed reasoning. No execution. Question types: conceptual / scenario / predict_output / debug. Response: MCQ.
 **Reasoning archetype:** Diagnose model behavior, not write training code; recognise leakage and bias before they ship.
 **Current tag inventory:** 29 unique tags / 210 occurrences — **already tight.**
 
@@ -968,7 +968,7 @@ Total / between / within variance, ANOVA mechanics, F-statistic interpretation.
 
 ## Experimentation — concept families
 
-**Modality:** Constructed reasoning. No execution. MCQ / scenario / predict-output / debug.
+**Modality:** Constructed reasoning. No execution. Question types: conceptual / scenario / predict_output / debug. Response: MCQ.
 **Reasoning archetype:** Design experiments that survive contact with reality (network effects, novelty, SRM, biased traffic); interpret results with appropriate uncertainty.
 **Current tag inventory:** 22 unique tags / 208 occurrences — **the tightest registry in the bank.**
 

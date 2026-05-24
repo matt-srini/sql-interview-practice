@@ -8,6 +8,19 @@ Last updated: 2026-05-19
 
 This spec defines the canonical modality model for practice so tracks are not reduced to a false binary of coding vs MCQ.
 
+## Response mechanism is not a question type
+
+Two orthogonal axes:
+
+- **Response mechanism** — how the user answers. `MCQ` (radio buttons, single-best-answer) or `code editor` (executable). Track-level. Encoded as `eval_kind` (`mcq` / `mixed` / `sql` / `python` / `pandas`) and surfaced in `MCQPanel.js` / `hasMCQ`.
+- **Question type** — the cognitive skill the question exercises. Per-question. Recorded in the JSON `type` field. Valid values: `conceptual`, `scenario`, `debug`, `predict_output`, `optimization`, `numerical`.
+
+The value `mcq` is **NEVER** a valid question `type`. A `scenario` question and a `conceptual` question may both use MCQ response — they are still different question types because they exercise different reasoning.
+
+Docs that conflate the two ("MCQ / scenario / debug formats") collapse this distinction. Always list real `type` values; if you need to mention the response UI, say so separately: "Question types: conceptual / scenario / debug. Response: MCQ."
+
+This section is the **canonical citation for terminology pushback**. When a doc or prompt says "MCQ / scenario / debug" and means question types, it is wrong. Fix it to real type values.
+
 ## Modality families
 
 | Modality | Definition | Typical user action |

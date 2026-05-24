@@ -168,6 +168,14 @@ Anti-patterns: H1 reading like the first line of the solution; pasting code / me
 
 ---
 
+## Question type values — what they are and what they aren't
+
+The JSON `type` field records the **cognitive skill** the question exercises, not the response UI. Valid values used on disk: `conceptual`, `scenario`, `debug`, `predict_output`, `optimization`, `numerical`.
+
+The value `mcq` is **NEVER** a valid question type. MCQ is a response mechanism (radio buttons, single-best-answer), not a question type. If you find yourself writing `type: "mcq"`, you mean `type: "conceptual"`. See [`docs/specs/practice-modality-spec.md`](../../docs/specs/practice-modality-spec.md) for the canonical distinction.
+
+---
+
 ## Mock-only authoring contract
 
 `mock_only: true` makes a question exclusive to mock interview sessions (Pro/Elite). It never appears in the practice catalog.

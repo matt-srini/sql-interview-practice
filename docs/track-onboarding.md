@@ -78,13 +78,13 @@ Define the format mix and target percentages. Reference PySpark/DE as examples. 
 
 | Type | Use for |
 |---|---|
-| `mcq` | Conceptual understanding anchored in a real-world scenario |
+| `conceptual` | Conceptual understanding anchored in a concrete real-world scenario — evaluated via single-best-answer MCQ |
 | `scenario` | Multi-clue production/design diagnosis with realistic context |
 | `predict_output` | Given a snippet or configuration, predict what happens |
 | `debug` | Given broken code or a flawed design, identify the root cause |
 | `optimization` | Given a real constraint, choose the best approach and justify |
 
-Easy tier must **not** be pure-recall MCQ. Prefer scenario, predict_output, or debug at easy to force reasoning rather than memorisation.
+Easy tier must **not** be pure-recall conceptual. Prefer scenario, predict_output, or debug at easy to force reasoning rather than memorisation.
 
 **For code tracks** (`sql`, `python`, `pandas`): define test case counts per difficulty (see `docs/content-authoring.md` per-track sections).
 
@@ -243,7 +243,7 @@ Add an entry to `TRACK_META`:
   mixedSubtype: false,     // true only for Statistics
   totalQuestions: 0,       // update to final count when content is complete
   easyQuestions: 0,        // update when easy content is authored
-  tagline: '<short format hint, e.g. "MCQ · scenario · debug">',
+  tagline: '<short format hint, e.g. "conceptual · scenario · debug">',
   comingSoon: true,        // remove on launch
 },
 ```
@@ -303,7 +303,7 @@ Author easy questions first, then medium, then hard. Within each difficulty, fol
 
 ### 4.2 Maintain format balance
 
-For MCQ tracks: track the format counts as you author. Do not let the track become 80%+ pure MCQ. Use the target distribution from Phase 1.3 and check it every 15–20 questions.
+For MCQ tracks: track the format counts as you author. Do not let the track become 80%+ pure conceptual. Use the target distribution from Phase 1.3 and check it every 15–20 questions.
 
 ### 4.3 Ensure concept tag coverage
 

@@ -36,7 +36,7 @@ Benchmark blueprints:
 | ML Fundamentals | 6 constructed reasoning prompts | 40 min |
 | Experimentation | 6 constructed reasoning prompts | 40 min |
 
-Benchmark composition now follows track-specific type targets where the bank supports them. For example, PySpark benchmarks still target code-adjacent Spark forms, Statistics benchmarks enforce `1 numerical + 2 conceptual`, and ML Fundamentals / Experimentation benchmarks explicitly pull from scenario, MCQ, predict-output, and debug forms instead of inheriting PySpark's composition rules.
+Benchmark composition now follows track-specific type targets where the bank supports them. For example, PySpark benchmarks still target code-adjacent Spark forms, Statistics benchmarks enforce `1 numerical + 2 conceptual`, and ML Fundamentals / Experimentation benchmarks explicitly pull from `scenario`, `conceptual`, `predict_output`, and `debug` question types instead of inheriting PySpark's composition rules.
 
 Custom drill validates server-side: `num_questions` must be 1–5, `time_minutes` must be 10–90.
 
@@ -301,7 +301,7 @@ Returns 403 for non-Elite plans. On MockHub, the primary Elite panel now uses `b
 - **Countdown timer** in the topbar — colour-coded: normal → amber (<10 min) → red (<3 min). Browser tab title updates with remaining time.
 - **Auto-finish** when timer reaches 0.
 - **Question navigation** — numbered dot tabs, each shows solved/unsolved state.
-- **Run code** — SQL, Python, and Pandas support running code against the live evaluator mid-session (same as practice mode). PySpark is MCQ-only.
+- **Run code** — SQL, Python, and Pandas support running code against the live evaluator mid-session (same as practice mode). PySpark has no run-code support.
 - **SQL schema viewer** — Description / Schema toggle in the left panel.
 - **Hints and concept tags** visible on each question.
 - **Submit per question** — each question allows exactly one real submission. **No feedback is shown on submit** — the submit button locks (label changes to `✗ Submitted` on a wrong answer; `✓ Solved` on a correct one) and that is the only mid-session signal. Solutions are withheld until the session ends. A second `/submit` for the same question returns 409. Blank code or a missing MCQ selection returns 422 and does not consume the slot, so users can run and iterate freely before committing their final answer. After any submit (correct or wrong) a **"Next question →"** button appears on non-last questions; on the last question a nudge paragraph appears instead — "All questions answered — end your session when ready." if every question has been submitted, or "End your session when ready, or go back to answer remaining questions." if some are still unanswered.

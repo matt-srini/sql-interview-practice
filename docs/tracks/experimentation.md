@@ -10,10 +10,10 @@ A working experimentation practitioner gets paid to **say "no, we can't claim th
 
 ## Modality
 
-**Constructed reasoning.** No execution. MCQ / scenario / predict_output / debug. 4 options.
+**Constructed reasoning.** No execution. Response: MCQ (4 options).
 
-Subtypes:
-- **`mcq`** — conceptual experimentation question with scenario anchor
+Question types:
+- **`conceptual`** — conceptual experimentation question with scenario anchor, evaluated via single-best-answer MCQ
 - **`scenario`** — `scenario_context` carries the experiment setup / observation; description asks the call
 - **`predict_output`** — given experiment-output numbers or a setup, predict what the right read would be
 - **`debug`** — broken experiment design; identify the flaw
