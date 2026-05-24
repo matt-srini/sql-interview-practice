@@ -76,7 +76,7 @@ Full registry: [`docs/concept-taxonomy.md` → Data Engineering section](../conc
 
 **Ratio:** 110 / 91 = **1.21×** (within the 1.20× ± 5pp target band locked at Stage A).
 
-**Mock-only chain inventory:** 16 chains total — 8 medium (52042–52056, 3 members each plus standalones) + 8 hard (53035–53054, 2–3 members each). 7 follow-up dimensions covered: `scale_pivot`, `business_rule`, `data_quality`, `edge_case`, `performance`, `ambiguity`, `stakeholder`.
+**Mock-only chain inventory:** 14 chains total (35 questions: 14 parents + 21 follow-ups) — 6 medium (parents at 52042/52045/52047/52050/52052/52054, 2–3 members each) + 8 hard (parents at 53035/53038/53040/53043/53045/53048/53051/53053, 2–3 members each). 7 follow-up dimensions covered: `scale_pivot` (3), `business_rule` (3), `data_quality` (4), `edge_case` (4), `performance` (3), `ambiguity` (3), `stakeholder` (1).
 
 **Type distribution (mock-only):**
 - Medium (50 total): scenario 28, debug 12, conceptual 10

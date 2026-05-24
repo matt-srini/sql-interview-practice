@@ -373,7 +373,7 @@ Practice questions are the full curriculum. Mock-only questions live in the same
 | Experimentation | 30 | 32 | 22 | **84** | Constructed reasoning (MCQ) |
 | **Total** | | | | **858** | |
 
-Mock-only add-on bank: **607 questions** (Pro/Elite only). Samples: **36 total** SQL/Python/Pandas/PySpark + auto-sliced from practice for the other 5 tracks.
+Mock-only add-on bank: **703 questions** (Pro/Elite only). Samples: **36 total** SQL/Python/Pandas/PySpark + auto-sliced from practice for the other 5 tracks.
 
 **These counts evolve.** They reflect the bank at the time of the 2026-05 refactor. CLAUDE.md mirrors them; both files update together.
 
