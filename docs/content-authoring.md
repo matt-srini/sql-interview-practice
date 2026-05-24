@@ -81,6 +81,22 @@ Reasoning depth — not syntax recall, not trivia, not concept-stacking — is t
 - (MCQ tracks) Distractors no competent practitioner would pick, or questions with multiple correct answers depending on version / assumptions.
 - Mechanic-name tags as `concepts` values (per-track blocklists in [`docs/concept-taxonomy.md`](./concept-taxonomy.md)).
 
+### Framing authority (per-track)
+
+Each `docs/tracks/<track>.md` "What this track trains" section is the **authoritative framing** for that track. Authoring agents, audits, and any analytical session that touches the track must **reinforce** that framing — never substitute their own. Three concrete rules:
+
+- **Do not inject a contradictory lens.** Generic "interview patterns / NeetCode-grind / LeetCode-classic" framings, when they pull against a track doc's professional purpose, are out. The datathink test (durable data-professional reasoning, interview success as consequence) is primary.
+- **References must fit the track's professional reality.** Use track-appropriate references for exhaustiveness (e.g. *Designing Data-Intensive Applications* for Data Engineering; data-engineering/data-science Python interview rounds for Python; pandas docs / Wes McKinney for Pandas; Spark: The Definitive Guide for PySpark; StrataScratch / DataLemur for SQL). Generic algorithm-catalogue references may be used **only** to check coverage breadth, never to justify a question's inclusion.
+- **Reconcile a track doc's internal contradictions in the doc, not in the audit.** When a track doc's framing prose contradicts its difficulty ladder / concept arc / canonical example (the Python case — prose said "not competitive coders" while the ladder + example were LeetCode), **fix the doc to match its framing**; the framing wins.
+
+### Research grounding (industry sources)
+
+Authoring may use industry sources (StrataScratch, DataLemur, NeetCode, Glassdoor / Levels.fyi interview posts, canonical textbooks like *Designing Data-Intensive Applications*, vendor docs) for two purposes:
+1. **Exhaustiveness** — checking that a track's family / pattern / scenario coverage isn't missing something every senior interview probes.
+2. **Plausibility of MCQ distractors** — verifying that "an expert could defend this option" is grounded in real practitioner positions.
+
+**Never lift content.** No description, scenario, code, options, or explanation is copied or paraphrased from external sources. Every question is authored from scratch against the datathink datasets, framing, and concept registry. This is a discipline rule with no exceptions.
+
 ### Difficulty model (cross-track)
 
 This is the spine of the bank. The same rule applies to every track; only the per-track vocabulary changes (see track docs).
@@ -259,6 +275,7 @@ The distinction is **framing, realism, ambiguity, and interview dynamics — not
   - No nested chains, no shared children
   - Chain stays within one track and uses same-or-escalating difficulty
 - **Atomicity** — selector-enforced, see [`docs/features/mock.md`](./features/mock.md#follow-up-chain-atomicity-proelite--mock-only-content). Authors just write chains that *make sense* as iterative interviewer pivots.
+- **Mock-only is not limited to query/function-writing.** `debug` (fix a broken query/function/pipeline), `scenario` (read a production-incident narrative and choose the correct call), `reverse` (infer the query from a result preview), and `predict_output` (read code, predict output/schema) are **first-class mock-only types** wherever a track's evaluator + UI support them — they simulate real interview dynamics that pure write-the-query/function questions can't. A track decides which formats fit (see per-track doc); don't default to "mock = write the query."
 - **Special types** (track-specific, see per-track doc):
   - `framing: "scenario"` — narrative business brief in `description` (≤3 sentences, grounded)
   - `type: "reverse"` (SQL only) — user sees `result_preview`, writes the query

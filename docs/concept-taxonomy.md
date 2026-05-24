@@ -14,6 +14,12 @@ If a family fails either test, it doesn't belong here. We are **not** building a
 
 ---
 
+## Cross-track family naming reusability
+
+Family names may be **reused across tracks only within the executable analytics cluster** (SQL, Pandas, PySpark). Where the same reasoning skill applies under the same name (e.g. `DATA QUALITY SKEPTICISM`, `DOUBLE-COUNTING DETECTION`, `OUTPUT SANITY VALIDATION`), the shared name carries — same family, same semantics, distinct per-track member tags and match patterns. This makes cross-track dashboards meaningful.
+
+**Outside that cluster, families do not transfer.** Python algorithmic patterns are native to Python (no SQL/Pandas/PySpark sharing). DE/DM/Stats/ML/Exp families are reasoning-domain-specific and stay within their track. Borrowing a family name into a track where it doesn't carry identical semantics is forbidden — it produces fake cross-track signal in dashboards.
+
 ## How this file is used
 
 ### By authors (and the authoring agent)
