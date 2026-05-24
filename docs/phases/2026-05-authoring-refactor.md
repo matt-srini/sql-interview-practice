@@ -653,29 +653,33 @@ Current mock-only: 26. **New mock-only to author: 85** (84 net new + 1 replaceme
 
 | Tier | Current | Target | New to author |
 |---|---|---|---|
-| Medium mock-only | 12 (11 keep + 1 replace 32036) | 35 | +24 |
-| Hard mock-only | 14 | 75 | +61 |
+| Medium mock-only | 12 (11 keep + 1 replace 32036) | 50 | +38 |
+| Hard mock-only | 14 | 60 | +46 |
 | **Total** | **26** | **110** | **+84 net** |
 
+**M:H ratio = 50:60 = 1:1.2.** Matches SQL's established precedent (73:89 = 1:1.22). Prior draft proposed 35:75 (1:2.1) — no Pandas-specific reason to deviate from SQL's skew; rejected.
+
 Chain structure (~⅓ chain members from 110 = ~37 chain children, 10–13 chains total):
-- Formalize 4 existing chains (8 members) via item 5 — immediately in scope
-- Author 9 new chains at hard difficulty (avg ~3 follow-ups each = 27 chain children); total ~35 chain children ≈ ⅓ of 110
+- Formalize 4 existing chains (8 members) via item 5 — all hard; immediately in scope
+- Author 9 new chains: 7 hard (avg ~3 follow-ups each = 21 chain children) + 2 medium chains (avg ~2 follow-ups = 4 children); total ~33 chain children ≈ ⅓ of 110
 - Chain follow-up dimensions: draw from 7-dimension taxonomy in `docs/concept-taxonomy.md`
 
-Prioritized chain topics for the 9 new hard chains:
+Prioritized chain topics for the 7 new hard chains:
 - Cohort retention → `scale_pivot` (50M rows: dtype optimization now required)
 - MoM revenue trend → `business_rule_pivot` (exclude returns)
 - Conversion funnel → `data_quality_pivot` (null order_dates in the event stream)
 - Session engagement per user → `performance_pivot` (apply-vs-vectorize refactor required)
 - RFM segmentation → `business_rule_pivot` (tier thresholds revised)
-- Event deduplication → `data_quality_pivot` (source sends duplicate events)
-- Product affinity pairs → `scale_pivot` (1M products: explode is too expensive, use merge-self instead)
-- Salary distribution per region → `business_rule_pivot` (exclude contractors)
+- Product affinity pairs → `scale_pivot` (1M products: explode too expensive, use merge-self)
 - Churn cohort analysis → `business_rule_pivot` (reactivated users should not count as churned)
 
+Medium chain topics (2 chains):
+- Debug: wrong `transform` vs `agg` → `data_quality_pivot` (now the same bug in a multi-join context)
+- `groupby + cumsum` trend → `business_rule_pivot` (extend with MoM diff)
+
 Family priority for standalone new mock additions:
-- **Medium standalones (+17 after 7 chained mediums):** GROUPED AGGREGATION with DATA QUALITY co-tag, DATETIME OPERATIONS with timezone edge, WINDOW & ROLLING, RESHAPING & PIVOTING, MISSING VALUE STRATEGY in realism scenarios
-- **Hard standalones (+43 after 18 hard chain members):** FEATURE ENGINEERING, RANKING & TOP-N PER GROUP, DEDUPLICATION LOGIC, TIME SERIES & RESAMPLING with gaps, MULTI-TABLE JOINING with ambiguous join type
+- **Medium standalones (+36 after ~14 chained mediums):** GROUPED AGGREGATION with DATA QUALITY co-tag, DATETIME OPERATIONS with timezone edge, WINDOW & ROLLING, RESHAPING & PIVOTING, MISSING VALUE STRATEGY realism scenarios, DEBUG PANDAS (additional practice-grounded debug patterns), DEDUPLICATION LOGIC, BOOLEAN FILTERING with dirty-data conditions
+- **Hard standalones (+27 after ~33 hard chain members):** FEATURE ENGINEERING, RANKING & TOP-N PER GROUP, DEDUPLICATION LOGIC, TIME SERIES & RESAMPLING with gaps, MULTI-TABLE JOINING with ambiguous join type
 
 The SQL-in-pandas quality constraint governs *quality* per question, not the quantity ceiling. Every mock question must be pandas-idiomatic (test DISTINCT COUNT awareness, window-function equivalents, `.dt` accessor chaining, etc.) — do not author `SELECT ... GROUP BY ...` logic in Python clothes.
 
