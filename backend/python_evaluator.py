@@ -242,7 +242,10 @@ def _expand_test_case(tc: dict, expected_code: str) -> dict:
     - public_test_cases are always all-literal; only hidden tests use generators
     """
     expanded_input = [_expand_arg(a) for a in tc["input"]]
-    expected = tc.get("expected")
+    # Accept both "expected" and legacy "expected_output" key names.
+    # The harness already handles both; the evaluator must too so that
+    # authored questions using either key are graded correctly.
+    expected = tc.get("expected") if "expected" in tc else tc.get("expected_output")
 
     has_gen = any(isinstance(a, dict) and "gen" in a for a in tc["input"])
     compute_spec = isinstance(expected, dict) and expected.get("compute") == "reference"

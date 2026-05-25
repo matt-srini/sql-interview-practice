@@ -10,7 +10,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 0.3629
+        "expected": 0.3629
       }
     ],
     "explanation": "P(HHH|fair)=0.125, P(HHH|biased)=0.512. P(HHH)=0.125\u00d70.70 + 0.512\u00d70.30 = 0.0875+0.1536=0.2411. Posterior = 0.0875/0.2411 \u2248 0.3629.",
@@ -63,7 +63,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 0.7
+        "expected": 0.7
       }
     ],
     "explanation": "The log-likelihood for Bernoulli is L(p) = k\u00b7log(p) + (n\u2212k)\u00b7log(1\u2212p). Taking dL/dp = 0 gives p\u0302 = k/n = 7/10 = 0.70. The MLE is simply the observed proportion.",
@@ -116,7 +116,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": [
+        "expected": [
           3.475,
           97.525
         ]
@@ -171,7 +171,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 0.978
+        "expected": 0.978
       }
     ],
     "explanation": "\u0233=5. SS_tot=(3-5)\u00b2+(5-5)\u00b2+(4-5)\u00b2+(7-5)\u00b2+(6-5)\u00b2=4+0+1+4+1=10. SS_res=0.04+0.04+0.01+0.04+0.09=0.22. R\u00b2=1\u22120.22/10=0.978.",
@@ -222,7 +222,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 16.0
+        "expected": 16.0
       }
     ],
     "explanation": "\u03c7\u00b2 = (30\u221250)\u00b2/50 + (70\u221250)\u00b2/50 = 400/50 + 400/50 = 8 + 8 = 16.0.",
@@ -275,7 +275,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 0.4
+        "expected": 0.4
       }
     ],
     "explanation": "d = |52 \u2212 48| / 10 = 4/10 = 0.40. By convention, d=0.2 is small, d=0.5 medium, d=0.8 large. This effect would be considered between small and medium.",
@@ -328,7 +328,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 0.3448
+        "expected": 0.3448
       }
     ],
     "explanation": "x\u0304 = (2.1+3.5+1.8+4.2+2.9)/5 = 14.5/5 = 2.9. \u03bb\u0302 = 1/2.9 \u2248 0.3448.",
@@ -381,7 +381,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 0.42
+        "expected": 0.42
       }
     ],
     "explanation": "S(4) = (1\u22122/10) \u00d7 (1\u22121/8) \u00d7 (1\u22122/5) = 0.8 \u00d7 0.875 \u00d7 0.6 = 0.42.",
@@ -408,7 +408,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": [
+        "expected": [
           6.0,
           2.0
         ]
@@ -438,7 +438,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 9.0
+        "expected": 9.0
       }
     ],
     "explanation": "MS_Between = 80/2 = 40. MS_Within = 120/27 \u2248 4.444. F = 40/4.444 \u2248 9.0.",
@@ -543,7 +543,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 0.6522
+        "expected": 0.6522
       }
     ],
     "explanation": "Posterior: Beta(15, 8). Mean = 15/(15+8) = 15/23 \u2248 0.6522.",
@@ -597,7 +597,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 97.0
+        "expected": 97.0
       }
     ],
     "explanation": "Var(2X \u2212 3Y) = 2\u00b2\u00d7Var(X) + (\u22123)\u00b2\u00d7Var(Y) = 4\u00d74 + 9\u00d79 = 16 + 81 = 97.",
@@ -652,7 +652,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 0.0168
+        "expected": 0.0168
       }
     ],
     "explanation": "MDE = (1.96 + 0.842) \u00d7 \u221a(2 \u00d7 0.10 \u00d7 0.90 / 5000) = 2.802 \u00d7 \u221a(0.000036) = 2.802 \u00d7 0.006 = 0.016812 \u2248 0.0168. This means the experiment can reliably detect a lift as small as 1.68 percentage points (e.g., 10% \u2192 11.68%) with 80% power. Increasing n or baseline variance (p closer to 0.5) would shrink the MDE; requiring higher power or a smaller \u03b1 would widen it.",
@@ -682,7 +682,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 0.18
+        "expected": 0.18
       }
     ],
     "explanation": "CUPED (Controlled-experiment Using Pre-Experiment Data) adjusts each group's post-experiment mean using a pre-experiment covariate to reduce variance. Treatment adjusted: 12.5 \u2212 0.8\u00d7(11.2\u221211.0) = 12.5 \u2212 0.16 = 12.34. Control adjusted: 12.0 \u2212 0.8\u00d7(10.8\u221211.0) = 12.0 + 0.16 = 12.16. Adjusted effect = 12.34 \u2212 12.16 = 0.18. The raw effect was 12.5 \u2212 12.0 = 0.5, but pre-experiment imbalance (treatment group had higher pre-experiment revenue) explained 0.32 of it. CUPED recovers the true effect by removing this covariate-driven component.",

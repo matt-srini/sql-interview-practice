@@ -91,6 +91,15 @@ def isolated_state(monkeypatch):
         f"Full URL: {_active_url!r}"
     )
 
+    # The app lifespan calls ensure_schema() on every TestClient start (non-PROD path),
+    # which runs CREATE INDEX IF NOT EXISTS.  _reset_db_sync() runs TRUNCATE, which takes
+    # AccessExclusiveLock on all listed tables.  When a TestClient teardown overlaps with
+    # the next TestClient's startup, TRUNCATE and CREATE INDEX deadlock on the same table.
+    # _test_db_schema (scope="session") already created all indexes once, so it is safe to
+    # no-op ensure_schema() for the duration of each test.
+    import db as _db_module
+    monkeypatch.setattr(_db_module, "ensure_schema", AsyncMock(return_value=None))
+
     asyncio.run(close_pool())
     _reset_db_sync()
     _clear_rate_limit_state()

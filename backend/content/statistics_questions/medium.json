@@ -36,7 +36,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 4.0
+        "expected": 4.0
       }
     ],
     "explanation": "Standard error = \u03c3/\u221an = 24/\u221a36 = 24/6 = 4.0. The standard error quantifies how much sample means vary around the true population mean.",
@@ -63,7 +63,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": [
+        "expected": [
           48.04,
           51.96
         ]
@@ -223,7 +223,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 2.0
+        "expected": 2.0
       }
     ],
     "explanation": "SE = 8/\u221a64 = 1.0. z = (52\u221250)/1.0 = 2.0. This z-score tells us the sample mean is 2 standard errors above the hypothesized mean.",
@@ -276,7 +276,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 0.7746
+        "expected": 0.7746
       }
     ],
     "explanation": "Pearson r = \u03a3(xi\u2212x\u0304)(yi\u2212\u0233) / \u221a[\u03a3(xi\u2212x\u0304)\u00b2 \u00d7 \u03a3(yi\u2212\u0233)\u00b2]. x\u0304=3, \u0233=4. Numerator=6, denominator=\u221a(10\u00d76)\u22487.746, r\u22480.7746.",
@@ -355,7 +355,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 3840
+        "expected": 3840
       }
     ],
     "explanation": "n = (1.96+0.842)\u00b2 \u00d7 (0.10\u00d70.90 + 0.12\u00d70.88) / 0.02\u00b2 = 7.8516 \u00d7 0.1956 / 0.0004 \u2248 3839.24. Ceiling = 3840.",
@@ -408,7 +408,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 0.1008
+        "expected": 0.1008
       }
     ],
     "explanation": "P(X=k) = \u03bb^k \u00d7 e^{\u2212\u03bb} / k! = 3^5 \u00d7 e^{\u22123} / 5! = 243 \u00d7 0.049787 / 120 \u2248 0.1008.",
@@ -460,7 +460,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 0.0876
+        "expected": 0.0876
       }
     ],
     "explanation": "P(+) = 0.95\u00d70.01 + 0.10\u00d70.99 = 0.0095 + 0.099 = 0.1085. P(D|+) = 0.0095/0.1085 \u2248 0.0876. Due to the low prevalence, even a mostly-accurate test has a low positive predictive value.",
@@ -539,7 +539,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": [
+        "expected": [
           20.0,
           3.4641
         ]
@@ -569,7 +569,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 0.0324
+        "expected": 0.0324
       }
     ],
     "explanation": "SE = \u221a(p(1\u2212p)/n) = \u221a(0.30\u00d70.70/200) = \u221a(0.00105) \u2248 0.0324.",
@@ -648,7 +648,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 0.0063
+        "expected": 0.0063
       }
     ],
     "explanation": "The Bonferroni correction divides the target \u03b1 by the number of tests: 0.05/8 = 0.00625 \u2248 0.0063. Each individual test must meet this stricter threshold to maintain FWER \u2264 0.05.",
@@ -675,7 +675,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 0.1353
+        "expected": 0.1353
       }
     ],
     "explanation": "In 12 minutes, expected arrivals = 10\u00d7(12/60) = 2. P(X=0) = e^{\u22122} \u2248 0.1353.",
@@ -727,7 +727,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": [
+        "expected": [
           80,
           3.0
         ]

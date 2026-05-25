@@ -37,7 +37,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 5.7143
+        "expected": 5.7143
       }
     ],
     "explanation": "Sum all values: 4+7+13+2+1+8+5 = 40. Divide by count (7): 40/7 \u2248 5.7143.",
@@ -63,7 +63,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 5.0
+        "expected": 5.0
       }
     ],
     "explanation": "Sorted: [1, 3, 4, 6, 7, 9]. With 6 elements, median is average of 3rd and 4th values: (4+6)/2 = 5.0.",
@@ -115,7 +115,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 2.0
+        "expected": 2.0
       }
     ],
     "explanation": "Mean = 40/8 = 5. Squared deviations: 9,1,1,1,0,0,4,16 \u2192 sum=32. Population variance = 32/8 = 4. Standard deviation = \u221a4 = 2.0.",
@@ -192,7 +192,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 0.7
+        "expected": 0.7
       }
     ],
     "explanation": "P(A\u222aB) = P(A) + P(B) \u2212 P(A\u2229B) = 0.5 + 0.4 \u2212 0.2 = 0.7.",
@@ -270,7 +270,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 0.3
+        "expected": 0.3
       }
     ],
     "explanation": "P(A|B) = P(A\u2229B) / P(B) = 0.12 / 0.40 = 0.30.",
@@ -322,7 +322,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 0.2344
+        "expected": 0.2344
       }
     ],
     "explanation": "P(X=4) = C(6,4) \u00d7 0.5^4 \u00d7 0.5^2 = 15 \u00d7 0.0625 \u00d7 0.25 = 15/64 \u2248 0.2344.",
@@ -375,7 +375,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 2.0
+        "expected": 2.0
       }
     ],
     "explanation": "z = (x \u2212 \u03bc) / \u03c3 = (86 \u2212 70) / 8 = 16 / 8 = 2.0. A z-score of 2 means the value is 2 standard deviations above the mean.",
@@ -428,7 +428,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 1.5
+        "expected": 1.5
       }
     ],
     "explanation": "E[X] = 10\u00d70.20 + 2\u00d70.50 + (\u22125)\u00d70.30 = 2.0 + 1.0 \u2212 1.5 = 1.5.",
@@ -506,7 +506,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 120
+        "expected": 120
       }
     ],
     "explanation": "C(10,3) = 10! / (3! \u00d7 7!) = (10\u00d79\u00d78) / (3\u00d72\u00d71) = 720/6 = 120.",
@@ -532,7 +532,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 3
+        "expected": 3
       }
     ],
     "explanation": "Value 3 appears 3 times; 7 appears 2 times; all others appear once. The mode is 3.",
@@ -558,7 +558,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 20.0
+        "expected": 20.0
       }
     ],
     "explanation": "Lower half: [5,10,15,20] \u2192 Q1=(10+15)/2=12.5. Upper half: [25,30,35,40] \u2192 Q3=(30+35)/2=32.5. IQR = 32.5\u221212.5 = 20.0.",
@@ -611,7 +611,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 336
+        "expected": 336
       }
     ],
     "explanation": "P(8,3) = 8!/(8\u22123)! = 8\u00d77\u00d76 = 336. Order matters because 1st, 2nd, and 3rd are distinct outcomes.",
@@ -637,7 +637,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 0.42
+        "expected": 0.42
       }
     ],
     "explanation": "For independent events, P(A\u2229B) = P(A) \u00d7 P(B) = 0.6 \u00d7 0.7 = 0.42.",
@@ -689,7 +689,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 0.0769
+        "expected": 0.0769
       }
     ],
     "explanation": "There are 4 Kings in a 52-card deck. P(King) = 4/52 \u2248 0.0769.",
@@ -715,7 +715,7 @@
     "test_cases": [
       {
         "input": [],
-        "expected_output": 0.6667
+        "expected": 0.6667
       }
     ],
     "explanation": "E[X] = (1+2+3)/3 = 2. E[X\u00b2] = (1+4+9)/3 = 14/3. Var(X) = 14/3 \u2212 4 = 2/3 \u2248 0.6667.",
