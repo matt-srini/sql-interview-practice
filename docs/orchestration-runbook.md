@@ -291,7 +291,7 @@ Update this section after each track closes / each retro-cleanup completes.
 | Python | ✅ Closed | Retro-cleanup pending — 1 dead family, 4 sub-floor, 1 practice-floor flagged | After SQL closes |
 | Pandas | ✅ Closed | Retro-cleanup pending — 1 dead family, 3 sub-floor flagged + GROUPED AGGREGATION 60.9% load-bearing defence | After SQL closes |
 | PySpark | ✅ Closed | ✅ Zero coverage warnings | Cleanest track on platform under per-family discipline |
-| Data Engineering | ✅ Closed | Retro-cleanup pending — 1 dead family, 1 practice-floor flagged | After SQL closes |
+| Data Engineering | ✅ Closed | Retro-cleanup PARTIAL (2026-05-25) — INCIDENT RESPONSE: 16 mock-only re-tiered medium→hard (R2, rule 1 cleared). DATA CONTRACT: P2 BLOCKED — pattern shadowed by SCHEMA EVOLUTION; remove "DATA CONTRACT" from SCHEMA EVOLUTION patterns in `concept_families.py`, no new authoring needed (23 existing questions auto-resolve). | 1 breach remains pending P2 fix |
 | Data Modeling | ✅ Closed (Phase 2.5 pending) | DIMENSIONAL MODELING 93.8% ceiling breach + 2 dead families + 1 practice-floor | **Separate Phase 2.5 re-balance cycle** — not a retro-cleanup; needs Stage A→B→C |
 | Statistics | ⏸ Pending | Registry incomplete (12 families, 84 orphan tag instances) | Phase 2 pending; registry expansion gates Stage A → Sonnet |
 | ML Fundamentals | ⏸ Pending | 0 orphans / 29 families — clean enough to enforce now | Phase 2 pending |

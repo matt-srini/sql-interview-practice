@@ -70,17 +70,17 @@ Full registry: [`docs/concept-taxonomy.md` → Data Engineering section](../conc
 | Difficulty | Practice | Mock-only | Total |
 |---|---|---|---|
 | Easy | 30 | 0 | 30 |
-| Medium | 35 | 50 | 85 |
-| Hard | 26 | 60 | 86 |
+| Medium | 35 | 34 | 69 |
+| Hard | 26 | 76 | 102 |
 | **Total** | **91** | **110** | **201** |
 
 **Ratio:** 110 / 91 = **1.21×** (within the 1.20× ± 5pp target band locked at Stage A).
 
-**Mock-only chain inventory:** 14 chains total (35 questions: 14 parents + 21 follow-ups) — 6 medium (parents at 52042/52045/52047/52050/52052/52054, 2–3 members each) + 8 hard (parents at 53035/53038/53040/53043/53045/53048/53051/53053, 2–3 members each). 7 follow-up dimensions covered: `scale_pivot` (3), `business_rule` (3), `data_quality` (4), `edge_case` (4), `performance` (3), `ambiguity` (3), `stakeholder` (1).
+**Mock-only chain inventory (post retro-cleanup 2026-05-25):** 13 chains total — 5 medium (parents at 52045/52047/52050/52052/52054; note: 52052 was dissolved when its child 52053 re-tiered to hard) + 8 hard (parents at 53035/53038/53040/53043/53045/53048/53051/53053) + the chain 53089/53090/53091 (re-tiered from medium to hard together, intact). 7 follow-up dimensions remain covered.
 
-**Type distribution (mock-only):**
-- Medium (50 total): scenario 28, debug 12, conceptual 10
-- Hard (60 total): scenario 36, debug 15, conceptual 9
+**Type distribution (mock-only, post retro-cleanup):**
+- Medium (34 total): 16 INCIDENT RESPONSE questions re-tiered to hard; remaining mix of scenario, debug, conceptual
+- Hard (76 total): includes the 16 re-tiered INCIDENT RESPONSE questions (scenario/debug/conceptual)
 
 **No mock-only realism families.** All 21 DE concept families are practice-grounded and directly gradeable as MCQ. `MOCK_ONLY_REALISM_FAMILIES["data-engineering"] = set()` enforced in `concept_families.py`. Track is in `_TAXONOMY_VALIDATED_TRACKS` in `validate_content.py`.
 

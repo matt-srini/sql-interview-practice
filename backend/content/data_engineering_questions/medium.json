@@ -900,34 +900,6 @@
     ]
   },
   {
-    "id": 52037,
-    "order": 37,
-    "title": "Fact Table Corrupted by Bad Pipeline Write: Containment and Recovery",
-    "difficulty": "medium",
-    "type": "scenario",
-    "mock_only": true,
-    "scenario_context": "At 3:47 AM, a Spark batch pipeline writing to a Delta Lake fact table (events_fact) produces incorrect aggregations due to a bug in the deduplication logic. The pipeline ran successfully and committed the bad data to events_fact for three consecutive days (March 12–14). The pipeline runs nightly and overwrites the current day's partition using mode(\"overwrite\") + partitionOverwriteMode=DYNAMIC.\n\nDownstream impact at discovery (March 15, 9:00 AM):\n  - 4 BI dashboards showing inflated event counts for March 12–14\n  - 1 ML feature pipeline reading from events_fact to compute daily active user counts — last 3 days of features are corrupted\n  - No other pipelines depend on events_fact\n\nDelta Lake time-travel log:\n  Version 214: March 11 data (clean)\n  Version 215: March 12 data (corrupted)\n  Version 216: March 13 data (corrupted)\n  Version 217: March 14 data (corrupted)",
-    "description": "What is the correct sequence of containment and recovery actions?",
-    "options": [
-      "(1) Disable the nightly pipeline trigger to prevent a 4th corrupted run tonight; (2) restore March 12–14 partitions by re-running the pipeline with the bug fix applied for those three dates in isolation; (3) invalidate and recompute the ML feature pipeline for those three dates; (4) re-enable the nightly trigger after verifying the March 12–14 re-runs produce clean output",
-      "(1) Roll back the entire events_fact table to version 214 using Delta time-travel (RESTORE TABLE events_fact TO VERSION AS OF 214); (2) re-enable the pipeline immediately so tonight's run fills in March 12–14 automatically; (3) wait for dashboards to refresh on their own schedule",
-      "(1) Drop and recreate events_fact from the upstream raw events table for all historical dates; (2) disable the BI dashboards until the full recompute is complete to avoid users seeing stale data",
-      "(1) Alert the BI team to add a date filter excluding March 12–14 from all dashboards; (2) leave the pipeline running as-is and let next week's data dilute the corrupted period's impact on trend metrics"
-    ],
-    "correct_option": 0,
-    "explanation": "Option A follows the principle of minimum blast radius: stop further corruption, repair exactly the affected window, and propagate the fix to downstream dependents. Step 1 (disable trigger) prevents a 4th corrupted run tonight — the bug is still in the deployed code. Step 2 (re-run with fix for March 12–14 only) uses the DYNAMIC partition overwrite to replace only those three date partitions; the rest of the table is untouched. Step 3 (recompute ML features) propagates the fix to the derived dataset that depends on the corrected partitions. Step 4 (verify and re-enable) closes the loop. Option B (RESTORE to version 214) rolls back the entire table, erasing March 11 and earlier data as well — or more precisely, restoring to the March 11 snapshot means March 12–14 data is gone and must be re-run anyway. RESTORE affects the whole table, not individual partitions; for a partitioned table with a DYNAMIC overwrite history, restoring individual date partitions is more surgical. Option C (full historical recompute) is disproportionate — only 3 of potentially thousands of date partitions are affected; recomputing everything wastes hours of compute and extends the dashboard outage unnecessarily. Option D (dashboard filter + dilution) is not a fix — it leaves corrupt data in the table, the ML features remain incorrect, and 'dilution' does not repair historical records.",
-    "hints": [
-      "The first priority after discovering corrupted data is preventing further corruption — what must be disabled before anything else?",
-      "Delta Lake's DYNAMIC partition overwrite means only the affected date partitions need to be rewritten; how does that change the scope of the recovery compared to a full-table rollback?"
-    ],
-    "concepts": [
-      "INCIDENT RESPONSE",
-      "BACKFILL DESIGN",
-      "DATA QUALITY",
-      "LINEAGE & OBSERVABILITY"
-    ]
-  },
-  {
     "id": 52038,
     "order": 38,
     "title": "Choosing the Right Data Contract Enforcement Tier",
@@ -983,34 +955,6 @@
     ]
   },
   {
-    "id": 52040,
-    "order": 40,
-    "title": "Pipeline Keeps Flooding a Degraded Downstream System",
-    "difficulty": "medium",
-    "type": "debug",
-    "mock_only": true,
-    "scenario_context": "A streaming pipeline writes enriched events to a downstream REST API. The downstream API degrades at 3:00 AM (elevated response times, 503 errors). The pipeline continues sending events at full rate, overwhelming the degraded system and extending its recovery time from an expected 5 minutes to 47 minutes.\n\nPipeline error log (3:00–3:47 AM):\n  [WARN] POST /api/ingest 503 Service Unavailable (attempt 1)\n  [WARN] POST /api/ingest 503 Service Unavailable (attempt 2, retry after 1s)\n  [WARN] POST /api/ingest 503 Service Unavailable (attempt 3, retry after 2s)\n  [WARN] POST /api/ingest 503 Service Unavailable (attempt 4, retry after 4s)\n  [WARN] POST /api/ingest 503 Service Unavailable (attempt 5, retry after 8s)\n  [ERROR] Max retries exceeded, dropping event batch\n  ... (repeated every 15 seconds for 47 minutes)\n\nPipeline behavior: exponential backoff with 5 retries, then drops the batch and continues processing",
-    "description": "The retry logic uses exponential backoff, but the downstream system took 47 minutes to recover instead of the expected 5. What is the design flaw, and what pattern resolves it?",
-    "options": [
-      "Exponential backoff with a fixed max-retry count does not stop the pipeline from continuously attempting new request cycles against a system that is already overwhelmed. After 5 retries fail, the pipeline drops the batch and immediately starts the next one — producing a sustained flood of retry sequences every 15 seconds. A circuit breaker pattern solves this: after a configurable error threshold is crossed (e.g., 5 consecutive failures), the circuit opens and the pipeline stops sending requests entirely for a cooldown period (e.g., 30–60 seconds), giving the downstream system time to recover without continued pressure.",
-      "The exponential backoff multiplier is too small (doubling from 1s to 8s across 5 retries); increasing the max backoff to 5 minutes would give the downstream system enough recovery time within the retry window without needing an architectural change",
-      "The pipeline should route all failed events directly to a dead-letter queue (DLQ) on the first failure rather than retrying; the DLQ operator can manually replay events once the downstream system recovers, eliminating all retry pressure",
-      "The downstream system's SLA requires at-least-once delivery; dropping batches after max retries violates the SLA. The correct fix is to increase max retries to 1000 with a 1-minute backoff between each attempt, holding events in memory until delivery succeeds"
-    ],
-    "correct_option": 0,
-    "explanation": "Exponential backoff with a max retry count protects against transient single-request failures but does not protect a degraded downstream system from **sustained request pressure**. After 5 retries fail (total elapsed: ~15 seconds), the pipeline drops the batch and immediately begins the next batch's retry cycle. From the downstream system's perspective, it receives a continuous stream of retry sequences from the pipeline — each sequence arriving every ~15 seconds with up to 5 requests at escalating intervals. This sustained load prevents the degraded system from shedding load and recovering. A **circuit breaker** adds a third state to the retry logic: after a threshold of consecutive failures, the circuit 'opens' and the pipeline stops making requests entirely for a cooldown window, allowing the downstream system to recover under zero incoming pressure. After the cooldown, the circuit enters a 'half-open' probe state, sends a test request, and closes only if it succeeds. Option B is wrong — increasing backoff to 5 minutes helps only if you happen to start retrying near the end of the 5-minute outage; for a 47-minute outage it changes nothing about the sustained flood of subsequent retry cycles. Option C is wrong — routing to a DLQ on the first failure eliminates retry entirely, which causes unnecessary data loss for transient errors that would have resolved after 1–2 retries. A circuit breaker is more nuanced. Option D is wrong — holding 1000 retries in memory for a degraded system holds open the memory buffer indefinitely and continues pressure on the downstream system.",
-    "hints": [
-      "Exponential backoff governs the delay between retries within a single attempt sequence. What happens after max retries are exhausted — does the pipeline stop sending to the downstream system, or does it immediately start the next attempt sequence?",
-      "If a downstream system is struggling under load, what pattern temporarily stops all outbound requests to give it a recovery window, rather than continuing to probe it on every retry cycle?"
-    ],
-    "concepts": [
-      "INCIDENT RESPONSE",
-      "PIPELINE RESILIENCE",
-      "DELIVERY SEMANTICS",
-      "SCHEDULING & SLAS"
-    ]
-  },
-  {
     "id": 52041,
     "order": 41,
     "title": "Clustering Key vs Partitioning for Mixed Read/Write Warehouse Workloads",
@@ -1035,97 +979,6 @@
       "COST OPTIMIZATION",
       "PARTITIONING & PRUNING",
       "CLOUD COST MODELING"
-    ]
-  },
-  {
-    "id": 52042,
-    "order": 42,
-    "title": "Overnight Double-Fire: Diagnosing Duplicate Event Processing",
-    "difficulty": "medium",
-    "type": "scenario",
-    "mock_only": true,
-    "follow_ups": [
-      52043,
-      52044
-    ],
-    "scenario_context": "Your overnight pipeline reads from a Kafka topic (at-least-once delivery) and writes processed events to a Snowflake fact table using INSERT statements. At 8:47 AM an analyst reports yesterday's event count is 1.83 million instead of the expected 920 thousand. Orchestrator logs show two complete runs: 2:00 AM (normal) and a 3:14 AM retry triggered by a false-positive timeout alert. Both runs show status SUCCESS.",
-    "description": "What is the most likely root cause of the duplication, and what is the immediate remediation?",
-    "options": [
-      "The pipeline lacks idempotency at the write step: the 3:14 AM retry consumed events from the last committed Kafka offset and appended them to the fact table rather than overwriting the partition. Remediation: truncate yesterday's partition, re-run once, and add a dedup guard (MERGE on event_id) or switch to partition-replace semantics.",
-      "The Kafka consumer group offset was reset by the orchestrator retry to the beginning of the topic, causing all events to replay from earliest — remove the auto.offset.reset=earliest configuration setting.",
-      "Both pipeline instances ran in parallel (2:00 AM and 3:14 AM active simultaneously), causing a race condition at the sink — add a distributed lock before the Snowflake write step.",
-      "The 3:14 AM run consumed a separate Kafka partition that was not seen by the 2:00 AM run, meaning events exist twice at the source level — deduplicate at the Kafka consumer before writing."
-    ],
-    "correct_option": 0,
-    "explanation": "Option A identifies the core issue: at-least-once Kafka delivery combined with an append-only INSERT sink guarantees duplicates on any retry. The 3:14 AM run consumed from the previously committed offset (no reset occurred), re-processed all events from that point, and appended them as new rows. Partition-replace or MERGE semantics make the write idempotent — re-running any number of times produces the same fact table. Option B misidentifies the behavior: a false-positive timeout retry does not reset the consumer group offset to earliest; offset resets require explicit configuration changes. Option C (parallel runs) is ruled out by the sequential timestamps in the logs. Option D would require duplicate events to exist independently in the Kafka topic, which the scenario does not describe.",
-    "hints": [
-      "Think about what property a production pipeline must have so that an orchestrator retry produces the same outcome as the first run — and whether INSERT satisfies that property.",
-      "The write step appended rows rather than replacing them. Which sink operation makes a pipeline safe to retry regardless of how many times the producer fires?"
-    ],
-    "concepts": [
-      "INCIDENT RESPONSE",
-      "BACKFILL DESIGN",
-      "DELIVERY SEMANTICS",
-      "IDEMPOTENCY"
-    ]
-  },
-  {
-    "id": 52043,
-    "order": 43,
-    "title": "Idempotency Under 5× Concurrent Producers",
-    "difficulty": "medium",
-    "type": "scenario",
-    "mock_only": true,
-    "parent_id": 52042,
-    "follow_up_dimension": "scale_pivot",
-    "scenario_context": "You fixed the overnight double-fire by switching to partition-replace semantics (DELETE + INSERT in a transaction). A month later the company onboards 4 additional regional Kafka clusters; the pipeline now ingests from 5 clusters simultaneously, each producing ~900 K events/day to the same Snowflake fact table partition. During a regional network partition, 2 of the 5 producers replay their last hour of events. The fact table shows 1.9 million events for yesterday instead of the expected 4.5 million.",
-    "description": "Why is idempotency failing now even though partition-replace worked before, and what must change?",
-    "options": [
-      "Partition-replace is only idempotent when a single writer exclusively owns a partition. With 5 concurrent writers each issuing DELETE + INSERT on the same partition, the last writer's DELETE removes all other writers' valid data — the result depends on execution order. The fix is event-level deduplication: MERGE on (event_id, region_id) so re-processed events from replaying producers are skipped, not lost.",
-      "The 5 Kafka consumer groups are sharing the same group ID, causing events to be split across consumers rather than each consumer receiving all events for its region — assign a unique group ID per regional pipeline to restore correct partitioning.",
-      "Partition-replace semantics are correct, but the 2 replaying producers sent events with timestamps outside yesterday's partition window, landing them in today's partition — add an event_date filter to both the DELETE and INSERT steps.",
-      "The network partition caused Kafka offset commits to fail for the 2 affected producers, so they replayed from the earliest available offset rather than the last hour — implement exactly-once offset management at the source level."
-    ],
-    "correct_option": 0,
-    "explanation": "Partition-replace assumes one authoritative writer per partition at a time. When 5 writers each execute DELETE + INSERT on the same partition, the DELETE step of writer N removes all rows that writers 1..N-1 just wrote — the partition contains only the last writer's data. The scenario shows 1.9 M rows instead of 4.5 M, consistent with one writer's data surviving. MERGE on (event_id, region_id) is idempotent regardless of concurrent writers or replay count: each event has exactly one correct row and duplicates are skipped. Option B (shared group ID) would cause events to be round-robined, producing gaps not duplicates. Option C (timestamp window) would explain missing recent events but not the 1.9 M total. Option D (offset commit failure) is ruled out: the scenario says the producers replay their 'last hour,' not from earliest.",
-    "hints": [
-      "Partition-replace assumes a single authoritative writer. What happens to that assumption when five writers each issue a DELETE on the same partition before their own INSERT completes?",
-      "Event-level deduplication on a globally unique key is idempotent regardless of how many writers replay — unlike partition-replace, which requires exclusive write ownership to be safe."
-    ],
-    "concepts": [
-      "IDEMPOTENCY",
-      "DELIVERY SEMANTICS",
-      "BACKPRESSURE",
-      "INCIDENT RESPONSE"
-    ]
-  },
-  {
-    "id": 52044,
-    "order": 44,
-    "title": "Silent Dedup Failure: event_id Collision Across Regions",
-    "difficulty": "medium",
-    "type": "debug",
-    "mock_only": true,
-    "parent_id": 52042,
-    "follow_up_dimension": "data_quality",
-    "description": "After adding event-level deduplication with MERGE ON event_id, the pipeline runs cleanly for 8 weeks. A data quality check then flags a 0.4% event count discrepancy across two regional pipelines. Investigation reveals that event_ids are generated as SHA-256(user_id || event_type || event_minute_epoch) — not globally unique identifiers. Two users in different regions can trigger the same event_type in the same minute, producing an identical event_id for distinct events. The MERGE deduplication silently drops the second occurrence.",
-    "options": [
-      "The event_id generation function is not globally unique — it guarantees uniqueness only within a single region for a given minute. The MERGE key must incorporate a region identifier (e.g., MERGE ON (event_id, region_id)) or the hash must include a region-scoped seed. The data quality check must also validate per-region event counts, not only the global total.",
-      "Switch from MERGE to a ROW_NUMBER() OVER (PARTITION BY event_id ORDER BY processed_at) = 1 deduplication window function; it will preserve the first-seen event and surface the collision as a visible duplicate row rather than silently dropping a valid event.",
-      "Disable event-level deduplication and rely on partition-replace semantics exclusively; event_id hashing is inherently fragile for multi-region deployments and the added complexity does not justify its unreliable uniqueness guarantees.",
-      "The 0.4% discrepancy is within acceptable noise for a distributed multi-region system; update the data quality check to use a ±1% tolerance band instead of exact counts."
-    ],
-    "correct_option": 0,
-    "explanation": "The root failure is that the key generation function is not globally unique — two distinct events can produce the same event_id. Option A correctly fixes the problem at the source: include a region identifier in either the MERGE key or the hash input so that cross-region collisions become distinguishable. Option B describes a valid alternative dedup mechanism but does not fix the key collision — if two distinct events share the same event_id, any dedup logic that uses event_id alone will drop one. The fix must be at the key-generation level, not the dedup-logic level. Option C abandons deduplication entirely, reintroducing the original at-least-once duplicate problem. Option D's 'acceptable noise' framing is a governance failure: 0.4% of 4.5 M events/day is ~18 K silently dropped real-world events.",
-    "hints": [
-      "Deduplication is only as reliable as the uniqueness of its key. What assumptions does SHA-256(user_id || event_type || event_minute) make, and do those hold across regions?",
-      "If two distinct events can produce the same dedup key, any dedup logic — MERGE, ROW_NUMBER, or SET — will silently drop one. The fix must be at the key, not the dedup logic."
-    ],
-    "concepts": [
-      "DATA QUALITY",
-      "LINEAGE & OBSERVABILITY",
-      "IDEMPOTENCY",
-      "INCIDENT RESPONSE"
     ]
   },
   {
@@ -1339,9 +1192,6 @@
     "difficulty": "medium",
     "type": "scenario",
     "mock_only": true,
-    "follow_ups": [
-      52053
-    ],
     "scenario_context": "A batch pipeline runs nightly at 2:00 AM, reading from S3 (daily event files partitioned by event_date) and writing to a Snowflake fact table using INSERT statements. The orchestrator marks the job as failed due to a network timeout at 2:47 AM and immediately retries. Both runs complete successfully. At 8:00 AM the analyst reports yesterday's event count is exactly double the expected value. Logs confirm both runs read the same S3 input files.",
     "description": "What is the correct idempotency fix, and which approach avoids introducing new failure modes?",
     "options": [
@@ -1360,35 +1210,6 @@
       "IDEMPOTENCY",
       "BACKFILL DESIGN",
       "DELIVERY SEMANTICS"
-    ]
-  },
-  {
-    "id": 52053,
-    "order": 53,
-    "title": "MRR Alert Fires at 7:15 AM After Duplicate Data Propagates Downstream",
-    "difficulty": "medium",
-    "type": "debug",
-    "mock_only": true,
-    "parent_id": 52052,
-    "follow_up_dimension": "edge_case",
-    "description": "At 7:15 AM an automated alert fires: 'Monthly Recurring Revenue is +38% above expected baseline.' The overnight double-run duplicated yesterday's fact-table partition before it was detected. The partition has since been corrected (dropped and re-loaded). However, 4 downstream dbt incremental models (revenue_summary, mrr_trend, customer_ltv, cohort_retention) still reflect the incorrect doubled data. The scheduled dbt DAG runs at 9:00 AM. It is now 7:30 AM.",
-    "options": [
-      "Run a targeted dbt full-refresh rebuild of only the 4 affected models immediately, before the 9:00 AM run: `dbt run --select revenue_summary mrr_trend customer_ltv cohort_retention --full-refresh`. Validate against the corrected fact table before BI consumers refresh. Do not wait for the 9:00 AM run — executives and dashboards are reading wrong MRR from 7:00 AM onward.",
-      "Wait for the 9:00 AM scheduled dbt run — incremental models check for new rows based on updated_at and will automatically correct all 4 models when they detect the re-loaded fact partition. No manual intervention is needed.",
-      "Mark the revenue dashboard as 'data refresh in progress' and alert stakeholders to ignore MRR numbers until the 9:00 AM run completes. Manual dbt runs outside the scheduled window risk consistency issues.",
-      "Drop and recreate all 4 downstream tables from scratch using `dbt run --full-refresh` on the entire DAG — this is the safest approach because it eliminates any risk of residual incorrect rows from incremental logic."
-    ],
-    "correct_option": 0,
-    "explanation": "Option A is correct for a time-sensitive situation where BI consumers are actively reading doubled MRR from 7:00 AM. The targeted --full-refresh on only the 4 affected models corrects the data before the executive dashboard refresh. Option B is wrong: dbt incremental models detect rows where updated_at > last_run_timestamp. The fact partition was dropped and re-loaded — all rows have fresh updated_at values. The incremental model will APPEND those re-loaded rows on top of the already-doubled rows already in the downstream models, tripling the count instead of correcting it. A full-refresh is required to reset the model. Option C delays correction for 90 minutes during active executive use. Option D (--full-refresh on the entire DAG) is functionally equivalent to A but wasteful — it would rebuild all models including those that were not affected, taking much longer than targeting only the 4 impacted models.",
-    "hints": [
-      "Incremental dbt models add rows where updated_at is newer than the last run. If the fact partition was dropped and re-loaded, would an incremental model treat those fresh rows as 'already processed' or 'new data to append'?",
-      "The downstream models still contain the doubled data. A --full-refresh rebuilds the model from scratch against the corrected source — an incremental run cannot remove rows that are already in the model."
-    ],
-    "concepts": [
-      "INCIDENT RESPONSE",
-      "LINEAGE & OBSERVABILITY",
-      "ORCHESTRATION",
-      "DATA QUALITY"
     ]
   },
   {
@@ -1532,32 +1353,6 @@
     ]
   },
   {
-    "id": 52059,
-    "order": 59,
-    "title": "DAG Retry Sent Duplicate Email Campaigns to 50K Users",
-    "difficulty": "medium",
-    "type": "debug",
-    "mock_only": true,
-    "description": "A marketing pipeline reads a user segment from the warehouse, writes it to a campaign queue, and then triggers an email-send API. The orchestrator retried the pipeline at 3:14 AM after a false-positive timeout (the first run completed successfully). Both runs called the email-send API. 50,000 users received duplicate emails. Post-incident investigation shows the email-send step has no deduplication logic — each API call sends regardless of prior sends.",
-    "options": [
-      "Add idempotency to the email-send step: before calling the API, check whether a campaign_send_id (a deterministic hash of campaign_id + segment_id + run_date) has already been recorded as 'sent' in a side table. If the record exists, skip the API call. This makes the entire pipeline safe to retry any number of times.",
-      "Disable orchestrator retries for the marketing pipeline — email delivery is a non-idempotent side-effect, and retries are inherently dangerous for steps that call external APIs. Any failure must require manual operator review before re-execution.",
-      "Rate-limit the email-send API to one call per user per campaign per day at the API layer; duplicate calls would be rejected, preventing duplicate sends regardless of how many times the pipeline retries.",
-      "Add a dry-run flag to the pipeline that, on orchestrator retries, sends to a test-mailbox subset instead of the full segment, allowing operators to confirm correctness before triggering a full resend."
-    ],
-    "correct_option": 0,
-    "explanation": "Option A fixes the root cause: the email-send step is not idempotent. A campaign_send_id that is deterministically computed and checked before each API call makes the step safe to retry — the second execution detects that the campaign was already sent and skips the API call. This is the general solution pattern: any pipeline step that calls an external API must record state before calling and check that state before retrying. Option B (disable retries) is an operational over-reaction — retries are a fundamental reliability mechanism and should not be removed. The fix is to make the step idempotent, not to remove the retry. Option C (rate-limit at the API layer) is a useful defense-in-depth control but cannot be assumed — many email APIs do not provide this guarantee. Option D (dry-run on retry) adds manual intervention to every retry, which defeats the purpose of automated recovery and creates operational bottlenecks.",
-    "hints": [
-      "The pipeline failed because calling the email API twice produced two sends. What state could you record before the first API call that would allow a second execution to detect 'already sent' and skip?",
-      "Idempotency for external API calls requires a 'check before act' pattern: record intent in a durable store, check that record at the start of each run, and skip the API call if the record already exists."
-    ],
-    "concepts": [
-      "IDEMPOTENCY",
-      "ORCHESTRATION",
-      "INCIDENT RESPONSE"
-    ]
-  },
-  {
     "id": 52060,
     "order": 60,
     "title": "Consumer Lag at 6 Hours: Kafka Retention Window at Risk",
@@ -1638,32 +1433,6 @@
     ]
   },
   {
-    "id": 52063,
-    "order": 63,
-    "title": "Daily Revenue Metric Is Wrong but No Alert Fired",
-    "difficulty": "medium",
-    "type": "debug",
-    "mock_only": true,
-    "description": "Your revenue_daily table aggregates order revenue by date. The business analyst reports that yesterday's revenue figure is $1.2 M lower than expected. Investigating: the pipeline logs show no errors, all DAG tasks completed with SUCCESS, and no data quality alerts fired. Examining the raw orders table, the expected order count is correct. However, a join to the payments table shows that 8,400 orders have a payment record with status = 'voided' — they are legitimately excluded from revenue. The same 8,400 orders appeared in last month's figures. The confusion: last month the voided filter was applied; this month it was inadvertently removed during a schema refactor.",
-    "options": [
-      "The data quality suite is checking row counts (do the expected number of rows exist?) but not value-level invariants (is the revenue figure within an expected range?). The correct fix: add a reconciliation check that compares the sum of revenue_daily against an independent control total from the payments table, filtered by status != 'voided'. This would catch the filter removal immediately. The pipeline logic also needs to have the filter restored.",
-      "The pipeline should add a NOT NULL constraint on the voided_at column in the payments table — voided payments always have a non-null voided_at timestamp. A NOT NULL violation during INSERT would surface the schema change as an error.",
-      "Enable dbt's source freshness check on the payments table — if the payments table has not been updated in the expected window, the freshness check fails and the DAG halts, surfacing the data staleness as an alert.",
-      "The fix is to add an explicit test that compares today's revenue aggregate against yesterday's with a ±10% tolerance band. A 12% drop would immediately fire the alert."
-    ],
-    "correct_option": 0,
-    "explanation": "Option A correctly diagnoses the gap in the data quality strategy: the existing checks validate structure (row counts, NULLs) but not business-level value correctness (revenue total matches an independent control). A reconciliation check against a trusted control total would catch any filter addition or removal. Option B (NOT NULL constraint on voided_at) does not help — the voided payments were not missing; they were incorrectly included in the aggregate because the filter was removed. The payments table itself has valid data; the bug is in the aggregation query. Option C (freshness check) validates that data is recent, not that it is correct — the payments table was fresh and complete. Option D (±10% tolerance) could work as a fallback alert, but it does not identify the cause and would require manual investigation every time revenue changes by more than 10% due to legitimate business reasons (promotions, seasonality).",
-    "hints": [
-      "Every check that passed was a structural check: did the right number of rows arrive? Were there NULLs? What kind of check would have caught that the revenue calculation itself was using the wrong filter?",
-      "A reconciliation check compares two independent paths to the same value — the pipeline output and a control query that re-derives the expected value from raw data. Where would you add this check, and what control query would catch a missing 'voided' filter?"
-    ],
-    "concepts": [
-      "DATA QUALITY",
-      "LINEAGE & OBSERVABILITY",
-      "INCIDENT RESPONSE"
-    ]
-  },
-  {
     "id": 52064,
     "order": 64,
     "title": "Hourly Aggregates Wrong Because Late Events Miss the Window",
@@ -1688,32 +1457,6 @@
       "WATERMARKING",
       "BATCH VS STREAMING",
       "SCHEDULING & SLAS"
-    ]
-  },
-  {
-    "id": 52065,
-    "order": 65,
-    "title": "Why Exactly-Once Delivery Alone Does Not Prevent Duplicates in the Sink",
-    "difficulty": "medium",
-    "type": "conceptual",
-    "mock_only": true,
-    "description": "A data engineering team migrates their Kafka pipeline to use the Kafka transactional producer with exactly-once delivery semantics. After the migration, they discover duplicate rows in the destination Postgres database during a load test. An engineer argues 'we configured exactly-once — there should be no duplicates.' A second engineer says the duplicates are still possible. Who is correct, and why?",
-    "options": [
-      "The second engineer is correct. Kafka's exactly-once semantics guarantee that each message is written to Kafka exactly once and delivered to a consumer exactly once — but they make no guarantee about what happens after the consumer reads the message and writes to the sink. If the consumer crashes after writing to Postgres but before committing the Kafka offset, the next consumer run will re-read the message and write to Postgres again, producing a duplicate. The sink write must also be idempotent (e.g., INSERT ON CONFLICT DO NOTHING) to complete the exactly-once guarantee end-to-end.",
-      "The first engineer is correct. Kafka's exactly-once transactional producer and consumer guarantee that each message is processed exactly once end-to-end, including the write to the sink. Duplicates in Postgres indicate a Kafka configuration error — verify that isolation.level=read_committed is set on all consumers.",
-      "Both engineers are partially correct: Kafka exactly-once guarantees are best-effort, allowing up to 1% duplicate delivery under high load. The solution is to set the Kafka producer's max.in.flight.requests.per.connection to 1, which eliminates reordering and reduces duplicate delivery probability to near zero.",
-      "The second engineer is correct, but the root cause is that Postgres is not a transactional Kafka connector — exactly-once guarantees apply only to Kafka-to-Kafka pipelines (e.g., Kafka Streams). Writes to external databases always require at-least-once delivery with a separate deduplication layer."
-    ],
-    "correct_option": 0,
-    "explanation": "Option A correctly describes the exactly-once boundary: Kafka's transactional semantics guarantee exactly-once delivery *within the Kafka ecosystem* (producer to broker to consumer). The guarantee does not extend to external sinks like Postgres, because the consumer must atomically commit both the Kafka offset and the Postgres write — if these two commits are not part of the same transaction, a crash between them breaks the exactly-once guarantee. The fix is to make the sink write idempotent (UPSERT / INSERT ON CONFLICT) or to use a two-phase commit between Kafka and Postgres. Option B is wrong: the guarantee does not cover external writes. Option C incorrectly describes exactly-once as 'best-effort' — it is a strong guarantee within Kafka, not probabilistic. Option D overstates the limitation: Kafka Streams can maintain exactly-once for Kafka-to-Kafka processing, but exactly-once to external sinks is achievable with idempotent sinks or two-phase commit.",
-    "hints": [
-      "Kafka's delivery guarantee covers the path from producer to broker to consumer offset commit. What happens to the data that the consumer writes to Postgres — is that covered by the same guarantee?",
-      "Two commits must happen atomically for an end-to-end guarantee: the Kafka offset commit and the sink write. If the consumer crashes between these two operations, what does the next consumer run do?"
-    ],
-    "concepts": [
-      "DELIVERY SEMANTICS",
-      "IDEMPOTENCY",
-      "INCIDENT RESPONSE"
     ]
   },
   {
@@ -1798,59 +1541,6 @@
     ]
   },
   {
-    "id": 52069,
-    "order": 69,
-    "title": "SCD Type 2 Records Duplicated After Reprocessing Without Deduplication",
-    "difficulty": "medium",
-    "type": "scenario",
-    "mock_only": true,
-    "scenario_context": "A customer dimension is maintained as SCD Type 2 (inserts a new row per change, with effective_from and effective_to). An operator mistakenly re-ran last week's load job, which re-read the source change feed and inserted new SCD rows for every customer change that was processed last week. The customer dimension now has duplicate SCD periods: two rows with identical (customer_id, effective_from) combinations but different surrogate_keys, both with effective_to = '9999-12-31'.",
-    "description": "What is the correct strategy to restore the dimension without breaking downstream fact table foreign keys?",
-    "options": [
-      "Identify the duplicate SCD pairs using a query that finds rows with the same (customer_id, effective_from) and effective_to = '9999-12-31'. For each pair, retain the row with the original surrogate_key (the lower value, written during last week's load) and mark the duplicate row (the higher surrogate_key, written during the re-run) as expired by setting its effective_to to the re-run timestamp. Do not delete the duplicate rows — downstream fact rows may reference their surrogate_keys.",
-      "Delete all duplicate SCD rows (the rows introduced by the re-run) and re-run the load job with a deduplication guard that checks for existing (customer_id, effective_from) pairs before inserting. The fact table uses customer_id for joins, not surrogate_key, so deletions are safe.",
-      "Merge the duplicate rows into a single row by choosing the effective_from date from the original row and the most recent attribute values from the duplicate. This collapses the duplicates while preserving the correct current-state semantics.",
-      "Drop and rebuild the entire customer dimension from source history — this is the only way to guarantee a clean SCD state without residual duplicate rows or orphaned fact references."
-    ],
-    "correct_option": 0,
-    "explanation": "Option A correctly handles the constraint that downstream fact rows may reference the duplicated surrogate keys. Deleting the duplicate rows would break referential integrity for any fact row that used the re-run surrogate key during the window between the re-run and the fix. Instead, the duplicate row should be expired (effective_to set to now) so that it is no longer 'current' — queries for the current customer attributes will find the correct original row, and historical fact rows that reference the duplicate surrogate key still resolve correctly. Option B (delete duplicates) risks orphaning fact rows that reference the duplicate surrogate_keys. Option C (merge rows) is not a valid SCD Type 2 operation — merged rows lose the audit trail of independent dimension changes and can corrupt the effective date timeline. Option D (full rebuild) is correct in principle but unnecessarily expensive and risky for a targeted fix.",
-    "hints": [
-      "Downstream fact rows contain foreign keys that reference the customer dimension's surrogate key. What happens to those fact rows if you delete the duplicate dimension rows they reference?",
-      "The goal is to make the original row the 'current' record and the duplicate row a 'closed historical record,' without breaking existing foreign key relationships. Which field on the duplicate row controls whether it is 'current' or 'historical'?"
-    ],
-    "concepts": [
-      "SCD OPERATIONS",
-      "LINEAGE & OBSERVABILITY",
-      "INCIDENT RESPONSE"
-    ]
-  },
-  {
-    "id": 52070,
-    "order": 70,
-    "title": "GDPR Right-to-Erasure vs Immutable Kafka Event Log",
-    "difficulty": "medium",
-    "type": "debug",
-    "mock_only": true,
-    "description": "A GDPR erasure request arrives for a customer whose email address and name appear in event payloads stored in an immutable Kafka topic with a 90-day retention window. Kafka topics are immutable by design — individual records cannot be deleted. The current pipeline stores PII directly in event fields (email, full_name). The compliance officer demands the data be 'erased' within the 72-hour GDPR window. The on-call engineer proposes compacting the topic with a tombstone record (null value for the user's key), but the events use a content-addressable key (event_id), not a user_id key.",
-    "options": [
-      "Kafka log compaction with tombstone records works only when messages are keyed by the entity to be erased (e.g., user_id). Because these events use event_id as the key, a tombstone on user_id has no effect. The correct immediate remediation: use Kafka's delete records API to drop all messages within the offset range containing this user's events (only available for non-compacted topics and time-bounded). Long-term prevention: encrypt PII fields with per-user keys at produce time and destroy the key at erasure; this makes existing records cryptographically inaccessible without Kafka-level deletion.",
-      "Kafka log compaction with a tombstone record (null payload) on the affected event_ids is the correct approach. Set the topic's cleanup.policy to compact, then produce a null-value record for each event_id associated with the erased user — Kafka will remove those records during the next compaction cycle.",
-      "The 90-day retention window is sufficient: the GDPR erasure obligation can be met by setting the Kafka topic retention to 0 for the next 72 hours, which purges all messages, then restoring the 90-day retention once the user's records are gone.",
-      "The platform should switch the Kafka topic to a consumer-side soft-delete model: maintain an erasure list in a separate topic that consumers check before processing each event, and exclude events associated with erased users from all downstream outputs. This meets GDPR erasure semantics without modifying the immutable topic."
-    ],
-    "correct_option": 0,
-    "explanation": "Option A correctly identifies the mismatch: Kafka log compaction tombstones work by key — a null payload for a given key removes all prior records with that key during compaction. Because the events use event_id (not user_id) as the key, a tombstone on user_id does nothing. The delete records API (available for non-compacted topics) allows targeted offset-range deletion, which is the shortest path to GDPR compliance for this topic structure. The long-term fix is crypto-shredding: never store raw PII in immutable streams. Option B incorrectly describes tombstone behavior — tombstones compact records by their Kafka message KEY, not by payload content. You cannot tombstone all event_ids for a user with a single message. Option C (set retention to 0) purges ALL data from the topic, not just the affected user's records — this is disproportionate and would erase other users' data. Option D (consumer-side soft-delete) does not satisfy GDPR erasure — PII physically remains in the Kafka topic and is accessible to any consumer that reads the raw topic.",
-    "hints": [
-      "Kafka log compaction tombstones operate on the message KEY. If you want compaction to remove a record, the tombstone must use the same key as that record. What key does your topic use, and can you generate a valid tombstone for a user_id with this key scheme?",
-      "If tombstone compaction is not feasible given the key scheme, what Kafka API allows removing specific messages by offset range from a non-compacted topic?"
-    ],
-    "concepts": [
-      "DATA GOVERNANCE",
-      "STORAGE LAYOUT & FILE FORMATS",
-      "INCIDENT RESPONSE"
-    ]
-  },
-  {
     "id": 52071,
     "order": 71,
     "title": "Missed 3 Days of Data: Safe Backfill Without Breaking Downstream Dependencies",
@@ -1930,59 +1620,6 @@
     ]
   },
   {
-    "id": 52074,
-    "order": 74,
-    "title": "3 AM Alert: Dedup Key Collision in Production Fact Table",
-    "difficulty": "medium",
-    "type": "scenario",
-    "mock_only": true,
-    "scenario_context": "At 3:07 AM an on-call alert fires: 'fact_events row count exceeds expected 120% threshold.' Investigation shows that a code change deployed yesterday updated the deduplication key from (user_id, event_type, event_timestamp) to (user_id, event_type) — removing the timestamp component. Events that occurred multiple times per user-event-type combination within the same session (e.g., a user clicking 'add to cart' 3 times) are now collapsed to one row each. The MERGE ON (user_id, event_type) is treating distinct events as duplicates.",
-    "description": "What is the immediate remediation, and what was the underlying design error?",
-    "options": [
-      "Immediate: roll back the pipeline code to the previous version that used (user_id, event_type, event_timestamp) as the dedup key, and re-process yesterday's data from the raw source to restore the lost event rows. Design error: the dedup key was changed without considering that multiple events with the same user_id and event_type are semantically distinct if their timestamps differ — the dedup key must uniquely identify each distinct real-world event, not just each user-event-type combination.",
-      "Immediate: remove all deduplication logic from the pipeline and append all events without deduplication — the row count alert threshold should be updated to reflect the true event volume. Design error: deduplication should never have been applied to event streams because events are inherently unique.",
-      "Immediate: add event_session_id to the dedup key ((user_id, event_type, event_session_id)) so that multiple events within a session are preserved while cross-session duplicates are still removed. Design error: the timestamp component was too granular — session scope is the right dedup boundary.",
-      "Immediate: revert the code change and run the pipeline with the original key. The alert threshold was misconfigured — the fact table should be allowed to grow beyond 120% of expected when genuine duplicate events are being correctly removed."
-    ],
-    "correct_option": 0,
-    "explanation": "Option A correctly identifies both the immediate fix (code rollback + re-process from source) and the root design error: the dedup key was narrowed incorrectly. A dedup key for events must uniquely identify each distinct real-world event. Adding event_type without timestamp means any two events of the same type for the same user are treated as duplicates, collapsing valid repeated actions. The timestamp is essential to distinguish 'user added to cart 3 times' from 'event was delivered 3 times.' Option B (remove all dedup) goes too far — at-least-once delivery does produce genuine duplicates that must be handled. Option C (session-scoped key) assumes session boundaries are a correct dedup scope, but a user adding to cart 3 times within one session is 3 distinct events that should all be preserved. Option D misidentifies the alert threshold as misconfigured — the alert correctly detected an anomaly; the code change caused the anomaly.",
-    "hints": [
-      "A dedup key must uniquely identify each distinct real-world event. If the same user performs the same action multiple times, what field distinguishes the second occurrence from the first?",
-      "When narrowing a dedup key (removing a component), ask: can two semantically distinct events now produce the same key? If yes, the key is too narrow."
-    ],
-    "concepts": [
-      "DATA QUALITY",
-      "INCIDENT RESPONSE",
-      "IDEMPOTENCY"
-    ]
-  },
-  {
-    "id": 52075,
-    "order": 75,
-    "title": "Consumer Acknowledges Before Processing: Messages Lost Under Crash",
-    "difficulty": "medium",
-    "type": "debug",
-    "mock_only": true,
-    "description": "A Kafka consumer team is debugging message loss during pod restarts. Investigation reveals the consumer code calls consumer.commitSync() immediately after consumer.poll(), before any processing logic runs. During a pod crash that occurs mid-processing, the offsets are already committed — on restart, those messages are skipped. The team argues that committing early reduces re-processing overhead after restarts. The data shows ~0.3% message loss per deployment.",
-    "options": [
-      "Committing offsets before processing converts Kafka's at-least-once delivery into at-most-once: if the consumer crashes after committing but before processing, those messages are never retried. The correct pattern is commit-after-processing: commit offsets only after the message has been successfully written to the sink. This may cause some messages to be re-processed after a crash (at-least-once), but re-processing is recoverable if the sink is idempotent; message loss is not.",
-      "The team's approach is correct for pipelines where exactly-once processing is not required — committing early reduces duplicate processing at the cost of occasional loss. For a 0.3% loss rate, the operational trade-off is acceptable for non-critical streams.",
-      "Enable Kafka's auto-commit feature (enable.auto.commit=true) with a 5-second interval — this commits offsets automatically on a schedule, splitting the difference between processing speed and loss risk.",
-      "Switch to Kafka's transactional producer and consumer with isolation.level=read_committed — this guarantees that offsets are committed atomically with the downstream write, eliminating both message loss and reprocessing."
-    ],
-    "correct_option": 0,
-    "explanation": "Option A correctly identifies the delivery semantic: commit-before-process gives at-most-once delivery (may lose messages); commit-after-process gives at-least-once delivery (may re-process but never loses). For data pipelines, re-processing a message is recoverable if the sink is idempotent — message loss is typically not recoverable. Option B normalizes the loss rate without recognizing that the semantic guarantee was incorrectly chosen. 0.3% loss may be acceptable for some use cases (non-critical metrics), but the team should make this choice deliberately, not as a side effect of optimization. Option C (auto-commit on schedule) creates a window between when the consumer commits and when processing completes — same semantic issue as manual early commit. Option D (transactional producer) requires both producer and consumer to participate in a Kafka transaction, which is a significant architectural change; it is not a targeted fix for a consumer-only commit ordering issue.",
-    "hints": [
-      "When a consumer commits an offset before the message has been processed, what happens to that message if the pod crashes between the commit and the write to the sink?",
-      "If the consumer crashes after committing the offset but before writing to the sink, what happens to those messages on restart? What if the order were reversed — crash after writing but before committing?"
-    ],
-    "concepts": [
-      "DELIVERY SEMANTICS",
-      "BACKPRESSURE",
-      "INCIDENT RESPONSE"
-    ]
-  },
-  {
     "id": 52076,
     "order": 76,
     "title": "Switching from Micro-Batch Spark to Full Streaming to Cut Costs",
@@ -2033,59 +1670,6 @@
       "WATERMARKING",
       "BATCH VS STREAMING",
       "SCHEDULING & SLAS"
-    ]
-  },
-  {
-    "id": 52078,
-    "order": 78,
-    "title": "CDC Pipeline Diverges from Source After Database Failover",
-    "difficulty": "medium",
-    "type": "scenario",
-    "mock_only": true,
-    "scenario_context": "A Debezium CDC pipeline streams changes from a MySQL primary database to a data warehouse. At 6:15 AM, the primary database fails and the DBA promotes the replica to primary within 4 minutes. The Debezium connector is configured to reconnect automatically. After reconnection, the pipeline resumes and shows no errors. At 11:00 AM, a data quality check finds that 320 rows are missing from the warehouse that exist in the new primary — these rows were written to the original primary during the 4-minute failover window but were never committed to the binlog before the crash.",
-    "description": "Why did the CDC pipeline not detect the gap, and what process should prevent this in the future?",
-    "options": [
-      "Debezium reads the binlog starting from the last committed offset before the failover. Transactions committed to the original primary but not yet replicated to the replica's binlog before the crash are permanently lost — they appear neither in the replica's binlog nor in Debezium's view. The pipeline reconnects successfully and appears healthy because it picks up from a valid point in the replica's binlog. Prevention: implement a post-failover reconciliation check that compares row counts (and ideally a row-level hash) between the warehouse and the new primary for the failover time window.",
-      "Debezium should be configured with snapshot.mode=always so that after any reconnection event, it re-snapshots the entire source table and replays all changes from the beginning — this guarantees no gaps regardless of failover behavior.",
-      "The 320 missing rows were written during a network partition, not a failover — Debezium would have detected a true failover. The root cause is a misconfigured replica lag threshold that allowed the replica to fall behind the primary by more than 4 minutes. Reduce max_allowed_lag on the replica.",
-      "Enable exactly-once delivery at the Debezium connector level using Kafka transactions — this guarantees that every row written to the primary is captured in Kafka exactly once, including rows written during failover windows."
-    ],
-    "correct_option": 0,
-    "explanation": "Option A correctly identifies the gap: if a transaction committed to the primary but hadn't replicated to the replica's binlog before the crash, it simply does not exist in the CDC stream. Debezium reconnects to a valid binlog position on the new primary — the connector is healthy and reports no errors — but the gap in the data is silent. This is a known limitation of asynchronous replication: the replica may lag behind the primary at the moment of failover. Prevention requires a reconciliation step that verifies data completeness for the failover window, not connector health metrics. Option B (snapshot.mode=always) would re-snapshot the entire table on every reconnection, which is prohibitively expensive for large tables and still wouldn't recover the lost transactions (the snapshot reflects the replica's state at reconnect time, which also lacks the lost rows). Option C misidentifies the event type — the scenario explicitly describes a primary database failure and promotion. Option D: Debezium's exactly-once delivery applies to Kafka delivery semantics, not to capturing transactions from a database that was lost before replication completed.",
-    "hints": [
-      "Asynchronous database replication means the replica may be slightly behind the primary at any moment. If the primary crashes and 320 uncommitted rows haven't replicated yet, where do those rows end up?",
-      "Debezium reads the binlog and reports health based on whether it can connect and consume. What check would surface data gaps that are invisible to the connector health monitor?"
-    ],
-    "concepts": [
-      "CDC & INGESTION",
-      "LINEAGE & OBSERVABILITY",
-      "INCIDENT RESPONSE"
-    ]
-  },
-  {
-    "id": 52079,
-    "order": 79,
-    "title": "DAG Retry Sent Duplicate Campaign to Users Who Already Received It",
-    "difficulty": "medium",
-    "type": "debug",
-    "mock_only": true,
-    "description": "A daily pipeline reads the user eligibility table, writes a campaign_queue table, and then triggers a push notification API. After a database timeout at 11:47 PM, the orchestrator retried the full DAG from the beginning rather than from the failed step. The push notification step ran twice: once at 11:32 PM (completed) and again at 12:05 AM (retry run). 85,000 users received the push notification twice. The orchestrator is configured to retry the entire DAG, not individual tasks.",
-    "options": [
-      "The push notification step should check a sent_notifications log table before calling the API: if a record for (campaign_id, run_date, user_id) exists, skip the send. This makes the step idempotent and safe to retry at the DAG level. Additionally, configure the orchestrator to retry from the failed task (the database timeout step) rather than from the beginning of the DAG.",
-      "Disable full-DAG retries and require manual operator approval before any retry that includes the push notification step — external API calls are not recoverable and should never be automated.",
-      "Add a 24-hour cooldown period between runs of the push notification step, enforced at the orchestrator level — this prevents duplicate sends even if the DAG is retried multiple times within a day.",
-      "Switch the push notification step to use a message queue (e.g., SQS) with FIFO deduplication IDs — this moves deduplication responsibility to the queue and eliminates the need for a separate idempotency check in the pipeline."
-    ],
-    "correct_option": 0,
-    "explanation": "Option A addresses both the immediate problem (the push notification step is not idempotent) and the orchestration configuration issue (full-DAG retries rather than task-level retries). The check-before-send pattern with a persistent log table is the standard approach for making external API calls safe to retry. The orchestrator configuration change reduces the blast radius of future failures — retrying only the failed task instead of the whole DAG means the notification step is not re-executed unless it actually failed. Option B (disable automated retries) is operationally brittle and creates a manual bottleneck for any pipeline that includes external calls. Option C (24-hour cooldown) is too blunt — it would prevent legitimate re-runs on the next day if the scheduled run fails and the cooldown hasn't expired. Option D (SQS FIFO deduplication) is a valid architectural approach for async notification systems but requires replacing the synchronous API call with an async queue integration — a significant architectural change.",
-    "hints": [
-      "The push notification step has already run successfully at 11:32 PM. When the DAG retries at 12:05 AM, the step has no memory of the first run. What persistent record, checked at the start of each run, would allow the step to detect 'already sent' and skip?",
-      "Two problems exist: the step is not idempotent, and the orchestrator retries the wrong scope. Fixing both independently makes the pipeline more robust — which fix is faster to deploy, and which has broader benefits?"
-    ],
-    "concepts": [
-      "IDEMPOTENCY",
-      "ORCHESTRATION",
-      "INCIDENT RESPONSE"
     ]
   },
   {
@@ -2193,32 +1777,6 @@
       "LINEAGE & OBSERVABILITY",
       "DATA GOVERNANCE",
       "ORCHESTRATION"
-    ]
-  },
-  {
-    "id": 52084,
-    "order": 84,
-    "title": "Replay Is Safe in Theory — When Does It Go Wrong in Practice?",
-    "difficulty": "medium",
-    "type": "conceptual",
-    "mock_only": true,
-    "description": "A senior data engineer claims 'our pipeline is safe to replay at any time because we use partition-replace semantics.' A junior engineer asks: 'What could go wrong?' The senior engineer lists three scenarios: (A) the pipeline reads from a mutable source that has since changed; (B) a downstream consumer reads the partition mid-replace; (C) the pipeline triggers an external notification step that is not partition-replace aware. Which of the three scenarios represents a genuine idempotency failure?",
-    "options": [
-      "All three are genuine failures: (A) replaying against a changed source produces a different result than the original run — the output is deterministic for the replay but not equal to the original, violating the 'same result' guarantee; (B) a mid-replace read produces partial data if the DELETE and INSERT are not atomic from the reader's perspective; (C) the notification step is not idempotent — external side-effects are outside the partition-replace guarantee. Partition-replace idempotency applies only to the write step itself, not to source mutability or downstream side-effects.",
-      "Only scenario C is a genuine idempotency failure. Partition-replace handles scenarios A and B correctly: (A) partition-replace always produces a deterministic output for the input it receives, regardless of whether the source changed; (B) the atomicity of DELETE + INSERT prevents any mid-replace reads from returning partial data.",
-      "Only scenario B is a genuine failure — partial reads during replace are the only idempotency risk. Scenario A is not a problem because pipelines are expected to produce different outputs if their inputs change (that is correct behavior, not a failure). Scenario C is handled by marking the notification step as 'conditional on source change.'",
-      "None of the three scenarios represents an idempotency failure because idempotency is defined as 'running the same operation multiple times produces the same final state.' Partition-replace satisfies this definition for all three scenarios if the database transaction isolation level is set correctly."
-    ],
-    "correct_option": 0,
-    "explanation": "Option A correctly identifies all three as genuine failures, but with important nuance. Scenario A: partition-replace is deterministic for a given run but if the source data has changed between the original run and the replay, the replayed output differs from the original — this is correct behavior for the new inputs, but means 'replay produces the original output' is NOT guaranteed when the source is mutable. Scenario B: partition-replace using DELETE + INSERT in a transaction is atomic from the write side, but a reader using a lower isolation level (READ UNCOMMITTED) or reading outside the transaction boundary can observe partial state — this depends on database isolation semantics. Scenario C: the notification step is definitively not covered by partition-replace — it is an external side-effect with its own idempotency requirements. Option B incorrectly dismisses A and B; specifically, scenario A IS a practical problem when pipelines are used to backfill historical data from sources that have since been corrected or updated.",
-    "hints": [
-      "Partition-replace guarantees that the write step produces the same output for the same inputs. Which of the three scenarios involves something other than the write step itself — something that partition-replace was never designed to cover?",
-      "If the source data has been corrected since the original run, replaying the pipeline produces a different (corrected) output. Is that a failure, correct behavior, or both, depending on the intent of the replay?"
-    ],
-    "concepts": [
-      "IDEMPOTENCY",
-      "INCIDENT RESPONSE",
-      "DATA QUALITY"
     ]
   },
   {

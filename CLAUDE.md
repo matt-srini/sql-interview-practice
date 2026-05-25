@@ -125,7 +125,7 @@ A data interview practice platform covering nine tracks. Users write SQL or Pyth
 - **Python** — 79 practice (33 easy / 29 medium / 17 hard) + 100 mock-only, data-professional algorithms (sessionization, hash join, DAG cycle detection, critical path, rate limiting, edit distance, streaming anomaly detection), test-case evaluation
 - **Pandas** — 92 practice (28 easy / 40 medium / 24 hard) + 110 mock-only, pandas-specific data manipulation, DataFrame comparison
 - **PySpark** — 128 practice (41 easy / 45 medium / 42 hard) + 150 mock-only, conceptual / predict_output / debug / scenario / optimization (MCQ response), no code execution
-- **Data Engineering** — 91 practice (30 easy / 35 medium / 26 hard) + 110 mock-only (0 easy / 50 medium / 60 hard), conceptual / scenario / debug (MCQ response), no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
+- **Data Engineering** — 91 practice (30 easy / 35 medium / 26 hard) + 110 mock-only (0 easy / 34 medium / 76 hard), conceptual / scenario / debug (MCQ response), no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
 - **Data Modeling** — 80 practice (25 easy / 30 medium / 25 hard) + 96 mock-only, conceptual / scenario / debug (MCQ response), no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
 - **Statistics** — 97 practice (31 easy / 41 medium / 25 hard) + 8 mock-only, **dual-subtype**: each question is either `conceptual` (MCQ response) or `numerical` (Python code execution); `eval_kind="mixed"`, `unlock_profile="code"`, `mixed_subtype=true`, `in_mixed_mock=false`
 - **ML Fundamentals** — 96 practice (30 easy / 38 medium / 28 hard) + 25 mock-only, conceptual / scenario / predict_output / debug (MCQ response), no code execution; `eval_kind="mcq"`, `unlock_profile="mcq"`, `in_mixed_mock=false`
@@ -158,7 +158,7 @@ Mock-only questions (`mock_only: true`) live in the same JSON files as practice 
 | Python | 33 + 0 | 29 + 50 | 17 + 50 | Algorithm function, test cases | `backend/content/python_questions/` |
 | Pandas | 28 + 0 | 40 + 50 | 24 + 60 | DataFrame function, output comparison | `backend/content/python_data_questions/` |
 | PySpark | 41 + 0 | 45 + 75 | 42 + 75 | conceptual / predict_output / debug / scenario / optimization (MCQ) | `backend/content/pyspark_questions/` |
-| Data Engineering | 30 + 0 | 35 + 50 | 26 + 60 | conceptual / scenario / debug (MCQ) | `backend/content/data_engineering_questions/` |
+| Data Engineering | 30 + 0 | 35 + 34 | 26 + 76 | conceptual / scenario / debug (MCQ) | `backend/content/data_engineering_questions/` |
 | Data Modeling | 25 + 0 | 30 + 45 | 25 + 51 | conceptual / scenario / debug (MCQ) | `backend/content/data_modeling_questions/` |
 | Statistics | 31 + 0 | 41 + 0 | 25 + 8 | conceptual (MCQ) + numerical Python | `backend/content/statistics_questions/` |
 | ML Fundamentals | 30 + 0 | 38 + 12 | 28 + 13 | conceptual / scenario / predict_output / debug (MCQ) | `backend/content/ml_fundamentals_questions/` |
