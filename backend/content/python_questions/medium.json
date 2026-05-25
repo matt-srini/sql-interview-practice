@@ -47382,8 +47382,8 @@
       "Sort `nums` before iterating to ensure subsets are built in a consistent order. Final `result.sort()` gives lexicographic ordering of the entire output list."
     ],
     "concepts": [
-      "BACKTRACKING & COMBINATORIAL SEARCH",
-      "LIST & COLLECTION TRANSFORMATION"
+      "LIST & COLLECTION TRANSFORMATION",
+      "INDEXED SEQUENCE REASONING"
     ]
   }
 ]

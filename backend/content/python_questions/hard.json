@@ -80063,5 +80063,97 @@
       "HEAP & PRIORITY QUEUE",
       "GREEDY CHOICE"
     ]
+  },
+  {
+    "id": 23086,
+    "order": 86,
+    "topic": "python",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Longest Shared Operation Sequence",
+    "description": "Two versions of a batch pipeline produce audit logs as ordered lists of operation codes. You need to quantify how much the two runs share in common — the basis for deciding whether the newer run can incrementally reuse cached intermediate results from the older run.\n\nGiven `ops_a` and `ops_b` (lists of operation-code strings), return the length of their **longest common subsequence** — the longest sequence of operations that appears in the same relative order in both logs.\n\n```\nsolve(['SELECT', 'FILTER', 'AGG', 'JOIN'], ['SELECT', 'AGG', 'JOIN', 'SORT'])\n# → 3  (SELECT → AGG → JOIN appears in both in order)\n```\n\nConstraints:\n- 0 <= len(ops_a), len(ops_b) <= 500\n- Operation codes are non-empty strings",
+    "starter_code": "def solve(ops_a: list, ops_b: list) -> int:\n    # Your code here\n    pass",
+    "expected_code": "def solve(ops_a: list, ops_b: list) -> int:\n    m, n = len(ops_a), len(ops_b)\n    if m == 0 or n == 0:\n        return 0\n    dp = [[0] * (n + 1) for _ in range(m + 1)]\n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            if ops_a[i - 1] == ops_b[j - 1]:\n                dp[i][j] = dp[i - 1][j - 1] + 1\n            else:\n                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])\n    return dp[m][n]",
+    "solution_code": "def solve(ops_a: list, ops_b: list) -> int:\n    m, n = len(ops_a), len(ops_b)\n    if m == 0 or n == 0:\n        return 0\n    dp = [[0] * (n + 1) for _ in range(m + 1)]\n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            if ops_a[i - 1] == ops_b[j - 1]:\n                dp[i][j] = dp[i - 1][j - 1] + 1\n            else:\n                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])\n    return dp[m][n]",
+    "explanation": "Longest Common Subsequence (LCS): build a 2D table where `dp[i][j]` is the LCS of `ops_a[:i]` and `ops_b[:j]`. If the current operations match, extend by 1 from the diagonal; otherwise carry forward the best of skipping one step in either sequence. Final answer is `dp[m][n]`. Time O(mn), space O(mn) (reducible to O(min(m,n)) with row-rolling). In data work, LCS length normalised by sequence length gives a pipeline-similarity score: a score near 1.0 means the new run can reuse almost all cached steps from the old run; a score near 0 signals structural divergence requiring a full recompute.",
+    "test_cases": [
+      {"input": [["SELECT", "FILTER", "AGG", "JOIN"], ["SELECT", "AGG", "JOIN", "SORT"]], "expected": 3},
+      {"input": [["INGEST", "TRANSFORM", "VALIDATE"], ["INGEST", "TRANSFORM", "VALIDATE"]], "expected": 3},
+      {"input": [["READ", "WRITE"], ["FILTER", "SORT"]], "expected": 0},
+      {"input": [[], ["INGEST", "TRANSFORM"]], "expected": 0},
+      {"input": [["SELECT", "JOIN", "FILTER", "AGG", "SORT"], ["JOIN", "SELECT", "AGG", "SORT", "CACHE"]], "expected": 3}
+    ],
+    "public_test_cases": 2,
+    "hints": [
+      "Build a 2D table where dp[i][j] = LCS length for the first i operations of ops_a and the first j of ops_b. What's the recurrence when ops_a[i-1] == ops_b[j-1]?",
+      "Match: dp[i][j] = dp[i-1][j-1] + 1 (extend the diagonal). No match: dp[i][j] = max(dp[i-1][j], dp[i][j-1]) — skip the non-matching op from either side and keep the best."
+    ],
+    "concepts": ["DYNAMIC PROGRAMMING (2D)", "STRING PATTERN REASONING"]
+  },
+  {
+    "id": 23087,
+    "order": 87,
+    "topic": "python",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Entity Resolution via Union-Find",
+    "description": "A customer data platform ingests records from multiple sources. Fuzzy matching has produced a list of `matches` where each `[a, b]` pair indicates that record `a` and record `b` refer to the same real-world customer. Given `n` customer records (0-indexed) and this list of match pairs, group all records into canonical clusters using Union-Find. Return a list of length `n` where `result[i]` is the **canonical representative** (minimum ID) of record `i`'s cluster.\n\n```\nsolve(5, [[0, 1], [1, 2], [3, 4]])\n# → [0, 0, 0, 3, 3]\n# Records 0, 1, 2 are the same customer (canonical ID: 0)\n# Records 3, 4 are the same customer (canonical ID: 3)\n```\n\nConstraints:\n- 1 <= n <= 10^4\n- 0 <= a, b < n for every match pair\n- Matches may be given in any order; duplicates are harmless",
+    "starter_code": "def solve(n: int, matches: list) -> list:\n    # Your code here\n    pass",
+    "expected_code": "def solve(n: int, matches: list) -> list:\n    parent = list(range(n))\n\n    def find(x):\n        while parent[x] != x:\n            parent[x] = parent[parent[x]]\n            x = parent[x]\n        return x\n\n    def union(a, b):\n        ra, rb = find(a), find(b)\n        if ra != rb:\n            if ra < rb:\n                parent[rb] = ra\n            else:\n                parent[ra] = rb\n\n    for a, b in matches:\n        union(a, b)\n\n    return [find(i) for i in range(n)]",
+    "solution_code": "def solve(n: int, matches: list) -> list:\n    parent = list(range(n))\n\n    def find(x):\n        while parent[x] != x:\n            parent[x] = parent[parent[x]]\n            x = parent[x]\n        return x\n\n    def union(a, b):\n        ra, rb = find(a), find(b)\n        if ra != rb:\n            if ra < rb:\n                parent[rb] = ra\n            else:\n                parent[ra] = rb\n\n    for a, b in matches:\n        union(a, b)\n\n    return [find(i) for i in range(n)]",
+    "explanation": "Union-Find with path-compression-by-halving. `find(x)` walks to the root while flattening the path (each node points to its grandparent), giving amortised near-O(1) per operation. `union` always makes the smaller-ID root the new root, guaranteeing the minimum-ID canonical property: after all merges, `find(i)` returns the smallest ID in i's cluster. In data engineering, entity resolution is exactly this problem: fuzzy-match pairs arrive from blocking algorithms, and Union-Find incrementally maintains the connected components (customer clusters) as pairs are processed, supporting downstream deduplication and golden-record selection.",
+    "test_cases": [
+      {"input": [5, [[0, 1], [1, 2], [3, 4]]], "expected": [0, 0, 0, 3, 3]},
+      {"input": [3, [[0, 1], [0, 2]]], "expected": [0, 0, 0]},
+      {"input": [4, []], "expected": [0, 1, 2, 3]},
+      {"input": [6, [[0, 5], [1, 4], [2, 3]]], "expected": [0, 1, 2, 2, 1, 0]},
+      {"input": [1, []], "expected": [0]},
+      {
+        "input": [
+          500,
+          {"gen": "random_pairs", "n": 300, "seed": 42, "key_space": 500, "value_low": 0, "value_high": 499}
+        ],
+        "expected": {"compute": "reference"}
+      }
+    ],
+    "public_test_cases": 2,
+    "hints": [
+      "Model each record as a node. `find(x)` returns the root of x's component — use path compression so repeated finds stay fast. `union(a, b)` merges two components by linking their roots.",
+      "To guarantee the minimum ID as canonical: in `union`, always make the smaller root the parent of the larger. After all merges, `find(i)` on every record returns that cluster's minimum ID."
+    ],
+    "concepts": ["UNION-FIND & DISJOINT SET", "HASH-MAP STATE"]
+  },
+  {
+    "id": 23088,
+    "order": 88,
+    "topic": "python",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Fraud Ring Size Detection",
+    "description": "A fraud detection system has flagged `n` accounts (0-indexed) and identified suspicious links between them. Each edge `[a, b]` in `edges` means account `a` and account `b` share a suspicious attribute (same device fingerprint, same IP range, or same payment instrument). Accounts that are directly or transitively linked form a **fraud ring** (connected component).\n\nReturn the size of the **largest fraud ring**. If there are no edges, each account is its own isolated group — return 1.\n\n```\nsolve(6, [[0, 1], [1, 2], [3, 4], [4, 5]])\n# → 3  (rings {0,1,2} and {3,4,5} are both size 3)\n```\n\nConstraints:\n- 1 <= n <= 10^5\n- 0 <= a, b < n for every edge\n- Edges may be given in any order; self-loops are harmless",
+    "starter_code": "def solve(n: int, edges: list) -> int:\n    # Your code here\n    pass",
+    "expected_code": "def solve(n: int, edges: list) -> int:\n    parent = list(range(n))\n    size = [1] * n\n\n    def find(x):\n        while parent[x] != x:\n            parent[x] = parent[parent[x]]\n            x = parent[x]\n        return x\n\n    def union(a, b):\n        ra, rb = find(a), find(b)\n        if ra == rb:\n            return\n        if size[ra] < size[rb]:\n            ra, rb = rb, ra\n        parent[rb] = ra\n        size[ra] += size[rb]\n\n    for a, b in edges:\n        union(a, b)\n\n    return max(size[find(i)] for i in range(n))",
+    "solution_code": "def solve(n: int, edges: list) -> int:\n    parent = list(range(n))\n    size = [1] * n\n\n    def find(x):\n        while parent[x] != x:\n            parent[x] = parent[parent[x]]\n            x = parent[x]\n        return x\n\n    def union(a, b):\n        ra, rb = find(a), find(b)\n        if ra == rb:\n            return\n        if size[ra] < size[rb]:\n            ra, rb = rb, ra\n        parent[rb] = ra\n        size[ra] += size[rb]\n\n    for a, b in edges:\n        union(a, b)\n\n    return max(size[find(i)] for i in range(n))",
+    "explanation": "Union-Find with union-by-size and path-compression-by-halving. The `size` array tracks component size at each root: when two components merge, the smaller root's count is added to the larger root's count. `find` with path halving flattens the tree. After processing all edges, the answer is the maximum `size[find(i)]` across all accounts — one pass over n nodes, O(nα(n)) total. In fraud detection, this directly sizes the risk exposure: a ring of 3 accounts sharing the same device fingerprint is a minor signal; a ring of 400 accounts across a shared IP range is a major fraud cluster requiring immediate review.",
+    "test_cases": [
+      {"input": [6, [[0, 1], [1, 2], [3, 4], [4, 5]]], "expected": 3},
+      {"input": [5, [[0, 1], [1, 2], [2, 3], [3, 4]]], "expected": 5},
+      {"input": [4, []], "expected": 1},
+      {"input": [7, [[0, 1], [2, 3], [4, 5], [4, 6]]], "expected": 3},
+      {"input": [3, [[0, 2]]], "expected": 2},
+      {
+        "input": [
+          500,
+          {"gen": "random_pairs", "n": 400, "seed": 99, "key_space": 500, "value_low": 0, "value_high": 499}
+        ],
+        "expected": {"compute": "reference"}
+      }
+    ],
+    "public_test_cases": 2,
+    "hints": [
+      "Union-Find is the right tool: each edge merges two components. Track the size of each component at its root — when two components merge, add the smaller size to the larger root's size.",
+      "After processing all edges, iterate over all accounts and return the maximum `size[find(i)]`. Only roots have valid sizes (size is maintained at the root during union-by-size)."
+    ],
+    "concepts": ["UNION-FIND & DISJOINT SET", "HASH-MAP STATE"]
   }
 ]
