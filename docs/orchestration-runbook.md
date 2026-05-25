@@ -233,6 +233,22 @@ Used when the validator surfaces per-family coverage breaches (or other rule vio
 
 Focused on the flagged findings ONLY. NOT a full Phase 2 round. No new Stage A deliverables; no registry expansion (unless flagged and approved separately); no sizing-band re-litigation.
 
+**What IS in scope (always, when content changes):**
+- New questions, edits to existing questions, tag remaps for the flagged families.
+- Numerical count-syncing in CLAUDE.md (content footprint table + "Practice totals" + "Mock-only totals") AND `docs/content-authoring.md` § Question bank current state. Required by the no-stale-docs rule whenever question counts shift — this overrides any blanket "do not modify CLAUDE.md" language in the brief.
+- Re-running validators after each ITEM and at end.
+- The applicable subset of the H-series H1–H7 closeout (typically H1 orphan remap if any new orphans were introduced; H6 count sync; H7 tracker tick if scope is large enough to warrant a decision-log entry).
+
+**What is OUT of scope (P2 applies — surface as flag, do not self-apply):**
+- Adding new families to `CONCEPT_FAMILIES`.
+- Modifying `MOCK_ONLY_REALISM_FAMILIES`.
+- Adding match patterns to existing families (lower-risk; flag in hand-back).
+- Modifying philosophy/rules sections of CLAUDE.md, `docs/content-authoring.md`, `docs/specs/*`, `.github/agents/question-authoring.agent.md`.
+- Modifying `docs/concept-taxonomy.md` outside the track's section.
+- Re-litigating sizing-band targets or precedent table ratios.
+
+**The P2 boundary in one line:** numerical/mechanical updates (count syncs, tag remaps to registered families, content additions per the remedy menu) are in scope; philosophy/rule/registry/contract edits are not.
+
 ### 5.3 Remedy menu per finding
 
 For each flagged finding, Sonnet picks one of three remedies and documents the rationale:
@@ -249,9 +265,15 @@ Smaller than a Stage A handoff. Includes:
 - Verbatim validator output for the flagged findings.
 - Per-family investigation + remedy procedure (Step 1 investigate, Step 2 propose, Step 3 execute, Step 4 verify).
 - Hypothesis-level guidance per family (if available) — investigate-against-content; do not pre-commit.
-- P1 + P2 verbatim.
-- Hand-back format.
+- **Explicit count-sync expectation:** state that CLAUDE.md content footprint + totals AND `docs/content-authoring.md` § Question bank current state must be updated as the closing step of the pass if question counts shifted. Do NOT write blanket "DO NOT modify CLAUDE.md" language — that conflicts with the no-stale-docs rule.
+- P1 + P2 verbatim, with the § 5.2 boundary statement included so Sonnet knows numerical sync is in scope and philosophy edits aren't.
+- Hand-back format with explicit instruction: "describe what was actually done, not what was intended. If a chain was dissolved rather than updated, say dissolved. Hand-back accuracy is part of the contract."
 - Out-of-scope list (other tracks, separate work streams).
+
+**Chain-handling rule for retro-cleanup that re-tiers questions.** If a re-tier moves a child to a different difficulty file than its parent, that's allowed by the chain-integrity validator (children may be at >= parent difficulty, same track). Two valid responses:
+- **(a) Keep chain intact** — update parent's `follow_ups[]` and children's `parent_id` references; chain now spans difficulty files. Preferred when the pedagogical link is valuable.
+- **(b) Dissolve chain** — strip `follow_ups[]` from parent, strip `parent_id` + `follow_up_dimension` from children. All become standalone mock-only. Valid when the original chain depended on same-tier pedagogical framing that re-tiering broke.
+Sonnet picks per chain with documented rationale in the hand-back. NEVER describe a dissolution as an "update" — these are different operations with different pedagogical consequences.
 
 No Stage A pre-planning needed; Sonnet uses judgment per family with documented rationale. User reviews hand-back; if any per-family decision is wrong, request remediation.
 
@@ -265,7 +287,7 @@ Update this section after each track closes / each retro-cleanup completes.
 
 | Track | Phase 2 status | Per-family coverage state | Notes |
 |---|---|---|---|
-| SQL | ✅ Closed | Retro-cleanup in flight — 2 sub-floor + 6 practice-floor flagged | Sonnet authoring; audit pending |
+| SQL | ✅ Closed | ✅ Retro-cleanup closed 2026-05-25 — zero warnings; 3 mock-only added (13132/33/34), 3 practice added (12121/22/23), 11 mock-only re-tiered medium → hard, 2 chains dissolved on re-tier (12042/12043) — accepted per § 5.4 chain-handling rule | Practice 115→118, mock 162→165, ratio 1.40× |
 | Python | ✅ Closed | Retro-cleanup pending — 1 dead family, 4 sub-floor, 1 practice-floor flagged | After SQL closes |
 | Pandas | ✅ Closed | Retro-cleanup pending — 1 dead family, 3 sub-floor flagged + GROUPED AGGREGATION 60.9% load-bearing defence | After SQL closes |
 | PySpark | ✅ Closed | ✅ Zero coverage warnings | Cleanest track on platform under per-family discipline |
