@@ -1625,11 +1625,15 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
     # -----------------------------------------------------------------------
     "statistics": {
         # D2-A.1: appended skewness/kurtosis/IQR/quartiles/heavy-tails/mean-vs-median/standardization/empirical-rule
+        # C4/E2 fix (Stage C audit): bare "variance" pattern removed — it caused substring shadowing on
+        # "variance decomposition", "variance reduction", "bias-variance tradeoff" which should route to
+        # their own families (variance decomposition & ANOVA, experimental design, correlation/regression).
+        # "standard deviation" catches remaining descriptive-stats variance-related tags ("variance" as a
+        # colloquial synonym for spread is covered by "standard deviation" and "IQR" patterns).
         "descriptive statistics": [
             "descriptive statistics",
             "measures of central tendency",
             "outliers",
-            "variance",
             "standard deviation",
             "skewness",
             "kurtosis",
@@ -1737,6 +1741,10 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "FDR",
         ],
         # D2-A.5: appended causal-DAG/mediation/residual-diagnostics/heteroscedasticity/coeff-interpretation/log-odds/model-assumptions/linear-relationships/causation/survivorship-bias/Berkson's-bias/relative-risk/linear-regression/logistic-regression
+        # C4/E2 fix (Stage C audit): bias-variance tradeoff added here — Stats hard difficulty explicitly
+        # covers "regression (R², bias-variance)" under regression interpretation, and this family is
+        # the only Statistics family where model-fit reasoning lives. The ML Fundamentals track has its own
+        # BIAS-VARIANCE TRADEOFF family, but that's a different track; within Statistics, regression is the home.
         "correlation, regression & causality": [
             "correlation",
             "regression",
@@ -1761,6 +1769,8 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "relative risk",
             "linear regression",
             "logistic regression",
+            "bias-variance tradeoff",  # C4/E2: was shadowed by bare "variance" in descriptive statistics
+            "bias variance",           # unhyphenated variant
         ],
         # D2-A.6: appended variance-reduction/CUPED/pre-experiment-covariate/experiment-design/within-subject/HTE/experiment-interpretation (narrowed: Exp-track mechanics excluded)
         "experimental design (within stats)": [

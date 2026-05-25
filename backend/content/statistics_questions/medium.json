@@ -436,15 +436,14 @@
       "The frequentist agrees with the statement because both frameworks always produce the same numerical probability",
       "The frequentist objects because Bayesian methods require more data than frequentist methods to produce valid results"
     ],
-    "correct_option": 2,
-    "explanation": "Frequentists treat population parameters as fixed but unknown constants. Assigning a probability to 'the conversion rate exceeds 10%' is meaningless in the frequentist framework \u2014 parameters don't have probability distributions. Bayesians treat parameters as random variables and use prior beliefs + data to form posterior distributions.",
+    "correct_option": 1,
+    "explanation": "A frequentist views population parameters (like the true conversion rate) as fixed, unknown constants \u2014 not random variables. Statements like \"the probability that the conversion rate exceeds 10%\" are meaningless in the frequentist framework: parameters either exceed 10% or they do not; only data, not parameters, have probability distributions. The Bayesian framework treats parameters as random variables and naturally produces posterior probability statements by combining priors with observed data. (Option 0) confuses the significance threshold \u03b1 with posterior probability \u2014 these are unrelated quantities; \u03b1 is a Type I error rate, not a posterior. (Option 2) is the core misconception to refute: the two frameworks do NOT agree numerically on parameter probabilities \u2014 the frequentist refuses to assign any probability to \"rate > 10%\" at all, while the Bayesian produces a posterior probability. (Option 3) conflates data requirements with the philosophical distinction; the core disagreement is whether parameters are fixed constants or random variables, not about sample-size thresholds.",
     "hints": [
       "In frequentism, probability is the long-run frequency of events, not a degree of belief about a fixed parameter.",
       "Ask: can a fixed (non-random) parameter have a probability of being above a threshold?"
     ],
     "concepts": [
       "Bayesian inference",
-      "frequentist inference",
       "probability"
     ],
     "order": 17,

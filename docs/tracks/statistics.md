@@ -63,7 +63,7 @@ Difficulty controls reasoning depth, never licenses formula recall. Even easy qu
 
 Full registry: [`docs/concept-taxonomy.md` → Statistics section](../concept-taxonomy.md#statistics--concept-families).
 
-12 families. **Statistics uses lowercase canonical tag style** (e.g. `probability`, `hypothesis testing`, `central limit theorem`) — a deliberate exception to the UPPERCASE convention used by the other tracks. This preserves the existing tag corpus and matches academic / industry conventions where lowercase is normal.
+13 families. **Statistics uses lowercase canonical tag style** (e.g. `probability`, `hypothesis testing`, `central limit theorem`) — a deliberate exception to the UPPERCASE convention used by the other tracks. This preserves the existing tag corpus and matches academic / industry conventions where lowercase is normal.
 
 Same concept families apply to both subtypes. A `central limit theorem` question can be conceptual (MCQ about when CLT applies) or numerical (Python code demonstrating convergence).
 
@@ -93,7 +93,23 @@ Same concept families apply to both subtypes. A `central limit theorem` question
 | Hard | 26 | 50 | 76 |
 | **Total** | **100** | **116** | **216** |
 
-Mock-only ratio: 116 / 100 = 1.16× (target: 1.15–1.25×).
+Mock-only ratio: 116 / 100 = **1.16×** — landed inside the locked target band of **1.15–1.25×**.
+
+**Target-ratio justification.** The 1.15–1.25× band was locked at Stage A against two anchors: (a) PySpark 1.17× as the closest modality precedent (code-adjacent reasoning with MCQ evaluation, similar per-question authoring constraint); (b) the dual-subtype format imposes a stricter anti-clone ceiling than pure-MCQ tracks — a mock-only numerical question must have meaningfully different numerical scaffolding from its practice equivalent, which bounds the practical authoring ceiling lower than pure-MCQ tracks (SQL 1.40×, Python 1.30×). 1.16× represents the achievable runway under that quality constraint.
+
+**Per-subtype ratio.** Of the 116 mock-only questions, 72 are conceptual and 44 are numerical. Of the 100 practice questions, 51 are conceptual and 49 are numerical.
+
+| Subtype | Practice | Mock-only | Ratio |
+|---|---|---|---|
+| Conceptual | 51 | 72 | **1.41×** |
+| Numerical | 49 | 44 | **0.90×** |
+| Total | 100 | 116 | **1.16×** |
+
+The numerical mock-only ratio (0.90×) is below 1.0×. This is an acknowledged and defended outcome, not an oversight: numerical questions with complex starter/expected code and deterministic test cases are the hardest format to anti-clone — a mock-only numerical question must have visually and computationally distinct scaffolding from its practice counterpart. At 44 mock-only numerical questions across 9 hard-eligible families, the bank provides genuine numerical runway (roughly 5 per family at hard, 3–4 at medium). The conceptual surplus (1.41×) more than covers the overall runway target. If a future audit finds the numerical pool insufficient for power-user consumption, the remediation is new numerical authoring, not retroactive ratio inflation.
+
+**Mock difficulty split.** Medium/hard mock split: 66 medium / 50 hard = 1:0.76.
+
+The hard-skewed preference (55/45 or 60/40 medium/hard per the platform contract) would target closer to 1:0.87. The observed 1:0.76 skew toward medium is explained by two factors: (1) Statistics easy questions are practice-only by design (0 easy mock), so the full 116 mock-only budget spans only medium and hard; (2) the Statistics hard difficulty covers highly combinable families (Bayesian, ANOVA, survival analysis, multiple testing) but has fewer family-pair recombination surfaces than medium, where the 13 families span wider conceptual distances. The 1:0.76 ratio is within acceptable bounds — it is not a quality failure, and further hard authoring would risk cloning the existing 50-question hard pool.
 
 **Family coverage (mock-only floor ≥4 per applicable tier):**
 

@@ -466,8 +466,8 @@
       "Yes, because lower bias guarantees better generalization to new datasets according to statistical theory",
       "Cannot be determined without knowing the sample size; bias-variance tradeoffs only apply to large-n settings"
     ],
-    "correct_option": 2,
-    "explanation": "Simple model MSE = 4+9+2 = 15. Complex model MSE = 1+16+2 = 19. Despite lower bias, the complexity increase inflates variance enough to raise total expected prediction error. The irreducible error (noise in the data) is the same for both. A good model minimizes total MSE, not just one component.",
+    "correct_option": 1,
+    "explanation": "Option 1 is correct. Simple model: total MSE = bias\u00b2 + variance + irreducible noise = 4 + 9 + 2 = 15. Complex model: 1 + 16 + 2 = 19. Despite halving the squared bias (4\u2192 1), the variance more than doubled (9\u2192 16), raising total expected prediction error from 15 to 19. Lower bias does not guarantee lower MSE \u2014 it is the bias\u00b2 + variance + noise total that determines generalization. (Option 0) is the core misconception: minimising bias regardless of variance impact is never the correct objective. Bias reduction is only beneficial when the variance increase is smaller in magnitude than the bias reduction. (Option 2) restates the same misconception more directly \u2014 lower bias does not guarantee better generalisation; total MSE determines it. (Option 3) is incorrect: the bias-variance decomposition holds at all sample sizes; the expected-MSE breakdown (bias\u00b2 + variance + noise) is a population-level identity, and we have sufficient information to compare the two models.",
     "hints": [
       "Compute the total MSE for each model: Bias\u00b2 + Variance + Irreducible Error.",
       "Lower bias does not automatically mean lower total error if variance increases enough to compensate."
@@ -518,8 +518,8 @@
       "Normal(0.667, \u03c3\u00b2) posterior, because the CLT applies to the posterior with n=11 observations",
       "Beta(16,6) posterior with mean 16/22 \u2248 0.727, because all parameters are doubled for a two-sided Beta"
     ],
-    "correct_option": 2,
-    "explanation": "The Beta distribution is the conjugate prior for the Binomial likelihood. Starting from Beta(\u03b1=2, \u03b2=2) and observing s=8 successes and f=3 failures, the posterior is Beta(\u03b1+s, \u03b2+f) = Beta(10, 5). The posterior mean is \u03b1'/(\u03b1'+\u03b2') = 10/15 = 0.667, which is a weighted blend of the prior mean (0.5) and the data proportion (8/11\u22480.727).",
+    "correct_option": 1,
+    "explanation": "Option 1 is correct. The Beta distribution is the conjugate prior for the Binomial likelihood: starting from Beta(\u03b1=2, \u03b2=2) and observing s=8 successes and f=3 failures in n=11 trials, the posterior is Beta(\u03b1+s, \u03b2+f) = Beta(2+8, 2+3) = Beta(10, 5). The posterior mean is 10/(10+5) = 0.667, a weighted blend of the prior mean (2/(2+2)=0.5) and the data proportion (8/11\u22480.727). (Option 0) erroneously replaces both prior hyperparameters with the raw observed counts \u2014 the conjugate update adds s to \u03b1 and f to \u03b2; it does not substitute them. Starting from non-uniform prior information would be lost. (Option 2) misapplies the CLT: with n=11 trials the normal approximation to the posterior is weak, and more importantly the posterior is Beta-distributed exactly (not approximately) by the conjugacy theorem. CLT applies to sampling distributions of statistics, not to Bayesian posteriors of parameters. (Option 3) incorrectly doubles all parameters \u2014 there is no \"two-sided\" Beta doubling rule; the posterior update Beta(\u03b1+s, \u03b2+f) adds 8 successes to \u03b1 and 3 failures to \u03b2 independently.",
     "hints": [
       "The Beta-Binomial conjugate pair means the posterior is also Beta \u2014 just with updated parameters.",
       "Posterior parameters: \u03b1' = \u03b1 + successes, \u03b2' = \u03b2 + failures. Posterior mean = \u03b1'/(\u03b1'+\u03b2')."
@@ -895,7 +895,6 @@
     ],
     "concepts": [
       "Bayesian inference",
-      "frequentist inference",
       "prior information",
       "decision making under uncertainty"
     ],
