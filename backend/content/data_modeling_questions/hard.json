@@ -1535,5 +1535,306 @@
       "SCHEMA FROM REQUIREMENTS",
       "DIMENSIONAL MODELING"
     ]
+  },
+  {
+    "id": 63056,
+    "order": 56,
+    "title": "Model a ragged org-chart hierarchy to support revenue roll-ups at any arbitrary level",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "follow_ups": [
+      63057,
+      63058
+    ],
+    "scenario_context": "A company has an org chart where reporting depth varies: some teams report directly to a VP (3 levels deep), while others sit under 4 intermediate managers (7 levels deep). Finance wants to roll up sales revenue to any org level in a single dashboard filter \u2014 team, sub-department, department, division, or company-wide. The current design stores a single manager_id on each employee row, requiring recursive CTEs in every dashboard query.",
+    "description": "Which dimensional modeling approach correctly supports arbitrary-level roll-ups across a variable-depth hierarchy without requiring recursive queries at report time?",
+    "options": [
+      "Add fixed-depth level columns to dim_org (level1_id through level8_id, NULL-padded for shallow paths) \u2014 Finance can filter on any level column without recursive joins.",
+      "Build an org hierarchy bridge table with one row per ancestor-descendant pair (including self-referential rows); join fact_sales to the bridge on employee_id = descendant_id and filter by the desired ancestor to aggregate at any level.",
+      "Flatten the entire org chart into a single wide fact row per employee with all ancestor IDs pre-joined \u2014 this avoids bridge joins by materializing the hierarchy in the fact table.",
+      "Run recursive CTEs at report time and cache the results in a BI tool materialized view \u2014 this keeps the dimension simple and delegates hierarchy traversal to the reporting layer."
+    ],
+    "correct_option": 1,
+    "explanation": "The hierarchy bridge table stores every ancestor-descendant relationship explicitly \u2014 for a 7-level-deep node, it stores 7 rows (node \u2192 self, node \u2192 parent, node \u2192 grandparent, \u2026, node \u2192 root). A fact-to-bridge join filters WHERE ancestor_id = <target org level> and produces only the descendants of that node, allowing SUM(revenue) to roll up correctly at any depth. Option 1 is correct. Option 0 (fixed-depth level columns) is a valid Kimball pattern but fails for ragged hierarchies \u2014 a 7-level node cannot fit into 6 fixed columns without either truncation or redefining what 'level 6' means across shallow and deep branches; the NULL-padding makes roll-up logic inconsistent. Option 2 is wrong: flattening hierarchy into the fact row couples the fact table to the org structure \u2014 every org change (manager reassignment, restructuring) requires updating fact rows rather than just the dimension/bridge; fact tables should carry foreign keys to dimensions, not inlined hierarchy paths. Option 3 is wrong: recursive CTEs scale poorly on large org charts (100K+ employees), are not supported by all BI tools' query pushdown, and cannot be easily indexed or cached correctly across changing org structures.",
+    "hints": [
+      "An org chart spans 3 to 7 reporting levels depending on the division. If a fact row joins to a single leaf-level employee node, how can the reporting layer aggregate that employee's revenue under every ancestor node \u2014 manager, department, division, and company \u2014 in a single non-recursive query?",
+      "A bridge table with ancestor-descendant pairs stores every 'node X is a descendant of ancestor Y' relationship, including a self-referential row for each node. How does filtering WHERE ancestor_id = division_id aggregate all revenue from all teams in that division in one pass?"
+    ],
+    "concepts": [
+      "HIERARCHIES & MULTI-PATH",
+      "BRIDGE & MANY-TO-MANY",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63057,
+    "order": 57,
+    "title": "Compare bridge-table and fixed-depth hierarchy approaches for org-chart roll-ups when hierarchy depth is bounded",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "mock_only": true,
+    "parent_id": 63056,
+    "follow_up_dimension": "performance_pivot",
+    "description": "A company's org chart has at most 6 levels of depth. The data team is choosing between a hierarchy bridge table (ancestor-descendant pairs) and a fixed-depth flattened hierarchy (level1_id through level6_id on each dim_org row). Under what condition does the fixed-depth approach outperform the bridge table, and what does it give up?",
+    "options": [
+      "The fixed-depth approach always outperforms the bridge table \u2014 the bridge adds O(n \u00d7 d) rows (nodes \u00d7 average depth) while the fixed-depth table has exactly n rows, and fewer rows always means faster queries.",
+      "The fixed-depth approach outperforms the bridge table for simple level-filtering roll-ups when hierarchy depth is known and stable \u2014 the bridge join is replaced by a single level column filter; the trade-off is brittleness if hierarchy depth ever needs to expand beyond 6 levels.",
+      "The bridge table always outperforms the fixed-depth approach because bridge rows can be indexed on both ancestor_id and descendant_id, while fixed-depth tables require scanning all 6 level columns for each query.",
+      "Performance is identical \u2014 the query planner chooses the same execution path for a bridge join and a fixed-depth level filter given the same data volume."
+    ],
+    "correct_option": 1,
+    "explanation": "When hierarchy depth is bounded and stable, a fixed-depth dim_org row with level1_id through level6_id allows roll-up via a simple WHERE level3_id = <dept_id> filter \u2014 a fast, index-friendly equality predicate on a single column. The bridge join requires a JOIN ON ancestor_id = <dept_id> across O(n \u00d7 d) rows, which is larger and involves a join operation. The fixed-depth approach wins here. The cost is structural rigidity: if the hierarchy ever gains a 7th level (e.g., after a corporate reorganization adds an intermediate layer), all 6 level columns shift, breaking every existing report that references them by position. Option 1 is correct. Option 0 is wrong: fewer rows does not always mean faster queries \u2014 an equality filter on a well-indexed column is fast regardless of bridge size, and the bridge's index on both axes makes specific traversal very efficient; 'fewer rows always wins' ignores index design and access patterns. Option 2 is wrong: fixed-depth level columns are individually indexed and each roll-up query touches exactly one level column; the bridge's dual-axis index is efficient for traversal but adds join cost that the fixed-depth approach avoids. Option 3 is wrong: the query execution plans are structurally different \u2014 a single column filter versus a join on a larger table \u2014 and their performance characteristics differ with scale.",
+    "hints": [
+      "A fixed-depth dim_org row has columns level1_id through level6_id. A division-level roll-up filters WHERE level3_id = X. A bridge approach JOINs WHERE ancestor_id = X across a table with 6\u00d7 as many rows. Which predicate is simpler for a query planner to execute?",
+      "If the company reorganizes and adds a new intermediate management layer, making some paths now 7 levels deep, what happens to the fixed-depth level columns \u2014 and what happens to the bridge table?"
+    ],
+    "concepts": [
+      "HIERARCHIES & MULTI-PATH",
+      "AGGREGATE & SUMMARY DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63058,
+    "order": 58,
+    "title": "Handle a mid-quarter org restructuring where Finance and Product need different hierarchy versions",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "parent_id": 63056,
+    "follow_up_dimension": "ambiguity_pivot",
+    "scenario_context": "On October 1 (mid-Q3), an engineering team of 30 is moved from Division A to Division B. Finance wants all Q3 revenue under Division B (applying the new structure retroactively). Product wants Q3 revenue split by actual reporting structure \u2014 pre-Oct 1 revenue under Division A, post-Oct 1 under Division B. Both reports pull from the same fact_sales table.",
+    "description": "What modeling approach correctly serves both Finance (retroactive new structure) and Product (point-in-time historical structure) without duplicating fact rows?",
+    "options": [
+      "Update the org hierarchy bridge table in place to reflect Division B for all ancestor-descendant pairs of the moved team; Finance sees the new structure, Product will also see Division B for the whole quarter.",
+      "Add effective_from and effective_to dates to each row of the org hierarchy bridge table; Finance queries the bridge as-of October 1 (new structure for all of Q3); Product queries the bridge as-of the fact row's transaction_date to get the structure active at each sale's time.",
+      "Duplicate the fact rows for the 30 engineers' Q3 sales: one copy attributed to Division A, one to Division B, with a is_retroactive flag to filter; Finance includes retroactive rows, Product excludes them.",
+      "Store the org_version (pre-move or post-move) as a column on the fact row at load time; Finance filters on post-move, Product uses the version stored at transaction time."
+    ],
+    "correct_option": 1,
+    "explanation": "A time-aware bridge table with effective dates on each ancestor-descendant pair supports point-in-time hierarchy traversal: Product queries WHERE bridge.effective_from <= fact.transaction_date AND fact.transaction_date < bridge.effective_to, applying the org structure active at each transaction's date. Finance queries the bridge as-of a fixed date (October 1 or later), applying the post-restructuring hierarchy uniformly to all Q3 transactions. Both queries use the same fact table \u2014 no duplication. Option 1 is correct. Option 0 is wrong: updating bridge rows in place destroys the historical hierarchy; Product can no longer reconstruct which transactions were under Division A before October 1 because those relationships no longer exist in the table. Option 2 is wrong: duplicating fact rows to represent both attribution versions introduces a structural double-count risk \u2014 any query that does not correctly filter on is_retroactive sums every revenue transaction twice; this is an operational error waiting to happen, not a governed solution. Option 3 is wrong: storing org_version on the fact row fixes the hierarchy state at load time \u2014 Finance's retroactive requirement (restate all Q3 as Division B regardless of when it was loaded) cannot be served by a pre-stamped fact attribute without re-loading the fact table whenever the org restructures.",
+    "hints": [
+      "Product needs to see which division each sale actually reported to on the day it happened. Finance needs to see all Q3 sales under the new post-restructuring division. Are these two questions asking for the same version of the org hierarchy?",
+      "If the bridge table stores when each ancestor-descendant relationship was valid (effective_from / effective_to dates), how can a fact row's transaction_date be used to pick the correct org structure for that row?"
+    ],
+    "concepts": [
+      "HIERARCHIES & MULTI-PATH",
+      "SCD STRUCTURE",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63059,
+    "order": 59,
+    "title": "Diagnose revenue inflation caused by a fan-out through a product-to-tag many-to-many join",
+    "difficulty": "hard",
+    "type": "debug",
+    "mock_only": true,
+    "scenario_context": "A product analytics report shows total revenue 2.4\u00d7 higher than the expected figure. The query joins fact_order (one row per order line) to dim_product (one row per product) and then to dim_product_tag (which has one row per product per tag, since each product has 2\u20134 tags). The analyst filters on a specific tag category but leaves the join to dim_product_tag without any aggregation or deduplication step.",
+    "description": "What is the root cause of the revenue inflation, and what is the correct fix?",
+    "options": [
+      "dim_product contains duplicate product_ids from a failed deduplication run \u2014 the fix is to add DISTINCT to the dim_product query before joining.",
+      "The join to dim_product_tag produces multiple rows per order line (one per tag), replicating the revenue amount before the SUM aggregation; the fix is to resolve the many-to-many either by pre-aggregating to one tag per product or by restructuring the query to aggregate revenue before joining to tags.",
+      "The WHERE clause on tag category is missing an AND condition that limits to active tags \u2014 inactive tag rows inflate the join result.",
+      "Revenue is stored at unit-price level in fact_order \u2014 multiplying by quantity in the SELECT is producing inflated totals because the join already accounts for quantity."
+    ],
+    "correct_option": 1,
+    "explanation": "Joining fact_order to dim_product_tag directly (without pre-aggregation) fans out every order line to 2\u20134 tag rows, replicating the revenue value once per tag per order line. With an average of 2.4 tags per product, SUM(revenue) inflates by a factor of 2.4 before the GROUP BY fires \u2014 matching the observed 2.4\u00d7 inflation. The fix is to determine the query's intent: if the goal is revenue per tag category, build an attribution model with credit_fraction weights; if the goal is total revenue filtered to products with a specific tag, aggregate revenue first at the product or order level before joining to tags. Option 1 is correct. Option 0 is wrong: duplicate product_ids in dim_product would also fan out the join, but the consistent 2.4\u00d7 factor and the description of 2\u20134 tags per product point specifically to the tag dimension as the source; a deduplication issue would produce variable multiplication by whatever the duplicate count happens to be. Option 2 is wrong: inactive tags would reduce the result (fewer matching rows), not inflate it. Option 3 is wrong: unit-price vs. line-total is a data quality issue but would produce consistent over/under-counting based on quantities, not a 2.4\u00d7 multiplier correlated with tag count.",
+    "hints": [
+      "fact_order has one row per order line. dim_product_tag has 2\u20134 rows per product. When these two tables are joined on product_id without any deduplication or pre-aggregation, how many rows does the join produce per order line?",
+      "If an order line with $100 revenue fans out to 3 tag rows, and SUM(revenue) runs after the join, what total does the aggregation return for that one order line?"
+    ],
+    "concepts": [
+      "DOUBLE-COUNTING & FAN-OUT",
+      "GRAIN DEFINITION",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63060,
+    "order": 60,
+    "title": "Debug revenue misattribution after a source system vendor consolidation overwrites natural keys used in fact rows",
+    "difficulty": "hard",
+    "type": "debug",
+    "mock_only": true,
+    "scenario_context": "A data team uses the ERP's vendor_id (a natural key, e.g., 'V001', 'V003') directly as the foreign key in fact_purchase, rather than generating a warehouse key. The ERP system performs a vendor consolidation: vendor V003 is merged into V001. All records in the ERP \u2014 including historical ones \u2014 are retroactively updated to reference V001. The following week, Finance reports that vendor V001's historical revenue has roughly doubled, and V003 shows zero revenue for all past periods.",
+    "description": "What caused the misattribution, and which modeling practice would have prevented it?",
+    "options": [
+      "Vendor consolidation is a source system data quality issue \u2014 the same misattribution would occur regardless of which key strategy the warehouse used, because the source system changed the underlying data.",
+      "Using the ERP's natural vendor_id as the fact table foreign key means the warehouse inherits retroactive ERP updates \u2014 historical fact rows that originally referenced V003 now resolve to V001 in every join. A warehouse-generated key for each vendor (independent of ERP identifiers) would have kept V003 rows pointing to the original V003 dimension row, preserving historical attribution.",
+      "The root cause is that dim_vendor was not rebuilt after the consolidation \u2014 re-running the dimension ETL with a deduplication step would restore the correct historical vendor rows.",
+      "The fix is to store both old and new vendor_ids in dim_vendor using a cross-reference column \u2014 fact rows join to the cross-reference table at query time to resolve historical attribution."
+    ],
+    "correct_option": 1,
+    "explanation": "When the ERP retroactively changed all V003 references to V001, the fact rows in fact_purchase that stored 'V003' as the foreign key now mismatch dim_vendor (which was updated to only show V001). Depending on the JOIN type, those rows either resolve incorrectly to V001 or drop entirely. If a warehouse-generated dimension key had been used \u2014 one that was created when V003 first appeared and never changed \u2014 the old fact rows would still hold that key and join correctly to the V003 dimension row, regardless of what the ERP did to its own identifier. Option 1 is correct. Option 0 is wrong: the misattribution is specifically a modeling choice \u2014 using a natural key that the source system can retroactively change without notifying the warehouse. A warehouse-generated key is immutable by warehouse policy and would have isolated the fact from the ERP change. Option 2 is wrong: re-running the dimension ETL after consolidation would produce a dim_vendor with only V001 (the consolidated entity), which makes historical attribution even harder \u2014 the original V003 entry is gone from the source and cannot be recovered. Option 3 is wrong: a cross-reference table at query time introduces join complexity and still relies on the source system having preserved the old V003 identifier \u2014 if the ERP retroactively overwrote it everywhere, the cross-reference has nothing to link back to.",
+    "hints": [
+      "When fact rows use the ERP's vendor identifier directly as a foreign key, what happens to those fact rows when the ERP retroactively renames or merges that identifier?",
+      "A warehouse key generated at the time a vendor first appears is never changed by the warehouse team \u2014 even if the source system merges two vendors. What would historical V003 fact rows show if they referenced that warehouse-generated key instead of the ERP vendor_id?"
+    ],
+    "concepts": [
+      "SURROGATE VS NATURAL KEYS",
+      "REFERENTIAL INTEGRITY",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63061,
+    "order": 61,
+    "title": "Debug an inflated quarterly balance by identifying incorrect aggregation of a semi-additive measure across time",
+    "difficulty": "hard",
+    "type": "debug",
+    "mock_only": true,
+    "scenario_context": "A finance team builds fact_account_balance as a monthly periodic snapshot: one row per account per month-end, storing the account's end-of-month balance. An analyst queries total deposits held across all accounts for Q1 2024 by writing: SELECT SUM(balance) FROM fact_account_balance WHERE snapshot_month IN ('2024-01', '2024-02', '2024-03'). The result is approximately 3\u00d7 the figure shown in the bank's general ledger for March 31.",
+    "description": "What is the structural cause of the inflation, and what is the correct query approach for quarterly total deposits?",
+    "options": [
+      "The IN clause includes 3 months; each account has 3 snapshot rows in the range; SUM(balance) adds each account's balance three times \u2014 once for January, once for February, once for March. The correct approach for a point-in-time balance is to filter to a single month-end snapshot, not sum across multiple months.",
+      "The periodic snapshot table has an indexing defect \u2014 rows from February and March are incorrectly tagged with January's snapshot_month, causing triple-counting. The fix is to rebuild the snapshot ETL with correct date partitioning.",
+      "Account balances should not be stored in a periodic snapshot fact \u2014 they are slowly changing attributes and belong in an SCD Type 2 dimension table with an effective_date range.",
+      "SUM is the wrong aggregation function \u2014 account balances should be aggregated with MAX to return the highest balance across the period, which represents the peak deposit level."
+    ],
+    "correct_option": 0,
+    "explanation": "Account balance is a semi-additive measure: it can be summed across accounts within a single time period (all accounts' January balances sum to total January deposits), but it cannot be summed across time (January + February + March deposits counts each account's money three times). The analyst's query spans 3 months, so every account balance appears 3 times in the result set before SUM runs \u2014 producing a value 3\u00d7 the correct March 31 balance. To get Q1 total deposits, filter to snapshot_month = '2024-03' and SUM across accounts. Option 0 is correct. Option 1 is wrong: a consistent 3\u00d7 inflation pattern across all accounts is the expected mathematical outcome of summing across 3 monthly snapshots \u2014 it is not an ETL or indexing defect. Option 2 is wrong: periodic snapshot is the correct and standard fact table design for account balances \u2014 it enables historical trending (balance over time) and point-in-time queries (balance on a specific month-end); SCD Type 2 on a dimension models entity attribute changes, not financial measures. Option 3 is wrong: MAX(balance) returns the highest single account balance across the period, not the total deposits; it is the wrong metric and the wrong aggregation for this use case.",
+    "hints": [
+      "A periodic snapshot fact table stores one balance row per account per month-end. When you include three months in the filter, how many rows does each account contribute to the SUM before the aggregation runs?",
+      "Account balance is additive across accounts (all accounts' balances for one month can be summed to get total deposits) but not additive across time periods. Which dimension can it be aggregated across, and which cannot?"
+    ],
+    "concepts": [
+      "ADDITIVE VS NON-ADDITIVE",
+      "PERIODIC SNAPSHOT",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63062,
+    "order": 62,
+    "title": "Determine when a Data Vault hub satellite should be split into two separate satellites",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A Data Vault customer hub currently has a single satellite (sat_customer) with 40 attributes sourced from both the CRM (25 attributes) and the ERP (15 attributes). After 12 months, the team finds that CRM attributes change 20\u00d7 more frequently than ERP attributes, and every CRM update produces a full new satellite row including all 15 unchanged ERP columns. Under which principle should the team split this satellite, and into what?",
+    "options": [
+      "Split when the satellite exceeds 30 columns \u2014 column count is the primary driver of satellite decomposition in Data Vault.",
+      "Split by source system: create sat_customer_crm (25 CRM attributes) and sat_customer_erp (15 ERP attributes). High-churn CRM rows no longer replicate unchanged ERP columns, and each satellite's load timestamp accurately reflects changes from its own source.",
+      "Split by change frequency: create sat_customer_volatile (frequently-changing attributes from any source) and sat_customer_stable (infrequently-changing attributes from any source), regardless of which system they come from.",
+      "Satellites should never be split per Data Vault standards \u2014 one satellite per hub per source system is the canonical rule; splitting violates hub-to-satellite atomicity."
+    ],
+    "correct_option": 1,
+    "explanation": "Data Vault 2.0 satellite design principles include splitting by source system AND by rate of change when they differ. In this case, source alignment and change frequency align: CRM attributes come from one system and change frequently; ERP attributes come from another and change rarely. Splitting into sat_customer_crm and sat_customer_erp means a CRM update creates a new CRM satellite row without touching the ERP satellite \u2014 reducing write amplification by 37.5% (15 fewer columns per CRM-sourced row) and keeping each satellite's load_date accurate to its source. Option 1 is correct. Option 0 is wrong: column count is not a splitting criterion in Data Vault; 40 columns is within normal satellite size; the standard splits on source system or change rate, not column count. Option 2 describes a valid alternative split (by change rate across systems), but it mixes source systems in each satellite \u2014 a CRM column that happens to be stable sits in the same satellite as an ERP column that is also stable; this makes source-level lineage harder to trace and violates the source-system-per-satellite principle that Data Vault uses for provenance. Option 3 is wrong: Data Vault explicitly permits and encourages satellite splits when source systems or change rates differ \u2014 the one-satellite-per-hub constraint applies per-source, not globally; splitting by source is a standard pattern.",
+    "hints": [
+      "Every time a CRM attribute changes, a new satellite row is inserted with all 40 attributes \u2014 including 15 ERP columns that did not change. What does this mean for the load_date on ERP attributes, and how accurately does it reflect when ERP data actually changed?",
+      "Data Vault satellites are designed to be split by source system (for provenance) or by rate of change (for write efficiency). In this scenario, do source system alignment and change frequency point toward the same split?"
+    ],
+    "concepts": [
+      "DATA VAULT",
+      "SCHEMA EVOLUTION",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63063,
+    "order": 63,
+    "title": "Identify when denormalization creates reporting correctness problems beyond maintenance cost",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A data team inlines the customer's region attribute directly into fact_orders as a column (denormalized from dim_customer), eliminating the dimension join for most BI queries. A customer moves from the West region to the East region on October 1. What is the correctness risk introduced by this denormalization, and under what ETL update strategy does it materialize?",
+    "options": [
+      "Denormalization never creates correctness problems in fact tables \u2014 region is a slowly changing attribute and the risk is only one of maintenance overhead when it changes.",
+      "If the ETL updates the inlined region column on existing fact rows when a customer's region changes, historical orders placed before October 1 will show East region instead of West \u2014 the fact table loses its point-in-time accuracy for all pre-change orders.",
+      "Denormalization creates a correctness problem only when the fact table has more than 100 columns \u2014 below this threshold, the query planner maintains semantic correctness automatically.",
+      "The correctness problem manifests only when two customers in different regions share the same customer_id \u2014 an edge case that proper deduplication in the dimension prevents."
+    ],
+    "correct_option": 1,
+    "explanation": "When a customer attribute is inlined on the fact row and the ETL performs an UPDATE on existing fact rows when that attribute changes, historical facts lose their point-in-time accuracy \u2014 a January order now shows East region even though the customer was in West at the time of purchase. This is not a maintenance cost; it is a semantic correctness error: regional revenue reports for Q1 will silently misattribute transactions. The ETL strategy (overwrite vs. leave-as-is vs. insert-new-fact-row) determines whether this error occurs. Option 1 is correct. Option 0 is wrong: the maintenance cost framing misses the correctness dimension \u2014 the issue depends on how the ETL handles updates to inlined attributes; if the ETL overwrites historical fact rows (the most common 'easy' ETL approach), the data is incorrect for historical analysis. Option 2 is wrong: the column count of the fact table is irrelevant to the correctness risk; the risk depends entirely on whether the ETL updates existing rows or preserves the value at insert time. Option 3 is wrong: customer_id uniqueness is not the relevant constraint here; the issue is that any single customer moving regions triggers a potential overwrite of all their historical fact rows if the ETL is not carefully designed to leave historical values intact.",
+    "hints": [
+      "A fact table inlines the customer's region as a column. On October 1, the customer moves from West to East. If the ETL updates this column on all existing fact rows for that customer, what region do historical January orders now show?",
+      "A normalized design joins to a dimension at query time \u2014 the dimension holds current region, and the fact holds only a key. A denormalized design stores the region inline. Which approach preserves what the region was at the time of the order without any special ETL logic?"
+    ],
+    "concepts": [
+      "DENORMALIZATION TRADEOFF",
+      "DIMENSION DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63064,
+    "order": 64,
+    "title": "Design a fractional-credit attribution fact for multi-touchpoint marketing attribution",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A marketing attribution team wants to credit the revenue from each closed deal across the 3\u20137 marketing touchpoints that influenced it (email opens, ad clicks, webinar attendance, sales calls). Each touchpoint receives a fractional credit (e.g., first touch 40%, last touch 40%, middle touches split 20%). The existing fact_deal table has one row per deal with no touchpoint information. dim_touchpoint has one row per touchpoint type.",
+    "description": "What fact table design correctly models fractional attribution without double-counting total deal revenue at the deal level?",
+    "options": [
+      "Add 7 columns to fact_deal (touchpoint_1_id through touchpoint_7_id with credit_fraction_1 through credit_fraction_7) \u2014 this keeps one row per deal while storing all touchpoints.",
+      "Create fact_deal_attribution at touchpoint-level grain \u2014 one row per (deal_id, touchpoint_id) pair \u2014 with a credit_fraction column; total attributed revenue per touchpoint = deal_revenue \u00d7 credit_fraction, and SUM(credit_fraction) per deal_id = 1.0.",
+      "Store a JSON array of touchpoint credits on fact_deal \u2014 each element contains touchpoint_id and credit_fraction; the BI tool unpacks the array at query time.",
+      "Build a bridge table deal_touchpoint_bridge between fact_deal and dim_touchpoint with a credit_fraction weight column, and compute attributed revenue at query time as deal_revenue \u00d7 credit_fraction in the SELECT."
+    ],
+    "correct_option": 1,
+    "explanation": "An attribution fact at touchpoint grain is the canonical design: each row carries deal_id, touchpoint_id, credit_fraction, and credited_revenue = deal_revenue \u00d7 credit_fraction. Because SUM(credit_fraction) per deal = 1.0, summing credited_revenue across all touchpoints for a deal returns the full deal revenue exactly once \u2014 no double-counting. Touchpoint-level aggregation (SUM(credited_revenue) GROUP BY touchpoint_type) shows attributed revenue by channel. Option 1 is correct. Option 0 is wrong: 7 sparse columns for up to 7 touchpoints is fragile \u2014 deals with 3 touchpoints waste 4 columns; a deal with 8 touchpoints cannot be modeled; and any column-by-column analysis requires pivoting across all 7 columns, making touchpoint-type aggregation complex. Option 2 is wrong: JSON arrays in analytical fact tables defeat column-level filtering, indexing, and aggregation \u2014 every query must unpack the array with string parsing functions, which is slow, non-portable, and invisible to schema documentation; JSON is appropriate for semi-structured source landing, not governed analytical facts. Option 3 is partially valid \u2014 a bridge table with credit_fraction is a documented Kimball technique \u2014 but placing the weight on the bridge rather than on a dedicated attribution fact table means the credited_revenue is never stored as a pre-computable column; complex multi-step JOIN + multiplication must happen in every query, and the bridge pattern is harder to document and test than an explicit attribution fact row.",
+    "hints": [
+      "If each deal has 3\u20137 touchpoints and credit_fraction must sum to 1.0 per deal, how many rows does the attribution model need per deal \u2014 and which table type is designed to store one row per event or allocation unit?",
+      "If attributed revenue per row = deal_revenue \u00d7 credit_fraction, and SUM(credit_fraction) per deal = 1.0, what does SUM(attributed_revenue) across all rows for one deal return \u2014 and is that the right answer?"
+    ],
+    "concepts": [
+      "FACT TABLE DESIGN",
+      "BRIDGE & MANY-TO-MANY",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63065,
+    "order": 65,
+    "title": "Evaluate the GDPR data minimization constraint on a historically versioned customer dimension",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A company uses a versioned dimension design to track customer tier history \u2014 each tier change creates a new row alongside the previous rows, indefinitely retained. GDPR's data minimization principle requires that personal data not be kept longer than necessary for its stated purpose. The legal team asks whether historical tier-change rows containing personal identifiers (name, email, customer_id) constitute personal data requiring a retention limit. What is the data team's correct response?",
+    "options": [
+      "Historical dimension rows do not contain personal data \u2014 only current-state dimension rows are personal data under GDPR; historical versions are analytical records exempt from minimization.",
+      "Historical dimension rows that contain personal identifiers (name, email, customer_id) are personal data under GDPR regardless of whether they are 'old' versions \u2014 the data team should implement a retention policy that either deletes or pseudonymizes identifiers on dimension rows older than the agreed retention window, while preserving the tier-change structure for analytics.",
+      "GDPR data minimization does not apply to data warehouses \u2014 it applies only to operational systems that interact directly with customers; analytical systems are exempt by design.",
+      "The only compliant solution is to delete all historical dimension rows and switch to SCD Type 1 \u2014 GDPR minimization cannot be satisfied while retaining any historical customer rows."
+    ],
+    "correct_option": 1,
+    "explanation": "GDPR's definition of personal data includes any information that directly or indirectly identifies a natural person \u2014 historical dimension rows carrying name, email, or customer_id are personal data regardless of their 'version' status. The data minimization principle requires that data be kept only as long as necessary for its purpose. The correct response is to implement a retention policy: rows older than the retention window have their direct identifiers replaced with pseudonyms or nulled out (tombstone pattern), while the tier-change structure (tier_value, effective_from, effective_to, a pseudonymous key) is preserved for analytical integrity. Option 1 is correct. Option 0 is wrong: the GDPR does not exempt historical versions of personal data \u2014 'old row' is not a legal category; if a row contains a field that identifies a person, it is personal data. Option 2 is wrong: GDPR applies to any system that processes personal data of EU residents, including data warehouses; there is no analytical system exemption, and major DPA enforcement actions have explicitly included data warehouse and analytics platform data. Option 3 is wrong: switching to overwrite (Type 1) would satisfy minimization by removing history but destroys the business value (historical reporting, regulatory audit trails of tier changes) the warehouse was built to provide; pseudonymization after a retention window achieves compliance without destroying analytical value.",
+    "hints": [
+      "Historical tier-change rows in a versioned dimension contain the customer's name, email, and identifier alongside each old tier value. Does GDPR's definition of personal data apply to a row because it is 'historical' or because it contains an identifying field?",
+      "A tombstone approach nulls out personal identifiers (name, email) after a retention window but keeps the tier and date columns. Does this satisfy GDPR data minimization while preserving the historical tier-change structure for analytics?"
+    ],
+    "concepts": [
+      "DIMENSION DESIGN",
+      "SCHEMA EVOLUTION",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63066,
+    "order": 66,
+    "title": "Govern source system precedence when two marts define the same dimension attribute with conflicting values",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "Two business units produce conflicting values for customer acquisition_channel: Marketing uses Salesforce (CRM) as the source of truth, where acquisition_channel reflects the first touchpoint. Finance uses the ERP, where acquisition_channel reflects the payment method used at first purchase. Both teams reference the same customer IDs. When a conformed customer dimension is built, the data team must pick one source for acquisition_channel \u2014 or handle both \u2014 for a shared executive dashboard.",
+    "description": "What governance process and modeling approach should the data team use to resolve this conflict correctly?",
+    "options": [
+      "Default to the ERP value \u2014 financial systems are always the authoritative system of record for customer data across the enterprise.",
+      "Store both values in the conformed dimension (crm_acquisition_channel and erp_acquisition_channel), document the business definition of each, and surface both to the executive dashboard so stakeholders can decide which to use for each report.",
+      "Convene a cross-functional governance session with Marketing, Finance, and the executive dashboard owner to align on a single canonical definition; encode the agreed definition in the conformed dimension and document the decision with a lineage note. If business units legitimately need different definitions, name them explicitly and maintain both as governed variants.",
+      "Use whichever source system has more complete data for acquisition_channel \u2014 coverage percentage is the objective tiebreaker for conflicting source systems."
+    ],
+    "correct_option": 2,
+    "explanation": "Conformed dimension governance requires business agreement before technical implementation. The conflict is semantic, not technical: Marketing and Finance use the same label ('acquisition_channel') for conceptually different things (first touchpoint vs. payment method). A cross-functional governance process names the disagreement, aligns on definitions, and either selects one canonical value or legitimizes both as distinct named attributes (first_touchpoint_channel, payment_channel). The technical implementation follows the business decision. Option 2 is correct. Option 0 is wrong: 'financial systems are always authoritative' is an organizational policy, not a universal fact \u2014 the ERP's acquisition_channel (payment method) is not obviously more correct than the CRM's (first marketing touchpoint) for a marketing attribution dashboard; authority must be established per attribute, not per system. Option 1 is wrong: exposing both values without a governance decision replicates the confusion at the dashboard level \u2014 executives will ask 'which one do I use?' and receive no authoritative answer, perpetuating the same conflict in reporting that prompted the question. Option 3 is wrong: coverage percentage answers 'which source has fewer NULLs' but not 'which source's definition is the right one for the agreed analytical purpose'; a source with 99% coverage of the wrong definition is worse than a 70% coverage source with the right definition.",
+    "hints": [
+      "When two source systems define acquisition_channel differently \u2014 first marketing touchpoint in one, payment method at purchase in another \u2014 can a single shared dimension table contain one acquisition_channel value that is semantically correct for both Finance's and Marketing's reports simultaneously?",
+      "If the data team picks Salesforce without asking Finance, and Finance later discovers the executive dashboard uses the CRM definition for a metric they own, what happens to trust in the conformed dimension?"
+    ],
+    "concepts": [
+      "CONFORMED DIMENSIONS",
+      "SCHEMA FROM REQUIREMENTS",
+      "DIMENSIONAL MODELING"
+    ]
   }
 ]
