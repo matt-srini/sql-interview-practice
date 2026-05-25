@@ -317,6 +317,7 @@ _TAXONOMY_VALIDATED_TRACKS: frozenset[str] = frozenset({
     "python",             # Python Phase 2: registry complete, all practice/mock tags validated
     "python-data",        # Pandas Phase 2: registry complete, all 112 practice tags validated
     "data-engineering",   # DE Phase 2: registry complete, 21 families, 0e/50m/60h mock-only validated
+    "data-modeling",      # DM Phase 2: registry complete (22 families), 0 realism families by design (MCQ-only), 0e/45m/51h mock-only validated
     # Add a track here once its concept_families.py registry is fully populated.
 })
 

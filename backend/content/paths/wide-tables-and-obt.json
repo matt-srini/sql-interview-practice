@@ -21,7 +21,6 @@
   "focus_concepts": [
     "DENORMALIZATION TRADEOFF",
     "WIDE VS NARROW",
-    "STORAGE ARCHITECTURE TRADEOFFS",
     "SCHEMA FROM REQUIREMENTS"
   ],
   "outcomes": "You'll decide when an OBT outperforms a star schema, name the cost of denormalisation in update-heavy systems, design wide-table models for BI and ML feature stores, and recognise the scalability limits at which OBTs break down.",

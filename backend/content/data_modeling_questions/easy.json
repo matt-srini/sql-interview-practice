@@ -20,8 +20,7 @@
     ],
     "concepts": [
       "DIMENSIONAL MODELING",
-      "DENORMALIZATION TRADEOFF",
-      "STORAGE ARCHITECTURE TRADEOFFS"
+      "DENORMALIZATION TRADEOFF"
     ]
   },
   {
@@ -435,8 +434,7 @@
     ],
     "concepts": [
       "DENORMALIZATION TRADEOFF",
-      "DIMENSIONAL MODELING",
-      "STORAGE ARCHITECTURE TRADEOFFS"
+      "DIMENSIONAL MODELING"
     ]
   },
   {
@@ -483,7 +481,7 @@
       "The 'O' in both stands for Online, but the 'T' (Transactional) vs 'A' (Analytical) captures the fundamental difference in workload."
     ],
     "concepts": [
-      "STORAGE ARCHITECTURE TRADEOFFS",
+      "DENORMALIZATION TRADEOFF",
       "DIMENSIONAL MODELING",
       "NORMALIZATION"
     ]
@@ -508,7 +506,6 @@
       "The more joins a query needs, the more expensive it becomes \u2014 and normalised schemas maximise the number of joins."
     ],
     "concepts": [
-      "STORAGE ARCHITECTURE TRADEOFFS",
       "NORMALIZATION",
       "DENORMALIZATION TRADEOFF"
     ]

@@ -130,7 +130,6 @@
     ],
     "concepts": [
       "AGGREGATE & SUMMARY DESIGN",
-      "STORAGE ARCHITECTURE TRADEOFFS",
       "DENORMALIZATION TRADEOFF"
     ]
   },
@@ -238,8 +237,7 @@
     ],
     "concepts": [
       "DBT MODELING",
-      "FACT TABLE DESIGN",
-      "STORAGE ARCHITECTURE TRADEOFFS"
+      "FACT TABLE DESIGN"
     ]
   },
   {
@@ -264,7 +262,7 @@
       "A lakehouse (Delta Lake / Iceberg) provides ACID, schema enforcement, and time-travel on top of object storage \u2014 evaluate whether this closes the BI team's complaints without requiring a separate warehouse."
     ],
     "concepts": [
-      "STORAGE ARCHITECTURE TRADEOFFS",
+      "DIMENSIONAL MODELING",
       "WIDE VS NARROW",
       "NORMALIZATION"
     ]
@@ -346,9 +344,8 @@
       "Low-cardinality columns (like subscription_tier with 3\u20135 values) make poor partition keys because each partition remains very large, limiting the benefit of partition pruning."
     ],
     "concepts": [
-      "PARTITIONING & CLUSTERING",
-      "FACT TABLE DESIGN",
-      "STORAGE ARCHITECTURE TRADEOFFS"
+      "AGGREGATE & SUMMARY DESIGN",
+      "FACT TABLE DESIGN"
     ]
   },
   {
@@ -593,7 +590,6 @@
       "BI-TEMPORAL MODELING",
       "TRANSACTION TIME",
       "VALID TIME",
-      "TEMPORAL QUERY",
       "SCD STRUCTURE"
     ]
   },
@@ -621,7 +617,6 @@
       "CROSS-HIERARCHY REPORTING",
       "DIMENSION DESIGN",
       "MULTIPLE HIERARCHIES",
-      "WINDOW FUNCTIONS",
       "CONFORMED DIMENSION"
     ]
   },
@@ -811,7 +806,6 @@
     "concepts": [
       "PERIODIC SNAPSHOT",
       "FACT TABLE DESIGN",
-      "STORAGE ARCHITECTURE TRADEOFFS",
       "DIMENSIONAL MODELING",
       "SEMI-ADDITIVE FACTS"
     ]
@@ -1913,7 +1907,7 @@
       "When a source schema changes mid-year, which layer of the medallion architecture absorbs the change without requiring the gold star schema to be rebuilt?"
     ],
     "concepts": [
-      "STORAGE ARCHITECTURE TRADEOFFS",
+      "WIDE VS NARROW",
       "DIMENSIONAL MODELING",
       "SCHEMA EVOLUTION"
     ]

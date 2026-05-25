@@ -65,6 +65,15 @@ MOCK_ONLY_REALISM_FAMILIES: dict[str, set[str]] = {
     # appears in practice questions and is re-combined under fresh framing in
     # mock. See docs/tracks/data-engineering.md and the DE Phase 2 decision log.
     "data-engineering": set(),
+    # Data Modeling: NO realism families by design. DM is constructed
+    # reasoning (MCQ-only, no code execution). All 22 concept families
+    # are directly gradeable as scenario / debug / conceptual MCQ — the
+    # "assessment lens" rationale that designates SQL/Pandas families as
+    # mock-only realism (they can't grade as query-writing) does not apply
+    # here. Every DM family appears in practice questions and is
+    # re-combined under fresh framing in mock-only. See
+    # docs/tracks/data-modeling.md and the DM Phase 2 decision log.
+    "data-modeling": set(),
 }
 
 # ---------------------------------------------------------------------------

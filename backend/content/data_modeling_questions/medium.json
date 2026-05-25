@@ -181,7 +181,6 @@
     ],
     "concepts": [
       "DBT MODELING",
-      "STORAGE ARCHITECTURE TRADEOFFS",
       "DENORMALIZATION TRADEOFF"
     ]
   },
@@ -339,7 +338,6 @@
     ],
     "concepts": [
       "REFERENTIAL INTEGRITY",
-      "STORAGE ARCHITECTURE TRADEOFFS",
       "DIMENSIONAL MODELING"
     ]
   },
@@ -393,8 +391,7 @@
     ],
     "concepts": [
       "DENORMALIZATION TRADEOFF",
-      "SCHEMA FROM REQUIREMENTS",
-      "STORAGE ARCHITECTURE TRADEOFFS"
+      "SCHEMA FROM REQUIREMENTS"
     ]
   },
   {
@@ -419,8 +416,7 @@
     ],
     "concepts": [
       "DENORMALIZATION TRADEOFF",
-      "NORMALIZATION",
-      "STORAGE ARCHITECTURE TRADEOFFS"
+      "NORMALIZATION"
     ]
   },
   {
@@ -658,8 +654,7 @@
       "High-cardinality columns make poor partition keys; date is almost always the best partition column for time-series data."
     ],
     "concepts": [
-      "PARTITIONING & CLUSTERING",
-      "STORAGE ARCHITECTURE TRADEOFFS",
+      "AGGREGATE & SUMMARY DESIGN",
       "FACT TABLE DESIGN"
     ]
   },
@@ -685,7 +680,6 @@
     "concepts": [
       "SEMANTIC LAYER",
       "METRIC GOVERNANCE",
-      "DATA MODELING GOVERNANCE",
       "SINGLE SOURCE OF TRUTH"
     ]
   },
@@ -870,7 +864,6 @@
     ],
     "concepts": [
       "SCD STRUCTURE",
-      "STORAGE ARCHITECTURE TRADEOFFS",
       "DIMENSIONAL MODELING"
     ]
   },
@@ -923,7 +916,6 @@
     ],
     "concepts": [
       "SCD STRUCTURE",
-      "STORAGE ARCHITECTURE TRADEOFFS",
       "FACT TABLE DESIGN",
       "DIMENSIONAL MODELING"
     ]

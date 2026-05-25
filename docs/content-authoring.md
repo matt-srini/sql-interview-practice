@@ -296,6 +296,7 @@ Mock-only inventory must support a power user who completes most of practice and
 | Pandas | 92 | 110 | **1.20×** | executable analytics |
 | PySpark | 128 | 150 | **1.17×** | code-adjacent reasoning (MCQ) |
 | Data Engineering | 91 | 110 | **1.21×** | constructed reasoning (MCQ) |
+| Data Modeling | 80 | 96 | **1.20×** | constructed reasoning (MCQ) |
 
 A track audit proposing **< 1.0×** must record the track-specific reason in the brief and the decision log (e.g. interview-frequency data showing low demand, a finite pattern-space argument that more mock would only produce clones, etc.) — and the reason must survive critical pushback. *"Lean"* in this contract applies to **practice** (don't pad the curriculum with puzzles or low-value variants); **mock** sizes to the runway. A small mock pool is a power-user runway failure, not a virtue.
 
@@ -308,7 +309,7 @@ A track audit proposing **< 1.0×** must record the track-specific reason in the
 - **Operational ceiling:** `target + ~5pp`. Exceeding the band also requires escalation (prevents over-authoring into near-clone territory under the anti-duplication rule).
 - **Quality > integer.** If the anti-duplication rule binds before the band's lower bound, stop authoring, record the binding reason in the closeout commit, and hand back for re-audit. Do not pad with near-clones to hit a number.
 
-**Closed tracks (SQL, Python, PySpark, Pandas, Data Engineering) keep their locked targets** — this rule applies only to track audits running 2026-05-24 onward (Data Modeling, Statistics, ML Fundamentals, Experimentation). The precedent table above records LANDED ratios (history), not retro-fitted targets.
+**Closed tracks (SQL, Python, PySpark, Pandas, Data Engineering, Data Modeling) keep their locked targets** — this rule applies only to track audits running 2026-05-24 onward (Statistics, ML Fundamentals, Experimentation). The precedent table above records LANDED ratios (history), not retro-fitted targets.
 
 ---
 
