@@ -306,8 +306,8 @@ Out of set: Statistics, ML Fundamentals, Experimentation. Validator emits stderr
 
 | Track | Practice | Mock-only | Ratio |
 |---|---|---|---|
-| SQL | 115 | 162 | 1.41 |
-| Python | 79 | 100 | 1.27 |
+| SQL | 118 | 165 | 1.40 |
+| Python | 79 | 103 | 1.30 |
 | Pandas | 92 | 114 | 1.24 |
 | PySpark | 128 | 150 | 1.17 |
 | DE | 91 | 110 | 1.21 |

@@ -285,7 +285,7 @@ Concept families must be distributed across questions with neither starvation no
 
 **Strategic anchor:** per-family weighting is by **reasoning surface**, never by interview or business frequency. See [`CLAUDE.md`](../CLAUDE.md) § Platform position. A family with broad reasoning surface (many distinct learnable variants — e.g. SQL `WINDOW FUNCTIONS` spans ranking, running totals, frame semantics, lateral patterns, qualify, deduplication via row_number, gap-fill) legitimately occupies more bank space than a narrow family. A family that dominates StrataScratch tag counts does not.
 
-**The seven rules:**
+**The eight rules:**
 
 | # | Rule | Anchor / rationale |
 |---|---|---|
@@ -296,6 +296,7 @@ Concept families must be distributed across questions with neither starvation no
 | 5 | **Realism families exempt from rule 2.** Realism families are sampled per question as co-tags, not per target count. They are bounded by rule 3 only. | SQL/Pandas realism class design. |
 | 6 | **Quality override.** If the anti-duplication rule binds before a floor is met, stop and document — never pad with near-clones. | Existing "Quality > integer" principle (`docs/content-authoring.md` § Power-user runway sizing benchmark). |
 | 7 | **Load-bearing exception.** A family may exceed rule 3's 50% ceiling if it has genuinely broad reasoning surface for the track. Must be named explicitly in the track-doc with a reasoning-depth defence (NOT a frequency defence). The defence is: this family has N distinct learnable variants the curriculum must teach; the question count reflects that surface, not interview-market frequency. | Strategic anchor (Platform position). Defended per-track, not platform-wide. |
+| 8 | **Curated-lean exception.** A family may sit below the rule-1, rule-2, or rule-4 floor IF the family is registered for legitimate sub-pattern coverage but its primary patterns are out-of-scope for the track's curation philosophy (e.g. Python anti-puzzle, anti-trivia, anti-vendor-lock-in). Must be named explicitly in the track-doc Coverage section with the curation rationale + which sub-patterns warrant continued registration. The defence is: this family stays registered because [legitimate sub-pattern], primary patterns [list] are banned per [philosophy], authoring more would require exactly the patterns the track rejects. | Symmetric to rule 7 — rule 7 defends ceiling breaches on reasoning-depth grounds, rule 8 defends floor breaches on curation-philosophy grounds. Both reject frequency arguments. Anchor: Python Phase 2 anti-puzzle decision; first-class application in `docs/tracks/python.md` § Per-family coverage exceptions (BACKTRACKING, IN-PLACE, MODULAR ARITHMETIC). |
 
 **What does NOT justify a rule-3 ceiling breach:**
 - "This is the most-asked family on StrataScratch."
@@ -310,11 +311,23 @@ These are frequency arguments. The Platform-position rule rejects them.
 
 The defence is per-variant, on disk in the track-doc's Coverage section.
 
-**Machine enforcement.** `validate_content.py` runs `_validate_per_family_coverage()` after the existing checks and emits **stderr warnings** for each breach. Gated on `_TAXONOMY_VALIDATED_TRACKS`. Warnings (not errors) because rules 6 and 7 are real override paths — hard failures would force documentation-after-the-fact rather than at the right moment. Stage C audit verifies each warning is either remediated or documented as a load-bearing exception in the track-doc.
+**What does NOT justify a rule-1/2/4 floor breach:**
+- "We don't have time to author more."
+- "These question types are unpopular."
+- "The validator warning is annoying."
 
-**Stage A integration.** Each Phase 2 Stage A produces a per-family target table as part of Sizing + Structure Lock: family count, fair-share per family, target practice count + target mock-only count per family, load-bearing families called out with reasoning-depth rationale.
+These are convenience arguments. The Platform-position rule rejects them.
 
-**Stage C integration.** Audit dimension verifies (a) zero rule-1 floor breaches, (b) zero rule-2 floor breaches (excluding realism), (c) zero rule-3 ceiling breaches NOT documented as load-bearing in the track-doc, (d) zero dead families (rule 4).
+**What DOES justify a rule-1/2/4 floor breach (rule-8 curated-lean exception):**
+- "BACKTRACKING & COMBINATORIAL SEARCH stays registered because BST operations, SERIALIZATION, VISITED STATE tracking, and recursive tree traversal are genuine data-professional patterns. The family's canonical puzzle implementations — subset enumeration, N-queens, Sudoku — are deprecated per the anti-puzzle philosophy. Authoring 4+ mock-only would require exactly the patterns the curriculum bans."
+
+The defence is curation-rooted, on disk in the track-doc's Coverage section. Frequency in interview banks is irrelevant; what matters is whether the registered family has legitimate sub-patterns AND whether its primary patterns conflict with the track's curation philosophy.
+
+**Machine enforcement.** `validate_content.py` runs `_validate_per_family_coverage()` after the existing checks and emits **stderr warnings** for each breach. Gated on `_TAXONOMY_VALIDATED_TRACKS`. Warnings (not errors) because rules 6, 7, and 8 are real override paths — hard failures would force documentation-after-the-fact rather than at the right moment. Stage C audit verifies each warning is either remediated or documented as a rule-7 or rule-8 exception in the track-doc.
+
+**Stage A integration.** Each Phase 2 Stage A produces a per-family target table as part of Sizing + Structure Lock: family count, fair-share per family, target practice count + target mock-only count per family, load-bearing families (rule 7) called out with reasoning-depth rationale, curated-lean families (rule 8) called out with curation rationale.
+
+**Stage C integration.** Audit dimension verifies (a) zero rule-1 floor breaches not documented as curated-lean, (b) zero rule-2 floor breaches not documented as curated-lean (excluding realism), (c) zero rule-3 ceiling breaches not documented as load-bearing, (d) zero dead families not documented as curated-lean (rule 4 + rule 8 cross-reference).
 
 ---
 
@@ -368,7 +381,7 @@ Mock-only inventory must support a power user who completes most of practice and
 
 | Track | Practice | Mock-only | Ratio | Notes |
 |---|---|---|---|---|
-| SQL | 115 | 162 | **1.41×** | executable analytics |
+| SQL | 118 | 165 | **1.40×** | executable analytics |
 | Python | 79 | 103 | **1.30×** | executable algorithms |
 | Pandas | 92 | 114 | **1.24×** | executable analytics |
 | PySpark | 128 | 150 | **1.17×** | code-adjacent reasoning (MCQ) |
@@ -440,7 +453,7 @@ Practice questions are the full curriculum. Mock-only questions live in the same
 
 | Track | Easy | Medium | Hard | Practice total | Modality |
 |---|---|---|---|---|---|
-| SQL | 37 | 47 | 31 | **115** | Executable (DuckDB) |
+| SQL | 37 | 50 | 31 | **118** | Executable (DuckDB) |
 | Python | 33 | 29 | 17 | **79** | Executable (sandbox) |
 | Pandas | 28 | 40 | 24 | **92** | Executable (sandbox) |
 | PySpark | 41 | 45 | 42 | **128** | Code-adjacent reasoning (MCQ) |
