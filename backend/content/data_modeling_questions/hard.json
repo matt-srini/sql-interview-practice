@@ -1836,5 +1836,272 @@
       "SCHEMA FROM REQUIREMENTS",
       "DIMENSIONAL MODELING"
     ]
+  },
+  {
+    "id": 63067,
+    "order": 67,
+    "title": "Resolve conflicting 'active user' metric definitions across three teams before an IPO filing",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "Three teams have each defined 'Monthly Active Users' differently in the semantic layer: Product defines it as users who triggered any event in 30 days; Growth defines it as users who completed a core action (purchase or booking) in 30 days; Finance defines it as unique users with any session lasting more than 5 minutes. The CFO must report a single MAU figure in SEC filings. All three definitions produce materially different numbers.",
+    "description": "What is the correct process and technical implementation to produce a single, defensible MAU definition for regulatory reporting?",
+    "options": [
+      "Use the highest of the three numbers \u2014 regulators expect companies to report the most favorable metric, and the Product definition is the most inclusive.",
+      "Use the lowest of the three numbers \u2014 conservative metrics reduce legal exposure; the Growth definition (core actions) is most defensible as it reflects genuine engagement.",
+      "Convene a governance process with Legal, Finance, and Product to agree on a single canonical MAU definition backed by a business rationale; encode that definition in the semantic layer as the official 'mau' metric, rename the others with explicit qualifiers (mau_any_event, mau_core_action, mau_session_5min), and document the rationale in the metric's metadata.",
+      "Expose all three definitions in the SEC filing with footnotes explaining each \u2014 transparency about metric methodology satisfies regulatory requirements better than picking one."
+    ],
+    "correct_option": 2,
+    "explanation": "Regulatory filings require a consistent, documented, and business-rationale-backed metric definition \u2014 not the most favorable or most conservative number, but the most defensible one agreed upon by the business and legal teams. The semantic layer then enforces the canonical definition technically. Renaming the other definitions to explicit qualifiers (rather than deleting them) preserves analytical utility while ensuring there is no confusion about which MAU is the 'official' one. Option 2 is correct. Option 0 is wrong: selecting the highest metric to look favorable is exactly the kind of metric inflation that attracts SEC scrutiny \u2014 MAU manipulation was central to several high-profile enforcement actions; the choice must be anchored in business rationale. Option 1 is wrong: conservative is not the same as correct \u2014 the right metric is defined by what the company's business model identifies as meaningful engagement, not by which number is smallest; choosing arbitrarily for legal safety without a rationale is itself a governance failure. Option 3 is wrong: footnoting multiple definitions without picking one is not how SEC MAU reporting works \u2014 the SEC expects a primary metric with a clear definition; multiple competing definitions in a single filing invite enforcement questions about which figure management actually relies on.",
+    "hints": [
+      "When three teams each have a different definition of 'active user' in the semantic layer, can an executive report reference all three simultaneously as 'the company's active user count' in an SEC filing?",
+      "The semantic layer can enforce whichever definition is agreed upon \u2014 but who makes the decision about which definition is canonical, and what makes that decision defensible to a regulator?"
+    ],
+    "concepts": [
+      "SEMANTIC LAYER",
+      "METRIC GOVERNANCE",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63068,
+    "order": 68,
+    "title": "Diagnose revenue fan-out from a multi-valued pricing-tier dimension joined directly to a sales fact",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A revenue operations report shows total revenue inflating by a consistent factor of ~3.5\u00d7 per product. The query joins fact_sales (one row per order line) to dim_product (one row per product) and then to dim_product_pricing_tier, which has one row per product per active pricing tier \u2014 products have 2\u20135 active tiers simultaneously (volume discount tiers, channel-specific tiers, promotional tiers). The analyst includes a filter on a single tier_type but applies it with OR across all three tier_type values, inadvertently un-filtering the join.",
+    "description": "What is the structural root cause and the correct resolution strategy?",
+    "options": [
+      "The filter's OR logic is the only problem \u2014 changing it to AND would eliminate the fan-out without any schema change.",
+      "The many-to-many relationship between products and pricing tiers is not modeled with a bridge table; joining fact_sales to dim_product_pricing_tier on product_id fans out the fact row to all matching tier rows (averaging 3.5 per product), replicating revenue before aggregation. The fix is either a bridge table with explicit allocation logic or a query-rewrite that pre-filters to one tier per product before joining.",
+      "The root cause is that dim_product_pricing_tier is missing a primary key constraint \u2014 duplicate tier rows inflate the join result.",
+      "Pricing tiers should not be stored in a dimension at all \u2014 they are a fact-level attribute and should be columns on fact_sales instead."
+    ],
+    "correct_option": 1,
+    "explanation": "A direct JOIN from fact_sales to dim_product_pricing_tier on product_id is a many-to-many join: each order line fans out to all matching tier rows for that product. With an average of 3.5 tiers per product, every revenue value is replicated 3.5 times before SUM aggregates \u2014 producing the observed inflation. The OR filter compounds this but is not the root cause; even a correctly written AND filter would still fan out revenue if multiple tiers matched. The structural fix is to determine the analytic intent: if revenue should be attributed to all tiers simultaneously, a bridge table with credit_fraction solves it; if only the applied tier matters, pre-filter dim_product_pricing_tier to one row per product (the actually-applied tier for each order) before joining. Option 1 is correct. Option 0 is wrong: the OR filter is a secondary issue \u2014 fixing it reduces the multiplier from 3.5 to fewer matching tiers, but does not eliminate the structural many-to-many problem; any product with more than 1 tier matching the corrected filter still fans out. Option 2 is wrong: missing primary key constraints produce duplicates at the dimension level, which also fans out, but the 3.5\u00d7 factor correlates with the average tier count per product (as described), not with arbitrary duplicates \u2014 duplicate rows would produce inconsistent multipliers, not a consistent factor. Option 3 is wrong: pricing tiers are a dimension of products (they describe product attributes), not a fact-level measure; moving them to fact_sales would require knowing at order time which tier applied \u2014 that information belongs in the order itself, not as a static column on the fact schema.",
+    "hints": [
+      "fact_sales has one row per order line. dim_product_pricing_tier has 2\u20135 rows per product. When these two tables are joined on product_id without any pre-aggregation, how many rows does the join produce per order line on average?",
+      "If the filter was correctly written but a product still has 3 matching tier rows, what does SUM(revenue) return after the join \u2014 and is that the correct revenue for that order line?"
+    ],
+    "concepts": [
+      "DOUBLE-COUNTING & FAN-OUT",
+      "BRIDGE & MANY-TO-MANY",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63069,
+    "order": 69,
+    "title": "Choose between OBT, Lakehouse medallion, and Kimball star schema for a new analytics platform under specific constraints",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A company is designing a new analytics platform from scratch. Constraints: (1) source schemas change 2\u20133 times per year; (2) data science team needs row-level access to raw events; (3) BI team needs sub-second dashboard queries on pre-aggregated metrics; (4) the platform must support point-in-time audit queries for regulators. The team is choosing between: OBT (all dimensions pre-joined), Lakehouse medallion (bronze/silver/gold), and Kimball star schema.",
+    "description": "Which architecture, or combination, best satisfies all four constraints?",
+    "options": [
+      "OBT (one big table) \u2014 pre-joining all dimensions satisfies the BI team's performance requirement, and the full row-level data satisfies the DS team; schema changes require a single-table migration.",
+      "Kimball star schema only \u2014 fact and dimension tables satisfy BI requirements; DS team queries the star schema directly; schema changes require coordinated dimension migrations.",
+      "Lakehouse medallion (bronze: raw events, silver: cleansed entity-resolved records, gold: pre-aggregated marts) with star schema marts in gold \u2014 bronze satisfies DS raw access and audit, silver handles schema change isolation, gold/star satisfies BI performance. The medallion layers complement rather than replace each other.",
+      "Data Vault for ingestion, OBT in gold \u2014 Data Vault absorbs schema changes at ingestion, and OBT in the gold layer satisfies the BI performance requirement; DS team queries the Data Vault satellite tables directly for raw access."
+    ],
+    "correct_option": 2,
+    "explanation": "The medallion architecture with star schema marts in gold satisfies all four constraints with distinct layers: bronze absorbs raw events (DS access, audit point-in-time replay by filtering to loads before a given date), silver applies schema-change-tolerant cleansing (schema changes at source are handled in the bronze\u2192silver transformation without touching gold), and gold star schema marts deliver the pre-aggregated performance the BI team requires. Each layer is independently queryable. Option 2 is correct. Option 0 is wrong: OBT does not satisfy constraint 4 (point-in-time audit) \u2014 a single pre-joined flat table has no bronze-level append-only raw record that can reconstruct what the warehouse knew at any historical date; schema changes also require rebuilding the entire wide table. Option 1 is wrong: a pure Kimball star schema has no bronze/raw layer for the DS team (they would query transformed dimension and fact tables, not raw events), and schema changes at the source propagate directly to the star schema without an isolation layer; point-in-time audit is possible only if the star schema itself is append-only, which is non-standard. Option 3 is partially valid \u2014 Data Vault handles schema changes and raw audit \u2014 but OBT in the gold layer reintroduces constraint 0's schema volatility problem when the OBT must be rebuilt after Data Vault satellite changes; the DS team querying raw satellite tables requires familiarity with Data Vault's hub-link-satellite structure, which is technically demanding for data scientists focused on model development.",
+    "hints": [
+      "A Lakehouse medallion architecture and a Kimball-style mart layer both produce analytics-ready tables in their gold layer. What does the bronze layer provide that a pre-aggregated mart layer alone cannot \u2014 specifically for point-in-time audit queries and raw event access?",
+      "When a source schema changes mid-year, which layer of the medallion architecture absorbs the change without requiring the gold star schema to be rebuilt?"
+    ],
+    "concepts": [
+      "STORAGE ARCHITECTURE TRADEOFFS",
+      "DIMENSIONAL MODELING",
+      "SCHEMA EVOLUTION"
+    ]
+  },
+  {
+    "id": 63070,
+    "order": 70,
+    "title": "Design a zero-downtime fact table schema migration when a new business line requires incompatible new dimension attributes",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "An e-commerce company launches a B2B subscription business line mid-year. The existing fact_order table has columns for: customer_id, product_id, order_date, revenue, promo_id. Subscription orders require three new required dimensions: contract_id, subscription_term_months, and billing_cycle. These attributes are meaningless (NULL) for the original retail orders. The data team must migrate without downtime and without breaking existing BI dashboards.",
+    "description": "What is the correct zero-downtime schema migration strategy for this scenario?",
+    "options": [
+      "Add contract_id, subscription_term_months, and billing_cycle as nullable columns to fact_order and NULL-fill them for all historical retail orders \u2014 existing queries are unaffected since they don't reference the new columns.",
+      "Create a separate fact_subscription_order table for the new business line and union it with fact_order in a view that downstream queries can use as a single access point.",
+      "Migrate fact_order to a wide OBT format by adding all new subscription columns as NULLable with a business_line discriminator column; update all existing BI queries to add WHERE business_line = 'retail' to restore original results.",
+      "Create a new version of the fact table (fact_order_v2) with all new columns, migrate historical data to the new schema, and switch BI queries over a two-week cutover window."
+    ],
+    "correct_option": 0,
+    "explanation": "Adding nullable columns to an existing fact table is the standard zero-downtime additive migration: existing rows get NULL for the new columns, existing queries are unaffected (they do not reference columns they do not know about), and new subscription rows populate the new columns. Dashboards continue to run against the original schema without modification. Option 0 is correct. Option 1 is wrong: two separate fact tables require BI tools to know which table to query based on business line \u2014 every query must be redesigned with a UNION or a view layer; this is not zero-downtime from the user perspective, as all existing queries must be migrated to reference the view. Option 2 is wrong: adding a business_line discriminator and updating existing queries defeats the 'zero-downtime' requirement \u2014 all BI queries must be modified to add the WHERE clause, which is a coordinated migration requiring downtime of the dashboard development cycle, not just the database. Option 3 is wrong: creating a new table version with a cutover window is the most disruptive approach \u2014 it requires migrating historical data (compute-intensive), maintaining two active tables during the window, and updating all BI queries before the cutover date; this is a planned migration, not zero-downtime.",
+    "hints": [
+      "If new columns are added as nullable to an existing fact table, what happens to existing BI queries that don't reference those columns \u2014 do they break, slow down, or continue unaffected?",
+      "The new subscription columns are meaningless for retail orders. Does NULL in those columns for retail rows create any reporting correctness risk for dashboards that only query retail metrics?"
+    ],
+    "concepts": [
+      "SCHEMA EVOLUTION",
+      "FACT TABLE DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63071,
+    "order": 71,
+    "title": "Extend a shared customer dimension when a new subsidiary uses an incompatible tier classification system",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "scenario_context": "A parent company (Company A) has used a 4-tier customer classification (Bronze, Silver, Gold, Platinum) tracked with versioned history for 3 years. A new subsidiary (Company B) is onboarded; Company B uses an 8-level tier system (1\u20138) based on different lifecycle criteria. Both companies' customers must appear in the shared customer dimension for cross-company reporting. The existing tier_code column is an integer constrained to 1\u20134.",
+    "description": "What is the most governance-sound approach to extend the customer dimension for Company B's tier system?",
+    "options": [
+      "Expand tier_code to allow values 1\u20138 \u2014 both companies' customers coexist with a single column; Company A uses codes 1\u20134 and Company B uses codes 1\u20138, distinguished by a source_company column.",
+      "Add a company_b_tier_code column alongside tier_code; a source_company column disambiguates which tier schema applies per row; existing historical Company A rows are unchanged.",
+      "Align both companies on a canonical tier taxonomy (e.g., a 5-level shared classification) through a governance process; map both source tier systems to the canonical codes; expose source-specific tiers as separate attributes for internal use within each subsidiary.",
+      "Maintain two separate customer dimension tables (dim_customer_a and dim_customer_b) and join them in the reporting layer using a UNION with a company discriminator."
+    ],
+    "correct_option": 2,
+    "explanation": "A conformed dimension requires that a shared attribute means the same thing across all fact tables that reference it. Allowing two incompatible tier schemas (1\u20134 vs. 1\u20138) to coexist in one column or as two separate columns without a canonical mapping makes cross-company tier analysis impossible \u2014 'Tier 3' means different things for Company A and Company B. A governance process that maps both source systems to a shared canonical taxonomy enables unified reporting (e.g., 'combined customers at Platinum-equivalent tier') while preserving source-level detail as separate attributes for subsidiary-specific analysis. Option 2 is correct. Option 0 is wrong: allowing Company B to use codes 1\u20138 in the same tier_code column used by Company A means tier_code 3 is ambiguous (it means Gold for Company A and an intermediate Company B tier) \u2014 cross-company queries are semantically incorrect even with a source_company filter. Option 1 is wrong: two parallel tier columns without a canonical mapping leaves the cross-company tier comparison problem unsolved \u2014 the executive dashboard still has no single 'equivalent tier' to filter on; it only shifts the ambiguity from one column to two columns. Option 3 is wrong: UNION joins in the reporting layer with a company discriminator produce a combined list of customers but no unified tier concept \u2014 a filter on tier still requires two separate WHERE clauses with different tier semantics, and the query planner cannot use a shared index; this is the reporting-layer workaround that conformed dimensions are specifically designed to replace.",
+    "hints": [
+      "A shared customer dimension has a tier_code column that means Gold/Platinum for Company A and a completely different lifecycle level for Company B. Can a cross-company dashboard filter on tier_code = 3 and get a meaningful result that applies to both companies?",
+      "Canonical mapping \u2014 translating both source tier systems to a shared taxonomy \u2014 requires a governance decision about equivalence. What does the canonical mapping enable that simply adding a Company B column does not?"
+    ],
+    "concepts": [
+      "CONFORMED DIMENSIONS",
+      "SCD STRUCTURE",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63072,
+    "order": 72,
+    "title": "Distinguish semantic layer metrics from dbt mart metrics and identify when each fails",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A company's semantic layer defines a metric 'revenue' that filters to closed-won opportunities only. A dbt mart also has a column named 'revenue' that includes deals with probability > 80% (pipeline revenue). Both are exposed to BI users. The CFO queries 'revenue' in the dashboard and gets $50 M; a data analyst queries the mart directly and gets $75 M. Neither the CFO nor the analyst knows they are looking at different definitions. Under what governance failure did this occur, and when does each approach specifically fail to protect against it?",
+    "options": [
+      "The semantic layer fails because it applies a filter the user did not request \u2014 the mart's broader definition is more appropriate for a default revenue metric.",
+      "The dbt mart fails because mart column names should never be exposed directly to end users \u2014 all BI access must route through the semantic layer to prevent definition drift.",
+      "Both approaches fail when metric naming is not governed: the semantic layer fails to protect BI users if mart tables are also directly queryable under the same metric name; the mart column fails to communicate its definition when exposed without documentation. The fix is a naming convention (e.g., revenue_closed_won vs. revenue_pipeline), enforced access routing to the semantic layer for BI tools, and mart column documentation.",
+      "Neither approach fails \u2014 the discrepancy is a data freshness issue; the semantic layer refreshes daily while the mart refreshes hourly, producing a $25 M difference from new deals closed during the day."
+    ],
+    "correct_option": 2,
+    "explanation": "The semantic layer's value proposition is a single canonical definition \u2014 but it fails if BI users can bypass it and query mart tables directly under similar column names. The mart's value proposition is a governed, documented column \u2014 but it fails if it is undocumented and shares a name with the semantic layer's differently-defined metric. Both failures are governance failures, not technical ones: the semantic layer's definition is not the source of truth if mart access is uncontrolled, and the mart's column is not governed if it has no documentation and no naming discipline. Option 2 is correct. Option 0 is wrong: the semantic layer's filter is not arbitrary \u2014 it encodes a business decision about what 'revenue' means for executive reporting; the broader mart definition may be valid for pipeline analysis but not for the CFO's closed-business metric. Option 1 is wrong: routing all BI access through the semantic layer is a valid enforcement approach but does not address the naming collision \u2014 if a user ever queries the mart directly (e.g., a data scientist), they encounter the same ambiguity; naming discipline is required regardless of routing. Option 3 is wrong: a $25 M gap between closed-won and pipeline-inclusive definitions is a semantic difference, not a staleness difference; closed-won deals do not appear in pipeline revenue, so no amount of freshness synchronization would close the definitional gap.",
+    "hints": [
+      "A semantic layer metric named 'revenue' and a mart column also named 'revenue' both exist and produce different numbers. If a BI user can reach both, what prevents them from accidentally using the wrong definition?",
+      "The semantic layer enforces its definition for queries routed through it. What happens to its governance value when analysts query mart tables directly using SQL clients \u2014 and what naming or access control fixes this?"
+    ],
+    "concepts": [
+      "SEMANTIC LAYER",
+      "METRIC GOVERNANCE",
+      "DBT MODELING"
+    ]
+  },
+  {
+    "id": 63073,
+    "order": 73,
+    "title": "Identify when an OBT's inlined dimension attributes produce correct-looking but semantically wrong aggregation results",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A team builds an OBT by inlining the customer's region attribute onto every order row at the time the order is loaded. Customer region changes over time (relocation). An analyst queries 'total revenue by region for last quarter' and the result looks plausible but is consistently 8% higher in the East region and 6% lower in the West compared to the benchmark report. Under what specific OBT loading strategy does this correctness error occur?",
+    "options": [
+      "The error occurs when the OBT loading strategy overwrites the inlined region column on all existing order rows whenever a customer's region changes \u2014 historical orders are re-attributed to the customer's new region, silently transferring revenue across regions.",
+      "The error occurs because OBTs always inflate East region revenue due to the higher average order value of East-region customers being applied retroactively to all historical rows.",
+      "The error occurs only when the OBT is partitioned by region \u2014 re-partitioning after a region change moves rows between partitions and corrupts the row count.",
+      "The error occurs because the analyst's query is filtering on the wrong date column \u2014 the OBT's load_date rather than the order_date causes region attribution to shift for recently loaded rows."
+    ],
+    "correct_option": 0,
+    "explanation": "When the OBT ETL updates the inlined region column on all historical order rows whenever a customer relocates, those historical orders are now attributed to the new region \u2014 revenue that occurred while the customer was in West now shows under East. This is semantically incorrect for any point-in-time analysis. A normalized design avoids this by joining to the dimension at query time, where the analyst can choose current-region attribution or point-in-time attribution by selecting the appropriate dimension row version. Option 0 is correct. Option 1 is wrong: 'East region has higher AOV' is a dataset property, not a structural OBT flaw; OBTs do not systematically inflate any specific region \u2014 the error pattern depends on the relocation direction and ETL strategy, not geography. Option 2 is wrong: re-partitioning moves rows between storage partitions for performance, which changes query performance but does not change the data values or the region column's value on any row \u2014 partition-key updates affect WHERE clause pruning, not data correctness. Option 3 is wrong: load_date vs. order_date filtering is a common query error but would produce a date-range discrepancy, not a consistent regional attribution shift \u2014 the 8%/6% regional split is diagnostic of cross-regional re-attribution, not a date filter issue.",
+    "hints": [
+      "An OBT table stores region inline on every order row at load time. A customer moves from West to East on November 1. If the ETL runs an UPDATE to set region = 'East' on all that customer's historical rows, what region do their January orders now show?",
+      "In a normalized design, a query joins to the customer dimension and can choose which version of the dimension to use (current vs. historical). What flexibility does the OBT's inlined column lose when it is overwritten on region change?"
+    ],
+    "concepts": [
+      "DENORMALIZATION TRADEOFF",
+      "DIMENSION DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63074,
+    "order": 74,
+    "title": "Evaluate when normalizing attributes within a Data Vault satellite provides architectural value",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "A hub's satellite stores three customer attributes from the same CRM: email, region, and account_tier. These three attributes change at very different rates: email changes once per year on average, region changes quarterly, and account_tier changes monthly. A senior engineer proposes normalizing within the satellite by splitting it into three separate satellites, one per attribute. Under what condition does this intra-satellite normalization provide tangible analytical or operational value?",
+    "options": [
+      "When the satellite exceeds 20 columns \u2014 intra-attribute normalization is only beneficial beyond this threshold; 3-column satellites should always remain together.",
+      "When the attributes have significantly different change rates: one satellite per attribute means a monthly tier change inserts only a new tier row (1 column) instead of replicating the stable email and region alongside it \u2014 reducing write amplification and ensuring each attribute's load_date accurately reflects only that attribute's change, not coincidental changes to other attributes.",
+      "When the CRM source system enforces separate change-tracking on each attribute \u2014 intra-satellite normalization mirrors the source system's internal event model and is only appropriate when the source itself treats each attribute as an independent record.",
+      "Intra-satellite normalization is never appropriate \u2014 the satellite design principle in Data Vault is one satellite per source system per hub, and splitting by attribute violates the source-atomicity contract."
+    ],
+    "correct_option": 1,
+    "explanation": "When attributes on the same satellite change at very different rates, a single satellite conflates their histories: a monthly tier change inserts a new row with the current email and region as well \u2014 even though those didn't change \u2014 and their load_date updates to the tier-change date. This makes it appear that email and region changed monthly alongside tier, obscuring their true change history. Splitting into one satellite per attribute (or per rate-of-change group) means each satellite's load_date accurately reflects its own attribute's change history, and write amplification for high-churn attributes decreases. Option 1 is correct. Option 0 is wrong: column count is not the driver for intra-satellite splitting in Data Vault 2.0; the driver is change rate (and source system, which is already a first-level split). Option 2 is wrong: Data Vault satellite design does not require that the source system itself tracks each attribute as an independent event \u2014 the modeling decision is an architectural choice in the warehouse, not a mirror of source system internals; warehouses regularly split on change rate regardless of source event structure. Option 3 is wrong: Data Vault 2.0 explicitly permits and recommends splitting satellites by rate of change as an optimization; the one-satellite-per-source-per-hub rule is a minimum, not a maximum \u2014 further splits by change rate are documented standard practice.",
+    "hints": [
+      "A satellite stores email, region, and tier on the same row. When tier changes monthly, a new satellite row is inserted \u2014 but the load_date on the new row now also reflects when email and region 'changed,' even though they didn't. What does this do to the accuracy of email and region change history?",
+      "If email is in its own satellite and only changes once per year, how many rows does the email satellite accumulate over 3 years compared to a combined satellite that re-inserts email alongside every monthly tier change?"
+    ],
+    "concepts": [
+      "DATA VAULT",
+      "SCHEMA EVOLUTION",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63075,
+    "order": 75,
+    "title": "Debug a cross-fact double-count when two fact tables at different levels of detail share a customer dimension",
+    "difficulty": "hard",
+    "type": "debug",
+    "mock_only": true,
+    "scenario_context": "A query joins fact_order (one row per order), fact_return (one row per returned item, multiple per order), and dim_customer (one row per customer) in a single SELECT to compute net revenue = SUM(order_revenue) - SUM(return_amount) per customer segment. The result shows net revenue approximately 4\u00d7 higher than the GL balance. Investigation shows orders have an average of 3.8 returned items when a return occurs.",
+    "description": "What is the structural cause of the inflation, and how should the query be restructured?",
+    "options": [
+      "fact_return is missing rows \u2014 the 4\u00d7 inflation indicates that some return amounts are negative and their absolute values are being summed instead of subtracted.",
+      "Joining both facts to dim_customer in the same query creates a three-way join where each order row fans out to all matching return rows for that customer, replicating order_revenue once per return row; net revenue must be computed by aggregating each fact to the customer segment level independently, then joining the two aggregates.",
+      "The customer dimension has duplicate rows for customers with multiple addresses \u2014 the join to dim_customer causes the double-count regardless of the return fact.",
+      "SUM(order_revenue) - SUM(return_amount) is algebraically incorrect for net revenue \u2014 the correct formula is SUM(order_revenue - return_amount) computed on a row-by-row basis within the same fact table."
+    ],
+    "correct_option": 1,
+    "explanation": "When fact_order and fact_return are joined to the same dim_customer in one query, the join engine must reconcile two different granularities through a shared key. If the JOIN path is dim_customer \u2192 fact_order \u2192 fact_return (or the equivalent), each order row joins to all return rows for that customer \u2014 producing an order \u00d7 return Cartesian product per customer. With 3.8 return items per order on average, order_revenue is replicated 3.8 times in the join result before SUM runs. The correct approach is to compute each fact's customer-segment total independently (one CTE per fact, both grouped to customer_segment) and then join the two aggregated results \u2014 never joining raw mismatched-level facts through a shared dimension in a single SELECT. Option 1 is correct. Option 0 is wrong: missing return rows or negative values would reduce the return SUM, making net revenue too high by a small amount from undercounting returns \u2014 not a 4\u00d7 inflation; negative sign handling would cause subtraction to become addition but would produce erratic results, not a consistent 4\u00d7 factor. Option 2 is wrong: a customer dimension with duplicate rows for multiple addresses would fan out every order and return row equally, producing a consistent multiplier based on address count \u2014 but dim_customer typically has one row per customer (addresses may be handled separately); this would not produce a 3.8\u00d7 factor. Option 3 is wrong: the formula SUM(order_revenue) - SUM(return_amount) is algebraically equivalent to SUM(order_revenue - return_amount) when the rows are correctly aligned at the same granularity \u2014 the issue here is not the formula but that the rows are NOT aligned (facts are at different granularities).",
+    "hints": [
+      "A query joins fact_order (one row per order) and fact_return (one row per returned item, multiple per order) through the same dim_customer. If a customer has 1 order and 4 return items, how many rows does the three-way join produce for that customer?",
+      "If each order row fans out to 4 return rows during the join, how many times does order_revenue appear in the result set before SUM aggregates \u2014 and what does this do to the total?"
+    ],
+    "concepts": [
+      "DOUBLE-COUNTING & FAN-OUT",
+      "GRAIN DEFINITION",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63076,
+    "order": 76,
+    "title": "Debug a monthly p95 latency undercount caused by averaging pre-computed weekly percentiles",
+    "difficulty": "hard",
+    "type": "debug",
+    "mock_only": true,
+    "scenario_context": "A platform team stores pre-computed p95_latency_ms (95th percentile of request latency) per week in an aggregate table. An SRE analyst computes monthly p95 by averaging the four weekly p95 values: (p95_week1 + p95_week2 + p95_week3 + p95_week4) / 4. The result is consistently 30\u201340% lower than the true monthly p95 computed directly from the raw event log. The discrepancy is largest in weeks with traffic spikes.",
+    "description": "What is the structural cause of the undercount, and what is the correct approach to compute monthly p95 from a weekly aggregate table?",
+    "options": [
+      "The weekly p95 values are computed over too small a sample \u2014 95th percentile estimates are unreliable for weekly windows with fewer than 1 000 requests; the fix is to widen the window to monthly from the start.",
+      "Averaging four weekly p95 values applies equal weight to each week regardless of request volume; a high-traffic week (e.g., 500 000 requests) contributes the same weight as a low-traffic week (e.g., 10 000 requests), making the arithmetic mean systematically lower than the true p95 over all requests in the month.",
+      "The pre-computed p95 values are stored as integers (milliseconds rounded to the nearest integer) \u2014 rounding error compounds across four weeks, producing a 30\u201340% undercount.",
+      "The SRE analyst should use MAX(p95_week1, p95_week2, p95_week3, p95_week4) instead of the arithmetic average \u2014 the maximum weekly p95 is the correct conservative estimate for monthly p95."
+    ],
+    "correct_option": 1,
+    "explanation": "Percentiles are non-additive and cannot be re-aggregated by averaging. The 95th percentile of the combined monthly distribution is determined by the distribution of all requests \u2014 a week with 500 000 requests dominates the monthly percentile calculation far more than a week with 10 000 requests. The arithmetic average of weekly p95 values gives each week equal weight, effectively assuming equal traffic volumes across all weeks. During traffic spikes, the spike week's p95 (which is higher than normal) is diluted by the three normal weeks in the average, producing a monthly p95 that is lower than the true value. Option 1 is correct. The fix requires either storing per-request latency in the aggregate table (not feasible at scale) or storing request counts alongside each weekly p95 and applying a weighted approximation \u2014 but true p95 re-aggregation is mathematically impossible from only weekly p95 values; the data team must compute p95 directly from the raw event log for monthly periods. Option 0 is wrong: p95 estimates are statistically reliable for samples of 1 000+ requests; the systematic 30\u201340% undercount is not a sample-size problem but an algebraic re-aggregation error. Option 2 is wrong: integer rounding at the millisecond level (even 500 ms rounding) would produce errors far smaller than 30\u201340% \u2014 rounding cannot explain that magnitude of systematic bias. Option 3 is wrong: MAX(weekly p95) is the most conservative approach and avoids the undercount, but it is not the true monthly p95 \u2014 it is the worst weekly p95, which overstates the true monthly value in most cases and is not a statistically meaningful metric.",
+    "hints": [
+      "p95 latency is a percentile \u2014 the latency value below which 95% of requests fall in a given window. If Week 1 has 500 000 requests with p95 = 800 ms and Week 2 has 10 000 requests with p95 = 200 ms, does arithmetic average correctly represent the monthly p95 over 510 000 total requests?",
+      "Pre-computed summary statistics like percentiles cannot be re-aggregated by simple arithmetic \u2014 unlike revenue (which can be summed) or counts (which can be summed). What information is lost when a weekly p95 is stored without its underlying request count?"
+    ],
+    "concepts": [
+      "ADDITIVE VS NON-ADDITIVE",
+      "AGGREGATE & SUMMARY DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
   }
 ]
