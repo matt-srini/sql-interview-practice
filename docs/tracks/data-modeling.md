@@ -15,6 +15,7 @@ A working data architect / analytics engineer / senior analyst gets paid to **an
 Question types:
 - **`conceptual`** — modeling decision evaluated via single-best-answer MCQ
 - **`scenario`** — `scenario_context` carries the business / system situation; description asks for the design call
+- **`debug`** — `scenario_context` describes a broken model or query output; description asks for the root cause and fix (mock-only only; never in the practice bank)
 
 ## ID range (TXNNN scheme)
 

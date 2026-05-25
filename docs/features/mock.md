@@ -59,7 +59,7 @@ On MockHub, drill modes now get their own planner surface with session shape, pu
 | ML Fundamentals | ✅ | 25 mock-only questions |
 | Experimentation | ✅ | 25 mock-only questions |
 | Statistics | ✅ | 8 mock-only questions |
-| Data Modeling | ✅ | 1 mock-only question (expanding) |
+| Data Modeling | ✅ | 96 mock-only questions (0 easy / 45 medium / 51 hard) |
 | Data Engineering | ✅ | 1 mock-only question (expanding) |
 
 Sessions for tracks without a dedicated mock bank draw from practice questions. The Mixed track pools only the four code-execution tracks (SQL, Python, Pandas, PySpark) and is available only in drill modes.
