@@ -731,7 +731,6 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "GROUPED AGGREGATION",
             "GROUPBY AGGREGATION",
             "AGGREGATION",
-            " AGG",
             "AGGREG",
             "NAMED AGGREG",
         ],
