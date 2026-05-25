@@ -166,6 +166,21 @@ Anti-patterns: H1 reading like the first line of the solution; pasting code / me
 
 **Quick test:** *"If a user saw this tag in a weak-spot insight, would it teach them what kind of thinking to improve?"* If no, rewrite.
 
+### Tag lookup procedure (verbatim — before writing any `concepts` array)
+
+This is procedure, not principle. Follow it for every question.
+
+1. Open [`docs/concept-taxonomy.md`](../../docs/concept-taxonomy.md) to the **current track's family registry section**. Not the track you authored last week. The track you are authoring now.
+2. For each candidate tag string you intend to use, verify it appears verbatim either:
+   - **(a)** in a family's `members` list, OR
+   - **(b)** as a substring matching one of that family's documented `match_patterns`.
+3. If a candidate string passes neither (a) nor (b), do one of:
+   - Rewrite the tag to a registered family member, OR
+   - Stop and **propose a registry addition in your hand-back summary**. A registry change is a durable-contract change and requires user approval per the P2 rule — never self-apply mid-execution.
+4. **Adjacent-track family names DO NOT transfer.** `STORAGE ARCHITECTURE TRADEOFFS` is real in DE but unregistered in DM. `HYPOTHESIS TESTING` is real in Statistics but unregistered in ML Fundamentals. Same name ≠ same registration. The model under cognitive load reaches for the natural-sounding label — this step is your guard against that reach.
+
+**Why this is verbatim procedure, not principle.** `validate_content.py` only enforces tag resolution for tracks in `_TAXONOMY_VALIDATED_TRACKS` (see [`docs/content-authoring.md`](../../docs/content-authoring.md) § Validator coverage state). For tracks outside the set, the validator emits a warning but returns success — meaning silent drift was historically possible. This lookup procedure is the human-side guard against that drift. Do not skip it because the validator passed.
+
 ---
 
 ## Question type values — what they are and what they aren't

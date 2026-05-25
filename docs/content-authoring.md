@@ -239,6 +239,46 @@ Per-track family lists, blocklists, and resolution rules: [`docs/concept-taxonom
 
 **Quick test:** *"If a user saw this tag in a weak-spot insight, would it teach them what kind of thinking to improve?"* If no, rewrite.
 
+### Tag lookup procedure (mandatory)
+
+The 4-step verbatim lookup procedure lives in [`.github/agents/question-authoring.agent.md`](../.github/agents/question-authoring.agent.md) § Tag lookup procedure. Every authoring run — practice or mock-only, new question or edit — must follow it. Adjacent-track family names do not transfer; same name ≠ same registration.
+
+### Validator coverage state
+
+`backend/scripts/validate_content.py` enforces tag-family resolution (`_validate_concept_taxonomy`) and mock-only realism rules (`_validate_mock_only_realism`) **only** for tracks listed in the in-file constant `_TAXONOMY_VALIDATED_TRACKS`. For tracks outside that set, the validator emits a warning to stderr and skips those checks — it does NOT raise. Historically the skip was silent and gave false-positive PASS reports during authoring.
+
+| Track | In set? | Last orphan-resolver sweep | Notes |
+|---|---|---|---|
+| SQL | ✅ | clean | Phase 2 closed |
+| Python | ✅ | clean | Phase 2 closed; no realism families by design |
+| Pandas (`python-data`) | ✅ | clean | Phase 2 closed; 3 realism families |
+| PySpark | ✅ | clean (278 q, 0 orphans) | Phase 2 closed; added to set post-closure |
+| Data Engineering | ✅ | clean | Phase 2 closed; no realism families by design |
+| Data Modeling | ✅ | clean | Phase 2 closed; no realism families by design |
+| Statistics | ⛔ | 84 orphans / 105 q (registry incomplete) | Phase 2 pending; registry expansion needed before set inclusion |
+| ML Fundamentals | ⛔ | 0 orphans / 121 q | Phase 2 pending; clean enough to enforce, awaiting Phase 2 closure |
+| Experimentation | ⛔ | 0 orphans / 109 q | Phase 2 pending; clean enough to enforce, awaiting Phase 2 closure |
+
+**Per-ITEM authoring discipline.** When the target track is NOT in `_TAXONOMY_VALIDATED_TRACKS`, Sonnet (or any executor) must run an explicit orphan-resolver one-liner after every ITEM (chunk of 8–12 questions) — `validate_content.py` is not sufficient. The one-liner appears in the Stage A handoff template; if orphans return, fix in that ITEM before authoring the next. Do not accumulate drift across multiple ITEMs.
+
+**Closure rule.** A track joins `_TAXONOMY_VALIDATED_TRACKS` as the final durable-doc step of its Phase 2 closeout (see § Phase 2 closeout doc-hygiene below). Inclusion gates on: (a) registry fully populated for the Phase 2 scope, (b) zero orphans across all questions, (c) realism designation set in `MOCK_ONLY_REALISM_FAMILIES`.
+
+### Phase 2 closeout doc-hygiene (durable — the H-series)
+
+Every track's Phase 2 closure must execute this checklist as the final step of execution. Items live in durable docs; the transitional tracker (`docs/phases/2026-05-authoring-refactor.md`) self-deletes when Phase 3 ships.
+
+1. **Orphan remap.** Run the per-track orphan-resolver one-liner. Remediate every orphan tag — either remap to a registered family or propose a registry addition for user approval. Zero orphans required.
+2. **Validator enable.** Add the track slug to `_TAXONOMY_VALIDATED_TRACKS` in `backend/scripts/validate_content.py` with a one-line comment matching the existing pattern (e.g. `# <Track> Phase 2: registry complete (N families), 0 realism families, <em/mm/hm> mock-only validated`). Re-run `validate_content.py` to confirm the now-enforcing checks still pass.
+3. **Taxonomy strip.** Remove the track's `⚡ *real-world gap*` markers from `docs/concept-taxonomy.md` and update the top-of-file ⚡ callout. Realism designation stays in body prose.
+4. **Track-doc coverage section.** Add (or update) a "Coverage & sizing targets" section to `docs/tracks/<track>.md`: practice count, mock-only count, ratio, difficulty split, type mix, chain count, realism path.
+5. **Realism designation.** Set `MOCK_ONLY_REALISM_FAMILIES["<track>"]` in `backend/concept_families.py` (populated set OR explicit `set()` with design-rationale comment). Must match the track-doc's stated realism path.
+6. **IS-count sync.** Update CLAUDE.md (content footprint table + "Practice totals" + "Mock-only totals"), `docs/content-authoring.md` § Question bank current state, `docs/content-authoring.md` § Power-user runway sizing benchmark precedent table (add the row with locked ratio).
+7. **Tracker tick.** Mark the track row in `docs/phases/2026-05-authoring-refactor.md` and record the closeout in the decision log.
+
+**P1 — closeout commit naming.** The closeout commit must NOT self-title "audit PASS," "PASS," or any self-graded language. The executor does not audit itself; Stage C declares PASS. Use descriptive titles like `Phase 2 doc-hygiene closeout (orphan remap + validator enable + H-series)`.
+
+**P2 — scope-creep.** Any durable-contract doc change OUTSIDE this H-series (e.g. modifications to `docs/content-authoring.md` outside IS-count/precedent rows; modifications to `docs/specs/*`; modifications to `.github/agents/question-authoring.agent.md`; modifications to `docs/concept-taxonomy.md` outside the current track's section) must be surfaced to the user via the executor's hand-back summary BEFORE self-applying. The executor flags; the user triggers a separate doc-hygiene pass.
+
 ---
 
 ## Mock-only authoring contract

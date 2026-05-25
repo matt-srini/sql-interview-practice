@@ -18,8 +18,8 @@
     "delta-lake"
   ],
   "focus_concepts": [
-    "ACID TRANSACTION MANAGEMENT",
-    "SNAPSHOT ISOLATION",
+    "DELTA LAKE OPERATIONS",
+    "TIME TRAVEL",
     "PARTITION PRUNING STRATEGY",
     "DELTA LAKE UPSERT SEMANTICS"
   ],

@@ -316,10 +316,34 @@ _TAXONOMY_VALIDATED_TRACKS: frozenset[str] = frozenset({
     "sql",
     "python",             # Python Phase 2: registry complete, all practice/mock tags validated
     "python-data",        # Pandas Phase 2: registry complete, all 112 practice tags validated
+    "pyspark",            # PySpark Phase 2: registry complete (23 families), no realism families by design (MCQ-only), 0e/75m/75h mock-only validated; added 2026-05-25 post-closure cleanup (0 orphans across 278 questions)
     "data-engineering",   # DE Phase 2: registry complete, 21 families, 0e/50m/60h mock-only validated
     "data-modeling",      # DM Phase 2: registry complete (22 families), 0 realism families by design (MCQ-only), 0e/45m/51h mock-only validated
     # Add a track here once its concept_families.py registry is fully populated.
 })
+
+
+def _warn_unenforced_tracks() -> None:
+    """Emit a stderr warning listing tracks where tag-family resolution is skipped.
+
+    The silent-skip in _validate_concept_taxonomy and _validate_mock_only_realism
+    historically produced false-positive PASS reports during authoring rounds for
+    tracks outside _TAXONOMY_VALIDATED_TRACKS. This warning makes the skip visible
+    so authoring sessions cannot miss it. See docs/content-authoring.md §
+    Validator coverage state.
+    """
+    import sys
+    skipped: list[str] = []
+    for track, _ in _iter_question_files():
+        if track not in _TAXONOMY_VALIDATED_TRACKS and track not in skipped:
+            skipped.append(track)
+    if skipped:
+        print(
+            "WARNING: tag-family resolution and realism rules NOT enforced for: "
+            + ", ".join(sorted(skipped))
+            + ". See docs/content-authoring.md § Validator coverage state.",
+            file=sys.stderr,
+        )
 
 
 def _validate_concept_taxonomy() -> None:
@@ -736,6 +760,7 @@ def main() -> None:
     }
     _validate_paths(paths, catalogs_by_topic)
     _validate_concepts()
+    _warn_unenforced_tracks()
     _validate_concept_taxonomy()
     _validate_mock_only_realism()
     _validate_chain_integrity()
