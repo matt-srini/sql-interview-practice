@@ -319,6 +319,7 @@ _TAXONOMY_VALIDATED_TRACKS: frozenset[str] = frozenset({
     "pyspark",            # PySpark Phase 2: registry complete (23 families), no realism families by design (MCQ-only), 0e/75m/75h mock-only validated; added 2026-05-25 post-closure cleanup (0 orphans across 278 questions)
     "data-engineering",   # DE Phase 2: registry complete, 21 families, 0e/50m/60h mock-only validated
     "data-modeling",      # DM Phase 2: registry complete (22 families), 0 realism families by design (MCQ-only), 0e/45m/51h mock-only validated
+    "statistics",         # Statistics Phase 2: registry complete (13 families), 0e/66m/50h mock-only validated; lowercase tag convention; dual-subtype (conceptual + numerical)
     # Add a track here once its concept_families.py registry is fully populated.
 })
 

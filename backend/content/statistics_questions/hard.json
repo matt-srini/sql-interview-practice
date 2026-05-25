@@ -2285,5 +2285,779 @@
       "binomial",
       "probability"
     ]
+  },
+  {
+    "id": 73063,
+    "order": 63,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "CLT Convergence Rate: When Is n = 30 Not Enough?",
+    "description": "A textbook states: 'For n \u2265 30, the sampling distribution of the mean is approximately normal.' A data scientist applies this rule to estimate the mean transaction value from a sample of 30 purchases. The distribution of individual transaction amounts is:\n\n- Median: $12\n- Mean: $85\n- Max: $8,500 (luxury items exist)\n- Skewness: 4.2 (highly right-skewed)\n\nA colleague says the n = 30 rule doesn't apply here. Who is right?",
+    "options": [
+      "The textbook is correct: n = 30 is the universal threshold for CLT applicability, regardless of skewness",
+      "The colleague is right. The 'n \u2265 30' rule of thumb assumes moderate skewness. For highly skewed distributions (skewness > 2), the sampling distribution of the mean requires much larger n to approach normality \u2014 often n \u2265 200 or more. With mean $85 and max $8,500, a single luxury purchase in a sample of 30 can shift the mean by $280 (8500/30), making the sampling distribution heavily influenced by rare extremes",
+      "The colleague is wrong: skewness of 4.2 is large in absolute terms but the CLT applies immediately for any n > 10",
+      "The CLT never applies to monetary data because money amounts have a lower bound of $0"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct. The 'n \u2265 30' rule is a rough heuristic for distributions with moderate skewness. For heavily skewed distributions, convergence to normality is much slower.\n\nThe Berry-Esseen theorem gives a quantitative bound on CLT convergence rate: the error in the normal approximation is bounded by C \u00d7 E[|X \u2212 \u03bc|\u00b3] / (\u03c3\u00b3 \u00d7 \u221an). For heavy-tailed distributions, the third central moment E[|X \u2212 \u03bc|\u00b3] is large, making the required n proportionally larger.\n\nPractical implications for this case:\n- With n = 30, one transaction of $8,500 contributes $8,500/30 = $283 to the sample mean\n- If two luxury purchases appear in the sample (not unlikely given heavy tails), the mean is severely inflated\n- The sampling distribution of the mean at n = 30 would show heavy right skew, not approximate normality\n\nFor highly skewed financial data, standard advice is:\n- Use n \u2265 100\u2013200 for heavy-tailed distributions\n- Use log-transformation to reduce skewness before applying CLT-based inference\n- Consider robust alternatives (median with bootstrap CI) that don't require approximate normality of the mean\n- Run a Q-Q plot of sample means from subsamples to assess normality empirically\n\nOption A is wrong: the n = 30 threshold was developed for distributions with skewness similar to the exponential (~2) and works poorly for highly skewed distributions.\n\nOption C is wrong: there is no 'n > 10' universal rule. Convergence rate depends critically on the distribution's tail behavior.\n\nOption D is wrong: the lower bound at $0 is irrelevant for CLT applicability. CLT applies to any distribution with finite mean and variance, regardless of support boundary. The issue is the heavy upper tail, not the lower bound.",
+    "hints": [
+      "If a sample of 30 transactions contains one $8,500 purchase, how much does that single observation shift the sample mean? Does this suggest n=30 gives a stable mean estimate?",
+      "The Berry-Esseen theorem bounds the CLT approximation error. What term in that bound grows for heavy-tailed distributions, and how does that affect the required n?"
+    ],
+    "concepts": [
+      "sampling & central limit theorem",
+      "distributions",
+      "standard error",
+      "heavy tails"
+    ]
+  },
+  {
+    "id": 73064,
+    "order": 64,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Stratified vs Simple Random Sampling: When Stratification Wins",
+    "description": "A company surveys customer satisfaction (NPS, -100 to +100). The customer base has two distinct segments:\n- Enterprise customers (5% of base): average NPS = 70, SD = 20\n- Consumer customers (95% of base): average NPS = 25, SD = 30\n\nTrue overall NPS = 0.05 \u00d7 70 + 0.95 \u00d7 25 = 27.25\n\nThe team plans to survey 200 customers. Compare:\n- **Option A (SRS):** Simple random sample of 200 (will get ~190 consumer, ~10 enterprise customers)\n- **Option B (Stratified):** Oversample enterprise: 50 enterprise + 150 consumer, then weight back to population proportions\n\nWhich design gives a more precise estimate of overall NPS?",
+    "options": [
+      "Option A (SRS) is always preferable because it gives unbiased estimates without requiring knowledge of segment proportions",
+      "Option B (stratified) gives a more precise estimate when segments differ substantially in means and/or variances. With SRS, enterprise customers (5% of population, sampled at ~5%) contribute high-NPS variance to the estimate; with only ~10 enterprise observations, the enterprise-segment mean is estimated with high uncertainty. Stratified sampling with oversampling of enterprise reduces this \u2014 at the cost of knowing and applying the weights",
+      "Both methods give identical precision if the total sample size is the same",
+      "Option A is better because oversampling a small segment (enterprise) introduces bias that cannot be corrected"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B correctly explains when stratified sampling outperforms SRS.\n\nVariance of the SRS estimate of overall mean:\nVar(X\u0304_SRS) = \u03c3\u00b2_pop / n where \u03c3\u00b2_pop accounts for both within-segment variance and between-segment variance.\n\nFor stratified sampling with proportional allocation, the variance is reduced to:\nVar(X\u0304_strat) = \u03a3 (N\u2095/N)\u00b2 \u00d7 \u03c3\u00b2\u2095/n\u2095\n\nThe key gain comes from eliminating between-segment variance: stratification ensures both segments are represented, so the variance only reflects within-segment variability.\n\nIn this example:\n- SRS: with ~10 enterprise observations, SE of enterprise mean \u2248 20/\u221a10 \u2248 6.3 points \u2014 the enterprise contribution to overall NPS is very imprecise\n- Stratified (50 enterprise): SE of enterprise mean \u2248 20/\u221a50 \u2248 2.8 points \u2014 2.2\u00d7 more precise\n\nAfter applying weights (0.05 for enterprise, 0.95 for consumer), the stratified estimate has substantially lower variance for the same total n.\n\nStates when stratification wins:\n1. Segments have very different means (enterprise NPS = 70 vs consumer = 25)\n2. Within-segment variances are lower than overall population variance\n3. Segment proportions are known\n\nOption A is partially right about unbiasedness: SRS is unbiased. But it conflates unbiasedness with precision. Stratified sampling is also unbiased (with correct weights) and more precise.\n\nOption C is wrong: equal total n does not imply equal precision. Stratification specifically improves precision by controlling within-stratum sampling rates.\n\nOption D is wrong: oversampling followed by reweighting is standard practice in stratified sampling and produces unbiased estimates. The weights correct for the oversampling \u2014 no bias is introduced if weights are correctly applied.",
+    "hints": [
+      "With only 10 enterprise observations in SRS (out of 200), how precise is the estimate of enterprise NPS? Compare to 50 enterprise observations in stratified sampling.",
+      "Stratified sampling eliminates between-segment variance from the estimate. Why does that matter here, given that enterprise NPS (70) and consumer NPS (25) differ by 45 points?"
+    ],
+    "concepts": [
+      "sampling & central limit theorem",
+      "standard error",
+      "experiment design",
+      "law of large numbers"
+    ]
+  },
+  {
+    "id": 73065,
+    "order": 65,
+    "topic": "statistics",
+    "type": "numerical",
+    "subtype": "numerical",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Bootstrap Standard Error of the Mean",
+    "description": "Implement `solve(values, n_resamples=2000)` that estimates the **bootstrap standard error of the sample mean** using `random.Random(42)` for determinism.\n\nAlgorithm:\n1. For each of n_resamples iterations: draw n values with replacement from `values`\n2. Compute the mean of each resample\n3. Return the standard deviation of the n_resamples means (using n-1 denominator)\n\nReturn a float rounded to 6 decimal places.",
+    "starter_code": "def solve(values: list[float], n_resamples: int = 2000) -> float:\n    # Your code here\n    pass",
+    "expected_code": "def solve(values: list[float], n_resamples: int = 2000) -> float:\n    import random, statistics\n    rng = random.Random(42)\n    n = len(values)\n    means = [\n        statistics.mean(rng.choices(values, k=n))\n        for _ in range(n_resamples)\n    ]\n    return round(statistics.stdev(means), 6)",
+    "solution_code": "def solve(values: list[float], n_resamples: int = 2000) -> float:\n    import random, statistics\n    rng = random.Random(42)\n    n = len(values)\n    # Bootstrap: resample with replacement, compute mean, repeat\n    means = [\n        statistics.mean(rng.choices(values, k=n))\n        for _ in range(n_resamples)\n    ]\n    # Standard error of mean \u2248 std of bootstrap means\n    return round(statistics.stdev(means), 6)",
+    "explanation": "The bootstrap standard error is the standard deviation of the bootstrap distribution of the statistic. For the mean, it approximates \u03c3/\u221an \u2014 the theoretical standard error. The bootstrap makes no distributional assumption; it estimates the sampling distribution empirically by resampling from the observed data. `random.choices(values, k=n)` samples with replacement (as required for bootstrap).",
+    "test_cases": [
+      {
+        "input": [
+          [
+            1.0,
+            2.0,
+            3.0,
+            4.0,
+            5.0,
+            6.0,
+            7.0,
+            8.0,
+            9.0,
+            10.0
+          ]
+        ],
+        "expected": 0.889939,
+        "tolerance": 0.1
+      },
+      {
+        "input": [
+          [
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0
+          ]
+        ],
+        "expected": 0.0,
+        "tolerance": 1e-05
+      }
+    ],
+    "public_test_cases": [
+      {
+        "input": [
+          [
+            1.0,
+            2.0,
+            3.0,
+            4.0,
+            5.0,
+            6.0,
+            7.0,
+            8.0,
+            9.0,
+            10.0
+          ]
+        ],
+        "expected": 0.889939,
+        "tolerance": 0.1
+      }
+    ],
+    "hints": [
+      "`random.choices(values, k=n)` draws n values with replacement from values \u2014 this is one bootstrap resample.",
+      "Compute the mean of each resample. Then take the standard deviation of all those means \u2014 that's the bootstrap SE."
+    ],
+    "concepts": [
+      "sampling & central limit theorem",
+      "bootstrap",
+      "resampling",
+      "standard error"
+    ]
+  },
+  {
+    "id": 73066,
+    "order": 66,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Sampling Bias: Non-Response and Survivorship",
+    "description": "A platform wants to estimate average daily active time among all registered users. The team surveys 5,000 users via in-app notification. 2,200 (44%) respond.\n\nAnalysis of the respondents shows average daily active time = 42 minutes.\n\nA PM says: '42 minutes is our estimate for all 500,000 registered users.'\n\nA statistician says: 'This estimate is almost certainly biased upward, and possibly substantially so.'\n\nWhat is the systematic bias, and how large could it be?",
+    "options": [
+      "The PM is right: 2,200 respondents is a large enough sample that the CLT ensures accurate estimates regardless of who responded",
+      "The statistician is right: non-response bias. Users who respond to in-app notifications are those who are currently active. Dormant or low-engagement users are less likely to see the notification or respond. The 42-minute estimate reflects active users, not all 500,000 registered users. If low-engagement users average 5 minutes/day (or 0) and make up 60% of registered users, the true average could be around 0.4\u00d742 + 0.6\u00d75 = 19.8 minutes \u2014 roughly half the measured estimate",
+      "The bias is minor: 44% response rate is high enough that non-response bias has negligible effect on the mean estimate",
+      "The CLT guarantees that with n = 2,200, the sample mean converges to the population mean; response bias is only a concern for small samples"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B correctly identifies non-response bias and quantifies its potential magnitude.\n\nNon-response bias arises when the probability of responding differs systematically between groups in ways that are correlated with the variable being measured. Here:\n- Responding to an in-app notification requires being active in the app\n- Highly engaged users (who are active) are more likely to see and respond to notifications\n- Low-engagement or dormant users (who have low daily active time) are systematically underrepresented in the 44% who responded\n\nThis is a textbook case of selection bias in survey methodology. The sample is not a random subset of all 500,000 registered users \u2014 it is a convenience sample of currently active users.\n\nBias magnitude: If dormant users (averaging 0\u20135 min/day) make up a substantial fraction of the base, the true mean could be dramatically lower than 42 minutes. Platforms often see 60\u201380% of registered users as dormant or very low-activity.\n\nThe CLT does NOT help here: it guarantees that the sample mean converges to the mean of the *population from which you sampled* \u2014 which is active responders, not all registered users. With perfect non-response, even n = 1,000,000 responders would not converge to the population mean if respondents are systematically different from non-respondents.\n\nFixes:\n1. Compare respondents vs non-respondents on observable characteristics (registration date, platform, device)\n2. Send follow-up surveys to a random sample of non-respondents with incentive\n3. Use administrative data (passive session tracking) rather than active surveys\n4. Apply non-response weighting based on observable characteristics\n\nOption A and Option D both invoke the CLT incorrectly. The CLT is about precision (variance of the estimate), not about bias. A biased estimator with n = 100,000 is still biased \u2014 just more precisely biased.",
+    "hints": [
+      "Who responds to an in-app notification? Who is likely in the app at that moment? Are these the same as 'all registered users'?",
+      "The CLT guarantees the mean converges to the population mean of the sampling distribution. If your 'sample' systematically excludes inactive users, what population are you actually sampling from?"
+    ],
+    "concepts": [
+      "sampling & central limit theorem",
+      "selection bias",
+      "statistical artefacts",
+      "standard error"
+    ]
+  },
+  {
+    "id": 73067,
+    "order": 67,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Bonferroni Is Conservative: Why It Loses Power",
+    "description": "A genomics researcher runs 10,000 gene expression tests simultaneously (standard in high-throughput biology). They apply Bonferroni correction: \u03b1/10,000 = 0.000005 per test.\n\nA colleague says: 'At this threshold, you're going to miss 90% of the true effects. Bonferroni at scale 10,000 is essentially useless.'\n\nA statistician says the colleague overstates it. What is the real trade-off, and when is Bonferroni appropriate at this scale?",
+    "options": [
+      "Bonferroni is always appropriate; the colleague is wrong that it loses power",
+      "The colleague is partially right about power loss. Bonferroni requires p < 0.000005, which means the effect must be very large or n must be very large to achieve significance. For moderate effect sizes in genomics (typical OR or fold-change), many true effects will produce p-values between 0.000005 and 0.05 \u2014 Bonferroni will fail to detect them. However, Bonferroni is appropriate when false positives are very costly (e.g., genome-wide significance for clinical decisions). FDR control (BH) is standard in exploratory genomics for exactly this reason",
+      "Bonferroni has no power loss at any scale; the threshold just becomes more stringent",
+      "Bonferroni cannot be applied when k > 1,000; at that scale only Bayesian methods are valid"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B correctly states the Bonferroni-power trade-off.\n\nThe Bonferroni correction at k = 10,000 sets the per-test threshold at \u03b1/k = 0.05/10,000 = 5 \u00d7 10\u207b\u2076. To achieve this significance level, a test must have:\n- Very large effect size (Cohen's d >> 0.5), OR\n- Very large sample size (n >> 100), OR\n- Both\n\nIn genomics, most individual gene effects are moderate \u2014 log-fold-changes of 0.5\u20131.5. At typical study sizes (n = 50\u2013200 patients), such effects produce p-values in the range 0.001\u20130.01 \u2014 far above the Bonferroni threshold but well below the uncorrected 0.05. These would be classified as 'significant' by FDR but not by Bonferroni.\n\nPower comparison at k = 10,000, true effect produces p = 0.001:\n- Uncorrected (\u03b1 = 0.05): significant \u2713\n- FDR 5% (BH): significant if ~500 tests at this p-level (depends on how many truly significant) \u2713 (likely)\n- Bonferroni: p = 0.001 >> 5\u00d710\u207b\u2076, NOT significant \u2717\n\nWhen Bonferroni is appropriate at large k:\n- When false positives have high cost (genome-wide association studies for clinical actionability)\n- When the research question is confirmatory ('is this specific gene definitively associated?')\n- When replication is planned and you want only very high-confidence hits in the discovery cohort\n\nWhen FDR is preferred:\n- Exploratory discovery ('find a list of candidate genes for further study')\n- When false positives are cheap (cost = further lab testing, not treatment decisions)\n- Standard in modern GWAS follow-up and RNA-seq differential expression\n\nOption A dismisses the power concern, which is real and well-documented.\n\nOption C misunderstands 'power loss' \u2014 any more stringent threshold reduces power (probability of detecting true effects). By definition, requiring p < 5\u00d710\u207b\u2076 instead of p < 0.05 means many true effects won't clear the threshold.\n\nOption D is wrong: Bonferroni is mathematically valid for any k; its limitation is practical (power), not validity.",
+    "hints": [
+      "If a true effect produces p = 0.001, does it pass Bonferroni at k=10000? Does it pass at k=10? What does this tell you about Bonferroni's power at large k?",
+      "Think about the relationship between the significance threshold and the effect size needed to clear it. As the threshold drops from 0.05 to 0.000005, what happens to the minimum detectable effect?"
+    ],
+    "concepts": [
+      "multiple testing & correction",
+      "bonferroni",
+      "errors & power",
+      "effect size"
+    ]
+  },
+  {
+    "id": 73068,
+    "order": 68,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Family-Wise Error Rate Under Correlated Tests",
+    "description": "A product team runs 20 A/B tests simultaneously, all measuring different aspects of the same UI redesign (load time, engagement, retention, conversion, NPS, etc.). A statistician notes: 'These metrics are correlated \u2014 users who engage more also tend to show better retention.'\n\nAnother statistician says: 'Positive correlation between tests affects the family-wise error rate. The actual FWER is lower than the 1 \u2212 (0.95)\u00b2\u2070 \u2248 64% estimate for independent tests.'\n\nIs this claim correct? How does correlation between tests affect multiple testing corrections?",
+    "options": [
+      "The claim is wrong: correlation between tests has no effect on the FWER calculation, which is always 1 \u2212 (1 \u2212 \u03b1)^k",
+      "The claim is correct for positive correlation. The formula 1 \u2212 (1 \u2212 \u03b1)^k assumes independence. With positive correlation: if one test gives a false positive due to random high noise in the data, correlated tests are also more likely to give spurious signals in the same direction \u2014 but the probability of the FIRST false positive is reduced because the 'effective number of independent tests' is less than k. The Westfall-Young permutation method and related approaches account for this correlation structure. Bonferroni is conservative (overestimates FWER) when tests are positively correlated",
+      "Positive correlation inflates the FWER: correlated tests are more likely to all produce false positives simultaneously, increasing the probability of at least one false positive",
+      "The FWER is 1 for any k \u2265 2 when tests are correlated; independence is required for FWER to be less than 1"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B correctly explains how positive correlation affects the FWER.\n\nThe formula 1 \u2212 (1 \u2212 \u03b1)^k = P(at least one false positive under independence). Under positive correlation, when one test produces a false positive (due to, say, an unusually high random noise in the data), the correlated tests tend to show similar noise \u2014 so they are less likely to produce INDEPENDENT false positives.\n\nIntuitively: with 20 perfectly correlated tests (all measuring the same thing), the effective number of tests is 1, not 20. FWER = \u03b1 = 0.05, not 1 \u2212 (0.95)\u00b2\u2070 = 0.64. With partial positive correlation, the true FWER falls between these extremes.\n\nConsequences for multiple testing corrections:\n- **Bonferroni** assumes independence: uses \u03b1/k, which is conservative (too stringent) when tests are positively correlated\n- **\u0160id\u00e1k correction** (\u03b1 = 1 \u2212 (1 \u2212 FWER)^(1/k)) also assumes independence\n- **Westfall-Young permutation method:** accounts for correlation structure by computing the null distribution of the maximum test statistic via permutation \u2014 this is the gold standard for correlated tests\n- **Effective number of tests** (M_eff): methods like the Li-Ji correction estimate an effective number of independent tests k_eff < k when tests are correlated, and apply Bonferroni/\u0160id\u00e1k using k_eff\n\nOption A is wrong: correlation does matter for FWER computation.\n\nOption C inverts the direction: positive correlation reduces, not increases, the FWER relative to the independence assumption. Negative correlation would increase the FWER (tests could compensate each other in unexpected ways).\n\nOption D is wrong and has no basis in statistical theory.",
+    "hints": [
+      "If 20 tests all measure the same metric (perfect positive correlation), what is the effective number of independent tests? What would the FWER be?",
+      "Does Bonferroni overestimate or underestimate the FWER when tests are positively correlated? Think about whether the independence formula overstates or understates the probability of simultaneous false positives."
+    ],
+    "concepts": [
+      "multiple testing & correction",
+      "bonferroni",
+      "type i",
+      "errors & power"
+    ]
+  },
+  {
+    "id": 73069,
+    "order": 69,
+    "topic": "statistics",
+    "type": "numerical",
+    "subtype": "numerical",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "FWER and Required Sample Size Under Multiple Testing",
+    "description": "Given k simultaneous two-proportion z-tests with family-wise error rate control via Bonferroni correction, implement `solve(k, p1, p2, fwer=0.05, power=0.80)` that returns the minimum sample size per arm per test.\n\nBonferroni corrected alpha per test: \u03b1_bonf = fwer / k\nUse the two-proportion z-test sample size formula from earlier:\n  n = ceil(2 \u00d7 ((z_{\u03b1_bonf/2} + z_\u03b2) \u00d7 \u03c3 / mde)\u00b2)\nwhere \u03c3 = sqrt(p_bar \u00d7 (1 - p_bar)), p_bar = (p1 + p2) / 2, mde = |p2 - p1|\n\nReturn an int.",
+    "starter_code": "def solve(k: int, p1: float, p2: float, fwer: float = 0.05, power: float = 0.80) -> int:\n    # Your code here\n    pass",
+    "expected_code": "def solve(k: int, p1: float, p2: float, fwer: float = 0.05, power: float = 0.80) -> int:\n    import math\n    from statistics import NormalDist\n    alpha_bonf = fwer / k\n    z_alpha2 = NormalDist().inv_cdf(1 - alpha_bonf / 2)\n    z_beta = NormalDist().inv_cdf(power)\n    p_bar = (p1 + p2) / 2\n    sigma = math.sqrt(p_bar * (1 - p_bar))\n    mde = abs(p2 - p1)\n    return math.ceil(2 * ((z_alpha2 + z_beta) * sigma / mde) ** 2)",
+    "solution_code": "def solve(k: int, p1: float, p2: float, fwer: float = 0.05, power: float = 0.80) -> int:\n    import math\n    from statistics import NormalDist\n    # Bonferroni corrected alpha per test\n    alpha_bonf = fwer / k\n    z_alpha2 = NormalDist().inv_cdf(1 - alpha_bonf / 2)  # z for corrected alpha\n    z_beta = NormalDist().inv_cdf(power)\n    p_bar = (p1 + p2) / 2\n    sigma = math.sqrt(p_bar * (1 - p_bar))\n    mde = abs(p2 - p1)\n    return math.ceil(2 * ((z_alpha2 + z_beta) * sigma / mde) ** 2)",
+    "explanation": "Bonferroni splits the FWER \u03b1 across k tests: each test uses \u03b1/k. This requires a more extreme z-score to reject, which in turn requires larger n. Running 10 tests simultaneously with FWER=5% uses \u03b1/10=0.5% per test, requiring ~1.5-2\u00d7 larger samples than a single test at 5%. This is the statistical cost of running many simultaneous experiments.",
+    "test_cases": [
+      {
+        "input": [
+          1,
+          0.1,
+          0.15
+        ],
+        "expected": 394,
+        "tolerance": 5
+      },
+      {
+        "input": [
+          10,
+          0.1,
+          0.15
+        ],
+        "expected": 631,
+        "tolerance": 5
+      },
+      {
+        "input": [
+          20,
+          0.05,
+          0.07
+        ],
+        "expected": 5785,
+        "tolerance": 50
+      }
+    ],
+    "public_test_cases": [
+      {
+        "input": [
+          1,
+          0.1,
+          0.15
+        ],
+        "expected": 394,
+        "tolerance": 5
+      },
+      {
+        "input": [
+          10,
+          0.1,
+          0.15
+        ],
+        "expected": 631,
+        "tolerance": 5
+      }
+    ],
+    "hints": [
+      "Bonferroni correction: alpha per test = fwer / k. More tests \u2192 smaller alpha per test \u2192 larger z-score needed \u2192 more users per arm.",
+      "The formula is n = ceil(2 * ((z_alpha2 + z_beta) * sigma / mde)^2) where sigma = sqrt(p_bar*(1-p_bar)) and z_alpha2 uses the Bonferroni-corrected alpha."
+    ],
+    "concepts": [
+      "multiple testing & correction",
+      "bonferroni",
+      "sample size",
+      "errors & power"
+    ]
+  },
+  {
+    "id": 73070,
+    "order": 70,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Sequential Testing and Alpha Spending Functions",
+    "description": "A large-scale A/B test is planned for 6 weeks. The team wants to peek at interim results after weeks 2, 4, and 6 (three planned looks). They want to control FWER at 5% across all three looks.\n\nA statistician proposes using an **O'Brien-Fleming alpha spending function**, which allocates more of the alpha budget to later looks:\n- Look 1 (week 2): \u03b1\u2081 = 0.0005\n- Look 2 (week 4): \u03b1\u2082 = 0.014\n- Look 3 (week 6): \u03b1\u2083 = 0.045\n\nThe PM asks: 'Why not just split the alpha equally at each look (0.05/3 \u2248 0.0167 per look)?'\n\nWhat is the correct explanation of the O'Brien-Fleming approach?",
+    "options": [
+      "O'Brien-Fleming is arbitrary; equal splitting (Bonferroni over looks) is always preferable",
+      "O'Brien-Fleming is conservative at early looks to protect against stopping too soon based on sparse data. The logic: early looks have few observations and high noise \u2014 a significant result at look 1 (week 2) is likely noise. By setting a very low \u03b1\u2081 = 0.0005, the test only stops early if the evidence is overwhelming (e.g., a clearly harmful treatment). By look 3 (\u03b1\u2083 = 0.045 \u2248 \u03b1), the full data is available and near-standard significance is required. This preserves power while controlling FWER",
+      "O'Brien-Fleming wastes alpha budget at early looks; the equal-split approach uses the same total alpha more efficiently",
+      "Sequential testing requires that each look uses an independent fresh dataset; O'Brien-Fleming violates this by using cumulative data"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B correctly explains the O'Brien-Fleming design philosophy.\n\nGroup sequential methods allow pre-planned interim analyses while controlling the overall FWER. The alpha spending function f(t) specifies how much of the \u03b1 budget is 'spent' at each information fraction t (t = fraction of planned sample collected).\n\nO'Brien-Fleming approach: f(t) is very conservative at early t (small \u03b1 spent early) and less conservative late. The boundary at time t is approximately z_{\u03b1\u00d71/(2t\u00b2)}, which requires very large z-statistics early.\n\nWhy this makes sense:\n1. **Early looks are noisy:** With 1/3 of the data at look 1, the estimate is imprecise. Only extreme effects (which would be obvious without any correction) should trigger early stopping.\n2. **Preserves power at the final look:** By spending almost no alpha early, the final look retains nearly the full \u03b1 = 0.05 threshold \u2014 similar to running the test without interim looks.\n3. **Protects against 'early winner' bias:** If you stop early every time an effect looks big, you systematically overestimate true effects (winner's curse from early stopping).\n\nEqual splitting (Bonferroni over looks): sets 0.05/3 \u2248 0.017 at each look. This is more generous at early looks than O'Brien-Fleming (0.017 vs 0.0005) but stricter at the final look (0.017 vs 0.045), sacrificing power.\n\nPocock design: equal boundaries across all looks (all at ~0.022 for 3 looks) \u2014 most aggressive about early stopping but most power loss at final look.\n\nOption A dismisses O'Brien-Fleming without acknowledging its well-established theoretical and practical basis.\n\nOption C incorrectly claims equal splitting is more efficient \u2014 it trades power at the final look for more opportunity to stop early, which is often suboptimal.\n\nOption D misunderstands sequential testing: O'Brien-Fleming and all group sequential methods USE cumulative data. Each interim look analyzes all data collected so far, not a fresh dataset.",
+    "hints": [
+      "At look 1 (week 2), you have 1/3 of the planned data. Is a barely significant test statistic at this interim point a reliable signal, or could it revert by week 6?",
+      "Compare the final-look alpha in O'Brien-Fleming (0.045 \u2248 0.05) vs equal splitting (0.017). Which design preserves more power at the end when the most data is available?"
+    ],
+    "concepts": [
+      "multiple testing & correction",
+      "hypothesis testing",
+      "errors & power",
+      "significance level"
+    ]
+  },
+  {
+    "id": 73071,
+    "order": 71,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Heavy-tailed distribution and the reliability of 2\u03c3 anomaly thresholds",
+    "description": "A data scientist monitors daily revenue with the rule: flag any day with revenue outside mean \u00b1 2\u03c3 as anomalous. The daily revenue distribution is roughly symmetric with near-zero skew, but has excess kurtosis of 4.2. The PM asks: 'Does mean \u00b1 2\u03c3 reliably capture only the true anomalies?' What is the most accurate assessment?",
+    "options": [
+      "Yes \u2014 the 95% rule (mean \u00b1 2\u03c3) holds for any symmetric distribution, regardless of kurtosis.",
+      "Yes \u2014 excess kurtosis primarily affects skewed distributions; symmetric data can safely use the empirical rule.",
+      "No \u2014 excess kurtosis of 4.2 means heavy tails; more than 5% of non-anomalous days will fall outside mean \u00b1 2\u03c3, inflating the false-positive rate.",
+      "No \u2014 excess kurtosis above 3 implies bimodality; a single mean is not meaningful for this distribution."
+    ],
+    "correct_option": 2,
+    "explanation": "Option 2 is correct: the empirical rule (95% within \u00b12\u03c3) is derived from the normal distribution. Excess kurtosis > 0 (leptokurtic) means more probability mass sits in the tails than a normal with the same \u03c3. Concretely, more than 5% of observations fall outside \u00b12\u03c3 \u2014 those flagged 'anomalies' are actually normal heavy-tail days, not true revenue anomalies. This inflates the false-positive rate and erodes trust in the alert system. The fix is either to widen the threshold or use a distribution with heavier tails (e.g., Student's t) as the reference. | Option 0 is wrong: the empirical rule applies ONLY to the normal distribution. A Student's t with 4 degrees of freedom is symmetric but its tails extend far beyond \u00b12\u03c3 of the normal. | Option 1 is wrong: kurtosis and skewness are orthogonal. A perfectly symmetric distribution (skew = 0) can be highly leptokurtic \u2014 Student's t with few degrees of freedom is the canonical example. The empirical rule cannot be rescued by symmetry alone. | Option 3 is a misconception: excess kurtosis measures tail weight (how peaked and heavy-tailed the distribution is), NOT the number of modes. A sharply peaked, single-mode distribution can have very high kurtosis; high kurtosis does NOT imply bimodality.",
+    "hints": [
+      "For a leptokurtic distribution, what proportion of observations falls beyond \u00b12\u03c3 compared to the normal?",
+      "The empirical rule is derived from a specific distribution. Does symmetry alone make a distribution normal?"
+    ],
+    "concepts": [
+      "descriptive statistics",
+      "distributions"
+    ]
+  },
+  {
+    "id": 73072,
+    "order": 72,
+    "topic": "statistics",
+    "type": "numerical",
+    "subtype": "numerical",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Implement population skewness and excess kurtosis from first principles",
+    "description": "Given a list of numeric values, return a tuple `(skewness, excess_kurtosis)` using the biased (population) moment formulas:\n- skewness = m\u2083 / m\u2082^(3/2)\n- excess_kurtosis = m\u2084 / m\u2082\u00b2 \u2212 3\nwhere m\u2096 = (1/n) \u00d7 \u03a3\u1d62(x\u1d62 \u2212 x\u0305)^k and x\u0305 is the arithmetic mean. If m\u2082 = 0 (constant data), return (0.0, 0.0). Round each component to 6 decimal places.",
+    "starter_code": "def solve(values: list[float]) -> tuple[float, float]:\n    # Your code here\n    pass",
+    "expected_code": "def solve(values: list[float]) -> tuple[float, float]:\n    n = len(values)\n    mean = sum(values) / n\n    m2 = sum((x - mean) ** 2 for x in values) / n\n    m3 = sum((x - mean) ** 3 for x in values) / n\n    m4 = sum((x - mean) ** 4 for x in values) / n\n    if m2 == 0:\n        return (0.0, 0.0)\n    skewness = m3 / m2 ** 1.5\n    excess_kurtosis = m4 / m2 ** 2 - 3\n    return (round(skewness, 6), round(excess_kurtosis, 6))",
+    "solution_code": "def solve(values: list[float]) -> tuple[float, float]:\n    n = len(values)\n    mean = sum(values) / n\n    # m\u2096 = population k-th central moment\n    m2 = sum((x - mean) ** 2 for x in values) / n   # variance (biased)\n    m3 = sum((x - mean) ** 3 for x in values) / n\n    m4 = sum((x - mean) ** 4 for x in values) / n\n    if m2 == 0:\n        return (0.0, 0.0)   # constant data\n    skewness = m3 / m2 ** 1.5\n    excess_kurtosis = m4 / m2 ** 2 - 3\n    return (round(skewness, 6), round(excess_kurtosis, 6))",
+    "explanation": "The biased (population) moment formula computes m\u2096 as the average k-th deviation from the mean (divisor n, not n\u22121). Skewness captures asymmetry: positive means a right tail; 0 means symmetric. Excess kurtosis measures tail weight relative to the normal: positive (leptokurtic) means heavier tails, negative (platykurtic) means lighter. The \u22123 shift makes the normal distribution's excess kurtosis = 0 by convention. Note: this uses population moments \u2014 scipy.stats uses sample-corrected (Fisher) formulas with divisor n\u22121 adjustments; both are valid for different purposes.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            1.0,
+            2.0,
+            3.0,
+            4.0,
+            5.0
+          ]
+        ],
+        "expected": [
+          0.0,
+          -1.3
+        ],
+        "tolerance": 0.0001
+      },
+      {
+        "input": [
+          [
+            1.0,
+            1.0,
+            1.0,
+            4.0
+          ]
+        ],
+        "expected": [
+          1.154701,
+          -0.666667
+        ],
+        "tolerance": 0.0001
+      },
+      {
+        "input": [
+          [
+            5.0,
+            5.0,
+            5.0
+          ]
+        ],
+        "expected": [
+          0.0,
+          0.0
+        ],
+        "tolerance": 0.0
+      }
+    ],
+    "public_test_cases": [
+      {
+        "input": [
+          [
+            1.0,
+            2.0,
+            3.0,
+            4.0,
+            5.0
+          ]
+        ],
+        "expected": [
+          0.0,
+          -1.3
+        ],
+        "tolerance": 0.0001
+      }
+    ],
+    "hints": [
+      "Compute the central moments m\u2096 = mean of (x\u1d62 \u2212 x\u0305)^k for k = 2, 3, 4 in a single pass each.",
+      "Skewness uses m\u2082^(3/2) as the denominator; excess kurtosis uses m\u2082\u00b2 and then subtracts 3."
+    ],
+    "concepts": [
+      "descriptive statistics",
+      "skewness"
+    ]
+  },
+  {
+    "id": 73073,
+    "order": 73,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Eta-squared: separating practical from statistical significance in ANOVA",
+    "description": "A one-way ANOVA comparing user satisfaction scores across 5 product versions (N = 1000 total) returns F(4, 995) = 15.3, p < 0.001. A colleague computes \u03b7\u00b2 = SS_between / SS_total = 0.058. The PM says: \"Massively significant \u2014 let's immediately switch to the best version!\" How should the data scientist respond?",
+    "options": [
+      "Agree \u2014 F = 15.3 with p < 0.001 confirms the effect is large and practically important; acting on it is justified.",
+      "\u03b7\u00b2 = 0.058 means only about 6% of the variance in satisfaction is explained by product version; the remaining 94% is within-group noise. The absolute differences between versions may be too small to matter.",
+      "With N = 1000 the F-statistic is inflated by sample size and is unreliable; ignore it and collect more data.",
+      "\u03b7\u00b2 < 0.10 indicates the ANOVA violated its homoscedasticity assumption; the result cannot be trusted."
+    ],
+    "correct_option": 1,
+    "explanation": "Option 1 is correct: \u03b7\u00b2 = SS_between / SS_total is the ANOVA analogue of R\u00b2 \u2014 the proportion of total variance in satisfaction explained by product version. \u03b7\u00b2 = 0.058 means only ~6% of satisfaction variance is attributable to which version a user saw; ~94% comes from individual user differences. With N = 1000, the study has immense statistical power to detect even trivially small effects. Statistical significance (p < 0.001) says the evidence against the null is overwhelming; it does not say the differences are large enough to matter in practice. A data scientist should report the effect size alongside significance and let the PM weigh the practical magnitude. | Option 0 is the classic error of conflating statistical and practical significance. Large N virtually guarantees significance for any nonzero effect. | Option 2 is wrong in both directions: large samples do make it easier to detect small effects, but that is not a reason to ignore or discard a well-powered study. The correct response is to interpret effect size, not dismiss the test. | Option 3 is a misconception: \u03b7\u00b2 is an effect-size measure, not a diagnostic for the homoscedasticity assumption. Assumption checking uses Levene's test or residual analysis, not the R\u00b2-like effect-size metric.",
+    "hints": [
+      "If \u03b7\u00b2 = 0.06, how much variance in satisfaction is NOT explained by which product version a user saw?",
+      "With N = 1000, even a tiny true difference between version means will produce a very small p-value. What does \u03b7\u00b2 tell you that the p-value does not?"
+    ],
+    "concepts": [
+      "anova",
+      "effect size"
+    ]
+  },
+  {
+    "id": 73074,
+    "order": 74,
+    "topic": "statistics",
+    "type": "numerical",
+    "subtype": "numerical",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Compute SS components and \u03b7\u00b2 (eta-squared) from group data",
+    "description": "Given a list of groups (each a list of numeric observations), compute and return a tuple:\n`(SS_between, SS_within, eta_squared)`\nwhere:\n- SS_between = \u03a3\u2c7c n\u2c7c(x\u0304\u2c7c \u2212 x\u0304)\u00b2\n- SS_within = \u03a3\u2c7c \u03a3\u1d62 (x\u1d62\u2c7c \u2212 x\u0304\u2c7c)\u00b2\n- \u03b7\u00b2 = SS_between / (SS_between + SS_within)\n\nIf SS_total = 0, return (0.0, 0.0, 0.0). Round each component to 4 decimal places.",
+    "starter_code": "def solve(groups: list[list[float]]) -> tuple[float, float, float]:\n    # Your code here\n    pass",
+    "expected_code": "def solve(groups: list[list[float]]) -> tuple[float, float, float]:\n    k = len(groups)\n    n_j = [len(g) for g in groups]\n    N = sum(n_j)\n    grand_mean = sum(sum(g) for g in groups) / N\n    group_means = [sum(g) / len(g) for g in groups]\n    ss_between = sum(n_j[j] * (group_means[j] - grand_mean) ** 2 for j in range(k))\n    ss_within = sum((x - group_means[j]) ** 2 for j, g in enumerate(groups) for x in g)\n    ss_total = ss_between + ss_within\n    if ss_total == 0:\n        return (0.0, 0.0, 0.0)\n    eta_sq = ss_between / ss_total\n    return (round(ss_between, 4), round(ss_within, 4), round(eta_sq, 4))",
+    "solution_code": "def solve(groups: list[list[float]]) -> tuple[float, float, float]:\n    k = len(groups)\n    n_j = [len(g) for g in groups]\n    N = sum(n_j)\n    grand_mean = sum(sum(g) for g in groups) / N\n    group_means = [sum(g) / len(g) for g in groups]\n    # SS_between: weighted squared deviations of group means from grand mean\n    ss_between = sum(n_j[j] * (group_means[j] - grand_mean) ** 2 for j in range(k))\n    # SS_within: squared deviations of obs from their group mean\n    ss_within = sum((x - group_means[j]) ** 2 for j, g in enumerate(groups) for x in g)\n    ss_total = ss_between + ss_within  # SS_total = SS_between + SS_within always\n    if ss_total == 0:\n        return (0.0, 0.0, 0.0)\n    eta_sq = ss_between / ss_total  # proportion of variance explained by group\n    return (round(ss_between, 4), round(ss_within, 4), round(eta_sq, 4))",
+    "explanation": "\u03b7\u00b2 (eta-squared) is the ANOVA analogue of R\u00b2: it measures the proportion of total variance in the outcome explained by the group factor. SS_between captures between-group signal; SS_within captures within-group noise. A high \u03b7\u00b2 means the group factor accounts for most of the variation; a low \u03b7\u00b2 (even with a significant F) means the effect is statistically detectable but explains little of the outcome variance. This distinction is critical for translating statistical findings into business decisions.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            [
+              2.0,
+              4.0,
+              6.0
+            ],
+            [
+              8.0,
+              10.0,
+              12.0
+            ],
+            [
+              1.0,
+              3.0,
+              5.0
+            ]
+          ]
+        ],
+        "expected": [
+          86.0,
+          24.0,
+          0.7818
+        ],
+        "tolerance": 0.0001
+      },
+      {
+        "input": [
+          [
+            [
+              1.0,
+              2.0,
+              3.0
+            ],
+            [
+              2.0,
+              3.0,
+              4.0
+            ]
+          ]
+        ],
+        "expected": [
+          1.5,
+          4.0,
+          0.2727
+        ],
+        "tolerance": 0.0001
+      }
+    ],
+    "public_test_cases": [
+      {
+        "input": [
+          [
+            [
+              2.0,
+              4.0,
+              6.0
+            ],
+            [
+              8.0,
+              10.0,
+              12.0
+            ],
+            [
+              1.0,
+              3.0,
+              5.0
+            ]
+          ]
+        ],
+        "expected": [
+          86.0,
+          24.0,
+          0.7818
+        ],
+        "tolerance": 0.0001
+      }
+    ],
+    "hints": [
+      "Compute grand mean and each group mean first. SS_between weights each group mean deviation by the group size.",
+      "\u03b7\u00b2 = SS_between / SS_total where SS_total = SS_between + SS_within \u2014 the same decomposition as R\u00b2 in regression."
+    ],
+    "concepts": [
+      "anova",
+      "sum of squares"
+    ]
+  },
+  {
+    "id": 73075,
+    "order": 75,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Log-rank test: separating statistical difference from causal inference",
+    "description": "Two customer cohorts are tracked for subscription cancellation: Cohort A (early adopters, n=280) and Cohort B (new users, n=310). Their Kaplan-Meier curves diverge from month 3 onward, with Cohort A retaining better over time. The log-rank test returns \u03c7\u00b2 = 12.4, p = 0.0004. The PM says: 'Cohort A is clearly more loyal \u2014 we should target new users who behave like early adopters.' What is the most analytically careful response?",
+    "options": [
+      "Agree \u2014 \u03c7\u00b2 = 12.4 with p < 0.001 proves Cohort A has better retention; the recommendation is well-supported.",
+      "The log-rank test confirms the survival curves differ significantly, but the cohorts differ in how they were acquired. The retention difference may reflect who chose to adopt early, not something replicable in new users.",
+      "The log-rank test is invalid here; you need at least 500 users per cohort for chi-squared-based tests on survival data.",
+      "A p-value of 0.0004 means there is a 0.04% probability the cohorts have the same retention rate."
+    ],
+    "correct_option": 1,
+    "explanation": "Option 1 is correct: the log-rank test correctly concludes the survival distributions differ significantly between cohorts. However, cohorts A and B differ not just in acquisition timing but likely in demographics, motivation, and product fit. The PM's inference \u2014 'they are more loyal, so replicate them' \u2014 is a causal claim from observational data. Early adopters self-select; their higher retention may reflect who they are, not a behaviour that can be transplanted. Without randomization, the difference could be entirely attributable to selection effects. | Option 0 is the classic error: conflating statistical significance with causal evidence. Observational cohort differences have many explanations. | Option 2 is wrong: the log-rank test is based on comparing expected vs observed event counts at each time step; it is valid for small samples (though power decreases). There is no hard 500-per-cohort requirement. | Option 3 is the standard p-value misinterpretation: the p-value is P(data at least this extreme | cohort survival curves are equal), not P(cohort survival curves are equal | data). The probability of the null being true is not defined in frequentist statistics.",
+    "hints": [
+      "The log-rank test tells you whether the survival curves are different. Does that answer why they are different?",
+      "Early adopters chose to adopt early. What type of study design would let you separate the effect of adoption timing from who those users are?"
+    ],
+    "concepts": [
+      "survival analysis & time-to-event",
+      "hypothesis testing"
+    ]
+  },
+  {
+    "id": 73076,
+    "order": 76,
+    "topic": "statistics",
+    "type": "numerical",
+    "subtype": "numerical",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Compute K-M median survival time from censored event data",
+    "description": "Given a list of `[time, event]` observations (event=1 = event occurred, event=0 = right-censored), implement the Kaplan-Meier estimator and return the median survival time: the smallest event time t at which S(t) \u2264 0.5. Return -1.0 if the survival function remains above 0.5 at all observed event times.\n\nAt each event time t\u1d62 (ascending):\n- n\u1d62 = count of observations with time \u2265 t\u1d62\n- d\u1d62 = events at t\u1d62\n- S(t\u1d62) = S(t\u1d62\u208b\u2081) \u00d7 (1 \u2212 d\u1d62/n\u1d62)\n\nStop and return float(t\u1d62) as soon as S(t\u1d62) \u2264 0.5.",
+    "starter_code": "def solve(data: list[list[int]]) -> float:\n    # Your code here\n    pass",
+    "expected_code": "def solve(data: list[list[int]]) -> float:\n    from collections import defaultdict\n    events = defaultdict(int)\n    for t, e in data:\n        if e == 1:\n            events[t] += 1\n    sorted_times = sorted(events.keys())\n    S = 1.0\n    for t in sorted_times:\n        n = sum(1 for obs_t, _ in data if obs_t >= t)\n        d = events[t]\n        S = S * (1 - d / n)\n        if S <= 0.5:\n            return float(t)\n    return -1.0",
+    "solution_code": "def solve(data: list[list[int]]) -> float:\n    from collections import defaultdict\n    events = defaultdict(int)\n    for t, e in data:\n        if e == 1:\n            events[t] += 1\n    sorted_times = sorted(events.keys())\n    S = 1.0\n    for t in sorted_times:\n        n = sum(1 for obs_t, _ in data if obs_t >= t)  # risk set\n        d = events[t]\n        S = S * (1 - d / n)  # product-limit update\n        if S <= 0.5:  # first crossing of the 50% threshold\n            return float(t)\n    return -1.0  # median not estimable from observed data",
+    "explanation": "The K-M median is the infimum of t where S(t) \u2264 0.5 \u2014 the first time the estimated survival probability drops to or below 50%. The implementation walks sorted event times, updating the product-limit estimate, and returns immediately when the threshold is crossed. If the curve never crosses 0.5 (too few events or light censoring at the tail), the median is not estimable from the data and the function returns -1.0. This is common when a large fraction of the cohort is censored before experiencing the event.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            [
+              1,
+              1
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              3,
+              1
+            ]
+          ]
+        ],
+        "expected": 1.0,
+        "tolerance": 0.0
+      },
+      {
+        "input": [
+          [
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              4,
+              1
+            ],
+            [
+              4,
+              1
+            ],
+            [
+              6,
+              0
+            ]
+          ]
+        ],
+        "expected": 4.0,
+        "tolerance": 0.0
+      },
+      {
+        "input": [
+          [
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              3,
+              0
+            ],
+            [
+              4,
+              0
+            ],
+            [
+              5,
+              0
+            ]
+          ]
+        ],
+        "expected": -1.0,
+        "tolerance": 0.0
+      }
+    ],
+    "public_test_cases": [
+      {
+        "input": [
+          [
+            [
+              1,
+              1
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              3,
+              1
+            ]
+          ]
+        ],
+        "expected": 1.0,
+        "tolerance": 0.0
+      }
+    ],
+    "hints": [
+      "Sort the unique event times. For each t, count how many observations in the original data have time \u2265 t to get the risk set size.",
+      "Track S multiplicatively from 1.0. Return the current t as soon as S drops to or below 0.5. If the loop ends without S hitting 0.5, return -1.0."
+    ],
+    "concepts": [
+      "survival analysis & time-to-event",
+      "Kaplan-Meier"
+    ]
   }
 ]

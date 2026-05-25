@@ -74,6 +74,8 @@ MOCK_ONLY_REALISM_FAMILIES: dict[str, set[str]] = {
     # re-combined under fresh framing in mock-only. See
     # docs/tracks/data-modeling.md and the DM Phase 2 decision log.
     "data-modeling": set(),
+    # Statistics: union-of-modalities — MCQ subtype + numerical harness already grade judgment; no realism lens needed.
+    "statistics": set(),
 }
 
 # ---------------------------------------------------------------------------
@@ -1622,13 +1624,37 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
     # Statistics — 12 canonical families (lowercase canonical for this track)
     # -----------------------------------------------------------------------
     "statistics": {
+        # D2-A.1: appended skewness/kurtosis/IQR/quartiles/heavy-tails/mean-vs-median/standardization/empirical-rule
         "descriptive statistics": [
             "descriptive statistics",
             "measures of central tendency",
             "outliers",
             "variance",
             "standard deviation",
+            "skewness",
+            "kurtosis",
+            "IQR",
+            "interquartile range",
+            "quartiles",
+            "heavy tails",
+            "mean vs median",
+            "standardization",
+            "empirical rule",
         ],
+        # D2-A.7: bayesian inference placed BEFORE probability & combinatorics to prevent
+        # "bayes" substring in prob&comb from capturing "Bayesian*" tags (ordering fix).
+        # Appended: prior-information/decision-making-under-uncertainty/model-selection
+        "bayesian inference": [
+            "bayesian",
+            "prior",
+            "posterior",
+            "bayes factor",
+            "prior information",
+            "decision making under uncertainty",
+            "model selection",
+        ],
+        # D2-A.2: appended set-theory/sample-space/inclusion-exclusion/complementary/memoryless/symmetry/proportions
+        # Note: "bayes" here now only captures "Bayes' theorem" (not "bayesian*" tags — those resolve above)
         "probability & combinatorics": [
             "probability",
             "combinatorics",
@@ -1638,6 +1664,13 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "bayes",
             "conditional probability",
             "independence",
+            "set theory",
+            "sample space",
+            "inclusion-exclusion",
+            "complementary events",
+            "memoryless property",
+            "symmetry",
+            "proportions",
         ],
         "distributions": [
             "distribution",
@@ -1657,6 +1690,7 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "law of large numbers",
             "sample size",
         ],
+        # D2-A.8: appended sufficient-statistics/noise-and-signal/statistical-artefacts/frequentist-inference/method-of-moments
         "confidence intervals & estimation": [
             "confidence interval",
             "parameter estimation",
@@ -1664,7 +1698,13 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "resampling",
             "MLE",
             "maximum likelihood",
+            "sufficient statistics",
+            "noise and signal",
+            "statistical artefacts",
+            "frequentist inference",
+            "method of moments",
         ],
+        # D2-A.3: appended alternative-hypothesis/significance-level/test-selection/non-parametric; removed "ANOVA" (D2-C)
         "hypothesis testing": [
             "hypothesis testing",
             "p-value",
@@ -1672,14 +1712,23 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "t-test",
             "z-test",
             "chi-squared test",
-            "ANOVA",
+            "alternative hypothesis",
+            "significance level",
+            "test selection",
+            "non-parametric tests",
+            "non-parametric methods",
+            "goodness of fit",
         ],
+        # D2-A.4: appended minimum-detectable-effect/MDE; Phase2-Stats: added family name as self-resolving pattern
         "errors & power": [
+            "errors & power",
             "type i",
             "type ii",
             "statistical power",
             "effect size",
             "power analysis",
+            "minimum detectable effect",
+            "MDE",
         ],
         "multiple testing & correction": [
             "multiple comparisons",
@@ -1687,12 +1736,7 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "bonferroni",
             "FDR",
         ],
-        "bayesian inference": [
-            "bayesian",
-            "prior",
-            "posterior",
-            "bayes factor",
-        ],
+        # D2-A.5: appended causal-DAG/mediation/residual-diagnostics/heteroscedasticity/coeff-interpretation/log-odds/model-assumptions/linear-relationships/causation/survivorship-bias/Berkson's-bias/relative-risk/linear-regression/logistic-regression
         "correlation, regression & causality": [
             "correlation",
             "regression",
@@ -1703,16 +1747,52 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "selection bias",
             "observational",
             "odds ratio",
+            "causal DAG",
+            "mediation",
+            "residual diagnostics",
+            "heteroscedasticity",
+            "coefficient interpretation",
+            "log-odds",
+            "model assumptions",
+            "linear relationships",
+            "causation",
+            "survivorship bias",
+            "Berkson's bias",
+            "relative risk",
+            "linear regression",
+            "logistic regression",
         ],
+        # D2-A.6: appended variance-reduction/CUPED/pre-experiment-covariate/experiment-design/within-subject/HTE/experiment-interpretation (narrowed: Exp-track mechanics excluded)
         "experimental design (within stats)": [
             "experimental design",
             "a/b testing",
             "randomization",
+            "variance reduction",
+            "CUPED",
+            "pre-experiment covariate",
+            "experiment design",
+            "within-subject design",
+            "heterogeneous treatment effects",
+            "experiment interpretation",
         ],
         "variance decomposition & ANOVA": [
             "variance decomposition",
             "anova",
             "f-statistic",
+            "sum of squares",
+            "between-group",
+            "within-group",
+            "explained variance",
+            "eta squared",
+        ],
+        # D2-B: new family for survival analysis & time-to-event
+        "survival analysis & time-to-event": [
+            "survival analysis",
+            "hazard rate",
+            "Kaplan-Meier",
+            "kaplan meier",
+            "time-to-event",
+            "censoring",
         ],
     },
 

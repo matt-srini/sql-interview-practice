@@ -255,7 +255,7 @@ The 4-step verbatim lookup procedure lives in [`.github/agents/question-authorin
 | PySpark | ✅ | clean (278 q, 0 orphans) | Phase 2 closed; added to set post-closure |
 | Data Engineering | ✅ | clean | Phase 2 closed; no realism families by design |
 | Data Modeling | ✅ | clean | Phase 2 closed; no realism families by design |
-| Statistics | ⛔ | 84 orphans / 105 q (registry incomplete) | Phase 2 pending; registry expansion needed before set inclusion |
+| Statistics | ✅ | clean (216 q, 0 orphans) | Phase 2 closed 2026-05-26; 13 families, no realism families by design; 100 practice + 116 mock-only |
 | ML Fundamentals | ⛔ | 0 orphans / 121 q | Phase 2 pending; clean enough to enforce, awaiting Phase 2 closure |
 | Experimentation | ⛔ | 0 orphans / 109 q | Phase 2 pending; clean enough to enforce, awaiting Phase 2 closure |
 
@@ -459,12 +459,12 @@ Practice questions are the full curriculum. Mock-only questions live in the same
 | PySpark | 41 | 45 | 42 | **128** | Code-adjacent reasoning (MCQ) |
 | Data Engineering | 30 | 35 | 26 | **91** | Constructed reasoning (MCQ) |
 | Data Modeling | 25 | 30 | 25 | **80** | Constructed reasoning (MCQ) |
-| Statistics | 31 | 41 | 25 | **97** | Hybrid (conceptual MCQ + numerical Python) |
+| Statistics | 31 | 43 | 26 | **100** | Hybrid (conceptual MCQ + numerical Python) |
 | ML Fundamentals | 30 | 38 | 28 | **96** | Constructed reasoning (MCQ) |
 | Experimentation | 30 | 32 | 22 | **84** | Constructed reasoning (MCQ) |
-| **Total** | | | | **862** | |
+| **Total** | | | | **868** | |
 
-Mock-only add-on bank: **796 questions** (Pro/Elite only). Samples: **36 total** SQL/Python/Pandas/PySpark + auto-sliced from practice for the other 5 tracks.
+Mock-only add-on bank: **904 questions** (Pro/Elite only). Samples: **36 total** SQL/Python/Pandas/PySpark + auto-sliced from practice for the other 5 tracks.
 
 **These counts evolve.** They reflect the bank at the time of the 2026-05 refactor. CLAUDE.md mirrors them; both files update together.
 

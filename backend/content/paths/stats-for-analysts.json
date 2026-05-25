@@ -20,11 +20,10 @@
     "distributions"
   ],
   "focus_concepts": [
-    "DESCRIPTIVE STATISTICS",
-    "PROBABILITY BASICS",
-    "NORMAL DISTRIBUTION",
-    "CONFIDENCE INTERVALS",
-    "EXPECTED VALUE"
+    "descriptive statistics",
+    "probability",
+    "distributions",
+    "confidence intervals & estimation"
   ],
   "outcomes": "You will be able to compute and interpret mean, median, and standard deviation, apply basic probability rules, reason about the normal distribution and z-scores, and explain what a confidence interval actually means.",
   "recommended_after": []

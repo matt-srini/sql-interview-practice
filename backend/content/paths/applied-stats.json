@@ -19,13 +19,10 @@
     "regression"
   ],
   "focus_concepts": [
-    "SURVIVORSHIP BIAS",
-    "SAMPLING BIAS",
-    "REGRESSION TO THE MEAN",
-    "GOODHART'S LAW",
-    "LOGISTIC REGRESSION",
-    "ODDS RATIO",
-    "PAIRED T-TEST"
+    "correlation, regression & causality",
+    "sampling & central limit theorem",
+    "hypothesis testing",
+    "experimental design"
   ],
   "outcomes": "You'll recognize survivorship, Berkson's, and sampling bias in real datasets; avoid Goodhart's Law traps in metric design; interpret logistic regression coefficients and odds ratios correctly; and know when to use a paired vs unpaired t-test.",
   "recommended_after": [

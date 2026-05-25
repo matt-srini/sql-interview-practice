@@ -82,6 +82,41 @@ Same concept families apply to both subtypes. A `central limit theorem` question
 
 **Practice teaches, mock-only stress-tests transfer.** The difference is framing and realism, not new concepts. A mock-only question recombines statistical reasoning the practice bank already teaches at that difficulty (or lower), anchored in a fresh applied scenario; it must not clone an existing practice question and must not introduce a concept family the curriculum never taught. If a mock would need an untaught concept, author the practice question first.
 
+## Coverage & sizing targets
+
+**Phase 2 complete (2026-05-26).** All 13 concept families have ≥1 practice question (rule-1) and ≥4 mock-only questions (rule-2).
+
+| Tier | Practice | Mock-only | Total |
+|---|---|---|---|
+| Easy | 31 | 0 (by design) | 31 |
+| Medium | 43 | 66 | 109 |
+| Hard | 26 | 50 | 76 |
+| **Total** | **100** | **116** | **216** |
+
+Mock-only ratio: 116 / 100 = 1.16× (target: 1.15–1.25×).
+
+**Family coverage (mock-only floor ≥4 per applicable tier):**
+
+| Family | Status |
+|---|---|
+| descriptive statistics | ✓ |
+| bayesian inference | ✓ |
+| probability & combinatorics | ✓ |
+| distributions | ✓ |
+| sampling & central limit theorem | ✓ |
+| confidence intervals & estimation | ✓ |
+| hypothesis testing | ✓ |
+| errors & power | ✓ |
+| multiple testing & correction | ✓ |
+| correlation, regression & causality | ✓ |
+| experimental design (within stats) | ✓ |
+| variance decomposition & ANOVA | ✓ |
+| survival analysis & time-to-event | ✓ |
+
+`_TAXONOMY_VALIDATED_TRACKS` includes `"statistics"` — all concept tags are fully validated against the registry.
+
+**No mock-only realism families** (`MOCK_ONLY_REALISM_FAMILIES["statistics"] = set()`). Statistics' dual-subtype format (conceptual MCQ + numerical code execution) makes every reasoning lens directly gradeable; the SQL/Pandas "assessment lens" rationale does not transfer.
+
 ## Anti-patterns specific to Statistics
 
 - **Mixing subtypes silently** — the user must know whether they're answering conceptual or numerical before they answer.

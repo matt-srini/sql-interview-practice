@@ -3097,5 +3097,1015 @@
       "binomial",
       "probability"
     ]
+  },
+  {
+    "id": 72091,
+    "order": 91,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "medium",
+    "mock_only": true,
+    "follow_ups": [
+      72092,
+      72093
+    ],
+    "title": "Central Limit Theorem: Why Averages Are 'More Normal'",
+    "description": "A product tracks daily active session time per user. The distribution of individual session times is highly right-skewed: most sessions last 2\u20135 minutes, but a small fraction last hours. The distribution is far from Normal.\n\nA data scientist says: 'Even though individual session times are skewed, the average session time across 500 daily users is approximately normally distributed.'\n\nThe PM asks: 'How can the average be normal if the individual values aren't?'\n\nWhat is the correct explanation?",
+    "options": [
+      "The CLT is wrong in this case \u2014 skewed individual data always produces a skewed mean regardless of sample size",
+      "The Central Limit Theorem (CLT) states that the distribution of the sample mean converges to Normal as n increases, regardless of the shape of the individual observations' distribution. With n = 500 users per day, the CLT applies well: the daily average session time will follow approximately N(\u03bc, \u03c3\u00b2/n), where \u03bc and \u03c3\u00b2 are the population mean and variance. The averaging process smooths out skewness",
+      "The average is normally distributed only if the median equals the mean in the underlying distribution",
+      "The CLT applies only to symmetric distributions; for skewed session data, the Lognormal distribution should be used for the average"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B correctly explains the Central Limit Theorem.\n\nThe CLT is one of the most important results in statistics: given n independent, identically distributed random variables X\u2081, X\u2082, ..., X\u2099 with mean \u03bc and finite variance \u03c3\u00b2, the sample mean X\u0304 = (\u03a3X\u1d62)/n has a distribution that converges to N(\u03bc, \u03c3\u00b2/n) as n \u2192 \u221e, regardless of the shape of the original distribution.\n\nWith session times:\n- Individual session times: right-skewed, far from normal\n- Average of 500 session times per day: approximately N(\u03bc, \u03c3\u00b2/500)\n\nThe standard error of the daily mean is \u03c3/\u221a500, which is much smaller than \u03c3. The averaging process creates symmetry because the large values are 'diluted' by the many small values \u2014 no single extreme session dominates the average of 500.\n\nPractical rule of thumb for skewed data: n \u2265 30\u201350 is often sufficient for CLT to apply; for highly skewed distributions (like session times with very heavy tails), n \u2265 100\u2013200 may be needed.\n\nOption A is wrong: this is precisely what the CLT refutes. The CLT is one of the most thoroughly verified theorems in probability theory.\n\nOption C is wrong: the CLT doesn't require the mean to equal the median. Skewed distributions can have very different means and medians, and the CLT applies to the mean's sampling distribution regardless.\n\nOption D is wrong: the CLT does not require symmetric distributions. It applies to any distribution with finite mean and variance \u2014 and for the purposes of the daily mean, even right-skewed session-time distributions satisfy this requirement.",
+    "hints": [
+      "Think about what happens to extreme values when you average them with hundreds of normal values. Can one very long session dominate the average of 500 sessions?",
+      "The CLT says the sampling distribution of the mean converges to Normal. Does this apply to individual session times, or to the average of many session times?"
+    ],
+    "concepts": [
+      "sampling & central limit theorem",
+      "distributions",
+      "standard error"
+    ]
+  },
+  {
+    "id": 72092,
+    "order": 92,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "medium",
+    "mock_only": true,
+    "parent_id": 72091,
+    "follow_up_dimension": "data_quality_pivot",
+    "title": "Missing Data and CLT: What If 30% of Session Times Are Unrecorded?",
+    "description": "Continuing from the session-time analysis: the data team discovers that 30% of sessions are truncated in the database \u2014 the session-end event fails to log for mobile users, resulting in session durations recorded as exactly 0 minutes.\n\nThe true distribution: 70% of sessions are correctly measured (right-skewed, 2\u201330 min), 30% are logged as 0 min due to the bug.\n\nThe team has been computing daily average session time using all records. A data scientist says the CLT still applies, so the daily mean is still approximately Normal.\n\nIs the data scientist right? What is the key concern?",
+    "options": [
+      "The data scientist is correct: the CLT applies to any mixture of distributions, and 0-values are legitimate data points",
+      "The data scientist is correct that the sample mean of 500 users is approximately Normal in distribution (CLT holds). However, the mean it converges to is the wrong population mean: E[recorded time] = 0.7 \u00d7 E[true time] + 0.3 \u00d7 0, which systematically underestimates the true mean session time. The CLT describes the shape of the sampling distribution around a biased estimator",
+      "The CLT fails when there are exact zeros in the data; the distribution must be continuous for CLT to apply",
+      "The 30% zeros make the distribution bimodal, and CLT never applies to bimodal distributions"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B correctly distinguishes the CLT's guarantee (distributional shape) from the estimator's validity (unbiasedness).\n\nThe CLT makes a claim about the shape of the sampling distribution of the mean: as n increases, X\u0304 \u2192 N(\u03bc_observed, \u03c3\u00b2_observed/n). With n = 500 daily sessions, the CLT still holds \u2014 the sample mean's sampling distribution is approximately Normal.\n\nHowever, \u03bc_observed (the mean of the recorded data, including zeros) is NOT the true mean session time \u03bc_true:\n\nE[recorded session] = 0.7 \u00d7 \u03bc_true + 0.3 \u00d7 0 = 0.7 \u00d7 \u03bc_true\n\nThe CLT precisely characterises the distribution of a biased estimate. The mean will converge (in distribution) to Normal, but centered at 0.7 \u00d7 \u03bc_true rather than \u03bc_true. This is Missing Not At Random (MNAR) \u2014 the missing data is systematically on mobile devices, not a random subset.\n\nThe correct response:\n1. Fix the logging bug (don't record 0 for truncated sessions; use NULL or exclude)\n2. Adjust the estimate: multiply the observed mean by 1/0.7 if mobile and desktop are equally active on average\n3. Analyse mobile and desktop separately if their session patterns differ\n\nOption A is wrong: '0-values are legitimate data points' is true only if 0 represents a real zero-duration session. Here, 0 is a measurement artifact \u2014 the session duration was not recorded, not zero.\n\nOption C is wrong: the CLT applies to discrete, mixed, and mass-at-zero distributions as long as the variance is finite. The zeros don't invalidate the CLT \u2014 they bias the estimate.\n\nOption D is wrong: bimodal distributions (even discrete ones) satisfy the CLT conditions as long as the variance is finite. CLT does not require unimodality.",
+    "hints": [
+      "The CLT says the mean converges to Normal \u2014 centered at what value? Is the mean of 'all recorded sessions including bug-induced zeros' equal to the true mean session time?",
+      "If 30% of sessions are recorded as 0 when they shouldn't be, what is E[recorded session time] as a function of E[true session time]?"
+    ],
+    "concepts": [
+      "sampling & central limit theorem",
+      "statistical artefacts",
+      "standard error",
+      "noise and signal"
+    ]
+  },
+  {
+    "id": 72093,
+    "order": 93,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "medium",
+    "mock_only": true,
+    "parent_id": 72091,
+    "follow_up_dimension": "scale_pivot",
+    "title": "Law of Large Numbers vs CLT: Different Guarantees at Scale",
+    "description": "After fixing the logging bug, the team scales up their daily active user count from 500 to 500,000. A PM says: 'Now that we have 500,000 users per day, the Law of Large Numbers guarantees our daily average session time is exactly equal to the true mean \u2014 no more variability.'\n\nA data scientist disagrees. Who is right?",
+    "options": [
+      "The PM is right: with 500,000 observations, the LLN ensures the sample mean equals the population mean exactly",
+      "The PM overstates the LLN. The Law of Large Numbers guarantees the sample mean *converges* to the true mean as n \u2192 \u221e \u2014 meaning the probability of a large error becomes arbitrarily small. But with finite n (even n = 500,000), the daily average is still a random variable with variance \u03c3\u00b2/n > 0. The CLT gives the precise distribution: N(\u03bc, \u03c3\u00b2/500,000). The standard error is much smaller than at n = 500, but never exactly zero",
+      "The PM is wrong for the opposite reason: the LLN only applies when n < 1,000; for large n, the sample mean does not approach the population mean",
+      "Both the LLN and CLT guarantee exactly zero variability for n \u2265 100,000"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B correctly distinguishes the LLN's asymptotic guarantee from a finite-sample guarantee.\n\nThe **Law of Large Numbers (LLN)** states: P(|X\u0304\u2099 \u2212 \u03bc| > \u03b5) \u2192 0 as n \u2192 \u221e, for any \u03b5 > 0. This is a convergence-in-probability statement \u2014 for large enough n, the sample mean is arbitrarily close to \u03bc with arbitrarily high probability. But 'close' and 'arbitrarily high probability' are asymptotic \u2014 they do not mean 'exactly equal' or 'probability one for finite n.'\n\nWith n = 500,000, the standard error of the daily mean is \u03c3/\u221a500,000. If \u03c3 = 10 minutes:\n- n=500: SE = 10/\u221a500 \u2248 0.45 min\n- n=500,000: SE = 10/\u221a500,000 \u2248 0.014 min\n\nThe daily average is still a random variable \u2014 just a much more precisely estimated one. There will still be day-to-day variability in the mean; it will just be confined to a very narrow band (roughly \u00b10.03 min for 95% of days).\n\nThis distinction matters in practice: with 500,000 daily users, the team can detect real changes in mean session time of ~0.03 minutes with high power. This is precision, not exactness.\n\nOption A mistakes the asymptotic guarantee for a finite-sample certainty. The LLN says the probability of error becomes tiny \u2014 not that error is zero.\n\nOption C is the exact opposite of reality. The LLN applies more reliably as n grows; the accuracy of the approximation increases, not decreases.\n\nOption D is wrong by the same logic as Option A. No finite sample guarantees zero variability in a random estimator.",
+    "hints": [
+      "The Law of Large Numbers says the mean converges *in probability* to \u03bc as n \u2192 \u221e. Does convergence in probability mean equality at any finite n?",
+      "What is the standard error of the mean at n=500 vs n=500,000? Is it zero at 500,000?"
+    ],
+    "concepts": [
+      "sampling & central limit theorem",
+      "law of large numbers",
+      "standard error"
+    ]
+  },
+  {
+    "id": 72094,
+    "order": 94,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Standard Error vs Standard Deviation: Common Confusion",
+    "description": "A junior analyst reports: 'The average conversion rate is 7.2% with a standard deviation of 2.1%.'\n\nA senior analyst asks: 'Are you reporting the standard deviation of the conversion rate across users, or the standard error of your mean estimate?'\n\nThe junior analyst says: 'Aren't they the same thing?'\n\nWhat is the correct distinction?",
+    "options": [
+      "They are the same: standard deviation and standard error both measure spread in the data and are computed identically",
+      "Standard deviation (\u03c3 or s) measures spread in the individual observations \u2014 how much individual conversion rates vary across users. Standard error (SE = s/\u221an) measures precision of the mean estimate \u2014 how much the sample mean would vary across different samples of the same size. SE answers 'how uncertain is the mean?' while SD answers 'how spread out are individuals?'",
+      "Standard error is the standard deviation divided by n (not \u221an); standard deviation divided by \u221an is the variance",
+      "Standard error applies to population parameters; standard deviation applies to samples"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B correctly distinguishes the two concepts.\n\n**Standard deviation (\u03c3 or s):** measures the spread of individual values around the mean. A conversion rate SD of 2.1% means individual users' conversion rates vary substantially around the 7.2% average. This quantifies heterogeneity in the population.\n\n**Standard error of the mean (SE = s/\u221an):** measures how precisely the sample mean estimates the population mean. With n users, SE = 2.1% / \u221an. This quantifies uncertainty about the mean estimate.\n\nFor n = 1,000 users: SE = 2.1%/\u221a1000 \u2248 0.066% \u2014 the mean is estimated very precisely.\nFor n = 10 users: SE = 2.1%/\u221a10 \u2248 0.66% \u2014 the mean estimate is much less certain.\n\nThe confusion is common because both are 'measures of spread,' but they answer different questions:\n- SD: 'How variable are individual users?'\n- SE: 'How confident should I be in this mean estimate?'\n\nConfidence intervals use SE (not SD): CI = mean \u00b1 z \u00d7 SE\nDescriptive statistics use SD: 'typical spread in the data'\n\nOption A is wrong: the formulas differ (\u03c3 vs. \u03c3/\u221an) and they answer different questions.\n\nOption C is wrong: SE = s/\u221an (not s/n). Dividing by n would give something very different and non-standard.\n\nOption D inverts the typical usage. Standard deviation is commonly applied to both samples and populations; SE specifically refers to the precision of a sample statistic.",
+    "hints": [
+      "SE = \u03c3/\u221an. What does the \u221an in the denominator do \u2014 what does it measure about the quality of the mean estimate?",
+      "If you drew 1,000 different samples of the same size and computed the mean of each, the standard deviation of those 1,000 means would be what, in terms of \u03c3 and n?"
+    ],
+    "concepts": [
+      "sampling & central limit theorem",
+      "standard error",
+      "descriptive statistics"
+    ]
+  },
+  {
+    "id": 72095,
+    "order": 95,
+    "topic": "statistics",
+    "type": "numerical",
+    "subtype": "numerical",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Standard Error of the Mean",
+    "description": "Implement `solve(values)` that computes the **standard error of the mean** for a list of numerical values:\n\nSE = s / \u221an\n\nwhere s is the sample standard deviation (using n\u22121 denominator, i.e., Bessel's correction) and n is the sample size. Return a float rounded to 6 decimal places. Raise `ValueError` if n < 2.",
+    "starter_code": "def solve(values: list[float]) -> float:\n    # Your code here\n    pass",
+    "expected_code": "def solve(values: list[float]) -> float:\n    import math\n    import statistics\n    n = len(values)\n    if n < 2:\n        raise ValueError('Need at least 2 values to compute standard error')\n    s = statistics.stdev(values)  # sample std (n-1 denominator)\n    return round(s / math.sqrt(n), 6)",
+    "solution_code": "def solve(values: list[float]) -> float:\n    import math\n    import statistics\n    n = len(values)\n    if n < 2:\n        raise ValueError('Need at least 2 values to compute standard error')\n    # statistics.stdev uses (n-1) denominator (Bessel's correction)\n    s = statistics.stdev(values)\n    return round(s / math.sqrt(n), 6)",
+    "explanation": "SE = s / \u221an where s is the sample standard deviation (n\u22121 denominator). SE measures how precisely the sample mean estimates the population mean: smaller n \u2192 larger SE (less precise); smaller s \u2192 smaller SE (less variable population). `statistics.stdev` in Python uses Bessel's correction (n\u22121 denominator) by default, which gives an unbiased estimate of the population standard deviation.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            1.0,
+            2.0,
+            3.0,
+            4.0,
+            5.0
+          ]
+        ],
+        "expected": 0.707107,
+        "tolerance": 1e-05
+      },
+      {
+        "input": [
+          [
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0
+          ]
+        ],
+        "expected": 0.0,
+        "tolerance": 1e-09
+      },
+      {
+        "input": [
+          [
+            5.0,
+            10.0,
+            15.0,
+            20.0
+          ]
+        ],
+        "expected": 3.227486,
+        "tolerance": 1e-05
+      }
+    ],
+    "public_test_cases": [
+      {
+        "input": [
+          [
+            1.0,
+            2.0,
+            3.0,
+            4.0,
+            5.0
+          ]
+        ],
+        "expected": 0.707107,
+        "tolerance": 1e-05
+      },
+      {
+        "input": [
+          [
+            5.0,
+            10.0,
+            15.0,
+            20.0
+          ]
+        ],
+        "expected": 3.227486,
+        "tolerance": 1e-05
+      }
+    ],
+    "hints": [
+      "Use `statistics.stdev(values)` for the sample standard deviation (n-1 denominator). Then divide by `math.sqrt(n)`.",
+      "SE = s / sqrt(n). If all values are identical, s = 0 and SE = 0 \u2014 a constant variable has no sampling uncertainty."
+    ],
+    "concepts": [
+      "sampling & central limit theorem",
+      "standard error",
+      "descriptive statistics"
+    ]
+  },
+  {
+    "id": 72096,
+    "order": 96,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "medium",
+    "mock_only": true,
+    "follow_ups": [
+      72097,
+      72098
+    ],
+    "title": "Multiple Testing: Why 5% Significance Doesn't Mean 5%",
+    "description": "A product team runs 10 simultaneous A/B tests across 10 different features. Each test uses \u03b1 = 0.05. At the end, 2 tests reach significance (p < 0.05).\n\nThe PM says: 'We have 5% Type I error per test, so these results are reliable.'\n\nA statistician says: 'You have not controlled the family-wise error rate.'\n\nWhat is the correct concern, and approximately what is the probability that at least one of the 10 results is a false positive?",
+    "options": [
+      "The PM is correct: \u03b1 = 0.05 per test means exactly 5% Type I error for each test, which is sufficient",
+      "With 10 independent tests each at \u03b1 = 0.05, the family-wise error rate (FWER) \u2014 the probability of at least one false positive across all tests \u2014 is approximately 1 \u2212 (0.95)\u00b9\u2070 \u2248 40%. Even if no feature actually has an effect, there is a 40% chance of finding at least one 'significant' result purely by chance",
+      "The FWER is 10 \u00d7 5% = 50%; the correct way to fix this is to reduce \u03b1 to 0.5%",
+      "Multiple testing only inflates error rates when tests are correlated; if the 10 tests are independent, \u03b1 = 0.05 per test is valid"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B correctly computes the family-wise error rate for independent tests.\n\nFWER = 1 \u2212 P(no false positives) = 1 \u2212 (1 \u2212 \u03b1)^k where k = number of tests.\n\nWith k = 10, \u03b1 = 0.05:\nFWER = 1 \u2212 (0.95)\u00b9\u2070 = 1 \u2212 0.5987 \u2248 40%\n\nThis means: even if NONE of the 10 features has any effect, there is a 40% chance that the testing procedure will declare at least one of them significant. The 2 significant results the team found must be viewed in this context \u2014 with a 40% false positive risk for the family, the findings require correction or independent replication.\n\nIntuition: Each test is essentially a '5% lottery' for false positives. With 10 independent lotteries, the probability that you win at least one is far above 5%.\n\nCommon corrections:\n- **Bonferroni:** use \u03b1/k = 0.005 per test (controls FWER at 5% for independent tests)\n- **Holm-Bonferroni:** step-down method, more powerful than Bonferroni\n- **Benjamini-Hochberg:** controls False Discovery Rate (FDR), more powerful for exploratory analyses\n\nOption A is the standard mistake: \u03b1 = 0.05 is the per-test error rate, not the family error rate. It's valid for a single pre-specified test, not for a family of tests.\n\nOption C is wrong in the formula: FWER \u2260 k \u00d7 \u03b1 (this is an upper bound that becomes loose). The exact formula is 1 \u2212 (1 \u2212 \u03b1)^k. Also, reducing \u03b1 to 0.5% = \u03b1/10 IS the Bonferroni correction, so Option C is partially right about the fix but wrong about the formula.\n\nOption D is wrong: multiple testing inflates error rates for independent tests too. Correlation between tests can actually reduce the FWER (when tests are positively correlated, finding a false positive in one makes a false positive in a correlated test less surprising \u2014 the 'effective number of tests' decreases).",
+    "hints": [
+      "If each of 10 independent tests has a 5% chance of a false positive, what is the probability that ALL 10 give true negatives? What is 1 minus that probability?",
+      "The formula is FWER = 1 - (1 - alpha)^k for k independent tests. Compute this for k=10, alpha=0.05."
+    ],
+    "concepts": [
+      "multiple testing & correction",
+      "type i",
+      "errors & power",
+      "hypothesis testing"
+    ]
+  },
+  {
+    "id": 72097,
+    "order": 97,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "medium",
+    "mock_only": true,
+    "parent_id": 72096,
+    "follow_up_dimension": "scale_pivot",
+    "title": "Bonferroni vs FDR at Scale: Which Correction to Use?",
+    "description": "The team scales their testing from 10 simultaneous tests to 200 simultaneous tests (a full platform-wide experiment round). Two statisticians disagree on the correction:\n\n- **Statistician A:** 'Apply Bonferroni: use \u03b1/200 = 0.00025 per test.'\n- **Statistician B:** 'At 200 tests, Bonferroni is too conservative \u2014 most null hypotheses are probably false. Use Benjamini-Hochberg FDR at 5%.'\n\nWho is right, and in what circumstances does each approach apply?",
+    "options": [
+      "Statistician A is always right: Bonferroni is the gold standard and should always be applied",
+      "Both can be appropriate depending on the goal. Bonferroni controls the FWER (probability of ANY false positive) at 5% \u2014 extremely conservative at k=200, making it hard to detect any effects. FDR (Benjamini-Hochberg) controls the expected fraction of false discoveries among all rejected hypotheses. At 200 tests, FDR is often preferred in exploratory contexts: you accept that some fraction (~5%) of 'significant' findings are false positives, but you can still discover many real effects that Bonferroni would miss",
+      "Statistician B is always right: Bonferroni should never be used at k > 50",
+      "At k = 200 tests, neither correction is needed because the tests average out statistically"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B correctly identifies the trade-off between FWER and FDR control.\n\n**Bonferroni (FWER control):**\n- Threshold: \u03b1/k = 0.05/200 = 0.00025 per test\n- Guarantee: P(at least one false positive) \u2264 0.05\n- Trade-off: Very stringent \u2014 many real effects will be missed (high false negative rate)\n- Best for: Confirmatory tests where a single false positive has high cost (medical decisions, regulatory submission, policy changes)\n\n**Benjamini-Hochberg (FDR control):**\n- Threshold: Rank p-values; reject hypothesis k if p_(k) \u2264 k \u00d7 0.05 / 200\n- Guarantee: E[false discoveries / total discoveries] \u2264 0.05\n- Trade-off: You allow ~5% of 'significant' findings to be false positives\n- Best for: Exploratory analyses (genomics, platform-wide feature screening) where you want to identify a promising subset for follow-up; false positives are acceptable if they are later validated\n\nWith 200 tests:\n- Bonferroni: only features with p < 0.00025 can be declared significant \u2014 misses features with real effects of moderate size\n- FDR: features with p < threshold (which is more lenient) can be flagged \u2014 more discoveries, some of which will need validation\n\nThe choice depends on the purpose: confirmatory (Bonferroni/FWER) vs. discovery (BH/FDR).\n\nOptions A and C are both wrong for asserting universal dominance of one approach.\n\nOption D is fundamentally wrong: statistical errors do not 'average out' with more tests. If anything, more tests create more opportunities for false positives.",
+    "hints": [
+      "What does FWER control guarantee vs what FDR control guarantees? Which is stronger, and at what cost?",
+      "If you have 200 tests and expect ~50% of null hypotheses to be false (i.e., 100 real effects), which correction method will let you find more of them?"
+    ],
+    "concepts": [
+      "multiple testing & correction",
+      "bonferroni",
+      "FDR",
+      "errors & power"
+    ]
+  },
+  {
+    "id": 72098,
+    "order": 98,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "medium",
+    "mock_only": true,
+    "parent_id": 72096,
+    "follow_up_dimension": "ambiguity_pivot",
+    "title": "FDR Misinterpretation: What 'False Discovery Rate' Really Means",
+    "description": "After applying Benjamini-Hochberg at FDR = 5% to 200 tests, the team identifies 40 significant features.\n\nThe PM says: 'FDR = 5% means each of the 40 findings individually has a 5% chance of being a false positive.'\n\nA statistician says the PM's interpretation is incorrect.\n\nWhat does FDR control actually guarantee?",
+    "options": [
+      "The PM is right: FDR = 5% means each finding has a 5% false positive rate",
+      "FDR = 5% controls the expected proportion of false discoveries among all discoveries: E[false positives / total positives] \u2264 5%. With 40 findings, the expected number of false positives is ~2 (5% \u00d7 40), but individual findings do not have a guaranteed 5% error rate. Some findings may have very low posterior probability of being false; others may be borderline. The FDR is a property of the procedure as a whole, not of individual discoveries",
+      "FDR = 5% means 5% of the 200 tested hypotheses are expected to be false positives regardless of how many were significant",
+      "FDR = 5% applies to the experiment family, not individual tests; it is equivalent to running each test at \u03b1 = 5%"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B correctly states the FDR guarantee.\n\nFDR control (Benjamini-Hochberg) gives a guarantee about the *ratio* \u2014 not about individual tests:\n\nE[FP / (FP + TP)] \u2264 0.05 when there are at least some true discoveries\n\nWith 40 findings and FDR = 5%:\n- Expected false positives \u2248 0.05 \u00d7 40 = 2\n- Expected true discoveries \u2248 38\n\nThis does NOT mean each finding individually has P(false positive) = 5%. The 40 findings span a range of p-values and evidence levels. The most significant finding (p = 0.0001) likely has much less than 5% probability of being a false positive; the marginally significant finding (p = 0.049) likely has more than 5%.\n\nDistinction from per-comparison error rate:\n- Per-comparison: each test has 5% false positive rate (\u03b1 = 0.05 per test)\n- FWER: probability of ANY false positive \u2264 5%\n- FDR: expected fraction of false positives among discoveries \u2264 5%\n\nPM's error: treating FDR = 5% as a per-discovery posterior probability. In a Bayesian sense, the local false discovery rate (locFDR) \u2014 the probability that a specific finding is false given its specific evidence level \u2014 varies across findings. The BH procedure's 5% is an average, not a per-finding guarantee.\n\nOption A restates the PM's error.\n\nOption C incorrectly replaces the denominator: FDR is false positives / DISCOVERIES (not false positives / all hypotheses). If no hypotheses are rejected, FDR = 0 by convention.\n\nOption D is wrong: running each test at \u03b1 = 5% does not control FDR \u2014 that's the uncorrected approach that would produce ~10 false positives in 200 tests.",
+    "hints": [
+      "FDR = E[false positives / total positives]. With 40 discoveries and FDR \u2264 5%, what is the expected NUMBER of false positives? Is this the same as a 5% error rate per finding?",
+      "Think about the most significant finding (p = 0.0001) vs the barely significant finding (p = 0.049). Do you believe each has exactly the same 5% probability of being a false positive?"
+    ],
+    "concepts": [
+      "multiple testing & correction",
+      "FDR",
+      "bonferroni",
+      "errors & power"
+    ]
+  },
+  {
+    "id": 72099,
+    "order": 99,
+    "topic": "statistics",
+    "type": "numerical",
+    "subtype": "numerical",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Benjamini-Hochberg FDR Procedure",
+    "description": "Implement `solve(p_values, alpha=0.05)` that applies the Benjamini-Hochberg procedure and returns a list of booleans indicating which hypotheses are rejected (True = rejected, False = not rejected).\n\nAlgorithm:\n1. Sort p-values in ascending order, keeping track of original indices\n2. For rank k (1-indexed), the threshold is \u03b1 \u00d7 k / m where m = total number of tests\n3. Find the largest k where p_(k) \u2264 \u03b1 \u00d7 k / m\n4. Reject all hypotheses with ranks \u2264 that largest k\n\nReturn a list of booleans in the original order.",
+    "starter_code": "def solve(p_values: list[float], alpha: float = 0.05) -> list[bool]:\n    # Your code here\n    pass",
+    "expected_code": "def solve(p_values: list[float], alpha: float = 0.05) -> list[bool]:\n    m = len(p_values)\n    sorted_idx = sorted(range(m), key=lambda i: p_values[i])\n    threshold = 0\n    for rank, idx in enumerate(sorted_idx, 1):\n        if p_values[idx] <= alpha * rank / m:\n            threshold = rank\n    result = [False] * m\n    for rank in range(1, threshold + 1):\n        result[sorted_idx[rank - 1]] = True\n    return result",
+    "solution_code": "def solve(p_values: list[float], alpha: float = 0.05) -> list[bool]:\n    m = len(p_values)\n    # Sort by p-value, keeping original indices\n    sorted_idx = sorted(range(m), key=lambda i: p_values[i])\n    # Find largest rank where p_(k) <= alpha * k / m\n    threshold = 0\n    for rank, idx in enumerate(sorted_idx, 1):\n        if p_values[idx] <= alpha * rank / m:\n            threshold = rank\n    # Reject all hypotheses up to the threshold rank\n    result = [False] * m\n    for rank in range(1, threshold + 1):\n        result[sorted_idx[rank - 1]] = True\n    return result",
+    "explanation": "The BH procedure ranks p-values from smallest to largest, then finds the largest rank k where p_(k) \u2264 \u03b1\u00d7k/m. All hypotheses at ranks \u2264 k are rejected \u2014 including those with p-values between consecutive rejections. This controls the expected false discovery rate at \u03b1. BH is less conservative than Bonferroni and more powerful for exploratory analyses.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            0.001,
+            0.012,
+            0.024,
+            0.031,
+            0.052,
+            0.081,
+            0.158,
+            0.223
+          ]
+        ],
+        "expected": [
+          true,
+          true,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "tolerance": 0
+      },
+      {
+        "input": [
+          [
+            0.003,
+            0.008,
+            0.045,
+            0.103,
+            0.211
+          ],
+          0.1
+        ],
+        "expected": [
+          true,
+          true,
+          true,
+          false,
+          false
+        ],
+        "tolerance": 0
+      }
+    ],
+    "public_test_cases": [
+      {
+        "input": [
+          [
+            0.001,
+            0.012,
+            0.024,
+            0.031,
+            0.052,
+            0.081,
+            0.158,
+            0.223
+          ]
+        ],
+        "expected": [
+          true,
+          true,
+          false,
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "tolerance": 0
+      }
+    ],
+    "hints": [
+      "Sort p-values ascending and find the largest rank k where p_(k) \u2264 \u03b1\u00d7k/m. Then reject everything at ranks 1 through k (not just k \u2014 all earlier ranks are also rejected).",
+      "Keep track of original indices so you can map rejections back to the original order."
+    ],
+    "concepts": [
+      "multiple testing & correction",
+      "FDR",
+      "bonferroni"
+    ]
+  },
+  {
+    "id": 72100,
+    "order": 100,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Reporting 'typical' salary when 3% of hires are VP-level outliers",
+    "description": "Your company publishes a salary transparency report. The dataset has 400 data scientist hire records; 12 are VP-level outliers earning approximately 10\u00d7 more than the median contributor. The PR team asks which single number best captures a typical starting salary for a non-senior candidate reading the report. Which do you recommend?",
+    "options": [
+      "Arithmetic mean \u2014 it accounts for every data point and its estimation-theory properties are well understood.",
+      "Median \u2014 it is the 50th-percentile value and is unaffected by the 12 extreme earners.",
+      "Mode \u2014 it reports the single most common salary, so most candidates see a realistic number.",
+      "5% trimmed mean \u2014 it symmetrically removes high and low extremes for a balanced view."
+    ],
+    "correct_option": 1,
+    "explanation": "Median (option 1) is correct: with 3% outliers earning 10\u00d7 the median, the mean is materially inflated \u2014 a candidate reading the mean would overestimate their likely offer. The median is the midpoint of the sorted distribution and is immune to the magnitude of extreme values. | Mean (option 0): estimation-theory properties apply when estimating a population parameter; here the task is communication to candidates, and the mean overstates what a typical hire earns. | Mode (option 2) has surface appeal but is poorly defined for continuous salary data \u2014 in a 400-record dataset many salary values may appear exactly once, making the mode unstable or non-unique. | 5% trimmed mean (option 3) has a subtle flaw: it trims BOTH tails, removing legitimate entry-level salaries from the bottom 5% alongside the VP outliers. For a right-skewed distribution the left tail does not need trimming \u2014 applying it introduces a new distortion.",
+    "hints": [
+      "Which summary statistic is unchanged if every VP salary doubled overnight?",
+      "Consider how a first-year candidate reading the report would interpret each number \u2014 which one represents the salary they are likely to receive?"
+    ],
+    "concepts": [
+      "descriptive statistics",
+      "mean vs median"
+    ]
+  },
+  {
+    "id": 72101,
+    "order": 101,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Spread metric for a heavy-tailed session-time distribution",
+    "description": "An analyst compares weekly session times for two user cohorts. Cohort A sessions are roughly normal; Cohort B has a heavy right tail driven by a small number of power users logging very long sessions. She wants to answer: \"How consistent are typical users?\" Which spread metric is most appropriate for Cohort B?",
+    "options": [
+      "Standard deviation \u2014 the most widely understood spread metric; required for computing confidence intervals.",
+      "IQR \u2014 measures the spread of the middle 50% of users and is unaffected by the heavy tail.",
+      "Variance \u2014 squares the deviations, capturing how far users drift from the mean.",
+      "Range \u2014 shows the full span from the shortest to the longest session."
+    ],
+    "correct_option": 1,
+    "explanation": "IQR (option 1) is correct: it measures Q3 \u2212 Q1, covering the central 50% of the distribution, and completely ignores the extreme values that inflate the right tail. For \"how consistent are typical users?\" IQR directly answers the question about the central majority. | Standard deviation (option 0) is inflated by the heavy tail: a few power users with sessions 10\u00d7 the median can double the SD, making it misleading for typical-user consistency. Its role in confidence intervals is a property of the normal approximation \u2014 not a reason to prefer it as a spread summary here. | Variance (option 2) is doubly inappropriate: it squares deviations, making outliers even more influential than in SD. | Range (option 3) is entirely determined by the single longest and shortest sessions \u2014 one extreme power-user session moves it arbitrarily.",
+    "hints": [
+      "Which measure of spread uses only the central 50% of observations and ignores the extremes entirely?",
+      "Imagine one power user adds a session three times longer than their previous maximum. Which metric changes \u2014 and which does not?"
+    ],
+    "concepts": [
+      "descriptive statistics",
+      "IQR"
+    ]
+  },
+  {
+    "id": 72102,
+    "order": 102,
+    "topic": "statistics",
+    "type": "numerical",
+    "subtype": "numerical",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Compute a 10% trimmed mean for skewed revenue data",
+    "description": "Given a list of daily revenue values, return the 10% trimmed mean: remove floor(10% \u00d7 n) values from each end of the sorted list and return the arithmetic mean of the remaining values. Round to 4 decimal places. Assume n \u2265 20.",
+    "starter_code": "def solve(values: list[float]) -> float:\n    # Your code here\n    pass",
+    "expected_code": "def solve(values: list[float]) -> float:\n    import math\n    sorted_v = sorted(values)\n    k = math.floor(len(sorted_v) * 0.10)\n    trimmed = sorted_v[k:len(sorted_v) - k]\n    return round(sum(trimmed) / len(trimmed), 4)",
+    "solution_code": "def solve(values: list[float]) -> float:\n    import math\n    sorted_v = sorted(values)         # sort ascending\n    k = math.floor(len(sorted_v) * 0.10)  # number to trim from each end\n    trimmed = sorted_v[k:len(sorted_v) - k]  # central (1 - 2*0.1)*n values\n    return round(sum(trimmed) / len(trimmed), 4)",
+    "explanation": "A trimmed mean removes the most extreme values \u2014 here the bottom and top 10% \u2014 before computing the mean.  gives the integer count to trim from each end; slicing  retains the central n \u2212 2k values. This is used in practice when a distribution has a long tail but you still want a mean-like estimator more robust than the raw mean. The rounding to 4 decimal places produces a stable output for test comparison.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            10.0,
+            20.0,
+            30.0,
+            40.0,
+            50.0,
+            60.0,
+            70.0,
+            80.0,
+            90.0,
+            100.0,
+            110.0,
+            120.0,
+            130.0,
+            140.0,
+            150.0,
+            160.0,
+            170.0,
+            180.0,
+            190.0,
+            200.0
+          ]
+        ],
+        "expected": 105.0,
+        "tolerance": 0.0
+      },
+      {
+        "input": [
+          [
+            1.0,
+            1.0,
+            2.0,
+            2.0,
+            3.0,
+            3.0,
+            4.0,
+            4.0,
+            5.0,
+            5.0,
+            6.0,
+            6.0,
+            7.0,
+            7.0,
+            8.0,
+            8.0,
+            9.0,
+            9.0,
+            10.0,
+            100.0
+          ]
+        ],
+        "expected": 5.5,
+        "tolerance": 0.0
+      }
+    ],
+    "public_test_cases": [
+      {
+        "input": [
+          [
+            10.0,
+            20.0,
+            30.0,
+            40.0,
+            50.0,
+            60.0,
+            70.0,
+            80.0,
+            90.0,
+            100.0,
+            110.0,
+            120.0,
+            130.0,
+            140.0,
+            150.0,
+            160.0,
+            170.0,
+            180.0,
+            190.0,
+            200.0
+          ]
+        ],
+        "expected": 105.0,
+        "tolerance": 0.0
+      }
+    ],
+    "hints": [
+      "Sort the data, then count how many values to drop from each end using floor(0.10 \u00d7 n).",
+      "Slice away k values from each end, then take the arithmetic mean of the remainder."
+    ],
+    "concepts": [
+      "descriptive statistics",
+      "outliers"
+    ]
+  },
+  {
+    "id": 72103,
+    "order": 103,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Bimodal session-length distribution: what does it signal?",
+    "description": "A data scientist plots a histogram of session lengths for a new app and observes two clear peaks: one around 2 minutes and another around 18 minutes, with a valley in between. The PM asks what this means for the product. Which interpretation is most analytically sound?",
+    "options": [
+      "The distribution has high positive kurtosis, which indicates clustering near both extreme values.",
+      "The data likely reflects two distinct user populations with different engagement patterns \u2014 for example, quick-check users and deep-dive users.",
+      "There is probably a data collection error; a single product should not produce two natural session peaks.",
+      "The mean and standard deviation are unreliable here; the data should be reported using the median only."
+    ],
+    "correct_option": 1,
+    "explanation": "Option 1 is correct: a bimodal distribution typically signals that two underlying processes or sub-populations are contributing to the data. In a product context, a 2-minute peak often corresponds to quick-check or bounce users, while an 18-minute peak corresponds to engaged or returning users \u2014 a real segmentation signal worth acting on. | Option 0 confuses kurtosis with bimodality: kurtosis measures tail weight relative to a normal distribution, NOT the number of peaks. A bimodal distribution does not necessarily have high kurtosis. | Option 2 is wrong: bimodality is a real and common pattern in user-behavioural data when user cohorts co-exist. Dismissing it as an error would obscure genuine product signal. | Option 3 misses the point: switching to the median does not resolve the underlying bi-population structure. The correct response is to model both peaks (e.g., mixture model) or analyse each user segment separately \u2014 not flatten the distribution with a single robust statistic.",
+    "hints": [
+      "Two distinct peaks in a distribution often signal two different groups contributing to the same dataset.",
+      "Consider what real user behaviors could generate a 2-minute peak and an 18-minute peak within the same product."
+    ],
+    "concepts": [
+      "descriptive statistics",
+      "distributions"
+    ]
+  },
+  {
+    "id": 72104,
+    "order": 104,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Why ANOVA instead of multiple t-tests for comparing three groups?",
+    "description": "A PM wants to know if average session durations differ across three app versions (A, B, C). An analyst suggests running three pairwise t-tests (A vs B, A vs C, B vs C), each at \u03b1 = 0.05. A statistician recommends one-way ANOVA instead. Which is the strongest defense of ANOVA over multiple t-tests here?",
+    "options": [
+      "ANOVA is faster to compute \u2014 it produces a single F-statistic rather than three test statistics.",
+      "ANOVA controls the family-wise Type I error rate; running three t-tests at \u03b1 = 0.05 each inflates the probability of at least one false positive to approximately 14%.",
+      "ANOVA is always more powerful than t-tests for detecting small differences between groups.",
+      "ANOVA provides specific pairwise comparisons, whereas three t-tests only tell you that groups differ overall."
+    ],
+    "correct_option": 1,
+    "explanation": "Option 1 is correct: with 3 independent t-tests each at \u03b1 = 0.05, the family-wise error rate (FWER) = 1 \u2212 (0.95)\u00b3 \u2248 0.143. Running more tests without correction inflates the chance of a false positive. ANOVA tests the omnibus null (all means equal) in a single test at the specified \u03b1, avoiding this inflation. | Option 0 is wrong: computational cost is not a statistical argument; the concern is error-rate integrity. | Option 2 has partial merit \u2014 ANOVA pools within-group variance, which can improve efficiency \u2014 but this is not the primary argument; it also assumes homoscedasticity. The Type I error control argument is more fundamental and universally applicable. | Option 3 is backwards: ANOVA does NOT provide pairwise comparisons \u2014 it only flags that at least one mean differs. Post-hoc tests (Tukey, Bonferroni) are needed after a significant F for pairwise comparisons. Individual t-tests do provide pairwise comparisons, albeit with the inflation problem.",
+    "hints": [
+      "With 3 independent tests each at 5% alpha, what is the probability of at least one false positive?",
+      "What question does the F-statistic answer \u2014 and how does that differ from what a single t-test answers?"
+    ],
+    "concepts": [
+      "anova",
+      "multiple testing & correction"
+    ]
+  },
+  {
+    "id": 72105,
+    "order": 105,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Interpreting a significant F-statistic: what ANOVA tells you",
+    "description": "A one-way ANOVA comparing conversion rates across four marketing campaigns returns F(3, 196) = 5.8, p < 0.01. The PM asks: \"Great \u2014 which campaigns are significantly different from each other?\" What is the most accurate response?",
+    "options": [
+      "The significant F tells you all four campaigns differ from one another; no further testing is needed.",
+      "A significant F only tells you at least one campaign mean differs from the rest; post-hoc pairwise tests are needed to identify which specific pairs differ.",
+      "The F-statistic identifies the campaign with the highest conversion rate as significantly different; the others are equivalent.",
+      "A significant F means the campaign effects are large enough to be practically important."
+    ],
+    "correct_option": 1,
+    "explanation": "Option 1 is correct: the F-statistic is an omnibus test \u2014 it tests the null hypothesis that all group means are equal. A significant F only rules out this single null; it cannot identify which specific pairs differ. Any pattern of difference (one outlier group, two groups pulling away, a gradient) could produce the same significant F. Post-hoc tests such as Tukey HSD or Bonferroni-corrected pairwise comparisons are required to answer the PM's actual question. | Option 0 is wrong: a significant omnibus F does not imply all pairwise comparisons are significant. A single outlier group could drive the entire F while the other three are indistinguishable. | Option 2 is wrong: the F-statistic does not pinpoint which group drives the result; it aggregates across all group-mean deviations. | Option 3 confuses statistical significance with practical importance: a significant F with large N can arise from trivially small practical differences.",
+    "hints": [
+      "The F-test answers one yes/no question: are all group means identical, or is at least one different? What further question did the PM actually ask?",
+      "After a significant ANOVA result, what additional step is required to answer which specific campaigns differ from which?"
+    ],
+    "concepts": [
+      "anova",
+      "hypothesis testing"
+    ]
+  },
+  {
+    "id": 72106,
+    "order": 106,
+    "topic": "statistics",
+    "type": "numerical",
+    "subtype": "numerical",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Compute the F-statistic for a one-way ANOVA",
+    "description": "Given group data as a list of lists (each inner list contains one group's numeric observations), compute the one-way ANOVA F-statistic and return it rounded to 4 decimal places.\n\nUse the standard decomposition:\n- SS_between = \u03a3\u2c7c n\u2c7c(x\u0304\u2c7c \u2212 x\u0304)\u00b2\n- SS_within = \u03a3\u2c7c \u03a3\u1d62 (x\u1d62\u2c7c \u2212 x\u0304\u2c7c)\u00b2\n- df_between = k \u2212 1, df_within = N \u2212 k\n- F = (SS_between / df_between) / (SS_within / df_within)",
+    "starter_code": "def solve(groups: list[list[float]]) -> float:\n    # Your code here\n    pass",
+    "expected_code": "def solve(groups: list[list[float]]) -> float:\n    k = len(groups)\n    n_j = [len(g) for g in groups]\n    N = sum(n_j)\n    grand_mean = sum(sum(g) for g in groups) / N\n    group_means = [sum(g) / len(g) for g in groups]\n    ss_between = sum(n_j[j] * (group_means[j] - grand_mean) ** 2 for j in range(k))\n    ss_within = sum((x - group_means[j]) ** 2 for j, g in enumerate(groups) for x in g)\n    df_between = k - 1\n    df_within = N - k\n    ms_between = ss_between / df_between\n    ms_within = ss_within / df_within\n    return round(ms_between / ms_within, 4)",
+    "solution_code": "def solve(groups: list[list[float]]) -> float:\n    k = len(groups)\n    n_j = [len(g) for g in groups]\n    N = sum(n_j)\n    grand_mean = sum(sum(g) for g in groups) / N  # overall mean\n    group_means = [sum(g) / len(g) for g in groups]\n    # Between-group: how much do group means deviate from grand mean?\n    ss_between = sum(n_j[j] * (group_means[j] - grand_mean) ** 2 for j in range(k))\n    # Within-group: how much do observations deviate from their own group mean?\n    ss_within = sum((x - group_means[j]) ** 2 for j, g in enumerate(groups) for x in g)\n    ms_between = ss_between / (k - 1)   # mean squared between\n    ms_within = ss_within / (N - k)     # mean squared within (pooled variance)\n    return round(ms_between / ms_within, 4)",
+    "explanation": "ANOVA decomposes total variance into two sources: between-group (signal \u2014 do means differ?) and within-group (noise \u2014 how spread are observations within each group?). The F-statistic = MS_between / MS_within is the ratio of signal to noise. Under the null (all group means equal), F ~ F(k\u22121, N\u2212k); a large F suggests the group differences are too large to be explained by within-group variability alone.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            [
+              2.0,
+              4.0,
+              6.0
+            ],
+            [
+              8.0,
+              10.0,
+              12.0
+            ],
+            [
+              1.0,
+              3.0,
+              5.0
+            ]
+          ]
+        ],
+        "expected": 10.75,
+        "tolerance": 0.0001
+      },
+      {
+        "input": [
+          [
+            [
+              1.0,
+              2.0,
+              3.0
+            ],
+            [
+              2.0,
+              3.0,
+              4.0
+            ]
+          ]
+        ],
+        "expected": 1.5,
+        "tolerance": 0.0001
+      }
+    ],
+    "public_test_cases": [
+      {
+        "input": [
+          [
+            [
+              2.0,
+              4.0,
+              6.0
+            ],
+            [
+              8.0,
+              10.0,
+              12.0
+            ],
+            [
+              1.0,
+              3.0,
+              5.0
+            ]
+          ]
+        ],
+        "expected": 10.75,
+        "tolerance": 0.0001
+      }
+    ],
+    "hints": [
+      "Compute the grand mean across all observations, then each group mean. The F-statistic is the ratio of between-group to within-group variance.",
+      "Between-group MS = SS_between / (k\u22121); within-group MS = SS_within / (N\u2212k). Then F = MS_between / MS_within."
+    ],
+    "concepts": [
+      "anova",
+      "f-statistic"
+    ]
+  },
+  {
+    "id": 72107,
+    "order": 107,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Right-censoring in subscription churn analysis",
+    "description": "A product team tracks how long users stay subscribed before cancelling. Some users have been subscribed for 6 months and have not cancelled when the analysis is run. How should these users be handled in a survival analysis of churn?",
+    "options": [
+      "Exclude them \u2014 their outcomes are unknown so including them would bias the results.",
+      "Include them as right-censored at their current subscription length \u2014 they provide partial information confirming survival up to that duration.",
+      "Assume they will cancel the day after the observation window closes and include that as their churn time.",
+      "Replace their subscription length with the mean churn time of users who have already cancelled."
+    ],
+    "correct_option": 1,
+    "explanation": "Option 1 is correct: right-censoring records that a user survived at least X months without specifying when (or if) they will eventually cancel. This is the correct treatment \u2014 censored observations contribute to the risk set for all event times before the censoring time, providing valuable partial information without fabricating an outcome. | Option 0 is wrong: excluding active users introduces survival bias. The analysis would see only churned users, making churn appear to happen faster than it actually does \u2014 a systematic distortion. | Option 2 is wrong: inventing future churn dates introduces fabricated data and distorts the shape of the survival function. | Option 3 is wrong: imputing with the mean churn time ignores that active users may cancel later or never cancel at all, creating a different kind of bias.",
+    "hints": [
+      "An active user who has not cancelled after 6 months still provides information: they survived at least 6 months. How can that partial observation be used rather than discarded?",
+      "If you exclude active subscribers, your analysis sees only cancelled users. Does that sample represent the full picture of user retention?"
+    ],
+    "concepts": [
+      "survival analysis & time-to-event",
+      "censoring"
+    ]
+  },
+  {
+    "id": 72108,
+    "order": 108,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Reading a Kaplan-Meier curve: median survival time",
+    "description": "A product team shows a Kaplan-Meier retention curve. The x-axis is days since signup; the y-axis is S(t) = P(user still active at day t). At day 30, S(30) = 0.62. The curve first reaches S(t) = 0.50 at day 45. A PM asks: 'What is the typical user lifetime?' Which answer is most accurate?",
+    "options": [
+      "The average (mean) user lifetime is 45 days \u2014 that is where the curve crosses the 50% mark.",
+      "The median user lifetime is 45 days \u2014 that is where half of users have churned and half remain.",
+      "62% of users are still active at day 30; there is no single \"typical\" lifetime in survival analysis.",
+      "The expected lifetime is 30 days, since more than 50% of users are active for the first 30 days."
+    ],
+    "correct_option": 1,
+    "explanation": "Option 1 is correct: the K-M median survival time is the smallest t where S(t) \u2264 0.5. Here that is day 45 \u2014 exactly half the cohort has churned by then. The median is the standard 'typical lifetime' summary from K-M curves and is well-defined even with censored data. | Option 0 is wrong: the 50% crossing gives the median, not the mean. The mean survival time requires integrating the full survival curve (including the unobserved tail), and is often not reported for censored data. | Option 2 has partial merit \u2014 the full curve is more informative than any single number \u2014 but data scientists are expected to read the K-M median when asked for a typical value. | Option 3 is wrong: S(30) = 0.62 tells you the proportion still active at day 30, not anything about the expected lifetime. The median requires finding where S(t) = 0.50.",
+    "hints": [
+      "The Kaplan-Meier curve crosses 50% at a specific day. That crossing point has a standard name \u2014 what is it called?",
+      "S(t) = P(still active at day t). At day 45, S(45) = 0.50 means exactly half the users have churned. How would you describe that day in terms of survival?"
+    ],
+    "concepts": [
+      "survival analysis & time-to-event",
+      "distributions"
+    ]
+  },
+  {
+    "id": 72109,
+    "order": 109,
+    "topic": "statistics",
+    "type": "numerical",
+    "subtype": "numerical",
+    "difficulty": "medium",
+    "mock_only": true,
+    "title": "Compute Kaplan-Meier survival probabilities from event data",
+    "description": "Given a list of `[time, event]` pairs (event=1 = event occurred, event=0 = right-censored), compute the Kaplan-Meier survival probability at each unique event time. Return a list of survival probabilities in ascending time order, rounded to 4 decimal places.\n\nAt each event time t\u1d62:\n- n\u1d62 = number at risk just before t\u1d62 (count of observations with time \u2265 t\u1d62)\n- d\u1d62 = number of events (event=1) at t\u1d62\n- S(t\u1d62) = S(t\u1d62\u208b\u2081) \u00d7 (1 \u2212 d\u1d62/n\u1d62), with S(0) = 1.0\n\nInclude only times where at least one event occurs; skip times with only censored observations.",
+    "starter_code": "def solve(data: list[list[int]]) -> list[float]:\n    # Your code here\n    pass",
+    "expected_code": "def solve(data: list[list[int]]) -> list[float]:\n    from collections import defaultdict\n    events = defaultdict(int)\n    for t, e in data:\n        if e == 1:\n            events[t] += 1\n    sorted_times = sorted(events.keys())\n    result = []\n    S = 1.0\n    for t in sorted_times:\n        n = sum(1 for obs_t, _ in data if obs_t >= t)\n        d = events[t]\n        S = S * (1 - d / n)\n        result.append(round(S, 4))\n    return result",
+    "solution_code": "def solve(data: list[list[int]]) -> list[float]:\n    from collections import defaultdict\n    events = defaultdict(int)\n    for t, e in data:\n        if e == 1:  # only count actual events, not censoring\n            events[t] += 1\n    sorted_times = sorted(events.keys())  # ascending event times\n    result = []\n    S = 1.0\n    for t in sorted_times:\n        n = sum(1 for obs_t, _ in data if obs_t >= t)  # risk set size\n        d = events[t]  # events at this time\n        S = S * (1 - d / n)  # product-limit update\n        result.append(round(S, 4))\n    return result",
+    "explanation": "The Kaplan-Meier estimator is a product-limit estimator: at each observed event time, the survival probability is updated multiplicatively by (1 \u2212 d/n) where d is the number of events and n is the risk set (number still at risk just before that time). Censored observations contribute to n at all event times before their censoring time, making use of partial information without fabricating an outcome. The result is a step function that decreases only at observed event times.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              3,
+              1
+            ],
+            [
+              4,
+              1
+            ],
+            [
+              5,
+              0
+            ]
+          ]
+        ],
+        "expected": [
+          0.8,
+          0.5333,
+          0.2667
+        ],
+        "tolerance": 0.0001
+      },
+      {
+        "input": [
+          [
+            [
+              1,
+              1
+            ],
+            [
+              3,
+              0
+            ],
+            [
+              5,
+              1
+            ],
+            [
+              7,
+              1
+            ]
+          ]
+        ],
+        "expected": [
+          0.75,
+          0.375,
+          0.0
+        ],
+        "tolerance": 0.0001
+      }
+    ],
+    "public_test_cases": [
+      {
+        "input": [
+          [
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              3,
+              1
+            ],
+            [
+              4,
+              1
+            ],
+            [
+              5,
+              0
+            ]
+          ]
+        ],
+        "expected": [
+          0.8,
+          0.5333,
+          0.2667
+        ],
+        "tolerance": 0.0001
+      }
+    ],
+    "hints": [
+      "Sort the unique event times. For each one, count how many observations have time \u2265 t \u2014 that is the risk set size n\u1d62.",
+      "S(t) is the running product of (1 \u2212 d/n) over all event times up to t. Start from S = 1.0 and multiply at each step."
+    ],
+    "concepts": [
+      "survival analysis & time-to-event",
+      "Kaplan-Meier"
+    ]
   }
 ]
