@@ -23,6 +23,24 @@ Keep all five lenses active at once. The best decisions here satisfy all of them
 
 ---
 
+## Platform position
+
+datathink is a **premium reasoning-based data-interview-prep platform**, positioned against the LeetCode / StrataScratch / DataLemur grind market on a single axis: we train the reasoning that makes someone genuinely effective in a data-driven role; interview success is the consequence, not the goal.
+
+This positioning is operational, not marketing:
+
+- **Curriculum weighting is by reasoning surface, never by interview or business frequency.** A high-reasoning-depth pattern that appears rarely in interview question banks stays; a rote-recall pattern that dominates them is rejected. Load-bearing families (per [`docs/content-authoring.md`](docs/content-authoring.md) § Per-family coverage discipline) are defended on reasoning-depth grounds in the per-track `docs/tracks/<track>.md`, not on frequency grounds.
+
+- **Content benchmarks against the durable contract, never against competitor banks.** "LeetCode has this question," "StrataScratch ranks this top-10," "DataLemur's premium covers it" are not defenses. The defense is: this question exercises reasoning a practicing data professional uses years into the role (per [`docs/content-authoring.md`](docs/content-authoring.md) § The one test every question must pass).
+
+- **Premium tier value lives in reasoning depth, not coverage volume.** A Pro/Elite user is buying judgment-building material — chains, realism-lens questions, mock-only recombinations, scenario reasoning — that a free LeetCode grind doesn't offer. Volume parity with competitors is not the goal; depth differentiation is.
+
+- **The product disagreement resolver.** When two paths satisfy every immediate rule but point in different curriculum directions, the question is: which one strengthens the reasoning-premium positioning, and which one quietly converges us toward the grind market? Pick the former.
+
+The five-perspective pushback in § Standing instructions reads this section as its strategic frame: the curriculum-designer and product-operator lenses both anchor here.
+
+---
+
 ## Standing instructions
 
 - **Always pushback with critical analysis. Never agree by default.** Your job is not to comply — it is to make this product better. Before agreeing to any user request involving design, product, UX, gating, content, or architecture, run it through these lenses:

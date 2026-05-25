@@ -445,6 +445,161 @@ def _validate_mock_only_realism() -> None:
         raise ValueError(f"Mock-only realism family validation failed:\n{joined}")
 
 
+def _validate_per_family_coverage() -> None:
+    """Emit warnings for per-family coverage rule breaches.
+
+    Rules (see docs/content-authoring.md § Per-family coverage discipline):
+      1. Practice floor: every applicable family has ≥1 practice question per
+         applicable tier. (Tier applicability is judged on whether the family
+         has any presence in that tier — i.e. we don't enforce e.g. "every
+         family must have an easy question" since some families are inherently
+         medium/hard. Floor is: if family appears in mock-only at a tier, it
+         must appear in practice at that tier OR lower.)
+      2. Mock-only floor: every practice-grounded family has ≥4 mock-only.
+      3. Max-share ceiling: no family is tagged on >50% of questions in either
+         tier (practice and mock-only computed independently).
+      4. Zero dead families: every registered family appears in mock-only ≥1.
+      5. Realism families exempt from rule 2 (still bounded by rule 3).
+
+    Soft (warnings only, not errors) because rules 6 + 7 — quality override
+    and load-bearing exceptions defended in track-docs — are real override
+    paths. Stage C audit cross-references warnings to documented exceptions.
+
+    Gated on _TAXONOMY_VALIDATED_TRACKS; tracks outside the set get a separate
+    warning via _warn_unenforced_tracks().
+    """
+    import sys
+    from collections import Counter
+    from concept_families import (
+        CONCEPT_FAMILIES,
+        MOCK_ONLY_REALISM_FAMILIES,
+        resolve_to_family,
+    )
+
+    warnings: list[str] = []
+
+    for track in sorted(_TAXONOMY_VALIDATED_TRACKS):
+        families = CONCEPT_FAMILIES.get(track)
+        if not families:
+            continue
+        realism = MOCK_ONLY_REALISM_FAMILIES.get(track, set())
+
+        # Tally per-tier, per-family presence.
+        practice_per_family: dict[str, Counter] = {
+            f: Counter() for f in families
+        }
+        mock_per_family: dict[str, Counter] = {f: Counter() for f in families}
+        practice_total_per_tier: Counter = Counter()
+        mock_total_per_tier: Counter = Counter()
+
+        track_files = [
+            (tk, fp) for tk, fp in _iter_question_files() if tk == track
+        ]
+        for _, file_path in track_files:
+            tier = file_path.stem  # easy | medium | hard
+            with file_path.open("r", encoding="utf-8") as handle:
+                questions = json.load(handle)
+            for q in questions:
+                is_mock = q.get("mock_only", False)
+                if is_mock:
+                    mock_total_per_tier[tier] += 1
+                else:
+                    practice_total_per_tier[tier] += 1
+                fams_in_q: set[str] = set()
+                for concept in q.get("concepts", []):
+                    if not isinstance(concept, str):
+                        continue
+                    f = resolve_to_family(concept, track)
+                    if f in families:
+                        fams_in_q.add(f)
+                for f in fams_in_q:
+                    if is_mock:
+                        mock_per_family[f][tier] += 1
+                    else:
+                        practice_per_family[f][tier] += 1
+
+        practice_total = sum(practice_total_per_tier.values())
+        mock_total = sum(mock_total_per_tier.values())
+
+        # Rule 4: every registered family appears in mock-only ≥1.
+        for f in families:
+            if sum(mock_per_family[f].values()) == 0:
+                warnings.append(
+                    f"{track}: family {f!r} has ZERO mock-only questions "
+                    f"(rule 4 — dead family)"
+                )
+
+        # Rule 2: every practice-grounded family has ≥4 mock-only.
+        for f in families:
+            if f in realism:
+                continue  # rule 5
+            mock_count = sum(mock_per_family[f].values())
+            if 0 < mock_count < 4:
+                warnings.append(
+                    f"{track}: family {f!r} has only {mock_count} mock-only "
+                    f"questions (rule 2 — mock-only floor is 4)"
+                )
+
+        # Rule 1: if family appears in mock-only at tier T, it must appear in
+        # practice at tier T or lower. (Captures the "no unseen concept"
+        # invariant at tier-granularity.) Realism families are exempt by
+        # design — they are mock-only-only and never have practice content.
+        difficulty_order = ["easy", "medium", "hard"]
+        for f in families:
+            if f in realism:
+                continue
+            for tier in difficulty_order:
+                if mock_per_family[f][tier] == 0:
+                    continue
+                tier_idx = difficulty_order.index(tier)
+                allowed = difficulty_order[: tier_idx + 1]
+                practice_at_or_below = sum(
+                    practice_per_family[f][t] for t in allowed
+                )
+                if practice_at_or_below == 0:
+                    warnings.append(
+                        f"{track}: family {f!r} has mock-only at {tier} but "
+                        f"NO practice question at {tier} or lower "
+                        f"(rule 1 — practice floor)"
+                    )
+
+        # Rule 3: per-tier max-share ceiling 50%.
+        for f in families:
+            p_count = sum(practice_per_family[f].values())
+            m_count = sum(mock_per_family[f].values())
+            if practice_total > 0:
+                share = p_count / practice_total
+                if share > 0.50:
+                    warnings.append(
+                        f"{track}: family {f!r} tagged on "
+                        f"{share*100:.1f}% of practice questions "
+                        f"({p_count}/{practice_total}) — exceeds rule 3 "
+                        f"50% ceiling. Document as load-bearing in "
+                        f"docs/tracks/{track.replace('-','-')}.md with "
+                        f"reasoning-depth defence, or remediate."
+                    )
+            if mock_total > 0:
+                share = m_count / mock_total
+                if share > 0.50:
+                    warnings.append(
+                        f"{track}: family {f!r} tagged on "
+                        f"{share*100:.1f}% of mock-only questions "
+                        f"({m_count}/{mock_total}) — exceeds rule 3 "
+                        f"50% ceiling. Document as load-bearing in "
+                        f"docs/tracks/{track.replace('-','-')}.md with "
+                        f"reasoning-depth defence, or remediate."
+                    )
+
+    if warnings:
+        print(
+            "WARNING: per-family coverage rule breaches (see "
+            "docs/content-authoring.md § Per-family coverage discipline):",
+            file=sys.stderr,
+        )
+        for w in warnings:
+            print(f"  - {w}", file=sys.stderr)
+
+
 _DIFFICULTY_ORDER = {"easy": 0, "medium": 1, "hard": 2}
 
 
@@ -763,6 +918,7 @@ def main() -> None:
     _warn_unenforced_tracks()
     _validate_concept_taxonomy()
     _validate_mock_only_realism()
+    _validate_per_family_coverage()
     _validate_chain_integrity()
     _validate_hints()
     _validate_statistics_subtypes()

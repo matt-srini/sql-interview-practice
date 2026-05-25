@@ -279,6 +279,43 @@ Every track's Phase 2 closure must execute this checklist as the final step of e
 
 **P2 — scope-creep.** Any durable-contract doc change OUTSIDE this H-series (e.g. modifications to `docs/content-authoring.md` outside IS-count/precedent rows; modifications to `docs/specs/*`; modifications to `.github/agents/question-authoring.agent.md`; modifications to `docs/concept-taxonomy.md` outside the current track's section) must be surfaced to the user via the executor's hand-back summary BEFORE self-applying. The executor flags; the user triggers a separate doc-hygiene pass.
 
+### Per-family coverage discipline
+
+Concept families must be distributed across questions with neither starvation nor concentration. The rules are calibrated to empirical evidence across six closed tracks — not absolute targets. Soft, with documented overrides; warnings on breach (not errors), because the override paths are real.
+
+**Strategic anchor:** per-family weighting is by **reasoning surface**, never by interview or business frequency. See [`CLAUDE.md`](../CLAUDE.md) § Platform position. A family with broad reasoning surface (many distinct learnable variants — e.g. SQL `WINDOW FUNCTIONS` spans ranking, running totals, frame semantics, lateral patterns, qualify, deduplication via row_number, gap-fill) legitimately occupies more bank space than a narrow family. A family that dominates StrataScratch tag counts does not.
+
+**The seven rules:**
+
+| # | Rule | Anchor / rationale |
+|---|---|---|
+| 1 | **Practice floor.** Every applicable family has ≥1 practice question per applicable tier (`easy`/`medium`/`hard` where the family applies). | Codifies the existing "one teaching arc per family per applicable tier" principle (currently stated in `docs/tracks/sql.md` + `docs/tracks/pandas.md`). |
+| 2 | **Mock-only floor.** Every practice-grounded family has ≥4 mock-only questions. | PySpark min=8; DE/DM min=4 (boundary). Below 4, benchmark/drill sessions exhaust fresh-first within 2–3 picks. |
+| 3 | **Max-share ceiling.** No family is tagged on more than **50%** of questions in either tier (practice and mock-only computed independently). | SQL 39.5% / Pandas 50.0% empirical boundary; DM 93.8% broken. Earlier 2×-fair-share proposal would have failed every closed track except PySpark — empirically wrong. |
+| 4 | **Zero dead families.** Every registered family appears in mock-only at least once. | PySpark and SQL achieved zero dead families; Python/Pandas/DE/DM each left 1–2 dead. |
+| 5 | **Realism families exempt from rule 2.** Realism families are sampled per question as co-tags, not per target count. They are bounded by rule 3 only. | SQL/Pandas realism class design. |
+| 6 | **Quality override.** If the anti-duplication rule binds before a floor is met, stop and document — never pad with near-clones. | Existing "Quality > integer" principle (`docs/content-authoring.md` § Power-user runway sizing benchmark). |
+| 7 | **Load-bearing exception.** A family may exceed rule 3's 50% ceiling if it has genuinely broad reasoning surface for the track. Must be named explicitly in the track-doc with a reasoning-depth defence (NOT a frequency defence). The defence is: this family has N distinct learnable variants the curriculum must teach; the question count reflects that surface, not interview-market frequency. | Strategic anchor (Platform position). Defended per-track, not platform-wide. |
+
+**What does NOT justify a rule-3 ceiling breach:**
+- "This is the most-asked family on StrataScratch."
+- "Interviewers ask about this often."
+- "Business cases use this everywhere."
+- "Competitor banks weight this heavily."
+
+These are frequency arguments. The Platform-position rule rejects them.
+
+**What DOES justify a rule-3 ceiling breach (load-bearing exception):**
+- "WINDOW FUNCTIONS has N distinct reasoning variants — ranking, running totals, percentiles, frame semantics, lateral subqueries, qualify, deduplication, gap-fill. The bank must teach all N because each is a separate learnable pattern. The 50% breach is the consequence of teaching all variants, not of repeated treatment of one variant."
+
+The defence is per-variant, on disk in the track-doc's Coverage section.
+
+**Machine enforcement.** `validate_content.py` runs `_validate_per_family_coverage()` after the existing checks and emits **stderr warnings** for each breach. Gated on `_TAXONOMY_VALIDATED_TRACKS`. Warnings (not errors) because rules 6 and 7 are real override paths — hard failures would force documentation-after-the-fact rather than at the right moment. Stage C audit verifies each warning is either remediated or documented as a load-bearing exception in the track-doc.
+
+**Stage A integration.** Each Phase 2 Stage A produces a per-family target table as part of Sizing + Structure Lock: family count, fair-share per family, target practice count + target mock-only count per family, load-bearing families called out with reasoning-depth rationale.
+
+**Stage C integration.** Audit dimension verifies (a) zero rule-1 floor breaches, (b) zero rule-2 floor breaches (excluding realism), (c) zero rule-3 ceiling breaches NOT documented as load-bearing in the track-doc, (d) zero dead families (rule 4).
+
 ---
 
 ## Mock-only authoring contract
