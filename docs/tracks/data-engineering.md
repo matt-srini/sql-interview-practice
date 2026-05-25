@@ -82,6 +82,10 @@ Full registry: [`docs/concept-taxonomy.md` → Data Engineering section](../conc
 - Medium (34 total): 16 INCIDENT RESPONSE questions re-tiered to hard; remaining mix of scenario, debug, conceptual
 - Hard (76 total): includes the 16 re-tiered INCIDENT RESPONSE questions (scenario/debug/conceptual)
 
+**Mock-only difficulty split rationale.** Post retro-cleanup, mock m:h = 34:76 ≈ 1:2.24 — heavier hard-skew than other tracks (PySpark 1:1.0, SQL 1:1.22, Pandas 1:1.20, DM 1:1.13). This is **corrected** content, not over-shift: the 16 re-tiered INCIDENT RESPONSE questions exercise multi-family judgement under ambiguous conditions (on-call triage, cascading-failure diagnosis, postmortem framing, containment+recovery sequencing) — intrinsically hard-tier reasoning per `docs/content-authoring.md` § Difficulty model (`Hard` = "2+ dependent reasoning steps, trade-offs, edge-case awareness, production-grade thinking"). The original Stage B mis-tiered these at medium because the mock difficulty target was a soft anchor; the family character is the binding constraint. Audited spot-check on 3 questions (53087, 53092, 53102 — beginning, chain-dissolution case, end of range) confirmed hard-tier reasoning bar on all three.
+
+**DATA CONTRACT family resurrected via pattern fix.** The DE registry had a shadow bug: `"DATA CONTRACT"` appeared as a match pattern under SCHEMA EVOLUTION (preceded DATA CONTRACT family in dict order), making the DATA CONTRACT family unreachable. 23 existing questions tagged literal `"DATA CONTRACT"` all resolved to SCHEMA EVOLUTION. Fix applied 2026-05-25 (remove the pattern from SCHEMA EVOLUTION). Post-fix: DATA CONTRACT family covers 21 mock-only + 2 practice questions; well above rule-2 floor. SCHEMA EVOLUTION remains well above floor as well.
+
 **No mock-only realism families.** All 21 DE concept families are practice-grounded and directly gradeable as MCQ. `MOCK_ONLY_REALISM_FAMILIES["data-engineering"] = set()` enforced in `concept_families.py`. Track is in `_TAXONOMY_VALIDATED_TRACKS` in `validate_content.py`.
 
 ## Authoring allocation matrix

@@ -1390,7 +1390,6 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "BACKWARD COMPAT",
             "FORWARD COMPAT",
             "BREAKING CHANGE",
-            "DATA CONTRACT",
             "SCHEMA REGISTRY",
         ],
         "BATCH VS STREAMING": [
