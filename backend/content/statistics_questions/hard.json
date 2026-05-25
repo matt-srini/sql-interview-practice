@@ -205,9 +205,8 @@
       "Overfitting = excellent training performance + poor test performance = low bias + high variance."
     ],
     "concepts": [
-      "bias-variance tradeoff",
-      "regression",
-      "overfitting"
+      "variance decomposition",
+      "regression"
     ],
     "order": 8,
     "difficulty": "hard"
@@ -259,7 +258,6 @@
     ],
     "concepts": [
       "multiple comparisons",
-      "ANOVA",
       "hypothesis testing",
       "Type I error"
     ],
@@ -721,11 +719,9 @@
       "MCAR and MAR can both be handled with standard imputation. MNAR requires sensitivity analysis or external data because the missingness pattern is baked into the missing values."
     ],
     "concepts": [
-      "MCAR",
-      "MAR",
-      "MNAR",
-      "missing data",
-      "data quality"
+      "selection bias",
+      "sampling",
+      "statistical artefacts"
     ],
     "order": 27,
     "difficulty": "hard"
@@ -757,7 +753,11 @@
       "Berkson's bias"
     ],
     "order": 28,
-    "difficulty": "hard"
+    "difficulty": "hard",
+    "follow_ups": [
+      73032,
+      73040
+    ]
   },
   {
     "id": 73029,
@@ -870,7 +870,9 @@
       "causal inference"
     ],
     "order": 32,
-    "difficulty": "hard"
+    "difficulty": "hard",
+    "parent_id": 73028,
+    "follow_up_dimension": "abstraction_pivot"
   },
   {
     "id": 73033,
@@ -899,5 +901,1389 @@
     ],
     "order": 33,
     "difficulty": "hard"
+  },
+  {
+    "id": 73034,
+    "order": 34,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "title": "CUPED: Mechanism Behind Variance Reduction",
+    "description": "A data scientist runs an A/B test measuring revenue per user. She applies CUPED by regressing the outcome Y on a pre-experiment covariate X_pre (same revenue metric from the prior week) and using the residuals Y \u2212 \u03b8X_pre (where \u03b8 = Cov(Y,X_pre)/Var(X_pre)) as the adjusted outcome. Compared to the unadjusted difference in means, which statement best explains WHY the CUPED estimator has lower variance \u2014 and therefore narrower confidence intervals for the treatment effect?",
+    "options": [
+      "CUPED filters out users whose pre-experiment revenue was unusually high or low, reducing sample size and therefore the denominator of the standard error formula.",
+      "The pre-experiment covariate absorbs variance in Y that is explained by stable user heterogeneity (e.g., heavy vs light spenders), leaving a residual with smaller variance. A lower-variance outcome directly reduces the standard error of the treatment effect estimator.",
+      "Regressing on X_pre increases the effective sample size because the residuals are numerically smaller than the raw outcomes, reducing the variance estimate in the denominator.",
+      "CUPED ensures the control and treatment groups have identical pre-experiment revenue distributions by resampling the control group to match the treatment group's covariate distribution."
+    ],
+    "correct_option": 1,
+    "explanation": "Option 1 \u2014 correct: user revenue is heavily driven by persistent individual-level factors \u2014 heavy spenders spend more in every period regardless of treatment. X_pre captures this stable component. The CUPED-adjusted outcome Y \u2212 \u03b8X_pre removes the variance attributable to those stable differences, leaving only the variance from treatment response and noise. Because Var(Y \u2212 \u03b8X_pre) = Var(Y)(1 \u2212 R\u00b2), where R\u00b2 is the R-squared of regressing Y on X_pre, higher R\u00b2 means more variance removed. SE of the treatment effect drops proportionally. Option 0 \u2014 wrong: CUPED does not reduce sample size; all users are retained and their adjusted outcomes are used. Option 2 \u2014 wrong: smaller absolute values of residuals do not define effective sample size, and the SE reduction comes from reduced variance, not n increasing. Option 3 \u2014 wrong: CUPED is a regression adjustment, not a matching or resampling procedure \u2014 group distributions are not modified.",
+    "hints": [
+      "Start from first principles: the variance of the treatment effect estimator depends on the variance of the outcome metric. What fraction of revenue variance is explained by who the user is (stable) versus what treatment they received (signal)?",
+      "The CUPED residual variance is Var(Y)(1 \u2212 R\u00b2) where R\u00b2 is from regressing Y on X_pre. Trace through what a high R\u00b2 implies for the SE of your treatment effect estimate."
+    ],
+    "concepts": [
+      "variance reduction",
+      "CUPED",
+      "confidence intervals"
+    ]
+  },
+  {
+    "id": 73035,
+    "order": 35,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Chi-Squared Test of Independence vs Goodness of Fit",
+    "description": "An analyst runs two chi-squared tests: (1) a 2\u00d72 test of independence on user type (free vs paid) \u00d7 retention status (churned vs active), getting \u03c7\u00b2 = 12.4, df = 1, p < 0.001; (2) a goodness-of-fit test comparing observed daily app opens across 7 days to a uniform distribution, getting \u03c7\u00b2 = 8.1, df = 6, p = 0.23. What is the fundamental difference between the two tests, and what does each null hypothesis actually claim?",
+    "options": [
+      "Both tests are equivalent \u2014 they use the same formula and the df equals k\u22121 in both cases; the only difference is how the expected counts are specified.",
+      "The test of independence asks whether two categorical variables are statistically associated (H\u2080: the variables are independent); the goodness-of-fit test asks whether observed frequencies match a specified theoretical distribution (H\u2080: observed = expected distribution). Both use \u03a3(O\u2212E)\u00b2/E but compute degrees of freedom differently: (r\u22121)(c\u22121) vs k\u22121.",
+      "The test of independence can only be applied to 2\u00d72 tables; goodness-of-fit applies to any number of categories. The independence test is only valid if all expected cell counts exceed 5.",
+      "The first test proves that user type causes different retention rates; the second proves that daily opens are not uniformly distributed across the week."
+    ],
+    "correct_option": 1,
+    "explanation": "Option 0 \u2014 wrong: for a 2\u00d72 independence test df = (r\u22121)(c\u22121) = 1; for a 7-category goodness-of-fit test df = k\u22121 = 6. The degrees of freedom formulas differ because they encode different numbers of free parameters. Option 1 \u2014 correct: the two tests share the \u03a3(O\u2212E)\u00b2/E formula and the chi-squared distribution but answer different questions. Independence: H\u2080 = 'user type and retention are independent (no association).' Goodness-of-fit: H\u2080 = 'the observed daily open counts follow a uniform distribution.' Neither test establishes causation. Option 2 \u2014 wrong: both tests generalise beyond 2\u00d72 tables, and the expected-count condition (E \u2265 5) applies to both. Option 3 \u2014 wrong: chi-squared tests are associational; 'proves causation' requires randomisation or a strong causal identification strategy.",
+    "hints": [
+      "Ask yourself what claim each test makes about the data. What is the research question that calls for testing association between variables versus testing whether observed counts match a known distribution?",
+      "For a 2\u00d72 table: once you fix the row and column totals, how many cells are free? For k categories with pre-specified proportions, how many counts are free? This determines the degrees of freedom."
+    ],
+    "concepts": [
+      "goodness of fit",
+      "hypothesis testing",
+      "test selection"
+    ]
+  },
+  {
+    "id": 73036,
+    "order": 36,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "p = 0.04 Does Not Mean 'The Null Is 4% Likely'",
+    "description": "A data scientist reports p = 0.04 for an A/B test. An engineering lead says: 'There's only a 4% chance the null hypothesis is true \u2014 we can safely ignore it.' A statistician calls this a fundamental misinterpretation. Which response most precisely explains the error and what the p-value actually measures?",
+    "options": [
+      "The error is minor: p = 0.04 is not exactly the probability the null is true, but for typical product experiments with a 50/50 prior it is a reasonable approximation.",
+      "The p-value is P(observing data at least as extreme as observed | H\u2080 is true) \u2014 a statement about data frequency under H\u2080, not a posterior on H\u2080. Computing P(H\u2080 | data) requires a prior on H\u2080 via Bayes' theorem; with a skeptical prior (most tested variants don't move the needle), P(H\u2080 | data) at p = 0.04 can easily exceed 50%.",
+      "The p-value measures the probability that the observed effect was caused by chance; at p = 0.04, the probability the effect is real is 96%.",
+      "The correct interpretation is that p = 0.04 means there is a 4% chance of observing exactly this result under H\u2080 \u2014 not 'at least as extreme.'"
+    ],
+    "correct_option": 1,
+    "explanation": "Option 0 \u2014 wrong: even with a 50/50 prior, P(H\u2080|data) \u2260 p-value. The posterior depends on the likelihood ratio, not just the p-value. Option 1 \u2014 correct: the frequentist p-value is P(data \u2265 observed | H\u2080) \u2014 a frequency statement under the null, not a posterior. Bayes' theorem gives P(H\u2080|data) = P(data|H\u2080)\u00b7P(H\u2080)/P(data). With a skeptical prior \u2014 say 90% of A/B tests show no real effect \u2014 P(H\u2080|data) at p = 0.04 can be surprisingly high (this is the replication-crisis insight from Ioannidis 2005). Option 2 \u2014 wrong: 'probability the effect is real' IS the Bayesian posterior, not the p-value; it cannot be computed without a prior. Option 3 \u2014 wrong: the 'at least as extreme' tail probability is the correct frequentist definition; 'exactly this result' is the misconception option 3 is falsely claiming to fix.",
+    "hints": [
+      "Conditional probabilities are easy to swap by accident. Two related but distinct quantities are being confused here \u2014 one is what frequentist hypothesis testing computes, and one is what people often wish it computed.",
+      "Imagine a pharmaceutical trial where only 1 in 100 candidate compounds actually works (prior P(H\u2081) = 0.01). If a test gives p = 0.04, what does Bayes' theorem imply about P(H\u2081 | p < 0.05)?"
+    ],
+    "concepts": [
+      "hypothesis testing",
+      "null hypothesis",
+      "Bayesian inference"
+    ]
+  },
+  {
+    "id": 73037,
+    "order": 37,
+    "topic": "statistics",
+    "type": "numerical",
+    "subtype": "numerical",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "One-Sample t-Test Statistic",
+    "description": "A batch processing pipeline is expected to complete in \u03bc\u2080 = 4.2 seconds on average. A performance engineer samples n recent runs and observes sample mean x\u0304 and sample standard deviation s. Write a Python function `solve(x_bar, mu_0, s, n)` that returns the one-sample t-test statistic for H\u2080: \u03bc = \u03bc\u2080 vs H\u2081: \u03bc \u2260 \u03bc\u2080, rounded to 4 decimal places.",
+    "starter_code": "import math\ndef solve(x_bar: float, mu_0: float, s: float, n: int) -> float:\n    # Your code here\n    pass",
+    "expected_code": "import math\ndef solve(x_bar: float, mu_0: float, s: float, n: int) -> float:\n    t = (x_bar - mu_0) / (s / math.sqrt(n))\n    return round(t, 4)",
+    "solution_code": "import math\ndef solve(x_bar: float, mu_0: float, s: float, n: int) -> float:\n    # t = (x_bar - mu_0) / SE   where SE = s / sqrt(n)\n    se = s / math.sqrt(n)\n    t = (x_bar - mu_0) / se\n    return round(t, 4)",
+    "explanation": "The one-sample t-statistic measures how many standard errors the sample mean is from the hypothesised mean: t = (x\u0304 \u2212 \u03bc\u2080)/(s/\u221an). Degrees of freedom = n\u22121. For x\u0304=4.8, \u03bc\u2080=4.2, s=1.5, n=25: SE=1.5/5=0.3, t=(4.8\u22124.2)/0.3=2.0. With df=24, t=2.0 corresponds to p\u22480.057 (two-tailed) \u2014 borderline at \u03b1=0.05.",
+    "test_cases": [
+      {
+        "input": [
+          4.8,
+          4.2,
+          1.5,
+          25
+        ],
+        "expected": 2.0,
+        "tolerance": 0.0001
+      },
+      {
+        "input": [
+          5.0,
+          4.2,
+          2.0,
+          16
+        ],
+        "expected": 1.6,
+        "tolerance": 0.0001
+      },
+      {
+        "input": [
+          4.2,
+          4.2,
+          1.0,
+          10
+        ],
+        "expected": 0.0,
+        "tolerance": 0.0
+      }
+    ],
+    "public_test_cases": [
+      {
+        "input": [
+          4.8,
+          4.2,
+          1.5,
+          25
+        ],
+        "expected": 2.0,
+        "tolerance": 0.0001
+      }
+    ],
+    "hints": [
+      "The standard error of the mean is s/\u221an, not s alone. This measures the precision of the sample mean estimate, not the spread of individual observations.",
+      "The t-statistic counts how many standard errors separate x\u0304 from \u03bc\u2080. A larger n reduces SE, which increases t for the same raw difference."
+    ],
+    "concepts": [
+      "hypothesis testing",
+      "standard error"
+    ]
+  },
+  {
+    "id": 73038,
+    "order": 38,
+    "topic": "statistics",
+    "type": "numerical",
+    "subtype": "numerical",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Pooled Two-Sample t-Test Statistic",
+    "description": "Two query implementations are benchmarked. Implementation A: n\u2081 trials, mean\u2081 ms, s\u2081 ms. Implementation B: n\u2082 trials, mean\u2082 ms, s\u2082 ms. Using the pooled-variance formula (assuming equal population variances), write a Python function `solve(n1, mean1, s1, n2, mean2, s2)` that returns the pooled two-sample t-statistic rounded to 4 decimal places. Pooled variance: s\u00b2_p = ((n\u2081\u22121)s\u2081\u00b2 + (n\u2082\u22121)s\u2082\u00b2)/(n\u2081+n\u2082\u22122). SE = sqrt(s\u00b2_p\u00b7(1/n\u2081+1/n\u2082)). t = (mean\u2081\u2212mean\u2082)/SE.",
+    "starter_code": "import math\ndef solve(n1: int, mean1: float, s1: float, n2: int, mean2: float, s2: float) -> float:\n    # Your code here\n    pass",
+    "expected_code": "import math\ndef solve(n1: int, mean1: float, s1: float, n2: int, mean2: float, s2: float) -> float:\n    sp2 = ((n1 - 1) * s1**2 + (n2 - 1) * s2**2) / (n1 + n2 - 2)\n    se = math.sqrt(sp2 * (1/n1 + 1/n2))\n    t = (mean1 - mean2) / se\n    return round(t, 4)",
+    "solution_code": "import math\ndef solve(n1: int, mean1: float, s1: float, n2: int, mean2: float, s2: float) -> float:\n    # Pooled variance: weighted average of within-group variances\n    sp2 = ((n1 - 1) * s1**2 + (n2 - 1) * s2**2) / (n1 + n2 - 2)\n    # SE of difference of means under equal-variance assumption\n    se = math.sqrt(sp2 * (1/n1 + 1/n2))\n    t = (mean1 - mean2) / se\n    return round(t, 4)",
+    "explanation": "The pooled t-test assumes both groups have the same population variance. The pooled variance s\u00b2_p is a weighted average of within-group variances (weights = df). SE = sqrt(s\u00b2_p*(1/n\u2081+1/n\u2082)) estimates the standard error of the mean difference. For n\u2081=12, mean\u2081=45.2, s\u2081=8.4, n\u2082=10, mean\u2082=52.7, s\u2082=9.1: s\u00b2_p=(11\u00d770.56+9\u00d782.81)/20=76.07, SE=sqrt(76.07\u00d70.1833)\u22483.735, t=-7.5/3.735\u2248-2.0083.",
+    "test_cases": [
+      {
+        "input": [
+          12,
+          45.2,
+          8.4,
+          10,
+          52.7,
+          9.1
+        ],
+        "expected": -2.0083,
+        "tolerance": 0.001
+      },
+      {
+        "input": [
+          5,
+          10.0,
+          2.0,
+          5,
+          8.0,
+          2.0
+        ],
+        "expected": 1.5811,
+        "tolerance": 0.001
+      },
+      {
+        "input": [
+          10,
+          20.0,
+          5.0,
+          10,
+          20.0,
+          5.0
+        ],
+        "expected": 0.0,
+        "tolerance": 0.0
+      }
+    ],
+    "public_test_cases": [
+      {
+        "input": [
+          12,
+          45.2,
+          8.4,
+          10,
+          52.7,
+          9.1
+        ],
+        "expected": -2.0083,
+        "tolerance": 0.001
+      }
+    ],
+    "hints": [
+      "The pooled variance combines within-group variance from both samples, weighted by degrees of freedom. Why n\u22121 as the weight? Because each sample's variance estimate uses n\u22121 degrees of freedom.",
+      "Once you have s\u00b2_p, the SE of (mean\u2081\u2212mean\u2082) follows from independence: Var(X\u0304\u2081\u2212X\u0304\u2082) = s\u00b2_p/n\u2081 + s\u00b2_p/n\u2082 = s\u00b2_p\u00b7(1/n\u2081+1/n\u2082)."
+    ],
+    "concepts": [
+      "hypothesis testing",
+      "standard error"
+    ]
+  },
+  {
+    "id": 73039,
+    "order": 39,
+    "topic": "statistics",
+    "type": "numerical",
+    "subtype": "numerical",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Two-Proportion Z-Test with Rejection Decision",
+    "description": "A health app tests a notification nudge on daily meal-logging completion. Control: n\u2081 users, k\u2081 completions. Treatment: n\u2082 users, k\u2082 completions. Write a Python function `solve(k1, n1, k2, n2)` that returns a tuple `(z_stat, reject_h0)` where `z_stat` is the two-proportion z-statistic rounded to 4 decimal places, and `reject_h0` is a bool indicating rejection at \u03b1 = 0.05 two-tailed (critical value |z| > 1.96). Use pooled proportion p_pool = (k1+k2)/(n1+n2).",
+    "starter_code": "import math\ndef solve(k1: int, n1: int, k2: int, n2: int):\n    # Your code here\n    pass",
+    "expected_code": "import math\ndef solve(k1: int, n1: int, k2: int, n2: int):\n    p1 = k1 / n1\n    p2 = k2 / n2\n    p_pool = (k1 + k2) / (n1 + n2)\n    se = math.sqrt(p_pool * (1 - p_pool) * (1/n1 + 1/n2))\n    z = (p2 - p1) / se\n    return (round(z, 4), bool(abs(z) > 1.96))",
+    "solution_code": "import math\ndef solve(k1: int, n1: int, k2: int, n2: int):\n    p1 = k1 / n1  # control rate\n    p2 = k2 / n2  # treatment rate\n    # Pooled proportion under H\u2080: p1 = p2\n    p_pool = (k1 + k2) / (n1 + n2)\n    se = math.sqrt(p_pool * (1 - p_pool) * (1/n1 + 1/n2))\n    z = (p2 - p1) / se\n    return (round(z, 4), bool(abs(z) > 1.96))",
+    "explanation": "z = (p\u0302\u2082\u2212p\u0302\u2081)/SE where SE uses the pooled proportion under H\u2080. For k\u2081=1400, n\u2081=8000, k\u2082=1600, n\u2082=8000: p_pool=0.1875, SE\u22480.00617, z\u22484.051 \u2192 |z| > 1.96 \u2192 reject H\u2080. Note that a large z-statistic also means a very small p-value \u2014 and the effect (2.5 pp lift from 17.5% to 20%) is both statistically and practically meaningful at this scale.",
+    "test_cases": [
+      {
+        "input": [
+          1400,
+          8000,
+          1600,
+          8000
+        ],
+        "expected": [
+          4.051,
+          true
+        ],
+        "tolerance": 0.001
+      },
+      {
+        "input": [
+          505,
+          10000,
+          510,
+          10000
+        ],
+        "expected": [
+          0.1611,
+          false
+        ],
+        "tolerance": 0.001
+      },
+      {
+        "input": [
+          100,
+          1000,
+          100,
+          1000
+        ],
+        "expected": [
+          0.0,
+          false
+        ],
+        "tolerance": 0.0
+      }
+    ],
+    "public_test_cases": [
+      {
+        "input": [
+          1400,
+          8000,
+          1600,
+          8000
+        ],
+        "expected": [
+          4.051,
+          true
+        ],
+        "tolerance": 0.001
+      }
+    ],
+    "hints": [
+      "The rejection decision is symmetric: reject if |z| > z_crit = 1.96, which is the two-tailed 5% critical value for the standard normal distribution.",
+      "For the second test case (505 vs 510 out of 10,000 each), the absolute difference is tiny (0.05 pp). What does this tell you about effect size vs sample size in determining statistical significance?"
+    ],
+    "concepts": [
+      "hypothesis testing",
+      "proportions",
+      "standard error"
+    ]
+  },
+  {
+    "id": 73040,
+    "order": 40,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 73028,
+    "follow_up_dimension": "ambiguity_pivot",
+    "title": "Does Controlling for Confounders Prove Causation?",
+    "description": "Continuing from the exercise/cardiovascular study (73032): the researcher correctly adjusts for age (confounder), excludes resting heart rate (mediator), and excludes insurance status (collider). The final OLS regression coefficient on exercise is \u03b2 = 0.42 (95% CI: [0.31, 0.53], p < 0.001).\n\nThe research team wants to recommend a company-wide fitness subsidy program, citing this coefficient as evidence that exercise *causes* a 0.42-unit improvement in the cardiovascular health score.\n\nA biostatistician on the review panel says the causal claim is still premature. Which of the following best captures the core objection?",
+    "options": [
+      "The p-value is well below 0.05, so the result is both statistically and causally significant; no further validation is needed before making recommendations",
+      "Adjusting for the three identified variables closes all backdoor paths only if those are the only confounders \u2014 unmeasured confounders (e.g., dietary habits, socioeconomic status) may still leave open backdoor paths; observational regression cannot rule this out",
+      "The coefficient would be causal if the dataset were larger; the sample size is the limiting factor, not the study design",
+      "Using OLS instead of logistic regression is the core methodological problem; switching the estimator would make the causal claim valid"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B identifies the correct objection: causal identification from observational regression requires that ALL confounders \u2014 not just the measured ones \u2014 are controlled for. This assumption (no unmeasured confounding / ignorability / exogeneity) is untestable from the data itself. In this study, dietary habits, socioeconomic status, stress levels, and genetic predisposition are plausible unmeasured confounders. Each could create backdoor paths between exercise (X) and cardiovascular health (Y) that the regression cannot close.\n\nControlling for a correct set of observed variables is necessary but not sufficient for a causal claim. The researcher has made progress \u2014 the three variables were correctly handled \u2014 but the causal claim requires additionally asserting that there are no other relevant omitted variables. That assertion needs subject-matter knowledge and sensitivity analysis (e.g., how strong would an unmeasured confounder need to be to explain away the estimated effect?), not just statistical output.\n\nOption A confuses statistical significance with causal significance \u2014 a persistent and dangerous conflation. A statistically significant regression coefficient in observational data is evidence of association, not causation.\n\nOption C is wrong: sample size affects precision (confidence interval width), not the causal interpretation. A larger sample of the same observational design is still observational \u2014 it produces a more precise estimate of the same potentially confounded association.\n\nOption D is a red herring: the choice between OLS and logistic regression depends on the outcome distribution, not on whether the estimate is causal.",
+    "hints": [
+      "Conditioning on the right observed variables closes identified backdoor paths \u2014 but what about the unobserved ones?",
+      "Think about what assumption is required for observational regression to yield a causal estimate, and whether that assumption can ever be verified from the data alone."
+    ],
+    "concepts": [
+      "confounding",
+      "causal inference",
+      "observational",
+      "causal DAG"
+    ]
+  },
+  {
+    "id": 73041,
+    "order": 41,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Mediation Analysis: Can You 'Just Increase Bookmarks'?",
+    "description": "A product team runs a pre-registered A/B test. Treatment (T): personalised feed (vs. default feed). Outcome (Y): 90-day retention. Post-treatment variable (M): number of items bookmarked in the first week.\n\nResults (standard mediation decomposition):\n- Total effect of T on Y: large and positive (\u03b2_total = 0.18)\n- Direct effect of T on Y controlling for M: near zero (\u03b2_direct \u2248 0.01, p = 0.62)\n- Indirect effect (T \u2192 M \u2192 Y): accounts for ~94% of the total effect\n\nThe PM concludes: 'The treatment works entirely through bookmarking. Let's drop the personalised feed and just send push notifications to get all users to bookmark more \u2014 it's cheaper.' Which of the following best explains why this plan is likely to fail?",
+    "options": [
+      "The indirect effect being 94% of the total effect means bookmarking is causally upstream of retention; the PM is correct that any intervention boosting bookmarks will produce the same retention lift",
+      "Bookmarking (M) is a post-treatment variable: its distribution under the push-notification intervention will differ from its distribution under the personalised feed, and the causal path T \u2192 M depends on the mechanism the feed creates. Artificially increasing M through a different intervention may not activate the same M \u2192 Y pathway",
+      "The mediation analysis is invalid because M was not randomised; mediation analysis requires a second randomised trial on M to be interpretable",
+      "The near-zero direct effect proves the personalised feed has no value; the PM's conclusion is correct that a cheaper intervention can replicate the result"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B identifies the correct flaw in the PM's reasoning \u2014 a form of 'mechanism confusion.'\n\nMediation analysis decomposes the total causal effect of T into a pathway through M (indirect) and a pathway not through M (direct). But this decomposition describes how the *original treatment* (personalised feed) achieves its effect \u2014 it does not mean that any intervention that raises M will yield the same outcome.\n\nThe personalised feed likely increases bookmarking *because* it surfaces highly relevant content. The M \u2192 Y causal pathway (bookmarks \u2192 retention) works because users who find content worth saving are more engaged with the product. A push notification saying 'tap to bookmark this random item' may increase raw bookmark counts while delivering no engagement lift \u2014 or even a negative one (notification fatigue).\n\nThis is the 'mediation does not license a new intervention on M' fallacy: the indirect effect estimate tells you about the mechanism under the original treatment, not about what happens when M is perturbed directly or through a different mechanism.\n\nOption A is the common error the PM is making: equating 'M mediates the effect' with 'M is causally sufficient to produce the effect by any means.' This ignores the mechanism by which M is raised.\n\nOption C is partially right that standard mediation analysis requires additional assumptions (sequential ignorability), but those assumptions don't invalidate the analysis entirely \u2014 they limit interpretation. And the question asks about the PM's plan, not the analysis validity.\n\nOption D misreads the near-zero direct effect: it means the treatment's effect on retention *not through bookmarking* is negligible \u2014 not that the treatment has no value. The treatment works, but primarily through the bookmarking pathway.",
+    "hints": [
+      "Mediation analysis describes how the original treatment achieves its effect. Does that description mean any other way to increase M will produce the same Y?",
+      "Think about what 'bookmarking in week 1 \u2192 retention' means. Why might a user bookmark something? Does the reason matter for whether it predicts retention?"
+    ],
+    "concepts": [
+      "mediation",
+      "causal inference",
+      "causal DAG",
+      "regression",
+      "confounding"
+    ]
+  },
+  {
+    "id": 73042,
+    "order": 42,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Subgroup-Only Ship After a Null Overall Result",
+    "description": "An A/B test for a redesigned checkout flow shows:\n- Overall: no significant effect (p = 0.62, power was 90% for a 2pp MDE)\n- Mobile users: +8pp conversion (p = 0.003, n = 4,200 per arm)\n- Desktop users: \u22126pp conversion (p = 0.04, n = 3,800 per arm)\n\nThe PM says: 'The mobile result is highly significant. Let's ship the redesign to mobile users only \u2014 we'll remove it for desktop.'\n\nWhich statistical issues arise specifically from this decision?",
+    "options": [
+      "No issues: the mobile p = 0.003 is well below any reasonable threshold and the subgroup analysis is pre-specified in standard practice",
+      "Two issues: (1) The mobile subgroup was not pre-registered \u2014 finding the subgroup after observing a null overall result is a form of post-hoc multiple testing. With two subgroups at \u03b1 = 0.05, the combined false positive rate is approximately 10%; p = 0.003 is still striking but its interpretation changes. (2) The opposing direction of the mobile and desktop effects suggests a heterogeneous treatment effect that the overall experiment averaged away \u2014 shipping for mobile only is productively reasonable but requires a confirmatory pre-registered experiment on mobile to validate the magnitude",
+      "The experiment is invalid because a significant negative effect in desktop and a null overall result are mathematically inconsistent",
+      "The subgroup result is automatically valid because mobile and desktop are mutually exclusive and exhaustive user categories; no multiple testing adjustment is needed"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B identifies both the statistical and decision-making nuance correctly.\n\n**Issue 1 \u2014 Post-hoc subgroup analysis and multiple testing:** The overall experiment was null, and the subgroups were not pre-specified. Searching for significant subgroups after an overall null is exactly the scenario multiple testing corrections are designed to protect against. With two subgroups (mobile / desktop), the effective Type I error rate is approximately 1 \u2212 (0.95)\u00b2 \u2248 10%. The mobile p = 0.003 is compelling, but it should be treated as a hypothesis-generating finding, not a confirmatory one.\n\n**Issue 2 \u2014 Heterogeneous treatment effects (HTE):** The opposing signs (mobile +8pp, desktop \u22126pp) explain the null overall result \u2014 the effects cancel in the aggregate. This is a meaningful discovery: the redesign genuinely helps mobile users and genuinely hurts desktop users. The HTE interpretation is likely correct, but its magnitude needs confirmation. Shipping to mobile only based on an unplanned subgroup analysis risks overstating the benefit.\n\n**Correct path:** Pre-register a confirmatory mobile-only experiment with the observed +8pp as the expected effect. Run it with appropriate sample size for that specific hypothesis. Only then is the causal claim about mobile users validated.\n\nOption A is wrong because 'standard practice' does not mean subgroup analyses are exempt from multiple testing concerns. They are exempt only if pre-specified with explicit Bonferroni (or other) correction.\n\nOption C is wrong mathematically: a treatment that helps mobile and hurts desktop can easily average to a null overall result if the subgroup sizes and effect sizes offset each other.\n\nOption D is wrong: mutual exclusivity between subgroups does not remove the multiple testing problem. You are still making two comparisons; each has its own chance of a false positive.",
+    "hints": [
+      "How many subgroup comparisons were made after seeing the null overall result? How does that affect the family-wise error rate?",
+      "If mobile and desktop effects are roughly equal in magnitude but opposite in sign, what would you expect the overall experiment result to look like?"
+    ],
+    "concepts": [
+      "experimental design",
+      "multiple testing",
+      "a/b testing",
+      "experiment interpretation",
+      "heterogeneous treatment effects"
+    ]
+  },
+  {
+    "id": 73043,
+    "order": 43,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Switchback Experiment Validity Threats",
+    "description": "A ride-sharing platform cannot randomise surge pricing by user \u2014 the same driver pool and market conditions affect all users simultaneously. Instead, the team uses a **switchback design**: they alternate treatment (surge pricing algorithm A) and control (algorithm B) in 1-hour windows throughout the day across 30 days.\n\nA statistician says this design works but has different validity threats than standard user-level A/B tests.\n\nWhich of the following best characterises the primary validity threats *unique to* the switchback design?",
+    "options": [
+      "Switchback designs have no additional validity threats compared to standard A/B tests as long as the hourly windows are randomised",
+      "Three key threats: (1) Carry-over effects \u2014 driver and rider behavior in a treatment period may persist into the next control period (e.g., drivers who positioned themselves for surge may still be differently distributed when control begins); (2) Period confounding \u2014 time-of-day, day-of-week, and external events affect both demand and which algorithm runs, so any systematic assignment (e.g., always treatment in mornings) confounds the estimate; (3) Autocorrelation in the outcome \u2014 consecutive time windows are not independent (rush-hour effects span multiple windows), violating the independence assumption of standard t-tests and requiring time-series-aware variance estimators",
+      "The only threat is sample size: switchback designs have fewer independent observations than user-level designs because time windows are larger units than users",
+      "Switchback designs are invalid for pricing experiments because prices are continuous variables; they are only valid for binary feature flags"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B identifies the three core validity threats unique to time-series / switchback experiments.\n\n**Carry-over effects:** When a surge-pricing treatment ends and the control period begins, the market does not instantly reset. Drivers who moved toward high-demand areas during surge do not immediately redistribute. Riders who were waiting for prices to drop may now request rides. These behavioral residuals from the treatment period contaminate the subsequent control period, making the control outcome artificially different from what it would have been in a pure control condition. Longer window lengths (e.g., 4-hour windows instead of 1-hour) reduce carry-over at the cost of fewer periods.\n\n**Period confounding:** If the same time slots tend to get the same treatment assignment (e.g., morning always gets algorithm A), then any effect of time-of-day or day-of-week is confounded with the treatment. The solution is to randomise which algorithm runs in each window independently, ensuring that the assignment is uncorrelated with time patterns. In practice, this means checking that both algorithms run roughly equally often at each hour of day.\n\n**Autocorrelation:** Consecutive 1-hour windows are not independent outcomes \u2014 rush-hour effects, weather, and events span multiple windows. Standard variance estimators (which assume independence) will underestimate true variance, inflating the t-statistic and producing false positives. The fix is to use variance estimators that account for temporal autocorrelation, such as clustered standard errors by day or time-series HAC (heteroscedasticity-and-autocorrelation-consistent) standard errors.\n\nOption A is wrong: randomising the hourly windows addresses period confounding but does not eliminate carry-over or autocorrelation.\n\nOption C is partially right that window count limits statistical power, but this is a shared challenge of all cluster-level designs \u2014 not the primary novel threat of switchback designs specifically.\n\nOption D is wrong: switchback designs are widely used for continuous-valued treatments (pricing, ranking scores, delay tolerances); the validity threats are the same.",
+    "hints": [
+      "What happens to driver locations and rider queues at the exact moment the surge algorithm switches off? Does the market state reset instantly?",
+      "If rush hour creates correlated outcomes across three consecutive 1-hour windows, do standard t-test variance formulas correctly account for that dependency?"
+    ],
+    "concepts": [
+      "experimental design",
+      "a/b testing",
+      "within-subject design",
+      "experiment design",
+      "causal inference"
+    ]
+  },
+  {
+    "id": 73044,
+    "order": 44,
+    "topic": "statistics",
+    "type": "numerical",
+    "subtype": "numerical",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Sample Size for a Two-Sample Z-Test",
+    "description": "Implement `solve(mde, sigma, alpha=0.05, power=0.80)` that returns the **minimum sample size per arm** for a two-sided two-sample z-test to detect an absolute effect of `mde` (minimum detectable effect) with the given significance level and power.\n\nFormula: n = ceil( 2 \u00d7 ((z_{\u03b1/2} + z_\u03b2) \u00d7 \u03c3 / mde)\u00b2 )\n\nUse `statistics.NormalDist` for z-score lookup. Return an int.",
+    "starter_code": "def solve(mde: float, sigma: float, alpha: float = 0.05, power: float = 0.80) -> int:\n    # Your code here\n    pass",
+    "expected_code": "def solve(mde: float, sigma: float, alpha: float = 0.05, power: float = 0.80) -> int:\n    import math\n    from statistics import NormalDist\n    z_alpha2 = NormalDist().inv_cdf(1 - alpha / 2)\n    z_beta = NormalDist().inv_cdf(power)\n    return math.ceil(2 * ((z_alpha2 + z_beta) * sigma / mde) ** 2)",
+    "solution_code": "def solve(mde: float, sigma: float, alpha: float = 0.05, power: float = 0.80) -> int:\n    import math\n    from statistics import NormalDist\n    # n = ceil(2 * ((z_{alpha/2} + z_beta) * sigma / mde)^2)\n    # Factor of 2 accounts for two equal-sized arms.\n    z_alpha2 = NormalDist().inv_cdf(1 - alpha / 2)  # \u2248 1.96\n    z_beta = NormalDist().inv_cdf(power)             # \u2248 0.84 for 80%, 1.28 for 90%\n    n_exact = 2 * ((z_alpha2 + z_beta) * sigma / mde) ** 2\n    return math.ceil(n_exact)",
+    "explanation": "n = \u23082 \u00d7 ((z_{\u03b1/2} + z_\u03b2) \u00d7 \u03c3 / MDE)\u00b2\u2309. This is the per-arm sample size for a two-sided two-sample z-test. The formula is the inverse of the MDE formula: given target MDE, solve for n. Key intuitions: (1) n scales as 1/MDE\u00b2 \u2014 halving the MDE requires 4\u00d7 the sample; (2) n scales as \u03c3\u00b2 \u2014 higher outcome variance demands more data; (3) higher power or lower \u03b1 increases z_\u03b2 and z_{\u03b1/2}, raising n.",
+    "test_cases": [
+      {
+        "input": [
+          0.05,
+          0.25
+        ],
+        "expected": 393,
+        "tolerance": 0
+      },
+      {
+        "input": [
+          0.1,
+          0.3
+        ],
+        "expected": 142,
+        "tolerance": 0
+      },
+      {
+        "input": [
+          0.02,
+          0.2,
+          0.05,
+          0.9
+        ],
+        "expected": 2102,
+        "tolerance": 0
+      }
+    ],
+    "public_test_cases": [
+      {
+        "input": [
+          0.05,
+          0.25
+        ],
+        "expected": 393,
+        "tolerance": 0
+      },
+      {
+        "input": [
+          0.1,
+          0.3
+        ],
+        "expected": 142,
+        "tolerance": 0
+      }
+    ],
+    "hints": [
+      "The sample size formula is the algebraic inverse of the MDE formula from the companion medium question: solve for n given a target MDE.",
+      "`math.ceil` rounds up because you cannot have a fractional user \u2014 you always need at least n, never fewer."
+    ],
+    "concepts": [
+      "sample size",
+      "experiment design",
+      "a/b testing",
+      "statistical power",
+      "minimum detectable effect"
+    ]
+  },
+  {
+    "id": 73045,
+    "order": 45,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Bayes Factor: Which Model Is Supported by the Data?",
+    "description": "A data scientist models a landing page's conversion rate using two competing models:\n\n- **M\u2081 (uninformed):** Beta(1, 1) prior \u2014 no prior knowledge\n- **M\u2082 (historical):** Beta(40, 360) prior \u2014 encodes strong belief that conversion is ~10%, based on 400 past observations\n\nAfter seeing 35 conversions from 500 visits, the analyst computes the marginal likelihoods:\n- P(data | M\u2081) = 0.00192\n- P(data | M\u2082) = 0.00318\n\nThe Bayes factor BF\u2082\u2081 = P(data | M\u2082) / P(data | M\u2081) \u2248 1.66.\n\nA PM asks: 'M\u2082 has a higher marginal likelihood \u2014 that means M\u2082 is correct, right?' What is the accurate interpretation?",
+    "options": [
+      "Yes \u2014 the higher marginal likelihood for M\u2082 proves M\u2082 is correct. The Bayes factor > 1 is definitive evidence for M\u2082",
+      "BF\u2082\u2081 \u2248 1.66 is weak evidence (by conventional Jeffreys scale: BF < 3 is 'barely worth mentioning'). The data modestly favor M\u2082 over M\u2081, but this does not mean M\u2082 is 'correct.' The Bayes factor compares evidence for models relative to each other; a BF of 1.66 means the data are 1.66\u00d7 more probable under M\u2082 than M\u2081 \u2014 not a strong enough signal to dismiss M\u2081. The correct conclusion: weak preference for M\u2082, neither model is definitively supported",
+      "BF\u2082\u2081 < 2 means the data favor M\u2081, since the threshold for M\u2082 to win is a Bayes factor greater than 2",
+      "Bayes factors cannot be computed when one prior is uninformative; the M\u2081 analysis is invalid"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B correctly interprets the Bayes factor on the Jeffreys (1961) strength-of-evidence scale:\n- BF < 3: anecdotal / barely worth mentioning\n- 3 \u2264 BF < 10: moderate evidence\n- 10 \u2264 BF < 100: strong evidence\n- BF \u2265 100: decisive evidence\n\nBF\u2082\u2081 \u2248 1.66 falls in the 'anecdotal' category. The data are 66% more probable under M\u2082 than M\u2081 \u2014 a mild preference, not a decisive one. Given that M\u2082 encodes specific prior knowledge (40 successes in 400 historical trials \u2248 10% rate) and the observed data shows 35/500 = 7% (somewhat below the M\u2082 prior), the modest preference for M\u2082 makes intuitive sense: the historical data at 10% are not dramatically contradicted by the new 7% observation, so M\u2082 is mildly supported but not strongly.\n\nA critical insight: the Bayes factor depends on the specific priors chosen. It is not a test of 'which true model generated the data' but 'given these two prior specifications, which predicts the observed data better?' With a BF of 1.66, the honest answer is 'we can't tell.'\n\nOption A applies a threshold fallacy (BF > 1 = M\u2082 wins) that ignores the continuous evidence scale.\n\nOption C inverts the direction: BF\u2082\u2081 > 1 means M\u2082 is favored (not M\u2081). Any BF > 1 favors the model in the numerator.\n\nOption D is wrong: uninformative (uniform) priors are perfectly valid for computing marginal likelihoods. Beta(1,1) is a proper probability distribution; its marginal likelihood is well-defined.",
+    "hints": [
+      "A factor of 1.66 means the data are 1.66\u00d7 more probable under one model than the other. What constitutes 'strong' evidence on conventional strength-of-evidence scales?",
+      "Look up or recall the Jeffreys strength-of-evidence scale. Where does BF = 1.66 fall on that scale?"
+    ],
+    "concepts": [
+      "bayesian inference",
+      "bayes factor",
+      "model selection",
+      "prior information"
+    ]
+  },
+  {
+    "id": 73046,
+    "order": 46,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Bayesian Expected Value for a Campaign Decision",
+    "description": "A product team has run 35 conversions from 500 visits. Using a Beta(1,1) prior, the posterior is Beta(36, 466). The team is considering a more expensive ad campaign costing $10,000 that is believed to increase the conversion rate by exactly 2 percentage points (from the current posterior mean of ~7%).\n\nEach conversion is worth $V in revenue to the company. The expected number of conversions over the next 1,000 visits under the new campaign is:\n\nExpected conversions = 1,000 \u00d7 (posterior mean + 0.02) = 1,000 \u00d7 0.09 \u2248 90\n\nWithout the campaign: 1,000 \u00d7 0.07 = 70 conversions.\n\nAt what minimum revenue per conversion $V does the campaign break even on expected value?",
+    "options": [
+      "$125 per conversion: 20 additional conversions \u00d7 $125 = $2,500, which does not cover $10,000",
+      "$500 per conversion: 20 additional conversions \u00d7 $500 = $10,000. The incremental revenue from the 2pp lift exactly covers the campaign cost at $V = $500",
+      "$200 per conversion: the campaign break-even is at 1,000 total conversions \u00d7 $200 = $200,000 total revenue, minus the $10,000 campaign cost",
+      "$100 per conversion: 70 baseline conversions \u00d7 $100 = $7,000 incremental revenue from having any conversions"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct. The break-even analysis focuses on the *incremental* value generated by the campaign, not total conversion revenue.\n\nIncremental conversions = 1,000 \u00d7 0.02 = 20 additional conversions (from the 2pp lift)\nBreak-even condition: 20 \u00d7 V = $10,000\nV = $10,000 / 20 = **$500 per conversion**\n\nAt exactly $500 per conversion, the campaign's expected incremental revenue equals its cost. Above $500, the campaign has positive expected value; below $500, it loses money on expectation.\n\nThis is the core Bayesian expected value framework for product decisions: use the posterior distribution to form a point estimate of the relevant rate, compute the expected incremental impact of the intervention, and compare to cost. The uncertainty in the posterior is not captured in this simplified calculation \u2014 a full analysis would integrate over the posterior distribution of conversion rates and include the uncertainty about the 2pp lift itself.\n\nOption A uses the wrong multiplier (only multiplies incremental conversions by a rate, not by V).\n\nOption C computes total revenue, not incremental: the $200,000 baseline revenue exists regardless of the campaign \u2014 what matters is the incremental $V \u00d7 20 conversions from the lift.\n\nOption D looks at baseline conversions \u00d7 V, which counts revenue that would have existed without the campaign \u2014 not incremental revenue from the decision.",
+    "hints": [
+      "Break-even analysis compares the incremental cost to the incremental benefit. How many additional conversions does the 2pp lift generate over 1,000 visits?",
+      "The campaign cost is $10,000. That needs to be covered by revenue from the EXTRA conversions the campaign generates \u2014 not total conversions."
+    ],
+    "concepts": [
+      "bayesian inference",
+      "decision making under uncertainty",
+      "posterior",
+      "expected value"
+    ]
+  },
+  {
+    "id": 73047,
+    "order": 47,
+    "topic": "statistics",
+    "type": "numerical",
+    "subtype": "numerical",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Bayesian A/B Test: P(Variant A Outperforms B)",
+    "description": "In a Bayesian A/B test, two variants have Beta-distributed posterior beliefs about their conversion rates:\n- Variant A: Beta(alpha_A, beta_A)\n- Variant B: Beta(alpha_B, beta_B)\n\nImplement `solve(alpha_A, beta_A, alpha_B, beta_B, n_samples=10000)` that estimates **P(\u03b8_A > \u03b8_B)** via Monte Carlo simulation using `random.Random(42)`. Return a float rounded to 4 decimal places.\n\nUse `random.Random(42).betavariate(alpha, beta)` for sampling.",
+    "starter_code": "def solve(alpha_A: float, beta_A: float, alpha_B: float, beta_B: float, n_samples: int = 10000) -> float:\n    # Your code here\n    pass",
+    "expected_code": "def solve(alpha_A: float, beta_A: float, alpha_B: float, beta_B: float, n_samples: int = 10000) -> float:\n    import random\n    rng = random.Random(42)\n    count = sum(\n        1 for _ in range(n_samples)\n        if rng.betavariate(alpha_A, beta_A) > rng.betavariate(alpha_B, beta_B)\n    )\n    return round(count / n_samples, 4)",
+    "solution_code": "def solve(alpha_A: float, beta_A: float, alpha_B: float, beta_B: float, n_samples: int = 10000) -> float:\n    import random\n    rng = random.Random(42)\n    # For each sample, draw one theta from each posterior and check which is larger.\n    # The fraction of samples where A > B estimates P(theta_A > theta_B).\n    count = sum(\n        1 for _ in range(n_samples)\n        if rng.betavariate(alpha_A, beta_A) > rng.betavariate(alpha_B, beta_B)\n    )\n    return round(count / n_samples, 4)",
+    "explanation": "P(\u03b8_A > \u03b8_B) is computed by Monte Carlo: draw N pairs (\u03b8_A, \u03b8_B) from their respective Beta posteriors and estimate the fraction where \u03b8_A > \u03b8_B. With n_samples=10000 and seed 42, the result is deterministic. This metric directly answers 'what probability does our posterior assign to A being better than B?' \u2014 a natural Bayesian decision criterion, unlike a p-value which tests a point null hypothesis.",
+    "test_cases": [
+      {
+        "input": [
+          36,
+          466,
+          21,
+          481
+        ],
+        "expected": 0.9809,
+        "tolerance": 0.02
+      },
+      {
+        "input": [
+          36,
+          466,
+          36,
+          466
+        ],
+        "expected": 0.5005,
+        "tolerance": 0.02
+      },
+      {
+        "input": [
+          11,
+          91,
+          6,
+          96
+        ],
+        "expected": 0.9027,
+        "tolerance": 0.02
+      }
+    ],
+    "public_test_cases": [
+      {
+        "input": [
+          36,
+          466,
+          21,
+          481
+        ],
+        "expected": 0.9809,
+        "tolerance": 0.02
+      },
+      {
+        "input": [
+          36,
+          466,
+          36,
+          466
+        ],
+        "expected": 0.5005,
+        "tolerance": 0.02
+      }
+    ],
+    "hints": [
+      "`random.Random(42).betavariate(alpha, beta)` draws a sample from Beta(alpha, beta). Draw one for each variant per iteration.",
+      "Repeat this N times and count how often A's draw exceeds B's draw. Divide by N for the probability estimate."
+    ],
+    "concepts": [
+      "bayesian inference",
+      "distributions",
+      "experimental design",
+      "posterior"
+    ]
+  },
+  {
+    "id": 73048,
+    "order": 48,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "MLE vs. Method of Moments for a Skewed Distribution",
+    "description": "A data scientist models user session count per day as Poisson(\u03bb). Two estimators are proposed:\n\n- **MLE:** \u03bb\u0302_MLE = x\u0304 (sample mean)\n- **MOM:** \u03bb\u0302_MOM = x\u0304 (same, since the Poisson mean equals its variance)\n\nFor the Poisson, MLE and MOM coincide. But for a **Gamma distribution** (modelling session duration), MLE and MOM give different estimates. A colleague asks: 'If they give the same answer for Poisson, why prefer MLE over MOM in general?'\n\nWhich answer best explains why MLE is generally preferred?",
+    "options": [
+      "MLE is always preferred because it always gives a smaller estimate than MOM, leading to more conservative confidence intervals",
+      "MLE is asymptotically efficient (achieves the Cram\u00e9r-Rao lower bound on variance) and is asymptotically unbiased. MOM is consistent but not generally efficient \u2014 it doesn't use all the information in the likelihood. For complex or multiparameter models, MLE extracting information from the full likelihood often produces substantially lower mean squared error than MOM",
+      "MLE requires more data than MOM, so MOM is preferred for small samples and MLE only for large samples",
+      "MLE and MOM are identical for all exponential family distributions; the difference only appears for non-standard models that rarely occur in practice"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B correctly identifies the key theoretical advantage of MLE: asymptotic efficiency.\n\nThe **Cram\u00e9r-Rao lower bound (CRLB)** gives the minimum achievable variance for any unbiased estimator. Under regularity conditions, MLE achieves this lower bound asymptotically \u2014 meaning no other consistent estimator can have lower asymptotic variance. This is the key efficiency advantage.\n\nMethod of Moments (MOM) matches sample moments to population moments and solves for parameters. MOM is:\n- Conceptually simple and often closed-form\n- Consistent (converges to the true value)\n- NOT generally efficient \u2014 it uses only the moments, not the full shape information in the likelihood\n\nFor the **Gamma(\u03b1, \u03b2)** distribution, MLE and MOM diverge:\n- MOM uses the first two moments (mean = \u03b1\u03b2, variance = \u03b1\u03b2\u00b2)\n- MLE uses the full log-likelihood, including information from the distribution's shape in every observation\n- For moderate n (50\u2013200), MLE estimates are noticeably more stable\n\nOption A is wrong: MLE does not always produce smaller estimates. The relative magnitude depends on the model and data.\n\nOption C inverts the standard recommendation: MOM is often used for quick initialisation in small-sample settings (or as a starting point for numerical MLE), but MLE is generally preferred when the likelihood can be optimised.\n\nOption D is wrong: MLE and MOM coincide for some exponential family distributions (like Poisson and Normal for their natural parameters), but they diverge for many others, including the Gamma. The Gamma is extremely common in practice (session duration, customer lifetime value, response times).",
+    "hints": [
+      "What is the Cram\u00e9r-Rao lower bound, and which estimator achieves it asymptotically?",
+      "MOM uses only moment equations. MLE uses the full shape of the likelihood for every observation. Which approach extracts more statistical information from the data?"
+    ],
+    "concepts": [
+      "confidence intervals & estimation",
+      "MLE",
+      "maximum likelihood",
+      "distributions",
+      "sufficient statistics"
+    ]
+  },
+  {
+    "id": 73049,
+    "order": 49,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Bias-Variance in CI Width: Small vs. Large Effect Estimates",
+    "description": "A team estimates the treatment effect of a new recommendation system. They have two approaches:\n\n- **Method A:** Ordinary least squares (OLS) on all users \u2014 unbiased but high variance (wide CI)\n- **Method B:** OLS with 20 control variables added \u2014 reduces residual variance, narrows CI, but introduces small potential bias if any control variable is actually a mediator\n\nBoth methods are applied to an experiment of n = 2,000 users (1,000 treatment, 1,000 control).\n\nMethod A CI: [\u22120.5%, 6.5%] (width = 7pp, centred at 3%)\nMethod B CI: [1.2%, 4.8%] (width = 3.6pp, centred at 3%)\n\nThe team debates which CI to report. What is the correct framework for choosing?",
+    "options": [
+      "Always report Method A (OLS without controls) because any bias from controls invalidates the CI, even if the bias is small",
+      "Report Method B if (a) the control variables are confounders or pre-treatment variables (not mediators), and (b) the variance reduction is large enough that the reduction in CI width outweighs the small bias risk. If adding controls genuinely reduces residual variance without opening mediator paths, Method B is the better estimator by mean squared error (MSE = bias\u00b2 + variance)",
+      "Always report Method B because a narrower CI is always better for decision-making",
+      "The choice is arbitrary as long as both CIs are reported in the paper"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B correctly applies the bias-variance tradeoff in a confidence interval context.\n\nFor randomised experiments, the treatment effect estimator from OLS (with or without controls) is unbiased \u2014 randomisation ensures the treatment is uncorrelated with any covariate. Adding pre-treatment control variables to an OLS model in a randomised experiment (covariate adjustment) reduces residual variance without introducing bias, as long as the controls are:\n1. Pre-treatment (not caused by the treatment)\n2. Not mediators (not on the causal pathway from treatment to outcome)\n\nIf these conditions hold, Method B is strictly better than Method A: same expected value, lower variance, narrower CI.\n\nIf a control variable IS a mediator (e.g., adding 'items clicked in the recommendation system' when measuring 'purchases'), then conditioning on it blocks part of the causal pathway, introducing bias. This is the risk to check.\n\nFrom an MSE perspective: MSE = Bias\u00b2 + Variance. If Method B has slightly higher bias but substantially lower variance, it can have lower MSE and better coverage than Method A \u2014 the 'narrower but slightly shifted CI' may actually contain the true value more often in finite samples.\n\nOption A is overly conservative: small potential bias from pre-treatment controls in randomised experiments is typically negligible. The ANCOVA / covariate-adjusted estimator is a well-established best practice in clinical trials and tech experimentation.\n\nOption C is wrong: a narrower CI from a biased estimator can be misleading. The width is not the only criterion \u2014 the centre matters too.\n\nOption D dodges the methodological question. Reporting both is fine for transparency, but the primary analysis should be pre-specified.",
+    "hints": [
+      "In a randomised experiment, does adding pre-treatment control variables to an OLS regression introduce bias? What is the causal argument for or against?",
+      "MSE = bias\u00b2 + variance. If adding controls reduces variance substantially with only negligible bias, what happens to MSE?"
+    ],
+    "concepts": [
+      "confidence intervals & estimation",
+      "regression",
+      "experimental design",
+      "frequentist inference",
+      "noise and signal"
+    ]
+  },
+  {
+    "id": 73050,
+    "order": 50,
+    "topic": "statistics",
+    "type": "numerical",
+    "subtype": "numerical",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Wald Confidence Interval for a Proportion",
+    "description": "Implement `solve(k, n, conf=0.95)` that returns the Wald confidence interval `(lower, upper)` for a binomial proportion, rounded to 4 decimal places each.\n\nFormula: p\u0302 \u00b1 z_{(1+conf)/2} \u00d7 \u221a(p\u0302(1\u2212p\u0302)/n)\n\nUse `statistics.NormalDist` for z-score lookup. Clamp both bounds to [0.0, 1.0].",
+    "starter_code": "def solve(k: int, n: int, conf: float = 0.95) -> tuple[float, float]:\n    # Your code here\n    pass",
+    "expected_code": "def solve(k: int, n: int, conf: float = 0.95) -> tuple[float, float]:\n    import math\n    from statistics import NormalDist\n    phat = k / n\n    z = NormalDist().inv_cdf((1 + conf) / 2)\n    se = math.sqrt(phat * (1 - phat) / n)\n    lower = max(0.0, phat - z * se)\n    upper = min(1.0, phat + z * se)\n    return (round(lower, 4), round(upper, 4))",
+    "solution_code": "def solve(k: int, n: int, conf: float = 0.95) -> tuple[float, float]:\n    import math\n    from statistics import NormalDist\n    phat = k / n\n    z = NormalDist().inv_cdf((1 + conf) / 2)  # z_{alpha/2}\n    se = math.sqrt(phat * (1 - phat) / n)      # standard error of proportion\n    lower = max(0.0, phat - z * se)\n    upper = min(1.0, phat + z * se)\n    return (round(lower, 4), round(upper, 4))",
+    "explanation": "The Wald CI is p\u0302 \u00b1 z_{\u03b1/2} \u00d7 SE, where SE = \u221a(p\u0302(1\u2212p\u0302)/n). For a 95% CI, z_{\u03b1/2} = \u03a6\u207b\u00b9(0.975) \u2248 1.96. Clamping to [0, 1] prevents physically impossible bounds (can occur when p\u0302 is near 0 or 1). The Wald CI is the textbook standard but degrades for small n or extreme proportions \u2014 the Wilson interval is preferred in those settings.",
+    "test_cases": [
+      {
+        "input": [
+          35,
+          500
+        ],
+        "expected": [
+          0.0476,
+          0.0924
+        ],
+        "tolerance": 0.001
+      },
+      {
+        "input": [
+          350,
+          5000
+        ],
+        "expected": [
+          0.0629,
+          0.0771
+        ],
+        "tolerance": 0.001
+      },
+      {
+        "input": [
+          1,
+          100,
+          0.99
+        ],
+        "expected": [
+          0.0,
+          0.0257
+        ],
+        "tolerance": 0.002
+      }
+    ],
+    "public_test_cases": [
+      {
+        "input": [
+          35,
+          500
+        ],
+        "expected": [
+          0.0476,
+          0.0924
+        ],
+        "tolerance": 0.001
+      },
+      {
+        "input": [
+          350,
+          5000
+        ],
+        "expected": [
+          0.0629,
+          0.0771
+        ],
+        "tolerance": 0.001
+      }
+    ],
+    "hints": [
+      "The z-score for a conf-level CI is NormalDist().inv_cdf((1 + conf) / 2) \u2014 this gives z such that P(-z < Z < z) = conf.",
+      "Standard error for a proportion is sqrt(phat * (1 - phat) / n). After computing bounds, clamp to [0, 1] to avoid impossible values."
+    ],
+    "concepts": [
+      "confidence intervals & estimation",
+      "distributions",
+      "sampling & central limit theorem",
+      "frequentist inference"
+    ]
+  },
+  {
+    "id": 73051,
+    "order": 51,
+    "topic": "statistics",
+    "type": "numerical",
+    "subtype": "numerical",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "MLE for Exponential Distribution with Asymptotic CI",
+    "description": "The exponential distribution models time-to-event data. Its MLE is \u03bb\u0302 = 1/x\u0304.\n\nThe asymptotic 95% CI for \u03bb uses the Fisher information I(\u03bb) = 1/\u03bb\u00b2:\n- SE(\u03bb\u0302) = \u03bb\u0302 / \u221an\n- 95% CI: \u03bb\u0302 \u00b1 z_{0.025} \u00d7 \u03bb\u0302/\u221an\n\nImplement `solve(observations)` that returns `(lambda_hat, ci_lower, ci_upper)` rounded to 6 decimal places.\n\nUse `statistics.NormalDist` for z-score lookup.",
+    "starter_code": "def solve(observations: list[float]) -> tuple[float, float, float]:\n    # Your code here\n    pass",
+    "expected_code": "def solve(observations: list[float]) -> tuple[float, float, float]:\n    import math\n    from statistics import NormalDist\n    n = len(observations)\n    lam = n / sum(observations)\n    z = NormalDist().inv_cdf(0.975)\n    se = lam / math.sqrt(n)\n    return (round(lam, 6), round(lam - z * se, 6), round(lam + z * se, 6))",
+    "solution_code": "def solve(observations: list[float]) -> tuple[float, float, float]:\n    import math\n    from statistics import NormalDist\n    # MLE for Exp(lambda): lambda_hat = 1/x_bar = n / sum(x)\n    # Fisher information: I(lambda) = 1/lambda^2\n    # SE(lambda_hat) = lambda_hat / sqrt(n)  [from delta method: SE = 1/sqrt(n * I)]\n    n = len(observations)\n    lam = n / sum(observations)\n    z = NormalDist().inv_cdf(0.975)\n    se = lam / math.sqrt(n)\n    return (round(lam, 6), round(lam - z * se, 6), round(lam + z * se, 6))",
+    "explanation": "For Exp(\u03bb), the log-likelihood is \u2113(\u03bb) = n\u00b7log(\u03bb) \u2212 \u03bb\u00b7\u03a3x\u1d62. Taking \u2202\u2113/\u2202\u03bb = 0 gives \u03bb\u0302 = n/\u03a3x\u1d62 = 1/x\u0304. The Fisher information I(\u03bb) = E[\u2212\u2202\u00b2\u2113/\u2202\u03bb\u00b2] = 1/\u03bb\u00b2. The asymptotic standard error of \u03bb\u0302 is 1/\u221a(n\u00b7I(\u03bb\u0302)) = \u03bb\u0302/\u221an. The CI is \u03bb\u0302 \u00b1 z_{\u03b1/2} \u00d7 SE. This CI is asymptotically valid; for small n or very skewed data, a profile likelihood or bootstrap CI may be preferable.",
+    "test_cases": [
+      {
+        "input": [
+          [
+            1.2,
+            0.8,
+            2.1,
+            0.5,
+            1.7,
+            0.9,
+            1.4,
+            0.6,
+            2.3,
+            1.0
+          ]
+        ],
+        "expected": [
+          0.8,
+          0.304164,
+          1.295836
+        ],
+        "tolerance": 0.01
+      },
+      {
+        "input": [
+          [
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1
+          ]
+        ],
+        "expected": [
+          10.0,
+          5.617387,
+          14.382613
+        ],
+        "tolerance": 0.01
+      }
+    ],
+    "public_test_cases": [
+      {
+        "input": [
+          [
+            1.2,
+            0.8,
+            2.1,
+            0.5,
+            1.7,
+            0.9,
+            1.4,
+            0.6,
+            2.3,
+            1.0
+          ]
+        ],
+        "expected": [
+          0.8,
+          0.304164,
+          1.295836
+        ],
+        "tolerance": 0.01
+      }
+    ],
+    "hints": [
+      "The MLE for an exponential rate is the reciprocal of the sample mean. Write out the log-likelihood and differentiate to confirm.",
+      "Fisher information for Exp(\u03bb) is 1/\u03bb\u00b2. The asymptotic SE is 1/sqrt(n \u00d7 I(\u03bb\u0302)) = \u03bb\u0302/sqrt(n)."
+    ],
+    "concepts": [
+      "confidence intervals & estimation",
+      "MLE",
+      "maximum likelihood",
+      "distributions",
+      "method of moments"
+    ]
+  },
+  {
+    "id": 73052,
+    "order": 52,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Non-Inferiority Trial: Different Framing, Different Power",
+    "description": "A product team plans to replace a premium recommendation algorithm (expensive to run) with a lighter one. The lighter algorithm must not perform more than 1 percentage point worse than the premium one (non-inferiority margin \u03b4 = 1pp).\n\nBaseline: premium algorithm has a 20% engagement rate.\n\nThe team wants to run a non-inferiority test: H\u2080: p_new \u2264 p_old \u2212 \u03b4 (new is inferior by more than \u03b4) vs. H\u2081: p_new > p_old \u2212 \u03b4 (new is non-inferior).\n\nHow does the power calculation and design differ from a standard two-sided superiority test?",
+    "options": [
+      "Non-inferiority tests are identical to superiority tests; just use a one-sided p-value threshold of 0.025",
+      "Non-inferiority tests use a one-sided test structure, but the null hypothesis is reversed: the null is that the new treatment is inferior by more than \u03b4. The power calculation targets detecting non-inferiority \u2014 the relevant effect to detect is 'new rate \u2265 old rate \u2212 \u03b4.' This means the margin \u03b4 replaces the MDE, and the required sample size is often larger than a standard superiority test because you need to rule out a specific inferiority threshold rather than just detecting a difference from zero",
+      "Non-inferiority tests require smaller sample sizes because they need to detect only that the new treatment is within \u03b4 of the old, not that it is better",
+      "The non-inferiority margin \u03b4 is equivalent to the significance level \u03b1; set \u03b4 = 0.05 and run a standard test"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B correctly characterises non-inferiority trial design.\n\nIn a non-inferiority (NI) test:\n- H\u2080: \u0394 = p_new \u2212 p_old \u2264 \u2212\u03b4 (new is inferior by more than \u03b4)\n- H\u2081: \u0394 > \u2212\u03b4 (new is non-inferior)\n\nThis is a one-sided test, but the null is that the new treatment falls outside an acceptable inferiority margin. To reject H\u2080, the data must show that the lower bound of the confidence interval for \u0394 is above \u2212\u03b4.\n\nSample size implications:\n- The MDE in a standard superiority test is the minimum effect the experiment can reliably detect\n- In a non-inferiority test, the relevant parameter is whether the CI lower bound clears \u2212\u03b4\n- With \u03b4 = 1pp, a true equivalence (\u0394 = 0) must be detected as 'the effect is above \u22121pp with 80% power' \u2014 this requires ruling out that the new treatment is 1pp worse, which at 20% baseline rate requires careful power calculation\n- Typically, NI tests require sample sizes similar to or larger than superiority tests for the same \u03b4 and power, because you're trying to rule out the inferiority margin precisely\n\nOption A is wrong: using a one-sided p < 0.025 without reversing the null gives the wrong test \u2014 a one-sided superiority test checks H\u2080: \u0394 \u2264 0, not H\u2080: \u0394 \u2264 \u2212\u03b4.\n\nOption C is a common misconception. Non-inferiority tests do NOT require smaller samples. You are trying to demonstrate that the effect is within \u03b4 of the reference \u2014 this is a higher evidence bar than simply detecting a directional difference, and it requires adequate power to rule out the inferiority margin.\n\nOption D confuses the margin \u03b4 with the significance level \u03b1. They are entirely different quantities.",
+    "hints": [
+      "In a superiority test, H\u2080 is 'no difference' (\u0394=0). In a non-inferiority test, what is H\u2080? How does this change the effect you're trying to detect?",
+      "To conclude non-inferiority, you need the CI lower bound to be above \u2212\u03b4. Think about the sample size needed to ensure the lower bound reliably clears a specific threshold."
+    ],
+    "concepts": [
+      "errors & power",
+      "effect size",
+      "power analysis",
+      "experiment design",
+      "minimum detectable effect"
+    ]
+  },
+  {
+    "id": 73053,
+    "order": 53,
+    "topic": "statistics",
+    "type": "numerical",
+    "subtype": "numerical",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Power for a Non-Inferiority Two-Proportion Test",
+    "description": "For a **one-sided** non-inferiority test comparing two proportions:\n\n- H\u2080: p_new \u2264 p_old \u2212 \u03b4 (new is inferior by more than margin \u03b4)\n- H\u2081: p_new > p_old \u2212 \u03b4\n\nUnder the assumption of true equivalence (p_new = p_old), power is:\n\n`power = \u03a6( (\u03b4 / se_alt) \u2212 z_\u03b1 )`\n\nwhere `se_alt = sqrt(p_old*(1-p_old)/n + p_new*(1-p_new)/n)` and `z_\u03b1 = z_{1-\u03b1}` (one-sided).\n\nImplement `solve(n_per_arm, p_old, delta, alpha=0.05)` assuming `p_new = p_old` (true equivalence). Return a float rounded to 4 decimal places.",
+    "starter_code": "def solve(n_per_arm: int, p_old: float, delta: float, alpha: float = 0.05) -> float:\n    # Your code here\n    pass",
+    "expected_code": "def solve(n_per_arm: int, p_old: float, delta: float, alpha: float = 0.05) -> float:\n    import math\n    from statistics import NormalDist\n    p_new = p_old  # true equivalence assumption\n    z_alpha = NormalDist().inv_cdf(1 - alpha)\n    se_alt = math.sqrt(p_old * (1 - p_old) / n_per_arm + p_new * (1 - p_new) / n_per_arm)\n    power = NormalDist().cdf(delta / se_alt - z_alpha)\n    return round(power, 4)",
+    "solution_code": "def solve(n_per_arm: int, p_old: float, delta: float, alpha: float = 0.05) -> float:\n    import math\n    from statistics import NormalDist\n    p_new = p_old  # assume true equivalence: p_new == p_old\n    # One-sided z_alpha (not z_alpha/2)\n    z_alpha = NormalDist().inv_cdf(1 - alpha)   # ~1.645 for alpha=0.05\n    se_alt = math.sqrt(p_old * (1 - p_old) / n_per_arm + p_new * (1 - p_new) / n_per_arm)\n    # Power: probability that the CI lower bound clears -delta when true delta=0\n    power = NormalDist().cdf(delta / se_alt - z_alpha)\n    return round(power, 4)",
+    "explanation": "Under true equivalence (\u0394=0), the standardised statistic (0 \u2212 (\u2212\u03b4)) / SE = \u03b4/SE measures how many SEs the non-inferiority margin is from zero. Power = \u03a6(\u03b4/SE \u2212 z_\u03b1). Note: this uses z_\u03b1 (one-sided), not z_{\u03b1/2} \u2014 the test is one-sided because we only care whether the new treatment falls below the inferiority margin, not whether it's better.",
+    "test_cases": [
+      {
+        "input": [
+          1000,
+          0.2,
+          0.01
+        ],
+        "expected": 0.1388,
+        "tolerance": 0.01
+      },
+      {
+        "input": [
+          5000,
+          0.2,
+          0.01
+        ],
+        "expected": 0.3465,
+        "tolerance": 0.01
+      },
+      {
+        "input": [
+          2000,
+          0.15,
+          0.02
+        ],
+        "expected": 0.5503,
+        "tolerance": 0.01
+      }
+    ],
+    "public_test_cases": [
+      {
+        "input": [
+          1000,
+          0.2,
+          0.01
+        ],
+        "expected": 0.1388,
+        "tolerance": 0.01
+      },
+      {
+        "input": [
+          5000,
+          0.2,
+          0.01
+        ],
+        "expected": 0.3465,
+        "tolerance": 0.01
+      }
+    ],
+    "hints": [
+      "This is a one-sided test \u2014 use z_{1-\u03b1} (not z_{1-\u03b1/2}). For \u03b1=0.05, z_\u03b1 \u2248 1.645, not 1.96.",
+      "Power = \u03a6(\u03b4 / SE_alt \u2212 z_\u03b1). \u03b4 is the non-inferiority margin (how far from the inferiority boundary you're trying to show you are)."
+    ],
+    "concepts": [
+      "errors & power",
+      "power analysis",
+      "statistical power",
+      "effect size",
+      "minimum detectable effect"
+    ]
+  },
+  {
+    "id": 73054,
+    "order": 54,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Winner's Curse: Effect Size Inflation Near the Significance Threshold",
+    "description": "A company ran 50 A/B tests over a year. Only tests reaching p < 0.05 were shipped. Of those, the first external replication (run by an independent team) found:\n\n- Average measured effect in original tests that reached significance: +8.2pp\n- Average replicated effect for the same features: +3.1pp\n\nThe replication rate is high (80% of significant tests replicate directionally), but the effect sizes are dramatically lower.\n\nWhat statistical phenomenon explains the effect size shrinkage, and what are its implications?",
+    "options": [
+      "The replications are methodologically flawed \u2014 original A/B tests in a mature product environment are more reliable than external replications",
+      "Winner's curse / Type M (magnitude) error: tests that barely cross the significance threshold do so partly by random chance inflating the measured effect. The observed effect in any just-significant test is a biased upward estimate of the true effect. This is because the experiment only 'wins' (gets reported/shipped) when the estimated effect is large enough to cross the significance boundary \u2014 systematically filtering for lucky large estimates",
+      "The shrinkage is explained by regression to the mean in the user population, not by the selection procedure",
+      "Effect size shrinkage is a sign that the original tests committed Type I errors; the replication confirms the original effects were false positives"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B correctly identifies the winner's curse (also called Type M error in the Gelman-Tuerlinckx framework).\n\n**The mechanism:** An unbiased experiment estimating a true effect \u0394 produces an estimate \u0394\u0302 = \u0394 + \u03b5, where \u03b5 is random noise. The experiment is only deemed significant when |\u0394\u0302| > threshold. If the true effect \u0394 is small, the test can only reach significance when \u03b5 happens to be large and in the same direction. This means the conditional distribution of \u0394\u0302 given significance is shifted upward from \u0394 \u2014 the 'winning' estimates are systematically biased upward.\n\n**Implications:**\n1. Effect size estimates from underpowered experiments that barely reach significance are inflated and unreliable for forecasting impact\n2. Replication studies of 'significant' findings typically show smaller effects \u2014 the 'replication crisis' in psychology and medicine is partly driven by this phenomenon\n3. Solutions include: pre-registering minimum effect sizes, running adequately powered experiments, using Bayesian shrinkage priors, or reporting effect size distributions rather than point estimates\n\nOption A dismisses the replication evidence without statistical reasoning. The pattern of systematic shrinkage across 50 tests is inconsistent with random methodological variability.\n\nOption C confuses regression to the mean (which affects individuals repeatedly measured) with the winner's curse (which is a selection bias in the reporting of experiments). They are distinct mechanisms.\n\nOption D is wrong: the 80% directional replication rate implies most effects are real (not false positives). The issue is magnitude, not direction \u2014 a real effect can be much smaller than the biased original estimate.",
+    "hints": [
+      "An experiment is only reported significant when its estimate crosses a threshold. In a noisy experiment, when does the estimate tend to cross the threshold \u2014 when the noise is small or large?",
+      "Consider the conditional distribution: E[\u0394\u0302 | |\u0394\u0302| > threshold]. Is this equal to the true \u0394, or is it biased in a specific direction?"
+    ],
+    "concepts": [
+      "errors & power",
+      "type i",
+      "effect size",
+      "minimum detectable effect",
+      "power analysis"
+    ]
+  },
+  {
+    "id": 73055,
+    "order": 55,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Inclusion-Exclusion: Three Overlapping User Segments",
+    "description": "A product team defines three user segments based on feature usage:\n- A = users who used Feature X in the last 30 days\n- B = users who used Feature Y in the last 30 days\n- C = users who used Feature Z in the last 30 days\n\nFrom a database query:\n- |A| = 12,000, |B| = 8,000, |C| = 10,000\n- |A \u2229 B| = 3,000, |A \u2229 C| = 4,000, |B \u2229 C| = 2,500\n- |A \u2229 B \u2229 C| = 1,200\n\nTotal users: 100,000.\n\nA PM wants to send a targeted notification to all users who used **at least one** of X, Y, or Z. How many users should receive the notification?",
+    "options": [
+      "30,000 (sum of |A| + |B| + |C|)",
+      "21,700 using the inclusion-exclusion principle: |A \u222a B \u222a C| = 12,000 + 8,000 + 10,000 \u2212 3,000 \u2212 4,000 \u2212 2,500 + 1,200 = 21,700",
+      "28,800 (sum minus triple overlap: 30,000 \u2212 1,200)",
+      "23,500 (sum minus pairwise overlaps only: 30,000 \u2212 3,000 \u2212 4,000 \u2212 2,500)"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B applies the inclusion-exclusion principle correctly.\n\n|A \u222a B \u222a C| = |A| + |B| + |C| \u2212 |A \u2229 B| \u2212 |A \u2229 C| \u2212 |B \u2229 C| + |A \u2229 B \u2229 C|\n= 12,000 + 8,000 + 10,000 \u2212 3,000 \u2212 4,000 \u2212 2,500 + 1,200\n= 30,000 \u2212 9,500 + 1,200 = 21,700\n\nThe intuition: when you add |A| + |B| + |C|, users in multiple segments are counted multiple times:\n- Users in exactly 2 segments are counted twice; subtract once (pairwise intersections)\n- Users in all 3 segments are counted 3 times in the sum, then subtracted 3 times in the pairwise step (net 0 times), so add back once\n\nOption A double/triple-counts users who appear in multiple segments.\n\nOption C only subtracts the triple intersection (not the pairwise intersections). This does not properly account for users in exactly two segments.\n\nOption D subtracts pairwise intersections but not the triple. Users in A \u2229 B \u2229 C are counted 3 times in the sum, and they appear in all 3 pairwise intersections (A\u2229B, A\u2229C, B\u2229C) \u2014 so they're subtracted 3 times \u2014 leaving them uncounted. The triple intersection must be added back.",
+    "hints": [
+      "For three sets: |A \u222a B \u222a C| = |A| + |B| + |C| minus each pairwise intersection, plus the triple intersection. Write out why each term is included.",
+      "Think about a user who appears in all three segments. How many times is that user counted in |A| + |B| + |C|? How many times in the pairwise subtractions? Net count after those steps, and what correction is needed?"
+    ],
+    "concepts": [
+      "combinatorics",
+      "probability",
+      "set theory",
+      "inclusion-exclusion"
+    ]
+  },
+  {
+    "id": 73056,
+    "order": 56,
+    "topic": "statistics",
+    "type": "numerical",
+    "subtype": "numerical",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Bayesian Update via Conditional Probability",
+    "description": "Implement `solve(p_disease, sensitivity, specificity)` that computes the posterior probability that a patient has a disease given a **positive** test result, using Bayes' theorem.\n\n- `p_disease`: prior probability of disease P(D)\n- `sensitivity`: P(positive | D) = true positive rate\n- `specificity`: P(negative | no D) = true negative rate\n\nReturn a float rounded to 6 decimal places.",
+    "starter_code": "def solve(p_disease: float, sensitivity: float, specificity: float) -> float:\n    # Your code here\n    pass",
+    "expected_code": "def solve(p_disease: float, sensitivity: float, specificity: float) -> float:\n    p_no_disease = 1 - p_disease\n    false_positive_rate = 1 - specificity\n    p_pos = sensitivity * p_disease + false_positive_rate * p_no_disease\n    p_disease_given_pos = (sensitivity * p_disease) / p_pos\n    return round(p_disease_given_pos, 6)",
+    "solution_code": "def solve(p_disease: float, sensitivity: float, specificity: float) -> float:\n    # P(D|pos) = P(pos|D) * P(D) / P(pos)\n    # P(pos) = P(pos|D)*P(D) + P(pos|no D)*P(no D)\n    p_no_disease = 1 - p_disease\n    false_positive_rate = 1 - specificity  # P(pos | no D)\n    p_pos = sensitivity * p_disease + false_positive_rate * p_no_disease\n    p_disease_given_pos = (sensitivity * p_disease) / p_pos\n    return round(p_disease_given_pos, 6)",
+    "explanation": "Bayes' theorem: P(D|+) = P(+|D)\u00d7P(D) / P(+). The denominator P(+) = P(+|D)\u00d7P(D) + P(+|\u00acD)\u00d7P(\u00acD) = sensitivity\u00d7p + (1\u2212specificity)\u00d7(1\u2212p). This is the core calculation behind medical screening analysis, fraud detection, and spam filtering \u2014 low base rates mean even accurate tests produce many false positives.",
+    "test_cases": [
+      {
+        "input": [
+          0.001,
+          0.9,
+          0.99
+        ],
+        "expected": 0.082645,
+        "tolerance": 0.0001
+      },
+      {
+        "input": [
+          0.01,
+          0.95,
+          0.95
+        ],
+        "expected": 0.161017,
+        "tolerance": 0.0001
+      },
+      {
+        "input": [
+          0.3,
+          0.9,
+          0.85
+        ],
+        "expected": 0.72,
+        "tolerance": 0.0001
+      }
+    ],
+    "public_test_cases": [
+      {
+        "input": [
+          0.001,
+          0.9,
+          0.99
+        ],
+        "expected": 0.082645,
+        "tolerance": 0.0001
+      },
+      {
+        "input": [
+          0.01,
+          0.95,
+          0.95
+        ],
+        "expected": 0.161017,
+        "tolerance": 0.0001
+      }
+    ],
+    "hints": [
+      "P(positive test) = P(positive | disease) \u00d7 P(disease) + P(positive | no disease) \u00d7 P(no disease). Write this out using the given parameters.",
+      "P(positive | no disease) = 1 - specificity (false positive rate). Then apply Bayes' theorem."
+    ],
+    "concepts": [
+      "conditional probability",
+      "probability",
+      "bayes",
+      "bayesian inference"
+    ]
+  },
+  {
+    "id": 73057,
+    "order": 57,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Law of Total Probability in a Funnel",
+    "description": "A product has two acquisition channels: organic (70% of new users) and paid (30%). First-week retention differs by channel:\n- Organic users: 45% retention\n- Paid users: 20% retention\n\nThe PM reports: 'Overall first-week retention is 32.5% = (45% + 20%) / 2.'\n\nA data analyst says the calculation is wrong.\n\nWhat is the correct overall retention, and what principle does the PM's error violate?",
+    "options": [
+      "The PM is correct: averaging two group rates gives the overall rate",
+      "The correct overall retention is 0.70 \u00d7 45% + 0.30 \u00d7 20% = 31.5% + 6% = 37.5%. The PM averaged the rates without weighting by group size, violating the law of total probability: P(retained) = P(retained | organic) \u00d7 P(organic) + P(retained | paid) \u00d7 P(paid)",
+      "The correct overall retention is (0.45 \u00d7 0.70) + (0.20 \u00d7 0.30) = 37.5%, and the PM's error is computing a geometric mean instead of an arithmetic mean",
+      "The PM's calculation is correct if and only if both groups are equally sized"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B is correct and demonstrates the law of total probability.\n\nP(retained) = P(retained | organic) \u00d7 P(organic) + P(retained | paid) \u00d7 P(paid)\n= 0.45 \u00d7 0.70 + 0.20 \u00d7 0.30\n= 0.315 + 0.060 = 0.375 = 37.5%\n\nThe PM's calculation (45% + 20%) / 2 = 32.5% implicitly assumes equal group sizes (50% organic, 50% paid). With actual proportions of 70%/30%, the unweighted average is wrong.\n\nThis is an extremely common analytical error: computing averages of group rates without weighting by group proportion. The correct formula is always the probability-weighted sum \u2014 the law of total probability.\n\nNote that 37.5% > 32.5%: since organic users (who have higher retention) make up the larger group, the correct overall retention is pulled toward the organic rate.\n\nThis matters practically: if a product manager measures 'average retention' by averaging channel retention rates equally, they will systematically underestimate overall retention when the higher-retention channel dominates the mix (and overestimate when the lower-retention channel dominates).\n\nOption A is the PM's error.\n\nOption C states the correct numerical answer (37.5%) but misidentifies the error as 'geometric mean' \u2014 the PM used an arithmetic mean, which is correct conceptually but with wrong weights (1/2, 1/2 instead of 0.70, 0.30).\n\nOption D: the PM's calculation is only correct when both groups are exactly 50% each, which is not stated and not the case here.",
+    "hints": [
+      "The law of total probability: P(A) = \u03a3 P(A|B\u1d62) \u00d7 P(B\u1d62) over mutually exclusive exhaustive events B\u1d62. What are the B\u1d62 here, and what are their probabilities?",
+      "If 70% of users are organic (with 45% retention) and 30% paid (20% retention), what is the weighted average retention? Compare to (45% + 20%) / 2."
+    ],
+    "concepts": [
+      "probability",
+      "conditional probability",
+      "expected value",
+      "proportions"
+    ]
+  },
+  {
+    "id": 73058,
+    "order": 58,
+    "topic": "statistics",
+    "type": "numerical",
+    "subtype": "numerical",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Binomial Probability: At Least K Successes",
+    "description": "Implement `solve(n, k, p)` that computes P(X \u2265 k) for a Binomial(n, p) random variable using the formula:\n\nP(X \u2265 k) = \u03a3\u1d62\u208c\u2096\u207f C(n,i) \u00d7 p\u2071 \u00d7 (1\u2212p)^(n\u2212i)\n\nwhere C(n,i) is the binomial coefficient. Return a float rounded to 6 decimal places. Use only `math` module (no scipy).",
+    "starter_code": "def solve(n: int, k: int, p: float) -> float:\n    # Your code here\n    pass",
+    "expected_code": "def solve(n: int, k: int, p: float) -> float:\n    import math\n    total = sum(\n        math.comb(n, i) * (p ** i) * ((1 - p) ** (n - i))\n        for i in range(k, n + 1)\n    )\n    return round(total, 6)",
+    "solution_code": "def solve(n: int, k: int, p: float) -> float:\n    import math\n    # Sum P(X = i) for i from k to n\n    total = sum(\n        math.comb(n, i) * (p ** i) * ((1 - p) ** (n - i))\n        for i in range(k, n + 1)\n    )\n    return round(total, 6)",
+    "explanation": "P(X \u2265 k) = 1 \u2212 P(X < k) = \u03a3\u1d62\u208c\u2096\u207f P(X=i). `math.comb(n, i)` computes the binomial coefficient C(n,i). Summing from k to n gives the upper tail of the binomial distribution \u2014 the probability of at least k successes. This is the survival function of the binomial.",
+    "test_cases": [
+      {
+        "input": [
+          10,
+          3,
+          0.5
+        ],
+        "expected": 0.945312,
+        "tolerance": 1e-05
+      },
+      {
+        "input": [
+          20,
+          15,
+          0.8
+        ],
+        "expected": 0.804208,
+        "tolerance": 0.0001
+      },
+      {
+        "input": [
+          5,
+          5,
+          0.9
+        ],
+        "expected": 0.59049,
+        "tolerance": 0.0001
+      }
+    ],
+    "public_test_cases": [
+      {
+        "input": [
+          10,
+          3,
+          0.5
+        ],
+        "expected": 0.945312,
+        "tolerance": 1e-05
+      },
+      {
+        "input": [
+          20,
+          15,
+          0.8
+        ],
+        "expected": 0.804208,
+        "tolerance": 0.0001
+      }
+    ],
+    "hints": [
+      "`math.comb(n, i)` computes C(n,i). Loop from k to n (inclusive), computing P(X=i) for each i and sum them.",
+      "P(X = i) = C(n,i) \u00d7 p\u2071 \u00d7 (1\u2212p)^(n\u2212i). This is one term of the binomial PMF."
+    ],
+    "concepts": [
+      "probability",
+      "combinatorics",
+      "distributions",
+      "expected value"
+    ]
+  },
+  {
+    "id": 73059,
+    "order": 59,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Heavy-Tailed Distributions: When Normal Fails for Risk",
+    "description": "A risk analyst models daily user complaints using a Normal distribution (\u03bc = 50, \u03c3 = 15). They report: 'A day with 95 or more complaints is a 3-sigma event \u2014 it happens less than 0.13% of the time.'\n\nAn audit reveals that the actual frequency of 95+ complaint days in 3 years of data (1,095 days) is 12 days \u2014 approximately 1.1%, roughly 8\u00d7 higher than the Normal model predicts.\n\nWhich explanation best accounts for this discrepancy, and what should the analyst do?",
+    "options": [
+      "The analyst made an arithmetic error; the normal calculation of 0.13% is correct and 12 observed days is within expected random variation",
+      "The Normal distribution has thin tails (sub-Gaussian), and complaint counts likely follow a heavier-tailed distribution (log-normal, Negative Binomial, or similar). During outages, viral complaints, or PR incidents, complaint volumes are correlated and can spike far above the mean \u2014 events that are 'impossible' under Normal assumptions. The analyst should examine the residuals, test for heavy tails (e.g., Q-Q plot), and fit a more appropriate distribution",
+      "3-sigma events by definition occur 0.13% of the time; having more observed occurrences simply means the dataset is non-representative",
+      "The Normal distribution always fits well for large datasets (n > 1,000); the problem must be a measurement error in the complaint data"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B correctly diagnoses the problem: the Normal distribution underestimates tail probabilities when the true distribution is heavy-tailed.\n\nA Normal(50, 15) distribution assigns P(X \u2265 95) = P(Z \u2265 3) \u2248 0.0013 = 0.13%. At 1,095 days, that predicts 0.0013 \u00d7 1,095 \u2248 1.4 days with 95+ complaints. Observing 12 such days is a ratio of ~8.5\u00d7 the prediction.\n\nWhy this happens with complaint data:\n1. **Correlated events:** Outages, product bugs, or PR incidents cause many users to complain simultaneously \u2014 violating the independence assumption implicit in treating daily complaints as a sum of independent small contributions\n2. **Heavy tails:** The actual distribution likely has heavier tails than Normal \u2014 possibly log-normal or Negative Binomial. These distributions have more probability mass in the extremes\n3. **Non-stationarity:** The mean and variance may shift over time; a single Normal model averages across different operating regimes\n\nDiagnosis steps:\n- Q-Q plot against Normal \u2014 tail deviations will show as systematic upward curvature in the upper quantiles\n- Fit alternative distributions (log-normal, negative binomial) and compare via AIC/BIC\n- Examine the 12 extreme days for common causes (outages, incidents)\n\nOption A is wrong: 0.13% in 1,095 days predicts 1.4 extreme days. Observing 12 (8\u00d7 more) is a 6+ sigma departure from the predicted count \u2014 not 'random variation.'\n\nOption C redefines '3-sigma event' incorrectly. The 0.13% is the probability under the Normal model, not a universal law. The whole point is that the Normal model's 3-sigma probability estimate is wrong for this data.\n\nOption D inverts reality: large datasets are MORE likely to expose distributional misspecification, not less. With more data, deviations from a misspecified distribution accumulate and become undeniable.",
+    "hints": [
+      "If the normal model predicts 1.4 days with 95+ complaints but you observe 12, what does this suggest about the model's tail probabilities? Is this consistent with a thin-tailed distribution?",
+      "What properties of complaint data (correlation structure, event clustering) make the independence assumption underlying the Normal distribution questionable?"
+    ],
+    "concepts": [
+      "distributions",
+      "normal",
+      "heavy tails",
+      "skewness",
+      "kurtosis"
+    ]
+  },
+  {
+    "id": 73060,
+    "order": 60,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Bimodal Distribution: Mixing Two Populations",
+    "description": "An analyst plots session duration for all users and observes a bimodal distribution: one peak at ~2 minutes and another at ~18 minutes, with a valley around 8 minutes. The analyst fits a single Normal distribution to the data and uses it to compute a 95th percentile session duration for capacity planning.\n\nA colleague says: 'Your 95th percentile estimate is wrong \u2014 and the normal fit is conceptually misleading.'\n\nWhy, and what is the correct modelling approach?",
+    "options": [
+      "The Normal fit is appropriate; bimodal data is just normally distributed data with high variance, and a single Normal captures both peaks with a wide enough \u03c3",
+      "A bimodal distribution suggests a mixture of two sub-populations (likely casual vs. power users). Fitting a single Normal ignores this structure. The Normal will misestimate the tails (especially the 95th percentile) because it doesn't model the second peak correctly. The correct approach is a Gaussian mixture model or a segment-specific model \u2014 fit separate distributions to each sub-population and combine them",
+      "The analyst should use a log-normal distribution instead of Normal, which always handles bimodal data",
+      "Bimodal data violates the Central Limit Theorem and cannot be modeled parametrically"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B correctly identifies the mixture population problem and its modelling implications.\n\nA bimodal distribution with two distinct peaks is almost always evidence of two sub-populations mixed in the data \u2014 here, likely:\n- Casual users (2-minute peak): quick checks, possibly landing page bounces or feature verification\n- Power users (18-minute peak): deep engagement sessions, workflow completion\n\nFitting a single Normal distribution to this data produces a poor fit: the Normal will estimate a mean somewhere around the valley (e.g., 10 minutes) and a high variance to cover both peaks. The 95th percentile from this Normal will be estimated from the combined high-variance distribution rather than from the actual shape of the power-user tail \u2014 likely giving a wrong answer.\n\nThe correct approach depends on the goal:\n1. **Mixture model:** Fit a 2-component Gaussian Mixture Model (GMM) to separately estimate parameters for each sub-population\n2. **Segment-specific modelling:** Identify which users belong to each segment and fit separate models; compute segment-specific percentiles\n3. **Empirical approach:** Use the empirical CDF directly for capacity planning (e.g., 95th percentile of the raw data), avoiding distributional assumptions entirely\n\nOption A is wrong: a single Normal with high \u03c3 does technically cover both peaks, but it assigns too much probability to the intermediate valley region (where actual sessions are rare) and misestimates the tails.\n\nOption C is wrong: log-normal models right-skewed unimodal data (positive support). It does not handle bimodal structure.\n\nOption D is wrong: the CLT applies to sample means, not to individual observations. Bimodal data is common and perfectly modelable parametrically (e.g., via mixture models). CLT applicability is a different question from distributional shape.",
+    "hints": [
+      "What does a bimodal distribution usually indicate about the data-generating process? Does a single Normal adequately represent a population with two distinct peaks?",
+      "To estimate the 95th percentile for capacity planning, what would the Normal model compute, and why would it differ from the actual 95th percentile?"
+    ],
+    "concepts": [
+      "distributions",
+      "normal",
+      "statistical artefacts",
+      "descriptive statistics"
+    ]
+  },
+  {
+    "id": 73061,
+    "order": 61,
+    "topic": "statistics",
+    "type": "numerical",
+    "subtype": "numerical",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Poisson PMF: Computing the Probability of Exactly k Events",
+    "description": "Implement `solve(k, lam)` that computes the Poisson PMF: P(X = k) = e^{\u2212\u03bb} \u00d7 \u03bb^k / k!\n\nRaise `ValueError` if k < 0 or lam \u2264 0. Return a float rounded to 6 decimal places.\n\nDo NOT use `statistics.NormalDist` or `scipy`. Use only `math`.",
+    "starter_code": "def solve(k: int, lam: float) -> float:\n    # Your code here\n    pass",
+    "expected_code": "def solve(k: int, lam: float) -> float:\n    import math\n    if k < 0:\n        raise ValueError('k must be non-negative')\n    if lam <= 0:\n        raise ValueError('lambda must be positive')\n    return round(math.exp(-lam) * (lam ** k) / math.factorial(k), 6)",
+    "solution_code": "def solve(k: int, lam: float) -> float:\n    import math\n    if k < 0:\n        raise ValueError('k must be non-negative')\n    if lam <= 0:\n        raise ValueError('lambda must be positive')\n    # P(X = k) = e^{-lambda} * lambda^k / k!\n    return round(math.exp(-lam) * (lam ** k) / math.factorial(k), 6)",
+    "explanation": "The Poisson PMF gives the probability of exactly k events when events occur at average rate \u03bb. P(X=0) = e^{-\u03bb} is the probability of zero events \u2014 which equals ~0.37 for \u03bb=1. The mean and variance of a Poisson are both \u03bb. For large \u03bb, the Poisson approaches Normal(\u03bb, \u03bb) by CLT.",
+    "test_cases": [
+      {
+        "input": [
+          0,
+          2.5
+        ],
+        "expected": 0.082085,
+        "tolerance": 1e-05
+      },
+      {
+        "input": [
+          3,
+          2.5
+        ],
+        "expected": 0.213763,
+        "tolerance": 1e-05
+      },
+      {
+        "input": [
+          5,
+          5.0
+        ],
+        "expected": 0.175467,
+        "tolerance": 1e-05
+      }
+    ],
+    "public_test_cases": [
+      {
+        "input": [
+          0,
+          2.5
+        ],
+        "expected": 0.082085,
+        "tolerance": 1e-05
+      },
+      {
+        "input": [
+          3,
+          2.5
+        ],
+        "expected": 0.213763,
+        "tolerance": 1e-05
+      }
+    ],
+    "hints": [
+      "P(X = k) = exp(-lambda) * lambda^k / k!. `math.exp`, `math.factorial` are your tools.",
+      "Validate inputs first: k must be non-negative (can't have -1 events), lambda must be positive (rate must be > 0)."
+    ],
+    "concepts": [
+      "distributions",
+      "poisson",
+      "probability"
+    ]
+  },
+  {
+    "id": 73062,
+    "order": 62,
+    "topic": "statistics",
+    "type": "conceptual",
+    "subtype": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "Distribution Selection: Matching Data Characteristics to Distribution Families",
+    "description": "A data team is building models for four different metrics. Match each metric to its most appropriate distribution family and explain the key characteristic that drives the choice.\n\n1. Number of customer service calls per day (integer, \u2265 0, rate-driven)\n2. Conversion rate inferred from a Bayesian model (continuous, bounded [0,1])\n3. Time until a user's first purchase after signup (continuous, positive, decreasing hazard)\n4. Count of defects per 10,000 items with 0.01% defect rate\n\nWhich matching is correct?",
+    "options": [
+      "1\u2192Normal, 2\u2192Uniform, 3\u2192Exponential, 4\u2192Binomial",
+      "1\u2192Poisson, 2\u2192Beta, 3\u2192Exponential, 4\u2192Poisson. Key: (1) Poisson models independent counts at a constant rate; (2) Beta models probabilities \u2014 continuous on (0,1), flexible shape; (3) Exponential models time-to-event with memoryless property and constant hazard (or Weibull if hazard varies); (4) Large n, very small p makes this Poisson(\u03bb=np=1)",
+      "1\u2192Binomial, 2\u2192Normal, 3\u2192Normal, 4\u2192Normal",
+      "1\u2192Poisson, 2\u2192Uniform, 3\u2192Normal, 4\u2192Binomial"
+    ],
+    "correct_option": 1,
+    "explanation": "Option B correctly matches each metric to its natural distribution family.\n\n**Metric 1 (daily calls, count \u2265 0):** Poisson is the canonical model for counts of independent events at a constant rate. Each call arrives independently; the distribution of counts follows Poisson(\u03bb) where \u03bb = average daily calls.\n\n**Metric 2 (conversion rate, [0,1]):** The Beta distribution is defined on (0,1) and is the natural distribution for continuous probabilities. Its two shape parameters (\u03b1, \u03b2) allow flexible shapes: uniform (\u03b1=\u03b2=1), bell-shaped, U-shaped, or skewed. It is the conjugate prior for Binomial observations, making it ideal for Bayesian inference on proportions.\n\n**Metric 3 (time-to-first-purchase, positive, continuous):** The Exponential distribution models time-to-event with a constant hazard rate (memoryless property). For time-to-purchase, the assumption of constant hazard (equal probability of purchase in every minute of existence) may be reasonable initially. If hazard decreases over time (users less likely to convert the longer they wait), a Weibull with shape < 1 is better. The Exponential is the baseline model.\n\n**Metric 4 (defects, 0.01% rate):** With n = 10,000 and p = 0.0001, \u03bb = np = 1. The Poisson(\u03bb=1) approximation is excellent (Binomial variance = np(1-p) \u2248 1.0000 \u2248 \u03bb). This is exactly the large-n, small-p regime where Poisson applies.\n\nOption A uses Normal for count data (wrong support \u2014 counts are non-negative integers, not continuous; Normal can predict negative counts) and Uniform for conversion rate (too restrictive \u2014 assumes all rates [0,1] equally likely, which is rarely a good prior).\n\nOption D uses Binomial for defects but with n=10,000 and p=0.0001, Binomial(10000, 0.0001) and Poisson(1) are numerically equivalent for all practical purposes \u2014 Poisson is the simpler correct answer.",
+    "hints": [
+      "Think about support and structure: counts (integers \u2265 0) \u2192 Poisson or Negative Binomial. Continuous on [0,1] \u2192 Beta. Positive continuous with rate \u2192 Exponential/Weibull.",
+      "For metric 4: n=10,000, p=0.0001, \u03bb=np=1. What is the Binomial variance vs the Poisson variance? Are they nearly equal?"
+    ],
+    "concepts": [
+      "distributions",
+      "poisson",
+      "bernoulli",
+      "binomial",
+      "probability"
+    ]
   }
 ]

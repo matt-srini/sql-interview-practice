@@ -12,7 +12,6 @@
     72014,
     72018,
     72022,
-    72026,
     72028,
     72031,
     72032,
@@ -25,16 +24,15 @@
     "confidence-intervals"
   ],
   "focus_concepts": [
-    "HYPOTHESIS TESTING",
-    "A/B TESTING",
-    "TYPE I AND TYPE II ERRORS",
-    "CENTRAL LIMIT THEOREM",
-    "BAYESIAN REASONING",
-    "SAMPLE SIZE",
-    "SEQUENTIAL TESTING",
-    "METRIC SENSITIVITY",
-    "GUARDRAIL METRICS",
-    "CONFIDENCE INTERVALS"
+    "hypothesis testing",
+    "a/b testing",
+    "Type I error",
+    "central limit theorem",
+    "Bayesian inference",
+    "sample size",
+    "multiple testing",
+    "confidence intervals",
+    "experimental design"
   ],
   "outcomes": "You will be able to set up a valid hypothesis test, interpret p-values correctly, distinguish Type I and Type II errors, calculate minimum detectable effect for an A/B test, apply the Central Limit Theorem to sampling distributions, and explain the Bayesian perspective on evidence.",
   "recommended_after": [
