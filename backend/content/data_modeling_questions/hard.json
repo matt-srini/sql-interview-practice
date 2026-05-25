@@ -1303,5 +1303,237 @@
       "REFERENTIAL INTEGRITY",
       "SCHEMA EVOLUTION"
     ]
+  },
+  {
+    "id": 63048,
+    "order": 48,
+    "title": "Design a bi-temporal claim fact to satisfy both Finance (incident date) and Compliance (as-of-date) reporting",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "follow_ups": [
+      63049,
+      63050
+    ],
+    "scenario_context": "An insurance company records claim events. Finance needs to report claims by incident date (the date the loss occurred). Compliance needs point-in-time reporting: 'what did the warehouse know about claims as of March 31?' \u2014 i.e., only claims that had arrived in the warehouse by that date, using the data state visible at that snapshot. A single claim filed on Jan 15 may not arrive in the warehouse until Jan 20. Existing design stores only event_date and a loaded_at timestamp.",
+    "description": "Which modeling approach correctly supports both time dimensions for this use case without conflating when an event occurred with when the warehouse learned about it?",
+    "options": [
+      "Store event_date and loaded_at as separate columns on the fact row \u2014 Finance filters on event_date, Compliance filters on loaded_at. No schema change required.",
+      "Build a bi-temporal model with two explicit versioned date ranges on every row: transaction_time (when the loss occurred, possibly corrected later) and valid_time (when this version of the record was known to the warehouse); queries specify both ranges independently.",
+      "Use a periodic snapshot fact table keyed on reporting_month \u2014 each month's snapshot captures all claims known by month-end, implicitly satisfying both time dimensions.",
+      "Add a SCD Type 2 effective_from / effective_to on the claim dimension to track when claim attributes change; join fact rows to the dimension version current at event_date for Finance, and current at report_date for Compliance."
+    ],
+    "correct_option": 1,
+    "explanation": "Bi-temporal modeling is the only approach that independently tracks both axes: transaction_time (when the business event truly occurred, correctable retroactively) and valid_time (when the warehouse first knew about the row, never rewritten). Finance queries filter on transaction_time; Compliance queries use valid_time to reconstruct the warehouse's state at any past date. Option 1 is correct. Option 0 is wrong: a single loaded_at column captures when the row arrived but not corrections \u2014 if the incident date is later amended (claim originally recorded as Jan 15, corrected to Jan 10), a single event_date column overwrites the original, destroying the audit trail the Compliance team needs. Option 2 is wrong: a periodic snapshot collapses both time dimensions into the snapshot date \u2014 it cannot represent a Jan 15 incident that was loaded on Jan 20 and corrected on Feb 1; each revision of the claim overwrites the prior snapshot state. Option 3 is wrong: SCD Type 2 on a dimension tracks attribute changes on entities (e.g., customer tier), not two independent time axes on fact events; the claim fact's own transaction_time vs. valid_time distinction is not a dimension attribute change.",
+    "hints": [
+      "An insurance claim filed on Jan 15 arrives in the warehouse on Jan 20 and is later corrected on Feb 1. Can a single timestamp column represent all three points in time on one row without overwriting prior information?",
+      "Finance needs to group claims by when the loss happened; Compliance needs to reconstruct what the warehouse knew on a specific past date. Are these two questions answered by the same timestamp, or do they require independent axes?"
+    ],
+    "concepts": [
+      "BI-TEMPORAL MODELING",
+      "FACT TABLE DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63049,
+    "order": 49,
+    "title": "Handle a retroactive incident-date correction in a bi-temporal claim fact without losing the original record",
+    "difficulty": "hard",
+    "type": "debug",
+    "mock_only": true,
+    "parent_id": 63048,
+    "follow_up_dimension": "edge_case_pivot",
+    "scenario_context": "The bi-temporal claim model is live. A month after go-live, a source system correction arrives: claim #9981 was originally recorded with incident_date 2024-01-15. The claimant filed an amended report stating the actual loss occurred on 2024-01-10. The data engineer updates the row in place \u2014 changing the transaction_time_from to 2024-01-10 on the existing row \u2014 and commits. Compliance runs their March 31 as-of query the next day and gets different results than before.",
+    "description": "What went wrong with the correction, and how should a bi-temporal correction be applied correctly?",
+    "options": [
+      "Updating the existing row in place is correct \u2014 the correction should overwrite the original transaction_time because the original value was wrong and should not persist in the model.",
+      "The engineer should have updated valid_time_to on the existing row to today's date (closing it) and inserted a new row with the corrected transaction_time and valid_time_from = today \u2014 preserving what was known before the correction while reflecting the new knowledge going forward.",
+      "Corrections to incident dates are not representable in a bi-temporal model \u2014 a separate correction_log table should capture amendments, and the main fact table should remain immutable.",
+      "The correction should be applied by adding a new row with the corrected transaction_time and setting the original row's is_corrected flag to true \u2014 the as-of query filters out corrected rows automatically."
+    ],
+    "correct_option": 1,
+    "explanation": "In bi-temporal modeling, valid_time tracks when a version of the record was known. Updating a row in place rewrites history \u2014 a Compliance as-of query for March 31 (before the correction) now sees the corrected incident date, which the warehouse did not know on March 31. The correct procedure is to close the existing row by setting valid_time_to = today, then insert a new row with corrected transaction_time and valid_time_from = today. Past as-of queries (before today) still resolve to the old row; future queries resolve to the corrected row. Option 1 is correct. Option 0 is wrong: overwriting is precisely what bi-temporal modeling is designed to prevent \u2014 Compliance's reproducibility requirement means that running the March 31 as-of report today must return the same results as running it on April 1; in-place updates break that guarantee. Option 2 is wrong: bi-temporal models are specifically designed to handle corrections without a separate log table \u2014 the valid_time axis IS the correction audit trail; a correction_log duplicates this mechanism unnecessarily. Option 3 is wrong: an is_corrected flag does not preserve what was known before the correction \u2014 it marks rows but does not provide a time-bounded view of prior knowledge; the as-of query cannot use a boolean flag to reconstruct historical warehouse state.",
+    "hints": [
+      "When a claim's incident date is corrected retroactively, should the existing bi-temporal row be modified in place, or should a new row be inserted alongside it?",
+      "If a Compliance query asks 'what did the warehouse know on March 31?' and you updated the existing row on April 5, which incident date does the query return for claim #9981 \u2014 the original or the corrected one?"
+    ],
+    "concepts": [
+      "BI-TEMPORAL MODELING",
+      "SCHEMA EVOLUTION",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63050,
+    "order": 50,
+    "title": "Decide when a pre-computed temporal snapshot is preferable to full bi-temporal query resolution",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "mock_only": true,
+    "parent_id": 63048,
+    "follow_up_dimension": "performance_pivot",
+    "description": "Full bi-temporal queries must filter on two independent date ranges simultaneously (transaction_time_from \u2264 query_date < transaction_time_to AND valid_time_from \u2264 as_of_date < valid_time_to), which requires range-join scans across the full fact table. Under what conditions is it appropriate to pre-compute a temporal snapshot table instead of resolving bi-temporal queries at runtime?",
+    "options": [
+      "Always \u2014 bi-temporal queries are inherently too slow for any production BI use case and should always be replaced with pre-computed snapshots.",
+      "When the set of as-of dates queried by consumers is small and predictable (e.g., month-end regulatory reports), pre-computing one snapshot per required as-of date trades storage for query-time simplicity; ad-hoc historical queries still require the full bi-temporal table.",
+      "When the fact table exceeds 10 million rows \u2014 below this threshold, bi-temporal range joins are fast enough; above it, a snapshot is always required.",
+      "Snapshots are never appropriate for bi-temporal data because they collapse the valid_time axis, making it impossible to detect late-arriving corrections after the snapshot date."
+    ],
+    "correct_option": 1,
+    "explanation": "Pre-computed snapshots are a pragmatic optimization when the required as-of dates are known in advance and the consumer base is narrow (e.g., a Compliance team that only needs month-end state). Each snapshot is a materialized view of the bi-temporal table filtered to valid_time_from \u2264 snapshot_date < valid_time_to \u2014 a fast, single-axis query. The full bi-temporal table remains the source of truth for ad-hoc or retrospective analysis. Option 1 is correct. Option 0 is wrong: bi-temporal range joins are expensive for large tables but entirely tractable with proper indexing (range indexes on both time axes); many analytical workloads run them at acceptable latency; 'always replace with snapshots' eliminates ad-hoc flexibility unnecessarily. Option 2 is wrong: a row-count threshold is an arbitrary heuristic \u2014 the real drivers are query frequency, as-of date cardinality, and index efficiency, not a fixed row count. Option 3 is wrong: snapshots absolutely can be used alongside the bi-temporal source \u2014 they are a derived optimization layer, not a replacement; the full bi-temporal table remains available for corrections and retrospective queries, and the snapshot is simply a pre-filtered materialization of a specific valid_time slice.",
+    "hints": [
+      "A Compliance team runs the same March 31 as-of report every quarter. Does computing the bi-temporal range join fresh each time serve them better than reading a pre-materialized snapshot for that date?",
+      "What information does a pre-computed month-end snapshot preserve compared to the full bi-temporal table, and what does it give up?"
+    ],
+    "concepts": [
+      "BI-TEMPORAL MODELING",
+      "AGGREGATE & SUMMARY DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63051,
+    "order": 51,
+    "title": "Satisfy conflicting SCD requirements from Finance (full history) and Marketing (current state only) on a shared customer dimension",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "follow_ups": [
+      63052
+    ],
+    "scenario_context": "Finance requires SCD Type 2 on customer_tier \u2014 every tier change must produce a new versioned row so historical revenue reports reflect the tier active at transaction time. Marketing requires only the current tier for campaign targeting \u2014 they want a simple customer table with no history rows, always reflecting today's tier. Both teams reference the same source system. The data team has a single data warehouse with one customer dimension.",
+    "description": "How should the data team design the customer dimension to satisfy both requirements without physically duplicating the customer master data?",
+    "options": [
+      "Implement SCD Type 3 \u2014 keep both current_tier and previous_tier columns; Finance uses previous_tier for historical lookups, Marketing uses current_tier for targeting.",
+      "Implement SCD Type 2 as the physical dimension table (satisfying Finance), and build a current-state view or Type 1 snapshot mart on top that selects only the active row per customer (satisfying Marketing).",
+      "Implement two separate physical customer dimension tables \u2014 one SCD Type 2 for Finance and one SCD Type 1 for Marketing \u2014 each loaded independently from the same source.",
+      "Implement SCD Type 4 \u2014 keep current state in the main dimension and full history in a separate history table; Finance joins to the history table, Marketing joins to the main table."
+    ],
+    "correct_option": 1,
+    "explanation": "The canonical solution is to implement the more demanding requirement (SCD Type 2 full history) as the physical storage layer, then derive the simpler requirement (current state) as a lightweight view or mart. A current-state view is a SELECT WHERE is_current = true (or WHERE effective_to IS NULL) over the Type 2 table \u2014 zero additional storage, always in sync, and Marketing gets a flat table without history rows. Option 1 is correct. Option 0 is wrong: SCD Type 3 keeps only the immediately previous value; a customer who changed tiers three times loses tiers 1 and 2 entirely \u2014 Finance cannot reconstruct historical reports beyond one change ago. Option 2 is wrong: two separate physical tables require two independent ETL pipelines from the same source, both of which must be kept in sync; this doubles maintenance cost and creates drift risk when one pipeline lags or fails; a view derived from the Type 2 table eliminates this redundancy. Option 3 describes SCD Type 4 correctly and it is a viable alternative, but it requires Marketing to always join to the main table (which must be explicitly kept current) while Finance joins to the history table \u2014 two different join targets creates pipeline complexity comparable to two separate tables, and the view approach in Option 1 is simpler.",
+    "hints": [
+      "Finance needs every historical tier version; Marketing needs only today's tier. Can both needs be served from a single Type 2 physical table without duplicating storage?",
+      "If a SCD Type 2 table has an is_current or effective_to IS NULL flag, what does a simple SELECT WHERE is_current = true produce \u2014 and how useful is that to Marketing?"
+    ],
+    "concepts": [
+      "SCD STRUCTURE",
+      "DIMENSION DESIGN",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63052,
+    "order": 52,
+    "title": "Debug a broken historical join after filtering short-lived SCD Type 2 rows to suppress operational corrections",
+    "difficulty": "hard",
+    "type": "debug",
+    "mock_only": true,
+    "parent_id": 63051,
+    "follow_up_dimension": "business_rule_pivot",
+    "scenario_context": "Finance revises their requirement: 'Ignore tier changes that lasted fewer than 7 days \u2014 those are operational corrections, not real promotions.' A data engineer implements this by deleting SCD Type 2 rows where (effective_to - effective_from) < 7 days, then runs an UPDATE to close the gap: the row before the deleted row has its effective_to extended to match the effective_from of the next surviving row. Several Finance dashboards break immediately after the migration.",
+    "description": "What is the root cause of the broken dashboards?",
+    "options": [
+      "The 7-day threshold is too aggressive \u2014 some operational corrections lasted 8 or 9 days and were incorrectly retained, polluting the historical tier values.",
+      "Historical fact rows recorded during the deleted short-lived tier period now reference a dimension surrogate key that no longer exists; the JOIN to the customer dimension returns NULL for those fact rows, silently dropping them from revenue reports.",
+      "The UPDATE that extended effective_to on adjacent rows introduced overlapping date ranges \u2014 a customer now has two dimension rows with overlapping effective periods, causing fan-out in fact-to-dimension joins.",
+      "Deleting dimension rows is valid but the dashboard cache was not invalidated \u2014 re-running the ETL pipeline will refresh the stale view state."
+    ],
+    "correct_option": 1,
+    "explanation": "Fact rows recorded during the deleted 7-day window hold the surrogate key of the now-deleted dimension row. When Finance's dashboard joins fact_revenue to dim_customer on that surrogate key, the JOIN finds no matching row and the fact row is dropped (INNER JOIN) or returns NULL dimensions (LEFT JOIN). Revenue transactions from that window become invisible or unattributed, making reports appear to under-count. Option 1 is correct. Option 0 is wrong: while threshold calibration matters, it does not explain why dashboards break after the migration \u2014 the breakage mechanism is the missing surrogate key, not incorrect retention decisions. Option 2 is wrong: the UPDATE extends effective_to on the surviving row to cover the deleted gap; if done correctly (effective_to = next row's effective_from with no overlap), ranges remain non-overlapping; the problem is not overlapping ranges but orphaned fact keys pointing to deleted rows. Option 3 is wrong: a cache refresh would fix display lag, not a broken JOIN \u2014 cache invalidation never resurrects dimension rows that were physically deleted from the table.",
+    "hints": [
+      "When a dimension row is physically deleted during a cleanup migration, fact rows recorded during that row's active effective period still hold its primary key as a foreign key reference. What happens when those fact rows try to JOIN to the customer dimension table?",
+      "A revenue report that was correct yesterday now shows lower totals after the dimension cleanup. Which specific join produces fewer matching rows than before \u2014 and why?"
+    ],
+    "concepts": [
+      "SCD STRUCTURE",
+      "REFERENTIAL INTEGRITY",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63053,
+    "order": 53,
+    "title": "Choose between Data Vault and Kimball star schema for an enterprise platform with volatile source systems",
+    "difficulty": "hard",
+    "type": "conceptual",
+    "mock_only": true,
+    "description": "An enterprise data platform ingests from 12 source systems. Source schemas change 3\u20134 times per year per system. Business requirements include a complete audit trail of every load and the ability to re-state any historical period. Downstream consumers are primarily BI dashboards expecting star schema marts. Which architectural pattern is most appropriate for the ingestion and integration layer, and why?",
+    "options": [
+      "Kimball star schema directly from sources \u2014 star schemas are the fastest to build and easiest for BI tools to consume; schema changes can be handled with ALTER TABLE migrations.",
+      "Data Vault hub-satellite-link for ingestion, with Kimball star schema marts built on top \u2014 the vault absorbs schema volatility and provides load-level audit; marts expose the consumption-friendly structure downstream consumers need.",
+      "Inmon enterprise data warehouse (3NF normalized) as the integration layer \u2014 normalization isolates schema changes to specific subject areas, and star schema datamarts are derived downstream.",
+      "Flat file landing zone (schema-on-read) with no structured integration layer \u2014 defer all transformation to query time so that schema changes in sources never break the storage layer."
+    ],
+    "correct_option": 1,
+    "explanation": "Data Vault is designed precisely for this scenario: hub entities absorb new source systems via hub-per-entity patterns; satellites receive new source columns as additional satellite rows without breaking existing satellites (insert-only); link tables capture new relationships without schema migrations; load timestamps on every satellite row provide the load-level audit trail needed to re-state any historical period. Kimball star schema marts are then built on top as the consumption layer \u2014 consumers get the star schema they expect while the vault handles integration complexity. Option 1 is correct. Option 0 is wrong: building star schemas directly from volatile sources means every source schema change propagates into the mart layer immediately \u2014 ALTER TABLE migrations on production star schemas are risky, require coordination with all mart consumers, and produce a history gap during the migration window. Option 2 describes a valid alternative (Inmon \u2192 datamarts) but a 3NF normalized EDW requires extensive modeling upfront, and adding new source systems or columns still requires schema migrations in normalized tables \u2014 it is more rigid than Data Vault under the described volatility. Option 3 is wrong: schema-on-read defers parsing to query time but does not provide the structured audit trail (load dates, source system provenance) or the entity-relationship integrity that the business requirements specify.",
+    "hints": [
+      "If a source system adds three new columns on its next daily load, which architectural pattern absorbs that change without modifying any existing table \u2014 and which requires an ALTER TABLE before the next pipeline run?",
+      "The requirements include a load-level audit trail and the ability to re-state any historical period. Which pattern natively attaches a load timestamp and source system identifier to every row at ingestion time?"
+    ],
+    "concepts": [
+      "DATA VAULT",
+      "SCHEMA EVOLUTION",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63054,
+    "order": 54,
+    "title": "Evaluate the architectural benefit of centralizing metric definitions in a semantic layer versus mart-level SQL",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "follow_ups": [
+      63055
+    ],
+    "scenario_context": "A company has three dbt marts: finance_mart, marketing_mart, and product_mart. Each mart independently defines 'monthly_recurring_revenue' in SQL with slightly different logic (Finance excludes trials, Marketing includes trials in pipeline, Product uses a rolling 30-day window). The CFO has flagged that the three dashboards show three different MRR numbers for the same period. The data team is evaluating adding a semantic layer (dbt Metrics / Cube.js).",
+    "description": "What is the primary architectural problem the semantic layer solves, and what does it not solve on its own?",
+    "options": [
+      "A semantic layer solves all metric inconsistency by enforcing a single SQL definition at query time \u2014 once MRR is defined in the semantic layer, every dashboard automatically uses the same number with no further governance required.",
+      "A semantic layer centralizes the canonical metric definition (solving the divergence problem) but does not enforce which definition Finance, Marketing, and Product stakeholders agree to use \u2014 the governance decision about which MRR logic is 'correct' must precede the technical implementation.",
+      "A semantic layer is only beneficial when the BI tool enforces it \u2014 if any team can still query mart tables directly, metric divergence continues regardless of the semantic layer.",
+      "A semantic layer replaces the need for dbt marts \u2014 once metrics are defined semantically, mart tables are redundant and can be deprecated."
+    ],
+    "correct_option": 1,
+    "explanation": "A semantic layer solves the technical problem of metric divergence by providing a single authoritative definition that all BI tools query through. However, it does not automatically resolve the business disagreement about which definition is correct \u2014 if Finance, Marketing, and Product each believe their MRR logic is right, the semantic layer will encode whichever definition the data team picks without necessarily having stakeholder buy-in. The governance decision (what does MRR mean for this company?) must happen first; the semantic layer enforces the agreed definition technically. Option 1 is correct. Option 0 is wrong: the semantic layer enforces the definition once it is agreed upon, but it does not generate the agreement \u2014 deploying a semantic layer with Finance's MRR definition while Marketing still believes their trial-inclusive definition is correct will produce stakeholder conflict, not resolution. Option 2 is wrong: while direct mart queries can bypass the semantic layer, this is a governance enforcement problem, not an architectural deficiency of the semantic layer itself; the semantic layer still provides value for BI-tool consumers even if some power users query marts directly. Option 3 is wrong: semantic layers and marts serve different purposes \u2014 marts provide the physical tables that the semantic layer queries; removing marts would require the semantic layer to query raw source tables directly, reintroducing the transformation and performance problems that marts solve.",
+    "hints": [
+      "When a company has three different SQL definitions of 'monthly recurring revenue' across three marts, is the root cause a technical problem (no shared SQL) or a governance problem (no agreed business definition) \u2014 or both?",
+      "If the data team deploys a semantic layer encoding Finance's MRR definition without getting agreement from Marketing and Product, what happens to the metric divergence across dashboards?"
+    ],
+    "concepts": [
+      "DBT MODELING",
+      "CONFORMED DIMENSIONS",
+      "DIMENSIONAL MODELING"
+    ]
+  },
+  {
+    "id": 63055,
+    "order": 55,
+    "title": "Extend semantic layer metric governance to data science teams who query marts directly via Python",
+    "difficulty": "hard",
+    "type": "scenario",
+    "mock_only": true,
+    "parent_id": 63054,
+    "follow_up_dimension": "stakeholder_pivot",
+    "scenario_context": "The data science team at the same company does not use the BI tool \u2014 they query the dbt mart tables directly via Python (pandas, SQLAlchemy). They argue the semantic layer does not help them because they never pass queries through it. Meanwhile, their MRR calculations in Jupyter notebooks use yet another definition (they exclude refunds, which neither Finance nor Marketing does). This creates a fourth MRR variant in ML model training data.",
+    "description": "What is the correct approach to bring the DS team's metric consumption into the governance framework without forcing them to abandon Python-based querying?",
+    "options": [
+      "Require the DS team to use the BI tool for all metric queries \u2014 direct mart access is the root cause of the divergence and must be blocked to enforce governance.",
+      "Create a governed metric mart (a dedicated set of pre-computed metric tables built from the agreed semantic layer definitions), document it as the canonical metric source for Python consumers, and deprecate the practice of computing metrics ad-hoc from raw mart tables in notebooks.",
+      "Add a fourth MRR definition to the semantic layer representing the DS team's logic \u2014 having multiple named MRR variants (MRR_finance, MRR_marketing, MRR_ds) in the semantic layer is preferable to undocumented notebook logic.",
+      "Accept that data science workflows will always use different metric definitions than BI \u2014 model training data and executive dashboards serve different purposes and do not need to agree."
+    ],
+    "correct_option": 1,
+    "explanation": "A governed metric mart bridges the gap: it exposes pre-computed, semantic-layer-sourced metrics as plain SQL tables that Python consumers can query with pandas or SQLAlchemy directly \u2014 no BI tool required. The DS team keeps their Python workflow while consuming the canonical metric definition. Documentation and deprecation notices steer notebook authors away from ad-hoc mart-table calculations. Option 1 is correct. Option 0 is wrong: blocking direct mart access is operationally disruptive and politically unfeasible for a team with legitimate technical reasons to use Python; it treats a governance problem as a permissions problem without solving the underlying metric definition disagreement. Option 2 is wrong: adding named variants (MRR_ds) legitimizes the DS team's divergent definition rather than resolving it; the question is whether the DS refund exclusion is a justified analytical choice or an error \u2014 if it is justified, it should be documented and agreed upon first, then modeled as a distinct metric with a name that reflects its purpose (e.g., MRR_net_of_refunds), not added as a team-specific variant. Option 3 is wrong: when ML models are trained on an MRR definition that diverges from the executive dashboard definition, model outputs will predict behavior against a metric the business does not track \u2014 forecasts and anomaly detection become difficult to interpret and defend in business reviews.",
+    "hints": [
+      "The DS team needs Python/SQL access to metrics, not BI-tool access. Is there a way to serve the canonical metric definition as a queryable table rather than through a BI tool interface?",
+      "If an ML model is trained on MRR that excludes refunds, but the company tracks MRR inclusive of refunds on its executive dashboard, what happens when the model's predictions are presented to the CFO?"
+    ],
+    "concepts": [
+      "DBT MODELING",
+      "SCHEMA FROM REQUIREMENTS",
+      "DIMENSIONAL MODELING"
+    ]
   }
 ]
