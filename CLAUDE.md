@@ -99,6 +99,8 @@ The five-perspective pushback in § Standing instructions reads this section as 
 
 - **Active refactor — the canonical pickup point.** When in doubt about "what's the next work," read [`docs/phases/2026-05-authoring-refactor.md`](docs/phases/2026-05-authoring-refactor.md) — it is the single self-contained tracking doc for the in-flight authoring-system refactor. It explains every locked decision with rationale, lists the remaining work items (Phase 2, Phase 3), and points at every source-of-truth doc. **Delete this CLAUDE.md bullet once Phase 3 ships and the tracker doc is removed.**
 
+- **Phase 2 orchestration runbook — durable counterpart to the tracker.** Any Opus session running Phase 2 orchestration (Stage A planning, Stage C audit, retro-cleanup briefs) for the remaining open tracks (Statistics, ML Fundamentals, Experimentation) or the deferred DM Phase 2.5 must read [`docs/orchestration-runbook.md`](docs/orchestration-runbook.md) before producing any Stage artefact. The runbook codifies the three-stage process (A → B → C), the Stage A/B/C template skeletons, the retro-cleanup pattern, the current Phase 2 status table, and the pre-identified watch-outs per open track. Unlike the tracker bullet above, this doc is **durable** — it survives Phase 3 and is reusable for any future track Phase 2.
+
 - **Always commit after meaningful changes.** End every session of edits with a `git commit` carrying a clear, specific message (not "update files" — something like "add mock interview mode with timer and session summary"). Co-author line: `Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>`.
 
 - **Keep `CLAUDE.md` in sync.** When content footprint, tech stack, routes, or product behaviour changes, update the relevant section below in the same commit.
@@ -534,6 +536,7 @@ cd backend && DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:543
 | `docs/specs/practice-modality-spec.md` | Track modality matrix, practice interaction rules, metadata contract |
 | `docs/specs/mock-benchmark-spec.md` | Benchmark-vs-drill split, mock invariants, analytics contract |
 | `docs/track-onboarding.md` | End-to-end process for adding a new track — spec, backend, frontend, content, paths, docs |
+| `docs/orchestration-runbook.md` | **Phase 2 orchestration handbook** — three-stage process (A planning → B execution → C audit), Stage A/B/C templates, retro-cleanup pattern, current Phase 2 status, pre-identified watch-outs for open tracks. Pickup point for any Opus session running Phase 2 orchestration. |
 | `docs/USERGUIDE.md` | End-user guide to the platform |
 | `docs/features/pricing.md` | Pricing feature reference — plan entitlements, Razorpay flows, CTA states, webhook rules |
 | `docs/features/mock.md` | Mock interview feature reference — plan gates, endpoints, coaching insights, test coverage |
