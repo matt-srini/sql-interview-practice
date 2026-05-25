@@ -370,7 +370,7 @@ Mock-only inventory must support a power user who completes most of practice and
 |---|---|---|---|---|
 | SQL | 115 | 162 | **1.41×** | executable analytics |
 | Python | 79 | 100 | **1.27×** | executable algorithms |
-| Pandas | 92 | 110 | **1.20×** | executable analytics |
+| Pandas | 92 | 114 | **1.24×** | executable analytics |
 | PySpark | 128 | 150 | **1.17×** | code-adjacent reasoning (MCQ) |
 | Data Engineering | 91 | 110 | **1.21×** | constructed reasoning (MCQ) |
 | Data Modeling | 80 | 96 | **1.20×** | constructed reasoning (MCQ) |
@@ -451,7 +451,7 @@ Practice questions are the full curriculum. Mock-only questions live in the same
 | Experimentation | 30 | 32 | 22 | **84** | Constructed reasoning (MCQ) |
 | **Total** | | | | **862** | |
 
-Mock-only add-on bank: **786 questions** (Pro/Elite only). Samples: **36 total** SQL/Python/Pandas/PySpark + auto-sliced from practice for the other 5 tracks.
+Mock-only add-on bank: **793 questions** (Pro/Elite only). Samples: **36 total** SQL/Python/Pandas/PySpark + auto-sliced from practice for the other 5 tracks.
 
 **These counts evolve.** They reflect the bank at the time of the 2026-05 refactor. CLAUDE.md mirrors them; both files update together.
 

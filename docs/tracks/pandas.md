@@ -120,6 +120,16 @@ These are the durable *targets* (what the bank ought to look like). For live cou
 - **Realism vs. practice-grounded split.** `MEMORY & VECTORIZATION REASONING` is practice-grounded and Pandas-native — gradable via `assert_frame_equal` dtype mismatches, anchored by real practice questions. The three mock-only realism families (`METRIC INTERPRETATION & DENOMINATOR CHOICE`, `OUTPUT SANITY VALIDATION`, `PERFORMANCE-AWARE ANALYTICS`) must **co-occur with ≥ 1 practice-grounded family** on every question that uses them.
 - **Quality risk: SQL-in-Python clones.** Any question whose reference solution is idiomatic SQL transliterated into pandas (`groupby + merge + rename` where a single `pivot_table` would do) must be dropped, not padded. The track's purpose is teaching pandas as a tool with its own grammar; volume built on SQL-shaped problems actively harms the curriculum.
 
+### Load-bearing family exception: GROUPED AGGREGATION
+
+**GROUPED AGGREGATION currently appears on ~59–60% of practice questions, which exceeds the 50% ceiling (rule 3).** This is a documented, defended exception — not a coverage drift.
+
+**Reasoning-depth defence:** `groupby()` is the central computational primitive of the Pandas track. Every meaningful aggregation, temporal bucketing, ranked-within-group pattern, and metric computation runs through it. Unlike SQL where GROUP BY is one clause among many, in pandas the groupby/split-apply-combine paradigm is the grammar itself — a practitioner who cannot reason about groupby mechanics, key selection, `as_index`, named aggregation, and multi-level groupby cannot use pandas professionally. The families that are *distinct* from GROUPED AGGREGATION (WINDOW & ROLLING, RESHAPING & PIVOT, DATETIME OPERATIONS, etc.) all routinely compose with groupby. A question about rolling averages by cohort is primarily WINDOW & ROLLING — but it still uses groupby to partition. Tagging both families on such questions is correct; GROUPED AGGREGATION's high share reflects this composition reality, not curriculum bloat.
+
+**Why remediation would harm the curriculum:** Aggressively removing GROUPED AGGREGATION tags to get below 50% would either (a) drop the primary family from questions where groupby *is* the reasoning surface, mislabelling them, or (b) require manufacturing a large batch of non-groupby practice questions to dilute the share, which would pad volume against the track's stated anti-padding philosophy.
+
+**Governance:** The validator treats this as a soft warning. Any future audit noting this warning should cross-reference this section and confirm the share is still driven by the composition reality above, not by untagged questions that should carry additional families (which would dilute the share naturally).
+
 ## Anti-patterns specific to Pandas
 
 - **SQL-in-Python solutions** — using groupby+merge+rename when the idiomatic pandas would be a single `pivot_table`. The track is *teaching* pandas, not punishing the candidate for not knowing it.

@@ -147,7 +147,29 @@
       "Bash(../.venv/bin/pip-audit *)",
       "Bash(../.venv/bin/pip show *)",
       "Bash(DATABASE_URL=\"postgresql+asyncpg://postgres:oSLmxqaswbDKweFoZbiPoTTLlkiwDnWg@shuttle.proxy.rlwy.net:39347/railway\" ../.venv/bin/alembic upgrade head)",
-      "Bash(DATABASE_URL=\"postgresql+asyncpg://postgres:oSLmxqaswbDKweFoZbiPoTTLlkiwDnWg@shuttle.proxy.rlwy.net:39347/railway\" ../.venv/bin/alembic current *)"
+      "Bash(DATABASE_URL=\"postgresql+asyncpg://postgres:oSLmxqaswbDKweFoZbiPoTTLlkiwDnWg@shuttle.proxy.rlwy.net:39347/railway\" ../.venv/bin/alembic current *)",
+      "Bash(grep -rn \"Easy mock-only: never\\\\.\\\\*$\" docs/tracks/)",
+      "Bash(grep -nA3 'METRIC INTERPRETATION & DENOMINATOR CHOICE` ⚡\\\\|DATA QUALITY SKEPTICISM` ⚡\\\\|DOUBLE-COUNTING DETECTION` ⚡' docs/concept-taxonomy.md)",
+      "Bash(awk '/^## Pandas/,/^## PySpark/' docs/concept-taxonomy.md)",
+      "Bash(awk '/^## PySpark/,/^## Data Engineering/' docs/concept-taxonomy.md)",
+      "Bash(grep -rn \"Target \\\\`METRIC\\\\|Target \\\\`MEMORY\\\\|Lean on \\\\`\" docs/tracks/)",
+      "Bash(../.venv/bin/python -c ' *)",
+      "Bash(.venv/bin/python /tmp/py_resolve.py)",
+      "Bash(.venv/bin/python scripts/validate_content.py)",
+      "Bash(python3 -c 'import json; d=json.load\\(open\\('\\\\''__TRACKED_VAR__'\\\\''\\)\\); print\\('\\\\''count:'\\\\'', len\\(d\\)\\); print\\('\\\\''keys:'\\\\'', list\\(d[0].keys\\(\\)\\)\\); print\\('\\\\''sample concepts:'\\\\'', d[0].get\\('\\\\''concepts'\\\\''\\)\\); print\\('\\\\''types:'\\\\'', sorted\\(set\\(q.get\\('\\\\''type'\\\\''\\) for q in d\\)\\)\\)')",
+      "Bash(ls sample/)",
+      "Bash(../.venv/bin/python)",
+      "Bash(grep -niC1 \"realism famil\\\\|sole tag\\\\|co-tag\\\\|assessment lens\" docs/content-authoring.md)",
+      "Bash(grep -n \"## Mock-only authoring contract\\\\|## Final checklist\\\\|If \\\\`mock_only\\\\`\\\\|Concept tag discipline\" .github/agents/question-authoring.agent.md)",
+      "Bash(git fetch *)",
+      "Bash(.venv/bin/python -c ' *)",
+      "Bash(sed -n '430,455p' backend/concept_families.py)",
+      "Bash(grep -nA1 \"Net practice\\\\|~80–85\\\\|~90–120\\\\|Sizing \\(user-locked\\\\|target practice\\\\|target mock\" docs/phases/2026-05-authoring-refactor.md)",
+      "Bash(sed -n '25,55p' backend/concept_families.py)",
+      "Bash(sed -n '313,332p' docs/content-authoring.md)",
+      "Bash(sed -n '450,470p' docs/phases/2026-05-authoring-refactor.md)",
+      "Bash(awk 'NR>=550 && NR<=554' docs/phases/2026-05-authoring-refactor.md)",
+      "Bash(git pull *)"
     ]
   }
 }

@@ -289,7 +289,7 @@ Update this section after each track closes / each retro-cleanup completes.
 |---|---|---|---|
 | SQL | ✅ Closed | ✅ Retro-cleanup closed 2026-05-25 — zero warnings; 3 mock-only added (13132/33/34), 3 practice added (12121/22/23), 11 mock-only re-tiered medium → hard, 2 chains dissolved on re-tier (12042/12043) — accepted per § 5.4 chain-handling rule | Practice 115→118, mock 162→165, ratio 1.40× |
 | Python | ✅ Closed | Retro-cleanup pending — 1 dead family, 4 sub-floor, 1 practice-floor flagged | After SQL closes |
-| Pandas | ✅ Closed | Retro-cleanup pending — 1 dead family, 3 sub-floor flagged + GROUPED AGGREGATION 60.9% load-bearing defence | After SQL closes |
+| Pandas | ✅ Closed | ✅ Retro-cleanup closed 2026-05-25 — TRANSFORM VS AGGREGATE: shadow bug (GROUPED AGGREGATION's " AGG" pattern) caused dead-family false alarm; 12 questions re-tagged "GROUPBY TRANSFORM" to resolve without concept_families.py edit. 3 sub-floor families remediated (4 mock-only added: 32091, 33085, 33086, 33087). GROUPED AGGREGATION 59.8% ceiling breach defended as load-bearing in docs/tracks/pandas.md; standing soft warning. | Practice 92, mock 110→114, ratio 1.20×→1.24× |
 | PySpark | ✅ Closed | ✅ Zero coverage warnings | Cleanest track on platform under per-family discipline |
 | Data Engineering | ✅ Closed | ✅ Retro-cleanup closed 2026-05-25 — zero warnings. INCIDENT RESPONSE: 16 medium mock-only re-tiered to hard (R2). DATA CONTRACT: registry pattern shadow fixed (1-line removal from SCHEMA EVOLUTION patterns) resurrected family with 21 mock-only + 2 practice already on disk. Spot-check on 3 re-tiered questions (53087/53092/53102) confirmed hard-tier reasoning bar. 2 chains touched per § 5.4 (1 intact, 1 dissolved). | Practice 91, mock 110, ratio 1.21×, mock m:h = 1:2.24 (corrected — rationale in data-engineering.md) |
 | Data Modeling | ✅ Closed (Phase 2.5 pending) | DIMENSIONAL MODELING 93.8% ceiling breach + 2 dead families + 1 practice-floor | **Separate Phase 2.5 re-balance cycle** — not a retro-cleanup; needs Stage A→B→C |
@@ -308,7 +308,7 @@ Out of set: Statistics, ML Fundamentals, Experimentation. Validator emits stderr
 |---|---|---|---|
 | SQL | 115 | 162 | 1.41 |
 | Python | 79 | 100 | 1.27 |
-| Pandas | 92 | 110 | 1.20 |
+| Pandas | 92 | 114 | 1.24 |
 | PySpark | 128 | 150 | 1.17 |
 | DE | 91 | 110 | 1.21 |
 | DM | 80 | 96 | 1.20 |

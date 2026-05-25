@@ -5,7 +5,7 @@
     "topic": "python_data",
     "difficulty": "hard",
     "title": "Monthly Cohort Retention",
-    "description": "You have two DataFrames: `df_users` (users dataset) and `df_orders` (orders dataset).\n\n**df_users columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `acquisition_channel`, `plan_tier`, `is_active`\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nCompute monthly cohort retention:\n1. Define each user's **cohort** as the month-year of their **first order** (format `YYYY-MM`).\n2. For each user-order pair, compute `months_since_first` = the number of whole months between the cohort month and the order month.\n3. For each cohort, count how many distinct users ordered in each `months_since_first` bucket.\n4. Divide by the cohort size (users at `months_since_first=0`) to get the retention fraction (rounded to 2 decimal places).\n5. Return a pivot table where:\n   - **rows** are `cohort_month` (sorted ascending)\n   - **columns** are `months_since_first` (0, 1, 2, \u2026 sorted ascending)\n   - **values** are the retention fraction (0.0\u20131.0)\n   - Fill missing values with `0.0`\n\nThe returned DataFrame's index should be `cohort_month` and its columns should be integers.",
+    "description": "You have two DataFrames: `df_users` (users dataset) and `df_orders` (orders dataset).\n\n**df_users columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `acquisition_channel`, `plan_tier`, `is_active`\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nCompute monthly cohort retention:\n1. Define each user's **cohort** as the month-year of their **first order** (format `YYYY-MM`).\n2. For each user-order pair, compute `months_since_first` = the number of whole months between the cohort month and the order month.\n3. For each cohort, count how many distinct users ordered in each `months_since_first` bucket.\n4. Divide by the cohort size (users at `months_since_first=0`) to get the retention fraction (rounded to 2 decimal places).\n5. Return a pivot table where:\n   - **rows** are `cohort_month` (sorted ascending)\n   - **columns** are `months_since_first` (0, 1, 2, … sorted ascending)\n   - **values** are the retention fraction (0.0–1.0)\n   - Fill missing values with `0.0`\n\nThe returned DataFrame's index should be `cohort_month` and its columns should be integers.",
     "dataframes": {
       "df_users": "users.csv",
       "df_orders": "orders.csv"
@@ -96,7 +96,7 @@
     "topic": "python_data",
     "difficulty": "hard",
     "title": "30-Day Moving Average Revenue",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Aggregate orders to **daily total revenue** (sum of `net_amount` per day).\n2. Sort by date ascending.\n3. Compute a **30-day rolling mean** of daily revenue with `min_periods=1`.\n4. Return a DataFrame with columns:\n   - `date` \u2014 date as a string in `YYYY-MM-DD` format\n   - `daily_revenue` \u2014 sum of `net_amount` for that day (rounded to 2 dp)\n   - `ma_30d` \u2014 30-day rolling mean (rounded to 2 dp)\n5. Sort by `date` ascending.",
+    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Aggregate orders to **daily total revenue** (sum of `net_amount` per day).\n2. Sort by date ascending.\n3. Compute a **30-day rolling mean** of daily revenue with `min_periods=1`.\n4. Return a DataFrame with columns:\n   - `date` — date as a string in `YYYY-MM-DD` format\n   - `daily_revenue` — sum of `net_amount` for that day (rounded to 2 dp)\n   - `ma_30d` — 30-day rolling mean (rounded to 2 dp)\n5. Sort by `date` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -240,7 +240,7 @@
     "topic": "python_data",
     "difficulty": "hard",
     "title": "Support Ticket Resolution Rate by Month",
-    "description": "You have a DataFrame `df_support_tickets` loaded from the support_tickets dataset.\n\n**Columns:** `ticket_id`, `user_id`, `created_at`, `issue_type`, `priority`, `status`, `resolution_hours`\n\n1. Parse `created_at` to datetime and extract the month as `YYYY-MM`.\n2. Per month, compute:\n   - `total_tickets` \u2014 count of all tickets\n   - `resolved_tickets` \u2014 count of tickets where `status == 'resolved'`\n   - `resolution_rate_pct` \u2014 `resolved_tickets / total_tickets * 100`, rounded to 1 dp\n3. Return columns: `month`, `total_tickets`, `resolved_tickets`, `resolution_rate_pct`.\n4. Sort by `month` ascending.",
+    "description": "You have a DataFrame `df_support_tickets` loaded from the support_tickets dataset.\n\n**Columns:** `ticket_id`, `user_id`, `created_at`, `issue_type`, `priority`, `status`, `resolution_hours`\n\n1. Parse `created_at` to datetime and extract the month as `YYYY-MM`.\n2. Per month, compute:\n   - `total_tickets` — count of all tickets\n   - `resolved_tickets` — count of tickets where `status == 'resolved'`\n   - `resolution_rate_pct` — `resolved_tickets / total_tickets * 100`, rounded to 1 dp\n3. Return columns: `month`, `total_tickets`, `resolved_tickets`, `resolution_rate_pct`.\n4. Sort by `month` ascending.",
     "dataframes": {
       "df_support_tickets": "support_tickets.csv"
     },
@@ -313,7 +313,7 @@
     "order": 9,
     "topic": "python_data",
     "difficulty": "hard",
-    "title": "Cross-Tab: Country \u00d7 Order Status",
+    "title": "Cross-Tab: Country × Order Status",
     "description": "You have two DataFrames: `df_orders` (orders dataset) and `df_users` (users dataset).\n\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n**df_users columns:** `user_id`, `name`, `email`, `signup_date`, `country`, `acquisition_channel`, `plan_tier`, `is_active`\n\n1. Join orders with users on `user_id` to get `country`.\n2. Use `pd.crosstab` to produce a table: **rows = country**, **columns = status**, **values = count of orders**.\n3. Add a `Total` column = sum across all status columns.\n4. Sort by `Total` descending.\n5. Drop the `Total` column before returning.\n\nThe returned DataFrame's index should be `country` and columns should be the distinct order statuses.",
     "dataframes": {
       "df_orders": "orders.csv",
@@ -346,7 +346,7 @@
     "solution_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_orders, df_users):\n    df = df_orders.merge(df_users[['user_id', 'country']], on='user_id', how='left')\n    ct = pd.crosstab(df['country'], df['status'])\n    ct['Total'] = ct.sum(axis=1)\n    ct = ct.sort_values('Total', ascending=False)\n    ct = ct.drop(columns=['Total'])\n    ct.columns.name = None\n    return ct",
     "explanation": "`pd.crosstab(rows, cols)` counts co-occurrences, producing the frequency table directly. Adding a `Total` column (sum across axis=1) enables sorting by overall order volume per country. The `Total` column is then dropped as specified. Clearing `columns.name` removes the 'status' axis label for a clean output.",
     "hints": [
-      "`pd.crosstab(df['country'], df['status'])` builds the frequency table \u2014 no aggregation needed separately",
+      "`pd.crosstab(df['country'], df['status'])` builds the frequency table — no aggregation needed separately",
       "Add a Total column with `.sum(axis=1)` for sorting, then drop it before returning"
     ],
     "concepts": [
@@ -360,7 +360,7 @@
     "order": 10,
     "topic": "python_data",
     "difficulty": "hard",
-    "title": "Stack/Unstack: Order Status \u00d7 Month",
+    "title": "Stack/Unstack: Order Status × Month",
     "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Extract `month` as `YYYY-MM` string from `order_date`.\n2. Create a **pivot table**: rows = `status`, columns = `month`, values = count of orders. Fill NaN with 0 (as int).\n3. **Stack** the pivot back to a long-format DataFrame with columns: `status`, `month`, `count`.\n4. Sort by `status` ascending, then `month` ascending.\n5. Return the long-format DataFrame with a reset index.",
     "dataframes": {
       "df_orders": "orders.csv"
@@ -435,7 +435,7 @@
     "solution_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_events, df_sessions, df_orders):\n    ec = df_events.groupby('user_id').size().rename('event_count')\n    sc = df_sessions.groupby('user_id').size().rename('session_count')\n    oc = df_orders.groupby('user_id').size().rename('order_count')\n    all_users = set(df_events['user_id']).union(df_sessions['user_id']).union(df_orders['user_id'])\n    result = pd.DataFrame({'user_id': list(all_users)}).set_index('user_id')\n    result = result.join(ec).join(sc).join(oc).fillna(0).astype(int).reset_index()\n    def minmax(s):\n        mn, mx = s.min(), s.max()\n        return (s - mn) / (mx - mn) if mx != mn else pd.Series(0.0, index=s.index)\n    result['norm_events'] = minmax(result['event_count'])\n    result['norm_sessions'] = minmax(result['session_count'])\n    result['norm_orders'] = minmax(result['order_count'])\n    result['engagement_score'] = (0.3 * result['norm_events'] + 0.3 * result['norm_sessions'] + 0.4 * result['norm_orders']).round(3)\n    return result[['user_id', 'event_count', 'session_count', 'order_count', 'engagement_score']].sort_values(['engagement_score', 'user_id'], ascending=[False, True]).reset_index(drop=True)",
     "explanation": "Count events, sessions, and orders per user separately, then outer-join all three. Fill NaN with 0 for users missing from one dataset. Min-max normalisation scales each metric to [0, 1]. The weighted sum forms the final score.",
     "hints": [
-      "Count each metric separately then join \u2014 users may appear in only some datasets, so fill missing counts with 0",
+      "Count each metric separately then join — users may appear in only some datasets, so fill missing counts with 0",
       "Min-max normalise: `(x - x.min()) / (x.max() - x.min())`; guard against division by zero when all values are equal"
     ],
     "concepts": [
@@ -449,7 +449,7 @@
     "topic": "python_data",
     "difficulty": "hard",
     "title": "Multi-Step Funnel Analysis",
-    "description": "You have three DataFrames: `df_events` (events dataset), `df_sessions` (sessions dataset), and `df_orders` (orders dataset).\n\n**df_events columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n**df_sessions columns:** `session_id`, `user_id`, `session_start`, `device_type`, `traffic_source`, `country`\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nBuild a 3-stage funnel:\n1. **Stage 1 \u2014 Has Event:** users present in `df_events`\n2. **Stage 2 \u2014 Has Session:** users present in both events and sessions\n3. **Stage 3 \u2014 Has Order:** users present in events, sessions, and orders\n\nReturn a DataFrame with **3 rows** and columns:\n- `stage` \u2014 `'has_event'`, `'has_session'`, `'has_order'`\n- `user_count` \u2014 number of distinct users at that stage\n- `pct_of_event_users` \u2014 percentage relative to stage-1 user count, rounded to 1 dp",
+    "description": "You have three DataFrames: `df_events` (events dataset), `df_sessions` (sessions dataset), and `df_orders` (orders dataset).\n\n**df_events columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n**df_sessions columns:** `session_id`, `user_id`, `session_start`, `device_type`, `traffic_source`, `country`\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nBuild a 3-stage funnel:\n1. **Stage 1 — Has Event:** users present in `df_events`\n2. **Stage 2 — Has Session:** users present in both events and sessions\n3. **Stage 3 — Has Order:** users present in events, sessions, and orders\n\nReturn a DataFrame with **3 rows** and columns:\n- `stage` — `'has_event'`, `'has_session'`, `'has_order'`\n- `user_count` — number of distinct users at that stage\n- `pct_of_event_users` — percentage relative to stage-1 user count, rounded to 1 dp",
     "dataframes": {
       "df_events": "events.csv",
       "df_sessions": "sessions.csv",
@@ -483,7 +483,7 @@
         "payment_status"
       ]
     },
-    "starter_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_events, df_sessions, df_orders):\n    # Build a 3-stage funnel: has_event \u2192 has_session \u2192 has_order\n    pass",
+    "starter_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_events, df_sessions, df_orders):\n    # Build a 3-stage funnel: has_event → has_session → has_order\n    pass",
     "expected_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_events, df_sessions, df_orders):\n    event_users = set(df_events['user_id'].unique())\n    session_users = set(df_sessions['user_id'].unique())\n    order_users = set(df_orders['user_id'].unique())\n    stage1 = len(event_users)\n    stage2 = len(event_users & session_users)\n    stage3 = len(event_users & session_users & order_users)\n    data = {\n        'stage': ['has_event', 'has_session', 'has_order'],\n        'user_count': [stage1, stage2, stage3],\n        'pct_of_event_users': [round(100.0, 1), round(stage2 / stage1 * 100, 1), round(stage3 / stage1 * 100, 1)]\n    }\n    return pd.DataFrame(data)",
     "solution_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_events, df_sessions, df_orders):\n    event_users = set(df_events['user_id'].unique())\n    session_users = set(df_sessions['user_id'].unique())\n    order_users = set(df_orders['user_id'].unique())\n    stage1 = len(event_users)\n    stage2 = len(event_users & session_users)\n    stage3 = len(event_users & session_users & order_users)\n    data = {\n        'stage': ['has_event', 'has_session', 'has_order'],\n        'user_count': [stage1, stage2, stage3],\n        'pct_of_event_users': [round(100.0, 1), round(stage2 / stage1 * 100, 1), round(stage3 / stage1 * 100, 1)]\n    }\n    return pd.DataFrame(data)",
     "explanation": "Each stage is defined by set intersection: stage 2 requires the user to appear in both events AND sessions; stage 3 requires all three. Percentages are relative to stage 1 (the top of the funnel). Using Python sets for the intersections is efficient and readable.",
@@ -571,7 +571,7 @@
     "topic": "python_data",
     "difficulty": "hard",
     "title": "Forecast Next Month Revenue",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Aggregate to **monthly revenue** (sum of `net_amount`, format `YYYY-MM`), sorted ascending.\n2. Use `pct_change()` on the monthly revenue series to compute month-over-month growth rates, then take the **mean** of all non-NaN growth rates.\n3. **Forecast** the next month's revenue = `last_month_revenue * (1 + avg_growth)`, rounded to 2 dp.\n4. Compute the next calendar month label from the last observed month.\n5. Return a DataFrame with all historical rows **plus** the forecast row, columns:\n   - `month` (string `YYYY-MM`)\n   - `revenue` (rounded to 2 dp)\n   - `is_forecast` (bool \u2014 `False` for historical, `True` for forecast row)\n6. Sort by `month` ascending.",
+    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Aggregate to **monthly revenue** (sum of `net_amount`, format `YYYY-MM`), sorted ascending.\n2. Use `pct_change()` on the monthly revenue series to compute month-over-month growth rates, then take the **mean** of all non-NaN growth rates.\n3. **Forecast** the next month's revenue = `last_month_revenue * (1 + avg_growth)`, rounded to 2 dp.\n4. Compute the next calendar month label from the last observed month.\n5. Return a DataFrame with all historical rows **plus** the forecast row, columns:\n   - `month` (string `YYYY-MM`)\n   - `revenue` (rounded to 2 dp)\n   - `is_forecast` (bool — `False` for historical, `True` for forecast row)\n6. Sort by `month` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -592,7 +592,7 @@
     "solution_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_date'] = pd.to_datetime(df['order_date'])\n    df['month'] = df['order_date'].dt.to_period('M').astype(str)\n    monthly = df.groupby('month', as_index=False)['net_amount'].sum().rename(columns={'net_amount': 'revenue'})\n    monthly = monthly.sort_values('month').reset_index(drop=True)\n    monthly['revenue'] = monthly['revenue'].round(2)\n    monthly['is_forecast'] = False\n    avg_growth = monthly['revenue'].pct_change().mean()\n    last_month = pd.Period(monthly['month'].iloc[-1], freq='M')\n    next_month = str(last_month + 1)\n    forecast_rev = round(monthly['revenue'].iloc[-1] * (1 + avg_growth), 2)\n    forecast_row = pd.DataFrame({'month': [next_month], 'revenue': [forecast_rev], 'is_forecast': [True]})\n    result = pd.concat([monthly, forecast_row], ignore_index=True)\n    return result.sort_values('month').reset_index(drop=True)",
     "explanation": "`pct_change()` gives the fractional MoM change; `.mean()` across all periods gives the average growth rate, skipping the first NaN. The next month label is computed via Period arithmetic (`last_month + 1`). The forecast row is appended with `pd.concat` and the `is_forecast` flag distinguishes it from historical data.",
     "hints": [
-      "Compute average growth with `monthly['revenue'].pct_change().mean()` \u2014 NaN for the first period is skipped automatically",
+      "Compute average growth with `monthly['revenue'].pct_change().mean()` — NaN for the first period is skipped automatically",
       "Use `pd.Period(month_str, freq='M') + 1` to get the next calendar month label"
     ],
     "concepts": [
@@ -640,8 +640,8 @@
     "order": 17,
     "topic": "python_data",
     "difficulty": "hard",
-    "title": "Churn Proxy \u2014 Users Inactive 90 Days",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Per user, compute their **last order date**.\n2. Compute `days_since_last_order` = (max order date in dataset) \u2212 last_order_date, in days (integer).\n3. Flag `is_churned = True` if `days_since_last_order > 90`.\n4. Return columns: `user_id`, `last_order_date` (string `YYYY-MM-DD`), `days_since_last_order` (int), `is_churned` (bool).\n5. Sort by `days_since_last_order` descending.",
+    "title": "Churn Proxy — Users Inactive 90 Days",
+    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\n1. Per user, compute their **last order date**.\n2. Compute `days_since_last_order` = (max order date in dataset) − last_order_date, in days (integer).\n3. Flag `is_churned = True` if `days_since_last_order > 90`.\n4. Return columns: `user_id`, `last_order_date` (string `YYYY-MM-DD`), `days_since_last_order` (int), `is_churned` (bool).\n5. Sort by `days_since_last_order` descending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -662,7 +662,7 @@
     "solution_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_date'] = pd.to_datetime(df['order_date'])\n    last_orders = df.groupby('user_id')['order_date'].max().reset_index()\n    last_orders.columns = ['user_id', 'last_order_date']\n    max_date = df['order_date'].max()\n    last_orders['days_since_last_order'] = (max_date - last_orders['last_order_date']).dt.days\n    last_orders['is_churned'] = last_orders['days_since_last_order'] > 90\n    last_orders['last_order_date'] = last_orders['last_order_date'].dt.strftime('%Y-%m-%d')\n    return last_orders[['user_id', 'last_order_date', 'days_since_last_order', 'is_churned']].sort_values('days_since_last_order', ascending=False).reset_index(drop=True)",
     "explanation": "The 'most recent date in the dataset' acts as the reference point for recency. Subtracting each user's last order date from this reference gives the days of inactivity. Using the dataset max (rather than today's date) makes the result deterministic regardless of when the code runs.",
     "hints": [
-      "Use `df['order_date'].max()` as the reference date for recency calculations \u2014 this is deterministic",
+      "Use `df['order_date'].max()` as the reference date for recency calculations — this is deterministic",
       "`(max_date - last_order_date).dt.days` converts the Timedelta to an integer day count"
     ],
     "concepts": [
@@ -676,7 +676,7 @@
     "topic": "python_data",
     "difficulty": "hard",
     "title": "Session-to-Order Attribution Rate",
-    "description": "You have two DataFrames: `df_sessions` (sessions dataset) and `df_orders` (orders dataset).\n\n**df_sessions columns:** `session_id`, `user_id`, `session_start`, `device_type`, `traffic_source`, `country`\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nA session is **attributed** to an order if the **same user** placed an order within **24 hours** after `session_start`.\n\n1. For each session, check whether any order from the same user has `order_date` in the window `[session_start, session_start + 24h)`.\n2. Compute:\n   - `total_sessions` \u2014 total number of sessions\n   - `attributed_sessions` \u2014 sessions with at least one attributed order\n   - `attribution_rate_pct` \u2014 `attributed_sessions / total_sessions * 100`, rounded to 1 dp\n3. Return a **single-row** DataFrame with columns: `total_sessions`, `attributed_sessions`, `attribution_rate_pct`.",
+    "description": "You have two DataFrames: `df_sessions` (sessions dataset) and `df_orders` (orders dataset).\n\n**df_sessions columns:** `session_id`, `user_id`, `session_start`, `device_type`, `traffic_source`, `country`\n**df_orders columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nA session is **attributed** to an order if the **same user** placed an order within **24 hours** after `session_start`.\n\n1. For each session, check whether any order from the same user has `order_date` in the window `[session_start, session_start + 24h)`.\n2. Compute:\n   - `total_sessions` — total number of sessions\n   - `attributed_sessions` — sessions with at least one attributed order\n   - `attribution_rate_pct` — `attributed_sessions / total_sessions * 100`, rounded to 1 dp\n3. Return a **single-row** DataFrame with columns: `total_sessions`, `attributed_sessions`, `attribution_rate_pct`.",
     "dataframes": {
       "df_sessions": "sessions.csv",
       "df_orders": "orders.csv"
@@ -704,7 +704,7 @@
     "starter_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_sessions, df_orders):\n    # Compute what fraction of sessions are followed by an order within 24 hours\n    pass",
     "expected_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_sessions, df_orders):\n    sessions = df_sessions.copy()\n    orders = df_orders.copy()\n    sessions['session_start'] = pd.to_datetime(sessions['session_start'])\n    orders['order_date'] = pd.to_datetime(orders['order_date'])\n    merged = sessions.merge(orders[['user_id', 'order_date']], on='user_id', how='left')\n    window = pd.Timedelta(hours=24)\n    merged['attributed'] = (\n        (merged['order_date'] >= merged['session_start']) &\n        (merged['order_date'] < merged['session_start'] + window)\n    )\n    attr_per_session = merged.groupby('session_id')['attributed'].any()\n    total = len(sessions)\n    attributed = int(attr_per_session.sum())\n    rate = round(attributed / total * 100, 1)\n    return pd.DataFrame({'total_sessions': [total], 'attributed_sessions': [attributed], 'attribution_rate_pct': [rate]})",
     "solution_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_sessions, df_orders):\n    sessions = df_sessions.copy()\n    orders = df_orders.copy()\n    sessions['session_start'] = pd.to_datetime(sessions['session_start'])\n    orders['order_date'] = pd.to_datetime(orders['order_date'])\n    merged = sessions.merge(orders[['user_id', 'order_date']], on='user_id', how='left')\n    window = pd.Timedelta(hours=24)\n    merged['attributed'] = (\n        (merged['order_date'] >= merged['session_start']) &\n        (merged['order_date'] < merged['session_start'] + window)\n    )\n    attr_per_session = merged.groupby('session_id')['attributed'].any()\n    total = len(sessions)\n    attributed = int(attr_per_session.sum())\n    rate = round(attributed / total * 100, 1)\n    return pd.DataFrame({'total_sessions': [total], 'attributed_sessions': [attributed], 'attribution_rate_pct': [rate]})",
-    "explanation": "Merge sessions with all orders for the same user (a left join keeps all sessions). For each resulting row, check whether the order falls in the 24-hour window after the session. `groupby('session_id').any()` collapses multiple orders per session to a single True/False \u2014 was any order in the window?",
+    "explanation": "Merge sessions with all orders for the same user (a left join keeps all sessions). For each resulting row, check whether the order falls in the 24-hour window after the session. `groupby('session_id').any()` collapses multiple orders per session to a single True/False — was any order in the window?",
     "hints": [
       "After merging sessions and orders on `user_id`, check `order_date >= session_start` and `order_date < session_start + pd.Timedelta(hours=24)`",
       "Use `groupby('session_id')['attributed'].any()` to reduce to one bool per session"
@@ -767,7 +767,7 @@
     "topic": "python_data",
     "difficulty": "hard",
     "title": "Customer RFM Segmentation",
-    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nCompute **RFM segmentation** for each user:\n\n1. Use the **maximum order date** in the dataset as the reference date.\n2. Per user compute:\n   - `recency` = days since last order (integer)\n   - `frequency` = number of orders (integer)\n   - `monetary` = sum of `net_amount` (rounded to 2 dp)\n3. Score each dimension 1\u20133:\n   - **Recency:** \u2264 30 days \u2192 3, 31\u201390 days \u2192 2, > 90 days \u2192 1\n   - **Frequency:** 1 order \u2192 1, 2\u20133 orders \u2192 2, \u2265 4 orders \u2192 3\n   - **Monetary:** bottom third of users \u2192 1, middle third \u2192 2, top third \u2192 3 (use `pd.qcut` with 3 equal-sized buckets; label as 1, 2, 3)\n4. `rfm_score` = recency_score + frequency_score + monetary_score\n5. `segment`:\n   - `rfm_score` 7\u20139 \u2192 `'Champions'`\n   - `rfm_score` 5\u20136 \u2192 `'Loyal'`\n   - `rfm_score` 3\u20134 \u2192 `'At Risk'`\n6. Return columns: `user_id`, `recency`, `frequency`, `monetary`, `rfm_score`, `segment`.\n7. Sort by `rfm_score` descending, then `user_id` ascending.",
+    "description": "You have a DataFrame `df_orders` loaded from the orders dataset.\n\n**Columns:** `order_id`, `user_id`, `order_date`, `status`, `gross_amount`, `discount_amount`, `net_amount`, `payment_status`\n\nCompute **RFM segmentation** for each user:\n\n1. Use the **maximum order date** in the dataset as the reference date.\n2. Per user compute:\n   - `recency` = days since last order (integer)\n   - `frequency` = number of orders (integer)\n   - `monetary` = sum of `net_amount` (rounded to 2 dp)\n3. Score each dimension 1–3:\n   - **Recency:** ≤ 30 days → 3, 31–90 days → 2, > 90 days → 1\n   - **Frequency:** 1 order → 1, 2–3 orders → 2, ≥ 4 orders → 3\n   - **Monetary:** bottom third of users → 1, middle third → 2, top third → 3 (use `pd.qcut` with 3 equal-sized buckets; label as 1, 2, 3)\n4. `rfm_score` = recency_score + frequency_score + monetary_score\n5. `segment`:\n   - `rfm_score` 7–9 → `'Champions'`\n   - `rfm_score` 5–6 → `'Loyal'`\n   - `rfm_score` 3–4 → `'At Risk'`\n6. Return columns: `user_id`, `recency`, `frequency`, `monetary`, `rfm_score`, `segment`.\n7. Sort by `rfm_score` descending, then `user_id` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -821,10 +821,10 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Measure baseline memory, optimize dtypes, measure again\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    original_bytes = int(df.memory_usage(deep=True).sum())\n    \n    df['status'] = df['status'].astype('category')\n    df['payment_status'] = df['payment_status'].astype('category')\n    df['order_id'] = df['order_id'].astype('int32')\n    df['user_id'] = df['user_id'].astype('int32')\n    \n    optimized_bytes = int(df.memory_usage(deep=True).sum())\n    reduction_pct = round((original_bytes - optimized_bytes) / original_bytes * 100, 1)\n    \n    return pd.DataFrame({\n        'metric': ['original_bytes', 'optimized_bytes', 'reduction_pct'],\n        'value': [original_bytes, optimized_bytes, reduction_pct]\n    })",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    original_bytes = int(df.memory_usage(deep=True).sum())\n    \n    df['status'] = df['status'].astype('category')\n    df['payment_status'] = df['payment_status'].astype('category')\n    df['order_id'] = df['order_id'].astype('int32')\n    df['user_id'] = df['user_id'].astype('int32')\n    \n    optimized_bytes = int(df.memory_usage(deep=True).sum())\n    reduction_pct = round((original_bytes - optimized_bytes) / original_bytes * 100, 1)\n    \n    return pd.DataFrame({\n        'metric': ['original_bytes', 'optimized_bytes', 'reduction_pct'],\n        'value': [original_bytes, optimized_bytes, reduction_pct]\n    })",
-    "explanation": "`memory_usage(deep=True)` measures actual memory including object arrays (without `deep=True`, string columns are undercounted). Converting low-cardinality string columns to `category` dtype stores the unique values once and references them by integer codes \u2014 massive savings when few distinct values exist. Converting `int64` to `int32` halves the integer storage. For a column with N rows and K distinct values, `category` uses roughly N * (int size) + K * (string size) bytes vs N * (string size) for object dtype.",
+    "explanation": "`memory_usage(deep=True)` measures actual memory including object arrays (without `deep=True`, string columns are undercounted). Converting low-cardinality string columns to `category` dtype stores the unique values once and references them by integer codes — massive savings when few distinct values exist. Converting `int64` to `int32` halves the integer storage. For a column with N rows and K distinct values, `category` uses roughly N * (int size) + K * (string size) bytes vs N * (string size) for object dtype.",
     "hints": [
-      "Use `memory_usage(deep=True).sum()` for accurate measurement \u2014 `deep=True` counts the actual bytes in object/string columns",
-      "Low-cardinality string columns (few distinct values, many rows) benefit most from `.astype('category')` \u2014 pandas stores the strings once and uses integer codes"
+      "Use `memory_usage(deep=True).sum()` for accurate measurement — `deep=True` counts the actual bytes in object/string columns",
+      "Low-cardinality string columns (few distinct values, many rows) benefit most from `.astype('category')` — pandas stores the strings once and uses integer codes"
     ],
     "concepts": [
       "MEMORY & VECTORIZATION REASONING",
@@ -861,7 +861,7 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    # Build MultiIndex then slice one region with .xs()\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    df = df_employees.merge(df_departments[['department_id', 'department_name', 'region']], on='department_id', how='inner')\n    agg = df.groupby(['region', 'department_name'])['salary'].mean().round(2).rename('mean_salary')\n    agg.index = pd.MultiIndex.from_tuples(agg.index, names=['region', 'department_name'])\n    na_slice = agg.xs('NA', level='region').reset_index()\n    na_slice.columns = ['department_name', 'mean_salary']\n    return na_slice.sort_values('mean_salary', ascending=False).reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    df = df_employees.merge(df_departments[['department_id', 'department_name', 'region']], on='department_id', how='inner')\n    agg = df.groupby(['region', 'department_name'])['salary'].mean().round(2).rename('mean_salary')\n    na_slice = agg.xs('NA', level='region').reset_index()\n    na_slice.columns = ['department_name', 'mean_salary']\n    return na_slice.sort_values('mean_salary', ascending=False).reset_index(drop=True)",
-    "explanation": "Grouping by multiple columns produces a MultiIndex Series (or DataFrame). `.xs(key, level='level_name')` is the cross-section selector \u2014 it retrieves all rows where the specified level equals the key, returning a result with that level removed from the index. This is more ergonomic than `.loc[(key, slice(None))]` for hierarchical data. `reset_index()` promotes the remaining index level back to a column.",
+    "explanation": "Grouping by multiple columns produces a MultiIndex Series (or DataFrame). `.xs(key, level='level_name')` is the cross-section selector — it retrieves all rows where the specified level equals the key, returning a result with that level removed from the index. This is more ergonomic than `.loc[(key, slice(None))]` for hierarchical data. `reset_index()` promotes the remaining index level back to a column.",
     "hints": [
       "Aggregate to a region-plus-department hierarchy first, then isolate the slice that belongs to the target region.",
       "Use the hierarchical result to pull one region cleanly before reshaping it back into columns for the final output."
@@ -877,7 +877,7 @@
     "topic": "python_data",
     "difficulty": "hard",
     "title": "Funnel conversion analysis from events",
-    "description": "You have a DataFrame `df_events`.\n\n**Columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n\nCompute a 3-stage conversion funnel:\n- **Stage 1** (`view_product`): users with at least one `'view_product'` event\n- **Stage 2** (`add_to_cart`): users who also have at least one `'add_to_cart'` event\n- **Stage 3** (`purchase`): users who also have at least one `'purchase'` event\n\nEach stage must be a subset of the previous.\n\nReturn a DataFrame with columns `stage`, `user_count`, `conversion_from_top` (rate vs stage 1 user count, rounded to 2 dp \u2014 1.00 for stage 1). Rows ordered: stage 1, 2, 3.",
+    "description": "You have a DataFrame `df_events`.\n\n**Columns:** `event_id`, `session_id`, `user_id`, `event_time`, `event_name`, `product_id`\n\nCompute a 3-stage conversion funnel:\n- **Stage 1** (`view_product`): users with at least one `'view_product'` event\n- **Stage 2** (`add_to_cart`): users who also have at least one `'add_to_cart'` event\n- **Stage 3** (`purchase`): users who also have at least one `'purchase'` event\n\nEach stage must be a subset of the previous.\n\nReturn a DataFrame with columns `stage`, `user_count`, `conversion_from_top` (rate vs stage 1 user count, rounded to 2 dp — 1.00 for stage 1). Rows ordered: stage 1, 2, 3.",
     "dataframes": {
       "df_events": "events.csv"
     },
@@ -896,7 +896,7 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_events):\n    viewers = set(df_events[df_events['event_name'] == 'view_product']['user_id'].unique())\n    carters = set(df_events[df_events['event_name'] == 'add_to_cart']['user_id'].unique())\n    purchasers = set(df_events[df_events['event_name'] == 'purchase']['user_id'].unique())\n    \n    s1 = len(viewers)\n    s2 = len(viewers & carters)\n    s3 = len(viewers & carters & purchasers)\n    \n    return pd.DataFrame({\n        'stage': ['view_product', 'add_to_cart', 'purchase'],\n        'user_count': [s1, s2, s3],\n        'conversion_from_top': [\n            1.0,\n            round(s2 / s1, 2) if s1 > 0 else 0.0,\n            round(s3 / s1, 2) if s1 > 0 else 0.0\n        ]\n    })",
     "explanation": "Funnel stages are set intersections: stage 2 users must be in both viewers AND carters; stage 3 must be in all three. Python set intersection (`&`) is O(min(|A|,|B|)) and produces the correct subset relationship. Using sets instead of repeated `isin()` + `nunique()` is cleaner and more efficient. The conversion rate is always relative to the top of the funnel (stage 1). Building the result as a literal DataFrame ensures the row order is controlled.",
     "hints": [
-      "Extract each stage's user set with `.unique()` then convert to `set()` \u2014 intersection (`&`) enforces the subset requirement",
+      "Extract each stage's user set with `.unique()` then convert to `set()` — intersection (`&`) enforces the subset requirement",
       "Each stage's user count = size of the intersection of all previous stages plus the current one"
     ],
     "concepts": [
@@ -941,10 +941,10 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    # Filter completed, join users, extract month, aggregate, filter on revenue\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['month'] = pd.to_datetime(completed['order_date']).dt.to_period('M').astype(str)\n    merged = completed.merge(df_users[['user_id', 'acquisition_channel']], on='user_id')\n    result = (\n        merged.groupby(['acquisition_channel', 'month'])\n        .agg(total_revenue=('net_amount', 'sum'), order_count=('order_id', 'count'))\n        .reset_index()\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .query('total_revenue > 50000')\n        .sort_values(['month', 'total_revenue'], ascending=[True, False])\n    )\n    return result",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['month'] = pd.to_datetime(completed['order_date']).dt.to_period('M').astype(str)\n    merged = completed.merge(df_users[['user_id', 'acquisition_channel']], on='user_id')\n    result = (\n        merged.groupby(['acquisition_channel', 'month'])\n        .agg(total_revenue=('net_amount', 'sum'), order_count=('order_id', 'count'))\n        .reset_index()\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .query('total_revenue > 50000')\n        .sort_values(['month', 'total_revenue'], ascending=[True, False])\n    )\n    return result",
-    "explanation": "`pd.to_datetime(...).dt.to_period('M').astype(str)` extracts the YYYY-MM string from order_date. The `query('total_revenue > 50000')` filters after aggregation \u2014 equivalent to HAVING in SQL. `sort_values` with a list of columns and a corresponding list of `ascending` flags handles the two-key sort.",
+    "explanation": "`pd.to_datetime(...).dt.to_period('M').astype(str)` extracts the YYYY-MM string from order_date. The `query('total_revenue > 50000')` filters after aggregation — equivalent to HAVING in SQL. `sort_values` with a list of columns and a corresponding list of `ascending` flags handles the two-key sort.",
     "hints": [
-      "Extract the year-month string from the date column before aggregating \u2014 `to_period('M').astype(str)` produces the YYYY-MM format.",
-      "Filter on total_revenue after aggregation using `.query(...)` \u2014 you can't filter on an aggregate before it's computed."
+      "Extract the year-month string from the date column before aggregating — `to_period('M').astype(str)` produces the YYYY-MM format.",
+      "Filter on total_revenue after aggregation using `.query(...)` — you can't filter on an aggregate before it's computed."
     ],
     "concepts": [
       "DATETIME OPERATIONS",
@@ -962,7 +962,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "title": "Top 3 products per category with revenue rank",
-    "description": "You have three DataFrames: `df_order_items`, `df_products`, and `df_categories`.\n\n**df_order_items columns:** `product_id`, `line_amount`\n**df_products columns:** `product_id`, `product_name`, `category_id`\n**df_categories columns:** `category_id`, `category_name`\n\nFor each category, find the top 3 products by total revenue. Return `category_name`, `product_name`, `total_revenue` (rounded to 2 dp), `revenue_rank` (1 = highest within category), and `is_top` (1 if rank = 1, else 0). Include only ranks 1\u20133. Order by `category_name` ascending, then `revenue_rank` ascending.",
+    "description": "You have three DataFrames: `df_order_items`, `df_products`, and `df_categories`.\n\n**df_order_items columns:** `product_id`, `line_amount`\n**df_products columns:** `product_id`, `product_name`, `category_id`\n**df_categories columns:** `category_id`, `category_name`\n\nFor each category, find the top 3 products by total revenue. Return `category_name`, `product_name`, `total_revenue` (rounded to 2 dp), `revenue_rank` (1 = highest within category), and `is_top` (1 if rank = 1, else 0). Include only ranks 1–3. Order by `category_name` ascending, then `revenue_rank` ascending.",
     "dataframes": {
       "df_order_items": "order_items.csv",
       "df_products": "products.csv",
@@ -995,7 +995,7 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_order_items, df_products, df_categories):\n    # Aggregate revenue per product, then rank within each category\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_order_items, df_products, df_categories):\n    merged = (\n        df_order_items[['product_id', 'line_amount']]\n        .merge(df_products[['product_id', 'product_name', 'category_id']], on='product_id')\n        .merge(df_categories[['category_id', 'category_name']], on='category_id')\n    )\n    product_rev = (\n        merged.groupby(['category_name', 'category_id', 'product_name'])['line_amount'].sum()\n        .reset_index(name='total_revenue')\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n    )\n    product_rev['revenue_rank'] = (\n        product_rev.groupby('category_id')['total_revenue']\n        .rank(ascending=False, method='min')\n        .astype(int)\n    )\n    result = (\n        product_rev[product_rev['revenue_rank'] <= 3]\n        .assign(is_top=lambda x: (x['revenue_rank'] == 1).astype(int))\n        [['category_name', 'product_name', 'total_revenue', 'revenue_rank', 'is_top']]\n        .sort_values(['category_name', 'revenue_rank'])\n    )\n    return result",
     "solution_code": "import pandas as pd\n\ndef solve(df_order_items, df_products, df_categories):\n    merged = (\n        df_order_items[['product_id', 'line_amount']]\n        .merge(df_products[['product_id', 'product_name', 'category_id']], on='product_id')\n        .merge(df_categories[['category_id', 'category_name']], on='category_id')\n    )\n    product_rev = (\n        merged.groupby(['category_name', 'category_id', 'product_name'])['line_amount'].sum()\n        .reset_index(name='total_revenue')\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n    )\n    product_rev['revenue_rank'] = (\n        product_rev.groupby('category_id')['total_revenue']\n        .rank(ascending=False, method='min')\n        .astype(int)\n    )\n    result = (\n        product_rev[product_rev['revenue_rank'] <= 3]\n        .assign(is_top=lambda x: (x['revenue_rank'] == 1).astype(int))\n        [['category_name', 'product_name', 'total_revenue', 'revenue_rank', 'is_top']]\n        .sort_values(['category_name', 'revenue_rank'])\n    )\n    return result",
-    "explanation": "`.groupby('category_id')['total_revenue'].rank(ascending=False, method='min')` assigns rank 1 to the highest value within each category \u2014 `groupby` here applies the rank transformation within each partition. `method='min'` gives tied products the same lower rank. The result is filtered to `revenue_rank <= 3` before adding `is_top`.",
+    "explanation": "`.groupby('category_id')['total_revenue'].rank(ascending=False, method='min')` assigns rank 1 to the highest value within each category — `groupby` here applies the rank transformation within each partition. `method='min'` gives tied products the same lower rank. The result is filtered to `revenue_rank <= 3` before adding `is_top`.",
     "hints": [
       "Break the problem into two steps: compute a per-product summary first, then compare each product against others in the same category to determine its relative position.",
       "`.groupby(...)['col'].rank(...)` applies the rank independently within each group."
@@ -1044,10 +1044,10 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_users, df_orders):\n    # Filter 2024 signups, find users with a completed order within 30 days, compute conversion rate\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_users, df_orders):\n    signups = df_users[df_users['signup_date'].between('2024-01-01', '2024-12-31')].copy()\n    signups['signup_date'] = pd.to_datetime(signups['signup_date'])\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['order_date'] = pd.to_datetime(completed['order_date'])\n    merged = signups.merge(completed[['user_id', 'order_date']], on='user_id', how='left')\n    merged['days_to_order'] = (merged['order_date'] - merged['signup_date']).dt.days\n    conv_users = set(merged[merged['days_to_order'] <= 30]['user_id'])\n    signups['converted'] = signups['user_id'].isin(conv_users)\n    result = (\n        signups.groupby(['acquisition_channel', 'country'])\n        .agg(total_signups=('user_id', 'count'), converted_count=('converted', 'sum'))\n        .reset_index()\n        .query('total_signups >= 5')\n        .assign(conversion_rate_pct=lambda x: (x['converted_count'] * 100.0 / x['total_signups']).round(1))\n        .sort_values('conversion_rate_pct', ascending=False)\n    )\n    return result",
     "solution_code": "import pandas as pd\n\ndef solve(df_users, df_orders):\n    signups = df_users[df_users['signup_date'].between('2024-01-01', '2024-12-31')].copy()\n    signups['signup_date'] = pd.to_datetime(signups['signup_date'])\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['order_date'] = pd.to_datetime(completed['order_date'])\n    merged = signups.merge(completed[['user_id', 'order_date']], on='user_id', how='left')\n    merged['days_to_order'] = (merged['order_date'] - merged['signup_date']).dt.days\n    conv_users = set(merged[merged['days_to_order'] <= 30]['user_id'])\n    signups['converted'] = signups['user_id'].isin(conv_users)\n    result = (\n        signups.groupby(['acquisition_channel', 'country'])\n        .agg(total_signups=('user_id', 'count'), converted_count=('converted', 'sum'))\n        .reset_index()\n        .query('total_signups >= 5')\n        .assign(conversion_rate_pct=lambda x: (x['converted_count'] * 100.0 / x['total_signups']).round(1))\n        .sort_values('conversion_rate_pct', ascending=False)\n    )\n    return result",
-    "explanation": "Join signups to completed orders (left join keeps non-converters). Compute `days_to_order` as a timedelta in days. Build a set of users with a qualifying order (`days_to_order <= 30`), then flag the original signups DataFrame \u2014 this avoids counting the same user as converted multiple times. `query('total_signups >= 5')` applies a minimum-size threshold after grouping.",
+    "explanation": "Join signups to completed orders (left join keeps non-converters). Compute `days_to_order` as a timedelta in days. Build a set of users with a qualifying order (`days_to_order <= 30`), then flag the original signups DataFrame — this avoids counting the same user as converted multiple times. `query('total_signups >= 5')` applies a minimum-size threshold after grouping.",
     "hints": [
       "Use a left join so non-converting users still appear in the signups DataFrame for the denominator.",
-      "Build a set of converted user IDs, then flag them in the original per-user DataFrame before aggregating \u2014 this prevents double-counting users with multiple qualifying orders."
+      "Build a set of converted user IDs, then flag them in the original per-user DataFrame before aggregating — this prevents double-counting users with multiple qualifying orders."
     ],
     "concepts": [
       "DATETIME OPERATIONS",
@@ -1083,14 +1083,14 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_payments):\n    # Filter paid, extract month, aggregate monthly totals, then compute running total per method\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_payments):\n    paid = df_payments[df_payments['status'] == 'paid'].copy()\n    paid['month'] = pd.to_datetime(paid['payment_date']).dt.to_period('M').astype(str)\n    monthly = (\n        paid.groupby(['payment_method', 'month'])['amount'].sum()\n        .reset_index(name='monthly_paid')\n        .assign(monthly_paid=lambda x: x['monthly_paid'].round(2))\n        .sort_values(['payment_method', 'month'])\n    )\n    monthly['cumulative_paid'] = (\n        monthly.groupby('payment_method')['monthly_paid'].cumsum().round(2)\n    )\n    return monthly",
     "solution_code": "import pandas as pd\n\ndef solve(df_payments):\n    paid = df_payments[df_payments['status'] == 'paid'].copy()\n    paid['month'] = pd.to_datetime(paid['payment_date']).dt.to_period('M').astype(str)\n    monthly = (\n        paid.groupby(['payment_method', 'month'])['amount'].sum()\n        .reset_index(name='monthly_paid')\n        .assign(monthly_paid=lambda x: x['monthly_paid'].round(2))\n        .sort_values(['payment_method', 'month'])\n    )\n    monthly['cumulative_paid'] = (\n        monthly.groupby('payment_method')['monthly_paid'].cumsum().round(2)\n    )\n    return monthly",
-    "explanation": "After computing monthly paid amounts, `groupby('payment_method')['monthly_paid'].cumsum()` applies the cumulative sum independently within each payment method group. The DataFrame must be sorted by method then month before calling `cumsum` \u2014 otherwise the running total would accumulate in the wrong order.",
+    "explanation": "After computing monthly paid amounts, `groupby('payment_method')['monthly_paid'].cumsum()` applies the cumulative sum independently within each payment method group. The DataFrame must be sorted by method then month before calling `cumsum` — otherwise the running total would accumulate in the wrong order.",
     "hints": [
-      "Sort by payment_method and month before computing the running total \u2014 cumulative sum accumulates in DataFrame row order.",
+      "Sort by payment_method and month before computing the running total — cumulative sum accumulates in DataFrame row order.",
       "Apply the running total per payment method independently using a grouped cumulative sum."
     ],
     "concepts": [
       "WINDOW & ROLLING OPERATIONS",
-      "TRANSFORM VS AGGREGATE",
+      "GROUPBY TRANSFORM",
       "DATETIME OPERATIONS"
     ],
     "follow_ups": [
@@ -1135,10 +1135,10 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    # Aggregate per-user spend metrics, assign tier, filter to top 20% by spend\n    pass",
     "expected_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed']\n    user_spend = (\n        completed.merge(df_users[['user_id', 'name', 'country']], on='user_id')\n        .groupby(['user_id', 'name', 'country'])\n        .agg(total_spend=('net_amount', 'sum'),\n             order_count=('order_id', 'count'),\n             avg_order_value=('net_amount', 'mean'))\n        .reset_index()\n        .assign(total_spend=lambda x: x['total_spend'].round(2),\n                avg_order_value=lambda x: x['avg_order_value'].round(2))\n    )\n    p80 = user_spend['total_spend'].quantile(0.80)\n    filtered = user_spend[user_spend['total_spend'] >= p80].copy()\n    filtered['loyalty_tier'] = pd.cut(\n        filtered['total_spend'],\n        bins=[-np.inf, 10000, 20000, np.inf],\n        labels=['Silver', 'Gold', 'Platinum']\n    ).astype(str)\n    return filtered.sort_values('total_spend', ascending=False).reset_index(drop=True)",
     "solution_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed']\n    user_spend = (\n        completed.merge(df_users[['user_id', 'name', 'country']], on='user_id')\n        .groupby(['user_id', 'name', 'country'])\n        .agg(total_spend=('net_amount', 'sum'),\n             order_count=('order_id', 'count'),\n             avg_order_value=('net_amount', 'mean'))\n        .reset_index()\n        .assign(total_spend=lambda x: x['total_spend'].round(2),\n                avg_order_value=lambda x: x['avg_order_value'].round(2))\n    )\n    p80 = user_spend['total_spend'].quantile(0.80)\n    filtered = user_spend[user_spend['total_spend'] >= p80].copy()\n    filtered['loyalty_tier'] = pd.cut(\n        filtered['total_spend'],\n        bins=[-np.inf, 10000, 20000, np.inf],\n        labels=['Silver', 'Gold', 'Platinum']\n    ).astype(str)\n    return filtered.sort_values('total_spend', ascending=False).reset_index(drop=True)",
-    "explanation": "`pd.cut` with `bins=[-np.inf, 10000, 20000, np.inf]` and ordered labels assigns tiers in one vectorized step \u2014 no row-wise `apply` needed. The bins use half-open intervals (left, right]: Silver \u2264 10 000, 10 000 < Gold \u2264 20 000, Platinum > 20 000. `.astype(str)` converts the Categorical result to plain strings. `quantile(0.80)` computes the 80th-percentile spend threshold; the boolean filter then keeps only the top 20% of spenders.",
+    "explanation": "`pd.cut` with `bins=[-np.inf, 10000, 20000, np.inf]` and ordered labels assigns tiers in one vectorized step — no row-wise `apply` needed. The bins use half-open intervals (left, right]: Silver ≤ 10 000, 10 000 < Gold ≤ 20 000, Platinum > 20 000. `.astype(str)` converts the Categorical result to plain strings. `quantile(0.80)` computes the 80th-percentile spend threshold; the boolean filter then keeps only the top 20% of spenders.",
     "hints": [
       "Compute the 80th-percentile spend threshold from the per-user aggregated series, then filter to the top 20%.",
-      "`pd.cut` with explicit bins and ordered labels assigns tiers in one vectorized pass \u2014 no row-wise `apply` needed."
+      "`pd.cut` with explicit bins and ordered labels assigns tiers in one vectorized pass — no row-wise `apply` needed."
     ],
     "concepts": [
       "RANKING & TOP-N PER GROUP",
@@ -1184,7 +1184,7 @@
     "explanation": "Lambda aggregations inside `agg` can call `.quantile()` on the group series. The `salary_range` column is derived in `assign` after the aggregation step, using the already-computed min/max columns. `query('headcount >= 10')` filters after aggregation (equivalent to SQL HAVING).",
     "hints": [
       "Percentile aggregations can be written as lambda functions inside `.agg()`, e.g. `lambda x: x.quantile(0.25)`.",
-      "Filter to departments with enough employees using `.query()` after aggregating \u2014 not before."
+      "Filter to departments with enough employees using `.query()` after aggregating — not before."
     ],
     "concepts": [
       "GROUPED AGGREGATION",
@@ -1231,7 +1231,7 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_users, df_orders):\n    signups = df_users[df_users['signup_date'].between('2024-01-01', '2024-12-31')].copy()\n    signups['signup_date'] = pd.to_datetime(signups['signup_date'])\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['order_date'] = pd.to_datetime(completed['order_date'])\n    merged = signups.merge(completed[['user_id', 'order_date', 'net_amount']], on='user_id', how='left')\n    merged['days_to_order'] = (merged['order_date'] - merged['signup_date']).dt.days\n    qualifying = merged[merged['days_to_order'] <= 30]\n    first_order = qualifying.loc[qualifying.groupby('user_id')['order_date'].idxmin(), ['user_id', 'net_amount']].rename(columns={'net_amount': 'first_order_value'})\n    signups = signups.merge(first_order, on='user_id', how='left')\n    signups['converted'] = signups['first_order_value'].notna()\n    result = (\n        signups.groupby(['acquisition_channel', 'country'])\n        .agg(total_signups=('user_id', 'count'),\n             converted_count=('converted', 'sum'),\n             avg_first_order_value=('first_order_value', 'mean'))\n        .reset_index()\n        .query('total_signups >= 5')\n        .assign(conversion_rate_pct=lambda x: (x['converted_count'] * 100.0 / x['total_signups']).round(1),\n                avg_first_order_value=lambda x: x['avg_first_order_value'].round(2))\n        .sort_values('conversion_rate_pct', ascending=False)\n    )\n    return result",
     "explanation": "`.groupby('user_id')['order_date'].idxmin()` finds the index of the earliest qualifying order per user. The first-order value is then joined back to the signups DataFrame. Non-converting users get NaN for `first_order_value`, which serves as the conversion flag. `mean` on a column with NaN values ignores NaNs automatically.",
     "hints": [
-      "For each user, identify which of their orders came first \u2014 that first-order row is the key to capturing the order value at the time they converted.",
+      "For each user, identify which of their orders came first — that first-order row is the key to capturing the order value at the time they converted.",
       "After joining the first-order value back to signups, NaN in that column indicates a non-converting user."
     ],
     "concepts": [
@@ -1249,7 +1249,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "title": "Month-over-month change in paid revenue",
-    "description": "Extend the cumulative paid revenue analysis to also include the month-over-month change. For each payment method and month, return `payment_method`, `month` (formatted `YYYY-MM`), `monthly_paid` (rounded to 2 dp), `cumulative_paid` (running total, rounded to 2 dp), and `mom_change` (difference from the previous month's `monthly_paid`, rounded to 2 dp \u2014 `NaN` for the first month of each method). Order by `payment_method` ascending, then `month` ascending.",
+    "description": "Extend the cumulative paid revenue analysis to also include the month-over-month change. For each payment method and month, return `payment_method`, `month` (formatted `YYYY-MM`), `monthly_paid` (rounded to 2 dp), `cumulative_paid` (running total, rounded to 2 dp), and `mom_change` (difference from the previous month's `monthly_paid`, rounded to 2 dp — `NaN` for the first month of each method). Order by `payment_method` ascending, then `month` ascending.",
     "dataframes": {
       "df_payments": "payments.csv"
     },
@@ -1266,9 +1266,9 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_payments):\n    # Build monthly paid totals, then compute running total and month-over-month diff per method\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_payments):\n    paid = df_payments[df_payments['status'] == 'paid'].copy()\n    paid['month'] = pd.to_datetime(paid['payment_date']).dt.to_period('M').astype(str)\n    monthly = (\n        paid.groupby(['payment_method', 'month'])['amount'].sum()\n        .reset_index(name='monthly_paid')\n        .assign(monthly_paid=lambda x: x['monthly_paid'].round(2))\n        .sort_values(['payment_method', 'month'])\n    )\n    monthly['cumulative_paid'] = monthly.groupby('payment_method')['monthly_paid'].cumsum().round(2)\n    monthly['mom_change'] = monthly.groupby('payment_method')['monthly_paid'].diff().round(2)\n    return monthly",
     "solution_code": "import pandas as pd\n\ndef solve(df_payments):\n    paid = df_payments[df_payments['status'] == 'paid'].copy()\n    paid['month'] = pd.to_datetime(paid['payment_date']).dt.to_period('M').astype(str)\n    monthly = (\n        paid.groupby(['payment_method', 'month'])['amount'].sum()\n        .reset_index(name='monthly_paid')\n        .assign(monthly_paid=lambda x: x['monthly_paid'].round(2))\n        .sort_values(['payment_method', 'month'])\n    )\n    monthly['cumulative_paid'] = monthly.groupby('payment_method')['monthly_paid'].cumsum().round(2)\n    monthly['mom_change'] = monthly.groupby('payment_method')['monthly_paid'].diff().round(2)\n    return monthly",
-    "explanation": "`groupby()['col'].diff()` computes the difference between each row and the previous row within the group \u2014 equivalent to a LAG subtraction in SQL. The first row in each group returns NaN automatically. Both `cumsum` and `diff` must be applied after sorting by month to ensure correct ordering.",
+    "explanation": "`groupby()['col'].diff()` computes the difference between each row and the previous row within the group — equivalent to a LAG subtraction in SQL. The first row in each group returns NaN automatically. Both `cumsum` and `diff` must be applied after sorting by month to ensure correct ordering.",
     "hints": [
-      "Grouped `.diff()` computes the difference from the previous row within each group \u2014 the first row in each group becomes NaN.",
+      "Grouped `.diff()` computes the difference from the previous row within each group — the first row in each group becomes NaN.",
       "Sort by payment_method and month before applying both cumulative and diff operations."
     ],
     "concepts": [
@@ -1315,10 +1315,10 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    # Compute per-user spend, assign tier, filter to top 20%, then aggregate by country + tier\n    pass",
     "expected_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed']\n    user_spend = (\n        completed.merge(df_users[['user_id', 'country']], on='user_id')\n        .groupby(['user_id', 'country'])['net_amount'].sum()\n        .reset_index(name='total_spend')\n        .assign(total_spend=lambda x: x['total_spend'].round(2))\n    )\n    p80 = user_spend['total_spend'].quantile(0.80)\n    top_spenders = user_spend[user_spend['total_spend'] >= p80].copy()\n    top_spenders['loyalty_tier'] = pd.cut(\n        top_spenders['total_spend'],\n        bins=[-np.inf, 10000, 20000, np.inf],\n        labels=['Silver', 'Gold', 'Platinum']\n    ).astype(str)\n    result = (\n        top_spenders.groupby(['country', 'loyalty_tier'])\n        .agg(user_count=('user_id', 'count'), total_segment_spend=('total_spend', 'sum'))\n        .reset_index()\n        .assign(total_segment_spend=lambda x: x['total_segment_spend'].round(2))\n        .sort_values(['country', 'loyalty_tier'])\n        .reset_index(drop=True)\n    )\n    return result",
     "solution_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed']\n    user_spend = (\n        completed.merge(df_users[['user_id', 'country']], on='user_id')\n        .groupby(['user_id', 'country'])['net_amount'].sum()\n        .reset_index(name='total_spend')\n        .assign(total_spend=lambda x: x['total_spend'].round(2))\n    )\n    p80 = user_spend['total_spend'].quantile(0.80)\n    top_spenders = user_spend[user_spend['total_spend'] >= p80].copy()\n    top_spenders['loyalty_tier'] = pd.cut(\n        top_spenders['total_spend'],\n        bins=[-np.inf, 10000, 20000, np.inf],\n        labels=['Silver', 'Gold', 'Platinum']\n    ).astype(str)\n    result = (\n        top_spenders.groupby(['country', 'loyalty_tier'])\n        .agg(user_count=('user_id', 'count'), total_segment_spend=('total_spend', 'sum'))\n        .reset_index()\n        .assign(total_segment_spend=lambda x: x['total_segment_spend'].round(2))\n        .sort_values(['country', 'loyalty_tier'])\n        .reset_index(drop=True)\n    )\n    return result",
-    "explanation": "Build per-user spend first, then use `pd.cut` with ordered tier bins to assign tiers in one vectorized step. The bins use (left, right] intervals: Silver \u2264 10 000, 10 000 < Gold \u2264 20 000, Platinum > 20 000. `.astype(str)` converts the Categorical result to plain strings for clean groupby behavior. The final aggregation groups by country \u00d7 tier to produce the segment breakdown.",
+    "explanation": "Build per-user spend first, then use `pd.cut` with ordered tier bins to assign tiers in one vectorized step. The bins use (left, right] intervals: Silver ≤ 10 000, 10 000 < Gold ≤ 20 000, Platinum > 20 000. `.astype(str)` converts the Categorical result to plain strings for clean groupby behavior. The final aggregation groups by country × tier to produce the segment breakdown.",
     "hints": [
       "Build per-user totals first, then filter to the top 80th-percentile spenders before assigning tiers.",
-      "`pd.cut` with explicit bins assigns tiers vectorially \u2014 no row-wise `apply` needed. Convert the Categorical result with `.astype(str)` before groupby."
+      "`pd.cut` with explicit bins assigns tiers vectorially — no row-wise `apply` needed. Convert the Categorical result with `.astype(str)` before groupby."
     ],
     "concepts": [
       "CATEGORICAL & BINNING",
@@ -1365,9 +1365,9 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_users, df_support):\n    # Join users to tickets, aggregate stats per user, filter to high-volume users\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_users, df_support):\n    merged = df_support.merge(df_users[['user_id', 'name']], on='user_id')\n    result = (\n        merged.groupby(['user_id', 'name'])\n        .agg(ticket_count=('ticket_id', 'count'),\n             avg_resolution_hours=('resolution_hours', 'mean'),\n             max_resolution_hours=('resolution_hours', 'max'))\n        .reset_index()\n        .query('ticket_count > 3')\n        .assign(avg_resolution_hours=lambda x: x['avg_resolution_hours'].round(1),\n                max_resolution_hours=lambda x: x['max_resolution_hours'].round(0))\n        .sort_values('avg_resolution_hours', ascending=False)\n    )\n    return result",
     "solution_code": "import pandas as pd\n\ndef solve(df_users, df_support):\n    merged = df_support.merge(df_users[['user_id', 'name']], on='user_id')\n    result = (\n        merged.groupby(['user_id', 'name'])\n        .agg(ticket_count=('ticket_id', 'count'),\n             avg_resolution_hours=('resolution_hours', 'mean'),\n             max_resolution_hours=('resolution_hours', 'max'))\n        .reset_index()\n        .query('ticket_count > 3')\n        .assign(avg_resolution_hours=lambda x: x['avg_resolution_hours'].round(1),\n                max_resolution_hours=lambda x: x['max_resolution_hours'].round(0))\n        .sort_values('avg_resolution_hours', ascending=False)\n    )\n    return result",
-    "explanation": "`query('ticket_count > 3')` filters after aggregation \u2014 equivalent to SQL HAVING. Including `name` in the groupby keys preserves it in the output without losing the per-user granularity. `max` on resolution_hours finds the worst case; `round(0)` rounds to the nearest whole number but keeps the float dtype.",
+    "explanation": "`query('ticket_count > 3')` filters after aggregation — equivalent to SQL HAVING. Including `name` in the groupby keys preserves it in the output without losing the per-user granularity. `max` on resolution_hours finds the worst case; `round(0)` rounds to the nearest whole number but keeps the float dtype.",
     "hints": [
-      "Filter on ticket count after aggregating using `.query()` \u2014 this is the HAVING equivalent for pandas.",
+      "Filter on ticket count after aggregating using `.query()` — this is the HAVING equivalent for pandas.",
       "Include `name` in the groupby key alongside `user_id` to carry it through to the result."
     ],
     "concepts": [
@@ -1382,7 +1382,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "type": "debug",
-    "title": "Fix the code \u2014 wrong pivot_table aggregation function",
+    "title": "Fix the code — wrong pivot_table aggregation function",
     "description": "The function below should produce a pivot table of average salary by department. It raises an error. Find and fix the bug.\n\n**DataFrames:** `df_employees` (columns: `employee_id`, `department_id`, `salary`), `df_departments` (columns: `department_id`, `department_name`)",
     "dataframes": {
       "df_employees": "employees.csv",
@@ -1408,9 +1408,9 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    merged = df_employees.merge(df_departments[['department_id', 'department_name']], on='department_id')\n    result = (\n        merged.pivot_table(index='department_name', values='salary', aggfunc='average')\n        .reset_index()\n        .rename(columns={'salary': 'avg_salary'})\n        .assign(avg_salary=lambda x: x['avg_salary'].round(2))\n        .sort_values('avg_salary', ascending=False)\n    )\n    return result",
     "expected_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    merged = df_employees.merge(df_departments[['department_id', 'department_name']], on='department_id')\n    result = (\n        merged.pivot_table(index='department_name', values='salary', aggfunc='mean')\n        .reset_index()\n        .rename(columns={'salary': 'avg_salary'})\n        .assign(avg_salary=lambda x: x['avg_salary'].round(2))\n        .sort_values('avg_salary', ascending=False)\n    )\n    return result",
     "solution_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    merged = df_employees.merge(df_departments[['department_id', 'department_name']], on='department_id')\n    result = (\n        merged.pivot_table(index='department_name', values='salary', aggfunc='mean')\n        .reset_index()\n        .rename(columns={'salary': 'avg_salary'})\n        .assign(avg_salary=lambda x: x['avg_salary'].round(2))\n        .sort_values('avg_salary', ascending=False)\n    )\n    return result",
-    "explanation": "`pivot_table` accepts standard numpy/pandas aggregation strings. `'average'` is not a valid string \u2014 the correct value is `'mean'`. This is a common mistake: `average` exists in some statistical libraries but not as a pandas aggfunc string. Fix: change `'average'` to `'mean'`.",
+    "explanation": "`pivot_table` accepts standard numpy/pandas aggregation strings. `'average'` is not a valid string — the correct value is `'mean'`. This is a common mistake: `average` exists in some statistical libraries but not as a pandas aggfunc string. Fix: change `'average'` to `'mean'`.",
     "hints": [
-      "Read the error message carefully \u2014 it tells you exactly which argument value is wrong. Check whether the aggregation function name you passed is in the list of accepted values.",
+      "Read the error message carefully — it tells you exactly which argument value is wrong. Check whether the aggregation function name you passed is in the list of accepted values.",
       "The pandas string for arithmetic mean is the same as the numpy function name for it."
     ],
     "concepts": [
@@ -1425,7 +1425,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "type": "debug",
-    "title": "Fix the code \u2014 wrong merge key in three-way join",
+    "title": "Fix the code — wrong merge key in three-way join",
     "description": "The function below should compute total revenue per product category by joining order_items, products, and categories. It raises an error. Find and fix the bug.\n\n**DataFrames:** `df_order_items` (columns: `product_id`, `line_amount`), `df_products` (columns: `product_id`, `category_id`), `df_categories` (columns: `category_id`, `category_name`)",
     "dataframes": {
       "df_order_items": "order_items.csv",
@@ -1460,10 +1460,10 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_order_items, df_products, df_categories):\n    merged = (\n        df_order_items[['product_id', 'line_amount']]\n        .merge(df_products[['product_id', 'category_id']], on='product_id')\n        .merge(df_categories[['category_id', 'category_name']], on='category_name')\n    )\n    result = (\n        merged.groupby('category_name')['line_amount'].sum()\n        .reset_index(name='total_revenue')\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('total_revenue', ascending=False)\n    )\n    return result",
     "expected_code": "import pandas as pd\n\ndef solve(df_order_items, df_products, df_categories):\n    merged = (\n        df_order_items[['product_id', 'line_amount']]\n        .merge(df_products[['product_id', 'category_id']], on='product_id')\n        .merge(df_categories[['category_id', 'category_name']], on='category_id')\n    )\n    result = (\n        merged.groupby('category_name')['line_amount'].sum()\n        .reset_index(name='total_revenue')\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('total_revenue', ascending=False)\n    )\n    return result",
     "solution_code": "import pandas as pd\n\ndef solve(df_order_items, df_products, df_categories):\n    merged = (\n        df_order_items[['product_id', 'line_amount']]\n        .merge(df_products[['product_id', 'category_id']], on='product_id')\n        .merge(df_categories[['category_id', 'category_name']], on='category_id')\n    )\n    result = (\n        merged.groupby('category_name')['line_amount'].sum()\n        .reset_index(name='total_revenue')\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('total_revenue', ascending=False)\n    )\n    return result",
-    "explanation": "After the first merge (order_items + products), the intermediate DataFrame has `category_id` but not `category_name`. The second merge joins to categories using `on='category_name'` \u2014 but `category_name` doesn't exist in the left DataFrame yet. Fix: change `on='category_name'` to `on='category_id'`. The join key must be a column that exists in both DataFrames at the time of the merge.",
+    "explanation": "After the first merge (order_items + products), the intermediate DataFrame has `category_id` but not `category_name`. The second merge joins to categories using `on='category_name'` — but `category_name` doesn't exist in the left DataFrame yet. Fix: change `on='category_name'` to `on='category_id'`. The join key must be a column that exists in both DataFrames at the time of the merge.",
     "hints": [
-      "Think about what columns exist in the result of the first join before you attempt the second join \u2014 the key you want to join on must actually be present in both DataFrames at that point.",
-      "The join key must exist in both DataFrames \u2014 the left side only has category_id at that point, not category_name."
+      "Think about what columns exist in the result of the first join before you attempt the second join — the key you want to join on must actually be present in both DataFrames at that point.",
+      "The join key must exist in both DataFrames — the left side only has category_id at that point, not category_name."
     ],
     "concepts": [
       "DEBUG PANDAS",
@@ -1507,7 +1507,7 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    # Find most recent completed order per user, keep those > 180 days before reference date\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    reference_date = pd.Timestamp('2025-01-01')\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['order_date'] = pd.to_datetime(completed['order_date'])\n    last_order = (\n        completed.groupby('user_id')['order_date'].max()\n        .reset_index(name='last_order_date')\n    )\n    last_order['days_since_last_order'] = (reference_date - last_order['last_order_date']).dt.days\n    churned = last_order[last_order['days_since_last_order'] > 180].copy()\n    churned['last_order_date'] = churned['last_order_date'].dt.strftime('%Y-%m-%d')\n    result = (\n        churned.merge(df_users[['user_id', 'name', 'country']], on='user_id')\n        [['user_id', 'name', 'country', 'last_order_date', 'days_since_last_order']]\n        .sort_values('days_since_last_order', ascending=False)\n    )\n    return result",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    reference_date = pd.Timestamp('2025-01-01')\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['order_date'] = pd.to_datetime(completed['order_date'])\n    last_order = (\n        completed.groupby('user_id')['order_date'].max()\n        .reset_index(name='last_order_date')\n    )\n    last_order['days_since_last_order'] = (reference_date - last_order['last_order_date']).dt.days\n    churned = last_order[last_order['days_since_last_order'] > 180].copy()\n    churned['last_order_date'] = churned['last_order_date'].dt.strftime('%Y-%m-%d')\n    result = (\n        churned.merge(df_users[['user_id', 'name', 'country']], on='user_id')\n        [['user_id', 'name', 'country', 'last_order_date', 'days_since_last_order']]\n        .sort_values('days_since_last_order', ascending=False)\n    )\n    return result",
-    "explanation": "`groupby('user_id')['order_date'].max()` finds the most recent order per user efficiently. Timedelta arithmetic with `pd.Timestamp` produces a timedelta series; `.dt.days` converts to integers. Filter to > 180 days before joining to users \u2014 this keeps the working set small. `strftime` formats the date as a string for display.",
+    "explanation": "`groupby('user_id')['order_date'].max()` finds the most recent order per user efficiently. Timedelta arithmetic with `pd.Timestamp` produces a timedelta series; `.dt.days` converts to integers. Filter to > 180 days before joining to users — this keeps the working set small. `strftime` formats the date as a string for display.",
     "hints": [
       "Find the most recent completed order per user first, then compute the gap to the reference date.",
       "Timedelta arithmetic between a Timestamp and a datetime column gives a timedelta series; `.dt.days` extracts the integer count."
@@ -1525,7 +1525,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "title": "Monthly order volume and revenue trend (2024)",
-    "description": "You have a DataFrame `df_orders`.\n\n**Columns:** `order_id`, `order_date`, `status`, `net_amount`\n\nFor each calendar month in 2024, compute the count of completed orders and the total completed-order revenue. Also include `mom_revenue_change` \u2014 the difference in `total_revenue` from the previous month (rounded to 2 dp, NaN for January). Return `month` (formatted `YYYY-MM`), `order_count`, `total_revenue` (rounded to 2 dp), and `mom_revenue_change`. Order by `month` ascending.",
+    "description": "You have a DataFrame `df_orders`.\n\n**Columns:** `order_id`, `order_date`, `status`, `net_amount`\n\nFor each calendar month in 2024, compute the count of completed orders and the total completed-order revenue. Also include `mom_revenue_change` — the difference in `total_revenue` from the previous month (rounded to 2 dp, NaN for January). Return `month` (formatted `YYYY-MM`), `order_count`, `total_revenue` (rounded to 2 dp), and `mom_revenue_change`. Order by `month` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -1544,9 +1544,9 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    # Filter to 2024 completed orders, aggregate monthly, compute month-over-month change\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['order_date'] = pd.to_datetime(completed['order_date'])\n    completed_2024 = completed[completed['order_date'].dt.year == 2024]\n    completed_2024 = completed_2024.assign(month=completed_2024['order_date'].dt.to_period('M').astype(str))\n    monthly = (\n        completed_2024.groupby('month')\n        .agg(order_count=('order_id', 'count'), total_revenue=('net_amount', 'sum'))\n        .reset_index()\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('month')\n    )\n    monthly['mom_revenue_change'] = monthly['total_revenue'].diff().round(2)\n    return monthly",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['order_date'] = pd.to_datetime(completed['order_date'])\n    completed_2024 = completed[completed['order_date'].dt.year == 2024]\n    completed_2024 = completed_2024.assign(month=completed_2024['order_date'].dt.to_period('M').astype(str))\n    monthly = (\n        completed_2024.groupby('month')\n        .agg(order_count=('order_id', 'count'), total_revenue=('net_amount', 'sum'))\n        .reset_index()\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('month')\n    )\n    monthly['mom_revenue_change'] = monthly['total_revenue'].diff().round(2)\n    return monthly",
-    "explanation": "`dt.year == 2024` filters to the correct year efficiently. `to_period('M').astype(str)` extracts the YYYY-MM string. After sorting by month, `.diff()` computes the difference from the previous row \u2014 for a single time series (no groupby needed), plain `.diff()` is the correct method.",
+    "explanation": "`dt.year == 2024` filters to the correct year efficiently. `to_period('M').astype(str)` extracts the YYYY-MM string. After sorting by month, `.diff()` computes the difference from the previous row — for a single time series (no groupby needed), plain `.diff()` is the correct method.",
     "hints": [
-      "Start by narrowing the dataset to the relevant year \u2014 you need to extract the year component from the date column before you can apply the year filter.",
+      "Start by narrowing the dataset to the relevant year — you need to extract the year component from the date column before you can apply the year filter.",
       "After sorting by month, `.diff()` on the total_revenue column gives the month-over-month change for a single time series."
     ],
     "concepts": [
@@ -1579,10 +1579,10 @@
     "starter_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_orders):\n    # Replace apply(axis=1) with np.select\n    pass",
     "expected_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_orders):\n    df_orders = df_orders.copy()\n    pct = df_orders['discount_amount'] / df_orders['gross_amount']\n    conditions = [\n        df_orders['discount_amount'] == 0,\n        pct <= 0.05,\n        pct <= 0.10,\n    ]\n    choices = ['no_discount', 'low', 'medium']\n    df_orders['discount_class'] = np.select(conditions, choices, default='high')\n    result = (\n        df_orders.groupby('discount_class', as_index=False)\n        .agg(order_count=('order_id', 'count'), avg_net_amount=('net_amount', 'mean'))\n        .assign(avg_net_amount=lambda x: x['avg_net_amount'].round(2))\n        .sort_values('discount_class')\n        .reset_index(drop=True)\n    )\n    return result",
     "solution_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_orders):\n    df_orders = df_orders.copy()\n    pct = df_orders['discount_amount'] / df_orders['gross_amount']\n    conditions = [\n        df_orders['discount_amount'] == 0,\n        pct <= 0.05,\n        pct <= 0.10,\n    ]\n    choices = ['no_discount', 'low', 'medium']\n    df_orders['discount_class'] = np.select(conditions, choices, default='high')\n    result = (\n        df_orders.groupby('discount_class', as_index=False)\n        .agg(order_count=('order_id', 'count'), avg_net_amount=('net_amount', 'mean'))\n        .assign(avg_net_amount=lambda x: x['avg_net_amount'].round(2))\n        .sort_values('discount_class')\n        .reset_index(drop=True)\n    )\n    return result",
-    "explanation": "`apply(axis=1)` calls the Python function once per row \u2014 on 4 200 rows this is fast, but on 100 million rows it would take minutes. `np.select` evaluates boolean arrays over the entire column at once using NumPy's C-level vectorised operations. The conditions are evaluated in order; the first matching condition wins (matching `apply`'s if/elif semantics). The `default` argument handles the fallback case (`'high'`). The pattern `conditions / choices / default` is the canonical replacement for multi-branch row-wise `apply`.",
+    "explanation": "`apply(axis=1)` calls the Python function once per row — on 4 200 rows this is fast, but on 100 million rows it would take minutes. `np.select` evaluates boolean arrays over the entire column at once using NumPy's C-level vectorised operations. The conditions are evaluated in order; the first matching condition wins (matching `apply`'s if/elif semantics). The `default` argument handles the fallback case (`'high'`). The pattern `conditions / choices / default` is the canonical replacement for multi-branch row-wise `apply`.",
     "hints": [
       "Compute `pct = discount_amount / gross_amount` as a vectorised Series first.",
-      "`np.select(conditions, choices, default=...)` evaluates each condition array left-to-right and picks the first True \u2014 mirrors if/elif logic."
+      "`np.select(conditions, choices, default=...)` evaluates each condition array left-to-right and picks the first True — mirrors if/elif logic."
     ],
     "concepts": [
       "MEMORY & VECTORIZATION REASONING",
@@ -1600,7 +1600,7 @@
     "follow_up_dimension": "business_rule_pivot",
     "framing": "scenario",
     "title": "Month-over-month revenue change per acquisition channel",
-    "description": "Your manager follows up: 'Great breakdown. Now show me how each channel's revenue is trending month-over-month \u2014 so I can see which channels are accelerating or decelerating.'\n\nUsing the same DataFrames as before (`df_orders`, `df_users`), compute the monthly revenue per acquisition channel for all completed orders, then add a `mom_revenue_change` column showing the revenue difference from the previous month for that channel. For the first month of each channel there is no prior month \u2014 `mom_revenue_change` should be `NaN`.\n\nReturn columns: `acquisition_channel`, `month` (YYYY-MM), `total_revenue` (rounded to 2 dp), `mom_revenue_change` (float, rounded to 2 dp). Sort by `month` ascending, then `total_revenue` descending. Include all channel-month combinations (no revenue threshold filter).",
+    "description": "Your manager follows up: 'Great breakdown. Now show me how each channel's revenue is trending month-over-month — so I can see which channels are accelerating or decelerating.'\n\nUsing the same DataFrames as before (`df_orders`, `df_users`), compute the monthly revenue per acquisition channel for all completed orders, then add a `mom_revenue_change` column showing the revenue difference from the previous month for that channel. For the first month of each channel there is no prior month — `mom_revenue_change` should be `NaN`.\n\nReturn columns: `acquisition_channel`, `month` (YYYY-MM), `total_revenue` (rounded to 2 dp), `mom_revenue_change` (float, rounded to 2 dp). Sort by `month` ascending, then `total_revenue` descending. Include all channel-month combinations (no revenue threshold filter).",
     "dataframes": {
       "df_orders": "orders.csv",
       "df_users": "users.csv"
@@ -1630,9 +1630,9 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    # Compute monthly revenue per channel, then add MoM change using grouped diff\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['month'] = pd.to_datetime(completed['order_date']).dt.to_period('M').astype(str)\n    merged = completed.merge(df_users[['user_id', 'acquisition_channel']], on='user_id')\n    monthly = (\n        merged.groupby(['acquisition_channel', 'month'])\n        .agg(total_revenue=('net_amount', 'sum'), order_count=('order_id', 'count'))\n        .reset_index()\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values(['acquisition_channel', 'month'])\n        .reset_index(drop=True)\n    )\n    monthly['mom_revenue_change'] = (\n        monthly.groupby('acquisition_channel')['total_revenue']\n        .diff()\n        .round(2)\n    )\n    result = (\n        monthly[['acquisition_channel', 'month', 'total_revenue', 'mom_revenue_change']]\n        .sort_values(['month', 'total_revenue'], ascending=[True, False])\n        .reset_index(drop=True)\n    )\n    return result",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['month'] = pd.to_datetime(completed['order_date']).dt.to_period('M').astype(str)\n    merged = completed.merge(df_users[['user_id', 'acquisition_channel']], on='user_id')\n    monthly = (\n        merged.groupby(['acquisition_channel', 'month'])\n        .agg(total_revenue=('net_amount', 'sum'), order_count=('order_id', 'count'))\n        .reset_index()\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values(['acquisition_channel', 'month'])\n        .reset_index(drop=True)\n    )\n    monthly['mom_revenue_change'] = (\n        monthly.groupby('acquisition_channel')['total_revenue']\n        .diff()\n        .round(2)\n    )\n    result = (\n        monthly[['acquisition_channel', 'month', 'total_revenue', 'mom_revenue_change']]\n        .sort_values(['month', 'total_revenue'], ascending=[True, False])\n        .reset_index(drop=True)\n    )\n    return result",
-    "explanation": "Sort by channel + month before calling `.diff()` \u2014 `diff()` computes the difference between consecutive rows, so the sort order determines what 'previous month' means. Grouping the diff by channel via `.groupby('acquisition_channel')['total_revenue'].diff()` ensures the first month of each channel produces NaN (no prior month within that group) rather than computing a cross-channel difference. The `.round(2)` after `.diff()` handles floating-point noise from the subtraction.",
+    "explanation": "Sort by channel + month before calling `.diff()` — `diff()` computes the difference between consecutive rows, so the sort order determines what 'previous month' means. Grouping the diff by channel via `.groupby('acquisition_channel')['total_revenue'].diff()` ensures the first month of each channel produces NaN (no prior month within that group) rather than computing a cross-channel difference. The `.round(2)` after `.diff()` handles floating-point noise from the subtraction.",
     "hints": [
-      "Sort by channel and month before applying `.diff()` \u2014 the difference is computed between consecutive rows in order.",
+      "Sort by channel and month before applying `.diff()` — the difference is computed between consecutive rows in order.",
       "Use `.groupby('acquisition_channel')['total_revenue'].diff()` so the first row of each channel group is NaN, not a cross-channel difference."
     ],
     "concepts": [
@@ -1648,7 +1648,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "title": "Monthly cohort retention (M+1 and M+2)",
-    "description": "Given `orders`, compute a cohort retention table. A user's cohort is the calendar month of their first **completed** order. For each cohort, return: `cohort` (YYYY-MM string), `cohort_size` (distinct users), `retention_m1` (share of cohort users who placed any completed order exactly 1 month later, 4 dp), `retention_m2` (2 months later, 4 dp). Include all cohorts \u2014 recent ones will have low or zero retention. Sort by cohort ascending.",
+    "description": "Given `orders`, compute a cohort retention table. A user's cohort is the calendar month of their first **completed** order. For each cohort, return: `cohort` (YYYY-MM string), `cohort_size` (distinct users), `retention_m1` (share of cohort users who placed any completed order exactly 1 month later, 4 dp), `retention_m2` (2 months later, 4 dp). Include all cohorts — recent ones will have low or zero retention. Sort by cohort ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -1670,7 +1670,7 @@
     "explanation": "Key steps: (1) find each user's first completed order month (cohort); (2) annotate every order with its user's cohort and compute month offset; (3) groupby cohort for cohort_size; (4) for each offset m, count retained users and left-join back. Period arithmetic handles month offsets cleanly.",
     "hints": [
       "Find each user's earliest completed order first, then offset from that.",
-      "Period objects support year/month attributes for offset arithmetic \u2014 no loop needed."
+      "Period objects support year/month attributes for offset arithmetic — no loop needed."
     ],
     "concepts": [
       "DATETIME OPERATIONS",
@@ -1692,7 +1692,7 @@
     "follow_up_dimension": "data_quality_pivot",
     "framing": "scenario",
     "title": "Identify one-time buyers in the order history",
-    "description": "Your analyst notes: 'Before we trust the cohort model, let's see how many users only ever placed a single completed order \u2014 they never had a chance to be retained.' From `orders`, return all users who completed exactly **one** order ever. Columns: `user_id`, `order_date` (YYYY-MM-DD), `net_amount` (2 dp). Sort by `user_id` ascending.",
+    "description": "Your analyst notes: 'Before we trust the cohort model, let's see how many users only ever placed a single completed order — they never had a chance to be retained.' From `orders`, return all users who completed exactly **one** order ever. Columns: `user_id`, `order_date` (YYYY-MM-DD), `net_amount` (2 dp). Sort by `user_id` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -1731,7 +1731,7 @@
     "follow_up_dimension": "business_rule_pivot",
     "framing": "scenario",
     "title": "Cohort retention restricted to paid-tier users",
-    "description": "Your manager says: 'Free-tier users skew the retention numbers because they churn more. Rerun the cohort analysis but only include users on a paid plan (plan_tier \u2260 'free').' Join `orders` with `users` and reproduce the same table shape: `cohort`, `cohort_size`, `retention_m1`, `retention_m2`. Sort by cohort ascending.",
+    "description": "Your manager says: 'Free-tier users skew the retention numbers because they churn more. Rerun the cohort analysis but only include users on a paid plan (plan_tier ≠ 'free').' Join `orders` with `users` and reproduce the same table shape: `cohort`, `cohort_size`, `retention_m1`, `retention_m2`. Sort by cohort ascending.",
     "dataframes": {
       "df_orders": "orders.csv",
       "df_users": "users.csv"
@@ -1764,7 +1764,7 @@
     "explanation": "Filter users to non-free plan_tier, then merge into the orders pipeline before computing cohorts. The core Period-based offset logic is identical to the parent question.",
     "hints": [
       "Filter to paid users first, then restrict completed orders to that subset.",
-      "The cohort logic is the same as the parent \u2014 only the population changes."
+      "The cohort logic is the same as the parent — only the population changes."
     ],
     "concepts": [
       "MULTI-TABLE JOINING",
@@ -1800,7 +1800,7 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['order_date'] = pd.to_datetime(completed['order_date'])\n\n    ref_date = completed['order_date'].max()\n\n    rfm = (\n        completed.groupby('user_id', as_index=False)\n        .agg(\n            last_order_date=('order_date', 'max'),\n            frequency=('order_id', 'count'),\n            monetary=('net_amount', 'sum')\n        )\n    )\n    rfm['recency_days'] = (ref_date - rfm['last_order_date']).dt.days\n    rfm['monetary'] = rfm['monetary'].round(2)\n\n    def score_tercile(series, ascending=True):\n        ranks = series.rank(method='first', ascending=ascending)\n        return pd.cut(ranks, bins=3, labels=[1, 2, 3]).astype(int)\n\n    rfm['r_score'] = score_tercile(rfm['recency_days'], ascending=False)\n    rfm['f_score'] = score_tercile(rfm['frequency'], ascending=True)\n    rfm['m_score'] = score_tercile(rfm['monetary'], ascending=True)\n\n    return (\n        rfm[['user_id', 'recency_days', 'frequency', 'monetary', 'r_score', 'f_score', 'm_score']]\n        .sort_values('user_id')\n        .reset_index(drop=True)\n    )\n",
     "explanation": "Compute RFM metrics via groupby, then score using rank-based tercile binning. The rank(method='first') trick avoids duplicate-bin-edge errors that plague pd.qcut on skewed distributions. For Recency, descending rank gives score 3 to the most-recent user.",
     "hints": [
-      "Three metrics \u2014 how recently, how often, how much \u2014 can each be computed from a single aggregation over completed orders. Once you have them, how would you score each user into three equal-sized tiers per metric?",
+      "Three metrics — how recently, how often, how much — can each be computed from a single aggregation over completed orders. Once you have them, how would you score each user into three equal-sized tiers per metric?",
       "Use rank(method='first') before pd.cut to avoid duplicate bin-edge errors from tied values."
     ],
     "concepts": [
@@ -1824,7 +1824,7 @@
     "follow_up_dimension": "data_quality_pivot",
     "framing": "scenario",
     "title": "Find paying customers with missing email addresses",
-    "description": "Your CRM team flags a concern: some users in the RFM base have a null email address \u2014 that means you can't reach them for retention campaigns. Join `orders` with `users` and return every user who placed at least one completed order but has a null `email`. Columns: `user_id`, `frequency` (completed order count), `monetary` (total net_amount, 2 dp). Sort by `user_id` ascending.",
+    "description": "Your CRM team flags a concern: some users in the RFM base have a null email address — that means you can't reach them for retention campaigns. Join `orders` with `users` and return every user who placed at least one completed order but has a null `email`. Columns: `user_id`, `frequency` (completed order count), `monetary` (total net_amount, 2 dp). Sort by `user_id` ascending.",
     "dataframes": {
       "df_orders": "orders.csv",
       "df_users": "users.csv"
@@ -1854,9 +1854,9 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_orders: pd.DataFrame, df_users: pd.DataFrame) -> pd.DataFrame:\n    # Your code here\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n\n    rfm_base = (\n        completed.groupby('user_id', as_index=False)\n        .agg(frequency=('order_id', 'count'), monetary=('net_amount', 'sum'))\n        .assign(monetary=lambda x: x['monetary'].round(2))\n    )\n\n    null_email_users = df_users[df_users['email'].isna()][['user_id']]\n\n    return (\n        rfm_base.merge(null_email_users, on='user_id')\n        [['user_id', 'frequency', 'monetary']]\n        .sort_values('user_id')\n        .reset_index(drop=True)\n    )\n",
     "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n\n    rfm_base = (\n        completed.groupby('user_id', as_index=False)\n        .agg(frequency=('order_id', 'count'), monetary=('net_amount', 'sum'))\n        .assign(monetary=lambda x: x['monetary'].round(2))\n    )\n\n    null_email_users = df_users[df_users['email'].isna()][['user_id']]\n\n    return (\n        rfm_base.merge(null_email_users, on='user_id')\n        [['user_id', 'frequency', 'monetary']]\n        .sort_values('user_id')\n        .reset_index(drop=True)\n    )\n",
-    "explanation": "Build the RFM base (groupby on completed orders), then semi-join with users filtered to email IS NULL. Only the intersection \u2014 users who both have orders and no email \u2014 appears in the result.",
+    "explanation": "Build the RFM base (groupby on completed orders), then semi-join with users filtered to email IS NULL. Only the intersection — users who both have orders and no email — appears in the result.",
     "hints": [
-      "You want users who appear in both the orders *and* have a specific data-quality issue in users. What kind of join gives you only the intersection \u2014 and on what condition do you filter the users side?",
+      "You want users who appear in both the orders *and* have a specific data-quality issue in users. What kind of join gives you only the intersection — and on what condition do you filter the users side?",
       "Semi-join: merge the null-email user list with the rfm_base using an inner join."
     ],
     "concepts": [
@@ -1875,7 +1875,7 @@
     "follow_up_dimension": "business_rule_pivot",
     "framing": "scenario",
     "title": "RFM restricted to the last 365 days",
-    "description": "Your analyst says: 'Historical orders from 2+ years ago shouldn't influence today's RFM \u2014 they reflect behaviour we can't act on. Restrict the analysis to orders within the 365 days before the dataset's latest order date.' Reproduce the same output shape as the parent: `user_id`, `recency_days`, `frequency`, `monetary`, `r_score`, `f_score`, `m_score`. Sort by `user_id` ascending.",
+    "description": "Your analyst says: 'Historical orders from 2+ years ago shouldn't influence today's RFM — they reflect behaviour we can't act on. Restrict the analysis to orders within the 365 days before the dataset's latest order date.' Reproduce the same output shape as the parent: `user_id`, `recency_days`, `frequency`, `monetary`, `r_score`, `f_score`, `m_score`. Sort by `user_id` ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -1896,7 +1896,7 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['order_date'] = pd.to_datetime(completed['order_date'])\n\n    ref_date = completed['order_date'].max()\n    cutoff = ref_date - pd.Timedelta(days=365)\n\n    recent = completed[completed['order_date'] >= cutoff]\n\n    rfm = (\n        recent.groupby('user_id', as_index=False)\n        .agg(\n            last_order_date=('order_date', 'max'),\n            frequency=('order_id', 'count'),\n            monetary=('net_amount', 'sum')\n        )\n    )\n    rfm['recency_days'] = (ref_date - rfm['last_order_date']).dt.days\n    rfm['monetary'] = rfm['monetary'].round(2)\n\n    def score_tercile(series, ascending=True):\n        ranks = series.rank(method='first', ascending=ascending)\n        return pd.cut(ranks, bins=3, labels=[1, 2, 3]).astype(int)\n\n    rfm['r_score'] = score_tercile(rfm['recency_days'], ascending=False)\n    rfm['f_score'] = score_tercile(rfm['frequency'], ascending=True)\n    rfm['m_score'] = score_tercile(rfm['monetary'], ascending=True)\n\n    return (\n        rfm[['user_id', 'recency_days', 'frequency', 'monetary', 'r_score', 'f_score', 'm_score']]\n        .sort_values('user_id')\n        .reset_index(drop=True)\n    )\n",
     "explanation": "Compute the reference date and a cutoff = ref_date - 365 days. Filter completed orders to the window, then rerun the identical RFM pipeline. Users with no orders in the window are excluded entirely.",
     "hints": [
-      "Derive the cutoff from max(order_date) minus 365 days \u2014 keep it data-driven.",
+      "Derive the cutoff from max(order_date) minus 365 days — keep it data-driven.",
       "The rest of the RFM pipeline is identical; only the filtered DataFrame changes."
     ],
     "concepts": [
@@ -1941,7 +1941,7 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_events, df_sessions):\n    merged = df_events.merge(df_sessions[['session_id', 'device_type']], on='session_id')\n\n    stage_counts = (\n        merged.groupby(['device_type', 'event_name'])['session_id']\n        .nunique()\n        .unstack(fill_value=0)\n        .reset_index()\n    )\n\n    stage_counts = stage_counts.rename(columns={\n        'view_product': 'view_sessions',\n        'add_to_cart': 'cart_sessions',\n        'start_checkout': 'checkout_sessions',\n        'purchase': 'purchase_sessions'\n    })\n\n    stage_counts['view_to_cart_rate'] = (\n        stage_counts['cart_sessions'] / stage_counts['view_sessions']\n    ).round(4)\n    stage_counts['checkout_to_purchase_rate'] = (\n        stage_counts['purchase_sessions'] / stage_counts['checkout_sessions']\n    ).round(4)\n\n    return (\n        stage_counts[[\n            'device_type', 'view_sessions', 'cart_sessions',\n            'checkout_sessions', 'purchase_sessions',\n            'view_to_cart_rate', 'checkout_to_purchase_rate'\n        ]]\n        .sort_values('device_type')\n        .reset_index(drop=True)\n    )\n",
     "explanation": "Join events with sessions to get device_type, then groupby (device_type, event_name) counting distinct session_ids. unstack() pivots event_name into columns. Rename stages and compute rates.",
     "hints": [
-      "Think of each session as containing a set of event stages. How would you count the distinct sessions that reached each stage, grouped by device type \u2014 and how do you go from that long format into a wide table with one column per stage?",
+      "Think of each session as containing a set of event stages. How would you count the distinct sessions that reached each stage, grouped by device type — and how do you go from that long format into a wide table with one column per stage?",
       "unstack() on a groupby result is the idiomatic way to go from long to wide in one step."
     ],
     "concepts": [
@@ -1964,7 +1964,7 @@
     "follow_up_dimension": "data_quality_pivot",
     "framing": "scenario",
     "title": "Flag funnel-skipping sessions (purchase without add_to_cart)",
-    "description": "Your analytics engineer spots an anomaly: 'Some sessions have a `purchase` event but no `add_to_cart` \u2014 they jumped straight to buying. These are probably bot orders or a checkout bypass bug.' From `events`, find all session IDs where `purchase` appears but `add_to_cart` does not. Return a single column: `session_id` (int). Sort by `session_id` ascending.",
+    "description": "Your analytics engineer spots an anomaly: 'Some sessions have a `purchase` event but no `add_to_cart` — they jumped straight to buying. These are probably bot orders or a checkout bypass bug.' From `events`, find all session IDs where `purchase` appears but `add_to_cart` does not. Return a single column: `session_id` (int). Sort by `session_id` ascending.",
     "dataframes": {
       "df_events": "events.csv"
     },
@@ -1984,7 +1984,7 @@
     "explanation": "Extract the sets of session_ids for 'purchase' and 'add_to_cart' separately, then take the set difference. Converting to sets before differencing is vectorized and avoids groupby overhead for a pure membership check.",
     "hints": [
       "Build two sets: sessions with 'purchase' and sessions with 'add_to_cart'.",
-      "Set difference (A - B) gives sessions in A that are not in B \u2014 no groupby needed."
+      "Set difference (A - B) gives sessions in A that are not in B — no groupby needed."
     ],
     "concepts": [
       "DATA QUALITY SKEPTICISM",
@@ -2002,7 +2002,7 @@
     "follow_up_dimension": "business_rule_pivot",
     "framing": "scenario",
     "title": "Conversion funnel restricted to paid traffic sources",
-    "description": "Your paid-marketing lead asks: 'Our paid channels have a higher CPC \u2014 I want the same funnel breakdown but only for sessions with a paid traffic source (traffic_source starts with \"paid\").' Filter `sessions` to paid sources, then reproduce the same funnel table as the parent: `device_type`, `view_sessions`, `cart_sessions`, `checkout_sessions`, `purchase_sessions`, `view_to_cart_rate`, `checkout_to_purchase_rate`. Sort by `device_type` ascending.",
+    "description": "Your paid-marketing lead asks: 'Our paid channels have a higher CPC — I want the same funnel breakdown but only for sessions with a paid traffic source (traffic_source starts with \"paid\").' Filter `sessions` to paid sources, then reproduce the same funnel table as the parent: `device_type`, `view_sessions`, `cart_sessions`, `checkout_sessions`, `purchase_sessions`, `view_to_cart_rate`, `checkout_to_purchase_rate`. Sort by `device_type` ascending.",
     "dataframes": {
       "df_events": "events.csv",
       "df_sessions": "sessions.csv"
@@ -2028,10 +2028,10 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_events: pd.DataFrame, df_sessions: pd.DataFrame) -> pd.DataFrame:\n    # Your code here\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_events, df_sessions):\n    paid_sessions = df_sessions[\n        df_sessions['traffic_source'].str.startswith('paid')\n    ][['session_id', 'device_type']]\n\n    merged = df_events.merge(paid_sessions, on='session_id')\n\n    stage_counts = (\n        merged.groupby(['device_type', 'event_name'])['session_id']\n        .nunique()\n        .unstack(fill_value=0)\n        .reset_index()\n    )\n\n    stage_counts = stage_counts.rename(columns={\n        'view_product': 'view_sessions',\n        'add_to_cart': 'cart_sessions',\n        'start_checkout': 'checkout_sessions',\n        'purchase': 'purchase_sessions'\n    })\n\n    stage_counts['view_to_cart_rate'] = (\n        stage_counts['cart_sessions'] / stage_counts['view_sessions']\n    ).round(4)\n    stage_counts['checkout_to_purchase_rate'] = (\n        stage_counts['purchase_sessions'] / stage_counts['checkout_sessions']\n    ).round(4)\n\n    return (\n        stage_counts[[\n            'device_type', 'view_sessions', 'cart_sessions',\n            'checkout_sessions', 'purchase_sessions',\n            'view_to_cart_rate', 'checkout_to_purchase_rate'\n        ]]\n        .sort_values('device_type')\n        .reset_index(drop=True)\n    )\n",
     "solution_code": "import pandas as pd\n\ndef solve(df_events, df_sessions):\n    paid_sessions = df_sessions[\n        df_sessions['traffic_source'].str.startswith('paid')\n    ][['session_id', 'device_type']]\n\n    merged = df_events.merge(paid_sessions, on='session_id')\n\n    stage_counts = (\n        merged.groupby(['device_type', 'event_name'])['session_id']\n        .nunique()\n        .unstack(fill_value=0)\n        .reset_index()\n    )\n\n    stage_counts = stage_counts.rename(columns={\n        'view_product': 'view_sessions',\n        'add_to_cart': 'cart_sessions',\n        'start_checkout': 'checkout_sessions',\n        'purchase': 'purchase_sessions'\n    })\n\n    stage_counts['view_to_cart_rate'] = (\n        stage_counts['cart_sessions'] / stage_counts['view_sessions']\n    ).round(4)\n    stage_counts['checkout_to_purchase_rate'] = (\n        stage_counts['purchase_sessions'] / stage_counts['checkout_sessions']\n    ).round(4)\n\n    return (\n        stage_counts[[\n            'device_type', 'view_sessions', 'cart_sessions',\n            'checkout_sessions', 'purchase_sessions',\n            'view_to_cart_rate', 'checkout_to_purchase_rate'\n        ]]\n        .sort_values('device_type')\n        .reset_index(drop=True)\n    )\n",
-    "explanation": "Filter sessions to traffic_source.str.startswith('paid') before joining with events. The funnel pivot logic is identical to the parent \u2014 only the session population changes.",
+    "explanation": "Filter sessions to traffic_source.str.startswith('paid') before joining with events. The funnel pivot logic is identical to the parent — only the session population changes.",
     "hints": [
-      "Which sessions should you include? Filter the session population first, then apply the same funnel logic as before \u2014 the analysis doesn't change, only the data going into it.",
-      "The funnel pivot logic is the same as the parent \u2014 the only change is the session population."
+      "Which sessions should you include? Filter the session population first, then apply the same funnel logic as before — the analysis doesn't change, only the data going into it.",
+      "The funnel pivot logic is the same as the parent — the only change is the session population."
     ],
     "concepts": [
       "BOOLEAN INDEXING & FILTERING",
@@ -2047,7 +2047,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "title": "Customer LTV proxy by acquisition channel",
-    "description": "Given `orders` and `users`, compute a lifetime-value proxy for each `acquisition_channel`. First build per-user stats from **completed** orders only: order count and total net_amount. Then aggregate by channel: `user_count` (distinct users with \u22651 completed order), `avg_orders` (mean per user, 2 dp), `avg_revenue` (mean total net_amount per user, 2 dp), `ltv_proxy` = avg_orders \u00d7 avg_revenue (2 dp). Sort by `ltv_proxy` descending.",
+    "description": "Given `orders` and `users`, compute a lifetime-value proxy for each `acquisition_channel`. First build per-user stats from **completed** orders only: order count and total net_amount. Then aggregate by channel: `user_count` (distinct users with ≥1 completed order), `avg_orders` (mean per user, 2 dp), `avg_revenue` (mean total net_amount per user, 2 dp), `ltv_proxy` = avg_orders × avg_revenue (2 dp). Sort by `ltv_proxy` descending.",
     "dataframes": {
       "df_orders": "orders.csv",
       "df_users": "users.csv"
@@ -2080,7 +2080,7 @@
     "explanation": "Two-stage aggregation: first groupby user_id to get per-user stats, then join with users to get acquisition_channel, then groupby channel. The ltv_proxy is a derived column computed after the second groupby.",
     "hints": [
       "Aggregate per user first, then join users, then aggregate per channel.",
-      "ltv_proxy is a derived column \u2014 compute it in .assign() after the second groupby."
+      "ltv_proxy is a derived column — compute it in .assign() after the second groupby."
     ],
     "concepts": [
       "MULTI-TABLE JOINING",
@@ -2102,7 +2102,7 @@
     "follow_up_dimension": "data_quality_pivot",
     "framing": "scenario",
     "title": "Revenue exposure from customers with missing email",
-    "description": "Your CRM team raises a concern: 'We can't email win-back campaigns to customers with no email address on file \u2014 how much revenue are we potentially losing reach on?' From `orders` and `users`, find all users with a null `email` who placed at least one **completed** order. Return: `user_id`, `order_count`, `total_spent` (2 dp). Sort by `user_id` ascending.",
+    "description": "Your CRM team raises a concern: 'We can't email win-back campaigns to customers with no email address on file — how much revenue are we potentially losing reach on?' From `orders` and `users`, find all users with a null `email` who placed at least one **completed** order. Return: `user_id`, `order_count`, `total_spent` (2 dp). Sort by `user_id` ascending.",
     "dataframes": {
       "df_orders": "orders.csv",
       "df_users": "users.csv"
@@ -2134,7 +2134,7 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_orders, df_users):\n    null_email = df_users[df_users['email'].isna()][['user_id']]\n    completed = df_orders[df_orders['status'] == 'completed']\n\n    return (\n        completed.merge(null_email, on='user_id')\n        .groupby('user_id', as_index=False)\n        .agg(order_count=('order_id', 'count'), total_spent=('net_amount', 'sum'))\n        .assign(total_spent=lambda x: x['total_spent'].round(2))\n        .sort_values('user_id')\n        .reset_index(drop=True)\n    )\n",
     "explanation": "Filter users to null email, then semi-join with completed orders. A simple inner merge between null-email users and completed orders, then groupby user_id.",
     "hints": [
-      "Filter users to email.isna() first \u2014 this is your population of interest.",
+      "Filter users to email.isna() first — this is your population of interest.",
       "Inner merge the null-email list with completed orders, then aggregate per user."
     ],
     "concepts": [
@@ -2153,7 +2153,7 @@
     "follow_up_dimension": "business_rule_pivot",
     "framing": "scenario",
     "title": "LTV proxy restricted to early-adopter users",
-    "description": "Your growth analyst argues: 'Early adopters behave differently \u2014 they discovered us before we scaled paid acquisition. Show me the LTV proxy only for users whose first completed order came within 30 days of their signup date.' Reproduce the same output as the parent: `acquisition_channel`, `user_count`, `avg_orders`, `avg_revenue`, `ltv_proxy`. Sort by `ltv_proxy` descending.",
+    "description": "Your growth analyst argues: 'Early adopters behave differently — they discovered us before we scaled paid acquisition. Show me the LTV proxy only for users whose first completed order came within 30 days of their signup date.' Reproduce the same output as the parent: `acquisition_channel`, `user_count`, `avg_orders`, `avg_revenue`, `ltv_proxy`. Sort by `ltv_proxy` descending.",
     "dataframes": {
       "df_orders": "orders.csv",
       "df_users": "users.csv"
@@ -2186,7 +2186,7 @@
     "explanation": "Find each user's first completed order date, compute days-to-first relative to signup_date, filter to <= 30 days. Then restrict the LTV pipeline to that early-adopter population only.",
     "hints": [
       "The 'early adopter' label depends on two dates per user: when they signed up and when they placed their first order. How do you compute that time gap, and what threshold makes someone an early adopter?",
-      "Filter to days_to_first <= 30 \u2014 this is your early-adopter population for the LTV pipeline."
+      "Filter to days_to_first <= 30 — this is your early-adopter population for the LTV pipeline."
     ],
     "concepts": [
       "DATETIME OPERATIONS",
@@ -2243,7 +2243,7 @@
     "follow_up_dimension": "data_quality_pivot",
     "framing": "scenario",
     "title": "Orders with multiple payment attempts (duplicate detection)",
-    "description": "Your payments engineer flags a concern: 'Some orders have more than one payment record \u2014 that could mean duplicate charges or retry logic leaving stale rows.' From `payments`, find all `order_id`s with more than one payment record. Return: `order_id`, `payment_count`, `total_amount` (sum of all amounts, 2 dp), `paid_count` (count where status = 'paid'), `has_duplicate_paid` (bool: paid_count > 1). Sort by `order_id` ascending.",
+    "description": "Your payments engineer flags a concern: 'Some orders have more than one payment record — that could mean duplicate charges or retry logic leaving stale rows.' From `payments`, find all `order_id`s with more than one payment record. Return: `order_id`, `payment_count`, `total_amount` (sum of all amounts, 2 dp), `paid_count` (count where status = 'paid'), `has_duplicate_paid` (bool: paid_count > 1). Sort by `order_id` ascending.",
     "dataframes": {
       "df_payments": "payments.csv"
     },
@@ -2260,10 +2260,10 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_payments: pd.DataFrame) -> pd.DataFrame:\n    # Your code here\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_payments):\n    result = (\n        df_payments.groupby('order_id', as_index=False)\n        .agg(\n            payment_count=('payment_id', 'count'),\n            total_amount=('amount', 'sum'),\n            paid_count=('status', lambda x: (x == 'paid').sum())\n        )\n        .assign(\n            total_amount=lambda x: x['total_amount'].round(2),\n            has_duplicate_paid=lambda x: x['paid_count'] > 1\n        )\n    )\n    return (\n        result[result['payment_count'] > 1]\n        [['order_id', 'payment_count', 'total_amount', 'paid_count', 'has_duplicate_paid']]\n        .sort_values('order_id')\n        .reset_index(drop=True)\n    )\n",
     "solution_code": "import pandas as pd\n\ndef solve(df_payments):\n    result = (\n        df_payments.groupby('order_id', as_index=False)\n        .agg(\n            payment_count=('payment_id', 'count'),\n            total_amount=('amount', 'sum'),\n            paid_count=('status', lambda x: (x == 'paid').sum())\n        )\n        .assign(\n            total_amount=lambda x: x['total_amount'].round(2),\n            has_duplicate_paid=lambda x: x['paid_count'] > 1\n        )\n    )\n    return (\n        result[result['payment_count'] > 1]\n        [['order_id', 'payment_count', 'total_amount', 'paid_count', 'has_duplicate_paid']]\n        .sort_values('order_id')\n        .reset_index(drop=True)\n    )\n",
-    "explanation": "Group by order_id, compute payment_count and paid_count, then filter to payment_count > 1. The has_duplicate_paid flag catches orders charged twice \u2014 a fraud / retry risk.",
+    "explanation": "Group by order_id, compute payment_count and paid_count, then filter to payment_count > 1. The has_duplicate_paid flag catches orders charged twice — a fraud / retry risk.",
     "hints": [
-      "What does it mean for an order to have more than one payment record? Define the condition numerically \u2014 then also flag the specific case where the same order was successfully charged more than once.",
-      "has_duplicate_paid = paid_count > 1 \u2014 the case you most want to surface for refund risk."
+      "What does it mean for an order to have more than one payment record? Define the condition numerically — then also flag the specific case where the same order was successfully charged more than once.",
+      "has_duplicate_paid = paid_count > 1 — the case you most want to surface for refund risk."
     ],
     "concepts": [
       "DOUBLE-COUNTING DETECTION",
@@ -2281,7 +2281,7 @@
     "follow_up_dimension": "business_rule_pivot",
     "framing": "scenario",
     "title": "Payment method rates including chargeback breakdown",
-    "description": "Your risk team says: 'Chargebacks need their own rate \u2014 they're different from failed payments and carry penalty fees. Extend the analysis to include chargeback_rate.' Reproduce the payment method summary with: `payment_method`, `total_payments`, `success_rate` (4 dp), `chargeback_rate` (chargebacks / total, 4 dp), `failure_rate` (failed + chargeback / total, 4 dp), `avg_amount` (2 dp). Sort by `success_rate` descending.",
+    "description": "Your risk team says: 'Chargebacks need their own rate — they're different from failed payments and carry penalty fees. Extend the analysis to include chargeback_rate.' Reproduce the payment method summary with: `payment_method`, `total_payments`, `success_rate` (4 dp), `chargeback_rate` (chargebacks / total, 4 dp), `failure_rate` (failed + chargeback / total, 4 dp), `avg_amount` (2 dp). Sort by `success_rate` descending.",
     "dataframes": {
       "df_payments": "payments.csv"
     },
@@ -2358,7 +2358,7 @@
     "follow_up_dimension": "data_quality_pivot",
     "framing": "scenario",
     "title": "Flag stale in-progress tickets (open > 365 days)",
-    "description": "Your support ops lead raises a red flag: 'We have tickets in `in_progress` status that haven't been resolved in over a year \u2014 they're effectively stale backlog.' From `support_tickets`, find all tickets with status = 'in_progress' that have been open more than 365 days (relative to the latest `created_at` in the dataset). Return: `ticket_id`, `user_id`, `issue_type`, `priority`, `created_at` (as-is string), `days_open` (int). Sort by `days_open` descending.",
+    "description": "Your support ops lead raises a red flag: 'We have tickets in `in_progress` status that haven't been resolved in over a year — they're effectively stale backlog.' From `support_tickets`, find all tickets with status = 'in_progress' that have been open more than 365 days (relative to the latest `created_at` in the dataset). Return: `ticket_id`, `user_id`, `issue_type`, `priority`, `created_at` (as-is string), `days_open` (int). Sort by `days_open` descending.",
     "dataframes": {
       "df_support": "support_tickets.csv"
     },
@@ -2379,7 +2379,7 @@
     "explanation": "Convert created_at to datetime, compute a reference date as the dataset maximum, then subtract to get days_open. Filter to status='in_progress' and days_open > 365.",
     "hints": [
       "A ticket's age depends on a fixed reference point and its creation date. What reference point makes the calculation data-driven? And what threshold distinguishes a stale ticket from an ordinary one?",
-      "Reference date = max(created_at) \u2014 keeps the analysis data-driven rather than hardcoded."
+      "Reference date = max(created_at) — keeps the analysis data-driven rather than hardcoded."
     ],
     "concepts": [
       "DATA QUALITY SKEPTICISM",
@@ -2397,7 +2397,7 @@
     "follow_up_dimension": "business_rule_pivot",
     "framing": "scenario",
     "title": "SLA metrics restricted to high and urgent priority tickets",
-    "description": "Your head of support says: 'SLA compliance for low/medium tickets doesn't matter as much \u2014 we need to know how we're performing for the tickets that actually escalate.' Reproduce the same SLA table as the parent but **only for tickets with priority in ('high', 'urgent')**. Return: `issue_type`, `ticket_count`, `resolved_count`, `resolution_rate`, `avg_resolution_hours`, `p90_resolution_hours`. Sort by `issue_type` ascending.",
+    "description": "Your head of support says: 'SLA compliance for low/medium tickets doesn't matter as much — we need to know how we're performing for the tickets that actually escalate.' Reproduce the same SLA table as the parent but **only for tickets with priority in ('high', 'urgent')**. Return: `issue_type`, `ticket_count`, `resolved_count`, `resolution_rate`, `avg_resolution_hours`, `p90_resolution_hours`. Sort by `issue_type` ascending.",
     "dataframes": {
       "df_support": "support_tickets.csv"
     },
@@ -2415,10 +2415,10 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_support: pd.DataFrame) -> pd.DataFrame:\n    # Your code here\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_support):\n    high_urgent = df_support[df_support['priority'].isin(['high', 'urgent'])]\n    resolved = high_urgent[high_urgent['status'] == 'resolved']\n\n    totals = (\n        high_urgent.groupby('issue_type', as_index=False)\n        .agg(\n            ticket_count=('ticket_id', 'count'),\n            resolved_count=('status', lambda x: (x == 'resolved').sum())\n        )\n    )\n\n    sla = (\n        resolved.groupby('issue_type', as_index=False)\n        .agg(\n            avg_resolution_hours=('resolution_hours', 'mean'),\n            p90_resolution_hours=('resolution_hours', lambda x: x.quantile(0.9))\n        )\n        .assign(\n            avg_resolution_hours=lambda x: x['avg_resolution_hours'].round(2),\n            p90_resolution_hours=lambda x: x['p90_resolution_hours'].round(2)\n        )\n    )\n\n    return (\n        totals.merge(sla, on='issue_type')\n        .assign(resolution_rate=lambda x: (x['resolved_count'] / x['ticket_count']).round(4))\n        [['issue_type', 'ticket_count', 'resolved_count', 'resolution_rate',\n          'avg_resolution_hours', 'p90_resolution_hours']]\n        .sort_values('issue_type')\n        .reset_index(drop=True)\n    )\n",
     "solution_code": "import pandas as pd\n\ndef solve(df_support):\n    high_urgent = df_support[df_support['priority'].isin(['high', 'urgent'])]\n    resolved = high_urgent[high_urgent['status'] == 'resolved']\n\n    totals = (\n        high_urgent.groupby('issue_type', as_index=False)\n        .agg(\n            ticket_count=('ticket_id', 'count'),\n            resolved_count=('status', lambda x: (x == 'resolved').sum())\n        )\n    )\n\n    sla = (\n        resolved.groupby('issue_type', as_index=False)\n        .agg(\n            avg_resolution_hours=('resolution_hours', 'mean'),\n            p90_resolution_hours=('resolution_hours', lambda x: x.quantile(0.9))\n        )\n        .assign(\n            avg_resolution_hours=lambda x: x['avg_resolution_hours'].round(2),\n            p90_resolution_hours=lambda x: x['p90_resolution_hours'].round(2)\n        )\n    )\n\n    return (\n        totals.merge(sla, on='issue_type')\n        .assign(resolution_rate=lambda x: (x['resolved_count'] / x['ticket_count']).round(4))\n        [['issue_type', 'ticket_count', 'resolved_count', 'resolution_rate',\n          'avg_resolution_hours', 'p90_resolution_hours']]\n        .sort_values('issue_type')\n        .reset_index(drop=True)\n    )\n",
-    "explanation": "Pre-filter to priority in ['high', 'urgent'] before the two-pass aggregation. The SLA logic is identical to the parent \u2014 the only change is the ticket population.",
+    "explanation": "Pre-filter to priority in ['high', 'urgent'] before the two-pass aggregation. The SLA logic is identical to the parent — the only change is the ticket population.",
     "hints": [
       "Filter to high+urgent priority first, then apply the same two-pass aggregation as the parent.",
-      "Use .isin(['high', 'urgent']) \u2014 cleaner than two separate boolean conditions."
+      "Use .isin(['high', 'urgent']) — cleaner than two separate boolean conditions."
     ],
     "concepts": [
       "GROUPED AGGREGATION",
@@ -2432,7 +2432,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "title": "Revenue by product category (3-table join)",
-    "description": "Given `order_items`, `products`, and `categories`, compute revenue metrics for each product category. Join the three tables: order_items \u2192 products (via product_id) \u2192 categories (via category_id). Aggregate by `category_name`: `total_revenue` (sum of line_amount, 2 dp), `order_count` (distinct order_ids), `units_sold` (sum of quantity), `avg_price_per_unit` (total_revenue / units_sold, 2 dp). Sort by `total_revenue` descending.",
+    "description": "Given `order_items`, `products`, and `categories`, compute revenue metrics for each product category. Join the three tables: order_items → products (via product_id) → categories (via category_id). Aggregate by `category_name`: `total_revenue` (sum of line_amount, 2 dp), `order_count` (distinct order_ids), `units_sold` (sum of quantity), `avg_price_per_unit` (total_revenue / units_sold, 2 dp). Sort by `total_revenue` descending.",
     "dataframes": {
       "df_order_items": "order_items.csv",
       "df_products": "products.csv",
@@ -2465,10 +2465,10 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_order_items: pd.DataFrame, df_products: pd.DataFrame, df_categories: pd.DataFrame) -> pd.DataFrame:\n    # Your code here\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_order_items, df_products, df_categories):\n    merged = (\n        df_order_items\n        .merge(df_products[['product_id', 'category_id']], on='product_id')\n        .merge(df_categories[['category_id', 'category_name']], on='category_id')\n    )\n\n    return (\n        merged.groupby('category_name', as_index=False)\n        .agg(\n            total_revenue=('line_amount', 'sum'),\n            order_count=('order_id', 'nunique'),\n            units_sold=('quantity', 'sum')\n        )\n        .assign(\n            total_revenue=lambda x: x['total_revenue'].round(2),\n            avg_price_per_unit=lambda x: (x['total_revenue'] / x['units_sold']).round(2)\n        )\n        [['category_name', 'total_revenue', 'order_count', 'units_sold', 'avg_price_per_unit']]\n        .sort_values('total_revenue', ascending=False)\n        .reset_index(drop=True)\n    )\n",
     "solution_code": "import pandas as pd\n\ndef solve(df_order_items, df_products, df_categories):\n    merged = (\n        df_order_items\n        .merge(df_products[['product_id', 'category_id']], on='product_id')\n        .merge(df_categories[['category_id', 'category_name']], on='category_id')\n    )\n\n    return (\n        merged.groupby('category_name', as_index=False)\n        .agg(\n            total_revenue=('line_amount', 'sum'),\n            order_count=('order_id', 'nunique'),\n            units_sold=('quantity', 'sum')\n        )\n        .assign(\n            total_revenue=lambda x: x['total_revenue'].round(2),\n            avg_price_per_unit=lambda x: (x['total_revenue'] / x['units_sold']).round(2)\n        )\n        [['category_name', 'total_revenue', 'order_count', 'units_sold', 'avg_price_per_unit']]\n        .sort_values('total_revenue', ascending=False)\n        .reset_index(drop=True)\n    )\n",
-    "explanation": "Chain two inner merges to link order_items \u2192 products \u2192 categories. Groupby category_name with named aggregations. avg_price_per_unit is a derived column in .assign().",
+    "explanation": "Chain two inner merges to link order_items → products → categories. Groupby category_name with named aggregations. avg_price_per_unit is a derived column in .assign().",
     "hints": [
-      "Three tables need to be linked to answer this: line-level revenue, the product behind each line, and the category that product belongs to. What's the join path \u2014 and what's the grain of the final result?",
-      "avg_price_per_unit = total_revenue / units_sold \u2014 compute in .assign() after the groupby."
+      "Three tables need to be linked to answer this: line-level revenue, the product behind each line, and the category that product belongs to. What's the join path — and what's the grain of the final result?",
+      "avg_price_per_unit = total_revenue / units_sold — compute in .assign() after the groupby."
     ],
     "concepts": [
       "MULTI-TABLE JOINING",
@@ -2489,7 +2489,7 @@
     "follow_up_dimension": "data_quality_pivot",
     "framing": "scenario",
     "title": "Detect line_amount discrepancies in order_items",
-    "description": "Your data engineer points out: 'The `line_amount` column in order_items doesn't always equal quantity \u00d7 unit_price \u2014 there seem to be rounding adjustments or per-item fees being applied.' From `order_items`, find all rows where `abs(line_amount - quantity * unit_price) > 0.01`. Return: `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`, `expected_amount` (quantity \u00d7 unit_price, 2 dp), `discrepancy` (line_amount - expected_amount, 2 dp). Sort by `order_item_id` ascending.",
+    "description": "Your data engineer points out: 'The `line_amount` column in order_items doesn't always equal quantity × unit_price — there seem to be rounding adjustments or per-item fees being applied.' From `order_items`, find all rows where `abs(line_amount - quantity * unit_price) > 0.01`. Return: `order_item_id`, `order_id`, `product_id`, `quantity`, `unit_price`, `line_amount`, `expected_amount` (quantity × unit_price, 2 dp), `discrepancy` (line_amount - expected_amount, 2 dp). Sort by `order_item_id` ascending.",
     "dataframes": {
       "df_order_items": "order_items.csv"
     },
@@ -2508,7 +2508,7 @@
     "solution_code": "import pandas as pd\n\ndef solve(df_order_items):\n    df = df_order_items.copy()\n    df['expected_amount'] = (df['quantity'] * df['unit_price']).round(2)\n    df['discrepancy'] = (df['line_amount'] - df['expected_amount']).round(2)\n\n    return (\n        df[df['discrepancy'].abs() > 0.01]\n        [['order_item_id', 'order_id', 'product_id', 'quantity',\n          'unit_price', 'line_amount', 'expected_amount', 'discrepancy']]\n        .sort_values('order_item_id')\n        .reset_index(drop=True)\n    )\n",
     "explanation": "Compute expected_amount = quantity * unit_price, round to 2 dp, then subtract from line_amount to get discrepancy. Boolean filter on abs(discrepancy) > 0.01 catches genuine mismatches while ignoring floating-point noise.",
     "hints": [
-      "expected_amount = (quantity * unit_price).round(2) \u2014 round before the comparison.",
+      "expected_amount = (quantity * unit_price).round(2) — round before the comparison.",
       "Use abs(discrepancy) > 0.01 as the filter threshold to exclude floating-point noise."
     ],
     "concepts": [
@@ -2526,7 +2526,7 @@
     "follow_up_dimension": "business_rule_pivot",
     "framing": "scenario",
     "title": "Category revenue restricted to active products",
-    "description": "Your merchandising team says: 'Discontinued products shouldn't be included in our revenue attribution \u2014 customers can't buy them anymore and they distort the category comparison.' Reproduce the category revenue table from the parent but **only include products where is_active = True**. Return the same columns: `category_name`, `total_revenue`, `order_count`, `units_sold`, `avg_price_per_unit`. Sort by `total_revenue` descending.",
+    "description": "Your merchandising team says: 'Discontinued products shouldn't be included in our revenue attribution — customers can't buy them anymore and they distort the category comparison.' Reproduce the category revenue table from the parent but **only include products where is_active = True**. Return the same columns: `category_name`, `total_revenue`, `order_count`, `units_sold`, `avg_price_per_unit`. Sort by `total_revenue` descending.",
     "dataframes": {
       "df_order_items": "order_items.csv",
       "df_products": "products.csv",
@@ -2559,9 +2559,9 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_order_items: pd.DataFrame, df_products: pd.DataFrame, df_categories: pd.DataFrame) -> pd.DataFrame:\n    # Your code here\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_order_items, df_products, df_categories):\n    active = df_products[df_products['is_active']][['product_id', 'category_id']]\n\n    merged = (\n        df_order_items\n        .merge(active, on='product_id')\n        .merge(df_categories[['category_id', 'category_name']], on='category_id')\n    )\n\n    return (\n        merged.groupby('category_name', as_index=False)\n        .agg(\n            total_revenue=('line_amount', 'sum'),\n            order_count=('order_id', 'nunique'),\n            units_sold=('quantity', 'sum')\n        )\n        .assign(\n            total_revenue=lambda x: x['total_revenue'].round(2),\n            avg_price_per_unit=lambda x: (x['total_revenue'] / x['units_sold']).round(2)\n        )\n        [['category_name', 'total_revenue', 'order_count', 'units_sold', 'avg_price_per_unit']]\n        .sort_values('total_revenue', ascending=False)\n        .reset_index(drop=True)\n    )\n",
     "solution_code": "import pandas as pd\n\ndef solve(df_order_items, df_products, df_categories):\n    active = df_products[df_products['is_active']][['product_id', 'category_id']]\n\n    merged = (\n        df_order_items\n        .merge(active, on='product_id')\n        .merge(df_categories[['category_id', 'category_name']], on='category_id')\n    )\n\n    return (\n        merged.groupby('category_name', as_index=False)\n        .agg(\n            total_revenue=('line_amount', 'sum'),\n            order_count=('order_id', 'nunique'),\n            units_sold=('quantity', 'sum')\n        )\n        .assign(\n            total_revenue=lambda x: x['total_revenue'].round(2),\n            avg_price_per_unit=lambda x: (x['total_revenue'] / x['units_sold']).round(2)\n        )\n        [['category_name', 'total_revenue', 'order_count', 'units_sold', 'avg_price_per_unit']]\n        .sort_values('total_revenue', ascending=False)\n        .reset_index(drop=True)\n    )\n",
-    "explanation": "Filter products to is_active before the merge chain \u2014 this is more efficient than filtering after joining. The aggregation logic is identical to the parent.",
+    "explanation": "Filter products to is_active before the merge chain — this is more efficient than filtering after joining. The aggregation logic is identical to the parent.",
     "hints": [
-      "Filter products to is_active=True before merging \u2014 pre-filter beats post-filter for large tables.",
+      "Filter products to is_active=True before merging — pre-filter beats post-filter for large tables.",
       "The aggregation is identical to the parent; only the product population changes."
     ],
     "concepts": [
@@ -2576,7 +2576,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "order": 61,
-    "description": "A user is 'churned' if they have no completed orders in the last 90 days (relative to the most recent order_date in the dataset). The churn rate must be computed only over users who had at least one completed order at any point \u2014 not over all users in the users table. Compute: total_ever_active (users with at least one completed order), churned_count (active users with no completed order in the last 90 days), and churn_rate (churned_count / total_ever_active, rounded to 4 decimal places). Return a single-row DataFrame with those three columns.",
+    "description": "A user is 'churned' if they have no completed orders in the last 90 days (relative to the most recent order_date in the dataset). The churn rate must be computed only over users who had at least one completed order at any point — not over all users in the users table. Compute: total_ever_active (users with at least one completed order), churned_count (active users with no completed order in the last 90 days), and churn_rate (churned_count / total_ever_active, rounded to 4 decimal places). Return a single-row DataFrame with those three columns.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -2594,8 +2594,8 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['order_date'] = pd.to_datetime(completed['order_date'])\n    ref_date = completed['order_date'].max()\n    cutoff = ref_date - pd.Timedelta(days=90)\n\n    ever_active = set(completed['user_id'].unique())\n    recent = set(completed[completed['order_date'] > cutoff]['user_id'].unique())\n    churned = ever_active - recent\n\n    total = len(ever_active)\n    churn_count = len(churned)\n    return pd.DataFrame({\n        'total_ever_active': [total],\n        'churned_count': [churn_count],\n        'churn_rate': [round(churn_count / total, 4)]\n    })\n",
     "hints": [
-      "The denominator for churn rate must be users who were ever active \u2014 not all users in the users table, many of whom may have never ordered.",
-      "A user is churned if they appear in the ever-active set but NOT in the recently-active set \u2014 set subtraction captures this exactly.",
+      "The denominator for churn rate must be users who were ever active — not all users in the users table, many of whom may have never ordered.",
+      "A user is churned if they appear in the ever-active set but NOT in the recently-active set — set subtraction captures this exactly.",
       "Use the most recent order date in the dataset as the reference point to make the 90-day window self-contained."
     ],
     "concepts": [
@@ -2627,8 +2627,8 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    per_user = completed.groupby('user_id', as_index=False).agg(\n        user_total=('net_amount', 'sum'),\n        user_orders=('order_id', 'count')\n    )\n    per_user['user_aov'] = per_user['user_total'] / per_user['user_orders']\n    fleet_aov = round(per_user['user_aov'].mean(), 4)\n    order_weighted = round(completed['net_amount'].sum() / len(completed), 4)\n    return pd.DataFrame({\n        'fleet_aov': [fleet_aov],\n        'order_weighted_aov': [order_weighted]\n    })\n",
     "hints": [
-      "User-level AOV and order-weighted AOV differ whenever users have different order volumes \u2014 a power user with 100 orders dominates the order-weighted calculation.",
-      "Compute per-user AOV first, then average those \u2014 this treats each user equally regardless of how many orders they placed."
+      "User-level AOV and order-weighted AOV differ whenever users have different order volumes — a power user with 100 orders dominates the order-weighted calculation.",
+      "Compute per-user AOV first, then average those — this treats each user equally regardless of how many orders they placed."
     ],
     "concepts": [
       "METRIC INTERPRETATION & DENOMINATOR CHOICE",
@@ -2641,7 +2641,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "order": 63,
-    "description": "Compute three resolution rate variants for support tickets and show why denominator choice matters: (1) naive_rate: resolved or closed tickets / ALL tickets; (2) actionable_rate: resolved tickets / (open + in_progress + resolved) tickets \u2014 excluding 'closed' which may mean abandoned; (3) priority_rate: resolved tickets / all non-closed tickets, broken down by priority. Return two DataFrames as a tuple: first a single-row summary with naive_rate and actionable_rate (both rounded to 4 decimal places); second a per-priority breakdown with priority, non_closed_count, resolved_count, and priority_rate (rounded to 4 decimal places), sorted by priority.",
+    "description": "Compute three resolution rate variants for support tickets and show why denominator choice matters: (1) naive_rate: resolved or closed tickets / ALL tickets; (2) actionable_rate: resolved tickets / (open + in_progress + resolved) tickets — excluding 'closed' which may mean abandoned; (3) priority_rate: resolved tickets / all non-closed tickets, broken down by priority. Return two DataFrames as a tuple: first a single-row summary with naive_rate and actionable_rate (both rounded to 4 decimal places); second a per-priority breakdown with priority, non_closed_count, resolved_count, and priority_rate (rounded to 4 decimal places), sorted by priority.",
     "dataframes": {
       "df_tickets": "support_tickets.csv"
     },
@@ -2660,8 +2660,8 @@
     "expected_code": "import pandas as pd\n\ndef solve(df_tickets):\n    total = len(df_tickets)\n    resolved_or_closed = df_tickets['status'].isin(['resolved', 'closed']).sum()\n    naive_rate = round(resolved_or_closed / total, 4)\n\n    actionable = df_tickets[df_tickets['status'] != 'closed']\n    actionable_rate = round((actionable['status'] == 'resolved').sum() / len(actionable), 4)\n\n    summary = pd.DataFrame({'naive_rate': [naive_rate], 'actionable_rate': [actionable_rate]})\n\n    non_closed = df_tickets[df_tickets['status'] != 'closed']\n    priority_df = (\n        non_closed.groupby('priority', as_index=False)\n        .agg(\n            non_closed_count=('ticket_id', 'count'),\n            resolved_count=('status', lambda x: (x == 'resolved').sum())\n        )\n    )\n    priority_df['priority_rate'] = (priority_df['resolved_count'] / priority_df['non_closed_count']).round(4)\n    priority_df = priority_df.sort_values('priority').reset_index(drop=True)\n\n    return summary, priority_df\n",
     "hints": [
       "The naive denominator inflates the apparent resolution rate by treating 'closed' (potentially abandoned) tickets the same as 'resolved' tickets.",
-      "The actionable denominator excludes closed tickets \u2014 only tickets in a state where resolution was actually possible count toward the rate.",
-      "Return a tuple of two DataFrames \u2014 the function signature produces both the summary and the per-priority breakdown."
+      "The actionable denominator excludes closed tickets — only tickets in a state where resolution was actually possible count toward the rate.",
+      "Return a tuple of two DataFrames — the function signature produces both the summary and the per-priority breakdown."
     ],
     "concepts": [
       "METRIC INTERPRETATION & DENOMINATOR CHOICE",
@@ -2692,8 +2692,8 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed']\n    per_user = (\n        completed.groupby('user_id', as_index=False)['order_id']\n        .count()\n        .rename(columns={'order_id': 'total_orders'})\n    )\n    top10 = per_user.nlargest(10, 'total_orders', keep='all')\n    return (\n        top10.sort_values(['total_orders', 'user_id'], ascending=[False, True])\n        .head(10)\n        .reset_index(drop=True)\n    )\n",
     "hints": [
-      "nlargest() uses a partial sort (heap-based) that is faster than a full sort when N is much smaller than the dataset \u2014 it avoids ordering rows you will never use.",
-      "After nlargest(), apply the tiebreaker sort on the small result set \u2014 this is cheap since it operates on at most N rows."
+      "nlargest() uses a partial sort (heap-based) that is faster than a full sort when N is much smaller than the dataset — it avoids ordering rows you will never use.",
+      "After nlargest(), apply the tiebreaker sort on the small result set — this is cheap since it operates on at most N rows."
     ],
     "concepts": [
       "PERFORMANCE-AWARE ANALYTICS",
@@ -2724,8 +2724,8 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed']\n    result = (\n        completed.groupby('region', as_index=False)\n        .agg(\n            total_revenue=('net_amount', 'sum'),\n            order_count=('order_id', 'count'),\n            avg_discount=('discount_amount', 'mean')\n        )\n    )\n    result['total_revenue'] = result['total_revenue'].round(2)\n    result['avg_discount'] = result['avg_discount'].round(4)\n    return result.sort_values('region').reset_index(drop=True)\n",
     "hints": [
-      "Multiple aggregation functions can be computed in a single pass by passing a dictionary of named aggregations \u2014 this avoids re-scanning the data three times.",
-      "Filter to completed orders once, store the result, then aggregate \u2014 re-applying the same filter inside each aggregation is redundant work."
+      "Multiple aggregation functions can be computed in a single pass by passing a dictionary of named aggregations — this avoids re-scanning the data three times.",
+      "Filter to completed orders once, store the result, then aggregate — re-applying the same filter inside each aggregation is redundant work."
     ],
     "concepts": [
       "PERFORMANCE-AWARE ANALYTICS",
@@ -2738,7 +2738,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "order": 66,
-    "description": "Flag employees hired more than 3 years before the most recent hire date in the dataset. Compute a boolean column is_veteran (True if tenure > 3 years) and an integer years_tenure (floor of years since hire_date). Do this entirely with vectorized operations \u2014 no apply(), no iterrows(). Return employee_id, employee_name, hire_date, years_tenure, and is_veteran, sorted by years_tenure descending then employee_id ascending.",
+    "description": "Flag employees hired more than 3 years before the most recent hire date in the dataset. Compute a boolean column is_veteran (True if tenure > 3 years) and an integer years_tenure (floor of years since hire_date). Do this entirely with vectorized operations — no apply(), no iterrows(). Return employee_id, employee_name, hire_date, years_tenure, and is_veteran, sorted by years_tenure descending then employee_id ascending.",
     "dataframes": {
       "df_emp": "employees.csv"
     },
@@ -2755,8 +2755,8 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_emp):\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_emp):\n    df = df_emp.copy()\n    df['hire_date'] = pd.to_datetime(df['hire_date'])\n    ref_date = df['hire_date'].max()\n    days = (ref_date - df['hire_date']).dt.days\n    df['years_tenure'] = (days / 365.25).astype(int)\n    df['is_veteran'] = df['years_tenure'] > 3\n    return (\n        df[['employee_id', 'employee_name', 'hire_date', 'years_tenure', 'is_veteran']]\n        .sort_values(['years_tenure', 'employee_id'], ascending=[False, True])\n        .reset_index(drop=True)\n    )\n",
     "hints": [
-      "Subtracting two datetime columns produces a timedelta column \u2014 extracting the day count and dividing gives fractional years without any loop.",
-      "Boolean columns are derived directly from numeric comparisons on the whole column \u2014 the comparison operator broadcasts across all rows at once."
+      "Subtracting two datetime columns produces a timedelta column — extracting the day count and dividing gives fractional years without any loop.",
+      "Boolean columns are derived directly from numeric comparisons on the whole column — the comparison operator broadcasts across all rows at once."
     ],
     "concepts": [
       "PERFORMANCE-AWARE ANALYTICS",
@@ -2769,7 +2769,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "order": 67,
-    "description": "For each completed order, compute its share of total net_amount within its region (pct_of_region, rounded to 4 decimal places). This requires the group total to be broadcast back to each individual row \u2014 not collapsed to one row per group. Return order_id, user_id, region, net_amount, and pct_of_region, sorted by region ascending then pct_of_region descending then order_id ascending.",
+    "description": "For each completed order, compute its share of total net_amount within its region (pct_of_region, rounded to 4 decimal places). This requires the group total to be broadcast back to each individual row — not collapsed to one row per group. Return order_id, user_id, region, net_amount, and pct_of_region, sorted by region ascending then pct_of_region descending then order_id ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -2788,10 +2788,10 @@
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['region_total'] = completed.groupby('region')['net_amount'].transform('sum')\n    completed['pct_of_region'] = (completed['net_amount'] / completed['region_total']).round(4)\n    return (\n        completed[['order_id', 'user_id', 'region', 'net_amount', 'pct_of_region']]\n        .sort_values(['region', 'pct_of_region', 'order_id'], ascending=[True, False, True])\n        .reset_index(drop=True)\n    )\n",
     "hints": [
       "When you need a group-level statistic on every individual row (not one result per group), the operation broadcasts the aggregated value back to all rows in the group.",
-      "The key distinction: aggregation collapses rows, while the broadcast variant preserves the original row count \u2014 both use the same grouping key."
+      "The key distinction: aggregation collapses rows, while the broadcast variant preserves the original row count — both use the same grouping key."
     ],
     "concepts": [
-      "TRANSFORM VS AGGREGATE",
+      "GROUPBY TRANSFORM",
       "GROUPED AGGREGATION"
     ]
   },
@@ -2801,7 +2801,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "order": 68,
-    "description": "For each employee, compute how much their salary deviates from their department's mean salary. Join employees to departments to get department_name. For each employee, compute dept_mean_salary (mean salary in their department, rounded to 2 decimal places) and salary_deviation (salary \u2212 dept_mean_salary, rounded to 2 decimal places). Return employee_id, employee_name, department_name, salary, dept_mean_salary, and salary_deviation, sorted by abs(salary_deviation) descending then employee_id ascending.",
+    "description": "For each employee, compute how much their salary deviates from their department's mean salary. Join employees to departments to get department_name. For each employee, compute dept_mean_salary (mean salary in their department, rounded to 2 decimal places) and salary_deviation (salary − dept_mean_salary, rounded to 2 decimal places). Return employee_id, employee_name, department_name, salary, dept_mean_salary, and salary_deviation, sorted by abs(salary_deviation) descending then employee_id ascending.",
     "dataframes": {
       "df_emp": "employees.csv",
       "df_dept": "departments.csv"
@@ -2824,11 +2824,11 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_emp, df_dept):\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_emp, df_dept):\n    merged = df_emp.merge(df_dept[['department_id', 'department_name']], on='department_id')\n    merged['dept_mean_salary'] = merged.groupby('department_name')['salary'].transform('mean').round(2)\n    merged['salary_deviation'] = (merged['salary'] - merged['dept_mean_salary']).round(2)\n    merged['abs_dev'] = merged['salary_deviation'].abs()\n    return (\n        merged[['employee_id', 'employee_name', 'department_name', 'salary', 'dept_mean_salary', 'salary_deviation', 'abs_dev']]\n        .sort_values(['abs_dev', 'employee_id'], ascending=[False, True])\n        .drop(columns='abs_dev')\n        .reset_index(drop=True)\n    )\n",
     "hints": [
-      "The department mean must appear on every row so it can be subtracted from each employee's individual salary \u2014 this is a broadcast operation, not a collapse.",
+      "The department mean must appear on every row so it can be subtracted from each employee's individual salary — this is a broadcast operation, not a collapse.",
       "Compute an absolute-value helper column to sort by magnitude of deviation, then drop it from the final output."
     ],
     "concepts": [
-      "TRANSFORM VS AGGREGATE",
+      "GROUPBY TRANSFORM",
       "MULTI-DATAFRAME ENTITY LINKING"
     ]
   },
@@ -2856,11 +2856,11 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['user_median'] = completed.groupby('user_id')['net_amount'].transform('median').round(2)\n    completed['above_personal_median'] = completed['net_amount'] > completed['user_median']\n    return (\n        completed[['order_id', 'user_id', 'net_amount', 'user_median', 'above_personal_median']]\n        .sort_values(['user_id', 'net_amount'], ascending=[True, False])\n        .reset_index(drop=True)\n    )\n",
     "hints": [
-      "The user's median must be available on every row of that user's orders simultaneously \u2014 computing the group-level statistic and broadcasting it back keeps the row count unchanged.",
-      "Once the user median is a column, the above-median flag is a simple element-wise comparison \u2014 no aggregation or join needed."
+      "The user's median must be available on every row of that user's orders simultaneously — computing the group-level statistic and broadcasting it back keeps the row count unchanged.",
+      "Once the user median is a column, the above-median flag is a simple element-wise comparison — no aggregation or join needed."
     ],
     "concepts": [
-      "TRANSFORM VS AGGREGATE",
+      "GROUPBY TRANSFORM",
       "BOOLEAN INDEXING & FILTERING"
     ]
   },
@@ -2870,7 +2870,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "order": 70,
-    "description": "Compare total revenue from two sources: (1) completed orders (sum of net_amount from orders where status='completed') and (2) completed payments (sum of amount from payments where status='completed'). Show both totals and their difference. Return a single-row DataFrame with order_revenue (rounded to 2 decimal places), payment_revenue (rounded to 2 decimal places), and discrepancy (order_revenue \u2212 payment_revenue, rounded to 2 decimal places).",
+    "description": "Compare total revenue from two sources: (1) completed orders (sum of net_amount from orders where status='completed') and (2) completed payments (sum of amount from payments where status='completed'). Show both totals and their difference. Return a single-row DataFrame with order_revenue (rounded to 2 decimal places), payment_revenue (rounded to 2 decimal places), and discrepancy (order_revenue − payment_revenue, rounded to 2 decimal places).",
     "dataframes": {
       "df_orders": "orders.csv",
       "df_payments": "payments.csv"
@@ -2897,8 +2897,8 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_orders, df_payments):\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders, df_payments):\n    order_rev = round(df_orders[df_orders['status'] == 'completed']['net_amount'].sum(), 2)\n    pay_rev = round(df_payments[df_payments['status'] == 'completed']['amount'].sum(), 2)\n    return pd.DataFrame({\n        'order_revenue': [order_rev],\n        'payment_revenue': [pay_rev],\n        'discrepancy': [round(order_rev - pay_rev, 2)]\n    })\n",
     "hints": [
-      "Orders and payments are different grains \u2014 an order has one net_amount, but multiple payment rows can exist for the same order.",
-      "Summing payment amounts directly may double-count when orders have multiple payment rows \u2014 compare against the order-level total to surface the discrepancy."
+      "Orders and payments are different grains — an order has one net_amount, but multiple payment rows can exist for the same order.",
+      "Summing payment amounts directly may double-count when orders have multiple payment rows — compare against the order-level total to surface the discrepancy."
     ],
     "concepts": [
       "DOUBLE-COUNTING DETECTION",
@@ -2911,7 +2911,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "order": 71,
-    "description": "Compute total revenue per product category using order_items, products, and categories. A common mistake is joining order_items to orders first (adding order-level columns), which can fan out rows if orders has duplicates. Avoid that \u2014 join order_items directly to products, then to categories, to get category_name. Compute total_revenue as sum of line_amount per category. Return category_name and total_revenue (rounded to 2 decimal places), sorted by total_revenue descending.",
+    "description": "Compute total revenue per product category using order_items, products, and categories. A common mistake is joining order_items to orders first (adding order-level columns), which can fan out rows if orders has duplicates. Avoid that — join order_items directly to products, then to categories, to get category_name. Compute total_revenue as sum of line_amount per category. Return category_name and total_revenue (rounded to 2 decimal places), sorted by total_revenue descending.",
     "dataframes": {
       "df_items": "order_items.csv",
       "df_products": "products.csv",
@@ -2940,7 +2940,7 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_items, df_products, df_cats):\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_items, df_products, df_cats):\n    with_cat = (\n        df_items\n        .merge(df_products[['product_id', 'category_id']], on='product_id')\n        .merge(df_cats[['category_id', 'category_name']], on='category_id')\n    )\n    result = (\n        with_cat.groupby('category_name', as_index=False)['line_amount']\n        .sum()\n        .rename(columns={'line_amount': 'total_revenue'})\n    )\n    result['total_revenue'] = result['total_revenue'].round(2)\n    return result.sort_values('total_revenue', ascending=False).reset_index(drop=True)\n",
     "hints": [
-      "Every fact you need (quantity, price, category) is available through the item-to-product-to-category chain \u2014 introducing the orders table adds columns you don't need and risk of row multiplication.",
+      "Every fact you need (quantity, price, category) is available through the item-to-product-to-category chain — introducing the orders table adds columns you don't need and risk of row multiplication.",
       "Join only the columns you need from each side to keep the working DataFrame narrow and avoid accidentally carrying over join keys that could produce duplicates."
     ],
     "concepts": [
@@ -2982,7 +2982,7 @@
     "expected_code": "import pandas as pd\n\ndef solve(df_orders, df_payments):\n    completed = df_orders[df_orders['status'] == 'completed']\n    order_stats = (\n        completed.groupby('user_id', as_index=False)\n        .agg(order_revenue=('net_amount', 'sum'), order_count=('order_id', 'count'))\n    )\n    order_stats['order_revenue'] = order_stats['order_revenue'].round(2)\n\n    pay_per_user = (\n        df_payments.merge(df_orders[['order_id', 'user_id']], on='order_id')\n        .groupby('user_id', as_index=False)['payment_id']\n        .nunique()\n        .rename(columns={'payment_id': 'payment_attempts'})\n    )\n\n    result = order_stats.merge(pay_per_user, on='user_id', how='left')\n    result['payment_attempts'] = result['payment_attempts'].fillna(0).astype(int)\n    return result.sort_values(['order_revenue', 'user_id'], ascending=[False, True]).reset_index(drop=True)\n",
     "hints": [
       "Revenue must come from the orders table (one row per order) to avoid summing payment amounts that may represent multiple attempts for the same order.",
-      "To count payment attempts per user, bring user_id into the payments frame via orders, then count distinct payment IDs \u2014 not payment rows, which may include duplicates."
+      "To count payment attempts per user, bring user_id into the payments frame via orders, then count distinct payment IDs — not payment rows, which may include duplicates."
     ],
     "concepts": [
       "DOUBLE-COUNTING DETECTION",
@@ -3013,8 +3013,8 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    return (\n        df_orders\n        .loc[df_orders['status'] == 'completed']\n        .assign(month=lambda x: pd.to_datetime(x['order_date']).dt.to_period('M').astype(str))\n        .groupby('month', as_index=False)\n        .agg(order_count=('order_id', 'count'), total_revenue=('net_amount', 'sum'))\n        .assign(total_revenue=lambda x: x['total_revenue'].round(2))\n        .sort_values('month')\n        .reset_index(drop=True)\n    )\n",
     "hints": [
-      "A fluent pipeline uses method chaining \u2014 each step returns the transformed DataFrame so the next method can be called directly on it.",
-      "Use assign() to add derived columns inline without breaking the chain \u2014 it returns the full DataFrame with the new column appended."
+      "A fluent pipeline uses method chaining — each step returns the transformed DataFrame so the next method can be called directly on it.",
+      "Use assign() to add derived columns inline without breaking the chain — it returns the full DataFrame with the new column appended."
     ],
     "concepts": [
       "METHOD CHAINING & PIPELINE STYLE",
@@ -3027,7 +3027,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "order": 74,
-    "description": "Express the following as a single chained expression: (1) filter to open and in_progress tickets; (2) add days_open column (days since created_at relative to max created_at in full dataset); (3) add urgency_score = days_open \u00d7 (4 if critical, 3 if high, 2 if medium, 1 if low); (4) select ticket_id, priority, status, days_open, urgency_score; (5) sort by urgency_score descending. Return that result.",
+    "description": "Express the following as a single chained expression: (1) filter to open and in_progress tickets; (2) add days_open column (days since created_at relative to max created_at in full dataset); (3) add urgency_score = days_open × (4 if critical, 3 if high, 2 if medium, 1 if low); (4) select ticket_id, priority, status, days_open, urgency_score; (5) sort by urgency_score descending. Return that result.",
     "dataframes": {
       "df_tickets": "support_tickets.csv"
     },
@@ -3045,8 +3045,8 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_tickets):\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_tickets):\n    ref_date = pd.to_datetime(df_tickets['created_at']).max()\n    priority_weight = {'critical': 4, 'high': 3, 'medium': 2, 'low': 1}\n    return (\n        df_tickets\n        .loc[df_tickets['status'].isin(['open', 'in_progress'])]\n        .assign(\n            days_open=lambda x: (ref_date - pd.to_datetime(x['created_at'])).dt.days,\n            priority_w=lambda x: x['priority'].map(priority_weight),\n            urgency_score=lambda x: x['days_open'] * x['priority_w']\n        )\n        [['ticket_id', 'priority', 'status', 'days_open', 'urgency_score']]\n        .sort_values('urgency_score', ascending=False)\n        .reset_index(drop=True)\n    )\n",
     "hints": [
-      "Compute the reference date outside the chain since it depends on the full dataset, not just the filtered subset \u2014 pre-computing it once avoids recomputing it inside a lambda.",
-      "Multiple assign() calls can reference columns created by a preceding assign() in the same chain \u2014 build derived columns incrementally within a single assign block."
+      "Compute the reference date outside the chain since it depends on the full dataset, not just the filtered subset — pre-computing it once avoids recomputing it inside a lambda.",
+      "Multiple assign() calls can reference columns created by a preceding assign() in the same chain — build derived columns incrementally within a single assign block."
     ],
     "concepts": [
       "METHOD CHAINING & PIPELINE STYLE",
@@ -3077,8 +3077,8 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['order_date'] = pd.to_datetime(completed['order_date'])\n    ref_date = completed['order_date'].max()\n    result = (\n        completed.groupby('user_id', as_index=False)\n        .agg(\n            last_order=('order_date', 'max'),\n            order_frequency=('order_id', 'count'),\n            avg_order_size=('net_amount', 'mean')\n        )\n    )\n    result['recency_days'] = (ref_date - result['last_order']).dt.days\n    result['avg_order_size'] = result['avg_order_size'].round(2)\n    return (\n        result[['user_id', 'recency_days', 'order_frequency', 'avg_order_size']]\n        .sort_values(['recency_days', 'user_id'])\n        .reset_index(drop=True)\n    )\n",
     "hints": [
-      "All three features derive from the same per-user aggregation \u2014 computing them in a single pass avoids re-scanning the data multiple times.",
-      "Recency requires a reference date subtracted from the per-user last order date \u2014 compute both in the same step after the aggregation."
+      "All three features derive from the same per-user aggregation — computing them in a single pass avoids re-scanning the data multiple times.",
+      "Recency requires a reference date subtracted from the per-user last order date — compute both in the same step after the aggregation."
     ],
     "concepts": [
       "COLUMN SELECTION & PROJECTION",
@@ -3091,7 +3091,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "order": 76,
-    "description": "Join order_items to products to get product_name and price, then to categories to get category_name. Before each join, project down to only the columns needed \u2014 do not carry the full table through. Compute line_margin as line_amount \u2212 (quantity \u00d7 price) for each item. Return order_item_id, order_id, product_name, category_name, line_amount, and line_margin (rounded to 2 decimal places), sorted by line_margin ascending then order_item_id ascending.",
+    "description": "Join order_items to products to get product_name and price, then to categories to get category_name. Before each join, project down to only the columns needed — do not carry the full table through. Compute line_margin as line_amount − (quantity × price) for each item. Return order_item_id, order_id, product_name, category_name, line_amount, and line_margin (rounded to 2 decimal places), sorted by line_margin ascending then order_item_id ascending.",
     "dataframes": {
       "df_items": "order_items.csv",
       "df_products": "products.csv",
@@ -3120,7 +3120,7 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_items, df_products, df_cats):\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_items, df_products, df_cats):\n    result = (\n        df_items[['order_item_id', 'order_id', 'product_id', 'quantity', 'line_amount']]\n        .merge(df_products[['product_id', 'product_name', 'category_id', 'price']], on='product_id')\n        .merge(df_cats[['category_id', 'category_name']], on='category_id')\n    )\n    result['line_margin'] = (result['line_amount'] - result['quantity'] * result['price']).round(2)\n    return (\n        result[['order_item_id', 'order_id', 'product_name', 'category_name', 'line_amount', 'line_margin']]\n        .sort_values(['line_margin', 'order_item_id'])\n        .reset_index(drop=True)\n    )\n",
     "hints": [
-      "Select only the columns you need from each table before joining \u2014 carrying unnecessary columns through every join wastes memory proportional to the number of rows.",
+      "Select only the columns you need from each table before joining — carrying unnecessary columns through every join wastes memory proportional to the number of rows.",
       "Compute derived columns after all joins are complete, once the working DataFrame has its final shape."
     ],
     "concepts": [
@@ -3152,8 +3152,8 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['high_value'] = (df['status'] == 'completed') & (df['net_amount'] > 200)\n    completed = df[df['status'] == 'completed']\n    return (\n        completed[['order_id', 'status', 'net_amount', 'high_value']]\n        .sort_values('order_id')\n        .reset_index(drop=True)\n    )\n",
     "hints": [
-      "Assigning to a chained index expression (df[filter][col] = value) writes to a temporary copy that is immediately discarded \u2014 the original DataFrame is unchanged.",
-      "Compute the flag on the full DataFrame first (before any filter), then filter \u2014 this avoids chained indexing and ensures the write lands on the actual DataFrame."
+      "Assigning to a chained index expression (df[filter][col] = value) writes to a temporary copy that is immediately discarded — the original DataFrame is unchanged.",
+      "Compute the flag on the full DataFrame first (before any filter), then filter — this avoids chained indexing and ensures the write lands on the actual DataFrame."
     ],
     "concepts": [
       "DEBUG PANDAS",
@@ -3189,7 +3189,7 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_emp, df_dept):\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_emp, df_dept):\n    result = (\n        df_emp.groupby('department_id', as_index=False)\n        .agg(avg_salary=('salary', 'mean'), emp_count=('employee_id', 'count'))\n    )\n    result['avg_salary'] = result['avg_salary'].round(2)\n    result = result.merge(df_dept[['department_id', 'department_name']], on='department_id')\n    return (\n        result[['department_name', 'avg_salary', 'emp_count']]\n        .sort_values(['emp_count', 'department_name'], ascending=[False, True])\n        .reset_index(drop=True)\n    )\n",
     "hints": [
-      "Combining two Series with pd.concat aligns on their index \u2014 if the indexes happen to match, it works silently; if not, it produces NaN. A single multi-output aggregation avoids this entirely.",
+      "Combining two Series with pd.concat aligns on their index — if the indexes happen to match, it works silently; if not, it produces NaN. A single multi-output aggregation avoids this entirely.",
       "A single grouped aggregation with multiple named outputs produces a clean DataFrame with the grouping key as a regular column when as_index=False is used."
     ],
     "concepts": [
@@ -3221,7 +3221,7 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_tickets):\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_tickets):\n    ref_date = pd.to_datetime(df_tickets['created_at']).max()\n    df = df_tickets.copy()\n    df['priority'] = pd.Categorical(\n        df['priority'],\n        categories=['low', 'medium', 'high', 'critical'],\n        ordered=True\n    )\n    critical = df[df['priority'] == 'critical'].copy()\n    critical['priority'] = critical['priority'].cat.remove_unused_categories()\n    critical['days_open'] = (ref_date - pd.to_datetime(critical['created_at'])).dt.days\n    return (\n        critical[['ticket_id', 'priority', 'status', 'days_open']]\n        .sort_values('days_open', ascending=False)\n        .reset_index(drop=True)\n    )\n",
     "hints": [
-      "Filtering a Categorical Series does not remove unused categories from the category list \u2014 the metadata still remembers all original categories.",
+      "Filtering a Categorical Series does not remove unused categories from the category list — the metadata still remembers all original categories.",
       "Call remove_unused_categories() on the filtered column to prune the category list down to only the levels actually present in the remaining rows."
     ],
     "concepts": [
@@ -3252,8 +3252,8 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_payments):\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_payments):\n    df = df_payments.copy()\n    df['payment_date'] = pd.to_datetime(df['payment_date'])\n    df = df.sort_values(['order_id', 'payment_date', 'payment_id'], ascending=[True, False, False])\n    deduped = df.drop_duplicates(subset='order_id', keep='first')\n    return (\n        deduped[['payment_id', 'order_id', 'payment_method', 'amount', 'status', 'payment_date']]\n        .sort_values('order_id')\n        .reset_index(drop=True)\n    )\n",
     "hints": [
-      "The deduplication key is order_id \u2014 you want one row per order, keeping the most recent payment.",
-      "Sort by payment_date descending (then payment_id descending as tiebreaker) before deduplicating \u2014 drop_duplicates keeps the first row it encounters after the sort."
+      "The deduplication key is order_id — you want one row per order, keeping the most recent payment.",
+      "Sort by payment_date descending (then payment_id descending as tiebreaker) before deduplicating — drop_duplicates keeps the first row it encounters after the sort."
     ],
     "concepts": [
       "DEDUPLICATION LOGIC",
@@ -3281,8 +3281,8 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_events):\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_events):\n    df = df_events.copy()\n    df['timestamp'] = pd.to_datetime(df['timestamp'])\n    df = df.sort_values(['session_id', 'event_name', 'timestamp', 'event_id'])\n    deduped = df.drop_duplicates(subset=['session_id', 'event_name'], keep='first')\n    session_start = (\n        deduped.groupby('session_id')['timestamp']\n        .min()\n        .rename('session_start')\n    )\n    deduped = deduped.join(session_start, on='session_id')\n    deduped['time_to_first_event_s'] = (\n        (deduped['timestamp'] - deduped['session_start']).dt.total_seconds().astype(int)\n    )\n    return (\n        deduped[['session_id', 'event_name', 'event_id', 'timestamp', 'time_to_first_event_s']]\n        .sort_values(['session_id', 'timestamp'])\n        .reset_index(drop=True)\n    )\n",
     "hints": [
-      "Sort by the deduplication key and timestamp before deduplicating \u2014 the first row per (session_id, event_name) after sorting by timestamp ascending is the earliest occurrence.",
-      "After deduplication, the session start time is the minimum timestamp across all remaining events in that session \u2014 broadcast it back to each row to compute elapsed time."
+      "Sort by the deduplication key and timestamp before deduplicating — the first row per (session_id, event_name) after sorting by timestamp ascending is the earliest occurrence.",
+      "After deduplication, the session start time is the minimum timestamp across all remaining events in that session — broadcast it back to each row to compute elapsed time."
     ],
     "concepts": [
       "DEDUPLICATION LOGIC",
@@ -3323,7 +3323,7 @@
     "expected_code": "import pandas as pd\n\ndef solve(df_users, df_orders):\n    completed = df_orders[df_orders['status'] == 'completed'].copy()\n    completed['order_date'] = pd.to_datetime(completed['order_date'])\n    completed = completed.sort_values(['user_id', 'order_date', 'order_id'], ascending=[True, False, False])\n    latest = completed.drop_duplicates(subset='user_id', keep='first')\n    latest = latest[['user_id', 'order_id', 'order_date', 'net_amount']].rename(\n        columns={'order_id': 'last_order_id', 'order_date': 'last_order_date', 'net_amount': 'last_order_amount'}\n    )\n    result = df_users[['user_id', 'city', 'acquisition_channel']].merge(latest, on='user_id', how='left')\n    return result.sort_values('user_id').reset_index(drop=True)\n",
     "hints": [
       "To get one row per user with the most recent order, first filter and sort completed orders descending by date, then deduplicate on user_id keeping the first row.",
-      "A left join from users to the deduplicated order set preserves users who have no completed orders \u2014 they appear with nulls in the order columns."
+      "A left join from users to the deduplicated order set preserves users who have no completed orders — they appear with nulls in the order columns."
     ],
     "concepts": [
       "DEDUPLICATION LOGIC",
@@ -3336,7 +3336,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "order": 83,
-    "description": "After joining order_items to products (inner join on product_id), run three sanity checks and return a validation_report with check_name and passed (boolean): (1) 'no_row_loss' \u2014 result has same row count as order_items; (2) 'no_orphan_products' \u2014 no product_id in order_items is missing from products; (3) 'no_null_product_name' \u2014 product_name has no nulls in the result. Sort by check_name ascending.",
+    "description": "After joining order_items to products (inner join on product_id), run three sanity checks and return a validation_report with check_name and passed (boolean): (1) 'no_row_loss' — result has same row count as order_items; (2) 'no_orphan_products' — no product_id in order_items is missing from products; (3) 'no_null_product_name' — product_name has no nulls in the result. Sort by check_name ascending.",
     "dataframes": {
       "df_items": "order_items.csv",
       "df_products": "products.csv"
@@ -3360,8 +3360,8 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_items, df_products):\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_items, df_products):\n    merged = df_items.merge(df_products[['product_id', 'product_name']], on='product_id', how='inner')\n    orphan_count = df_items[~df_items['product_id'].isin(df_products['product_id'])].shape[0]\n    checks = [\n        {'check_name': 'no_null_product_name', 'passed': bool(merged['product_name'].isna().sum() == 0)},\n        {'check_name': 'no_orphan_products', 'passed': bool(orphan_count == 0)},\n        {'check_name': 'no_row_loss', 'passed': bool(len(merged) == len(df_items))},\n    ]\n    return pd.DataFrame(checks).sort_values('check_name').reset_index(drop=True)\n",
     "hints": [
-      "Row loss after an inner join signals orphaned foreign keys \u2014 items referencing product_ids that don't exist in the products table are silently dropped.",
-      "Check for orphans explicitly using isin() on the key column before the join \u2014 this lets you distinguish 'join dropped rows' from 'join produced nulls'."
+      "Row loss after an inner join signals orphaned foreign keys — items referencing product_ids that don't exist in the products table are silently dropped.",
+      "Check for orphans explicitly using isin() on the key column before the join — this lets you distinguish 'join dropped rows' from 'join produced nulls'."
     ],
     "concepts": [
       "OUTPUT SANITY VALIDATION",
@@ -3374,7 +3374,7 @@
     "difficulty": "hard",
     "mock_only": true,
     "order": 84,
-    "description": "After computing total completed revenue per region from orders, run three sanity checks and return them as a validation_report DataFrame with check_name and passed (boolean): (1) 'expected_region_count' \u2014 result has exactly 4 rows (one per region); (2) 'no_null_revenue' \u2014 total_revenue has no nulls; (3) 'revenue_sum_matches' \u2014 sum of total_revenue equals sum of net_amount in completed orders (within 0.01 tolerance). Sort by check_name ascending.",
+    "description": "After computing total completed revenue per region from orders, run three sanity checks and return them as a validation_report DataFrame with check_name and passed (boolean): (1) 'expected_region_count' — result has exactly 4 rows (one per region); (2) 'no_null_revenue' — total_revenue has no nulls; (3) 'revenue_sum_matches' — sum of total_revenue equals sum of net_amount in completed orders (within 0.01 tolerance). Sort by check_name ascending.",
     "dataframes": {
       "df_orders": "orders.csv"
     },
@@ -3392,12 +3392,109 @@
     "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    pass",
     "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    completed = df_orders[df_orders['status'] == 'completed']\n    by_region = (\n        completed.groupby('region', as_index=False)['net_amount']\n        .sum()\n        .rename(columns={'net_amount': 'total_revenue'})\n    )\n    expected_total = completed['net_amount'].sum()\n    actual_total = by_region['total_revenue'].sum()\n    checks = [\n        {'check_name': 'expected_region_count', 'passed': bool(len(by_region) == 4)},\n        {'check_name': 'no_null_revenue', 'passed': bool(by_region['total_revenue'].isna().sum() == 0)},\n        {'check_name': 'revenue_sum_matches', 'passed': bool(abs(actual_total - expected_total) < 0.01)},\n    ]\n    return pd.DataFrame(checks).sort_values('check_name').reset_index(drop=True)\n",
     "hints": [
-      "After any group-level aggregation, verify that the sum of the aggregated values equals the raw total \u2014 rounding or null handling can cause silent loss.",
+      "After any group-level aggregation, verify that the sum of the aggregated values equals the raw total — rounding or null handling can cause silent loss.",
       "A tolerance-based equality check (abs difference < threshold) is more robust than exact equality for floating-point revenue sums."
     ],
     "concepts": [
       "OUTPUT SANITY VALIDATION",
       "GROUPED AGGREGATION"
     ]
+  },
+  {
+    "id": 33085,
+    "order": 85,
+    "difficulty": "hard",
+    "title": "Chained Monthly Revenue Anomaly Detector",
+    "description": "Build a single chained expression that: (1) filters `df_orders` to completed orders; (2) extracts the calendar month as a YYYY-MM string using `.dt.to_period('M').astype(str)`; (3) groups by month and sums `net_amount` as `monthly_revenue`; (4) sorts by month ascending; (5) adds `rolling_mean` (3-month rolling mean of `monthly_revenue`, `min_periods=1`, rounded 2 dp) and `rolling_std` (3-month rolling std, `min_periods=1`, NaN filled with 0.0, rounded 2 dp); (6) adds `is_anomaly` = True where `monthly_revenue > rolling_mean + 2 × rolling_std`. Return all columns, index reset.",
+    "dataframes": {
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_orders):\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_orders):\n    return (\n        df_orders\n        .loc[df_orders['status'] == 'completed']\n        .assign(month=lambda x: pd.to_datetime(x['order_date']).dt.to_period('M').astype(str))\n        .groupby('month', as_index=False)\n        .agg(monthly_revenue=('net_amount', 'sum'))\n        .sort_values('month')\n        .assign(\n            rolling_mean=lambda x: x['monthly_revenue'].rolling(3, min_periods=1).mean().round(2),\n            rolling_std=lambda x: x['monthly_revenue'].rolling(3, min_periods=1).std().fillna(0).round(2),\n        )\n        .assign(is_anomaly=lambda x: x['monthly_revenue'] > x['rolling_mean'] + 2 * x['rolling_std'])\n        .reset_index(drop=True)\n    )",
+    "hints": [
+      "Decompose the pipeline into two phases: first build the aggregated monthly revenue series in correct temporal order, then layer the anomaly detection metrics on top as a second pass.",
+      "Use two separate assign() calls: the first creates rolling_mean and rolling_std; the second references both to compute is_anomaly."
+    ],
+    "concepts": [
+      "METHOD CHAINING & PIPELINE STYLE",
+      "WINDOW & ROLLING OPERATIONS"
+    ],
+    "mock_only": true
+  },
+  {
+    "id": 33086,
+    "order": 86,
+    "difficulty": "hard",
+    "title": "Payment Method × Month Pivot with Naming Contract",
+    "description": "A finance BI tool expects a wide-format payment summary. Using `df_payments`, build a pivot table where: rows = `payment_method`; cell values = sum of `amount` per month derived from `payment_date`; column names follow the pattern `total_YYYY_MM` (replace `-` with `_`). Fill missing combinations with 0.0. Return `payment_method` followed by monthly columns in chronological order. Sort by `payment_method` ascending. Reset the index.",
+    "dataframes": {
+      "df_payments": "payments.csv"
+    },
+    "schema": {
+      "df_payments": [
+        "payment_id",
+        "order_id",
+        "payment_date",
+        "payment_method",
+        "amount",
+        "status"
+      ]
+    },
+    "starter_code": "import pandas as pd\n\ndef solve(df_payments):\n    pass",
+    "expected_code": "import pandas as pd\n\ndef solve(df_payments):\n    df = df_payments.copy()\n    df['month'] = (\n        pd.to_datetime(df['payment_date'])\n        .dt.to_period('M')\n        .astype(str)\n        .str.replace('-', '_', regex=False)\n    )\n    pivot = (\n        df.groupby(['payment_method', 'month'])['amount']\n        .sum()\n        .unstack(fill_value=0.0)\n    )\n    pivot.columns = ['total_' + c for c in pivot.columns]\n    return (\n        pivot.reset_index()\n        .sort_values('payment_method')\n        .reset_index(drop=True)\n    )",
+    "hints": [
+      "Treat the shape transformation as two separate concerns: first get the data into wide format so each month becomes its own column, then conform those column labels to the naming contract as a distinct step.",
+      "Two reset_index() calls serve different purposes: the first converts the pivot's row index into a column; the second re-sequences the integer row index after sort_values."
+    ],
+    "concepts": [
+      "OUTPUT SHAPE & ORDERING",
+      "RESHAPING & PIVOT"
+    ],
+    "mock_only": true
+  },
+  {
+    "id": 33087,
+    "order": 87,
+    "difficulty": "hard",
+    "title": "Vectorised Metrics with Dtype Optimisation",
+    "description": "A legacy pipeline uses apply() to compute per-order metrics. Rewrite it with vectorised pandas operations. Using `df_orders`, compute two new columns without any apply() or iterrows(): `discount_rate` = `discount_amount / gross_amount` rounded to 3 decimal places and stored as float32; `revenue_tier` = 'premium' if `net_amount ≥ 200`, 'standard' if `50 ≤ net_amount < 200`, else 'basic' — stored as an ordered pandas Categorical (basic < standard < premium). Return `order_id`, `net_amount`, `discount_rate`, `revenue_tier`, sorted by `order_id` ascending.",
+    "dataframes": {
+      "df_orders": "orders.csv"
+    },
+    "schema": {
+      "df_orders": [
+        "order_id",
+        "user_id",
+        "order_date",
+        "status",
+        "gross_amount",
+        "discount_amount",
+        "net_amount",
+        "payment_status"
+      ]
+    },
+    "starter_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_orders):\n    pass",
+    "expected_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['discount_rate'] = (df['discount_amount'] / df['gross_amount']).round(3).astype('float32')\n    df['revenue_tier'] = pd.Categorical(\n        np.select(\n            [df['net_amount'] >= 200, df['net_amount'] >= 50],\n            ['premium', 'standard'],\n            default='basic'\n        ),\n        categories=['basic', 'standard', 'premium'],\n        ordered=True\n    )\n    return (\n        df[['order_id', 'net_amount', 'discount_rate', 'revenue_tier']]\n        .sort_values('order_id')\n        .reset_index(drop=True)\n    )",
+    "hints": [
+      "numpy.select() evaluates an ordered list of boolean conditions and returns the first matching value for each row — the vectorised equivalent of a row-wise if/elif/else.",
+      "Wrap the np.select result in pd.Categorical with ordered=True and an explicit categories list to declare the ordinal ranking; chain .astype() directly on a Series for scalar dtype conversions."
+    ],
+    "concepts": [
+      "MEMORY & VECTORIZATION REASONING",
+      "BOOLEAN INDEXING & FILTERING"
+    ],
+    "mock_only": true
   }
 ]
