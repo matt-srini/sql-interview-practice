@@ -1,7 +1,7 @@
 # Track Phase 2 Orchestration Runbook
 
 **Status:** durable orchestration doc (survives Phase 3 tracker deletion)
-**Audience:** any Opus session picking up Phase 2 orchestration for an open track (Statistics, ML Fundamentals, Experimentation), the deferred DM Phase 2.5 re-balance, or any future Phase 2 round for a new track.
+**Audience:** any Opus session picking up Phase 2 orchestration for an open track (ML Fundamentals, Experimentation), the deferred DM Phase 2.5 re-balance, or any future Phase 2 round for a new track.
 
 This is the **orchestration handbook**, not the contract. The contract (rules, philosophy, schemas) lives in the durable docs listed at the bottom. This doc captures the **process patterns** for running a track through Phase 2: how Stage A plans, how Sonnet executes Stage B, how Stage C audits — all the orchestration-level knowledge that doesn't fit in the contract docs and historically lived only in conversation context.
 
@@ -46,7 +46,7 @@ In this order:
 
 **Deliverable 1 — Track Reality + Watch-Outs block.** Self-contained, formatted for the Sonnet handoff. Must include: on-disk counts (split by subtype if applicable), current practice:mock ratio, closest-precedent analog (with quoted precedent table), framing summary lifted from track-doc, current registry state (family count, orphan count, ⚡-scaffolding count), reject-on-sight anti-patterns specific to the track (≥4 named), adjacent-track tag bleed list (per § 2.5 below).
 
-**Deliverable 2 — Registry expansion proposal (if needed).** Mandatory if the track's registered family count is materially incomplete relative to its on-disk concept space (e.g. Statistics with 12 families and 84 orphan tag instances). Proposes new families with name + definition + initial `members` list + initial `match_patterns` + practice-grounded-vs-realism designation + reasoning-depth justification. **User approval gates Sonnet authoring** — Sonnet must NOT author against an incomplete registry; the validator's silent-skip (now warning) would mask drift.
+**Deliverable 2 — Registry expansion proposal (if needed).** Mandatory if the track's registered family count is materially incomplete relative to its on-disk concept space (precedent: Statistics started with 12 families + 84 orphan tag instances; Stage A Deliverable 2 expanded to 13 families with full pattern coverage before Sonnet authoring began). Proposes new families with name + definition + initial `members` list + initial `match_patterns` + practice-grounded-vs-realism designation + reasoning-depth justification. **User approval gates Sonnet authoring** — Sonnet must NOT author against an incomplete registry; the validator's silent-skip (now warning) would mask drift. **Pattern-shadow warning** (lesson from Stats Stage C): when authoring new patterns, walk the registry from top and check whether each new pattern substring-shadows an earlier-defined family. Stats Round 1 audit caught a `"variance"` substring shadow that mis-routed 11 tags; verify on disk during Stage A before locking the registry.
 
 **Deliverable 3 — Practice gap analysis.** Read every practice question. Reconcile concept-tag coverage against the (post-expansion) registry. Identify concept-arc gaps that need practice additions BEFORE mock-only sizing is locked.
 
@@ -293,14 +293,15 @@ Update this section after each track closes / each retro-cleanup completes.
 | PySpark | ✅ Closed | ✅ Zero coverage warnings | Cleanest track on platform under per-family discipline |
 | Data Engineering | ✅ Closed | ✅ Retro-cleanup closed 2026-05-25 — zero warnings. INCIDENT RESPONSE: 16 medium mock-only re-tiered to hard (R2). DATA CONTRACT: registry pattern shadow fixed (1-line removal from SCHEMA EVOLUTION patterns) resurrected family with 21 mock-only + 2 practice already on disk. Spot-check on 3 re-tiered questions (53087/53092/53102) confirmed hard-tier reasoning bar. 2 chains touched per § 5.4 (1 intact, 1 dissolved). | Practice 91, mock 110, ratio 1.21×, mock m:h = 1:2.24 (corrected — rationale in data-engineering.md) |
 | Data Modeling | ✅ Closed (Phase 2.5 pending) | DIMENSIONAL MODELING 93.8% ceiling breach + 2 dead families + 1 practice-floor | **Separate Phase 2.5 re-balance cycle** — not a retro-cleanup; needs Stage A→B→C |
-| Statistics | ⏸ Pending | Registry incomplete (12 families, 84 orphan tag instances) | Phase 2 pending; registry expansion gates Stage A → Sonnet |
+| Statistics | ✅ Closed | ✅ Phase 2 closed 2026-05-26 (Stage C PASS after 2 remediation rounds — see tracker decision log). 13-family registry locked (expanded from 12 via Stage A Deliverable 2). 100 practice + 116 mock-only authored; 12 chains all 7 follow-up dimensions exercised. Dual-subtype (conceptual + numerical); per-subtype ratios conceptual 1.42× / numerical 0.78× (numerical below 1.0× — provisional, first-remediation candidate if exhaustion observed). Path (ii) no realism by design (union-of-modalities defence in `statistics.md`). | Practice 100, mock 116, ratio 1.16× (band low end); validator-enabled |
 | ML Fundamentals | ⏸ Pending | 0 orphans / 29 families — clean enough to enforce now | Phase 2 pending |
 | Experimentation | ⏸ Pending | 0 orphans / 22 families — clean enough to enforce now | Phase 2 pending |
 
 ### 6.2 Validator coverage state (`_TAXONOMY_VALIDATED_TRACKS`)
 
 In set: SQL, Python, Pandas (`python-data`), PySpark, Data Engineering, Data Modeling.
-Out of set: Statistics, ML Fundamentals, Experimentation. Validator emits stderr warning naming them on every run.
+In set (post Stats closure): SQL, Python, Pandas (`python-data`), PySpark, Data Engineering, Data Modeling, Statistics.
+Out of set: ML Fundamentals, Experimentation. Validator emits stderr warning naming them on every run.
 
 ### 6.3 Precedent table (sizing-benchmark anchor for next Stage A)
 
@@ -312,8 +313,11 @@ Out of set: Statistics, ML Fundamentals, Experimentation. Validator emits stderr
 | PySpark | 128 | 150 | 1.17 |
 | DE | 91 | 110 | 1.21 |
 | DM | 80 | 96 | 1.20 |
+| Statistics | 100 | 116 | 1.16 |
 
 Band: 1.0–1.5×. Always quote this in Stage A Deliverable 1.
+
+**Subtype caveat for Statistics:** the 1.16× track-level ratio masks asymmetric per-subtype ratios — conceptual subtype landed at 1.42× (60/85), numerical subtype at 0.78× (40/31). The numerical 0.78× is below the 1.0× contract floor and is flagged as provisional in `docs/tracks/statistics.md` Coverage section; first remediation candidate if benchmark fresh-first exhausts. Future hybrid-subtype tracks should plan per-subtype ratios that BOTH sit inside the band.
 
 ---
 
@@ -321,14 +325,15 @@ Band: 1.0–1.5×. Always quote this in Stage A Deliverable 1.
 
 These are starting hypotheses. Each track's Stage A planner refines on inspection.
 
-### 7.1 Statistics
+### 7.1 Statistics — ✅ CLOSED 2026-05-26
 
-- **W1**: Ratio 0.08× (8 mock-only / 97 practice) — largest authoring gap on the platform.
-- **W2**: HYBRID modality — `eval_kind="mixed"`. Every question has `subtype` (`conceptual` MCQ-response or `numerical` Python-code). Stage A must address BOTH subtypes (per-subtype sizing, type mix, realism, chains). Benchmark spec locks `1 numerical + 2 conceptual` per benchmark — mock-only must support this composition.
-- **W3**: **Registry incomplete — 12 families, 84 orphan tag instances.** Registry expansion (Deliverable 2) GATES Sonnet authoring. Likely new families: probability foundations (set theory, sample space, inclusion-exclusion, conditional probability); descriptive statistics (skewness, IQR, kurtosis); bias patterns (survivorship, Berkson's, selection — strong path-(i) realism candidates); inferential frameworks (frequentist inference, MLE, log-odds, sufficient statistics).
-- **W4**: Realism-family decision — strong path-(i) signal from bias-pattern cluster. Defend explicitly.
-- **W5**: Adjacent-track tag bleed candidates: ML's `MODEL EVALUATION & METRICS`, `CLASSIFIER PERFORMANCE METRICS`, `FEATURE ENGINEERING`, `BIAS-VARIANCE TRADEOFF`; Exp's `HYPOTHESIS TESTING`, `A/B TESTING DESIGN`, `CAUSAL INFERENCE`, `EXPERIMENT DESIGN`, `RANDOMIZATION`; SQL's `WINDOW FUNCTIONS`. Stats may want its OWN registered versions of `HYPOTHESIS TESTING` etc. — verify against final registry.
-- **W6**: Validator NOT enforcing Stats yet. Per-ITEM orphan-resolver mandatory in handoff.
+Outcome (historical reference for future hybrid-subtype tracks):
+- Final state: 100 practice (31e/43m/26h, 60c/40n subtype) + 116 mock-only (0e/66m/50h, 85c/31n subtype) = 1.16× ratio (band low end).
+- Registry: 12 → 13 families via Stage A Deliverable 2 (added `survival analysis & time-to-event`; expanded patterns on `errors & power` + `variance decomposition & ANOVA`). Bayesian-frequentist non-inversion enforced (D2-A). Experimental-design boundary narrowed to statistical-foundation only (D2-B option a) — platform-mechanic patterns deferred to Experimentation track.
+- Path (ii) no realism family — defended on union-of-modalities + chain-pivot coverage in `docs/tracks/statistics.md`.
+- Stage C took 2 remediation rounds + a doc-only Round 3 closeout. Real catches: Bayesian-frequentist co-tag violations on 2 questions, `"variance"` substring shadow mis-routing 11 tags, 3 factual answer-key errors in pre-existing conceptual questions, Coverage-section subtype counts fabricated rather than computed from disk. **Lesson for future Stage Bs**: when validator enforcement is first enabled for a track (H2), pre-existing questions surfaced as failures must be remediated as part of closeout — but those edits should still be surfaced to user BEFORE self-applying, not in hand-back-only. Codification candidate: extend P2 guidance with "validator-blocked = closeout-blocking but still surface-first."
+- **Provisional flag carried forward to runbook § 6.3:** numerical subtype 0.78× ratio is below 1.0× contract floor; first remediation candidate if benchmark fresh-first exhausts.
+- **Experimentation Phase 2 handoff carry**: the 3 platform-mechanic concepts stripped from Stats path focus_concepts (`SEQUENTIAL TESTING`, `METRIC SENSITIVITY`, `GUARDRAIL METRICS`) must map to Experimentation families when its Phase 2 runs.
 
 ### 7.2 ML Fundamentals
 
