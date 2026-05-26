@@ -59,7 +59,7 @@ Difficulty controls reasoning depth, never licenses vocabulary trivia. Even easy
 
 Full registry: [`docs/concept-taxonomy.md` → Data Modeling section](../concept-taxonomy.md#data-modeling--concept-families).
 
-22 families. **Registry locked (Phase 2 complete).** 41 unique tags / 515 occurrences across 176 questions (80 practice + 96 mock-only). 5 orphan tags remediated in the Phase 2 pass.
+22 families. **Registry locked (Phase 2.5 complete).** 41 unique tags across 178 questions (81 practice + 97 mock-only). 5 orphan tags remediated in Phase 2; 2 registry shadows fixed in Phase 2.5 (CONFORMED + DENORMALIZATION TRADEOFF).
 
 ## Authoring allocation matrix
 
@@ -117,21 +117,21 @@ Required:
 
 ## Coverage & sizing targets
 
-**Phase 2 complete (2026-05-25).** 96 mock-only questions authored and committed.
+**Phase 2.5 complete (2026-05-26).** 97 mock-only questions; 81 practice questions.
 
 | Difficulty | Practice | Mock-only | Total |
 |---|---|---|---|
 | Easy | 25 | 0 | 25 |
-| Medium | 30 | 45 | 75 |
+| Medium | 31 | 46 | 77 |
 | Hard | 25 | 51 | 76 |
-| **Total** | **80** | **96** | **176** |
+| **Total** | **81** | **97** | **178** |
 
-**Ratio:** 96 / 80 = **1.20×** (within the 1.20× ± 5pp target band locked at Stage A).
+**Ratio:** 97 / 81 = **1.20×** (within the 1.20× ± 5pp target band locked at Stage A).
 
 **Mock-only chain inventory:** 10 chains total (31 questions: 10 parents + 21 follow-ups) — 4 medium parents (62047/62053/62059/62060, 2–3 members each) + 6 hard parents (63041/63044/63048/63051/63054/63056, 1–3 members each). All 7 follow-up dimensions covered: `business_rule_pivot` (5), `data_quality_pivot` (3), `performance_pivot` (3), `edge_case_pivot` (3), `ambiguity_pivot` (3), `scale_pivot` (2), `stakeholder_pivot` (2).
 
 **Type distribution (mock-only):**
-- Medium (45 total): scenario 22, conceptual 16, debug 7
+- Medium (46 total): scenario 23, conceptual 16, debug 7
 - Hard (51 total): scenario 31, conceptual 12, debug 8
 
 **No mock-only realism families.** All 22 DM concept families are practice-grounded and directly gradeable as MCQ. `MOCK_ONLY_REALISM_FAMILIES["data-modeling"] = set()` enforced in `concept_families.py`. Track is in `_TAXONOMY_VALIDATED_TRACKS` in `validate_content.py`.
