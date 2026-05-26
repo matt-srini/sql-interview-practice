@@ -325,7 +325,7 @@
     "solution_query": "SELECT CASE\n WHEN net_amount < 100 THEN 'low value'\n WHEN net_amount < 500 THEN 'mid value'\n ELSE 'high value'\n END AS order_value_band,\n COUNT(order_id) AS order_count\nFROM orders\nGROUP BY CASE\n WHEN net_amount < 100 THEN 'low value'\n WHEN net_amount < 500 THEN 'mid value'\n ELSE 'high value'\n END\nORDER BY order_count DESC, order_value_band ASC;",
     "explanation": "CASE WHEN creates a derived label for each order based on its net_amount, which turns a continuous numeric value into business-friendly categories. Because the output is summarized by those labels, the same CASE expression must appear in the GROUP BY clause. COUNT then measures how many orders fall into each band. The ORDER BY clause makes the summary deterministic and shows the most common band first.",
     "hints": [
-      "Collapse the data to the business grain named in the result before you calculate the summary values.",
+      "Turn each order's net_amount into one of three named buckets, then group and count by that derived label.",
       "Group by the same CASE expression you use in the SELECT list."
     ],
     "concepts": [
@@ -410,7 +410,7 @@
     "enforce_concepts": false,
     "explanation": "The subquery first identifies which user_ids are associated with at least one chargeback payment by joining orders to payments. The outer query then filters the users table to only those matching user_ids. This is a good introductory subquery pattern because the inner query solves a narrower set-membership problem and the outer query uses that result to fetch descriptive user columns. ORDER BY user_id keeps the final output deterministic.",
     "hints": [
-      "Combine the sources that hold the needed attributes before you filter or shape the final result.",
+      "First figure out which user_ids have a chargeback (that's an orders↔payments lookup); then keep only users whose user_id appears in that set.",
       "The outer query should filter users based on whether their user_id appears in that inner result set."
     ],
     "concepts": [
@@ -609,7 +609,7 @@
     "enforce_concepts": false,
     "explanation": "The outer query returns employee details along with the department name. The correlated subquery recalculates the average salary for the current employee's department by matching e2.department_id to e.department_id. Because that subquery depends on the outer row, it produces a department-specific comparison instead of one global average. The WHERE clause keeps only employees whose salary is above their own department average, and the ORDER BY produces a stable result.",
     "hints": [
-      "Combine the sources that hold the needed attributes before you filter or shape the final result.",
+      "Each employee is compared against the average of their own department — your filter needs an average that recomputes for every row, not a single global average.",
       "The subquery should reference the outer employee row through department_id.",
       "Join departments only to display the department name."
     ],
@@ -655,7 +655,7 @@
     "enforce_concepts": false,
     "explanation": "The outer query starts from users because the result needs user-level output, including people who may have no qualifying orders at all. NOT EXISTS is the correct anti-subquery pattern here because it checks whether any completed order is present for the current user. If none exists, that user remains in the result. The signup_date filter is applied in the outer WHERE clause so only early signups are evaluated, and the final ordering is deterministic.",
     "hints": [
-      "Break the problem into stages so the reusable intermediate result exists before the final filter or comparison.",
+      "Start from users and ask, for each one: does any completed order exist? Keep only the users where the answer is no — that's an anti-match, not a join.",
       "Use an anti-subquery pattern to exclude users who have at least one completed order.",
       "Apply the signup-date filter in the outer query."
     ],
@@ -792,7 +792,7 @@
     "enforce_concepts": false,
     "explanation": "The query groups tickets by issue_type and then calculates multiple metrics from that same grouped data. Conditional SUM expressions separate resolved from unresolved tickets without needing multiple passes over the table. AVG(CASE WHEN status = 'resolved' THEN resolution_hours END) averages only resolved-ticket times because unresolved rows contribute NULL, which AVG ignores. HAVING enforces the minimum volume requirement after the grouping step.",
     "hints": [
-      "Reduce the data to the requested segment first, then keep only the segments that clear the summary threshold.",
+      "All three metrics come from one grouped pass over support_tickets — use CASE inside SUM and AVG to separate resolved from unresolved within the same group, rather than running multiple queries or pre-filtering rows.",
       "A CASE expression inside AVG can limit which rows contribute to the average.",
       "The minimum-ticket requirement belongs after grouping."
     ],
@@ -977,9 +977,9 @@
     "solution_query": "SELECT u.user_id, u.name, u.country\nFROM users u\nLEFT JOIN orders o\n  ON u.user_id = o.user_id\n AND o.order_date >= '2024-01-01'\n AND o.order_date < '2025-01-01'\nWHERE u.country IN ('US', 'UK', 'CA')\nGROUP BY u.user_id, u.name, u.country\nHAVING COUNT(o.order_id) = 0\nORDER BY u.user_id ASC;",
     "explanation": "The result must include users even when they have no 2024 orders, so the query starts from users and uses a LEFT JOIN to orders. The 2024 date filter is applied in the join condition so only 2024 orders can match, while users with no such orders remain in the joined result. The country filter belongs in WHERE because it applies to the driving users table. After grouping by user, COUNT(o.order_id) counts only matched 2024 orders, and HAVING COUNT(o.order_id) = 0 keeps the users with none. This is a join-correctness problem because moving the order-date filter to WHERE would incorrectly remove the users you need.",
     "hints": [
-      "Bring together the sources that hold the required attributes, then summarize at the business grain named in the prompt.",
+      "Users with zero qualifying orders must survive into the result — that requirement dictates which join type you pick, and that choice interacts with where you put the date filter.",
       "Filter the user list to the requested countries before applying the zero-order test.",
-      "Filter the order date range before the grouping, but be careful where that filter is placed."
+      "Putting `o.order_date >= '2024-01-01'` in the WHERE clause silently turns a LEFT JOIN into an INNER join (NULL fails the comparison and drops the row); keep the date filter in the ON clause so unmatched users survive."
     ],
     "concepts": [
       "OPTIONAL ENTITY PRESERVATION",
@@ -1185,7 +1185,7 @@
     "solution_query": "SELECT p.product_id, p.product_name, p.brand\nFROM products p\nWHERE p.launch_date < '2024-01-01'\n AND NOT EXISTS (\n  SELECT 1\n  FROM order_items oi\n  JOIN orders o ON oi.order_id = o.order_id\n  WHERE oi.product_id = p.product_id\n   AND o.status = 'completed'\n )\nORDER BY p.product_id ASC;",
     "explanation": "The outer query starts from products because the result should include products that might have no matching order history at all. The NOT EXISTS subquery checks whether a completed-order match exists for the current product by joining order_items to orders and correlating back through oi.product_id = p.product_id. If no such completed-order row exists, the product stays in the result. This is a clean anti-match pattern that avoids accidental loss of products with no order-item rows.",
     "hints": [
-      "Break the problem into stages so the reusable intermediate result exists before the final filter or comparison.",
+      "Start from products and ask, for each one: does any completed-order line item exist? Keep only the products where the answer is no — that's an anti-match against the order_items↔orders pair.",
       "The subquery should look for evidence that a product appears in a completed order.",
       "Keep only products for which that evidence does not exist."
     ],
@@ -1277,7 +1277,7 @@
     "solution_query": "SELECT u.user_id, u.name, COUNT(p.payment_id) AS refunded_payment_count, SUM(p.amount) AS refunded_amount\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nJOIN payments p ON o.order_id = p.order_id\nWHERE p.status = 'refunded'\n AND NOT EXISTS (\n  SELECT 1\n  FROM support_tickets st\n  WHERE st.user_id = u.user_id\n   AND st.status IN ('open', 'in_progress')\n )\nGROUP BY u.user_id, u.name\nHAVING COUNT(p.payment_id) >= 2\nORDER BY refunded_amount DESC, u.user_id ASC;",
     "explanation": "This is a business-logic question that combines payment behavior with support status. The main query joins users to their orders and payment rows, then filters to refunded payment rows only. The NOT EXISTS subquery removes any user who currently has an open or in-progress support ticket, which keeps the user-level business rule separate from the payment-row aggregation. After grouping by user, HAVING COUNT(p.payment_id) >= 2 enforces the repeated-refund threshold, and SUM(p.amount) measures the refund exposure.",
     "hints": [
-      "Break the problem into stages so the reusable intermediate result exists before the final filter or comparison.",
+      "Two distinct user-level checks are happening at once: aggregate the refunded payments per user, AND separately exclude users who currently have an open ticket. Keep those two pieces of reasoning in different parts of the query so the ticket exclusion doesn't fold into the payment aggregation.",
       "Handle the support-ticket exclusion as a separate user-level check, not by joining ticket rows into the main aggregation.",
       "Use HAVING for the minimum refund-count requirement."
     ],
