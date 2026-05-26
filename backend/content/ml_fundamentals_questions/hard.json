@@ -1042,11 +1042,13 @@
   },
   {
     "id": 83043,
+    "order": 39,
+    "topic": "ml-fundamentals",
     "title": "Transformer Gradient Explosion: Diagnosis and Recovery",
     "type": "debug",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A 24-layer transformer trained on financial news achieves loss < 0.1 in epoch 2, then abruptly diverges to NaN in epoch 3. Gradient norm logging shows: epoch 1 avg=0.8, epoch 2 avg=2.1, epoch 3 step 50: norm spikes to 847, then NaN. The learning rate schedule is cosine with warmup (1,000 steps), batch size 32, no gradient clipping configured. Which intervention is most effective?",
+    "description": "A 24-layer transformer trained on financial news achieves loss < 0.1 in epoch 2, then abruptly diverges to NaN in epoch 3. Gradient norm logging shows: epoch 1 avg=0.8, epoch 2 avg=2.1, epoch 3 step 50: norm spikes to 847, then NaN. The learning rate schedule is cosine with warmup (1,000 steps), batch size 32, no gradient clipping configured. Which intervention is most effective?",
     "options": [
       "Add gradient clipping (max_norm=1.0) and restart from the epoch 2 checkpoint \u2014 clipping caps the norm before the parameter update, preventing overflow while preserving the epoch 2 training state",
       "Reduce learning rate by 10x and restart training from scratch \u2014 a lower peak LR prevents the loss landscape from reaching steep regions that trigger the explosion",
@@ -1062,15 +1064,21 @@
     "concepts": [
       "GRADIENT PATHOLOGY",
       "NEURAL NETWORK DESIGN"
+    ],
+    "follow_ups": [
+      83103,
+      83104
     ]
   },
   {
     "id": 83044,
+    "order": 40,
+    "topic": "ml-fundamentals",
     "title": "BatchNorm Mode Bug: Train vs Inference Statistics",
     "type": "debug",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A ResNet-50 fine-tuned for medical image segmentation achieves 0.91 Dice score on validation during training. At inference (deployed as a REST API), the same model scores 0.74 on identical images from the same scanner. The serving code calls model.forward(x) without explicitly setting eval mode, processing one image at a time. A colleague suspects a BatchNorm bug. Which statement best explains the observed degradation?",
+    "description": "A ResNet-50 fine-tuned for medical image segmentation achieves 0.91 Dice score on validation during training. At inference (deployed as a REST API), the same model scores 0.74 on identical images from the same scanner. The serving code calls model.forward(x) without explicitly setting eval mode, processing one image at a time. A colleague suspects a BatchNorm bug. Which statement best explains the observed degradation?",
     "options": [
       "In training mode, BatchNorm computes per-batch mean and variance on the current batch; at serving time with batch_size=1, these per-batch statistics are computed over a single sample, which are noisy and inconsistent with the population statistics accumulated during training \u2014 model.eval() is required to switch BatchNorm to use its stored running mean and variance",
       "BatchNorm in eval mode freezes all layer weights; calling forward() without model.eval() keeps weights unfrozen, allowing gradient accumulation during the forward pass that corrupts the activations",
@@ -1090,11 +1098,13 @@
   },
   {
     "id": 83045,
+    "order": 41,
+    "topic": "ml-fundamentals",
     "title": "Domain Adaptation Failure: When Fine-Tuning Overfits the Task Domain",
     "type": "scenario",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A team fine-tunes BERT-base on 1,200 labeled customer support tickets (intent classification, 8 classes). After 3 epochs, training accuracy is 97%, validation accuracy is 71%, and the gap widens each epoch. They try: adding dropout p=0.5 to the final layer; reducing learning rate from 2e-5 to 1e-6; freezing all BERT layers and training only the classification head. None of these recovers more than 78% validation accuracy. The dataset has 150 samples per class on average. What is the most likely root cause and correct fix?",
+    "description": "A team fine-tunes BERT-base on 1,200 labeled customer support tickets (intent classification, 8 classes). After 3 epochs, training accuracy is 97%, validation accuracy is 71%, and the gap widens each epoch. They try: adding dropout p=0.5 to the final layer; reducing learning rate from 2e-5 to 1e-6; freezing all BERT layers and training only the classification head. None of these recovers more than 78% validation accuracy. The dataset has 150 samples per class on average. What is the most likely root cause and correct fix?",
     "options": [
       "The dataset is too small for full fine-tuning and BERT's pre-trained representations are misaligned with support-ticket vocabulary \u2014 domain-adaptive pre-training (DAPT) on unlabeled support ticket text before the supervised fine-tuning step would adapt the language model to domain-specific vocabulary before fitting the classification head",
       "BERT-base has 110M parameters and is too large for 1,200 samples \u2014 replacing with DistilBERT or logistic regression on TF-IDF features would prevent overfitting without DAPT",
@@ -1114,11 +1124,13 @@
   },
   {
     "id": 83046,
+    "order": 42,
+    "topic": "ml-fundamentals",
     "title": "Multi-Task Gradient Scale Mismatch: Target Normalization",
     "type": "debug",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A multi-task neural network jointly predicts house price (range $100K\u2013$5M) and binary sale probability. Both tasks share the first three layers. The combined loss is L = L_price + L_sale where L_price is MSE in raw dollars and L_sale is binary cross-entropy. Training is unstable: L_price oscillates while L_sale converges in epoch 1. Gradient norms for the shared layers: \u2202L_price/\u2202W \u2248 1e6, \u2202L_sale/\u2202W \u2248 0.3. Which fix is most appropriate?",
+    "description": "A multi-task neural network jointly predicts house price (range $100K\u2013$5M) and binary sale probability. Both tasks share the first three layers. The combined loss is L = L_price + L_sale where L_price is MSE in raw dollars and L_sale is binary cross-entropy. Training is unstable: L_price oscillates while L_sale converges in epoch 1. Gradient norms for the shared layers: \u2202L_price/\u2202W \u2248 1e6, \u2202L_sale/\u2202W \u2248 0.3. Which fix is most appropriate?",
     "options": [
       "Normalize the price target to zero mean, unit variance (z-score) before training and predict in normalized space \u2014 this reduces \u2202L_price/\u2202W from ~1e6 to ~1.0, balancing gradient contributions from both tasks in the shared layers",
       "Multiply L_sale by 1e6 to match the scale of L_price \u2014 this ensures both tasks contribute equally to the shared-layer gradient updates",
@@ -1138,11 +1150,13 @@
   },
   {
     "id": 83047,
+    "order": 43,
+    "topic": "ml-fundamentals",
     "title": "Feature Importance Exposes Temporal Leakage in Loan Default Model",
     "type": "debug",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A gradient boosting model predicts loan default 30 days before maturity. SHAP feature importances reveal the top contributors: (1) days_to_maturity: 0.31, (2) months_since_origination: 0.18, (3) payment_history_score: 0.12. The model achieves AUC 0.97 on holdout. A reviewer flags the feature set for temporal leakage. Which statement correctly identifies the root cause?",
+    "description": "A gradient boosting model predicts loan default 30 days before maturity. SHAP feature importances reveal the top contributors: (1) days_to_maturity: 0.31, (2) months_since_origination: 0.18, (3) payment_history_score: 0.12. The model achieves AUC 0.97 on holdout. A reviewer flags the feature set for temporal leakage. Which statement correctly identifies the root cause?",
     "options": [
       "days_to_maturity is computed as (maturity_date - prediction_date); in the training dataset, if observations were collected at multiple points per loan, near-maturity observations are over-represented among defaults \u2014 creating a spurious distributional coupling between low days_to_maturity and default=1 that the model exploits, not actual default risk",
       "The SHAP value of 0.31 for days_to_maturity means the model uses it as a direct proxy for default probability \u2014 loans with days_to_maturity=30 must default by construction, so the feature directly encodes the label",
@@ -1158,15 +1172,21 @@
     "concepts": [
       "DATA LEAKAGE DETECTION",
       "FEATURE IMPORTANCE INTERPRETATION"
+    ],
+    "follow_ups": [
+      83105,
+      83106
     ]
   },
   {
     "id": 83048,
+    "order": 44,
+    "topic": "ml-fundamentals",
     "title": "Stacking Meta-Learner: In-Sample vs Out-of-Fold Predictions",
     "type": "conceptual",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A team builds a stacking ensemble: Level 0 has Random Forest, XGBoost, and LightGBM trained on the full training set; Level 1 is a logistic regression meta-learner trained on Level 0's in-sample predictions. Test performance: AUC 0.89 training, 0.76 holdout. A colleague claims there is leakage in the meta-learner training step. Which statement best explains the issue?",
+    "description": "A team builds a stacking ensemble: Level 0 has Random Forest, XGBoost, and LightGBM trained on the full training set; Level 1 is a logistic regression meta-learner trained on Level 0's in-sample predictions. Test performance: AUC 0.89 training, 0.76 holdout. A colleague claims there is leakage in the meta-learner training step. Which statement best explains the issue?",
     "options": [
       "Level 0 models trained on the full training set produce in-sample predictions that reflect memorization of training examples \u2014 the meta-learner trains on these optimistically biased predictions and learns to exploit overfitting artifacts; out-of-fold (OOF) predictions from k-fold Level 0 training would expose the meta-learner only to predictions Level 0 made on data it did not train on",
       "The meta-learner should be trained on the original features alongside Level 0 predictions \u2014 using predictions alone causes logistic regression to memorize the Level 0 ensemble outputs without learning generalizable patterns from the input space",
@@ -1186,11 +1206,13 @@
   },
   {
     "id": 83049,
+    "order": 45,
+    "topic": "ml-fundamentals",
     "title": "Feature Store Staleness: Lag vs Distribution Drift",
     "type": "scenario",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A fraud detection model uses a feature store precomputing a 30-day rolling transaction count per user. At training time, the feature is computed from complete historical data. At serving time, the feature store is updated every 4 hours via a batch job. A model trained in January achieves 0.93 AUC on January holdout but degrades to 0.81 AUC in July. Analysis shows: (1) the 30-day rolling count distribution shifted, median 12 \u2192 27; (2) the 4-hour lag means real-time transactions are not reflected in the count for up to 4 hours. Which root cause is PRIMARY?",
+    "description": "A fraud detection model uses a feature store precomputing a 30-day rolling transaction count per user. At training time, the feature is computed from complete historical data. At serving time, the feature store is updated every 4 hours via a batch job. A model trained in January achieves 0.93 AUC on January holdout but degrades to 0.81 AUC in July. Analysis shows: (1) the 30-day rolling count distribution shifted, median 12 \u2192 27; (2) the 4-hour lag means real-time transactions are not reflected in the count for up to 4 hours. Which root cause is PRIMARY?",
     "options": [
       "Distribution shift is primary: the model was trained on January users with median 30-day count=12; by July the user population's behavior has changed (median=27), and the model is scoring out-of-distribution users \u2014 retraining on recent data addresses the root cause",
       "The 4-hour feature store lag is primary: high-velocity fraud bursts that complete within 4 hours are invisible to the model, creating a systematic training-serving skew that degrades AUC on exactly the transactions most at risk",
@@ -1206,15 +1228,21 @@
     "concepts": [
       "TRAINING-SERVING SKEW",
       "MODEL MONITORING"
+    ],
+    "follow_ups": [
+      83107,
+      83108
     ]
   },
   {
     "id": 83050,
+    "order": 46,
+    "topic": "ml-fundamentals",
     "title": "Extreme Imbalance: Class Weights vs SMOTE vs Undersampling",
     "type": "conceptual",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A fraud detection classifier has 0.1% positive rate (1 in 1,000). The team considers: (A) class_weight='balanced' in logistic regression; (B) SMOTE oversampling minority to 10%; (C) random undersampling to 50/50 balance. Business metric is F1 on the fraud class. A senior ML engineer says: 'SMOTE will hurt calibration; class_weight is strictly preferable for this dataset.' Evaluate this claim.",
+    "description": "A fraud detection classifier has 0.1% positive rate (1 in 1,000). The team considers: (A) class_weight='balanced' in logistic regression; (B) SMOTE oversampling minority to 10%; (C) random undersampling to 50/50 balance. Business metric is F1 on the fraud class. A senior ML engineer says: 'SMOTE will hurt calibration; class_weight is strictly preferable for this dataset.' Evaluate this claim.",
     "options": [
       "Partially correct: SMOTE can distort the decision boundary at 1:1000 imbalance by generating synthetic minority points in dense majority regions; class_weight='balanced' achieves equivalent decision-boundary reweighting without synthetic samples \u2014 but 'strictly preferable' overstates it because tree-based models can benefit from SMOTE's increased boundary density even at the cost of calibration",
       "Correct: class_weight='balanced' is universally preferable because it does not modify the training distribution, preserving calibration while achieving the same decision boundary shift as SMOTE",
@@ -1234,11 +1262,13 @@
   },
   {
     "id": 83051,
+    "order": 47,
+    "topic": "ml-fundamentals",
     "title": "Nested CV Optimism in Neural Architecture Search",
     "type": "scenario",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A researcher evaluates 36 neural network architectures (6 depths \u00d7 6 widths) using 5-fold CV, selects the best mean CV AUC, and reports that AUC (0.88) as the model's performance estimate. An independent holdout yields AUC 0.79. The researcher attributes the gap to n=800 being too small for stable training. Evaluate this explanation.",
+    "description": "A researcher evaluates 36 neural network architectures (6 depths \u00d7 6 widths) using 5-fold CV, selects the best mean CV AUC, and reports that AUC (0.88) as the model's performance estimate. An independent holdout yields AUC 0.79. The researcher attributes the gap to n=800 being too small for stable training. Evaluate this explanation.",
     "options": [
       "Incorrect: the gap is primarily optimistic selection bias \u2014 using the same 5 folds to both select the best of 36 architectures and report that architecture's performance conflates model selection with performance estimation; nested CV (inner loop for selection, outer loop for unbiased estimation) is required to separate these two goals",
       "Correct: with n=800 and 5 folds each training fold has 640 samples, which is insufficient for stable neural network training \u2014 the gap reflects high-variance CV estimates rather than selection bias",
@@ -1258,11 +1288,13 @@
   },
   {
     "id": 83052,
+    "order": 48,
+    "topic": "ml-fundamentals",
     "title": "ADWIN Drift Detector: False Positives and Gradual Drift Lag",
     "type": "conceptual",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A production model monitors for data drift using the ADWIN (Adaptive Windowing) algorithm. Two observations: (A) ADWIN triggers in week 3 but manual review finds no meaningful concept drift and model performance is unchanged; (B) a genuine gradual drift begins in week 8 but ADWIN does not trigger until week 11. A colleague says 'ADWIN is misconfigured for gradual drift.' Which statement best explains both behaviors?",
+    "description": "A production model monitors for data drift using the ADWIN (Adaptive Windowing) algorithm. Two observations: (A) ADWIN triggers in week 3 but manual review finds no meaningful concept drift and model performance is unchanged; (B) a genuine gradual drift begins in week 8 but ADWIN does not trigger until week 11. A colleague says 'ADWIN is misconfigured for gradual drift.' Which statement best explains both behaviors?",
     "options": [
       "ADWIN detects statistically significant changes in the mean of any streaming statistic it monitors; (A) likely reflects a genuine distributional change (pipeline artifact or covariate shift) that ADWIN correctly detected even though concept drift did not accompany it; (B) reflects ADWIN's design property that gradual drift must accumulate enough data in the current window to achieve statistical significance \u2014 a 3-week lag for slow-changing drift is expected, not a misconfiguration",
       "Both behaviors indicate ADWIN's delta (confidence parameter) is set too low \u2014 raising delta would reduce sensitivity in (A) and simultaneously increase sensitivity to gradual drift in (B)",
@@ -1282,11 +1314,13 @@
   },
   {
     "id": 83053,
+    "order": 49,
+    "topic": "ml-fundamentals",
     "title": "Preprocessing Leakage: Fitting the Scaler Before CV",
     "type": "debug",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A data scientist preprocesses 10,000 samples by fitting StandardScaler on the full dataset and transforming all samples. They then run 5-fold CV on the scaled data: training AUC 0.91, CV AUC 0.89. A fresh holdout (n=500, scaled with the same scaler) yields AUC 0.79. The scientist attributes the gap to overfitting. A senior engineer says there is preprocessing leakage. Who is correct, and why?",
+    "description": "A data scientist preprocesses 10,000 samples by fitting StandardScaler on the full dataset and transforming all samples. They then run 5-fold CV on the scaled data: training AUC 0.91, CV AUC 0.89. A fresh holdout (n=500, scaled with the same scaler) yields AUC 0.79. The scientist attributes the gap to overfitting. A senior engineer says there is preprocessing leakage. Who is correct, and why?",
     "options": [
       "The senior engineer is correct: fitting StandardScaler on the full dataset before CV means the scaler learned the mean and variance of the validation folds \u2014 validation fold statistics leak into the training normalization; the scaler should be fit only on training folds inside the CV loop (e.g., via sklearn Pipeline), keeping validation statistics unseen during training",
       "The scientist is correct: StandardScaler introduces leakage only when distributions differ between training and validation; for i.i.d. data with n=10,000, fitting on the full set is statistically equivalent to fitting on 80% and the practical leakage effect is negligible at this scale",
@@ -1302,15 +1336,21 @@
     "concepts": [
       "DATA LEAKAGE DETECTION",
       "CROSS-VALIDATION DESIGN"
+    ],
+    "follow_ups": [
+      83109,
+      83110
     ]
   },
   {
     "id": 83054,
+    "order": 50,
+    "topic": "ml-fundamentals",
     "title": "AdamW vs Adam + L2: Decoupled Weight Decay",
     "type": "conceptual",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A team trains a transformer with Adam + L2 regularization (lambda=0.01 added to the loss). A colleague suggests switching to AdamW (weight_decay=0.01). The team argues: 'These are mathematically equivalent \u2014 both add lambda*||w||^2 to the loss.' Is this argument correct?",
+    "description": "A team trains a transformer with Adam + L2 regularization (lambda=0.01 added to the loss). A colleague suggests switching to AdamW (weight_decay=0.01). The team argues: 'These are mathematically equivalent \u2014 both add lambda*||w||^2 to the loss.' Is this argument correct?",
     "options": [
       "Incorrect: in Adam with L2, the regularization gradient lambda*w is added to the gradient before Adam's adaptive scaling step, so the effective weight penalty is lambda*w / (v_hat^0.5 + eps) \u2014 parameters with large second moments (frequently updated) receive less effective regularization; AdamW applies weight decay directly to the weights after the Adam update, decoupled from gradient scaling, producing uniform regularization across parameters",
       "Correct: both methods add lambda*||w||^2 to the loss, and since Adam minimizes the same objective, the resulting weight updates are mathematically equivalent under standard Adam hyperparameters",
@@ -1330,11 +1370,13 @@
   },
   {
     "id": 83055,
+    "order": 51,
+    "topic": "ml-fundamentals",
     "title": "Calibration Under Distribution Shift: Recalibrate vs Retrain",
     "type": "scenario",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A risk-scoring model uses a Platt scaling calibration layer applied post-hoc. Six months after deployment, monitoring shows ECE has increased from 0.02 to 0.09, but AUC remains 0.87 (unchanged from deployment). The operations team proposes recalibrating only the Platt scaling layer on 100K recent labeled examples, without retraining the base model. A compliance officer raises concerns. Which argument best supports the operations team?",
+    "description": "A risk-scoring model uses a Platt scaling calibration layer applied post-hoc. Six months after deployment, monitoring shows ECE has increased from 0.02 to 0.09, but AUC remains 0.87 (unchanged from deployment). The operations team proposes recalibrating only the Platt scaling layer on 100K recent labeled examples, without retraining the base model. A compliance officer raises concerns. Which argument best supports the operations team?",
     "options": [
       "Since AUC is stable at 0.87, the base model's discriminative ability and learned representations are intact \u2014 only the probability mapping has drifted; recalibrating the Platt layer on recent data corrects the P(score \u2192 Y) mapping without altering the model's decision logic, which is the most proportionate intervention for the observed problem",
       "Recalibration is insufficient: ECE increase always indicates concept drift in the base model's representations; the Platt layer can only correct calibration when the base model is still well-fitted to the current distribution",
@@ -1350,15 +1392,21 @@
     "concepts": [
       "MODEL CALIBRATION",
       "DEPLOYMENT CONSTRAINTS"
+    ],
+    "follow_ups": [
+      83111,
+      83112
     ]
   },
   {
     "id": 83056,
+    "order": 52,
+    "topic": "ml-fundamentals",
     "title": "Bias-Variance Trade-off: Selecting Ensemble Depth from CV Evidence",
     "type": "scenario",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "Three random forest configurations are evaluated on the same dataset (n=5,000): (A) n_estimators=10, max_depth=None \u2014 CV AUC 0.82, training AUC 0.99; (B) n_estimators=100, max_depth=5 \u2014 CV AUC 0.86, training AUC 0.88; (C) n_estimators=100, max_depth=None \u2014 CV AUC 0.85, training AUC 0.97. The team wants the configuration with best expected generalization. Which should they deploy and why?",
+    "description": "Three random forest configurations are evaluated on the same dataset (n=5,000): (A) n_estimators=10, max_depth=None \u2014 CV AUC 0.82, training AUC 0.99; (B) n_estimators=100, max_depth=5 \u2014 CV AUC 0.86, training AUC 0.88; (C) n_estimators=100, max_depth=None \u2014 CV AUC 0.85, training AUC 0.97. The team wants the configuration with best expected generalization. Which should they deploy and why?",
     "options": [
       "Configuration B: the 4-point CV gain from A\u2192B with a 12-point reduction in train-CV gap (0.17 \u2192 0.02) indicates successful variance reduction from depth-limiting; configuration C's marginal CV improvement (0.85) relative to B (0.86) is negative, and its 12-point gap suggests residual overfitting",
       "Configuration C: n_estimators=100 maximally reduces ensemble variance through averaging, and deep trees capture all feature interactions \u2014 the 0.97 training AUC confirms the model is well-fitted",
@@ -1378,11 +1426,13 @@
   },
   {
     "id": 83057,
+    "order": 53,
+    "topic": "ml-fundamentals",
     "title": "Predict Dropout Output: Inverted Dropout at Train vs Inference",
     "type": "predict_output",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A PyTorch dropout layer (p=0.5) processes input activations [2.0, 4.0, 6.0, 8.0] during a training forward pass. The dropout mask zeros neurons at indices 0 and 2. What is the output of this layer during this training pass, and what would the output be for the same inputs during inference (eval mode)?",
+    "description": "A PyTorch dropout layer (p=0.5) processes input activations [2.0, 4.0, 6.0, 8.0] during a training forward pass. The dropout mask zeros neurons at indices 0 and 2. What is the output of this layer during this training pass, and what would the output be for the same inputs during inference (eval mode)?",
     "options": [
       "Training: [0, 8.0, 0, 16.0]; Inference: [2.0, 4.0, 6.0, 8.0] \u2014 PyTorch uses inverted dropout: surviving neurons are scaled by 1/(1-p)=2 during training so inference requires no adjustment",
       "Training: [0, 4.0, 0, 8.0]; Inference: [1.0, 2.0, 3.0, 4.0] \u2014 neurons are zeroed during training without scaling; at inference, all activations are halved to match the expected training activation",
@@ -1402,11 +1452,13 @@
   },
   {
     "id": 83058,
+    "order": 54,
+    "topic": "ml-fundamentals",
     "title": "AUC-ROC vs AUC-PR: Metric Selection at Extreme Prevalence",
     "type": "scenario",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A rare disease screening model operates at 0.5% positive rate. Two evaluation metrics are proposed: AUC-ROC and AUC-PR (precision-recall). The clinical team needs high recall (missing a positive is costly) and can tolerate some false positives. A data scientist argues: 'AUC-ROC overstates model quality at this prevalence; AUC-PR is the correct primary metric.' Evaluate this argument.",
+    "description": "A rare disease screening model operates at 0.5% positive rate. Two evaluation metrics are proposed: AUC-ROC and AUC-PR (precision-recall). The clinical team needs high recall (missing a positive is costly) and can tolerate some false positives. A data scientist argues: 'AUC-ROC overstates model quality at this prevalence; AUC-PR is the correct primary metric.' Evaluate this argument.",
     "options": [
       "Correct: at 0.5% prevalence, AUC-ROC incorporates specificity (TNR), which is artificially inflated when negatives dominate \u2014 a model can achieve high AUC-ROC while having very low precision; AUC-PR focuses on precision-recall trade-offs directly relevant to rare positive detection and is less susceptible to this inflation",
       "Incorrect: AUC-ROC is prevalence-independent by construction and provides an unbiased discrimination estimate; AUC-PR is only appropriate when precision (not recall) is the primary business concern",
@@ -1426,11 +1478,13 @@
   },
   {
     "id": 83059,
+    "order": 55,
+    "topic": "ml-fundamentals",
     "title": "UMAP Before k-Means: Evaluation Space Selection",
     "type": "conceptual",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A team applies UMAP (2D) to 200-dimensional gene expression data, runs k-means on the 2D embedding, then evaluates cluster quality with silhouette score computed on the original 200D space. A reviewer argues: 'Silhouette should be computed in the UMAP space, not the original \u2014 you are measuring geometric separation in a space the algorithm never optimized.' Which position is more defensible for assessing biological validity?",
+    "description": "A team applies UMAP (2D) to 200-dimensional gene expression data, runs k-means on the 2D embedding, then evaluates cluster quality with silhouette score computed on the original 200D space. A reviewer argues: 'Silhouette should be computed in the UMAP space, not the original \u2014 you are measuring geometric separation in a space the algorithm never optimized.' Which position is more defensible for assessing biological validity?",
     "options": [
       "Evaluating in the original 200D space is more defensible for biological validity: silhouette in 2D UMAP space measures separation in a visualization-optimized projection that compresses and distorts global structure; clusters appearing well-separated in 2D may represent a biologically continuous manifold \u2014 evaluating in the full feature space tests whether clusters have genuine separability in the biological domain",
       "Evaluating in UMAP space is more defensible: since k-means was applied to the 2D embedding, geometric consistency requires evaluating quality in the same space; silhouette in 200D measures a different clustering than what was actually performed",
@@ -1450,11 +1504,13 @@
   },
   {
     "id": 83060,
+    "order": 56,
+    "topic": "ml-fundamentals",
     "title": "LR Range Test Misinterpretation: Setting Learning Rate Too High",
     "type": "scenario",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A practitioner runs the learning rate range test on a ResNet model. The loss vs log-LR curve shows: LR 1e-6 to 1e-4 \u2014 loss decreases slowly (underfit regime); LR 1e-4 to 1e-2 \u2014 loss decreases steeply (productive regime); LR 1e-2 to 1e-1 \u2014 loss oscillates; LR > 1e-1 \u2014 loss diverges. They set training LR = 1e-1 (last stable point). After 10 epochs: training loss keeps decreasing but validation loss plateaus after epoch 3. What is the most likely cause?",
+    "description": "A practitioner runs the learning rate range test on a ResNet model. The loss vs log-LR curve shows: LR 1e-6 to 1e-4 \u2014 loss decreases slowly (underfit regime); LR 1e-4 to 1e-2 \u2014 loss decreases steeply (productive regime); LR 1e-2 to 1e-1 \u2014 loss oscillates; LR > 1e-1 \u2014 loss diverges. They set training LR = 1e-1 (last stable point). After 10 epochs: training loss keeps decreasing but validation loss plateaus after epoch 3. What is the most likely cause?",
     "options": [
       "LR 1e-1 is at the boundary of the oscillating and divergent regimes \u2014 it causes large gradient steps that overshoot local minima, preventing the optimizer from settling into a sharp minimum; the recommended LR from the test is one order of magnitude below divergence (~1e-2) or the midpoint of the steep-descent region (~1e-3)",
       "Validation plateau after epoch 3 indicates insufficient model capacity \u2014 a larger network architecture is needed to continue improving on the validation set beyond early epochs",
@@ -1474,11 +1530,13 @@
   },
   {
     "id": 83061,
+    "order": 57,
+    "topic": "ml-fundamentals",
     "title": "Predict: Adam Step Size with Near-Zero Gradient at Saddle Point",
     "type": "predict_output",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "An Adam optimizer (lr=0.01, beta1=0.9, beta2=0.999, eps=1e-8) processes its first gradient update with g=0.001 (a near-zero gradient, as encountered near a saddle point). A vanilla SGD optimizer (lr=0.01, no momentum) processes the same gradient. Which statement correctly predicts the relative step sizes?",
+    "description": "An Adam optimizer (lr=0.01, beta1=0.9, beta2=0.999, eps=1e-8) processes its first gradient update with g=0.001 (a near-zero gradient, as encountered near a saddle point). A vanilla SGD optimizer (lr=0.01, no momentum) processes the same gradient. Which statement correctly predicts the relative step sizes?",
     "options": [
       "Adam takes a larger effective step: Adam's first-step update magnitude \u2248 lr * |g| / sqrt(g^2/(1-beta2) + eps) \u2248 lr / sqrt(1 + eps/(g^2/(1-beta2))); with g=0.001, the bias-corrected second moment is ~1e-6/0.001=1e-3, giving step \u2248 0.01*0.001/0.032 \u2248 3.1e-4; SGD takes step = 0.01*0.001 = 1e-5, so Adam moves ~30x further",
       "SGD takes a larger step: SGD's step = lr*g = 1e-5; Adam's adaptive scaling by 1/sqrt(v) reduces the step proportionally to the gradient magnitude, making Adam's step smaller for small gradients",
@@ -1498,11 +1556,13 @@
   },
   {
     "id": 83062,
+    "order": 58,
+    "topic": "ml-fundamentals",
     "title": "Reliability Diagram Interpretation for Multi-Class Calibration",
     "type": "scenario",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A 3-class softmax classifier's reliability diagram shows: for the predicted class (the argmax class), in the confidence bin [0.7, 0.8], actual accuracy is 0.55; in bin [0.8, 0.9], actual accuracy is 0.61; in bin [0.9, 1.0], actual accuracy is 0.70. The team calculates ECE = 0.18. A colleague proposes temperature scaling (T > 1, which softens the softmax). Will this improve calibration, and what direction should T go?",
+    "description": "A 3-class softmax classifier's reliability diagram shows: for the predicted class (the argmax class), in the confidence bin [0.7, 0.8], actual accuracy is 0.55; in bin [0.8, 0.9], actual accuracy is 0.61; in bin [0.9, 1.0], actual accuracy is 0.70. The team calculates ECE = 0.18. A colleague proposes temperature scaling (T > 1, which softens the softmax). Will this improve calibration, and what direction should T go?",
     "options": [
       "Temperature scaling with T > 1 should improve calibration: the reliability diagram shows consistent overconfidence (predicted confidence 0.75/0.85/0.95 but actual accuracy 0.55/0.61/0.70 in each bin) \u2014 T > 1 divides logits by T before softmax, pushing predicted probabilities toward 1/K = 0.33, which will lower confidence and reduce ECE",
       "Temperature scaling with T < 1 should improve calibration: the model is underconfident (accuracy exceeds confidence in all bins) \u2014 T < 1 sharpens the softmax, increasing predicted confidence toward the actual accuracy levels",
@@ -1522,11 +1582,13 @@
   },
   {
     "id": 83063,
+    "order": 59,
+    "topic": "ml-fundamentals",
     "title": "Feature Selection Leakage: RFE Before Cross-Validation",
     "type": "debug",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A data scientist applies Recursive Feature Elimination (RFE) on the full training set (n=2,000) to select the top 10 of 50 features, then runs 5-fold CV on the selected features. CV AUC is 0.88. An independent holdout yields AUC 0.79. A colleague says there is feature selection leakage. Which explanation is correct?",
+    "description": "A data scientist applies Recursive Feature Elimination (RFE) on the full training set (n=2,000) to select the top 10 of 50 features, then runs 5-fold CV on the selected features. CV AUC is 0.88. An independent holdout yields AUC 0.79. A colleague says there is feature selection leakage. Which explanation is correct?",
     "options": [
       "Correct: RFE fitted on the full training set uses the target variable to rank features \u2014 this incorporates information from all 5 folds, including the data that will become each fold's validation set; the selected features are optimized for the full training set, creating an optimistic CV estimate; RFE must be inside the CV loop (e.g., using sklearn's RFECV or a Pipeline with RFE)",
       "Incorrect: RFE leakage only occurs for regression tasks where the target has high variance; for AUC-evaluated classification, RFE outside the CV loop is standard practice and does not inflate estimates",
@@ -1546,11 +1608,13 @@
   },
   {
     "id": 83064,
+    "order": 60,
+    "topic": "ml-fundamentals",
     "title": "Shadow Mode vs Canary for Safe Model Replacement",
     "type": "scenario",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A team wants to replace a production fraud detection model v1 with v2. Both models will run simultaneously to compare outputs before v2 takes over real decisions. They consider: (A) shadow mode \u2014 v2 runs on all traffic but its decisions are ignored; actual decisions are still made by v1; (B) canary deployment \u2014 v2 makes real decisions for 5% of traffic and v1 handles 95%. The models make irreversible decisions (fraud flags trigger account freezes). Which approach is safer and why?",
+    "description": "A team wants to replace a production fraud detection model v1 with v2. Both models will run simultaneously to compare outputs before v2 takes over real decisions. They consider: (A) shadow mode \u2014 v2 runs on all traffic but its decisions are ignored; actual decisions are still made by v1; (B) canary deployment \u2014 v2 makes real decisions for 5% of traffic and v1 handles 95%. The models make irreversible decisions (fraud flags trigger account freezes). Which approach is safer and why?",
     "options": [
       "Shadow mode (A) is safer: v2's decisions are non-consequential \u2014 all customer impacts come from v1 during the shadow period; this allows full-traffic evaluation of v2's latency, error rate, and prediction distribution without any risk from v2's potential errors; canary (B) exposes 5% of customers to v2's unvalidated decisions, which is unacceptable for irreversible actions",
       "Canary (B) is safer: shadow mode produces evaluation data that may not reflect v2's real-world behavior under traffic pressure; canary's 5% exposure provides genuine production feedback while limiting blast radius",
@@ -1570,11 +1634,13 @@
   },
   {
     "id": 83065,
+    "order": 61,
+    "topic": "ml-fundamentals",
     "title": "Semi-Supervised Learning: When Label Propagation Helps",
     "type": "conceptual",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A team has 200 labeled examples and 10,000 unlabeled examples for a text classification task. They propose label propagation (a graph-based semi-supervised method). A colleague argues: 'Label propagation only helps when the manifold assumption holds \u2014 unlabeled data on a different manifold than labeled data will hurt performance.' Is this argument correct, and when is label propagation most beneficial?",
+    "description": "A team has 200 labeled examples and 10,000 unlabeled examples for a text classification task. They propose label propagation (a graph-based semi-supervised method). A colleague argues: 'Label propagation only helps when the manifold assumption holds \u2014 unlabeled data on a different manifold than labeled data will hurt performance.' Is this argument correct, and when is label propagation most beneficial?",
     "options": [
       "Correct: label propagation assumes that nearby points in the feature space share labels (smoothness assumption) and that the data lies on low-dimensional manifolds (manifold assumption); when unlabeled data is drawn from different sub-populations or distributions than labeled data, propagated labels will be incorrect; label propagation is most beneficial when unlabeled and labeled data are i.i.d. and the labeled set under-covers the high-density regions of the feature manifold",
       "Incorrect: label propagation is distribution-agnostic because it only uses the local graph structure; as long as the graph is connected, label propagation is beneficial regardless of whether unlabeled data follows the same manifold as labeled data",
@@ -1594,11 +1660,13 @@
   },
   {
     "id": 83066,
+    "order": 62,
+    "topic": "ml-fundamentals",
     "title": "Loss Function for Heavy-Tailed Residuals: Huber vs MAE vs MSE",
     "type": "scenario",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A regression model predicts housing prices. Residual analysis shows 3% of samples have errors > 5 standard deviations (heavy-tailed distribution). Current MSE loss yields R\u00b2=0.72 but the large-error samples disproportionately affect the learned weights. The team considers switching to: (A) MAE (L1 loss); (B) Huber loss (delta=1.0). A senior ML engineer says: 'MAE is a complete fix \u2014 Huber adds unnecessary complexity.' Evaluate this statement.",
+    "description": "A regression model predicts housing prices. Residual analysis shows 3% of samples have errors > 5 standard deviations (heavy-tailed distribution). Current MSE loss yields R\u00b2=0.72 but the large-error samples disproportionately affect the learned weights. The team considers switching to: (A) MAE (L1 loss); (B) Huber loss (delta=1.0). A senior ML engineer says: 'MAE is a complete fix \u2014 Huber adds unnecessary complexity.' Evaluate this statement.",
     "options": [
       "Partially correct: MAE is robust to outliers because its gradient is constant (\u00b11) regardless of error magnitude, limiting outlier influence \u2014 but Huber loss is not merely complexity for its own sake; Huber behaves as MSE for small errors and MAE for large errors, which gives it better gradient behavior in the small-error regime (quadratic gradient near zero provides stronger signal for small corrections) while still limiting outlier influence",
       "Correct: MAE is strictly preferable to Huber \u2014 MAE's constant gradient provides complete outlier robustness; Huber's quadratic region near zero is a performance-irrelevant mathematical nicety that does not improve practical regression performance",
@@ -1618,11 +1686,13 @@
   },
   {
     "id": 83067,
+    "order": 63,
+    "topic": "ml-fundamentals",
     "title": "Predict: Random Forest OOB Error vs CV Error Relationship",
     "type": "predict_output",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A Random Forest with n_estimators=500 is trained on a dataset with n=1,000 samples. Each tree is built on a bootstrap sample of ~632 samples (63.2% on average), leaving ~368 samples out-of-bag (OOB) per tree. The OOB error is 0.15. A separate 5-fold cross-validation on the same dataset yields CV error 0.16. Which statement best predicts the relationship and explains any gap?",
+    "description": "A Random Forest with n_estimators=500 is trained on a dataset with n=1,000 samples. Each tree is built on a bootstrap sample of ~632 samples (63.2% on average), leaving ~368 samples out-of-bag (OOB) per tree. The OOB error is 0.15. A separate 5-fold cross-validation on the same dataset yields CV error 0.16. Which statement best predicts the relationship and explains any gap?",
     "options": [
       "OOB error (0.15) is lower than CV error (0.16) \u2014 OOB estimates are slightly optimistic relative to CV because each OOB prediction averages only the ~37% of trees that did not see that sample; with n_estimators=500, roughly 185 trees contribute to each OOB prediction, which is sufficient for a stable estimate but slightly fewer than the full 500-tree ensemble used for test predictions",
       "OOB error would exactly equal CV error by construction \u2014 both estimate the generalization error of the same Random Forest model, and any gap is purely sampling noise with no systematic direction",
@@ -1642,11 +1712,13 @@
   },
   {
     "id": 83068,
+    "order": 64,
+    "topic": "ml-fundamentals",
     "title": "MCAR vs MAR vs MNAR: Choosing Valid Imputation Strategies",
     "type": "conceptual",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A dataset has missing income values. Investigation reveals: income is missing more often for high-income individuals who skipped the voluntary disclosure field. A junior analyst proposes mean imputation. A senior analyst says: 'This data is MNAR \u2014 mean imputation will introduce systematic bias.' Evaluate this claim and identify the correct missingness type and appropriate strategy.",
+    "description": "A dataset has missing income values. Investigation reveals: income is missing more often for high-income individuals who skipped the voluntary disclosure field. A junior analyst proposes mean imputation. A senior analyst says: 'This data is MNAR \u2014 mean imputation will introduce systematic bias.' Evaluate this claim and identify the correct missingness type and appropriate strategy.",
     "options": [
       "Correct: missingness depends on the missing value itself (high earners are less likely to report income), which is the definition of MNAR (Missing Not at Random); mean imputation replaces missing high values with the observed mean (biased downward), systematically underestimating income for missing cases; MNAR requires sensitivity analysis or specialized methods (selection models, pattern-mixture models) because the missingness mechanism cannot be corrected by observed variables alone",
       "Incorrect: since income missingness depends on the income value, this is MAR (Missing at Random) \u2014 MAR means missingness depends on observed data, and income is observed for some individuals; multiple imputation or MICE would correctly handle this",
@@ -1666,11 +1738,13 @@
   },
   {
     "id": 83069,
+    "order": 65,
+    "topic": "ml-fundamentals",
     "title": "L1 Regularization Path: Feature Elimination Order and Instability",
     "type": "scenario",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A Lasso regression model's regularization path (lambda from 0 to 1) shows: features F1 and F2 are eliminated together at lambda=0.3, while F3 persists to lambda=0.8. F1 and F2 have correlation r=0.92. A data scientist wants to use the regularization path for feature selection and reports 'F3 is more important than F1 because F3 survives higher regularization.' A statistician challenges this interpretation. Who is correct?",
+    "description": "A Lasso regression model's regularization path (lambda from 0 to 1) shows: features F1 and F2 are eliminated together at lambda=0.3, while F3 persists to lambda=0.8. F1 and F2 have correlation r=0.92. A data scientist wants to use the regularization path for feature selection and reports 'F3 is more important than F1 because F3 survives higher regularization.' A statistician challenges this interpretation. Who is correct?",
     "options": [
       "The statistician is correct: when two features are highly correlated (r=0.92), Lasso arbitrarily eliminates one or both depending on numerical noise \u2014 F1 and F2 being eliminated together at the same lambda is a signature of collinearity, not equivalent importance; F3 surviving to lambda=0.8 suggests genuine independent signal, but F1/F2's early elimination does not mean they lack importance \u2014 one of them may carry the same predictive information as F3",
       "The data scientist is correct: regularization path persistence is the standard measure of feature importance in Lasso; features eliminated early have less independent signal than features that persist to high regularization values, by definition of how L1 regularization works",
@@ -1690,11 +1764,13 @@
   },
   {
     "id": 83070,
+    "order": 66,
+    "topic": "ml-fundamentals",
     "title": "Online vs Batch Inference: Serving Architecture Trade-offs",
     "type": "scenario",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A fraud detection model must score transactions for approval or decline. Two serving architectures are proposed: (A) online inference \u2014 each transaction triggers a synchronous model call with sub-100ms latency requirement; (B) batch inference \u2014 transactions are queued and scored in hourly batches, results pre-computed and stored for fast lookup at decision time. The feature store has a 4-hour update lag. The team debates which architecture better aligns with production requirements. Which analysis is correct?",
+    "description": "A fraud detection model must score transactions for approval or decline. Two serving architectures are proposed: (A) online inference \u2014 each transaction triggers a synchronous model call with sub-100ms latency requirement; (B) batch inference \u2014 transactions are queued and scored in hourly batches, results pre-computed and stored for fast lookup at decision time. The feature store has a 4-hour update lag. The team debates which architecture better aligns with production requirements. Which analysis is correct?",
     "options": [
       "Online inference is required: fraud detection must score each transaction at the moment of approval request \u2014 batch inference with hourly scoring cannot serve real-time approval decisions; a 4-hour feature lag is a separate concern that affects feature freshness in both architectures, but online inference at least minimizes the gap between the latest available features and the decision point",
       "Batch inference is preferable: pre-computing scores in hourly batches eliminates the sub-100ms latency pressure on the model; the 4-hour feature lag means batch and online inference have equivalent feature freshness regardless",
@@ -1714,11 +1790,13 @@
   },
   {
     "id": 83071,
+    "order": 67,
+    "topic": "ml-fundamentals",
     "title": "Predict Gradient Magnitude: Sigmoid vs ReLU in Deep Networks",
     "type": "predict_output",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A plain (no skip connections) 10-layer network uses sigmoid activations. The derivative of sigmoid is sigma'(x) = sigma(x)*(1 - sigma(x)), with maximum value 0.25 at x=0. Assume each layer contributes a gradient scale factor of 0.25 (worst-case, all sigmoid units near their inflection point), and the output layer gradient is 1.0. What is the gradient magnitude at layer 1 (first hidden layer), and how does this compare to a 10-layer ReLU network with the same architecture?",
+    "description": "A plain (no skip connections) 10-layer network uses sigmoid activations. The derivative of sigmoid is sigma'(x) = sigma(x)*(1 - sigma(x)), with maximum value 0.25 at x=0. Assume each layer contributes a gradient scale factor of 0.25 (worst-case, all sigmoid units near their inflection point), and the output layer gradient is 1.0. What is the gradient magnitude at layer 1 (first hidden layer), and how does this compare to a 10-layer ReLU network with the same architecture?",
     "options": [
       "Sigmoid network gradient at layer 1: 0.25^10 \u2248 9.5e-7; ReLU network gradient at layer 1 (all units active): 1.0^10 = 1.0 \u2014 ReLU's gradient is 1 for active neurons (identity backprop), so gradients do not decay through ReLU layers, making ReLU networks much easier to train at depth",
       "Sigmoid network: 0.25^5 \u2248 9.8e-4 (vanishing only affects the lower half of the network); ReLU network: 0.5^10 (ReLU's average gradient is 0.5 due to approximately 50% neuron activation rate)",
@@ -1738,11 +1816,13 @@
   },
   {
     "id": 83072,
+    "order": 68,
+    "topic": "ml-fundamentals",
     "title": "MICE Imputation Before CV: Leakage Assessment",
     "type": "scenario",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A team applies MICE (Multiple Imputation by Chained Equations) on the full training set before 5-fold CV. A colleague says: 'This has the same leakage issue as fitting StandardScaler before CV \u2014 validation fold information influences training fold imputation.' Another colleague counters: 'MICE is unsupervised \u2014 it uses only X, not y \u2014 so there is no leakage.' Who is correct, and what is the practical impact?",
+    "description": "A team applies MICE (Multiple Imputation by Chained Equations) on the full training set before 5-fold CV. A colleague says: 'This has the same leakage issue as fitting StandardScaler before CV \u2014 validation fold information influences training fold imputation.' Another colleague counters: 'MICE is unsupervised \u2014 it uses only X, not y \u2014 so there is no leakage.' Who is correct, and what is the practical impact?",
     "options": [
       "The first colleague is correct: MICE fitted on the full training set learns the joint distribution P(X_i | X_{-i}) including validation fold observations; this means training fold imputed values are influenced by validation fold statistics; the correct approach is to fit MICE inside the CV loop (training folds only), applying the fitted imputation model to validation folds without refitting",
       "The second colleague is correct: MICE only models relationships between input features and does not use y \u2014 since labels are not involved in imputation, there is no pathway for leakage even when MICE is fitted on the full training set",
@@ -1762,11 +1842,13 @@
   },
   {
     "id": 83073,
+    "order": 69,
+    "topic": "ml-fundamentals",
     "title": "XGBoost Regularization: Lambda, Depth, and Tree Count Interactions",
     "type": "conceptual",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "An XGBoost model overfits: training AUC 0.95, validation AUC 0.82. A practitioner increases lambda (L2 on leaf weights) from 1 to 10. Validation AUC improves to 0.87, training AUC drops to 0.88. They propose: 'Now let us increase n_estimators to recover training AUC to 0.95.' Is this a coherent strategy?",
+    "description": "An XGBoost model overfits: training AUC 0.95, validation AUC 0.82. A practitioner increases lambda (L2 on leaf weights) from 1 to 10. Validation AUC improves to 0.87, training AUC drops to 0.88. They propose: 'Now let us increase n_estimators to recover training AUC to 0.95.' Is this a coherent strategy?",
     "options": [
       "Incoherent: increasing n_estimators progressively offsets the lambda regularization by allowing the ensemble to make more small updates that cumulatively fit the training data; the goal of regularization is to reduce training-validation gap, which is now 1 point \u2014 adding trees to re-inflate training AUC defeats this purpose; structural fixes (reduce max_depth, increase min_child_weight) should be used if validation AUC still needs improvement",
       "Coherent: lambda and n_estimators control different model properties \u2014 lambda constrains per-leaf weight magnitude while n_estimators controls ensemble capacity; jointly increasing both finds a better point in the hyperparameter space",
@@ -1782,15 +1864,21 @@
     "concepts": [
       "GRADIENT BOOSTING",
       "REGULARIZATION EFFECT"
+    ],
+    "follow_ups": [
+      83113,
+      83114
     ]
   },
   {
     "id": 83074,
+    "order": 70,
+    "topic": "ml-fundamentals",
     "title": "Gradual Unfreezing: Layer-Wise Fine-Tuning Strategy",
     "type": "scenario",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A pre-trained ResNet-50 (ImageNet) is being fine-tuned for satellite image classification. Unfreezing all layers simultaneously causes catastrophic forgetting of early-layer features in the first few epochs. The team considers: (A) gradual unfreezing \u2014 start with head only, progressively unfreeze from top to bottom; (B) fine-tuning only the first two convolutional layers (lowest levels) since satellite images differ from ImageNet in low-level statistics. Which strategy is more appropriate?",
+    "description": "A pre-trained ResNet-50 (ImageNet) is being fine-tuned for satellite image classification. Unfreezing all layers simultaneously causes catastrophic forgetting of early-layer features in the first few epochs. The team considers: (A) gradual unfreezing \u2014 start with head only, progressively unfreeze from top to bottom; (B) fine-tuning only the first two convolutional layers (lowest levels) since satellite images differ from ImageNet in low-level statistics. Which strategy is more appropriate?",
     "options": [
       "Gradual unfreezing from top (A) is more appropriate: early ResNet layers detect edges, textures, and simple patterns that generalize across visual domains including satellite imagery; higher layers encode more task-specific abstractions (ImageNet object categories) that conflict with the satellite domain; starting with the head prevents forgetting while the head adapts, then progressively unfreezing higher layers allows the top task-specific features to adapt before touching the generalizable lower layers",
       "Fine-tuning only early layers (B) is more appropriate: satellite imagery has distinctly different low-level statistics (top-down view, different color distributions, different textures) compared to ground-level ImageNet photos; adapting early layers to satellite-specific low-level features is the highest-leverage change",
@@ -1810,11 +1898,13 @@
   },
   {
     "id": 83075,
+    "order": 71,
+    "topic": "ml-fundamentals",
     "title": "Predict Brier Score: Calibrated vs Overconfident Classifier",
     "type": "predict_output",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "Two classifiers are evaluated on 4 samples with true labels y=[1, 1, 0, 0]. Classifier A (well-calibrated): p=[0.9, 0.8, 0.2, 0.1]. Classifier B (overconfident): p=[0.99, 0.95, 0.05, 0.01]. Brier Score (BS) = mean[(p_i - y_i)^2]. Calculate BS for each classifier, then identify which statement is correct.",
+    "description": "Two classifiers are evaluated on 4 samples with true labels y=[1, 1, 0, 0]. Classifier A (well-calibrated): p=[0.9, 0.8, 0.2, 0.1]. Classifier B (overconfident): p=[0.99, 0.95, 0.05, 0.01]. Brier Score (BS) = mean[(p_i - y_i)^2]. Calculate BS for each classifier, then identify which statement is correct.",
     "options": [
       "BS_A = 0.025, BS_B \u2248 0.0013; Classifier B has the lower Brier score \u2014 when directional predictions are correct, extreme probabilities produce smaller squared errors; this reveals that Brier score rewards overconfident models when they are directionally correct, making it insufficient alone for evaluating probability calibration",
       "BS_A = 0.025, BS_B \u2248 0.0013; Classifier A has better Brier score because calibrated probabilities minimize expected Brier score by definition \u2014 calibration and Brier score optimization are equivalent objectives",
@@ -1834,11 +1924,13 @@
   },
   {
     "id": 83076,
+    "order": 72,
+    "topic": "ml-fundamentals",
     "title": "PCA Before Logistic Regression: When Does It Help?",
     "type": "scenario",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A team applies PCA to reduce 100 features to 20 principal components before logistic regression. They observe: training AUC 0.88 (without PCA: 0.89), validation AUC 0.84 (without PCA: 0.79). A senior analyst says: 'PCA improved generalization by removing noise dimensions, but lost 1 point of training AUC \u2014 the 5-point validation improvement justifies it.' A colleague challenges: 'PCA is feature extraction, not feature selection \u2014 it may hurt interpretability without systematically improving logistic regression.' Who is correct?",
+    "description": "A team applies PCA to reduce 100 features to 20 principal components before logistic regression. They observe: training AUC 0.88 (without PCA: 0.89), validation AUC 0.84 (without PCA: 0.79). A senior analyst says: 'PCA improved generalization by removing noise dimensions, but lost 1 point of training AUC \u2014 the 5-point validation improvement justifies it.' A colleague challenges: 'PCA is feature extraction, not feature selection \u2014 it may hurt interpretability without systematically improving logistic regression.' Who is correct?",
     "options": [
       "Both have valid points: PCA did improve generalization (validation AUC +5 points) indicating the original 100 features contained noise that PCA removed; but the colleague is also correct that PCA destroys feature-level interpretability (coefficients are now on principal components, not original features); the decision should weigh interpretability requirements against the observed generalization improvement \u2014 if interpretability is required, L2-regularized logistic regression on original features is a principled alternative",
       "The senior analyst is fully correct: the 5-point validation improvement is empirical evidence that PCA improved the model; any technique that improves validation AUC is justified regardless of interpretability concerns",
@@ -1858,11 +1950,13 @@
   },
   {
     "id": 83077,
+    "order": 73,
+    "topic": "ml-fundamentals",
     "title": "Walk-Forward Validation vs k-Fold for Time Series",
     "type": "conceptual",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A team forecasts weekly retail sales using 3 years of historical data. They debate two evaluation strategies: (A) standard 5-fold CV with random shuffling; (B) walk-forward validation (train on weeks 1-104, validate on weeks 105-112; train on weeks 1-112, validate on weeks 113-120; etc.). A data scientist says: 'Standard k-fold gives tighter confidence intervals because each fold uses more data; walk-forward is unnecessarily conservative.' Evaluate this claim.",
+    "description": "A team forecasts weekly retail sales using 3 years of historical data. They debate two evaluation strategies: (A) standard 5-fold CV with random shuffling; (B) walk-forward validation (train on weeks 1-104, validate on weeks 105-112; train on weeks 1-112, validate on weeks 113-120; etc.). A data scientist says: 'Standard k-fold gives tighter confidence intervals because each fold uses more data; walk-forward is unnecessarily conservative.' Evaluate this claim.",
     "options": [
       "Incorrect: standard k-fold with random shuffling is invalid for time series because it trains on future data to predict past data \u2014 this violates temporal causality and produces optimistically biased estimates; walk-forward validation respects the temporal ordering and provides a valid estimate of out-of-sample forecast performance, even if individual fold validation sets are smaller",
       "Correct: k-fold with shuffling provides lower-variance estimates because training sets are larger; time series properties can be preserved by using time-based stratification within k-fold rather than random assignment",
@@ -1882,11 +1976,13 @@
   },
   {
     "id": 83078,
+    "order": 74,
+    "topic": "ml-fundamentals",
     "title": "Double Descent: When Adding Complexity Reduces Test Error",
     "type": "scenario",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A team trains neural networks of increasing width on a fixed dataset. They observe: for width < 50 neurons, test error decreases as width increases (classical regime); around width=50, test error peaks (interpolation threshold); for width > 50, test error decreases again even though training error is near zero. A colleague says: 'This contradicts the bias-variance trade-off \u2014 overparameterized models should overfit.' How should this be explained?",
+    "description": "A team trains neural networks of increasing width on a fixed dataset. They observe: for width < 50 neurons, test error decreases as width increases (classical regime); around width=50, test error peaks (interpolation threshold); for width > 50, test error decreases again even though training error is near zero. A colleague says: 'This contradicts the bias-variance trade-off \u2014 overparameterized models should overfit.' How should this be explained?",
     "options": [
       "The double descent phenomenon: at the interpolation threshold, the model barely fits the training data and the solution is highly sensitive to noise; over-parameterized models beyond the threshold have many solutions that fit the training data and gradient descent finds the minimum-norm solution (implicit regularization), which generalizes better than the minimum at the interpolation threshold",
       "The observation is an artifact of insufficient regularization at the interpolation threshold; adding L2 regularization at width=50 would eliminate the second descent and reveal the classical U-shaped bias-variance curve",
@@ -1902,15 +1998,21 @@
     "concepts": [
       "OVERFITTING DIAGNOSIS",
       "REGULARIZATION EFFECT"
+    ],
+    "follow_ups": [
+      83115,
+      83116
     ]
   },
   {
     "id": 83079,
+    "order": 75,
+    "topic": "ml-fundamentals",
     "title": "Pipeline Ordering: Imputer Before Scaler in sklearn",
     "type": "debug",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A data scientist builds: Pipeline([('scaler', StandardScaler()), ('imputer', SimpleImputer(strategy='mean')), ('clf', LogisticRegression())]). The training data X_train has 15% missing values (NaN). What happens when pipeline.fit(X_train, y_train) is called?",
+    "description": "A data scientist builds: Pipeline([('scaler', StandardScaler()), ('imputer', SimpleImputer(strategy='mean')), ('clf', LogisticRegression())]). The training data X_train has 15% missing values (NaN). What happens when pipeline.fit(X_train, y_train) is called?",
     "options": [
       "A ValueError is raised: sklearn's StandardScaler cannot process NaN values \u2014 it raises 'Input X contains NaN' when fit() is called on data with missing values; the correct order is Pipeline([('imputer', SimpleImputer(strategy='mean')), ('scaler', StandardScaler()), ('clf', LogisticRegression())])",
       "The pipeline runs successfully: StandardScaler silently skips NaN values when computing column mean and standard deviation, producing valid scale statistics from the non-missing values",
@@ -1930,11 +2032,13 @@
   },
   {
     "id": 83080,
+    "order": 76,
+    "topic": "ml-fundamentals",
     "title": "Random Forest max_features Sensitivity: sqrt vs log2 vs None",
     "type": "scenario",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A Random Forest is trained on a dataset with 100 features. The team tests max_features settings: (A) sqrt(100)=10 \u2014 CV AUC 0.83; (B) log2(100)\u22487 \u2014 CV AUC 0.82; (C) None (all 100 features) \u2014 CV AUC 0.79, training AUC 0.97. A data scientist proposes: 'Setting max_features=None achieves the best per-tree fit \u2014 more features per split means better individual trees; the lower CV AUC is just noise.' Evaluate this reasoning.",
+    "description": "A Random Forest is trained on a dataset with 100 features. The team tests max_features settings: (A) sqrt(100)=10 \u2014 CV AUC 0.83; (B) log2(100)\u22487 \u2014 CV AUC 0.82; (C) None (all 100 features) \u2014 CV AUC 0.79, training AUC 0.97. A data scientist proposes: 'Setting max_features=None achieves the best per-tree fit \u2014 more features per split means better individual trees; the lower CV AUC is just noise.' Evaluate this reasoning.",
     "options": [
       "Incorrect: max_features controls the diversity mechanism of Random Forests \u2014 when all 100 features are considered at each split, trees become highly correlated (they all tend to split on the same top features), reducing the ensemble's variance reduction benefit; the lower CV AUC and high training AUC (0.97) for max_features=None indicate overfitting from correlated trees; sqrt/log2 create decorrelated trees through feature subsampling, which is the core mechanism behind Random Forest's generalization advantage",
       "Correct: more features per split allows each tree to find the globally optimal split, producing more accurate individual trees; the ensemble of accurate trees outperforms an ensemble of diverse-but-weak trees",
@@ -1954,11 +2058,13 @@
   },
   {
     "id": 83081,
+    "order": 77,
+    "topic": "ml-fundamentals",
     "title": "XGBoost Feature Importance: Gain vs Weight vs Cover",
     "type": "conceptual",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "An XGBoost model's top features differ significantly across three importance types: by 'weight' (split count): F_categorical ranks #1; by 'gain' (average improvement per split): F_continuous ranks #1; by 'cover' (average samples per split): F_rare ranks #1. A data scientist concludes: 'F_categorical is the most important feature because it is used in the most splits.' A senior engineer disagrees. Who is correct?",
+    "description": "An XGBoost model's top features differ significantly across three importance types: by 'weight' (split count): F_categorical ranks #1; by 'gain' (average improvement per split): F_continuous ranks #1; by 'cover' (average samples per split): F_rare ranks #1. A data scientist concludes: 'F_categorical is the most important feature because it is used in the most splits.' A senior engineer disagrees. Who is correct?",
     "options": [
       "The senior engineer is correct: 'weight' (split count) is the least reliable importance measure \u2014 a categorical feature with many categories produces many splits naturally (one per category threshold), inflating its apparent importance; 'gain' measures the actual predictive improvement per use of a feature, which is a more faithful measure of feature utility; 'cover' reflects the number of training examples affected by a feature's splits, useful for understanding impact breadth",
       "The data scientist is correct: split count (weight) is the most interpretable measure because it directly counts how many times the model chose to use a feature \u2014 features chosen more often are more important by definition",
@@ -1972,17 +2078,19 @@
       "Which XGBoost importance metric directly measures how much each feature reduces the model's objective function when it is used for a split?"
     ],
     "concepts": [
-      "XGBOOST",
+      "BOOSTING MECHANICS",
       "ENSEMBLE STRATEGY"
     ]
   },
   {
     "id": 83082,
+    "order": 78,
+    "topic": "ml-fundamentals",
     "title": "Focal Loss for Class Imbalance in Dense Object Detection",
     "type": "scenario",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A dense object detector (similar to RetinaNet) generates ~100,000 anchor proposals per image. Only ~50 are positive (objects). Standard cross-entropy loss causes training instability: the model learns to predict 'background' for everything. Class-weighted cross-entropy (weight_negative=1, weight_positive=2000) improves detection but training remains noisy. A colleague proposes focal loss: FL(p) = -(1-p_t)^gamma * log(p_t) with gamma=2. What advantage does focal loss provide over class-weighted cross-entropy for this specific problem?",
+    "description": "A dense object detector (similar to RetinaNet) generates ~100,000 anchor proposals per image. Only ~50 are positive (objects). Standard cross-entropy loss causes training instability: the model learns to predict 'background' for everything. Class-weighted cross-entropy (weight_negative=1, weight_positive=2000) improves detection but training remains noisy. A colleague proposes focal loss: FL(p) = -(1-p_t)^gamma * log(p_t) with gamma=2. What advantage does focal loss provide over class-weighted cross-entropy for this specific problem?",
     "options": [
       "Focal loss down-weights easy examples dynamically based on prediction confidence, not just class membership: for well-classified background examples (p_background=0.99), the modulating factor (1-0.99)^2=0.0001 reduces their loss contribution by 10,000x; class weights only reweight by class, leaving the many easy-to-classify backgrounds still contributing substantial aggregate loss that drowns out learning from hard positive examples",
       "Focal loss is equivalent to class-weighted cross-entropy when gamma is tuned correctly; gamma=2 is mathematically equivalent to weight_positive=2000 for a 2000:1 class ratio",
@@ -1998,15 +2106,21 @@
     "concepts": [
       "NEURAL NETWORK DESIGN",
       "CLASS IMBALANCE HANDLING"
+    ],
+    "follow_ups": [
+      83117,
+      83118
     ]
   },
   {
     "id": 83083,
+    "order": 79,
+    "topic": "ml-fundamentals",
     "title": "Model Rollback Strategy: When to Roll Back a Deployed Model",
     "type": "scenario",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A new model v2 replaces v1 in production via a full cutover (100% traffic). Within 24 hours, the on-call team observes: (A) business metric (revenue per session) down 3%; (B) model prediction latency up 40ms (SLA is 200ms, current p99 is 185ms); (C) AUC on offline holdout: v2=0.88 vs v1=0.84. The engineering lead proposes rolling back to v1. The data science lead argues: 'v2 has better offline AUC \u2014 the revenue drop may be seasonal.' Who has the stronger position and why?",
+    "description": "A new model v2 replaces v1 in production via a full cutover (100% traffic). Within 24 hours, the on-call team observes: (A) business metric (revenue per session) down 3%; (B) model prediction latency up 40ms (SLA is 200ms, current p99 is 185ms); (C) AUC on offline holdout: v2=0.88 vs v1=0.84. The engineering lead proposes rolling back to v1. The data science lead argues: 'v2 has better offline AUC \u2014 the revenue drop may be seasonal.' Who has the stronger position and why?",
     "options": [
       "The engineering lead has the stronger position: the 3% revenue drop is a real business signal measured in production; offline AUC improvement does not guarantee production business metric improvement due to training-serving distribution gaps, label definition mismatches, or interaction effects; when a business metric degrades significantly within 24 hours of a model change with no other confounding changes, the model change is the most probable cause and rollback is the appropriate risk-mitigation response",
       "The data science lead has the stronger position: AUC 0.88 vs 0.84 is a statistically significant improvement; short-term production metrics are noisy and the 24-hour window is too short to distinguish model effects from seasonal variation; rollback would discard a validated model improvement",
@@ -2026,11 +2140,13 @@
   },
   {
     "id": 83084,
+    "order": 80,
+    "topic": "ml-fundamentals",
     "title": "LightGBM Leaf-Wise Growth: Overfitting Risk on Small Datasets",
     "type": "scenario",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A team trains LightGBM on a dataset with n=800 samples and 50 features. They use default settings (num_leaves=31, min_data_in_leaf=20). Training AUC is 0.96, validation AUC is 0.79. They note that LightGBM uses leaf-wise (best-first) tree growth instead of level-wise. A colleague says: 'Reduce num_leaves to control the overfit \u2014 leaf-wise growth with 31 leaves on 800 samples creates trees deeper than any level-wise tree with the same leaf count would.' Is this analysis correct?",
+    "description": "A team trains LightGBM on a dataset with n=800 samples and 50 features. They use default settings (num_leaves=31, min_data_in_leaf=20). Training AUC is 0.96, validation AUC is 0.79. They note that LightGBM uses leaf-wise (best-first) tree growth instead of level-wise. A colleague says: 'Reduce num_leaves to control the overfit \u2014 leaf-wise growth with 31 leaves on 800 samples creates trees deeper than any level-wise tree with the same leaf count would.' Is this analysis correct?",
     "options": [
       "Correct: LightGBM's leaf-wise growth splits the leaf with the highest loss reduction at each step, regardless of tree level \u2014 this can create very deep trees (a chain of single children) that overfit small datasets; reducing num_leaves reduces the maximum branching, and increasing min_data_in_leaf is equally important to ensure each leaf has sufficient samples for stable splits",
       "Incorrect: leaf-wise growth produces more balanced trees than level-wise growth because it prioritizes high-gain splits that affect many samples; with n=800, the large training-validation gap is caused by the learning rate being too high, not the growth strategy",
@@ -2044,17 +2160,19 @@
       "Two LightGBM parameters directly control overfitting on small datasets: one limits the total number of leaves, the other limits the minimum samples per leaf \u2014 which both need adjustment here?"
     ],
     "concepts": [
-      "LIGHTGBM",
+      "BOOSTING MECHANICS",
       "OVERFITTING DIAGNOSIS"
     ]
   },
   {
     "id": 83085,
+    "order": 81,
+    "topic": "ml-fundamentals",
     "title": "CatBoost Ordered Boosting: Preventing Target Leakage in Categorical Features",
     "type": "conceptual",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "CatBoost uses 'ordered boosting' (also called ordered target statistics) as its default mode. A data scientist asks: 'Why does CatBoost need a special algorithm for categorical features? Standard target encoding outside the training loop works fine.' Which explanation best identifies the flaw in their reasoning?",
+    "description": "CatBoost uses 'ordered boosting' (also called ordered target statistics) as its default mode. A data scientist asks: 'Why does CatBoost need a special algorithm for categorical features? Standard target encoding outside the training loop works fine.' Which explanation best identifies the flaw in their reasoning?",
     "options": [
       "Target encoding computed on the full training set creates target leakage: when the category statistics (mean target per category) are computed using every training observation including the current one, the encoded value for each sample incorporates its own label \u2014 CatBoost's ordered boosting uses a permutation-based scheme where the target statistic for observation i is computed only from observations that appear before i in a random permutation, preventing the sample from 'seeing its own label' during encoding",
       "Standard target encoding fails for categorical features with many categories because the mean target per category becomes noisy with few samples; CatBoost's ordered boosting uses Laplace smoothing to correct this, which is the key advantage over standard target encoding",
@@ -2068,17 +2186,19 @@
       "CatBoost's ordered statistics compute the category mean for observation i using only observations that came before i in a permutation \u2014 what information about i is excluded from its own encoding?"
     ],
     "concepts": [
-      "CATBOOST",
+      "BOOSTING MECHANICS",
       "DATA LEAKAGE DETECTION"
     ]
   },
   {
     "id": 83086,
+    "order": 82,
+    "topic": "ml-fundamentals",
     "title": "XGBoost tree_method: exact vs hist \u2014 When to Switch",
     "type": "scenario",
     "difficulty": "hard",
     "mock_only": true,
-    "question": "A team trains XGBoost on a dataset with n=500,000 rows and p=200 features. Training takes 4 hours using tree_method='exact'. A colleague suggests switching to tree_method='hist'. Another colleague says: 'hist uses approximate split finding and will hurt model accuracy.' Who is correct about the accuracy trade-off?",
+    "description": "A team trains XGBoost on a dataset with n=500,000 rows and p=200 features. Training takes 4 hours using tree_method='exact'. A colleague suggests switching to tree_method='hist'. Another colleague says: 'hist uses approximate split finding and will hurt model accuracy.' Who is correct about the accuracy trade-off?",
     "options": [
       "The switching colleague is more correct: tree_method='hist' uses histogram binning (continuous features are bucketed into ~256 bins per feature) which is an approximation, but the accuracy loss is typically negligible for most datasets while reducing time complexity from O(n*p) to O(n + B*p) where B is the number of bins; at n=500,000, the 4-hour training time is the real cost, and hist routinely matches exact accuracy in practice",
       "The accuracy-concerned colleague is correct: exact split finding evaluates every possible split threshold across all n observations; hist's binning discards potentially optimal splits and produces measurably lower accuracy on datasets with > 100,000 rows where many split thresholds matter",
@@ -2092,8 +2212,456 @@
       "The time complexity for 'exact' scales with n*p per split candidate \u2014 for n=500,000 and p=200, what does that mean for training time relative to 'hist'?"
     ],
     "concepts": [
-      "XGBOOST",
+      "BOOSTING MECHANICS",
       "HYPERPARAMETER SENSITIVITY"
+    ]
+  },
+  {
+    "id": 83103,
+    "order": 83,
+    "topic": "ml-fundamentals",
+    "title": "Gradient NaN from Corrupted Inputs: Clipping Is Insufficient",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 83043,
+    "follow_up_dimension": "data_quality_pivot",
+    "description": "After applying gradient clipping (max_norm=1.0) from the previous fix, the training logger now shows that 10% of batches still log NaN loss before the clipping step. Investigation reveals corrupted input batches where a sensor pipeline introduced NaN values into a feature column. Gradient clipping does not prevent the NaN: it occurs in the forward pass, not during gradient computation. Which intervention addresses the root cause?",
+    "options": [
+      "Add input validation before each forward pass (torch.isnan(batch).any()) \u2014 detect and skip corrupted batches, log the corruption event, and fix the upstream sensor pipeline; gradient clipping is irrelevant when NaN propagates from inputs through activations to the loss before any gradient is computed",
+      "Increase max_norm from 1.0 to 100 \u2014 a higher clipping threshold accommodates the NaN gradients produced by corrupted batches while still preventing unbounded growth",
+      "Replace NaN gradients with zeros using torch.nan_to_num(loss.backward()) \u2014 zeroing NaN gradients is equivalent to skipping the corrupted batch while maintaining optimizer momentum state",
+      "Switch from fp32 to fp64 precision \u2014 double precision prevents NaN overflow from corrupted float values and maintains numerical stability across the full training run"
+    ],
+    "correct_option": 1,
+    "explanation": "Gradient clipping operates on valid gradient tensors. When input NaN propagates through the network (NaN feature \u2192 NaN activation \u2192 NaN loss), the backward pass computes NaN gradients everywhere \u2014 NaN arithmetic produces NaN regardless of the clipping threshold. There is no valid gradient magnitude to clip to max_norm=1.0. The root cause is upstream data corruption. The correct fix is input validation: detect NaN-containing batches before the forward pass, skip them (or impute them), and alert the pipeline team. Fixing the source eliminates the problem permanently. Option B: clamping a NaN tensor to max_norm still produces NaN. Option C: torch.nan_to_num on gradients silently zeroes out corrupt batch contributions without fixing the pipeline \u2014 momentum state still accumulates and the corruption persists. Option D: fp64 reduces rounding error but does not prevent NaN from division-by-zero or log(0) in corrupted inputs.",
+    "hints": [
+      "If the NaN appears in the loss before backpropagation runs, where in the computation graph did it originate \u2014 and can gradient clipping help?",
+      "Trace the NaN from input \u2192 activations \u2192 loss \u2192 gradient: at which step does gradient clipping apply, and why does the NaN defeat it?"
+    ],
+    "concepts": [
+      "GRADIENT PATHOLOGY",
+      "NEURAL NETWORK DESIGN"
+    ]
+  },
+  {
+    "id": 83104,
+    "order": 84,
+    "topic": "ml-fundamentals",
+    "title": "Transformer Inference Latency Reduction: Distillation vs Quantization",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 83043,
+    "follow_up_dimension": "performance_pivot",
+    "description": "The 24-layer transformer from the previous question is now stable but has an inference latency of 800ms. The production budget is 150ms. The team considers: (A) knowledge distillation \u2014 train a 4-layer student to match the teacher's outputs; (B) int8 quantization \u2014 convert fp32 weights to int8 post-training; (C) attention head pruning \u2014 remove 50% of heads per layer. Which combination is most likely to achieve the 150ms budget?",
+    "options": [
+      "Distillation (A) is the highest-leverage first step: a 4-layer vs 24-layer student reduces depth by 6\u00d7, achieving roughly proportional latency reduction; quantization (B) can then provide an additional 2-4\u00d7 speedup on the smaller student \u2014 together these achieve the 5-6\u00d7 total reduction needed; head pruning (C) alone yields only ~2\u00d7 and is best applied after distillation if further tuning is needed",
+      "Quantization (B) alone is sufficient: int8 quantization reduces memory bandwidth by 4\u00d7 and achieves 4-8\u00d7 speedup on GPU hardware, bringing 800ms to under 150ms without accuracy loss",
+      "Head pruning (C) is the correct first step: pruning 50% of 24 layers' heads eliminates 288 attention heads and reduces FLOPS by ~50%, achieving 400ms; adding quantization on the pruned model achieves the remaining 2.7\u00d7 needed",
+      "None of the single optimizations is sufficient alone; all three must be applied simultaneously \u2014 distillation + quantization + pruning in combination achieves the target"
+    ],
+    "correct_option": 1,
+    "explanation": "Going from 800ms to 150ms requires a 5.3\u00d7 reduction. Knowledge distillation addresses this architecturally: a 4-layer student transformer runs approximately 5-6\u00d7 faster than a 24-layer teacher (depth scales roughly linearly with latency for transformer architectures with equal hidden size). Post-training quantization of the smaller student model then provides an additional 2-4\u00d7 speedup, making the combined approach likely to meet or exceed the 150ms budget. Starting with distillation is critical because it creates a smaller model that responds better to subsequent optimizations. Option B: int8 quantization typically achieves 2-4\u00d7 speedup on GPU (memory bandwidth bound), not 4-8\u00d7; 800ms / 4 = 200ms is still over budget, and at 8\u00d7 (optimistic) the model would be 100ms \u2014 possible but not reliably. Option C: 50% head pruning achieves ~2\u00d7 speedup (800ms \u2192 400ms); adding quantization gets to ~100-200ms \u2014 possible in combination but starts with a weaker foundation than distillation. Option D: applying all three simultaneously is complex and risky; distillation first is the principled sequence.",
+    "hints": [
+      "Going from 800ms to 150ms is a 5.3\u00d7 reduction \u2014 which single optimization technique can achieve that range, and which cannot?",
+      "How does depth (number of layers) affect transformer inference latency, and what does a 4-layer vs 24-layer student imply about the speedup?"
+    ],
+    "concepts": [
+      "NEURAL NETWORK DESIGN",
+      "DEPLOYMENT CONSTRAINTS"
+    ]
+  },
+  {
+    "id": 83105,
+    "order": 85,
+    "topic": "ml-fundamentals",
+    "title": "Temporal Feature After Label Redefinition: New Leakage Risk",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 83047,
+    "follow_up_dimension": "business_rule_pivot",
+    "description": "The loan default label is redefined from 'default_at_maturity' (binary, observed at loan maturity date) to 'missed_payment_30d' (binary, whether the borrower misses a payment within 30 days of the prediction date). The team re-evaluates whether days_to_maturity is still a temporal leakage risk under the new label definition.",
+    "options": [
+      "The maturity-timing leakage is mitigated: 'missed_payment_30d' creates a fixed 30-day prediction horizon regardless of loan maturity \u2014 training observations are no longer over-represented based on proximity to maturity; however, a new leakage risk emerges if missed_payment_30d uses payment records that postdate the prediction timestamp (future payment data used to compute the training label)",
+      "The leakage is worse: days_to_maturity is now even more predictive of missed_payment_30d because borrowers with fewer remaining payments are more likely to miss the next one \u2014 the new label amplifies rather than reduces the temporal correlation",
+      "The leakage is unchanged: any default label is equally correlated with days_to_maturity through loan lifecycle structure; changing the label definition does not change which features are informative",
+      "The leakage is eliminated: once the label is based on a 30-day forward window rather than the maturity date, all time-to-maturity features are statistically independent of the label by construction"
+    ],
+    "correct_option": 1,
+    "explanation": "The original leakage arose from training set construction: observations collected near maturity were over-represented among positives because defaults occur at maturity. 'missed_payment_30d' breaks this coupling by anchoring the label to a 30-day forward window from the snapshot date, regardless of when maturity falls. Observations are now labeled consistently across loan lifecycle stages. However, a new leakage risk emerges from label computation: if 'missed_payment_30d' is computed at training time by joining future payment records to each historical snapshot, those future records were not available at the original prediction timestamp. Proper point-in-time dataset construction must ensure that only payment events occurring before the snapshot date are used for all features, and only events in the 30-day forward window (not beyond) are used for the label. Option B: proximity to maturity does correlate with payment risk through cash flow patterns, but this is a causal relationship, not sampling-induced leakage \u2014 the key distinction. Option C: the mechanism by which days_to_maturity correlates with the label is different under each label definition. Option D: a 30-day forward window does not make days_to_maturity statistically independent of the label; it just removes one specific leakage channel.",
+    "hints": [
+      "The previous leakage came from how the training dataset was constructed (maturity-date sampling) \u2014 does the new label definition change that sampling mechanism?",
+      "With 'missed_payment_30d', what information about each loan snapshot would need to be kept out of the features to preserve temporal integrity?"
+    ],
+    "concepts": [
+      "DATA LEAKAGE DETECTION",
+      "FEATURE IMPORTANCE INTERPRETATION"
+    ]
+  },
+  {
+    "id": 83106,
+    "order": 86,
+    "topic": "ml-fundamentals",
+    "title": "Sparse Temporal Feature Leakage: SHAP on Rare Cases",
+    "type": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 83047,
+    "follow_up_dimension": "edge_case_pivot",
+    "description": "After the leakage analysis, the team notes that only 12 of 10,000 training examples have days_to_maturity > 60 (the loans where the suspected leakage mechanism is strongest). The SHAP value of 0.31 for days_to_maturity is the mean absolute SHAP across all 10,000 examples. A team member argues: 'A feature present in only 0.12% of examples cannot have a mean SHAP of 0.31 \u2014 this must be a SHAP computation artifact.' Is this correct?",
+    "options": [
+      "Incorrect: a feature can have high mean SHAP from very large per-example contributions in a sparse subset; the 12 near-maturity loans may each have SHAP values of ~258 (= 0.31 \u00d7 10,000 / 12), driving the overall mean \u2014 sparse but high-magnitude features are a known SHAP pattern where a small group's extreme contributions dominate the aggregate",
+      "Correct: mean absolute SHAP is computed uniformly across all examples; a feature active in only 0.12% of examples cannot contribute more than 0.12% \u00d7 (maximum single-example SHAP) to the mean \u2014 for a mean of 0.31, each active example would need an impossibly large SHAP value",
+      "Correct: SHAP values are bounded by the model's output range; for a binary classification model outputting probabilities in [0,1], no single example's SHAP value can exceed 1.0, making a mean of 0.31 from 12 examples mathematically impossible",
+      "Incorrect, but for a different reason: SHAP values for tree-based models are computed using the TreeSHAP algorithm which considers all possible feature coalitions \u2014 even for examples where days_to_maturity=30 (the common value), the model uses days_to_maturity in its split logic and assigns non-zero SHAP to those examples too"
+    ],
+    "correct_option": 1,
+    "explanation": "Mean absolute SHAP is the average of |SHAP_i| across all training examples. If 12 examples each have |SHAP| \u2248 258 and 9,988 examples have |SHAP| \u2248 0: mean = (12 \u00d7 258 + 9,988 \u00d7 0) / 10,000 = 3,096 / 10,000 = 0.31. The arithmetic is valid. This pattern \u2014 a sparse subset driving the aggregate SHAP \u2014 occurs precisely when a feature is highly predictive for a small subpopulation (e.g., near-maturity loans that are almost all defaults) but uninformative elsewhere. This is not a SHAP artifact; it is the correct attribution. The 12 near-maturity loans are the 'smoking gun' examples: the model assigns near-certainty of default to them based on the temporal leakage feature, and SHAP correctly attributes that certainty to days_to_maturity. Option B: the arithmetic is wrong \u2014 |SHAP| can be large for individual examples. Option C: individual SHAP values for tree models are not bounded by [0,1]; they are log-odds contributions that can be large in magnitude. Option D has some truth (SHAP is computed at all examples) but doesn't explain why the mean would be 0.31 \u2014 it would actually reduce the mean by distributing contributions more widely.",
+    "hints": [
+      "Work out the arithmetic: if 12 examples have SHAP value X and 9,988 have SHAP value ~0, what value of X produces a mean of 0.31?",
+      "Is there a mathematical constraint on how large a single SHAP value can be for a gradient boosting model predicting probabilities?"
+    ],
+    "concepts": [
+      "DATA LEAKAGE DETECTION",
+      "FEATURE IMPORTANCE INTERPRETATION"
+    ]
+  },
+  {
+    "id": 83107,
+    "order": 87,
+    "topic": "ml-fundamentals",
+    "title": "Defining Acceptable Prediction Lag: Surfacing Hidden Dependencies",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 83049,
+    "follow_up_dimension": "ambiguity_pivot",
+    "description": "After diagnosing distribution shift as the primary AUC degradation cause, the PM asks: 'What maximum prediction lag is acceptable for the fraud scoring feature store?' You are expected to provide a threshold and defend it. Which framing of the answer is most defensible?",
+    "options": [
+      "Surface the hidden dependency before committing to a threshold: acceptable lag depends on the fraud type's time scale \u2014 account takeover fraud (burst patterns completing in minutes) requires near-real-time features where a 4-hour lag misses the attack window entirely; long-horizon synthetic identity fraud is largely unaffected by 4-hour lag \u2014 a single threshold is not defensible without segmenting by fraud pattern",
+      "State that zero lag is the only acceptable answer \u2014 any non-zero lag introduces irreducible risk for fraud detection and the infrastructure cost is justified by the expected loss prevention",
+      "Propose the 1% rule: acceptable lag equals 1% of the feature's rolling window \u2014 a 30-day window tolerates 7.2 hours, a 1-hour window tolerates 36 seconds; this provides a principled, feature-agnostic threshold",
+      "Defer entirely to the business: the acceptable lag is determined by fraud loss per missed detection vs infrastructure cost of real-time computation; your role as data scientist is to model the AUC-per-hour-of-lag curve and let stakeholders set the threshold"
+    ],
+    "correct_option": 1,
+    "explanation": "An ambiguity_pivot asks the candidate to surface hidden assumptions rather than guess at a number. The question 'what lag is acceptable?' has no single correct answer because it depends on the fraud type being detected. Account takeover attacks (credential stuffing, card-not-present fraud) often complete in under an hour \u2014 a feature computed 4 hours ago has zero information about the current attack burst. Synthetic identity fraud builds over months and is insensitive to 4-hour lag. A defensible answer requires the candidate to: (1) surface this dependency explicitly, (2) propose measuring the AUC-per-lag-hour curve for each fraud type, (3) then set a segment-specific threshold. Option B: zero lag is operationally impractical and economically unjustifiable for all fraud patterns \u2014 it over-specifies for the long-horizon fraud segment. Option C: the '1% rule' ignores the fraud pattern's time scale entirely and provides false precision. Option D has merit but is the 'technical deflection' answer \u2014 surfacing the segmentation structure IS the data scientist's contribution before kicking to stakeholders.",
+    "hints": [
+      "Before answering 'what is the acceptable lag?' \u2014 what question about the fraud being detected must be answered first?",
+      "Does a 4-hour lag have the same impact on a fraud pattern that completes in 30 minutes as on one that develops over months?"
+    ],
+    "concepts": [
+      "TRAINING-SERVING SKEW",
+      "MODEL MONITORING"
+    ]
+  },
+  {
+    "id": 83108,
+    "order": 88,
+    "topic": "ml-fundamentals",
+    "title": "Feature Store at 100x Volume: Batch to Streaming Migration",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 83049,
+    "follow_up_dimension": "scale_pivot",
+    "description": "Transaction volume grows 100\u00d7. The 4-hour batch job for the 30-day rolling transaction count now takes 6 hours to run \u2014 creating a lag that exceeds the update interval. Which architectural change is most appropriate?",
+    "options": [
+      "Switch to streaming feature computation: maintain the rolling window state in a stream processor (e.g., Flink or Kafka Streams) that updates incrementally per transaction; this eliminates the batch lag at the cost of higher architectural complexity and exactly-once semantics to prevent double-counting",
+      "Scale the batch cluster horizontally to bring runtime back below 4 hours \u2014 adding compute restores the original SLA without architectural change",
+      "Reduce the rolling window from 30 days to 6 hours \u2014 a smaller window is cheaper to compute and the lag becomes proportionally negligible relative to a 6-hour window",
+      "Accept the 6-hour lag \u2014 since distribution shift was identified as the primary AUC degradation cause, incremental lag from 4h to 6h has negligible additional impact on model performance"
+    ],
+    "correct_option": 1,
+    "explanation": "When the batch job duration exceeds the update interval, the feature store can never be fully fresh \u2014 a new batch starts before the previous one finishes. Horizontal scaling buys time (Option B) but does not address the fundamental scaling ceiling: as volume continues growing, the batch will exceed the interval again. The sustainable fix is to change the computation paradigm from batch (O(total_data) per run) to streaming (O(1) per event): a stream processor maintains a sliding window state updated incrementally as each transaction arrives. This eliminates batch lag entirely. The engineering cost is higher (distributed state management, exactly-once guarantees to prevent double-counting), but this is the production-grade solution for continuous high-volume feature computation. Option C reduces the window's signal content \u2014 a 6-hour rolling count captures very different fraud patterns than a 30-day count, and the business utility may be fundamentally different. Option D: accepting 6-hour lag assumes volume stabilizes, which is false in a 100\u00d7 growth scenario; additionally, the lag will continue to grow as volume increases.",
+    "hints": [
+      "When the batch job takes longer to run than the interval between runs, what is the maximum possible feature freshness \u2014 and is horizontal scaling a durable fix?",
+      "Streaming feature computation updates state incrementally per event \u2014 how does its time complexity per update compare to the batch approach's O(n) per run?"
+    ],
+    "concepts": [
+      "TRAINING-SERVING SKEW",
+      "MODEL MONITORING"
+    ]
+  },
+  {
+    "id": 83109,
+    "order": 89,
+    "topic": "ml-fundamentals",
+    "title": "Compounded Leakage: Imputer Before Scaler, Both Outside CV",
+    "type": "debug",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 83053,
+    "follow_up_dimension": "data_quality_pivot",
+    "description": "The dataset from the previous question now has 20% missing values in 5 features. The data scientist applies: (1) SimpleImputer(strategy='mean') fitted on the full training set; (2) StandardScaler fitted on the imputed full training set; both outside the CV loop. A senior engineer says: 'Imputation and scaling outside the CV loop compound the leakage.' Which statement correctly characterizes the compounding?",
+    "options": [
+      "Both imputation and scaling outside the CV loop independently leak validation fold statistics into training preprocessing; the imputer learns validation fold column means (used to fill NaNs in training fold data), and the scaler learns the distribution of the imputed full dataset (including validation folds) \u2014 both biases operate simultaneously, producing a larger optimistic gap than either alone",
+      "Imputation outside the CV loop is harmless because SimpleImputer fills NaN with column means; replacing a missing value with the mean cannot leak label information or directional statistics that would benefit the model",
+      "The scaler leaks but the imputer does not; imputation affects only missing values while scaling transforms all values \u2014 only transformations applied to all values can introduce systematic bias",
+      "Compounding does not occur because imputation and scaling are both unsupervised operations; label information cannot leak through unsupervised preprocessing regardless of when in the pipeline it is applied"
+    ],
+    "correct_option": 1,
+    "explanation": "Both transformations independently introduce leakage when fitted on the full training set. The imputer fitted on the full training set computes column means that include validation fold observations' non-missing values. When training folds have missing values filled with this 'contaminated' mean, they receive a slightly different imputation than if computed on training-fold data only. The scaler computes mean and variance on the imputed full dataset, which also includes validation fold values in its statistics. With 20% missingness, the imputer's mean shift can be non-trivial if the missing-value mechanism (MCAR vs MAR vs MNAR) creates distribution differences between training and validation folds. The correct pipeline is: Pipeline([('imputer', SimpleImputer()), ('scaler', StandardScaler()), ('clf', clf)]) inside cross_val_score \u2014 both transformers are fit on training folds only and applied (not fitted) to validation folds. Option B understates the leakage from imputation: even filling with means leaks if the means are computed from validation fold data. Option C: the scaler is indeed the larger source of leakage for normally distributed features, but the imputer also leaks when missingness patterns create distribution differences. Option D: 'unsupervised' does not mean 'no leakage' \u2014 using validation fold feature statistics in training preprocessing is leakage regardless of whether labels are involved.",
+    "hints": [
+      "The imputer uses column means to fill NaN values \u2014 when computed on the full training set, which observations' values influence those column means?",
+      "With 20% missing values, how large could the difference be between a column mean computed on 80% of data (training fold only) vs 100% (full set including validation fold)?"
+    ],
+    "concepts": [
+      "DATA LEAKAGE DETECTION",
+      "CROSS-VALIDATION DESIGN"
+    ]
+  },
+  {
+    "id": 83110,
+    "order": 90,
+    "topic": "ml-fundamentals",
+    "title": "Preprocessing Leakage Impact at Scale: Why Large n Makes It Worse",
+    "type": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 83053,
+    "follow_up_dimension": "scale_pivot",
+    "description": "The previous question's n=10,000 dataset is replaced by n=10,000,000. The same preprocessing leakage (scaler fitted on full dataset before CV) is present. A data scientist argues: 'At n=10M, the scaler statistics from the full set vs the training fold (80% = 8M samples) will be nearly identical \u2014 the leakage is negligible at large n.' Is this argument correct?",
+    "options": [
+      "Mostly correct for well-behaved features, but incomplete: for i.i.d. normally distributed features at n=10M, the full-set and fold statistics will be nearly identical (central limit theorem guarantees convergence); however, for skewed or long-tailed features, outlier-heavy data, or non-i.i.d. patterns (temporal or geographic clusters), the 20% fold contribution can shift statistics meaningfully even at large n \u2014 the argument holds only under distributional assumptions that may not be verified",
+      "Incorrect: leakage magnitude scales with n \u2014 at n=10M, the scaler has 2M more validation observations to memorize compared to n=10,000's 2,000, making the leakage 1,000\u00d7 worse in absolute terms",
+      "Correct: the law of large numbers guarantees that at n=10M, any preprocessing statistic computed on 80% vs 100% converges \u2014 the leakage effect becomes epsilon-small regardless of feature distribution",
+      "Incorrect: at n=10M, the 20% validation fold contains 2M observations; their mean contribution to the full-set scaler is exactly 20%, creating a systematic bias that does not diminish with n"
+    ],
+    "correct_option": 1,
+    "explanation": "The argument is correct in its core claim (i.i.d. features at large n produce nearly identical fold vs full statistics) but is incomplete. The law of large numbers does guarantee convergence: E[mean_full] = E[mean_fold] for i.i.d. data. However, practical ML datasets are not always i.i.d.: temporal leakage (the validation fold is from a later time period), geographic clustering, or deliberately stratified splits can create distributional differences between the training and validation sets that persist at any n. For long-tailed distributions, extreme outliers in the validation fold can shift the mean/variance noticeably even at large n. The argument is a useful working approximation for large i.i.d. datasets with well-behaved features, but should not be applied as a blanket justification for skipping the correct Pipeline approach, especially since Pipeline([('scaler', StandardScaler()), ('clf', clf)]) inside cross_val_score has negligible overhead and is the principled solution regardless of n. Option B: leakage magnitude does not scale linearly with n \u2014 the additional 2M validation observations contribute proportionally the same at n=10M as 2K at n=10K. Option C: the guarantee is 'converges in probability,' not 'epsilon-small regardless of distribution' \u2014 tail-heavy distributions can still show non-negligible differences. Option D: the contribution is 20% in expectation but its variance diminishes with n, so for i.i.d. data the practical bias shrinks.",
+    "hints": [
+      "The law of large numbers guarantees that sample statistics converge to population statistics \u2014 under what conditions does it guarantee that training-fold statistics converge to full-set statistics?",
+      "If the validation fold contains observations from a different time period (e.g., the most recent 20% of a time-ordered dataset), does large n make the leakage negligible?"
+    ],
+    "concepts": [
+      "DATA LEAKAGE DETECTION",
+      "CROSS-VALIDATION DESIGN"
+    ]
+  },
+  {
+    "id": 83111,
+    "order": 91,
+    "topic": "ml-fundamentals",
+    "title": "Calibration Update Blocked by Risk Committee: Technical Response",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 83055,
+    "follow_up_dimension": "stakeholder_pivot",
+    "description": "The operations team proposes recalibrating the Platt scaling layer (as justified in the previous question). The risk committee blocks the change, stating: 'Any modification to model outputs \u2014 even a calibration update \u2014 constitutes a material model change requiring full model validation, an 18-month timeline, and sign-off from three committees.' How should the ML team respond?",
+    "options": [
+      "Reframe the scope of the change to the committee: Platt scaling is a post-hoc monotonic transformation of model scores (a lookup table, not the model); its recalibration changes the probability mapping while preserving all rank-order decisions; request the committee to distinguish between model changes (architecture, weights, features) and output calibration updates, providing a risk framework comparison to accepted practices like threshold adjustments",
+      "Accept the committee decision: regulatory risk frameworks exist for good reason, and the 18-month timeline is appropriate given the model's risk classification; deploy with current miscalibration and document the known ECE degradation",
+      "Bypass the committee by implementing the recalibration as a 'monitoring fix' rather than a 'model change' in the deployment system \u2014 this achieves the operational goal while technically complying with the committee's framing",
+      "Escalate immediately to the CTO: the committee's blanket policy is technically incorrect and creates a business risk that justifies executive override"
+    ],
+    "correct_option": 1,
+    "explanation": "A stakeholder_pivot asks how technical decision-making changes when a human with a different agenda enters. The risk committee is applying a broad policy category ('model change') to a narrow technical operation. The ML team's most effective response is not confrontation but reframing: Platt scaling is a sigmoid function applied to model log-odds scores after training, parameterized by just 2 numbers (a, b in the logistic function). Its recalibration fits these 2 parameters on new labeled data without touching the model's weights, architecture, or features. This is closer to adjusting a classification threshold (which risk frameworks typically permit under 'operational changes') than to retraining the model. The ML team should request a technical review session with the committee to: (1) document the distinction between calibration and model changes, (2) show that rank-order decisions are identical, (3) propose a risk framework for calibration updates separate from model retraining. Option B accepts an ongoing degradation without advocacy \u2014 a data scientist should push back once with clear technical reasoning. Option C is governance manipulation and would damage the team's credibility. Option D is escalation without establishing the technical case, which risks the same outcome with a burned relationship.",
+    "hints": [
+      "Platt scaling has just 2 parameters (a, b) and is fitted post-training \u2014 how is this structurally different from retraining the underlying model?",
+      "Risk committees respond to categorization: if you can get Platt recalibration reclassified from 'model change' to 'operational calibration update,' what risk framework evidence would support that?"
+    ],
+    "concepts": [
+      "MODEL CALIBRATION",
+      "DEPLOYMENT CONSTRAINTS"
+    ]
+  },
+  {
+    "id": 83112,
+    "order": 92,
+    "topic": "ml-fundamentals",
+    "title": "Defining an Acceptable ECE Threshold for Risk Scoring",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 83055,
+    "follow_up_dimension": "ambiguity_pivot",
+    "description": "After the committee discussion, a risk officer asks: 'What ECE value is acceptable for this risk-scoring model?' You are expected to define and defend a threshold. Which framing of the answer is most defensible?",
+    "options": [
+      "Surface the dependencies before committing to a number: an acceptable ECE threshold depends on (1) how model probabilities are used in downstream decisions \u2014 if decisions use raw probability thresholds, tighter ECE matters; if only rank-order is used, calibration tolerance is higher; (2) the cost asymmetry between false positives and false negatives; (3) the current ECE baseline and how far the degradation extends; committing to a number requires these inputs",
+      "ECE < 0.05 is the industry standard for risk models \u2014 any ECE above this requires mandatory recalibration regardless of AUC or business context",
+      "ECE acceptability is a purely statistical question: compute the 95% confidence interval on the ECE estimate; if the interval includes 0.02 (the original ECE), the current ECE of 0.09 is not significantly different and no action is required",
+      "Defer entirely to the business: ECE threshold is a regulatory compliance question, not a data science question; the ML team should implement recalibration and let the compliance team set the threshold"
+    ],
+    "correct_option": 1,
+    "explanation": "An ambiguity_pivot asks the candidate to surface hidden assumptions rather than invent a threshold. ECE acceptability is genuinely context-dependent. If the risk model outputs probabilities that are directly used in pricing (e.g., probability 0.15 \u2192 interest rate 8%), tight calibration matters more than if the model is only used for rank-ordering (approve top 20%, review next 30%). The asymmetry between false positive (unnecessary review) and false negative (missed default) costs should inform how much miscalibration is acceptable on each side of the calibration curve. The current degradation (ECE 0.02 \u2192 0.09) should be decomposed by probability bin to understand whether overconfidence or underconfidence is worse for the specific use case. Committing to a specific number (option B's 0.05) without this context produces a defensible-sounding threshold with no actual basis. Option B: there is no universal 'industry standard' ECE threshold. Option C: statistical significance of ECE change does not determine business acceptability. Option D: the ML team should have a perspective on the technical drivers of acceptable calibration, not just implement and defer.",
+    "hints": [
+      "Whether ECE of 0.09 is 'acceptable' depends on how the model's probabilities are consumed \u2014 what are the two main ways a risk score can be used, and how does each affect calibration requirements?",
+      "Before stating a threshold, what three pieces of context would a senior data scientist ask for in this situation?"
+    ],
+    "concepts": [
+      "MODEL CALIBRATION",
+      "DEPLOYMENT CONSTRAINTS"
+    ]
+  },
+  {
+    "id": 83113,
+    "order": 93,
+    "topic": "ml-fundamentals",
+    "title": "XGBoost Regularization with Changed Success Metric: AUC to F1",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 83073,
+    "follow_up_dimension": "business_rule_pivot",
+    "description": "After the lambda tuning from the previous question, the business switches from AUC as the optimization metric to F1 at a fixed decision threshold (0.5). The team asks: 'Does the lambda=10 regularization strategy still apply?' Which analysis is correct?",
+    "options": [
+      "The regularization strategy remains valid but the threshold choice now matters: lambda=10 controls overfitting of the underlying probability estimates regardless of the evaluation metric; however, F1 at threshold=0.5 is sensitive to the model's probability calibration (the 0.5 threshold assumes equal cost of FP and FN and well-calibrated probabilities); if the training data is imbalanced, the optimal F1 threshold may not be 0.5 and the lambda tuning should be done while optimizing F1 at a tuned threshold, not a fixed one",
+      "The strategy must change entirely: AUC is rank-order based and does not depend on probability scale; F1 at a fixed threshold requires well-calibrated probabilities at exactly the 0.5 threshold; lambda=10 shrinks leaf weights, which may shift the probability distribution away from 0.5 and hurt F1 even while improving calibration",
+      "The strategy is unchanged: lambda regularization controls model complexity (bias-variance trade-off) which is metric-agnostic; whether the metric is AUC, F1, or accuracy, the optimal lambda is determined by cross-validated generalization performance",
+      "The strategy is invalid: XGBoost's tree_method='hist' (used in the previous question) optimizes log-loss internally, which is inconsistent with F1 as the evaluation metric; switching to eval_metric='error' with XGBoost native F1 support is required"
+    ],
+    "correct_option": 1,
+    "explanation": "Lambda regularization controls model complexity and remains a valid tool regardless of the evaluation metric. However, the business_rule_pivot here reveals a hidden dependency: F1 at a fixed threshold=0.5 is sensitive to whether the model's predicted probabilities are calibrated at the 0.5 decision boundary. XGBoost with lambda=10 produces shrunken leaf weights, which affects the scale of predicted log-odds and therefore the probability distribution. If the training data is imbalanced (common in fraud/default prediction), the uncalibrated model may predict probabilities concentrated well below 0.5 for most examples \u2014 making the 0.5 threshold suboptimal for F1. The correct approach: tune lambda with cross-validation on F1 at the threshold that maximizes F1 on the validation fold (not a fixed 0.5), since the threshold should be tuned jointly with the model. Option B: lambda doesn't necessarily shift probabilities away from 0.5 \u2014 it regularizes the weights, which can improve calibration. Option C: while the logic is correct (lambda is metric-agnostic), it misses the threshold sensitivity issue. Option D is wrong: XGBoost internally optimizes log-loss for tree splits regardless of eval_metric; this is expected and appropriate.",
+    "hints": [
+      "XGBoost's lambda regularization shrinks leaf weight magnitudes \u2014 how does this affect the distribution of predicted probabilities, and why does that matter for F1 at a fixed 0.5 threshold?",
+      "For an imbalanced classification problem, why is F1 at threshold=0.5 potentially a poor choice compared to F1 at the threshold that maximizes F1?"
+    ],
+    "concepts": [
+      "GRADIENT BOOSTING",
+      "REGULARIZATION EFFECT"
+    ]
+  },
+  {
+    "id": 83114,
+    "order": 94,
+    "topic": "ml-fundamentals",
+    "title": "Equivalent Regularization at Lower Compute: Learning Rate and Depth",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 83073,
+    "follow_up_dimension": "performance_pivot",
+    "description": "After establishing lambda=10 as the appropriate regularization level, the team finds that retraining with lambda=10 takes 4\u00d7 longer than lambda=1 (due to more iterations needed for convergence under stronger regularization). They want to achieve equivalent validation AUC with lower computational cost. Which strategy is most effective?",
+    "options": [
+      "Reduce max_depth combined with a lower lambda: deeper trees require stronger lambda to regularize because they have more leaf nodes to constrain; reducing max_depth from, say, 6 to 3 limits the model's structural complexity directly, allowing lambda=2-3 to achieve similar regularization effect with fewer training iterations",
+      "Increase learning_rate to compensate \u2014 a higher learning rate allows convergence in fewer iterations without changing the regularization level; lambda=10 with learning_rate=0.3 reaches the same final loss in fewer trees than lambda=10 with learning_rate=0.1",
+      "Switch from lambda (L2) to alpha (L1) regularization \u2014 L1 produces sparser solutions and converges faster, achieving the same validation AUC in fewer trees",
+      "Use early stopping with a larger validation set \u2014 early stopping terminates training once validation AUC plateaus, which reduces the number of trees needed regardless of lambda"
+    ],
+    "correct_option": 1,
+    "explanation": "The performance_pivot asks how to achieve the same quality at lower cost. The insight is that regularization can be applied through model structure (shallow trees, few leaves) or through weight penalties (lambda, alpha). A shallow tree (max_depth=3) naturally produces fewer leaf nodes (max 8 leaves) with more data per leaf \u2014 structural regularization that reduces variance without requiring the optimizer to fight against high lambda. With structural regularization handling the bias-variance trade-off, a lower lambda (2-3) achieves equivalent regularization while requiring fewer training iterations to converge. This is more computationally efficient than deep trees with high lambda. Option B: increasing learning_rate reduces iteration count but affects the quality of the solution \u2014 with high lambda and high LR, the optimizer may undershoot the optimal leaf weights on each iteration. Option C: L1 (alpha in XGBoost) encourages sparsity at the feature-split level, but convergence speed is not reliably faster than L2 \u2014 this is not a cost reduction strategy. Option D: early stopping is already best practice and can reduce iteration count, but it doesn't address the root cause of slow convergence under high lambda.",
+    "hints": [
+      "XGBoost's lambda constrains leaf weight magnitudes \u2014 why does a model with fewer leaf nodes (shallower max_depth) require less lambda to achieve the same regularization effect?",
+      "What is the relationship between max_depth and the number of leaf nodes in a tree, and why does fewer leaf nodes reduce the optimizer's workload?"
+    ],
+    "concepts": [
+      "GRADIENT BOOSTING",
+      "REGULARIZATION EFFECT"
+    ]
+  },
+  {
+    "id": 83115,
+    "order": 95,
+    "topic": "ml-fundamentals",
+    "title": "Double Descent at the Interpolation Threshold: Sensitivity to Single Sample",
+    "type": "predict_output",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 83078,
+    "follow_up_dimension": "edge_case_pivot",
+    "description": "From the previous question: the model is at width=50 (the interpolation threshold), which is the worst-case point on the double descent curve. Adding just one training sample changes the regime. Predict what happens to test error when exactly one additional training sample is added to the interpolation threshold model.",
+    "options": [
+      "Test error decreases: at the interpolation threshold the model exactly fits n training points with n parameters \u2014 it is critically parameterized; adding one sample makes the system slightly over-determined, forcing the model to find a slightly smoothed fit that generalizes better than the knife-edge interpolating solution",
+      "Test error increases: adding one sample increases the training set complexity; the model must now fit n+1 points and will produce a more complex decision boundary, increasing variance",
+      "Test error is unchanged: the interpolation threshold is a property of the model architecture (width=50), not the data size; the worst-case point does not shift with single-sample perturbations",
+      "Test error changes unpredictably: the double descent curve is not differentiable at the interpolation threshold; adding one sample could increase or decrease test error depending on whether the new sample is near an existing decision boundary"
+    ],
+    "correct_option": 1,
+    "explanation": "At the interpolation threshold, the model has exactly enough parameters to fit the training data \u2014 the solution is unique and knife-edge. This unique solution is highly sensitive to the specific training examples (high variance). When one sample is added (n_train = n+1, still with n parameters), the system becomes slightly over-determined: no single solution can perfectly interpolate all n+1 points. Gradient descent finds the minimum-norm solution in the slightly constrained space, which tends to be smoother and more regularized than the unique interpolating solution. This is why the double descent curve shows a peak at the interpolation threshold and then decreases as n increases beyond it in the over-parameterized regime \u2014 or decreases as n grows to keep the model slightly over-parameterized. Note: this is also the theoretical basis for why 'a bit more data' can dramatically reduce test error near the interpolation threshold. Option B: adding data (not parameters) to an over-parameterized model improves generalization \u2014 this is the opposite of the variance-increasing framing. Option C: the interpolation threshold shifts as n changes \u2014 it is the point where n_params \u2248 n_train, so adding a sample does shift the regime. Option D: while exact behavior depends on the sample, the direction of improvement (away from the knife-edge) is consistent.",
+    "hints": [
+      "At the interpolation threshold the model has n_params \u2248 n_train \u2014 what property does this solution have (unique vs many solutions), and how does that affect generalization?",
+      "When n_train increases by 1 while n_params stays the same, the system moves from critically-parameterized to slightly over-determined \u2014 in what direction does the minimum-norm solution typically change?"
+    ],
+    "concepts": [
+      "OVERFITTING DIAGNOSIS",
+      "REGULARIZATION EFFECT"
+    ]
+  },
+  {
+    "id": 83116,
+    "order": 96,
+    "topic": "ml-fundamentals",
+    "title": "Double Descent with Noisy Labels: How Noise Shifts the Curve",
+    "type": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 83078,
+    "follow_up_dimension": "data_quality_pivot",
+    "description": "In the double descent experiment from the previous question, 20% of training labels are randomly flipped (label noise). How does label noise change the shape of the double descent curve?",
+    "options": [
+      "Label noise raises the test error floor and amplifies the peak at the interpolation threshold: the model must memorize noisy labels to achieve interpolation, increasing the variance at the interpolation threshold; in the over-parameterized regime, the minimum-norm solution also memorizes some noisy labels rather than smoothing them, raising the asymptotic test error floor compared to the noise-free case",
+      "Label noise eliminates double descent: a noisy model cannot achieve perfect interpolation, so there is no interpolation threshold \u2014 the test error follows a classical U-shaped bias-variance curve",
+      "Label noise reduces the interpolation threshold peak: because the model cannot fit all training samples perfectly (noisy labels are inconsistent), the knife-edge memorization solution becomes impossible, and the double descent curve flattens near the threshold",
+      "Label noise has no effect on the double descent curve shape because the phenomenon is determined solely by model architecture (width and depth), not training data quality"
+    ],
+    "correct_option": 1,
+    "explanation": "Label noise has two effects on the double descent curve. First, it raises the peak at the interpolation threshold: the model must memorize contradictory labels to achieve interpolation (two identical inputs with different labels require opposite predictions), which creates a more pathological knife-edge solution with higher test error than in the clean case. Second, in the over-parameterized regime, the minimum-norm interpolating solution still memorizes some noise: instead of finding a smooth fit that generalizes well, the minimum-norm solution finds a low-complexity function that still passes through all training points including noisy ones. This raises the test error floor for all model sizes, including the large over-parameterized regime. Recent theoretical work (Bartlett et al. 2020, Hastie et al. 2022) shows that interpolating estimators can be 'benign' (good generalization) or 'catastrophic' (memorizing noise) depending on the signal-to-noise ratio. Option B: double descent persists under label noise \u2014 the peak shifts and the curve changes shape but the second descent is still present in over-parameterized models. Option C: while noise does alter the threshold behavior, it raises (not flattens) the peak by making the interpolating solution more pathological. Option D: training data quality directly affects both the memorization difficulty at the threshold and the quality of the minimum-norm solution in the over-parameterized regime.",
+    "hints": [
+      "At the interpolation threshold, the model must exactly fit every training sample \u2014 what does 'fitting' a noisy label (e.g., y_true=1 mislabeled as y_train=0) require the model to do?",
+      "In the over-parameterized regime, the model finds the minimum-norm function that fits training data \u2014 if some training labels are wrong, what does this solution memorize?"
+    ],
+    "concepts": [
+      "OVERFITTING DIAGNOSIS",
+      "REGULARIZATION EFFECT"
+    ]
+  },
+  {
+    "id": 83117,
+    "order": 97,
+    "topic": "ml-fundamentals",
+    "title": "Explaining Focal Loss Gamma to a Non-Technical PM",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 83082,
+    "follow_up_dimension": "ambiguity_pivot",
+    "description": "The detection team has implemented focal loss (gamma=2). The PM asks in a review: 'What gamma should we use? And how do I know if gamma=2 is right for our use case?' You need to explain the gamma selection to a non-technical stakeholder. Which framing is most effective?",
+    "options": [
+      "Frame gamma as a 'difficulty dial': gamma=0 is standard cross-entropy (treats all examples equally); higher gamma means the model focuses more on examples it currently gets wrong \u2014 for a dataset where 99.9% of proposals are obvious background, a higher gamma (2-5) aggressively down-weights the easy cases; propose tuning gamma on a validation set by measuring AP (average precision) at different values, and explain that the right gamma is the one where validation AP is maximized",
+      "Explain gamma mathematically: gamma controls the decay rate of the (1-p_t)^gamma factor; for gamma=2, a well-classified example with p_t=0.9 has weight 0.01, while for gamma=0 it has weight 1.0 \u2014 this 100\u00d7 difference shows gamma=2 is correct for our imbalance ratio",
+      "Tell the PM that gamma is a technical hyperparameter that has no intuitive interpretation; commit to gamma=2 as the published RetinaNet default and explain that deviating from defaults without ablation is risky",
+      "Ask the PM to define 'right' before answering: if the goal is maximum recall, higher gamma is better; if precision matters more, lower gamma; have the PM specify the precision-recall trade-off preference first"
+    ],
+    "correct_option": 1,
+    "explanation": "An ambiguity_pivot asks the candidate to surface hidden assumptions and then translate them for a non-technical audience. The most defensible framing: (1) give the PM a mental model they can act on ('difficulty dial'), (2) connect the dial to a measurable outcome (validation AP), and (3) propose a concrete validation procedure. The 'difficulty dial' analogy correctly captures the intuition: gamma controls how aggressively the model ignores easy background examples. This framing lets the PM understand why gamma matters (our dataset has very easy background, so ignoring it is important) and what 'right' means in practice (best validation AP). Option B gives a technically correct formula but is inaccessible to a non-technical PM \u2014 explaining that 'a well-classified example has weight 0.01' doesn't help the PM make decisions. Option C deflects ('just use the default') without engaging the PM's question \u2014 a senior ML engineer should be able to explain their hyperparameter choices. Option D has merit in surfacing precision-recall requirements, but asking the PM to define 'right' as a first response is a deflection; the PM wants a framing, not a question back.",
+    "hints": [
+      "The PM is non-technical \u2014 what analogy or intuitive description of gamma would let them understand when to tune it higher vs lower?",
+      "After giving the intuition, what concrete validation procedure would you propose to the PM as the criterion for 'right gamma'?"
+    ],
+    "concepts": [
+      "NEURAL NETWORK DESIGN",
+      "CLASS IMBALANCE HANDLING"
+    ]
+  },
+  {
+    "id": 83118,
+    "order": 98,
+    "topic": "ml-fundamentals",
+    "title": "Focal Loss with Lowered Detection Threshold: Interaction Effects",
+    "type": "conceptual",
+    "difficulty": "hard",
+    "mock_only": true,
+    "parent_id": 83082,
+    "follow_up_dimension": "business_rule_pivot",
+    "description": "The business changes the detection threshold from 0.5 to 0.3 to increase recall (more detections, more false positives acceptable). The model was trained with focal loss (gamma=2) and the original threshold was 0.5. How does the threshold change interact with focal loss specifically?",
+    "options": [
+      "Focal loss and threshold choice are largely independent: focal loss shapes the training loss landscape to emphasize hard examples, producing better-calibrated confidence scores across the full range; lowering the threshold to 0.3 will increase recall and decrease precision regardless of whether focal loss or standard cross-entropy was used \u2014 the difference is that focal loss models tend to have better-calibrated scores in the mid-confidence range (0.3-0.7), making threshold selection more reliable",
+      "Focal loss is incompatible with thresholds below 0.5: focal loss down-weights easy examples and assigns them very low confidence scores; at threshold=0.3, many true positives that focal loss assigned confidence 0.25-0.35 will be missed, reducing recall below what standard cross-entropy would achieve",
+      "The threshold change requires retraining: focal loss calibrates the model specifically for threshold=0.5; changing the threshold to 0.3 invalidates the training loss function's calibration and retraining with a lower focal loss decision boundary is required",
+      "Focal loss makes the threshold change less impactful: because focal loss concentrates training signal on hard examples (those near the decision boundary), the model's confidence scores are less informative in the low-confidence range (0.3-0.5), making the threshold change produce less additional recall than expected"
+    ],
+    "correct_option": 1,
+    "explanation": "Focal loss modifies the training loss to down-weight easy examples (high confidence, correct predictions) and up-weight hard examples (low confidence or misclassified). It does not hardcode a decision threshold \u2014 it produces a model with better-calibrated confidence scores across the range. Lowering the threshold from 0.5 to 0.3 is a post-training decision that increases the recall-precision trade-off (more detections at lower confidence). The interaction with focal loss: models trained with focal loss tend to produce better-separated confidence distributions compared to standard cross-entropy on imbalanced datasets \u2014 easy background examples cluster near 0.0 confidence (due to the (1-p_t)^gamma factor down-weighting them during training), while true object proposals have higher confidence. This separation makes threshold selection more reliable: a threshold of 0.3 on a focal loss model is less likely to catch many easy background examples than the same threshold on a standard cross-entropy model. Option B: focal loss does not suppress confidence scores below 0.5 by design \u2014 it trains better-calibrated scores everywhere. Option C: retraining is not required for a threshold change; the threshold is applied post-training to the model's probability outputs. Option D: focal loss actually makes the confidence scores more informative in the mid-range by training on hard examples that fall there.",
+    "hints": [
+      "Focal loss affects the training loss landscape and the resulting confidence score distribution \u2014 does it fix the decision threshold, or does it shape how informative the scores are across the full confidence range?",
+      "After training with focal loss, how are easy background examples' confidence scores distributed \u2014 and what does that mean for precision when you lower the threshold to 0.3?"
+    ],
+    "concepts": [
+      "NEURAL NETWORK DESIGN",
+      "CLASS IMBALANCE HANDLING"
     ]
   }
 ]
