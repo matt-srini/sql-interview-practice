@@ -617,6 +617,9 @@ def _validate_chain_integrity() -> None:
     - No nested chains: children must not themselves have follow_ups
     - No shared children: each child belongs to exactly one parent
     - No easy mock_only (checked here to complement _validate_mock_fields)
+    - No orphan children: every question with parent_id set must appear in that parent's
+      follow_ups list (child→parent reverse check; historically missed and surfaced as
+      a real bug in Python Q23080→Q22092 chain 2026-05-26).
     """
     errors: list[str] = []
 
@@ -709,6 +712,33 @@ def _validate_chain_integrity() -> None:
             # No mock_only at easy
             if q.get("mock_only", False) and difficulty == "easy":
                 errors.append(f"{track} {qid} {title}: mock_only=true not allowed at easy difficulty")
+
+    # Second pass: orphan-child reverse check. Every question with parent_id set must
+    # appear in that parent's follow_ups[] — i.e. all_children_seen[track]. Catches the
+    # case where a child claims a parent but the parent does not claim the child back.
+    # The parent-direction main loop above does NOT catch this because it iterates parents
+    # and walks their follow_ups; an orphan child with no parent listing it is invisible.
+    for track, lookup in track_all_questions.items():
+        children_claimed_by_parents = all_children_seen.get(track, set())
+        for qid, (q, difficulty) in lookup.items():
+            parent_id = q.get("parent_id")
+            if not parent_id:
+                continue
+            parent_id = int(parent_id)
+            title = q.get("title", "<untitled>")
+            if qid not in children_claimed_by_parents:
+                parent_exists = parent_id in lookup
+                if parent_exists:
+                    parent_q, _ = lookup[parent_id]
+                    parent_follow_ups = parent_q.get("follow_ups") or []
+                    errors.append(
+                        f"{track} {qid} {title}: parent_id={parent_id} but parent's follow_ups={parent_follow_ups!r} "
+                        f"does not list {qid} — orphan child (chain broken)"
+                    )
+                else:
+                    errors.append(
+                        f"{track} {qid} {title}: parent_id={parent_id} but parent {parent_id} not found in track"
+                    )
 
     if errors:
         joined = "\n".join(f"- {item}" for item in errors[:200])

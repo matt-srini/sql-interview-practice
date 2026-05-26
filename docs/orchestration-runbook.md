@@ -305,15 +305,17 @@ Out of set: ML Fundamentals, Experimentation. Validator emits stderr warning nam
 
 ### 6.3 Precedent table (sizing-benchmark anchor for next Stage A)
 
-| Track | Practice | Mock-only | Ratio |
-|---|---|---|---|
-| SQL | 118 | 165 | 1.40 |
-| Python | 79 | 103 | 1.30 |
-| Pandas | 92 | 114 | 1.24 |
-| PySpark | 128 | 150 | 1.17 |
-| DE | 91 | 110 | 1.21 |
-| DM | 80 | 96 | 1.20 |
-| Statistics | 100 | 116 | 1.16 |
+| Track | Practice | Mock-only | Ratio | Chains | Chain-members | Chain-member % |
+|---|---|---|---|---|---|---|
+| SQL | 118 | 165 | 1.40 | 6 | 12 (6p + 6c) | 7% |
+| Python | 79 | 103 | 1.30 | 18 | 36 (18p + 18c) | 35% |
+| Pandas | 92 | 114 | 1.24 | 13 | 35 (13p + 22c) | 31% |
+| PySpark | 128 | 150 | 1.17 | 15 | 45 (15p + 30c) | 30% |
+| DE | 91 | 110 | 1.21 | 13 | 33 (13p + 20c) | 30% |
+| DM | 80 | 96 | 1.20 | 10 | 31 (10p + 21c) | 32% |
+| Statistics | 100 | 116 | 1.16 | 12 | 35 (12p + 23c) | 30% |
+
+**Chain-member % precedent**: most closed tracks cluster at **30–35%** chain-members per mock-only. SQL is the chain-light outlier at 7% (Phase 2 authored chains conservatively as 1-child pairs; no retroactive chain expansion). Future Stage A planners should target **~30%** as the precedent anchor, NOT ~10-20%. (Backfilled 2026-05-26 — chain counts were never previously surfaced at the orchestration layer; an earlier orchestrator estimate of "DM 10%, DE 15%, Stats 10%" was based on miscounted parent-only figures rather than full chain-member math. ML Fundamentals Phase 2 was sized at 8 chains (~20%) under the wrong figure; this is below precedent but in operational range — not a blocker, candidate for post-Stage-C consideration if Elite-tier Interview Loop coverage feels thin.)
 
 Band: 1.0–1.5×. Always quote this in Stage A Deliverable 1.
 
@@ -353,6 +355,7 @@ Outcome (historical reference for future hybrid-subtype tracks):
 - **W4**: Realism-family decision — open. Experimentation has candidate clusters around real-world experimentation pathology (Simpson's paradox traps, novelty-effect traps, primacy/recency, network effects in A/B). Strong path-(i) candidate territory; defend.
 - **W5**: Adjacent-track tag bleeds — Stats's `STATISTICAL POWER`, `HYPOTHESIS TESTING`; ML's `MODEL EVALUATION`; SQL's `WINDOW FUNCTIONS` (no — Exp has its own metric-windowing concept).
 - **W6**: Validator NOT enforcing Exp yet. Per-ITEM orphan-resolver mandatory in handoff.
+- **Carry from ML Fundamentals Phase 2 Stage A (2026-05-26):** during ML D4 audit, mock-only Q83029 *"Causal vs Predictive Modeling: When the Distinction Matters"* (hard scenario, currently tagged `DATA LEAKAGE DETECTION` + `MODEL MONITORING`) was verdicted REPLACE in ML scope because its pedagogical centre is **causal-vs-predictive / uplift modeling** — out of ML's diagnostic-and-decision spine, in Experimentation territory. The marketing-churn-with-discount-targeting framing exercises uplift reasoning (predicting *who can be persuaded* vs *who will churn*). When Experimentation Phase 2 runs, the Stage A planner should consider resurrecting this question as a hard mock-only source for Exp — likely tagged `CAUSAL INFERENCE` + `EXPERIMENT DESIGN` or `QUASI-EXPERIMENTAL METHODS`. Question body is preserved in `git show` of the ML deletion commit.
 
 ### 7.4 DM Phase 2.5 re-balance (deferred)
 
