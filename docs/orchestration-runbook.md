@@ -299,10 +299,8 @@ Update this section after each track closes / each retro-cleanup completes.
 
 ### 6.2 Validator coverage state (`_TAXONOMY_VALIDATED_TRACKS`)
 
-In set: SQL, Python, Pandas (`python-data`), PySpark, Data Engineering, Data Modeling.
-In set (post Stats + ML Fundamentals closure): SQL, Python, Pandas (`python-data`), PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals.
-In set (post Experimentation closure): SQL, Python, Pandas (`python-data`), PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, Experimentation.
-Out of set: none (all active tracks enrolled).
+In set: SQL, Python, Pandas (`python-data`), PySpark, Data Engineering, Data Modeling, Statistics, ML Fundamentals, Experimentation.
+Out of set: none (all 9 active tracks enrolled).
 
 ### 6.3 Precedent table (sizing-benchmark anchor for next Stage A)
 
@@ -364,19 +362,34 @@ Outcome (historical reference for future tracks):
 - **Lesson confirmed**: chain-children-IN-locked-total (runbook § 2.2 D5f, codified post-ML Stage C) worked as expected — no overage.
 - **Lesson confirmed**: new-family pattern-shadow check (runbook § 2.2 D2 warning, codified post-Stats Stage C) caught no surprises.
 
-### 7.4 DM Phase 2.5 re-balance (deferred)
+### 7.4 DM Phase 2.5 re-balance — ✅ CLOSED 2026-05-26
 
-Not a Phase 2 first-pass; a re-balance of closed Phase 2 content.
+Outcome (historical reference):
+- DIMENSIONAL MODELING share: 93.8% → 5.2% mock-only (rule-3 cleared on both tiers).
+- Dead families resurrected via registry-pattern-shadow fix (not via tag-shuffling — the cleaner-possible-signal path): DENORMALIZATION TRADEOFF reordered before NORMALIZATION; bare `"CONFORMED"` pattern removed from DIMENSION DESIGN. Tags were already on questions; routing was broken.
+- DATA VAULT rule-1 floor cleared via R1 (Q62077 medium practice authored).
+- Bonus: Q62078 NORMALIZATION mock-only added at medium (family-pair coverage).
+- Final state: 81 practice + 97 mock-only = 1.20× (band-aligned, +1 practice / +1 mock from baseline).
+- **Lesson confirmed**: tag-honesty (E5 audit dimension) caught zero tagging lies — Stage B's discipline of pre-surfacing 2-tag-constraint cases (62032, 63029) in the commit message rather than silently keeping them set a cleaner precedent for future Phase 2.5 work.
 
-- **Primary issue**: `DIMENSIONAL MODELING` tagged on 90/96 mock-only (93.8%) — rule-3 ceiling breach.
+### 7.5 BIAS/FAIRNESS Phase 2.5 — ML new-family addition (next pickup)
 
-### 7.4 DM Phase 2.5 re-balance (deferred)
+Not a Phase 2 first-pass and not a re-balance of existing rule violations — this is a **new-family addition** to ML Fundamentals registry. Smaller scope than DM 2.5.
 
-Not a Phase 2 first-pass; a re-balance of closed Phase 2 content.
+- **Origin**: P2 surfacing from ML Phase 2 Stage A. ML's 29-family registry is missing a `BIAS / FAIRNESS LENS` family. Algorithmic fairness, disparate impact, fairness metrics (demographic parity, equalized odds, calibration-within-groups), bias-audit workflows are legitimate ML practitioner concerns not currently covered.
+- **Existing signal**: two ML mock-only questions reach for this territory:
+  - **82046** ("Model Selection: When Simpler Beats Complex") — has a "regulators prefer it" framing edge.
+  - **83031** (group A/B AUC disparity) — the cleaner signal; currently tagged `CLASSIFICATION METRICS + DEPLOYMENT CONSTRAINTS` as least-bad ML registry fits, but the question's pedagogical centre IS fairness.
+- **Scope**:
+  - **New family registration** in `backend/concept_families.py` for ml-fundamentals. Family name TBD by Stage A (candidates: `BIAS & FAIRNESS LENS`, `ALGORITHMIC FAIRNESS`, `FAIRNESS & DISPARATE IMPACT`). Reasoning-depth defence required for the new family (fairness-constrained training, post-hoc threshold adjustment per group, fairness metric selection — distinct techniques, not just a realism lens).
+  - **Practice grounding**: 1 medium + 2 hard (1 easy optional if easy-tier framing avoids trivia). Per cross-track contract.
+  - **Mock-only**: ≥4 per rule-2 floor (one being the retagged 83031; others authored fresh).
+  - **W4 designation**: practice-grounded family, NOT realism — fairness has its own teachable techniques.
+- **Pattern-shadow check** mandatory at Stage A post-registry-add (lesson from Stats `variance` shadow). Walk ML registry top-to-bottom for substring collisions with `"BIAS"`, `"FAIRNESS"`, `"DISPARATE"`, etc. (BIAS-VARIANCE TRADEOFF is a separate ML family with `"BIAS"` patterns — collision risk.)
+- **Estimated scope**: ~8 questions + 1 family registration + concept-taxonomy doc update + CLAUDE.md / content-authoring.md IS-count sync + tracker tick. Smaller than DM Phase 2.5.
+- **Treat as Stage A → B → C cycle** (not retro-cleanup) — new family registration is a registry-contract change requiring upfront defence.
 
-- **Primary issue**: `DIMENSIONAL MODELING` tagged on 90/96 mock-only (93.8%) — rule-3 ceiling breach.
-- **Secondary**: 2 dead families (`DENORMALIZATION TRADEOFF`, `CONFORMED DIMENSIONS`); 1 practice-floor breach (`DATA VAULT` at medium).
-- **Likely cheapest remedy path**: re-tagging existing mock-only (many tag `DIMENSIONAL MODELING` as secondary when a more specific family is primary) — NOT authoring 85+ new questions to dilute the ratio. Stage A for Phase 2.5 must investigate the on-disk tag distribution before sizing the work.
+After BIAS/FAIRNESS Phase 2.5 closes: **Phase 3 ships and the transitional tracker (`docs/phases/2026-05-authoring-refactor.md`) self-deletes.** This runbook stays as the durable orchestration handbook.
 
 ---
 
