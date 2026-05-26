@@ -255,7 +255,7 @@
     "explanation": "Sessionization is inherently multi-step. The first step uses LAG(event_time) to look at the previous event for the same user in chronological order. The next step converts that row-to-row comparison into a boundary flag that marks the start of each new session. Finally, a running SUM of those flags turns boundaries into stable derived session ids, which can then be aggregated into session-level metrics like start time, end time, and duration. The reasoning challenge is that the final group identifier is not stored anywhere in the data; it has to be derived from event gaps.",
     "hints": [
       "Create row-to-row context within each entity first; the final filter or comparison happens after that derived state exists.",
-      "Turn session-start flags into session ids with a cumulative SUM before aggregating to one row per session."
+      "Once you can mark the first event of each session with a flag, think about how a running aggregation can turn those flags into stable, contiguous identifiers."
     ],
     "concepts": [
       "SESSIONIZATION",
@@ -1595,7 +1595,7 @@
     "explanation": "strftime(order_date, '%Y-%m') extracts the year-month string. WHERE constrains to completed orders in 2024 only. GROUP BY month aggregates per calendar month. ORDER BY month produces the chronological trend. The result shows 8 of 12 months — the full query returns all 12.",
     "hints": [
       "Use strftime to extract year-month from order_date.",
-      "The result shows only 8 months for display — your query should return all 12 months in 2024."
+      "Bound the time filter to the full reporting range stated in the prompt — don't infer the bound from the rows shown in the preview."
     ],
     "concepts": [
       "MONTHLY TREND",
@@ -3701,7 +3701,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Employee salary gap to department maximum",
-    "description": "HR wants to identify employees who earn significantly less than their department's highest earner. Write a query that returns `employee_id`, `employee_name`, `salary`, `department_name`, `dept_max_salary` (the department's highest salary, rounded to 2 dp), `gap_to_max` (dept_max_salary - salary, rounded to 2 dp), and `gap_pct` ((dept_max_salary - salary) / dept_max_salary × 100, rounded to 1 dp). Order by `gap_to_max` descending. Limit to 20 rows.",
+    "description": "HR wants to see all employees, ordered by salary gap to the department maximum, largest gap first. Write a query that returns `employee_id`, `employee_name`, `salary`, `department_name`, `dept_max_salary` (the department's highest salary, rounded to 2 dp), `gap_to_max` (dept_max_salary - salary, rounded to 2 dp), and `gap_pct` ((dept_max_salary - salary) / dept_max_salary × 100, rounded to 1 dp). Order by `gap_to_max` descending. Limit to 20 rows.",
     "difficulty": "hard",
     "schema": {
       "employees": [
@@ -4677,7 +4677,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Week-over-week unique active user change",
-    "description": "A product team wants to monitor engagement momentum over the past 8 weeks. For each week in the last 56 days (anchored at MAX(event_time)), compute unique_users, the previous week's unique_users (prev_week_users), and the absolute week-over-week change (wow_change). Order by week_start ascending.",
+    "description": "A product team wants to monitor engagement momentum. Cover the last 56 days of activity, bucketed by week; partial weeks at the edges are expected. Compute unique_users, the previous week's unique_users (prev_week_users), and the absolute week-over-week change (wow_change). Order by week_start ascending.",
     "difficulty": "hard",
     "schema": {
       "events": [
@@ -4716,8 +4716,8 @@
     "order": 101,
     "mock_only": true,
     "framing": "scenario",
-    "title": "Top 5 products by unique buyers",
-    "description": "A sales team wants to identify the most broadly appealing products (distinct buyers, not just order volume). Using completed orders, compute unique_buyers per product, then return all products with a DENSE_RANK of 5 or better. Include product_id, product_name, unique_buyers, and buyer_rank. Order by buyer_rank, then product_id.",
+    "title": "Top-ranked products by unique buyers",
+    "description": "A sales team wants to identify the most broadly appealing products (distinct buyers, not just order volume). Using completed orders, compute unique_buyers per product, then return all products whose DENSE_RANK ≤ 5; ties at the cutoff are included, so the result may exceed 5 rows. Include product_id, product_name, unique_buyers, and buyer_rank. Order by buyer_rank, then product_id.",
     "difficulty": "hard",
     "schema": {
       "order_items": [
@@ -5426,7 +5426,7 @@
     "order": 118,
     "mock_only": true,
     "title": "Collapse redundant orders CTEs — eliminate duplicate table scans",
-    "description": "The query below scans the `orders` table twice — once for order counts and once for revenue — then stitches the two results together. Rewrite it to scan `orders` exactly once while producing the same daily metrics.\n\n```sql\nWITH daily_orders AS (\n    SELECT DATE_TRUNC('day', order_date)::DATE AS day, COUNT(*) AS order_count\n    FROM orders WHERE status = 'completed' GROUP BY 1\n),\ndaily_revenue AS (\n    SELECT DATE_TRUNC('day', order_date)::DATE AS day, ROUND(SUM(net_amount),2) AS total_revenue\n    FROM orders WHERE status = 'completed' GROUP BY 1\n),\ndaily_signups AS (\n    SELECT DATE_TRUNC('day', signup_date)::DATE AS day, COUNT(*) AS signup_count\n    FROM users GROUP BY 1\n)\nSELECT o.day, o.order_count, r.total_revenue, s.signup_count\nFROM daily_orders o\nJOIN daily_revenue r ON o.day = r.day\nLEFT JOIN daily_signups s ON o.day = s.day\nORDER BY o.day\n```\n\nReturn `day`, `order_count`, `total_revenue`, and `signup_count`, ordered by `day` ascending.",
+    "description": "The query below scans the `orders` table twice — once for order counts and once for revenue — then stitches the two results together. Rewrite it to scan `orders` exactly once while producing the same daily metrics.\n\n```sql\nWITH daily_orders AS (\n    SELECT DATE_TRUNC('day', order_date)::DATE AS day, COUNT(*) AS order_count\n    FROM orders WHERE status = 'completed' GROUP BY 1\n),\ndaily_revenue AS (\n    SELECT DATE_TRUNC('day', order_date)::DATE AS day, ROUND(SUM(net_amount),2) AS total_revenue\n    FROM orders WHERE status = 'completed' GROUP BY 1\n),\ndaily_signups AS (\n    SELECT DATE_TRUNC('day', signup_date)::DATE AS day, COUNT(*) AS signup_count\n    FROM users GROUP BY 1\n)\nSELECT o.day, o.order_count, r.total_revenue, s.signup_count\nFROM daily_orders o\nJOIN daily_revenue r ON o.day = r.day\nLEFT JOIN daily_signups s ON o.day = s.day\nORDER BY o.day\n```\n\nReturn `day`, `order_count`, `total_revenue`, and `signup_count`, ordered by `day` ascending.\n\nBecause both removed CTEs filter to `status = 'completed'`, the merged single-scan version is semantically equivalent.",
     "difficulty": "hard",
     "schema": {
       "orders": [
@@ -5848,6 +5848,7 @@
     "enforce_concepts": true,
     "explanation": "ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY net_amount DESC) assigns rank 1 to the most expensive order per user. Filtering rn = 1 in the outer query returns exactly one row per user — a classic top-N-per-group pattern using window functions.",
     "hints": [
+      "If two orders for the same user share a tied `net_amount`, the window function needs a secondary sort key (e.g., `order_date` or `order_id`) to make the row-pick deterministic.",
       "Each user should appear exactly once with their highest-value order — the challenge is selecting one row per user based on order amount, keeping only the maximum per user.",
       "Wrap in a CTE, then filter WHERE rn = 1 in the outer query."
     ],
@@ -6166,7 +6167,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Monthly revenue by payment method without double-counting",
-    "description": "Finance wants a monthly breakdown of completed order revenue by payment method. Each completed order can have multiple payment rows (retries, partial payments) — attributing the full order's net_amount to each payment row would inflate revenue figures. De-duplicate by assigning each order to its earliest paid payment. Return `payment_month` (formatted `YYYY-MM`), `payment_method`, `order_count` (distinct order IDs attributed to that method+month), `total_net_amount` (sum of net_amount for those orders, rounded to 2 dp), and `payment_count` (raw payment rows in that group). Order by `payment_month` ascending, then `order_count` descending.",
+    "description": "Finance wants a monthly breakdown of completed order revenue by payment method. Each completed order can have multiple payment rows (retries, partial payments) — attributing the full order's net_amount to each payment row would inflate revenue figures. De-duplicate by assigning each order to its earliest paid payment. Return `payment_month` (formatted `YYYY-MM`), `payment_method`, `order_count` (distinct order IDs attributed to that method+month), `total_net_amount` (sum of net_amount for those orders, rounded to 2 dp), and `payment_count`. `payment_count` is the number of (de-duplicated by `rn=1`) payment rows in that (month, method) — equal to `order_count` by construction; keep both columns for clarity in the result schema. Order by `payment_month` ascending, then `order_count` descending.",
     "difficulty": "hard",
     "schema": {
       "orders": [

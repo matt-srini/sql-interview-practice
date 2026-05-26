@@ -1344,7 +1344,7 @@
     "id": 12031,
     "order": 31,
     "title": "Quarter-over-quarter revenue change",
-    "description": "Compute total `net_amount` per calendar quarter from the `orders` table. Label each quarter as `'YYYY-QN'` (e.g. `'2024-Q1'`). Use LAG() to compute `qoq_change` = current quarter revenue minus the previous quarter. Return `quarter`, `total_revenue` (rounded to 2 decimal places), and `qoq_change` (rounded to 2 decimal places; NULL for the first quarter). Order by `quarter` ascending.\n\nTo derive the quarter number: `((CAST(STRFTIME('%m', order_date) AS INT) - 1) / 3 + 1)`.",
+    "description": "Compute total `net_amount` per calendar quarter from the `orders` table. Label each quarter as `'YYYY-QN'` (e.g. `'2024-Q1'`). Use LAG() to compute `qoq_change` = current quarter revenue minus the previous quarter. Return `quarter`, `total_revenue` (rounded to 2 decimal places), and `qoq_change` (rounded to 2 decimal places; NULL for the first quarter). Order by `quarter` ascending.\n\nDerive the quarter number with integer division (DuckDB's `//`) so the label reads `'YYYY-Q1'` and never `'YYYY-Q1.0'` or `'YYYY-Q5'`: `((CAST(STRFTIME('%m', order_date) AS INT) - 1) // 3) + 1`.",
     "difficulty": "medium",
     "schema": {
       "orders": [
@@ -1356,8 +1356,8 @@
     "dataset_files": [
       "orders.csv"
     ],
-    "expected_query": "WITH quarterly AS (\n    SELECT STRFTIME('%Y', order_date) || '-Q' ||\n           CAST(((CAST(STRFTIME('%m', order_date) AS INT) - 1) / 3 + 1) AS TEXT) AS quarter,\n           ROUND(SUM(net_amount), 2) AS total_revenue\n    FROM orders\n    GROUP BY quarter\n)\nSELECT quarter,\n       total_revenue,\n       ROUND(total_revenue - LAG(total_revenue) OVER (ORDER BY quarter), 2) AS qoq_change\nFROM quarterly\nORDER BY quarter",
-    "solution_query": "WITH quarterly AS (\n    SELECT STRFTIME('%Y', order_date) || '-Q' ||\n           CAST(((CAST(STRFTIME('%m', order_date) AS INT) - 1) / 3 + 1) AS TEXT) AS quarter,\n           ROUND(SUM(net_amount), 2) AS total_revenue\n    FROM orders\n    GROUP BY quarter\n)\nSELECT quarter,\n       total_revenue,\n       ROUND(total_revenue - LAG(total_revenue) OVER (ORDER BY quarter), 2) AS qoq_change\nFROM quarterly\nORDER BY quarter;",
+    "expected_query": "WITH quarterly AS (\n    SELECT STRFTIME('%Y', order_date) || '-Q' ||\n           CAST(((CAST(STRFTIME('%m', order_date) AS INT) - 1) // 3) + 1 AS TEXT) AS quarter,\n           ROUND(SUM(net_amount), 2) AS total_revenue\n    FROM orders\n    GROUP BY quarter\n)\nSELECT quarter,\n       total_revenue,\n       ROUND(total_revenue - LAG(total_revenue) OVER (ORDER BY quarter), 2) AS qoq_change\nFROM quarterly\nORDER BY quarter",
+    "solution_query": "WITH quarterly AS (\n    SELECT STRFTIME('%Y', order_date) || '-Q' ||\n           CAST(((CAST(STRFTIME('%m', order_date) AS INT) - 1) // 3) + 1 AS TEXT) AS quarter,\n           ROUND(SUM(net_amount), 2) AS total_revenue\n    FROM orders\n    GROUP BY quarter\n)\nSELECT quarter,\n       total_revenue,\n       ROUND(total_revenue - LAG(total_revenue) OVER (ORDER BY quarter), 2) AS qoq_change\nFROM quarterly\nORDER BY quarter;",
     "required_concepts": [
       "window_function",
       "group_by",
@@ -2346,7 +2346,7 @@
     "order": 54,
     "title": "Normalize event names for display",
     "difficulty": "medium",
-    "description": "Event names in the `events` table use snake_case (e.g., `'view_product'`, `'add_to_cart'`). Write a query that returns each distinct `event_name` and a `display_name` version where underscores are replaced by spaces and the result is title-cased using `INITCAP`. Order by `event_name`.",
+    "description": "Event names in the `events` table use snake_case (e.g., `'view_product'`, `'add_to_cart'`). Write a query that returns each distinct `event_name` and a `display_name` version where underscores are replaced by spaces and the result is title-cased so `'add_to_cart'` becomes `'Add To Cart'`. Order by `event_name`.\n\nDuckDB does not ship `INITCAP`, so build the title-case manually by splitting on spaces, capitalising each word's first letter, and re-joining.",
     "dataset_files": [
       "events.csv"
     ],
@@ -2370,13 +2370,13 @@
       "order_by"
     ],
     "enforce_concepts": true,
-    "expected_query": "SELECT DISTINCT event_name,\n       INITCAP(REGEXP_REPLACE(event_name, '_', ' ', 'g')) AS display_name\nFROM events\nORDER BY event_name",
-    "solution_query": "SELECT DISTINCT event_name,\n       INITCAP(REGEXP_REPLACE(event_name, '_', ' ', 'g')) AS display_name\nFROM events\nORDER BY event_name;",
+    "expected_query": "SELECT DISTINCT event_name,\n       ARRAY_TO_STRING(\n         LIST_TRANSFORM(\n           STRING_SPLIT(REGEXP_REPLACE(event_name, '_', ' ', 'g'), ' '),\n           w -> UPPER(SUBSTR(w, 1, 1)) || LOWER(SUBSTR(w, 2))\n         ),\n         ' '\n       ) AS display_name\nFROM events\nORDER BY event_name",
+    "solution_query": "SELECT DISTINCT event_name,\n       ARRAY_TO_STRING(\n         LIST_TRANSFORM(\n           STRING_SPLIT(REGEXP_REPLACE(event_name, '_', ' ', 'g'), ' '),\n           w -> UPPER(SUBSTR(w, 1, 1)) || LOWER(SUBSTR(w, 2))\n         ),\n         ' '\n       ) AS display_name\nFROM events\nORDER BY event_name;",
     "hints": [
       "REGEXP_REPLACE(string, pattern, replacement, flags) with flag 'g' replaces every match, not just the first.",
-      "INITCAP capitalizes the first letter of each word — wrap REGEXP_REPLACE with it to title-case the result."
+      "Title-casing without `INITCAP` (DuckDB does not implement it): split the phrase into words, transform each word so its first letter is uppercased and the rest lowercased, then join with spaces. `STRING_SPLIT`, `LIST_TRANSFORM`, and `ARRAY_TO_STRING` are the DuckDB pieces you need."
     ],
-    "explanation": "REGEXP_REPLACE(str, '_', ' ', 'g') replaces every underscore globally (the 'g' flag). INITCAP then capitalizes the first letter of each space-separated word, converting snake_case to Title Case. This pipeline — regex → case function — is standard for producing human-readable labels from machine-formatted identifiers in dashboards and reports. Without the 'g' flag, only the first underscore is replaced."
+    "explanation": "REGEXP_REPLACE(str, '_', ' ', 'g') replaces every underscore globally (the 'g' flag) so the snake_case identifier becomes space-separated words. DuckDB does not ship `INITCAP`, so the title-case step is built manually: `STRING_SPLIT` turns the phrase into a list of words, `LIST_TRANSFORM` rebuilds each word as `UPPER(first letter) || LOWER(rest)`, and `ARRAY_TO_STRING` joins them back with spaces. This pipeline — regex → split → per-word transform → join — is the portable substitute for `INITCAP` in dashboards and reports."
   },
   {
     "id": 12055,
@@ -3423,7 +3423,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "User registration breakdown by email domain",
-    "description": "The growth team wants to understand where users sign up from. Write a query that extracts the email domain (the part after '@') from each user's email and returns `email_domain`, `user_count`, `first_signup` (earliest signup_date for that domain), and `last_signup` (most recent signup_date). Order by `user_count` descending.",
+    "description": "The growth team wants to understand where users sign up from. Write a query that extracts the email domain (the part after '@') from each user's email and returns `email_domain`, `user_count`, `first_signup` (earliest signup_date for that domain), and `last_signup` (most recent signup_date). Order by `user_count` descending. Include rows with NULL `email` as a NULL `email_domain` group.",
     "difficulty": "medium",
     "schema": {
       "users": [
@@ -3587,6 +3587,7 @@
     "explanation": "NOT IN with a subquery is the most direct expression of 'user has no orders'. The subquery returns all user_ids that appear in orders; NOT IN excludes them from the result. An equivalent approach is a LEFT JOIN ... WHERE orders.order_id IS NULL (anti-join pattern) — both are correct. NOT IN is simpler to read but has a subtle NULL hazard: if the subquery returns any NULL, NOT IN returns no rows for the outer query. DISTINCT in the subquery is defensive practice.",
     "hints": [
       "NOT IN (SELECT user_id FROM orders) excludes users who have any order — users not in the subquery result are those with no orders.",
+      "`NOT IN` returns no rows if the subquery contains any NULL — `NOT EXISTS` is safer when the joined column is nullable.",
       "Add DISTINCT to the subquery to reduce its size — it doesn't change correctness but improves clarity."
     ],
     "concepts": [
@@ -3646,7 +3647,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Support ticket resolution and open rate by country",
-    "description": "The support operations manager wants a country-level summary. Write a query that returns `country`, `total_tickets`, `resolved` (count where status = 'resolved'), `open` (count where status != 'resolved'), `avg_resolution_hours` (average of `resolution_hours` for resolved tickets only, treating NULL values as 0 with COALESCE, rounded to 1 dp), and `open_rate_pct` (open / total × 100, rounded to 1 dp). Order by `open_rate_pct` descending.",
+    "description": "The support operations manager wants a country-level summary. Write a query that returns `country`, `total_tickets`, `resolved` (count where status = 'resolved'), `open` (count where status != 'resolved'), `avg_resolution_hours` (average of `resolution_hours` for resolved tickets only, treating NULL values as 0, rounded to 1 dp), and `open_rate_pct` (open / total × 100, rounded to 1 dp). Order by `open_rate_pct` descending.",
     "difficulty": "medium",
     "schema": {
       "users": [
@@ -3676,7 +3677,7 @@
     "explanation": "COALESCE wraps AVG(CASE WHEN status='resolved' THEN resolution_hours END) to return 0 when a country has only open tickets (AVG of NULL = NULL). The CASE inside AVG scopes the average to resolved tickets only — unresolved tickets with NULL resolution_hours are excluded from the average automatically. open_rate_pct = open / total (all tickets, not resolved ones) measures the fraction still outstanding.",
     "hints": [
       "CASE inside AVG limits the average to resolved tickets — open tickets (which have NULL resolution_hours) are excluded by AVG's NULL handling.",
-      "COALESCE handles the edge case where a country has zero resolved tickets — their AVG would otherwise be NULL."
+      "If a group could have zero qualifying rows, decide what the average should be (null, zero, or skipped) and reflect that in your aggregate."
     ],
     "concepts": [
       "NULL HANDLING & COALESCE",
@@ -4020,7 +4021,7 @@
     "mock_only": true,
     "framing": "scenario",
     "title": "Weekly event count over the last 12 weeks",
-    "description": "An engagement analyst wants to see the event volume trend over the last 12 weeks (84 days) ending at the most recent event in the dataset. Return week_start (truncated to week) and event_count, ordered chronologically.",
+    "description": "An engagement analyst wants to see the event volume trend. Cover the most recent 12 weeks of activity; partial weeks at the boundary are expected. Return week_start (truncated to week) and event_count, ordered chronologically.",
     "difficulty": "medium",
     "schema": {
       "events": [
@@ -4704,7 +4705,7 @@
     "explanation": "The CTE builds a per-user count of completed orders, preserving users with no matching orders. The outer query then uses conditional FILTER clauses to split the count into buyers and non-buyers without a second pass. If active_buyers + non_buyers = total_users, the NULLs in a downstream revenue pipeline are fully explained by users who never purchased — no data quality issue.",
     "hints": [
       "Every user belongs to one of two groups — those with at least one completed order and those without. Start by building a per-user completed-order count, making sure users with zero orders are still present.",
-      "Once you have per-user counts, a conditional expression inside each aggregation can separate the two groups in a single pass over the result."
+      "A per-row conditional inside the aggregate can split groups — `COUNT(*) FILTER (WHERE …)` is the cleanest form in DuckDB; `COUNT(CASE WHEN … END)` is the portable equivalent."
     ],
     "concepts": [
       "MULTI-TABLE ENTITY LINKING",
