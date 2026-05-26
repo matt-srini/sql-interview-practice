@@ -118,7 +118,7 @@
     "solution_query": "SELECT employee_id, employee_name, hire_date\nFROM employees\nWHERE hire_date IS NOT NULL\nORDER BY hire_date ASC;",
     "explanation": "WHERE hire_date IS NOT NULL filters out rows that do not have a known hire date before sorting begins. After that filter, ORDER BY hire_date ASC sorts the remaining employees from the earliest hire date to the most recent. This keeps the result focused on employees whose tenure can be evaluated and makes the final row order deterministic.",
     "hints": [
-      "Narrow the rows to those hired within the date range before deciding what order to present them.",
+      "Decide what to do with rows whose hire_date is unknown before you pick a sort order — undated rows can't anchor a chronological result.",
       "Date columns sort chronologically — ASC means earliest first"
     ],
     "concepts": [
@@ -209,7 +209,7 @@
     "solution_query": "SELECT MIN(resolution_hours) AS min_resolution_hours\nFROM support_tickets\nWHERE status = 'resolved';",
     "explanation": "WHERE status = 'resolved' filters the table to only closed tickets before MIN runs. MIN(resolution_hours) returns the smallest resolution time among those rows — the ticket that was resolved fastest. Filtering first ensures we do not include NULL or irrelevant resolution_hours from tickets that are not yet resolved.",
     "hints": [
-      "Find the single row in the entire table that represents the minimum of the time column.",
+      "Not every ticket qualifies — narrow the table to the right subset first, then take the minimum across just those rows.",
       "MIN() returns the smallest value in a column"
     ],
     "concepts": [
@@ -1098,7 +1098,7 @@
     "enforce_concepts": true,
     "explanation": "A CTE (Common Table Expression) defined with `WITH name AS (...)` creates a named temporary result set that lives only for the duration of the query. The CTE is defined first, then referenced in the main SELECT just like a table. CTEs make complex queries readable by naming intermediate steps — they are fundamental to writing maintainable SQL at any level. Here the CTE computes monthly counts, and the outer query retrieves and sorts them.",
     "hints": [
-      "Break the problem into stages so the reusable intermediate result exists before the final filter or comparison.",
+      "A CTE lets you name an intermediate result and read from it like a table — compute the per-month counts inside `WITH monthly_signups AS (...)`, then SELECT from `monthly_signups` in the outer query.",
       "Reference the CTE name in the outer SELECT like a table; grouping by the extracted date part and ordering by it ensures chronological output."
     ],
     "concepts": [
