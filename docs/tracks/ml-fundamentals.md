@@ -121,9 +121,9 @@ Required:
 ## Coverage (Phase 2 complete — 2026-05-26)
 
 **Practice:** 97 questions (30 easy / 39 medium / 28 hard) · ratio 1.433×  
-**Mock-only standalone:** 123 questions (0 easy / 66 medium / 57 hard)  
-**Mock chains:** 8 chains — 8 parents (all hard, counted in the 57h standalone) + 16 children (all hard) = 24 chain-member slots  
-**Mock-only total (standalone + chain children):** 139 (0e / 66m / 73h)
+**Mock-only standalone:** 123 questions (0 easy / 59 medium / 64 hard)  
+**Mock chains:** 8 chains — 8 parents (all hard, counted in the 64h standalone) + 16 children (all hard) = 24 chain-member slots  
+**Mock-only total (standalone + chain children):** 139 (0e / 59m / 80h)
 
 **Type mix (practice + mock-only combined):**
 
@@ -140,7 +140,7 @@ Mock-only intentionally skews toward scenario (heavier production realism framin
 
 **Realism family decision (path ii):** No mock-only realism family. ML's curriculum already absorbs the realism lens via six pathology-flavoured families (`DATA LEAKAGE DETECTION`, `OVERFITTING DIAGNOSIS`, `MODEL MONITORING`, `TRAINING-SERVING SKEW`, `GRADIENT PATHOLOGY`, `DEPLOYMENT CONSTRAINTS`). `MOCK_ONLY_REALISM_FAMILIES["ml-fundamentals"] = set()` in `concept_families.py`.
 
-**Sizing note:** The hard mock-only count (57 standalone) landed above the original Stage B plan (38 standalone targeted). Deviation sources: (a) 3 BOOSTING MECHANICS floor-fix questions (83084–83086), (b) the Item 8–10 batch allocation of 44 questions was sized to the correct *net total* including chain parents, but chain children (16) are additional rather than pulled from the batch count — making the hard total additive. The ratio 1.433× is within acceptable range for a mock-bank that includes a heavy chain component (chain children are follow-up units, not independently-seekable questions).
+**Sizing note:** The hard mock-only count (64 standalone, including 8 chain parents) landed above the original Stage B plan (38 standalone targeted). Deviation sources: (a) 3 BOOSTING MECHANICS floor-fix questions (83084–83086); (b) the Item 8–10 batch allocation of 44 questions was sized to the correct *net total* including chain parents, but chain children (16) are additional rather than pulled from the batch count — making the hard total additive; (c) Stage C remediation promoted 7 medium mock-only tagging-lie questions to hard (83119–83125), which moved them from the 59m column to the 64h column with correct natural-fit concept tags. The ratio 1.433× is within acceptable range for a mock-bank that includes a heavy chain component (chain children are follow-up units, not independently-seekable questions).
 
 ## Verification before commit
 

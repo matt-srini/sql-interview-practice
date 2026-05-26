@@ -1,7 +1,7 @@
 # Track Phase 2 Orchestration Runbook
 
 **Status:** durable orchestration doc (survives Phase 3 tracker deletion)
-**Audience:** any Opus session picking up Phase 2 orchestration for an open track (ML Fundamentals, Experimentation), the deferred DM Phase 2.5 re-balance, or any future Phase 2 round for a new track.
+**Audience:** any Opus session picking up Phase 2 orchestration for an open track (Experimentation), the deferred DM Phase 2.5 re-balance, or any future Phase 2 round for a new track.
 
 This is the **orchestration handbook**, not the contract. The contract (rules, philosophy, schemas) lives in the durable docs listed at the bottom. This doc captures the **process patterns** for running a track through Phase 2: how Stage A plans, how Sonnet executes Stage B, how Stage C audits — all the orchestration-level knowledge that doesn't fit in the contract docs and historically lived only in conversation context.
 
@@ -294,7 +294,7 @@ Update this section after each track closes / each retro-cleanup completes.
 | Data Engineering | ✅ Closed | ✅ Retro-cleanup closed 2026-05-25 — zero warnings. INCIDENT RESPONSE: 16 medium mock-only re-tiered to hard (R2). DATA CONTRACT: registry pattern shadow fixed (1-line removal from SCHEMA EVOLUTION patterns) resurrected family with 21 mock-only + 2 practice already on disk. Spot-check on 3 re-tiered questions (53087/53092/53102) confirmed hard-tier reasoning bar. 2 chains touched per § 5.4 (1 intact, 1 dissolved). | Practice 91, mock 110, ratio 1.21×, mock m:h = 1:2.24 (corrected — rationale in data-engineering.md) |
 | Data Modeling | ✅ Closed (Phase 2.5 pending) | DIMENSIONAL MODELING 93.8% ceiling breach + 2 dead families + 1 practice-floor | **Separate Phase 2.5 re-balance cycle** — not a retro-cleanup; needs Stage A→B→C |
 | Statistics | ✅ Closed | ✅ Phase 2 closed 2026-05-26 (Stage C PASS after 2 remediation rounds — see tracker decision log). 13-family registry locked (expanded from 12 via Stage A Deliverable 2). 100 practice + 116 mock-only authored; 12 chains all 7 follow-up dimensions exercised. Dual-subtype (conceptual + numerical); per-subtype ratios conceptual 1.42× / numerical 0.78× (numerical below 1.0× — provisional, first-remediation candidate if exhaustion observed). Path (ii) no realism by design (union-of-modalities defence in `statistics.md`). | Practice 100, mock 116, ratio 1.16× (band low end); validator-enabled |
-| ML Fundamentals | ✅ Stage B complete (Stage C pending) | ✅ 0 orphans / 29 families / validator enabled | 97 practice + 139 mock-only (8 chains, 16 children) — ratio 1.43×. BOOSTING MECHANICS ambiguity documented (GRADIENT BOOSTING routes to ENSEMBLE STRATEGY). Awaiting Stage C audit. |
+| ML Fundamentals | ✅ Closed | ✅ Phase 2 closed 2026-05-26 (Stage C PASS after remediation). 29-family registry locked. 97 practice + 139 mock-only (0e/59m/80h; 64 hard standalone + 16 chain children from 8 chains); ratio 1.43×. Stage C E4 remediation: 7 medium mock-only tagging-lie questions promoted to hard (83119–83125) with natural-fit concept tags. All 29 families pass ≥4 mock-only floor. | Practice 97, mock 139, ratio 1.43×; validator-enabled |
 | Experimentation | ⏸ Pending | 0 orphans / 22 families — clean enough to enforce now | Phase 2 pending |
 
 ### 6.2 Validator coverage state (`_TAXONOMY_VALIDATED_TRACKS`)
