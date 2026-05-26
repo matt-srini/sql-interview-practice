@@ -37,7 +37,7 @@
     "solution_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_users, df_orders):\n    orders = df_orders.copy()\n    orders['order_date'] = pd.to_datetime(orders['order_date'])\n    orders['order_month'] = orders['order_date'].dt.to_period('M')\n\n    first_order = orders.groupby('user_id')['order_month'].min().rename('cohort_month')\n    orders = orders.join(first_order, on='user_id')\n\n    orders['months_since_first'] = (\n        (orders['order_month'].dt.year - orders['cohort_month'].dt.year) * 12\n        + (orders['order_month'].dt.month - orders['cohort_month'].dt.month)\n    )\n\n    cohort_sizes = orders[orders['months_since_first'] == 0].groupby('cohort_month')['user_id'].nunique()\n\n    retention = orders.groupby(['cohort_month', 'months_since_first'])['user_id'].nunique().reset_index()\n    retention.columns = ['cohort_month', 'months_since_first', 'user_count']\n    retention = retention.join(cohort_sizes.rename('cohort_size'), on='cohort_month')\n    retention['retention'] = (retention['user_count'] / retention['cohort_size']).round(2)\n\n    pivot = retention.pivot(index='cohort_month', columns='months_since_first', values='retention').fillna(0.0)\n    pivot.index = pivot.index.astype(str)\n    pivot.columns = pivot.columns.astype(int)\n    pivot = pivot.sort_index()\n    pivot.columns.name = None\n    return pivot",
     "explanation": "First convert `order_date` to a Period('M') so month arithmetic is easy. Find each user's first-order month as their cohort. Compute `months_since_first` by comparing order month to cohort month. Count distinct users per cohort/lag bucket, divide by cohort size (lag 0 count), then pivot to the wide retention matrix.",
     "hints": [
-      "Use `dt.to_period('M')` to reduce dates to year-month periods, then subtract periods to get lag in months",
+      "Reduce each order's date to a year-month key, then compute the month gap between an order's month and the user's cohort month for every order.",
       "Cohort size = distinct users at `months_since_first == 0`; divide each cell's user count by that to get the fraction"
     ],
     "concepts": [
@@ -82,7 +82,7 @@
     "explanation": "Sum `line_amount` per product, then merge in `category_id` from the products table. `groupby('category_id')['total_revenue'].rank(pct=True)` assigns each product a value in (0, 1] representing its position within its category. Rounding to 2 dp and sorting by category then percentile desc gives the final result.",
     "hints": [
       "Bring the related attributes into one aligned table before you filter, compare, or aggregate.",
-      "Use `groupby('category_id')['total_revenue'].rank(pct=True)` to compute within-category percentile ranks"
+      "Within each category, assign every product its fractional position in the category's revenue distribution — pandas has a built-in for this on grouped Series."
     ],
     "concepts": [
       "GROUPED AGGREGATION",
@@ -118,7 +118,7 @@
     "explanation": "Convert `order_date` to datetime, then group by the date part (`.dt.date`) to get daily revenue. Sort ascending so the rolling window looks back correctly. `.rolling(window=30, min_periods=1).mean()` computes the trailing 30-day average, using however many days are available at the start of the series.",
     "hints": [
       "Normalize the date values into a true time representation before extracting calendar pieces or measuring intervals.",
-      "`.rolling(window=30, min_periods=1).mean()` computes a trailing 30-day average; `min_periods=1` avoids NaN at the start"
+      "Once daily revenue is sorted ascending, apply a trailing 30-day window mean; for the first few days fall back to whatever days are available rather than emitting NaN."
     ],
     "concepts": [
       "WINDOW & ROLLING OPERATIONS",
@@ -154,11 +154,10 @@
     "explanation": "Sum `net_amount` per user for lifetime value. `rank(method='min', ascending=False)` assigns rank 1 to the highest value; tied values get the minimum (lowest) rank of the tied group. Converting to int cleans up the float output from `rank()`.",
     "hints": [
       "Collapse the data to the requested grain and total the numeric measure at that level.",
-      "`rank(method='min', ascending=False)` gives rank 1 to the highest value, with ties sharing the lowest rank in the group"
+      "Rank the lifetime values so the highest gets 1; pick a tie-handling method that gives tied users the same lowest rank rather than averaging."
     ],
     "concepts": [
       "GROUPED AGGREGATION",
-      "RANKING & TOP-N PER GROUP",
       "OUTPUT SHAPE & ORDERING"
     ]
   },
@@ -190,7 +189,7 @@
     "explanation": "Sort by user and date so that `cumsum()` accumulates in chronological order within each user. `groupby('user_id')['net_amount'].cumsum()` resets the running total at the start of each new user, giving per-user cumulative revenue.",
     "hints": [
       "Establish the within-group order first because running totals depend on sequence.",
-      "`groupby('user_id')['net_amount'].cumsum()` computes a running total that resets for each user"
+      "Within each user, the answer is a running total of `net_amount` in chronological order — the group key resets the accumulation at the start of each new user."
     ],
     "concepts": [
       "WINDOW & ROLLING OPERATIONS",
@@ -225,8 +224,8 @@
     "solution_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_date'] = pd.to_datetime(df['order_date'])\n    df['month'] = df['order_date'].dt.to_period('M').astype(str)\n    monthly = df.groupby('month', as_index=False)['net_amount'].sum().rename(columns={'net_amount': 'revenue'})\n    monthly = monthly.sort_values('month').reset_index(drop=True)\n    monthly['revenue'] = monthly['revenue'].round(2)\n    monthly['mom_growth_pct'] = monthly['revenue'].pct_change().mul(100).round(1)\n    monthly['rolling_3m_avg'] = monthly['revenue'].rolling(window=3, min_periods=1).mean().round(2)\n    return monthly[['month', 'revenue', 'mom_growth_pct', 'rolling_3m_avg']]",
     "explanation": "Convert order dates to `YYYY-MM` period strings for grouping. `pct_change()` gives the fraction change between consecutive rows; multiplying by 100 converts to a percentage. The 3-month rolling mean smooths out short-term spikes. The first month has NaN growth because there is no prior month to compare against.",
     "hints": [
-      "Use `dt.to_period('M').astype(str)` to convert dates to `YYYY-MM` strings for grouping",
-      "`pct_change().mul(100).round(1)` gives month-over-month % growth; the first row will be NaN"
+      "Three derivations stack on top of the monthly aggregate: the level itself, the period-over-period change against the prior month, and a short trailing average.",
+      "Order the monthly aggregates ascending before computing changes or rolling averages — both depend on row order. The first period has no prior comparison and ends up NaN."
     ],
     "concepts": [
       "WINDOW & ROLLING OPERATIONS",
@@ -260,7 +259,7 @@
     "solution_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_support_tickets):\n    df = df_support_tickets.copy()\n    df['created_at'] = pd.to_datetime(df['created_at'])\n    df['month'] = df['created_at'].dt.to_period('M').astype(str)\n    monthly = df.groupby('month').agg(\n        total_tickets=('ticket_id', 'count'),\n        resolved_tickets=('status', lambda x: (x == 'resolved').sum())\n    ).reset_index()\n    monthly['resolution_rate_pct'] = (monthly['resolved_tickets'] / monthly['total_tickets'] * 100).round(1)\n    return monthly.sort_values('month').reset_index(drop=True)",
     "explanation": "Named aggregations with `agg()` compute total ticket count and resolved count in a single pass. A lambda counts rows where `status == 'resolved'`. The resolution rate is then derived from those two columns.",
     "hints": [
-      "Use named aggregation: `agg(total_tickets=('ticket_id', 'count'), resolved_tickets=('status', lambda x: (x=='resolved').sum()))`",
+      "Two per-month metrics drive the rate: total tickets and the subset where status equals 'resolved'. Bundle them into a single aggregation pass so the rate is one division afterwards.",
       "Compute the rate after aggregation: `resolved / total * 100`"
     ],
     "concepts": [
@@ -346,7 +345,7 @@
     "solution_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_orders, df_users):\n    df = df_orders.merge(df_users[['user_id', 'country']], on='user_id', how='left')\n    ct = pd.crosstab(df['country'], df['status'])\n    ct['Total'] = ct.sum(axis=1)\n    ct = ct.sort_values('Total', ascending=False)\n    ct = ct.drop(columns=['Total'])\n    ct.columns.name = None\n    return ct",
     "explanation": "`pd.crosstab(rows, cols)` counts co-occurrences, producing the frequency table directly. Adding a `Total` column (sum across axis=1) enables sorting by overall order volume per country. The `Total` column is then dropped as specified. Clearing `columns.name` removes the 'status' axis label for a clean output.",
     "hints": [
-      "`pd.crosstab(df['country'], df['status'])` builds the frequency table — no aggregation needed separately",
+      "Counting co-occurrences of two categorical fields naturally produces a wide table — one row per value of the first field, one column per value of the second, cells = co-occurrence counts.",
       "Add a Total column with `.sum(axis=1)` for sorting, then drop it before returning"
     ],
     "concepts": [
@@ -492,7 +491,7 @@
       "Stage 1 pct is always 100.0; stages 2 and 3 divide by the stage-1 user count"
     ],
     "concepts": [
-      "GROUPED AGGREGATION",
+      "MULTI-DATAFRAME ENTITY LINKING",
       "DEDUPLICATION LOGIC"
     ]
   },
@@ -528,8 +527,8 @@
     ],
     "concepts": [
       "GROUPED AGGREGATION",
-      "DATA QUALITY SKEPTICISM",
-      "CATEGORICAL & BINNING"
+      "DATETIME OPERATIONS",
+      "BOOLEAN INDEXING & FILTERING"
     ]
   },
   {
@@ -557,7 +556,7 @@
     "solution_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_order_items):\n    items = df_order_items[['order_id', 'product_id']].drop_duplicates()\n    pairs = items.merge(items, on='order_id', suffixes=('_a', '_b'))\n    pairs = pairs[pairs['product_id_a'] < pairs['product_id_b']]\n    result = pairs.groupby(['product_id_a', 'product_id_b'], as_index=False)['order_id'].nunique()\n    result.columns = ['product_a_id', 'product_b_id', 'co_occurrence_count']\n    return result.sort_values('co_occurrence_count', ascending=False).head(10).reset_index(drop=True)",
     "explanation": "Self-joining on `order_id` creates all product pairs within each order. The `product_a < product_b` filter eliminates self-pairs and duplicate reversed pairs. Counting distinct `order_id`s per pair (rather than rows) avoids overcounting orders where a product appears multiple times as separate line items.",
     "hints": [
-      "Self-join `df_order_items` on `order_id` to get all product combinations per order",
+      "Co-purchase information lives in product pairs that share an order — restructure the data so every same-order product pair becomes its own row, then count how many distinct orders each pair appears in.",
       "Filter `product_id_a < product_id_b` to keep only unique ordered pairs, then count distinct orders per pair"
     ],
     "concepts": [
@@ -592,13 +591,13 @@
     "solution_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_date'] = pd.to_datetime(df['order_date'])\n    df['month'] = df['order_date'].dt.to_period('M').astype(str)\n    monthly = df.groupby('month', as_index=False)['net_amount'].sum().rename(columns={'net_amount': 'revenue'})\n    monthly = monthly.sort_values('month').reset_index(drop=True)\n    monthly['revenue'] = monthly['revenue'].round(2)\n    monthly['is_forecast'] = False\n    avg_growth = monthly['revenue'].pct_change().mean()\n    last_month = pd.Period(monthly['month'].iloc[-1], freq='M')\n    next_month = str(last_month + 1)\n    forecast_rev = round(monthly['revenue'].iloc[-1] * (1 + avg_growth), 2)\n    forecast_row = pd.DataFrame({'month': [next_month], 'revenue': [forecast_rev], 'is_forecast': [True]})\n    result = pd.concat([monthly, forecast_row], ignore_index=True)\n    return result.sort_values('month').reset_index(drop=True)",
     "explanation": "`pct_change()` gives the fractional MoM change; `.mean()` across all periods gives the average growth rate, skipping the first NaN. The next month label is computed via Period arithmetic (`last_month + 1`). The forecast row is appended with `pd.concat` and the `is_forecast` flag distinguishes it from historical data.",
     "hints": [
-      "Compute average growth with `monthly['revenue'].pct_change().mean()` — NaN for the first period is skipped automatically",
+      "Naive forecast = last observed value scaled by the average period-over-period growth rate seen historically; the first period has no prior comparison and is skipped from the mean.",
       "Use `pd.Period(month_str, freq='M') + 1` to get the next calendar month label"
     ],
     "concepts": [
       "WINDOW & ROLLING OPERATIONS",
       "DATETIME OPERATIONS",
-      "MULTI-DATAFRAME ENTITY LINKING"
+      "GROUPED AGGREGATION"
     ]
   },
   {
@@ -662,7 +661,7 @@
     "solution_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_date'] = pd.to_datetime(df['order_date'])\n    last_orders = df.groupby('user_id')['order_date'].max().reset_index()\n    last_orders.columns = ['user_id', 'last_order_date']\n    max_date = df['order_date'].max()\n    last_orders['days_since_last_order'] = (max_date - last_orders['last_order_date']).dt.days\n    last_orders['is_churned'] = last_orders['days_since_last_order'] > 90\n    last_orders['last_order_date'] = last_orders['last_order_date'].dt.strftime('%Y-%m-%d')\n    return last_orders[['user_id', 'last_order_date', 'days_since_last_order', 'is_churned']].sort_values('days_since_last_order', ascending=False).reset_index(drop=True)",
     "explanation": "The 'most recent date in the dataset' acts as the reference point for recency. Subtracting each user's last order date from this reference gives the days of inactivity. Using the dataset max (rather than today's date) makes the result deterministic regardless of when the code runs.",
     "hints": [
-      "Use `df['order_date'].max()` as the reference date for recency calculations — this is deterministic",
+      "Anchor recency to a fixed point inside the dataset (not today's clock) so the result is reproducible regardless of when the code runs.",
       "`(max_date - last_order_date).dt.days` converts the Timedelta to an integer day count"
     ],
     "concepts": [
@@ -704,9 +703,9 @@
     "starter_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_sessions, df_orders):\n    # Compute what fraction of sessions are followed by an order within 24 hours\n    pass",
     "expected_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_sessions, df_orders):\n    sessions = df_sessions.copy()\n    orders = df_orders.copy()\n    sessions['session_start'] = pd.to_datetime(sessions['session_start'])\n    orders['order_date'] = pd.to_datetime(orders['order_date'])\n    merged = sessions.merge(orders[['user_id', 'order_date']], on='user_id', how='left')\n    window = pd.Timedelta(hours=24)\n    merged['attributed'] = (\n        (merged['order_date'] >= merged['session_start']) &\n        (merged['order_date'] < merged['session_start'] + window)\n    )\n    attr_per_session = merged.groupby('session_id')['attributed'].any()\n    total = len(sessions)\n    attributed = int(attr_per_session.sum())\n    rate = round(attributed / total * 100, 1)\n    return pd.DataFrame({'total_sessions': [total], 'attributed_sessions': [attributed], 'attribution_rate_pct': [rate]})",
     "solution_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_sessions, df_orders):\n    sessions = df_sessions.copy()\n    orders = df_orders.copy()\n    sessions['session_start'] = pd.to_datetime(sessions['session_start'])\n    orders['order_date'] = pd.to_datetime(orders['order_date'])\n    merged = sessions.merge(orders[['user_id', 'order_date']], on='user_id', how='left')\n    window = pd.Timedelta(hours=24)\n    merged['attributed'] = (\n        (merged['order_date'] >= merged['session_start']) &\n        (merged['order_date'] < merged['session_start'] + window)\n    )\n    attr_per_session = merged.groupby('session_id')['attributed'].any()\n    total = len(sessions)\n    attributed = int(attr_per_session.sum())\n    rate = round(attributed / total * 100, 1)\n    return pd.DataFrame({'total_sessions': [total], 'attributed_sessions': [attributed], 'attribution_rate_pct': [rate]})",
-    "explanation": "Merge sessions with all orders for the same user (a left join keeps all sessions). For each resulting row, check whether the order falls in the 24-hour window after the session. `groupby('session_id').any()` collapses multiple orders per session to a single True/False — was any order in the window?",
+    "explanation": "Merge sessions with all orders for the same user (a left join keeps all sessions). For each resulting row, check whether the order falls in the 24-hour window after the session. `groupby('session_id').any()` collapses multiple orders per session to a single True/False — was any order in the window? Note: the user-key merge produces a many-to-many expansion (every session row paired with every order row for that user), which is fine here because `.any()` collapses it back per session. On larger datasets this fan-out would be costly and a windowed merge (e.g. `merge_asof` with a tolerance) would be preferable.",
     "hints": [
-      "After merging sessions and orders on `user_id`, check `order_date >= session_start` and `order_date < session_start + pd.Timedelta(hours=24)`",
+      "Each session needs to know whether any of the same user's orders fell in a 24-hour window starting at `session_start` — bring those order timestamps next to each session, then check the temporal predicate per row.",
       "Use `groupby('session_id')['attributed'].any()` to reduce to one bool per session"
     ],
     "concepts": [
@@ -788,7 +787,7 @@
     "solution_code": "import pandas as pd\nimport numpy as np\n\ndef solve(df_orders):\n    df = df_orders.copy()\n    df['order_date'] = pd.to_datetime(df['order_date'])\n    max_date = df['order_date'].max()\n\n    rfm = df.groupby('user_id').agg(\n        last_order=('order_date', 'max'),\n        frequency=('order_id', 'count'),\n        monetary=('net_amount', 'sum')\n    ).reset_index()\n\n    rfm['recency'] = (max_date - rfm['last_order']).dt.days\n    rfm['monetary'] = rfm['monetary'].round(2)\n\n    rfm['recency_score'] = pd.cut(\n        rfm['recency'],\n        bins=[-1, 30, 90, rfm['recency'].max()],\n        labels=[3, 2, 1]\n    ).astype(int)\n\n    rfm['frequency_score'] = pd.cut(\n        rfm['frequency'],\n        bins=[0, 1, 3, rfm['frequency'].max()],\n        labels=[1, 2, 3],\n        include_lowest=True\n    ).astype(int)\n\n    rfm['monetary_score'] = pd.qcut(\n        rfm['monetary'],\n        q=3,\n        labels=[1, 2, 3],\n        duplicates='drop'\n    ).astype(int)\n\n    rfm['rfm_score'] = rfm['recency_score'] + rfm['frequency_score'] + rfm['monetary_score']\n\n    def segment(score):\n        if score >= 7:\n            return 'Champions'\n        elif score >= 5:\n            return 'Loyal'\n        else:\n            return 'At Risk'\n\n    rfm['segment'] = rfm['rfm_score'].apply(segment)\n\n    return rfm[['user_id', 'recency', 'frequency', 'monetary', 'rfm_score', 'segment']].sort_values(['rfm_score', 'user_id'], ascending=[False, True]).reset_index(drop=True)",
     "explanation": "RFM is a classic customer segmentation framework. Recency and frequency use fixed `pd.cut` bins; monetary uses `pd.qcut` for equal-population quantile bins so the score distribution is balanced. Scores are summed and mapped to segments. Using the dataset's max date as reference makes the analysis reproducible.",
     "hints": [
-      "Use `pd.cut` for recency and frequency (fixed thresholds) and `pd.qcut` for monetary (equal-population buckets)",
+      "Two of the three dimensions score against fixed numeric thresholds the prompt gives you; the third scores by where the user falls in the dataset-wide distribution — pick the binning tool that matches each style.",
       "Score recency in reverse: lower days = higher score (3); sum all three scores for the final RFM score"
     ],
     "concepts": [
@@ -828,7 +827,7 @@
     ],
     "concepts": [
       "MEMORY & VECTORIZATION REASONING",
-      "DATA QUALITY SKEPTICISM"
+      "OUTPUT SHAPE & ORDERING"
     ]
   },
   {
@@ -859,7 +858,7 @@
       ]
     },
     "starter_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    # Build MultiIndex then slice one region with .xs()\n    pass",
-    "expected_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    df = df_employees.merge(df_departments[['department_id', 'department_name', 'region']], on='department_id', how='inner')\n    agg = df.groupby(['region', 'department_name'])['salary'].mean().round(2).rename('mean_salary')\n    agg.index = pd.MultiIndex.from_tuples(agg.index, names=['region', 'department_name'])\n    na_slice = agg.xs('NA', level='region').reset_index()\n    na_slice.columns = ['department_name', 'mean_salary']\n    return na_slice.sort_values('mean_salary', ascending=False).reset_index(drop=True)",
+    "expected_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    df = df_employees.merge(df_departments[['department_id', 'department_name', 'region']], on='department_id', how='inner')\n    agg = df.groupby(['region', 'department_name'])['salary'].mean().round(2).rename('mean_salary')\n    na_slice = agg.xs('NA', level='region').reset_index()\n    na_slice.columns = ['department_name', 'mean_salary']\n    return na_slice.sort_values('mean_salary', ascending=False).reset_index(drop=True)",
     "solution_code": "import pandas as pd\n\ndef solve(df_employees, df_departments):\n    df = df_employees.merge(df_departments[['department_id', 'department_name', 'region']], on='department_id', how='inner')\n    agg = df.groupby(['region', 'department_name'])['salary'].mean().round(2).rename('mean_salary')\n    na_slice = agg.xs('NA', level='region').reset_index()\n    na_slice.columns = ['department_name', 'mean_salary']\n    return na_slice.sort_values('mean_salary', ascending=False).reset_index(drop=True)",
     "explanation": "Grouping by multiple columns produces a MultiIndex Series (or DataFrame). `.xs(key, level='level_name')` is the cross-section selector — it retrieves all rows where the specified level equals the key, returning a result with that level removed from the index. This is more ergonomic than `.loc[(key, slice(None))]` for hierarchical data. `reset_index()` promotes the remaining index level back to a column.",
     "hints": [
