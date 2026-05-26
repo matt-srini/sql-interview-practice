@@ -1013,5 +1013,31 @@
       "GRADIENT PATHOLOGY",
       "NEURAL NETWORK DESIGN"
     ]
+  },
+  {
+    "id": 83042,
+    "order": 29,
+    "topic": "ml-fundamentals",
+    "type": "scenario",
+    "difficulty": "hard",
+    "mock_only": true,
+    "title": "When SHAP, Permutation, and Split-Gain Importance Disagree",
+    "description": "You train an XGBoost fraud detection model. Computing three feature importance measures reveals a striking disagreement:\n\n- Split-gain importance (top 3): tenure_days #1, account_age_months #2, num_accounts #3\n- Permutation importance on validation set (top 3): transaction_amount #1, num_transactions_30d #2, days_since_last_login #3\n- SHAP values — mean |SHAP| across test set (top 3): transaction_amount #1, num_transactions_30d #2, days_since_last_login #3\n\nPermutation and SHAP agree. Split-gain ranks tenure_days, account_age_months, and num_accounts far higher than either. All three are continuous features with many distinct values. What explains the split-gain divergence, and which measure should guide feature selection?",
+    "options": [
+      "Split-gain is most reliable because it is computed from training data; SHAP and permutation introduce estimation noise by evaluating on held-out data",
+      "Split-gain is biased toward continuous and high-cardinality features — tenure_days, account_age_months, and num_accounts each have many distinct split thresholds, so the model splits on them frequently and accumulates gain regardless of actual predictive contribution; SHAP and permutation correctly measure impact on model output predictions and should guide feature selection",
+      "Agreement between permutation and SHAP indicates data leakage in transaction_amount — features ranked consistently high by multiple methods are always leaking the label",
+      "Average the three rankings to produce a consensus list and use that for feature selection — the consensus cancels out individual method biases"
+    ],
+    "correct_option": 1,
+    "explanation": "Split-gain (also called 'gain' or 'information gain') sums the reduction in impurity across every split involving a feature during training. This has a well-known bias: continuous and high-cardinality features can be split at many thresholds, accumulating gain simply by appearing in many splits — even when the marginal prediction improvement per split is small. Tenure_days and account_age_months likely span thousands of distinct values, making them frequent split candidates in boosted trees. The result is inflated split-gain rankings that do not reflect actual predictive contribution.\n\nPermutation importance measures something fundamentally different: the increase in validation loss when a feature's values are randomly shuffled. This directly tests whether the model's predictions rely on the feature. When tenure_days is shuffled and validation AUC barely changes, the feature is not load-bearing — regardless of how often the model chose to split on it during training.\n\nSHAP values (mean |SHAP|) measure each feature's average marginal contribution to individual predictions via game-theoretic Shapley values. TreeSHAP computes exact values for tree ensembles in polynomial time. Both SHAP and permutation measuring the same top features is strong corroborating evidence that split-gain's divergent rankings are an artifact of the high-cardinality bias.\n\nA caveat for permutation importance: when features are correlated, shuffling one correlated feature leaves predictive signal in its partner, potentially underestimating the joint feature group's importance. SHAP handles correlated features more correctly through the Shapley value formulation, making it the preferred method when correlation is present.\n\nFor production feature selection: use SHAP or permutation importance as the primary criterion. Split-gain is useful for exploratory training-time analysis but should not determine which features enter a production model.\n\nOption A is wrong: being computed from training data does not make split-gain more reliable — it makes it susceptible to training artifacts such as the high-cardinality split bias. Held-out evaluation (permutation, SHAP) is more informative precisely because it measures what happens to actual predictions, not what happened during tree construction.\n\nOption C is wrong: high SHAP rank does not indicate leakage. Transaction_amount and transaction frequency are natural fraud predictors; their consistent ranking across methods is evidence of genuine predictive importance. Data leakage is diagnosed by temporal holdout analysis and AUC collapse patterns, not by feature importance rankings.\n\nOption D is wrong: averaging rankings mixes measures with different biases. Split-gain's inflation will corrupt the average rather than being cancelled out — the top split-gain features will remain inflated in the consensus, perpetuating the bias.",
+    "hints": [
+      "Split-gain accumulates over every tree split involving a feature. What property of tenure_days (a continuous feature with thousands of distinct values) would cause it to appear in many splits — regardless of whether each split is genuinely informative for predicting fraud?",
+      "Permutation importance measures what happens to validation AUC when a feature's values are scrambled. If scrambling tenure_days barely changes AUC, what does that reveal about the feature's actual role in the model's predictions?"
+    ],
+    "concepts": [
+      "FEATURE IMPORTANCE INTERPRETATION",
+      "ENSEMBLE STRATEGY"
+    ]
   }
 ]

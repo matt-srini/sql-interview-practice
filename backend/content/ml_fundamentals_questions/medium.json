@@ -1265,5 +1265,30 @@
       "FEATURE SELECTION STRATEGY",
       "DATA LEAKAGE DETECTION"
     ]
+  },
+  {
+    "id": 82051,
+    "order": 39,
+    "topic": "ml-fundamentals",
+    "type": "conceptual",
+    "difficulty": "medium",
+    "title": "Local vs Global Model Explanations: Matching Method to Need",
+    "description": "A gradient boosted churn model is in production at a telecom. Three teams request explanations:\n\n- Customer support: 'Why was customer A7823 flagged as high churn risk today?'\n- Model risk: 'Which features drive the model overall — and do any raise fairness concerns?'\n- Legal: 'Does tenure have a monotonic, consistent effect on predicted churn probability?'\n\nMatch each team's need to the most appropriate explanation approach.",
+    "options": [
+      "Use the same global feature importance plot for all three — it shows which features matter most, which covers all stakeholder needs",
+      "SHAP local (per-instance Shapley values) for customer support; SHAP global summary or partial dependence plots for model risk; partial dependence plot for legal — each method is scoped to the right level of analysis",
+      "LIME for all three — it is the most widely cited explanation method and applies to any use case",
+      "Replace the gradient boosting model with logistic regression so all teams can read coefficients directly instead of relying on post-hoc methods"
+    ],
+    "correct_option": 1,
+    "explanation": "Different explanation needs require different methods, scoped to the right unit of analysis.\n\nCustomer support needs a local explanation for a single instance. SHAP local values (per-instance Shapley values) attribute the prediction for A7823 to each feature's contribution. For tree models, TreeSHAP computes exact Shapley values efficiently — the explanation is faithful to the model's actual behavior for that specific input.\n\nModel risk needs a global perspective. SHAP global summary plots aggregate local SHAP values across all predictions to show which features the model relies on most overall, and how each feature's value affects predictions. Partial dependence plots (PDP) show the marginal effect of each feature averaged across the dataset — a complementary global view useful for auditing discriminatory patterns.\n\nLegal needs a feature-monotonicity check: does higher tenure always produce lower churn risk? A partial dependence plot for the tenure feature isolates its marginal effect while averaging over other features, making monotonicity visually verifiable across the full input range.\n\nOption A is wrong: a global feature importance plot shows which features matter overall, but cannot answer 'why this prediction for this customer' — it has no per-instance resolution.\n\nOption C is wrong: LIME generates local approximations for individual instances but is not suited for global feature importance audits or monotonicity verification across the full input distribution.\n\nOption D is wrong: replacing a higher-performing model with logistic regression to satisfy explanation needs may not be necessary or appropriate. Post-hoc explanation methods — especially SHAP for tree models — produce faithful, auditable explanations without sacrificing model performance.",
+    "hints": [
+      "Separate 'local' (this prediction, this instance) from 'global' (the model's overall behavior). Which stakeholder needs which level of analysis?",
+      "A partial dependence plot varies one feature across its full range while averaging over all other features — what question does that naturally answer about the model's behavior?"
+    ],
+    "concepts": [
+      "INTERPRETABILITY TRADEOFF",
+      "FEATURE IMPORTANCE INTERPRETATION"
+    ]
   }
 ]
