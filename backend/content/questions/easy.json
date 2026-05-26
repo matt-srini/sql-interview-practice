@@ -86,7 +86,7 @@
     "solution_query": "SELECT employee_id, employee_name, salary\nFROM employees\nWHERE salary > 80000\nORDER BY salary DESC;",
     "explanation": "WHERE salary > 80000 is a numeric comparison filter. Only employees whose salary value is strictly greater than 80000 are included. Numeric comparisons do not require quotes around the value. ORDER BY salary DESC places the highest earners at the top of the result.",
     "hints": [
-      "Identify the salary threshold in the prompt and filter rows to those that meet or exceed it.",
+      "Identify the salary threshold in the prompt and filter rows to those strictly above it.",
       "Descending order on a numeric column surfaces the largest values first — here the direction follows naturally from 'high salary'."
     ],
     "concepts": [
@@ -588,7 +588,7 @@
     "solution_query": "SELECT order_id, status, payment_status, net_amount\nFROM orders\nWHERE status = 'cancelled' OR payment_status = 'failed';",
     "explanation": "OR makes the filter broader by keeping rows that satisfy either condition. In this case, an order appears in the result if it was cancelled, if its payment failed, or if both things are true for the same row. This is different from AND, which would require both conditions to be true at once. Returning both status columns helps explain why each order qualifies for the review list.",
     "hints": [
-      "The prompt states two independent requirements; a qualifying row must satisfy both simultaneously.",
+      "Two columns each carry a reason a row might need review — the filter should keep rows where either reason holds, not only where both do.",
       "Both status columns belong in the result because both are part of the business rule"
     ],
     "concepts": [
