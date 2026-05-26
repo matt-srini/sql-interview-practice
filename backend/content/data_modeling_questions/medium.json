@@ -811,8 +811,7 @@
     ],
     "concepts": [
       "CONFORMED DIMENSIONS",
-      "SCHEMA EVOLUTION",
-      "DIMENSIONAL MODELING"
+      "SCHEMA EVOLUTION"
     ]
   },
   {
@@ -837,7 +836,6 @@
     ],
     "concepts": [
       "SEMANTIC LAYER",
-      "DIMENSIONAL MODELING",
       "METRIC GOVERNANCE"
     ]
   },
@@ -889,7 +887,6 @@
     ],
     "concepts": [
       "SCHEMA EVOLUTION",
-      "DIMENSIONAL MODELING",
       "CONFORMED DIMENSIONS"
     ]
   },
@@ -916,8 +913,7 @@
     ],
     "concepts": [
       "SCD STRUCTURE",
-      "FACT TABLE DESIGN",
-      "DIMENSIONAL MODELING"
+      "FACT TABLE DESIGN"
     ]
   },
   {
@@ -943,8 +939,7 @@
     ],
     "concepts": [
       "SCHEMA FROM REQUIREMENTS",
-      "GRAIN DEFINITION",
-      "DIMENSIONAL MODELING"
+      "GRAIN DEFINITION"
     ]
   },
   {
@@ -970,8 +965,7 @@
     ],
     "concepts": [
       "BRIDGE & MANY-TO-MANY",
-      "FACT TABLE DESIGN",
-      "DIMENSIONAL MODELING"
+      "FACT TABLE DESIGN"
     ]
   },
   {
@@ -996,7 +990,6 @@
     ],
     "concepts": [
       "DENORMALIZATION TRADEOFF",
-      "DIMENSIONAL MODELING",
       "WIDE VS NARROW"
     ]
   },
@@ -1049,8 +1042,7 @@
     ],
     "concepts": [
       "ADDITIVE VS NON-ADDITIVE",
-      "FACT TABLE DESIGN",
-      "DIMENSIONAL MODELING"
+      "FACT TABLE DESIGN"
     ]
   },
   {
@@ -1075,8 +1067,7 @@
     ],
     "concepts": [
       "DOUBLE-COUNTING & FAN-OUT",
-      "GRAIN DEFINITION",
-      "DIMENSIONAL MODELING"
+      "GRAIN DEFINITION"
     ]
   },
   {
@@ -1102,8 +1093,7 @@
     ],
     "concepts": [
       "SCHEMA FROM REQUIREMENTS",
-      "GRAIN DEFINITION",
-      "DIMENSIONAL MODELING"
+      "GRAIN DEFINITION"
     ]
   },
   {
@@ -1154,8 +1144,7 @@
     ],
     "concepts": [
       "DOUBLE-COUNTING & FAN-OUT",
-      "FACT TABLE DESIGN",
-      "DIMENSIONAL MODELING"
+      "FACT TABLE DESIGN"
     ]
   },
   {
@@ -1181,7 +1170,6 @@
     ],
     "concepts": [
       "DBT MODELING",
-      "DIMENSIONAL MODELING",
       "SCHEMA EVOLUTION"
     ]
   },
@@ -1213,8 +1201,7 @@
     ],
     "concepts": [
       "GRAIN DEFINITION",
-      "SCHEMA FROM REQUIREMENTS",
-      "DIMENSIONAL MODELING"
+      "SCHEMA FROM REQUIREMENTS"
     ]
   },
   {
@@ -1242,8 +1229,7 @@
     ],
     "concepts": [
       "GRAIN DEFINITION",
-      "SCHEMA FROM REQUIREMENTS",
-      "DIMENSIONAL MODELING"
+      "SCHEMA FROM REQUIREMENTS"
     ]
   },
   {
@@ -1269,8 +1255,7 @@
     ],
     "concepts": [
       "HIERARCHIES & MULTI-PATH",
-      "DIMENSION DESIGN",
-      "DIMENSIONAL MODELING"
+      "DIMENSION DESIGN"
     ]
   },
   {
@@ -1322,8 +1307,7 @@
     ],
     "concepts": [
       "AGGREGATE & SUMMARY DESIGN",
-      "ADDITIVE VS NON-ADDITIVE",
-      "DIMENSIONAL MODELING"
+      "ADDITIVE VS NON-ADDITIVE"
     ]
   },
   {
@@ -1349,8 +1333,7 @@
     ],
     "concepts": [
       "REFERENTIAL INTEGRITY",
-      "DIMENSION DESIGN",
-      "DIMENSIONAL MODELING"
+      "DIMENSION DESIGN"
     ]
   },
   {
@@ -1380,8 +1363,7 @@
     ],
     "concepts": [
       "ADDITIVE VS NON-ADDITIVE",
-      "FACT TABLE DESIGN",
-      "DIMENSIONAL MODELING"
+      "FACT TABLE DESIGN"
     ]
   },
   {
@@ -1409,8 +1391,7 @@
     ],
     "concepts": [
       "ADDITIVE VS NON-ADDITIVE",
-      "FACT TABLE DESIGN",
-      "DIMENSIONAL MODELING"
+      "FACT TABLE DESIGN"
     ]
   },
   {
@@ -1436,8 +1417,7 @@
     ],
     "concepts": [
       "AGGREGATE & SUMMARY DESIGN",
-      "ADDITIVE VS NON-ADDITIVE",
-      "DIMENSIONAL MODELING"
+      "ADDITIVE VS NON-ADDITIVE"
     ]
   },
   {
@@ -1462,8 +1442,7 @@
     ],
     "concepts": [
       "DATA VAULT",
-      "SCHEMA EVOLUTION",
-      "DIMENSIONAL MODELING"
+      "SCHEMA EVOLUTION"
     ]
   },
   {
@@ -1488,8 +1467,7 @@
     ],
     "concepts": [
       "SCD STRUCTURE",
-      "DIMENSION DESIGN",
-      "DIMENSIONAL MODELING"
+      "DIMENSION DESIGN"
     ]
   },
   {
@@ -1515,8 +1493,7 @@
     ],
     "concepts": [
       "HIERARCHIES & MULTI-PATH",
-      "DIMENSION DESIGN",
-      "DIMENSIONAL MODELING"
+      "DIMENSION DESIGN"
     ]
   },
   {
@@ -1545,8 +1522,7 @@
     ],
     "concepts": [
       "BRIDGE & MANY-TO-MANY",
-      "FACT TABLE DESIGN",
-      "DIMENSIONAL MODELING"
+      "FACT TABLE DESIGN"
     ]
   },
   {
@@ -1577,8 +1553,7 @@
     ],
     "concepts": [
       "SCD STRUCTURE",
-      "DIMENSION DESIGN",
-      "DIMENSIONAL MODELING"
+      "DIMENSION DESIGN"
     ]
   },
   {
@@ -1605,8 +1580,7 @@
     ],
     "concepts": [
       "SCD STRUCTURE",
-      "DIMENSION DESIGN",
-      "DIMENSIONAL MODELING"
+      "DIMENSION DESIGN"
     ]
   },
   {
@@ -1631,8 +1605,7 @@
     ],
     "concepts": [
       "SCHEMA EVOLUTION",
-      "CONFORMED DIMENSIONS",
-      "DIMENSIONAL MODELING"
+      "CONFORMED DIMENSIONS"
     ]
   },
   {
@@ -1657,8 +1630,7 @@
     ],
     "concepts": [
       "SCD STRUCTURE",
-      "FACT TABLE DESIGN",
-      "DIMENSIONAL MODELING"
+      "FACT TABLE DESIGN"
     ]
   },
   {
@@ -1684,8 +1656,7 @@
     ],
     "concepts": [
       "DENORMALIZATION TRADEOFF",
-      "GRAIN DEFINITION",
-      "DIMENSIONAL MODELING"
+      "GRAIN DEFINITION"
     ]
   },
   {
@@ -1711,8 +1682,7 @@
     ],
     "concepts": [
       "SCHEMA FROM REQUIREMENTS",
-      "FACT TABLE DESIGN",
-      "DIMENSIONAL MODELING"
+      "FACT TABLE DESIGN"
     ]
   },
   {
@@ -1738,8 +1708,7 @@
     ],
     "concepts": [
       "CONFORMED DIMENSIONS",
-      "SCHEMA FROM REQUIREMENTS",
-      "DIMENSIONAL MODELING"
+      "SCHEMA FROM REQUIREMENTS"
     ]
   },
   {
@@ -1765,8 +1734,7 @@
     ],
     "concepts": [
       "WIDE VS NARROW",
-      "DENORMALIZATION TRADEOFF",
-      "DIMENSIONAL MODELING"
+      "DENORMALIZATION TRADEOFF"
     ]
   },
   {
@@ -1792,8 +1760,7 @@
     ],
     "concepts": [
       "DATA VAULT",
-      "SCHEMA FROM REQUIREMENTS",
-      "DIMENSIONAL MODELING"
+      "SCHEMA FROM REQUIREMENTS"
     ]
   },
   {
@@ -1818,7 +1785,6 @@
     ],
     "concepts": [
       "DBT MODELING",
-      "DIMENSIONAL MODELING",
       "SCHEMA FROM REQUIREMENTS"
     ]
   },
@@ -1844,8 +1810,7 @@
     ],
     "concepts": [
       "NORMALIZATION",
-      "DIMENSION DESIGN",
-      "DIMENSIONAL MODELING"
+      "DIMENSION DESIGN"
     ]
   },
   {
@@ -1870,8 +1835,7 @@
     ],
     "concepts": [
       "DBT MODELING",
-      "DENORMALIZATION TRADEOFF",
-      "DIMENSIONAL MODELING"
+      "DENORMALIZATION TRADEOFF"
     ]
   },
   {
@@ -1896,8 +1860,7 @@
     ],
     "concepts": [
       "WIDE VS NARROW",
-      "FACT TABLE DESIGN",
-      "DIMENSIONAL MODELING"
+      "FACT TABLE DESIGN"
     ]
   },
   {
@@ -1922,8 +1885,7 @@
     ],
     "concepts": [
       "NORMALIZATION",
-      "REFERENTIAL INTEGRITY",
-      "DIMENSIONAL MODELING"
+      "REFERENTIAL INTEGRITY"
     ]
   },
   {
@@ -1948,8 +1910,7 @@
     ],
     "concepts": [
       "AGGREGATE & SUMMARY DESIGN",
-      "ADDITIVE VS NON-ADDITIVE",
-      "DIMENSIONAL MODELING"
+      "ADDITIVE VS NON-ADDITIVE"
     ]
   },
   {
@@ -1975,8 +1936,7 @@
     ],
     "concepts": [
       "DOUBLE-COUNTING & FAN-OUT",
-      "GRAIN DEFINITION",
-      "DIMENSIONAL MODELING"
+      "GRAIN DEFINITION"
     ]
   },
   {
@@ -2002,8 +1962,7 @@
     ],
     "concepts": [
       "ADDITIVE VS NON-ADDITIVE",
-      "AGGREGATE & SUMMARY DESIGN",
-      "DIMENSIONAL MODELING"
+      "AGGREGATE & SUMMARY DESIGN"
     ]
   }
 ]
