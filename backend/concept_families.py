@@ -1530,7 +1530,6 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
         ],
         "DIMENSION DESIGN": [
             "DIMENSION DESIGN",
-            "CONFORMED",
             "DEGENERATE",
             "JUNK DIMENSION",
             "ROLE-PLAYING",
@@ -1552,15 +1551,15 @@ CONCEPT_FAMILIES: dict[str, dict[str, list[str]]] = {
             "NATURAL KEY",
             "KEY STRATEGY",
         ],
+        "DENORMALIZATION TRADEOFF": [
+            "DENORMALIZATION",
+        ],
         "NORMALIZATION": [
             "NORMALIZATION",
             "1NF",
             "2NF",
             "3NF",
             "BCNF",
-        ],
-        "DENORMALIZATION TRADEOFF": [
-            "DENORMALIZATION",
         ],
         "BRIDGE & MANY-TO-MANY": [
             "BRIDGE",
