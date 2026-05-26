@@ -1988,5 +1988,31 @@
       "ADDITIVE VS NON-ADDITIVE",
       "AGGREGATE & SUMMARY DESIGN"
     ]
+  },
+  {
+    "id": 62078,
+    "order": 77,
+    "title": "2NF Violation in a Composite-Key Sourcing Table: Diagnosing Update Anomalies",
+    "difficulty": "medium",
+    "mock_only": true,
+    "type": "scenario",
+    "scenario_context": "A retail analytics team maintains a product_supplier_sourcing table with columns: product_id, supplier_id (composite primary key), product_category, supplier_country, unit_cost, and lead_time_days. A procurement manager asks the data engineer to update supplier_country for a major supplier whose operations have relocated \u2014 and the engineer discovers the update requires touching thousands of rows across the table.",
+    "description": "The data engineer flags this bulk-update requirement as evidence of a structural problem. Which normalization issue is causing this update anomaly, and what does it imply for the table design?",
+    "options": [
+      "Third Normal Form violation: product_category transitively depends on supplier_id through the supplier relationship chain, which must be resolved by introducing an intermediate table.",
+      "Second Normal Form violation: product_category depends only on product_id and supplier_country depends only on supplier_id \u2014 both are partial dependencies on the composite key, so changing one supplier forces an update across every row for that supplier.",
+      "First Normal Form violation: the composite primary key encodes a many-to-many relationship between products and suppliers, which must be split into separate tables to satisfy atomicity requirements.",
+      "Boyce-Codd Normal Form violation: unit_cost and lead_time_days depend on the full key but supplier_country creates a functional dependency from a non-superkey determinant, which BCNF forbids."
+    ],
+    "correct_option": 1,
+    "explanation": "Second Normal Form requires every non-key attribute to depend on the entire composite primary key, not just part of it. Here, supplier_country depends only on supplier_id (one half of the key) and product_category depends only on product_id (the other half) \u2014 neither requires both keys together. That partial dependency directly causes the update anomaly: supplier_country is duplicated on every row for the supplier, so relocating that supplier forces a bulk update across all (product_id, supplier_id) rows rather than a single-row change. The fix is decomposition: a supplier table holds supplier_country keyed on supplier_id; a products table holds product_category keyed on product_id; the sourcing table retains only unit_cost, lead_time_days, and the composite key. Option A describes 3NF, which concerns transitive dependencies through non-key attributes \u2014 not what is happening here. Option C misidentifies 1NF: the table has no repeating groups or multi-valued columns. Option D correctly defines BCNF, but BCNF applies to tables already in 3NF; this table fails 2NF first, making BCNF analysis premature.",
+    "hints": [
+      "For each non-key column, ask: does this attribute describe the product, the supplier, or the specific pairing of the two? Only the third category genuinely depends on the full composite key.",
+      "The update anomaly \u2014 needing to touch thousands of rows to change one supplier attribute \u2014 is a structural diagnostic. Which normalization form requires that every non-key attribute depend on the entire composite key, not just part of it?"
+    ],
+    "concepts": [
+      "NORMALIZATION",
+      "REFERENTIAL INTEGRITY"
+    ]
   }
 ]
