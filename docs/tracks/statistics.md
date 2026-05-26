@@ -97,15 +97,15 @@ Mock-only ratio: 116 / 100 = **1.16×** — landed inside the locked target band
 
 **Target-ratio justification.** The 1.15–1.25× band was locked at Stage A against two anchors: (a) PySpark 1.17× as the closest modality precedent (code-adjacent reasoning with MCQ evaluation, similar per-question authoring constraint); (b) the dual-subtype format imposes a stricter anti-clone ceiling than pure-MCQ tracks — a mock-only numerical question must have meaningfully different numerical scaffolding from its practice equivalent, which bounds the practical authoring ceiling lower than pure-MCQ tracks (SQL 1.40×, Python 1.30×). 1.16× represents the achievable runway under that quality constraint.
 
-**Per-subtype ratio.** Of the 116 mock-only questions, 72 are conceptual and 44 are numerical. Of the 100 practice questions, 51 are conceptual and 49 are numerical.
+**Per-subtype ratio.** Of the 116 mock-only questions, 85 are conceptual and 31 are numerical. Of the 100 practice questions, 60 are conceptual and 40 are numerical.
 
 | Subtype | Practice | Mock-only | Ratio |
 |---|---|---|---|
-| Conceptual | 51 | 72 | **1.41×** |
-| Numerical | 49 | 44 | **0.90×** |
+| Conceptual | 60 | 85 | **1.42×** |
+| Numerical | 40 | 31 | **0.78×** |
 | Total | 100 | 116 | **1.16×** |
 
-The numerical mock-only ratio (0.90×) is below 1.0×. This is an acknowledged and defended outcome, not an oversight: numerical questions with complex starter/expected code and deterministic test cases are the hardest format to anti-clone — a mock-only numerical question must have visually and computationally distinct scaffolding from its practice counterpart. At 44 mock-only numerical questions across 9 hard-eligible families, the bank provides genuine numerical runway (roughly 5 per family at hard, 3–4 at medium). The conceptual surplus (1.41×) more than covers the overall runway target. If a future audit finds the numerical pool insufficient for power-user consumption, the remediation is new numerical authoring, not retroactive ratio inflation.
+The numerical mock-only ratio (0.78×) is materially below the 1.0× contract floor. This is an acknowledged outcome, not an oversight, but it is **provisional**: it stands only as long as the numerical-pool runway is empirically sufficient for power-user consumption, and is the first remediation candidate if a future audit shows fresh-first exhaustion on numerical benchmarks. Rationale for the present landing: (a) numerical questions with deterministic starter/expected code and hidden test cases are the hardest format to anti-clone — a mock-only numerical question must have visually and computationally distinct scaffolding from its practice counterpart, and the practice numerical pool (40 questions) already occupies much of the available recombination surface; (b) the conceptual surplus (1.42×) carries the overall 1.16× ratio. Numerical mock distributes as 13 medium + 18 hard (≈1 per family at medium, ≈1.4 per family at hard across the 13-family registry); benchmark composition is `1 numerical + 2 conceptual` per benchmark (per `docs/specs/mock-benchmark-spec.md`), so the 31-question numerical mock pool supports roughly 15 distinct hard benchmarks before fresh-first exhausts — borderline-sufficient under steady benchmark use, fragile under heavy drill mode. **First remediation if exhaustion is observed:** numerical-only top-up authoring to bring the pool to ~40 (≈1.0×), not retroactive ratio inflation.
 
 **Mock difficulty split.** Medium/hard mock split: 66 medium / 50 hard = 1:0.76.
 
