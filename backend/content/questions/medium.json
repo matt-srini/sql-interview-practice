@@ -655,7 +655,7 @@
     "enforce_concepts": false,
     "explanation": "The outer query starts from users because the result needs user-level output, including people who may have no qualifying orders at all. NOT EXISTS is the correct anti-subquery pattern here because it checks whether any completed order is present for the current user. If none exists, that user remains in the result. The signup_date filter is applied in the outer WHERE clause so only early signups are evaluated, and the final ordering is deterministic.",
     "hints": [
-      "Start from users and ask, for each one: does any completed order exist? Keep only the users where the answer is no — that's an anti-match, not a join.",
+      "Start from users and ask, for each one: does any completed order exist? The result keeps only users for whom the answer is no — that's an absence test, not a matching test.",
       "Use an anti-subquery pattern to exclude users who have at least one completed order.",
       "Apply the signup-date filter in the outer query."
     ],
@@ -977,7 +977,7 @@
     "solution_query": "SELECT u.user_id, u.name, u.country\nFROM users u\nLEFT JOIN orders o\n  ON u.user_id = o.user_id\n AND o.order_date >= '2024-01-01'\n AND o.order_date < '2025-01-01'\nWHERE u.country IN ('US', 'UK', 'CA')\nGROUP BY u.user_id, u.name, u.country\nHAVING COUNT(o.order_id) = 0\nORDER BY u.user_id ASC;",
     "explanation": "The result must include users even when they have no 2024 orders, so the query starts from users and uses a LEFT JOIN to orders. The 2024 date filter is applied in the join condition so only 2024 orders can match, while users with no such orders remain in the joined result. The country filter belongs in WHERE because it applies to the driving users table. After grouping by user, COUNT(o.order_id) counts only matched 2024 orders, and HAVING COUNT(o.order_id) = 0 keeps the users with none. This is a join-correctness problem because moving the order-date filter to WHERE would incorrectly remove the users you need.",
     "hints": [
-      "Users with zero qualifying orders must survive into the result — that requirement dictates which join type you pick, and that choice interacts with where you put the date filter.",
+      "Users with zero qualifying orders must survive into the result — that requirement dictates which row-combination strategy you pick, and that strategy interacts with how the date condition is positioned.",
       "Filter the user list to the requested countries before applying the zero-order test.",
       "Putting `o.order_date >= '2024-01-01'` in the WHERE clause silently turns a LEFT JOIN into an INNER join (NULL fails the comparison and drops the row); keep the date filter in the ON clause so unmatched users survive."
     ],
@@ -1185,7 +1185,7 @@
     "solution_query": "SELECT p.product_id, p.product_name, p.brand\nFROM products p\nWHERE p.launch_date < '2024-01-01'\n AND NOT EXISTS (\n  SELECT 1\n  FROM order_items oi\n  JOIN orders o ON oi.order_id = o.order_id\n  WHERE oi.product_id = p.product_id\n   AND o.status = 'completed'\n )\nORDER BY p.product_id ASC;",
     "explanation": "The outer query starts from products because the result should include products that might have no matching order history at all. The NOT EXISTS subquery checks whether a completed-order match exists for the current product by joining order_items to orders and correlating back through oi.product_id = p.product_id. If no such completed-order row exists, the product stays in the result. This is a clean anti-match pattern that avoids accidental loss of products with no order-item rows.",
     "hints": [
-      "Start from products and ask, for each one: does any completed-order line item exist? Keep only the products where the answer is no — that's an anti-match against the order_items↔orders pair.",
+      "Start from products and ask, for each one: does any completed-order line item exist? The result keeps only products for which the answer is no — that's an absence test against the order_items↔orders link.",
       "The subquery should look for evidence that a product appears in a completed order.",
       "Keep only products for which that evidence does not exist."
     ],
@@ -1277,7 +1277,7 @@
     "solution_query": "SELECT u.user_id, u.name, COUNT(p.payment_id) AS refunded_payment_count, SUM(p.amount) AS refunded_amount\nFROM users u\nJOIN orders o ON u.user_id = o.user_id\nJOIN payments p ON o.order_id = p.order_id\nWHERE p.status = 'refunded'\n AND NOT EXISTS (\n  SELECT 1\n  FROM support_tickets st\n  WHERE st.user_id = u.user_id\n   AND st.status IN ('open', 'in_progress')\n )\nGROUP BY u.user_id, u.name\nHAVING COUNT(p.payment_id) >= 2\nORDER BY refunded_amount DESC, u.user_id ASC;",
     "explanation": "This is a business-logic question that combines payment behavior with support status. The main query joins users to their orders and payment rows, then filters to refunded payment rows only. The NOT EXISTS subquery removes any user who currently has an open or in-progress support ticket, which keeps the user-level business rule separate from the payment-row aggregation. After grouping by user, HAVING COUNT(p.payment_id) >= 2 enforces the repeated-refund threshold, and SUM(p.amount) measures the refund exposure.",
     "hints": [
-      "Two distinct user-level checks are happening at once: aggregate the refunded payments per user, AND separately exclude users who currently have an open ticket. Keep those two pieces of reasoning in different parts of the query so the ticket exclusion doesn't fold into the payment aggregation.",
+      "Two separate user-level checks are happening at once: aggregate the refunded payments per user, AND independently exclude users who currently have an open ticket. Keep those two pieces of reasoning in different parts of the query so the ticket exclusion doesn't fold into the payment aggregation.",
       "Handle the support-ticket exclusion as a separate user-level check, not by joining ticket rows into the main aggregation.",
       "Use HAVING for the minimum refund-count requirement."
     ],

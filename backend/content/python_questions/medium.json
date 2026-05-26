@@ -47381,7 +47381,7 @@
     ],
     "public_test_cases": 2,
     "hints": [
-      "Build the power set iteratively: start with just the empty subset, then for each new element, extend the current collection by adding a version of every existing subset that includes the new element.",
+      "Every input element is either included or excluded from a given output member, independent of the others — what systematic enumeration ensures every distinct combination is produced exactly once?",
       "Sort `nums` before iterating to ensure subsets are built in a consistent order. Final `result.sort()` gives lexicographic ordering of the entire output list."
     ],
     "concepts": [
