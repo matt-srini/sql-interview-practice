@@ -58,7 +58,7 @@ In this order:
 - D5c. Type/subtype mix inside mock-only.
 - D5d. Per-family target table (NEW): family count → fair-share per family → soft ceiling (50% per tier) → target practice + target mock-only per family → load-bearing families called out with reasoning-depth defence.
 - D5e. Realism-family decision — path (i) designated family OR path (ii) no realism by design (defended).
-- D5f. Chain policy — count + dimension mix.
+- D5f. Chain policy — count + dimension mix. **Critical (lesson from ML Phase 2 Stage C F4): chain children count IN the locked mock-only total, NOT additive on top.** A target of 120 mock-only with 8 chains × (parent + 2 children) means: 8 parents + 16 children + 96 standalones = 120 total. The chain-member percentage anchor (see § 6.3 Chain-member % precedent — ~30%) drives chain SIZING within the locked total, not above it. Explicit Stage A handoff language should read: "Mock-only target N includes all chain members. Chain children are inside the count, not additive."
 
 **Deliverable 6 — Sonnet handoff prompt.** See § 3 for the required format.
 
