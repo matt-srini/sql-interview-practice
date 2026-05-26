@@ -1862,7 +1862,7 @@
       "If the goal is higher validation AUC and adding trees re-inflates training AUC, what does that trajectory predict about the training-validation gap as trees are added?"
     ],
     "concepts": [
-      "XGBOOST",
+      "BOOSTING MECHANICS",
       "REGULARIZATION EFFECT"
     ],
     "follow_ups": [
@@ -2078,7 +2078,7 @@
       "Which XGBoost importance metric directly measures how much each feature reduces the model's objective function when it is used for a split?"
     ],
     "concepts": [
-      "XGBOOST",
+      "BOOSTING MECHANICS",
       "ENSEMBLE STRATEGY"
     ]
   },
@@ -2160,7 +2160,7 @@
       "Two LightGBM parameters directly control overfitting on small datasets: one limits the total number of leaves, the other limits the minimum samples per leaf — which both need adjustment here?"
     ],
     "concepts": [
-      "LIGHTGBM",
+      "BOOSTING MECHANICS",
       "OVERFITTING DIAGNOSIS"
     ]
   },
@@ -2186,7 +2186,7 @@
       "CatBoost's ordered statistics compute the category mean for observation i using only observations that came before i in a permutation — what information about i is excluded from its own encoding?"
     ],
     "concepts": [
-      "CATBOOST",
+      "BOOSTING MECHANICS",
       "DATA LEAKAGE DETECTION"
     ]
   },
@@ -2212,7 +2212,7 @@
       "The time complexity for 'exact' scales with n*p per split candidate — for n=500,000 and p=200, what does that mean for training time relative to 'hist'?"
     ],
     "concepts": [
-      "XGBOOST",
+      "BOOSTING MECHANICS",
       "HYPERPARAMETER SENSITIVITY"
     ]
   },
@@ -2520,7 +2520,7 @@
       "For an imbalanced classification problem, why is F1 at threshold=0.5 potentially a poor choice compared to F1 at the threshold that maximizes F1?"
     ],
     "concepts": [
-      "XGBOOST",
+      "BOOSTING MECHANICS",
       "REGULARIZATION EFFECT"
     ]
   },
@@ -2548,7 +2548,7 @@
       "What is the relationship between max_depth and the number of leaf nodes in a tree, and why does fewer leaf nodes reduce the optimizer's workload?"
     ],
     "concepts": [
-      "XGBOOST",
+      "BOOSTING MECHANICS",
       "REGULARIZATION EFFECT"
     ]
   },

@@ -419,13 +419,16 @@ TRACKS: tuple[TrackConfig, ...] = (
             "tensorflow",
             "pytorch",
             "keras",
-            # xgboost / lightgbm / catboost are intentionally NOT blocked:
-            # they are the only concept tags that route to BOOSTING MECHANICS
-            # (GRADIENT BOOSTING routes to ENSEMBLE STRATEGY via substring match
-            # on "BOOSTING"; XGBOOST/LIGHTGBM/CATBOOST route correctly).
-            # Use these when the question is specifically about algorithm-level
-            # behavior of the named tool; see docs/concept-taxonomy.md BOOSTING
-            # MECHANICS section for the routing rationale.
+            # Library names are blocklisted as concept tags per the cross-track
+            # concept-tag contract ("Mechanic-name tags as concepts values").
+            # Library names appear as patterns under BOOSTING MECHANICS in
+            # concept_families.py for RESOLUTION (questions whose content
+            # mentions XGBoost route to the family), but the authored
+            # concept tag must be the family name BOOSTING MECHANICS itself.
+            # Decision locked 2026-05-26 (F2 from ML Stage C).
+            "xgboost",
+            "lightgbm",
+            "catboost",
             "fit",
             "predict",
             "transform",
